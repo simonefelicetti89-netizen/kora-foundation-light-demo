@@ -18,28 +18,34 @@ interface NavGroup {
   items: NavItem[];
 }
 
+const DEMO_GROUP: NavGroup = {
+  heading: 'Demo',
+  items: [{ href: '/demo-guide', label: 'Demo Guide' }],
+};
+
 function buildNavGroups(role: string): NavGroup[] {
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
     return [
+      DEMO_GROUP,
       {
-        heading: 'Admin',
-        items: [{ href: '/admin', label: 'Admin Workspace' }],
+        heading: 'KORA Console',
+        items: [
+          { href: '/admin',                label: 'Operating Console' },
+          { href: '/admin/portfolio',      label: 'Company Portfolio' },
+          { href: '/admin/index-registry', label: 'Index Registry' },
+          { href: '/admin/benchmarks',     label: 'Benchmarks' },
+          { href: '/admin/network',        label: 'Advisor & Partners' },
+          { href: '/admin/gtm',            label: 'GTM Pipeline' },
+        ],
       },
       {
         heading: 'Company Intelligence',
         items: [
-          { href: '/company',               label: 'Executive Cockpit' },
-          { href: '/company/kora-index',    label: 'KORA Index' },
-          { href: '/company/activation',    label: 'Activation' },
-          { href: '/company/contribution',  label: 'KORA Contribution' },
-          { href: '/company/pillars',       label: 'Pillars & Initiatives' },
-        ],
-      },
-      {
-        heading: 'Data & Governance',
-        items: [
-          { href: '/company/data',      label: 'Data & Evidence' },
-          { href: '/company/financial', label: 'Financial Governance' },
+          { href: '/company',              label: 'Executive Cockpit' },
+          { href: '/company/kora-index',   label: 'KORA Index' },
+          { href: '/company/activation',   label: 'Activation' },
+          { href: '/company/contribution', label: 'KORA Contribution' },
+          { href: '/company/pillars',      label: 'Pillars & Initiatives' },
         ],
       },
       {
@@ -49,6 +55,8 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/company/uef-review', label: 'UEF Review' },
           { href: '/company/scoring',    label: 'Scoring Run' },
           { href: '/company/reports',    label: 'Reports' },
+          { href: '/company/data',       label: 'Data & Evidence' },
+          { href: '/company/financial',  label: 'Financial Governance' },
         ],
       },
       {
@@ -60,6 +68,7 @@ function buildNavGroups(role: string): NavGroup[] {
 
   if (isEmployerRole(role as Parameters<typeof isEmployerRole>[0])) {
     const groups: NavGroup[] = [
+      DEMO_GROUP,
       {
         heading: 'Company Intelligence',
         items: [
@@ -79,7 +88,6 @@ function buildNavGroups(role: string): NavGroup[] {
       },
     ];
 
-    // COMPANY_ADMIN and COMPANY_HR can see internal tools — marked coming soon
     if (role === 'COMPANY_ADMIN' || role === 'COMPANY_HR') {
       groups.push({
         heading: 'Internal Tools',
@@ -102,15 +110,16 @@ function buildNavGroups(role: string): NavGroup[] {
 
   if (isWorkerRole(role as Parameters<typeof isWorkerRole>[0])) {
     return [
+      DEMO_GROUP,
       {
         heading: 'My KORA',
         items: [
-          { href: '/my-kora',              label: 'My KORA Home' },
-          { href: '/my-kora/privacy',      label: 'Privacy & Sharing' },
-          { href: '/my-kora/dynamic-cv',   label: 'Dynamic Impact CV' },
-          { href: '/my-kora/opportunities', label: 'Opportunities', comingSoon: true },
-          { href: '/my-kora/bookings',     label: 'Bookings',      comingSoon: true },
-          { href: '/my-kora/collective',   label: 'Collective Impact', comingSoon: true },
+          { href: '/my-kora',               label: 'My KORA Home' },
+          { href: '/my-kora/privacy',       label: 'Privacy & Sharing' },
+          { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV' },
+          { href: '/my-kora/opportunities', label: 'Opportunities',    comingSoon: true },
+          { href: '/my-kora/bookings',      label: 'Bookings',         comingSoon: true },
+          { href: '/my-kora/collective',    label: 'Collective Impact', comingSoon: true },
         ],
       },
       {
@@ -122,6 +131,7 @@ function buildNavGroups(role: string): NavGroup[] {
 
   if (role === 'PARTNER_ADMIN_LIGHT') {
     return [
+      DEMO_GROUP,
       {
         heading: 'Partner',
         items: [{ href: '/partner', label: 'Partner Workspace' }],
@@ -135,6 +145,7 @@ function buildNavGroups(role: string): NavGroup[] {
 
   if (role === 'ADVISOR_EXTERNAL_LIGHT') {
     return [
+      DEMO_GROUP,
       {
         heading: 'Advisor',
         items: [{ href: '/advisor', label: 'Advisor Workspace' }],
@@ -147,8 +158,9 @@ function buildNavGroups(role: string): NavGroup[] {
   }
 
   return [
+    DEMO_GROUP,
     {
-      heading: 'Navigation',
+      heading: 'Other',
       items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
     },
   ];

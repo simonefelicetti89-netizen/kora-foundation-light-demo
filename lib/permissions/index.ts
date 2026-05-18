@@ -50,11 +50,16 @@ export function resolvePermission(role: KoraRole, resource: string): boolean {
 }
 
 export function getAccessibleRoutes(role: KoraRole): string[] {
-  const routes: string[] = ['/'];
+  const routes: string[] = ['/', '/demo-guide'];
   if (isAdminRole(role)) {
-    routes.push('/admin', '/company', '/company/ingestion', '/company/ingestion/mapping-review',
+    routes.push(
+      '/admin', '/admin/portfolio', '/admin/index-registry',
+      '/admin/benchmarks', '/admin/network', '/admin/gtm',
+      '/company', '/company/ingestion', '/company/ingestion/mapping-review',
       '/company/uef-review', '/company/scoring', '/company/kora-index', '/company/reports',
-      '/company/activation', '/company/data', '/company/financial');
+      '/company/activation', '/company/contribution', '/company/pillars',
+      '/company/data', '/company/financial',
+    );
   }
   if (isEmployerRole(role)) {
     routes.push(
