@@ -100,28 +100,55 @@ export default function AIOnboardingPage() {
       <section>
         <SectionLabel code="B" title="Source Intake" />
         <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="grid grid-cols-6 gap-2 px-4 py-2 bg-slate-50 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-            <span className="col-span-2">Source</span>
+          {/* Column headers */}
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_90px] gap-3 px-4 py-2 bg-slate-50 border-b border-slate-200 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+            <span>Source</span>
             <span className="text-right">Rows</span>
             <span className="text-right">Mapped</span>
-            <span className="text-right">Conf.</span>
+            <span className="text-right">Rejected</span>
             <span className="text-right">Status</span>
           </div>
           <div className="divide-y divide-slate-100">
             {sources.map((s) => (
-              <div key={s.id} className="grid grid-cols-6 gap-2 px-4 py-3 items-center text-xs">
-                <span className="col-span-2 text-slate-700 font-medium leading-tight">{s.source_label}</span>
-                <span className="text-right font-mono text-slate-500">{s.rows_received}</span>
-                <span className="text-right font-mono text-slate-500">{s.mapped_records}</span>
-                <span className={`text-right font-mono font-semibold ${
-                  s.mapping_confidence >= 0.8 ? 'text-green-600' :
-                  s.mapping_confidence >= 0.6 ? 'text-yellow-600' : 'text-red-500'
-                }`}>
-                  {Math.round(s.mapping_confidence * 100)}%
-                </span>
-                <div className="flex justify-end">
-                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${STATUS_PILL[s.status] ?? STATUS_PILL.pending}`}>
-                    {s.status.replace('_', ' ')}
+              <div key={s.id} className="px-4">
+                {/* Primary row: volume counts + status */}
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_90px] gap-3 py-2.5 items-center text-xs">
+                  <span className="text-slate-700 font-medium leading-snug">{s.source_label}</span>
+                  <span className="text-right font-mono text-slate-500">{s.rows_received}</span>
+                  <span className="text-right font-mono text-slate-500">{s.mapped_records}</span>
+                  <span className={`text-right font-mono font-semibold ${s.rejected_records > 0 ? 'text-orange-600' : 'text-slate-400'}`}>
+                    {s.rejected_records}
+                  </span>
+                  <div className="flex justify-end">
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${STATUS_PILL[s.status] ?? STATUS_PILL.pending}`}>
+                      {s.status.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                </div>
+                {/* Detail row: quality metrics */}
+                <div className="flex flex-wrap gap-x-5 gap-y-1 pb-2.5 text-[11px]">
+                  <span className="text-slate-400">
+                    Completeness{' '}
+                    <span className="font-mono text-slate-600">{Math.round(s.completeness_pct * 100)}%</span>
+                  </span>
+                  <span className="text-slate-400">
+                    Confidence{' '}
+                    <span className={`font-mono font-semibold ${
+                      s.mapping_confidence >= 0.8 ? 'text-green-600' :
+                      s.mapping_confidence >= 0.6 ? 'text-yellow-600' : 'text-red-500'
+                    }`}>
+                      {Math.round(s.mapping_confidence * 100)}%
+                    </span>
+                  </span>
+                  <span className="text-slate-400">
+                    Evidence attached{' '}
+                    <span className="font-mono text-slate-600">{Math.round(s.evidence_attached_pct * 100)}%</span>
+                  </span>
+                  <span className="text-slate-400">
+                    Pending review{' '}
+                    <span className={`font-mono font-semibold ${s.pending_review > 0 ? 'text-yellow-700' : 'text-slate-600'}`}>
+                      {s.pending_review}
+                    </span>
                   </span>
                 </div>
               </div>
