@@ -1,4 +1,5 @@
 import type { ScenarioId } from '@/lib/types';
+import { getMethodologyVersion, getCalibrationStatus } from '@/lib/methodology-config/v0.1';
 
 // KORA Contribution is a companion indicator — never a KORA Index component (CLAUDE.md §12.7)
 export interface KoraContributionOutput {
@@ -24,8 +25,8 @@ export class KoraContributionService implements IKoraContributionService {
       contribution_score: scenarioId === 'S2' ? 0.45 : 0.17,
       collective_initiatives: [],
       ecosystem_reach: 0,
-      methodology_version_id: 'KORA Methodology v0.1',
-      calibration_status: 'pre_empirical_calibration',
+      methodology_version_id: getMethodologyVersion(),
+      calibration_status: getCalibrationStatus(),
       synthetic_demo_data: true,
     };
   }
