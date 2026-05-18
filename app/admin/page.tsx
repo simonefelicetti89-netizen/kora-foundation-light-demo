@@ -103,7 +103,7 @@ export default function KoraOperatingConsole() {
         <div className="rounded-lg border border-teal-200 bg-teal-50 p-5 flex flex-col gap-3 sm:col-span-2 lg:col-span-3">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-500">01 — Orchestration Layer</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-500">ORCH — Orchestration Layer</p>
               <p className="text-sm font-bold text-teal-900 mt-0.5">Activation Orchestration Engine</p>
               <p className="text-xs text-teal-700 mt-1 max-w-xl">
                 Internal KORA module for reviewing, approving and measuring company and collective initiatives.
