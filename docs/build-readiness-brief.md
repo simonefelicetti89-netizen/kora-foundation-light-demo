@@ -556,7 +556,7 @@ After reviewing all canonical documents (docs 10, 12, 21, 21b, 22A, 23, 24, 25, 
 
 Specific status:
 - Gate 1: CLOSED — all 21 decisions (D-01–D-21) recorded in doc 21
-- Gate 2: OPEN — CTO review required before SQL. doc 22 (SQL schema) does not yet exist. Demo build may proceed independently.
+- Gate 2: OPEN — CTO review required before executable SQL. doc 22 (SQL schema specification) exists as a specification-only document. Executable SQL DDL, Prisma, Supabase migrations, production schema provisioning and production backend remain blocked. Demo build may proceed independently.
 - Gate 3: OPEN — legal/privacy counsel required before live data. Demo build uses synthetic data only.
 - Gate 5: OPEN — tax/fiscal advisor required before live fiscal outputs. Not relevant to Phase 0.
 
