@@ -133,8 +133,11 @@ The five pillars are the grammar of KORA. Every event, program, and initiative m
 - Program portfolio governance (budget, participation rate, status, source type)
 - The difference between pillar breadth (how many pillars are represented) and pillar balance (how evenly IU is distributed)
 - Aggregate participation rates per scenario — no individual worker activity
+- **Initiative Studio (Foundation Light Preview):** KORA is not only diagnostic — it is an activation orchestration layer. The Initiative Studio preview shows how companies can create, propose, join and co-fund initiatives that KORA validates and measures. Four example initiative proposals illustrate the additionality classification: mandatory legal minimum (low activation value), beyond-minimum internal initiative, strategic company initiative, and collective verified initiative.
 
-**Still demo/mock:** Participation rates are scenario estimates, clearly labeled. Budget figures are informational only.
+**Additionality note:** Mandatory legal minimum activities receive low or zero activation value. KORA rewards additionality, verified activation and distributed participation — not mere compliance.
+
+**Still demo/mock:** Participation rates are scenario estimates, clearly labeled. Budget figures are informational only. Initiative Studio is a preview — no initiative is submitted, approved, funded or activated from the demo screen.
 
 ---
 

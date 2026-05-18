@@ -29,6 +29,10 @@ KORA measures **organizations**, not individuals. The KORA Index is a company-le
 
 The commercial premise: companies invest in people programs and have no reliable way to measure what those investments actually produce in terms of organizational activation. KORA solves that problem. It tells companies where activation is strong, where it is weak, how balanced it is across pillars, how reliable the data behind it is, and what to do next.
 
+**KORA is not only diagnostic.** KORA also orchestrates validated activation initiatives. Companies can create, propose, join and economically support initiatives — with KORA acting as the validation and orchestration layer. KORA identifies activation gaps, proposes relevant initiatives, validates eligibility, routes to advisors and partners, approves or rejects actions, and measures outcomes. KORA moves from measuring what happened to orchestrating what should happen next.
+
+**Additionality principle:** KORA rewards additionality, verified activation and distributed participation — not mere compliance. Mandatory legal minimum activities receive low or zero activation value. Money alone is not impact — budget allocation does not produce activation without verified worker participation.
+
 ---
 
 ## 3. What KORA Is Not

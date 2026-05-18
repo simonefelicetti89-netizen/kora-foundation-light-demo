@@ -99,6 +99,58 @@ export default function KoraOperatingConsole() {
           </Link>
         </div>
 
+        {/* 01: Activation Orchestration Engine */}
+        <div className="rounded-lg border border-teal-200 bg-teal-50 p-5 flex flex-col gap-3 sm:col-span-2 lg:col-span-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-500">01 — Orchestration Layer</p>
+              <p className="text-sm font-bold text-teal-900 mt-0.5">Activation Orchestration Engine</p>
+              <p className="text-xs text-teal-700 mt-1 max-w-xl">
+                Internal KORA module for reviewing, approving and measuring company and collective initiatives.
+                KORA validates eligibility, classifies pillar fit, routes to advisors and partners, approves or rejects,
+                monitors participation thresholds and measures outcomes.
+              </p>
+            </div>
+            {/* Inline lifecycle counts */}
+            <div className="shrink-0 space-y-1 text-right">
+              {[
+                ['Proposed',                '2'],
+                ['Under KORA Review',       '1'],
+                ['Advisor Review Required', '1'],
+                ['Approved / Active',       '3'],
+                ['Measured',                '1'],
+              ].map(([label, count]) => (
+                <p key={label} className="text-[10px] text-teal-600">
+                  <span className="font-bold text-teal-800 mr-1">{count}</span>{label}
+                </p>
+              ))}
+            </div>
+          </div>
+
+          {/* Lifecycle stages */}
+          <div className="flex flex-wrap gap-1 items-center text-[10px] font-mono text-teal-600 border-t border-teal-100 pt-3">
+            {['draft', 'proposed', 'under_kora_review', 'advisor_review_required', 'partner_validation_required',
+              'approved', 'active', 'completed', 'measured', 'rejected'].map((s, i, arr) => (
+              <span key={s} className="flex items-center gap-1">
+                <span className="rounded border border-teal-200 bg-white px-1.5 py-0.5">{s}</span>
+                {i < arr.length - 1 && <span className="text-teal-300">→</span>}
+              </span>
+            ))}
+          </div>
+
+          {/* Canonical sentence + disclaimer */}
+          <div className="rounded border border-teal-100 bg-white px-3 py-2 text-xs text-teal-700 border-t border-teal-100 pt-3">
+            KORA is the orchestration layer between company intent, worker participation, partner evidence, advisor validation and measurable impact.
+          </div>
+          <div className="flex items-center gap-3 text-[10px] text-teal-600">
+            <span>Money alone is not impact — spending without activation is not rewarded.</span>
+            <span>·</span>
+            <span>KORA rewards additionality, not mere compliance.</span>
+            <span>·</span>
+            <span className="rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-blue-700 font-semibold">Foundation Light Preview</span>
+          </div>
+        </div>
+
         {/* 1: Company Portfolio */}
         <div className="rounded-lg border border-slate-200 bg-white p-5 flex flex-col gap-3">
           <div>

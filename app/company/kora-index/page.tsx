@@ -47,6 +47,57 @@ export default function KoraIndexDetail() {
 
       {/* Explainability — full text explanation, weak/strong, next actions, limitations */}
       <ExplainabilityPanel record={explanation} />
+
+      {/* Additionality Guardrail */}
+      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+        <h3 className="text-sm font-semibold text-emerald-800">Additionality Guardrail</h3>
+        <p className="text-xs text-emerald-700 leading-relaxed">
+          KORA rewards additionality, verified activation and distributed participation — not mere compliance.
+          Mandatory legal minimum activities receive low or zero activation value unless they exceed the minimum
+          requirement or demonstrate additionality.
+        </p>
+
+        <div className="grid gap-2 sm:grid-cols-3">
+          {[
+            {
+              label: 'Mandatory legal safety course',
+              value: 'Low activation value',
+              note: 'Compliance with law is baseline, not activation. Evidence context only.',
+              color: 'border-rose-200 bg-rose-50 text-rose-800',
+            },
+            {
+              label: 'Additional safety culture workshop',
+              value: 'Higher activation value',
+              note: 'Beyond legal minimum, participatory, evidence-backed. KORA rewards going further.',
+              color: 'border-green-200 bg-green-50 text-green-800',
+            },
+            {
+              label: 'Cross-company volunteering initiative',
+              value: 'High KORA Contribution relevance',
+              note: 'Collective, verified, multi-company scope. Highest activation signal if above threshold.',
+              color: 'border-indigo-200 bg-indigo-50 text-indigo-800',
+            },
+          ].map((ex) => (
+            <div key={ex.label} className={`rounded border p-3 ${ex.color}`}>
+              <p className="text-xs font-semibold mb-1">{ex.label}</p>
+              <p className="text-xs font-bold mb-1">{ex.value}</p>
+              <p className="text-xs opacity-80 leading-relaxed">{ex.note}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="border-t border-emerald-200 pt-3 space-y-2">
+          <p className="text-xs text-emerald-700 leading-relaxed">
+            Additionality modifies upstream IU qualification and weighting — it does not add a new KORA Index component.
+            The KORA Index has exactly 10 components. Additionality affects the UEF feature vector, IU computation, and explainability.
+          </p>
+          <p className="text-xs text-emerald-700 leading-relaxed">
+            To improve the KORA Index, launch a KORA-reviewed initiative targeting weak pillar coverage —
+            such as an additional voluntary safety culture workshop or a cross-company volunteering action.
+            See <span className="font-semibold">Pillars &amp; Initiatives → Initiative Studio</span> to propose or join an initiative.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
