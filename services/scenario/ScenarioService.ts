@@ -20,6 +20,7 @@ const STUB_SCENARIOS: ScenarioConfig[] = [
     safeguard_status: 'WARNING',
     kora_index_value: 47,
     demo_activation_summary: '38% activation · 22% meaningful · Safeguard WARNING',
+    demo_confidence_score: 0.60,
   },
   {
     id: 'S2',
@@ -30,6 +31,7 @@ const STUB_SCENARIOS: ScenarioConfig[] = [
     safeguard_status: 'CLEAR',
     kora_index_value: 64,
     demo_activation_summary: '52% activation · 38% meaningful · Safeguard CLEAR',
+    demo_confidence_score: 0.72,
   },
 ];
 
