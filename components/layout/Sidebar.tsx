@@ -36,6 +36,7 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/admin/benchmarks',     label: 'Benchmarks' },
           { href: '/admin/network',        label: 'Advisor & Partners' },
           { href: '/admin/gtm',            label: 'GTM Pipeline' },
+          { href: '/admin/ai-onboarding',  label: 'AI Onboarding' },
         ],
       },
       {

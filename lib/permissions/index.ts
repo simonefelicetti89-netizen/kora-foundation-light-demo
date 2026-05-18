@@ -54,7 +54,7 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
   if (isAdminRole(role)) {
     routes.push(
       '/admin', '/admin/portfolio', '/admin/index-registry',
-      '/admin/benchmarks', '/admin/network', '/admin/gtm',
+      '/admin/benchmarks', '/admin/network', '/admin/gtm', '/admin/ai-onboarding',
       '/company', '/company/ingestion', '/company/ingestion/mapping-review',
       '/company/uef-review', '/company/scoring', '/company/kora-index', '/company/reports',
       '/company/activation', '/company/contribution', '/company/pillars',

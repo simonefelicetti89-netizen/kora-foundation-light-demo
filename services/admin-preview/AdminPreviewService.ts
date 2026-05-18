@@ -21,9 +21,10 @@ interface SeedKoraIndex {
 
 interface SeedBatch {
   id: string; company_id: string; scenario_id: string;
-  source_type: string; batch_status: string;
-  row_count: number; mapped_count: number;
+  source_type: string; source_name?: string; batch_status: string;
+  row_count: number; mapped_count: number; rejected_count?: number;
   completeness_pct: number; mapping_confidence_avg: number;
+  evidence_attached_pct?: number; pending_review_count?: number;
 }
 
 const companies   = (companiesRaw as { data: SeedCompany[] }).data;
@@ -305,4 +306,241 @@ class AdminPreviewService {
   }
 }
 
-export const adminPreviewService = new AdminPreviewService();
+// ─── AI Onboarding Engine interfaces ─────────────────────────────────────────
+
+export interface CompanyOnboardingStatus {
+  company_id: string;
+  company_name: string;
+  onboarding_status: string;
+  current_phase: string;
+  scoring_readiness: 'ready' | 'partial' | 'blocked';
+  source_batch_count: number;
+  approved_batches: number;
+  pending_review_batches: number;
+  synthetic_demo: true;
+}
+
+export interface SourceBatchPreview {
+  id: string;
+  source_type: string;
+  source_label: string;
+  scenario_id: string;
+  rows_received: number;
+  mapped_records: number;
+  rejected_records: number;
+  completeness_pct: number;
+  mapping_confidence: number;
+  evidence_attached_pct: number;
+  pending_review: number;
+  status: string;
+}
+
+export interface MappingIntelligencePreview {
+  total_rows_processed: number;
+  rows_mapped: number;
+  rows_rejected: number;
+  rows_pending: number;
+  avg_mapping_confidence: number;
+  sources_requiring_review: number;
+  taxonomy_rules_applied: number;
+  bcm_pillar_assignments: number;
+  unmapped_requiring_manual: number;
+  taxonomy_basis: string;
+}
+
+export interface PrivacyFilterPreview {
+  sensitive_fields_detected: number;
+  sensitive_fields_excluded: number;
+  excluded_categories: string[];
+  no_external_llm_on_hr_data: true;
+  no_employer_access_individual: true;
+  pseudonymization_applied: true;
+}
+
+export interface UefDraftQueuePreview {
+  draft_total_estimated: number;
+  approved: number;
+  flagged_for_review: number;
+  rejected: number;
+  eligible_for_scoring: number;
+  uef_event_records_deferred: true;
+  deferred_reason: string;
+}
+
+export interface HumanReviewPreview {
+  batches_requiring_review: number;
+  total_pending_items: number;
+  flagged_mappings: number;
+  rejected_mappings: number;
+  advisor_queue_items: number;
+  approval_gate_active: true;
+}
+
+export interface ScoringReadinessPreview {
+  data_completeness: number;
+  evidence_quality: number;
+  mapping_confidence: number;
+  review_completion: number;
+  readiness_status: 'ready' | 'partial' | 'blocked';
+  next_required_action: string;
+}
+
+const SOURCE_TYPE_LABELS: Record<string, string> = {
+  hris_population:  'HRIS Population Export',
+  lms_training:     'LMS Training Export',
+  welfare_provider: 'Welfare Provider Export',
+  esg_initiatives:  'ESG Initiatives File',
+  partner_events:   'Partner Events File',
+  manual_upload:    'Manual Upload',
+};
+
+// ─── Extended AdminPreviewService ─────────────────────────────────────────────
+
+export const adminPreviewService = new (class extends AdminPreviewService {
+
+  // A. Company onboarding status (Meridiana — primary demo company)
+  getAIOnboardingPreview(): CompanyOnboardingStatus {
+    const meridianaS1 = batches.filter(
+      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
+    );
+    const approved = meridianaS1.filter((b) => b.batch_status === 'approved').length;
+    const pending  = meridianaS1.filter((b) => b.batch_status !== 'approved').length;
+
+    return {
+      company_id: 'meridiana-group',
+      company_name: 'Meridiana Group S.r.l.',
+      onboarding_status: 'Foundation Light demo ready — partial review required',
+      current_phase: 'Source mapping complete · UEF review preparation',
+      scoring_readiness: approved >= 2 ? 'partial' : 'blocked',
+      source_batch_count: meridianaS1.length,
+      approved_batches: approved,
+      pending_review_batches: pending,
+      synthetic_demo: true,
+    };
+  }
+
+  // B. Source intake per scenario (defaults to S1 — most interesting for demo)
+  getSourceIntakePreview(scenarioId: 'S1' | 'S2' = 'S1'): SourceBatchPreview[] {
+    return batches
+      .filter((b) => b.company_id === 'meridiana-group' && b.scenario_id === scenarioId)
+      .map((b): SourceBatchPreview => ({
+        id: b.id,
+        source_type: b.source_type,
+        source_label: SOURCE_TYPE_LABELS[b.source_type] ?? b.source_type,
+        scenario_id: b.scenario_id,
+        rows_received: b.row_count,
+        mapped_records: b.mapped_count,
+        rejected_records: b.rejected_count ?? (b.row_count - b.mapped_count - (b.pending_review_count ?? 0)),
+        completeness_pct: b.completeness_pct,
+        mapping_confidence: b.mapping_confidence_avg,
+        evidence_attached_pct: b.evidence_attached_pct ?? 0,
+        pending_review: b.pending_review_count ?? 0,
+        status: b.batch_status,
+      }));
+  }
+
+  // C. Mapping intelligence — derived from S1 batch data
+  getMappingIntelligencePreview(): MappingIntelligencePreview {
+    const s1 = batches.filter(
+      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
+    );
+    const totalRows   = s1.reduce((s, b) => s + b.row_count, 0);
+    const totalMapped = s1.reduce((s, b) => s + b.mapped_count, 0);
+    const totalRejected = s1.reduce((s, b) => s + (b.rejected_count ?? 0), 0);
+    const totalPending  = s1.reduce((s, b) => s + (b.pending_review_count ?? 0), 0);
+    const weightedConf  = s1.reduce((s, b) => s + b.mapping_confidence_avg * b.row_count, 0);
+    const avgConf = totalRows > 0 ? weightedConf / totalRows : 0;
+    const requiresReview = s1.filter((b) => b.batch_status !== 'approved').length;
+
+    return {
+      total_rows_processed: totalRows,
+      rows_mapped: totalMapped,
+      rows_rejected: totalRejected,
+      rows_pending: totalPending,
+      avg_mapping_confidence: Math.round(avgConf * 100) / 100,
+      sources_requiring_review: requiresReview,
+      taxonomy_rules_applied: 847,
+      bcm_pillar_assignments: totalMapped,
+      unmapped_requiring_manual: totalRejected + Math.floor(totalPending * 0.3),
+      taxonomy_basis: 'Rule-based BCM taxonomy classifier — no external LLM',
+    };
+  }
+
+  // D. Privacy filter — inline synthetic preview
+  getPrivacyFilterPreview(): PrivacyFilterPreview {
+    return {
+      sensitive_fields_detected: 14,
+      sensitive_fields_excluded: 14,
+      excluded_categories: [
+        'Email addresses',
+        'Phone numbers',
+        'Postal addresses',
+        'Tax identifiers (codice fiscale)',
+        'Health and clinical details',
+        'Free-text personal notes',
+        'Diagnostic or therapist references',
+      ],
+      no_external_llm_on_hr_data: true,
+      no_employer_access_individual: true,
+      pseudonymization_applied: true,
+    };
+  }
+
+  // E. UEF draft queue — aggregate counts only (no event-level records)
+  getUefDraftQueuePreview(): UefDraftQueuePreview {
+    const s1 = batches.filter(
+      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
+    );
+    const totalMapped = s1.reduce((s, b) => s + b.mapped_count, 0);
+    const draft  = Math.floor(totalMapped * 0.92);
+    const approved = Math.floor(draft * 0.55);
+    const flagged  = Math.floor(draft * 0.18);
+    const rejected = Math.floor(draft * 0.08);
+    return {
+      draft_total_estimated: draft,
+      approved,
+      flagged_for_review: flagged,
+      rejected,
+      eligible_for_scoring: approved,
+      uef_event_records_deferred: true,
+      deferred_reason: 'UEF event-level records are not generated in Foundation Light demo phase. Aggregate queue counts only.',
+    };
+  }
+
+  // F. Human review summary — inline synthetic
+  getHumanReviewPreview(): HumanReviewPreview {
+    const s1 = batches.filter(
+      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
+    );
+    const pendingBatches = s1.filter((b) => b.batch_status !== 'approved').length;
+    const totalPending   = s1.reduce((s, b) => s + (b.pending_review_count ?? 0), 0);
+    return {
+      batches_requiring_review: pendingBatches,
+      total_pending_items: totalPending,
+      flagged_mappings: Math.floor(totalPending * 0.22),
+      rejected_mappings: Math.floor(totalPending * 0.09),
+      advisor_queue_items: 11,
+      approval_gate_active: true,
+    };
+  }
+
+  // G. Scoring readiness
+  getScoringReadinessPreview(): ScoringReadinessPreview {
+    const s1 = batches.filter(
+      (b) => b.company_id === 'meridiana-group' && b.scenario_id === 'S1',
+    );
+    const avgCompleteness = s1.reduce((s, b) => s + b.completeness_pct, 0) / (s1.length || 1);
+    const avgEvidence     = s1.reduce((s, b) => s + (b.evidence_attached_pct ?? 0), 0) / (s1.length || 1);
+    const avgConf         = s1.reduce((s, b) => s + b.mapping_confidence_avg, 0) / (s1.length || 1);
+    const approvedRatio   = s1.filter((b) => b.batch_status === 'approved').length / (s1.length || 1);
+
+    return {
+      data_completeness: Math.round(avgCompleteness * 100) / 100,
+      evidence_quality: Math.round(avgEvidence * 100) / 100,
+      mapping_confidence: Math.round(avgConf * 100) / 100,
+      review_completion: Math.round(approvedRatio * 100) / 100,
+      readiness_status: 'partial',
+      next_required_action: 'Complete human review of 165 pending items across LMS, Welfare, ESG, Partner, and Manual batches. Advisor review of 11 queued IMPACT events required before scoring run.',
+    };
+  }
+})();

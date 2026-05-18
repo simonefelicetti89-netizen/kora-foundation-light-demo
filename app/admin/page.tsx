@@ -57,6 +57,48 @@ export default function KoraOperatingConsole() {
       {/* Module grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
+        {/* 00: AI Onboarding Engine — featured */}
+        <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-5 flex flex-col gap-3 sm:col-span-2 lg:col-span-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400">00 — Primary Flow</p>
+              <p className="text-sm font-bold text-indigo-900 mt-0.5">AI Onboarding Engine</p>
+              <p className="text-xs text-indigo-700 mt-1 max-w-xl">
+                Data source intake · BCM taxonomy mapping · Privacy filter · UEF draft queue · Human review · Scoring readiness.
+                The path from raw company data to a scoring-ready dataset.
+              </p>
+            </div>
+            <div className="shrink-0 space-y-1 text-right">
+              {(() => {
+                const onb = adminPreviewService.getAIOnboardingPreview();
+                return (
+                  <>
+                    <p className="text-[10px] text-indigo-500">{onb.source_batch_count} source batches</p>
+                    <p className="text-[10px] text-indigo-500">{onb.approved_batches} approved · {onb.pending_review_batches} pending</p>
+                    <span className={`inline-block rounded border px-2 py-0.5 text-[10px] font-bold ${
+                      onb.scoring_readiness === 'ready'   ? 'bg-green-100 text-green-800 border-green-200' :
+                      onb.scoring_readiness === 'partial' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                      'bg-red-100 text-red-800 border-red-200'
+                    }`}>
+                      {onb.scoring_readiness.toUpperCase()} for scoring
+                    </span>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+          <div className="flex items-center gap-3 text-[10px] text-indigo-600 border-t border-indigo-100 pt-3">
+            <span>AI assists mapping and review. It does not score workers.</span>
+            <span>·</span>
+            <span>Rule-based BCM taxonomy — no external LLM on HR data.</span>
+            <span>·</span>
+            <span>Only approved UEF records enter scoring.</span>
+          </div>
+          <Link href="/admin/ai-onboarding" className="text-xs font-semibold text-indigo-600 hover:underline self-start">
+            Open AI Onboarding Engine →
+          </Link>
+        </div>
+
         {/* 1: Company Portfolio */}
         <div className="rounded-lg border border-slate-200 bg-white p-5 flex flex-col gap-3">
           <div>
