@@ -34,9 +34,18 @@ const ADMIN_ONLY_RESOURCES = new Set([
   'impact-units',
 ]);
 
+// Resources restricted to Finance + Admin roles (informational governance data)
+const FINANCE_ADMIN_RESOURCES = new Set([
+  'financial_governance',
+  'source-batches',
+]);
+
 export function resolvePermission(role: KoraRole, resource: string): boolean {
   if (WORKER_PRIVATE_RESOURCES.has(resource)) return isWorkerRole(role);
   if (ADMIN_ONLY_RESOURCES.has(resource)) return isAdminRole(role) || role === 'COMPANY_ADMIN';
+  if (FINANCE_ADMIN_RESOURCES.has(resource)) {
+    return isAdminRole(role) || role === 'COMPANY_ADMIN' || role === 'COMPANY_FINANCE' || role === 'COMPANY_HR';
+  }
   return true;
 }
 
@@ -48,7 +57,10 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
       '/company/activation', '/company/data', '/company/financial');
   }
   if (isEmployerRole(role)) {
-    routes.push('/company', '/company/kora-index', '/company/reports', '/company/activation');
+    routes.push(
+      '/company', '/company/kora-index', '/company/reports', '/company/activation',
+      '/company/contribution', '/company/pillars',
+    );
     if (role === 'COMPANY_ADMIN' || role === 'COMPANY_HR') {
       routes.push('/company/ingestion', '/company/ingestion/mapping-review',
         '/company/uef-review', '/company/scoring', '/company/data');

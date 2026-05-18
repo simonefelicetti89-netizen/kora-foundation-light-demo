@@ -20,6 +20,8 @@ function getNavItems(role: string): NavItem[] {
     { href: '/company/scoring', label: 'Scoring Run' },
     { href: '/company/reports', label: 'Reports' },
     { href: '/company/activation', label: 'Activation' },
+    { href: '/company/contribution', label: 'KORA Contribution' },
+    { href: '/company/pillars', label: 'Pillars & Initiatives' },
     { href: '/company/data', label: 'Data & Evidence' },
     { href: '/company/financial', label: 'Financial Governance' },
     { href: '/my-kora', label: 'My KORA Home' },
