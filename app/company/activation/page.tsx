@@ -7,6 +7,14 @@ import type { PillarCode } from '@/lib/types';
 
 const SAFE_AGGREGATION_THRESHOLD = 10;
 
+const PILLAR_BAR_COLORS: Record<string, string> = {
+  LIFE:       'bg-green-400',
+  GROWTH:     'bg-blue-400',
+  CONNECTION: 'bg-purple-400',
+  IMPACT:     'bg-orange-400',
+  LEGACY:     'bg-amber-400',
+};
+
 const DEPT_LABELS: Record<string, string> = {
   'dept-operations': 'Operations',
   'dept-sales': 'Sales',
@@ -19,12 +27,17 @@ function pct(val: number): string {
   return `${(val * 100).toFixed(0)}%`;
 }
 
-function MetricCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+function MetricCard({ label, value, sub, description }: { label: string; value: string; sub: string; description?: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3">
       <p className="text-xs text-slate-400">{label}</p>
       <p className="text-2xl font-bold text-slate-800 mt-1">{value}</p>
       <p className="text-xs font-mono text-slate-400 mt-0.5">{sub}</p>
+      {description && (
+        <p className="text-xs text-slate-400 mt-1.5 leading-snug border-t border-slate-100 pt-1.5">
+          {description}
+        </p>
+      )}
     </div>
   );
 }
@@ -46,10 +59,10 @@ export default function Activation() {
       {aggregate ? (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <MetricCard label="Activation Rate" value={pct(aggregate.activation_rate)} sub="AR" />
-            <MetricCard label="Meaningful Activation" value={pct(aggregate.meaningful_activation_rate)} sub="MAR" />
-            <MetricCard label="Continuity Rate" value={pct(aggregate.continuity_rate)} sub="CO" />
-            <MetricCard label="Verification Rate" value={pct(aggregate.verification_rate)} sub="VR" />
+            <MetricCard label="Activation Rate"       value={pct(aggregate.activation_rate)}             sub="AR"  description="Share of eligible workforce with at least one approved impact unit in the period." />
+            <MetricCard label="Meaningful Activation" value={pct(aggregate.meaningful_activation_rate)}  sub="MAR" description="Share of workers whose participation exceeds the materiality threshold — not just nominal." />
+            <MetricCard label="Continuity Rate"       value={pct(aggregate.continuity_rate)}             sub="CO"  description="Share of workers with sustained engagement across multiple reporting periods." />
+            <MetricCard label="Verification Rate"     value={pct(aggregate.verification_rate)}           sub="VR"  description="Share of recorded activity supported by verified or partially verified evidence." />
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white p-4">
@@ -80,7 +93,7 @@ export default function Activation() {
                     <span className="w-24 text-xs font-mono text-slate-600">{pillar}</span>
                     <div className="flex-1 h-2 rounded-full bg-slate-100">
                       <div
-                        className="h-2 rounded-full bg-indigo-400"
+                        className={`h-2 rounded-full ${PILLAR_BAR_COLORS[pillar] ?? 'bg-slate-400'}`}
                         style={{ width: `${share * 100}%` }}
                       />
                     </div>

@@ -147,6 +147,7 @@ export interface ScenarioConfig {
   narrative: string;
   safeguard_status: SafeguardStatus;
   kora_index_value: number;
+  demo_activation_summary?: string;
 }
 
 export interface WorkerPersona {

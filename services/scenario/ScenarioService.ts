@@ -19,6 +19,7 @@ const STUB_SCENARIOS: ScenarioConfig[] = [
     narrative: 'Baseline state — participation concentrated in 12% of workers. Activation Safeguard: WARNING.',
     safeguard_status: 'WARNING',
     kora_index_value: 47,
+    demo_activation_summary: '38% activation · 22% meaningful · Safeguard WARNING',
   },
   {
     id: 'S2',
@@ -28,6 +29,7 @@ const STUB_SCENARIOS: ScenarioConfig[] = [
     narrative: 'Post-recommendation state — broader activation, improved continuity. Activation Safeguard: CLEAR.',
     safeguard_status: 'CLEAR',
     kora_index_value: 64,
+    demo_activation_summary: '52% activation · 38% meaningful · Safeguard CLEAR',
   },
 ];
 

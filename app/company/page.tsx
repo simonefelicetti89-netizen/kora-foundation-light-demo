@@ -10,12 +10,17 @@ import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSim
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import type { PillarCode } from '@/lib/types';
 
-function MetricTile({ label, value, code }: { label: string; value: string; code: string }) {
+function MetricTile({ label, value, code, description }: { label: string; value: string; code: string; description?: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 text-center">
       <p className="text-xs text-slate-400">{label}</p>
       <p className="text-2xl font-bold text-slate-800 mt-1">{value}</p>
       <p className="text-xs font-mono text-slate-400 mt-0.5">{code}</p>
+      {description && (
+        <p className="text-xs text-slate-400 mt-1.5 leading-snug border-t border-slate-100 pt-1.5 text-left">
+          {description}
+        </p>
+      )}
     </div>
   );
 }
@@ -56,10 +61,10 @@ export default function ExecutiveCockpit() {
             Activation Summary
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <MetricTile label="Activation Rate"        value={pct(aggregate.activation_rate)}             code="AR"  />
-            <MetricTile label="Meaningful Activation"  value={pct(aggregate.meaningful_activation_rate)}  code="MAR" />
-            <MetricTile label="Continuity Rate"        value={pct(aggregate.continuity_rate)}             code="CO"  />
-            <MetricTile label="Verification Rate"      value={pct(aggregate.verification_rate)}           code="VR"  />
+            <MetricTile label="Activation Rate"        value={pct(aggregate.activation_rate)}             code="AR"  description="Share of workforce with at least one approved impact unit." />
+            <MetricTile label="Meaningful Activation"  value={pct(aggregate.meaningful_activation_rate)}  code="MAR" description="Share exceeding the materiality threshold — not just nominal." />
+            <MetricTile label="Continuity Rate"        value={pct(aggregate.continuity_rate)}             code="CO"  description="Workers engaged across multiple reporting periods." />
+            <MetricTile label="Verification Rate"      value={pct(aggregate.verification_rate)}           code="VR"  description="Activity backed by verified or partially verified evidence." />
           </div>
         </div>
       )}
