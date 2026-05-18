@@ -3,6 +3,11 @@ import type { ScenarioConfig, ScenarioId } from '@/lib/types';
 export interface IScenarioService {
   getScenario(id: ScenarioId): ScenarioConfig;
   listScenarios(): ScenarioConfig[];
+  getAvailableScenarios(): ScenarioConfig[];
+  filterByScenario<T extends { scenario_id: string }>(
+    records: T[],
+    scenarioId: ScenarioId,
+  ): T[];
 }
 
 const STUB_SCENARIOS: ScenarioConfig[] = [
@@ -33,6 +38,20 @@ export class ScenarioService implements IScenarioService {
 
   listScenarios(): ScenarioConfig[] {
     return STUB_SCENARIOS;
+  }
+
+  getAvailableScenarios(): ScenarioConfig[] {
+    return STUB_SCENARIOS;
+  }
+
+  // Returns records matching the scenario, plus records with scenario_id = "all"
+  filterByScenario<T extends { scenario_id: string }>(
+    records: T[],
+    scenarioId: ScenarioId,
+  ): T[] {
+    return records.filter(
+      (r) => r.scenario_id === scenarioId || r.scenario_id === 'all',
+    );
   }
 }
 

@@ -47,6 +47,34 @@ export interface KoraIndexOutput {
   safeguard_status: SafeguardStatus;
   generated_at: string;
   synthetic_demo_data: true;
+  // Cross-references populated from seed data
+  confidence_score_id?: string;
+  activation_safeguard_result_id?: string;
+  scoring_run_id?: string;
+  limitations_text?: string;
+}
+
+export interface CompanyAggregateExtended {
+  id: string;
+  company_id: string;
+  scenario_id: ScenarioId;
+  reporting_period: string;
+  total_workers: number;
+  eligible_worker_count: number;
+  active_worker_count: number;
+  meaningful_active_worker_count: number;
+  activation_rate: number;
+  meaningful_activation_rate: number;
+  continuity_rate: number;
+  verification_rate: number;
+  pillar_distribution: Record<PillarCode, number>;
+  department_activation: Record<string, number>;
+  privacy_threshold_met: boolean;
+  methodology_version_id: string;
+  calibration_status: CalibrationStatus;
+  synthetic_demo_data: true;
+  generated_for: string;
+  not_live_data: true;
 }
 
 export interface UEFRecord {
