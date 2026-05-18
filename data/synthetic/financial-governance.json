@@ -1,0 +1,145 @@
+{
+  "file": "financial-governance.json",
+  "version": "1.0",
+  "synthetic_demo_data": true,
+  "generated_for": "foundation_light_demo",
+  "not_live_data": true,
+  "primary_consumer": "FinancialGovernanceService",
+  "role_access_note": "Financial governance data is accessible to company_finance, company_admin, and kora_admin roles only. company_viewer, company_hr, partner, worker, and advisor roles must receive a suppressed state.",
+  "gate_note": "Gate 5 (tax/fiscal advisor) is OPEN but does not block informational budget governance display. This file contains informational budget data only — no tax advice, no live fiscal outputs, no automated enforcement.",
+  "constitutional_rule": "Budget figures in this file are informational governance data only. KORA does not handle fund custody, payment execution, or financial settlement. This data does not feed the KORA Index.",
+  "data": [
+    {
+      "id": "fin-gov-S1-meridiana-2025",
+      "synthetic_demo_data": true,
+      "scenario_id": "S1",
+      "generated_for": "foundation_light_demo",
+      "not_live_data": true,
+      "company_id": "meridiana-group",
+      "reporting_period": "Q1–Q3 2025",
+      "informational_only": true,
+      "no_payment_execution": true,
+      "no_fund_custody": true,
+      "disclaimer": "Budget figures are informational only. KORA does not handle fund custody, payment execution, or financial settlement. Final financial decisions and fiscal classification remain under company and advisor responsibility.",
+      "budget_allocated_total": 185000,
+      "budget_used_total": 112000,
+      "budget_committed_total": 28000,
+      "budget_residual": 45000,
+      "budget_utilization_rate": 0.61,
+      "cost_per_iu_indicator": 14.2,
+      "cost_per_iu_note": "Informational dashboard indicator only. Calculated as total budget used divided by total IU generated. Not a certified financial metric. Not suitable for regulatory or comparative benchmarking.",
+      "currency": "EUR",
+      "pillar_budget": {
+        "LIFE": {
+          "allocated": 72000,
+          "used": 48000,
+          "utilization_rate": 0.67,
+          "programs": ["prog-wellbeing-oasis", "prog-safety-first", "prog-remote-wellbeing"]
+        },
+        "GROWTH": {
+          "allocated": 51000,
+          "used": 32000,
+          "utilization_rate": 0.63,
+          "programs": ["prog-learning-accelerator", "prog-emerging-leaders"]
+        },
+        "CONNECTION": {
+          "allocated": 22000,
+          "used": 14000,
+          "utilization_rate": 0.64,
+          "programs": ["prog-mentoring-circle"]
+        },
+        "IMPACT": {
+          "allocated": 26000,
+          "used": 12000,
+          "utilization_rate": 0.46,
+          "programs": ["prog-community-impact", "prog-territorial-volunteer"]
+        },
+        "LEGACY": {
+          "allocated": 14000,
+          "used": 6000,
+          "utilization_rate": 0.43,
+          "programs": ["prog-mentoring-circle"]
+        }
+      },
+      "kora_billing": {
+        "subscription": 4800,
+        "setup": 1200,
+        "advisory": 2400,
+        "total": 8400,
+        "note": "KORA platform costs tracked separately from people program budget. Not included in budget_allocated_total."
+      },
+      "narrative": "In Q1–Q3 2025, budget is concentrated in LIFE (39% of allocation) with lower utilization in IMPACT (46%) and LEGACY (43%). Residual budget and low IMPACT utilization are consistent with the WARNING state narrative — programs were allocated but worker activation remains partial.",
+      "not_payroll_data": true,
+      "not_individual_worker_spend": true,
+      "not_tax_advice": true,
+      "not_fiscal_classification": true,
+      "not_kora_index_input": true
+    },
+    {
+      "id": "fin-gov-S2-meridiana-2025",
+      "synthetic_demo_data": true,
+      "scenario_id": "S2",
+      "generated_for": "foundation_light_demo",
+      "not_live_data": true,
+      "company_id": "meridiana-group",
+      "reporting_period": "Q1–Q4 2025",
+      "informational_only": true,
+      "no_payment_execution": true,
+      "no_fund_custody": true,
+      "disclaimer": "Budget figures are informational only. KORA does not handle fund custody, payment execution, or financial settlement. Final financial decisions and fiscal classification remain under company and advisor responsibility.",
+      "budget_allocated_total": 221000,
+      "budget_used_total": 168000,
+      "budget_committed_total": 18000,
+      "budget_residual": 35000,
+      "budget_utilization_rate": 0.76,
+      "cost_per_iu_indicator": 10.8,
+      "cost_per_iu_note": "Informational dashboard indicator only. Calculated as total budget used divided by total IU generated. Not a certified financial metric. Not suitable for regulatory or comparative benchmarking. Improvement vs S1 reflects broader activation across more workers.",
+      "currency": "EUR",
+      "pillar_budget": {
+        "LIFE": {
+          "allocated": 75000,
+          "used": 59000,
+          "utilization_rate": 0.79,
+          "programs": ["prog-wellbeing-oasis", "prog-safety-first", "prog-remote-wellbeing"]
+        },
+        "GROWTH": {
+          "allocated": 62000,
+          "used": 48000,
+          "utilization_rate": 0.77,
+          "programs": ["prog-learning-accelerator", "prog-emerging-leaders"]
+        },
+        "CONNECTION": {
+          "allocated": 32000,
+          "used": 26000,
+          "utilization_rate": 0.81,
+          "programs": ["prog-mentoring-circle"]
+        },
+        "IMPACT": {
+          "allocated": 34000,
+          "used": 22000,
+          "utilization_rate": 0.65,
+          "programs": ["prog-community-impact", "prog-territorial-volunteer"]
+        },
+        "LEGACY": {
+          "allocated": 18000,
+          "used": 13000,
+          "utilization_rate": 0.72,
+          "programs": ["prog-mentoring-circle"]
+        }
+      },
+      "kora_billing": {
+        "subscription": 4800,
+        "setup": 0,
+        "advisory": 4800,
+        "total": 9600,
+        "note": "KORA platform costs tracked separately from people program budget. Increased advisory engagement in Q4. Not included in budget_allocated_total."
+      },
+      "narrative": "In the full Q1–Q4 2025 period, budget allocation is more evenly distributed across pillars. LIFE remains the largest allocation (34%) but has reduced from S1 (39%). CONNECTION and LEGACY utilization improved significantly, consistent with the CLEAR state narrative. Cost per IU improved from 14.2 to 10.8, reflecting broader participation across more workers. No certified ROI claim is made — this is a directional governance indicator only.",
+      "not_payroll_data": true,
+      "not_individual_worker_spend": true,
+      "not_tax_advice": true,
+      "not_fiscal_classification": true,
+      "not_kora_index_input": true
+    }
+  ]
+}
