@@ -5,7 +5,7 @@ export default function MappingReview() {
       <h1 className="text-xl font-bold text-slate-900">AI Mapping Review</h1>
       <p className="text-sm text-slate-500">Review column header mapping suggestions. Approve, reject, or remap before UEF creation.</p>
       <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-        Mapping suggestions table skeleton — Phase 1
+        Mapping review is not active in Foundation Light. Column header mapping suggestions and approval flow unlock in a future phase.
       </div>
     </div>
   );

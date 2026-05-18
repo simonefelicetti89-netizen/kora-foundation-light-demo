@@ -67,7 +67,8 @@ export default function ExecutiveCockpit() {
 
       {/* Narrative framing block */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
-        <h1 className="text-xl font-bold text-slate-900">Organizational Activation Snapshot</h1>
+        <h1 className="text-xl font-bold text-slate-900">Executive Cockpit</h1>
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mt-0.5">Organizational Activation Snapshot</p>
         <p className="text-sm text-slate-600 mt-1 leading-relaxed max-w-2xl">
           This cockpit shows where Meridiana&apos;s initiatives are activating the organization,
           where participation is weak or concentrated, and which actions will improve the KORA Index.
@@ -175,7 +176,7 @@ export default function ExecutiveCockpit() {
       </div>
 
       <p className="text-xs text-slate-400">
-        Role: {activeRole} · Scenario: {activeScenario} · {output.reporting_period}
+        {output.methodology_version_id} · {output.calibration_status} · {output.reporting_period}
       </p>
     </div>
   );

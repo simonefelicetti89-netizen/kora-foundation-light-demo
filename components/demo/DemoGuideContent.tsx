@@ -1,12 +1,15 @@
 import Link from 'next/link';
 
 const REVIEW_STEPS = [
-  { step: 1, label: 'Executive Cockpit',         href: '/company',              desc: 'KORA Index · Confidence Score · Activation Safeguard · Insight tiles' },
-  { step: 2, label: 'KORA Index Detail',         href: '/company/kora-index',   desc: 'Full 10-component breakdown · Explainability panel · Methodology trace' },
-  { step: 3, label: 'Activation & Participation', href: '/company/activation',  desc: 'AR · MAR · Continuity · Verification · Pillar distribution' },
-  { step: 4, label: 'Data & Evidence',           href: '/company/data',          desc: 'Source coverage · Mapping confidence · Evidence completeness' },
-  { step: 5, label: 'My KORA',                   href: '/my-kora',               desc: 'Worker-private space — switch to Worker role first' },
-  { step: 6, label: 'Future Vision',             href: '/future-vision',         desc: 'Conceptual post-pilot capabilities — all inactive in Foundation Light' },
+  { step: 1, label: 'Executive Cockpit',          href: '/company',              desc: 'KORA Index · Confidence Score · Activation Safeguard · Insight tiles' },
+  { step: 2, label: 'KORA Index Detail',          href: '/company/kora-index',   desc: 'Full 10-component breakdown · Explainability panel · Methodology trace' },
+  { step: 3, label: 'Activation & Participation', href: '/company/activation',   desc: 'AR · MAR · Continuity · Verification · Pillar and department distribution' },
+  { step: 4, label: 'KORA Contribution',          href: '/company/contribution', desc: 'Companion indicator · Collective initiatives · Ecosystem and partner activity' },
+  { step: 5, label: 'Pillars & Initiatives',      href: '/company/pillars',      desc: 'Programme portfolio · Pillar distribution · Collective initiative table' },
+  { step: 6, label: 'Data & Evidence',            href: '/company/data',         desc: 'Source coverage · Mapping confidence · Evidence completeness · Batch-level only' },
+  { step: 7, label: 'KORA Operating Console',     href: '/admin',                desc: 'Switch to a KORA Admin role — AI Onboarding, Index Registry, portfolio and platform health' },
+  { step: 8, label: 'My KORA',                    href: '/my-kora',              desc: 'Worker-private space · Personal impact balance · Dynamic CV · Privacy controls — switch to Worker role first' },
+  { step: 9, label: 'Future Vision',              href: '/future-vision',        desc: 'Post-pilot strategic modules — all inactive in Foundation Light' },
 ];
 
 export function DemoGuideContent() {

@@ -5,7 +5,7 @@ export default function UEFReview() {
       <h1 className="text-xl font-bold text-slate-900">UEF Review</h1>
       <p className="text-sm text-slate-500">Approve, reject or flag mapped events before scoring. Only approved events enter IU computation.</p>
       <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-        UEF event table skeleton — Phase 1
+        UEF Review is not active in Foundation Light. Event approval and rejection flows unlock in a future phase.
       </div>
     </div>
   );

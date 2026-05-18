@@ -30,7 +30,7 @@ function BudgetCard({
   );
 }
 
-// C-08: Financial Governance Light
+// C-08: Financial Governance
 export default function FinancialGovernance() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
@@ -43,7 +43,7 @@ export default function FinancialGovernance() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Financial Governance Light</h1>
+          <h1 className="text-xl font-bold text-slate-900">Financial Governance</h1>
           <p className="text-sm text-slate-500">Meridiana Group S.r.l.</p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
@@ -61,7 +61,7 @@ export default function FinancialGovernance() {
   if (!rec) {
     return (
       <div className="space-y-4">
-        <h1 className="text-xl font-bold text-slate-900">Financial Governance Light</h1>
+        <h1 className="text-xl font-bold text-slate-900">Financial Governance</h1>
         <p className="text-sm text-slate-400">No financial governance data for this scenario.</p>
       </div>
     );
@@ -75,13 +75,17 @@ export default function FinancialGovernance() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-slate-900">Financial Governance Light</h1>
+          <h1 className="text-xl font-bold text-slate-900">Financial Governance</h1>
           <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
-            Semi-Functional Preview
+            Foundation Light Preview
           </span>
         </div>
         <p className="text-sm text-slate-500">
           Meridiana Group S.r.l. — {rec.reporting_period}
+        </p>
+        <p className="text-xs text-slate-400 mt-1.5 leading-relaxed max-w-2xl">
+          This is KORA&apos;s informational governance view of budget allocation and activation alignment
+          — not a payment, wallet or welfare fund management tool.
         </p>
       </div>
 

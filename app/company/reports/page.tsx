@@ -5,7 +5,7 @@ export default function Reports() {
       <h1 className="text-xl font-bold text-slate-900">Reports</h1>
       <p className="text-sm text-slate-500">Role-filtered report library. Employer-facing reports contain no individual worker data.</p>
       <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-        Report cards skeleton — Phase 1
+        Report library is not active in Foundation Light. Role-filtered report generation unlocks in a future phase.
       </div>
     </div>
   );

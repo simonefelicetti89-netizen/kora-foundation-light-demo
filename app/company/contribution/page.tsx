@@ -93,10 +93,6 @@ function InitiativeCard({ initiative }: { initiative: CollectiveInitiative }) {
           Partner: <span className="text-slate-600">{initiative.partner_name}</span>
         </p>
       )}
-
-      <p className="text-xs text-slate-400 italic border-t border-slate-100 pt-2">
-        {initiative.employer_privacy_notice}
-      </p>
     </div>
   );
 }
@@ -117,7 +113,7 @@ export default function KoraContribution() {
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-slate-900">KORA Contribution</h1>
           <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
-            Semi-Functional Preview
+            Foundation Light Preview
           </span>
         </div>
         <p className="text-sm text-slate-500">
@@ -132,7 +128,10 @@ export default function KoraContribution() {
           {summary?.companion_label ??
             'KORA Contribution measures verified collective contribution beyond the company perimeter. It complements the KORA Index — it does not replace it.'}
         </p>
-        <p className="mt-1.5 text-xs font-mono text-indigo-500">is_kora_index_component: false</p>
+        <p className="mt-1.5 text-xs text-indigo-600 leading-relaxed">
+          KORA Contribution is a companion indicator — it is measured and displayed separately
+          from the KORA Index and does not contribute to its computation.
+        </p>
       </div>
 
       {/* Score card */}

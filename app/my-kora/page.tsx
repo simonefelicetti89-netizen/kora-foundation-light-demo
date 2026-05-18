@@ -149,6 +149,9 @@ export default function MyKoraHome() {
 
       {/* Personal timeline */}
       <div>
+        <p className="mb-3 text-xs text-slate-500 leading-relaxed">
+          Your personal impact timeline shows category-level actions that contribute to your Personal Impact Balance across the five KORA pillars.
+        </p>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
           Personal Timeline
         </h2>
@@ -220,6 +223,10 @@ export default function MyKoraHome() {
 
       {/* Opportunities preview */}
       <div>
+        <p className="mb-3 text-xs text-slate-500 leading-relaxed">
+          Opportunities are KORA-matched learning, development, wellbeing and contribution pathways aligned to the worker&apos;s personal impact profile.
+          In Foundation Light, these are preview items only — availability and requests unlock post-pilot.
+        </p>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
           Opportunities
         </h2>

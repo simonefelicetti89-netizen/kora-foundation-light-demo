@@ -189,7 +189,9 @@ export default function AIOnboardingPage() {
             ))}
           </div>
           <AIBoundaryNotice>
-            Taxonomy basis: {mapping.taxonomy_basis}
+            Taxonomy basis: {mapping.taxonomy_basis}.
+            BCM (Base Contribution Matrix) is the rule-based classifier that maps source events to KORA pillars.
+            No machine learning model and no external LLM is involved in this step.
           </AIBoundaryNotice>
         </div>
       </section>

@@ -45,6 +45,15 @@ function eur(val: number) {
   return `€${val.toLocaleString('it-IT')}`;
 }
 
+const SOURCE_TYPE_LABELS: Record<string, string> = {
+  welfare_provider: 'Initiative Provider',
+  lms_training:     'Learning Platform',
+  esg_initiatives:  'ESG & Impact Initiatives',
+  manual_upload:    'Manual Evidence Upload',
+  partner_events:   'Partner Evidence Stream',
+  hris_population:  'Workforce Population Source',
+};
+
 // C-05: Pillars & Initiatives
 export default function PillarsInitiatives() {
   const { activeScenario } = useScenario();
@@ -138,8 +147,8 @@ export default function PillarsInitiatives() {
                         ))}
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-600 font-mono">
-                      {prog.source_type.replace(/_/g, ' ')}
+                    <td className="px-4 py-2.5 text-xs text-slate-600">
+                      {SOURCE_TYPE_LABELS[prog.source_type] ?? prog.source_type.replace(/_/g, ' ')}
                     </td>
                     <td className="px-4 py-2.5 text-right text-xs font-mono text-slate-700">
                       {eur(prog.budget_eur_approx)}

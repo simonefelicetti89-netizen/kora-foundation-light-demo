@@ -44,7 +44,7 @@ function buildNavGroups(role: string): NavGroup[] {
         items: [
           { href: '/company',              label: 'Executive Cockpit' },
           { href: '/company/kora-index',   label: 'KORA Index' },
-          { href: '/company/activation',   label: 'Activation' },
+          { href: '/company/activation',   label: 'Activation & Participation' },
           { href: '/company/contribution', label: 'KORA Contribution' },
           { href: '/company/pillars',      label: 'Pillars & Initiatives' },
         ],
@@ -75,7 +75,7 @@ function buildNavGroups(role: string): NavGroup[] {
         items: [
           { href: '/company',              label: 'Executive Cockpit' },
           { href: '/company/kora-index',   label: 'KORA Index' },
-          { href: '/company/activation',   label: 'Activation' },
+          { href: '/company/activation',   label: 'Activation & Participation' },
           { href: '/company/contribution', label: 'KORA Contribution' },
           { href: '/company/pillars',      label: 'Pillars & Initiatives' },
         ],
