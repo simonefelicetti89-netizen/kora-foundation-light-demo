@@ -1,0 +1,55 @@
+{
+  "file": "activation-safeguard-results.json",
+  "version": "1.0",
+  "synthetic_demo_data": true,
+  "generated_for": "foundation_light_demo",
+  "not_live_data": true,
+  "primary_consumer": "ActivationSafeguardService",
+  "logic_note": "OR logic: WARNING if (0.20 ≤ AR < 0.40) OR (0.15 ≤ MAR < 0.30). FLAGGED if (AR < 0.20) OR (MAR < 0.15). CLEAR only if AR ≥ 0.40 AND MAR ≥ 0.30.",
+  "data": [
+    {
+      "id": "safeguard-meridiana-S1-2025",
+      "synthetic_demo_data": true,
+      "scenario_id": "S1",
+      "generated_for": "foundation_light_demo",
+      "not_live_data": true,
+      "company_id": "meridiana-group",
+      "reporting_period": "Q1–Q3 2025",
+      "ar_value": 0.38,
+      "mar_value": 0.22,
+      "status": "WARNING",
+      "status_reason": "AR = 0.38 — in WARNING band (0.20 ≤ AR < 0.40). MAR = 0.22 — in WARNING band (0.15 ≤ MAR < 0.30). OR logic: either condition alone is sufficient for WARNING.",
+      "threshold_reference": {
+        "CLEAR_requires": "AR ≥ 0.40 AND MAR ≥ 0.30",
+        "WARNING_triggers_if": "(0.20 ≤ AR < 0.40) OR (0.15 ≤ MAR < 0.30)",
+        "FLAGGED_triggers_if": "(AR < 0.20) OR (MAR < 0.15)"
+      },
+      "methodology_version_id": "KORA Methodology v0.1",
+      "calibration_status": "pre_empirical_calibration",
+      "methodology_notes": "Provisional implementation baseline. Equal weight vector 0.10 x 10 components. Pre-Delphi calibration.",
+      "display_message": "Activation Safeguard — WARNING. Participation is insufficient for reliable diagnostic intelligence. KORA Index shown with reduced confidence."
+    },
+    {
+      "id": "safeguard-meridiana-S2-2025",
+      "synthetic_demo_data": true,
+      "scenario_id": "S2",
+      "generated_for": "foundation_light_demo",
+      "not_live_data": true,
+      "company_id": "meridiana-group",
+      "reporting_period": "Q1–Q4 2025",
+      "ar_value": 0.52,
+      "mar_value": 0.38,
+      "status": "CLEAR",
+      "status_reason": "AR = 0.52 — meets CLEAR threshold (AR ≥ 0.40). MAR = 0.38 — meets CLEAR threshold (MAR ≥ 0.30). Both conditions satisfied.",
+      "threshold_reference": {
+        "CLEAR_requires": "AR ≥ 0.40 AND MAR ≥ 0.30",
+        "WARNING_triggers_if": "(0.20 ≤ AR < 0.40) OR (0.15 ≤ MAR < 0.30)",
+        "FLAGGED_triggers_if": "(AR < 0.20) OR (MAR < 0.15)"
+      },
+      "methodology_version_id": "KORA Methodology v0.1",
+      "calibration_status": "pre_empirical_calibration",
+      "methodology_notes": "Provisional implementation baseline. Equal weight vector 0.10 x 10 components. Pre-Delphi calibration.",
+      "display_message": "Activation Safeguard — CLEAR. Sufficient activation breadth for meaningful diagnostic intelligence."
+    }
+  ]
+}
