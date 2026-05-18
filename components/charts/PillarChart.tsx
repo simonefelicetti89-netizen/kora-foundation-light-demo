@@ -1,9 +1,19 @@
 'use client';
 
-// Phase 0 scaffold — full chart implementation in Phase 1
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+} from 'recharts';
 import { cn } from '@/lib/utils';
 import { PILLAR_CODES, PILLAR_LABELS } from '@/lib/constants/kora';
 import type { PillarCode } from '@/lib/types';
+
+const PILLAR_COLORS: Record<string, string> = {
+  LIFE:       '#22c55e',
+  GROWTH:     '#3b82f6',
+  CONNECTION: '#a855f7',
+  IMPACT:     '#f97316',
+  LEGACY:     '#f59e0b',
+};
 
 interface PillarChartProps {
   data?: Partial<Record<PillarCode, number>>;
@@ -11,32 +21,51 @@ interface PillarChartProps {
 }
 
 export function PillarChart({ data, className }: PillarChartProps) {
+  const chartData = PILLAR_CODES.map((code) => ({
+    name: PILLAR_LABELS[code],
+    code,
+    value: Math.round((data?.[code] ?? 0) * 100),
+  }));
+
   return (
     <div className={cn('rounded-md border border-slate-100 bg-white p-4', className)}>
       <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-        Pillar Distribution
+        Pillar Distribution — Share of Impact Units
       </p>
-      <div className="space-y-2">
-        {PILLAR_CODES.map((code) => {
-          const value = data?.[code] ?? null;
-          const pct = value !== null ? Math.round(value * 100) : null;
-          return (
-            <div key={code} className="flex items-center gap-3">
-              <span className="w-20 text-xs text-slate-500">{PILLAR_LABELS[code]}</span>
-              <div className="h-2 flex-1 rounded-full bg-slate-100">
-                <div
-                  className="h-2 rounded-full bg-slate-300"
-                  style={{ width: pct !== null ? `${pct}%` : '0%' }}
-                />
-              </div>
-              <span className="w-8 text-right text-xs text-slate-400">
-                {pct !== null ? `${pct}%` : '—'}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      <p className="mt-3 text-xs text-slate-300">Chart implementation — Phase 1</p>
+      <ResponsiveContainer width="100%" height={190}>
+        <BarChart
+          data={chartData}
+          layout="vertical"
+          margin={{ top: 0, right: 32, bottom: 0, left: 64 }}
+        >
+          <XAxis
+            type="number"
+            domain={[0, 60]}
+            tick={{ fontSize: 10, fill: '#94a3b8' }}
+            tickFormatter={(v) => `${v}%`}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            type="category"
+            dataKey="name"
+            width={60}
+            tick={{ fontSize: 11, fill: '#64748b' }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip
+            formatter={(value) => [`${value}%`, 'Share of IU']}
+            contentStyle={{ fontSize: 11, borderRadius: '6px', border: '1px solid #e2e8f0' }}
+            cursor={{ fill: '#f8fafc' }}
+          />
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={22}>
+            {chartData.map((entry) => (
+              <Cell key={entry.code} fill={PILLAR_COLORS[entry.code] ?? '#6366f1'} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }

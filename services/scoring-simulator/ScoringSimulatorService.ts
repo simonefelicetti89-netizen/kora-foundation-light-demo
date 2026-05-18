@@ -38,8 +38,27 @@ interface SeedConfidence {
   id: string; company_id: string; scenario_id: string;
   kora_index_output_id: string; confidence_score: number;
   confidence_level: string; data_completeness: number;
-  evidence_quality: number; methodology_version_id: string; calibration_status: string;
+  evidence_quality: number; mapping_confidence: number; verification_weight: number;
+  source_coverage: Record<string, string>; gaps_identified: string[];
+  limitations: string; methodology_version_id: string; calibration_status: string;
   synthetic_demo_data: true; generated_for: string; not_live_data: true;
+}
+
+export interface ConfidenceRecord {
+  id: string;
+  company_id: string;
+  scenario_id: string;
+  confidence_score: number;
+  confidence_level: string;
+  data_completeness: number;
+  evidence_quality: number;
+  mapping_confidence: number;
+  verification_weight: number;
+  source_coverage: Record<string, string>;
+  gaps_identified: string[];
+  limitations: string;
+  methodology_version_id: string;
+  calibration_status: string;
 }
 
 const koraIndexRecords = (koraIndexRaw as { data: SeedKoraIndex[] }).data;
@@ -51,6 +70,7 @@ export interface IScoringSimulatorService {
   getKoraIndexOutput(companyId: string, scenarioId: ScenarioId): KoraIndexOutput | null;
   getKoraIndexComponents(companyId: string, scenarioId: ScenarioId): KoraIndexComponent[];
   getConfidenceScore(companyId: string, scenarioId: ScenarioId): number | null;
+  getConfidenceRecord(companyId: string, scenarioId: ScenarioId): ConfidenceRecord | null;
   getCompanyAggregate(companyId: string, scenarioId: ScenarioId): CompanyAggregateExtended | null;
   getActivationSafeguard(companyId: string, scenarioId: ScenarioId): ReturnType<typeof activationSafeguardService.evaluateFromSeed>;
 }
@@ -105,6 +125,29 @@ export class ScoringSimulatorService implements IScoringSimulatorService {
       (r) => r.company_id === companyId && r.scenario_id === scenarioId,
     );
     return rec?.confidence_score ?? null;
+  }
+
+  getConfidenceRecord(companyId: string, scenarioId: ScenarioId): ConfidenceRecord | null {
+    const rec = confidenceRecords.find(
+      (r) => r.company_id === companyId && r.scenario_id === scenarioId,
+    );
+    if (!rec) return null;
+    return {
+      id: rec.id,
+      company_id: rec.company_id,
+      scenario_id: rec.scenario_id,
+      confidence_score: rec.confidence_score,
+      confidence_level: rec.confidence_level,
+      data_completeness: rec.data_completeness,
+      evidence_quality: rec.evidence_quality,
+      mapping_confidence: rec.mapping_confidence,
+      verification_weight: rec.verification_weight,
+      source_coverage: rec.source_coverage,
+      gaps_identified: rec.gaps_identified,
+      limitations: rec.limitations,
+      methodology_version_id: rec.methodology_version_id,
+      calibration_status: rec.calibration_status,
+    };
   }
 
   getCompanyAggregate(companyId: string, scenarioId: ScenarioId): CompanyAggregateExtended | null {

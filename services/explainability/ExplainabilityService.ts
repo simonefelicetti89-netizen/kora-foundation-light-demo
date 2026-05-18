@@ -47,12 +47,21 @@ interface SeedRecord {
 
 const explainabilityRecords = (explainabilityRaw as { data: SeedRecord[] }).data;
 
+export interface Warning {
+  code: string;
+  severity: 'critical' | 'high' | 'medium';
+  title: string;
+  message: string;
+  affected_components: string[];
+}
+
 export interface IExplainabilityService {
   getExplanation(companyId: string, scenarioId: ScenarioId): ExplainabilityRecord | null;
   getTopWeakComponents(companyId: string, scenarioId: ScenarioId): ExplainabilityComponentRef[];
   getTopStrongComponents(companyId: string, scenarioId: ScenarioId): ExplainabilityComponentRef[];
   getNextBestActions(companyId: string, scenarioId: ScenarioId): ExplainabilityAction[];
   getLimitations(companyId: string, scenarioId: ScenarioId): string | null;
+  getWarnings(companyId: string, scenarioId: ScenarioId): Warning[];
 }
 
 export class ExplainabilityService implements IExplainabilityService {
@@ -100,6 +109,18 @@ export class ExplainabilityService implements IExplainabilityService {
 
   getLimitations(companyId: string, scenarioId: ScenarioId): string | null {
     return this.findRecord(companyId, scenarioId)?.limitations_statement ?? null;
+  }
+
+  getWarnings(companyId: string, scenarioId: ScenarioId): Warning[] {
+    const record = this.findRecord(companyId, scenarioId);
+    if (!record) return [];
+    return record.weak_components.slice(0, 3).map((comp) => ({
+      code: `weak-${comp.code.toLowerCase()}`,
+      severity: comp.value < 0.35 ? ('high' as const) : ('medium' as const),
+      title: `${comp.label} below threshold`,
+      message: comp.explanation,
+      affected_components: [comp.code],
+    }));
   }
 }
 
