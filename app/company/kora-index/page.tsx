@@ -32,7 +32,7 @@ export default function KoraIndexDetail() {
       </div>
 
       {/* KORA Index Hero — CS + Safeguard + Calibration non-suppressible */}
-      <KoraIndexHero output={output} />
+      <KoraIndexHero output={output} variant="dark" />
 
       {/* Pipeline trace — Come è stato costruito questo KORA Index */}
       <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />

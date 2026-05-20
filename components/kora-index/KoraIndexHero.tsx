@@ -11,33 +11,40 @@ import { METHODOLOGY_VERSION, CALIBRATION_STATUS } from '@/lib/constants/kora';
 interface KoraIndexHeroProps {
   output?: KoraIndexOutput;
   className?: string;
+  variant?: 'light' | 'dark';
 }
 
 // Confidence Score, CalibrationBadge, SafeguardBadge and MethodologyLabel are
 // non-suppressible per doc 21b — consuming pages must not remove them
-export function KoraIndexHero({ output, className }: KoraIndexHeroProps) {
+export function KoraIndexHero({ output, className, variant = 'light' }: KoraIndexHeroProps) {
   const indexValue = output?.kora_index_value ?? null;
   const confidenceScore = output?.confidence_score ?? null;
   const safeguardStatus = output?.safeguard_status ?? 'WARNING';
   const methodologyVersionId = output?.methodology_version_id ?? METHODOLOGY_VERSION;
   const calibrationStatus = output?.calibration_status ?? CALIBRATION_STATUS;
 
+  const dark = variant === 'dark';
+
   return (
-    <div className={cn('rounded-xl border border-slate-200 bg-white p-6 shadow-sm', className)}>
+    <div className={cn(
+      'rounded-xl border p-6',
+      dark ? 'border-slate-700 bg-slate-900 shadow-lg' : 'border-slate-200 bg-white shadow-sm',
+      className,
+    )}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">KORA Index</p>
           <div className="mt-1 flex items-end gap-3">
-            <span className="text-5xl font-bold text-slate-900">
+            <span className={cn('text-5xl font-bold', dark ? 'text-white' : 'text-slate-900')}>
               {indexValue !== null ? formatKoraIndex(indexValue) : '—'}
             </span>
-            <span className="mb-1 text-sm text-slate-400">/ 100</span>
+            <span className={cn('mb-1 text-sm', dark ? 'text-slate-500' : 'text-slate-400')}>/ 100</span>
           </div>
 
           {/* Confidence Score — always beside KORA Index, never omitted (doc 21b) */}
-          <div className="mt-2 flex items-center gap-1.5 text-sm text-slate-500">
+          <div className={cn('mt-2 flex items-center gap-1.5 text-sm', dark ? 'text-slate-400' : 'text-slate-500')}>
             <span>Confidence Score:</span>
-            <span className="font-semibold text-slate-700">
+            <span className={cn('font-semibold', dark ? 'text-slate-100' : 'text-slate-700')}>
               {confidenceScore !== null ? formatConfidenceScore(confidenceScore) : '—'}
             </span>
           </div>
@@ -50,7 +57,7 @@ export function KoraIndexHero({ output, className }: KoraIndexHeroProps) {
       </div>
 
       {/* Methodology version — non-suppressible */}
-      <div className="mt-4 border-t border-slate-100 pt-3">
+      <div className={cn('mt-4 border-t pt-3', dark ? 'border-slate-700' : 'border-slate-100')}>
         <MethodologyLabel
           methodologyVersionId={methodologyVersionId}
           calibrationStatus={calibrationStatus}
