@@ -12,7 +12,7 @@ interface PrivacyBoundaryNoticeProps {
 }
 
 const REASON_MESSAGES: Record<PrivacySuppressReason, string> = {
-  employer_role: 'This data is worker-private. Employer roles do not have access to individual worker records.',
+  employer_role: 'Questo dato appartiene al layer personale del lavoratore. I ruoli aziendali non hanno accesso ai record individuali.',
   group_too_small: `This segment contains fewer than ${SAFE_AGGREGATION_THRESHOLD} workers and is suppressed to prevent re-identification.`,
   insufficient_permission: 'Your current role does not have permission to view this data.',
   worker_consent_required: 'Worker consent is required before this data can be shared.',

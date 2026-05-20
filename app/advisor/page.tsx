@@ -10,35 +10,35 @@ export default function AdvisorDashboard() {
           </span>
         </div>
         <p className="text-sm text-slate-500 mt-1">
-          Advisor role in the KORA methodology and evidence layer.
+          Ruolo dedicato alla revisione delle evidenze nel layer metodologico KORA.
         </p>
       </div>
 
       <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-5">
-        <p className="text-sm font-semibold text-indigo-800 mb-2">What advisors do in KORA</p>
+        <p className="text-sm font-semibold text-indigo-800 mb-2">Cosa fa l&apos;Advisor in KORA</p>
         <p className="text-sm text-indigo-700 leading-relaxed">
-          Advisors support evidence review, eligibility confidence assignment, methodology interpretation,
-          and impact programme design across KORA-enrolled companies.
-          Their review decisions directly affect the Verification Rate and Confidence Score
-          of the KORA Index outputs they are assigned to.
+          L&apos;Advisor supporta la revisione delle evidenze, l&apos;assegnazione dell&apos;Advisor Confidence Stamp,
+          l&apos;interpretazione metodologica e il design dei programmi di impatto per le aziende iscritte a KORA.
+          Le decisioni di revisione influenzano direttamente il Verification Rate e il Confidence Score
+          degli output KORA Index assegnati.
         </p>
         <p className="text-xs text-indigo-600 mt-2">
-          Foundation Light shows the advisor role concept only. The full review queue
-          — including assigned evidence items, eligibility decisions, and reviewer audit trail —
-          is available in the pilot phase.
+          Foundation Light mostra il concetto del ruolo Advisor. La coda completa di revisione
+          — inclusi gli elementi Evidence assegnati, le decisioni di eleggibilità e il registro delle revisioni —
+          sarà disponibile nella fase pilota.
         </p>
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white p-5 space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-          What this workspace will include
+          Cosa includerà questo workspace
         </p>
         <div className="space-y-2">
           {[
-            'Assigned evidence review queue — per company, per pillar',
-            'Eligibility confidence assignment (verified / partial / not eligible)',
-            'Methodology interpretation support for edge cases',
-            'Review audit trail — all decisions are logged and methodology-versioned',
+            'Coda di revisione Evidence assegnata — per azienda, per pillar',
+            'Assegnazione Advisor Confidence Stamp (verificato / parziale / non eleggibile)',
+            'Supporto all\'interpretazione metodologica per casi limite',
+            'Registro di revisione — tutte le decisioni sono tracciate e versioned metodologicamente',
           ].map((item) => (
             <div key={item} className="flex gap-2 text-sm text-slate-600">
               <span className="text-slate-300 shrink-0 mt-0.5">·</span>
@@ -49,9 +49,9 @@ export default function AdvisorDashboard() {
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
-        <p className="font-semibold text-slate-600 mb-1">Scope clarification</p>
-        No production review queue active · No real evidence workflow · No certification actions ·
-        Advisor decisions in Foundation Light are illustrative only — no real scoring impact.
+        <p className="font-semibold text-slate-600 mb-1">Chiarimento sul perimetro</p>
+        Nessuna coda di revisione in produzione attiva · Nessun workflow Evidence reale · Nessuna azione di certificazione ·
+        La revisione Advisor non equivale a certificazione aziendale · L&apos;Advisor non ha accesso al PIB individuale né al layer personale del lavoratore.
       </div>
     </div>
   );

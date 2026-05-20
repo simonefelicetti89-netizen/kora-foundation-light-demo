@@ -255,7 +255,7 @@ const PRIVACY_SUMMARY: PrivacySummary = {
       current_state: 'on', scope: 'aggregate_only', editable_in_preview: false,
     },
   ],
-  privacy_guarantee: 'Your employer will not see your individual PIB, timeline, Dynamic CV, health data, or any data from groups smaller than 10 workers. Only you can decide what to export or share externally.',
+  privacy_guarantee: 'Il datore di lavoro vede solo insight aggregati sopra soglia privacy. Il PIB individuale, la timeline personale e il Dynamic Impact CV restano nel layer personale del lavoratore.',
 };
 
 const CV_ITEMS: DynamicCVItem[] = [
