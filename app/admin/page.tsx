@@ -26,26 +26,26 @@ export default function KoraOperatingConsole() {
         <div className="flex items-center gap-2 mb-2">
           <h1 className="text-2xl font-bold text-slate-900">KORA Operating Console</h1>
           <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
-            Internal Preview
+            Anteprima Interna
           </span>
           <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-400">
-            Synthetic demo only
+            Solo dati sintetici
           </span>
         </div>
         <p className="text-sm text-slate-500 max-w-2xl">
-          Internal operating view for KORA Admin, Analyst and Founder roles.
-          This is not the company workspace — it shows cross-company ecosystem state,
-          platform health, methodology governance and commercial pipeline.
+          Vista operativa interna per i ruoli KORA Admin, Analyst e Founder.
+          Non è il workspace aziendale — mostra lo stato dell&apos;ecosistema cross-azienda,
+          la salute della piattaforma, la governance metodologica e la pipeline commerciale.
         </p>
       </div>
 
       {/* Platform Analytics — top strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { label: 'Companies', value: String(analytics.companies_in_portfolio) },
-          { label: 'Active Scenarios', value: String(analytics.active_scenarios) },
-          { label: 'Source Batches', value: `${analytics.source_batches_approved}/${analytics.source_batches_total} approved` },
-          { label: 'Avg KORA Index', value: String(analytics.avg_kora_index) },
+          { label: 'Aziende', value: String(analytics.companies_in_portfolio) },
+          { label: 'Scenari Attivi', value: String(analytics.active_scenarios) },
+          { label: 'Batch Fonti', value: `${analytics.source_batches_approved}/${analytics.source_batches_total} approvati` },
+          { label: 'KORA Index Medio', value: String(analytics.avg_kora_index) },
         ].map(({ label, value }) => (
           <div key={label} className="rounded-lg border border-slate-200 bg-white p-3">
             <p className="text-xs text-slate-400">{label}</p>
@@ -61,11 +61,11 @@ export default function KoraOperatingConsole() {
         <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-5 flex flex-col gap-3 sm:col-span-2 lg:col-span-3">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400">00 — Primary Flow</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400">00 — Flusso Principale</p>
               <p className="text-sm font-bold text-indigo-900 mt-0.5">AI Onboarding Engine</p>
               <p className="text-xs text-indigo-700 mt-1 max-w-xl">
-                Data source intake · BCM taxonomy mapping · Privacy filter · UEF draft queue · Human review · Scoring readiness.
-                The path from raw company data to a scoring-ready dataset.
+                Acquisizione fonti · Mapping tassonomia BCM · Filtro privacy · Coda bozze UEF · Revisione umana · Idoneità al calcolo.
+                Il percorso dal dato aziendale grezzo a un dataset pronto per lo scoring.
               </p>
             </div>
             <div className="shrink-0 space-y-1 text-right">
@@ -73,14 +73,14 @@ export default function KoraOperatingConsole() {
                 const onb = adminPreviewService.getAIOnboardingPreview();
                 return (
                   <>
-                    <p className="text-[10px] text-indigo-500">{onb.source_batch_count} source batches</p>
-                    <p className="text-[10px] text-indigo-500">{onb.approved_batches} approved · {onb.pending_review_batches} pending</p>
+                    <p className="text-[10px] text-indigo-500">{onb.source_batch_count} batch fonti</p>
+                    <p className="text-[10px] text-indigo-500">{onb.approved_batches} approvati · {onb.pending_review_batches} in attesa</p>
                     <span className={`inline-block rounded border px-2 py-0.5 text-[10px] font-bold ${
                       onb.scoring_readiness === 'ready'   ? 'bg-green-100 text-green-800 border-green-200' :
                       onb.scoring_readiness === 'partial' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
                       'bg-red-100 text-red-800 border-red-200'
                     }`}>
-                      {onb.scoring_readiness.toUpperCase()} for scoring
+                      {onb.scoring_readiness.toUpperCase()} per scoring
                     </span>
                   </>
                 );
@@ -88,14 +88,14 @@ export default function KoraOperatingConsole() {
             </div>
           </div>
           <div className="flex items-center gap-3 text-[10px] text-indigo-600 border-t border-indigo-100 pt-3">
-            <span>AI assists mapping and review. It does not score workers.</span>
+            <span>L&apos;AI assiste il mapping e la revisione. Non calcola punteggi sui lavoratori.</span>
             <span>·</span>
-            <span>Rule-based BCM taxonomy — no external LLM on HR data.</span>
+            <span>Tassonomia BCM rule-based — nessun LLM esterno su dati HR.</span>
             <span>·</span>
-            <span>Only approved UEF records enter scoring.</span>
+            <span>Solo i record UEF approvati entrano nel calcolo.</span>
           </div>
           <Link href="/admin/ai-onboarding" className="text-xs font-semibold text-indigo-600 hover:underline self-start">
-            Open AI Onboarding Engine →
+            Apri AI Onboarding Engine →
           </Link>
         </div>
 
@@ -103,22 +103,22 @@ export default function KoraOperatingConsole() {
         <div className="rounded-lg border border-teal-200 bg-teal-50 p-5 flex flex-col gap-3 sm:col-span-2 lg:col-span-3">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-500">ORCH — Orchestration Layer</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-teal-500">ORCH — Livello di Orchestrazione</p>
               <p className="text-sm font-bold text-teal-900 mt-0.5">Activation Orchestration Engine</p>
               <p className="text-xs text-teal-700 mt-1 max-w-xl">
-                Internal KORA module for reviewing, approving and measuring company and collective initiatives.
-                KORA validates eligibility, classifies pillar fit, routes to advisors and partners, approves or rejects,
-                monitors participation thresholds and measures outcomes.
+                Modulo interno KORA per la revisione, approvazione e misurazione delle iniziative aziendali e collettive.
+                KORA valida l&apos;idoneità, classifica il pillar di riferimento, instrada verso advisor e partner, approva o rifiuta,
+                monitora le soglie di partecipazione e misura i risultati.
               </p>
             </div>
             {/* Inline lifecycle counts */}
             <div className="shrink-0 space-y-1 text-right">
               {[
-                ['Proposed',                '2'],
-                ['Under KORA Review',       '1'],
-                ['Advisor Review Required', '1'],
-                ['Approved / Active',       '3'],
-                ['Measured',                '1'],
+                ['Proposte',                '2'],
+                ['In Revisione KORA',       '1'],
+                ['Revisione Advisor Richiesta', '1'],
+                ['Approvate / Attive',      '3'],
+                ['Misurate',                '1'],
               ].map(([label, count]) => (
                 <p key={label} className="text-[10px] text-teal-600">
                   <span className="font-bold text-teal-800 mr-1">{count}</span>{label}
@@ -140,12 +140,12 @@ export default function KoraOperatingConsole() {
 
           {/* Canonical sentence + disclaimer */}
           <div className="rounded border border-teal-100 bg-white px-3 py-2 text-xs text-teal-700 border-t border-teal-100 pt-3">
-            KORA is the orchestration layer between company intent, worker participation, partner evidence, advisor validation and measurable impact.
+            KORA è il livello di orchestrazione tra l&apos;intenzione aziendale, la partecipazione dei lavoratori, le evidenze dei partner, la validazione degli advisor e l&apos;impatto misurabile.
           </div>
           <div className="flex items-center gap-3 text-[10px] text-teal-600">
-            <span>Money alone is not impact — spending without activation is not rewarded.</span>
+            <span>Il denaro da solo non è impatto — la spesa senza attivazione non viene premiata.</span>
             <span>·</span>
-            <span>KORA rewards additionality, not mere compliance.</span>
+            <span>KORA premia l&apos;addizionalità, non la semplice compliance.</span>
             <span>·</span>
             <span className="rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-blue-700 font-semibold">Foundation Light Preview</span>
           </div>
@@ -175,7 +175,7 @@ export default function KoraOperatingConsole() {
             ))}
           </div>
           <Link href="/admin/portfolio" className="text-xs font-medium text-indigo-600 hover:underline">
-            View portfolio →
+            Visualizza portfolio →
           </Link>
         </div>
 
@@ -187,7 +187,7 @@ export default function KoraOperatingConsole() {
           </div>
           <div className="flex-1 space-y-1.5">
             <div className="grid grid-cols-3 gap-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wide pb-1 border-b border-slate-100">
-              <span>Company</span><span>S</span><span className="text-right">Index</span>
+              <span>Azienda</span><span>S</span><span className="text-right">Index</span>
             </div>
             {adminPreviewService.getIndexRegistryPreview().slice(0, 5).map((e) => (
               <div key={`${e.company_id}-${e.scenario_id}`} className="grid grid-cols-3 gap-1 text-xs items-center">
@@ -200,7 +200,7 @@ export default function KoraOperatingConsole() {
             ))}
           </div>
           <Link href="/admin/index-registry" className="text-xs font-medium text-indigo-600 hover:underline">
-            View registry →
+            Visualizza registro →
           </Link>
         </div>
 
@@ -223,9 +223,9 @@ export default function KoraOperatingConsole() {
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-slate-400 italic">Synthetic benchmark data only</p>
+          <p className="text-[10px] text-slate-400 italic">Solo dati benchmark sintetici</p>
           <Link href="/admin/benchmarks" className="text-xs font-medium text-indigo-600 hover:underline">
-            View benchmarks →
+            Visualizza benchmark →
           </Link>
         </div>
 
@@ -240,7 +240,7 @@ export default function KoraOperatingConsole() {
               <div key={a.id} className="flex items-center justify-between gap-2 text-xs">
                 <span className="truncate text-slate-700">{a.name.split(' ').slice(-1)[0]}, {a.name.split(' ')[0]}</span>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-slate-400 font-mono">{a.pending_reviews} pending</span>
+                  <span className="text-slate-400 font-mono">{a.pending_reviews} in attesa</span>
                   <span className={`rounded px-1 py-0.5 text-[10px] font-medium ${a.status === 'active' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-slate-50 text-slate-400 border border-slate-200'}`}>
                     {a.status}
                   </span>
@@ -249,7 +249,7 @@ export default function KoraOperatingConsole() {
             ))}
           </div>
           <Link href="/admin/network" className="text-xs font-medium text-indigo-600 hover:underline">
-            View network →
+            Visualizza rete →
           </Link>
         </div>
 
@@ -267,11 +267,11 @@ export default function KoraOperatingConsole() {
               </div>
             ))}
             {partners.length > 4 && (
-              <p className="text-xs text-slate-400">+{partners.length - 4} more</p>
+              <p className="text-xs text-slate-400">+{partners.length - 4} altri</p>
             )}
           </div>
           <Link href="/admin/network" className="text-xs font-medium text-indigo-600 hover:underline">
-            View network →
+            Visualizza rete →
           </Link>
         </div>
 
@@ -283,8 +283,8 @@ export default function KoraOperatingConsole() {
           </div>
           <div className="flex-1 space-y-1.5">
             {[
-              ['Avg Confidence Score', `${(analytics.avg_confidence_score * 100).toFixed(0)}%`],
-              ['Avg Data Completeness', `${(analytics.avg_data_completeness * 100).toFixed(0)}%`],
+              ['Confidence Score Medio', `${(analytics.avg_confidence_score * 100).toFixed(0)}%`],
+              ['Completezza Dati Media', `${(analytics.avg_data_completeness * 100).toFixed(0)}%`],
               ['CLEAR / WARNING / FLAGGED', `${analytics.safeguard_distribution.CLEAR} / ${analytics.safeguard_distribution.WARNING} / ${analytics.safeguard_distribution.FLAGGED}`],
             ].map(([l, v]) => (
               <div key={l as string} className="flex justify-between text-xs">
@@ -300,7 +300,7 @@ export default function KoraOperatingConsole() {
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">07</p>
             <p className="text-sm font-bold text-slate-900 mt-0.5">Billing & Revenue</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Mock preview — no payment execution</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Anteprima mock — nessuna esecuzione pagamento</p>
           </div>
           <div className="flex-1 space-y-1.5">
             {billing.slice(0, 3).map((b) => (
@@ -310,7 +310,7 @@ export default function KoraOperatingConsole() {
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-slate-300 italic">No Stripe · No wallet · No fund custody · Demo only</p>
+          <p className="text-[10px] text-slate-300 italic">Nessun Stripe · Nessun wallet · Nessuna custodia fondi · Solo demo</p>
         </div>
 
         {/* 8: Go-to-Market / Founder Validation */}
@@ -335,7 +335,7 @@ export default function KoraOperatingConsole() {
             ))}
           </div>
           <Link href="/admin/gtm" className="text-xs font-medium text-indigo-600 hover:underline">
-            View pipeline →
+            Visualizza pipeline →
           </Link>
         </div>
 

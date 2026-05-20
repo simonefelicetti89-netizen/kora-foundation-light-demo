@@ -9,12 +9,12 @@ interface ExplainabilityPanelProps {
 }
 
 const FALLBACK_LIMITATIONS =
-  'This score is produced by KORA Foundation Light v0.1 under provisional methodology. It is pilot-grade diagnostic intelligence — not scientifically validated, empirically calibrated, or regulatory-grade.';
+  'Questo punteggio è prodotto da KORA Foundation Light v0.1 con metodologia provvisoria. È intelligence diagnostica di livello pilot — non validata scientificamente, non calibrata empiricamente, non di livello regolamentare.';
 
 export function ExplainabilityPanel({ record, className }: ExplainabilityPanelProps) {
   return (
     <div className={cn('rounded-lg border border-slate-200 bg-white p-4 space-y-4', className)}>
-      <h3 className="text-sm font-semibold text-slate-700">Score Explanation</h3>
+      <h3 className="text-sm font-semibold text-slate-700">Spiegazione del Punteggio</h3>
 
       {record ? (
         <>
@@ -23,7 +23,7 @@ export function ExplainabilityPanel({ record, className }: ExplainabilityPanelPr
           {record.strong_components.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-2">
-                Strong Components
+                Componenti Forti
               </p>
               <div className="space-y-2">
                 {record.strong_components.map((c) => (
@@ -39,7 +39,7 @@ export function ExplainabilityPanel({ record, className }: ExplainabilityPanelPr
           {record.weak_components.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2">
-                Areas for Improvement
+                Aree di Miglioramento
               </p>
               <div className="space-y-2">
                 {record.weak_components.map((c) => (
@@ -55,7 +55,7 @@ export function ExplainabilityPanel({ record, className }: ExplainabilityPanelPr
           {record.next_best_actions.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide mb-2">
-                Recommended Actions
+                Azioni Raccomandate
               </p>
               <div className="space-y-2">
                 {record.next_best_actions.slice(0, 3).map((a) => (
@@ -73,12 +73,12 @@ export function ExplainabilityPanel({ record, className }: ExplainabilityPanelPr
         </>
       ) : (
         <p className="text-sm text-slate-400">
-          Explanation panel — wiring to explainability service in progress.
+          Pannello di spiegabilità — connessione al servizio di explainability in corso.
         </p>
       )}
 
       <div className="rounded bg-amber-50 p-3 text-xs text-amber-700 border border-amber-200">
-        <span className="font-semibold">Limitations: </span>
+        <span className="font-semibold">Limitazioni: </span>
         {record?.limitations_statement ?? FALLBACK_LIMITATIONS}
       </div>
     </div>

@@ -16,12 +16,12 @@ export default function NetworkPage() {
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-slate-900">Advisor & Partner Network</h1>
           <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
-            Synthetic Preview
+            Anteprima Sintetica
           </span>
         </div>
         <p className="text-sm text-slate-500 mt-1">
-          Internal view of the KORA advisor and partner ecosystem.
-          No real advisor or partner data. No marketplace or payment logic.
+          Vista interna dell&apos;ecosistema di advisor e partner KORA.
+          Nessun dato reale di advisor o partner. Nessuna logica marketplace o pagamento.
         </p>
       </div>
 
@@ -39,12 +39,12 @@ export default function NetworkPage() {
                   <p className="text-xs text-slate-500 mt-0.5">{a.specialization}</p>
                   {a.assigned_companies.length > 0 && (
                     <p className="text-xs text-slate-400 mt-0.5">
-                      Assigned: {a.assigned_companies.join(', ')}
+                      Assegnato a: {a.assigned_companies.join(', ')}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-3 shrink-0 text-xs">
-                  <span className="font-mono text-slate-500">{a.pending_reviews} pending</span>
+                  <span className="font-mono text-slate-500">{a.pending_reviews} in attesa</span>
                   <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${a.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
                     {a.status}
                   </span>
@@ -88,7 +88,7 @@ export default function NetworkPage() {
       </div>
 
       <p className="text-xs text-slate-400">
-        No marketplace · No pricing engine · No payment execution · Synthetic demo data only
+        Nessun marketplace · Nessun motore di pricing · Nessuna esecuzione pagamento · Solo dati demo sintetici
       </p>
     </div>
   );

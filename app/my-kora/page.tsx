@@ -57,16 +57,16 @@ export default function MyKoraHome() {
       <div className="space-y-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">My KORA</h1>
-          <p className="text-sm text-slate-500">Worker personal space</p>
+          <p className="text-sm text-slate-500">Spazio personale del lavoratore</p>
         </div>
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
-          <p className="text-sm font-semibold text-rose-700">Access Restricted</p>
+          <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
           <p className="mt-1 text-xs text-rose-600 max-w-sm mx-auto">
-            My KORA is a worker-private space. Employer and admin roles cannot access individual worker data.
-            Individual worker data is never visible outside the worker&rsquo;s own session.
+            My KORA è uno spazio privato del lavoratore. I ruoli datore di lavoro e admin non possono accedere ai dati individuali.
+            I dati individuali del lavoratore non sono mai visibili al di fuori della sessione del lavoratore stesso.
           </p>
-          <p className="mt-3 text-xs font-mono text-rose-400">Current role: {activeRole}</p>
-          <p className="mt-1 text-xs text-rose-400">Switch to WORKER_MY_KORA role to preview this space.</p>
+          <p className="mt-3 text-xs font-mono text-rose-400">Ruolo attivo: {activeRole}</p>
+          <p className="mt-1 text-xs text-rose-400">Passa al ruolo WORKER_MY_KORA per visualizzare questo spazio.</p>
         </div>
       </div>
     );
@@ -92,10 +92,10 @@ export default function MyKoraHome() {
 
       {/* Worker-private banner — non-suppressible */}
       <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
-        <p className="text-xs font-semibold text-indigo-800">This space belongs to the worker.</p>
+        <p className="text-xs font-semibold text-indigo-800">Questo spazio appartiene al lavoratore.</p>
         <p className="text-xs text-indigo-700 mt-0.5">
-          Your employer cannot access individual My KORA data. Only aggregate, anonymized data
-          contributes to the company KORA Index. Nothing here is visible to your employer.
+          Il tuo datore di lavoro non può accedere ai dati individuali di My KORA. Solo dati aggregati e anonimizzati
+          contribuiscono al KORA Index aziendale. Nulla qui è visibile al tuo datore di lavoro.
         </p>
       </div>
 
@@ -107,7 +107,7 @@ export default function MyKoraHome() {
             <p className="text-xs text-slate-400 mt-0.5">{preview.pib_light.period}</p>
           </div>
           <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-mono text-slate-500">
-            worker-private
+            privato-lavoratore
           </span>
         </div>
 
@@ -115,7 +115,7 @@ export default function MyKoraHome() {
           <span className="text-4xl font-bold text-slate-800">{preview.pib_light.overall_index}</span>
           <span className="text-sm text-slate-400 pb-1">/ 100</span>
           <span className="text-xs text-slate-500 pb-1">
-            {preview.pib_light.active_pillars} active pillars · {preview.pib_light.total_events} events
+            {preview.pib_light.active_pillars} pillar attivi · {preview.pib_light.total_events} eventi
           </span>
         </div>
 
@@ -129,7 +129,7 @@ export default function MyKoraHome() {
                   <span className={cn('text-xs', TREND_COLOR[p.trend])}>
                     {TREND_ICON[p.trend]}
                   </span>
-                  <span className="text-slate-300 ml-1">{p.event_count} events</span>
+                  <span className="text-slate-300 ml-1">{p.event_count} eventi</span>
                 </span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-slate-100">
@@ -150,10 +150,10 @@ export default function MyKoraHome() {
       {/* Personal timeline */}
       <div>
         <p className="mb-3 text-xs text-slate-500 leading-relaxed">
-          Your personal impact timeline shows category-level actions that contribute to your Personal Impact Balance across the five KORA pillars.
+          La tua timeline di impatto personale mostra azioni a livello di categoria che contribuiscono al tuo Personal Impact Balance attraverso i cinque pillar KORA.
         </p>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Personal Timeline
+          Timeline Personale
         </h2>
         <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
           <div className="divide-y divide-slate-100">
@@ -184,7 +184,7 @@ export default function MyKoraHome() {
           </div>
         </div>
         <p className="mt-1.5 text-xs text-slate-400">
-          Category-level display only. No health details, names, or identifiers.
+          Solo visualizzazione a livello di categoria. Nessun dettaglio sanitario, nome o identificatore.
         </p>
       </div>
 
@@ -193,7 +193,7 @@ export default function MyKoraHome() {
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-slate-700">Company KORA Snapshot</h2>
-            <span className="text-xs text-slate-400 font-mono">aggregate</span>
+            <span className="text-xs text-slate-400 font-mono">aggregato</span>
           </div>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
@@ -209,14 +209,14 @@ export default function MyKoraHome() {
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-400">Active Workers</p>
+              <p className="text-xs text-slate-400">Lavoratori Attivi</p>
               <p className="text-lg font-bold text-slate-800 mt-0.5">
                 {aggregate.active_worker_count}
               </p>
             </div>
           </div>
           <p className="mt-2 text-xs text-slate-400">
-            Company-level figures only. No individual data is shown here.
+            Solo dati a livello aziendale. Nessun dato individuale è mostrato qui.
           </p>
         </div>
       )}
@@ -224,11 +224,11 @@ export default function MyKoraHome() {
       {/* Opportunities preview */}
       <div>
         <p className="mb-3 text-xs text-slate-500 leading-relaxed">
-          Opportunities are KORA-matched learning, development, wellbeing and contribution pathways aligned to the worker&apos;s personal impact profile.
-          In Foundation Light, these are preview items only — availability and requests unlock post-pilot.
+          Le Opportunità sono percorsi di apprendimento, sviluppo, benessere e contributo abbinati da KORA al profilo di impatto personale del lavoratore.
+          In Foundation Light, questi sono solo elementi di anteprima — disponibilità e richieste si sbloccano post-pilot.
         </p>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Opportunities
+          Opportunità
         </h2>
         <div className="space-y-2">
           {preview.opportunities.map((opp) => (
@@ -246,7 +246,7 @@ export default function MyKoraHome() {
                 {opp.pillar}
               </span>
               <span className="text-xs text-slate-400 shrink-0">
-                {opp.status === 'preview' ? 'Preview only' : 'Coming soon'}
+                {opp.status === 'preview' ? 'Solo anteprima' : 'Prossimamente'}
               </span>
             </div>
           ))}
@@ -260,14 +260,14 @@ export default function MyKoraHome() {
           className="rounded-lg border border-slate-200 bg-white p-4 hover:bg-slate-50 transition-colors"
         >
           <p className="text-sm font-semibold text-slate-700">Dynamic Impact CV</p>
-          <p className="text-xs text-slate-400 mt-0.5">Your verified impact portfolio</p>
+          <p className="text-xs text-slate-400 mt-0.5">Il tuo portfolio di impatto verificato</p>
         </Link>
         <Link
           href="/my-kora/privacy"
           className="rounded-lg border border-slate-200 bg-white p-4 hover:bg-slate-50 transition-colors"
         >
           <p className="text-sm font-semibold text-slate-700">Privacy & Sharing</p>
-          <p className="text-xs text-slate-400 mt-0.5">Control what is shared and with whom</p>
+          <p className="text-xs text-slate-400 mt-0.5">Controlla cosa viene condiviso e con chi</p>
         </Link>
       </div>
 

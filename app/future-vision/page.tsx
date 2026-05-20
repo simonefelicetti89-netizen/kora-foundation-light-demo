@@ -10,35 +10,35 @@ export default function FutureVision() {
           </span>
         </div>
         <p className="text-sm text-slate-500 mt-1 italic">
-          Future Vision / Not Active in Foundation Light — static concept screens only.
+          Future Vision / Not Active in Foundation Light — solo schermate concettuali statiche.
         </p>
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
         <p className="text-sm text-slate-700 leading-relaxed">
-          Beyond Foundation Light, KORA extends from company-level activation intelligence
-          into a certified ecosystem layer — connecting companies, workers, partners, advisors
-          and territorial networks into a verifiable human impact infrastructure.
-          These modules unlock progressively after empirical calibration and pilot closure.
-          None of the features below are active in Foundation Light.
+          Oltre Foundation Light, KORA si estende dall&apos;intelligence di attivazione aziendale
+          verso un livello ecosistemico certificato — connettendo aziende, lavoratori, partner, advisor
+          e reti territoriali in un&apos;infrastruttura di impatto umano verificabile.
+          Questi moduli si sbloccano progressivamente dopo la calibrazione empirica e la chiusura del pilot.
+          Nessuna delle funzionalità seguenti è attiva in Foundation Light.
         </p>
       </div>
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
-          Post-pilot strategic modules
+          Moduli strategici post-pilot
         </p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           {[
-            { name: 'KORA Certified', desc: 'Certified organizational intelligence status' },
-            { name: 'KORA Link (NFC/QR)', desc: 'Physical-digital activation touchpoints' },
-            { name: 'KORA Impact Pledge', desc: 'Governance-grade collective commitments' },
-            { name: 'KORA Value Chain', desc: 'Ecosystem activation across supply networks' },
-            { name: 'Territorial Activation Maps', desc: 'District-level impact intelligence layer' },
-            { name: 'Advisor Certification Academy', desc: 'Formal methodology certification track' },
-            { name: 'Partner Marketplace', desc: 'Verified partner and service discovery — no payment execution' },
-            { name: 'Worker Wallet', desc: 'Portable verified impact portfolio' },
-            { name: 'Benchmarking Marketplace', desc: 'Cross-sector calibrated intelligence exchange' },
+            { name: 'KORA Certified', desc: 'Status di intelligence organizzativa certificata' },
+            { name: 'KORA Link (NFC/QR)', desc: 'Punti di contatto di attivazione fisico-digitale' },
+            { name: 'KORA Impact Pledge', desc: 'Impegni collettivi di livello governance' },
+            { name: 'KORA Value Chain', desc: 'Attivazione ecosistemica attraverso reti di fornitura' },
+            { name: 'Mappe di Attivazione Territoriale', desc: 'Layer di intelligence di impatto a livello distrettuale' },
+            { name: 'Advisor Certification Academy', desc: 'Percorso di certificazione formale della metodologia' },
+            { name: 'Partner Marketplace', desc: 'Scoperta verificata di partner e servizi — nessuna esecuzione pagamento' },
+            { name: 'Worker Wallet', desc: 'Portfolio di impatto verificato portabile' },
+            { name: 'Benchmarking Marketplace', desc: 'Scambio di intelligence calibrata cross-settore' },
           ].map((feature) => (
             <div
               key={feature.name}
@@ -47,7 +47,7 @@ export default function FutureVision() {
               <p className="text-sm font-semibold text-orange-700">{feature.name}</p>
               <p className="mt-1 text-xs text-orange-500">{feature.desc}</p>
               <p className="mt-2 text-[10px] text-orange-400 font-medium uppercase tracking-wide">
-                Future Vision — Not Active
+                Future Vision — Non Attivo
               </p>
             </div>
           ))}

@@ -38,7 +38,7 @@ export function ConfidenceBreakdown({ record, className }: ConfidenceBreakdownPr
   return (
     <div className={cn('rounded-lg border border-slate-200 bg-white p-4 space-y-4', className)}>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700">Confidence Score Breakdown</h3>
+        <h3 className="text-sm font-semibold text-slate-700">Confidence Score — Dettaglio</h3>
         {record && (
           <span className="text-lg font-bold text-slate-800">
             {Math.round(record.confidence_score * 100)}%
@@ -52,15 +52,15 @@ export function ConfidenceBreakdown({ record, className }: ConfidenceBreakdownPr
       {record ? (
         <>
           <div className="space-y-3">
-            <SubFactor label="Data Completeness" value={record.data_completeness} />
-            <SubFactor label="Evidence Quality" value={record.evidence_quality} />
-            <SubFactor label="Mapping Confidence" value={record.mapping_confidence} />
-            <SubFactor label="Verification Weight" value={record.verification_weight} />
+            <SubFactor label="Completezza Dati" value={record.data_completeness} />
+            <SubFactor label="Qualità Evidenze" value={record.evidence_quality} />
+            <SubFactor label="Confidenza Mapping" value={record.mapping_confidence} />
+            <SubFactor label="Peso Verifica" value={record.verification_weight} />
           </div>
 
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-              Source Coverage
+              Copertura Fonti
             </p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(record.source_coverage).map(([src, status]) => (
@@ -80,7 +80,7 @@ export function ConfidenceBreakdown({ record, className }: ConfidenceBreakdownPr
           {record.gaps_identified.length > 0 && (
             <div>
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-                Identified Gaps
+                Lacune Identificate
               </p>
               <ul className="space-y-1">
                 {record.gaps_identified.map((gap, i) => (
@@ -94,7 +94,7 @@ export function ConfidenceBreakdown({ record, className }: ConfidenceBreakdownPr
           )}
         </>
       ) : (
-        <p className="text-sm text-slate-400">Confidence record not available for this scenario.</p>
+        <p className="text-sm text-slate-400">Record Confidence Score non disponibile per questo scenario.</p>
       )}
     </div>
   );

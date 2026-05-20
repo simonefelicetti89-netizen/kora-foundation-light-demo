@@ -47,11 +47,11 @@ function eur(val: number) {
 
 const SOURCE_TYPE_LABELS: Record<string, string> = {
   welfare_provider: 'Initiative Provider',
-  lms_training:     'Learning Platform',
-  esg_initiatives:  'ESG & Impact Initiatives',
-  manual_upload:    'Manual Evidence Upload',
-  partner_events:   'Partner Evidence Stream',
-  hris_population:  'Workforce Population Source',
+  lms_training:     'Piattaforma di Apprendimento',
+  esg_initiatives:  'Iniziative ESG & Impact',
+  manual_upload:    'Caricamento Evidenze Manuale',
+  partner_events:   'Flusso Evidenze Partner',
+  hris_population:  'Fonte Popolazione Workforce',
 };
 
 const ADDITIONALITY_BADGE: Record<string, string> = {
@@ -69,10 +69,10 @@ const REVIEW_STATUS_BADGE: Record<string, string> = {
 };
 
 const REVIEW_STATUS_LABELS: Record<string, string> = {
-  approved:                   'KORA Approved',
-  under_kora_review:          'Under KORA Review',
-  advisor_review_required:    'Advisor Review Required',
-  partner_validation_required:'Partner Validation Required',
+  approved:                   'Approvato KORA',
+  under_kora_review:          'In Revisione KORA',
+  advisor_review_required:    'Revisione Advisor Richiesta',
+  partner_validation_required:'Validazione Partner Richiesta',
 };
 
 interface InitiativePreview {
@@ -92,55 +92,55 @@ interface InitiativePreview {
 const INITIATIVE_PREVIEW: InitiativePreview[] = [
   {
     id: 'ip-01',
-    title: 'Advanced Safety Culture Workshop',
-    type: 'Internal Company Initiative',
+    title: 'Workshop Cultura della Sicurezza Avanzata',
+    type: 'Iniziativa Aziendale Interna',
     pillars: ['LIFE', 'CONNECTION'],
     additionality: 'additional_beyond_requirement',
-    additionality_label: 'Beyond legal minimum',
+    additionality_label: 'Oltre il minimo legale',
     review_status: 'advisor_review_required',
-    evidence_requirement: 'Verified attendance + structured session evidence',
-    kora_relevance: 'Improves MAR and CO — meaningful activation with continuity signal across LIFE and CONNECTION',
+    evidence_requirement: 'Presenze verificate + evidenza di sessione strutturata',
+    kora_relevance: 'Migliora MAR e CO — attivazione significativa con segnale di continuità su LIFE e CONNECTION',
     economic_contribution: null,
-    kora_note: 'KORA rewards additionality. Mandatory legal safety courses receive low activation value — this workshop goes beyond the legal minimum and generates stronger IU.',
+    kora_note: 'KORA premia l\'addizionalità. I corsi di sicurezza obbligatori per legge ricevono basso valore di attivazione — questo workshop va oltre il minimo legale e genera IU più forti.',
   },
   {
     id: 'ip-02',
-    title: 'Sustainability Day',
-    type: 'Internal Company Initiative',
+    title: 'Giornata della Sostenibilità',
+    type: 'Iniziativa Aziendale Interna',
     pillars: ['IMPACT', 'CONNECTION'],
     additionality: 'strategic_company_initiative',
-    additionality_label: 'Strategic initiative',
+    additionality_label: 'Iniziativa strategica',
     review_status: 'under_kora_review',
-    evidence_requirement: 'Aggregate participation record + structured activity evidence',
-    kora_relevance: 'Addresses IMPACT pillar gap — improves PC (Pillar Coverage) and PB (Pillar Balance)',
+    evidence_requirement: 'Registro aggregato delle presenze + evidenza attività strutturata',
+    kora_relevance: 'Copre il gap del pillar IMPACT — migliora PC (Pillar Coverage) e PB (Pillar Balance)',
     economic_contribution: null,
     kora_note: null,
   },
   {
     id: 'ip-03',
-    title: 'Cross-Company Volunteering Initiative',
-    type: 'Collective Initiative',
+    title: 'Iniziativa Cross-Azienda di Volontariato',
+    type: 'Iniziativa Collettiva',
     pillars: ['IMPACT', 'LEGACY', 'CONNECTION'],
     additionality: 'collective_verified_initiative',
-    additionality_label: 'Collective — verified',
+    additionality_label: 'Collettiva — verificata',
     review_status: 'partner_validation_required',
-    evidence_requirement: 'Partner verification + aggregate participation above threshold',
-    kora_relevance: 'High KORA Contribution relevance — cross-company, territorial scope, partner evidence required',
-    economic_contribution: 'Co-funding intent declared',
-    kora_note: 'KORA Contribution eligible if verified and above participation threshold. Money alone is not impact — economic contribution activates only when paired with verified worker participation.',
+    evidence_requirement: 'Verifica partner + partecipazione aggregata sopra soglia',
+    kora_relevance: 'Alta rilevanza KORA Contribution — portata cross-aziendale, territoriale, evidenza partner richiesta',
+    economic_contribution: 'Intenzione di co-finanziamento dichiarata',
+    kora_note: 'Ammissibile a KORA Contribution se verificata e sopra la soglia di partecipazione. Il denaro da solo non è impatto — il contributo economico si attiva solo se abbinato a partecipazione verificata dei lavoratori.',
   },
   {
     id: 'ip-04',
-    title: 'Mandatory Legal Safety Course (D.Lgs. 81/2008)',
-    type: 'Compliance Activity',
+    title: 'Corso di Sicurezza Obbligatorio (D.Lgs. 81/2008)',
+    type: 'Attività di Compliance',
     pillars: ['LIFE'],
     additionality: 'mandatory_legal_minimum',
-    additionality_label: 'Legal minimum',
+    additionality_label: 'Minimo legale',
     review_status: 'approved',
-    evidence_requirement: 'Attendance record — evidence context only, no strong IU generation',
-    kora_relevance: 'Low activation value. Contributes to Confidence Score as evidence context — not strong KORA Index uplift.',
+    evidence_requirement: 'Registro presenze — solo contesto evidenza, nessuna generazione IU significativa',
+    kora_relevance: 'Basso valore di attivazione. Contribuisce al Confidence Score come contesto evidenza — non genera un uplift KORA Index rilevante.',
     economic_contribution: null,
-    kora_note: 'KORA rewards additionality, verified activation and distributed participation — not mere compliance. Legal minimum obligations generate minimal activation value.',
+    kora_note: 'KORA premia l\'addizionalità, l\'attivazione verificata e la partecipazione distribuita — non la semplice compliance. Gli obblighi minimi di legge generano valore di attivazione minimo.',
   },
 ];
 
@@ -157,7 +157,7 @@ export default function PillarsInitiatives() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Pillars & Initiatives</h1>
+        <h1 className="text-xl font-bold text-slate-900">Pilastri & Iniziative</h1>
         <p className="text-sm text-slate-500">
           Meridiana Group S.r.l. — {aggregate?.reporting_period ?? activeScenario}
         </p>
@@ -166,7 +166,7 @@ export default function PillarsInitiatives() {
       {/* Pillar distribution overview */}
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Pillar Distribution — Aggregate IU
+          Distribuzione Pillar — IU Aggregato
         </h2>
         <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
           {PILLAR_CODES.map((code) => {
@@ -185,7 +185,7 @@ export default function PillarsInitiatives() {
             );
           })}
           <p className="text-xs text-slate-400 pt-1">
-            Aggregate company-level distribution. No individual worker data.
+            Distribuzione aggregata a livello aziendale. Nessun dato individuale del lavoratore.
           </p>
         </div>
       </div>
@@ -193,20 +193,20 @@ export default function PillarsInitiatives() {
       {/* Program portfolio */}
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Program Portfolio
+          Portfolio Programmi
         </h2>
         <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Program</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Programma</th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Pillar</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Source</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Fonte</th>
                 <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Budget</th>
                 <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">
-                  Part. Rate ({activeScenario})
+                  Tasso Part. ({activeScenario})
                 </th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Status</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Stato</th>
               </tr>
             </thead>
             <tbody>
@@ -267,26 +267,26 @@ export default function PillarsInitiatives() {
           </table>
         </div>
         <p className="mt-1.5 text-xs text-slate-400">
-          Budget figures are informational only. Participation rates are scenario estimates.
+          I valori del budget sono indicativi. I tassi di partecipazione sono stime di scenario.
         </p>
       </div>
 
       {/* Collective initiatives */}
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Collective Initiatives
+          Iniziative Collettive
         </h2>
         {initiatives.length > 0 ? (
           <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Initiative</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Iniziativa</th>
                   <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Pillar</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Territory</th>
-                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Participants</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Verification</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Status</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Territorio</th>
+                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Partecipanti</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Verifica</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Stato</th>
                 </tr>
               </thead>
               <tbody>
@@ -299,7 +299,7 @@ export default function PillarsInitiatives() {
                       <td className="px-4 py-2.5">
                         <p className="font-medium text-slate-800">{init.name}</p>
                         {init.companies_involved.length > 1 && (
-                          <p className="text-xs text-indigo-500 mt-0.5">Cross-company</p>
+                          <p className="text-xs text-indigo-500 mt-0.5">Cross-azienda</p>
                         )}
                         {init.partner_name && (
                           <p className="text-xs text-slate-400 mt-0.5">Partner: {init.partner_name}</p>
@@ -333,11 +333,11 @@ export default function PillarsInitiatives() {
           </div>
         ) : (
           <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-            No collective initiatives recorded for this scenario.
+            Nessuna iniziativa collettiva registrata per questo scenario.
           </div>
         )}
         <p className="mt-1.5 text-xs text-slate-400">
-          Aggregate participation only. No individual worker data is shown.
+          Solo partecipazione aggregata. Nessun dato individuale del lavoratore è mostrato.
         </p>
       </div>
 
@@ -352,8 +352,8 @@ export default function PillarsInitiatives() {
           </span>
         </div>
         <p className="text-xs text-slate-500 mb-4 leading-relaxed max-w-2xl">
-          Create, propose or join initiatives that KORA can validate, orchestrate and measure.
-          KORA moves from measuring what happened to orchestrating what should happen next.
+          Crea, proponi o unisciti a iniziative che KORA può validare, orchestrare e misurare.
+          KORA passa dal misurare ciò che è accaduto all&apos;orchestrare ciò che dovrebbe accadere dopo.
         </p>
 
         <div className="space-y-3">
@@ -394,18 +394,18 @@ export default function PillarsInitiatives() {
               {/* Evidence + relevance grid */}
               <div className="grid gap-1.5 sm:grid-cols-2 text-xs">
                 <div className="text-slate-600">
-                  <span className="font-medium text-slate-400">Evidence required: </span>
+                  <span className="font-medium text-slate-400">Evidenza richiesta: </span>
                   {init.evidence_requirement}
                 </div>
                 <div className="text-slate-600">
-                  <span className="font-medium text-slate-400">KORA relevance: </span>
+                  <span className="font-medium text-slate-400">Rilevanza KORA: </span>
                   {init.kora_relevance}
                 </div>
                 {init.economic_contribution && (
                   <div className="sm:col-span-2 text-slate-600">
-                    <span className="font-medium text-slate-400">Economic contribution: </span>
+                    <span className="font-medium text-slate-400">Contributo economico: </span>
                     <span className="text-indigo-600">{init.economic_contribution}</span>
-                    <span className="text-slate-400 ml-1">— governance intent only, not payment execution</span>
+                    <span className="text-slate-400 ml-1">— solo intento di governance, non esecuzione di pagamento</span>
                   </div>
                 )}
               </div>
@@ -424,8 +424,8 @@ export default function PillarsInitiatives() {
                   className="rounded border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 cursor-not-allowed"
                 >
                   {init.additionality === 'mandatory_legal_minimum'
-                    ? 'Register Compliance Activity — Available in pilot phase'
-                    : 'Propose Initiative — Available in pilot phase'}
+                    ? 'Registra Attività Compliance — Disponibile in fase pilot'
+                    : 'Proponi Iniziativa — Disponibile in fase pilot'}
                 </button>
               </div>
             </div>
@@ -435,8 +435,8 @@ export default function PillarsInitiatives() {
         <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-4 py-3">
           <p className="text-xs text-amber-800">
             <span className="font-semibold">Foundation Light Preview. </span>
-            No initiative is submitted, approved, funded or activated from this screen.
-            Initiative Studio and KORA orchestration workflows are available in the pilot phase.
+            Nessuna iniziativa viene inviata, approvata, finanziata o attivata da questa schermata.
+            L&apos;Initiative Studio e i workflow di orchestrazione KORA sono disponibili in fase pilot.
           </p>
         </div>
       </div>

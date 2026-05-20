@@ -14,15 +14,15 @@ export default function PrivacySharing() {
       <div className="space-y-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Privacy & Sharing</h1>
-          <p className="text-sm text-slate-500">Worker consent and data sharing preferences</p>
+          <p className="text-sm text-slate-500">Preferenze di consenso e condivisione dati del lavoratore</p>
         </div>
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
-          <p className="text-sm font-semibold text-rose-700">Access Restricted</p>
+          <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
           <p className="mt-1 text-xs text-rose-600 max-w-sm mx-auto">
-            Privacy preferences are worker-private. Employer and admin roles cannot view or
-            modify individual worker consent settings.
+            Le preferenze di privacy sono private del lavoratore. I ruoli datore di lavoro e admin non possono
+            visualizzare né modificare le impostazioni di consenso individuali.
           </p>
-          <p className="mt-3 text-xs font-mono text-rose-400">Current role: {activeRole}</p>
+          <p className="mt-3 text-xs font-mono text-rose-400">Ruolo attivo: {activeRole}</p>
         </div>
       </div>
     );
@@ -39,7 +39,7 @@ export default function PrivacySharing() {
 
       {/* Core privacy guarantee — non-suppressible */}
       <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
-        <p className="text-sm font-semibold text-indigo-800">Your privacy is constitutional.</p>
+        <p className="text-sm font-semibold text-indigo-800">La tua privacy è costituzionale.</p>
         <p className="mt-1 text-xs text-indigo-700 leading-relaxed">{privacy.privacy_guarantee}</p>
       </div>
 
@@ -48,7 +48,7 @@ export default function PrivacySharing() {
         <div className="rounded-lg border border-green-200 bg-green-50 p-4">
           <p className="text-xs font-semibold text-green-800 mb-2 flex items-center gap-1.5">
             <span className="inline-block w-4 h-4 rounded-full bg-green-500 text-white text-center leading-4 text-[10px]">✓</span>
-            Your employer CAN see
+            Il tuo datore di lavoro PUÒ vedere
           </p>
           <ul className="space-y-1.5">
             {privacy.company_can_see.map((item, i) => (
@@ -63,7 +63,7 @@ export default function PrivacySharing() {
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
           <p className="text-xs font-semibold text-rose-800 mb-2 flex items-center gap-1.5">
             <span className="inline-block w-4 h-4 rounded-full bg-rose-500 text-white text-center leading-4 text-[10px]">✕</span>
-            Your employer CANNOT see
+            Il tuo datore di lavoro NON PUÒ vedere
           </p>
           <ul className="space-y-1.5">
             {privacy.company_cannot_see.map((item, i) => (
@@ -79,14 +79,14 @@ export default function PrivacySharing() {
       {/* Consent toggles */}
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Consent Preferences
+          Preferenze di Consenso
         </h2>
 
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-3">
-          <p className="text-xs font-semibold text-amber-700">Preview only</p>
+          <p className="text-xs font-semibold text-amber-700">Solo anteprima</p>
           <p className="text-xs text-amber-700 mt-0.5">
-            These controls are shown for illustration only. No real consent action occurs in Foundation Light.
-            In production, changes would be cryptographically recorded and immediately applied.
+            Questi controlli sono mostrati solo a scopo illustrativo. Nessuna azione di consenso reale avviene in Foundation Light.
+            In produzione, le modifiche sarebbero registrate crittograficamente e applicate immediatamente.
           </p>
         </div>
 
@@ -116,7 +116,7 @@ export default function PrivacySharing() {
                       )}
                     />
                   </button>
-                  <span className="text-xs text-slate-400 font-mono">preview only</span>
+                  <span className="text-xs text-slate-400 font-mono">solo anteprima</span>
                 </div>
               </div>
             ))}
@@ -126,10 +126,10 @@ export default function PrivacySharing() {
 
       {/* Data deletion notice */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-        <p className="text-xs font-semibold text-slate-600 mb-1">Data Deletion & Portability</p>
+        <p className="text-xs font-semibold text-slate-600 mb-1">Cancellazione Dati & Portabilità</p>
         <p className="text-xs text-slate-500 leading-relaxed">
-          In production, workers may request full data deletion or portable export at any time.
-          Foundation Light does not process live data — no deletion workflow is active in this demo.
+          In produzione, i lavoratori possono richiedere la cancellazione completa dei dati o l&apos;esportazione portabile in qualsiasi momento.
+          Foundation Light non elabora dati reali — nessun flusso di cancellazione è attivo in questa demo.
         </p>
         <p className="mt-1.5 text-xs font-mono text-slate-400">
           delete_request: preview_only · export_request: preview_only

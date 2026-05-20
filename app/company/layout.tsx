@@ -13,7 +13,7 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
       <AccessDeniedState
         role={activeRole}
         route="/company"
-        reason="Company workspace is accessible to company and admin roles only."
+        reason="Il workspace aziendale è accessibile ai ruoli company e admin soltanto."
       />
     );
   }

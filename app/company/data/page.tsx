@@ -43,7 +43,7 @@ export default function DataEvidence() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Data & Evidence</h1>
+        <h1 className="text-xl font-bold text-slate-900">Dati & Evidenze</h1>
         <p className="text-sm text-slate-500">
           Meridiana Group S.r.l. — {activeScenario}
         </p>
@@ -51,37 +51,37 @@ export default function DataEvidence() {
 
       {/* Batch-level only notice — never shows individual UEF records */}
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
-        <p className="text-xs font-semibold text-blue-800">Batch-level metadata only</p>
+        <p className="text-xs font-semibold text-blue-800">Solo metadati a livello batch</p>
         <p className="text-xs text-blue-700 mt-0.5">
-          This page shows ingestion source summaries. It does not expose individual UEF event records,
-          worker identifiers, or raw file contents.
+          Questa pagina mostra i riepiloghi delle fonti di ingestione. Non espone record UEF individuali,
+          identificatori lavoratori o contenuto grezzo dei file.
         </p>
       </div>
 
       {/* Quality summary cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <SummaryCard
-          label="Overall Completeness"
+          label="Completezza Complessiva"
           value={pct(completeness.overall_completeness_pct)}
-          sub={`${completeness.total_mapped} / ${completeness.total_rows} rows`}
+          sub={`${completeness.total_mapped} / ${completeness.total_rows} record`}
           color={completeness.overall_completeness_pct >= 0.75 ? 'text-green-600' : 'text-yellow-600'}
         />
         <SummaryCard
-          label="Avg Mapping Confidence"
+          label="Confidenza Mapping Media"
           value={pct(mapping.average_confidence)}
-          sub={`${mapping.high_confidence_sources} high / ${mapping.low_confidence_sources} low`}
+          sub={`${mapping.high_confidence_sources} alta / ${mapping.low_confidence_sources} bassa`}
           color={mapping.average_confidence >= 0.70 ? 'text-green-600' : 'text-yellow-600'}
         />
         <SummaryCard
-          label="Pending Review"
+          label="In Attesa di Revisione"
           value={String(pending.total_pending)}
-          sub={`across ${pending.sources_with_pending} sources`}
+          sub={`su ${pending.sources_with_pending} fonti`}
           color={pending.total_pending > 50 ? 'text-orange-500' : 'text-slate-800'}
         />
         <SummaryCard
-          label="Avg Evidence Attachment"
+          label="Allegati Evidenza Medi"
           value={pct(evidence.average_evidence_pct)}
-          sub={`${evidence.sources_above_50pct} sources ≥ 50%`}
+          sub={`${evidence.sources_above_50pct} fonti ≥ 50%`}
           color={evidence.average_evidence_pct >= 0.50 ? 'text-green-600' : 'text-orange-500'}
         />
       </div>
@@ -89,22 +89,22 @@ export default function DataEvidence() {
       {/* Source inventory table */}
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Source Inventory
+          Inventario Fonti
         </h2>
         {batches.length > 0 ? (
           <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Source</th>
-                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Rows</th>
-                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Mapped</th>
-                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Rejected</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Completeness</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Map Confidence</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Evidence</th>
-                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Pending</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Status</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Fonte</th>
+                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Record</th>
+                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Mappati</th>
+                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Rifiutati</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Completezza</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Confidenza Mapping</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Evidenza</th>
+                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">In Attesa</th>
+                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Stato</th>
                 </tr>
               </thead>
               <tbody>
@@ -182,7 +182,7 @@ export default function DataEvidence() {
           </div>
         ) : (
           <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-            No source batches available for this scenario.
+            Nessun batch disponibile per questo scenario.
           </div>
         )}
       </div>
@@ -191,7 +191,7 @@ export default function DataEvidence() {
       {batches.length > 0 && (
         <div>
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Source Notes
+            Note Fonti
           </h2>
           <div className="space-y-2">
             {batches.map((batch) => (

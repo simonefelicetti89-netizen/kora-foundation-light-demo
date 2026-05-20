@@ -70,20 +70,20 @@ function InitiativeCard({ initiative }: { initiative: CollectiveInitiative }) {
 
       <div className="grid grid-cols-3 gap-2 pt-0.5">
         <div>
-          <p className="text-xs text-slate-400">Participants</p>
+          <p className="text-xs text-slate-400">Partecipanti</p>
           <p className="text-sm font-semibold text-slate-700">
             {initiative.aggregate_participation_count}{' '}
             <span className="text-xs font-normal text-slate-400">/ {initiative.aggregate_target_participants}</span>
           </p>
         </div>
         <div>
-          <p className="text-xs text-slate-400">Verification</p>
+          <p className="text-xs text-slate-400">Verifica</p>
           <p className={cn('text-xs font-medium capitalize', verifStyle)}>
             {initiative.verification_status.replace(/_/g, ' ')}
           </p>
         </div>
         <div>
-          <p className="text-xs text-slate-400">Companies</p>
+          <p className="text-xs text-slate-400">Aziende</p>
           <p className="text-xs font-medium text-slate-700">{initiative.companies_involved.length}</p>
         </div>
       </div>
@@ -126,18 +126,18 @@ export default function KoraContribution() {
         <p className="text-sm font-semibold text-indigo-800">KORA Contribution — Companion Indicator</p>
         <p className="mt-1 text-xs text-indigo-700 leading-relaxed">
           {summary?.companion_label ??
-            'KORA Contribution measures verified collective contribution beyond the company perimeter. It complements the KORA Index — it does not replace it.'}
+            'KORA Contribution misura il contributo collettivo verificato oltre il perimetro aziendale. Complementa il KORA Index — non lo sostituisce.'}
         </p>
         <p className="mt-1.5 text-xs text-indigo-600 leading-relaxed">
-          KORA Contribution is a companion indicator — it is measured and displayed separately
-          from the KORA Index and does not contribute to its computation.
+          KORA Contribution è un indicatore companion — viene misurato e visualizzato separatamente
+          dal KORA Index e non contribuisce al suo calcolo.
         </p>
       </div>
 
       {/* Score card */}
       <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-700">Contribution Score</h2>
+          <h2 className="text-sm font-semibold text-slate-700">Punteggio Contributo</h2>
           {summary && (
             <span className={cn('rounded px-2 py-0.5 text-xs font-semibold capitalize', levelStyle.badge)}>
               {summary.contribution_level}
@@ -156,24 +156,24 @@ export default function KoraContribution() {
             <p className="text-xs text-slate-600 leading-relaxed">{summary.contribution_explanation}</p>
           </>
         ) : (
-          <p className="text-sm text-slate-400">No contribution data for this scenario.</p>
+          <p className="text-sm text-slate-400">Nessun dato di contributo disponibile per questo scenario.</p>
         )}
       </div>
 
       {/* Stats row */}
       {summary && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatTile label="Collective Initiatives" value={summary.collective_initiatives_count} />
-          <StatTile label="Verified Participations" value={summary.verified_initiative_participations} sub="aggregate" />
-          <StatTile label="Cross-Company" value={summary.cross_company_initiatives_count} />
-          <StatTile label="Ecosystem Partners" value={summary.ecosystem_partners_active} />
+          <StatTile label="Iniziative Collettive" value={summary.collective_initiatives_count} />
+          <StatTile label="Partecipazioni Verificate" value={summary.verified_initiative_participations} sub="aggregato" />
+          <StatTile label="Cross-Azienda" value={summary.cross_company_initiatives_count} />
+          <StatTile label="Partner Ecosistema" value={summary.ecosystem_partners_active} />
         </div>
       )}
 
       {/* Initiative list */}
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Collective Initiatives
+          Iniziative Collettive
         </h2>
         {allInitiatives.length > 0 ? (
           <div className="space-y-3">
@@ -183,7 +183,7 @@ export default function KoraContribution() {
           </div>
         ) : (
           <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-            No collective initiatives recorded for this scenario.
+            Nessuna iniziativa collettiva registrata per questo scenario.
           </div>
         )}
       </div>
@@ -191,15 +191,14 @@ export default function KoraContribution() {
       {/* Privacy notice */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
         <p className="text-xs text-slate-500">
-          <strong>Privacy:</strong> Your employer will not see individual participation. Only aggregate
-          counts above privacy thresholds are shown. No individual workers are identified.
+          <strong>Privacy:</strong> Il datore di lavoro non vede la partecipazione individuale. Vengono mostrati solo conteggi aggregati sopra la soglia di privacy. Nessun lavoratore è identificato individualmente.
         </p>
       </div>
 
       {/* Limitations */}
       {summary?.limitations_text && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-          <p className="text-xs font-semibold text-amber-700 mb-1">Limitations</p>
+          <p className="text-xs font-semibold text-amber-700 mb-1">Limitazioni</p>
           <p className="text-xs text-amber-700 leading-relaxed">{summary.limitations_text}</p>
         </div>
       )}

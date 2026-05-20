@@ -13,11 +13,11 @@ export default function ScoringRun() {
     <div className="space-y-6">
       <h1 className="text-xl font-bold text-slate-900">Scoring Run</h1>
       <p className="text-sm text-slate-500">
-        Simulated IU → PIB → Company Aggregation → Activation Safeguard → KORA Index pipeline.
+        Pipeline simulata: IU → PIB → Aggregazione Aziendale → Activation Safeguard → KORA Index.
       </p>
       <KoraIndexHero output={output} />
       <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-        Formula trace and run parameters — Phase 1
+        Traccia formula e parametri di esecuzione — Fase 1
       </div>
     </div>
   );

@@ -1,15 +1,16 @@
 import Link from 'next/link';
+import { PipelineConnectorBanner } from '@/components/demo/PipelineConnectorBanner';
 
 const REVIEW_STEPS = [
-  { step: 1, label: 'Executive Cockpit',          href: '/company',              desc: 'KORA Index · Confidence Score · Activation Safeguard · Insight tiles' },
-  { step: 2, label: 'KORA Index Detail',          href: '/company/kora-index',   desc: 'Full 10-component breakdown · Explainability panel · Methodology trace' },
-  { step: 3, label: 'Activation & Participation', href: '/company/activation',   desc: 'AR · MAR · Continuity · Verification · Pillar and department distribution' },
-  { step: 4, label: 'KORA Contribution',          href: '/company/contribution', desc: 'Companion indicator · Collective initiatives · Ecosystem and partner activity' },
-  { step: 5, label: 'Pillars & Initiatives',      href: '/company/pillars',      desc: 'Programme portfolio · Pillar distribution · Collective initiative table' },
-  { step: 6, label: 'Data & Evidence',            href: '/company/data',         desc: 'Source coverage · Mapping confidence · Evidence completeness · Batch-level only' },
-  { step: 7, label: 'KORA Operating Console',     href: '/admin',                desc: 'Switch to a KORA Admin role — AI Onboarding, Index Registry, portfolio and platform health' },
-  { step: 8, label: 'My KORA',                    href: '/my-kora',              desc: 'Worker-private space · Personal impact balance · Dynamic CV · Privacy controls — switch to Worker role first' },
-  { step: 9, label: 'Future Vision',              href: '/future-vision',        desc: 'Post-pilot strategic modules — all inactive in Foundation Light' },
+  { step: 1, label: 'Executive Cockpit',          href: '/company',              desc: 'KORA Index · Confidence Score · Activation Safeguard · Schede insight' },
+  { step: 2, label: 'KORA Index Detail',          href: '/company/kora-index',   desc: 'Breakdown completo dei 10 componenti · Pannello di spiegabilità · Traccia metodologica' },
+  { step: 3, label: 'Attivazione & Partecipazione', href: '/company/activation', desc: 'AR · MAR · Continuità · Verifica · Distribuzione per pillar e dipartimento' },
+  { step: 4, label: 'KORA Contribution',          href: '/company/contribution', desc: 'Indicatore companion · Iniziative collettive · Attività ecosistema e partner' },
+  { step: 5, label: 'Pilastri & Iniziative',      href: '/company/pillars',      desc: 'Portfolio programmi · Distribuzione pillar · Tabella iniziative collettive' },
+  { step: 6, label: 'Dati & Evidenze',            href: '/company/data',         desc: 'Copertura delle fonti · Confidenza del mapping · Completezza evidenze · Solo a livello batch' },
+  { step: 7, label: 'KORA Operating Console',     href: '/admin',                desc: 'Passa al ruolo KORA Admin — AI Onboarding, Registro Index, portfolio e salute piattaforma' },
+  { step: 8, label: 'My KORA',                    href: '/my-kora',              desc: 'Spazio privato del lavoratore · Bilancio impatto personale · Dynamic CV · Controlli privacy — passa prima al ruolo Worker' },
+  { step: 9, label: 'Visione Futura',             href: '/future-vision',        desc: 'Moduli strategici post-pilota — tutti inattivi in Foundation Light' },
 ];
 
 export function DemoGuideContent() {
@@ -23,38 +24,38 @@ export function DemoGuideContent() {
             Foundation Light v0.1
           </span>
           <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500">
-            Synthetic data only
+            Solo dati sintetici
           </span>
           <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500">
-            Pre-empirical calibration
+            Pre-calibrazione empirica
           </span>
         </div>
 
         <h1 className="text-3xl font-bold text-slate-900 leading-tight">
-          KORA shows whether organizational initiatives actually activate people.
+          KORA mostra se le iniziative organizzative attivano davvero le persone.
         </h1>
         <p className="mt-3 text-base text-slate-600 leading-relaxed max-w-2xl">
-          KORA translates fragmented actions, participation signals and evidence
-          into explainable organizational activation intelligence — a company-level output
-          with a Confidence Score, Activation Safeguard and methodology-versioned explainability.
+          KORA trasforma azioni frammentate, segnali di partecipazione ed evidenze
+          in intelligence organizzativa sull&apos;attivazione verificata — un output a livello aziendale
+          con Confidence Score, Activation Safeguard e spiegabilità versioned.
         </p>
 
         {/* Positioning strip */}
         <div className="mt-4 rounded border border-slate-200 bg-slate-50 px-4 py-3">
           <p className="text-xs font-semibold text-slate-500 tracking-wide leading-relaxed">
-            Not welfare management&nbsp;&nbsp;·&nbsp;&nbsp;
-            Not HR surveillance&nbsp;&nbsp;·&nbsp;&nbsp;
-            Not a wellbeing tracker&nbsp;&nbsp;·&nbsp;&nbsp;
-            Not a generic ESG dashboard&nbsp;&nbsp;·&nbsp;&nbsp;
-            Not a marketplace
+            Non è gestione del welfare&nbsp;&nbsp;·&nbsp;&nbsp;
+            Non è sorveglianza HR&nbsp;&nbsp;·&nbsp;&nbsp;
+            Non è un tracker del benessere&nbsp;&nbsp;·&nbsp;&nbsp;
+            Non è una dashboard ESG generica&nbsp;&nbsp;·&nbsp;&nbsp;
+            Non è un marketplace
           </p>
         </div>
 
         {/* Thesis */}
         <div className="mt-4 rounded border border-indigo-100 bg-indigo-50 px-4 py-3">
           <p className="text-sm font-semibold text-indigo-800">
-            Companies see aggregate organizational intelligence.
-            Workers keep ownership of their personal layer.
+            Le aziende vedono intelligence organizzativa aggregata.
+            I lavoratori mantengono la proprietà del proprio layer personale.
           </p>
         </div>
 
@@ -63,33 +64,36 @@ export function DemoGuideContent() {
             href="/company"
             className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition-colors"
           >
-            Open Company Cockpit
+            Apri il Cockpit Aziendale
           </Link>
           <Link
             href="/my-kora"
             className="rounded-md border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
           >
-            Open My KORA Preview
+            Apri il Preview My KORA
           </Link>
         </div>
       </div>
 
+      {/* Action-to-Index pipeline */}
+      <PipelineConnectorBanner />
+
       {/* What KORA measures and does not */}
       <div>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
-          What is being measured
+          Cosa viene misurato
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-slate-200 bg-white p-5">
-            <p className="text-xs font-semibold text-slate-700 mb-3">KORA measures</p>
+            <p className="text-xs font-semibold text-slate-700 mb-3">KORA misura</p>
             <ul className="space-y-2">
               {[
-                'Organizational activation rate and distribution',
-                'Participation balance across departments and pillars',
-                'Pillar coverage across LIFE, GROWTH, CONNECTION, IMPACT, LEGACY',
-                'Verified vs. self-declared contribution quality',
-                'Continuity of engagement across periods',
-                'Confidence Score reflecting evidence reliability',
+                'Tasso di attivazione organizzativa e distribuzione',
+                'Bilanciamento della partecipazione tra dipartimenti e pillar',
+                'Copertura pillar su LIFE, GROWTH, CONNECTION, IMPACT, LEGACY',
+                "Qualità del contributo verificata vs. autodichiarata",
+                "Continuità dell'engagement tra periodi",
+                "Confidence Score che riflette l'affidabilità delle evidenze",
               ].map((item) => (
                 <li key={item} className="flex gap-2 text-sm text-slate-700">
                   <span className="mt-0.5 shrink-0 text-slate-300">·</span>
@@ -100,15 +104,15 @@ export function DemoGuideContent() {
           </div>
 
           <div className="rounded-lg border border-rose-100 bg-rose-50 p-5">
-            <p className="text-xs font-semibold text-rose-700 mb-3">KORA does not measure</p>
+            <p className="text-xs font-semibold text-rose-700 mb-3">KORA non misura</p>
             <ul className="space-y-2">
               {[
-                'Individual worker performance or productivity',
-                'Worker wellbeing, health status or surveillance',
-                'Individual PIB scores visible to employers',
-                'Rankings, leaderboards or reward eligibility',
-                'Marketplace usage or benefits booking activity',
-                'Any metric that rates or surveils individual workers',
+                'Prestazioni o produttività individuale del lavoratore',
+                'Benessere, stato di salute o sorveglianza del lavoratore',
+                'Punteggi PIB individuali visibili ai datori di lavoro',
+                'Classifiche, leaderboard o idoneità ai premi',
+                'Utilizzo del marketplace o attività di prenotazione benefit',
+                'Qualsiasi metrica che valuta o sorveglia i lavoratori individualmente',
               ].map((item) => (
                 <li key={item} className="flex gap-2 text-sm text-rose-800">
                   <span className="mt-0.5 shrink-0 text-rose-300">✕</span>
@@ -123,21 +127,21 @@ export function DemoGuideContent() {
       {/* Why this matters */}
       <div>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
-          Why this matters
+          Perché questo è importante
         </h2>
         <div className="grid gap-3 sm:grid-cols-3">
           {[
             {
-              title: 'For the company',
-              body: 'Stop guessing whether your welfare and initiative budget is reaching people. KORA tells you what is being activated, how evenly, and with what evidence quality.',
+              title: "Per l'azienda",
+              body: "Smettila di indovinare se il tuo budget per il welfare e le iniziative raggiunge le persone. KORA ti dice cosa viene attivato, con quale distribuzione e con quale qualità delle evidenze.",
             },
             {
-              title: 'For the worker',
-              body: 'No surveillance. Your personal impact balance, consent settings and Dynamic CV are yours alone. Your employer sees only aggregate intelligence — never your individual data.',
+              title: 'Per il lavoratore',
+              body: "Nessuna sorveglianza. Il tuo bilancio impatto personale, le impostazioni di consenso e il Dynamic CV sono tuoi. Il tuo datore di lavoro vede solo intelligence aggregata — mai i tuoi dati individuali.",
             },
             {
-              title: 'For the ecosystem',
-              body: 'Partners, advisors and collective initiatives connect to a verifiable intelligence layer. Activation is measured, not assumed.',
+              title: "Per l'ecosistema",
+              body: "Partner, advisor e iniziative collettive si connettono a un layer di intelligence verificabile. L'attivazione viene misurata, non presupposta.",
             },
           ].map((card) => (
             <div key={card.title} className="rounded-lg border border-slate-200 bg-white p-4">
@@ -151,12 +155,12 @@ export function DemoGuideContent() {
       {/* Scenario story */}
       <div>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
-          One company, two points in time
+          Una società, due momenti nel tempo
         </h2>
         <p className="text-sm text-slate-500 mb-4">
-          Meridiana Group S.r.l. is the primary synthetic demo company.
-          Two scenarios show KORA before and after acting on its recommendations.
-          Toggle between them using the <span className="font-semibold text-slate-700">Demo Scenario</span> buttons in the top bar.
+          Meridiana Group S.r.l. è la principale società demo sintetica.
+          Due scenari mostrano KORA prima e dopo aver agito sulle sue raccomandazioni.
+          Passa tra di essi con i pulsanti <span className="font-semibold text-slate-700">Demo Scenario</span> nella barra superiore.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -168,7 +172,7 @@ export function DemoGuideContent() {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
-              {[['KORA Index', '47'], ['Confidence', '60%'], ['Activation', '38%'], ['Meaningful', '22%']].map(([l, v]) => (
+              {[['KORA Index', '47'], ['Confidence', '60%'], ['Attivazione', '38%'], ['Significativa', '22%']].map(([l, v]) => (
                 <div key={l} className="text-xs">
                   <span className="text-slate-500">{l}</span>
                   <span className="font-bold text-slate-800 ml-1.5">{v}</span>
@@ -176,20 +180,20 @@ export function DemoGuideContent() {
               ))}
             </div>
             <p className="text-xs text-slate-600 leading-relaxed italic border-t border-yellow-200 pt-3">
-              &ldquo;Fragmented initiatives, weak continuity, uneven participation.
-              12% of workers generate 64% of measured impact.&rdquo;
+              &ldquo;Iniziative frammentate, continuità debole, partecipazione disomogenea.
+              Il 12% dei lavoratori genera il 64% dell&apos;impatto misurato.&rdquo;
             </p>
           </div>
 
           <div className="rounded-lg border border-green-200 bg-green-50 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-base font-bold text-slate-900">S2 — Improved</span>
+              <span className="text-base font-bold text-slate-900">S2 — Migliorato</span>
               <span className="rounded border border-green-300 bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
                 CLEAR
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
-              {[['KORA Index', '64'], ['Confidence', '72%'], ['Activation', '52%'], ['Meaningful', '38%']].map(([l, v]) => (
+              {[['KORA Index', '64'], ['Confidence', '72%'], ['Attivazione', '52%'], ['Significativa', '38%']].map(([l, v]) => (
                 <div key={l} className="text-xs">
                   <span className="text-slate-500">{l}</span>
                   <span className="font-bold text-slate-800 ml-1.5">{v}</span>
@@ -197,8 +201,8 @@ export function DemoGuideContent() {
               ))}
             </div>
             <p className="text-xs text-slate-600 leading-relaxed italic border-t border-green-200 pt-3">
-              &ldquo;Better balance, stronger evidence, higher continuity and broader activation.
-              Activation Safeguard crossed to CLEAR.&rdquo;
+              &ldquo;Miglior bilanciamento, evidenze più solide, continuità maggiore e attivazione più ampia.
+              L&apos;Activation Safeguard è passato a CLEAR.&rdquo;
             </p>
           </div>
         </div>
@@ -207,7 +211,7 @@ export function DemoGuideContent() {
       {/* Review path */}
       <div>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
-          How to review this demo
+          Come esplorare questa demo
         </h2>
         <div className="space-y-2">
           {REVIEW_STEPS.map((step) => (
@@ -231,16 +235,16 @@ export function DemoGuideContent() {
       {/* Demo status */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">
-          Demo status
+          Stato della demo
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
           {[
-            ['Data',                  'Synthetic only — no real company data'],
-            ['Calibration',           'Pre-empirical — methodology v0.1, provisional weights'],
-            ['Worker accounts',       'None — no real participation records'],
-            ['Backend',               'No production DB, no auth, no live APIs'],
-            ['Payments / marketplace','None — excluded from Foundation Light'],
-            ['Employer access',       'Employer never sees individual worker data'],
+            ['Dati',                   'Solo sintetici — nessun dato aziendale reale'],
+            ['Calibrazione',           'Pre-empirica — metodologia v0.1, pesi provvisori'],
+            ['Account lavoratori',     'Nessuno — nessun record di partecipazione reale'],
+            ['Backend',                'Nessun DB in produzione, nessuna auth, nessuna API live'],
+            ['Pagamenti / marketplace','Nessuno — esclusi da Foundation Light'],
+            ['Accesso datore lavoro',  'Il datore di lavoro non vede mai i dati individuali dei lavoratori'],
           ].map(([label, value]) => (
             <div key={label} className="flex gap-3">
               <span className="text-xs font-semibold text-slate-500 shrink-0 w-40">{label}</span>
@@ -249,7 +253,7 @@ export function DemoGuideContent() {
           ))}
         </div>
         <p className="mt-5 text-xs text-slate-400 border-t border-slate-200 pt-3">
-          KORA Foundation Light v0.1 · Methodology v0.1 · Demo company: Meridiana Group S.r.l. (synthetic)
+          KORA Foundation Light v0.1 · Metodologia v0.1 · Società demo: Meridiana Group S.r.l. (sintetica)
         </p>
       </div>
 

@@ -30,38 +30,38 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'KORA Console',
         items: [
-          { href: '/admin',                label: 'Operating Console' },
-          { href: '/admin/portfolio',      label: 'Company Portfolio' },
-          { href: '/admin/index-registry', label: 'Index Registry' },
-          { href: '/admin/benchmarks',     label: 'Benchmarks' },
-          { href: '/admin/network',        label: 'Advisor & Partners' },
+          { href: '/admin',                label: 'Console Operativa' },
+          { href: '/admin/portfolio',      label: 'Portfolio Aziendale' },
+          { href: '/admin/index-registry', label: 'Registro Index' },
+          { href: '/admin/benchmarks',     label: 'Benchmark' },
+          { href: '/admin/network',        label: 'Advisor & Partner' },
           { href: '/admin/gtm',            label: 'GTM Pipeline' },
           { href: '/admin/ai-onboarding',  label: 'AI Onboarding' },
         ],
       },
       {
-        heading: 'Company Intelligence',
+        heading: 'Intelligence Aziendale',
         items: [
           { href: '/company',              label: 'Executive Cockpit' },
           { href: '/company/kora-index',   label: 'KORA Index' },
-          { href: '/company/activation',   label: 'Activation & Participation' },
+          { href: '/company/activation',   label: 'Attivazione & Partecipazione' },
           { href: '/company/contribution', label: 'KORA Contribution' },
-          { href: '/company/pillars',      label: 'Pillars & Initiatives' },
+          { href: '/company/pillars',      label: 'Pilastri & Iniziative' },
         ],
       },
       {
-        heading: 'Internal Tools',
+        heading: 'Strumenti Interni',
         items: [
           { href: '/company/ingestion',  label: 'AI Upload Studio' },
           { href: '/company/uef-review', label: 'UEF Review' },
           { href: '/company/scoring',    label: 'Scoring Run' },
-          { href: '/company/reports',    label: 'Reports' },
-          { href: '/company/data',       label: 'Data & Evidence' },
-          { href: '/company/financial',  label: 'Financial Governance' },
+          { href: '/company/reports',    label: 'Report' },
+          { href: '/company/data',       label: 'Dati & Evidenze' },
+          { href: '/company/financial',  label: 'Governance Finanziaria' },
         ],
       },
       {
-        heading: 'Other',
+        heading: 'Altro',
         items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
       },
     ];
@@ -71,38 +71,38 @@ function buildNavGroups(role: string): NavGroup[] {
     const groups: NavGroup[] = [
       DEMO_GROUP,
       {
-        heading: 'Company Intelligence',
+        heading: 'Intelligence Aziendale',
         items: [
           { href: '/company',              label: 'Executive Cockpit' },
           { href: '/company/kora-index',   label: 'KORA Index' },
-          { href: '/company/activation',   label: 'Activation & Participation' },
+          { href: '/company/activation',   label: 'Attivazione & Partecipazione' },
           { href: '/company/contribution', label: 'KORA Contribution' },
-          { href: '/company/pillars',      label: 'Pillars & Initiatives' },
+          { href: '/company/pillars',      label: 'Pilastri & Iniziative' },
         ],
       },
       {
-        heading: 'Data & Governance',
+        heading: 'Dati & Governance',
         items: [
-          { href: '/company/data',      label: 'Data & Evidence' },
-          { href: '/company/financial', label: 'Financial Governance' },
+          { href: '/company/data',      label: 'Dati & Evidenze' },
+          { href: '/company/financial', label: 'Governance Finanziaria' },
         ],
       },
     ];
 
     if (role === 'COMPANY_ADMIN' || role === 'COMPANY_HR') {
       groups.push({
-        heading: 'Internal Tools',
+        heading: 'Strumenti Interni',
         items: [
           { href: '/company/ingestion',  label: 'AI Upload Studio', comingSoon: true },
           { href: '/company/uef-review', label: 'UEF Review',       comingSoon: true },
           { href: '/company/scoring',    label: 'Scoring Run',      comingSoon: true },
-          { href: '/company/reports',    label: 'Reports',          comingSoon: true },
+          { href: '/company/reports',    label: 'Report',           comingSoon: true },
         ],
       });
     }
 
     groups.push({
-      heading: 'Other',
+      heading: 'Altro',
       items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
     });
 
@@ -116,15 +116,15 @@ function buildNavGroups(role: string): NavGroup[] {
         heading: 'My KORA',
         items: [
           { href: '/my-kora',               label: 'My KORA Home' },
-          { href: '/my-kora/privacy',       label: 'Privacy & Sharing' },
+          { href: '/my-kora/privacy',       label: 'Privacy & Condivisione' },
           { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV' },
-          { href: '/my-kora/opportunities', label: 'Opportunities',    comingSoon: true },
-          { href: '/my-kora/bookings',      label: 'Bookings',         comingSoon: true },
-          { href: '/my-kora/collective',    label: 'Collective Impact', comingSoon: true },
+          { href: '/my-kora/opportunities', label: 'Opportunità',      comingSoon: true },
+          { href: '/my-kora/bookings',      label: 'Prenotazioni',     comingSoon: true },
+          { href: '/my-kora/collective',    label: 'Impatto Collettivo', comingSoon: true },
         ],
       },
       {
-        heading: 'Other',
+        heading: 'Altro',
         items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
       },
     ];
@@ -135,10 +135,10 @@ function buildNavGroups(role: string): NavGroup[] {
       DEMO_GROUP,
       {
         heading: 'Partner',
-        items: [{ href: '/partner', label: 'Partner Workspace' }],
+        items: [{ href: '/partner', label: 'Workspace Partner' }],
       },
       {
-        heading: 'Other',
+        heading: 'Altro',
         items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
       },
     ];
@@ -149,10 +149,10 @@ function buildNavGroups(role: string): NavGroup[] {
       DEMO_GROUP,
       {
         heading: 'Advisor',
-        items: [{ href: '/advisor', label: 'Advisor Workspace' }],
+        items: [{ href: '/advisor', label: 'Workspace Advisor' }],
       },
       {
-        heading: 'Other',
+        heading: 'Altro',
         items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
       },
     ];
@@ -161,7 +161,7 @@ function buildNavGroups(role: string): NavGroup[] {
   return [
     DEMO_GROUP,
     {
-      heading: 'Other',
+      heading: 'Altro',
       items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
     },
   ];
@@ -197,12 +197,12 @@ export function Sidebar() {
                   <span className="truncate">{item.label}</span>
                   {item.comingSoon && (
                     <span className="ml-1 shrink-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[10px] font-medium text-slate-400">
-                      soon
+                      presto
                     </span>
                   )}
                   {item.inactive && (
                     <span className="ml-1 shrink-0 rounded border border-orange-200 bg-orange-50 px-1 py-0.5 text-[10px] font-medium text-orange-400">
-                      inactive
+                      inattivo
                     </span>
                   )}
                 </Link>
@@ -212,7 +212,7 @@ export function Sidebar() {
         ))}
       </nav>
       <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-400">
-        Role: {activeRole}
+        Ruolo: {activeRole}
       </div>
     </aside>
   );

@@ -122,7 +122,7 @@ export function ActivationSafeguardPanel({
           />
         </div>
       ) : (
-        <p className="text-sm text-slate-400">Safeguard result not available for this scenario.</p>
+        <p className="text-sm text-slate-400">Risultato Activation Safeguard non disponibile per questo scenario.</p>
       )}
 
       {explanation && (
@@ -132,7 +132,7 @@ export function ActivationSafeguardPanel({
       )}
 
       <p className="text-xs text-slate-400">
-        CLEAR requires AR ≥ 40% AND MAR ≥ 30%. OR logic — either metric in warning band triggers status.
+        CLEAR richiede AR ≥ 40% E MAR ≥ 30%. Logica OR — se uno dei due metrici è nella fascia di attenzione, lo stato viene attivato.
       </p>
     </div>
   );

@@ -117,7 +117,7 @@ export class ExplainabilityService implements IExplainabilityService {
     return record.weak_components.slice(0, 3).map((comp) => ({
       code: `weak-${comp.code.toLowerCase()}`,
       severity: comp.value < 0.35 ? ('high' as const) : ('medium' as const),
-      title: `${comp.label} below threshold`,
+      title: `${comp.label} sotto soglia`,
       message: comp.explanation,
       affected_components: [comp.code],
     }));

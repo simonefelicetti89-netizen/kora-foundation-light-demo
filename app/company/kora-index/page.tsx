@@ -2,6 +2,7 @@
 
 import { useScenario } from '@/lib/demo-state';
 import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
+import { KoraIndexBuildCard } from '@/components/kora-index/KoraIndexBuildCard';
 import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
 import { ComponentBreakdownChart } from '@/components/charts/ComponentBreakdownChart';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
@@ -16,6 +17,7 @@ export default function KoraIndexDetail() {
 
   const output       = scoringSimulatorService.score('meridiana-group', activeScenario, '2025');
   const safeguard    = scoringSimulatorService.getActivationSafeguard('meridiana-group', activeScenario);
+  const aggregate    = scoringSimulatorService.getCompanyAggregate('meridiana-group', activeScenario);
   const confidence   = scoringSimulatorService.getConfidenceRecord('meridiana-group', activeScenario);
   const explanation  = explainabilityService.getExplanation('meridiana-group', activeScenario);
   const weakCodes    = (explanation?.weak_components ?? []).map((c) => c.code);
@@ -31,6 +33,9 @@ export default function KoraIndexDetail() {
 
       {/* KORA Index Hero — CS + Safeguard + Calibration non-suppressible */}
       <KoraIndexHero output={output} />
+
+      {/* Pipeline trace — Come è stato costruito questo KORA Index */}
+      <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
 
       {/* Component chart + 10-component grid */}
       <ComponentBreakdownChart components={output.components} weakCodes={weakCodes} />
@@ -50,31 +55,31 @@ export default function KoraIndexDetail() {
 
       {/* Additionality Guardrail */}
       <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
-        <h3 className="text-sm font-semibold text-emerald-800">Additionality Guardrail</h3>
+        <h3 className="text-sm font-semibold text-emerald-800">Guardrail Addizionalità</h3>
         <p className="text-xs text-emerald-700 leading-relaxed">
-          KORA rewards additionality, verified activation and distributed participation — not mere compliance.
-          Mandatory legal minimum activities receive low or zero activation value unless they exceed the minimum
-          requirement or demonstrate additionality.
+          KORA premia l&apos;addizionalità, l&apos;attivazione verificata e la partecipazione distribuita — non la semplice compliance.
+          Le attività obbligatorie minime di legge ricevono basso o zero valore di attivazione a meno che non superino il requisito minimo
+          o dimostrino addizionalità.
         </p>
 
         <div className="grid gap-2 sm:grid-cols-3">
           {[
             {
-              label: 'Mandatory legal safety course',
-              value: 'Low activation value',
-              note: 'Compliance with law is baseline, not activation. Evidence context only.',
+              label: 'Corso di sicurezza obbligatorio per legge',
+              value: 'Basso valore di attivazione',
+              note: 'La compliance alla legge è baseline, non attivazione. Solo contesto di evidenza.',
               color: 'border-rose-200 bg-rose-50 text-rose-800',
             },
             {
-              label: 'Additional safety culture workshop',
-              value: 'Higher activation value',
-              note: 'Beyond legal minimum, participatory, evidence-backed. KORA rewards going further.',
+              label: 'Workshop aggiuntivo di cultura della sicurezza',
+              value: 'Valore di attivazione più alto',
+              note: 'Oltre il minimo legale, partecipativo, basato su evidenze. KORA premia chi va oltre.',
               color: 'border-green-200 bg-green-50 text-green-800',
             },
             {
-              label: 'Cross-company volunteering initiative',
-              value: 'High KORA Contribution relevance',
-              note: 'Collective, verified, multi-company scope. Highest activation signal if above threshold.',
+              label: 'Iniziativa di volontariato cross-azienda',
+              value: 'Alta rilevanza per KORA Contribution',
+              note: 'Collettiva, verificata, portata multi-aziendale. Segnale di attivazione più alto se sopra soglia.',
               color: 'border-indigo-200 bg-indigo-50 text-indigo-800',
             },
           ].map((ex) => (
@@ -88,13 +93,13 @@ export default function KoraIndexDetail() {
 
         <div className="border-t border-emerald-200 pt-3 space-y-2">
           <p className="text-xs text-emerald-700 leading-relaxed">
-            Additionality modifies upstream IU qualification and weighting — it does not add a new KORA Index component.
-            The KORA Index has exactly 10 components. Additionality affects the UEF feature vector, IU computation, and explainability.
+            L&apos;addizionalità modifica la qualificazione e il peso upstream delle IU — non aggiunge un nuovo componente al KORA Index.
+            Il KORA Index ha esattamente 10 componenti. L&apos;addizionalità influisce sul feature vector UEF, sul calcolo delle IU e sulla spiegabilità.
           </p>
           <p className="text-xs text-emerald-700 leading-relaxed">
-            To improve the KORA Index, launch a KORA-reviewed initiative targeting weak pillar coverage —
-            such as an additional voluntary safety culture workshop or a cross-company volunteering action.
-            See <span className="font-semibold">Pillars &amp; Initiatives → Initiative Studio</span> to propose or join an initiative.
+            Per migliorare il KORA Index, avvia un&apos;iniziativa revisionata da KORA che punti alle lacune di copertura pillar deboli —
+            come un workshop aggiuntivo volontario sulla cultura della sicurezza o un&apos;azione di volontariato cross-aziendale.
+            Vedi <span className="font-semibold">Pilastri &amp; Iniziative → Initiative Studio</span> per proporre o aderire a un&apos;iniziativa.
           </p>
         </div>
       </div>

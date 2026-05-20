@@ -50,41 +50,41 @@ export default function Activation() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Activation & Participation</h1>
+        <h1 className="text-xl font-bold text-slate-900">Attivazione & Partecipazione</h1>
         <p className="text-sm text-slate-500">
-          Aggregate-only view. Groups below {SAFE_AGGREGATION_THRESHOLD} workers are suppressed.
+          Vista solo aggregata. I gruppi con meno di {SAFE_AGGREGATION_THRESHOLD} lavoratori sono soppressi.
         </p>
       </div>
 
       {aggregate ? (
         <>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <MetricCard label="Activation Rate"       value={pct(aggregate.activation_rate)}             sub="AR"  description="Share of eligible workforce with at least one approved impact unit in the period." />
-            <MetricCard label="Meaningful Activation" value={pct(aggregate.meaningful_activation_rate)}  sub="MAR" description="Share of workers whose participation exceeds the materiality threshold — not just nominal." />
-            <MetricCard label="Continuity Rate"       value={pct(aggregate.continuity_rate)}             sub="CO"  description="Share of workers with sustained engagement across multiple reporting periods." />
-            <MetricCard label="Verification Rate"     value={pct(aggregate.verification_rate)}           sub="VR"  description="Share of recorded activity supported by verified or partially verified evidence." />
+            <MetricCard label="Activation Rate"       value={pct(aggregate.activation_rate)}             sub="AR"  description="Quota della forza lavoro idonea con almeno un'Impact Unit approvata nel periodo." />
+            <MetricCard label="Meaningful Activation" value={pct(aggregate.meaningful_activation_rate)}  sub="MAR" description="Quota di lavoratori la cui partecipazione supera la soglia di materialità — non solo nominale." />
+            <MetricCard label="Continuity Rate"       value={pct(aggregate.continuity_rate)}             sub="CO"  description="Quota di lavoratori con engagement sostenuto in più periodi di rendicontazione." />
+            <MetricCard label="Verification Rate"     value={pct(aggregate.verification_rate)}           sub="VR"  description="Quota di attività registrata supportata da evidenze verificate o parzialmente verificate." />
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">Worker Population</h2>
+            <h2 className="text-sm font-semibold text-slate-700 mb-3">Popolazione Lavoratori</h2>
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>
-                <p className="text-xs text-slate-400">Total Workers</p>
+                <p className="text-xs text-slate-400">Lavoratori Totali</p>
                 <p className="font-mono font-semibold text-slate-800">{aggregate.total_workers}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Active Workers</p>
+                <p className="text-xs text-slate-400">Lavoratori Attivi</p>
                 <p className="font-mono font-semibold text-slate-800">{aggregate.active_worker_count}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Meaningfully Active</p>
+                <p className="text-xs text-slate-400">Attivi Significativi</p>
                 <p className="font-mono font-semibold text-slate-800">{aggregate.meaningful_active_worker_count}</p>
               </div>
             </div>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">Pillar Distribution</h2>
+            <h2 className="text-sm font-semibold text-slate-700 mb-3">Distribuzione Pillar</h2>
             <div className="space-y-2">
               {PILLAR_CODES.map((pillar) => {
                 const share = aggregate.pillar_distribution[pillar as PillarCode] ?? 0;
@@ -105,9 +105,9 @@ export default function Activation() {
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-1">Department Activation Rate</h2>
+            <h2 className="text-sm font-semibold text-slate-700 mb-1">Tasso di Attivazione per Dipartimento</h2>
             <p className="text-xs text-slate-400 mb-3">
-              Only departments with ≥{SAFE_AGGREGATION_THRESHOLD} workers are shown.
+              Visualizzati solo i dipartimenti con ≥{SAFE_AGGREGATION_THRESHOLD} lavoratori.
             </p>
             <div className="space-y-2">
               {Object.entries(aggregate.department_activation).map(([deptId, rate]) => (
@@ -128,12 +128,12 @@ export default function Activation() {
           </div>
 
           <p className="text-xs text-slate-400">
-            {aggregate.methodology_version_id} · {aggregate.calibration_status} · Synthetic demo data
+            {aggregate.methodology_version_id} · {aggregate.calibration_status} · Dati demo sintetici
           </p>
         </>
       ) : (
         <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-          No aggregate data available for this scenario.
+          Nessun dato aggregato disponibile per questo scenario.
         </div>
       )}
     </div>

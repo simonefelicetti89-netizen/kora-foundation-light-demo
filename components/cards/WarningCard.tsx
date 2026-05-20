@@ -8,6 +8,12 @@ interface WarningCardProps {
   className?: string;
 }
 
+const SEVERITY_LABELS: Record<string, string> = {
+  critical: 'critico',
+  high: 'alto',
+  medium: 'medio',
+};
+
 const SEVERITY_STYLES = {
   critical: {
     border:     'border-red-200',
@@ -54,7 +60,7 @@ export function WarningCard({ warning, className }: WarningCardProps) {
               styles.tag,
             )}
           >
-            {warning.severity}
+            {SEVERITY_LABELS[warning.severity] ?? warning.severity}
           </span>
         </div>
         <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">

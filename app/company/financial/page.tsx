@@ -47,11 +47,11 @@ export default function FinancialGovernance() {
           <p className="text-sm text-slate-500">Meridiana Group S.r.l.</p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
-          <p className="text-sm font-semibold text-slate-600">Access Restricted</p>
+          <p className="text-sm font-semibold text-slate-600">Accesso Limitato</p>
           <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
-            {result.reason ?? 'Financial governance data is restricted to Finance and Admin roles.'}
+            {result.reason ?? 'I dati di governance finanziaria sono riservati ai ruoli Finance e Admin.'}
           </p>
-          <p className="mt-3 text-xs font-mono text-slate-400">Current role: {activeRole}</p>
+          <p className="mt-3 text-xs font-mono text-slate-400">Ruolo attivo: {activeRole}</p>
         </div>
       </div>
     );
@@ -62,7 +62,7 @@ export default function FinancialGovernance() {
     return (
       <div className="space-y-4">
         <h1 className="text-xl font-bold text-slate-900">Financial Governance</h1>
-        <p className="text-sm text-slate-400">No financial governance data for this scenario.</p>
+        <p className="text-sm text-slate-400">Nessun dato di governance finanziaria disponibile per questo scenario.</p>
       </div>
     );
   }
@@ -84,46 +84,46 @@ export default function FinancialGovernance() {
           Meridiana Group S.r.l. — {rec.reporting_period}
         </p>
         <p className="text-xs text-slate-400 mt-1.5 leading-relaxed max-w-2xl">
-          This is KORA&apos;s informational governance view of budget allocation and activation alignment
-          — not a payment, wallet or welfare fund management tool.
+          Vista informativa di governance KORA sull&apos;allocazione del budget e l&apos;allineamento all&apos;attivazione
+          — non uno strumento di pagamento, wallet o gestione fondi welfare.
         </p>
       </div>
 
       {/* Mandatory disclaimer — non-suppressible */}
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-        <p className="text-xs font-semibold text-amber-700">Informational Only</p>
+        <p className="text-xs font-semibold text-amber-700">Solo Informativo</p>
         <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">{rec.disclaimer}</p>
       </div>
 
       {/* Budget summary */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <BudgetCard
-          label="Budget Allocated"
+          label="Budget Allocato"
           value={eur(rec.budget_allocated_total)}
           sub={rec.currency}
         />
         <BudgetCard
-          label="Budget Used"
+          label="Budget Utilizzato"
           value={eur(rec.budget_used_total)}
-          sub={`${(rec.budget_utilization_rate * 100).toFixed(0)}% utilization`}
+          sub={`${(rec.budget_utilization_rate * 100).toFixed(0)}% utilizzo`}
           color={utilizationColor}
         />
         <BudgetCard
-          label="Committed"
+          label="Impegnato"
           value={eur(rec.budget_committed_total)}
-          sub="pending confirmation"
+          sub="in attesa di conferma"
         />
         <BudgetCard
-          label="Residual"
+          label="Residuo"
           value={eur(rec.budget_residual)}
-          sub="unallocated or unused"
+          sub="non allocato o inutilizzato"
         />
       </div>
 
       {/* Utilization bar */}
       <div className="rounded-lg border border-slate-200 bg-white p-4">
         <div className="flex justify-between text-xs mb-2">
-          <span className="font-semibold text-slate-700">Budget Utilization</span>
+          <span className="font-semibold text-slate-700">Utilizzo Budget</span>
           <span className={cn('font-mono font-semibold', utilizationColor)}>
             {(rec.budget_utilization_rate * 100).toFixed(0)}%
           </span>
@@ -135,7 +135,7 @@ export default function FinancialGovernance() {
           />
         </div>
         <p className="mt-2 text-xs text-slate-400">
-          Cost per IU (informational): <span className="font-mono text-slate-600">€{rec.cost_per_iu_indicator}</span>
+          Costo per IU (informativo): <span className="font-mono text-slate-600">€{rec.cost_per_iu_indicator}</span>
         </p>
         <p className="text-xs text-slate-400">{rec.cost_per_iu_note}</p>
       </div>
@@ -143,7 +143,7 @@ export default function FinancialGovernance() {
       {/* Pillar budget breakdown */}
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Pillar Budget Breakdown
+          Suddivisione Budget per Pillar
         </h2>
         <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-4">
           {rec.pillar_budget.map((line) => {
@@ -171,7 +171,7 @@ export default function FinancialGovernance() {
             );
           })}
           <p className="text-xs text-slate-400 pt-1">
-            Budget figures are informational only. These do not feed the KORA Index computation.
+            Le cifre di budget sono solo informative. Non alimentano il calcolo del KORA Index.
           </p>
         </div>
       </div>
@@ -179,12 +179,12 @@ export default function FinancialGovernance() {
       {/* KORA billing */}
       <div>
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          KORA Billing (separate ledger)
+          Fatturazione KORA (registro separato)
         </h2>
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <p className="text-xs text-slate-400">Subscription</p>
+              <p className="text-xs text-slate-400">Abbonamento</p>
               <p className="font-mono font-semibold text-slate-700">{eur(rec.kora_billing.subscription)}</p>
             </div>
             <div>
@@ -202,7 +202,7 @@ export default function FinancialGovernance() {
 
       {/* Narrative context */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-        <p className="text-xs font-semibold text-slate-600 mb-1">Context</p>
+        <p className="text-xs font-semibold text-slate-600 mb-1">Contesto</p>
         <p className="text-xs text-slate-600 leading-relaxed">{rec.narrative}</p>
       </div>
     </div>
