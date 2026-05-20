@@ -96,6 +96,166 @@ const DEMO_INITIATIVE = {
   synthetic_demo_data: true,
 };
 
+// Activation requests from companies (no booking engine, no calendar, no payment)
+interface ActivationRequest {
+  id: string;
+  company: string;
+  service: string;
+  pillar: string;
+  status: string;
+  participants_aggregate: number | null;
+  evidence_submitted: boolean;
+  date_requested: string;
+}
+
+const ACTIVATION_REQUESTS: ActivationRequest[] = [
+  {
+    id: 'req-001',
+    company: 'Meridiana Group S.r.l.',
+    service: 'Giornata Solidarietà Aziendale',
+    pillar: 'IMPACT',
+    status: 'confermata',
+    participants_aggregate: 22,
+    evidence_submitted: true,
+    date_requested: 'Aprile 2026',
+  },
+  {
+    id: 'req-002',
+    company: 'Communitas Cooperativa',
+    service: 'Workshop Community Leadership',
+    pillar: 'CONNECTION',
+    status: 'in_attesa',
+    participants_aggregate: null,
+    evidence_submitted: false,
+    date_requested: 'Maggio 2026',
+  },
+  {
+    id: 'req-003',
+    company: 'Meridiana Group S.r.l.',
+    service: 'Programma Volontariato Territoriale',
+    pillar: 'IMPACT',
+    status: 'evidenza_richiesta',
+    participants_aggregate: 14,
+    evidence_submitted: false,
+    date_requested: 'Maggio 2026',
+  },
+];
+
+const REQUEST_STATUS_BADGE: Record<string, { style: string; label: string }> = {
+  confermata:         { style: 'bg-green-50 text-green-700 border-green-200',    label: 'Confermata' },
+  in_attesa:          { style: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'In attesa' },
+  evidenza_richiesta: { style: 'bg-blue-50 text-blue-700 border-blue-200',       label: 'Evidenza richiesta' },
+};
+
+// Evidence submissions and review status
+interface EvidenceItem {
+  id: string;
+  service: string;
+  company: string;
+  evidence_type: string;
+  submitted: boolean;
+  advisor_status: string | null;
+  notes: string;
+}
+
+const EVIDENCE_ITEMS: EvidenceItem[] = [
+  {
+    id: 'ev-001',
+    service: 'Giornata Solidarietà Aziendale',
+    company: 'Meridiana Group S.r.l.',
+    evidence_type: 'Report attività + lista presenze aggregata',
+    submitted: true,
+    advisor_status: 'in_revisione',
+    notes: 'Documentazione ricevuta. In attesa di revisione advisor.',
+  },
+  {
+    id: 'ev-002',
+    service: 'Bergamo Solidarity Network',
+    company: 'Cross-company (aggregato)',
+    evidence_type: 'Report collettivo aggregato',
+    submitted: true,
+    advisor_status: 'parziale',
+    notes: "Evidenza parziale. Richiesta integrazione da Communitas Cooperativa.",
+  },
+  {
+    id: 'ev-003',
+    service: 'Programma Volontariato Territoriale',
+    company: 'Meridiana Group S.r.l.',
+    evidence_type: 'Attestato partecipazione + conferma coordinatore',
+    submitted: false,
+    advisor_status: null,
+    notes: "In attesa di caricamento documenti da parte dell'azienda.",
+  },
+];
+
+const EVIDENCE_STATUS_BADGE: Record<string, { style: string; label: string }> = {
+  in_revisione: { style: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'In revisione' },
+  parziale:     { style: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Parziale' },
+  approvata:    { style: 'bg-green-50 text-green-700 border-green-200',    label: 'Approvata' },
+};
+
+// Availability windows — static preview, no real calendar, no booking
+const AVAILABILITY_WINDOWS = [
+  {
+    id: 'av-001',
+    period: 'Maggio 2026',
+    service: 'Giornata Solidarietà Aziendale',
+    slots_label: '2 slot indicativi',
+    note: "Coordinamento via email. Nessuna prenotazione diretta in KORA.",
+  },
+  {
+    id: 'av-002',
+    period: 'Giugno 2026',
+    service: 'Workshop Community Leadership',
+    slots_label: '3 slot indicativi',
+    note: "Minimo 5 partecipanti. Conferma necessaria fuori piattaforma.",
+  },
+  {
+    id: 'av-003',
+    period: 'Giugno–Luglio 2026',
+    service: 'Percorso Mentoring Comunitario',
+    slots_label: 'Aperto — programma strutturato',
+    note: "In attesa di validazione advisor prima dell'attivazione.",
+  },
+];
+
+// Action log — partner activity trace (no real messaging, no notifications)
+const ACTION_LOG = [
+  {
+    id: 'log-001',
+    date: '12 Mag 2026',
+    action: 'Evidenza caricata',
+    detail: 'Report Giornata Solidarietà Aziendale — Meridiana Group S.r.l.',
+    status: 'completata',
+  },
+  {
+    id: 'log-002',
+    date: '08 Mag 2026',
+    action: 'Richiesta attivazione ricevuta',
+    detail: 'Workshop Community Leadership — Communitas Cooperativa',
+    status: 'in_corso',
+  },
+  {
+    id: 'log-003',
+    date: '28 Apr 2026',
+    action: 'Validazione advisor completata',
+    detail: 'Workshop Community Leadership — validato',
+    status: 'completata',
+  },
+  {
+    id: 'log-004',
+    date: '15 Apr 2026',
+    action: 'Profilo partner aggiornato',
+    detail: 'Aggiunto servizio: Percorso Mentoring Comunitario',
+    status: 'completata',
+  },
+];
+
+const LOG_STATUS_BADGE: Record<string, { style: string; label: string }> = {
+  completata: { style: 'bg-green-50 text-green-700 border-green-200',  label: 'Completata' },
+  in_corso:   { style: 'bg-amber-50 text-amber-700 border-amber-200',  label: 'In corso' },
+};
+
 // ─── Style helpers ────────────────────────────────────────────────────────────
 
 const PILLAR_BADGE: Record<string, string> = {
@@ -233,6 +393,203 @@ export default function PartnerDashboard() {
         </p>
       </div>
 
+      {/* ── Activation Requests Preview ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Richieste di Attivazione — Preview
+        </p>
+        <p className="text-xs text-slate-400 mb-3">
+          Richieste ricevute da aziende per i servizi del partner. Nessuna conferma diretta in piattaforma
+          — il coordinamento avviene fuori da KORA in Foundation Light.
+        </p>
+        <div className="space-y-2">
+          {ACTIVATION_REQUESTS.map((req) => {
+            const rb = REQUEST_STATUS_BADGE[req.status] ?? { style: 'bg-slate-50 text-slate-500 border-slate-200', label: req.status };
+            return (
+              <div key={req.id} className="rounded-lg border border-slate-200 bg-white p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{req.service}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{req.company} · {req.date_requested}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${PILLAR_BADGE[req.pillar] ?? 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                      {req.pillar}
+                    </span>
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${rb.style}`}>
+                      {rb.label}
+                    </span>
+                  </div>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-slate-400">
+                  {req.participants_aggregate !== null && (
+                    <span>Partecipanti aggregati: <span className="font-medium text-slate-600">{req.participants_aggregate}</span></span>
+                  )}
+                  <span>Evidenza: <span className={`font-medium ${req.evidence_submitted ? 'text-green-700' : 'text-amber-600'}`}>{req.evidence_submitted ? 'Presentata' : 'Non ancora presentata'}</span></span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Nessuna conferma calendario · Nessuna chat · Nessun pagamento · Dati sintetici demo.
+        </p>
+      </div>
+
+      {/* ── Evidence & Review Status ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Evidenze & Stato Revisione
+        </p>
+        <p className="text-xs text-slate-400 mb-3">
+          Documentazione presentata per la verifica KORA. L&apos;advisor assegnato revisiona le evidenze
+          prima dell&apos;approvazione. Solo conteggi aggregati — nessun dato individuale.
+        </p>
+        <div className="space-y-2">
+          {EVIDENCE_ITEMS.map((ev) => {
+            const eb = ev.advisor_status
+              ? (EVIDENCE_STATUS_BADGE[ev.advisor_status] ?? { style: 'bg-slate-50 text-slate-500 border-slate-200', label: ev.advisor_status })
+              : null;
+            return (
+              <div key={ev.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{ev.service}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{ev.company}</p>
+                  </div>
+                  <div className="flex gap-1.5 shrink-0">
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${ev.submitted ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-50 text-slate-400 border-slate-200'}`}>
+                      {ev.submitted ? 'Presentata' : 'Non presentata'}
+                    </span>
+                    {eb && (
+                      <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${eb.style}`}>
+                        {eb.label}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  <span className="font-medium">Tipo evidenza:</span> {ev.evidence_type}
+                </p>
+                <p className="text-[11px] text-slate-400 italic">{ev.notes}</p>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Dati sintetici · Nessun dato individuale · Solo aggregati sopra soglia privacy (≥10).
+        </p>
+      </div>
+
+      {/* ── Advisor Verification Area ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Area Verifica Advisor
+        </p>
+        <p className="text-xs text-slate-400 mb-3">
+          Stato di validazione advisor per ciascun servizio del partner. L&apos;advisor assegnato da KORA
+          revisiona l&apos;idoneità metodologica e la qualità dell&apos;evidenza — non il contenuto individuale.
+        </p>
+        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Servizio</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Pillar</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Stato validazione</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {PARTNER_SERVICES.map((svc) => {
+                const vb = VALIDATION_BADGE[svc.advisor_validation];
+                return (
+                  <tr key={svc.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-2.5 text-xs text-slate-700">{svc.title}</td>
+                    <td className="px-4 py-2.5">
+                      <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${PILLAR_BADGE[svc.pillar] ?? 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+                        {svc.pillar}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2.5">
+                      <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${vb.style}`}>
+                        {vb.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          La validazione advisor abilita il servizio all&apos;attivazione KORA. In assenza di validazione,
+          il servizio genera evidenza a reliability ridotta (EV corretto automaticamente dal motore di scoring).
+        </p>
+      </div>
+
+      {/* ── Availability Windows ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Finestre di Disponibilità — Preview
+        </p>
+        <p className="text-xs text-slate-400 mb-3">
+          Periodi indicativi in cui il partner è disponibile per attivazioni. Nessun calendario
+          interattivo, nessuna prenotazione diretta, nessuna esecuzione slot in KORA Foundation Light.
+        </p>
+        <div className="space-y-2">
+          {AVAILABILITY_WINDOWS.map((av) => (
+            <div key={av.id} className="rounded-lg border border-slate-200 bg-white p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">{av.service}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{av.period}</p>
+                </div>
+                <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                  {av.slots_label}
+                </span>
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-400 italic">{av.note}</p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Nessun calendario · Nessun slot prenotabile · Nessuna esecuzione real-time · Dati indicativi sintetici.
+        </p>
+      </div>
+
+      {/* ── Action Logging Preview ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Log Azioni Partner — Preview
+        </p>
+        <p className="text-xs text-slate-400 mb-3">
+          Traccia delle azioni recenti associate al partner nel sistema KORA. Nessuna notifica in tempo
+          reale, nessuna chat, nessun feed sociale.
+        </p>
+        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100">
+          {ACTION_LOG.map((log) => {
+            const lb = LOG_STATUS_BADGE[log.status] ?? { style: 'bg-slate-50 text-slate-500 border-slate-200', label: log.status };
+            return (
+              <div key={log.id} className="flex flex-wrap items-start justify-between gap-2 px-4 py-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-xs font-semibold text-slate-700">{log.action}</p>
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${lb.style}`}>
+                      {lb.label}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">{log.detail}</p>
+                </div>
+                <p className="text-[11px] text-slate-400 shrink-0">{log.date}</p>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Nessuna notifica push · Nessun feed · Nessuna chat · Traccia sintetica demo.
+        </p>
+      </div>
+
       {/* ── Collective Initiative Preview ── */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
@@ -285,6 +642,39 @@ export default function PartnerDashboard() {
         </div>
         <p className="text-[11px] text-slate-400 mt-2">
           Dati sintetici — Foundation Light demo preview · synthetic_demo_data: true
+        </p>
+      </div>
+
+      {/* ── KORA Activation Community — Future Vision ── */}
+      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            KORA Activation Community
+          </p>
+          <span className="rounded border border-slate-300 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+            Future Vision / Not Active in Foundation Light
+          </span>
+        </div>
+        <p className="text-sm text-slate-500 leading-relaxed">
+          In futuro, i partner KORA potranno coordinarsi in una rete di attivazione condivisa:
+          co-progettare iniziative cross-partner, condividere segnali di disponibilità aggregati,
+          e ricevere richieste di attivazione territoriale da più aziende in modo coordinato.
+        </p>
+        <ul className="space-y-1">
+          {[
+            'Rete di coordinamento cross-partner (non attiva)',
+            'Segnali di attivazione aggregati multi-azienda (non attivo)',
+            'Co-progettazione iniziative condivise (non attivo)',
+            'Nessun social feed · Nessun ranking partner · Nessun marketplace',
+          ].map((item) => (
+            <li key={item} className="flex gap-2 text-xs text-slate-400">
+              <span className="text-slate-300 shrink-0 mt-0.5">·</span>
+              {item}
+            </li>
+          ))}
+        </ul>
+        <p className="text-[11px] text-slate-400">
+          Questa sezione è un mockup statico. Nessuna logica attiva, nessun dato live, nessuna funzionalità abilitata.
         </p>
       </div>
 
