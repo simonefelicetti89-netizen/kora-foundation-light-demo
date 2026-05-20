@@ -55,7 +55,7 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/company/ingestion',  label: 'AI Upload Studio' },
           { href: '/company/uef-review', label: 'UEF Review' },
           { href: '/company/scoring',    label: 'Scoring Run' },
-          { href: '/company/reports',    label: 'Report' },
+          { href: '/company/reports',    label: 'Report & Decision Pack' },
           { href: '/company/data',       label: 'Dati & Evidenze' },
           { href: '/company/financial',  label: 'Governance Finanziaria' },
         ],
@@ -91,12 +91,12 @@ function buildNavGroups(role: string): NavGroup[] {
 
     if (role === 'COMPANY_ADMIN' || role === 'COMPANY_HR') {
       groups.push({
-        heading: 'Strumenti Interni',
+        heading: 'Foundation Light Preview',
         items: [
-          { href: '/company/ingestion',  label: 'AI Upload Studio', comingSoon: true },
-          { href: '/company/uef-review', label: 'UEF Review',       comingSoon: true },
-          { href: '/company/scoring',    label: 'Scoring Run',      comingSoon: true },
-          { href: '/company/reports',    label: 'Report',           comingSoon: true },
+          { href: '/company/ingestion',  label: 'AI Upload Studio',       comingSoon: true },
+          { href: '/company/uef-review', label: 'UEF Review',             comingSoon: true },
+          { href: '/company/scoring',    label: 'Scoring Run',            comingSoon: true },
+          { href: '/company/reports',    label: 'Report & Decision Pack', comingSoon: true },
         ],
       });
     }

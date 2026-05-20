@@ -64,15 +64,16 @@ const REPORT_CARDS: ReportCard[] = [
     id: 'esg-csr',
     title: 'ESG / CSR Evidence Annex',
     purpose:
-      'KORA organizza evidenze people strutturate e verificate utili al contesto di rendicontazione CSR/ESG.',
+      'KORA organizza evidenze people/social strutturate, verificate e spiegabili per supportare rendicontazione interna, stakeholder reporting e dialogo ESG.',
     audience: ['ESG / Sustainability', 'Comitato CSR', 'Auditor'],
     status: 'preview',
     statusLabel: 'Preview — non compliance',
     contents: [
       'Mappatura pillar IMPACT e LEGACY',
       'Qualità e verifica evidenze',
+      'Iniziative people/social verificate',
       'Gap evidence identificati',
-      'Framework di riferimento people/social',
+      'Limiti metodologici espliciti',
     ],
     claimBoundary:
       'Non garantisce conformità CSRD/ESRS — evidenza people strutturata, non motore di compliance.',
@@ -80,9 +81,9 @@ const REPORT_CARDS: ReportCard[] = [
   },
   {
     id: 'financial',
-    title: 'Financial Governance Light Report',
+    title: 'Financial Governance Report',
     purpose:
-      'Vista informativa su budget attivazione, cost per Impact Unit e allocation per pillar.',
+      'Vista informativa su allocazione budget attivazione e alignment con Impact Units prodotte per pillar.',
     audience: ['CFO', 'Finance', 'Comitato Amministrazione'],
     status: 'preview-info',
     statusLabel: 'Preview informativa',
@@ -90,10 +91,10 @@ const REPORT_CARDS: ReportCard[] = [
       'Budget attivazione vs. Impact Units prodotte',
       'Costo per IU — indicativo',
       'Allocation per pillar',
-      'Welfare allocation per tipologia',
+      'Allocazione budget di attivazione per perimetro',
     ],
     claimBoundary:
-      'Vista informativa direzionale — non contabilità, non fiscal compliance, non calcolo fiscale.',
+      'Vista informativa su allocazione budget e activation alignment — non contabilità, non pagamento, non fiscal compliance.',
   },
   {
     id: 'partner-ecosystem',
@@ -176,8 +177,11 @@ export default function Reports() {
 
       {/* ── Report cards ── */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
-          Libreria report
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Report Direzionali & Decision Pack
+        </p>
+        <p className="text-xs text-slate-400 mb-4">
+          KORA trasforma activation intelligence, evidenze e raccomandazioni in output leggibili per board, HR, ESG e finance — senza claim regolatori o certificativi.
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           {REPORT_CARDS.map((card) => {
