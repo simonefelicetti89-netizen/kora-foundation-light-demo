@@ -28,6 +28,7 @@ SQL generation, schema provisioning, and production database setup remain blocke
 
 | # | Document | Title | Status | Authority | Use for Code? | Developer Instruction |
 |---|---|---|---|---|---|---|
+| **Canon** | `docs/kora-canonical-product-architecture-v1.md` | **KORA Canonical Product Architecture** | **Canonical — Read First** | **Tier 0 — Master Reference** | **Yes — read before every session** | **Primary master reference. Read before any code, product, or documentation work. Defines product identity, KORA Index rules, module catalogue A–P, capability scope matrix, language policy, boundary rules, claims policy, alignment plan. Supersedes all prior product descriptions where in conflict (exception: doc 10 governs on methodology component definitions, IU formula, algorithm sequencing).** |
 | 06 | `docs/06-methodological-constitution.md` | Methodological Constitution | Canonical | Tier 1 — Methodology | Limited | Read for pillar definitions, IU formula rationale, verification philosophy. Do not use for implementation weights — use doc 21 §5 values. |
 | 09 | `docs/09-source-materials-alignment-and-conflict-map.md` | Source Materials Alignment & Conflict Map | Canonical | Tier 2 — Decision Record | No | Audit record of how conflicts between source docs were resolved. Use if a concept's origin is disputed. Do not use as primary spec. |
 | 10 | `docs/10-architecture-v3-layer-specification.md` | Architecture v3 Layer Specification | **Canonical — Primary** | Tier 1 — Architecture | **Yes** | Primary implementation reference. 14-stage algorithm, IU formula, 10-component KORA Index, Activation Safeguard, privacy rules, all defined here. Consult before any architectural decision. |
@@ -98,6 +99,8 @@ IU_{e,p} = NM × BC_{e,p} × CQ × EV × CF × AGF [× DF] [× EXF] [× SF]
 
 - Provisional equal weights: 0.10 per component. These are implementation scaffolding, not final values.
 - CO redistribution rule: when CO = INSUFFICIENT_DATA, its 0.10 weight is redistributed proportionally across the 9 remaining components (`w_k_adjusted = 0.1111`). Total weight vector remains 1.00.
+
+> **Phase 1M-A terminology warning:** A temporary error introduced in Phase 1M-A redefined EQ as "Evidence Quality." This has been reversed in Phase 1M-1. EQ = Equity remains canonical per `docs/10-architecture-v3-layer-specification.md` §17 and the table above. Evidence quality is handled by VR, CS, EV (correction factor in the IU formula), Evidence Debt, and Trust Ledger. Do not remap EQ to Evidence Quality or Event Quality in any future session.
 
 **Activation Safeguard thresholds (provisional v0.1):**
 
@@ -171,6 +174,7 @@ IU_{e,p} = NM × BC_{e,p} × CQ × EV × CF × AGF [× DF] [× EXF] [× SF]
 | Confidence Score | READY FOR DEMO APP WITH SYNTHETIC DATA | Gate 2 for SQL | Always displayed with KORA Index. Also component 10 (CS). Never omitted. |
 | Explainability Layer | READY FOR DEMO APP WITH SYNTHETIC DATA | None | Plain-language reason for score, component breakdown, data quality notes, methodology version, pre-calibration disclosure. |
 | Executive Cockpit | READY FOR DEMO APP WITH SYNTHETIC DATA | None | KORA Index, Confidence Score, Activation Safeguard badge, 10-component breakdown, pillar distribution, warnings, next actions. |
+| Initiative Studio (Activation Orchestration Preview) | READY ONLY AS SEMI-FUNCTIONAL PREVIEW | None | Gap detection, initiative lifecycle states, Additionality Lens, Activation Intervention Simulator — all on synthetic data. No booking engine. No payment. No marketplace. Canonical reference: `docs/kora-canonical-product-architecture-v1.md` §7B and §13. |
 | Worker PIB Light | READY ONLY AS SEMI-FUNCTIONAL PREVIEW | None | Synthetic/pseudonymized demo profiles only. No production accounts for real pilot employees. No employer access under any path. |
 | Partner Onboarding Light | READY ONLY AS SEMI-FUNCTIONAL PREVIEW | None | Partner catalog, service types, pillar mapping, eligibility confidence. No marketplace logic, no payouts, no booking. |
 | Advisor Portal Light | READY ONLY AS SEMI-FUNCTIONAL PREVIEW | None | Review records, status, evidence references, eligibility confidence. No advisor account system for demo. |
@@ -265,6 +269,7 @@ The following may be built before Gate 2 closes:
 - Executive Cockpit (KORA Index display, component breakdown, Activation Safeguard badge)
 - Explainability panels (component explanations, data quality notes, calibration disclosure)
 - Worker PIB Light demo view using synthetic profiles
+- Initiative Studio preview (gap detection, additionality lens, activation intervention simulator — synthetic data only; no booking, no payment, no marketplace)
 - Partner/Advisor light preview panels
 - Founder Validation Cockpit
 - Static Future Vision area (clearly labeled "Future Vision / Not Active in Foundation Light")
@@ -311,23 +316,53 @@ Those decisions, made individually, will be inconsistent and expensive to fix. D
 
 ---
 
-## 11. Final Decision
+## 11. New Intelligence Modules A–P — Catalogue Reference
+
+The canonical architecture (`docs/kora-canonical-product-architecture-v1.md` §12) defines 16 intelligence modules (A–P). The full definitions, demo/pilot/future status, rules, and Italian-first descriptions are in that document.
+
+**Summary of demo-status modules (active in Foundation Light):**
+
+| Module | Name | Foundation Light Status |
+|---|---|---|
+| A | Activation Debt | ✅ Demo — analytics visualization on synthetic data |
+| B | Evidence Debt | ✅ Demo — analytics visualization on synthetic data |
+| C | Trust Ledger | 🔶 Architectural — visualization in future |
+| E | No-Surveillance Proof | ✅ Demo — privacy boundary components |
+| F | Additionality Lens | ✅ Demo — part of Initiative Studio |
+| G | Silent Majority Detector | ✅ Demo — analytics layer, synthetic data |
+| H | Access Equity & Inclusion Evidence Layer | 🔶 Demo — aggregate synthetic only, above privacy threshold |
+| I | Activation Intervention Simulator | ✅ Demo — synthetic simulation |
+| J | Board Pack | 🔶 Mockup demo |
+| K | Benchmark & Normalization Layer | 🔶 Demo — synthetic benchmarks only |
+| L | KORA Evolution | 🔶 Demo — longitudinal on synthetic data |
+| M | KORA Value Chain | ❌ NOT IN FOUNDATION LIGHT |
+| N | Partner Activation Quality | 🔶 Demo — internal signal only |
+| O | Advisor Confidence Stamp | 🔶 Demo |
+| P | Worker Consent & Data Portability | 🔶 Demo — privacy controls |
+
+Capabilities marked ❌ must not be built. Capabilities marked 🔲 or ❌ in the Capability Scope Matrix (`docs/kora-canonical-product-architecture-v1.md` §25) must not be built in Foundation Light.
+
+---
+
+## 12. Final Decision
 
 KORA is not ready for production code or SQL generation.
 
 KORA is ready for a controlled Foundation Light demo app with synthetic data, provided:
 
-1. The next step is `docs/24-foundation-light-product-functional-spec.md`.
+1. Read `docs/kora-canonical-product-architecture-v1.md` before every session — it is the master reference.
 2. No SQL, Prisma models, Supabase schema, or persistent database setup occurs before Gate 2 (CTO review of docs 10, 12, 13, 20, 21).
 3. No live company data is ingested before Gate 3 (legal/privacy counsel engagement).
-4. The build follows doc 22A strictly — no scope additions without a formal amendment to the cutline.
+4. The build follows doc 22A (v1.1) strictly — no scope additions without a formal amendment to the cutline.
 5. Every scoring output carries `calibration_status = 'pre_empirical_calibration'`, `methodology_version_id`, and Confidence Score.
 6. The Activation Safeguard is implemented as non-bypassable from day one — not added later as a post-processing step.
+7. Initiative Studio is built as a Semi-Functional Preview only — no booking engine, no payment, no marketplace, synthetic data only.
 
 Gate 2 can be initiated immediately. No documentation gap prevents it.
 
 ---
 
-**Document version:** v1.0
-**Date:** 2026-05-17
+**Document version:** v1.1
+**Date:** 2026-05-20 (Phase 1M-B alignment: canonical architecture doc added to §2, Initiative Studio added to §5 and §8, module catalogue A–P summary added as §11)
 **Gate 1:** CLOSED | **Gate 2:** OPEN (blocks SQL) | **Gate 3:** OPEN (blocks live data) | **Gate 4:** Provisionally satisfied | **Gate 5:** OPEN (blocks live fiscal)
+**Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` — read before every session

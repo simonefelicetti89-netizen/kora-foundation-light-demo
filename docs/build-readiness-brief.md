@@ -11,6 +11,8 @@
 
 The following bullets confirm what Claude Code understands about KORA before any code is written. These are not aspirational descriptions — they are implementation constraints.
 
+- **Before any session, read `docs/kora-canonical-product-architecture-v1.md`.** This is the canonical product architecture reference (v1.1, Phase 1M-A). It supersedes all prior product descriptions, defines the Capability Scope Matrix, the Italian-first language policy, the CSR Evidence Mapping rules, the HR KPI Correlation rules, and the Do Not Build Yet list. If a prompt contradicts it, stop and correct before execution.
+
 - **KORA measures organizations, not individuals.** The KORA Index is a company-level output. Individual IU, PIB, and UEF records are internal intermediaries that are never surfaced to employer roles.
 
 - **KORA is not a welfare platform, not an HR tool, not a wellbeing tracker, not a reward system, not a marketplace, not a booking engine, not a social network, and not an employee surveillance system.** Every product decision must preserve this identity.
@@ -46,6 +48,14 @@ The following bullets confirm what Claude Code understands about KORA before any
 - **Worker adoption is a commercial dependency.** My KORA is not an afterthought. Without worker adoption, the KORA Index degrades over time. My KORA must be built to full demo quality alongside the company side.
 
 - **No score may be presented as certified, empirically validated, or regulatory-grade.** Foundation Light v0.1 produces pilot-grade diagnostic intelligence. Every score carries `calibration_status = 'pre_empirical_calibration'`.
+
+- **Platform copy is Italian-first for the Italian market.** All UI text, warnings, recommendations, next best actions, report text, privacy explanations, demo copy, and microcopy must be in Italian. Proprietary names remain in English: KORA Index, KORA Contribution, My KORA, Dynamic Impact CV, Activation Safeguard, Confidence Score, UEF, Impact Units, Activation Debt, Evidence Debt, Trust Ledger, KORA Activation Network.
+
+- **Canonical intelligence modules (demo scope).** The following modules are canonical and active in Foundation Light demo: Activation Debt (debito di attivazione), Evidence Debt (debito di evidenza), No-Surveillance Proof, Additionality Lens (inside Initiative Studio), Silent Majority Detector, Access Equity & Inclusion Evidence Layer (aggregate-only), Activation Intervention Simulator. The following are mockup/future only: Public KORA Snapshot, LinkedIn/Social Sharing, KORA Value Chain, KORA Certified. HR KPI Correlation and People ROI are interpretation-only layers — no causal engine. See Capability Scope Matrix in `docs/kora-canonical-product-architecture-v1.md §25`.
+
+- **CSR Evidence Mapping is a people-evidence support layer, not an ESG compliance engine.** Any output referencing CSR/ESG frameworks (CSRD, ESRS S1, GRI, ISO 26000, OECD Guidelines, UNGP, UN Global Compact) must include the standard disclaimer: "KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio."
+
+- **HR KPI Correlation and People ROI are adjacent interpretation layers, not KORA Index inputs.** All HR KPI comparisons are aggregate-only, correlation-only, and must explicitly state "correlazione ≠ causalità." Foundation Light must not claim predictive accuracy, causal reduction of absenteeism/turnover/productivity, or ROI causality.
 
 ---
 
@@ -565,6 +575,7 @@ The synthetic seed file shapes in `/data/synthetic/` must NOT be used to derive 
 
 ---
 
-**Document version:** v1.0
-**Date:** 2026-05-17
-**Gate status at creation:** Gate 1 CLOSED · Gate 2 OPEN · Gate 3 OPEN · Gate 5 OPEN
+**Document version:** v1.1 — Phase 1M-B Aligned
+**Date:** 2026-05-19
+**Gate status:** Gate 1 CLOSED · Gate 2 OPEN · Gate 3 OPEN · Gate 5 OPEN
+**Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) — read before every session

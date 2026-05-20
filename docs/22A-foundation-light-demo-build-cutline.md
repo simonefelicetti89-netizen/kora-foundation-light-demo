@@ -166,6 +166,32 @@ These modules must look real and use partial data logic. They are not production
 - Eligibility confidence visible per service/event type
 - Labeled as indicative — no tax advice, no live fiscal guardrails enforcement
 
+### 5.6 Initiative Studio — Activation Orchestration Preview
+
+Initiative Studio is the operational bridge between activation insight and verified action. It is not an event manager, not a marketplace, not a booking engine, and not a payment layer.
+
+- Activation gap detection → initiative proposal lifecycle visible in UI (synthetic data)
+- Pillar classification per initiative (LIFE / GROWTH / CONNECTION / IMPACT / LEGACY)
+- Additionality level classification display — 7 levels: `mandatory_legal_minimum` → `collective_verified_initiative`
+- Evidence requirement definition per initiative (descriptive — not execution logic)
+- Advisor / partner validation status display (synthetic data only)
+- Initiative lifecycle states: proposed → classified → validated → approved → monitored → measured
+- Activation Intervention Simulator: what-if simulation on synthetic data showing probable KORA Index and KORA Contribution impact
+- Additionality Lens: compliance vs. additionality distribution across active initiatives
+- Silent Majority view: which initiatives reach the whole workforce vs. only the already-engaged
+
+**Limits in Foundation Light:**
+- No booking engine logic
+- No payment execution
+- No marketplace logic
+- No operational advisor review workflow — status display only in Foundation Light
+- No live evidence collection — synthetic data only
+- No production partner API integration
+
+**Label:** "Initiative Studio — Foundation Light Preview"
+
+Canonical reference: `docs/kora-canonical-product-architecture-v1.md` §7B and §13.
+
 ---
 
 ## 6. Static / Mockup Future Vision
@@ -230,6 +256,14 @@ The following must not be built now. These are hard exclusions.
 - Partner marketplace
 - Territorial maps (beyond static mockup)
 - Worker dashboard (beyond PIB Light demo)
+
+**Canonical module exclusions (not in Foundation Light scope):**
+- KORA Value Chain production module (future / Governance / Certified scope only — no ESRS S2 supply chain logic)
+- Real HR KPI predictive analytics with causal or predictive accuracy claims
+- Causal ROI engine (ROI is interpretation layer only — no causality engine)
+- Real LinkedIn or social publishing (Public KORA Snapshot is future-vision mockup only)
+- Public company ranking of any kind
+- KORA Certified claims in Foundation Light or any non-certified pilot build
 
 ---
 
@@ -351,7 +385,16 @@ Any scope addition after this cutline is accepted requires an explicit founder d
 
 ---
 
-**Document version:** v1.0
-**Date:** 2026-05-17
-**Gate status at creation:** Gate 1 CLOSED / Gate 2 OPEN (blocks SQL) / Gates 3, 5 OPEN
+## 15. Capability Scope Matrix Reference
+
+Before implementing any capability, verify its demo / pilot / future status in the Capability Scope Matrix at `docs/kora-canonical-product-architecture-v1.md` §25.
+
+Capabilities marked 🔲 (future) or ❌ (blocked) in that matrix must not be built in Foundation Light under any circumstances. This document is subordinate to the canonical architecture document for all scope decisions. In case of conflict, `docs/kora-canonical-product-architecture-v1.md` governs.
+
+---
+
+**Document version:** v1.1
+**Date:** 2026-05-20 (Phase 1M-B alignment: Initiative Studio, Activation Orchestration, Capability Scope Matrix reference added)
+**Gate status:** Gate 1 CLOSED / Gate 2 OPEN (blocks SQL) / Gates 3, 5 OPEN
 **Next document:** `docs/22-foundation-light-sql-schema-specification.md` — blocked until Gate 2 (CTO review) is passed
+**Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` — read before every session

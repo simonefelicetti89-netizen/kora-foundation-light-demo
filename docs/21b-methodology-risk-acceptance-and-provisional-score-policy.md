@@ -285,7 +285,107 @@ The following are plausible hypotheses to be tested through pilot data and futur
 
 ---
 
-## 13. Founder Statement
+## 13. Certification & Assurance Path
+
+### Maturity Tiers
+
+| Livello | Nome | Descrizione | Status Foundation Light |
+|---|---|---|---|
+| 1 | Diagnostic | Foundation Light. Pre-calibrazione empirica. Pilot-grade diagnostic intelligence. | **Tier corrente** |
+| 2 | Tracked | Misurazione ricorrente, trend, KORA Evolution. | Futuro — Foundation tier |
+| 3 | Governed | Audit trail, policy rules, advisor involvement, financial governance. | Futuro — Governance tier |
+| 4 | Advisor-reviewed | Evidenza, iniziativa, metodologia o eligibilità specifica rivista da advisor qualificato. | Futuro — parzialmente disponibile in Foundation |
+| 5 | KORA Certified | Tier certificato futuro. Richiede validazione metodologica, revisione esterna, processo evidence-grade. | Futuro — richiede attivazione esplicita del tier |
+| 6 | Public Verified Snapshot | Segnale pubblico condivisibile con QR verification e strict claims controls. | Futuro — requisito: tier Certified |
+
+### Distinzioni assolute — non negoziabili
+
+- **Diagnostic ≠ Certified.** Foundation Light è Diagnostic tier. Nessun output può usare linguaggio "certified".
+- **Advisor-reviewed ≠ Certified.** La revisione advisor è un layer di fiducia, non un tier di certificazione.
+- **Public Snapshot ≠ Certified.** Un Public Snapshot è un segnale di fiducia, non una certificazione organizzativa.
+- **Verified initiative ≠ Certified organization.** Un'iniziativa verificata non certifica l'intera organizzazione.
+- **KORA Certified = futuro.** Richiede: validazione metodologica, processo evidence-grade, revisione esterna qualificata, attivazione esplicita del tier. Nessuno di questi elementi è presente in Foundation Light.
+
+### Regole operative
+
+- Foundation Light produce esclusivamente output di tier Diagnostic.
+- Nessun output Foundation Light può usare la parola "certified" in qualsiasi claim.
+- Lo status advisor-reviewed non deve essere presentato come equivalente a Certified.
+- Public Snapshot richiede il tier Certified per reclamare "Verified KORA Snapshot".
+- I claim di certificazione richiedono che tutti i requisiti del tier siano soddisfatti — l'attivazione esplicita è richiesta, non presupposta.
+
+---
+
+## 14. Public KORA Snapshot — Claims Policy
+
+### Status in Foundation Light
+
+Public KORA Snapshot è **future-vision / mockup only** in Foundation Light. Non è consentita alcuna condivisione pubblica reale. Nessuna integrazione LinkedIn attiva. Nessun QR verificabile live.
+
+Foundation Light mostra Public Snapshot solo come mockup statico, chiaramente etichettato "Future Vision / Not Active in Foundation Light."
+
+### Elementi obbligatori in ogni futuro Public Snapshot
+
+Ogni futuro Public KORA Snapshot deve mostrare obbligatoriamente:
+- `methodology_version_id`
+- `calibration_status`
+- Confidence Score
+- Data completeness / limitazioni dove rilevante
+- Dichiarazione: "Nessun dato individuale incluso"
+
+### Claim consentiti in Public Snapshot (solo in tier futuro)
+
+- Segnale aggregato di attivazione
+- Range del KORA Index per il periodo
+- Riepilogo Pillar Coverage
+- Direzione di miglioramento (non livello assoluto certificabile)
+- Segnale KORA Contribution
+- Indicatore evidence level
+
+### Claim non consentiti in qualsiasi Public Snapshot
+
+- Qualsiasi dato individuale del lavoratore
+- PIB, worker timeline, Dynamic Impact CV
+- Ranking pubblico rispetto ad altre organizzazioni in Foundation Light
+- Linguaggio "certified" senza i requisiti del tier KORA Certified soddisfatti
+- Claim causali di business outcome ("KORA riduce il turnover")
+- Claim di compliance CSRD/ESRS
+- KORA Index preciso presentato senza calibration status visibile
+
+### Posizionamento canonico
+
+> "KORA consente in futuro di comunicare segnali aggregati di fiducia, non ranking pubblici né claim ESG certificati."
+
+> "KORA trasforma l'intelligence interna sull'attivazione people in segnali di fiducia comunicabili verso stakeholder, mercato e talenti, senza esporre dati individuali e senza sovradichiarare certificazioni."
+
+---
+
+## 15. CSR/ESG Output — Mandatory Disclaimer
+
+Il seguente disclaimer è obbligatorio in ogni output che faccia riferimento a framework CSR/ESG:
+
+> *"KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio."*
+
+**Questo disclaimer deve comparire in:**
+- Pagine CSR Evidence Mapping della piattaforma
+- ESG/CSR Evidence Annex
+- Board Pack dove compare il CSR/ESG evidence mapping
+- Public KORA Snapshot se viene menzionata la rilevanza CSR/ESG
+- Qualsiasi report pilot che faccia riferimento a CSRD / ESRS / GRI / ISO 26000 / OECD / UNGP / UN Global Compact
+
+**Il disclaimer non può essere:**
+- Collocato solo in note a piè di pagina non visibili nella schermata principale
+- Visivamente subordinato o ridotto
+- Omesso da qualsiasi output che menzioni un framework CSR/ESG
+- Parafrasato in modo da ridurne la portata
+
+**KORA non sostituisce:** consulenti ESG, consulenti legali, consulenti fiscali, revisori di assurance, statutory sustainability reporting, processi di compliance CSRD/ESRS, processi di reporting GRI, certificazioni ISO, due diligence sui diritti umani.
+
+**KORA fornisce:** evidenze people strutturate, activation intelligence, tracciabilità, spiegabilità, confidenza, versioning metodologico, qualità dell'evidenza, contesto report-ready, potenziale CSR evidence annex.
+
+---
+
+## 16. Founder Statement
 
 KORA Foundation Light v0.1 is **ready for pilot intelligence and market validation** — and explicitly not yet something more than that.
 
@@ -316,7 +416,9 @@ Transparency about calibration status belongs to that same discipline. KORA is b
 
 ---
 
-*Document 21b — v1.2 — 2026-05-17*
+*Document 21b — v1.3 — 2026-05-20*
+*Phase 1M-B alignment: Added §13 Certification & Assurance Path, §14 Public Snapshot Claims Policy, §15 CSR/ESG Mandatory Disclaimer*
 *Status: Founder-Approved Methodology Governance*
 *Next calibration milestone: Delphi Study preparation — Foundation tier Phase 0*
 *Methodology version this document governs: v0.1 — `pre_empirical_calibration`*
+*Canonical reference: `docs/kora-canonical-product-architecture-v1.md` §20–21*

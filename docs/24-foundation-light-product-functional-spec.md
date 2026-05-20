@@ -25,6 +25,8 @@ KORA Foundation Light is a **controlled, ambitious multi-sided demo app with syn
 
 **This document is not:** Methodology. Database schema. SQL. Pitch deck. Architecture decision record.
 
+**Read first:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) is the canonical product architecture reference. This document derives from it. In case of conflict on product scope, positioning, workspace structure, capability catalogue, language policy and demo boundaries, the canonical document takes precedence. Methodology definitions — including KORA Index component names and definitions, IU formula, algorithm sequence, PIB role and Activation Safeguard structure — remain governed by `docs/10-architecture-v3-layer-specification.md`. If this document conflicts with doc 10 on methodology, doc 10 governs and the conflict must be reported before implementation. Refer to the canonical document for: capability scope matrix, Italian-first language policy, CSR Evidence Mapping rules, HR KPI Correlation rules, certification path rules, anti-drift rules.
+
 **Build status at time of writing:**
 - GO FOR DEMO APP WITH SYNTHETIC DATA
 - SQL generation: blocked until Gate 2 (CTO review)
@@ -90,6 +92,10 @@ My KORA must not be treated as a decorative demo module. It is a core adoption l
 | P-16 | **Ambition in experience, discipline in release scope** | Product experience should feel like an ambitious deeptech platform. Release depth must be controlled. |
 | P-17 | **Collective impact without social-network drift** | Cross-company initiatives and volunteering are about verified contribution, not social feeds, likes, or visibility. |
 | P-18 | **Data integration before API complexity** | File uploads and manual input come before API connectors. Foundation Light is not an integration platform. |
+| P-19 | **Italian-first platform copy** | All UI text, warnings, recommendations, next best actions, report text, privacy explanations, demo copy, onboarding, microcopy, and evidence descriptions must be in Italian. Proprietary names remain in English: KORA Index, KORA Contribution, My KORA, Dynamic Impact CV, Activation Safeguard, Confidence Score, UEF, Impact Units, Activation Debt, Evidence Debt, Trust Ledger, KORA Activation Network, Board Pack, KORA Evolution, Public KORA Snapshot. |
+| P-20 | **CSR Evidence Mapping is a people-evidence layer, not an ESG compliance engine** | KORA supports CSR/ESG reporting context by providing structured, verified, explainable people evidence. It does not guarantee regulatory compliance and does not replace ESG, legal, fiscal, or assurance consulting. Standard disclaimer must appear on all CSR/ESG-referencing outputs. |
+| P-21 | **HR KPI Correlation and People ROI are adjacent interpretation layers** | They do not feed the KORA Index automatically. All HR KPI comparisons are aggregate-only and must explicitly state "correlazione ≠ causalità." No causal claim, no predictive analytics claim in Foundation Light. |
+| P-22 | **Capability scope discipline** | Not all canonical KORA capabilities are in Foundation Light build scope. Before implementing any module, verify its status in the Capability Scope Matrix (`docs/kora-canonical-product-architecture-v1.md §25`). Public KORA Snapshot, LinkedIn sharing, KORA Value Chain, and KORA Certified are future/mock only. |
 
 ---
 
@@ -286,11 +292,13 @@ Company / Contact Name | Stakeholder Type | Contact Status | Pain Intensity (1�
 |---|---|---|---|
 | AR | Participation Reach | PC | Pillar Coverage |
 | MAR | Meaningful Activation | PB | Pillar Balance |
-| NI | Activation Depth | EQ | Distributed Participation |
+| NI | Activation Depth | EQ | Equity — Equità di attivazione |
 | WB | Worker Balance | VR | Verified Impact Quality |
 | CO | Continuity & Recurrence | CS | Data Confidence |
 
 **Strictly prohibited on this screen:** Partner & Ecosystem Quality, Strategic Coherence, Governance Maturity — these are not KORA Index components.
+
+**EQ canonical definition:** EQ = Equity — misura l'equità distributiva dell'attivazione tra segmenti della workforce (dipartimenti, fasce di seniority, tipi di contratto, siti) aggregati sopra soglia privacy. Alta Equity significa che l'attivazione non è sistematicamente concentrata in segmenti privilegiati o già ad alta partecipazione. In UI, EQ can be rendered as "Equity — Equità di attivazione" or "Equità di accesso e attivazione." Do not render EQ as Evidence Quality or Event Quality — those are not KORA Index components. Evidence quality is reflected through VR (Verification Rate), CS (Confidence Score), Evidence Debt, Trust Ledger, and the Data & Evidence section. The Access Equity & Inclusion Evidence Layer (Module H) is the advanced detailed analysis layer; EQ in the KORA Index is the summary equity component. They are complementary, not substitutes.
 
 ### 8.3 KORA Contribution & Collective Initiatives
 
@@ -1125,6 +1133,97 @@ The following must not be built, activated, or scaffolded in Foundation Light. N
 
 ---
 
+## 24B. New Intelligence Modules — Phase 1M Alignment
+
+The following canonical KORA modules are defined in `docs/kora-canonical-product-architecture-v1.md §12`. Each module has a status in Foundation Light. This section defines the product behavior specification for modules that are active in the demo.
+
+### Activation Debt — Debito di attivazione
+**Status:** Demo (sintetico). Parte dell'Activation & Participation screen e dell'Executive Cockpit.
+**Cosa mostra:** quota di popolazione eleggibile inattiva, dipartimenti sotto-attivati, siti sotto-attivati, pillar debt, silent majority, budget speso senza attivazione, iniziative con reach basso.
+**Regole:** aggregate-only; nessun dato individuale; nessuna soglia inferiore a 10 lavoratori; sempre con Activation Safeguard.
+
+### Evidence Debt — Debito di evidenza
+**Status:** Demo (sintetico). Parte del Data & Evidence screen.
+**Cosa mostra:** fonti mancanti, record auto-dichiarati, iniziative a bassa verifica, advisor review pending, potenziale di uplift della confidenza, CSR evidence gaps.
+**Regole:** batch-level only; collega Evidence Debt al Confidence Score; non mostra UEF individuali.
+
+### No-Surveillance Proof
+**Status:** Demo (Foundation Light, privacy boundary components attivi).
+**Cosa mostra:** dimostrazione visiva che il datore di lavoro non può accedere ai dati individuali del lavoratore. Include: nessun PIB individuale, nessuna worker timeline, nessun Dynamic CV, nessun booking, soglia aggregazione, separazione Identity Store, worker-owned layer.
+**Regole:** deve essere visibile e comprensibile; non basta nascondere dati — deve mostrare esplicitamente cosa il datore di lavoro NON vede.
+
+### Additionality Lens
+**Status:** Demo (Foundation Light, Initiative Studio / Pillars & Initiatives).
+**Cosa mostra:** classificazione additionality su 7 livelli (da `mandatory_legal_minimum` a `collective_verified_initiative`). Ogni iniziativa mostra il proprio livello.
+**Regole:** il valore KORA di un'iniziativa dipende dal livello di additionality; mandatory legal minimum = valore nullo o minimo; collective verified initiative = massima rilevanza KORA Contribution.
+
+### Silent Majority Detector
+**Status:** Demo (Foundation Light, Activation & Participation screen).
+**Cosa mostra:** segnale su quanta parte dell'organizzazione rimane esclusa dai programmi people.
+**Regole:** aggregate-only; mai individuale; complementare all'Activation Debt.
+
+### Access Equity & Inclusion Evidence Layer
+**Status:** Demo (aggregazione sintetica). Parte dell'Activation & Participation screen.
+**Cosa mostra:** vista aggregata dell'accesso alle iniziative per dipartimento, sito, job family, workforce operativa vs ufficio, remoto vs plant, tipo contratto.
+**Regole:** sempre sopra la privacy threshold (min 10 lavoratori); nessun profiling individuale; nessun ranking; dati di genere e diversità solo aggregati e con cautela legale.
+
+### Activation Intervention Simulator
+**Status:** Demo (simulazione sintetica). Parte del Benchmark & Simulator screen.
+**Cosa mostra:** simulazione dell'impatto di un intervento sulle componenti KORA, sui pillar, sulla confidenza e sulla qualità dell'evidenza.
+**Regole:** output indica se l'effetto è su KORA Index o KORA Contribution; mostra livello di additionality; mostra requisiti di evidenza; non è un motore predittivo causale.
+
+### CSR Evidence Mapping Layer
+**Status:** Demo/mockup. Parte del Company ESG/Sustainability role screen e dei Reports.
+**Cosa mostra:** collegamento tra evidenze KORA e framework CSR/ESG rilevanti (CSRD, ESRS 2, ESRS S1, D.Lgs. 125/2024, GRI 401/403/404/405/413, ISO 26000, OECD Guidelines, UNGP, UN Global Compact).
+**Regole:**
+- Il CSR Evidence Mapping Layer non modifica il KORA Index.
+- Non produce compliance automatica.
+- Disclaimer obbligatorio su ogni output CSR/ESG: "KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio."
+- ESRS S2 è scope futuro (Value Chain — non in Foundation Light).
+
+### HR KPI Correlation Layer
+**Status:** Demo/interpretazione sintetica. Parte del Company Intelligence Workspace (sezione Benchmark & Analysis).
+**Cosa mostra:** confronto aggregato tra segnali KORA e indicatori HR (assenteismo, turnover, retention, engagement survey, eNPS, fasce età, tipo contratto).
+**Regole:**
+- Layer adiacente di interpretazione — non alimenta il KORA Index.
+- Correlazione ≠ causalità. Ogni output HR KPI deve includere questa dichiarazione esplicitamente.
+- Aggregate-only; sopra la privacy threshold.
+- Dati di genere e diversità solo aggregati e con cautela.
+- Nessuna decisione lavorativa basata su output KORA.
+- Claim consentito: "I reparti con maggiore attivazione KORA mostrano, nello stesso periodo, un tasso di assenteismo inferiore."
+- Claim vietato: "KORA riduce l'assenteismo."
+
+### People ROI & Outcome Correlation Layer
+**Status:** Demo (indicatori direzionali sintetici). Parte del Financial Governance screen.
+**Cosa mostra:** efficienza del budget people vs attivazione prodotta (costo per meaningful activation, spend without activation, activation uplift).
+**Regole:**
+- ROI è interpretazione adiacente, non componente metodologica.
+- Cost per IU e cost per meaningful activation sono indicatori direzionali, non metriche assolute.
+- Foundation Light non può rivendicare causalità ROI.
+- Ogni output ROI mostra confidenza e limitazioni.
+- Claim vietato: "KORA ha generato un ROI del X% riducendo il turnover."
+
+### KORA Evolution & Temporal Intelligence
+**Status:** Demo (longitudinale su dati sintetici). Parte del Executive Cockpit e KORA Index screens (trend view).
+**Cosa mostra:** evoluzione KORA Index, pillar, Activation Debt, Evidence Debt, confidenza nel tempo; stabilità score; traiettoria trimestrale.
+
+### Board Pack
+**Status:** Mockup demo / futuro operativo. Parte del Reports screen.
+**Cosa mostra:** pack di reporting executive con KORA Index, Activation Debt, Evidence Debt, top 3 rischi, top 3 decisioni, CSR evidence mapping, HR KPI correlation, ROI interpretation, limitazioni.
+**Regole:** mockup visivo in Foundation Light; include disclaimer CSR e limitation statement; non è certificato.
+
+### Public KORA Snapshot & Social Trust Layer
+**Status:** Mockup/future-vision only in Foundation Light. Nessuna condivisione pubblica reale.
+**Cosa mostra:** segnali aggregati di fiducia futuri verso stakeholder, mercato e talenti.
+**Regole:** nessun dato individuale; nessun ranking pubblico; nessun claim "certified" senza tier Certified; Confidence Score e calibration_status sempre visibili; advisor-reviewed ≠ certified.
+
+### Worker Consent & Data Portability
+**Status:** Demo (privacy controls). Parte del My KORA / Privacy & Sharing screen.
+**Cosa mostra:** cosa il lavoratore può controllare, vedere, esportare e revocare.
+**Regole:** solo sintetico in Foundation Light; nessun consent action reale; data portability è feature futura.
+
+---
+
 ## 25. Final Product Decision
 
 KORA Foundation Light should proceed as an **ambitious multi-sided demo app with synthetic data** — not as a minimal dashboard, not as a generic welfare tool, and not as an HR engagement platform.
@@ -1161,8 +1260,8 @@ The goal is not platform completeness. The goal is **demo credibility, product a
 
 ---
 
-**Document version:** v1.0 (patch applied 2026-05-17)
-**Date:** 2026-05-17
-**Canonical inputs:** docs 10, 12, 18, 19, 20, 21, 21b, 22A, 23, Appendix A
+**Document version:** v1.1 — Phase 1M-B Aligned
+**Date:** 2026-05-19
+**Canonical inputs:** docs 10, 12, 18, 19, 20, 21, 21b, 22A, 23, Appendix A, `docs/kora-canonical-product-architecture-v1.md` (v1.1)
 **Gate status:** Gate 1 CLOSED · Gate 2 OPEN (blocks SQL) · Gate 3 OPEN (blocks live data) · Gate 4 Provisional · Gate 5 OPEN (blocks live fiscal)
-**Next action:** UX Design begins from this specification. Gate 2 CTO review begins in parallel.
+**Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) — supersedes this document on positioning, scope, and capability boundary questions.

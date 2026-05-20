@@ -795,7 +795,7 @@ Gate 2 does not authorize and must not be interpreted as authorizing any of the 
 - Full booking engine with slot inventory or calendar sync
 - KORA Link hardware integration
 - Advisor certification academy
-- Production benchmarking marketplace
+- Benchmark & Normalization Layer (future tier — synthetic demo benchmarks only in Foundation Light)
 
 **Methodology claims:**
 - Certified methodology claims
@@ -857,8 +857,65 @@ The following specific changes and decisions are required in doc 12 before a SQL
 
 ---
 
-## v1.0 Notes
+---
 
+## 25. New Module Footprint and KORA Activation Network Reference
+
+### 25.1 Modules A–P: Gate 2 Schema Impact
+
+The canonical architecture (`docs/kora-canonical-product-architecture-v1.md` §12) defines 16 intelligence modules (A–P). The following notes their schema impact for Gate 2 production readiness purposes only.
+
+| Module | Name | Gate 2 Schema Impact |
+|---|---|---|
+| A | Activation Debt | Derived from existing analytics data — no new table required; computed from AR, MAR, workforce_segments |
+| B | Evidence Debt | Derived from existing analytics data — no new table required; computed from VR, evidence_records |
+| C | Trust Ledger | Potential future table `analytics.trust_ledger_records` — not in Foundation Light SQL scope |
+| D | Activation Flywheel | Architectural / narrative — no schema; orchestration concept |
+| E | No-Surveillance Proof | UI + grant-absence enforcement — no new table; reflected in existing privacy model |
+| F | Additionality Lens | Part of Initiative Studio — `gov.initiatives.additionality_level` field on initiative records |
+| G | Silent Majority Detector | Derived analytics — no new table; computed from workforce_segments + activation data |
+| H | Access Equity & Inclusion Evidence Layer | Derived analytics — no new table; uses workforce_segments with segment type flags |
+| I | Activation Intervention Simulator | Simulation only in Foundation Light — no persistent schema |
+| J | Board Pack | Report output — no new table; aggregated from existing scoring and governance tables |
+| K | Benchmark & Normalization Layer | Future tier — synthetic benchmarks in demo; production benchmark tables are post-pilot |
+| L | KORA Evolution | Already in schema — `analytics.kora_evolution_snapshots` |
+| M | KORA Value Chain | ❌ NOT IN FOUNDATION LIGHT — no schema, no scope in Gate 2 |
+| N | Partner Activation Quality | Internal signal — derived from existing partner and activation data; no new table for Foundation Light |
+| O | Advisor Confidence Stamp | Advisor review metadata — `gov.advisor_reviews.confidence_stamp` field addition |
+| P | Worker Consent & Data Portability | Worker personal data layer — part of OQ-01 resolution |
+
+**Key conclusion:** Most modules A–P derive from existing entities in the 5-store model. The primary new schema implication is the initiative lifecycle record (related to OQ-03 resolution). None of these supplement or override the eight Gate 2 conditions (C-01 through C-08). They are additive notes for when those conditions are resolved.
+
+**Module M (KORA Value Chain) is explicitly blocked** from any Foundation Light schema. No `value_chain` table, no supply chain schema, no ESRS S2 data model should be created before the KORA Value Chain tier is formally activated.
+
+### 25.2 KORA Activation Network — Canonical Terminology
+
+The canonical architecture (`docs/kora-canonical-product-architecture-v1.md` §14) defines the correct product terminology for the partner ecosystem:
+
+| Term | Status |
+|---|---|
+| **KORA Activation Network** | Canonical — use in all product copy, commercial materials, UI |
+| **marketplace** | Deprecated — must not appear in product-facing contexts |
+
+References to "marketplace" in the exclusion lists of §2.2 and §22 of this document are architecturally correct — they describe features that are NOT built and must NOT be built. The term is used accurately in those exclusion contexts.
+
+When describing the partner ecosystem as a product category, "KORA Activation Network" is the canonical term. Partner quality evaluation is governed by Module N (Partner Activation Quality) — no star rating, no leaderboard, no public marketplace scoring.
+
+### 25.3 Capability Scope Matrix Reference
+
+Before implementing any new capability, verify its Foundation Light demo / pilot / future status in the Capability Scope Matrix at `docs/kora-canonical-product-architecture-v1.md` §25.
+
+Capabilities marked 🔲 (future) or ❌ (blocked) must not be included in Gate 2 SQL generation or Foundation Light implementation. In case of conflict between this document and the canonical architecture, `docs/kora-canonical-product-architecture-v1.md` governs on all scope and capability decisions.
+
+---
+
+## v1.1 Notes
+
+**v1.1 — Phase 1M-B alignment (2026-05-20):**
+- §22: Updated "Production benchmarking marketplace" to canonical "Benchmark & Normalization Layer"
+- §25 (new): Added new module footprint (A–P), KORA Activation Network canonical terminology, Capability Scope Matrix reference
+
+**v1.0 Notes (original):**
 - This document is produced by reading docs 10, 12, 13, 18, 19, 20, 21, 21b, 22A, 23, 24, 25, 26 and Appendix A.
 - Appendix B (historical WhitePaper extracts) was consulted for context only and did not influence any architectural recommendation.
 - This document does not generate SQL, Prisma models, migrations, or application code.

@@ -28,12 +28,21 @@ KORA Foundation Light is a synthetic-data demo application. It is a functional b
 
 Every data point visible in the demo is synthetic. Every seed object carries `synthetic_demo_data: true`. Nothing shown represents a real company or a real worker.
 
+**Posizionamento canonico:**
+KORA è il layer di intelligence e orchestrazione che trasforma iniziative people frammentate in attivazione organizzativa verificata. KORA misura, orchestra, valida, protegge e spiega. Non è una dashboard HR, non è un portale welfare, non è una piattaforma ESG, non è un marketplace.
+
 **What the demo is designed to show:**
 1. The KORA intelligence loop — raw data → ingestion → UEF → scoring → KORA Index → explainability
 2. The company-facing activation intelligence layer (Executive Cockpit through Financial Governance)
 3. The worker-owned personal value layer (My KORA)
 4. The privacy boundary between employer and worker — architectural, not cosmetic
 5. The role system across 11 demo roles
+6. **Activation Debt (Debito di attivazione)** — quale parte dell'organizzazione rimane esclusa dall'attivazione reale; silent majority; pillar debt; budget speso senza attivazione
+7. **Evidence Debt (Debito di evidenza)** — dove mancano prove verificate; quali fonti sono deboli; potenziale di uplift della confidenza
+8. **Additionality Lens** — distinzione tra compliance legale obbligatoria (valore KORA nullo) e attivazione aggiuntiva verificata (massimo valore)
+9. **CSR Evidence Mapping context** — KORA come layer di evidenza people a supporto dei processi di rendicontazione CSR/ESG (CSRD, ESRS S1, GRI, ISO 26000) — senza essere una piattaforma ESG e senza garantire compliance
+10. **Future: HR KPI Correlation** — confronto tra segnali KORA e outcome HR (assenteismo, turnover, retention) come correlazione interpretativa, non causalità
+11. **Future: Public KORA Snapshot** — segnali aggregati di fiducia comunicabili verso stakeholder, senza esporre dati individuali e senza dichiarazioni di certificazione
 
 ---
 
@@ -98,6 +107,8 @@ This is where the "you think your programs are working" vs "KORA shows the real 
 - Safe aggregation threshold — groups below 10 workers are suppressed, not shown
 - The Activation Safeguard in WARNING state as a governance signal, not just a badge
 
+**Activation Debt narrative (S1):** "Il 60% della forza lavoro non ha generato alcun Impact Unit in questo periodo. L'Operations department — il 40% della workforce — è quasi invisibile nel KORA Index. Questo è il Debito di attivazione: non quanto l'azienda ha speso, ma quanta organizzazione è rimasta esclusa."
+
 **Still demo/mock:** Department breakdown uses synthetic cohort data. No individual worker is identified.
 
 ---
@@ -154,6 +165,8 @@ The Confidence Score is only as good as the data behind it. This screen shows wh
 - Completeness, mapping confidence, and evidence attachment as the three quality dimensions
 - The pipeline from ingested source → quality assessment → scoring eligibility
 - Pending review count as a governance signal — records awaiting human validation
+
+**Evidence Debt narrative:** "Il 34% degli eventi è auto-dichiarato, senza evidenza allegata. Il 12% è in attesa di revisione advisor. Questo è il Debito di evidenza: la quota di attivazione che esiste ma non è ancora abbastanza solida da sostenere la Confidence Score. Ridurlo è la via più rapida per migliorare il KORA Index senza necessariamente lanciare nuovi programmi."
 
 **Still demo/mock:** All batch data is synthetic. No actual files were ingested. The `ingestion_date` values are illustrative.
 
@@ -313,12 +326,14 @@ The KORA Index has **exactly 10 components**. No more, no fewer.
 | WB | Worker Balance |
 | PC | Pillar Coverage |
 | PB | Pillar Balance |
-| EQ | Equity |
+| EQ | Equity — Equità distributiva dell'attivazione |
 | VR | Verification Rate |
 | CO | Continuity |
 | CS | Confidence Score |
 
 These are fixed. Methodology v0.1 applies equal weights (0.10 × 10 components). Weights will be re-calibrated after Delphi Study and empirical pilot.
+
+**EQ note:** EQ mostra se l'attivazione raggiunge in modo equilibrato i diversi segmenti della workforce (sedi, dipartimenti, seniority band, tipologie contrattuali), sempre in forma aggregata e sopra soglia privacy. EQ non è Evidence Quality — la qualità dell'evidenza è riflessa da VR (Verification Rate), CS (Confidence Score), Evidence Debt e Data & Evidence.
 
 **KORA Contribution is not part of the KORA Index.** It is a companion indicator displayed separately. It has never been, and must never be, an 11th component.
 
@@ -482,9 +497,15 @@ Future Vision areas include (for investor/stakeholder conversations only):
 
 - **KORA Link:** NFC/QR real-time participation verification — not operational in Foundation Light
 - **Worker wallet:** not implemented, not planned for Foundation Light
-- **Partner marketplace:** not implemented — partners are ecosystem actors, not commerce vendors
+- **Partner marketplace:** not implemented — partners are ecosystem actors, not commerce vendors. Termine canonico: KORA Activation Network.
 - **Production worker accounts:** not implemented — Gate 3 (legal/privacy) is open
 - **Payment and fiscal execution:** not implemented — Gate 5 (tax/fiscal) is open
+- **Public KORA Snapshot & Social Trust Layer:** segnali aggregati di fiducia futuri per stakeholder e mercato. In Foundation Light è solo mockup. Nessuna condivisione reale. Nessun ranking pubblico. Nessun claim "certified" senza tier Certified.
+- **KORA Certified:** tier di certificazione futuro — richiede validazione metodologica, processo evidence-grade, revisione esterna. Non attivo in Foundation Light.
+- **KORA Value Chain:** estensione futura del layer di attivazione a fornitori, contractors, partner ecosystem, valore della filiera. Rilevante per ESRS S2. Non in Foundation Light.
+- **HR KPI Correlation Layer (full):** correlazione aggregata tra segnali KORA e outcome HR (assenteismo, turnover, retention, engagement). Demo mostra indicatori direzionali sintetici. Produzione richiede dati reali e struttura di correlazione validata. Regola: correlazione ≠ causalità. Nessuna rivendicazione causale in Foundation Light.
+- **CSR Evidence Mapping Layer (full):** collegamento strutturato tra evidenze KORA e framework CSR/ESG (CSRD, ESRS S1, GRI, ISO 26000, OECD, UNGP). Disclaimer obbligatorio: "KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio."
+- **Board Pack:** pack di reporting executive con KORA Index, Activation Debt, Evidence Debt, top 3 rischi, CSR evidence mapping, HR KPI correlation, ROI interpretation, limitazioni. Struttura visibile in demo; operativo in Pilot/Future.
 
 Every Future Vision screen carries a non-suppressible label: "Future Vision / Not Active in Foundation Light."
 

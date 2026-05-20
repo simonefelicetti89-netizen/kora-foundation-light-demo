@@ -57,7 +57,7 @@ Foundation Light v0.2 organizes its scope into four explicit layers:
 | Layer | What it is | Status |
 |---|---|---|
 | **Functional Company Core** | Company intelligence, ingestion, scoring, reporting | Fully functional |
-| **Semi-functional Innovation** | AI Ingestion Assistant, Explainability Layer, Temporal Intelligence | Functional (AI assists; humans approve) |
+| **Semi-functional Innovation** | AI Ingestion Assistant, Explainability Layer, Temporal Intelligence, Initiative Studio (Activation Orchestration Preview) | Functional (AI assists; humans approve; orchestration preview on synthetic data) |
 | **Light Ecosystem Layer** | Worker PIB Light, Partner Onboarding Light, Advisor Portal Light | Functional with defined scope limits |
 | **Future Vision Area** | 14+ labeled mockup screens for future tiers | Static, clearly labeled, non-functional |
 
@@ -100,6 +100,7 @@ Foundation Light is not the full KORA ecosystem. But it must visibly feel like t
 **Semi-functional Innovation Layer:**
 - AI Ingestion Assistant: column recognition, source-type suggestion, pillar suggestion, sensitivity detection, data readiness scoring, onboarding guidance — AI assists, human approves
 - Data Readiness Summary and AI Mapping Review screens
+- Initiative Studio (Activation Orchestration Preview): activation gap detection, initiative lifecycle states, additionality level classification, Additionality Lens, Activation Intervention Simulator (what-if simulation on synthetic data), Silent Majority view — preview on synthetic data, no booking engine, no payment execution
 
 **Light Ecosystem Layer:**
 - Worker PIB Light: five-pillar PIB display, verified actions timeline, privacy boundary visibility, employer visibility limit — demonstrated with synthetic or pseudonymized demo data
@@ -370,6 +371,44 @@ Unchanged from v0.1 in core structure. Enriched by the Explainability Layer (Mod
 
 **Screens added by Module G-TI:**
 - **C-TI-1: Temporal & Activation Intelligence View** — concentration risk cards, pillar imbalance radar, activation continuity timeline (baseline + future periods), blind-spot detection panel
+
+---
+
+### Module G-IS — Initiative Studio (Activation Orchestration Preview)
+
+**Purpose:** Make KORA visible as an orchestration platform — not just a measurement tool. Initiative Studio is the operational bridge between activation insight and verified action. It shows gap → initiative → classification → validation → outcome in a comprehensible flow.
+
+**Initiative Studio is NOT:**
+- An event manager
+- A marketplace
+- A booking engine
+- A payment layer
+
+**What it includes at Foundation Light v0.2:**
+- Activation gap detection view: which pillars, departments, or cohorts show Activation Debt
+- Initiative proposal lifecycle display: initiative states — proposed → classified → validated → approved → monitored → measured
+- Pillar classification per initiative (LIFE / GROWTH / CONNECTION / IMPACT / LEGACY)
+- Additionality Lens: 7-level classification display (`mandatory_legal_minimum` → `collective_verified_initiative`) showing compliance vs. additionality distribution
+- Activation Intervention Simulator: what-if simulation on synthetic data showing probable KORA Index and KORA Contribution impact per proposed initiative
+- Silent Majority view: which initiatives reach the whole workforce vs. only the already-engaged
+- Evidence requirement description per initiative type
+
+**What Module G-IS does NOT include:**
+- Booking engine logic
+- Payment execution
+- Marketplace logic
+- Operational advisor review workflow (status display only in Foundation Light)
+- Live evidence collection (synthetic data only)
+- Production partner API integration
+
+**Screens added by Module G-IS:**
+- **C-IS-1: Initiative Studio Home** — activation gaps + initiative pipeline in lifecycle states
+- **C-IS-2: Additionality Lens** — compliance vs. additionality breakdown across active initiatives
+- **C-IS-3: Activation Intervention Simulator** — what-if simulation panel on synthetic data
+
+**Label:** "Initiative Studio — Foundation Light Preview"
+
+Canonical reference: `docs/kora-canonical-product-architecture-v1.md` §7B and §13.
 
 ---
 
@@ -1120,10 +1159,22 @@ This document will define: detailed technical implementation plan per phase, Sup
 
 ---
 
+---
+
+## 19. Capability Scope Matrix Reference
+
+Before implementing any capability, verify its Foundation Light demo / pilot / future status in the Capability Scope Matrix at `docs/kora-canonical-product-architecture-v1.md` §25.
+
+This matrix is the authoritative decision source for what is in scope (✅), partial/mockup (🔶), future (🔲), or blocked (❌) for Foundation Light. No capability listed as 🔲 or ❌ may be built, mocked with live logic, or added to this scope document without an explicit founder decision.
+
+For the Initiative Studio (Module G-IS), the Additionality Lens is listed as ✅ Active in Foundation Light Demo (part of Initiative Studio). The full Activation Orchestration Engine production workflow is future. Foundation Light shows a preview on synthetic data.
+
+---
+
 *Document authored: 2026-05-17*
-*Version: v0.2 — revised scope (platformized MVP)*
-*Supersedes: v0.1 (conservative diagnostic-only scope)*
-*Status: Pending Founder Review*
-*Canonical references: docs 10, 12, 13, 14, 15, 16, 17, CLAUDE.md*
+*Version: v0.3 — Phase 1M-B alignment*
+*Changes in v0.3: Added Initiative Studio (Module G-IS), Capability Scope Matrix reference (§19), updated four-layer architecture table and §2.2*
+*Supersedes: v0.2 (platformized MVP scope)*
+*Status: Active — Phase 1M-B aligned*
+*Canonical references: `docs/kora-canonical-product-architecture-v1.md`, docs 10, 12, 13, 14, 15, 16, 17, CLAUDE.md*
 *Gate authority: doc 13 Section 9 (five gate conditions)*
-*Must be approved before: any Phase 1 activity begins*

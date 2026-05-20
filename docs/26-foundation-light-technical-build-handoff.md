@@ -5,6 +5,8 @@
 **Status:** v1.0 — Active Build Reference
 **Authority:** This document translates docs 22A, 24 and 25 into a controlled demo build specification. It does not replace doc 12 (schema) or doc 22 (SQL). Gate 2 remains open.
 
+**Read first:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) is the canonical product architecture reference for product scope, positioning, workspace structure, capability catalogue, language policy and demo boundaries. Before any build session, read it. Key references: §25 Capability Scope Matrix, §26 Do Not Build Yet, §16 CSR Evidence Mapping, §18 HR KPI Correlation, §19 People ROI, §20 Public Snapshot. Methodology definitions remain governed by `docs/10-architecture-v3-layer-specification.md`, including KORA Index component names and definitions, IU formula, algorithm sequence, PIB role and Activation Safeguard structure. If this document or the canonical product architecture document conflicts with doc 10 on methodology, doc 10 governs and the conflict must be reported before implementation.
+
 ---
 
 ## 1. Executive Summary
@@ -84,6 +86,18 @@ Partner integration is a request-and-confirm flow. There is no checkout, no pric
 
 **No methodology expansion.**
 The KORA Index has 10 components. The formula is defined in doc 10 and doc 21. No new components, no new formula factors, no new scoring layers are introduced in this build. The scoring simulation reflects the approved provisional v0.1 methodology — nothing more.
+
+**Italian-first platform copy.**
+All UI text, warnings, next best actions, recommendations, report text, privacy explanations, microcopy, onboarding copy, and demo narrative copy must be in Italian. Proprietary KORA names remain in English: KORA Index, KORA Contribution, My KORA, Dynamic Impact CV, Activation Safeguard, Confidence Score, UEF, Impact Units, Activation Debt, Evidence Debt, Trust Ledger, KORA Activation Network, Board Pack, Public KORA Snapshot. Every English proprietary term shown in the UI must be accompanied by an Italian explanation or subtitle where first introduced.
+
+**New intelligence modules in scope for demo.**
+The following canonical modules are active in Foundation Light demo: Activation Debt (debito di attivazione), Evidence Debt (debito di evidenza), No-Surveillance Proof, Additionality Lens, Silent Majority Detector, Access Equity & Inclusion Evidence Layer (aggregazione sintetica), Activation Intervention Simulator (simulazione). The following are mockup/future-vision only: Public KORA Snapshot, LinkedIn sharing, KORA Value Chain, KORA Certified. See Capability Scope Matrix in canonical architecture doc §25.
+
+**CSR Evidence Mapping is a people-evidence support layer.**
+No CSR/ESG-referencing UI surface may claim compliance or certification. Standard disclaimer required: "KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio."
+
+**HR KPI Correlation and People ROI are adjacent interpretation layers.**
+They do not feed the KORA Index. All HR KPI outputs are aggregate-only, correlation-only, with mandatory "correlazione ≠ causalità" statement. No causal claim, no predictive analytics. No ROI causality claim. Cost per IU is a directional indicator only.
 
 **Demo as architecture projection, not architecture bypass.**
 Foundation Light demo build must be a projection of the target KORA architecture, not a shortcut around it. Mock services, local seed files and role switchers must mirror the future production boundaries: UEF, IU, PIB, Company Aggregation, Activation Safeguard, KORA Index, Confidence, Explainability, Identity separation, privacy boundaries, partner/advisor validation and reporting. The demo app must not create architectural shortcuts that would contradict the future production architecture. The demo app may proceed before production schema, but it must remain aligned with the target architecture. The future production architecture will be reviewed in Gate 2 before SQL/schema/backend artifacts are generated.
@@ -1483,8 +1497,8 @@ Applied 2026-05-17:
 
 ---
 
-**Document version:** v1.0 (patch applied 2026-05-17)
-**Date:** 2026-05-17
-**Canonical inputs:** docs 10, 18, 19, 20, 21, 21b, 22A, 23, 24, 25, Appendix A
+**Document version:** v1.1 — Phase 1M-B Aligned
+**Date:** 2026-05-19
+**Canonical inputs:** docs 10, 18, 19, 20, 21, 21b, 22A, 23, 24, 25, Appendix A, `docs/kora-canonical-product-architecture-v1.md` (v1.1)
 **Gate status:** Gate 1 CLOSED · Gate 2 OPEN (blocks SQL and production schema) · Gate 3 OPEN (blocks live data) · Gate 4 Provisional · Gate 5 OPEN (blocks live fiscal)
-**Next action:** Begin Phase 0 demo app scaffold. Generate local synthetic seed files from doc 25. Initiate Gate 2 CTO Review Pack preparation in parallel.
+**Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) — read before every build session. If a prompt conflicts with it, stop and correct before execution.

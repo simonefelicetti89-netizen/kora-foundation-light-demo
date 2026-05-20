@@ -101,10 +101,12 @@ The KORA Index v3 has exactly these 10 components. Do not add, remove, merge, or
 | `WB` | Worker Balance | Distribution evenness of IU across active workers |
 | `PC` | Pillar Coverage | Number of pillars with meaningful presence |
 | `PB` | Pillar Balance | Evenness of IU distribution across covered pillars |
-| `EQ` | Equity | Absence of activation concentration in a demographic or hierarchical cohort |
+| `EQ` | Equity | Equità distributiva dell'attivazione tra segmenti della workforce (dipartimenti, fasce di seniority, tipi di contratto, siti) aggregati sopra soglia privacy. Alta Equity significa che l'attivazione non è sistematicamente concentrata in segmenti privilegiati o già ad alta partecipazione. |
 | `VR` | Verification Rate | Share of IU backed by verified or partially verified evidence |
 | `CO` | Continuity | Share of workers with cross-period sustained engagement |
 | `CS` | Confidence Score | Data completeness, source quality, verification weight — always shown with KORA Index |
+
+**EQ must never be redefined as Evidence Quality or Event Quality.** Evidence quality is handled by VR (Verification Rate), CS (Confidence Score), EV (correction factor in the IU formula), Evidence Debt, and Trust Ledger. For methodology component definitions, `docs/10-architecture-v3-layer-specification.md` governs — this file defers to doc 10 on all component definitions.
 
 **KORA Contribution** is a companion indicator measuring collective and ecosystem engagement. It is NOT a KORA Index component. Display it separately — never merge it into the KORA Index computation.
 
@@ -144,6 +146,7 @@ All canonical documents are in `/docs`. Read the relevant document before workin
 
 | Priority | Document | Use for Code |
 |---|---|---|
+| **Primary — Read First** | `docs/kora-canonical-product-architecture-v1.md` | Canonical product architecture, positioning, scope matrix, capability boundaries, Italian-first language policy, alignment plan. Read before any session. |
 | **Primary** | `docs/10-architecture-v3-layer-specification.md` | 14-stage algorithm, IU formula, KORA Index v3, Activation Safeguard, privacy rules |
 | **Primary** | `docs/12-technical-data-model-database-schema.md` | Schema reference — after Gate 2 only |
 | **Primary** | `docs/21-founder-gate-resolution-log.md` | All 21 decisions (D-01–D-21) — authoritative decision record |
@@ -169,12 +172,13 @@ Production SQL generation remains blocked until Gate 2 (CTO review) is passed.
 When documents conflict, resolve in this order:
 
 1. **doc 21** (D-01–D-21 founder decisions) — overrides all
-2. **doc 10** (Architecture v3) — overrides all schema decisions
-3. **doc 12** (Technical Data Model) — authoritative for schema, after Gate 2
-4. **doc 22A** (build cutline) — overrides all scope decisions
-5. **doc 21b** (methodology governance) — overrides all output display decisions
-6. **docs 24, 25, 26** — demo build details
-7. **Appendix B, WhitePaper v3/v4 PDF** — historical only; do not use for implementation
+2. **`docs/kora-canonical-product-architecture-v1.md`** — canonical product architecture, overrides all product, positioning, scope, and capability decisions
+3. **doc 10** (Architecture v3) — overrides all schema decisions
+4. **doc 12** (Technical Data Model) — authoritative for schema, after Gate 2
+5. **doc 22A** (build cutline) — overrides all scope decisions
+6. **doc 21b** (methodology governance) — overrides all output display decisions
+7. **docs 24, 25, 26** — demo build details
+8. **Appendix B, WhitePaper v3/v4 PDF** — historical only; do not use for implementation
 
 Old formula names are superseded. Never use: ES, EF, RF, SQ, PA, EQT, CT, EC, GF.
 Use canonical names: EV, NM, AGF, NI, AR, MAR, EQ, VR, CO, CS, Activation Safeguard.
@@ -294,6 +298,14 @@ Blocked: live fiscal/tax classification, automated guardrail enforcement, tax-ad
 13. **TypeScript types are data contracts, not database schema.** Do not derive Prisma models or SQL tables from `/lib/types/`.
 
 14. **Default: write no comments.** Only add a comment when the WHY is non-obvious: a hidden privacy constraint, a formula invariant, a suppression boundary rule.
+
+15. **Platform copy for the Italian market is Italian-first.** UI text, warnings, recommendations, next best actions, report text, privacy explanations, demo copy, onboarding, microcopy, and evidence descriptions must be in Italian. The following proprietary names remain in English: KORA Index, KORA Contribution, My KORA, Dynamic Impact CV, Activation Safeguard, Confidence Score, UEF, Impact Units, Activation Debt, Evidence Debt, Trust Ledger, Board Pack, KORA Activation Network, KORA Evolution, Public KORA Snapshot.
+
+16. **Not all canonical capabilities are immediate build scope.** Canonical modules are documented in `docs/kora-canonical-product-architecture-v1.md §25 Capability Scope Matrix`. Before implementing any module, verify its demo/pilot/future status. Public KORA Snapshot, LinkedIn/social sharing, KORA Value Chain, and KORA Certified are future/mock only. HR KPI Correlation and People ROI are interpretation layers — no causal engine, no predictive analytics in Foundation Light.
+
+17. **CSR Evidence Mapping is a people-evidence layer, not a compliance engine.** Every output touching CSR/ESG must include the standard disclaimer: "KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio."
+
+18. **HR KPI and ESG metrics do not feed the KORA Index automatically.** They are adjacent interpretation layers. No correlation output may claim causality. Every HR KPI comparison must be aggregate-only and include "correlazione ≠ causalità" explicitly.
 
 ---
 
@@ -457,7 +469,17 @@ Absolute. No exception, no workaround, no "just for demo" bypass.
 
 ---
 
-**Document version:** v2.0 — Code-Focused Operational Constitution
-**Date:** 2026-05-17
+---
+
+## 18. Mandatory Session Rule
+
+**Before any coding or product documentation work, read `docs/kora-canonical-product-architecture-v1.md` first.**
+
+If a future prompt conflicts with that document, stop and ask for correction before execution. Do not proceed with a build, edit, or documentation task that contradicts the canonical architecture.
+
+---
+
+**Document version:** v2.1 — Phase 1M-B Aligned
+**Date:** 2026-05-19
 **Gate status:** Gate 1 CLOSED · Gate 2 OPEN (blocks SQL) · Gate 3 OPEN · Gate 5 OPEN
-**Next action:** Proceed with Phase 0 demo scaffold per docs/phase-0-scaffold-plan.md
+**Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) — read before every session
