@@ -65,7 +65,7 @@ interface PillarBtiRow {
 
 const PILLAR_BTI: PillarBtiRow[] = [
   { pillar: 'LIFE',       budget: 110_000, share: 0.26, iu: 3_200, cost_per_iu: 34, debt: 'alto',  recommendation: 'Espandere accesso alle sedi con bassa partecipazione — copertura attuale 22%' },
-  { pillar: 'GROWTH',     budget:  95_000, share: 0.23, iu: 4_600, cost_per_iu: 20, debt: 'medio', recommendation: 'Programmi ricorrenti per il bottom 50% — potenziale miglioramento CO e retention signal' },
+  { pillar: 'GROWTH',     budget:  95_000, share: 0.23, iu: 4_600, cost_per_iu: 20, debt: 'medio', recommendation: 'Programmi ricorrenti per il bottom 50% — indicatore direzionale CO / continuità — non causale' },
   { pillar: 'CONNECTION', budget:  70_000, share: 0.17, iu: 2_100, cost_per_iu: 33, debt: 'alto',  recommendation: 'Attivare Partner Network CONNECTION — copertura cross-reparto insufficiente' },
   { pillar: 'IMPACT',     budget:  85_000, share: 0.20, iu: 5_800, cost_per_iu: 15, debt: 'basso', recommendation: 'Pillar più efficiente — mantenere e ampliare il perimetro attuale' },
   { pillar: 'LEGACY',     budget:  60_000, share: 0.14, iu: 2_700, cost_per_iu: 22, debt: 'medio', recommendation: 'Attivare mentoring LEGACY — copertura attuale 12%, potenziale PB e CO' },
@@ -210,7 +210,7 @@ const SCENARIOS_BTI = [
     label: 'Scenario continuità',
     badge: 'bg-green-100 text-green-700 border-green-200',
     description: 'Introduzione iniziative ricorrenti GROWTH e mentoring LEGACY.',
-    interpretation: 'Potenziale miglioramento CO, PB e retention signal. Costo per IU atteso in riduzione con programmi ricorrenti consolidati.',
+    interpretation: 'Potenziale miglioramento CO, PB e continuità — segnale direzionale, non causale. Costo per IU atteso in riduzione con programmi ricorrenti consolidati.',
   },
 ] as const;
 
@@ -246,7 +246,7 @@ const INVESTMENT_RECS: InvestmentRec[] = [
     priority: 'Media',
     action: 'Ampliare GROWTH ricorrente per il bottom 50%',
     budget_note: '+€18.000 demo',
-    expected_signal: 'Segnale atteso: miglioramento CO / retention signal',
+    expected_signal: 'Segnale direzionale: miglioramento CO / continuità — non causale',
     risk: 'Medio',
   },
   {

@@ -111,6 +111,20 @@ export default function ExecutiveCockpit() {
         </p>
       </div>
 
+      {/* Scenario context label */}
+      <div className={cn(
+        'rounded border px-3 py-2 text-xs font-medium mt-2',
+        activeScenario === 'S2'
+          ? 'border-green-200 bg-green-50 text-green-700'
+          : 'border-amber-200 bg-amber-50 text-amber-700',
+      )}>
+        {activeScenario === 'S2'
+          ? 'Scenario S2 — Post-intervento: KORA Index 64, Activation Rate CLEAR, distribuzione più bilanciata.'
+          : activeScenario === 'S1'
+          ? 'Scenario S1 — Stato attuale: KORA Index 47, Activation Rate WARNING, Activation Debt elevato.'
+          : 'Scenario demo — dati sintetici Foundation Light.'}
+      </div>
+
       {/* KORA Index Hero (CS + Safeguard + Calibration non-suppressible) */}
       <KoraIndexHero output={output} />
 
