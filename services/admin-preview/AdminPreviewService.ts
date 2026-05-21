@@ -84,7 +84,7 @@ export interface PartnerEntry {
   name: string;
   pillars: string[];
   territory: string;
-  certification_status: string;
+  evidence_protocol_status: string;
   active_programs: number;
 }
 
@@ -230,12 +230,12 @@ class AdminPreviewService {
   // 5. Partner Network
   getPartnerNetworkPreview(): PartnerEntry[] {
     return [
-      { id: 'partner-mindspace',   name: 'MindSpace Wellness',   pillars: ['LIFE'],             territory: 'Milan',           certification_status: 'verified',  active_programs: 3 },
-      { id: 'partner-nutriwell',   name: 'NutriWell Italia',     pillars: ['LIFE'],             territory: 'Italy (remote)',  certification_status: 'verified',  active_programs: 2 },
-      { id: 'partner-mediflex',    name: 'MediFlex Health',      pillars: ['LIFE'],             territory: 'Lombardy',        certification_status: 'verified',  active_programs: 4 },
-      { id: 'partner-learningpro', name: 'LearningPro Academy',  pillars: ['GROWTH'],           territory: 'Italy',           certification_status: 'partial',   active_programs: 5 },
-      { id: 'partner-growthlab',   name: 'GrowthLab Skills',     pillars: ['GROWTH', 'LEGACY'], territory: 'Milan',           certification_status: 'partial',   active_programs: 2 },
-      { id: 'partner-communit8',   name: 'Communit8 Social',     pillars: ['CONNECTION', 'IMPACT'], territory: 'Northern Italy', certification_status: 'pending', active_programs: 1 },
+      { id: 'partner-mindspace',   name: 'MindSpace Wellness',   pillars: ['LIFE'],             territory: 'Milan',           evidence_protocol_status: 'audit_completato',  active_programs: 3 },
+      { id: 'partner-nutriwell',   name: 'NutriWell Italia',     pillars: ['LIFE'],             territory: 'Italy (remote)',  evidence_protocol_status: 'audit_completato',  active_programs: 2 },
+      { id: 'partner-mediflex',    name: 'MediFlex Health',      pillars: ['LIFE'],             territory: 'Lombardy',        evidence_protocol_status: 'audit_completato',  active_programs: 4 },
+      { id: 'partner-learningpro', name: 'LearningPro Academy',  pillars: ['GROWTH'],           territory: 'Italy',           evidence_protocol_status: 'audit_parziale',    active_programs: 5 },
+      { id: 'partner-growthlab',   name: 'GrowthLab Skills',     pillars: ['GROWTH', 'LEGACY'], territory: 'Milan',           evidence_protocol_status: 'audit_parziale',    active_programs: 2 },
+      { id: 'partner-communit8',   name: 'Communit8 Social',     pillars: ['CONNECTION', 'IMPACT'], territory: 'Northern Italy', evidence_protocol_status: 'audit_in_corso', active_programs: 1 },
     ];
   }
 

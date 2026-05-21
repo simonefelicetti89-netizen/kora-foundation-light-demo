@@ -51,14 +51,14 @@ const REVIEW_QUEUE: ReviewItem[] = [
   },
   {
     id: 'rev-002',
-    title: 'Validazione iniziativa — Skills Forward 2025',
-    review_type: 'Validazione iniziativa',
+    title: 'Audit protocollo evidenze — Skills Forward 2025',
+    review_type: 'Audit protocollo iniziativa',
     status: 'pending',
     status_label: 'In attesa',
     pillar: 'GROWTH',
     confidence_signal: 'Alta attesa',
     company: 'Meridiana Group S.r.l.',
-    notes: 'Curriculum strutturato. In attesa di conferma erogazione prime sessioni.',
+    notes: 'Curriculum strutturato. In attesa di conferma erogazione prime sessioni e validazione del protocollo evidenze.',
   },
   {
     id: 'rev-003',
@@ -129,12 +129,13 @@ export default function AdvisorDashboard() {
           </span>
         </div>
         <p className="text-sm text-slate-500 mt-1.5 leading-relaxed">
-          L&apos;Advisor supporta la qualità delle evidenze e la confidenza metodologica.
-          La revisione Advisor non equivale a certificazione KORA Certified.
+          L&apos;Advisor esegue un audit preliminare del processo e del protocollo evidenze del partner.
+          Non valida ogni singola azione. La revisione Advisor non equivale a certificazione KORA Certified.
         </p>
         <div className="mt-2 flex flex-wrap gap-1.5">
           {[
-            'Advisor-reviewed ≠ Certified',
+            'Audit processo — non validazione azione per azione',
+            'Advisor-reviewed ≠ KORA Certified',
             'Solo perimetro assegnato',
             'Nessun PIB individuale',
           ].map((b) => (
@@ -197,6 +198,33 @@ export default function AdvisorDashboard() {
         <p className="mt-1.5 text-[11px] text-slate-400">
           Dati sintetici — Foundation Light demo preview · synthetic_demo_data: true
         </p>
+      </div>
+
+      {/* ── Process Audit Model ── */}
+      <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 space-y-1.5">
+        <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">
+          Modello di audit processo KORA
+        </p>
+        <p className="text-sm text-blue-800 leading-relaxed">
+          L&apos;Advisor non valida ogni singola azione. L&apos;Advisor esegue un audit preliminare del processo
+          e del protocollo evidenze del partner. Le azioni successive sono considerate ammissibili se
+          rispettano il protocollo approvato, con monitoraggio periodico, controlli a campione e
+          possibilità di re-review.
+        </p>
+        <ul className="space-y-1 pt-1">
+          {[
+            'Advisor Process Audit — audit preliminare del processo e del protocollo',
+            'Evidence Protocol Review — revisione del protocollo evidenze per tipo di servizio',
+            'Monitoraggio periodico — review pianificate e campioni straordinari',
+            'Re-review — l\'Advisor può riaprire la review in caso di eccezioni o variazioni',
+            'Trust Ledger — storico audit, acceptance rate, prossima review',
+          ].map((item) => (
+            <li key={item} className="flex gap-2 text-xs text-blue-700">
+              <span className="text-blue-400 shrink-0 mt-0.5">·</span>
+              {item}
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* ── Evidence Review Panel ── */}

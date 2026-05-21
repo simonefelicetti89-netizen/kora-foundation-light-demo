@@ -27,7 +27,7 @@ interface PartnerService {
   pillar: string;
   activation_purpose: string;
   evidence_type: string;
-  advisor_validation: 'validated' | 'pending' | 'not_requested';
+  evidence_protocol_status: 'audit_completed' | 'audit_pending' | 'not_requested';
   scope: string;
 }
 
@@ -38,7 +38,7 @@ const PARTNER_SERVICES: PartnerService[] = [
     pillar: 'IMPACT',
     activation_purpose: 'Impegno verificato nella comunità locale. Rafforza attivazione IMPACT e CONNECTION.',
     evidence_type: 'Attestato partecipazione + conferma coordinatore',
-    advisor_validation: 'pending',
+    evidence_protocol_status: 'audit_pending',
     scope: 'Disponibile per aziende partner nel territorio di Bergamo.',
   },
   {
@@ -47,7 +47,7 @@ const PARTNER_SERVICES: PartnerService[] = [
     pillar: 'CONNECTION',
     activation_purpose: 'Sviluppo competenze relazionali e leadership nella comunità.',
     evidence_type: 'Attestato di completamento',
-    advisor_validation: 'validated',
+    evidence_protocol_status: 'audit_completed',
     scope: 'On-site e online. Gruppo minimo 5 partecipanti.',
   },
   {
@@ -56,7 +56,7 @@ const PARTNER_SERVICES: PartnerService[] = [
     pillar: 'IMPACT',
     activation_purpose: 'Iniziativa collettiva aziendale verificata in contesto comunitario.',
     evidence_type: 'Report attività + lista presenze aggregata',
-    advisor_validation: 'validated',
+    evidence_protocol_status: 'audit_completed',
     scope: 'Evento collettivo. Partecipazione ≥10 lavoratori per soglia KORA.',
   },
   {
@@ -65,7 +65,7 @@ const PARTNER_SERVICES: PartnerService[] = [
     pillar: 'LEGACY',
     activation_purpose: 'Trasferimento di competenze verso la comunità. Rilevante per pillar LEGACY.',
     evidence_type: 'Log sessioni + dichiarazione supervisore',
-    advisor_validation: 'not_requested',
+    evidence_protocol_status: 'not_requested',
     scope: 'Programma strutturato. Minimo 4 sessioni documentate.',
   },
   {
@@ -74,8 +74,8 @@ const PARTNER_SERVICES: PartnerService[] = [
     pillar: 'LIFE',
     activation_purpose: 'Supporto psicologico in contesti di fragilità sociale. Pillar LIFE.',
     evidence_type: 'Attestato partecipazione + referral report',
-    advisor_validation: 'pending',
-    scope: 'In attesa di validazione advisor. Non ancora disponibile per attivazione KORA.',
+    evidence_protocol_status: 'audit_pending',
+    scope: 'In attesa di audit processo advisor. Non ancora disponibile per attivazione KORA.',
   },
 ];
 
@@ -89,7 +89,7 @@ const DEMO_INITIATIVE = {
   aggregate_target: 40,
   aggregate_completed: 18,
   evidence_status: 'Parzialmente presentata',
-  advisor_status: 'In attesa di revisione advisor',
+  advisor_status: 'In attesa di review protocollo evidenze',
   kora_contribution_note:
     'Segnale KORA Contribution — direzionale. Non modifica direttamente il KORA Index.',
   not_kora_index_component: true,
@@ -215,7 +215,7 @@ const AVAILABILITY_WINDOWS = [
     period: 'Giugno–Luglio 2026',
     service: 'Percorso Mentoring Comunitario',
     slots_label: 'Aperto — programma strutturato',
-    note: "In attesa di validazione advisor prima dell'attivazione.",
+    note: "In attesa di audit processo advisor prima dell'attivazione.",
   },
 ];
 
@@ -238,8 +238,8 @@ const ACTION_LOG = [
   {
     id: 'log-003',
     date: '28 Apr 2026',
-    action: 'Validazione advisor completata',
-    detail: 'Workshop Community Leadership — validato',
+    action: 'Audit processo advisor completato',
+    detail: 'Workshop Community Leadership — protocollo evidenze rivisto',
     status: 'completata',
   },
   {
@@ -266,10 +266,10 @@ const PILLAR_BADGE: Record<string, string> = {
   LEGACY:     'bg-indigo-50 text-indigo-700 border-indigo-200',
 };
 
-const VALIDATION_BADGE: Record<string, { style: string; label: string }> = {
-  validated:     { style: 'bg-green-50 text-green-700 border-green-200',   label: 'Validato advisor' },
-  pending:       { style: 'bg-amber-50 text-amber-700 border-amber-200',   label: 'In attesa' },
-  not_requested: { style: 'bg-slate-50 text-slate-500 border-slate-200',   label: 'Non richiesto' },
+const PROTOCOL_BADGE: Record<string, { style: string; label: string }> = {
+  audit_completed: { style: 'bg-green-50 text-green-700 border-green-200',   label: 'Audit processo completato' },
+  audit_pending:   { style: 'bg-amber-50 text-amber-700 border-amber-200',   label: 'Audit processo in corso' },
+  not_requested:   { style: 'bg-slate-50 text-slate-500 border-slate-200',   label: 'Protocollo non definito' },
 };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -340,15 +340,16 @@ export default function PartnerDashboard() {
             <div>
               <p className="text-xs text-slate-400">Affidabilità evidenza</p>
               <span className="inline-block mt-0.5 rounded border bg-amber-50 border-amber-200 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
-                Parziale — validazione in corso
+                Parziale — revisione protocollo evidenze in corso
               </span>
             </div>
           </div>
 
           <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2 text-[11px] text-slate-400">
             <span className="font-semibold text-slate-500">Nota: </span>
-            Il partner non è un fornitore certificato KORA. Lo status di affidabilità dell&apos;evidenza
-            dipende dalla qualità della documentazione fornita e dalla validazione advisor assegnata.
+            Il partner non è un fornitore certificato KORA. Le azioni sono ammissibili se rispettano
+            il protocollo evidenze approvato. L&apos;Advisor esegue un audit preliminare del processo
+            e del protocollo — non valida le singole azioni.
           </div>
         </div>
       </div>
@@ -364,7 +365,7 @@ export default function PartnerDashboard() {
         </p>
         <div className="space-y-3">
           {PARTNER_SERVICES.map((svc) => {
-            const vb = VALIDATION_BADGE[svc.advisor_validation];
+            const vb = PROTOCOL_BADGE[svc.evidence_protocol_status];
             return (
               <div key={svc.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
                 <div className="flex flex-wrap items-start justify-between gap-2">
@@ -442,8 +443,9 @@ export default function PartnerDashboard() {
           Evidenze & Stato Revisione
         </p>
         <p className="text-xs text-slate-400 mb-3">
-          Documentazione presentata per la verifica KORA. L&apos;advisor assegnato revisiona le evidenze
-          prima dell&apos;approvazione. Solo conteggi aggregati — nessun dato individuale.
+          Documentazione presentata rispetto al protocollo evidenze approvato. L&apos;Advisor revisiona
+          il protocollo e gestisce eccezioni o campioni — non approva ogni singolo documento.
+          Solo conteggi aggregati — nessun dato individuale.
         </p>
         <div className="space-y-2">
           {EVIDENCE_ITEMS.map((ev) => {
@@ -481,14 +483,14 @@ export default function PartnerDashboard() {
         </p>
       </div>
 
-      {/* ── Advisor Verification Area ── */}
+      {/* ── Evidence Protocol Status — Process Audit ── */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
-          Area Verifica Advisor
+          Stato Protocollo Evidenze — Audit Processo
         </p>
         <p className="text-xs text-slate-400 mb-3">
-          Stato di validazione advisor per ciascun servizio del partner. L&apos;advisor assegnato da KORA
-          revisiona l&apos;idoneità metodologica e la qualità dell&apos;evidenza — non il contenuto individuale.
+          Stato dell&apos;audit di processo per ciascun servizio del partner. L&apos;Advisor KORA revisiona
+          il protocollo evidenze e la metodologia — non valida le singole azioni.
         </p>
         <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
           <table className="w-full text-sm">
@@ -496,12 +498,12 @@ export default function PartnerDashboard() {
               <tr className="bg-slate-50 border-b border-slate-200">
                 <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Servizio</th>
                 <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Pillar</th>
-                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Stato validazione</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Stato audit processo</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {PARTNER_SERVICES.map((svc) => {
-                const vb = VALIDATION_BADGE[svc.advisor_validation];
+                const vb = PROTOCOL_BADGE[svc.evidence_protocol_status];
                 return (
                   <tr key={svc.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5 text-xs text-slate-700">{svc.title}</td>
@@ -521,10 +523,13 @@ export default function PartnerDashboard() {
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-[11px] text-slate-400">
-          La validazione advisor abilita il servizio all&apos;attivazione KORA. In assenza di validazione,
-          il servizio genera evidenza a reliability ridotta (EV corretto automaticamente dal motore di scoring).
-        </p>
+        <div className="mt-3 rounded bg-blue-50 border border-blue-100 px-3 py-2.5 text-[11px] text-blue-700 leading-relaxed">
+          <span className="font-semibold">Modello di validazione KORA: </span>
+          L&apos;Advisor non valida ogni singola azione. L&apos;Advisor esegue un audit preliminare del processo
+          e del protocollo evidenze del partner. Le azioni successive sono considerate ammissibili se
+          rispettano il protocollo approvato, con monitoraggio periodico, controlli a campione e
+          possibilità di re-review.
+        </div>
       </div>
 
       {/* ── Availability Windows ── */}

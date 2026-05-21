@@ -1,9 +1,9 @@
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 
-const CERT_BADGE: Record<string, string> = {
-  verified: 'bg-green-50 text-green-700 border-green-200',
-  partial:  'bg-yellow-50 text-yellow-700 border-yellow-200',
-  pending:  'bg-slate-50 text-slate-500 border-slate-200',
+const PROTOCOL_BADGE: Record<string, { style: string; label: string }> = {
+  audit_completato: { style: 'bg-green-50 text-green-700 border-green-200',   label: 'Protocollo verificato' },
+  audit_parziale:   { style: 'bg-yellow-50 text-yellow-700 border-yellow-200', label: 'Protocollo parziale' },
+  audit_in_corso:   { style: 'bg-slate-50 text-slate-500 border-slate-200',    label: 'Audit in corso' },
 };
 
 export default function NetworkPage() {
@@ -76,8 +76,8 @@ export default function NetworkPage() {
                       </span>
                     ))}
                   </div>
-                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${CERT_BADGE[p.certification_status] ?? CERT_BADGE.pending}`}>
-                    {p.certification_status}
+                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${(PROTOCOL_BADGE[p.evidence_protocol_status] ?? PROTOCOL_BADGE.audit_in_corso).style}`}>
+                    {(PROTOCOL_BADGE[p.evidence_protocol_status] ?? PROTOCOL_BADGE.audit_in_corso).label}
                   </span>
                   <span className="text-[10px] font-mono text-slate-400">{p.active_programs} prog.</span>
                 </div>
