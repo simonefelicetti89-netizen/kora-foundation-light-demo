@@ -8,6 +8,8 @@ const ALLOWED_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>([
   'FOUNDER_INTERNAL',
   'COMPANY_ADMIN',
   'COMPANY_FINANCE',
+  'COMPANY_HR',
+  'COMPANY_ESG',
 ]);
 
 interface SeedPillarBudget {
@@ -156,7 +158,7 @@ export class FinancialGovernanceService implements IFinancialGovernanceService {
     if (!this.canAccessFinancialGovernance(role)) {
       return {
         allowed: false,
-        reason: `Role ${role} does not have access to financial governance data. Requires COMPANY_FINANCE, COMPANY_ADMIN, or KORA_ADMIN.`,
+        reason: `Role ${role} does not have access to financial governance data. Requires COMPANY_FINANCE, COMPANY_HR, COMPANY_ESG, COMPANY_ADMIN, or KORA_ADMIN.`,
       };
     }
     const rec = this.findRecord(companyId, scenarioId);

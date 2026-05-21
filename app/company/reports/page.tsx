@@ -592,7 +592,7 @@ export default function Reports() {
               </div>
               <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
                 <p className="text-xs text-slate-400">Costo per IU</p>
-                <p className="text-base font-bold text-slate-800 mt-0.5">Vedi Financial</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5">€22,8 / IU</p>
                 <p className="text-[10px] text-slate-400">informativo · non certificato</p>
               </div>
               <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
@@ -605,6 +605,19 @@ export default function Reports() {
               <span className="font-semibold">Disclaimer CFO:</span>{' '}
               KORA non garantisce ROI sul budget people. La correlazione tra budget e KORA Index è
               indicativa — correlazione ≠ causalità. Nessun output di compliance fiscale o payroll.
+              Il Budget-to-Impact Bridge non dimostra causalità e non certifica risparmio garantito.
+            </div>
+            <div className="rounded bg-emerald-50 border border-emerald-100 px-3 py-2 text-xs text-emerald-700 leading-relaxed flex items-center justify-between gap-3">
+              <span>
+                <span className="font-semibold">Budget-to-Impact Bridge disponibile: </span>
+                Alloca budget per pillar, costo per IU, People KPI Correlation preview e raccomandazioni di investimento direzionali.
+              </span>
+              <a
+                href="/company/financial"
+                className="shrink-0 rounded border border-emerald-300 bg-white px-2 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors whitespace-nowrap"
+              >
+                Vedi Bridge →
+              </a>
             </div>
           </div>
         </div>
