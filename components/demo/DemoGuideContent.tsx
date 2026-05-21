@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { PipelineConnectorBanner } from '@/components/demo/PipelineConnectorBanner';
+import { WorkspaceSwitcher } from '@/components/demo/WorkspaceSwitcher';
 
 const REVIEW_STEPS = [
   { step: 1, label: 'Executive Cockpit',          href: '/company',              desc: 'KORA Index · Confidence Score · Activation Safeguard · Schede insight' },
@@ -74,6 +75,9 @@ export function DemoGuideContent() {
           </Link>
         </div>
       </div>
+
+      {/* Multi-sided workspace switcher */}
+      <WorkspaceSwitcher />
 
       {/* Action-to-Index pipeline */}
       <PipelineConnectorBanner />

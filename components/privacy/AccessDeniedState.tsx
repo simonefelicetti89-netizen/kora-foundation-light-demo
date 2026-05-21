@@ -1,17 +1,29 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import type { KoraRole } from '@/lib/types';
 import { formatRole } from '@/lib/formatters';
+import { useRole } from '@/lib/demo-state';
 
 interface AccessDeniedStateProps {
   role: KoraRole;
   route: string;
   reason?: string;
+  requiredRole?: KoraRole;
   className?: string;
 }
 
-export function AccessDeniedState({ role, route, reason, className }: AccessDeniedStateProps) {
+export function AccessDeniedState({ role, route, reason, requiredRole, className }: AccessDeniedStateProps) {
+  const { setRole } = useRole();
+  const router = useRouter();
+
+  function handleRoleSwitch() {
+    if (!requiredRole) return;
+    setRole(requiredRole);
+    router.push(route);
+  }
+
   return (
     <div
       className={cn(
@@ -27,9 +39,25 @@ export function AccessDeniedState({ role, route, reason, className }: AccessDeni
         per il ruolo <span className="font-medium">{formatRole(role)}</span>.
       </p>
       {reason && <p className="mt-2 text-xs text-slate-400">{reason}</p>}
-      <p className="mt-4 text-xs text-slate-400">
-        Usa il Role Switcher per passare a un ruolo appropriato per questa sezione.
-      </p>
+      {requiredRole ? (
+        <div className="mt-5 flex flex-col items-center gap-3">
+          <p className="max-w-sm text-xs text-slate-400">
+            Questo workspace è protetto da ruolo demo. Per visualizzarlo, seleziona il ruolo{' '}
+            <span className="font-semibold text-slate-600">{formatRole(requiredRole)}</span> dal Role Switcher
+            oppure usa il pulsante qui sotto.
+          </p>
+          <button
+            onClick={handleRoleSwitch}
+            className="rounded-md bg-slate-800 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 transition-colors"
+          >
+            Passa al ruolo corretto
+          </button>
+        </div>
+      ) : (
+        <p className="mt-4 text-xs text-slate-400">
+          Usa il Role Switcher per passare a un ruolo appropriato per questa sezione.
+        </p>
+      )}
     </div>
   );
 }
