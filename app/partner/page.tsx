@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 // P-01: Partner Workspace Light — Foundation Light Preview
 // Synthetic demo data only. No marketplace, no booking, no payment.
 // Partners in KORA are activation actors, not marketplace vendors.
@@ -272,9 +274,244 @@ const PROTOCOL_BADGE: Record<string, { style: string; label: string }> = {
   not_requested:   { style: 'bg-slate-50 text-slate-500 border-slate-200',   label: 'Protocollo non definito' },
 };
 
+// ─── Phase 1N-C3: Daily Operations constants ──────────────────────────────────
+// All synthetic demo data. No individual workers. No company KORA Index.
+
+interface CompanyScope {
+  company_name: string;
+  sector: string;
+  territory: string;
+  relationship_status: string;
+  active_requests: number;
+  active_services: number;
+  aggregate_participants: number | null;
+  privacy_status: string;
+  next_action: string;
+  synthetic_demo_data: true;
+}
+
+const PARTNER_COMPANY_SCOPE: CompanyScope[] = [
+  {
+    company_name: 'Meridiana Group S.r.l.',
+    sector: 'Manufacturing',
+    territory: 'Lombardia / Bergamo',
+    relationship_status: 'Pilot attivo',
+    active_requests: 3,
+    active_services: 2,
+    aggregate_participants: 42,
+    privacy_status: 'Aggregato sopra soglia',
+    next_action: 'Completare evidenza per Workshop Community Leadership',
+    synthetic_demo_data: true,
+  },
+  {
+    company_name: 'Communitas Cooperativa',
+    sector: 'Servizi alla persona',
+    territory: 'Lombardia',
+    relationship_status: 'Richiesta in review',
+    active_requests: 1,
+    active_services: 1,
+    aggregate_participants: null,
+    privacy_status: 'Soglia privacy non ancora raggiunta',
+    next_action: 'Confermare finestra di attivazione',
+    synthetic_demo_data: true,
+  },
+  {
+    company_name: 'Studio Aurora Benefit',
+    sector: 'Professional services',
+    territory: 'Milano',
+    relationship_status: 'Interesse ricevuto',
+    active_requests: 1,
+    active_services: 1,
+    aggregate_participants: null,
+    privacy_status: 'Solo richiesta demo',
+    next_action: 'Valutare fit LIFE / CONNECTION',
+    synthetic_demo_data: true,
+  },
+];
+
+const RELATIONSHIP_STATUS_BADGE: Record<string, { style: string }> = {
+  'Pilot attivo':        { style: 'bg-green-50 text-green-700 border-green-200' },
+  'Richiesta in review': { style: 'bg-amber-50 text-amber-700 border-amber-200' },
+  'Interesse ricevuto':  { style: 'bg-slate-50 text-slate-500 border-slate-200' },
+};
+
+interface ActivationCohort {
+  cohort_label: string;
+  company: string;
+  service: string;
+  participant_count: number | null;
+  privacy_threshold_status: string;
+  scheduled_window: string;
+  action_status: string;
+  evidence_status: string;
+  synthetic_demo_data: true;
+}
+
+const ACTIVATION_COHORTS: ActivationCohort[] = [
+  {
+    cohort_label: 'Meridiana Group — Sede Bergamo',
+    company: 'Meridiana Group S.r.l.',
+    service: 'Programma Volontariato Territoriale',
+    participant_count: 28,
+    privacy_threshold_status: 'Sopra soglia privacy',
+    scheduled_window: 'Q4 2025',
+    action_status: 'Azione completata',
+    evidence_status: 'Evidenza richiesta',
+    synthetic_demo_data: true,
+  },
+  {
+    cohort_label: 'Communitas — gruppo volontariato',
+    company: 'Communitas Cooperativa',
+    service: 'Giornata Solidarietà Aziendale',
+    participant_count: null,
+    privacy_threshold_status: 'Sotto soglia privacy — conteggio non visibile',
+    scheduled_window: 'Q2 2026',
+    action_status: 'In valutazione partner',
+    evidence_status: 'Da definire',
+    synthetic_demo_data: true,
+  },
+  {
+    cohort_label: 'Studio Aurora — cohort demo',
+    company: 'Studio Aurora Benefit',
+    service: 'Percorso Mentoring Comunitario',
+    participant_count: null,
+    privacy_threshold_status: 'Richiesta non confermata',
+    scheduled_window: 'Q2 2026',
+    action_status: 'Interesse ricevuto',
+    evidence_status: 'Non avviata',
+    synthetic_demo_data: true,
+  },
+];
+
+type AgendaItemType = 'request_review' | 'scheduled_activation' | 'evidence_followup' | 'advisor_check';
+
+interface AgendaItem {
+  id: string;
+  time: string;
+  title: string;
+  company: string;
+  service: string;
+  type: AgendaItemType;
+  status: string;
+  synthetic_demo_data: true;
+}
+
+const TODAY_AGENDA: AgendaItem[] = [
+  {
+    id: 'ag-001',
+    time: '09:30',
+    title: 'Review richiesta Meridiana Group',
+    company: 'Meridiana Group S.r.l.',
+    service: 'Programma Volontariato Territoriale',
+    type: 'request_review',
+    status: 'Da valutare',
+    synthetic_demo_data: true,
+  },
+  {
+    id: 'ag-002',
+    time: '11:00',
+    title: 'Workshop Community Leadership',
+    company: 'Meridiana Group S.r.l.',
+    service: 'Workshop Community Leadership',
+    type: 'scheduled_activation',
+    status: 'Programmata demo',
+    synthetic_demo_data: true,
+  },
+  {
+    id: 'ag-003',
+    time: '14:30',
+    title: 'Follow-up evidenza Bergamo Solidarity Network',
+    company: 'Meridiana Group S.r.l.',
+    service: 'Giornata di volontariato territoriale',
+    type: 'evidence_followup',
+    status: 'Evidenza richiesta',
+    synthetic_demo_data: true,
+  },
+  {
+    id: 'ag-004',
+    time: '16:00',
+    title: 'Check protocollo evidenze con Advisor',
+    company: 'Città Aperta APS',
+    service: 'Protocollo evidenze LIFE / IMPACT',
+    type: 'advisor_check',
+    status: 'Audit processo',
+    synthetic_demo_data: true,
+  },
+];
+
+const AGENDA_TYPE_BADGE: Record<AgendaItemType, { style: string; label: string }> = {
+  request_review:       { style: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'Review richiesta' },
+  scheduled_activation: { style: 'bg-blue-50 text-blue-700 border-blue-200',       label: 'Attivazione' },
+  evidence_followup:    { style: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Follow-up evidenza' },
+  advisor_check:        { style: 'bg-violet-50 text-violet-700 border-violet-200', label: 'Check Advisor' },
+};
+
+interface FinancialRow {
+  period: string;
+  company: string;
+  service: string;
+  completed_activations: number;
+  estimated_amount: string;
+  status: string;
+  payment_boundary: string;
+  synthetic_demo_data: true;
+}
+
+const PARTNER_FINANCIAL_PREVIEW: FinancialRow[] = [
+  {
+    period: 'Q4 2025',
+    company: 'Meridiana Group S.r.l.',
+    service: 'Programma Volontariato Territoriale',
+    completed_activations: 2,
+    estimated_amount: '€ 4.800 demo',
+    status: 'Da consuntivare',
+    payment_boundary: 'Nessun pagamento eseguito',
+    synthetic_demo_data: true,
+  },
+  {
+    period: 'Q1 2026',
+    company: 'Meridiana Group S.r.l.',
+    service: 'Workshop Community Leadership',
+    completed_activations: 1,
+    estimated_amount: '€ 2.200 demo',
+    status: 'In verifica evidenze',
+    payment_boundary: 'Nessuna fattura generata',
+    synthetic_demo_data: true,
+  },
+  {
+    period: 'Q4 2025',
+    company: 'Communitas Cooperativa',
+    service: 'Giornata Solidarietà Aziendale',
+    completed_activations: 1,
+    estimated_amount: '€ 1.600 demo',
+    status: 'Liquidabile — demo',
+    payment_boundary: 'Preview informativa',
+    synthetic_demo_data: true,
+  },
+  {
+    period: 'Q2 2026',
+    company: 'Studio Aurora Benefit',
+    service: 'Percorso Mentoring Comunitario',
+    completed_activations: 0,
+    estimated_amount: '€ 0 demo',
+    status: 'Non fatturabile — evidenza incompleta',
+    payment_boundary: 'Nessun payout partner',
+    synthetic_demo_data: true,
+  },
+];
+
+const FINANCIAL_STATUS_BADGE: Record<string, string> = {
+  'Da consuntivare':                       'bg-slate-50 text-slate-500 border-slate-200',
+  'In verifica evidenze':                  'bg-amber-50 text-amber-700 border-amber-200',
+  'Liquidabile — demo':                    'bg-green-50 text-green-700 border-green-200',
+  'Non fatturabile — evidenza incompleta': 'bg-red-50 text-red-600 border-red-200',
+};
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PartnerDashboard() {
+  const [demoActions, setDemoActions] = useState<Record<string, string>>({});
+
   return (
     <div className="space-y-10 max-w-3xl">
 
@@ -300,6 +537,113 @@ export default function PartnerDashboard() {
             </span>
           ))}
         </div>
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          {[
+            { label: 'Aziende in perimetro', value: PARTNER_COMPANY_SCOPE.length.toString() },
+            { label: 'Richieste attive', value: PARTNER_COMPANY_SCOPE.reduce((s, c) => s + c.active_requests, 0).toString() },
+            { label: 'Evidenze da completare', value: EVIDENCE_ITEMS.filter((e) => !e.submitted).length.toString() },
+          ].map(({ label, value }) => (
+            <div key={label} className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center">
+              <p className="text-xl font-bold text-slate-800">{value}</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">{label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Aziende in perimetro ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Aziende in perimetro
+        </p>
+        <p className="text-xs text-slate-400 mb-3">
+          Il partner vede solo aziende e richieste nel proprio perimetro operativo. Non vede KORA Index
+          aziendale, dati HR confidenziali o dati individuali dei lavoratori.
+        </p>
+        <div className="space-y-3">
+          {PARTNER_COMPANY_SCOPE.map((co) => {
+            const rb = RELATIONSHIP_STATUS_BADGE[co.relationship_status] ?? { style: 'bg-slate-50 text-slate-500 border-slate-200' };
+            return (
+              <div key={co.company_name} className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800">{co.company_name}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{co.sector} · {co.territory}</p>
+                  </div>
+                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${rb.style}`}>
+                    {co.relationship_status}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded bg-slate-50 px-2 py-1.5">
+                    <p className="text-sm font-bold text-slate-700">{co.active_requests}</p>
+                    <p className="text-[10px] text-slate-400">Richieste attive</p>
+                  </div>
+                  <div className="rounded bg-slate-50 px-2 py-1.5">
+                    <p className="text-sm font-bold text-slate-700">{co.active_services}</p>
+                    <p className="text-[10px] text-slate-400">Servizi attivi</p>
+                  </div>
+                  <div className="rounded bg-slate-50 px-2 py-1.5">
+                    <p className="text-sm font-bold text-slate-700">
+                      {co.aggregate_participants !== null ? co.aggregate_participants : '—'}
+                    </p>
+                    <p className="text-[10px] text-slate-400">Partecipanti agg.</p>
+                  </div>
+                </div>
+                {co.aggregate_participants === null && (
+                  <p className="text-[10px] text-amber-600 italic">{co.privacy_status}</p>
+                )}
+                <div className="flex items-start gap-1.5">
+                  <span className="text-[10px] text-slate-400 shrink-0 mt-0.5">→</span>
+                  <p className="text-[11px] text-slate-500">{co.next_action}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Dati sintetici demo · Nessun KORA Index aziendale · Nessun dato HR confidenziale · Nessun dato individuale.
+        </p>
+      </div>
+
+      {/* ── Agenda operativa di oggi — demo ── */}
+      <div>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+            Agenda operativa di oggi — demo
+          </p>
+          <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium text-slate-400">
+            21 Mag 2026
+          </span>
+        </div>
+        <p className="text-xs text-slate-400 mb-3">
+          Agenda dimostrativa. Nessuna integrazione calendario reale, nessuna notifica, nessuna conferma operativa live.
+        </p>
+        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden divide-y divide-slate-100">
+          {TODAY_AGENDA.map((item) => {
+            const tb = AGENDA_TYPE_BADGE[item.type];
+            return (
+              <div key={item.id} className="flex items-start gap-4 px-4 py-3">
+                <p className="text-sm font-mono font-semibold text-slate-500 shrink-0 w-10 pt-0.5">{item.time}</p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <p className="text-sm font-semibold text-slate-800">{item.title}</p>
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${tb.style}`}>
+                      {tb.label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-0.5">{item.company} · {item.service}</p>
+                </div>
+                <span className="rounded border border-slate-100 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 shrink-0">
+                  {item.status}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Nessun calendario reale · Nessuna notifica · Nessuna conferma live · Dati sintetici demo.
+        </p>
       </div>
 
       {/* ── Partner Profile Card ── */}
@@ -406,8 +750,9 @@ export default function PartnerDashboard() {
         <div className="space-y-2">
           {ACTIVATION_REQUESTS.map((req) => {
             const rb = REQUEST_STATUS_BADGE[req.status] ?? { style: 'bg-slate-50 text-slate-500 border-slate-200', label: req.status };
+            const demoAction = demoActions[req.id];
             return (
-              <div key={req.id} className="rounded-lg border border-slate-200 bg-white p-4">
+              <div key={req.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <p className="text-sm font-semibold text-slate-800">{req.service}</p>
@@ -422,18 +767,80 @@ export default function PartnerDashboard() {
                     </span>
                   </div>
                 </div>
-                <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-slate-400">
+                <div className="flex flex-wrap gap-3 text-[11px] text-slate-400">
                   {req.participants_aggregate !== null && (
                     <span>Partecipanti aggregati: <span className="font-medium text-slate-600">{req.participants_aggregate}</span></span>
                   )}
                   <span>Evidenza: <span className={`font-medium ${req.evidence_submitted ? 'text-green-700' : 'text-amber-600'}`}>{req.evidence_submitted ? 'Presentata' : 'Non ancora presentata'}</span></span>
                 </div>
+                {demoAction ? (
+                  <div className="rounded bg-green-50 border border-green-100 px-2.5 py-1.5 text-[11px] text-green-700 font-medium">
+                    Azione demo registrata: {demoAction} — non persistente.
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {[
+                      { label: 'Accetta richiesta — demo', action: 'Accettata' },
+                      { label: 'Richiedi informazioni — demo', action: 'Info richiesta' },
+                      { label: 'Segna come programmata — demo', action: 'Programmata' },
+                    ].map(({ label, action }) => (
+                      <button
+                        key={label}
+                        onClick={() => setDemoActions((prev) => ({ ...prev, [req.id]: action }))}
+                        className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
         <p className="mt-2 text-[11px] text-slate-400">
+          Azioni demo non persistenti. In Foundation Light non esiste workflow operativo reale.
           Nessuna conferma calendario · Nessuna chat · Nessun pagamento · Dati sintetici demo.
+        </p>
+      </div>
+
+      {/* ── Coorti di attivazione ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Coorti di attivazione
+        </p>
+        <p className="text-xs text-slate-400 mb-3">
+          Le persone non sono mostrate nominativamente. Il partner opera su coorti autorizzate e
+          conteggi aggregati sopra soglia privacy.
+        </p>
+        <div className="space-y-2">
+          {ACTIVATION_COHORTS.map((cohort) => (
+            <div key={cohort.cohort_label} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">{cohort.cohort_label}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{cohort.company} · {cohort.service}</p>
+                </div>
+                <span className="rounded border border-slate-100 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+                  {cohort.scheduled_window}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-4 text-[11px] text-slate-400">
+                <span>
+                  Partecipanti:{' '}
+                  {cohort.participant_count !== null
+                    ? <span className="font-semibold text-slate-700">{cohort.participant_count}</span>
+                    : <span className="italic text-amber-600">{cohort.privacy_threshold_status}</span>
+                  }
+                </span>
+                <span>Stato: <span className="font-medium text-slate-600">{cohort.action_status}</span></span>
+                <span>Evidenza: <span className="font-medium text-slate-600">{cohort.evidence_status}</span></span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Nessun nominativo · Nessun ID lavoratore · Nessun PIB individuale · Solo aggregati sopra soglia (≥10) · Dati sintetici.
         </p>
       </div>
 
@@ -530,6 +937,52 @@ export default function PartnerDashboard() {
           rispettano il protocollo approvato, con monitoraggio periodico, controlli a campione e
           possibilità di re-review.
         </div>
+      </div>
+
+      {/* ── Resoconto attività e fatturazione — preview ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Resoconto attività e fatturazione — preview
+        </p>
+        <p className="text-xs text-slate-400 mb-3">
+          Preview informativa. Nessuna fattura fiscale generata, nessun pagamento eseguito, nessun wallet,
+          nessun payout partner in Foundation Light.
+        </p>
+        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Periodo</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Azienda / Servizio</th>
+                <th className="text-right px-4 py-2.5 text-xs font-semibold text-slate-500">Attivazioni</th>
+                <th className="text-right px-4 py-2.5 text-xs font-semibold text-slate-500">Importo stimato</th>
+                <th className="text-left px-4 py-2.5 text-xs font-semibold text-slate-500">Stato</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {PARTNER_FINANCIAL_PREVIEW.map((row, i) => (
+                <tr key={i} className="hover:bg-slate-50">
+                  <td className="px-4 py-2.5 text-xs font-mono text-slate-500">{row.period}</td>
+                  <td className="px-4 py-2.5 text-xs text-slate-700">
+                    <p className="font-medium">{row.company}</p>
+                    <p className="text-slate-400">{row.service}</p>
+                  </td>
+                  <td className="px-4 py-2.5 text-xs font-mono text-right text-slate-600">{row.completed_activations}</td>
+                  <td className="px-4 py-2.5 text-xs font-mono text-right text-slate-600">{row.estimated_amount}</td>
+                  <td className="px-4 py-2.5">
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${FINANCIAL_STATUS_BADGE[row.status] ?? 'bg-slate-50 text-slate-400 border-slate-200'}`}>
+                      {row.status}
+                    </span>
+                    <p className="text-[10px] text-slate-400 mt-0.5 italic">{row.payment_boundary}</p>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          Importi stimati indicativi · Nessuna fattura · Nessun pagamento · Nessun payout · Dati sintetici demo.
+        </p>
       </div>
 
       {/* ── Availability Windows ── */}
@@ -697,8 +1150,11 @@ export default function PartnerDashboard() {
             'Nessun PIB individuale visibile',
             'Nessuna timeline personale del lavoratore',
             'Nessun Dynamic Impact CV',
+            'Nessun nominativo, email o ID lavoratore',
+            'Nessun KORA Index aziendale',
+            'Nessun dato HR confidenziale',
             'Solo conteggi aggregati sopra soglia privacy (≥10 lavoratori)',
-            'Nessun dato aziendale confidenziale fuori dal perimetro assegnato',
+            'Solo perimetro operativo autorizzato — nessuna visibilità cross-perimetro',
           ].map((item) => (
             <li key={item} className="flex gap-2 text-xs text-emerald-700">
               <span className="text-emerald-400 shrink-0 mt-0.5">·</span>
