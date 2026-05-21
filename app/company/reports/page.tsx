@@ -440,6 +440,263 @@ export default function Reports() {
         </div>
 
       </div>
+
+      {/* ── Board Narrative Generator ── */}
+      <div className="space-y-6 border-t border-slate-200 pt-10">
+
+        <div>
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h2 className="text-lg font-bold text-slate-900">Board Narrative Generator</h2>
+            <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-500">
+              Demo
+            </span>
+          </div>
+          <p className="text-sm text-slate-500 leading-relaxed max-w-2xl">
+            Narrativa direzionale generata da template KORA su dati sintetici demo.
+            Nessun LLM esterno, nessun dato reale lavoratore.
+          </p>
+        </div>
+
+        {/* Mandatory narrative disclaimer — non-suppressible */}
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700 leading-relaxed">
+          <span className="font-semibold">Nota: </span>
+          Questa narrativa è generata da template demo su dati sintetici. Non usa LLM esterni su dati
+          HR/lavoratore, non dimostra causalità, non garantisce ROI, compliance, certificazione o assurance.
+        </div>
+
+        {/* A. CEO Summary */}
+        <div className="rounded-lg border border-indigo-200 bg-white p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">
+              CEO Summary
+            </p>
+            <span className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[10px] font-semibold text-indigo-600">
+              Narrativa direzionale
+            </span>
+          </div>
+          <div className="space-y-2 text-sm text-slate-700 leading-relaxed">
+            <p>
+              <span className="font-semibold">KORA Index:</span>{' '}
+              {output.kora_index_value} / 100 —{' '}
+              <span className="font-semibold">Confidence Score:</span>{' '}
+              {Math.round(output.confidence_score * 100)}% —{' '}
+              <span className="font-semibold">Activation Safeguard:</span>{' '}
+              <span className={
+                output.safeguard_status === 'CLEAR' ? 'text-green-700 font-bold' :
+                output.safeguard_status === 'FLAGGED' ? 'text-red-700 font-bold' :
+                'text-amber-700 font-bold'
+              }>
+                {output.safeguard_status}
+              </span>
+            </p>
+            <p>
+              Meridiana Group ha registrato un KORA Index di{' '}
+              <span className="font-semibold">{output.kora_index_value}/100</span> nel periodo {output.reporting_period},
+              con un Confidence Score del{' '}
+              <span className="font-semibold">{Math.round(output.confidence_score * 100)}%</span>.
+              {output.safeguard_status === 'WARNING' && (
+                <span className="text-amber-700">
+                  {' '}L&apos;Activation Safeguard indica che la partecipazione è ancora sotto le soglie ottimali —
+                  il KORA Index è da interpretare con cautela direzionale.
+                </span>
+              )}
+              {output.safeguard_status === 'CLEAR' && (
+                <span className="text-green-700">
+                  {' '}L&apos;Activation Safeguard è CLEAR: entrambe le soglie sono superate e il KORA Index
+                  può essere interpretato con piena validità direzionale.
+                </span>
+              )}
+              {output.safeguard_status === 'FLAGGED' && (
+                <span className="text-red-700">
+                  {' '}L&apos;Activation Safeguard è FLAGGED: attivazione insufficiente — azioni strutturali urgenti
+                  prima di interpretare il KORA Index.
+                </span>
+              )}
+            </p>
+            {explanation && (
+              <p className="text-slate-600">{explanation.kora_index_explanation}</p>
+            )}
+            <p className="text-slate-600">
+              <span className="font-semibold">Priorità strategica:</span>{' '}
+              {nextActions[0]
+                ? nextActions[0].action
+                : "Aumentare copertura e qualità delle evidenze per migliorare Confidence Score e componenti deboli."}
+            </p>
+          </div>
+        </div>
+
+        {/* B. CHRO Actions */}
+        <div className="rounded-lg border border-blue-200 bg-white p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-400">
+              CHRO Actions
+            </p>
+            <span className="rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600">
+              HR & People
+            </span>
+          </div>
+          <div className="space-y-2 text-sm text-slate-700 leading-relaxed">
+            <p>
+              L&apos;analisi di partecipazione rivela una concentrazione significativa degli Impact Unit:
+              una minoranza di lavoratori genera la quota predominante dell&apos;attivazione misurata.
+              Questa è la <span className="font-semibold">maggioranza silenziosa</span> — lavoratori
+              mai attivati o con attivazione nominale.
+            </p>
+            {weakComponents.length > 0 && (
+              <p>
+                <span className="font-semibold">Pillar con Debt elevato:</span>{' '}
+                {weakComponents.slice(0, 3).map((c) => c.code).join(', ')}.
+                EQ (Equity) misura l&apos;equità distributiva dell&apos;attivazione tra segmenti — non la qualità delle evidenze.
+              </p>
+            )}
+            <p className="font-semibold text-blue-800 text-xs mt-2">3 azioni raccomandate per HR:</p>
+            <ul className="space-y-1">
+              {(nextActions.length > 0 ? nextActions : [
+                { action: 'Estendere programmi LIFE ai reparti con AR sotto soglia', detail: 'Priorità sedi con AR < 30%' },
+                { action: 'Aumentare Verification Rate convertendo evidenze auto-dichiarate', detail: 'Partner verificati e protocollo evidenze' },
+                { action: 'Attivare programma LEGACY e CONNECTION nelle fasce senior', detail: 'Copertura pillar insufficiente' },
+              ]).slice(0, 3).map((a, i) => (
+                <li key={i} className="flex gap-2 text-xs text-slate-600">
+                  <span className="text-blue-300 shrink-0 mt-0.5 font-bold">{i + 1}.</span>
+                  {a.action}
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-slate-400 border-t border-blue-100 pt-2 mt-2">
+              Il layer My KORA del lavoratore (PIB, Dynamic Impact CV, timeline personale) resta privato
+              e non è accessibile ad HR. Solo dati aggregati sopra soglia privacy (≥10 lavoratori).
+            </p>
+          </div>
+        </div>
+
+        {/* C. CFO Budget View */}
+        <div className="rounded-lg border border-emerald-200 bg-white p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400">
+              CFO Budget View
+            </p>
+            <span className="rounded border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-600">
+              Finance
+            </span>
+          </div>
+          <div className="space-y-2 text-sm text-slate-700 leading-relaxed">
+            <p>
+              KORA fornisce una vista informativa sull&apos;allineamento tra budget people/welfare e
+              attivazione effettivamente misurata. Non è contabilità, non è pagamento, non è fiscal compliance.
+            </p>
+            <div className="grid grid-cols-3 gap-3 my-3">
+              <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
+                <p className="text-xs text-slate-400">Activation Debt stimato</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5">€84.000</p>
+                <p className="text-[10px] text-slate-400">stima sintetica demo</p>
+              </div>
+              <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
+                <p className="text-xs text-slate-400">Costo per IU</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5">Vedi Financial</p>
+                <p className="text-[10px] text-slate-400">informativo · non certificato</p>
+              </div>
+              <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
+                <p className="text-xs text-slate-400">KORA Index</p>
+                <p className="text-base font-bold text-slate-800 mt-0.5">{output.kora_index_value}/100</p>
+                <p className="text-[10px] text-slate-400">output direzionale</p>
+              </div>
+            </div>
+            <div className="rounded bg-amber-50 border border-amber-100 px-3 py-2 text-xs text-amber-700 leading-relaxed">
+              <span className="font-semibold">Disclaimer CFO:</span>{' '}
+              KORA non garantisce ROI sul budget people. La correlazione tra budget e KORA Index è
+              indicativa — correlazione ≠ causalità. Nessun output di compliance fiscale o payroll.
+            </div>
+          </div>
+        </div>
+
+        {/* D. ESG / CSR Evidence Annex */}
+        <div className="rounded-lg border border-teal-200 bg-white p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-teal-400">
+              ESG / CSR Evidence Annex
+            </p>
+            <span className="rounded border border-teal-200 bg-teal-50 px-1.5 py-0.5 text-[10px] font-semibold text-teal-600">
+              Sustainability
+            </span>
+          </div>
+          <div className="space-y-2 text-sm text-slate-700 leading-relaxed">
+            <p>
+              KORA organizza evidenze people/social strutturate, verificate e spiegabili per supportare
+              la rendicontazione CSR/ESG interna, lo stakeholder reporting e il dialogo con auditor ESG.
+              Le evidenze sono classificate per pillar IMPACT e LEGACY e qualificate per livello di verifica.
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: 'Verification Rate', value: `${safeguard ? Math.round(safeguard.ar_value * 100) : '—'}%`, note: 'VR — evidenze verificate/parziali' },
+                { label: 'Confidence Score', value: `${Math.round(output.confidence_score * 100)}%`, note: 'CS — affidabilità dati sottostanti' },
+              ].map((m) => (
+                <div key={m.label} className="rounded border border-slate-100 bg-slate-50 p-2">
+                  <p className="text-xs text-slate-400">{m.label}</p>
+                  <p className="text-base font-bold text-slate-800 mt-0.5">{m.value}</p>
+                  <p className="text-[10px] text-slate-400">{m.note}</p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded bg-amber-50 border border-amber-100 px-3 py-2 text-xs text-amber-700 leading-relaxed">
+              <span className="font-semibold">Disclaimer ESG obbligatorio: </span>
+              KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e
+              spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale,
+              fiscale, assurance o reporting obbligatorio.
+            </div>
+          </div>
+        </div>
+
+        {/* E. Worker Trust Note */}
+        <div className="rounded-lg border border-violet-200 bg-white p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-violet-400">
+              Worker Trust Note
+            </p>
+            <span className="rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[10px] font-semibold text-violet-600">
+              Lavoratori
+            </span>
+          </div>
+          <div className="space-y-2 text-sm text-slate-700 leading-relaxed">
+            <p>
+              L&apos;azienda vede <span className="font-semibold">esclusivamente intelligence aggregata</span>.
+              Nessun nominativo, nessun ID lavoratore, nessuna timeline individuale è mai accessibile
+              alle viste datoriali.
+            </p>
+            <ul className="space-y-2">
+              {[
+                'Il datore di lavoro vede solo dati aggregati sopra soglia privacy (≥10 lavoratori per segmento).',
+                'Il PIB (Personal Impact Balance) è privato del lavoratore — non è mai visibile al datore di lavoro.',
+                "Il Dynamic Impact CV è di proprietà del lavoratore — condiviso solo con consenso esplicito.",
+                'KORA non classifica, non rankifica, non sorveglia i singoli lavoratori.',
+                'Nessun output KORA è utilizzabile come strumento di performance management individuale.',
+              ].map((item) => (
+                <li key={item} className="flex gap-2 text-xs text-slate-600">
+                  <span className="text-violet-300 shrink-0 mt-0.5">·</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Board Narrative CTAs */}
+        <div className="flex flex-wrap items-center gap-2 pt-2">
+          {['Copia narrativa — demo', 'Porta nel Board Pack — demo', 'Esporta — demo'].map((label) => (
+            <button
+              key={label}
+              disabled
+              className="rounded border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-400 cursor-not-allowed"
+              title="Demo — nessuna generazione reale in Foundation Light."
+            >
+              {label}
+            </button>
+          ))}
+          <span className="text-[10px] text-slate-400 italic self-center">
+            Demo — nessun export reale, nessun LLM esterno, nessun dato individuale.
+          </span>
+        </div>
+
+      </div>
     </div>
   );
 }

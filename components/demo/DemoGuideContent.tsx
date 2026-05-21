@@ -1,17 +1,61 @@
 import Link from 'next/link';
 import { PipelineConnectorBanner } from '@/components/demo/PipelineConnectorBanner';
 import { WorkspaceSwitcher } from '@/components/demo/WorkspaceSwitcher';
+import { StakeholderPaths } from '@/components/demo/StakeholderPaths';
 
-const REVIEW_STEPS = [
-  { step: 1, label: 'Executive Cockpit',          href: '/company',              desc: 'KORA Index · Confidence Score · Activation Safeguard · Schede insight' },
-  { step: 2, label: 'KORA Index Detail',          href: '/company/kora-index',   desc: 'Breakdown completo dei 10 componenti · Pannello di spiegabilità · Traccia metodologica' },
-  { step: 3, label: 'Attivazione & Partecipazione', href: '/company/activation', desc: 'AR · MAR · Continuità · Verifica · Distribuzione per pillar e dipartimento' },
-  { step: 4, label: 'KORA Contribution',          href: '/company/contribution', desc: 'Indicatore companion · Iniziative collettive · Attività ecosistema e partner' },
-  { step: 5, label: 'Pilastri & Iniziative',      href: '/company/pillars',      desc: 'Portfolio programmi · Distribuzione pillar · Tabella iniziative collettive' },
-  { step: 6, label: 'Dati & Evidenze',            href: '/company/data',         desc: 'Copertura delle fonti · Confidenza del mapping · Completezza evidenze · Solo a livello batch' },
-  { step: 7, label: 'KORA Operating Console',     href: '/admin',                desc: 'Passa al ruolo KORA Admin — AI Onboarding, Registro Index, portfolio e salute piattaforma' },
-  { step: 8, label: 'My KORA',                    href: '/my-kora',              desc: 'Spazio privato del lavoratore · Bilancio impatto personale · Dynamic CV · Controlli privacy — passa prima al ruolo Worker' },
-  { step: 9, label: 'Visione Futura',             href: '/future-vision',        desc: 'Moduli strategici post-pilota — tutti inattivi in Foundation Light' },
+const DEMO_12_MIN: {
+  step: number;
+  label: string;
+  href: string;
+  duration: string;
+  objective: string;
+  pitch: string;
+}[] = [
+  {
+    step: 1, label: "Che cos'è KORA", href: '/demo-guide', duration: '1 min',
+    objective: 'Inquadratura del prodotto, percorsi stakeholder e architettura demo',
+    pitch: "KORA non è welfare management: è intelligence organizzativa aggregata sull'attivazione umana.",
+  },
+  {
+    step: 2, label: 'Executive Cockpit', href: '/company', duration: '2 min',
+    objective: 'KORA Index · Confidence Score · Activation Safeguard · Insight C-suite',
+    pitch: "Il CEO vede in un'unica schermata lo stato di attivazione, le priorità direzionali e i segnali critici.",
+  },
+  {
+    step: 3, label: 'Dal dato grezzo al KORA Index', href: '/company/kora-index', duration: '2 min',
+    objective: 'Pipeline 14-stage · 10 componenti · Explainability · Confidence breakdown',
+    pitch: "KORA è una piattaforma metodologica: ogni numero è tracciabile, spiegabile e versioned.",
+  },
+  {
+    step: 4, label: 'Debito di Attivazione', href: '/company/activation', duration: '2 min',
+    objective: 'Activation Debt · Silent Majority · Pillar gap · Site gap · Next actions',
+    pitch: "Chi non è ancora attivato? KORA rende visibile la maggioranza silenziosa senza esporre individui.",
+  },
+  {
+    step: 5, label: 'Report e Board Pack', href: '/company/reports', duration: '1 min',
+    objective: 'Board Narrative Generator · Executive Snapshot · Limiti espliciti · CSR/ESG disclaimer',
+    pitch: "Output direzionale con metodologia, Confidence Score e disclaimer integrati — pronto per il board.",
+  },
+  {
+    step: 6, label: 'My KORA e privacy lavoratore', href: '/my-kora', duration: '1 min',
+    objective: 'PIB privato · Dynamic Impact CV · Privacy & Condivisione',
+    pitch: "Il lavoratore vede il proprio impatto personale. Il datore di lavoro non accede mai a questo layer.",
+  },
+  {
+    step: 7, label: 'Partner Operating Preview', href: '/partner', duration: '1 min',
+    objective: 'Protocollo evidenze · Coorti aggregate · Agenda operativa · Financial preview',
+    pitch: "Il partner abilita azioni verificabili — non gestisce un marketplace.",
+  },
+  {
+    step: 8, label: 'Advisor Process Audit', href: '/advisor', duration: '1 min',
+    objective: 'Evidence Protocol Review · Trust Ledger · Boundary Advisor-reviewed ≠ Certified',
+    pitch: "L'Advisor audita il processo, non valida ogni azione — Advisor-reviewed ≠ KORA Certified.",
+  },
+  {
+    step: 9, label: 'Future Vision', href: '/future-vision', duration: '1 min',
+    objective: 'Moduli post-pilot · KORA Certified · KORA Link · Value Chain · Advisor Academy',
+    pitch: "KORA si estende verso un ecosistema certificato — nessuna funzionalità attiva in Foundation Light.",
+  },
 ];
 
 export function DemoGuideContent() {
@@ -75,6 +119,9 @@ export function DemoGuideContent() {
           </Link>
         </div>
       </div>
+
+      {/* Stakeholder demo paths */}
+      <StakeholderPaths />
 
       {/* Multi-sided workspace switcher */}
       <WorkspaceSwitcher />
@@ -212,24 +259,31 @@ export function DemoGuideContent() {
         </div>
       </div>
 
-      {/* Review path */}
+      {/* 12-minute demo sequence */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
-          Come esplorare questa demo
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Percorso demo consigliato — 12 minuti
         </h2>
+        <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+          Sequenza lineare ottimale per una presentazione completa di KORA a buyer, advisor o stakeholder tecnici.
+        </p>
         <div className="space-y-2">
-          {REVIEW_STEPS.map((step) => (
+          {DEMO_12_MIN.map((step) => (
             <Link
               key={step.step}
               href={step.href}
               className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-4 hover:border-slate-300 hover:shadow-sm transition-all"
             >
-              <span className="shrink-0 w-6 h-6 rounded-full bg-slate-100 text-xs font-bold text-slate-500 flex items-center justify-center mt-0.5">
-                {step.step}
-              </span>
+              <div className="shrink-0 flex flex-col items-center gap-1">
+                <span className="w-6 h-6 rounded-full bg-slate-100 text-xs font-bold text-slate-500 flex items-center justify-center">
+                  {step.step}
+                </span>
+                <span className="text-[10px] font-mono text-slate-300">{step.duration}</span>
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-slate-800">{step.label}</p>
-                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{step.desc}</p>
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{step.objective}</p>
+                <p className="text-xs text-slate-600 mt-1 italic leading-relaxed">&ldquo;{step.pitch}&rdquo;</p>
               </div>
             </Link>
           ))}
