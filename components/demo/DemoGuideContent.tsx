@@ -12,57 +12,133 @@ const DEMO_12_MIN: {
   pitch: string;
 }[] = [
   {
-    step: 1, label: "Che cos'è KORA", href: '/demo-guide', duration: '1 min',
-    objective: 'Inquadratura del prodotto, percorsi stakeholder e architettura demo',
-    pitch: "KORA non è welfare management: è intelligence organizzativa aggregata sull'attivazione umana.",
+    step: 1, label: 'KORA Foundation Light Experience', href: '/demo-guide', duration: '1 min',
+    objective: 'Storia KORA, percorsi stakeholder, cosa è attivo, come usarla in una call',
+    pitch: "Tre parole chiave: misura, spiega, attiva. Il resto viene da sé.",
   },
   {
-    step: 2, label: 'Executive Cockpit', href: '/company', duration: '2 min',
+    step: 2, label: 'Executive Cockpit', href: '/company', duration: '1.5 min',
     objective: 'KORA Index · Confidence Score · Activation Safeguard · Insight C-suite',
     pitch: "Il CEO vede in un'unica schermata lo stato di attivazione, le priorità direzionali e i segnali critici.",
   },
   {
-    step: 3, label: 'Dal dato grezzo al KORA Index', href: '/company/kora-index', duration: '2 min',
+    step: 3, label: 'Come nasce il KORA Index', href: '/company/kora-index', duration: '1.5 min',
     objective: 'Pipeline 14-stage · 10 componenti · Explainability · Confidence breakdown',
     pitch: "KORA è una piattaforma metodologica: ogni numero è tracciabile, spiegabile e versioned.",
   },
   {
-    step: 4, label: 'Debito di Attivazione', href: '/company/activation', duration: '2 min',
+    step: 4, label: 'Debito di Attivazione', href: '/company/activation', duration: '1.5 min',
     objective: 'Activation Debt · Silent Majority · Pillar gap · Site gap · Next actions',
     pitch: "Chi non è ancora attivato? KORA rende visibile la maggioranza silenziosa senza esporre individui.",
   },
   {
-    step: 5, label: 'Report e Board Pack', href: '/company/reports', duration: '1 min',
+    step: 5, label: 'Budget-to-Impact Bridge', href: '/company/financial', duration: '1.5 min',
+    objective: 'Governance finanziaria · Budget per pillar · Costo per IU · HR KPI Correlation',
+    pitch: "Il CFO collega budget people a Impact Units prodotti — senza claim di ROI garantito.",
+  },
+  {
+    step: 6, label: 'Reports / Board Narrative', href: '/company/reports', duration: '1 min',
     objective: 'Board Narrative Generator · Executive Snapshot · Limiti espliciti · CSR/ESG disclaimer',
     pitch: "Output direzionale con metodologia, Confidence Score e disclaimer integrati — pronto per il board.",
   },
   {
-    step: 6, label: 'My KORA e privacy lavoratore', href: '/my-kora', duration: '1 min',
-    objective: 'PIB privato · Dynamic Impact CV · Privacy & Condivisione',
+    step: 7, label: 'My KORA Worker Layer', href: '/my-kora', duration: '1 min',
+    objective: 'PIB privato · Dynamic Impact CV · Consent & Sharing Vault · KORA Link stepper',
     pitch: "Il lavoratore vede il proprio impatto personale. Il datore di lavoro non accede mai a questo layer.",
   },
   {
-    step: 7, label: 'Partner Operating Preview', href: '/partner', duration: '1 min',
+    step: 8, label: 'Partner Operating Preview', href: '/partner', duration: '1 min',
     objective: 'Protocollo evidenze · Coorti aggregate · Agenda operativa · Financial preview',
     pitch: "Il partner abilita azioni verificabili — non gestisce un marketplace.",
   },
   {
-    step: 8, label: 'Advisor Process Audit', href: '/advisor', duration: '1 min',
+    step: 9, label: 'Advisor Process Audit', href: '/advisor', duration: '1 min',
     objective: 'Evidence Protocol Review · Trust Ledger · Boundary Advisor-reviewed ≠ Certified',
     pitch: "L'Advisor audita il processo, non valida ogni azione — Advisor-reviewed ≠ KORA Certified.",
   },
   {
-    step: 9, label: 'Future Vision', href: '/future-vision', duration: '1 min',
+    step: 10, label: 'Future Vision', href: '/future-vision', duration: '0.5 min',
     objective: 'Moduli post-pilot · KORA Certified · KORA Link · Value Chain · Advisor Academy',
     pitch: "KORA si estende verso un ecosistema certificato — nessuna funzionalità attiva in Foundation Light.",
   },
 ];
 
+const STORY_90: { n: number; title: string; body: string; tag: string }[] = [
+  {
+    n: 1,
+    title: "L'azienda ha dati sparsi",
+    body: 'Welfare, training, CSR, HR KPI, attività partner, Excel — fonti eterogenee, formati incompatibili, nessuna vista unificata.',
+    tag: 'Input grezzo',
+  },
+  {
+    n: 2,
+    title: 'KORA li normalizza',
+    body: 'AI Onboarding → UEF draft. Un operatore umano approva ogni record prima che entri nella pipeline. Nessuna automazione cieca.',
+    tag: 'Stage 1–5',
+  },
+  {
+    n: 3,
+    title: 'Le azioni diventano Impact Units',
+    body: 'Feature Vector → fattori di correzione (CQ, EV, AGF) → Impact Units per pillar → PIB privato del lavoratore.',
+    tag: 'Stage 6–11',
+  },
+  {
+    n: 4,
+    title: "L'azienda vede solo aggregati",
+    body: 'Company Aggregation sopra soglia privacy (≥10 lavoratori). Nessun PIB individuale, nessun nome, nessun ID.',
+    tag: 'Stage 12',
+  },
+  {
+    n: 5,
+    title: 'Nascono KORA Index e Confidence Score',
+    body: 'Activation Safeguard (CLEAR/WARNING/FLAGGED) → KORA Index 10 componenti → Confidence Score inseparabile.',
+    tag: 'Stage 13–14',
+  },
+  {
+    n: 6,
+    title: 'KORA mostra dove manca attivazione',
+    body: 'Activation Debt identifica la maggioranza silenziosa. Budget-to-Impact Bridge collega spesa a IU prodotti per pillar.',
+    tag: 'Explainability',
+  },
+  {
+    n: 7,
+    title: 'Il board riceve un Decision Pack',
+    body: 'Reports, Board Narrative Generator, Next Actions. Con metodologia versionata, limiti espliciti e Confidence Score.',
+    tag: 'Output',
+  },
+];
+
+const READINESS: { label: string; status: 'active' | 'future' | 'blocked'; note?: string }[] = [
+  { label: 'Action-to-Index visibile',                          status: 'active' },
+  { label: 'KORA Index + Confidence Score',                     status: 'active' },
+  { label: 'Activation Safeguard (CLEAR / WARNING / FLAGGED)',  status: 'active' },
+  { label: 'Activation Debt / Silent Majority',                 status: 'active' },
+  { label: 'Budget-to-Impact Bridge + HR KPI Correlation',      status: 'active' },
+  { label: 'Board Pack / Board Narrative Generator',            status: 'active' },
+  { label: 'My KORA privacy/value layer',                       status: 'active' },
+  { label: 'Partner Operating Preview',                         status: 'active' },
+  { label: 'Advisor Process Audit',                             status: 'active' },
+  { label: 'Role-based demo navigation (8 ruoli)',              status: 'active' },
+  { label: 'Future Vision screens (labeled inactive)',          status: 'active' },
+  { label: 'KORA Certified',                                    status: 'future',  note: 'Post-pilot' },
+  { label: 'KORA Link NFC/QR operativo',                        status: 'future',  note: 'Post-pilot' },
+  { label: 'Partner Marketplace transazionale',                 status: 'future',  note: 'Post-pilot' },
+  { label: 'Worker Wallet',                                     status: 'future',  note: 'Post-pilot' },
+  { label: 'Live HRIS / LMS integrations',                      status: 'blocked', note: 'Gate 3' },
+  { label: 'Production SQL / Auth',                             status: 'blocked', note: 'Gate 2' },
+];
+
+const STATUS_STYLE = {
+  active:  { label: 'Attivo in Foundation Light', cls: 'bg-green-50 text-green-700 border-green-200' },
+  future:  { label: 'Future Vision',              cls: 'bg-orange-50 text-orange-700 border-orange-200' },
+  blocked: { label: 'Non attivo',                 cls: 'bg-slate-100 text-slate-500 border-slate-200' },
+} as const;
+
 export function DemoGuideContent() {
   return (
     <div className="space-y-10 max-w-3xl">
 
-      {/* Hero */}
+      {/* ── 1. Hero ── */}
       <div>
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
@@ -77,34 +153,43 @@ export function DemoGuideContent() {
         </div>
 
         <h1 className="text-3xl font-bold text-slate-900 leading-tight">
-          KORA mostra se le iniziative organizzative attivano davvero le persone.
+          KORA Foundation Light Demo Experience
         </h1>
-        <p className="mt-3 text-base text-slate-600 leading-relaxed max-w-2xl">
-          KORA trasforma azioni frammentate, segnali di partecipazione ed evidenze
-          in intelligence organizzativa sull&apos;attivazione verificata — un output a livello aziendale
-          con Confidence Score, Activation Safeguard e spiegabilità versioned.
+        <p className="mt-2 text-base text-slate-600 leading-relaxed max-w-2xl">
+          La demo commerciale di KORA: dal dato grezzo all&apos;intelligence organizzativa,
+          dal lavoratore al board, dal partner all&apos;Advisor.
         </p>
 
-        {/* Positioning strip */}
-        <div className="mt-4 rounded border border-slate-200 bg-slate-50 px-4 py-3">
-          <p className="text-xs font-semibold text-slate-500 tracking-wide leading-relaxed">
-            Non è gestione del welfare&nbsp;&nbsp;·&nbsp;&nbsp;
-            Non è sorveglianza HR&nbsp;&nbsp;·&nbsp;&nbsp;
-            Non è un tracker del benessere&nbsp;&nbsp;·&nbsp;&nbsp;
-            Non è una dashboard ESG generica&nbsp;&nbsp;·&nbsp;&nbsp;
-            Non è un marketplace
-          </p>
-        </div>
-
-        {/* Thesis */}
         <div className="mt-4 rounded border border-indigo-100 bg-indigo-50 px-4 py-3">
           <p className="text-sm font-semibold text-indigo-800">
-            Le aziende vedono intelligence organizzativa aggregata.
-            I lavoratori mantengono la proprietà del proprio layer personale.
+            KORA trasforma azioni reali in intelligence organizzativa verificata —
+            senza esporre dati individuali dei lavoratori.
           </p>
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-4 grid grid-cols-3 gap-3">
+          {[
+            { title: 'Misura',  body: 'KORA Index · Confidence Score · Activation Safeguard' },
+            { title: 'Spiega', body: 'Action-to-Index · Explainability · Activation Debt' },
+            { title: 'Attiva', body: 'Partner · Advisor · My KORA · Reports' },
+          ].map((p) => (
+            <div key={p.title} className="rounded-lg border border-slate-200 bg-white p-3">
+              <p className="text-sm font-bold text-slate-800">{p.title}</p>
+              <p className="mt-1 text-xs text-slate-500 leading-relaxed">{p.body}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 rounded border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-xs font-semibold text-amber-700">Limitazioni obbligatorie</p>
+          <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+            Foundation Light usa dati sintetici demo e{' '}
+            <span className="font-mono">calibration_status = pre_empirical_calibration</span>.
+            Non produce certificazioni, compliance assurance o causalità ROI.
+          </p>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-2">
           <Link
             href="/company"
             className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition-colors"
@@ -115,21 +200,189 @@ export function DemoGuideContent() {
             href="/my-kora"
             className="rounded-md border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
           >
-            Apri il Preview My KORA
+            Apri My KORA
           </Link>
         </div>
       </div>
 
-      {/* Stakeholder demo paths */}
+      {/* ── 2. Cosa può comprare un'azienda oggi ── */}
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Offerta commerciale
+        </h2>
+        <p className="text-lg font-bold text-slate-900 mb-4">
+          Cosa può comprare un&apos;azienda oggi
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {[
+            {
+              letter: 'A',
+              title: 'KORA Readiness & Data Inventory',
+              body: 'Mappatura delle fonti dati people/welfare/training/CSR e readiness per generare una prima intelligence KORA.',
+              color: 'border-indigo-200 bg-indigo-50',
+              lc: 'text-indigo-300',
+            },
+            {
+              letter: 'B',
+              title: 'KORA Foundation Light Pilot',
+              body: 'Pilot 60–90 giorni per trasformare dati esistenti in KORA Index, Activation Debt, Confidence Score e Board Pack.',
+              color: 'border-blue-200 bg-blue-50',
+              lc: 'text-blue-300',
+            },
+            {
+              letter: 'C',
+              title: 'People Activation Decision Pack',
+              body: 'Output direzionale per CEO, HR, ESG e Finance: report, narrative, limiti, next actions.',
+              color: 'border-emerald-200 bg-emerald-50',
+              lc: 'text-emerald-300',
+            },
+            {
+              letter: 'D',
+              title: 'Partner / Advisor Activation Preview',
+              body: "Prima vista dell'ecosistema: partner, protocolli evidenze, Advisor Process Audit e opportunità worker.",
+              color: 'border-violet-200 bg-violet-50',
+              lc: 'text-violet-300',
+            },
+          ].map((card) => (
+            <div key={card.letter} className={`rounded-lg border p-5 ${card.color}`}>
+              <div className="flex items-start gap-3">
+                <span className={`text-2xl font-black leading-none shrink-0 ${card.lc}`}>{card.letter}</span>
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">{card.title}</p>
+                  <p className="mt-1.5 text-xs text-slate-600 leading-relaxed">{card.body}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
+          <p className="text-xs text-slate-600 leading-relaxed">
+            KORA Foundation Light non richiede integrazioni live per il primo pilot.
+            Lavora su dati sintetici/demo o dataset concordati, con metodologia versionata e limiti espliciti.
+          </p>
+        </div>
+      </div>
+
+      {/* ── 3. La storia KORA in 90 secondi ── */}
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Narrativa prodotto
+        </h2>
+        <p className="text-lg font-bold text-slate-900 mb-4">
+          La storia KORA in 90 secondi
+        </p>
+        <div className="space-y-2">
+          {STORY_90.map((s, i) => (
+            <div key={s.n} className="flex gap-3 items-start rounded-lg border border-slate-200 bg-white p-4">
+              <div className="shrink-0 flex flex-col items-center gap-1">
+                <span className="w-6 h-6 rounded-full bg-indigo-100 text-xs font-bold text-indigo-600 flex items-center justify-center">
+                  {s.n}
+                </span>
+                {i < STORY_90.length - 1 && <div className="w-px h-4 bg-slate-200" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-semibold text-slate-800">{s.title}</p>
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">{s.tag}</span>
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500 leading-relaxed">{s.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 4. Stakeholder demo paths ── */}
       <StakeholderPaths />
 
-      {/* Multi-sided workspace switcher */}
+      {/* ── 5. Multi-sided workspace switcher ── */}
       <WorkspaceSwitcher />
 
-      {/* Action-to-Index pipeline */}
+      {/* ── 6. Action-to-Index pipeline ── */}
       <PipelineConnectorBanner />
 
-      {/* What KORA measures and does not */}
+      {/* ── 7. Percorso demo 12 minuti ── */}
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Percorso consigliato
+        </h2>
+        <p className="text-lg font-bold text-slate-900 mb-1">
+          Percorso consigliato per demo aziendale — 12 minuti
+        </p>
+        <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+          Sequenza lineare ottimale per una presentazione completa a buyer, advisor o stakeholder tecnici.
+        </p>
+        <div className="space-y-2">
+          {DEMO_12_MIN.map((step) => (
+            <Link
+              key={step.step}
+              href={step.href}
+              className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-4 hover:border-slate-300 hover:shadow-sm transition-all"
+            >
+              <div className="shrink-0 flex flex-col items-center gap-1">
+                <span className="w-6 h-6 rounded-full bg-slate-100 text-xs font-bold text-slate-500 flex items-center justify-center">
+                  {step.step}
+                </span>
+                <span className="text-[10px] font-mono text-slate-300">{step.duration}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-slate-800">{step.label}</p>
+                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{step.objective}</p>
+                <p className="text-xs text-slate-600 mt-1 italic leading-relaxed">&ldquo;{step.pitch}&rdquo;</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 8. Perché KORA non è una dashboard HR ── */}
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Differenziazione
+        </h2>
+        <p className="text-lg font-bold text-slate-900 mb-4">
+          Perché KORA non è una dashboard HR
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="rounded-lg border border-rose-100 bg-rose-50 p-5">
+            <p className="text-xs font-semibold text-rose-700 mb-3">KORA non è</p>
+            <ul className="space-y-2">
+              {[
+                'Welfare platform',
+                'HR surveillance tool',
+                'ESG dashboard generica',
+                'Marketplace di servizi',
+                'Social network aziendale',
+                'Sistema di ranking lavoratori',
+              ].map((item) => (
+                <li key={item} className="flex gap-1.5 text-sm text-rose-800">
+                  <span className="text-rose-300 shrink-0 mt-0.5">✕</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-lg border border-green-100 bg-green-50 p-5">
+            <p className="text-xs font-semibold text-green-700 mb-3">KORA è</p>
+            <ul className="space-y-2">
+              {[
+                'Human Impact Intelligence Platform',
+                'Activation Orchestration Layer',
+                'Evidence & Trust Layer',
+                'Privacy-first worker-owned layer',
+                'Board-ready decision system',
+              ].map((item) => (
+                <li key={item} className="flex gap-1.5 text-sm text-green-800">
+                  <span className="text-green-500 shrink-0 mt-0.5">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 9. Cosa viene misurato ── */}
       <div>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
           Cosa viene misurato
@@ -142,7 +395,7 @@ export function DemoGuideContent() {
                 'Tasso di attivazione organizzativa e distribuzione',
                 'Bilanciamento della partecipazione tra dipartimenti e pillar',
                 'Copertura pillar su LIFE, GROWTH, CONNECTION, IMPACT, LEGACY',
-                "Qualità del contributo verificata vs. autodichiarata",
+                'Qualità del contributo verificata vs. autodichiarata',
                 "Continuità dell'engagement tra periodi",
                 "Confidence Score che riflette l'affidabilità delle evidenze",
               ].map((item) => (
@@ -153,7 +406,6 @@ export function DemoGuideContent() {
               ))}
             </ul>
           </div>
-
           <div className="rounded-lg border border-rose-100 bg-rose-50 p-5">
             <p className="text-xs font-semibold text-rose-700 mb-3">KORA non misura</p>
             <ul className="space-y-2">
@@ -175,35 +427,103 @@ export function DemoGuideContent() {
         </div>
       </div>
 
-      {/* Why this matters */}
+      {/* ── 10. Stato demo commerciale ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
-          Perché questo è importante
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Readiness commerciale
         </h2>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <p className="text-lg font-bold text-slate-900 mb-4">
+          Stato demo commerciale
+        </p>
+        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+          <div className="divide-y divide-slate-100">
+            {READINESS.map((item) => {
+              const s = STATUS_STYLE[item.status];
+              return (
+                <div key={item.label} className="flex items-center justify-between gap-4 px-4 py-3">
+                  <p className="text-sm text-slate-700">{item.label}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {item.note && (
+                      <span className="text-xs font-mono text-slate-400">{item.note}</span>
+                    )}
+                    <span className={`rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap ${s.cls}`}>
+                      {s.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── 11. Come usare KORA in una call ── */}
+      <div>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          Sales enablement
+        </h2>
+        <p className="text-lg font-bold text-slate-900 mb-4">
+          Come usare KORA in una call con un&apos;azienda
+        </p>
+        <div className="space-y-4">
           {[
             {
-              title: "Per l'azienda",
-              body: "Smettila di indovinare se il tuo budget per il welfare e le iniziative raggiunge le persone. KORA ti dice cosa viene attivato, con quale distribuzione e con quale qualità delle evidenze.",
+              format: 'A',
+              title: 'Intro esecutiva — 15 minuti',
+              focus: 'CEO / CHRO',
+              color: 'border-indigo-200 bg-indigo-50',
+              lc: 'text-indigo-300',
+              sequence: ['KORA Index', 'Activation Debt', 'Board Pack'],
+              note: "Apri con KORA Index e Activation Safeguard (WARNING vs. CLEAR), mostra l'Activation Debt per la maggioranza silenziosa, chiudi con il Board Pack.",
             },
             {
-              title: 'Per il lavoratore',
-              body: "Nessuna sorveglianza. Il tuo bilancio impatto personale, le impostazioni di consenso e il Dynamic CV sono tuoi. Il tuo datore di lavoro vede solo intelligence aggregata — mai i tuoi dati individuali.",
+              format: 'B',
+              title: 'Demo prodotto — 30 minuti',
+              focus: 'CHRO · CFO · ESG',
+              color: 'border-emerald-200 bg-emerald-50',
+              lc: 'text-emerald-300',
+              sequence: ['Executive Cockpit', 'Pipeline dati', 'Budget-to-Impact', 'My KORA', 'Partner / Advisor'],
+              note: "Apertura con Cockpit, poi pipeline (PipelineConnectorBanner), Budget-to-Impact Bridge per CFO, My KORA per dimostrare il layer lavoratore, chiudi con Partner e Advisor.",
             },
             {
-              title: "Per l'ecosistema",
-              body: "Partner, advisor e iniziative collettive si connettono a un layer di intelligence verificabile. L'attivazione viene misurata, non presupposta.",
+              format: 'C',
+              title: 'Pilot discovery — 60 minuti',
+              focus: 'CHRO · CTO · CFO · HR · ESG',
+              color: 'border-violet-200 bg-violet-50',
+              lc: 'text-violet-300',
+              sequence: ['Data inventory', 'Readiness', 'Budget people', 'KPI HR', 'Ecosistema', 'Next steps pilot'],
+              note: "Sessione discovery: mappatura fonti dati disponibili, readiness, budget people, KPI HR in scope, ecosistema partner/advisor, proposal pilot 60–90 giorni.",
             },
-          ].map((card) => (
-            <div key={card.title} className="rounded-lg border border-slate-200 bg-white p-4">
-              <p className="text-sm font-semibold text-slate-800 mb-2">{card.title}</p>
-              <p className="text-xs text-slate-500 leading-relaxed">{card.body}</p>
+          ].map((call) => (
+            <div key={call.format} className={`rounded-lg border p-5 ${call.color}`}>
+              <div className="flex items-start gap-3">
+                <span className={`text-2xl font-black leading-none shrink-0 ${call.lc}`}>{call.format}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-semibold text-slate-800">{call.title}</p>
+                    <span className="rounded bg-white border border-slate-200 px-1.5 py-0.5 text-xs font-medium text-slate-600">
+                      {call.focus}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {call.sequence.map((step) => (
+                      <span
+                        key={step}
+                        className="rounded bg-white/70 border border-slate-200 px-1.5 py-0.5 text-[10px] font-mono text-slate-600"
+                      >
+                        {step}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="mt-2 text-xs text-slate-600 leading-relaxed">{call.note}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Scenario story */}
+      {/* ── 12. Una società, due momenti nel tempo ── */}
       <div>
         <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
           Una società, due momenti nel tempo
@@ -211,7 +531,8 @@ export function DemoGuideContent() {
         <p className="text-sm text-slate-500 mb-4">
           Meridiana Group S.r.l. è la principale società demo sintetica.
           Due scenari mostrano KORA prima e dopo aver agito sulle sue raccomandazioni.
-          Passa tra di essi con i pulsanti <span className="font-semibold text-slate-700">Demo Scenario</span> nella barra superiore.
+          Passa tra di essi con i pulsanti{' '}
+          <span className="font-semibold text-slate-700">Demo Scenario</span> nella barra superiore.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -259,50 +580,19 @@ export function DemoGuideContent() {
         </div>
       </div>
 
-      {/* 12-minute demo sequence */}
-      <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
-          Percorso demo consigliato — 12 minuti
-        </h2>
-        <p className="text-sm text-slate-500 mb-4 leading-relaxed">
-          Sequenza lineare ottimale per una presentazione completa di KORA a buyer, advisor o stakeholder tecnici.
-        </p>
-        <div className="space-y-2">
-          {DEMO_12_MIN.map((step) => (
-            <Link
-              key={step.step}
-              href={step.href}
-              className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-4 hover:border-slate-300 hover:shadow-sm transition-all"
-            >
-              <div className="shrink-0 flex flex-col items-center gap-1">
-                <span className="w-6 h-6 rounded-full bg-slate-100 text-xs font-bold text-slate-500 flex items-center justify-center">
-                  {step.step}
-                </span>
-                <span className="text-[10px] font-mono text-slate-300">{step.duration}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-800">{step.label}</p>
-                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{step.objective}</p>
-                <p className="text-xs text-slate-600 mt-1 italic leading-relaxed">&ldquo;{step.pitch}&rdquo;</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Demo status */}
+      {/* ── 13. Stato della demo ── */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">
           Stato della demo
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
           {[
-            ['Dati',                   'Solo sintetici — nessun dato aziendale reale'],
-            ['Calibrazione',           'Pre-empirica — metodologia v0.1, pesi provvisori'],
-            ['Account lavoratori',     'Nessuno — nessun record di partecipazione reale'],
-            ['Backend',                'Nessun DB in produzione, nessuna auth, nessuna API live'],
-            ['Pagamenti / marketplace','Nessuno — esclusi da Foundation Light'],
-            ['Accesso datore lavoro',  'Il datore di lavoro non vede mai i dati individuali dei lavoratori'],
+            ['Dati',                    'Solo sintetici — nessun dato aziendale reale'],
+            ['Calibrazione',            'Pre-empirica — metodologia v0.1, pesi provvisori'],
+            ['Account lavoratori',      'Nessuno — nessun record di partecipazione reale'],
+            ['Backend',                 'Nessun DB in produzione, nessuna auth, nessuna API live'],
+            ['Pagamenti / marketplace', 'Nessuno — esclusi da Foundation Light'],
+            ['Accesso datore lavoro',   'Il datore di lavoro non vede mai i dati individuali dei lavoratori'],
           ].map(([label, value]) => (
             <div key={label} className="flex gap-3">
               <span className="text-xs font-semibold text-slate-500 shrink-0 w-40">{label}</span>
