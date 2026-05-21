@@ -122,11 +122,14 @@ export default function DynamicCV() {
               </div>
               <div className="mt-2 flex items-center justify-between">
                 <p className="text-xs text-slate-400 italic">{item.export_label}</p>
+                {/* Visibility control per item — demo-only */}
                 <span className={cn(
-                  'text-xs font-medium',
-                  item.shareable ? 'text-indigo-600' : 'text-slate-300',
+                  'rounded border px-2 py-0.5 text-xs font-medium cursor-not-allowed',
+                  item.shareable
+                    ? 'bg-indigo-50 text-indigo-600 border-indigo-200'
+                    : 'bg-slate-50 text-slate-400 border-slate-200',
                 )}>
-                  {item.shareable ? 'Condivisibile' : 'Non ancora condivisibile'}
+                  {item.shareable ? '🔓 Condivisibile' : '🔒 Privato'}
                 </span>
               </div>
             </div>
@@ -140,20 +143,45 @@ export default function DynamicCV() {
         <p className="text-xs text-amber-700 leading-relaxed">{cvPreview.disclaimer}</p>
       </div>
 
-      {/* Export — disabled, preview only */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-slate-700">Esporta Dynamic Impact CV</p>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Genera un portfolio di impatto portabile e firmato per la condivisione esterna.
-          </p>
+      {/* Export & sharing actions — Future Vision */}
+      <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 mb-1">
+        <p className="text-xs font-semibold text-orange-700">
+          Future Vision / Non attivo in Foundation Light
+        </p>
+        <p className="text-xs text-orange-600 mt-0.5">
+          Le funzioni di esportazione e condivisione sono previste post-pilota. Nessuna esportazione reale avviene in questa demo.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-slate-700">Esporta profilo — Future Vision</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Genera un portfolio di impatto portabile e firmato per la condivisione esterna.
+            </p>
+          </div>
+          <button
+            disabled
+            className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-400 cursor-not-allowed"
+          >
+            Esporta — Non attivo
+          </button>
         </div>
-        <button
-          disabled
-          className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-400 cursor-not-allowed"
-        >
-          Esporta — Solo anteprima
-        </button>
+        <div className="border-t border-slate-100 pt-3 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-slate-700">Condividi su LinkedIn — Future Vision</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Aggiungi il tuo KORA Impact Badge al profilo LinkedIn con evidenze verificate.
+            </p>
+          </div>
+          <button
+            disabled
+            className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-400 cursor-not-allowed"
+          >
+            LinkedIn — Non attivo
+          </button>
+        </div>
       </div>
     </div>
   );

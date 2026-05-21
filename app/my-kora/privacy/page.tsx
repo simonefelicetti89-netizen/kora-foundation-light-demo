@@ -124,6 +124,93 @@ export default function PrivacySharing() {
         </div>
       </div>
 
+      {/* Consent & Sharing Vault */}
+      <div>
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Consent &amp; Sharing Vault
+        </h2>
+
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-3">
+          <p className="text-xs font-semibold text-amber-700">Solo anteprima — Foundation Light</p>
+          <p className="text-xs text-amber-700 mt-0.5">
+            Il Vault è mostrato solo a scopo illustrativo. Nessuna modifica di consenso reale avviene in questa demo.
+          </p>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+          <div className="divide-y divide-slate-100">
+            {[
+              {
+                id: 'vault-pib',
+                data_type: 'PIB individuale',
+                status: 'Privato',
+                status_color: 'bg-rose-50 text-rose-700 border-rose-200',
+                employer_visibility: 'Mai',
+                note: 'Il tuo Personal Impact Balance è esclusivamente tuo. Il datore di lavoro vede solo aggregati aziendali.',
+              },
+              {
+                id: 'vault-timeline',
+                data_type: 'Timeline personale',
+                status: 'Privata',
+                status_color: 'bg-rose-50 text-rose-700 border-rose-200',
+                employer_visibility: 'Mai',
+                note: 'Ogni evento nel tuo percorso è visibile solo a te. Nessun accesso employer.',
+              },
+              {
+                id: 'vault-cv',
+                data_type: 'Dynamic Impact CV',
+                status: 'Worker-controlled',
+                status_color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                employer_visibility: 'Solo esplicito',
+                note: 'Puoi scegliere tu cosa condividere, con chi e per quanto tempo. Nessuna condivisione automatica.',
+              },
+              {
+                id: 'vault-aggregates',
+                data_type: 'Aggregati aziendali',
+                status: 'Anonimi sopra soglia',
+                status_color: 'bg-green-50 text-green-700 border-green-200',
+                employer_visibility: 'Sì — aggregato',
+                note: 'Dati consolidati a livello aziendale. Nessun dato individuale. Soglia minima: 10 lavoratori per segmento.',
+              },
+              {
+                id: 'vault-partner',
+                data_type: 'Partner KORA',
+                status: 'Solo iniziative autorizzate',
+                status_color: 'bg-slate-50 text-slate-600 border-slate-200',
+                employer_visibility: 'Nessun PIB / timeline',
+                note: "I partner vedono solo l'esito di partecipazione a iniziative cui hai aderito. Non accedono al tuo PIB né alla timeline.",
+              },
+              {
+                id: 'vault-advisor',
+                data_type: 'Advisor KORA',
+                status: 'Solo review assegnate',
+                status_color: 'bg-slate-50 text-slate-600 border-slate-200',
+                employer_visibility: 'Perimetro review',
+                note: "L'advisor accede solo agli UEF che rientrano nella review formalmente assegnata. Non ha accesso al profilo completo.",
+              },
+            ].map((row) => (
+              <div key={row.id} className="px-4 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium text-slate-700">{row.data_type}</p>
+                      <span className={cn('rounded border px-1.5 py-0.5 text-xs font-medium', row.status_color)}>
+                        {row.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">{row.note}</p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-xs text-slate-400">Visibilità employer</p>
+                    <p className="text-xs font-medium text-slate-600 mt-0.5">{row.employer_visibility}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Data deletion notice */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
         <p className="text-xs font-semibold text-slate-600 mb-1">Cancellazione Dati & Portabilità</p>

@@ -118,7 +118,7 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/my-kora',               label: 'My KORA Home' },
           { href: '/my-kora/privacy',       label: 'Privacy & Condivisione' },
           { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV' },
-          { href: '/my-kora/opportunities', label: 'Opportunità',      comingSoon: true },
+          { href: '/my-kora/opportunities', label: 'Opportunità' },
           { href: '/my-kora/bookings',      label: 'Prenotazioni',     comingSoon: true },
           { href: '/my-kora/collective',    label: 'Impatto Collettivo', comingSoon: true },
         ],
