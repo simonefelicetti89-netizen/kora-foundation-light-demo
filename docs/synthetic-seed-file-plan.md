@@ -205,7 +205,7 @@ Every object in every seed file must include the following metadata fields. Thes
 {
   "methodology_version_id": "KORA Methodology v0.1",
   "calibration_status": "pre_empirical_calibration",
-  "methodology_notes": "Provisional implementation baseline. Equal weight vector 0.10 x 10 components. Pre-Delphi calibration."
+  "methodology_notes": "KORA Index v3 — v0.1 pre-empirical calibration. Macroblock weights: REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%. CS external (weight=0). Pre-Delphi calibration. Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical."
 }
 ```
 

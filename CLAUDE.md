@@ -110,8 +110,17 @@ The KORA Index v3 has exactly these 10 components. Do not add, remove, merge, or
 
 **KORA Contribution** is a companion indicator measuring collective and ecosystem engagement. It is NOT a KORA Index component. Display it separately — never merge it into the KORA Index computation.
 
-Provisional v0.1 weights: equal vector — 0.10 × 10 components.
-Weights are read from `lib/methodology-config/v0.1.ts`. Never hardcoded in components or services.
+**KORA Index v3 is canonical.** Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical.
+
+KORA Index v3 macroblock weights — v0.1 pre-empirical calibration:
+- Activation Reach — 25% (AR 12.5%, MAR 12.5%)
+- Activation Quality — 30% (NI ~10%, VR ~10%, CO ~10%)
+- Distribution & Equity — 25% (WB 6.25%, PC 6.25%, PB 6.25%, EQ 6.25%)
+- Budget-to-Human-Impact — 20% (BudgetToHumanImpactEngine — not from component values)
+
+**Confidence Score (CS) is external to KORA Index v3.** CS weight = 0. CS is displayed alongside the KORA Index as an external reliability indicator but does not influence the KORA Index value.
+
+Weights are read from `lib/methodology-config/v0.1.ts` via `getMacroblockWeights()`. Never hardcoded in components or services.
 
 ---
 

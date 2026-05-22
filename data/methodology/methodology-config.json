@@ -1,20 +1,71 @@
 {
-  "version": "KORA Methodology v0.1",
+  "version": "KORA Index v3 / KORA Methodology v0.1",
   "calibration_status": "pre_empirical_calibration",
-  "weights": {
-    "AR": 0.10,
-    "MAR": 0.10,
-    "NI": 0.10,
-    "WB": 0.10,
-    "PC": 0.10,
-    "PB": 0.10,
-    "EQ": 0.10,
-    "VR": 0.10,
-    "CO": 0.10,
-    "CS": 0.10
+
+  "methodology_note": "KORA Index v3 uses a theory-aligned v0.1 pre-empirical calibration. Previous equal weights were provisional scaffolding and are no longer canonical. Confidence Score is external to the KORA Index. Activation Safeguard is an interpretation gate, not a weighted component.",
+
+  "kora_index_v3": {
+    "cs_external": true,
+    "cs_note": "Confidence Score (CS) is external to the KORA Index v3 computation. Weight = 0 in the KORA Index. CS is displayed in the 10-component breakdown as an external reliability indicator only — it does not influence the KORA Index value.",
+    "activation_safeguard_note": "Activation Safeguard (CLEAR / WARNING / FLAGGED) is an interpretation gate applied after KORA Index computation. It is not a weighted component and does not modify the KORA Index value.",
+    "note": "KORA Index v3 uses a theory-aligned v0.1 pre-empirical calibration. Weights are subject to expert validation and empirical calibration post-pilot.",
+    "macroblocks": {
+      "REACH": {
+        "label": "Activation Reach",
+        "weight": 0.25,
+        "description": "Measures whether the company reaches a meaningful share of the workforce. Low reach means most workers are untouched by any verified activation program.",
+        "components": {
+          "AR": 0.50,
+          "MAR": 0.50
+        }
+      },
+      "QUALITY": {
+        "label": "Activation Quality",
+        "weight": 0.30,
+        "description": "Measures whether actions generate deep, verified and additional human activation. Quality distinguishes genuine human impact from surface-level or mandatory compliance events.",
+        "components": {
+          "NI": 0.333,
+          "VR": 0.333,
+          "CO": 0.334
+        }
+      },
+      "EQUITY": {
+        "label": "Distribution & Equity",
+        "weight": 0.25,
+        "description": "Measures whether activation and value are distributed across workers, sites, departments and clusters. High concentration among few workers or sites reduces equity.",
+        "components": {
+          "WB": 0.25,
+          "PC": 0.25,
+          "PB": 0.25,
+          "EQ": 0.25
+        }
+      },
+      "BTI": {
+        "label": "Budget-to-Human-Impact",
+        "weight": 0.20,
+        "description": "Measures how effectively people/welfare budget becomes real human value. Computed by the BudgetToHumanImpactEngine from spend classification, activation debt and efficiency metrics — not from KORA Index component values.",
+        "bti_engine": true,
+        "components": {}
+      }
+    }
   },
+
+  "legacy_equal_weights_note": "Deprecated. Not canonical for KORA Index v3. The previous equal-weight vector (0.10 × 10 components) was provisional scaffolding used in the Foundation Light pre-build phase. It is retained here for backwards compatibility only and must not be used for KORA Index v3 computation or documentation. Use kora_index_v3.macroblocks for v3 computation.",
+  "weights": {
+    "AR":  0.10,
+    "MAR": 0.10,
+    "NI":  0.10,
+    "WB":  0.10,
+    "PC":  0.10,
+    "PB":  0.10,
+    "EQ":  0.10,
+    "VR":  0.10,
+    "CO":  0.10,
+    "CS":  0.10
+  },
+
   "safeguard_thresholds": {
-    "CLEAR": { "AR": 0.40, "MAR": 0.30 },
+    "CLEAR":   { "AR": 0.40, "MAR": 0.30 },
     "WARNING": { "AR_min": 0.20, "AR_max": 0.40, "MAR_min": 0.15, "MAR_max": 0.30 },
     "FLAGGED": { "AR_max": 0.20, "MAR_max": 0.15 }
   }

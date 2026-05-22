@@ -225,8 +225,11 @@ Future (inactive): `kora_value_chain` (status='not_calculated'), `kora_evolution
 18. gov.kip_records — NOT CREATED in Foundation Light (hard exclusion)
 19. No hardcoded methodology weights — all weights read from gov.kora_index_weight_versions
 
-### D-21 Provisional Methodology Values
-- Equal weight vector: 0.10 × 10 components (all equal at Foundation Light v0.1)
+### D-21 Provisional Methodology Values — Superseded by KORA Index v3
+- **KORA Index v3 macroblock weights (v0.1 pre-empirical calibration, now canonical):**
+  - REACH 25% (AR 12.5%, MAR 12.5%) · QUALITY 30% (NI ~10%, VR ~10%, CO ~10%) · EQUITY 25% (WB 6.25%, PC 6.25%, PB 6.25%, EQ 6.25%) · BTI 20% (BudgetToHumanImpactEngine)
+  - CS external: weight=0, displayed alongside KORA Index but not included in computation
+  - Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical
 - Activation Safeguard thresholds:
   - CLEAR: AR ≥ 0.40 AND MAR ≥ 0.30
   - WARNING: 0.20 ≤ AR < 0.40 OR 0.15 ≤ MAR < 0.30

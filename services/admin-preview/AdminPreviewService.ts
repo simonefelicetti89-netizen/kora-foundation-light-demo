@@ -211,9 +211,9 @@ class AdminPreviewService {
   // 3. Benchmarks
   getBenchmarkPreview(): BenchmarkPreview[] {
     return [
-      { dimension: 'Sector', cluster_label: 'Manufacturing & Logistics — Italy', meridiana_index: 64, cluster_avg: 51, cluster_top_quartile: 68, percentile: '75th' },
-      { dimension: 'Territory', cluster_label: 'Northern Italy — Lombardy', meridiana_index: 64, cluster_avg: 58, cluster_top_quartile: 72, percentile: '65th' },
-      { dimension: 'Company size', cluster_label: '200–300 employees', meridiana_index: 64, cluster_avg: 55, cluster_top_quartile: 70, percentile: '70th' },
+      { dimension: 'Sector', cluster_label: 'Manufacturing & Logistics — Italy', meridiana_index: 54, cluster_avg: 51, cluster_top_quartile: 68, percentile: '75th' },
+      { dimension: 'Territory', cluster_label: 'Northern Italy — Lombardy', meridiana_index: 54, cluster_avg: 58, cluster_top_quartile: 72, percentile: '65th' },
+      { dimension: 'Company size', cluster_label: '200–300 employees', meridiana_index: 54, cluster_avg: 55, cluster_top_quartile: 70, percentile: '70th' },
     ];
   }
 

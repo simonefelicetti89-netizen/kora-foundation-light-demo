@@ -17,6 +17,21 @@ interface SeedPillarBudget {
   used: number;
   utilization_rate: number;
   programs: string[];
+  economic_relief_included?: number;
+}
+
+interface SeedBTIIndicators {
+  economic_relief_spend: number;
+  deep_activation_spend: number;
+  blocked_excluded_attempts: number;
+  economic_relief_share: number;
+  deep_activation_share: number;
+  activation_debt_eur: number;
+  activation_debt_description_it: string;
+  reallocation_opportunity_eur: number;
+  reallocation_opportunity_description_it: string;
+  bti_score: number;
+  bti_score_note: string;
 }
 
 interface SeedKoraBilling {
@@ -45,6 +60,8 @@ interface SeedFinancialRecord {
   cost_per_iu_note: string;
   currency: string;
   pillar_budget: Record<string, SeedPillarBudget>;
+  pillar_budget_note?: string;
+  bti_indicators?: SeedBTIIndicators;
   kora_billing: SeedKoraBilling;
   narrative: string;
 }
@@ -55,6 +72,22 @@ export interface PillarBudgetLine {
   used: number;
   utilization_rate: number;
   programs: string[];
+  economic_relief_included?: number;
+}
+
+export interface BTIIndicators {
+  economic_relief_spend: number;
+  deep_activation_spend: number;
+  blocked_excluded_attempts: number;
+  economic_relief_share: number;
+  deep_activation_share: number;
+  activation_debt_eur: number;
+  activation_debt_description_it: string;
+  reallocation_opportunity_eur: number;
+  reallocation_opportunity_description_it: string;
+  bti_score: number;
+  bti_score_note: string;
+  currency: string;
 }
 
 export interface FinancialGovernanceRecord {
@@ -75,6 +108,8 @@ export interface FinancialGovernanceRecord {
   cost_per_iu_note: string;
   currency: string;
   pillar_budget: PillarBudgetLine[];
+  pillar_budget_note?: string;
+  bti_indicators?: BTIIndicators;
   kora_billing: SeedKoraBilling;
   narrative: string;
 }
@@ -100,6 +135,7 @@ export interface IFinancialGovernanceService {
   getFinancialGovernance(companyId: string, scenarioId: ScenarioId, role: KoraRole): FinancialGovernanceResult;
   getPillarBudget(companyId: string, scenarioId: ScenarioId, role: KoraRole): PillarBudgetLine[] | null;
   getBudgetSummary(companyId: string, scenarioId: ScenarioId, role: KoraRole): BudgetSummary | null;
+  getBTIIndicators(companyId: string, scenarioId: ScenarioId, role: KoraRole): BTIIndicators | null;
 }
 
 export class FinancialGovernanceService implements IFinancialGovernanceService {
@@ -125,8 +161,16 @@ export class FinancialGovernanceService implements IFinancialGovernanceService {
         used: data.used,
         utilization_rate: data.utilization_rate,
         programs: data.programs,
+        ...(data.economic_relief_included !== undefined && {
+          economic_relief_included: data.economic_relief_included,
+        }),
       }),
     );
+
+    const bti_indicators: BTIIndicators | undefined = rec.bti_indicators
+      ? { ...rec.bti_indicators, currency: rec.currency }
+      : undefined;
+
     return {
       id: rec.id,
       company_id: rec.company_id,
@@ -145,6 +189,8 @@ export class FinancialGovernanceService implements IFinancialGovernanceService {
       cost_per_iu_note: rec.cost_per_iu_note,
       currency: rec.currency,
       pillar_budget,
+      ...(rec.pillar_budget_note && { pillar_budget_note: rec.pillar_budget_note }),
+      ...(bti_indicators && { bti_indicators }),
       kora_billing: rec.kora_billing,
       narrative: rec.narrative,
     };
@@ -180,7 +226,21 @@ export class FinancialGovernanceService implements IFinancialGovernanceService {
       used: data.used,
       utilization_rate: data.utilization_rate,
       programs: data.programs,
+      ...(data.economic_relief_included !== undefined && {
+        economic_relief_included: data.economic_relief_included,
+      }),
     }));
+  }
+
+  getBTIIndicators(
+    companyId: string,
+    scenarioId: ScenarioId,
+    role: KoraRole,
+  ): BTIIndicators | null {
+    if (!this.canAccessFinancialGovernance(role)) return null;
+    const rec = this.findRecord(companyId, scenarioId);
+    if (!rec?.bti_indicators) return null;
+    return { ...rec.bti_indicators, currency: rec.currency };
   }
 
   getBudgetSummary(

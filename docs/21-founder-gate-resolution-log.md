@@ -440,9 +440,11 @@ D-21 defines the numerical seed values required to execute the methodology seed 
 
 ### 5.2 KORA Index 10-Component Weight Vector
 
+> **AMENDMENT — KORA Index v3 (Phase 1N):** The flat equal-weight vector below was provisional scaffolding for Foundation Light pre-build. It is **no longer canonical**. KORA Index v3 replaces it with a theory-aligned macroblock weight structure (v0.1 pre-empirical calibration): REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20%. CS is external (weight=0). Canonical weights are in `data/methodology/methodology-config.json` and read via `lib/methodology-config/v0.1.ts`. The original decision record below is retained for audit continuity only.
+
 Components (from Architecture v3 and CLAUDE.md): AR, MAR, NI, WB, PC, PB, EQ, VR, CO, CS.
 
-**Provisional v0.1 weight vector: equal weights — 0.10 per component.**
+**Provisional v0.1 weight vector (original D-21 decision — superseded by KORA Index v3): equal weights — 0.10 per component.**
 
 Rationale: Equal weighting is the methodologically neutral baseline for a pre-calibration system. It does not impose an empirically unjustified relative emphasis on any component before the Delphi Study produces evidence-based weights. The Delphi Study may significantly redistribute these weights — that redistribution is the purpose of the calibration process.
 

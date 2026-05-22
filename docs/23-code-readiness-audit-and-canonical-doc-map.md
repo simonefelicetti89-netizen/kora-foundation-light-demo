@@ -97,8 +97,7 @@ IU_{e,p} = NM × BC_{e,p} × CQ × EV × CF × AGF [× DF] [× EXF] [× SF]
 | CO | Continuity | Temporal persistence |
 | CS | Confidence Score | NOT Company Scale; IS also a standalone output |
 
-- Provisional equal weights: 0.10 per component. These are implementation scaffolding, not final values.
-- CO redistribution rule: when CO = INSUFFICIENT_DATA, its 0.10 weight is redistributed proportionally across the 9 remaining components (`w_k_adjusted = 0.1111`). Total weight vector remains 1.00.
+- KORA Index v3 macroblock weights (v0.1 pre-empirical calibration): REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20%. Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical. Read from `lib/methodology-config/v0.1.ts` — never hardcoded.
 
 > **Phase 1M-A terminology warning:** A temporary error introduced in Phase 1M-A redefined EQ as "Evidence Quality." This has been reversed in Phase 1M-1. EQ = Equity remains canonical per `docs/10-architecture-v3-layer-specification.md` §17 and the table above. Evidence quality is handled by VR, CS, EV (correction factor in the IU formula), Evidence Debt, and Trust Ledger. Do not remap EQ to Evidence Quality or Event Quality in any future session.
 
@@ -152,7 +151,7 @@ IU_{e,p} = NM × BC_{e,p} × CQ × EV × CF × AGF [× DF] [× EXF] [× SF]
 | Appendix B concepts bleeding into active scope | CEF, KIP, Sector Friction Index, advanced Contribution in Appendix B | **NO ISSUE — monitored** | Doc 12 §1.3a lists all Appendix B deferred concepts explicitly. Boundary is enforced. Developers must not implement these without doc 18/20 inclusion. |
 | Financial data and KORA Index | Financial data enters KORA Index | **NO ISSUE** | Doc 10 §4 explicitly states financial data is INPUT layer only and never enters KORA Index. Confirmed in doc 11 §631. |
 | Old WhitePaper naming (ES, EF, RF, SQ, PA) | Historical names appearing in reference material | **MINOR — historical** | Old names exist only in Appendix B (correctly labeled historical) and doc 09 conflict map. They do not appear in active implementation docs. Developers must not use them. |
-| Equal weight vector permanence risk | Equal weights (0.10×10) could be treated as final values | **IMPORTANT** | Doc 21b §6 and CLAUDE.md Rule 34 explicitly state equal weights are scaffolding, not philosophy. Weights must be versioned config. Delphi Study will replace them. No code should treat 0.10 as a constant. |
+| Equal weight vector superseded | Previous equal weights (0.10×10) were provisional scaffolding — no longer canonical for KORA Index v3 | **RESOLVED** | KORA Index v3 macroblock weights (REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%) are now canonical per `data/methodology/methodology-config.json` and `lib/methodology-config/v0.1.ts`. Weights must remain versioned config — never hardcoded. Delphi Study will replace v0.1 pre-empirical calibration with empirically validated weights. |
 | SQL generation gating | Doc 12 is approved but blocked until Gate 2 | **BLOCKER — intentional** | No SQL may be generated until CTO reviews docs 10, 12, 13, 20, 21. Gate 2 is open. This is a required constraint, not a deficiency. |
 | Live data gating | Live HR/company data cannot be ingested before Gate 3 | **BLOCKER — intentional** | Gate 3 legal/privacy counsel review required. Synthetic-only development (Phases 1–2) may proceed. |
 
@@ -170,7 +169,7 @@ IU_{e,p} = NM × BC_{e,p} × CQ × EV × CF × AGF [× DF] [× EXF] [× SF]
 | PIB Engine | READY FOR DEMO APP WITH SYNTHETIC DATA | Gate 2 for SQL | Mandatory intermediate layer. Never bypassed. Employer roles have no access path. Grant absence. |
 | Company Aggregation | READY FOR DEMO APP WITH SYNTHETIC DATA | Gate 2 for SQL | Aggregates from PIB distribution. Not from raw event totals. Per doc 10 AG-01. |
 | Activation Safeguard | READY FOR DEMO APP WITH SYNTHETIC DATA | Gate 2 for SQL | CLEAR/WARNING/FLAGGED per D-21 thresholds. Non-bypassable. Must execute before KORA Index. |
-| KORA Index v3 | READY FOR DEMO APP WITH SYNTHETIC DATA | Gate 2 for SQL | 10 components, equal weights provisional, CO redistribution rule, versioned config. Calibration status = pre_empirical_calibration. |
+| KORA Index v3 | READY FOR DEMO APP WITH SYNTHETIC DATA | Gate 2 for SQL | 10 components (CS external, weight=0). KORA Index v3 macroblock weights (v0.1 pre-empirical calibration): REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20%. Versioned config via `lib/methodology-config/v0.1.ts`. Calibration status = pre_empirical_calibration. |
 | Confidence Score | READY FOR DEMO APP WITH SYNTHETIC DATA | Gate 2 for SQL | Always displayed with KORA Index. Also component 10 (CS). Never omitted. |
 | Explainability Layer | READY FOR DEMO APP WITH SYNTHETIC DATA | None | Plain-language reason for score, component breakdown, data quality notes, methodology version, pre-calibration disclosure. |
 | Executive Cockpit | READY FOR DEMO APP WITH SYNTHETIC DATA | None | KORA Index, Confidence Score, Activation Safeguard badge, 10-component breakdown, pillar distribution, warnings, next actions. |
@@ -198,7 +197,7 @@ IU_{e,p} = NM × BC_{e,p} × CQ × EV × CF × AGF [× DF] [× EXF] [× SF]
 | **Gate 1 — Founder Decisions (D-01–D-21)** | **CLOSED** (2026-05-17) | Nothing — Gate 1 is closed | All documentation work, UI design, demo app scaffolding, synthetic data build |
 | **Gate 2 — CTO Review** | **OPEN** | SQL DDL generation, schema provisioning (doc 22), Supabase project setup, Prisma model generation, any persistent database schema | Demo app scaffolding, UI prototyping, scoring simulation with in-memory or local config, synthetic data preparation, product functional spec (doc 24) |
 | **Gate 3 — Legal/Privacy Review** | **OPEN** | Live company data ingestion, live pilot with real HR data | All synthetic-only development (Phases 1–2 per doc 20), demo app with synthetic data, Gate 2 engagement |
-| **Gate 4 — Methodology Parameters** | **Provisionally satisfied** (D-21 equal weights, Activation Safeguard thresholds, NM scaling recorded in doc 21 §5) | Phase 5 scoring engine without provisional values | Demo scoring simulation using D-21 provisional values. Final calibration deferred to post-pilot Delphi Study. |
+| **Gate 4 — Methodology Parameters** | **Provisionally satisfied** (KORA Index v3 macroblock weights in `data/methodology/methodology-config.json`, Activation Safeguard thresholds, NM scaling recorded in doc 21 §5) | Phase 5 scoring engine without provisional values | Demo scoring simulation using KORA Index v3 v0.1 macroblock weights (REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20%). Final calibration deferred to post-pilot Delphi Study. Previous equal weights (0.10 × 10) are no longer canonical. |
 | **Gate 5 — Tax/Fiscal Review** | **OPEN** | Live fiscal classification outputs presented to clients, live Welfare Statement generation | All non-fiscal modules, Financial Governance Light dashboard (informational only), Gates 2 and 3 engagement |
 
 **Gate 2 can be initiated immediately.** No further documentation is required before the CTO begins their review of docs 10, 12, 13, 20, and 21.

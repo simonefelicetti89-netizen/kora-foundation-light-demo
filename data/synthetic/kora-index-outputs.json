@@ -1,12 +1,14 @@
 {
   "file": "kora-index-outputs.json",
-  "version": "1.0",
+  "version": "2.0",
+  "methodology": "KORA Index v3",
   "synthetic_demo_data": true,
   "generated_for": "foundation_light_demo",
   "not_live_data": true,
   "primary_consumer": "ScoringSimulatorService",
   "component_count_invariant": "Always exactly 10 components: AR, MAR, NI, WB, PC, PB, EQ, VR, CO, CS. Adding an 11th component is a methodology violation.",
   "kora_contribution_note": "KORA Contribution is a separate companion indicator. It is NOT a KORA Index component and is NOT included in this file. See kora-contribution-outputs.json.",
+  "v3_architecture_note": "KORA Index v3 = 4 macroblocks. CS weight=0 (external reliability indicator, not in computation). BTI macroblock score comes from BudgetToHumanImpactEngine, not from component values.",
   "data": [
     {
       "id": "kora-idx-S1-meridiana-2025",
@@ -16,87 +18,135 @@
       "not_live_data": true,
       "company_id": "meridiana-group",
       "reporting_period": "Q1–Q3 2025",
-      "kora_index_value": 47,
+      "kora_index_value": 34,
       "safeguard_status": "WARNING",
       "activation_safeguard_result_id": "safeguard-meridiana-S1-2025",
       "confidence_score": 0.60,
       "confidence_score_id": "conf-meridiana-S1-2025",
       "scoring_run_id": "run-meridiana-S1-2025-001",
-      "methodology_version_id": "KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v3 / KORA Methodology v0.1",
       "calibration_status": "pre_empirical_calibration",
-      "methodology_notes": "Provisional implementation baseline. Equal weight vector 0.10 x 10 components. Pre-Delphi calibration.",
+      "methodology_notes": "KORA Index v3 — macroblock architecture: REACH 25% (AR+MAR), QUALITY 30% (NI+VR+CO), EQUITY 25% (WB+PC+PB+EQ), BTI 20% (BudgetToHumanImpactEngine). CS external, weight=0. Pre-Delphi calibration.",
       "generated_at": "2025-10-15T09:00:00Z",
-      "limitations_text": "This KORA Index is a provisional diagnostic output produced under pre-empirical-calibration conditions. Component weights are equal-vector (0.10 × 10). Outputs are not empirically validated, not regulatory-grade, and not suitable for legal, fiscal, or comparative claims. Presented for pilot-grade diagnostic intelligence only.",
+      "limitations_text": "This KORA Index is a provisional diagnostic output produced under pre-empirical-calibration conditions (KORA Methodology v0.1). Macroblock weights are provisional — not yet empirically calibrated via Delphi Study. Outputs are not empirically validated, not regulatory-grade, and not suitable for legal, fiscal, or comparative claims. Presented for pilot-grade diagnostic intelligence only.",
       "components": [
         {
           "code": "AR",
           "label": "Activation Rate",
           "value": 0.38,
-          "weight": 0.10,
+          "weight": 0.125,
+          "macroblock": "REACH",
           "note": "Share of workforce with at least one approved IU. Below CLEAR threshold."
         },
         {
           "code": "MAR",
           "label": "Meaningful Activation Rate",
           "value": 0.22,
-          "weight": 0.10,
+          "weight": 0.125,
+          "macroblock": "REACH",
           "note": "Share with IU above materiality threshold. Low."
         },
         {
           "code": "NI",
           "label": "Normalized Intensity",
           "value": 0.41,
-          "weight": 0.10,
+          "weight": 0.100,
+          "macroblock": "QUALITY",
           "note": "Average IU magnitude per active worker. Moderate — concentrated in few workers."
         },
         {
           "code": "WB",
           "label": "Worker Balance",
           "value": 0.29,
-          "weight": 0.10,
+          "weight": 0.0625,
+          "macroblock": "EQUITY",
           "note": "Distribution evenness across active workers. Low — top 12% generating 64% of IU."
         },
         {
           "code": "PC",
           "label": "Pillar Coverage",
           "value": 0.60,
-          "weight": 0.10,
+          "weight": 0.0625,
+          "macroblock": "EQUITY",
           "note": "3 of 5 pillars have meaningful presence (LIFE, GROWTH, partial CONNECTION). IMPACT and LEGACY weak."
         },
         {
           "code": "PB",
           "label": "Pillar Balance",
           "value": 0.34,
-          "weight": 0.10,
+          "weight": 0.0625,
+          "macroblock": "EQUITY",
           "note": "Evenness of IU across covered pillars. Low — LIFE dominant at 44%."
         },
         {
           "code": "EQ",
           "label": "Equity",
           "value": 0.38,
-          "weight": 0.10,
+          "weight": 0.0625,
+          "macroblock": "EQUITY",
           "note": "Absence of activation concentration in demographic or hierarchical cohort. Low — Operations under-represented."
         },
         {
           "code": "VR",
           "label": "Verification Rate",
           "value": 0.41,
-          "weight": 0.10,
+          "weight": 0.100,
+          "macroblock": "QUALITY",
           "note": "Share of IU backed by verified or partially verified evidence. Low — high proportion self-declared."
         },
         {
           "code": "CO",
           "label": "Continuity",
           "value": 0.28,
-          "weight": 0.10,
+          "weight": 0.100,
+          "macroblock": "QUALITY",
           "note": "Share of workers with cross-period sustained engagement. Low — workers who engage do not return."
         },
         {
           "code": "CS",
           "label": "Confidence Score",
           "value": 0.60,
-          "weight": 0.10,
-          "note": "Data completeness, source quality, verification weight. Moderate — partial data coverage."
+          "weight": 0.0,
+          "external": true,
+          "note": "Data completeness, source quality, verification weight. External reliability indicator — not included in KORA Index v3 computation. Shown alongside KORA Index as mandatory reliability signal."
+        }
+      ],
+      "macroblocks": [
+        {
+          "code": "REACH",
+          "label": "Activation Reach",
+          "weight": 0.25,
+          "score": 30,
+          "component_codes": ["AR", "MAR"],
+          "main_driver": "AR=0.38 below CLEAR threshold. MAR=0.22 signals limited meaningful engagement across workforce.",
+          "risk_opportunity": "Opportunity: activating Operations site (11% AR, 90 workers) could materially shift REACH score."
+        },
+        {
+          "code": "QUALITY",
+          "label": "Activation Quality",
+          "weight": 0.30,
+          "score": 37,
+          "component_codes": ["NI", "VR", "CO"],
+          "main_driver": "CO=0.28 is the primary drag — workers who engage do not sustain participation across periods.",
+          "risk_opportunity": "VR=0.41 reflects high self-declared proportion — routing IMPACT events through advisor review would lift this."
+        },
+        {
+          "code": "EQUITY",
+          "label": "Distribution & Equity",
+          "weight": 0.25,
+          "score": 40,
+          "component_codes": ["WB", "PC", "PB", "EQ"],
+          "main_driver": "WB=0.29 — top 12% generate 64% of IU. Structural concentration is the dominant signal.",
+          "risk_opportunity": "EQ=0.38 driven by Operations site imbalance — addressable through accessible in-plant programs."
+        },
+        {
+          "code": "BTI",
+          "label": "Budget-to-Human-Impact",
+          "weight": 0.20,
+          "score": 28,
+          "component_codes": [],
+          "main_driver": "48% della spesa welfare (€54.000) è in economic_relief — non genera IU. Solo €58.000 su €112.000 spesi va a programmi di deep_activation. €45.000 di budget non speso.",
+          "risk_opportunity": "Riorientare la spesa economic_relief verso deep_activation è la singola azione con il più alto potenziale di miglioramento del BTI score."
         }
       ]
     },
@@ -108,87 +158,135 @@
       "not_live_data": true,
       "company_id": "meridiana-group",
       "reporting_period": "Q1–Q4 2025",
-      "kora_index_value": 64,
+      "kora_index_value": 54,
       "safeguard_status": "CLEAR",
       "activation_safeguard_result_id": "safeguard-meridiana-S2-2025",
       "confidence_score": 0.72,
       "confidence_score_id": "conf-meridiana-S2-2025",
       "scoring_run_id": "run-meridiana-S2-2025-001",
-      "methodology_version_id": "KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v3 / KORA Methodology v0.1",
       "calibration_status": "pre_empirical_calibration",
-      "methodology_notes": "Provisional implementation baseline. Equal weight vector 0.10 x 10 components. Pre-Delphi calibration.",
+      "methodology_notes": "KORA Index v3 — macroblock architecture: REACH 25% (AR+MAR), QUALITY 30% (NI+VR+CO), EQUITY 25% (WB+PC+PB+EQ), BTI 20% (BudgetToHumanImpactEngine). CS external, weight=0. Pre-Delphi calibration.",
       "generated_at": "2026-01-20T09:00:00Z",
-      "limitations_text": "This KORA Index is a provisional diagnostic output produced under pre-empirical-calibration conditions. Component weights are equal-vector (0.10 × 10). Outputs are not empirically validated, not regulatory-grade, and not suitable for legal, fiscal, or comparative claims. Presented for pilot-grade diagnostic intelligence only.",
+      "limitations_text": "This KORA Index is a provisional diagnostic output produced under pre-empirical-calibration conditions (KORA Methodology v0.1). Macroblock weights are provisional — not yet empirically calibrated via Delphi Study. Outputs are not empirically validated, not regulatory-grade, and not suitable for legal, fiscal, or comparative claims. Presented for pilot-grade diagnostic intelligence only.",
       "components": [
         {
           "code": "AR",
           "label": "Activation Rate",
           "value": 0.52,
-          "weight": 0.10,
+          "weight": 0.125,
+          "macroblock": "REACH",
           "note": "Activation broadly improved. Meets CLEAR threshold."
         },
         {
           "code": "MAR",
           "label": "Meaningful Activation Rate",
           "value": 0.38,
-          "weight": 0.10,
+          "weight": 0.125,
+          "macroblock": "REACH",
           "note": "Meaningful participation increased. Meets CLEAR threshold."
         },
         {
           "code": "NI",
           "label": "Normalized Intensity",
           "value": 0.57,
-          "weight": 0.10,
+          "weight": 0.100,
+          "macroblock": "QUALITY",
           "note": "Average IU per active worker improved. More workers contributing at higher intensity."
         },
         {
           "code": "WB",
           "label": "Worker Balance",
           "value": 0.51,
-          "weight": 0.10,
+          "weight": 0.0625,
+          "macroblock": "EQUITY",
           "note": "Distribution more even. Top workers now generate 51% of IU (down from 64%)."
         },
         {
           "code": "PC",
           "label": "Pillar Coverage",
           "value": 0.80,
-          "weight": 0.10,
+          "weight": 0.0625,
+          "macroblock": "EQUITY",
           "note": "4 of 5 pillars with meaningful presence. IMPACT improved. LEGACY still weak."
         },
         {
           "code": "PB",
           "label": "Pillar Balance",
           "value": 0.55,
-          "weight": 0.10,
+          "weight": 0.0625,
+          "macroblock": "EQUITY",
           "note": "Pillar spread improved. LIFE reduced to 34%, GROWTH stable, CONNECTION and IMPACT growing."
         },
         {
           "code": "EQ",
           "label": "Equity",
           "value": 0.54,
-          "weight": 0.10,
+          "weight": 0.0625,
+          "macroblock": "EQUITY",
           "note": "Operations site participation improved to 22% AR. Site imbalance reduced but not resolved."
         },
         {
           "code": "VR",
           "label": "Verification Rate",
           "value": 0.61,
-          "weight": 0.10,
+          "weight": 0.100,
+          "macroblock": "QUALITY",
           "note": "More advisor-reviewed events. Verification rate improved significantly."
         },
         {
           "code": "CO",
           "label": "Continuity",
           "value": 0.44,
-          "weight": 0.10,
+          "weight": 0.100,
+          "macroblock": "QUALITY",
           "note": "Sustained engagement improved. More workers returning in consecutive periods."
         },
         {
           "code": "CS",
           "label": "Confidence Score",
           "value": 0.72,
-          "weight": 0.10,
-          "note": "Higher data completeness and better verification coverage."
+          "weight": 0.0,
+          "external": true,
+          "note": "Higher data completeness and better verification coverage. External reliability indicator — not included in KORA Index v3 computation. Shown alongside KORA Index as mandatory reliability signal."
+        }
+      ],
+      "macroblocks": [
+        {
+          "code": "REACH",
+          "label": "Activation Reach",
+          "weight": 0.25,
+          "score": 45,
+          "component_codes": ["AR", "MAR"],
+          "main_driver": "AR=0.52 meets CLEAR threshold. MAR=0.38 confirms meaningful engagement breadth.",
+          "risk_opportunity": "LEGACY pillar still underrepresented — structured senior-junior mentoring could further lift meaningful reach."
+        },
+        {
+          "code": "QUALITY",
+          "label": "Activation Quality",
+          "weight": 0.30,
+          "score": 54,
+          "component_codes": ["NI", "VR", "CO"],
+          "main_driver": "VR=0.61 driven by expanded advisor review. CO=0.44 improving but still below 0.50.",
+          "risk_opportunity": "CO improvement path: structured continuity nudges and My KORA milestone tracking could push above 0.50."
+        },
+        {
+          "code": "EQUITY",
+          "label": "Distribution & Equity",
+          "weight": 0.25,
+          "score": 60,
+          "component_codes": ["WB", "PC", "PB", "EQ"],
+          "main_driver": "PC=0.80 — 4 pillars now active. EQ improvement driven by Operations site activation (11%→22%).",
+          "risk_opportunity": "LEGACY pillar absence limits PC ceiling at 0.80. WB still shows concentration in top workers."
+        },
+        {
+          "code": "BTI",
+          "label": "Budget-to-Human-Impact",
+          "weight": 0.20,
+          "score": 58,
+          "component_codes": [],
+          "main_driver": "Quota economic_relief ridotta 48%→30%. Cost per IU migliorato da 22,4 a 13,8. Deep activation share aumentata al 70%. Riallocazione parziale realizzata in Q4.",
+          "risk_opportunity": "Residual budget (€35,000) and partial LEGACY activation represent continued reallocation opportunity."
         }
       ]
     }

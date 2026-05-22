@@ -26,38 +26,40 @@
       "budget_committed_total": 28000,
       "budget_residual": 45000,
       "budget_utilization_rate": 0.61,
-      "cost_per_iu_indicator": 14.2,
-      "cost_per_iu_note": "Informational dashboard indicator only. Calculated as total budget used divided by total IU generated. Not a certified financial metric. Not suitable for regulatory or comparative benchmarking.",
+      "cost_per_iu_indicator": 22.4,
+      "cost_per_iu_note": "Informational dashboard indicator only. Calculated as total budget used divided by total IU generated. High value reflects that 48% of spend (€54.000 economic_relief) generates 0 IU — only the €58.000 deep_activation portion produces Impact Units. Not a certified financial metric. Not suitable for regulatory or comparative benchmarking.",
       "currency": "EUR",
+      "pillar_budget_note": "LIFE allocation includes economic_relief spend (buoni pasto, fringe generici, card carburante — €54.000) classified Limited at Eligibility Gate. Economic relief does not generate IU but is tracked in the BTI engine as economic_relief_spend.",
       "pillar_budget": {
         "LIFE": {
-          "allocated": 72000,
-          "used": 48000,
-          "utilization_rate": 0.67,
-          "programs": ["prog-wellbeing-oasis", "prog-safety-first", "prog-remote-wellbeing"]
+          "allocated": 90000,
+          "used": 68000,
+          "utilization_rate": 0.76,
+          "programs": ["prog-wellbeing-oasis", "prog-safety-first", "prog-remote-wellbeing"],
+          "economic_relief_included": 54000
         },
         "GROWTH": {
-          "allocated": 51000,
-          "used": 32000,
-          "utilization_rate": 0.63,
+          "allocated": 43000,
+          "used": 24000,
+          "utilization_rate": 0.56,
           "programs": ["prog-learning-accelerator", "prog-emerging-leaders"]
         },
         "CONNECTION": {
-          "allocated": 22000,
-          "used": 14000,
-          "utilization_rate": 0.64,
+          "allocated": 20000,
+          "used": 10000,
+          "utilization_rate": 0.50,
           "programs": ["prog-mentoring-circle"]
         },
         "IMPACT": {
-          "allocated": 26000,
-          "used": 12000,
-          "utilization_rate": 0.46,
+          "allocated": 20000,
+          "used": 6000,
+          "utilization_rate": 0.30,
           "programs": ["prog-community-impact", "prog-territorial-volunteer"]
         },
         "LEGACY": {
-          "allocated": 14000,
-          "used": 6000,
-          "utilization_rate": 0.43,
+          "allocated": 12000,
+          "used": 4000,
+          "utilization_rate": 0.33,
           "programs": ["prog-mentoring-circle"]
         }
       },
@@ -68,7 +70,20 @@
         "total": 8400,
         "note": "KORA platform costs tracked separately from people program budget. Not included in budget_allocated_total."
       },
-      "narrative": "In Q1–Q3 2025, budget is concentrated in LIFE (39% of allocation) with lower utilization in IMPACT (46%) and LEGACY (43%). Residual budget and low IMPACT utilization are consistent with the WARNING state narrative — programs were allocated but worker activation remains partial.",
+      "bti_indicators": {
+        "economic_relief_spend": 54000,
+        "deep_activation_spend": 58000,
+        "blocked_excluded_attempts": 47,
+        "economic_relief_share": 0.48,
+        "deep_activation_share": 0.52,
+        "activation_debt_eur": 45000,
+        "activation_debt_description_it": "€45.000 di budget non speso + 48% della spesa effettiva concentrata in economic relief che non genera Impact Units. Budget allocato ≠ Budget attivato.",
+        "reallocation_opportunity_eur": 54000,
+        "reallocation_opportunity_description_it": "€54.000 in benefit economici (buoni pasto, fringe generici, card carburante) non generano IU — classificati Limited al Eligibility Gate. Riorientare anche il 50% verso deep_activation aumenterebbe materialmente il BTI score.",
+        "bti_score": 28,
+        "bti_score_note": "BTI macroblock score (0–100) — calcolato dal BudgetToHumanImpactEngine. Non feed diretto dei component values. Informational only."
+      },
+      "narrative": "In Q1–Q3 2025, il 48% della spesa welfare (€54.000) è concentrato in benefit economici a bassa attivazione (buoni pasto, fringe generici, card carburante). LIFE assorbe il 61% della spesa totale, prevalentemente per economic relief classificato Limited — non genera Impact Units. Solo il 52% (€58.000) va a programmi di deep_activation. Budget residuo elevato (€45.000) e bassa conversione sono coerenti con lo stato WARNING.",
       "not_payroll_data": true,
       "not_individual_worker_spend": true,
       "not_tax_advice": true,
@@ -92,38 +107,40 @@
       "budget_committed_total": 18000,
       "budget_residual": 35000,
       "budget_utilization_rate": 0.76,
-      "cost_per_iu_indicator": 10.8,
-      "cost_per_iu_note": "Informational dashboard indicator only. Calculated as total budget used divided by total IU generated. Not a certified financial metric. Not suitable for regulatory or comparative benchmarking. Improvement vs S1 reflects broader activation across more workers.",
+      "cost_per_iu_indicator": 13.8,
+      "cost_per_iu_note": "Informational dashboard indicator only. Calculated as total budget used divided by total IU generated. Improvement vs S1 (22,4→13,8) reflects partial reallocation from economic_relief to deep_activation and broader verified activation. Not a certified financial metric. Not suitable for regulatory or comparative benchmarking.",
       "currency": "EUR",
+      "pillar_budget_note": "LIFE allocation includes residual economic_relief spend (buoni pasto, fringe — €50.000) classified Limited at Eligibility Gate. Reduction from S1 (€54.000→€50.000) reflects partial reallocation of fringe budget toward deep_activation programs in Q4.",
       "pillar_budget": {
         "LIFE": {
-          "allocated": 75000,
-          "used": 59000,
-          "utilization_rate": 0.79,
-          "programs": ["prog-wellbeing-oasis", "prog-safety-first", "prog-remote-wellbeing"]
+          "allocated": 100000,
+          "used": 85000,
+          "utilization_rate": 0.85,
+          "programs": ["prog-wellbeing-oasis", "prog-safety-first", "prog-remote-wellbeing"],
+          "economic_relief_included": 50000
         },
         "GROWTH": {
           "allocated": 62000,
-          "used": 48000,
-          "utilization_rate": 0.77,
+          "used": 38000,
+          "utilization_rate": 0.61,
           "programs": ["prog-learning-accelerator", "prog-emerging-leaders"]
         },
         "CONNECTION": {
-          "allocated": 32000,
-          "used": 26000,
-          "utilization_rate": 0.81,
+          "allocated": 30000,
+          "used": 20000,
+          "utilization_rate": 0.67,
           "programs": ["prog-mentoring-circle"]
         },
         "IMPACT": {
-          "allocated": 34000,
-          "used": 22000,
-          "utilization_rate": 0.65,
+          "allocated": 18000,
+          "used": 17000,
+          "utilization_rate": 0.94,
           "programs": ["prog-community-impact", "prog-territorial-volunteer"]
         },
         "LEGACY": {
-          "allocated": 18000,
-          "used": 13000,
-          "utilization_rate": 0.72,
+          "allocated": 11000,
+          "used": 8000,
+          "utilization_rate": 0.73,
           "programs": ["prog-mentoring-circle"]
         }
       },
@@ -134,7 +151,20 @@
         "total": 9600,
         "note": "KORA platform costs tracked separately from people program budget. Increased advisory engagement in Q4. Not included in budget_allocated_total."
       },
-      "narrative": "In the full Q1–Q4 2025 period, budget allocation is more evenly distributed across pillars. LIFE remains the largest allocation (34%) but has reduced from S1 (39%). CONNECTION and LEGACY utilization improved significantly, consistent with the CLEAR state narrative. Cost per IU improved from 14.2 to 10.8, reflecting broader participation across more workers. No certified ROI claim is made — this is a directional governance indicator only.",
+      "bti_indicators": {
+        "economic_relief_spend": 50000,
+        "deep_activation_spend": 118000,
+        "blocked_excluded_attempts": 31,
+        "economic_relief_share": 0.30,
+        "deep_activation_share": 0.70,
+        "activation_debt_eur": 35000,
+        "activation_debt_description_it": "€35.000 di budget non speso nel periodo Q1–Q4 2025. La quota economic_relief si è ridotta (48%→30%) — segnale positivo di riallocazione parziale avvenuta in Q4. Il pillar LEGACY rimane la principale opportunità di deep_activation ancora irrisolta.",
+        "reallocation_opportunity_eur": 30000,
+        "reallocation_opportunity_description_it": "Residuo di €50.000 in economic_relief (30% della spesa) ancora non convertito in IU. Una riallocazione mirata verso LEGACY, CONNECTION e programmi Operations potrebbe ulteriormente migliorare il BTI score. Il costo per IU è già sceso da 22,4 a 13,8 — la direzione è corretta.",
+        "bti_score": 58,
+        "bti_score_note": "BTI macroblock score (0–100) — calcolato dal BudgetToHumanImpactEngine. Non feed diretto dei component values. Informational only."
+      },
+      "narrative": "Nel periodo completo Q1–Q4 2025, la quota economic_relief si è ridotta al 30% (€50.000) grazie a una parziale riallocazione verso programmi di deep_activation (€118.000 — 70%). Il costo per IU è migliorato da 22,4 a 13,8. Il BTI macroblock è salito da 28 a 58. LIFE rimane la voce più grande (€85.000 — 51% della spesa), ma la composizione è cambiata: meno economic relief, più attivazione profonda. Nessun claim di ROI certificato — indicatore di governance direzionale only.",
       "not_payroll_data": true,
       "not_individual_worker_spend": true,
       "not_tax_advice": true,

@@ -267,8 +267,10 @@ The canonical KORA algorithm proceeds through 14 sequential stages. No stage may
 |---|---|
 | `financial_ref` | Link to Financial Movement record if spend data is provided |
 | `fiscal_perimeter` | Fiscal/budget perimeter if classified |
-| `eligibility_status` | Eligibility classification (Eligible / Conditional / Uncertain / Excluded) |
-| `eligibility_confidence` | Eligibility confidence level |
+| `eligibility_status` | Eligibility classification (Eligible / Limited / Blocked) — set by Eligibility Gate before scoring |
+| `eligibility_confidence` | Eligibility confidence level (high / medium / low) |
+
+> **Eligibility Gate implementation note (Phase 1N):** Every uploaded action, event, program, or dataset row is classified as **Eligible**, **Limited**, or **Blocked** by the `EligibilityGateService` before any Impact Units are computed. Classification is driven by `data/synthetic/action-taxonomy.json` (KORA Action Taxonomy v0.1) via keyword matching and mandatory-status rules. **Blocked items generate 0 IU and contribute 0 to the KORA Index — not low weight, zero.** Compliance is blocked, not low-weighted. Limited items (cash-like economic benefits) are routed to Economic Relief tracking only and do not generate IU. This gate corresponds to the `eligibility_status` field in the UEF Record and must execute before Stage ⑥ (NM) is applied. Canonical doctrine: "KORA non trasforma la compliance in impatto. La conformità legale è una baseline, non impatto."
 
 *Methodology:*
 
@@ -512,28 +514,54 @@ The Company Aggregation layer produces statistics. The KORA Index Engine interpr
 
 **What this layer is:** The final computation engine that produces the KORA Index — the primary company-level intelligence output of the KORA platform. The KORA Index is a function of 10 components. This is the Architecture v3 structure, which supersedes the 7-component structure in doc 06 per founder Decision 2 (doc 09 Section 12).
 
-**The Architecture v3 KORA Index formula:**
+**KORA Index v3 is canonical.** Previous equal-weight assumptions (0.10 × 10 components) were provisional scaffolding and are no longer canonical.
+
+**The KORA Index v3 formula:**
 
 ```
-KORA Index = f(AR, MAR, NI, WB, PC, PB, EQ, VR, CO, CS)
+KORA Index = f(AR, MAR, NI, WB, PC, PB, EQ, VR, CO)
+           organized into 4 macroblocks:
+
+  25% Activation Reach       — AR, MAR
+  30% Activation Quality     — NI, VR, CO
+  25% Distribution & Equity  — WB, PC, PB, EQ
+  20% Budget-to-Human-Impact — BudgetToHumanImpactEngine
 ```
 
-**The 10 components — definitions:**
+**Confidence Score (CS) is external.** CS is not a weighted component in KORA Index v3. It is an external reliability indicator displayed alongside the KORA Index — an inseparable output pair, but CS does not influence the KORA Index value. The two are always shown together; CS informs interpretation but does not enter computation.
 
-| Component | Symbol | Definition |
-|---|---|---|
-| **Activation Rate** | AR | Proportion of eligible workers who reached the minimum activation threshold. Measures distributional breadth of engagement. |
-| **Meaningful Activation Rate** | MAR | Proportion of eligible workers who reached a meaningful (higher) activation threshold. Distinguishes genuine engagement from minimal touchpoints. |
-| **Normalized Intensity** | NI | Average depth of engagement among activated workers — the average quality-weighted PIB per activated worker, normalized. Measures how substantive the engagement is among those who participated. |
-| **Worker Balance** | WB | Distribution health across the workforce — measures whether impact is spread across diverse worker segments or concentrated among a few. Captures workforce breadth of impact distribution. |
-| **Pillar Coverage** | PC | The proportion of the five pillars that have at least a minimum level of verified activation. A company with no activation in one or more pillars has incomplete coverage. |
-| **Pillar Balance** | PB | The relative balance of IU distribution across the five pillars. Rewards companies that develop impact across all five dimensions rather than over-indexing on one. |
-| **Equity** | EQ | Measures whether activated workers are distributed equitably across workforce segments — departments, seniority bands, contract types. High equity means impact is not systematically concentrated in privileged or high-participation segments. |
-| **Verification Rate** | VR | The proportion of total IU that is backed by strong evidence (verified or certified), versus self-declared. High VR indicates a program whose impact claims are defensible. |
-| **Continuity** | CO | The proportion of activated workers who show sustained, recurring engagement over the period — not just one-off participation. Measures program stickiness and long-term behavioral change. |
-| **Confidence Score** | CS | The overall methodological reliability of the KORA Index for this company program and period. Captures data completeness, source quality, verification coverage, and the quality of the evidence base. |
+**Activation Safeguard is an interpretation gate.** The Activation Safeguard (CLEAR / WARNING / FLAGGED) is applied after KORA Index computation. It is not a weighted component and does not modify the KORA Index value — it contextualizes it.
 
-**Weight status:** Weights for the 10 components are empirically to be calibrated. They are not fixed. The doc 06 weights (AR 20%, NI 20%, PB 15%, EQ 15%, VR 10%, CO 10%, PC 10%) are historical prototype weights from the 7-component structure and must be labeled as "historical baseline" — not applied as current weights. The 10-component Architecture v3 weights require empirical calibration through the validation roadmap. (AG-03, MV-01, MV-02)
+**The 10 components — definitions and v3 macroblock assignment:**
+
+| Component | Symbol | Macroblock | Definition |
+|---|---|---|---|
+| **Activation Rate** | AR | Activation Reach (25%) | Proportion of eligible workers who reached the minimum activation threshold. Measures distributional breadth of engagement. |
+| **Meaningful Activation Rate** | MAR | Activation Reach (25%) | Proportion of eligible workers who reached a meaningful (higher) activation threshold. Distinguishes genuine engagement from minimal touchpoints. |
+| **Normalized Intensity** | NI | Activation Quality (30%) | Average depth of engagement among activated workers — the average quality-weighted PIB per activated worker, normalized. Measures how substantive the engagement is among those who participated. |
+| **Worker Balance** | WB | Distribution & Equity (25%) | Distribution health across the workforce — measures whether impact is spread across diverse worker segments or concentrated among a few. |
+| **Pillar Coverage** | PC | Distribution & Equity (25%) | The proportion of the five pillars that have at least a minimum level of verified activation. A company with no activation in one or more pillars has incomplete coverage. |
+| **Pillar Balance** | PB | Distribution & Equity (25%) | The relative balance of IU distribution across the five pillars. Rewards companies that develop impact across all five dimensions rather than over-indexing on one. |
+| **Equity** | EQ | Distribution & Equity (25%) | Measures whether activated workers are distributed equitably across workforce segments — departments, seniority bands, contract types. High equity means impact is not systematically concentrated in privileged or high-participation segments. EQ must never be redefined as Evidence Quality — evidence quality is handled by VR and CS. |
+| **Verification Rate** | VR | Activation Quality (30%) | The proportion of total IU that is backed by strong evidence (verified or certified), versus self-declared. High VR indicates a program whose impact claims are defensible. |
+| **Continuity** | CO | Activation Quality (30%) | The proportion of activated workers who show sustained, recurring engagement over the period — not just one-off participation. Measures program stickiness and long-term behavioral change. |
+| **Confidence Score** | CS | **External** — weight = 0 | The overall methodological reliability of the KORA Index for this company program and period. Captures data completeness, source quality, verification coverage, and the quality of the evidence base. **CS is external to KORA Index v3 computation.** It is always displayed with the KORA Index but does not influence the KORA Index value. |
+
+**KORA Index v3 macroblock weights — v0.1 pre-empirical calibration:**
+
+| Macroblock | Weight | Components | Within-macroblock weight |
+|---|---|---|---|
+| Activation Reach | 25% | AR, MAR | 50% each |
+| Activation Quality | 30% | NI, VR, CO | ~33% each |
+| Distribution & Equity | 25% | WB, PC, PB, EQ | 25% each |
+| Budget-to-Human-Impact | 20% | BudgetToHumanImpactEngine | (computed from spend classification, activation debt, and efficiency metrics — not from component values) |
+
+**Effective component weights in KORA Index v3:**
+AR 12.5% · MAR 12.5% · NI ~10% · VR ~10% · CO ~10% · WB 6.25% · PC 6.25% · PB 6.25% · EQ 6.25% · BTI Engine 20% · CS 0% (external)
+
+All weights labeled **"v0.1 pre-empirical calibration"** — subject to expert validation and empirical calibration through the Delphi Study. (AG-03, MV-01, MV-02)
+
+**Migration note:** Previous equal weights (0.10 × 10 components, including CS as a weighted component) were provisional scaffolding used in the Foundation Light pre-build phase. They are retained only in `data/methodology/methodology-config.json` under `legacy_equal_weights_note` for backwards compatibility. They are not canonical for KORA Index v3 computation or documentation.
 
 **What changed from doc 06 to Architecture v3:**
 
@@ -780,7 +808,7 @@ These are analytical and governance layers that are architecturally defined in A
 | **Public / External Proof Layer** | Governance / Future | QR-verifiable KORA Index snapshots, certified badges, public methodology statements. Multiple levels: private / advisor-visible / executive / public. |
 | **Human Review & Advisor Audit Log** | Advanced | Structured logging of all advisor interventions — which records were reviewed, validation or rejection decision, before/after status, reason code, timestamp. (DG-06) |
 | **Methodology Versioning Layer** | Core (infrastructure) | Tracks all methodology versions, their components, their change logs, and which scoring outputs were produced under which version. Core from day one. |
-| **Confidence Score Layer** | Core | Confidence Score is a component of the KORA Index in Architecture v3 and also a standalone reliability signal for all other outputs. Core from day one. |
+| **Confidence Score Layer** | Core | Confidence Score is **external to KORA Index v3 computation** (weight = 0 in KORA Index). It is always displayed alongside the KORA Index as a reliability indicator — the two are inseparable outputs — but CS does not influence the KORA Index value. CS is also a standalone reliability signal for all other platform outputs. Core from day one. |
 
 ---
 
@@ -1039,7 +1067,7 @@ This architectural specification defines what the technical schema must support.
 | Activation Safeguard | AR, MAR, penalty status, ceiling status on KORA Index records |
 | Privacy architecture | Separate database for Worker Identity Layer; pseudonymization key references; sensitivity flags on all event records |
 | Methodology versioning | methodology_version foreign key on every scoring output |
-| Confidence Score as component + standalone | confidence_score on KORA Index records and on individual event records |
+| Confidence Score as external indicator + standalone | confidence_score on KORA Index records (always displayed; not a weighted input to the KORA Index value) and on individual event records |
 | Audit trail | append-only audit trail table with event type, entity reference, before/after values, actor, timestamp |
 | Factor value ranges | Validation constraints on correction factor columns |
 | Source tier classification | source_tier field on UEF Records, referenced in EV calculation |

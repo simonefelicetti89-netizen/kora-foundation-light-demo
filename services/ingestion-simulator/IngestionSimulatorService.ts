@@ -37,6 +37,10 @@ interface SeedSourceBatch {
   batch_status: string;
   ingestion_date: string;
   source_notes: string;
+  blocked_count?: number;
+  limited_count?: number;
+  eligibility_gate_result?: string;
+  eligibility_gate_note?: string;
 }
 
 export interface SourceBatch {
@@ -84,6 +88,15 @@ export interface EvidenceCoverageSummary {
   sources_below_50pct: number;
 }
 
+export interface EligibilityGateSummary {
+  blocked_count: number;
+  blocked_note: string;
+  limited_count: number;
+  limited_note: string;
+  eligible_row_count: number;
+  total_row_count: number;
+}
+
 export interface IIngestionSimulatorService {
   simulate(sourceType: SourceType, batchId: string, scenarioId: ScenarioId): IngestionResult;
   getSourceBatches(companyId: string, scenarioId: ScenarioId): SourceBatch[];
@@ -91,12 +104,14 @@ export interface IIngestionSimulatorService {
   getMappingConfidenceSummary(companyId: string, scenarioId: ScenarioId): MappingConfidenceSummary;
   getPendingReviewSummary(companyId: string, scenarioId: ScenarioId): PendingReviewSummary;
   getEvidenceCoverageSummary(companyId: string, scenarioId: ScenarioId): EvidenceCoverageSummary;
+  getEligibilityGateSummary(companyId: string, scenarioId: ScenarioId): EligibilityGateSummary;
 }
 
 export class IngestionSimulatorService implements IIngestionSimulatorService {
   private readonly batches = (sourceBatchesRaw as { data: SeedSourceBatch[] }).data;
 
   // Stub — BCM taxonomy rule-based classifier (no external LLM, doc 19 §9.2)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   simulate(sourceType: SourceType, batchId: string, _scenarioId: ScenarioId): IngestionResult {
     return {
       batch_id: batchId,
@@ -179,6 +194,32 @@ export class IngestionSimulatorService implements IIngestionSimulatorService {
       sources_above_50pct: batches.filter((b) => b.evidence_attached_pct >= 0.50).length,
       sources_below_50pct: batches.filter((b) => b.evidence_attached_pct < 0.50).length,
     };
+  }
+
+  getEligibilityGateSummary(companyId: string, scenarioId: ScenarioId): EligibilityGateSummary {
+    const raw = (sourceBatchesRaw as { data: SeedSourceBatch[] }).data.filter(
+      (b) => b.company_id === companyId && b.scenario_id === scenarioId,
+    );
+
+    let blocked_count = 0;
+    let blocked_note = '';
+    let limited_count = 0;
+    let limited_note = '';
+
+    for (const b of raw) {
+      if (b.eligibility_gate_result === 'blocked') {
+        blocked_count += b.blocked_count ?? 0;
+        if (!blocked_note && b.eligibility_gate_note) blocked_note = b.eligibility_gate_note;
+      } else if (b.eligibility_gate_result === 'limited') {
+        limited_count += b.limited_count ?? 0;
+        if (!limited_note && b.eligibility_gate_note) limited_note = b.eligibility_gate_note;
+      }
+    }
+
+    const total_row_count = raw.reduce((s, b) => s + b.row_count, 0);
+    const eligible_row_count = Math.max(0, total_row_count - blocked_count - limited_count);
+
+    return { blocked_count, blocked_note, limited_count, limited_note, eligible_row_count, total_row_count };
   }
 }
 

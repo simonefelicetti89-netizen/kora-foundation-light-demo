@@ -93,7 +93,7 @@ Worker records must be synthetic or pseudonymized. No real pilot employee data i
 - Every computation tagged with `methodology_version_id`
 - Every output tagged with `calibration_status = 'pre_empirical_calibration'`
 - Weights must be versioned config values — not hardcoded constants
-- Equal weight vector (0.10 × 10) as provisional v0.1 baseline
+- KORA Index v3 macroblock weights (v0.1 pre-empirical calibration): REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20% — read from `lib/methodology-config/v0.1.ts` via `getMacroblockWeights()`. Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical.
 - Compute in order: IU per event → PIB per worker → Company Aggregation → Activation Safeguard → 10-component KORA Index → Confidence Score
 - Activation Safeguard thresholds from doc 21 Section 5.7: CLEAR / WARNING / FLAGGED
 - KORA Index blocked or qualified if Safeguard status = FLAGGED

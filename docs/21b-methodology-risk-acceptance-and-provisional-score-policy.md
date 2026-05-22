@@ -35,7 +35,7 @@ A KORA Index that honestly shows activation distribution, pillar balance, and ev
 
 ### Calibration trajectory
 
-Foundation Light v0.1 uses implementation-baseline values (equal component weights, referenced NM ranges, provisional Activation Safeguard thresholds) that will be refined through the Delphi Study and real pilot evidence in the Foundation tier. Outputs produced under v0.1 carry `calibration_status: pre_empirical_calibration`. Calibrated outputs produced under v1.0 will carry `calibration_status: empirically_calibrated`.
+KORA Index v3 is canonical. The implementation now uses the v3 macroblock structure (Activation Reach 25% · Activation Quality 30% · Distribution & Equity 25% · Budget-to-Human-Impact 20%), which replaces the provisional equal-weight vector. All weights are labeled **"v0.1 pre-empirical calibration"** and will be refined through the Delphi Study and real pilot evidence in the Foundation tier. Outputs produced under v0.1 carry `calibration_status: pre_empirical_calibration`. Calibrated outputs produced under v1.0 will carry `calibration_status: empirically_calibrated`.
 
 This is the correct design sequence. Calibrating a methodology before real company data exists would produce a precisely calibrated framework validated against nothing. KORA calibrates through evidence — not in advance of it.
 
@@ -100,12 +100,17 @@ Every Foundation Light v0.1 output — in the platform UI, reports, demo present
 
 ## 6. Weight Vector and Calibration Philosophy
 
-### Implementation baseline values (D-21, doc 21)
+### KORA Index v3 — Canonical macroblock weights (v0.1 pre-empirical calibration)
+
+KORA Index v3 is canonical. **Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical.** They are retained in the methodology config file under `legacy_equal_weights_note` for backwards compatibility only.
+
+**Migration note:** Any reference to "equal component weights" or "0.10 × 10" as the canonical KORA Index weight model is outdated. The canonical model is the macroblock structure below.
 
 | Parameter | v0.1 Value |
 |---|---|
-| Component weight vector | Equal — 0.10 per component (AR, MAR, NI, WB, PC, PB, EQ, VR, CO, CS) |
-| CO redistribution (when CO = INSUFFICIENT_DATA) | `w_k_adjusted = 0.10 + (0.10 × 0.10 / 0.90) = 0.1111` for each of 9 remaining components |
+| **KORA Index v3 structure** | 4 macroblocks (see table below) |
+| **Confidence Score (CS)** | External — weight = 0 in KORA Index v3. Displayed alongside the Index as external reliability indicator. Not a weighted component. |
+| **Activation Safeguard** | Interpretation gate — applied after KORA Index computation. Not a weighted component. Does not modify the KORA Index value. |
 | Activation Safeguard — CLEAR | AR ≥ 0.40 AND MAR ≥ 0.30 |
 | Activation Safeguard — WARNING | 0.20 ≤ AR < 0.40 OR 0.15 ≤ MAR < 0.30 |
 | Activation Safeguard — FLAGGED | AR < 0.20 OR MAR < 0.15 |
@@ -115,33 +120,46 @@ Every Foundation Light v0.1 output — in the platform UI, reports, demo present
 | NM — passive participation | 0.10 – 0.30 |
 | Optional factors (DF, EXF, SF) | Default 1.00 — neutral when not applicable |
 
-### Equal weights are implementation scaffolding
+**KORA Index v3 macroblock weights:**
 
-Equal weighting (0.10 × 10) is the implementation starting point — not a statement that all components are philosophically equivalent. The founder's position is that empirical calibration will confirm certain components carry structurally more signal:
+| Macroblock | Weight | Operational components | Within-macroblock weight |
+|---|---|---|---|
+| Activation Reach | **25%** | AR, MAR | 50% each |
+| Activation Quality | **30%** | NI, VR, CO | ~33% each |
+| Distribution & Equity | **25%** | WB, PC, PB, EQ | 25% each |
+| Budget-to-Human-Impact | **20%** | BudgetToHumanImpactEngine | Computed from spend classification, activation debt, and efficiency metrics |
 
-- **Activation breadth (AR, MAR):** widespread distributed participation is a stronger indicator of organizational commitment than high-intensity engagement among a minority
-- **Verified contribution (VR):** organizations whose impact claims are externally evidenced occupy a fundamentally different evidentiary position than those that self-declare
-- **Continuity (CO):** sustained behavioral change has greater long-term organizational value than campaign-driven peaks
-- **Worker and pillar balance (WB, PB/PC):** concentrated, single-pillar programs are methodologically different from genuinely distributed, multi-pillar investment
+Effective component weights: AR 12.5% · MAR 12.5% · NI ~10% · VR ~10% · CO ~10% · WB 6.25% · PC 6.25% · PB 6.25% · EQ 6.25% · BTI Engine 20% · CS 0% (external)
 
-These are calibration hypotheses — to be tested and refined through the Delphi Study, not assumed. They prevent the implementation baseline from calcifying by default.
+All weights labeled **"v0.1 pre-empirical calibration"** — methodology subject to expert validation and empirical calibration.
 
-### When equal weights may and may not be used
+### Theory-aligned macroblock structure
 
-The 0.10 × 10 weight vector is acceptable for:
+The v3 macroblock structure reflects structured methodological reasoning — not empirical measurement. The calibration hypotheses it embeds are:
+
+- **Activation breadth (AR, MAR) — 25% Reach:** widespread distributed participation is a stronger indicator of organizational commitment than high-intensity engagement among a minority
+- **Verified quality and continuity (NI, VR, CO) — 30% Quality:** verification quality and sustained behavioral change carry more signal than raw intensity; Quality is the highest-weight macroblock
+- **Equitable distribution (WB, PC, PB, EQ) — 25% Equity:** concentrated, single-pillar programs are methodologically different from genuinely distributed, multi-pillar investment
+- **Budget efficiency (BTI Engine) — 20% Budget-to-Human-Impact:** how effectively spend becomes verified human activation is a governance-level signal, not just a reporting metric
+
+These are calibration hypotheses — to be tested and refined through the Delphi Study, not assumed to be final.
+
+### When the v0.1 macroblock weights may and may not be used
+
+The v0.1 macroblock weights are appropriate for:
 - synthetic testing and demo engagements
-- first-pass pilot diagnostic analysis
+- pilot diagnostic analysis under Foundation Light
 - internal platform validation
 
-Before any high-stakes use — board-facing client reports, Certified-tier claims, or external communications that position the KORA Index as a strategic organizational benchmark — KORA must complete a **v0.2 calibration pass**. This pass may be founder-led, advisor-assisted, mini-Delphi, or expert-reviewed, but must revisit at minimum:
+Before any high-stakes use — board-facing client reports, Certified-tier claims, or external communications that position the KORA Index as a strategic organizational benchmark — KORA must complete a **v0.2 calibration pass**. This pass must revisit at minimum:
 
-- AR and MAR weight (activation breadth signal)
-- VR weight (verification quality signal)
-- CO weight (continuity signal)
+- AR and MAR weight within the Reach macroblock
+- VR weight within the Quality macroblock
+- CO weight within the Quality macroblock
 - Activation Safeguard thresholds
-- PB/PC balance treatment
+- BTI Engine sub-metrics and their contribution to the BTI macroblock score
 
-The 0.10 × 10 vector is a structured starting point. It is not strong enough to be treated as strategically final.
+The v0.1 macroblock structure is a theory-aligned starting point. It is not strong enough to be treated as strategically final.
 
 ---
 

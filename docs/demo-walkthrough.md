@@ -331,7 +331,7 @@ The KORA Index has **exactly 10 components**. No more, no fewer.
 | CO | Continuity |
 | CS | Confidence Score |
 
-These are fixed. Methodology v0.1 applies equal weights (0.10 × 10 components). Weights will be re-calibrated after Delphi Study and empirical pilot.
+These are fixed. KORA Index v3 uses a macroblock weight structure (v0.1 pre-empirical calibration): REACH 25% (AR 12.5%, MAR 12.5%) · QUALITY 30% (NI ~10%, VR ~10%, CO ~10%) · EQUITY 25% (WB 6.25%, PC 6.25%, PB 6.25%, EQ 6.25%) · BTI 20% (BudgetToHumanImpactEngine). CS weight = 0 — external reliability indicator, displayed alongside the KORA Index but not included in the computation. Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical. Weights will be empirically calibrated after the Delphi Study and pilot.
 
 **EQ note:** EQ mostra se l'attivazione raggiunge in modo equilibrato i diversi segmenti della workforce (sedi, dipartimenti, seniority band, tipologie contrattuali), sempre in forma aggregata e sopra soglia privacy. EQ non è Evidence Quality — la qualità dell'evidenza è riflessa da VR (Verification Rate), CS (Confidence Score), Evidence Debt e Data & Evidence.
 

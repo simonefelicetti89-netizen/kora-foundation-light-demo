@@ -638,7 +638,7 @@ All services live in `/services/`. Every service reads from seed data and return
 **Outputs:** koraIndexOutput, confidenceRecord, activationSafeguardResult, companyAggregates, koraContributionOutput.
 **Screens using it:** A-06, C-01, C-02.
 **Demo behavior:** Reads pre-computed scenario outputs from seed data; simulates a progress sequence; presents results tagged with methodology_version_id and calibration_status = `pre_empirical_calibration`.
-**Methodology config:** Reads from `/data/methodology/methodology-config.json`. Weights are equal (0.10 × 10) as v0.1 baseline. No weight is hardcoded in component or service logic.
+**Methodology config:** Reads from `/data/methodology/methodology-config.json` via `lib/methodology-config/v0.1.ts`. KORA Index v3 macroblock weights (v0.1 pre-empirical calibration): REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20%. Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical. No weight is hardcoded in component or service logic.
 **Future production replacement:** Real scoring engine reading from production UEF store.
 **Forbidden assumptions:** No empirical calibration claims; no certified score language; no score without Confidence Score.
 

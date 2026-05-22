@@ -33,6 +33,14 @@ export interface ExplainabilityRecord {
   individual_worker_data_present: false;
 }
 
+export interface ConceptExplanation {
+  key: string;
+  label_it: string;
+  label_en: string;
+  definition_it: string;
+  related_concepts?: string[];
+}
+
 interface SeedRecord {
   id: string; company_id: string; scenario_id: string; reporting_period: string;
   kora_index_output_id: string; methodology_version_id: string; calibration_status: string;
@@ -46,6 +54,243 @@ interface SeedRecord {
 }
 
 const explainabilityRecords = (explainabilityRaw as { data: SeedRecord[] }).data;
+
+// ── 21-concept Italian-first methodology glossary ──────────────────────────────
+// Canonical explanations — never paraphrase or abbreviate in UI surfaces.
+const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
+  kora_index: {
+    key: 'kora_index',
+    label_it: 'KORA Index',
+    label_en: 'KORA Index',
+    definition_it:
+      'Indicatore composito (0–100) che misura la qualità e l\'ampiezza dell\'attivazione umana a livello aziendale. È calcolato su 4 macroblocks: Activation Reach (25%), Activation Quality (30%), Distribution & Equity (25%), Budget-to-Human-Impact (20%). Il Confidence Score è esterno al calcolo — mostrato sempre accanto al KORA Index come indicatore di affidabilità dei dati.',
+    related_concepts: ['confidence_score', 'activation_safeguard', 'macroblock'],
+  },
+  confidence_score: {
+    key: 'confidence_score',
+    label_it: 'Confidence Score',
+    label_en: 'Confidence Score',
+    definition_it:
+      'Indicatore di affidabilità dei dati (0–1) che misura la completezza delle fonti, la qualità delle evidenze e il peso della verifica. Il Confidence Score non contribuisce al calcolo del KORA Index v3 (peso = 0) ma è mostrato obbligatoriamente accanto ad esso. Un Confidence Score basso riduce la fiducia interpretativa nell\'output — non ne modifica il valore numerico.',
+    related_concepts: ['kora_index', 'verification_rate'],
+  },
+  activation_safeguard: {
+    key: 'activation_safeguard',
+    label_it: 'Activation Safeguard',
+    label_en: 'Activation Safeguard',
+    definition_it:
+      'Gate interpretativo applicato dopo il calcolo del KORA Index. Stati: CLEAR (AR ≥ 0,40 E MAR ≥ 0,30 — output interpretabile con piena fiducia), WARNING (AR < 0,40 O MAR < 0,30 — output disponibile ma con fiducia ridotta), FLAGGED (AR < 0,20 O MAR < 0,15 — base di partecipazione troppo bassa per un\'interpretazione affidabile). L\'Activation Safeguard non è un componente del KORA Index: è un\'etichetta interpretativa non bypassabile.',
+    related_concepts: ['activation_rate', 'meaningful_activation_rate', 'kora_index'],
+  },
+  activation_rate: {
+    key: 'activation_rate',
+    label_it: 'Tasso di Attivazione (AR)',
+    label_en: 'Activation Rate',
+    definition_it:
+      'Quota della forza lavoro eleggibile con almeno una Impact Unit approvata nel periodo di riferimento. AR = lavoratori_attivi / lavoratori_eleggibili. È il componente primario del macroblock Activation Reach. Soglia CLEAR: AR ≥ 0,40. Un AR basso segnala che la maggior parte della forza lavoro non ha partecipato ad alcun programma attivante nel periodo.',
+    related_concepts: ['meaningful_activation_rate', 'activation_safeguard', 'impact_unit'],
+  },
+  meaningful_activation_rate: {
+    key: 'meaningful_activation_rate',
+    label_it: 'Tasso di Attivazione Significativa (MAR)',
+    label_en: 'Meaningful Activation Rate',
+    definition_it:
+      'Quota della forza lavoro con Impact Units al di sopra della soglia di materialità. MAR filtra i lavoratori con partecipazione puramente formale (es. un solo evento di compliance minima). MAR = lavoratori_attivi_significativi / lavoratori_eleggibili. Soglia CLEAR: MAR ≥ 0,30. MAR < AR per definizione — la differenza segnala la dimensione della partecipazione superficiale.',
+    related_concepts: ['activation_rate', 'impact_unit', 'activation_safeguard'],
+  },
+  normalized_intensity: {
+    key: 'normalized_intensity',
+    label_it: 'Intensità Normalizzata (NI)',
+    label_en: 'Normalized Intensity',
+    definition_it:
+      'Media delle Impact Units per lavoratore attivo, normalizzata rispetto alla scala massima del periodo. NI misura la profondità dell\'engagement — quante IU genera in media un lavoratore che partecipa. Un NI alto su una base AR bassa segnala un programma che attiva intensamente una minoranza invece di distribuire l\'engagement. Componente del macroblock Activation Quality.',
+    related_concepts: ['impact_unit', 'worker_balance', 'activation_rate'],
+  },
+  worker_balance: {
+    key: 'worker_balance',
+    label_it: 'Bilanciamento dei Lavoratori (WB)',
+    label_en: 'Worker Balance',
+    definition_it:
+      'Misura l\'uniformità della distribuzione delle Impact Units tra i lavoratori attivi. WB basso segnala concentrazione strutturale: pochi lavoratori generano la maggior parte delle IU. Un WB alto indica che l\'attivazione è distribuita in modo equo tra chi partecipa. Componente del macroblock Distribution & Equity.',
+    related_concepts: ['equity', 'normalized_intensity', 'pillar_balance'],
+  },
+  pillar_coverage: {
+    key: 'pillar_coverage',
+    label_it: 'Copertura dei Pillar (PC)',
+    label_en: 'Pillar Coverage',
+    definition_it:
+      'Numero di pillar con presenza significativa nel periodo, espresso come quota sui 5 pillar KORA (LIFE, GROWTH, CONNECTION, IMPACT, LEGACY). PC = pillar_attivi / 5. Un PC basso indica che l\'azienda genera IU solo in un sottoinsieme di pillar — tipicamente LIFE e GROWTH — mentre CONNECTION, IMPACT e LEGACY restano sottorappresentati. Componente del macroblock Distribution & Equity.',
+    related_concepts: ['pillar_balance', 'kora_pillar'],
+  },
+  pillar_balance: {
+    key: 'pillar_balance',
+    label_it: 'Bilanciamento dei Pillar (PB)',
+    label_en: 'Pillar Balance',
+    definition_it:
+      'Uniformità della distribuzione delle Impact Units tra i pillar attivi. PB alto indica che le IU sono distribuite equamente tra i pillar coperti. Un pillar dominante (es. LIFE al 44% in S1) abbassa PB anche se PC è moderato. Componente del macroblock Distribution & Equity.',
+    related_concepts: ['pillar_coverage', 'kora_pillar', 'worker_balance'],
+  },
+  equity: {
+    key: 'equity',
+    label_it: 'Equità (EQ)',
+    label_en: 'Equity',
+    definition_it:
+      'Equità distributiva dell\'attivazione tra segmenti aggregati della forza lavoro (dipartimenti, fasce di seniority, tipi di contratto, siti) al di sopra della soglia privacy (gruppo ≥ 10 lavoratori). EQ alta significa che l\'attivazione non è sistematicamente concentrata in segmenti privilegiati o già ad alta partecipazione. Un sito Operations con AR 11% a fronte di un HR al 88% è il segnale tipico di EQ bassa. Componente del macroblock Distribution & Equity.',
+    related_concepts: ['worker_balance', 'activation_rate'],
+  },
+  verification_rate: {
+    key: 'verification_rate',
+    label_it: 'Tasso di Verifica (VR)',
+    label_en: 'Verification Rate',
+    definition_it:
+      'Quota delle Impact Units supportate da evidenze verificate o parzialmente verificate (revisione advisor, integrazione LMS, dati provider via API). VR basso indica alta proporzione di eventi autodichiarati senza revisione. Un VR basso riduce l\'affidabilità dell\'output e si riflette nel Confidence Score. Componente del macroblock Activation Quality.',
+    related_concepts: ['confidence_score', 'impact_unit'],
+  },
+  continuity: {
+    key: 'continuity',
+    label_it: 'Continuità (CO)',
+    label_en: 'Continuity',
+    definition_it:
+      'Quota di lavoratori attivi con engagement sostenuto tra periodi consecutivi (cross-period). CO misura se i programmi costruiscono abitudini o si limitano a eventi una tantum. CO basso segnala che i lavoratori si attivano in un periodo ma non tornano nel successivo. Componente del macroblock Activation Quality.',
+    related_concepts: ['activation_rate', 'meaningful_activation_rate'],
+  },
+  bti_macroblock: {
+    key: 'bti_macroblock',
+    label_it: 'Budget-to-Human-Impact (BTI)',
+    label_en: 'Budget-to-Human-Impact macroblock',
+    definition_it:
+      'Il quarto macroblock del KORA Index v3 (peso 20%). Il punteggio BTI è calcolato dal BudgetToHumanImpactEngine — non deriva dai valori dei componenti. Misura l\'efficienza di conversione della spesa welfare in attivazione umana reale. Budget allocato ≠ Budget attivato. La spesa economic relief (buoni pasto, fringe) non genera Impact Units.',
+    related_concepts: ['economic_relief', 'deep_activation', 'activation_debt', 'reallocation_opportunity'],
+  },
+  economic_relief: {
+    key: 'economic_relief',
+    label_it: 'Economic Relief',
+    label_en: 'Economic Relief',
+    definition_it:
+      'Categoria di spesa welfare a bassa attivazione: voucher alimentari, buoni carburante, fringe benefit generici, card shopping. Gli item economic relief sono classificati Limited all\'Eligibility Gate — generano 0 Impact Units ma sono tracciati nel BTI engine come economic_relief_spend. Non è spesa sbagliata: è spesa che può diventare più intelligente attraverso la riallocazione verso programmi di deep_activation.',
+    related_concepts: ['eligibility_gate', 'deep_activation', 'bti_macroblock'],
+  },
+  deep_activation: {
+    key: 'deep_activation',
+    label_it: 'Deep Activation',
+    label_en: 'Deep Activation',
+    definition_it:
+      'Spesa welfare orientata a programmi che generano Impact Units verificate: formazione, benessere strutturato, mentoring, volontariato, programmi di comunità. Contrapposta all\'economic relief, la deep_activation è la quota di budget che si converte in attivazione reale misurabile dal KORA Index. Il rapporto deep_activation_share / economic_relief_share è il principale segnale diagnostico del macroblock BTI.',
+    related_concepts: ['economic_relief', 'impact_unit', 'bti_macroblock'],
+  },
+  activation_debt: {
+    key: 'activation_debt',
+    label_it: 'Activation Debt',
+    label_en: 'Activation Debt',
+    definition_it:
+      'Budget allocato ma non convertito in attivazione verificata nel periodo. Include budget non speso e quota di spesa economic relief che non genera IU. KORA misura ciò che accade dopo la spesa. Activation Debt è il segnale che il budget teorico non si traduce in impatto umano reale. Ridurre l\'Activation Debt richiede sia una maggiore spesa in deep_activation sia una migliore verifica degli eventi.',
+    related_concepts: ['reallocation_opportunity', 'bti_macroblock', 'economic_relief'],
+  },
+  reallocation_opportunity: {
+    key: 'reallocation_opportunity',
+    label_it: 'Reallocation Opportunity',
+    label_en: 'Reallocation Opportunity',
+    definition_it:
+      'Quota dell\'economic_relief_spend che potrebbe essere riorientata verso programmi di deep_activation, aumentando il BTI score senza incrementare il budget totale. La Reallocation Opportunity non è una critica alla spesa esistente ma un\'indicazione quantitativa del potenziale di ottimizzazione. La riallocazione parziale (es. 50% dell\'economic relief) può generare miglioramenti materiali nell\'Activation Quality e nel KORA Index.',
+    related_concepts: ['activation_debt', 'economic_relief', 'deep_activation'],
+  },
+  impact_unit: {
+    key: 'impact_unit',
+    label_it: 'Impact Unit (IU)',
+    label_en: 'Impact Unit',
+    definition_it:
+      'Unità di misura dell\'attivazione individuale calcolata per ogni evento per ogni pillar. Formula: IU = NM × BC × CQ × EV × CF × AGF [× DF] [× EXF] [× SF]. Le IU sono intermediate — mai employer-visible in forma individuale. Vengono aggregate a livello aziendale per alimentare i componenti del KORA Index. Un evento bloccato (AGF = 0 o Eligibility Gate = Blocked) genera IU = 0.',
+    related_concepts: ['eligibility_gate', 'activation_rate', 'kora_index'],
+  },
+  eligibility_gate: {
+    key: 'eligibility_gate',
+    label_it: 'Eligibility Gate',
+    label_en: 'Eligibility Gate',
+    definition_it:
+      'Classificazione pre-scoring applicata a ogni item caricato prima del calcolo delle Impact Units. Tre classi: Eligible (genera IU piena — programmi di attivazione profonda), Limited (0 IU — benefit economici come buoni pasto e fringe; tracciati come economic_relief_spend nel BTI engine), Blocked (0 IU, 0 KORA Contribution — eventi obbligatori per legge o ruolo: DVR, DPI, DUVRI, formazione HSE obbligatoria). Il gate è obbligatorio e non bypassabile.',
+    related_concepts: ['economic_relief', 'impact_unit', 'deep_activation'],
+  },
+  pre_empirical_calibration: {
+    key: 'pre_empirical_calibration',
+    label_it: 'Pre-calibrazione empirica',
+    label_en: 'Pre-empirical calibration',
+    definition_it:
+      'Stato metodologico attuale di Foundation Light v0.1. I pesi dei macroblocks (REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%) sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output sono strumenti di intelligence diagnostica pilot-grade, non certificati e non adatti a decisioni legali, fiscali o regolamentari. Lo stato di calibrazione è non sopprimibile e deve essere mostrato accanto a ogni output KORA Index.',
+    related_concepts: ['kora_index', 'confidence_score'],
+  },
+  kora_contribution: {
+    key: 'kora_contribution',
+    label_it: 'KORA Contribution',
+    label_en: 'KORA Contribution',
+    definition_it:
+      'Indicatore companion che misura il contributo collettivo ed ecosistemico dell\'azienda: iniziative di gruppo, attività KORA Network, contributi di sistema. KORA Contribution NON è un componente del KORA Index v3 — ha peso 0 nel calcolo dell\'indice. È mostrato separatamente come indicatore complementare. Non deve mai essere aggregato o sommato al KORA Index.',
+    related_concepts: ['kora_index', 'kora_pillar'],
+  },
+  kora_pillar: {
+    key: 'kora_pillar',
+    label_it: 'Pillar KORA',
+    label_en: 'KORA Pillar',
+    definition_it:
+      'I 5 domini di valore umano in cui ogni evento è classificato: LIFE (salute, benessere, prevenzione, supporto psicologico, sicurezza-benessere), GROWTH (formazione, competenze, sviluppo professionale, upskilling), CONNECTION (mentoring, peer support, comunità, coesione), IMPACT (volontariato, progetti sociali, territorio, ambiente), LEGACY (trasferimento di conoscenza, mentoring senior-junior, continuità organizzativa). Ogni evento è classificato in esattamente un pillar per istanza.',
+    related_concepts: ['impact_unit', 'pillar_coverage', 'pillar_balance'],
+  },
+  eligible: {
+    key: 'eligible',
+    label_it: 'Eligible — Azioni Idonee',
+    label_en: 'Eligible',
+    definition_it:
+      'Classe Eligibility Gate per azioni che possono generare Impact Units verificate: programmi di benessere strutturato, formazione volontaria, mentoring, volontariato, supporto psicologico, childcare/asilo nido, caregiver support, upskilling, reskilling, percorsi di legacy e trasferimento di conoscenza. Le azioni Eligible sono processate dall\'IU Engine e contribuiscono al KORA Index.',
+    related_concepts: ['eligibility_gate', 'impact_unit', 'deep_activation'],
+  },
+  limited: {
+    key: 'limited',
+    label_it: 'Limited — Sollievo Economico',
+    label_en: 'Limited',
+    definition_it:
+      'Classe Eligibility Gate per benefit economici utili ma a bassa profondità di attivazione: buoni pasto, card carburante, voucher shopping, fringe benefit generici. Gli item Limited generano 0 Impact Units ma sono tracciati nel BTI engine come economic_relief_spend. Non è spesa sbagliata: è spesa che può diventare più intelligente attraverso la riallocazione verso programmi di deep_activation.',
+    related_concepts: ['eligibility_gate', 'economic_relief', 'bti_macroblock'],
+  },
+  blocked: {
+    key: 'blocked',
+    label_it: 'Blocked — Escluso per Design',
+    label_en: 'Blocked',
+    definition_it:
+      'Classe Eligibility Gate per eventi di compliance obbligatoria legale/HSE/documentale: DVR/DUVRI, DPI, D.Lgs 81/08, sorveglianza sanitaria, privacy GDPR obbligatorio, patentini e licenze obbligatori per ruolo. Gli item Blocked generano 0 IU, 0 KORA Index contribution, 0 PIB e 0 KORA Contribution. Non sono "punteggio basso" — sono esclusi per design. KORA non trasforma la compliance in impatto. La conformità legale è una baseline, non impatto.',
+    related_concepts: ['eligibility_gate', 'blocked_by_design'],
+  },
+  blocked_by_design: {
+    key: 'blocked_by_design',
+    label_it: 'Blocked by Design',
+    label_en: 'Blocked by Design',
+    definition_it:
+      'Principio architetturale di KORA: la conformità legale obbligatoria non può essere convertita in punteggio di attivazione. Gli eventi obbligatori per legge o per ruolo sono classificati Blocked all\'Eligibility Gate e generano zero contributo a KORA Index, IU e PIB. Questa esclusione è intenzionale e non bypassabile — garantisce che il KORA Index misuri solo attivazione genuina e addizionale, non la baseline di compliance.',
+    related_concepts: ['blocked', 'eligibility_gate', 'impact_unit'],
+  },
+  economic_relief_activation_opportunity: {
+    key: 'economic_relief_activation_opportunity',
+    label_it: 'Economic Relief & Activation Opportunity',
+    label_en: 'Economic Relief & Activation Opportunity',
+    definition_it:
+      'Sezione diagnostica del KORA Index v3 che confronta la quota di spesa welfare destinata a sollievo economico (Limited) con quella destinata a programmi di deep_activation (Eligible). Un\'alta economic_relief_share (es. 48% in S1) segnala che il budget è concentrato in benefit a bassa attivazione. La riduzione verso S2 (30%) attraverso parziale riallocazione verso deep_activation migliora il BTI score, la qualità dell\'attivazione e l\'equità della spesa. Il frame corretto: non è spesa sbagliata, è spesa che può diventare più intelligente.',
+    related_concepts: ['economic_relief', 'deep_activation', 'reallocation_opportunity', 'bti_macroblock'],
+  },
+  budget_to_human_impact: {
+    key: 'budget_to_human_impact',
+    label_it: 'Budget-to-Human-Impact',
+    label_en: 'Budget-to-Human-Impact',
+    definition_it:
+      'Pannello diagnostico del macroblock BTI che mostra i principali indicatori di efficienza della conversione budget → attivazione: spesa totale welfare, economic_relief_spend, deep_activation_spend, Activation Debt, Reallocation Opportunity, cost per IU, cost per deep activated worker, pillar investment balance e equity of spend. I dati provengono dal BudgetToHumanImpactEngine — non dai component values del KORA Index. Informational only: KORA non gestisce pagamenti, non custodisce fondi e non fornisce consulenza fiscale.',
+    related_concepts: ['bti_macroblock', 'activation_debt', 'reallocation_opportunity', 'cost_per_deep_activated_worker'],
+  },
+  cost_per_deep_activated_worker: {
+    key: 'cost_per_deep_activated_worker',
+    label_it: 'Costo per Lavoratore Profondamente Attivato',
+    label_en: 'Cost per Deep Activated Worker',
+    definition_it:
+      'Spesa deep_activation / numero di lavoratori con attivazione profonda verificata. Un aumento di questo indicatore non implica inefficienza: può riflettere l\'espansione dell\'accesso a programmi più strutturati e profondi per una platea più ampia. Leggere sempre insieme al cost_per_impact_unit: se quest\'ultimo diminuisce, l\'efficienza complessiva dell\'attivazione è migliorata. In S1→S2: cost_per_deep_worker +€181, ma cost_per_IU −8.6 — segnale di efficienza complessiva migliorata, non peggiorata.',
+    related_concepts: ['deep_activation', 'budget_to_human_impact', 'bti_macroblock'],
+  },
+};
 
 export interface Warning {
   code: string;
@@ -62,6 +307,8 @@ export interface IExplainabilityService {
   getNextBestActions(companyId: string, scenarioId: ScenarioId): ExplainabilityAction[];
   getLimitations(companyId: string, scenarioId: ScenarioId): string | null;
   getWarnings(companyId: string, scenarioId: ScenarioId): Warning[];
+  getConceptExplanation(key: string): ConceptExplanation | null;
+  listConceptKeys(): string[];
 }
 
 export class ExplainabilityService implements IExplainabilityService {
@@ -121,6 +368,14 @@ export class ExplainabilityService implements IExplainabilityService {
       message: comp.explanation,
       affected_components: [comp.code],
     }));
+  }
+
+  getConceptExplanation(key: string): ConceptExplanation | null {
+    return CONCEPT_GLOSSARY[key] ?? null;
+  }
+
+  listConceptKeys(): string[] {
+    return Object.keys(CONCEPT_GLOSSARY);
   }
 }
 
