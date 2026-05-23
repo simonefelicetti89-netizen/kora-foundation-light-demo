@@ -423,9 +423,9 @@ export default function ExecutiveCockpit() {
           : 'border-amber-200 bg-amber-50 text-amber-700',
       )}>
         {activeScenario === 'S2'
-          ? 'Scenario S2 — Post-intervento: KORA Index 64, Activation Rate CLEAR, distribuzione più bilanciata.'
+          ? `Scenario Post-Reallocation (S2) — Scenario migliorato: KORA Index ${output.kora_index_value}, Activation Safeguard ${output.safeguard_status}, distribuzione più bilanciata.`
           : activeScenario === 'S1'
-          ? 'Scenario S1 — Stato attuale: KORA Index 47, Activation Rate WARNING, Activation Debt elevato.'
+          ? `Scenario Baseline (S1) — Scenario iniziale: KORA Index ${output.kora_index_value}, Activation Safeguard ${output.safeguard_status}, Activation Debt elevato.`
           : 'Scenario demo — dati sintetici Foundation Light.'}
       </div>
 

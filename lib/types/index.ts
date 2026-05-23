@@ -492,6 +492,89 @@ export interface IngestionAuditEvent {
   reason: string;
 }
 
+// ── IU Computation Foundation ───────────────────────────────────────────────────
+// Foundation Light stub: IU = NM × BC × CQ × EV × CF × AGF
+// Structurally correct and typed. Factor values are deterministic stubs for v0.1.
+// Full empirical calibration post Delphi Study.
+
+export interface ImpactUnitEligibilityDecision {
+  produces_iu: boolean;
+  eligibility: EligibilityClass;
+  review_required: boolean;
+  approved_for_impact_units: boolean;
+  exclusion_reason: string | null;
+}
+
+export interface ImpactUnitFactorTrace {
+  factor_code: string;
+  label: string;
+  value: number;
+  reason: string;
+  data_source: string;
+  foundation_light_stub: boolean;
+}
+
+export interface ImpactUnitComputationInput {
+  record_id: string;
+  source_row_id: string;
+  action_family: ActionFamily;
+  event_nature: EventNature;
+  eligibility: EligibilityClass;
+  primary_pillar: PillarCode | null;
+  pillar_distribution: Partial<Record<PillarCode, number>>;
+  evidence_type: string;
+  missing_fields: string[];
+  data_completeness_score: number;
+  amount: number | null;
+  site_or_cluster: string | null;
+  review_required: boolean;
+  approved_for_impact_units: boolean;
+}
+
+export interface ImpactUnitComputationResult {
+  record_id: string;
+  source_row_id: string;
+  action_family: ActionFamily;
+  event_nature: EventNature;
+  eligibility: EligibilityClass;
+  primary_pillar: PillarCode | null;
+  pillar_distribution: Partial<Record<PillarCode, number>>;
+  normalized_magnitude_nm: number;
+  base_contribution_bc: number;
+  completeness_quality_cq: number;
+  evidence_verification_ev: number;
+  contextual_factor_cf: number;
+  anti_gaming_factor_agf: number;
+  impact_units_total: number;
+  impact_units_by_pillar: Partial<Record<PillarCode, number>>;
+  computed: boolean;
+  blocked: boolean;
+  limited: boolean;
+  review_required: boolean;
+  exclusion_reason: string | null;
+  explanation: string;
+  formula_trace: ImpactUnitFactorTrace[];
+  methodology_version: string;
+  calibration_status: CalibrationStatus;
+}
+
+export interface ImpactUnitComputationSummary {
+  total_records: number;
+  computed_records: number;
+  blocked_records: number;
+  limited_records: number;
+  review_required_records: number;
+  total_impact_units: number;
+  impact_units_by_pillar: Partial<Record<PillarCode, number>>;
+  records_without_iu: number;
+  average_cq: number;
+  average_ev: number;
+  average_cf: number;
+  average_agf: number;
+  methodology_version: string;
+  calibration_status: CalibrationStatus;
+}
+
 // ── Methodology Config ──────────────────────────────────────────────────────────
 
 export interface MethodologyConfig {
