@@ -988,3 +988,127 @@ export interface CompanyDecisionPack {
   export_actions: DecisionPackExportAction[];
   version_history: DecisionPackVersion[];
 }
+
+// ── Company Onboarding Studio ───────────────────────────────────────────────────
+
+export type CompanyOnboardingStatus =
+  | 'not_started'
+  | 'profile_complete'
+  | 'workforce_baseline_complete'
+  | 'program_data_loaded'
+  | 'hr_kpi_added'
+  | 'readiness_check_passed'
+  | 'pipeline_active'
+  | 'decision_pack_ready'
+  | 'blocked_insufficient_workforce';
+
+export interface CompanySite {
+  site_id: string;
+  name: string;
+  location: string;
+  employee_count: number;
+  privacy_threshold_met: boolean;
+  included_in_breakdown: boolean;
+}
+
+export interface WorkforceCluster {
+  cluster_id: string;
+  cluster_type: 'site' | 'department' | 'role_family' | 'seniority_band' | 'contract_type' | 'other';
+  label: string;
+  employee_count: number;
+  privacy_threshold_met: boolean;
+  included_in_breakdown: boolean;
+  suppression_reason?: string;
+}
+
+export interface CompanyProfile {
+  company_id: string;
+  company_name: string;
+  legal_form: string;
+  sector: string;
+  location: string;
+  employee_count: number;
+  foundation_year: number;
+  contact_role: string;
+  synthetic_demo_data: true;
+}
+
+export interface WorkforceBaseline {
+  company_id: string;
+  total_employees: number;
+  foundation_light_eligible: boolean;
+  eligibility_note: string;
+  sites: CompanySite[];
+  clusters: WorkforceCluster[];
+  privacy_threshold: number;
+  suppressed_cluster_count: number;
+  suppression_note: string;
+}
+
+export interface RawProgramDataSummary {
+  company_id: string;
+  total_programs: number;
+  welfare_programs: number;
+  training_programs: number;
+  volunteering_programs: number;
+  collective_programs: number;
+  total_budget_eur: number;
+  welfare_budget_eur: number;
+  training_budget_eur: number;
+  period: string;
+  data_sources: string[];
+  upload_status: 'loaded' | 'partial' | 'not_started';
+  upload_note: string;
+}
+
+export interface HRKPIContextRecord {
+  kpi_id: string;
+  label: string;
+  value: number;
+  unit: string;
+  period: string;
+  source: string;
+  used_in_kora_index: false;
+  context_only: true;
+  interpretation: string;
+}
+
+export interface HRKPIContextSummary {
+  company_id: string;
+  records: HRKPIContextRecord[];
+  correlation_disclaimer: string;
+  used_in_kora_index: false;
+  context_only: true;
+}
+
+export type OnboardingReadinessStatus = 'ok' | 'warning' | 'blocked';
+
+export interface OnboardingReadinessCheck {
+  check_id: string;
+  label: string;
+  status: OnboardingReadinessStatus;
+  detail: string;
+  blocking: boolean;
+}
+
+export interface PipelineStageLink {
+  stage: string;
+  label: string;
+  href: string;
+  status: 'active' | 'pending' | 'not_started';
+  description: string;
+}
+
+export interface CompanyOnboardingRecord {
+  company_id: string;
+  company_name: string;
+  onboarding_status: CompanyOnboardingStatus;
+  profile: CompanyProfile;
+  workforce_baseline: WorkforceBaseline;
+  program_data_summary: RawProgramDataSummary;
+  hr_kpi_context: HRKPIContextSummary;
+  readiness_checks: OnboardingReadinessCheck[];
+  pipeline_links: PipelineStageLink[];
+  synthetic_demo_data: true;
+  production_ready: false;
+}

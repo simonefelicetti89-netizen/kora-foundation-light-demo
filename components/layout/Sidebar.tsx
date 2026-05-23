@@ -52,6 +52,7 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Strumenti Interni',
         items: [
+          { href: '/company/onboarding', label: 'Onboarding Studio' },
           { href: '/company/ingestion',  label: 'AI Ingestion' },
           { href: '/company/uef-review', label: 'UEF Review' },
           { href: '/company/scoring',    label: 'Scoring Run' },
@@ -93,9 +94,10 @@ function buildNavGroups(role: string): NavGroup[] {
       groups.push({
         heading: 'Foundation Light Preview',
         items: [
+          { href: '/company/onboarding', label: 'Onboarding Studio' },
           { href: '/company/ingestion',  label: 'AI Ingestion' },
-          { href: '/company/uef-review', label: 'UEF Review',             comingSoon: true },
-          { href: '/company/scoring',    label: 'Scoring Run',            comingSoon: true },
+          { href: '/company/uef-review', label: 'UEF Review',    comingSoon: true },
+          { href: '/company/scoring',    label: 'Scoring Run',   comingSoon: true },
           { href: '/company/reports',    label: 'Decision Pack', comingSoon: true },
         ],
       });

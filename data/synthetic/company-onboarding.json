@@ -1,0 +1,447 @@
+[
+  {
+    "company_id": "meridiana-group",
+    "company_name": "Meridiana Group S.r.l.",
+    "onboarding_status": "decision_pack_ready",
+    "profile": {
+      "company_id": "meridiana-group",
+      "company_name": "Meridiana Group S.r.l.",
+      "legal_form": "S.r.l.",
+      "sector": "Servizi professionali e consulenza",
+      "location": "Milano, Italia",
+      "employee_count": 250,
+      "foundation_year": 2008,
+      "contact_role": "HR Director",
+      "synthetic_demo_data": true
+    },
+    "workforce_baseline": {
+      "company_id": "meridiana-group",
+      "total_employees": 250,
+      "foundation_light_eligible": true,
+      "eligibility_note": "Organico ≥ 30 lavoratori. Tutti i cluster superano la soglia di privacy N≥10.",
+      "sites": [
+        {
+          "site_id": "site-mi",
+          "name": "Sede Milano",
+          "location": "Milano",
+          "employee_count": 140,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "site_id": "site-rm",
+          "name": "Sede Roma",
+          "location": "Roma",
+          "employee_count": 72,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "site_id": "site-to",
+          "name": "Sede Torino",
+          "location": "Torino",
+          "employee_count": 38,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        }
+      ],
+      "clusters": [
+        {
+          "cluster_id": "dept-operations",
+          "cluster_type": "department",
+          "label": "Operations",
+          "employee_count": 68,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "cluster_id": "dept-tech",
+          "cluster_type": "department",
+          "label": "Technology",
+          "employee_count": 74,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "cluster_id": "dept-hr",
+          "cluster_type": "department",
+          "label": "HR & Sviluppo",
+          "employee_count": 32,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "cluster_id": "dept-finance",
+          "cluster_type": "department",
+          "label": "Finance & Controllo",
+          "employee_count": 41,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "cluster_id": "dept-commercial",
+          "cluster_type": "department",
+          "label": "Commerciale & Vendite",
+          "employee_count": 35,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        }
+      ],
+      "privacy_threshold": 10,
+      "suppressed_cluster_count": 0,
+      "suppression_note": "Tutti i cluster soddisfano la soglia di privacy N≥10."
+    },
+    "program_data_summary": {
+      "company_id": "meridiana-group",
+      "total_programs": 18,
+      "welfare_programs": 8,
+      "training_programs": 6,
+      "volunteering_programs": 2,
+      "collective_programs": 2,
+      "total_budget_eur": 320000,
+      "welfare_budget_eur": 180000,
+      "training_budget_eur": 95000,
+      "period": "2025-H1",
+      "data_sources": ["HR System", "Welfare Provider", "LMS", "ESG Report"],
+      "upload_status": "loaded",
+      "upload_note": "Tutti i file caricati. 18 programmi mappati nella pipeline."
+    },
+    "hr_kpi_context": {
+      "company_id": "meridiana-group",
+      "records": [
+        {
+          "kpi_id": "turnover-rate",
+          "label": "Tasso di turnover volontario",
+          "value": 7.2,
+          "unit": "%",
+          "period": "2025-H1",
+          "source": "HR System",
+          "used_in_kora_index": false,
+          "context_only": true,
+          "interpretation": "In linea con la media di settore. Valore di contesto per interpretare il KORA Index — non entra nel calcolo."
+        },
+        {
+          "kpi_id": "absenteeism-rate",
+          "label": "Tasso di assenteismo",
+          "value": 3.1,
+          "unit": "%",
+          "period": "2025-H1",
+          "source": "HR System",
+          "used_in_kora_index": false,
+          "context_only": true,
+          "interpretation": "Sotto la media nazionale. Valore di contesto — correlazione ≠ causalità con attivazione KORA."
+        },
+        {
+          "kpi_id": "training-hours-per-employee",
+          "label": "Ore di formazione per lavoratore",
+          "value": 24,
+          "unit": "ore",
+          "period": "2025-H1",
+          "source": "LMS",
+          "used_in_kora_index": false,
+          "context_only": true,
+          "interpretation": "Input di contesto per il pillar GROWTH. Non sostituisce la misurazione KORA."
+        },
+        {
+          "kpi_id": "engagement-score",
+          "label": "Employee Engagement Score",
+          "value": 71,
+          "unit": "/100",
+          "period": "2025-H1",
+          "source": "Indagine interna",
+          "used_in_kora_index": false,
+          "context_only": true,
+          "interpretation": "Punteggio di autovalutazione. Non misura l'attivazione organizzativa certificata KORA."
+        }
+      ],
+      "correlation_disclaimer": "I KPI HR sono indicatori di contesto. Correlazione ≠ causalità. Non entrano nel calcolo del KORA Index.",
+      "used_in_kora_index": false,
+      "context_only": true
+    },
+    "readiness_checks": [
+      {
+        "check_id": "workforce-threshold",
+        "label": "Organico minimo (≥30 lavoratori)",
+        "status": "ok",
+        "detail": "250 lavoratori — soglia ampiamente soddisfatta.",
+        "blocking": true
+      },
+      {
+        "check_id": "privacy-clusters",
+        "label": "Cluster privacy N≥10",
+        "status": "ok",
+        "detail": "Tutti i 5 cluster dipartimentali superano N=10. Nessuna soppressione richiesta.",
+        "blocking": true
+      },
+      {
+        "check_id": "program-data-loaded",
+        "label": "Dati programmi welfare/training caricati",
+        "status": "ok",
+        "detail": "18 programmi mappati. Upload completato da 4 fonti dati.",
+        "blocking": true
+      },
+      {
+        "check_id": "data-quality",
+        "label": "Qualità dati sufficiente per pipeline",
+        "status": "ok",
+        "detail": "CQ medio 0.78 — qualità documentale buona per l'ingestion.",
+        "blocking": false
+      },
+      {
+        "check_id": "consent-framework",
+        "label": "Framework consenso lavoratori",
+        "status": "warning",
+        "detail": "Demo: consenso simulato. In produzione sarà richiesto il consenso esplicito per worker con dati personali.",
+        "blocking": false
+      }
+    ],
+    "pipeline_links": [
+      {
+        "stage": "1-ingestion",
+        "label": "AI Ingestion Studio",
+        "href": "/company/ingestion",
+        "status": "active",
+        "description": "Parsing file, rilevazione colonne, classificazione BCM taxonomy"
+      },
+      {
+        "stage": "2-uef-review",
+        "label": "UEF Review",
+        "href": "/company/uef-review",
+        "status": "active",
+        "description": "Revisione UEF, approvazione / rifiuto record, supervisione quality gate"
+      },
+      {
+        "stage": "3-scoring",
+        "label": "Scoring Run",
+        "href": "/company/scoring",
+        "status": "active",
+        "description": "IU Engine, PIB, Company Aggregation, KORA Index Engine"
+      },
+      {
+        "stage": "4-decision-pack",
+        "label": "Decision Pack",
+        "href": "/company/reports",
+        "status": "active",
+        "description": "Company Decision Pack con 14 sezioni, scenario S1/S2, raccomandazioni"
+      },
+      {
+        "stage": "5-kora-index",
+        "label": "KORA Index",
+        "href": "/company/kora-index",
+        "status": "active",
+        "description": "Visualizza il KORA Index aggregato con Confidence Score e Activation Safeguard"
+      }
+    ],
+    "synthetic_demo_data": true,
+    "production_ready": false
+  },
+  {
+    "company_id": "alba-manufacturing",
+    "company_name": "Alba Manufacturing S.r.l.",
+    "onboarding_status": "readiness_check_passed",
+    "profile": {
+      "company_id": "alba-manufacturing",
+      "company_name": "Alba Manufacturing S.r.l.",
+      "legal_form": "S.r.l.",
+      "sector": "Manifatturiero — lavorazione metalli",
+      "location": "Cuneo, Piemonte",
+      "employee_count": 32,
+      "foundation_year": 2015,
+      "contact_role": "Responsabile HR",
+      "synthetic_demo_data": true
+    },
+    "workforce_baseline": {
+      "company_id": "alba-manufacturing",
+      "total_employees": 32,
+      "foundation_light_eligible": true,
+      "eligibility_note": "Organico ≥ 30 lavoratori. Attenzione: 2 cluster sotto soglia privacy N<10 — esclusi dal breakdown.",
+      "sites": [
+        {
+          "site_id": "site-cuneo",
+          "name": "Stabilimento Cuneo",
+          "location": "Cuneo",
+          "employee_count": 22,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "site_id": "site-alba",
+          "name": "Unità Alba",
+          "location": "Alba",
+          "employee_count": 10,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        }
+      ],
+      "clusters": [
+        {
+          "cluster_id": "dept-produzione",
+          "cluster_type": "department",
+          "label": "Produzione",
+          "employee_count": 18,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "cluster_id": "dept-logistica",
+          "cluster_type": "department",
+          "label": "Logistica & Magazzino",
+          "employee_count": 7,
+          "privacy_threshold_met": false,
+          "included_in_breakdown": false,
+          "suppression_reason": "Cluster soppresso: N=7 < soglia privacy N≥10. Non incluso nel breakdown."
+        },
+        {
+          "cluster_id": "dept-ufficio",
+          "cluster_type": "department",
+          "label": "Ufficio & Amministrazione",
+          "employee_count": 13,
+          "privacy_threshold_met": true,
+          "included_in_breakdown": true
+        },
+        {
+          "cluster_id": "dept-commerciale",
+          "cluster_type": "department",
+          "label": "Commerciale & Vendite",
+          "employee_count": 7,
+          "privacy_threshold_met": false,
+          "included_in_breakdown": false,
+          "suppression_reason": "Cluster soppresso: N=7 < soglia privacy N≥10. Non incluso nel breakdown."
+        },
+        {
+          "cluster_id": "contract-part-time",
+          "cluster_type": "contract_type",
+          "label": "Part-time / Stagionali",
+          "employee_count": 6,
+          "privacy_threshold_met": false,
+          "included_in_breakdown": false,
+          "suppression_reason": "Cluster soppresso: N=6 < soglia privacy N≥10. Non incluso nel breakdown."
+        }
+      ],
+      "privacy_threshold": 10,
+      "suppressed_cluster_count": 3,
+      "suppression_note": "3 cluster soppresso per privacy (N<10): Logistica, Commerciale, Part-time/Stagionali. Visibili solo in aggregato aziendale."
+    },
+    "program_data_summary": {
+      "company_id": "alba-manufacturing",
+      "total_programs": 5,
+      "welfare_programs": 3,
+      "training_programs": 2,
+      "volunteering_programs": 0,
+      "collective_programs": 0,
+      "total_budget_eur": 28000,
+      "welfare_budget_eur": 18000,
+      "training_budget_eur": 10000,
+      "period": "2025-H1",
+      "data_sources": ["HR System", "Welfare Provider"],
+      "upload_status": "partial",
+      "upload_note": "Caricamento parziale: dati LMS non ancora integrati. 5 programmi mappati su 7 previsti."
+    },
+    "hr_kpi_context": {
+      "company_id": "alba-manufacturing",
+      "records": [
+        {
+          "kpi_id": "turnover-rate",
+          "label": "Tasso di turnover volontario",
+          "value": 12.5,
+          "unit": "%",
+          "period": "2025-H1",
+          "source": "HR System",
+          "used_in_kora_index": false,
+          "context_only": true,
+          "interpretation": "Superiore alla media di settore. Valore di contesto — non entra nel calcolo KORA Index."
+        },
+        {
+          "kpi_id": "training-hours-per-employee",
+          "label": "Ore di formazione per lavoratore",
+          "value": 8,
+          "unit": "ore",
+          "period": "2025-H1",
+          "source": "HR System",
+          "used_in_kora_index": false,
+          "context_only": true,
+          "interpretation": "Sotto la media. Contesto utile per interpretare il pillar GROWTH."
+        }
+      ],
+      "correlation_disclaimer": "I KPI HR sono indicatori di contesto. Correlazione ≠ causalità. Non entrano nel calcolo del KORA Index.",
+      "used_in_kora_index": false,
+      "context_only": true
+    },
+    "readiness_checks": [
+      {
+        "check_id": "workforce-threshold",
+        "label": "Organico minimo (≥30 lavoratori)",
+        "status": "ok",
+        "detail": "32 lavoratori — soglia soddisfatta con margine minimo.",
+        "blocking": true
+      },
+      {
+        "check_id": "privacy-clusters",
+        "label": "Cluster privacy N≥10",
+        "status": "warning",
+        "detail": "3 cluster su 5 sotto soglia N<10 (Logistica, Commerciale, Part-time). Esclusi dal breakdown per privacy. Analisi limitata ai cluster visibili.",
+        "blocking": false
+      },
+      {
+        "check_id": "program-data-loaded",
+        "label": "Dati programmi welfare/training caricati",
+        "status": "warning",
+        "detail": "Caricamento parziale: 5/7 programmi mappati. LMS non ancora integrato.",
+        "blocking": false
+      },
+      {
+        "check_id": "data-quality",
+        "label": "Qualità dati sufficiente per pipeline",
+        "status": "warning",
+        "detail": "Dati limitati: solo 2 fonti disponibili. CQ atteso inferiore a Meridiana Group.",
+        "blocking": false
+      },
+      {
+        "check_id": "consent-framework",
+        "label": "Framework consenso lavoratori",
+        "status": "warning",
+        "detail": "Demo: consenso simulato. In produzione sarà richiesto il consenso esplicito.",
+        "blocking": false
+      }
+    ],
+    "pipeline_links": [
+      {
+        "stage": "1-ingestion",
+        "label": "AI Ingestion Studio",
+        "href": "/company/ingestion",
+        "status": "pending",
+        "description": "Parsing file, rilevazione colonne, classificazione BCM taxonomy"
+      },
+      {
+        "stage": "2-uef-review",
+        "label": "UEF Review",
+        "href": "/company/uef-review",
+        "status": "not_started",
+        "description": "Revisione UEF, approvazione / rifiuto record, supervisione quality gate"
+      },
+      {
+        "stage": "3-scoring",
+        "label": "Scoring Run",
+        "href": "/company/scoring",
+        "status": "not_started",
+        "description": "IU Engine, PIB, Company Aggregation, KORA Index Engine"
+      },
+      {
+        "stage": "4-decision-pack",
+        "label": "Decision Pack",
+        "href": "/company/reports",
+        "status": "not_started",
+        "description": "Company Decision Pack con 14 sezioni, scenario S1/S2, raccomandazioni"
+      },
+      {
+        "stage": "5-kora-index",
+        "label": "KORA Index",
+        "href": "/company/kora-index",
+        "status": "not_started",
+        "description": "Visualizza il KORA Index aggregato con Confidence Score e Activation Safeguard"
+      }
+    ],
+    "synthetic_demo_data": true,
+    "production_ready": false
+  }
+]
