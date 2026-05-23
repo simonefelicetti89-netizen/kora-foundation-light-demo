@@ -1,7 +1,69 @@
-import type { ScenarioId } from '@/lib/types';
+import type { ScenarioId, IngestionDestination, IngestionReviewStatus } from '@/lib/types';
 import sourceBatchesRaw from '@/data/synthetic/source-batches.json';
+import ingestionSamplesRaw from '@/data/synthetic/ingestion-samples.json';
+import { eligibilityGateService } from '@/services/eligibility-gate/EligibilityGateService';
+import type { EligibilityClassificationResult } from '@/services/eligibility-gate/EligibilityGateService';
 
 export type SourceType = 'hr_system' | 'welfare_provider' | 'lms' | 'esg_initiatives' | 'partner_events' | 'manual';
+
+// Re-export for backward compatibility
+export type { IngestionDestination, IngestionReviewStatus };
+
+export interface IngestionSample {
+  id: string;
+  raw_name: string;
+  raw_description: string;
+  source_file: string;
+  source_system: string;
+  source_type: string;
+  amount: number | null;
+  date_or_period: string;
+  provider: string | null;
+  site_or_cluster: string | null;
+  mandatory_status: string | null;
+  evidence_type: string;
+  missing_fields: string[];
+  expected_review_status: string;
+}
+
+export interface AnalyzedIngestionRow {
+  // raw fields
+  id: string;
+  raw_name: string;
+  raw_description: string;
+  source_file: string;
+  source_type: string;
+  amount: number | null;
+  date_or_period: string;
+  provider: string | null;
+  site_or_cluster: string | null;
+  missing_fields: string[];
+  // classification
+  classification: EligibilityClassificationResult;
+  // derived
+  destination: IngestionDestination;
+  review_status: IngestionReviewStatus;
+  can_enter_kora_index: boolean;
+  can_generate_impact_units: boolean;
+}
+
+export interface IngestionSummaryStats {
+  total: number;
+  eligible_count: number;
+  limited_count: number;
+  blocked_count: number;
+  review_required_count: number;
+  ready_for_index_count: number;
+  missing_data_total: number;
+  high_confidence_count: number;
+}
+
+export interface IngestionRoutingSummary {
+  kora_activation_core: number;
+  economic_relief_opportunity: number;
+  blocked_by_design: number;
+  human_review_required: number;
+}
 
 export interface IngestionResult {
   batch_id: string;
@@ -105,6 +167,12 @@ export interface IIngestionSimulatorService {
   getPendingReviewSummary(companyId: string, scenarioId: ScenarioId): PendingReviewSummary;
   getEvidenceCoverageSummary(companyId: string, scenarioId: ScenarioId): EvidenceCoverageSummary;
   getEligibilityGateSummary(companyId: string, scenarioId: ScenarioId): EligibilityGateSummary;
+  // Row-level ingestion analysis
+  getIngestionSamples(): IngestionSample[];
+  analyzeIngestionRow(sample: IngestionSample): AnalyzedIngestionRow;
+  analyzeIngestionBatch(): AnalyzedIngestionRow[];
+  getIngestionSummaryStats(): IngestionSummaryStats;
+  getIngestionRoutingSummary(): IngestionRoutingSummary;
 }
 
 export class IngestionSimulatorService implements IIngestionSimulatorService {
@@ -194,6 +262,93 @@ export class IngestionSimulatorService implements IIngestionSimulatorService {
       sources_above_50pct: batches.filter((b) => b.evidence_attached_pct >= 0.50).length,
       sources_below_50pct: batches.filter((b) => b.evidence_attached_pct < 0.50).length,
     };
+  }
+
+  // ── Row-level ingestion analysis ───────────────────────────────────────────
+
+  getIngestionSamples(): IngestionSample[] {
+    return (ingestionSamplesRaw as { data: IngestionSample[] }).data;
+  }
+
+  analyzeIngestionRow(sample: IngestionSample): AnalyzedIngestionRow {
+    const classification = eligibilityGateService.classifyAction({
+      name: sample.raw_name,
+      description: sample.raw_description,
+      source_type: sample.source_type,
+      mandatory_status: sample.mandatory_status ?? undefined,
+      evidence_type: sample.evidence_type,
+    });
+
+    const destination = this.deriveDestination(classification);
+    const review_status = this.deriveReviewStatus(classification);
+
+    return {
+      id: sample.id,
+      raw_name: sample.raw_name,
+      raw_description: sample.raw_description,
+      source_file: sample.source_file,
+      source_type: sample.source_type,
+      amount: sample.amount,
+      date_or_period: sample.date_or_period,
+      provider: sample.provider,
+      site_or_cluster: sample.site_or_cluster,
+      missing_fields: sample.missing_fields,
+      classification,
+      destination,
+      review_status,
+      can_enter_kora_index: classification.company_index_allowed && !classification.review_required,
+      can_generate_impact_units: classification.impact_units_allowed && !classification.review_required,
+    };
+  }
+
+  analyzeIngestionBatch(): AnalyzedIngestionRow[] {
+    return this.getIngestionSamples().map((s) => this.analyzeIngestionRow(s));
+  }
+
+  getIngestionSummaryStats(): IngestionSummaryStats {
+    const rows = this.analyzeIngestionBatch();
+    const eligible_count = rows.filter(
+      (r) => r.classification.kora_eligibility === 'eligible' && !r.classification.review_required,
+    ).length;
+    const limited_count = rows.filter((r) => r.classification.kora_eligibility === 'limited').length;
+    const blocked_count = rows.filter((r) => r.classification.kora_eligibility === 'blocked').length;
+    const review_required_count = rows.filter((r) => r.classification.review_required).length;
+    const missing_data_total = rows.reduce((s, r) => s + r.missing_fields.length, 0);
+    const high_confidence_count = rows.filter((r) => r.classification.confidence === 'high').length;
+    return {
+      total: rows.length,
+      eligible_count,
+      limited_count,
+      blocked_count,
+      review_required_count,
+      ready_for_index_count: eligible_count,
+      missing_data_total,
+      high_confidence_count,
+    };
+  }
+
+  getIngestionRoutingSummary(): IngestionRoutingSummary {
+    const rows = this.analyzeIngestionBatch();
+    return {
+      kora_activation_core: rows.filter((r) => r.destination === 'KORA Activation Core').length,
+      economic_relief_opportunity: rows.filter((r) => r.destination === 'Economic Relief & Activation Opportunity').length,
+      blocked_by_design: rows.filter((r) => r.destination === 'Blocked by Design').length,
+      human_review_required: rows.filter((r) => r.destination === 'Human Review Required').length,
+    };
+  }
+
+  private deriveDestination(c: EligibilityClassificationResult): IngestionDestination {
+    if (c.kora_eligibility === 'blocked') return 'Blocked by Design';
+    if (c.kora_eligibility === 'limited') return 'Economic Relief & Activation Opportunity';
+    if (c.review_required) return 'Human Review Required';
+    return 'KORA Activation Core';
+  }
+
+  private deriveReviewStatus(c: EligibilityClassificationResult): IngestionReviewStatus {
+    if (c.kora_eligibility === 'blocked') return 'blocked_gate';
+    if (c.kora_eligibility === 'limited') return 'limited_gate';
+    if (c.review_required) return 'pending_review';
+    return 'ready';
   }
 
   getEligibilityGateSummary(companyId: string, scenarioId: ScenarioId): EligibilityGateSummary {

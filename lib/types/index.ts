@@ -397,6 +397,101 @@ export interface BudgetToHumanImpactRecord {
   synthetic_demo_data: true;
 }
 
+// ── AI Ingestion Pipeline ────────────────────────────────────────────────────────
+// Stage 1–2 of the 14-stage algorithm.
+// Pipeline: RawIngestionRow → NormalizedIngestionRow → EligibilityGate → KoraReadyRecord
+
+export type IngestionSourceType =
+  | 'hr_system'
+  | 'welfare_provider'
+  | 'lms_training'
+  | 'esg_initiatives'
+  | 'partner_events'
+  | 'manual'
+  | 'unknown';
+
+export interface RawIngestionRow {
+  id: string;
+  raw_name: string;
+  raw_description?: string;
+  source_file?: string;
+  source_system?: string;
+  source_type?: string;
+  amount?: number | null;
+  date_or_period?: string;
+  provider?: string | null;
+  site_or_cluster?: string | null;
+  mandatory_status?: string | null;
+  evidence_type?: string;
+  missing_fields?: string[];
+  [key: string]: unknown;
+}
+
+export interface NormalizedIngestionRow {
+  id: string;
+  raw_name: string;
+  normalized_name: string;
+  raw_description: string;
+  source_file: string;
+  source_type: IngestionSourceType;
+  inferred_source_type: boolean;
+  amount: number | null;
+  date_or_period: string;
+  provider: string | null;
+  site_or_cluster: string | null;
+  mandatory_status: string | null;
+  inferred_mandatory_status: boolean;
+  evidence_type: string;
+  missing_fields: string[];
+  data_completeness_score: number;
+}
+
+export type IngestionDestination =
+  | 'KORA Activation Core'
+  | 'Economic Relief & Activation Opportunity'
+  | 'Blocked by Design'
+  | 'Human Review Required';
+
+export type IngestionReviewStatus = 'ready' | 'pending_review' | 'limited_gate' | 'blocked_gate';
+
+export interface KoraReadyRecord {
+  id: string;
+  normalized_row: NormalizedIngestionRow;
+  destination: IngestionDestination;
+  review_status: IngestionReviewStatus;
+  // Governance flags — strict rules per doc 10:
+  // Blocked → all false. Limited → bti_governance only.
+  // Eligible + review_required → all false until resolved.
+  // Eligible + !review_required → scoring/IU may be true.
+  approved_for_scoring: boolean;
+  approved_for_bti_governance: boolean;
+  approved_for_impact_units: boolean;
+  missing_data_questions: string[];
+  human_review_completed: boolean;
+  human_review_notes?: string;
+}
+
+export type IngestionAuditEventType =
+  | 'row_normalized'
+  | 'row_classified'
+  | 'mandatory_inferred'
+  | 'source_type_inferred'
+  | 'missing_fields_detected'
+  | 'review_required_flagged'
+  | 'human_review_completed'
+  | 'governance_flag_set'
+  | 'blocked_by_design';
+
+export interface IngestionAuditEvent {
+  timestamp: string;
+  actor: 'pipeline' | 'human_reviewer' | 'system';
+  event_type: IngestionAuditEventType;
+  row_id: string;
+  previous_value?: unknown;
+  new_value?: unknown;
+  reason: string;
+}
+
 // ── Methodology Config ──────────────────────────────────────────────────────────
 
 export interface MethodologyConfig {
