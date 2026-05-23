@@ -66,6 +66,7 @@ const REVIEW_STATUS_BADGE: Record<string, string> = {
   under_kora_review:          'bg-yellow-50 text-yellow-700 border-yellow-200',
   advisor_review_required:    'bg-orange-50 text-orange-700 border-orange-200',
   partner_validation_required:'bg-purple-50 text-purple-700 border-purple-200',
+  blocked_by_design:          'bg-rose-50 text-rose-700 border-rose-200',
 };
 
 const REVIEW_STATUS_LABELS: Record<string, string> = {
@@ -73,6 +74,7 @@ const REVIEW_STATUS_LABELS: Record<string, string> = {
   under_kora_review:          'In Revisione KORA',
   advisor_review_required:    'Revisione Advisor Richiesta',
   partner_validation_required:'Validazione Partner Richiesta',
+  blocked_by_design:          'Escluso per Design',
 };
 
 interface InitiativePreview {
@@ -101,7 +103,7 @@ const INITIATIVE_PREVIEW: InitiativePreview[] = [
     evidence_requirement: 'Presenze verificate + evidenza di sessione strutturata',
     kora_relevance: 'Migliora MAR e CO — attivazione significativa con segnale di continuità su LIFE e CONNECTION',
     economic_contribution: null,
-    kora_note: 'KORA premia l\'addizionalità. I corsi di sicurezza obbligatori per legge ricevono basso valore di attivazione — questo workshop va oltre il minimo legale e genera IU più forti.',
+    kora_note: 'KORA premia l\'addizionalità. I corsi obbligatori per legge (es. D.Lgs. 81/2008) sono classificati Blocked — generano 0 IU. Questo workshop va oltre il minimo legale: è addizionale, verificabile e può generare IU reali su LIFE e CONNECTION.',
   },
   {
     id: 'ip-02',
@@ -133,14 +135,14 @@ const INITIATIVE_PREVIEW: InitiativePreview[] = [
     id: 'ip-04',
     title: 'Corso di Sicurezza Obbligatorio (D.Lgs. 81/2008)',
     type: 'Attività di Compliance',
-    pillars: ['LIFE'],
+    pillars: [],
     additionality: 'mandatory_legal_minimum',
     additionality_label: 'Minimo legale',
-    review_status: 'approved',
-    evidence_requirement: 'Registro presenze — solo contesto evidenza, nessuna generazione IU significativa',
-    kora_relevance: 'Basso valore di attivazione. Contribuisce al Confidence Score come contesto evidenza — non genera un uplift KORA Index rilevante.',
+    review_status: 'blocked_by_design',
+    evidence_requirement: 'Registro presenze — contesto evidenza obbligatorio, non attivante',
+    kora_relevance: '0 IU · 0 KORA Index · 0 PIB · 0 Contribution · Blocked by Design. KORA non trasforma la compliance in impatto.',
     economic_contribution: null,
-    kora_note: 'KORA premia l\'addizionalità, l\'attivazione verificata e la partecipazione distribuita — non la semplice compliance. Gli obblighi minimi di legge generano valore di attivazione minimo.',
+    kora_note: 'Attività obbligatoria per legge (D.Lgs. 81/2008) — classificata Blocked. Genera 0 Impact Units e non contribuisce al KORA Index. Non è una penalizzazione: è design architetturale. La conformità legale è una baseline, non impatto.',
   },
 ];
 
@@ -412,7 +414,12 @@ export default function PillarsInitiatives() {
 
               {/* KORA methodology note */}
               {init.kora_note && (
-                <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-700 leading-relaxed">
+                <div className={cn(
+                  'rounded border px-3 py-2 text-xs leading-relaxed',
+                  init.review_status === 'blocked_by_design'
+                    ? 'border-rose-100 bg-rose-50 text-rose-700'
+                    : 'border-amber-100 bg-amber-50 text-amber-700',
+                )}>
                   {init.kora_note}
                 </div>
               )}

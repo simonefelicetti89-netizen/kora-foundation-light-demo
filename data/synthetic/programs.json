@@ -136,7 +136,7 @@
       "fiscal_classification_informational_only": true,
       "not_tax_advice": true,
       "fiscal_disclaimer": "Fiscal category shown for informational demo purposes only. Not tax advice. Consult your fiscal advisor.",
-      "note_on_scoring": "Mandatory events receive lower EV (Evidence Value) weight than voluntary events in the IU formula.",
+      "note_on_scoring": "Mandatory compliance events (Blocked) are excluded from the IU formula entirely — scoring_allowed: false, impact_units_allowed: false. They generate 0 IU. EV correction factors apply only to Eligible events inside the IU formula.",
       "budget_eur_approx": 31000,
       "partner_ids": [],
       "eligibility_scope": "operations_plant",
