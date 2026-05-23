@@ -758,3 +758,233 @@ export interface DynamicScoringPreviewOutput {
   methodology_version: string;
   calibration_status: CalibrationStatus;
 }
+
+// ── Service-compatible types ─────────────────────────────────────────────────
+// Structurally identical to types exported by their respective service files.
+// Defined here so CompanyDecisionPack can reference them without circular imports.
+// TypeScript structural typing guarantees assignment compatibility.
+
+export interface ConfidenceRecord {
+  id: string;
+  company_id: string;
+  scenario_id: string;
+  confidence_score: number;
+  confidence_level: string;
+  data_completeness: number;
+  evidence_quality: number;
+  mapping_confidence: number;
+  verification_weight: number;
+  source_coverage: Record<string, string>;
+  gaps_identified: string[];
+  limitations: string;
+  methodology_version_id: string;
+  calibration_status: string;
+}
+
+export interface EligibilityGateSummary {
+  blocked_count: number;
+  blocked_note: string;
+  limited_count: number;
+  limited_note: string;
+  eligible_row_count: number;
+  total_row_count: number;
+}
+
+export interface ExplainabilityComponentRef {
+  code: string;
+  label: string;
+  value: number;
+  explanation: string;
+}
+
+export interface ExplainabilityAction {
+  priority: number;
+  action: string;
+  detail: string;
+  target_components: string[];
+}
+
+export interface ExplainabilityRecord {
+  id: string;
+  company_id: string;
+  scenario_id: string;
+  reporting_period: string;
+  kora_index_output_id: string;
+  methodology_version_id: string;
+  calibration_status: string;
+  kora_index_explanation: string;
+  safeguard_explanation?: string;
+  explanations: ExplainabilityComponentRef[];
+  strong_components: ExplainabilityComponentRef[];
+  weak_components: ExplainabilityComponentRef[];
+  next_best_actions: ExplainabilityAction[];
+  limitations_statement: string;
+  individual_worker_data_present: false;
+}
+
+export interface PillarBudgetLine {
+  pillar: string;
+  allocated: number;
+  used: number;
+  utilization_rate: number;
+  programs: string[];
+  economic_relief_included?: boolean;
+}
+
+// ── Decision Pack types (Block 4) ─────────────────────────────────────────────
+
+export type DecisionPackStatus =
+  | 'draft'
+  | 'data_review_required'
+  | 'advisor_review_required'
+  | 'ready'
+  | 'exported'
+  | 'archived';
+
+export type DecisionPackSectionCode =
+  | 'cover'
+  | 'executive_summary'
+  | 'kora_index_v3'
+  | 'dynamic_scoring_preview'
+  | 'eligibility_gate'
+  | 'budget_to_human_impact'
+  | 'economic_relief'
+  | 'uef_review_data_quality'
+  | 'people_context_hr_kpi'
+  | 'workforce_activation'
+  | 'pillar_analysis'
+  | 'recommendations'
+  | 'ninety_day_action_plan'
+  | 'methodology_boundaries';
+
+export type DecisionPackAudience =
+  | 'executive'
+  | 'hr'
+  | 'cfo'
+  | 'esg'
+  | 'advisor'
+  | 'founder';
+
+export interface DecisionPackMetric {
+  code: string;
+  label: string;
+  value: string | number;
+  unit?: string;
+  scenario_value_previous?: string | number;
+  delta?: number;
+  interpretation: string;
+  source: string;
+  confidence: 'high' | 'medium' | 'low';
+  limitation?: string;
+}
+
+export interface DecisionPackInsight {
+  id: string;
+  title: string;
+  body: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  audience: DecisionPackAudience[];
+  related_section: DecisionPackSectionCode;
+  source: string;
+  limitation?: string;
+}
+
+export interface DecisionPackRecommendation {
+  id: string;
+  title: string;
+  rationale: string;
+  recommended_action: string;
+  priority: 'alta' | 'media' | 'bassa';
+  owner_suggestion: string;
+  horizon: '0-30gg' | '30-60gg' | '60-90gg' | 'ongoing';
+  related_metric?: string;
+  expected_direction: string;
+  caveat: string;
+}
+
+export interface DecisionPackSection {
+  code: DecisionPackSectionCode;
+  title: string;
+  subtitle?: string;
+  audience: DecisionPackAudience[];
+  summary: string;
+  metrics: DecisionPackMetric[];
+  insights: DecisionPackInsight[];
+  recommendations: DecisionPackRecommendation[];
+  limitations: string[];
+  methodology_notes?: string;
+}
+
+export interface DecisionPackVersion {
+  version_id: string;
+  company_id: string;
+  company_name: string;
+  period: string;
+  created_at: string;
+  status: DecisionPackStatus;
+  methodology_version: string;
+  calibration_status: CalibrationStatus;
+  confidence_score: number;
+  advisor_review_status: string;
+  data_readiness: string;
+  export_status: string;
+}
+
+export interface DecisionPackExportAction {
+  label: string;
+  icon: string;
+  demo_only: boolean;
+  disabled: boolean;
+  note: string;
+}
+
+export interface CompanyDecisionPack {
+  // Cover / metadata
+  report_id: string;
+  company_id: string;
+  company_name: string;
+  period: string;
+  generated_at: string;
+  status: DecisionPackStatus;
+  methodology_version: string;
+  calibration_status: CalibrationStatus;
+  scenario_id: ScenarioId;
+  scenario_label: string;
+  production_ready: false;
+  synthetic_demo_data: true;
+
+  // Status / readiness
+  data_readiness: 'high' | 'medium' | 'low';
+  advisor_review_status: 'not_required' | 'recommended' | 'required' | 'in_review' | 'reviewed';
+  export_status: 'demo_only';
+
+  // Raw service outputs (passed to existing rendering components)
+  kora_index_output: KoraIndexOutput;
+  s1_kora_output: KoraIndexOutput;
+  s2_kora_output: KoraIndexOutput;
+  s1_macroblocks: MacroblockScore[];
+  s2_macroblocks: MacroblockScore[];
+  activation_safeguard: ActivationSafeguardResult | null;
+  confidence_record: ConfidenceRecord | null;
+  confidence_score: number;
+  bti_record_s1: BudgetToHumanImpactRecord | null;
+  bti_record_s2: BudgetToHumanImpactRecord | null;
+  bti_recommendations: BudgetToHumanImpactRecommendation[];
+  eligibility_gate: EligibilityGateSummary;
+  explanation: ExplainabilityRecord | null;
+  pillar_budget: PillarBudgetLine[];
+
+  // Block 3 and IU data
+  dynamic_preview: DynamicScoringPreviewOutput;
+  uef_review_summary: UEFReviewSummary;
+  iu_summary: ImpactUnitComputationSummary;
+
+  // Generated report structure
+  sections: DecisionPackSection[];
+  top_insights: DecisionPackInsight[];
+  top_recommendations: DecisionPackRecommendation[];
+  limitations: string[];
+  privacy_boundary: string;
+  export_actions: DecisionPackExportAction[];
+  version_history: DecisionPackVersion[];
+}
