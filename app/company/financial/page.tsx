@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
 import { financialGovernanceService } from '@/services/financial-governance/FinancialGovernanceService';
+import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { cn } from '@/lib/utils';
-import { PILLAR_LABELS } from '@/lib/constants/kora';
+import { PILLAR_LABELS, BTI_DOCTRINE } from '@/lib/constants/kora';
 import type { PillarCode } from '@/lib/types';
 
 // ─── Pillar styling ───────────────────────────────────────────────────────────
@@ -41,35 +42,19 @@ function BudgetCard({
   );
 }
 
-// ─── Budget-to-Impact Bridge — synthetic aggregate demo constants ─────────────
-// All values are purely synthetic demo data. Not ROI certified, not causal, not individual.
-
-const BTI_HERO = {
-  budget_observed:        420_000,
-  impact_units_generated: 18_400,
-  cost_per_iu:            22.8,
-  activation_debt_eur:    84_000,
-};
+// ─── Budget-to-Impact Bridge — per-pillar directional metadata ───────────────
+// Budget, share, and deep activation values come from BudgetToHumanImpactService.
+// Debt level and recommendation are directional demo labels — not computed from service.
 
 type DebtLevel = 'basso' | 'medio' | 'alto';
 
-interface PillarBtiRow {
-  pillar: string;
-  budget: number;
-  share: number;
-  iu: number;
-  cost_per_iu: number;
-  debt: DebtLevel;
-  recommendation: string;
-}
-
-const PILLAR_BTI: PillarBtiRow[] = [
-  { pillar: 'LIFE',       budget: 110_000, share: 0.26, iu: 3_200, cost_per_iu: 34, debt: 'alto',  recommendation: 'Espandere accesso alle sedi con bassa partecipazione — copertura attuale 22%' },
-  { pillar: 'GROWTH',     budget:  95_000, share: 0.23, iu: 4_600, cost_per_iu: 20, debt: 'medio', recommendation: 'Programmi ricorrenti per il bottom 50% — indicatore direzionale CO / continuità — non causale' },
-  { pillar: 'CONNECTION', budget:  70_000, share: 0.17, iu: 2_100, cost_per_iu: 33, debt: 'alto',  recommendation: 'Attivare Partner Network CONNECTION — copertura cross-reparto insufficiente' },
-  { pillar: 'IMPACT',     budget:  85_000, share: 0.20, iu: 5_800, cost_per_iu: 15, debt: 'basso', recommendation: 'Pillar più efficiente — mantenere e ampliare il perimetro attuale' },
-  { pillar: 'LEGACY',     budget:  60_000, share: 0.14, iu: 2_700, cost_per_iu: 22, debt: 'medio', recommendation: 'Attivare mentoring LEGACY — copertura attuale 12%, potenziale PB e CO' },
-];
+const PILLAR_STATIC: Record<string, { debt: DebtLevel; recommendation: string }> = {
+  LIFE:       { debt: 'alto',  recommendation: 'Espandere accesso alle sedi con bassa partecipazione — elevata concentrazione economic_relief in questo pillar' },
+  GROWTH:     { debt: 'medio', recommendation: 'Programmi ricorrenti per il bottom 50% — indicatore direzionale CO / continuità — non causale' },
+  CONNECTION: { debt: 'alto',  recommendation: 'Attivare Partner Network CONNECTION — copertura cross-reparto insufficiente' },
+  IMPACT:     { debt: 'basso', recommendation: 'Pillar più efficiente — mantenere e ampliare il perimetro attuale' },
+  LEGACY:     { debt: 'medio', recommendation: 'Attivare mentoring LEGACY — potenziale PB e CO, budget attuale sotto soglia di segnale' },
+};
 
 const DEBT_BADGE: Record<DebtLevel, { style: string; label: string }> = {
   basso: { style: 'bg-green-50 text-green-700 border-green-200', label: 'Debt basso' },
@@ -276,9 +261,18 @@ export default function FinancialGovernance() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
 
+  const COMPANY_ID = 'meridiana-group';
+
   const result = financialGovernanceService.getFinancialGovernance(
-    'meridiana-group', activeScenario, activeRole,
+    COMPANY_ID, activeScenario, activeRole,
   );
+
+  const btiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(
+    COMPANY_ID, activeScenario, activeRole,
+  );
+  const btiRecord = btiResult.allowed ? btiResult.record : undefined;
+  const spendByPillar = btiRecord?.spend_by_pillar ?? {};
+  const deepByPillar  = btiRecord?.deep_activation_by_pillar ?? {};
 
   if (!result.allowed) {
     return (
@@ -450,90 +444,112 @@ export default function FinancialGovernance() {
             KORA non garantisce ROI e non dimostra causalità. Questa vista mostra una lettura
             direzionale su dati aggregati e sintetici demo.
           </div>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500 font-mono max-w-2xl">
+            <span>{BTI_DOCTRINE.budget_neq_activation}</span>
+            <span>{BTI_DOCTRINE.spend_neq_impact}</span>
+            <span>{BTI_DOCTRINE.relief_neq_activation}</span>
+          </div>
+          <p className="mt-1 text-[11px] text-slate-500 italic max-w-2xl">{BTI_DOCTRINE.limited_reframe}</p>
         </div>
 
-        {/* ── BTI Executive Hero — 4 cards ── */}
+        {/* ── BTI Executive Hero — 4 cards — from BudgetToHumanImpactService ── */}
         <div>
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Executive CFO / CHRO — vista di sintesi
+            Executive CFO / CHRO — vista di sintesi ({activeScenario})
           </h3>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <p className="text-xs text-slate-400">Budget osservato</p>
-              <p className="text-2xl font-bold text-slate-800 mt-1">{eur(BTI_HERO.budget_observed)}</p>
-              <p className="text-xs text-slate-400 mt-0.5">Budget people / welfare / training osservato</p>
-              <p className="text-[10px] text-slate-300 mt-1 italic">Perimetro sintetico demo: welfare, formazione, iniziative people/ESG.</p>
+              <p className="text-xs text-slate-400">Budget People/Welfare</p>
+              <p className="text-2xl font-bold text-slate-800 mt-1">
+                {btiRecord ? eur(btiRecord.total_people_welfare_budget) : '—'}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">welfare, formazione, iniziative people/ESG</p>
+              <p className="text-[10px] text-slate-300 mt-1 italic">Budget allocated ≠ Budget activated.</p>
             </div>
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
-              <p className="text-xs text-blue-500">Impact Units generate</p>
-              <p className="text-2xl font-bold text-blue-800 mt-1">{BTI_HERO.impact_units_generated.toLocaleString('it-IT')} IU</p>
-              <p className="text-xs text-blue-500 mt-0.5">da azioni approvate e normalizzate</p>
-              <p className="text-[10px] text-blue-300 mt-1 italic">IU aggregate periodo. Non stima individuale.</p>
+            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+              <p className="text-xs text-indigo-500">Economic Relief Share</p>
+              <p className="text-2xl font-bold text-indigo-800 mt-1">
+                {btiRecord ? `${Math.round(btiRecord.economic_relief_share * 100)}%` : '—'}
+              </p>
+              <p className="text-xs text-indigo-500 mt-0.5">spesa che non genera Impact Units</p>
+              <p className="text-[10px] text-indigo-400 mt-1 italic">Non è spesa sbagliata. È spesa che può diventare più intelligente.</p>
             </div>
             <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <p className="text-xs text-slate-400">Costo medio per IU</p>
-              <p className="text-2xl font-bold text-slate-800 mt-1">€{BTI_HERO.cost_per_iu.toFixed(1)}</p>
-              <p className="text-xs text-slate-400 mt-0.5">per Impact Unit</p>
+              <p className="text-xs text-slate-400">Costo per Impact Unit</p>
+              <p className="text-2xl font-bold text-slate-800 mt-1">
+                {btiRecord ? `€${btiRecord.cost_per_impact_unit.toFixed(1)}` : '—'}
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">per IU verificata</p>
               <p className="text-[10px] text-slate-300 mt-1 italic">Indicatore direzionale. Non ROI certificato.</p>
             </div>
             <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-              <p className="text-xs text-red-500">Activation Debt stimato</p>
-              <p className="text-2xl font-bold text-red-700 mt-1">{eur(BTI_HERO.activation_debt_eur)}</p>
-              <p className="text-xs text-red-400 mt-0.5">potenziale non attivato</p>
-              <p className="text-[10px] text-red-300 mt-1 italic">Valore non attivato per concentrazione o discontinuità.</p>
+              <p className="text-xs text-red-500">Activation Debt</p>
+              <p className="text-2xl font-bold text-red-700 mt-1">
+                {btiRecord ? eur(btiRecord.activation_debt_eur) : '—'}
+              </p>
+              <p className="text-xs text-red-400 mt-0.5">budget non convertito in attivazione</p>
+              <p className="text-[10px] text-red-300 mt-1 italic">Valore direzionale. Non garantito.</p>
             </div>
           </div>
+          {btiRecord?.activation_debt_description_it && (
+            <p className="mt-2 text-[11px] text-slate-500 leading-relaxed max-w-2xl">
+              {btiRecord.activation_debt_description_it}
+            </p>
+          )}
           <p className="mt-2 text-[11px] text-slate-400 italic">
-            Valori sintetici demo. Non rappresentano ROI certificato, risparmio garantito o causalità.
+            Dati BTI service — scenario {activeScenario}. Non rappresentano ROI certificato, risparmio garantito o causalità.
           </p>
         </div>
 
-        {/* ── Budget allocation by pillar ── */}
+        {/* ── Budget allocation by pillar — from BudgetToHumanImpactService ── */}
         <div>
-          <h3 className="mb-1 text-sm font-semibold text-slate-700">Allocazione budget per pillar</h3>
+          <h3 className="mb-1 text-sm font-semibold text-slate-700">Allocazione budget per pillar — {activeScenario}</h3>
           <p className="text-xs text-slate-400 mb-3">
-            Il costo per IU è un indicatore comparativo interno. Non è un valore monetario del lavoratore e non misura performance individuale.
+            Budget e deep activation da BTI service. Debt e raccomandazioni sono etichette direzionali demo — non calcolate per pillar dal service.
           </p>
           <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-100">
                   <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Pillar</th>
-                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">Budget</th>
+                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">Budget spend</th>
                   <th className="px-3 py-2.5 text-right font-semibold text-slate-500">%</th>
-                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">IU generate</th>
-                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">€/IU</th>
+                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">Deep Activation</th>
                   <th className="px-3 py-2.5 text-center font-semibold text-slate-500">Debt</th>
                   <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Raccomandazione</th>
                 </tr>
               </thead>
               <tbody>
-                {PILLAR_BTI.map((row) => {
-                  const label = PILLAR_LABELS[row.pillar as PillarCode] ?? row.pillar;
-                  const debt = DEBT_BADGE[row.debt];
+                {(['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as PillarCode[]).map((pillar) => {
+                  const budget = (spendByPillar as Record<string, number>)[pillar] ?? 0;
+                  const deep   = (deepByPillar  as Record<string, number>)[pillar] ?? 0;
+                  const total  = btiRecord?.total_people_welfare_budget ?? 0;
+                  const share  = total > 0 ? budget / total : 0;
+                  const label  = PILLAR_LABELS[pillar] ?? pillar;
+                  const staticData = PILLAR_STATIC[pillar];
+                  const debt = DEBT_BADGE[staticData?.debt ?? 'medio'];
                   return (
-                    <tr key={row.pillar} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
+                    <tr key={pillar} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
                       <td className="px-3 py-3">
-                        <span className={cn('font-mono font-semibold', PILLAR_TEXT[row.pillar] ?? 'text-slate-700')}>
+                        <span className={cn('font-mono font-semibold', PILLAR_TEXT[pillar] ?? 'text-slate-700')}>
                           {label}
                         </span>
                         <div className="mt-1 h-1 w-24 rounded-full bg-slate-100">
                           <div
-                            className={cn('h-1 rounded-full', PILLAR_BAR[row.pillar] ?? 'bg-slate-400')}
-                            style={{ width: `${row.share * 100}%` }}
+                            className={cn('h-1 rounded-full', PILLAR_BAR[pillar] ?? 'bg-slate-400')}
+                            style={{ width: `${share * 100}%` }}
                           />
                         </div>
                       </td>
-                      <td className="px-3 py-3 text-right font-mono text-slate-700">{eur(row.budget)}</td>
-                      <td className="px-3 py-3 text-right font-mono text-slate-500">{(row.share * 100).toFixed(0)}%</td>
-                      <td className="px-3 py-3 text-right font-mono text-slate-700">{row.iu.toLocaleString('it-IT')}</td>
-                      <td className="px-3 py-3 text-right font-mono font-semibold text-slate-700">€{row.cost_per_iu}</td>
+                      <td className="px-3 py-3 text-right font-mono text-slate-700">{budget > 0 ? eur(budget) : '—'}</td>
+                      <td className="px-3 py-3 text-right font-mono text-slate-500">{budget > 0 ? `${(share * 100).toFixed(0)}%` : '—'}</td>
+                      <td className="px-3 py-3 text-right font-mono text-slate-700">{deep > 0 ? eur(deep) : '—'}</td>
                       <td className="px-3 py-3 text-center">
                         <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', debt.style)}>
                           {debt.label}
                         </span>
                       </td>
-                      <td className="px-3 py-3 text-slate-500 leading-snug max-w-xs">{row.recommendation}</td>
+                      <td className="px-3 py-3 text-slate-500 leading-snug max-w-xs">{staticData?.recommendation ?? '—'}</td>
                     </tr>
                   );
                 })}
@@ -541,7 +557,7 @@ export default function FinancialGovernance() {
             </table>
           </div>
           <p className="mt-2 text-[11px] text-slate-400">
-            Dati sintetici demo · synthetic_demo_data: true · Valori budget non alimentano il KORA Index
+            Budget e deep activation da BTI service · Debt e raccomandazioni: etichette direzionali demo · synthetic_demo_data: true
           </p>
         </div>
 

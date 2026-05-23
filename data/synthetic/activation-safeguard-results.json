@@ -26,7 +26,7 @@
       },
       "methodology_version_id": "KORA Methodology v0.1",
       "calibration_status": "pre_empirical_calibration",
-      "methodology_notes": "Provisional implementation baseline. Equal weight vector 0.10 x 10 components. Pre-Delphi calibration.",
+      "methodology_notes": "KORA Index v3 — macroblock weight structure. REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%. Confidence Score is external and has weight = 0. Activation Safeguard is an interpretation gate, not a weighted component. v0.1 pre-empirical calibration; subject to expert validation and empirical calibration.",
       "display_message": "Activation Safeguard — WARNING. Participation is insufficient for reliable diagnostic intelligence. KORA Index shown with reduced confidence."
     },
     {
@@ -48,7 +48,7 @@
       },
       "methodology_version_id": "KORA Methodology v0.1",
       "calibration_status": "pre_empirical_calibration",
-      "methodology_notes": "Provisional implementation baseline. Equal weight vector 0.10 x 10 components. Pre-Delphi calibration.",
+      "methodology_notes": "KORA Index v3 — macroblock weight structure. REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%. Confidence Score is external and has weight = 0. Activation Safeguard is an interpretation gate, not a weighted component. v0.1 pre-empirical calibration; subject to expert validation and empirical calibration.",
       "display_message": "Activation Safeguard — CLEAR. Sufficient activation breadth for meaningful diagnostic intelligence."
     }
   ]
