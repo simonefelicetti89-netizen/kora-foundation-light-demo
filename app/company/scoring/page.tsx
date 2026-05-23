@@ -5,8 +5,9 @@ import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { uefReviewService } from '@/services/uef-review/UEFReviewService';
 import { iuComputationService } from '@/services/iu-computation/IUComputationService';
+import { dynamicScoringPreviewService } from '@/services/dynamic-scoring/DynamicScoringPreviewService';
 import { cn } from '@/lib/utils';
-import type { ImpactUnitComputationResult, ImpactUnitFactorTrace, PillarCode } from '@/lib/types';
+import type { ImpactUnitComputationResult, ImpactUnitFactorTrace, PillarCode, DynamicScoringPreviewOutput } from '@/lib/types';
 
 const PILLAR_COLORS: Record<string, string> = {
   LIFE:       'text-green-700',
@@ -104,6 +105,149 @@ function SampleTraceCard({ result }: { result: ImpactUnitComputationResult }) {
   );
 }
 
+const SAFEGUARD_BADGE: Record<string, string> = {
+  CLEAR:   'bg-green-50 text-green-700 border-green-200',
+  WARNING: 'bg-amber-50 text-amber-700 border-amber-200',
+  FLAGGED: 'bg-red-50 text-red-700 border-red-200',
+};
+
+const DELTA_COLOR = (delta: number) =>
+  delta > 0 ? 'text-green-600' : delta < 0 ? 'text-red-500' : 'text-slate-500';
+
+function DynamicPreviewSection({ preview }: { preview: DynamicScoringPreviewOutput }) {
+  const deltaSign = preview.delta_vs_canonical >= 0 ? '+' : '';
+
+  return (
+    <div className="space-y-4">
+      {/* Warning banner */}
+      <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 space-y-1">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-semibold text-amber-800">
+            Preview Dinamico Sperimentale — Foundation Light v0.1
+          </p>
+          <span className="rounded border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+            {preview.calculation_mode}
+          </span>
+        </div>
+        <p className="text-xs text-amber-700 leading-relaxed">
+          Questo preview è calcolato da metriche proxy derivate dal batch IU — non è il KORA Index ufficiale.
+          Il KORA Index ufficiale è quello canonico basato su seed scenario ({preview.official_index_source}).
+          Non usare per decision-making.
+        </p>
+      </div>
+
+      {/* Score comparison */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-lg border border-slate-200 bg-white p-4 text-center">
+          <p className="text-xs text-slate-400 mb-1">KORA Index Ufficiale</p>
+          <p className="text-3xl font-bold text-slate-800">{preview.canonical_kora_index}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">seed canonico</p>
+        </div>
+        <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4 text-center">
+          <p className="text-xs text-indigo-600 mb-1">Preview Score Dinamico</p>
+          <p className="text-3xl font-bold text-indigo-700">{preview.dynamic_preview_score}</p>
+          <p className="text-[10px] text-indigo-500 mt-0.5">stima proxy</p>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center">
+          <p className="text-xs text-slate-400 mb-1">Delta vs Canonico</p>
+          <p className={cn('text-3xl font-bold', DELTA_COLOR(preview.delta_vs_canonical))}>
+            {deltaSign}{preview.delta_vs_canonical}
+          </p>
+          <p className="text-[10px] text-slate-400 mt-0.5">punti differenza</p>
+        </div>
+      </div>
+
+      {/* Macroblock previews */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {preview.macroblocks.map((mb) => {
+          const mbd = mb.delta >= 0 ? '+' : '';
+          return (
+            <div key={mb.code} className="rounded-lg border border-slate-200 bg-white p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-semibold text-slate-500">{mb.code}</span>
+                <span className={cn('text-[10px] font-mono', DELTA_COLOR(mb.delta))}>
+                  {mbd}{mb.delta}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 leading-tight">{mb.label}</p>
+              <div className="flex items-end justify-between">
+                <div>
+                  <p className="text-[10px] text-slate-400">Preview</p>
+                  <p className="text-xl font-bold text-indigo-700">{mb.preview_score}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-slate-400">Canonico</p>
+                  <p className="text-lg font-semibold text-slate-500">{mb.canonical_seed_score}</p>
+                </div>
+              </div>
+              <div className="h-1.5 rounded-full bg-slate-100">
+                <div
+                  className="h-1.5 rounded-full bg-indigo-400"
+                  style={{ width: `${Math.min(mb.preview_score, 100)}%` }}
+                />
+              </div>
+              <p className="text-[9px] text-slate-300 leading-snug">{mb.proxy_basis}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Safeguard + CS proxy */}
+      <div className="flex gap-3">
+        <div className="flex-1 rounded-lg border border-slate-200 bg-white p-3 flex items-center gap-3">
+          <span className="text-xs text-slate-400 font-medium">Activation Safeguard (proxy)</span>
+          <span className={cn('rounded border px-2 py-0.5 text-xs font-semibold', SAFEGUARD_BADGE[preview.safeguard_preview.status])}>
+            {preview.safeguard_preview.status}
+          </span>
+          <span className="text-[10px] text-slate-400 font-mono">
+            AR={preview.aggregation.proxy_ar.toFixed(2)} MAR={preview.aggregation.proxy_mar.toFixed(2)}
+          </span>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-3 flex items-center gap-2 min-w-max">
+          <span className="text-xs text-slate-400">CS Proxy</span>
+          <span className="text-sm font-bold text-slate-700">{preview.confidence_score_proxy.toFixed(2)}</span>
+          <span className="text-[10px] text-slate-300 font-mono">{preview.calibration_status}</span>
+        </div>
+      </div>
+
+      {/* Trace */}
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+          Traccia Computazione Proxy
+        </h3>
+        <div className="space-y-2">
+          {preview.trace.map((step, i) => (
+            <div key={i} className="flex gap-3 text-[11px] border-b border-slate-50 last:border-0 pb-1.5 last:pb-0">
+              <span className="w-5 shrink-0 font-mono text-slate-300">{i + 1}.</span>
+              <span className="w-36 shrink-0 font-semibold text-slate-600">{step.step}</span>
+              <span className="w-48 shrink-0 text-slate-400 font-mono truncate">{step.output}</span>
+              <span className="flex-1 text-slate-300 leading-snug">{step.note}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Limitations */}
+      <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">
+          Limitazioni del Preview Dinamico ({preview.limitations.length})
+        </p>
+        <ul className="space-y-1">
+          {preview.limitations.map((lim, i) => (
+            <li key={i} className="flex gap-1.5 text-[11px] text-slate-400">
+              <span className="shrink-0 mt-0.5 text-slate-300">·</span>
+              {lim}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-[10px] text-slate-300 font-mono">
+          {preview.methodology_version} · production_ready: {String(preview.production_ready)}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // C-06: Scoring Run
 export default function ScoringRun() {
   const { activeScenario } = useScenario();
@@ -121,6 +265,9 @@ export default function ScoringRun() {
   const samples = [sampleEligible, sampleLimited, sampleBlocked].filter(Boolean) as ImpactUnitComputationResult[];
 
   const pillarEntries = Object.entries(summary.impact_units_by_pillar) as [PillarCode, number][];
+
+  // Dynamic scoring preview: live IU results → proxy macroblock scores → preview KORA Index
+  const dynamicPreview = dynamicScoringPreviewService.getDynamicScoringPreview('meridiana-group', activeScenario);
 
   return (
     <div className="space-y-6">
@@ -249,34 +396,19 @@ export default function ScoringRun() {
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 mb-3">
           <p className="text-xs text-amber-700">
             Foundation Light separa la computazione IU preview dagli output KORA Index canonici per scenario.
-            Il KORA Index v3 mostrato sotto è letto dal seed canonico — non è ancora ricalcolato dinamicamente
-            dagli IU appena computati. Il passo successivo è: IU → PIB → aggregazione aziendale → macroblocks → KORA Index.
+            Il KORA Index v3 mostrato sotto è letto dal <strong>seed canonico</strong> — non è ricalcolato dinamicamente da IU live.
+            La sezione successiva mostra un <strong>Preview Dinamico sperimentale</strong> basato su metriche proxy: non sostituisce questo output ufficiale.
           </p>
         </div>
         <KoraIndexHero output={output} />
       </div>
 
-      {/* ── What's missing for full dynamic KORA Index ── */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
-          Gap verso KORA Index dinamico completo
-        </p>
-        <ul className="space-y-1">
-          {[
-            'IU → PIB aggregazione per worker (Stage 11)',
-            'PIB → Company Aggregation (Stage 12)',
-            'Company Aggregation → Macroblock scores (REACH, QUALITY, EQUITY, BTI)',
-            'Macroblock scores → KORA Index v3 (Stage 14)',
-            'Confidence Score dinamico da qualità evidenze batch',
-            'Activation Safeguard dinamico da AR/MAR computati',
-            'Report generator wiring su output dinamici',
-          ].map((item) => (
-            <li key={item} className="flex gap-1.5 text-[11px] text-slate-400">
-              <span className="shrink-0 mt-0.5 text-slate-300">·</span>
-              {item}
-            </li>
-          ))}
-        </ul>
+      {/* ── Dynamic Scoring Preview ── */}
+      <div>
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Preview Dinamico — Stima Proxy da Batch IU
+        </h2>
+        <DynamicPreviewSection preview={dynamicPreview} />
       </div>
 
       <p className="text-xs text-slate-400">

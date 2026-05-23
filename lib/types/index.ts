@@ -688,3 +688,73 @@ export interface MethodologyConfig {
     FLAGGED: { AR_max: number; MAR_max: number };
   };
 }
+
+// ── Dynamic Scoring Preview (Block 3) ───────────────────────────────────────────
+// Foundation Light experimental bridge: live IU results → proxy macroblock scores → preview KORA Index.
+// calculation_mode: "foundation_light_dynamic_preview" — NOT the official KORA Index.
+
+export type DynamicScoringMode = 'foundation_light_dynamic_preview';
+
+export interface DynamicAggregationInput {
+  total_records: number;
+  computed_records: number;
+  blocked_records: number;
+  limited_records: number;
+  review_required_records: number;
+  total_impact_units: number;
+  impact_units_by_pillar: Partial<Record<PillarCode, number>>;
+  average_cq: number;
+  average_ev: number;
+  average_agf: number;
+  review_completion_rate: number;
+}
+
+export interface DynamicCompanyAggregationPreview {
+  proxy_ar: number;
+  proxy_mar: number;
+  proxy_quality_ratio: number;
+  proxy_pc: number;
+  proxy_pb: number;
+  proxy_wb: number;
+  proxy_eq: number;
+  active_pillars_count: number;
+  dominant_pillar: PillarCode | null;
+  dominant_pillar_share: number;
+}
+
+export interface DynamicMacroblockPreview {
+  code: MacroblockCode;
+  label: string;
+  weight: number;
+  preview_score: number;
+  proxy_basis: string;
+  canonical_seed_score: number;
+  delta: number;
+  foundation_light_stub: boolean;
+}
+
+export interface DynamicScoringTrace {
+  step: string;
+  input: string;
+  output: string;
+  note: string;
+}
+
+export interface DynamicScoringPreviewOutput {
+  calculation_mode: DynamicScoringMode;
+  official_index_source: 'canonical_seed_output';
+  production_ready: false;
+  company_id: string;
+  scenario_id: string;
+  canonical_kora_index: number;
+  dynamic_preview_score: number;
+  delta_vs_canonical: number;
+  aggregation: DynamicCompanyAggregationPreview;
+  macroblocks: DynamicMacroblockPreview[];
+  safeguard_preview: ActivationSafeguardResult;
+  confidence_score_proxy: number;
+  trace: DynamicScoringTrace[];
+  limitations: string[];
+  methodology_version: string;
+  calibration_status: CalibrationStatus;
+}
