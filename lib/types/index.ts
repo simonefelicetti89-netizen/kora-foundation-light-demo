@@ -1112,3 +1112,108 @@ export interface CompanyOnboardingRecord {
   synthetic_demo_data: true;
   production_ready: false;
 }
+
+// ── Workforce Baseline Upload ───────────────────────────────────────────────────
+
+export type WorkforceBaselineUploadStatus =
+  | 'not_started'
+  | 'uploaded'
+  | 'validated'
+  | 'needs_review'
+  | 'below_company_threshold'
+  | 'privacy_suppression_required'
+  | 'ready_for_aggregation';
+
+export type WorkforceBaselineSourceType =
+  | 'csv_upload_demo'
+  | 'hris_export_demo'
+  | 'manual_aggregate_entry'
+  | 'synthetic_seed'
+  | 'future_api';
+
+export type WorkforceDimensionType =
+  | 'site'
+  | 'department'
+  | 'role_family'
+  | 'seniority_band'
+  | 'contract_type'
+  | 'employment_status'
+  | 'other';
+
+export interface WorkforceBaselineUploadBatch {
+  batch_id: string;
+  company_id: string;
+  company_name: string;
+  source_type: WorkforceBaselineSourceType;
+  source_file_name: string;
+  uploaded_at: string;
+  uploaded_by: string;
+  upload_status: WorkforceBaselineUploadStatus;
+  total_rows: number;
+  valid_rows: number;
+  invalid_rows: number;
+  duplicate_rows: number;
+  missing_fields: string[];
+  validation_warnings: string[];
+  synthetic_demo_data: true;
+  production_ready: false;
+}
+
+export interface WorkforceAggregateGroup {
+  group_id: string;
+  company_id: string;
+  dimension_type: WorkforceDimensionType;
+  dimension_label: string;
+  employee_count: number;
+  share_of_workforce: number;
+  privacy_threshold: number;
+  privacy_threshold_met: boolean;
+  included_in_breakdown: boolean;
+  suppression_reason?: string;
+  merged_into_group_id?: string;
+  data_completeness: number;
+  notes?: string;
+}
+
+export interface WorkforceBaselineValidationResult {
+  company_id: string;
+  company_name: string;
+  total_workers: number;
+  minimum_company_threshold: number;
+  minimum_company_threshold_met: boolean;
+  privacy_threshold: number;
+  total_groups: number;
+  visible_groups: number;
+  suppressed_groups: number;
+  aggregate_only_groups: number;
+  missing_required_fields: string[];
+  duplicate_rate: number;
+  invalid_row_rate: number;
+  baseline_completeness_score: number;
+  readiness_status: WorkforceBaselineUploadStatus;
+  warnings: string[];
+  limitations: string[];
+}
+
+export interface WorkforceBaselineReadiness {
+  activation_reach_ready: boolean;
+  distribution_equity_ready: boolean;
+  site_breakdown_ready: boolean;
+  department_breakdown_ready: boolean;
+  role_family_breakdown_ready: boolean;
+  privacy_safe_for_company_view: boolean;
+  confidence_contribution: 'high' | 'medium' | 'low';
+  next_action: string;
+}
+
+export interface WorkforceBaselineRecord {
+  company_id: string;
+  company_name: string;
+  upload_batch: WorkforceBaselineUploadBatch;
+  validation_result: WorkforceBaselineValidationResult;
+  aggregate_groups: WorkforceAggregateGroup[];
+  readiness: WorkforceBaselineReadiness;
+  privacy_boundary: string;
+  methodology_notes: string;
+  pipeline_links: PipelineStageLink[];
+}

@@ -345,6 +345,20 @@ export default function OnboardingStudio() {
             <p className="mt-0.5 text-[11px] text-amber-700">{workforce_baseline.suppression_note}</p>
           </div>
         )}
+        <div className="mt-4 flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50 px-4 py-3">
+          <div>
+            <p className="text-xs font-semibold text-blue-800">Workforce Baseline dettagliata</p>
+            <p className="mt-0.5 text-[11px] text-blue-600">
+              Validazione completa con breakdown per sede, dipartimento, ruolo, seniority, contratto.
+            </p>
+          </div>
+          <a
+            href="/company/workforce-baseline"
+            className="shrink-0 rounded-md border border-blue-300 bg-white px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50 transition-colors"
+          >
+            Apri Workforce Baseline →
+          </a>
+        </div>
       </div>
 
       {/* ── G: Raw Program Data ───────────────────────────────────── */}

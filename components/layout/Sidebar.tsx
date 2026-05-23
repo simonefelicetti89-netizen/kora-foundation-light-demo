@@ -52,13 +52,14 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Strumenti Interni',
         items: [
-          { href: '/company/onboarding', label: 'Onboarding Studio' },
-          { href: '/company/ingestion',  label: 'AI Ingestion' },
-          { href: '/company/uef-review', label: 'UEF Review' },
-          { href: '/company/scoring',    label: 'Scoring Run' },
-          { href: '/company/reports',    label: 'Decision Pack' },
-          { href: '/company/data',       label: 'Dati & Evidenze' },
-          { href: '/company/financial',  label: 'Governance Finanziaria' },
+          { href: '/company/onboarding',         label: 'Onboarding Studio' },
+          { href: '/company/workforce-baseline', label: 'Workforce Baseline' },
+          { href: '/company/ingestion',          label: 'AI Ingestion' },
+          { href: '/company/uef-review',         label: 'UEF Review' },
+          { href: '/company/scoring',            label: 'Scoring Run' },
+          { href: '/company/reports',            label: 'Decision Pack' },
+          { href: '/company/data',               label: 'Dati & Evidenze' },
+          { href: '/company/financial',          label: 'Governance Finanziaria' },
         ],
       },
       {
@@ -94,9 +95,10 @@ function buildNavGroups(role: string): NavGroup[] {
       groups.push({
         heading: 'Foundation Light Preview',
         items: [
-          { href: '/company/onboarding', label: 'Onboarding Studio' },
-          { href: '/company/ingestion',  label: 'AI Ingestion' },
-          { href: '/company/uef-review', label: 'UEF Review',    comingSoon: true },
+          { href: '/company/onboarding',         label: 'Onboarding Studio' },
+          { href: '/company/workforce-baseline', label: 'Workforce Baseline' },
+          { href: '/company/ingestion',          label: 'AI Ingestion' },
+          { href: '/company/uef-review',         label: 'UEF Review',    comingSoon: true },
           { href: '/company/scoring',    label: 'Scoring Run',   comingSoon: true },
           { href: '/company/reports',    label: 'Decision Pack', comingSoon: true },
         ],
