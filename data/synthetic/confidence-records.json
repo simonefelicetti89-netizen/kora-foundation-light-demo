@@ -32,7 +32,7 @@
       "gaps_identified": [
         "LMS export incomplete — 38% of training completions not matched to workers",
         "Welfare provider API not available — manual export only",
-        "Operations site has 61% of events as mandatory compliance — lower EV weight applied",
+        "Operations site has 61% of events as mandatory compliance — mandatory compliance events excluded from IU formula — 0 IU, Blocked by Design",
         "29% of IMPACT events are self-declared with no advisor review yet"
       ],
       "limitations": "Confidence Score reflects data completeness and source quality at time of scoring. This is a provisional diagnostic output under pre-empirical-calibration. Not suitable for regulatory, legal, or certified claims.",
