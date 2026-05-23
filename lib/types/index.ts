@@ -575,6 +575,99 @@ export interface ImpactUnitComputationSummary {
   calibration_status: CalibrationStatus;
 }
 
+// ── UEF Review & Human Validation ───────────────────────────────────────────────
+// Stage 4 of the 14-stage algorithm: sits between Eligibility Gate and IU Computation.
+// "L'AI propone. La metodologia governa. La revisione umana valida."
+
+export type UEFReviewStatus =
+  | 'pending'                      // awaiting human review decision
+  | 'approved_for_scoring'         // eligible, confirmed for IU computation
+  | 'approved_for_bti_governance'  // limited, confirmed for BTI tracking only
+  | 'blocked_by_design'            // blocked, confirmed — 0 IU per design
+  | 'needs_more_data'              // review paused — additional information required
+  | 'rejected'                     // reviewer explicitly rejected record
+  | 'override_to_eligible'         // reviewer upgraded eligibility to eligible
+  | 'override_to_limited';         // reviewer downgraded eligibility to limited
+
+export type UEFReviewDecision =
+  | 'approve_scoring'
+  | 'approve_bti_governance'
+  | 'mark_blocked'
+  | 'request_more_data'
+  | 'reject'
+  | 'override_to_eligible'
+  | 'override_to_limited';
+
+export type UEFAuditEventType =
+  | 'review_assigned'
+  | 'review_decision_made'
+  | 'more_data_requested'
+  | 'record_approved'
+  | 'record_rejected'
+  | 'record_blocked'
+  | 'eligibility_overridden'
+  | 'kora_ready_set';
+
+export interface UEFReviewRecord {
+  id: string;
+  pipeline_row_id: string;
+  raw_name: string;
+  action_family: ActionFamily;
+  event_nature: EventNature;
+  eligibility: EligibilityClass;
+  primary_pillar: PillarCode | null;
+  review_status: UEFReviewStatus;
+  original_pipeline_status: IngestionReviewStatus;
+  approved_for_scoring: boolean;
+  approved_for_bti_governance: boolean;
+  approved_for_impact_units: boolean;
+  review_decision: UEFReviewDecision | null;
+  reviewer_notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  data_completeness_score: number;
+  missing_fields: string[];
+  additional_questions: string[];
+  kora_ready: KoraReadyRecord;
+  foundation_light_stub: boolean;
+}
+
+export interface UEFReviewSummary {
+  total_records: number;
+  pending_count: number;
+  approved_for_scoring_count: number;
+  approved_for_bti_governance_count: number;
+  blocked_count: number;
+  needs_more_data_count: number;
+  rejected_count: number;
+  override_count: number;
+  kora_ready_for_iu_count: number;
+  kora_ready_for_bti_count: number;
+  review_completion_rate: number;
+  methodology_version: string;
+  calibration_status: CalibrationStatus;
+}
+
+export interface UEFAuditEvent {
+  id: string;
+  timestamp: string;
+  actor: 'pipeline' | 'human_reviewer' | 'system';
+  event_type: UEFAuditEventType;
+  record_id: string;
+  raw_name: string;
+  decision?: UEFReviewDecision;
+  previous_review_status?: UEFReviewStatus;
+  new_review_status: UEFReviewStatus;
+  previous_eligibility?: EligibilityClass;
+  new_eligibility?: EligibilityClass;
+  notes?: string;
+  governance_flags?: {
+    approved_for_scoring: boolean;
+    approved_for_bti_governance: boolean;
+    approved_for_impact_units: boolean;
+  };
+}
+
 // ── Methodology Config ──────────────────────────────────────────────────────────
 
 export interface MethodologyConfig {

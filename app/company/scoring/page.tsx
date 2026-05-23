@@ -3,7 +3,7 @@
 import { useScenario } from '@/lib/demo-state';
 import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
-import { ingestionPipelineService } from '@/services/ingestion-pipeline/IngestionPipelineService';
+import { uefReviewService } from '@/services/uef-review/UEFReviewService';
 import { iuComputationService } from '@/services/iu-computation/IUComputationService';
 import { cn } from '@/lib/utils';
 import type { ImpactUnitComputationResult, ImpactUnitFactorTrace, PillarCode } from '@/lib/types';
@@ -109,8 +109,8 @@ export default function ScoringRun() {
   const { activeScenario } = useScenario();
   const output = scoringSimulatorService.score('meridiana-group', activeScenario, '2025');
 
-  // IU computation uses seed ingestion rows — independent of scenario (batch-level demo)
-  const analyzedRows = ingestionPipelineService.analyzeBatch();
+  // IU computation consumes UEF-reviewed rows — canonical pipeline lineage (UEF Review → IU Computation)
+  const analyzedRows = uefReviewService.getAllReviewedPipelineRows();
   const summary = iuComputationService.getIUComputationSummary(analyzedRows);
   const allResults = iuComputationService.computeIUForRecords(analyzedRows);
 
