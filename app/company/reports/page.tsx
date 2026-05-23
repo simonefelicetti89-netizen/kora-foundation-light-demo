@@ -1,11 +1,18 @@
 'use client';
 
-import { useScenario } from '@/lib/demo-state';
+import { useDemoState } from '@/lib/demo-state';
 import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
 import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
+import { DecisionPackHero } from '@/components/reports/DecisionPackHero';
+import { EligibilitySummaryReport } from '@/components/reports/EligibilitySummaryReport';
+import { BudgetImpactReport } from '@/components/reports/BudgetImpactReport';
+import { ActionPlanReport } from '@/components/reports/ActionPlanReport';
+import { PrivacyBoundaryNote } from '@/components/reports/PrivacyBoundaryNote';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
+import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
+import { ingestionSimulatorService } from '@/services/ingestion-simulator/IngestionSimulatorService';
 import { scenarioService } from '@/services/scenario/ScenarioService';
 
 // ─── Report card static definitions ──────────────────────────────────────────
@@ -25,6 +32,26 @@ interface ReportCard {
 }
 
 const REPORT_CARDS: ReportCard[] = [
+  {
+    id: 'decision-pack-v3',
+    title: 'KORA Index v3 Decision Pack',
+    purpose:
+      'Vista direzionale su attivazione, budget-to-human-impact, eligibility e priorità di riallocazione. Board-ready, HR-ready, CFO-ready e ESG-ready da KORA Index v3.',
+    audience: ['Board', 'CEO', 'CFO', 'CHRO', 'ESG'],
+    status: 'demo',
+    statusLabel: 'Demo disponibile',
+    contents: [
+      'KORA Index v3 + Confidence Score (esterno)',
+      'Activation Safeguard — gate interpretativo',
+      'Eligibility Gate: Blocked / Limited / Eligible',
+      'Budget-to-Human-Impact: Economic Relief vs Deep Activation',
+      'Activation Debt e Reallocation Opportunity',
+      'Macroblock breakdown S1 vs S2',
+      'Piano d\'azione 90 giorni',
+    ],
+    claimBoundary:
+      'Intelligence diagnostica organizzativa — non certificazione, non rating regolatorio, non misurazione individuale.',
+  },
   {
     id: 'executive-snapshot',
     title: 'KORA Executive Snapshot',
@@ -138,15 +165,30 @@ const STATUS_STYLES: Record<ReportStatus, { badge: string; card: string }> = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-// C-07: Reports — Board Pack MVP
-export default function Reports() {
-  const { activeScenario } = useScenario();
+const COMPANY_ID = 'meridiana-group';
 
-  const output      = scoringSimulatorService.score('meridiana-group', activeScenario, '2025');
-  const safeguard   = scoringSimulatorService.getActivationSafeguard('meridiana-group', activeScenario);
-  const confidence  = scoringSimulatorService.getConfidenceRecord('meridiana-group', activeScenario);
-  const explanation = explainabilityService.getExplanation('meridiana-group', activeScenario);
+// C-07: Reports — Board Pack MVP + KORA Index v3 Decision Pack
+export default function Reports() {
+  const { activeScenario, activeRole } = useDemoState();
+
+  const output      = scoringSimulatorService.score(COMPANY_ID, activeScenario, '2025');
+  const safeguard   = scoringSimulatorService.getActivationSafeguard(COMPANY_ID, activeScenario);
+  const confidence  = scoringSimulatorService.getConfidenceRecord(COMPANY_ID, activeScenario);
+  const explanation = explainabilityService.getExplanation(COMPANY_ID, activeScenario);
   const scenario    = scenarioService.getScenario(activeScenario);
+
+  const s1Output     = scoringSimulatorService.score(COMPANY_ID, 'S1', '2025');
+  const s2Output     = scoringSimulatorService.score(COMPANY_ID, 'S2', '2025');
+  const s1Macroblocks = s1Output.macroblocks ?? [];
+  const s2Macroblocks = s2Output.macroblocks ?? [];
+
+  const s1BtiResult  = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S1', activeRole);
+  const s2BtiResult  = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S2', activeRole);
+  const s1BtiRecord  = s1BtiResult.record;
+  const s2BtiRecord  = s2BtiResult.record;
+  const btiRecommendations = budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
+
+  const eligibilityGate = ingestionSimulatorService.getEligibilityGateSummary(COMPANY_ID, activeScenario);
 
   const nextActions      = explanation?.next_best_actions.slice(0, 3) ?? [];
   const weakComponents   = explanation?.weak_components ?? [];
@@ -232,6 +274,92 @@ export default function Reports() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* ── KORA Index v3 Decision Pack ── */}
+      <div className="space-y-5 border-t border-slate-200 pt-10">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="rounded border border-indigo-200 bg-indigo-100 px-2 py-0.5 text-[11px] font-bold text-indigo-700">
+                Primary Report
+              </span>
+              <span className="text-[10px] text-slate-400 font-mono">{output.methodology_version_id}</span>
+            </div>
+            <h2 className="text-lg font-bold text-slate-900">KORA Index v3 Decision Pack</h2>
+            <p className="text-sm text-slate-500 mt-0.5">
+              Vista direzionale su attivazione, budget-to-human-impact, eligibility e priorità di riallocazione.
+            </p>
+          </div>
+          <button
+            onClick={() => window.print()}
+            className="rounded-md border border-indigo-200 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors print:hidden"
+          >
+            Esporta Decision Pack — demo
+          </button>
+        </div>
+
+        <p className="text-xs text-slate-400 -mt-2 print:hidden">
+          Export simulato per Foundation Light — nessuna generazione reale, nessun LLM esterno.
+        </p>
+
+        {/* A + B */}
+        <DecisionPackHero
+          output={output}
+          s1Output={s1Output}
+          s2Output={s2Output}
+          activeScenario={activeScenario}
+          safeguard={safeguard}
+          confidence={confidence}
+          s1Macroblocks={s1Macroblocks}
+          s2Macroblocks={s2Macroblocks}
+        />
+
+        {/* C */}
+        <EligibilitySummaryReport summary={eligibilityGate} />
+
+        {/* D + E */}
+        <BudgetImpactReport
+          s1Record={s1BtiRecord}
+          s2Record={s2BtiRecord}
+          s1Macroblocks={s1Macroblocks}
+          s2Macroblocks={s2Macroblocks}
+          activeScenario={activeScenario}
+        />
+
+        {/* F + G + H */}
+        <ActionPlanReport
+          s1Record={s1BtiRecord}
+          s2Record={s2BtiRecord}
+          recommendations={btiRecommendations}
+          eligibilityGate={eligibilityGate}
+        />
+
+        {/* I */}
+        <PrivacyBoundaryNote />
+
+        {/* Export mock actions */}
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+          {[
+            { label: 'Export PDF', icon: '↓' },
+            { label: 'Share Board Pack', icon: '↗' },
+            { label: 'Generate ESG Appendix', icon: '⊕' },
+            { label: 'Advisor Review', icon: '◎' },
+          ].map(({ label, icon }) => (
+            <button
+              key={label}
+              disabled
+              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 cursor-not-allowed flex items-center gap-1.5"
+              title="Demo — nessuna generazione reale in Foundation Light."
+            >
+              <span className="text-slate-300">{icon}</span>
+              {label}
+            </button>
+          ))}
+          <span className="text-[10px] text-slate-400 italic self-center">
+            Demo — nessun export reale, nessun dato individuale.
+          </span>
         </div>
       </div>
 
@@ -584,23 +712,32 @@ export default function Reports() {
               KORA fornisce una vista informativa sull&apos;allineamento tra budget people/welfare e
               attivazione effettivamente misurata. Non è contabilità, non è pagamento, non è fiscal compliance.
             </p>
-            <div className="grid grid-cols-3 gap-3 my-3">
-              <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
-                <p className="text-xs text-slate-400">Activation Debt stimato</p>
-                <p className="text-base font-bold text-slate-800 mt-0.5">€84.000</p>
-                <p className="text-[10px] text-slate-400">stima sintetica demo</p>
-              </div>
-              <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
-                <p className="text-xs text-slate-400">Costo per IU</p>
-                <p className="text-base font-bold text-slate-800 mt-0.5">€22,8 / IU</p>
-                <p className="text-[10px] text-slate-400">informativo · non certificato</p>
-              </div>
-              <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
-                <p className="text-xs text-slate-400">KORA Index</p>
-                <p className="text-base font-bold text-slate-800 mt-0.5">{output.kora_index_value}/100</p>
-                <p className="text-[10px] text-slate-400">output direzionale</p>
-              </div>
-            </div>
+            {(() => {
+              const activeBti = activeScenario === 'S2' ? s2BtiRecord : s1BtiRecord;
+              return (
+                <div className="grid grid-cols-3 gap-3 my-3">
+                  <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
+                    <p className="text-xs text-slate-400">Activation Debt</p>
+                    <p className="text-base font-bold text-slate-800 mt-0.5">
+                      {activeBti ? new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(activeBti.activation_debt_eur) : '—'}
+                    </p>
+                    <p className="text-[10px] text-slate-400">stima sintetica demo</p>
+                  </div>
+                  <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
+                    <p className="text-xs text-slate-400">Costo per IU</p>
+                    <p className="text-base font-bold text-slate-800 mt-0.5">
+                      {activeBti ? `€${activeBti.cost_per_impact_unit.toFixed(1)} / IU` : '—'}
+                    </p>
+                    <p className="text-[10px] text-slate-400">informativo · non certificato</p>
+                  </div>
+                  <div className="rounded border border-slate-100 bg-slate-50 p-2 text-center">
+                    <p className="text-xs text-slate-400">KORA Index</p>
+                    <p className="text-base font-bold text-slate-800 mt-0.5">{output.kora_index_value}/100</p>
+                    <p className="text-[10px] text-slate-400">output direzionale</p>
+                  </div>
+                </div>
+              );
+            })()}
             <div className="rounded bg-amber-50 border border-amber-100 px-3 py-2 text-xs text-amber-700 leading-relaxed">
               <span className="font-semibold">Disclaimer CFO:</span>{' '}
               KORA non garantisce ROI sul budget people. La correlazione tra budget e KORA Index è
