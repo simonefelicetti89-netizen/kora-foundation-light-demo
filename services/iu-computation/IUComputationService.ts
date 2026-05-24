@@ -14,34 +14,46 @@ import { getMethodologyVersion, getCalibrationStatus } from '@/lib/methodology-c
 // ── Foundation Light factor defaults — BC by action family ──────────────────────
 // Conservative pre-empirical values. Requires Delphi Study calibration post-pilot.
 const BC_BY_FAMILY: Record<ActionFamily, number> = {
-  family_and_care:           1.2,
-  health_and_wellbeing:      1.2,
-  professional_growth:       1.1,
-  future_and_legacy:         1.1,
-  inclusion_and_connection:  1.0,
-  territorial_impact:        1.0,
-  economic_relief:           0,    // AGF=0 anyway; explicit for traceability
-  blocked_compliance:        0,    // AGF=0 anyway; explicit for traceability
+  family_and_care:              1.2,
+  health_and_wellbeing:         1.2,
+  professional_growth:          1.1,
+  future_and_legacy:            1.1,
+  inclusion_and_connection:     1.0,
+  territorial_impact:           1.0,
+  // Structural org policies: high additionality, broad coverage, structural continuity.
+  // 1.15 = above neutral (1.0) but below consumed welfare services (1.2).
+  // Subject to Delphi Study calibration post-pilot.
+  trust_and_flexibility_policy: 1.15,
+  economic_relief:              0,    // AGF=0 anyway; explicit for traceability
+  blocked_compliance:           0,    // AGF=0 anyway; explicit for traceability
 };
 
 // EV by evidence_type from ingestion seed field.
 // Maps source-level evidence codes to evidence verification weights.
 const EV_BY_EVIDENCE_TYPE: Record<string, number> = {
-  certified_partner_evidence:   1.0,
-  partner_participation_report: 0.9,
+  certified_partner_evidence:    1.0,
+  partner_participation_report:  0.9,
   provider_participation_report: 0.9,
-  lms_completion_certificate:   0.9,
-  lms_completion_log:           0.8,
-  invoice_receipt:              0.85,
-  invoice_or_budget_record:     0.8,
-  session_log_hr:               0.8,
-  license_certificate:          0.8,
-  signed_delivery_form:         0.8,
-  aggregate_session_count:      0.75,
-  attendance_report:            0.75,
-  voucher_distribution_log:     0.7,
-  declaration_self_certified:   0.6,
-  manual_note:                  0.6,
+  lms_completion_certificate:    0.9,
+  lms_completion_log:            0.8,
+  invoice_receipt:               0.85,
+  invoice_or_budget_record:      0.8,
+  session_log_hr:                0.8,
+  license_certificate:           0.8,
+  signed_delivery_form:          0.8,
+  aggregate_session_count:       0.75,
+  attendance_report:             0.75,
+  voucher_distribution_log:      0.7,
+  declaration_self_certified:    0.6,
+  manual_note:                   0.6,
+  // Structural policy evidence types — aggregate-only, no individual usage data
+  third_party_hr_audit:          0.92, // independent HR audit confirming policy coverage
+  board_approval_record:         0.90, // board/CDA deliberation or signed policy document
+  collective_agreement_signed:   0.90, // CCNL improvement or integrative collective agreement
+  advisor_validated_policy:      0.88, // KORA advisor or certified HR consultant validation
+  formal_policy_document:        0.85, // internal HR policy document with coverage data
+  hr_policy_register:            0.80, // HR policy register entry with effective date + coverage
+  self_declared_policy:          0.55, // policy declared by company without external validation
 };
 
 type FactorResult = { value: number; reason: string; data_source: string; foundation_light_stub: boolean };
@@ -95,9 +107,11 @@ function deriveAGF(
 function deriveNM(): FactorResult {
   // TODO: future NM must normalize duration, intensity, beneficiary count
   // against reference baselines per action family (post Delphi Study).
+  // For structural policies specifically, NM = f(coverage_rate × policy_depth × accessibility × duration_months)
+  // — requires post-Delphi calibration. Foundation Light uses proxy stub = 1.0 for all families.
   return {
     value: 1.0,
-    reason: 'Foundation Light stub: NM = 1.0 (intensità standard, nessuna normalizzazione avanzata attiva).',
+    reason: 'Foundation Light stub: NM = 1.0 (intensità standard, nessuna normalizzazione avanzata attiva). Per policy strutturali: NM richiede calibrazione post-Delphi su coverage × depth × accessibility × duration.',
     data_source: 'foundation_light_default',
     foundation_light_stub: true,
   };

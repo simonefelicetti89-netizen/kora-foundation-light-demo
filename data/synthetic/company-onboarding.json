@@ -102,9 +102,9 @@
       "welfare_budget_eur": 180000,
       "training_budget_eur": 95000,
       "period": "2025-H1",
-      "data_sources": ["HR System", "Welfare Provider", "LMS", "ESG Report"],
+      "data_sources": ["HR System", "Welfare Provider", "LMS", "ESG Report", "Company Policy Register"],
       "upload_status": "loaded",
-      "upload_note": "Tutti i file caricati. 18 programmi mappati nella pipeline."
+      "upload_note": "Tutti i file caricati. 18 programmi mappati nella pipeline. Policy register aziendale caricato: 4 policy strutturali identificate."
     },
     "hr_kpi_context": {
       "company_id": "meridiana-group",
@@ -192,6 +192,13 @@
         "label": "Framework consenso lavoratori",
         "status": "warning",
         "detail": "Demo: consenso simulato. In produzione sarà richiesto il consenso esplicito per worker con dati personali.",
+        "blocking": false
+      },
+      {
+        "check_id": "structural-policy-docs",
+        "label": "Documentazione policy strutturali",
+        "status": "ok",
+        "detail": "4 policy strutturali caricate da Company Policy Register. Evidenze: 2 board_approval_record, 1 collective_agreement_signed, 1 formal_policy_document. Copertura aggregata verificabile.",
         "blocking": false
       }
     ],
@@ -333,9 +340,9 @@
       "welfare_budget_eur": 18000,
       "training_budget_eur": 10000,
       "period": "2025-H1",
-      "data_sources": ["HR System", "Welfare Provider"],
+      "data_sources": ["HR System", "Welfare Provider", "Company Policy Register"],
       "upload_status": "partial",
-      "upload_note": "Caricamento parziale: dati LMS non ancora integrati. 5 programmi mappati su 7 previsti."
+      "upload_note": "Caricamento parziale: dati LMS non ancora integrati. 5 programmi mappati su 7 previsti. Policy register caricato parzialmente: 1 policy strutturale identificata, documentazione da completare."
     },
     "hr_kpi_context": {
       "company_id": "alba-manufacturing",
@@ -401,6 +408,13 @@
         "label": "Framework consenso lavoratori",
         "status": "warning",
         "detail": "Demo: consenso simulato. In produzione sarà richiesto il consenso esplicito.",
+        "blocking": false
+      },
+      {
+        "check_id": "structural-policy-docs",
+        "label": "Documentazione policy strutturali",
+        "status": "warning",
+        "detail": "1 policy strutturale identificata (accordo smart working). Documentazione incompleta: formalization_level e coverage aggregata da caricare prima della pipeline.",
         "blocking": false
       }
     ],

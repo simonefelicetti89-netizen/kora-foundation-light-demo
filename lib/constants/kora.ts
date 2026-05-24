@@ -155,18 +155,20 @@ export const ACTION_FAMILIES = [
   'inclusion_and_connection',
   'territorial_impact',
   'future_and_legacy',
+  'trust_and_flexibility_policy',
   'blocked_compliance',
 ] as const;
 
 export const ACTION_FAMILY_LABELS: Record<string, string> = {
-  economic_relief:           'Economic Relief',
-  family_and_care:           'Famiglia e Cura',
-  health_and_wellbeing:      'Salute e Benessere',
-  professional_growth:       'Crescita Professionale',
-  inclusion_and_connection:  'Inclusione e Connessione',
-  territorial_impact:        'Impatto Territoriale',
-  future_and_legacy:         'Futuro e Legacy',
-  blocked_compliance:        'Compliance Obbligatoria',
+  economic_relief:              'Economic Relief',
+  family_and_care:              'Famiglia e Cura',
+  health_and_wellbeing:         'Salute e Benessere',
+  professional_growth:          'Crescita Professionale',
+  inclusion_and_connection:     'Inclusione e Connessione',
+  territorial_impact:           'Impatto Territoriale',
+  future_and_legacy:            'Futuro e Legacy',
+  trust_and_flexibility_policy: 'Fiducia & Flessibilità Organizzativa',
+  blocked_compliance:           'Compliance Obbligatoria',
 };
 
 export const EVENT_NATURES = [
@@ -174,12 +176,43 @@ export const EVENT_NATURES = [
   'consumed_service',
   'training',
   'policy',
+  'structural_policy',
   'collective_initiative',
   'territorial_initiative',
   'long_term_benefit',
   'partner_service',
   'blocked_compliance',
 ] as const;
+
+// ── Structural Policy Taxonomy ─────────────────────────────────────────────────
+
+export const STRUCTURAL_POLICY_SUBTYPES = [
+  'time_autonomy_policy',
+  'enhanced_leave_policy',
+  'parental_care_policy',
+  'caregiving_flexibility_policy',
+  'hybrid_work_policy',
+  'right_to_disconnect_policy',
+  'meeting_hygiene_policy',
+  'work_life_campus_policy',
+  'solidarity_leave_policy',
+  'inclusive_work_arrangement',
+  'collective_agreement_people_policy',
+] as const;
+
+export const STRUCTURAL_POLICY_SUBTYPE_LABELS: Record<string, string> = {
+  time_autonomy_policy:               'Autonomia del Tempo / Ferie Illimitate',
+  enhanced_leave_policy:              'Congedo Migliorativo',
+  parental_care_policy:               'Parental Care Policy',
+  caregiving_flexibility_policy:      'Flessibilità Cura e Lavoro',
+  hybrid_work_policy:                 'Smart Working / Lavoro Ibrido',
+  right_to_disconnect_policy:         'Diritto alla Disconnessione',
+  meeting_hygiene_policy:             'No Meeting Zone',
+  work_life_campus_policy:            'Campus Work-Life (Kids@Campus / Dog@Campus)',
+  solidarity_leave_policy:            'Fondo Solidarietà Ferie',
+  inclusive_work_arrangement:         'Accordi di Inclusione Lavorativa',
+  collective_agreement_people_policy: 'Accordo Integrativo People Migliorativo',
+};
 
 export const MANDATORY_STATUSES = [
   'legal_mandatory',
@@ -195,6 +228,15 @@ export const MANDATORY_STATUSES = [
 // ── Budget-to-Human-Impact — canonical doctrine copy ────────────────────────────
 // These strings are canonical and must not be paraphrased in dashboard copy.
 
+// CCNL improvement signals — when these co-occur with ccnl/accordo keywords,
+// the item is a voluntary improvement beyond the contractual minimum → eligible.
+export const CCNL_IMPROVEMENT_SIGNALS: ReadonlyArray<string> = [
+  'migliorativo', 'aggiuntivo', 'aggiuntiva', 'oltre il minimo', 'superiore al minimo',
+  'accordo integrativo', 'integrativo', 'incrementale',
+  'eccedente', 'supplementare', 'rafforzato', 'potenziato',
+  'beyond legal', 'additional leave', 'enhanced leave',
+] as const;
+
 export const BTI_DOCTRINE = {
   core:          'KORA misura ciò che accade dopo la spesa.',
   budget_neq_activation: 'Budget allocated ≠ Budget activated.',
@@ -203,4 +245,9 @@ export const BTI_DOCTRINE = {
   limited_reframe:       'Non è spesa sbagliata. È spesa che può diventare più intelligente.',
   blocked_copy:          'KORA non trasforma la compliance in impatto.',
   baseline_copy:         'La conformità legale è una baseline, non impatto.',
+  // Structural policy doctrine — non-suppressible when trust_and_flexibility_policy IUs are present
+  policy_neq_partner:      'Non tutte le azioni KORA passano da un partner o da una fattura.',
+  structural_recognizable: 'KORA riconosce anche policy organizzative strutturali, se formalizzate, verificabili, aggregate e privacy-safe.',
+  trust_collective:        'La fiducia organizzativa è misurabile solo come capacità collettiva, non come controllo individuale.',
+  non_budget_mediated_note: 'Alcune policy strutturali generano Impact Units senza un costo diretto associato. Il BTI Engine separa le IU non budget-mediated dal calcolo di cost efficiency: la metrica di costo si applica solo alle attivazioni budget-mediated.',
 } as const;

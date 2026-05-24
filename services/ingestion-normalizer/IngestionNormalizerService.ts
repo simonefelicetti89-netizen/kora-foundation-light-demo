@@ -1,6 +1,17 @@
 import type { RawIngestionRow, NormalizedIngestionRow, IngestionSourceType } from '@/lib/types';
+import { CCNL_IMPROVEMENT_SIGNALS } from '@/lib/constants/kora';
 
 const SOURCE_TYPE_PATTERNS: Array<{ type: IngestionSourceType; keywords: string[] }> = [
+  {
+    // Structural policy register — must be checked before hr_system to avoid misclassification
+    type: 'company_policy_register',
+    keywords: [
+      'policy register', 'hr policy', 'accordo integrativo', 'regolamento aziendale',
+      'people policy', 'work-life policy', 'smart working policy', 'policy strutturale',
+      'registro policy', 'company policy', 'collective agreement', 'accordo sindacale people',
+      'ferie illimitate', 'diritto alla disconnessione', 'no meeting zone',
+    ],
+  },
   {
     type: 'welfare_provider',
     keywords: ['welfare platform', 'welfare export', 'welfare provider', 'edenred', 'day welfare', 'zucchetti welfare', 'voucher', 'buono'],
@@ -24,6 +35,16 @@ const SOURCE_TYPE_PATTERNS: Array<{ type: IngestionSourceType; keywords: string[
   {
     type: 'manual',
     keywords: ['manuale', 'inserimento manuale', 'manual entry'],
+  },
+];
+
+// CCNL improvement override — must be checked BEFORE MANDATORY_INFERENCE_PATTERNS.
+// If the text references a CCNL or collective agreement AND contains an improvement signal
+// (beyond legal/contractual minimum), the item is a voluntary structural policy, NOT blocked.
+const CCNL_IMPROVEMENT_PATTERNS: Array<{ keywords: string[]; status: string }> = [
+  {
+    keywords: ['ccnl', 'contratto collettivo', 'accordo sindacale', 'accordo integrativo'],
+    status: 'voluntary', // CCNL improvement beyond minimum → voluntary, eligible
   },
 ];
 
@@ -72,6 +93,14 @@ const MISSING_FIELD_QUESTIONS: Record<string, string> = {
   structured_program_evidence:    'Esiste documentazione strutturata del programma (curriculum, obiettivi, coppie)?',
   mentor_mentee_pair_count:       'Quante coppie mentore-mentee hanno partecipato?',
   participation_count_by_site:    'È disponibile il conteggio dei partecipanti per sito?',
+  // Structural policy missing fields
+  policy_coverage_pct:            'Quale percentuale della workforce è coperta da questa policy (dato aggregato)?',
+  policy_formalization_level:     'La policy è formalizzata in un documento ufficiale, accordo sindacale o delibera del CDA?',
+  policy_effective_date:          'Da quando è in vigore questa policy?',
+  policy_beyond_legal_minimum:    'La policy va oltre i requisiti minimi di legge o di CCNL standard?',
+  eligible_population:            'Quanti lavoratori sono nella popolazione eleggibile per questa policy?',
+  covered_population:             'Quanti lavoratori sono coperti da questa policy (dato aggregato, non individuale)?',
+  evidence_reference:             'Qual è il riferimento documentale di questa policy (numero delibera, codice accordo, nome documento)?',
 };
 
 export interface IIngestionNormalizerService {
@@ -148,6 +177,18 @@ export class IngestionNormalizerService implements IIngestionNormalizerService {
 
   inferMandatoryStatus(row: RawIngestionRow): string | undefined {
     const text = [row.raw_name, row.raw_description ?? ''].join(' ').toLowerCase();
+
+    // Check CCNL improvement override first: if the text references a collective agreement
+    // AND contains an improvement signal (beyond minimum), infer voluntary — not contractual_mandatory.
+    for (const { keywords } of CCNL_IMPROVEMENT_PATTERNS) {
+      if (keywords.some((kw) => text.includes(kw))) {
+        const hasImprovementSignal = CCNL_IMPROVEMENT_SIGNALS.some((s) => text.includes(s));
+        if (hasImprovementSignal) return 'voluntary';
+        // CCNL present but no improvement signal → fall through to contractual_mandatory below
+        break;
+      }
+    }
+
     for (const { keywords, status } of MANDATORY_INFERENCE_PATTERNS) {
       if (keywords.some((kw) => text.includes(kw))) return status;
     }

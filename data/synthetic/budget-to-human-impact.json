@@ -48,6 +48,10 @@
 
       "bti_score": 28,
 
+      "non_budget_mediated_iu_count": 0,
+      "structural_policy_iu_count": 0,
+      "non_budget_mediated_activation_note": null,
+
       "spend_by_pillar": {
         "LIFE": 68000,
         "GROWTH": 24000,
@@ -137,6 +141,10 @@
       "pillar_investment_balance": 0.47,
 
       "bti_score": 58,
+
+      "non_budget_mediated_iu_count": 38,
+      "structural_policy_iu_count": 38,
+      "non_budget_mediated_activation_note": "In S2 sono state introdotte 3 policy strutturali (accordo smart working 3gg/sett., diritto alla disconnessione, no meeting friday). Le 38 IU generate da queste policy non hanno un costo diretto per lavoratore: sono escluse dal denominatore di cost_per_impact_unit. Il BTI Engine separa le IU non-budget-mediated per preservare l'integrità della metrica di costo: 13,8 €/IU si applica solo alle attivazioni budget-mediated.",
 
       "spend_by_pillar": {
         "LIFE": 85000,

@@ -49,6 +49,11 @@ interface SeedBTIRecord {
   spend_by_pillar: Record<string, number>;
   deep_activation_by_pillar: Record<string, number>;
   recommendations: SeedBTIRecommendation[];
+  // Non-budget-mediated activation: structural policies generate IUs with no direct cost.
+  // cost_per_impact_unit applies ONLY to budget_mediated IUs — excluded from denominator.
+  non_budget_mediated_iu_count?: number;
+  structural_policy_iu_count?: number;
+  non_budget_mediated_activation_note?: string;
   synthetic_demo_data: true;
   generated_for: string;
   not_live_data: true;
@@ -209,6 +214,9 @@ export class BudgetToHumanImpactService implements IBudgetToHumanImpactService {
       spend_by_pillar: seed.spend_by_pillar as Partial<Record<PillarCode, number>>,
       deep_activation_by_pillar: seed.deep_activation_by_pillar as Partial<Record<PillarCode, number>>,
       recommendations,
+      non_budget_mediated_iu_count: seed.non_budget_mediated_iu_count,
+      structural_policy_iu_count: seed.structural_policy_iu_count,
+      non_budget_mediated_activation_note: seed.non_budget_mediated_activation_note,
       synthetic_demo_data: true,
     };
   }

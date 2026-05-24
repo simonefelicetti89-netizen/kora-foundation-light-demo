@@ -8,7 +8,7 @@ import type {
   PrivacySensitivity,
   DepthLevel,
 } from '@/lib/types';
-import { BTI_DOCTRINE, ELIGIBILITY_COPY } from '@/lib/constants/kora';
+import { BTI_DOCTRINE, ELIGIBILITY_COPY, CCNL_IMPROVEMENT_SIGNALS } from '@/lib/constants/kora';
 import rawTaxonomy from '@/data/synthetic/action-taxonomy.json';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -105,6 +105,10 @@ interface SeedTaxonomyEntry {
   exclusion_reason?: string;
   explanation_text: string;
   explanation_text_it: string;
+  // Structural policy extensions
+  individual_usage_visible?: false;
+  budget_mediated?: false;
+  scoring_unit?: string;
 }
 
 const BLOCKED_MANDATORY_STATUSES: ReadonlySet<string> = new Set([
@@ -142,6 +146,45 @@ const LIMITED_KEYWORD_PATTERNS: ReadonlyArray<string> = [
   'fringe benefit', 'welfare card', 'welfare credit', 'credito welfare',
   'voucher generico', 'buono generico', 'voucher multiuso',
   'convenzione commerciale', 'sconto aziendale',
+];
+
+// Structural policy recognition — positive patterns triggering trust_and_flexibility_policy
+// These override the generic review_required fallback when no taxonomy entry matches.
+const STRUCTURAL_POLICY_KEYWORD_PATTERNS: ReadonlyArray<string> = [
+  'ferie illimitate',
+  'ferie solidali',
+  'fondo solidarietà ferie',
+  'fondo solidarieta ferie',
+  'diritto alla disconnessione',
+  'no meeting zone',
+  'no-meeting zone',
+  'smart working policy',
+  'lavoro ibrido',
+  'hybrid working',
+  'lavoro agile policy',
+  'accordo smart working',
+  'congedo parentale migliorativo',
+  'congedo paternità migliorativo',
+  'congedo paternita migliorativo',
+  'congedo parentale aggiuntivo',
+  'rol aggiuntivi',
+  'permessi aggiuntivi caregiver',
+  'flessibilità caregiver',
+  'flessibilita caregiver',
+  'flessibilità cura lavoro',
+  'flessibilita cura lavoro',
+  'kids@campus',
+  'dog@campus',
+  'campus famiglie',
+  'accordo integrativo migliorativo',
+  'accordo integrativo people',
+  'policy di fiducia',
+  'politica di fiducia',
+  'inclusione lavorativa',
+  'accordo inclusione',
+  'rol disabilità',
+  'rol disabilita',
+  'accommodamento ragionevole',
 ];
 
 // ── Normalizer ────────────────────────────────────────────────────────────────
@@ -233,13 +276,15 @@ function buildLimitedResult(
 function buildReviewResult(
   input: EligibilityClassificationInput,
   reason: string,
+  actionFamily: ActionFamily = 'professional_growth',
 ): EligibilityClassificationResult {
+  const isStructuralPolicy = actionFamily === 'trust_and_flexibility_policy';
   return {
     input,
     matched_taxonomy_id: null,
     kora_eligibility: 'eligible',   // tentatively eligible pending review
-    action_family: 'professional_growth',
-    event_nature: 'training',
+    action_family: actionFamily,
+    event_nature: isStructuralPolicy ? 'structural_policy' : 'training',
     primary_pillar: null,
     secondary_pillars: [],
     pillar_distribution: {},
@@ -281,13 +326,21 @@ export class EligibilityGateService implements IEligibilityGateService {
     const inputMandatory = input.mandatory_status ?? '';
 
     // Rule 1 — Mandatory status override: hard-blocked statuses always produce BLOCKED.
+    // Exception: contractual_mandatory with CCNL improvement signals → tentatively eligible
+    // (CCNL improvement beyond minimum is voluntary, not contractual obligation).
     if (BLOCKED_MANDATORY_STATUSES.has(inputMandatory)) {
-      return buildBlockedResult(
-        input,
-        null,
-        `Input mandatory_status "${inputMandatory}" — legal/role/contractual compliance items are blocked by design.`,
-        'high',
-      );
+      const hasCcnlImprovementSignal =
+        inputMandatory === 'contractual_mandatory' &&
+        CCNL_IMPROVEMENT_SIGNALS.some((s) => searchText.includes(s));
+      if (!hasCcnlImprovementSignal) {
+        return buildBlockedResult(
+          input,
+          null,
+          `Input mandatory_status "${inputMandatory}" — legal/role/contractual compliance items are blocked by design.`,
+          'high',
+        );
+      }
+      // Fall through: CCNL improvement override — treat as voluntary structural policy candidate
     }
 
     // Rule 2 — Try taxonomy keyword match (exact keyword hit against normalized text).
@@ -368,7 +421,18 @@ export class EligibilityGateService implements IEligibilityGateService {
       );
     }
 
-    // Rule 6 — No signal → review required with low confidence.
+    // Rule 6 — Structural policy signal detected but no taxonomy match.
+    // Use trust_and_flexibility_policy as the review default instead of professional_growth.
+    // The policy is tentatively eligible pending formal documentation review.
+    if (containsAny(searchText, STRUCTURAL_POLICY_KEYWORD_PATTERNS)) {
+      return buildReviewResult(
+        input,
+        'Structural organizational policy signal detected — pending verification of formalization, coverage data, and beyond-legal-minimum status. Tentatively eligible as trust_and_flexibility_policy.',
+        'trust_and_flexibility_policy',
+      );
+    }
+
+    // Rule 7 — No signal → review required with low confidence.
     return buildReviewResult(
       input,
       'Insufficient information to classify. Human review required before scoring.',

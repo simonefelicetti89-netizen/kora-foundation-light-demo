@@ -314,6 +314,38 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
       'Spesa deep_activation / numero di lavoratori con attivazione profonda verificata. Un aumento di questo indicatore non implica inefficienza: può riflettere l\'espansione dell\'accesso a programmi più strutturati e profondi per una platea più ampia. Leggere sempre insieme al cost_per_impact_unit: se quest\'ultimo diminuisce, l\'efficienza complessiva dell\'attivazione è migliorata. In S1→S2: cost_per_deep_worker +€181, ma cost_per_IU −8.6 — segnale di efficienza complessiva migliorata, non peggiorata.',
     related_concepts: ['deep_activation', 'budget_to_human_impact', 'bti_macroblock'],
   },
+  structural_policy_activation: {
+    key: 'structural_policy_activation',
+    label_it: 'Attivazione da Policy Strutturale',
+    label_en: 'Structural Policy Activation',
+    definition_it:
+      'Classe di attivazione generata da policy organizzative formali che modificano strutturalmente le condizioni di lavoro: ferie illimitate, smart working, diritto alla disconnessione, no meeting zone, accordi integrativi migliorativi. A differenza dei benefit individuali, le policy strutturali sono aggregate per design — non esistono record di utilizzo individuale. Le IU generate da policy strutturali sono non-budget-mediated: non hanno un costo diretto associato e sono escluse dal denominatore di cost_per_impact_unit nel BTI Engine. KORA le riconosce solo se formalizzate, verificabili, aggregate e privacy-safe. Non misura l\'utilizzo individuale, non misura il comportamento dei singoli lavoratori.',
+    related_concepts: ['trust_and_flexibility_policy', 'non_budget_mediated_activation', 'impact_unit', 'eligibility_gate'],
+  },
+  trust_and_flexibility_policy: {
+    key: 'trust_and_flexibility_policy',
+    label_it: 'Fiducia & Flessibilità Organizzativa',
+    label_en: 'Trust & Flexibility Policy',
+    definition_it:
+      'Action Family KORA per policy organizzative strutturali che aumentano la fiducia, l\'autonomia e la flessibilità della forza lavoro. Comprende 11 sottotipi: autonomia del tempo/ferie illimitate, congedo migliorativo, parental care policy, flessibilità cura e lavoro, smart working/lavoro ibrido, diritto alla disconnessione, no meeting zone, campus work-life, fondo solidarietà ferie, accordi di inclusione lavorativa, accordi integrativi people migliorativi. Base Contribution (BC) = 1,15 — sopra il neutro (1,0) ma inferiore ai benefit welfare diretti (1,2). Richiede calibrazione post-Studio Delphi. La fiducia organizzativa è misurabile solo come capacità collettiva, non come controllo individuale.',
+    related_concepts: ['structural_policy_activation', 'non_budget_mediated_activation', 'policy_depth', 'kora_pillar'],
+  },
+  non_budget_mediated_activation: {
+    key: 'non_budget_mediated_activation',
+    label_it: 'Attivazione Non Budget-Mediated',
+    label_en: 'Non-Budget-Mediated Activation',
+    definition_it:
+      'Impact Units generate da policy strutturali che non hanno un costo diretto associato — l\'attivazione non richiede una spesa per lavoratore misurabile. Esempi: policy di ferie illimitate, accordi di smart working strutturale, diritto alla disconnessione formalizzato. Il BTI Engine separa le IU non-budget-mediated dal calcolo di cost efficiency: la metrica cost_per_impact_unit si applica solo alle attivazioni budget-mediated. Non tutte le azioni KORA passano da un partner o da una fattura.',
+    related_concepts: ['structural_policy_activation', 'trust_and_flexibility_policy', 'budget_to_human_impact', 'bti_macroblock'],
+  },
+  policy_depth: {
+    key: 'policy_depth',
+    label_it: 'Profondità della Policy (Policy Depth)',
+    label_en: 'Policy Depth',
+    definition_it:
+      'Dimensione qualitativa che misura il grado di strutturazione e impatto reale di una policy organizzativa. In Foundation Light v0.1, policy_depth è rappresentata come livello ordinale: superficial (policy dichiarata senza meccanismi di supporto), moderate (policy con misure di supporto parziali), deep (policy con meccanismi strutturati e verificati), transformative (policy che riorganizza strutturalmente i processi di lavoro). Il Normalized Magnitude (NM) per le policy strutturali richiede calibrazione post-Studio Delphi su coverage × depth × accessibility × duration. In Foundation Light: NM = 1.0 (stub pre-calibrazione).',
+    related_concepts: ['structural_policy_activation', 'trust_and_flexibility_policy', 'non_budget_mediated_activation'],
+  },
 };
 
 export interface Warning {

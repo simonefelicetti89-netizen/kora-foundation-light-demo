@@ -41,20 +41,22 @@ export type PrivacySuppressReason =
 export type EligibilityClass = 'eligible' | 'limited' | 'blocked';
 
 export type ActionFamily =
-  | 'economic_relief'         // meal vouchers, fuel vouchers, shopping vouchers, generic fringe
-  | 'family_and_care'         // childcare, asilo nido, caregiver support, elderly assistance
-  | 'health_and_wellbeing'    // preventive health, psychological support, mental health, nutrition
-  | 'professional_growth'     // training, upskilling, reskilling, certifications, coaching
-  | 'inclusion_and_connection' // mentoring, peer support, inclusion programs, cross-functional
-  | 'territorial_impact'      // volunteering, community projects, territorial initiatives
-  | 'future_and_legacy'       // pension support, long-term employability, knowledge transfer
-  | 'blocked_compliance';     // HSE/legal mandatory, DVR, DUVRI, DPI, mandatory safety training
+  | 'economic_relief'             // meal vouchers, fuel vouchers, shopping vouchers, generic fringe
+  | 'family_and_care'             // childcare, asilo nido, caregiver support, elderly assistance
+  | 'health_and_wellbeing'        // preventive health, psychological support, mental health, nutrition
+  | 'professional_growth'         // training, upskilling, reskilling, certifications, coaching
+  | 'inclusion_and_connection'    // mentoring, peer support, inclusion programs, cross-functional
+  | 'territorial_impact'          // volunteering, community projects, territorial initiatives
+  | 'future_and_legacy'           // pension support, long-term employability, knowledge transfer
+  | 'trust_and_flexibility_policy' // structural org policies: leave, flexibility, autonomy, solidarity
+  | 'blocked_compliance';         // HSE/legal mandatory, DVR, DUVRI, DPI, mandatory safety training
 
 export type EventNature =
   | 'monetary_benefit'         // cash-like: vouchers, fringe benefits, gift cards
   | 'consumed_service'         // welfare service actually used by worker
   | 'training'                 // learning event (may be mandatory or voluntary)
   | 'policy'                   // company policy or program enrollment
+  | 'structural_policy'        // formalized organizational policy — aggregate-only, no individual usage data
   | 'collective_initiative'    // group or cross-company initiative
   | 'territorial_initiative'   // local community or territorial project
   | 'long_term_benefit'        // pension, long-term employability, future programs
@@ -72,6 +74,63 @@ export type MandatoryStatus =
   | 'developmental';               // developmental, encouraged but not mandatory
 
 export type DepthLevel = 'deep' | 'moderate' | 'surface' | 'none';
+
+// ── Structural Policy Activation — Trust & Flexibility ──────────────────────────
+// Structural organizational policies are a third activation input class in KORA:
+//   1. Event/program-based activation (consumed_service, training, etc.)
+//   2. Budget/partner-mediated activation (partner_service, welfare programs)
+//   3. Structural policy activation (structural_policy — this type)
+// Structural policies flow into the existing IU → Aggregation → KORA Index v3 pipeline.
+// KORA Index v3 macroblocks and weights remain unchanged.
+// Privacy rule: individual_usage_visible = false on all structural_policy records.
+
+export type StructuralPolicySubtype =
+  | 'time_autonomy_policy'            // ferie illimitate, gestione autonoma del tempo
+  | 'enhanced_leave_policy'           // congedo parentale migliorativo, congedo paternità aggiuntivo
+  | 'parental_care_policy'            // politica parental care, leave per neo-genitori
+  | 'caregiving_flexibility_policy'   // ROL aggiuntivi caregiver/disabilità, flessibilità cura-lavoro
+  | 'hybrid_work_policy'              // smart working policy, lavoro ibrido strutturato
+  | 'right_to_disconnect_policy'      // diritto alla disconnessione formalizzato
+  | 'meeting_hygiene_policy'          // no meeting zone, finestre senza riunioni
+  | 'work_life_campus_policy'         // Kids@Campus, Dog@Campus, campus family-friendly
+  | 'solidarity_leave_policy'         // fondo solidarietà ferie, ferie solidali tra colleghi
+  | 'inclusive_work_arrangement'      // accordi inclusione, ROL aggiuntivi per personale con invalidità
+  | 'collective_agreement_people_policy'; // accordo integrativo migliorativo CCNL-plus people
+
+export interface StructuralPolicyRecord {
+  policy_id: string;
+  company_id: string;
+  policy_name: string;
+  policy_name_it?: string;
+  policy_subtype: StructuralPolicySubtype;
+  action_family: 'trust_and_flexibility_policy';
+  event_nature: 'structural_policy';
+  // Formalization
+  formalized_policy: boolean;
+  policy_evidence_reference: string;
+  // Coverage — aggregate only, never individual
+  eligible_population: number;
+  covered_population: number;
+  coverage_rate: number; // 0–1
+  applicable_roles_or_clusters: string[];
+  // Validity
+  start_date: string;
+  end_date?: string;
+  recurring_or_structural: boolean;
+  // Privacy constraints — constitutional
+  usage_data_available: false; // individual usage data never collected
+  usage_aggregation_level: 'company_level' | 'cluster_level' | 'none';
+  privacy_threshold_applied: boolean;
+  individual_usage_visible: false; // non-suppressible
+  budget_mediated: false;          // structural policies have no direct cost
+  // Scoring inputs
+  policy_depth: DepthLevel;
+  accessibility_score: number; // 0–1: how easy is access across workforce segments
+  duration_months: number;
+  equity_review_required: boolean;
+  beyond_legal_minimum: boolean; // must be true for eligible classification
+  notes?: string;
+}
 
 // ── KORA Index v3 — Macroblock Architecture ─────────────────────────────────────
 // KORA Index v3 = 25% Activation Reach + 30% Activation Quality
@@ -390,6 +449,11 @@ export interface BudgetToHumanImpactRecord {
   deep_activation_by_pillar: Partial<Record<PillarCode, number>>;
   // Recommendations (3–5 directional, not guaranteed)
   recommendations: BudgetToHumanImpactRecommendation[];
+  // Non-budget-mediated activation (structural policies) — separate from spend-based IUs
+  // cost_per_impact_unit applies only to budget_mediated IUs; policy IUs are excluded from cost calc.
+  non_budget_mediated_iu_count?: number;  // IUs generated by structural policies (no direct cost)
+  structural_policy_iu_count?: number;    // subset of non_budget_mediated — trust_and_flexibility_policy IUs
+  non_budget_mediated_activation_note?: string; // canonical doctrine copy — non-suppressible when present
   // Meta — non-suppressible
   currency: string;
   disclaimer: string;
@@ -407,6 +471,7 @@ export type IngestionSourceType =
   | 'lms_training'
   | 'esg_initiatives'
   | 'partner_events'
+  | 'company_policy_register' // structural organizational policies — aggregate-only
   | 'manual'
   | 'unknown';
 
@@ -469,6 +534,10 @@ export interface KoraReadyRecord {
   missing_data_questions: string[];
   human_review_completed: boolean;
   human_review_notes?: string;
+  // Structural policy metadata — only set for trust_and_flexibility_policy records
+  budget_mediated?: boolean;         // false for structural policies; true or undefined for all others
+  individual_usage_visible?: boolean; // false for structural policies; non-suppressible
+  structural_policy_subtype?: StructuralPolicySubtype;
 }
 
 export type IngestionAuditEventType =
