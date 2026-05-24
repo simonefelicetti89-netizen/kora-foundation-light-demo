@@ -67,14 +67,14 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
   }
   if (role === 'COMPANY_ADMIN') {
     routes.push(
-      '/company', '/company/kora-index', '/company/reports', '/company/activation',
+      '/company', '/company/shared', '/company/kora-index', '/company/reports', '/company/activation',
       '/company/contribution', '/company/pillars', '/company/data',
       '/company/financial', '/company/profile',
     );
   }
   if (role === 'COMPANY_VIEWER') {
     routes.push(
-      '/company', '/company/kora-index', '/company/profile',
+      '/company', '/company/shared', '/company/kora-index', '/company/profile',
     );
   }
   if (isWorkerRole(role)) {
