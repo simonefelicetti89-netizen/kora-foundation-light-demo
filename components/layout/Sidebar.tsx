@@ -52,6 +52,7 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Strumenti Interni',
         items: [
+          { href: '/company/setup',              label: 'Company Setup' },
           { href: '/company/onboarding',         label: 'Onboarding Studio' },
           { href: '/company/workforce-baseline', label: 'Workforce Baseline' },
           { href: '/company/ingestion',          label: 'AI Ingestion' },
@@ -95,6 +96,7 @@ function buildNavGroups(role: string): NavGroup[] {
       groups.push({
         heading: 'Foundation Light Preview',
         items: [
+          { href: '/company/setup',              label: 'Company Setup' },
           { href: '/company/onboarding',         label: 'Onboarding Studio' },
           { href: '/company/workforce-baseline', label: 'Workforce Baseline' },
           { href: '/company/ingestion',          label: 'AI Ingestion' },

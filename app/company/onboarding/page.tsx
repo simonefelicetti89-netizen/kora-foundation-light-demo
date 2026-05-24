@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
 import type {
@@ -256,6 +257,22 @@ export default function OnboardingStudio() {
               </span>
             </button>
           ))}
+        </div>
+
+        {/* ── CTA: Company Setup ── */}
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold text-slate-700">Registra una nuova azienda</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              Configura il profilo aziendale e avvia il pipeline KORA da zero.
+            </p>
+          </div>
+          <Link
+            href="/company/setup"
+            className="shrink-0 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 transition-colors"
+          >
+            Company Setup →
+          </Link>
         </div>
       </div>
 

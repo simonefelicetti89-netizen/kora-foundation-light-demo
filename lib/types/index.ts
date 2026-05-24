@@ -1112,6 +1112,93 @@ export interface CompanyOnboardingRecord {
   production_ready: false;
 }
 
+// ── Company Setup (Block 7) ─────────────────────────────────────────────────────
+
+export type CompanySetupStatus =
+  | 'not_started'
+  | 'draft'
+  | 'validated'
+  | 'pipeline_ready'
+  | 'blocked_below_threshold';
+
+export type CompanySizeBand =
+  | 'small_30_49'
+  | 'mid_50_249'
+  | 'large_250_999'
+  | 'enterprise_1000_plus';
+
+export interface CompanySetupTemplate {
+  template_id: string;
+  label: string;
+  size_band: CompanySizeBand;
+  description: string;
+  suggested_pillars: string[];
+  activation_benchmark_note: string;
+  recommended_for: string[];
+}
+
+export interface CompanySetupInput {
+  company_name: string;
+  legal_name: string;
+  sector: string;
+  size_band: CompanySizeBand;
+  headcount: number;
+  headquarters_city: string;
+  multi_site: boolean;
+  site_count?: number;
+  primary_contact_name: string;
+  primary_contact_role: string;
+  reporting_year: string;
+  preferred_template_id?: string;
+  notes?: string;
+}
+
+export interface CompanySetupValidationResult {
+  is_valid: boolean;
+  errors: { field: string; message: string }[];
+  warnings: { field: string; message: string }[];
+  headcount_eligible: boolean;
+  min_headcount_required: 30;
+}
+
+export interface WorkforceBaselinePreview {
+  headcount: number;
+  size_band: CompanySizeBand;
+  multi_site: boolean;
+  site_count: number;
+  eligible_for_pipeline: boolean;
+  cluster_note: string;
+  privacy_threshold_note: string;
+}
+
+export interface CompanySetupDraft {
+  draft_id: string;
+  created_at: string;
+  status: CompanySetupStatus;
+  input: CompanySetupInput;
+  validation: CompanySetupValidationResult;
+  workforce_preview: WorkforceBaselinePreview;
+  template: CompanySetupTemplate | null;
+  pipeline_handoff: CompanySetupPipelineLink[];
+  demo_session_only: true;
+  production_ready: false;
+  synthetic_demo_data: true;
+}
+
+export interface CompanySetupOption {
+  value: string;
+  label: string;
+  description?: string;
+}
+
+export interface CompanySetupPipelineLink {
+  stage: string;
+  label: string;
+  href: string;
+  available: boolean;
+  note: string;
+}
+
 // ── Workforce Baseline Upload ───────────────────────────────────────────────────
 
 export type WorkforceBaselineUploadStatus =
