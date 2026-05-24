@@ -98,7 +98,7 @@ function buildPipelineLinks(input: CompanySetupInput): CompanySetupPipelineLink[
     {
       stage: 'workforce_baseline',
       label: 'Workforce Baseline',
-      href: '/company/workforce-baseline',
+      href: '/admin/companies/workforce-baseline',
       available: eligible,
       note: eligible
         ? 'Carica i dati workforce per completare il profilo.'
@@ -107,7 +107,7 @@ function buildPipelineLinks(input: CompanySetupInput): CompanySetupPipelineLink[
     {
       stage: 'ingestion',
       label: 'AI Ingestion Studio',
-      href: '/company/ingestion',
+      href: '/admin/companies/onboarding',
       available: eligible,
       note: 'Carica dati welfare, formazione e iniziative per avviare il pipeline KORA.',
     },

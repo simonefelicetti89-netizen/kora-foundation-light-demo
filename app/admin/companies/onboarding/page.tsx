@@ -1,0 +1,265 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
+import type { OnboardingReadinessCheck } from '@/lib/types';
+
+const STATUS_LABELS: Record<string, string> = {
+  not_started:                    'Non avviato',
+  profile_complete:               'Profilo completato',
+  workforce_baseline_complete:    'Baseline workforce completata',
+  program_data_loaded:            'Dati programmi caricati',
+  hr_kpi_loaded:                  'HR KPI caricati',
+  ready_for_scoring:              'Pronto per scoring',
+  fully_onboarded:                'Completamente onboardato',
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  not_started:                  'bg-slate-100 text-slate-500 border-slate-200',
+  profile_complete:             'bg-blue-50 text-blue-700 border-blue-200',
+  workforce_baseline_complete:  'bg-blue-50 text-blue-700 border-blue-200',
+  program_data_loaded:          'bg-indigo-50 text-indigo-700 border-indigo-200',
+  hr_kpi_loaded:                'bg-violet-50 text-violet-700 border-violet-200',
+  ready_for_scoring:            'bg-amber-50 text-amber-700 border-amber-200',
+  fully_onboarded:              'bg-green-50 text-green-700 border-green-200',
+};
+
+function ReadinessCheck({ check }: { check: OnboardingReadinessCheck }) {
+  const isOk = check.status === 'ok';
+  const isBlocking = check.blocking && !isOk;
+  return (
+    <div className={cn('rounded-md border p-3', isOk ? 'border-green-200 bg-green-50' : isBlocking ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50')}>
+      <div className="flex items-start gap-2">
+        <span className={cn('text-xs font-bold shrink-0', isOk ? 'text-green-600' : isBlocking ? 'text-rose-600' : 'text-amber-600')}>
+          {isOk ? '✓' : isBlocking ? '✕' : '!'}
+        </span>
+        <div>
+          <p className="text-xs font-semibold text-slate-800">{check.label}</p>
+          <p className="text-[10px] text-slate-500 mt-0.5">{check.detail}</p>
+          {isBlocking && (
+            <span className="text-[9px] font-semibold text-rose-600 uppercase tracking-wide">Bloccante</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// A-17: KORA Admin — Company Onboarding Studio
+export default function AdminOnboardingStudio() {
+  const companies = companyOnboardingService.getOnboardingCompanies();
+  const [selectedId, setSelectedId] = useState<string>(companies[0]?.company_id ?? '');
+
+  const record = companyOnboardingService.getCompanyOnboardingRecord(selectedId);
+  const nextAction = companyOnboardingService.getNextBestAction(selectedId);
+  const pipelineReadiness = companyOnboardingService.getPipelineReadiness(selectedId);
+  const suppressedClusters = companyOnboardingService.getPrivacyThresholdWarnings(selectedId);
+  const isEligible = companyOnboardingService.isFoundationLightEligible(selectedId);
+
+  if (!record) return <div className="p-8 text-sm text-slate-500">Azienda non trovata.</div>;
+
+  const { profile, workforce_baseline, program_data_summary, readiness_checks, pipeline_links } = record;
+
+  return (
+    <div className="space-y-8 max-w-5xl">
+
+      {/* ── Header ── */}
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+          KORA Admin — Onboarding Azienda Cliente
+        </p>
+        <h1 className="text-xl font-bold text-slate-900 mt-0.5">Company Onboarding Studio</h1>
+        <p className="text-sm text-slate-500 mt-1">
+          Gestione onboarding, validazione dati e pipeline readiness per l&apos;azienda cliente.
+        </p>
+      </div>
+
+      {/* ── Admin identity ── */}
+      <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
+        <p>
+          <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
+          Questa sezione è riservata agli operatori KORA.
+        </p>
+        <p>Il cliente azienda non vede questa console tecnica.</p>
+      </div>
+
+      {/* ── Company selector ── */}
+      <div className="rounded-lg border border-slate-200 bg-white p-5 space-y-3">
+        <p className="text-xs font-semibold text-slate-600 uppercase tracking-widest">Seleziona Azienda Cliente</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {companies.map((c) => (
+            <button
+              key={c.company_id}
+              onClick={() => setSelectedId(c.company_id)}
+              className={cn(
+                'rounded-lg border p-4 text-left transition-colors',
+                selectedId === c.company_id ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white hover:border-slate-300',
+              )}
+            >
+              <p className="text-sm font-semibold text-slate-800">{c.company_name}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{c.profile.employee_count} lavoratori · {c.profile.sector}</p>
+              <span className={cn('mt-2 inline-block rounded border px-1.5 py-0.5 text-[10px]', STATUS_COLORS[c.onboarding_status] ?? 'bg-slate-100 text-slate-500')}>
+                {STATUS_LABELS[c.onboarding_status] ?? c.onboarding_status}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Foundation Light eligibility ── */}
+      <div className={cn('rounded-xl border p-5', isEligible ? 'border-green-200 bg-green-50' : 'border-rose-200 bg-rose-50')}>
+        <div className="flex items-center gap-2">
+          <span className={cn('text-lg font-bold', isEligible ? 'text-green-700' : 'text-rose-700')}>
+            {isEligible ? '✓' : '✕'}
+          </span>
+          <p className={cn('text-sm font-semibold', isEligible ? 'text-green-800' : 'text-rose-800')}>
+            {isEligible ? 'Idonea Foundation Light' : 'Non idonea Foundation Light'}
+          </p>
+        </div>
+        {!isEligible && (
+          <p className="text-xs text-rose-700 mt-1">
+            Foundation Light richiede almeno 30 lavoratori. Verificare il workforce baseline.
+          </p>
+        )}
+        {suppressedClusters.length > 0 && (
+          <p className="text-xs text-amber-700 mt-2">
+            {suppressedClusters.length} cluster sotto soglia privacy (&lt; 10 lavoratori) — soppressi.
+          </p>
+        )}
+      </div>
+
+      {/* ── Company profile ── */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Profilo Azienda Cliente</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[
+            ['Forma giuridica', profile.legal_form],
+            ['Settore', profile.sector],
+            ['Sede principale', profile.location],
+            ['Anno fondazione', profile.foundation_year],
+            ['Organico totale', `${profile.employee_count} lavoratori`],
+            ['Ruolo referente', profile.contact_role],
+          ].map(([label, value]) => (
+            <div key={label as string}>
+              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{label}</p>
+              <p className="text-xs text-slate-700 mt-0.5">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Workforce baseline summary ── */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Workforce Baseline</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[
+            ['Totale lavoratori', workforce_baseline.total_employees],
+            ['Threshold N≥30', workforce_baseline.foundation_light_eligible ? '✓ Soddisfatta' : '✕ Non soddisfatta'],
+            ['Cluster soppressi', workforce_baseline.suppressed_cluster_count],
+          ].map(([label, value]) => (
+            <div key={label as string}>
+              <p className="text-[10px] text-slate-400">{label}</p>
+              <p className="text-xs text-slate-700 font-semibold mt-0.5">{value}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[10px] text-slate-400 leading-relaxed">{workforce_baseline.eligibility_note}</p>
+        <Link href="/admin/companies/workforce-baseline" className="text-xs font-semibold text-indigo-600 hover:underline">
+          Apri Workforce Baseline →
+        </Link>
+      </div>
+
+      {/* ── Program data summary ── */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Dati Programma</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[
+            ['Programmi totali', program_data_summary.total_programs],
+            ['Budget welfare (€)', program_data_summary.welfare_budget_eur.toLocaleString('it-IT')],
+            ['Budget formazione (€)', program_data_summary.training_budget_eur.toLocaleString('it-IT')],
+            ['Stato upload', program_data_summary.upload_status],
+          ].map(([label, value]) => (
+            <div key={label as string}>
+              <p className="text-[10px] text-slate-400">{label}</p>
+              <p className="text-xs text-slate-700 font-semibold mt-0.5">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Readiness checks ── */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-semibold text-slate-800">Pipeline Readiness</p>
+          <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
+            pipelineReadiness.status === 'ok' ? 'border-green-200 bg-green-50 text-green-700' :
+            pipelineReadiness.status === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-700' :
+            'border-rose-200 bg-rose-50 text-rose-700',
+          )}>
+            {pipelineReadiness.status.toUpperCase()}
+          </span>
+        </div>
+        {pipelineReadiness.blocking_checks.length > 0 && (
+          <p className="text-xs text-rose-600">
+            {pipelineReadiness.blocking_checks.length} check bloccante{pipelineReadiness.blocking_checks.length > 1 ? 'i' : ''} non superato{pipelineReadiness.blocking_checks.length > 1 ? 'i' : ''}.
+          </p>
+        )}
+        <div className="grid gap-2 sm:grid-cols-2">
+          {readiness_checks.map((check) => (
+            <ReadinessCheck key={check.check_id} check={check} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Next action ── */}
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Next Best Action — KORA Admin</p>
+        <p className="text-sm font-semibold text-slate-800">{nextAction.action}</p>
+        <p className="text-xs text-slate-500">{nextAction.detail}</p>
+      </div>
+
+      {/* ── Pipeline links ── */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Pipeline KORA — Fasi Operative</p>
+        <div className="space-y-2">
+          {pipeline_links.map((link) => (
+            <div key={link.stage} className={cn('flex items-center justify-between gap-2 rounded p-2',
+              link.status === 'active' ? 'bg-indigo-50' : 'bg-slate-50'
+            )}>
+              <div>
+                <p className={cn('text-xs font-semibold',
+                  link.status === 'active' ? 'text-indigo-700' : 'text-slate-500'
+                )}>
+                  {link.label}
+                </p>
+                <p className="text-[10px] text-slate-400">{link.description}</p>
+              </div>
+              <span className={cn('rounded border px-1.5 py-0.5 text-[9px] font-semibold shrink-0',
+                link.status === 'active' ? 'border-indigo-200 bg-white text-indigo-700' :
+                'border-slate-200 bg-white text-slate-400',
+              )}>
+                {link.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Navigation ── */}
+      <div className="border-t border-slate-100 pt-4 flex items-center gap-4 flex-wrap">
+        <Link href="/admin/companies" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+          ← Company Registry
+        </Link>
+        <Link href="/admin/companies/setup" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+          Company Setup
+        </Link>
+        <Link href="/admin/companies/workforce-baseline" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+          Workforce Baseline →
+        </Link>
+      </div>
+
+    </div>
+  );
+}

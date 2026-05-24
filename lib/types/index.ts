@@ -1303,3 +1303,52 @@ export interface WorkforceBaselineRecord {
   methodology_notes: string;
   pipeline_links: PipelineStageLink[];
 }
+
+// ── Access Control Foundation (Block 7B) ───────────────────────────────────────
+
+export type KoraUserRole =
+  | 'KORA_SUPER_ADMIN'
+  | 'KORA_ADMIN'
+  | 'KORA_OPERATOR'
+  | 'KORA_ANALYST'
+  | 'KORA_ADVISOR'
+  | 'KORA_VIEWER'
+  | 'FOUNDER_INTERNAL'
+  | 'COMPANY_ADMIN'
+  | 'COMPANY_HR'
+  | 'COMPANY_FINANCE'
+  | 'COMPANY_ESG'
+  | 'COMPANY_EXECUTIVE'
+  | 'COMPANY_VIEWER'
+  | 'PARTNER_ADMIN'
+  | 'PARTNER_OPERATOR'
+  | 'WORKER';
+
+export type KoraAccessScope =
+  | 'global_admin'
+  | 'company_scoped'
+  | 'partner_scoped'
+  | 'worker_private';
+
+export interface KoraDemoUser {
+  user_id: string;
+  display_name: string;
+  role: KoraUserRole;
+  access_scope: KoraAccessScope;
+  company_id?: string;
+  partner_id?: string;
+  can_access_admin: boolean;
+  can_access_company_portal: boolean;
+  allowed_routes: string[];
+  notes: string;
+}
+
+export interface CompanyAccessProfile {
+  company_id: string;
+  company_name: string;
+  allowed_company_roles: KoraUserRole[];
+  default_company_route: string;
+  visible_company_sections: string[];
+  hidden_operational_sections: string[];
+  admin_managed_sections: string[];
+}

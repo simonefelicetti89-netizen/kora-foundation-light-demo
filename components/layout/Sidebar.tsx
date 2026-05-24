@@ -40,6 +40,15 @@ function buildNavGroups(role: string): NavGroup[] {
         ],
       },
       {
+        heading: 'Aziende Cliente',
+        items: [
+          { href: '/admin/companies',                      label: 'Company Registry' },
+          { href: '/admin/companies/setup',                label: 'Company Setup' },
+          { href: '/admin/companies/onboarding',           label: 'Onboarding Studio' },
+          { href: '/admin/companies/workforce-baseline',   label: 'Workforce Baseline' },
+        ],
+      },
+      {
         heading: 'Intelligence Aziendale',
         items: [
           { href: '/company',              label: 'Executive Cockpit' },
@@ -52,9 +61,6 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Strumenti Interni',
         items: [
-          { href: '/company/setup',              label: 'Company Setup' },
-          { href: '/company/onboarding',         label: 'Onboarding Studio' },
-          { href: '/company/workforce-baseline', label: 'Workforce Baseline' },
           { href: '/company/ingestion',          label: 'AI Ingestion' },
           { href: '/company/uef-review',         label: 'UEF Review' },
           { href: '/company/scoring',            label: 'Scoring Run' },
@@ -74,8 +80,9 @@ function buildNavGroups(role: string): NavGroup[] {
     const groups: NavGroup[] = [
       DEMO_GROUP,
       {
-        heading: 'Intelligence Aziendale',
+        heading: 'Il Tuo Spazio KORA',
         items: [
+          { href: '/company/profile',      label: 'Profilo & Stato KORA' },
           { href: '/company',              label: 'Executive Cockpit' },
           { href: '/company/kora-index',   label: 'KORA Index' },
           { href: '/company/activation',   label: 'Attivazione & Partecipazione' },
@@ -88,24 +95,10 @@ function buildNavGroups(role: string): NavGroup[] {
         items: [
           { href: '/company/data',      label: 'Dati & Evidenze' },
           { href: '/company/financial', label: 'Governance Finanziaria' },
+          { href: '/company/reports',   label: 'Decision Pack' },
         ],
       },
     ];
-
-    if (role === 'COMPANY_ADMIN' || role === 'COMPANY_HR') {
-      groups.push({
-        heading: 'Foundation Light Preview',
-        items: [
-          { href: '/company/setup',              label: 'Company Setup' },
-          { href: '/company/onboarding',         label: 'Onboarding Studio' },
-          { href: '/company/workforce-baseline', label: 'Workforce Baseline' },
-          { href: '/company/ingestion',          label: 'AI Ingestion' },
-          { href: '/company/uef-review',         label: 'UEF Review',    comingSoon: true },
-          { href: '/company/scoring',    label: 'Scoring Run',   comingSoon: true },
-          { href: '/company/reports',    label: 'Decision Pack', comingSoon: true },
-        ],
-      });
-    }
 
     groups.push({
       heading: 'Altro',
