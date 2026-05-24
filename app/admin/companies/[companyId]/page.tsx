@@ -11,6 +11,7 @@ import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSim
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { companyIntelligenceService } from '@/services/company-intelligence/CompanyIntelligenceService';
 import type { CompanyRiskLevel } from '@/services/company-intelligence/CompanyIntelligenceService';
+import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
 
 const SAFEGUARD_BADGE: Record<string, string> = {
   CLEAR:   'border-green-200 bg-green-50 text-green-700',
@@ -48,6 +49,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
   // BTI: KORA_ADMIN has full access
   const btiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(companyId, 'S1', 'KORA_ADMIN');
   const btiRecord = btiResult.allowed ? btiResult.record : undefined;
+
+  const dpFactoryStatus = reportFactoryService.getDecisionPackFactoryStatus(companyId);
+  const dpLatestVersion = reportFactoryService.getLatestDecisionPackVersion(companyId);
 
   workerProvisioningService.assertEmployerCannotViewIndividualPIB(companyId, '');
 
@@ -380,10 +384,115 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         )}
       </section>
 
-      {/* ── SECTION G: Access & Users ────────────────────────────────────────── */}
+      {/* ── SECTION G: Decision Pack Factory ────────────────────────────────── */}
+      <section className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">G — Decision Pack Factory</p>
+        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
+
+          {/* Status row */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
+            <div>
+              <p className="text-slate-400">Stato factory</p>
+              <span className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                dpFactoryStatus.latest_status === 'ready'                  ? 'bg-emerald-100 text-emerald-700' :
+                dpFactoryStatus.latest_status === 'advisor_review_required' ? 'bg-amber-100 text-amber-700' :
+                dpFactoryStatus.latest_status === 'data_review_required'    ? 'bg-orange-100 text-orange-700' :
+                dpFactoryStatus.latest_status === 'blocked'                 ? 'bg-rose-100 text-rose-700' :
+                'bg-slate-100 text-slate-500'
+              }`}>
+                {dpFactoryStatus.latest_status.replace(/_/g, ' ')}
+              </span>
+            </div>
+            <div>
+              <p className="text-slate-400">Può generare</p>
+              <p className={`font-semibold mt-0.5 ${dpFactoryStatus.can_generate ? 'text-emerald-700' : 'text-rose-600'}`}>
+                {dpFactoryStatus.can_generate ? 'Sì' : 'No'}
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-400">Export PDF</p>
+              <p className="text-slate-400 font-semibold mt-0.5">
+                {dpFactoryStatus.can_export_pdf ? 'Abilitato' : 'Non disponibile'}
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-400">Share link</p>
+              <p className="text-slate-400 font-semibold mt-0.5">
+                {dpFactoryStatus.can_share ? 'Abilitato' : 'Non disponibile'}
+              </p>
+            </div>
+          </div>
+
+          {/* Latest version */}
+          {dpLatestVersion ? (
+            <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] space-y-1">
+              <p className="font-semibold text-slate-600">Ultima versione: <span className="font-mono text-slate-500">{dpLatestVersion.version_id}</span></p>
+              {dpLatestVersion.title && <p className="text-slate-500">{dpLatestVersion.title}</p>}
+              <div className="flex flex-wrap gap-3 mt-1">
+                {dpLatestVersion.kora_index_value !== null && dpLatestVersion.kora_index_value !== undefined && (
+                  <span>KORA Index: <strong className="text-indigo-700">{dpLatestVersion.kora_index_value.toFixed(1)}</strong></span>
+                )}
+                {dpLatestVersion.confidence_score !== null && dpLatestVersion.confidence_score !== undefined && (
+                  <span>CS: <strong className="text-indigo-600">{(dpLatestVersion.confidence_score * 100).toFixed(0)}%</strong></span>
+                )}
+                {dpLatestVersion.activation_safeguard_status && (
+                  <span>Safeguard: <strong className={
+                    dpLatestVersion.activation_safeguard_status === 'CLEAR'   ? 'text-emerald-700' :
+                    dpLatestVersion.activation_safeguard_status === 'WARNING' ? 'text-amber-700' :
+                    'text-rose-600'
+                  }>{dpLatestVersion.activation_safeguard_status}</strong></span>
+                )}
+                <span className="text-slate-400">{dpLatestVersion.period}</span>
+              </div>
+              {dpLatestVersion.change_summary && (
+                <p className="text-slate-500 italic mt-1">{dpLatestVersion.change_summary}</p>
+              )}
+            </div>
+          ) : (
+            <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-400">
+              Nessuna versione Decision Pack generata per questa azienda.
+            </div>
+          )}
+
+          {/* Blocking reasons */}
+          {dpFactoryStatus.blocking_reasons.length > 0 && (
+            <div className="rounded border border-rose-100 bg-rose-50 px-3 py-2 space-y-1">
+              <p className="text-[10px] font-semibold text-rose-700">Blocking reasons:</p>
+              <ul className="list-disc list-inside space-y-0.5">
+                {dpFactoryStatus.blocking_reasons.map((r, i) => (
+                  <li key={i} className="text-[10px] text-rose-600">{r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Warnings */}
+          {dpFactoryStatus.warnings.length > 0 && (
+            <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2 space-y-1">
+              <p className="text-[10px] font-semibold text-amber-700">Avvisi:</p>
+              <ul className="list-disc list-inside space-y-0.5">
+                {dpFactoryStatus.warnings.map((w, i) => (
+                  <li key={i} className="text-[10px] text-amber-600">{w}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Next action */}
+          <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-600">
+            <span className="font-semibold text-slate-500">Prossima azione:</span>{' '}{dpFactoryStatus.next_action}
+          </div>
+
+          <p className="text-[9px] font-mono text-slate-300">
+            production_ready: false · synthetic_demo_data: true
+          </p>
+        </div>
+      </section>
+
+      {/* ── SECTION H: Access & Users ────────────────────────────────────────── */}
       <section className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          G — Access & Users — {companyAccounts.length} utenti
+          H — Access & Users — {companyAccounts.length} utenti
         </p>
         {companyAccounts.length === 0 ? (
           <div className="rounded border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-400">
@@ -463,10 +572,10 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         </div>
       </section>
 
-      {/* ── SECTION H: Worker Provisioning ──────────────────────────────────── */}
+      {/* ── SECTION I: Worker Provisioning ──────────────────────────────────── */}
       <section className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          H — Worker Provisioning
+          I — Worker Provisioning
         </p>
         <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
@@ -537,10 +646,10 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         )}
       </section>
 
-      {/* ── SECTION I: Lifecycle & Audit ─────────────────────────────────────── */}
+      {/* ── SECTION J: Lifecycle & Audit ─────────────────────────────────────── */}
       <section className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          I — Lifecycle / Audit — {auditEvents.length} eventi
+          J — Lifecycle / Audit — {auditEvents.length} eventi
         </p>
         {auditEvents.length === 0 ? (
           <div className="rounded border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-400">
@@ -583,7 +692,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
       </div>
 
       <p className="text-[10px] font-mono text-slate-300">
-        KORA Admin · synthetic_demo_data: true · company_id: {companyId} · Company Control Room v2
+        KORA Admin · synthetic_demo_data: true · company_id: {companyId} · Company Control Room v3
       </p>
     </div>
   );

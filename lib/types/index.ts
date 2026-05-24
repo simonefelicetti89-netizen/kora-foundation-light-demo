@@ -907,7 +907,46 @@ export type DecisionPackStatus =
   | 'advisor_review_required'
   | 'ready'
   | 'exported'
+  | 'archived'
+  | 'blocked';
+
+// Report Factory types
+export type DecisionPackVersionStatus =
+  | 'draft'
+  | 'ready'
+  | 'advisor_review_required'
+  | 'data_review_required'
+  | 'blocked'
   | 'archived';
+
+export type DecisionPackGenerationMode =
+  | 'synthetic_demo'
+  | 'foundation_light_preview'
+  | 'future_production';
+
+export interface DecisionPackFactoryStatus {
+  company_id: string;
+  tenant_id: string;
+  latest_version_id?: string;
+  latest_status: DecisionPackStatus;
+  can_generate: boolean;
+  can_export_pdf: boolean;
+  can_share: boolean;
+  blocking_reasons: string[];
+  warnings: string[];
+  next_action: string;
+}
+
+export interface DecisionPackChangeSummary {
+  from_version_id: string;
+  to_version_id: string;
+  kora_index_delta?: number;
+  confidence_delta?: number;
+  main_changes: string[];
+  methodology_changed: boolean;
+  data_sources_changed: boolean;
+  limitations_changed: boolean;
+}
 
 export type DecisionPackSectionCode =
   | 'cover'
@@ -996,6 +1035,21 @@ export interface DecisionPackVersion {
   advisor_review_status: string;
   data_readiness: string;
   export_status: string;
+  // V2 factory fields (optional for backwards compatibility)
+  tenant_id?: string;
+  title?: string;
+  generated_by_role?: string;
+  generation_mode?: DecisionPackGenerationMode;
+  kora_index_value?: number | null;
+  activation_safeguard_status?: string | null;
+  decision_pack_status?: string;
+  source_snapshot_ids?: string[];
+  sections_included?: string[];
+  limitations?: string[];
+  blocking_reasons?: string[];
+  change_summary?: string;
+  production_ready?: false;
+  synthetic_demo_data?: true;
 }
 
 export interface DecisionPackExportAction {
@@ -1004,6 +1058,12 @@ export interface DecisionPackExportAction {
   demo_only: boolean;
   disabled: boolean;
   note: string;
+  // V2 factory fields
+  action_id?: string;
+  type?: 'pdf' | 'share_link' | 'board_summary' | 'advisor_review' | 'archive';
+  enabled?: boolean;
+  reason_disabled?: string;
+  future_capability?: boolean;
 }
 
 export interface CompanyDecisionPack {

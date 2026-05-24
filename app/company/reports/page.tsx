@@ -2,7 +2,10 @@
 
 import { useDemoState } from '@/lib/demo-state';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
+import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
+import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { tenantService } from '@/services/tenant/TenantService';
 import { DecisionPackHero } from '@/components/reports/DecisionPackHero';
 import { EligibilitySummaryReport } from '@/components/reports/EligibilitySummaryReport';
 import { BudgetImpactReport } from '@/components/reports/BudgetImpactReport';
@@ -11,48 +14,58 @@ import { PrivacyBoundaryNote } from '@/components/reports/PrivacyBoundaryNote';
 import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
 import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
-import type { DecisionPackSection, DecisionPackMetric, DecisionPackInsight, DecisionPackRecommendation, DecisionPackStatus } from '@/lib/types';
+import type {
+  DecisionPackSection, DecisionPackMetric, DecisionPackInsight,
+  DecisionPackRecommendation, DecisionPackStatus, DecisionPackVersion,
+} from '@/lib/types';
 
-// ── Section navigation config ──────────────────────────────────────────────────
+// ── Section navigation ────────────────────────────────────────────────────────
 
 const SECTION_NAV = [
-  { id: 'cover',                    label: 'A · Cover' },
-  { id: 'executive_summary',        label: 'B · Executive' },
-  { id: 'kora_index_v3',            label: 'C · KORA Index' },
-  { id: 'dynamic_scoring_preview',  label: 'D · Preview' },
-  { id: 'eligibility_gate',         label: 'E · Eligibility' },
-  { id: 'budget_to_human_impact',   label: 'F · BTI' },
-  { id: 'economic_relief',          label: 'G · Relief' },
-  { id: 'uef_review_data_quality',  label: 'H · UEF' },
-  { id: 'people_context_hr_kpi',    label: 'I · People' },
-  { id: 'workforce_activation',     label: 'J · Workforce' },
-  { id: 'pillar_analysis',          label: 'K · Pillar' },
-  { id: 'recommendations',          label: 'L · Rec.' },
-  { id: 'ninety_day_action_plan',   label: 'M · 90gg' },
-  { id: 'methodology_boundaries',   label: 'N · Metod.' },
+  { id: 'executive_summary',       label: 'B · Executive' },
+  { id: 'kora_index_v3',           label: 'C · KORA Index' },
+  { id: 'dynamic_scoring_preview', label: 'D · Preview' },
+  { id: 'eligibility_gate',        label: 'E · Eligibility' },
+  { id: 'budget_to_human_impact',  label: 'F · BTI' },
+  { id: 'economic_relief',         label: 'G · Relief' },
+  { id: 'uef_review_data_quality', label: 'H · UEF' },
+  { id: 'people_context_hr_kpi',   label: 'I · People' },
+  { id: 'workforce_activation',    label: 'J · Workforce' },
+  { id: 'pillar_analysis',         label: 'K · Pillar' },
+  { id: 'recommendations',         label: 'L · Rec.' },
+  { id: 'ninety_day_action_plan',  label: 'M · 90gg' },
+  { id: 'methodology_boundaries',  label: 'N · Metodologia' },
 ];
 
-// ── Status display ─────────────────────────────────────────────────────────────
+// ── Status display ────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<DecisionPackStatus, string> = {
   draft:                   'Bozza',
   data_review_required:    'Dati in revisione',
-  advisor_review_required: 'Revisione advisor consigliata',
+  advisor_review_required: 'Revisione advisor',
   ready:                   'Pronto',
   exported:                'Esportato',
   archived:                'Archiviato',
+  blocked:                 'Bloccato',
 };
 
 const STATUS_STYLES: Record<DecisionPackStatus, string> = {
   data_review_required:    'bg-rose-50 text-rose-700 border-rose-200',
   advisor_review_required: 'bg-amber-50 text-amber-700 border-amber-200',
   ready:                   'bg-emerald-50 text-emerald-700 border-emerald-200',
-  draft:                   'bg-slate-50 text-slate-600 border-slate-200',
-  exported:                'bg-indigo-50 text-indigo-700 border-indigo-200',
-  archived:                'bg-slate-50 text-slate-500 border-slate-200',
+  draft:                   'bg-slate-50 text-slate-500 border-slate-200',
+  exported:                'bg-indigo-50 text-indigo-600 border-indigo-200',
+  archived:                'bg-slate-50 text-slate-400 border-slate-200',
+  blocked:                 'bg-rose-50 text-rose-600 border-rose-200',
 };
 
-// ── Generic section renderer ───────────────────────────────────────────────────
+const SAFEGUARD_STYLES: Record<string, string> = {
+  CLEAR:   'bg-emerald-50 text-emerald-700 border-emerald-200',
+  WARNING: 'bg-amber-50 text-amber-700 border-amber-200',
+  FLAGGED: 'bg-rose-50 text-rose-700 border-rose-200',
+};
+
+// ── Generic content renderers ─────────────────────────────────────────────────
 
 function MetricGrid({ metrics }: { metrics: DecisionPackMetric[] }) {
   if (!metrics.length) return null;
@@ -121,12 +134,8 @@ function RecList({ recommendations }: { recommendations: DecisionPackRecommendat
           <div className="flex items-start justify-between gap-2">
             <p className="text-xs font-semibold text-slate-800">{rec.title}</p>
             <div className="flex shrink-0 gap-1.5 items-center">
-              <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIORITY_TAG[rec.priority]}`}>
-                {rec.priority}
-              </span>
-              <span className="rounded bg-slate-100 border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-500">
-                {rec.horizon}
-              </span>
+              <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIORITY_TAG[rec.priority]}`}>{rec.priority}</span>
+              <span className="rounded bg-slate-100 border border-slate-200 px-1.5 py-0.5 text-[10px] text-slate-500">{rec.horizon}</span>
             </div>
           </div>
           <p className="text-xs text-slate-600">{rec.recommended_action}</p>
@@ -140,27 +149,17 @@ function RecList({ recommendations }: { recommendations: DecisionPackRecommendat
 function SectionBlock({ section, children }: { section: DecisionPackSection; children?: React.ReactNode }) {
   return (
     <div id={section.code} className="scroll-mt-24 space-y-4">
-      <div className="flex items-start gap-3">
-        <div className="space-y-0.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">
-              {section.code}
-            </span>
-            {section.audience.map((a) => (
-              <span key={a} className="rounded bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 text-[10px] text-indigo-600">
-                {a}
-              </span>
-            ))}
-          </div>
-          <h3 className="text-base font-bold text-slate-900">{section.title}</h3>
-          {section.subtitle && (
-            <p className="text-xs text-slate-500">{section.subtitle}</p>
-          )}
+      <div className="space-y-0.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">{section.code}</span>
+          {section.audience.map((a) => (
+            <span key={a} className="rounded bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 text-[10px] text-indigo-600">{a}</span>
+          ))}
         </div>
+        <h3 className="text-base font-bold text-slate-900">{section.title}</h3>
+        {section.subtitle && <p className="text-xs text-slate-500">{section.subtitle}</p>}
       </div>
-      {section.summary && (
-        <p className="text-sm text-slate-600 leading-relaxed">{section.summary}</p>
-      )}
+      {section.summary && <p className="text-sm text-slate-600 leading-relaxed">{section.summary}</p>}
       {children ?? (
         <>
           <MetricGrid metrics={section.metrics} />
@@ -174,8 +173,7 @@ function SectionBlock({ section, children }: { section: DecisionPackSection; chi
           <ul className="space-y-1">
             {section.limitations.filter(Boolean).map((l, i) => (
               <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
-                <span className="text-slate-300 shrink-0">·</span>
-                {l}
+                <span className="text-slate-300 shrink-0">·</span>{l}
               </li>
             ))}
           </ul>
@@ -192,312 +190,583 @@ function SectionDivider() {
   return <div className="border-t border-slate-100 pt-6 mt-2" />;
 }
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+// ── Version card ──────────────────────────────────────────────────────────────
 
-// C-07: Reports — KORA Company Decision Pack
+function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLatest: boolean }) {
+  return (
+    <div className={`rounded-xl border p-4 space-y-3 transition-colors ${
+      isLatest
+        ? 'border-indigo-200 bg-indigo-50'
+        : 'border-slate-200 bg-white'
+    }`}>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <p className="text-[10px] font-mono text-slate-400">{version.version_id}</p>
+            {isLatest && (
+              <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wide">
+                Corrente
+              </span>
+            )}
+          </div>
+          <p className="text-sm font-semibold text-slate-800 mt-1">
+            {version.title ?? `Decision Pack · ${version.period}`}
+          </p>
+          <p className="text-[11px] text-slate-500 mt-0.5">{version.period}</p>
+        </div>
+        <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap ${STATUS_STYLES[version.status]}`}>
+          {STATUS_LABELS[version.status]}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 text-[10px]">
+        {version.kora_index_value !== null && version.kora_index_value !== undefined ? (
+          <div>
+            <p className="text-slate-400">KORA Index</p>
+            <p className="font-bold text-indigo-700 text-base">{version.kora_index_value}</p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-slate-400">KORA Index</p>
+            <p className="text-slate-300">—</p>
+          </div>
+        )}
+        {version.confidence_score > 0 && (
+          <div>
+            <p className="text-slate-400">Confidence</p>
+            <p className="font-semibold text-slate-700">{(version.confidence_score * 100).toFixed(0)}%</p>
+          </div>
+        )}
+        {version.activation_safeguard_status && (
+          <div>
+            <p className="text-slate-400">Safeguard</p>
+            <span className={`rounded border px-1 py-0.5 text-[9px] font-semibold ${SAFEGUARD_STYLES[version.activation_safeguard_status] ?? 'border-slate-200 text-slate-500'}`}>
+              {version.activation_safeguard_status}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {version.change_summary && (
+        <p className="text-[11px] text-slate-600 leading-relaxed border-t border-slate-100 pt-2">
+          {version.change_summary}
+        </p>
+      )}
+
+      <div className="flex items-center justify-between text-[10px] text-slate-400">
+        <span>{new Date(version.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+        {version.sections_included && version.sections_included.length > 0 && (
+          <span>{version.sections_included.length} sezioni · {version.data_readiness} readiness</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+// C-07: Reports — KORA Company Decision Pack Console
 export default function Reports() {
   const { activeScenario, activeRole } = useDemoState();
   const COMPANY_ID = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
 
-  const pack = reportGeneratorService.getCurrentCompanyDecisionPack(COMPANY_ID, activeScenario);
-  const sectionMap = Object.fromEntries(pack.sections.map((s) => [s.code, s]));
+  // Factory layer
+  const factoryStatus = reportFactoryService.getDecisionPackFactoryStatus(COMPANY_ID);
+  const versionHistory = reportFactoryService.getDecisionPackVersionHistory(COMPANY_ID);
+  const latestVersion = versionHistory[0] ?? null;
+  const exportActions = reportFactoryService.getDecisionPackExportActions(COMPANY_ID);
+  const limitations = reportFactoryService.getDecisionPackLimitations(COMPANY_ID);
 
-  const safeguardExp = pack.explanation?.safeguard_explanation;
+  // Company metadata
+  const tenant = tenantService.getTenant(COMPANY_ID);
+  const companyName = tenant?.company_name ?? COMPANY_ID;
+
+  // Determine if we can render the full report
+  const koraIndex = scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, activeScenario)
+    ?? scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, 'S1');
+  const hasFullReport = koraIndex !== null;
+
+  // Full pack — only generated when KORA Index is available
+  const pack = hasFullReport ? reportGeneratorService.getCurrentCompanyDecisionPack(COMPANY_ID, activeScenario) : null;
+  const sectionMap = pack ? Object.fromEntries(pack.sections.map((s) => [s.code, s])) : {};
+  const safeguardExp = pack?.explanation?.safeguard_explanation;
+
+  // Change summary between v1 and v2 (Meridiana only)
+  const changeSummary = versionHistory.length >= 2
+    ? reportFactoryService.getDecisionPackChangeSummary(COMPANY_ID, versionHistory[1].version_id, versionHistory[0].version_id)
+    : null;
 
   return (
-    <div className="space-y-8 max-w-4xl">
+    <div className="space-y-0 max-w-4xl">
 
-      {/* ── Page header ── */}
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">KORA Company Decision Pack</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Report diagnostico unificato — {pack.company_name} · {pack.period}
-        </p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <span className="inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-            Dati sintetici demo
-          </span>
-          <span className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-mono text-slate-500">
-            {pack.methodology_version}
-          </span>
-          <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-semibold ${STATUS_STYLES[pack.status]}`}>
-            {STATUS_LABELS[pack.status]}
-          </span>
-          <span className="inline-flex items-center gap-1 rounded border border-rose-100 bg-rose-50 px-2 py-0.5 text-[11px] font-mono text-rose-600">
-            production_ready: false
-          </span>
-        </div>
-      </div>
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SECTION A — REPORT HERO
+          Premium cover: company identity + governance metadata
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 p-8 mb-6 text-white">
+        <div className="flex flex-col gap-6">
 
-      {/* ── Section navigation ── */}
-      <div className="overflow-x-auto -mx-4 px-4 print:hidden">
-        <div className="flex gap-1.5 min-w-max pb-1">
-          {SECTION_NAV.map((nav) => (
-            <a
-              key={nav.id}
-              href={`#${nav.id}`}
-              className="rounded border border-slate-200 bg-white px-2.5 py-1 text-[11px] font-medium text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors whitespace-nowrap"
-            >
-              {nav.label}
-            </a>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Export actions ── */}
-      <div className="flex flex-wrap gap-2 items-center print:hidden">
-        {pack.export_actions.map((action) => (
-          <button
-            key={action.label}
-            disabled={action.disabled}
-            title={action.note}
-            className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-400 cursor-not-allowed opacity-60"
-          >
-            {action.label}
-            <span className="rounded bg-slate-100 px-1 py-0.5 text-[9px] font-bold text-slate-400 uppercase tracking-wide">
-              demo
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {/* ── A: Cover ── */}
-      {sectionMap.cover && (
-        <SectionBlock section={sectionMap.cover} />
-      )}
-
-      <SectionDivider />
-
-      {/* ── B: Executive Summary ── */}
-      {sectionMap.executive_summary && (
-        <SectionBlock section={sectionMap.executive_summary}>
-          <DecisionPackHero
-            output={pack.kora_index_output}
-            s1Output={pack.s1_kora_output}
-            s2Output={pack.s2_kora_output}
-            activeScenario={activeScenario}
-            safeguard={pack.activation_safeguard}
-            confidence={pack.confidence_record}
-            s1Macroblocks={pack.s1_macroblocks}
-            s2Macroblocks={pack.s2_macroblocks}
-          />
-          <InsightList insights={sectionMap.executive_summary.insights} />
-          <RecList recommendations={sectionMap.executive_summary.recommendations} />
-        </SectionBlock>
-      )}
-
-      <SectionDivider />
-
-      {/* ── C: KORA Index v3 ── */}
-      {sectionMap.kora_index_v3 && (
-        <SectionBlock section={sectionMap.kora_index_v3}>
-          <KoraIndexHero output={pack.kora_index_output} />
-          <ComponentBreakdown components={pack.kora_index_output.components} />
-          <InsightList insights={sectionMap.kora_index_v3.insights} />
-          <RecList recommendations={sectionMap.kora_index_v3.recommendations} />
-          {sectionMap.kora_index_v3.limitations.length > 0 && (
-            <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Limiti</p>
-              <ul className="space-y-1">
-                {sectionMap.kora_index_v3.limitations.filter(Boolean).map((l, i) => (
-                  <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
-                    <span className="text-slate-300 shrink-0">·</span>{l}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </SectionBlock>
-      )}
-
-      <SectionDivider />
-
-      {/* ── D: Dynamic Scoring Preview ── */}
-      {sectionMap.dynamic_scoring_preview && (
-        <SectionBlock section={sectionMap.dynamic_scoring_preview}>
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
-            <p className="font-bold">calculation_mode: {pack.dynamic_preview.calculation_mode}</p>
-            <p>production_ready: false · official_index_source: {pack.dynamic_preview.official_index_source}</p>
-            <p>Preview Score: <strong>{pack.dynamic_preview.dynamic_preview_score}</strong>/100 · Canonical: <strong>{pack.dynamic_preview.canonical_kora_index}</strong>/100 · Delta: {pack.dynamic_preview.delta_vs_canonical >= 0 ? '+' : ''}{pack.dynamic_preview.delta_vs_canonical}</p>
+          {/* Eyebrow */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-300 mb-1">
+              KORA Company Decision Pack · Foundation Light v0.1
+            </p>
+            <h1 className="text-2xl font-bold text-white leading-tight">{companyName}</h1>
+            <p className="text-sm text-slate-300 mt-1">
+              Decision Pack versionato — output direzionale company-scoped.
+              Foundation Light v0.1 è in pre-empirical calibration.
+            </p>
           </div>
-          <MetricGrid metrics={sectionMap.dynamic_scoring_preview.metrics} />
-          <InsightList insights={sectionMap.dynamic_scoring_preview.insights} />
-          {sectionMap.dynamic_scoring_preview.limitations.length > 0 && (
-            <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Limiti</p>
-              <ul className="space-y-1">
-                {sectionMap.dynamic_scoring_preview.limitations.filter(Boolean).map((l, i) => (
-                  <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
-                    <span className="text-slate-300 shrink-0">·</span>{l}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </SectionBlock>
-      )}
 
-      <SectionDivider />
+          {/* Key metrics row */}
+          <div className="flex flex-wrap items-center gap-4">
+            {hasFullReport && koraIndex ? (
+              <>
+                <div className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">KORA Index v3</p>
+                  <p className="text-3xl font-bold text-white mt-0.5">{koraIndex.kora_index_value}</p>
+                  <p className="text-[10px] text-indigo-300">/100</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">Confidence Score</p>
+                  <p className="text-2xl font-bold text-white mt-0.5">{(koraIndex.confidence_score * 100).toFixed(0)}%</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">Activation Safeguard</p>
+                  <span className={`mt-1 inline-block rounded border px-2 py-0.5 text-[11px] font-bold ${SAFEGUARD_STYLES[koraIndex.safeguard_status] ?? 'border-white/20 text-white'}`}>
+                    {koraIndex.safeguard_status}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-5 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-300">KORA Index</p>
+                <p className="text-sm font-semibold text-amber-200 mt-0.5">Non disponibile</p>
+                <p className="text-[10px] text-amber-300/70 mt-0.5">{factoryStatus.next_action}</p>
+              </div>
+            )}
 
-      {/* ── E: Eligibility Gate ── */}
-      {sectionMap.eligibility_gate && (
-        <SectionBlock section={sectionMap.eligibility_gate}>
-          <EligibilitySummaryReport summary={pack.eligibility_gate} />
-          <InsightList insights={sectionMap.eligibility_gate.insights} />
-        </SectionBlock>
-      )}
+            {latestVersion && (
+              <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">Versione corrente</p>
+                <p className="text-xs font-mono text-white mt-0.5">{latestVersion.version_id}</p>
+                <span className={`mt-1 inline-block rounded border px-1.5 py-0.5 text-[10px] font-semibold ${STATUS_STYLES[latestVersion.status]}`}>
+                  {STATUS_LABELS[latestVersion.status]}
+                </span>
+              </div>
+            )}
+          </div>
 
-      <SectionDivider />
-
-      {/* ── F: Budget-to-Human-Impact ── */}
-      {sectionMap.budget_to_human_impact && (
-        <SectionBlock section={sectionMap.budget_to_human_impact}>
-          <BudgetImpactReport
-            s1Record={pack.bti_record_s1 ?? undefined}
-            s2Record={pack.bti_record_s2 ?? undefined}
-            s1Macroblocks={pack.s1_macroblocks}
-            s2Macroblocks={pack.s2_macroblocks}
-            activeScenario={activeScenario}
-          />
-          <InsightList insights={sectionMap.budget_to_human_impact.insights} />
-          <RecList recommendations={sectionMap.budget_to_human_impact.recommendations} />
-        </SectionBlock>
-      )}
-
-      <SectionDivider />
-
-      {/* ── G: Economic Relief ── */}
-      {sectionMap.economic_relief && (
-        <SectionBlock section={sectionMap.economic_relief} />
-      )}
-
-      <SectionDivider />
-
-      {/* ── H: UEF Review & Data Quality ── */}
-      {sectionMap.uef_review_data_quality && (
-        <SectionBlock section={sectionMap.uef_review_data_quality} />
-      )}
-
-      <SectionDivider />
-
-      {/* ── I: People Context & HR KPI ── */}
-      {sectionMap.people_context_hr_kpi && (
-        <SectionBlock section={sectionMap.people_context_hr_kpi} />
-      )}
-
-      <SectionDivider />
-
-      {/* ── J: Workforce Activation ── */}
-      {sectionMap.workforce_activation && (
-        <SectionBlock section={sectionMap.workforce_activation}>
-          <ActivationSafeguardPanel
-            result={pack.activation_safeguard}
-            explanation={safeguardExp}
-          />
-          <MetricGrid metrics={sectionMap.workforce_activation.metrics} />
-          <InsightList insights={sectionMap.workforce_activation.insights} />
-          <RecList recommendations={sectionMap.workforce_activation.recommendations} />
-        </SectionBlock>
-      )}
-
-      <SectionDivider />
-
-      {/* ── K: Pillar Analysis ── */}
-      {sectionMap.pillar_analysis && (
-        <SectionBlock section={sectionMap.pillar_analysis} />
-      )}
-
-      <SectionDivider />
-
-      {/* ── L: Recommendations ── */}
-      {sectionMap.recommendations && (
-        <SectionBlock section={sectionMap.recommendations}>
-          <RecList recommendations={sectionMap.recommendations.recommendations} />
-          {sectionMap.recommendations.limitations.length > 0 && (
-            <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
-              <ul className="space-y-1">
-                {sectionMap.recommendations.limitations.map((l, i) => (
-                  <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
-                    <span className="text-slate-300 shrink-0">·</span>{l}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </SectionBlock>
-      )}
-
-      <SectionDivider />
-
-      {/* ── M: 90-Day Action Plan ── */}
-      {sectionMap.ninety_day_action_plan && (
-        <SectionBlock section={sectionMap.ninety_day_action_plan}>
-          <ActionPlanReport
-            s1Record={pack.bti_record_s1 ?? undefined}
-            s2Record={pack.bti_record_s2 ?? undefined}
-            recommendations={pack.bti_recommendations}
-            eligibilityGate={pack.eligibility_gate}
-          />
-          <RecList recommendations={sectionMap.ninety_day_action_plan.recommendations} />
-        </SectionBlock>
-      )}
-
-      <SectionDivider />
-
-      {/* ── N: Methodology & Boundaries ── */}
-      {sectionMap.methodology_boundaries && (
-        <SectionBlock section={sectionMap.methodology_boundaries} />
-      )}
-
-      {/* ── Privacy boundary ── */}
-      <PrivacyBoundaryNote />
-
-      {/* ── Version history ── */}
-      <div className="border-t border-slate-200 pt-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">Versioni Report</p>
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-slate-600">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left py-1.5 pr-4 font-semibold text-slate-400">ID</th>
-                <th className="text-left py-1.5 pr-4 font-semibold text-slate-400">Periodo</th>
-                <th className="text-left py-1.5 pr-4 font-semibold text-slate-400">Stato</th>
-                <th className="text-left py-1.5 pr-4 font-semibold text-slate-400">CS</th>
-                <th className="text-left py-1.5 pr-4 font-semibold text-slate-400">Advisor</th>
-                <th className="text-left py-1.5 font-semibold text-slate-400">Generato</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pack.version_history.map((v) => (
-                <tr key={v.version_id} className="border-b border-slate-50 hover:bg-slate-50">
-                  <td className="py-2 pr-4 font-mono text-[11px] text-slate-500">{v.version_id}</td>
-                  <td className="py-2 pr-4">{v.period}</td>
-                  <td className="py-2 pr-4">
-                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${STATUS_STYLES[v.status]}`}>
-                      {STATUS_LABELS[v.status]}
-                    </span>
-                  </td>
-                  <td className="py-2 pr-4">{Math.round(v.confidence_score * 100)}%</td>
-                  <td className="py-2 pr-4">{v.advisor_review_status}</td>
-                  <td className="py-2 text-slate-400">{new Date(v.created_at).toLocaleDateString('it-IT')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Governance footer */}
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/10">
+            {pack && (
+              <span className="text-[10px] font-mono text-slate-400">{pack.methodology_version}</span>
+            )}
+            <span className="text-[10px] font-mono text-amber-400/80">pre_empirical_calibration</span>
+            <span className="text-[10px] font-mono text-rose-400/80">production_ready: false</span>
+            <span className="text-[10px] font-mono text-slate-400">synthetic_demo_data: true</span>
+            {pack && <span className="text-[10px] font-mono text-slate-400">{pack.period}</span>}
+          </div>
         </div>
       </div>
 
-      {/* ── Pack limitations ── */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <p className="text-xs font-semibold text-slate-500 mb-2">Limiti del Report</p>
-        <ul className="space-y-1.5">
-          {pack.limitations.map((l, i) => (
-            <li key={i} className="flex gap-1.5 text-[11px] text-slate-500 leading-relaxed">
-              <span className="text-slate-300 shrink-0 mt-0.5">·</span>
-              {l}
-            </li>
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SECTION B — FACTORY STATUS CARDS
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="mb-6 space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+          Stato Report Factory
+        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          {[
+            {
+              label: 'Stato Pack',
+              value: STATUS_LABELS[factoryStatus.latest_status] ?? factoryStatus.latest_status,
+              style: STATUS_STYLES[factoryStatus.latest_status] ?? 'border-slate-200 bg-slate-50 text-slate-500',
+            },
+            {
+              label: 'Può generare',
+              value: factoryStatus.can_generate ? 'Sì' : 'No',
+              style: factoryStatus.can_generate ? 'border-green-200 bg-green-50 text-green-700' : 'border-rose-200 bg-rose-50 text-rose-600',
+            },
+            {
+              label: 'PDF Export',
+              value: 'In arrivo',
+              style: 'border-slate-200 bg-slate-50 text-slate-400',
+            },
+            {
+              label: 'Share Link',
+              value: 'Futuro',
+              style: 'border-slate-200 bg-slate-50 text-slate-400',
+            },
+            {
+              label: 'Versioni',
+              value: String(versionHistory.length),
+              style: versionHistory.length > 0 ? 'border-indigo-200 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400',
+            },
+          ].map(({ label, value, style }) => (
+            <div key={label} className={`rounded-lg border px-3 py-2.5 text-center ${style}`}>
+              <p className="text-[9px] font-semibold uppercase tracking-wide opacity-70 leading-tight">{label}</p>
+              <p className="text-sm font-bold mt-1">{value}</p>
+            </div>
           ))}
-        </ul>
+        </div>
+
+        {/* Blocking reasons */}
+        {factoryStatus.blocking_reasons.length > 0 && (
+          <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 space-y-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-700">Blocchi attivi</p>
+            {factoryStatus.blocking_reasons.map((r, i) => (
+              <p key={i} className="text-xs text-rose-800">· {r}</p>
+            ))}
+          </div>
+        )}
+
+        {/* Warnings */}
+        {factoryStatus.warnings.length > 0 && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 space-y-1">
+            {factoryStatus.warnings.map((w, i) => (
+              <p key={i} className="text-xs text-amber-800">· {w}</p>
+            ))}
+          </div>
+        )}
+
+        {/* Next action */}
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600">
+          <span className="font-semibold text-slate-500">Prossima azione:</span>{' '}{factoryStatus.next_action}
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SECTION C — VERSION TIMELINE
+      ═══════════════════════════════════════════════════════════════════════ */}
+      {versionHistory.length > 0 && (
+        <div className="mb-6 space-y-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            Cronologia Versioni · {versionHistory.length} {versionHistory.length === 1 ? 'versione' : 'versioni'}
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {versionHistory.map((version, idx) => (
+              <VersionCard key={version.version_id} version={version} isLatest={idx === 0} />
+            ))}
+          </div>
+
+          {/* Change summary between versions */}
+          {changeSummary && changeSummary.main_changes.length > 0 && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 space-y-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+                Variazioni v1 → v2
+              </p>
+              {changeSummary.main_changes.map((c, i) => (
+                <p key={i} className="text-xs text-emerald-800">· {c}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          NO-DATA STATE — for companies without KORA Index
+      ═══════════════════════════════════════════════════════════════════════ */}
+      {!hasFullReport && (
+        <div className="mb-6 space-y-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center space-y-3">
+            <p className="text-base font-semibold text-slate-700">Decision Pack non ancora disponibile</p>
+            <p className="text-sm text-slate-500 max-w-lg mx-auto">
+              Il Decision Pack sarà generato quando data intake, validazione e scoring readiness saranno completati.
+            </p>
+            {factoryStatus.blocking_reasons.length > 0 && (
+              <div className="text-left max-w-lg mx-auto space-y-1 pt-2">
+                {factoryStatus.blocking_reasons.map((r, i) => (
+                  <p key={i} className="text-xs text-slate-600">· {r}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SECTION D — CHAPTER NAVIGATION (only when report available)
+      ═══════════════════════════════════════════════════════════════════════ */}
+      {hasFullReport && (
+        <div className="mb-6 space-y-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            Sezioni Decision Pack
+          </p>
+          <div className="overflow-x-auto -mx-1 px-1 print:hidden">
+            <div className="flex gap-1.5 min-w-max pb-1">
+              {SECTION_NAV.map((nav) => (
+                <a
+                  key={nav.id}
+                  href={`#${nav.id}`}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors whitespace-nowrap"
+                >
+                  {nav.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SECTION E — EXPORT / SHARING PANEL
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="mb-6 space-y-3 print:hidden">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+          Export & Distribuzione
+        </p>
+        <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+          <p className="text-xs text-slate-500">
+            PDF Export sarà abilitato nel blocco successivo. Questa sezione prepara versioning, governance e readiness del Decision Pack.
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+            {exportActions.map((action) => (
+              <div
+                key={action.action_id ?? action.label}
+                className={`rounded-lg border p-3 text-center space-y-1.5 ${
+                  action.enabled
+                    ? 'border-indigo-200 bg-indigo-50 cursor-pointer hover:bg-indigo-100 transition-colors'
+                    : 'border-slate-200 bg-slate-50 opacity-60'
+                }`}
+              >
+                <p className="text-xs font-semibold text-slate-600">{action.label}</p>
+                {action.future_capability && (
+                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 uppercase tracking-wide">
+                    In arrivo
+                  </span>
+                )}
+                {!action.future_capability && !action.enabled && (
+                  <span className="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-bold text-slate-500 uppercase tracking-wide">
+                    Demo
+                  </span>
+                )}
+                {action.reason_disabled && (
+                  <p className="text-[9px] text-slate-400 leading-tight">{action.reason_disabled}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SECTION F — REPORT BODY (14 sections, full content)
+          Only rendered when KORA Index is available
+      ═══════════════════════════════════════════════════════════════════════ */}
+      {hasFullReport && pack && (
+        <div className="space-y-8">
+          <div className="border-t border-slate-200 pt-6">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-6">
+              Contenuto Decision Pack · {pack.sections.length} sezioni
+            </p>
+
+            {/* B: Executive Summary */}
+            {sectionMap.executive_summary && (
+              <>
+                <SectionBlock section={sectionMap.executive_summary}>
+                  <DecisionPackHero
+                    output={pack.kora_index_output}
+                    s1Output={pack.s1_kora_output}
+                    s2Output={pack.s2_kora_output}
+                    activeScenario={activeScenario}
+                    safeguard={pack.activation_safeguard}
+                    confidence={pack.confidence_record}
+                    s1Macroblocks={pack.s1_macroblocks}
+                    s2Macroblocks={pack.s2_macroblocks}
+                  />
+                  <InsightList insights={sectionMap.executive_summary.insights} />
+                  <RecList recommendations={sectionMap.executive_summary.recommendations} />
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* C: KORA Index v3 */}
+            {sectionMap.kora_index_v3 && (
+              <>
+                <SectionBlock section={sectionMap.kora_index_v3}>
+                  <KoraIndexHero output={pack.kora_index_output} />
+                  <ComponentBreakdown components={pack.kora_index_output.components} />
+                  <InsightList insights={sectionMap.kora_index_v3.insights} />
+                  <RecList recommendations={sectionMap.kora_index_v3.recommendations} />
+                  {sectionMap.kora_index_v3.limitations.length > 0 && (
+                    <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
+                      <ul className="space-y-1">
+                        {sectionMap.kora_index_v3.limitations.filter(Boolean).map((l, i) => (
+                          <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
+                            <span className="text-slate-300 shrink-0">·</span>{l}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* D: Dynamic Scoring Preview */}
+            {sectionMap.dynamic_scoring_preview && (
+              <>
+                <SectionBlock section={sectionMap.dynamic_scoring_preview}>
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
+                    <p className="font-bold">calculation_mode: {pack.dynamic_preview.calculation_mode}</p>
+                    <p>production_ready: false · official_index_source: {pack.dynamic_preview.official_index_source}</p>
+                    <p>Preview Score: <strong>{pack.dynamic_preview.dynamic_preview_score}</strong>/100 · Canonical: <strong>{pack.dynamic_preview.canonical_kora_index}</strong>/100 · Delta: {pack.dynamic_preview.delta_vs_canonical >= 0 ? '+' : ''}{pack.dynamic_preview.delta_vs_canonical}</p>
+                  </div>
+                  <MetricGrid metrics={sectionMap.dynamic_scoring_preview.metrics} />
+                  <InsightList insights={sectionMap.dynamic_scoring_preview.insights} />
+                  {sectionMap.dynamic_scoring_preview.limitations.length > 0 && (
+                    <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
+                      <ul className="space-y-1">
+                        {sectionMap.dynamic_scoring_preview.limitations.filter(Boolean).map((l, i) => (
+                          <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
+                            <span className="text-slate-300 shrink-0">·</span>{l}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* E: Eligibility Gate */}
+            {sectionMap.eligibility_gate && (
+              <>
+                <SectionBlock section={sectionMap.eligibility_gate}>
+                  <EligibilitySummaryReport summary={pack.eligibility_gate} />
+                  <InsightList insights={sectionMap.eligibility_gate.insights} />
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* F: BTI */}
+            {sectionMap.budget_to_human_impact && (
+              <>
+                <SectionBlock section={sectionMap.budget_to_human_impact}>
+                  <BudgetImpactReport
+                    s1Record={pack.bti_record_s1 ?? undefined}
+                    s2Record={pack.bti_record_s2 ?? undefined}
+                    s1Macroblocks={pack.s1_macroblocks}
+                    s2Macroblocks={pack.s2_macroblocks}
+                    activeScenario={activeScenario}
+                  />
+                  <InsightList insights={sectionMap.budget_to_human_impact.insights} />
+                  <RecList recommendations={sectionMap.budget_to_human_impact.recommendations} />
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* G–K: plain sections */}
+            {(['economic_relief', 'uef_review_data_quality', 'people_context_hr_kpi', 'pillar_analysis'] as const).map((code) => (
+              sectionMap[code] ? (
+                <div key={code}>
+                  <SectionBlock section={sectionMap[code]} />
+                  <SectionDivider />
+                </div>
+              ) : null
+            ))}
+
+            {/* J: Workforce Activation */}
+            {sectionMap.workforce_activation && (
+              <>
+                <SectionBlock section={sectionMap.workforce_activation}>
+                  <ActivationSafeguardPanel result={pack.activation_safeguard} explanation={safeguardExp} />
+                  <MetricGrid metrics={sectionMap.workforce_activation.metrics} />
+                  <InsightList insights={sectionMap.workforce_activation.insights} />
+                  <RecList recommendations={sectionMap.workforce_activation.recommendations} />
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* L: Recommendations */}
+            {sectionMap.recommendations && (
+              <>
+                <SectionBlock section={sectionMap.recommendations}>
+                  <RecList recommendations={sectionMap.recommendations.recommendations} />
+                  {sectionMap.recommendations.limitations.length > 0 && (
+                    <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
+                      <ul className="space-y-1">
+                        {sectionMap.recommendations.limitations.map((l, i) => (
+                          <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
+                            <span className="text-slate-300 shrink-0">·</span>{l}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* M: 90-Day Action Plan */}
+            {sectionMap.ninety_day_action_plan && (
+              <>
+                <SectionBlock section={sectionMap.ninety_day_action_plan}>
+                  <ActionPlanReport
+                    s1Record={pack.bti_record_s1 ?? undefined}
+                    s2Record={pack.bti_record_s2 ?? undefined}
+                    recommendations={pack.bti_recommendations}
+                    eligibilityGate={pack.eligibility_gate}
+                  />
+                  <RecList recommendations={sectionMap.ninety_day_action_plan.recommendations} />
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* N: Methodology Boundaries */}
+            {sectionMap.methodology_boundaries && (
+              <SectionBlock section={sectionMap.methodology_boundaries} />
+            )}
+          </div>
+
+          <PrivacyBoundaryNote />
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SECTION G — LIMITATIONS / METHODOLOGY BOUNDARIES
+      ═══════════════════════════════════════════════════════════════════════ */}
+      <div className="mt-8 rounded-xl border border-indigo-100 bg-indigo-50 p-6 space-y-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500 mb-1">
+            Confini Metodologici
+          </p>
+          <p className="text-sm font-semibold text-indigo-900">
+            Decision Pack misura l&apos;organizzazione, non gli individui.
+          </p>
+        </div>
+        <div className="space-y-2 text-xs text-indigo-800 leading-relaxed">
+          <p>· Il PIB individuale resta privato al lavoratore. Nessun dato individuale è incluso nel Decision Pack.</p>
+          <p>· Foundation Light v0.1 è in pre-empirical calibration: output direzionale, non certificazione pubblica o attestazione regolatoria.</p>
+          <p>· KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.</p>
+        </div>
+        {limitations.length > 0 && (
+          <div className="border-t border-indigo-200 pt-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400 mb-2">
+              Limitazioni specifiche
+            </p>
+            <ul className="space-y-1">
+              {limitations.slice(0, 6).map((l, i) => (
+                <li key={i} className="flex gap-1.5 text-[11px] text-indigo-700">
+                  <span className="text-indigo-300 shrink-0">·</span>{l}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        <p className="text-[10px] font-mono text-indigo-400">
+          {pack?.methodology_version ?? 'KORA Methodology v0.1'} · pre_empirical_calibration · production_ready: false · synthetic_demo_data: true
+        </p>
       </div>
 
     </div>
