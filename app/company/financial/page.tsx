@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { financialGovernanceService } from '@/services/financial-governance/FinancialGovernanceService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { cn } from '@/lib/utils';
@@ -261,7 +262,7 @@ export default function FinancialGovernance() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
 
-  const COMPANY_ID = 'meridiana-group';
+  const COMPANY_ID = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
 
   const result = financialGovernanceService.getFinancialGovernance(
     COMPANY_ID, activeScenario, activeRole,

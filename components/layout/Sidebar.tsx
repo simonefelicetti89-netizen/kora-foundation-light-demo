@@ -46,6 +46,7 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/admin/companies/setup',                label: 'Enterprise Onboarding' },
           { href: '/admin/companies/onboarding',           label: 'Onboarding Studio' },
           { href: '/admin/companies/workforce-baseline',   label: 'Workforce Baseline' },
+          { href: '/admin/companies/data-intake',          label: 'Data Intake' },
         ],
       },
       {

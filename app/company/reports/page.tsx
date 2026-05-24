@@ -2,6 +2,7 @@
 
 import { useDemoState } from '@/lib/demo-state';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { DecisionPackHero } from '@/components/reports/DecisionPackHero';
 import { EligibilitySummaryReport } from '@/components/reports/EligibilitySummaryReport';
 import { BudgetImpactReport } from '@/components/reports/BudgetImpactReport';
@@ -11,8 +12,6 @@ import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
 import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
 import type { DecisionPackSection, DecisionPackMetric, DecisionPackInsight, DecisionPackRecommendation, DecisionPackStatus } from '@/lib/types';
-
-const COMPANY_ID = 'meridiana-group';
 
 // ── Section navigation config ──────────────────────────────────────────────────
 
@@ -197,7 +196,8 @@ function SectionDivider() {
 
 // C-07: Reports — KORA Company Decision Pack
 export default function Reports() {
-  const { activeScenario } = useDemoState();
+  const { activeScenario, activeRole } = useDemoState();
+  const COMPANY_ID = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
 
   const pack = reportGeneratorService.getCurrentCompanyDecisionPack(COMPANY_ID, activeScenario);
   const sectionMap = Object.fromEntries(pack.sections.map((s) => [s.code, s]));

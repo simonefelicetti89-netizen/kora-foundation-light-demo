@@ -6,6 +6,7 @@ import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { lifecycleService } from '@/services/lifecycle/LifecycleService';
+import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 import type { KoraTenant, KoraUserAccount, WorkerRosterRecord } from '@/lib/types';
 
 const ONBOARDING_PILL: Record<string, string> = {
@@ -32,6 +33,7 @@ export default function AdminCompanyRegistry() {
   const allWorkers: WorkerRosterRecord[] = tenants.flatMap((t) =>
     workerProvisioningService.getWorkersForCompany(t.company_id),
   );
+  const allIntakeSummaries = tenants.map((t) => companyDataIntakeService.getDataReadinessSummary(t.company_id));
   const pm = {
     total_tenants:          tenants.length,
     active_tenants:         tenants.filter((t) => t.tenant_status === 'active').length,
@@ -47,15 +49,26 @@ export default function AdminCompanyRegistry() {
     my_kora_enabled:        allWorkers.filter((w) => w.my_kora_enabled).length,
     pib_private_enabled:    allWorkers.filter((w) => w.pib_private_enabled).length,
     privacy_suppressed:     allWorkers.filter((w) => !w.privacy_threshold_cluster).length,
-    decision_packs_ready:   tenants.filter((t) => t.decision_pack_status === 'ready').length,
-    kora_index_available:   tenants.filter((t) => t.tenant_status === 'active' && t.data_readiness_status === 'high').length,
-    lifecycle_events:       lifecycleService.getAllEvents().length,
+    decision_packs_ready:           tenants.filter((t) => t.decision_pack_status === 'ready').length,
+    kora_index_available:           tenants.filter((t) => t.tenant_status === 'active' && t.data_readiness_status === 'high').length,
+    lifecycle_events:               lifecycleService.getAllEvents().length,
+    tenants_intake_not_started:     allIntakeSummaries.filter((s) => s.intake_status === 'not_started').length,
+    tenants_validation_required:    allIntakeSummaries.filter((s) => s.intake_status === 'validation_required' || s.intake_status === 'blocked_missing_required_fields').length,
+    tenants_ready_for_ingestion:    allIntakeSummaries.filter((s) => s.intake_status === 'ready_for_ingestion').length,
+    total_raw_rows:                 allIntakeSummaries.reduce((acc, s) => acc + s.total_rows, 0),
+    ready_for_ingestion_rows:       allIntakeSummaries.reduce((acc, s) => acc + s.ready_for_ingestion_rows, 0),
+    blocked_candidate_rows:         allIntakeSummaries.reduce((acc, s) => acc + s.blocked_candidate_rows, 0),
+    limited_candidate_rows:         allIntakeSummaries.reduce((acc, s) => acc + s.limited_candidate_rows, 0),
+    structural_policy_rows:         allIntakeSummaries.reduce((acc, s) => acc + s.structural_policy_rows, 0),
+    review_required_rows:           allIntakeSummaries.reduce((acc, s) => acc + s.review_required_rows, 0),
   };
   const riskFlags = [
     pm.tenants_missing_admin > 0  && `${pm.tenants_missing_admin} aziend${pm.tenants_missing_admin > 1 ? 'e' : 'a'} senza primo admin`,
     pm.draft_tenants > 0          && `${pm.draft_tenants} tenant in bozza — onboarding pendente`,
     pm.workers_invited > 0        && `${pm.workers_invited} lavoratori invitati in attesa di accettazione`,
-    pm.tenants_no_roster > 0      && `${pm.tenants_no_roster} aziend${pm.tenants_no_roster > 1 ? 'e' : 'a'} senza roster lavoratori`,
+    pm.tenants_no_roster > 0             && `${pm.tenants_no_roster} aziend${pm.tenants_no_roster > 1 ? 'e' : 'a'} senza roster lavoratori`,
+    pm.tenants_intake_not_started > 0    && `${pm.tenants_intake_not_started} aziend${pm.tenants_intake_not_started > 1 ? 'e' : 'a'} con data intake non avviato`,
+    pm.tenants_validation_required > 0   && `${pm.tenants_validation_required} aziend${pm.tenants_validation_required > 1 ? 'e' : 'a'} con dati in attesa di validazione`,
   ].filter(Boolean) as string[];
 
   function handleAction(
@@ -131,6 +144,29 @@ export default function AdminCompanyRegistry() {
           ))}
         </div>
 
+        {/* Data Intake metrics */}
+        <div>
+          <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-1.5">Data Intake Pipeline</p>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-9">
+            {[
+              ['Non avviato',        String(pm.tenants_intake_not_started),  pm.tenants_intake_not_started > 0 ? 'text-slate-500 bg-slate-50 border-slate-200' : 'text-slate-400 bg-white border-slate-100'],
+              ['Validazione req.',   String(pm.tenants_validation_required), pm.tenants_validation_required > 0 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-slate-400 bg-white border-slate-100'],
+              ['Pronti ingestion',   String(pm.tenants_ready_for_ingestion), pm.tenants_ready_for_ingestion > 0 ? 'text-green-700 bg-green-50 border-green-200' : 'text-slate-400 bg-white border-slate-100'],
+              ['Righe totali',       String(pm.total_raw_rows),             'text-slate-700 bg-white border-slate-200'],
+              ['Pronte',             String(pm.ready_for_ingestion_rows),   pm.ready_for_ingestion_rows > 0 ? 'text-green-700 bg-green-50 border-green-200' : 'text-slate-400 bg-white border-slate-100'],
+              ['Review req.',        String(pm.review_required_rows),       pm.review_required_rows > 0 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-slate-400 bg-white border-slate-100'],
+              ['Bloccate',           String(pm.blocked_candidate_rows),     pm.blocked_candidate_rows > 0 ? 'text-rose-700 bg-rose-50 border-rose-200' : 'text-slate-400 bg-white border-slate-100'],
+              ['Limitate',           String(pm.limited_candidate_rows),     'text-slate-600 bg-white border-slate-200'],
+              ['Policy strutturali', String(pm.structural_policy_rows),     'text-indigo-700 bg-indigo-50 border-indigo-200'],
+            ].map(([label, value, style]) => (
+              <div key={label as string} className={`rounded-lg border p-2 text-center ${style}`}>
+                <p className="text-[9px] leading-tight opacity-70">{label}</p>
+                <p className="text-base font-bold mt-0.5">{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Risk flags */}
         {riskFlags.length > 0 && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 space-y-1">
@@ -181,6 +217,7 @@ export default function AdminCompanyRegistry() {
             const adminAccounts = companyAccounts.filter((u) => u.role === 'COMPANY_ADMIN');
             const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(tenant.company_id);
             const statusBadge = tenantService.getTenantStatusBadge(tenant.tenant_status);
+            const intakeSummary = companyDataIntakeService.getDataReadinessSummary(tenant.company_id);
             const isFeedbackTarget = feedback?.tenantId === tenant.tenant_id;
             const isDemoReference = ['meridiana-group', 'alba-manufacturing'].includes(tenant.company_id);
 
@@ -240,6 +277,35 @@ export default function AdminCompanyRegistry() {
                   <div><p className="text-slate-400">My KORA attivi</p><p className="text-slate-700 font-medium">{workerSummary.my_kora_enabled_count}</p></div>
                 </div>
 
+                {/* Data Intake status */}
+                <div className="flex items-center justify-between gap-3 rounded border border-slate-100 bg-slate-50 px-2.5 py-1.5 text-[10px]">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-slate-500">Data Intake:</span>
+                    <span className={`rounded px-1.5 py-0.5 font-semibold ${
+                      intakeSummary.intake_status === 'ready_for_ingestion'          ? 'bg-green-100 text-green-700' :
+                      intakeSummary.intake_status === 'validation_required'          ? 'bg-amber-100 text-amber-700' :
+                      intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'bg-rose-100 text-rose-700' :
+                      intakeSummary.intake_status === 'partial'                      ? 'bg-blue-100 text-blue-700' :
+                      intakeSummary.intake_status === 'draft'                        ? 'bg-indigo-100 text-indigo-600' :
+                      'bg-slate-100 text-slate-500'
+                    }`}>
+                      {intakeSummary.intake_status.replace(/_/g, ' ')}
+                    </span>
+                    {intakeSummary.total_rows > 0 && (
+                      <span className="text-slate-500">
+                        {intakeSummary.total_rows} righe · {intakeSummary.ready_for_ingestion_rows} pronte
+                        {intakeSummary.review_required_rows > 0 && ` · ${intakeSummary.review_required_rows} review`}
+                      </span>
+                    )}
+                  </div>
+                  <Link
+                    href={`/admin/companies/${tenant.company_id}/data-intake`}
+                    className="font-semibold text-indigo-600 hover:underline whitespace-nowrap"
+                  >
+                    Data Intake →
+                  </Link>
+                </div>
+
                 {/* Next action */}
                 <div className="rounded border border-slate-100 bg-slate-50 px-2.5 py-1.5 text-[10px] text-slate-600">
                   <span className="font-semibold text-slate-500">Prossima azione:</span>{' '}
@@ -260,6 +326,10 @@ export default function AdminCompanyRegistry() {
                   <Link href={`/admin/companies/${tenant.company_id}`}
                     className="text-xs font-semibold text-indigo-600 hover:underline">
                     Dettaglio →
+                  </Link>
+                  <Link href={`/admin/companies/${tenant.company_id}/data-intake`}
+                    className="text-xs font-semibold text-violet-600 hover:underline">
+                    Data Intake
                   </Link>
                   <Link href="/admin/companies/setup"
                     className="text-xs text-slate-500 hover:text-slate-700 hover:underline">

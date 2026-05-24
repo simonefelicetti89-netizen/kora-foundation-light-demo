@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
 import { isAdminRole } from '@/lib/permissions';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { ingestionSimulatorService } from '@/services/ingestion-simulator/IngestionSimulatorService';
 import { cn } from '@/lib/utils';
 
@@ -245,11 +246,12 @@ export default function DataEvidence() {
   const { activeScenario } = useScenario();
   const isAdmin            = isAdminRole(activeRole);
 
-  const batches      = ingestionSimulatorService.getSourceBatches('meridiana-group', activeScenario);
-  const completeness = ingestionSimulatorService.getSourceCompletenessSummary('meridiana-group', activeScenario);
-  const mapping      = ingestionSimulatorService.getMappingConfidenceSummary('meridiana-group', activeScenario);
-  const pending      = ingestionSimulatorService.getPendingReviewSummary('meridiana-group', activeScenario);
-  const evidence     = ingestionSimulatorService.getEvidenceCoverageSummary('meridiana-group', activeScenario);
+  const companyId    = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const batches      = ingestionSimulatorService.getSourceBatches(companyId, activeScenario);
+  const completeness = ingestionSimulatorService.getSourceCompletenessSummary(companyId, activeScenario);
+  const mapping      = ingestionSimulatorService.getMappingConfidenceSummary(companyId, activeScenario);
+  const pending      = ingestionSimulatorService.getPendingReviewSummary(companyId, activeScenario);
+  const evidence     = ingestionSimulatorService.getEvidenceCoverageSummary(companyId, activeScenario);
 
   return (
     <div className="space-y-8">

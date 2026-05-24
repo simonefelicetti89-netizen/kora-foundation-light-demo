@@ -6,6 +6,7 @@ import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { lifecycleService } from '@/services/lifecycle/LifecycleService';
+import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 
 // A-19: KORA Admin — Company Detail (Enterprise SaaS Backbone)
 export default function AdminCompanyDetail({ params }: { params: { companyId: string } }) {
@@ -14,6 +15,7 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
 
   const tenant = tenantService.getTenant(companyId);
   const readiness = tenant ? tenantService.getTenantReadiness(companyId) : null;
+  const intakeSummary = companyDataIntakeService.getDataReadinessSummary(companyId);
   const companyAccounts = accountProvisioningService.getAccountsForCompany(companyId);
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(companyId);
   const workerRoster = workerProvisioningService.getWorkersForCompany(companyId);
@@ -139,6 +141,54 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
           </div>
         </section>
       )}
+
+      {/* ── SECTION: Data Intake ── */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Data Intake — Pre-Ingestion</p>
+          <Link
+            href={`/admin/companies/${companyId}/data-intake`}
+            className="rounded-md bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-700 transition-colors"
+          >
+            Apri Data Intake →
+          </Link>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
+          {intakeSummary.total_rows === 0 && intakeSummary.intake_status === 'not_started' ? (
+            <div className="rounded border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+              <p className="font-semibold mb-1">Data intake non avviato</p>
+              <p>Nessun piano fiscale né batch dati caricato. Accedi a Data Intake per definire il perimetro fiscale e caricare i programmi.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
+                <div>
+                  <p className="text-slate-400">Stato intake</p>
+                  <span className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+                    intakeSummary.intake_status === 'ready_for_ingestion'             ? 'bg-green-100 text-green-700' :
+                    intakeSummary.intake_status === 'validation_required'             ? 'bg-amber-100 text-amber-700' :
+                    intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'bg-rose-100 text-rose-700' :
+                    intakeSummary.intake_status === 'partial'                         ? 'bg-blue-100 text-blue-700' :
+                    'bg-slate-100 text-slate-500'
+                  }`}>
+                    {intakeSummary.intake_status.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                <div><p className="text-slate-400">Piano fiscale</p><p className="text-slate-700 font-medium mt-0.5">{intakeSummary.fiscal_plan_status.replace(/_/g, ' ')}</p></div>
+                <div><p className="text-slate-400">Batch caricati</p><p className="text-slate-700 font-bold text-sm mt-0.5">{intakeSummary.batch_count}</p></div>
+                <div><p className="text-slate-400">Righe totali</p><p className="text-slate-700 font-bold text-sm mt-0.5">{intakeSummary.total_rows}</p></div>
+                <div><p className="text-slate-400">Pronte ingestion</p><p className="text-green-700 font-bold text-sm mt-0.5">{intakeSummary.ready_for_ingestion_rows}</p></div>
+                <div><p className="text-slate-400">Candidate eligible</p><p className="text-indigo-700 font-bold text-sm mt-0.5">{intakeSummary.eligible_candidate_rows}</p></div>
+                <div><p className="text-slate-400">Review required</p><p className={`font-bold text-sm mt-0.5 ${intakeSummary.review_required_rows > 0 ? 'text-amber-700' : 'text-slate-500'}`}>{intakeSummary.review_required_rows}</p></div>
+                <div><p className="text-slate-400">Quality score</p><p className="text-slate-700 font-bold text-sm mt-0.5">{(intakeSummary.data_quality_score * 100).toFixed(0)}%</p></div>
+              </div>
+              <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-600">
+                <span className="font-semibold text-slate-500">Prossima azione:</span>{' '}{intakeSummary.next_action}
+              </div>
+            </>
+          )}
+        </div>
+      </section>
 
       {/* ── SECTION: Access & Users ── */}
       <section className="space-y-3">
@@ -348,6 +398,9 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
       <div className="border-t border-slate-100 pt-4 flex items-center gap-4 flex-wrap">
         <Link href="/admin/companies" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
           ← Company Registry
+        </Link>
+        <Link href={`/admin/companies/${companyId}/data-intake`} className="text-xs text-violet-600 hover:text-violet-800 underline underline-offset-2">
+          Data Intake →
         </Link>
         <Link href="/admin/companies/setup" className="text-xs text-indigo-500 hover:text-indigo-700 underline underline-offset-2">
           Enterprise Onboarding →
