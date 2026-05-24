@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F5F6FA;  /* KORA Gray Base */
+  --foreground: #06032B;  /* KORA Cosmic Blue */
 }
 
 @theme inline {
@@ -10,12 +10,27 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* ── KORA core brand palette ──────────────────────────────────────── */
+  /* CONFIRMED from SVG brandmark/wordmark in docs/Documenti grafici KORA/ */
+  --color-kora-violet:      #6156F5;
+  --color-kora-cosmic-blue: #06032B;
+  /* INFERRED from official color swatch screenshot — TODO: designer confirm */
+  --color-kora-gray-base:   #F5F6FA;
+  --color-kora-fun-green:   #C8FF47;
+
+  /* ── Pillar colors — DERIVED from Violet per Doc 17; provisional ─── */
+  --color-pillar-life:       #5185EE;
+  --color-pillar-growth:     #7B61F5;
+  --color-pillar-connection: #9574EA;
+  --color-pillar-impact:     #C8FF47;
+  --color-pillar-legacy:     #3F3A8F;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #06032B;  /* KORA Cosmic Blue — dark surface */
+    --foreground: #F5F6FA;  /* KORA Gray Base — dark text */
   }
 }
 

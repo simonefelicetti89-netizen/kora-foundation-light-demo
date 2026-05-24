@@ -163,7 +163,7 @@ The official KORA brand assets are located in `docs/Documenti grafici KORA/`:
 - `01_Horizontal/01_DIGITAL/` — Horizontal logo (brandmark + wordmark) in 4 variants: DARK, CLEAR, BLACK, WHITE
 - `02_Brandmark/01_DIGITAL/` — Brandmark alone in 4 variants: DARK, CLEAR, BLACK, WHITE
 
-**Horizontal logo:** Brandmark ring + lowercase "kora™" wordmark. Confirmed in brand guide screenshots — Violet brandmark ring + Cosmic Blue "kora™" text in the CLEAR variant; white brandmark + white "kora™" in the DARK variant.
+**Horizontal logo:** Brandmark ring + lowercase "kora™" wordmark. Confirmed in SVG source files — Violet brandmark ring + Cosmic Blue "kora™" text in the DARK variant (dark-colored elements, for use on light backgrounds); white brandmark + white "kora™" in the CLEAR variant (clear/light elements, for use on dark backgrounds). The variant name refers to the color of the logo elements, not the background color.
 
 **Brandmark alone:** The organic ring form without the wordmark. Used at small sizes, as app icon/favicon, and as a standalone signal element.
 
@@ -171,8 +171,8 @@ The official KORA brand assets are located in `docs/Documenti grafici KORA/`:
 
 | Variant | When to use |
 |---|---|
-| **CLEAR** (Violet brandmark + Cosmic Blue text) | Light backgrounds — app shell header (desktop), report documents, landing page on white, PDF cover |
-| **DARK** (white brandmark + white text) | Dark backgrounds — PDF cover hero, landing hero (dark), investor deck dark slides, dark card contexts |
+| **DARK** (Violet brandmark + Cosmic Blue text) | Light backgrounds — app shell header (desktop), report documents, landing page on white, PDF body |
+| **CLEAR** (white brandmark + white text) | Dark backgrounds — PDF cover hero, landing hero (dark), investor deck dark slides, dark card contexts |
 | **BLACK** (black brandmark + black text) | Print, monochrome contexts, grayscale documents |
 | **WHITE** (white brandmark + white text) | Dark backgrounds where full-white is the only option (e.g., dark print) |
 
@@ -180,16 +180,16 @@ The official KORA brand assets are located in `docs/Documenti grafici KORA/`:
 
 | Surface | Logo usage | Variant |
 |---|---|---|
-| App shell sidebar header | Horizontal logo, small-to-medium | CLEAR on light sidebar |
-| App shell top bar (if used) | Horizontal logo or brandmark alone | CLEAR |
-| Browser favicon | Brandmark in Violet on light square | CLEAR brandmark |
-| Report cover (PDF) | Horizontal logo, prominent | DARK on dark hero section |
-| Decision Pack export header | Horizontal logo | CLEAR on white document |
-| Shared View (company viewer) | Horizontal logo | CLEAR |
-| Landing page hero | Horizontal logo, large | DARK on dark/cosmic hero |
+| App shell sidebar header | Horizontal logo, small-to-medium | DARK on light sidebar |
+| App shell top bar (if used) | Horizontal logo or brandmark alone | DARK |
+| Browser favicon | Brandmark in Violet on light square | DARK brandmark |
+| Report cover (PDF) | Horizontal logo, prominent | CLEAR on dark hero section |
+| Decision Pack export header | Horizontal logo | DARK on white document |
+| Shared View (company viewer) | Horizontal logo | DARK |
+| Landing page hero | Horizontal logo, large | CLEAR on dark/cosmic hero |
 | Investor pitch | Horizontal logo | Appropriate to slide background |
-| Email notifications | Horizontal logo | CLEAR on white |
-| Loading / splash screen | Brandmark alone, animated ring | CLEAR or DARK |
+| Email notifications | Horizontal logo | DARK on white |
+| Loading / splash screen | Brandmark alone, animated ring | DARK or CLEAR |
 
 ### 4.4 Logo safe area
 
@@ -785,7 +785,7 @@ When a Decision Pack shows semester-over-semester comparison:
 ### 14.3 Decision Pack sections — visual hierarchy
 
 Required sections in this visual order:
-1. **Cover** — Inverse/dark hero (Cosmic Blue), horizontal logo DARK variant, company name, period, version
+1. **Cover** — Inverse/dark hero (Cosmic Blue), horizontal logo CLEAR variant, company name, period, version
 2. **Calibration and limitations** — always on page 2 or as persistent banner, non-suppressible
 3. **Executive summary** — Register 2 headline + body summary
 4. **KORA Index v3** — Full ring visualization, all 10 components, Confidence Score, Safeguard status
@@ -804,7 +804,7 @@ When PDF export is implemented (future build, blocked until confirmed), the visu
 - KORA color palette, not generic report gray
 - Generous white space, not compressed data density
 - Company logo alongside KORA logo on cover (co-branding rules TBD)
-- Horizontal logo DARK variant on dark cover section
+- Horizontal logo CLEAR variant on dark cover section
 - Print-safe colors (confirm Cosmic Blue and Violet CMYK values with NEXT/designer)
 
 > ⚠️ PDF is currently excluded from Foundation Light build scope. This section governs the design brief when PDF is implemented.
@@ -1134,7 +1134,7 @@ The following values, decisions, and assets must be confirmed with the NEXT desi
 - [ ] Minimum display sizes for horizontal logo and brandmark
 - [ ] Co-branding rules with company logos (relevant for report covers)
 - [ ] Animated brandmark specification (if any) — for loading/splash
-- [ ] Dark mode logo rules — is the DARK variant used in the app when OS dark mode is active?
+- [ ] Dark mode logo rules — is the CLEAR variant used in the app when OS dark mode is active?
 
 ### Platform-specific decisions
 
@@ -1188,7 +1188,7 @@ Apply board-document visual language to Decision Pack screens. Implement cover/h
 **Output:** Decision Pack surfaces feel like board-ready intelligence, not dashboard sections.
 
 ### Phase 6 — Landing Page Premium
-Apply dark/cosmic aesthetic (Cosmic Blue + orbital visual metaphor), DARK logo variant, Register 2 typography for hero claim, editorial rhythm.
+Apply dark/cosmic aesthetic (Cosmic Blue + orbital visual metaphor), CLEAR logo variant, Register 2 typography for hero claim, editorial rhythm.
 **Output:** Landing page earns the "Non un semplice tool. Un'infrastruttura." positioning visually.
 
 ### Phase 7 — PDF Export Direction (post-Foundation Light)
@@ -1281,13 +1281,13 @@ The following facts are confirmed by direct visual inspection of the brand guide
 
 1. **Color palette** (`09.33.03.png`): Gray Base (near-white cool gray, 40%) · Cosmic Blue (very deep dark navy, 30%) · Violet (medium periwinkle blue-violet, 20%) · Fun Green (bright chartreuse-lime, 10%). Tints and shades of each are visible below the primary swatches.
 
-2. **Logo on dark** (`09.32.44.png`): DARK variant shows white horizontal logo (white brandmark ring + white "kora™") on a very dark teal-cosmic background with orbital ring texture. Confirms the orbital/cosmic visual metaphor for dark hero contexts.
+2. **Logo on dark** (`09.32.44.png`): CLEAR variant shows white horizontal logo (white brandmark ring + white "kora™") on a very dark teal-cosmic background with orbital ring texture. Confirms the orbital/cosmic visual metaphor for dark hero contexts.
 
-3. **Brandmark in Violet** (`09.33.15.png`): CLEAR variant brandmark shown alone on white background in Violet color. Also shows browser favicon: small brandmark in white on a Violet/blue square app icon. Confirms favicon usage.
+3. **Brandmark in Violet** (`09.33.15.png`): DARK variant brandmark shown alone on white background in Violet color. Also shows browser favicon: small brandmark in white on a Violet/blue square app icon. Confirms favicon usage.
 
 4. **Typography specimen** (`09.33.36.png`): Confirms the serif italic Register 2 in action — *"Un'infrastruttura."* is in serif italic. The rest of the H1 headline is in geometric sans (Register 3 Bold). Body and Detail text in Register 3. CTA button "Scopri Kora" in Violet, pill-shaped with white text. Labeled hierarchy: H1, Body, Detail, Button, Link.
 
-5. **Logo safe area** (`09.33.44.png`): Horizontal CLEAR logo (Violet brandmark + Cosmic Blue "kora™" text). Four cyan corner markers showing X module spacing. Confirms X module = brandmark height as minimum safe area.
+5. **Logo safe area** (`09.33.44.png`): Horizontal DARK logo (Violet brandmark + Cosmic Blue "kora™" text). Four cyan corner markers showing X module spacing. Confirms X module = brandmark height as minimum safe area.
 
 6. **Three canonical forms** (`09.33.51.png`): Squircle (large rounded rectangle), Globe wireframe (sphere with lat/long grid lines), Organic blob (irregular organic form). All in light gray on white background — neutral and structural.
 

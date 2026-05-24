@@ -5,14 +5,15 @@ import {
 } from 'recharts';
 import { cn } from '@/lib/utils';
 import { PILLAR_CODES, PILLAR_LABELS } from '@/lib/constants/kora';
+import { PILLAR_COLORS as KORA_PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 import type { PillarCode } from '@/lib/types';
 
 const PILLAR_COLORS: Record<string, string> = {
-  LIFE:       '#22c55e',
-  GROWTH:     '#3b82f6',
-  CONNECTION: '#a855f7',
-  IMPACT:     '#f97316',
-  LEGACY:     '#f59e0b',
+  LIFE:       KORA_PILLAR_COLORS.LIFE,
+  GROWTH:     KORA_PILLAR_COLORS.GROWTH,
+  CONNECTION: KORA_PILLAR_COLORS.CONNECTION,
+  IMPACT:     KORA_PILLAR_COLORS.IMPACT,
+  LEGACY:     KORA_PILLAR_COLORS.LEGACY,
 };
 
 interface PillarChartProps {

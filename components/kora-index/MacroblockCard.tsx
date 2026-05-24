@@ -18,10 +18,10 @@ const MACROBLOCK_EXPLANATIONS: Record<string, string> = {
 };
 
 const MACROBLOCK_COLORS: Record<MacroblockCode, { border: string; accent: string; bar: string; score: string; bg: string }> = {
-  REACH:   { border: 'border-blue-200',   accent: 'text-blue-700',   bar: 'bg-blue-500',   score: 'text-blue-900',   bg: 'bg-blue-50/40' },
-  QUALITY: { border: 'border-violet-200', accent: 'text-violet-700', bar: 'bg-violet-500', score: 'text-violet-900', bg: 'bg-violet-50/40' },
-  EQUITY:  { border: 'border-teal-200',   accent: 'text-teal-700',   bar: 'bg-teal-500',   score: 'text-teal-900',   bg: 'bg-teal-50/40' },
-  BTI:     { border: 'border-amber-200',  accent: 'text-amber-700',  bar: 'bg-amber-500',  score: 'text-amber-900',  bg: 'bg-amber-50/40' },
+  REACH:   { border: 'border-violet-200', accent: 'text-violet-700', bar: 'bg-violet-500',  score: 'text-violet-900',  bg: 'bg-violet-50/40' },
+  QUALITY: { border: 'border-indigo-200', accent: 'text-indigo-700', bar: 'bg-indigo-500',  score: 'text-indigo-900',  bg: 'bg-indigo-50/40' },
+  EQUITY:  { border: 'border-slate-200',  accent: 'text-slate-600',  bar: 'bg-slate-400',   score: 'text-slate-800',   bg: 'bg-slate-50/40' },
+  BTI:     { border: 'border-purple-200', accent: 'text-purple-700', bar: 'bg-purple-500',  score: 'text-purple-900',  bg: 'bg-purple-50/40' },
 };
 
 function ScoreBar({ score, barClass }: { score: number; barClass: string }) {

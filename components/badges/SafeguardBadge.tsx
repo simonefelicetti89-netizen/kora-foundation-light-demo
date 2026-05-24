@@ -9,7 +9,7 @@ interface SafeguardBadgeProps {
 }
 
 const SAFEGUARD_STYLES: Record<SafeguardStatus, string> = {
-  CLEAR: 'bg-green-100 text-green-800 border-green-300',
+  CLEAR:   'bg-kora-fun-green text-kora-cosmic-blue border-kora-fun-green',
   WARNING: 'bg-yellow-100 text-yellow-800 border-yellow-300',
   FLAGGED: 'bg-red-100 text-red-800 border-red-300',
 };
