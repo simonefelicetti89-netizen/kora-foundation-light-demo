@@ -11,6 +11,8 @@ import { NextActionCard } from '@/components/cards/NextActionCard';
 import { SafeguardBadge } from '@/components/badges/SafeguardBadge';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { tenantService } from '@/services/tenant/TenantService';
 import { cn } from '@/lib/utils';
 import type { PillarCode } from '@/lib/types';
 
@@ -175,12 +177,18 @@ export default function ExecutiveCockpit() {
   const { activeScenario } = useScenario();
   const isAdmin = isAdminRole(activeRole);
 
-  const output      = scoringSimulatorService.score('meridiana-group', activeScenario, '2025');
-  const aggregate   = scoringSimulatorService.getCompanyAggregate('meridiana-group', activeScenario);
-  const warnings    = explainabilityService.getWarnings('meridiana-group', activeScenario);
-  const actions     = explainabilityService.getNextBestActions('meridiana-group', activeScenario);
-  const weakComps   = explainabilityService.getTopWeakComponents('meridiana-group', activeScenario);
-  const strongComps = explainabilityService.getTopStrongComponents('meridiana-group', activeScenario);
+  // Resolve company from current demo user — company-scoped
+  const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
+  const companyId   = currentUser.company_id ?? 'meridiana-group';
+  const tenant      = tenantService.getTenant(companyId);
+  const hasKoraData = !!scoringSimulatorService.getKoraIndexOutput(companyId, activeScenario);
+
+  const output      = scoringSimulatorService.score(companyId, activeScenario, '2025');
+  const aggregate   = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
+  const warnings    = explainabilityService.getWarnings(companyId, activeScenario);
+  const actions     = explainabilityService.getNextBestActions(companyId, activeScenario);
+  const weakComps   = explainabilityService.getTopWeakComponents(companyId, activeScenario);
+  const strongComps = explainabilityService.getTopStrongComponents(companyId, activeScenario);
 
   const pillarData = aggregate?.pillar_distribution as Partial<Record<PillarCode, number>> | undefined;
 
@@ -222,6 +230,23 @@ export default function ExecutiveCockpit() {
           L&apos;azienda vede solo aggregati sopra soglia privacy. Non vede PIB individuali,
           timeline personali, scelte individuali o Dynamic Impact CV.
         </p>
+      </div>
+
+      {/* ── Company identity / demo label ────────────────────────────────────── */}
+      <div className="flex items-center gap-2 flex-wrap">
+        {tenant && (
+          <span className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
+            Azienda attiva: <span className="font-semibold">{tenant.company_name}</span>
+          </span>
+        )}
+        <span className="rounded border border-amber-100 bg-amber-50 px-2 py-1 text-[10px] text-amber-600">
+          Dataset demo company-scoped · synthetic_demo_data: true
+        </span>
+        {!hasKoraData && (
+          <span className="rounded border border-slate-200 bg-white px-2 py-1 text-[10px] text-slate-500">
+            KORA Index non ancora disponibile per questa azienda
+          </span>
+        )}
       </div>
 
       {/* ── Cosa puoi fare da qui ─────────────────────────────────────────────── */}
@@ -378,7 +403,37 @@ export default function ExecutiveCockpit() {
         </div>
       </div>
 
-      {/* ── Dashboard Operativo divider ───────────────────────────────────────── */}
+      {/* ── Dashboard Operativo (only if company has KORA Index data) ─────────── */}
+      {!hasKoraData && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 space-y-3">
+          <p className="text-sm font-semibold text-amber-800">KORA Index non ancora disponibile</p>
+          <p className="text-xs text-amber-700 leading-relaxed">
+            Questa azienda non ha ancora completato l&apos;onboarding dati.
+            Il KORA Index, il Decision Pack e i report saranno disponibili al termine della pipeline dati.
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 text-[10px]">
+            {[
+              ['Onboarding', tenant?.onboarding_status?.replace(/_/g, ' ') ?? 'non avviato'],
+              ['Readiness dati', tenant?.data_readiness_status ?? '—'],
+              ['Decision Pack', tenant?.decision_pack_status ?? '—'],
+              ['Tenant status', tenant?.tenant_status ?? '—'],
+              ['Prossima azione', tenant ? tenantService.getNextAction(tenant) : '—'],
+            ].map(([label, value]) => (
+              <div key={label as string}>
+                <p className="text-amber-600">{label}</p>
+                <p className="text-amber-800 font-semibold mt-0.5">{value}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-3 flex-wrap pt-1 border-t border-amber-200">
+            <span className="text-[10px] text-amber-600">
+              Contatta il tuo referente KORA per procedere con il caricamento dati e l&apos;avvio della pipeline.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {hasKoraData && (<>
       <div className="border-t border-slate-200 pt-2">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
           Dashboard Operativo
@@ -540,6 +595,7 @@ export default function ExecutiveCockpit() {
       <p className="text-xs text-slate-400">
         {output.methodology_version_id} · {output.calibration_status} · {output.reporting_period}
       </p>
+      </>)}
     </div>
   );
 }

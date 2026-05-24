@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { workforceBaselineService } from '@/services/workforce-baseline/WorkforceBaselineService';
+import { tenantService } from '@/services/tenant/TenantService';
 import type { WorkforceDimensionType } from '@/lib/types';
 
 const DIMENSION_LABELS: Record<WorkforceDimensionType, string> = {
@@ -40,21 +41,51 @@ const UPLOAD_STATUS_COLORS: Record<string, string> = {
   ready_for_aggregation:        'border-emerald-200 bg-emerald-50 text-emerald-700',
 };
 
-const DEMO_COMPANY_ID = 'meridiana-group';
-
 // A-18: KORA Admin — Workforce Baseline
 export default function AdminWorkforceBaselinePage() {
   const [activeDimension, setActiveDimension] = useState<WorkforceDimensionType>('department');
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('meridiana-group');
 
+  const tenants     = tenantService.getTenants();
   const baselines   = workforceBaselineService.getAvailableWorkforceBaselines();
-  const baseline    = workforceBaselineService.getWorkforceBaseline(DEMO_COMPANY_ID);
-  const batch       = workforceBaselineService.getUploadBatch(DEMO_COMPANY_ID);
-  const readiness   = workforceBaselineService.getWorkforceBaselineReadiness(DEMO_COMPANY_ID);
-  const validation  = workforceBaselineService.validateWorkforceBaseline(DEMO_COMPANY_ID);
-  const visibleGroups = workforceBaselineService.getGroupsByDimension(DEMO_COMPANY_ID, activeDimension);
-  const suppressed  = workforceBaselineService.getSuppressedGroups(DEMO_COMPANY_ID);
+  const baseline    = workforceBaselineService.getWorkforceBaseline(selectedCompanyId);
+  const batch       = workforceBaselineService.getUploadBatch(selectedCompanyId);
+  const readiness   = workforceBaselineService.getWorkforceBaselineReadiness(selectedCompanyId);
+  const validation  = workforceBaselineService.validateWorkforceBaseline(selectedCompanyId);
+  const visibleGroups = workforceBaselineService.getGroupsByDimension(selectedCompanyId, activeDimension);
+  const suppressed  = workforceBaselineService.getSuppressedGroups(selectedCompanyId);
 
-  if (!baseline) return <div className="p-8 text-sm text-slate-500">Workforce baseline non trovata.</div>;
+  const selectedTenant = tenants.find((t) => t.company_id === selectedCompanyId);
+
+  if (!baseline) {
+    return (
+      <div className="space-y-6 max-w-5xl">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">KORA Admin — Validazione Workforce</p>
+          <h1 className="text-xl font-bold text-slate-900 mt-0.5">Workforce Baseline</h1>
+        </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Azienda cliente</p>
+          <div className="flex flex-wrap gap-2">
+            {tenants.map((t) => {
+              const hasBaseline = baselines.some((b) => b.company_id === t.company_id);
+              return (
+                <button key={t.company_id} type="button" onClick={() => setSelectedCompanyId(t.company_id)}
+                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedCompanyId === t.company_id ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}>
+                  {t.company_name}{!hasBaseline && <span className="ml-1 text-[9px] text-slate-400">(nessuna baseline)</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-xs text-amber-800 space-y-2">
+          <p className="font-semibold">Baseline non ancora caricata</p>
+          <p>{selectedTenant?.company_name ?? selectedCompanyId} non ha ancora una workforce baseline.</p>
+          <p>Onboarding status: {selectedTenant?.onboarding_status?.replace(/_/g, ' ') ?? 'non avviato'}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 max-w-5xl">
@@ -83,18 +114,29 @@ export default function AdminWorkforceBaselinePage() {
       </div>
 
       {/* ── Company selector ── */}
-      {baselines.length > 1 && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Azienda</p>
-          <div className="flex flex-wrap gap-2">
-            {baselines.map((b) => (
-              <span key={b.company_id} className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600 font-medium">
-                {b.company_name}
-              </span>
-            ))}
-          </div>
+      <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Azienda cliente</p>
+        <div className="flex flex-wrap gap-2">
+          {tenants.map((t) => {
+            const hasBaseline = baselines.some((b) => b.company_id === t.company_id);
+            return (
+              <button
+                key={t.company_id}
+                type="button"
+                onClick={() => setSelectedCompanyId(t.company_id)}
+                className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
+                  selectedCompanyId === t.company_id
+                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                {t.company_name}
+                {!hasBaseline && <span className="ml-1 text-[9px] text-slate-400">(nessuna baseline)</span>}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       {/* ── Upload batch status ── */}
       {batch && (

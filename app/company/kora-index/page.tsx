@@ -19,13 +19,56 @@ import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSim
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { ingestionSimulatorService } from '@/services/ingestion-simulator/IngestionSimulatorService';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { tenantService } from '@/services/tenant/TenantService';
 import type { MacroblockScore } from '@/lib/types';
-
-const COMPANY_ID = 'meridiana-group';
 
 // C-02: KORA Index Detail — v3
 export default function KoraIndexDetail() {
   const { activeScenario, activeRole } = useDemoState();
+
+  // Resolve company from current demo user — company-scoped
+  const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
+  const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
+  const tenant      = tenantService.getTenant(COMPANY_ID);
+  const hasKoraData = !!scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, activeScenario);
+
+  // If this company has no KORA Index data yet, show onboarding-pending state
+  if (!hasKoraData) {
+    return (
+      <div className="space-y-6 max-w-3xl">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">KORA Index</p>
+          <h1 className="text-xl font-bold text-slate-900 mt-0.5">
+            {tenant?.company_name ?? COMPANY_ID}
+          </h1>
+        </div>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 space-y-3">
+          <p className="text-sm font-semibold text-amber-800">KORA Index non ancora disponibile</p>
+          <p className="text-xs text-amber-700 leading-relaxed">
+            Il KORA Index sarà disponibile al termine della pipeline dati (onboarding → UEF Review → Scoring Run).
+            Questa azienda non ha ancora completato il caricamento dati.
+          </p>
+          <div className="grid grid-cols-2 gap-2 text-[10px]">
+            {[
+              ['Onboarding', tenant?.onboarding_status?.replace(/_/g, ' ') ?? 'non avviato'],
+              ['Readiness dati', tenant?.data_readiness_status ?? '—'],
+              ['Decision Pack', tenant?.decision_pack_status ?? '—'],
+              ['Prossima azione', tenant ? tenantService.getNextAction(tenant) : 'Contatta KORA Admin'],
+            ].map(([label, value]) => (
+              <div key={label as string}>
+                <p className="text-amber-600">{label}</p>
+                <p className="text-amber-800 font-semibold mt-0.5">{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <p className="text-[10px] font-mono text-slate-300">
+          KORA Methodology v0.1 · pre_empirical_calibration · synthetic_demo_data: true · onboarding pending
+        </p>
+      </div>
+    );
+  }
 
   // Active scenario data
   const output     = scoringSimulatorService.score(COMPANY_ID, activeScenario, '2025');

@@ -6,7 +6,7 @@ import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { lifecycleService } from '@/services/lifecycle/LifecycleService';
-import type { KoraTenant } from '@/lib/types';
+import type { KoraTenant, KoraUserAccount, WorkerRosterRecord } from '@/lib/types';
 
 const ONBOARDING_PILL: Record<string, string> = {
   decision_pack_ready:          'border-green-200 bg-green-50 text-green-700',
@@ -20,10 +20,43 @@ const ONBOARDING_PILL: Record<string, string> = {
 
 type ActionFeedback = { tenantId: string; message: string; type: 'success' | 'error' };
 
-// A-15: KORA Admin — Company Registry (Enterprise SaaS Backbone)
+// A-15: KORA Admin — Company Registry + Mission Control (Enterprise SaaS Backbone)
 export default function AdminCompanyRegistry() {
   const tenants = tenantService.getTenants();
   const [feedback, setFeedback] = useState<ActionFeedback | null>(null);
+
+  // ── Platform Control Metrics ──────────────────────────────────────────────
+  const allAccounts: KoraUserAccount[] = tenants.flatMap((t) =>
+    accountProvisioningService.getAccountsForCompany(t.company_id),
+  );
+  const allWorkers: WorkerRosterRecord[] = tenants.flatMap((t) =>
+    workerProvisioningService.getWorkersForCompany(t.company_id),
+  );
+  const pm = {
+    total_tenants:          tenants.length,
+    active_tenants:         tenants.filter((t) => t.tenant_status === 'active').length,
+    draft_tenants:          tenants.filter((t) => t.tenant_status === 'draft').length,
+    archived_tenants:       tenants.filter((t) => ['archived', 'suspended'].includes(t.tenant_status)).length,
+    tenants_missing_admin:  tenants.filter((t) => !allAccounts.some((u) => u.company_id === t.company_id && u.role === 'COMPANY_ADMIN')).length,
+    tenants_no_roster:      tenants.filter((t) => !allWorkers.some((w) => w.company_id === t.company_id)).length,
+    company_admins_invited: allAccounts.filter((u) => u.role === 'COMPANY_ADMIN' && u.invitation_status === 'pending').length,
+    company_admins_active:  allAccounts.filter((u) => u.role === 'COMPANY_ADMIN' && u.account_status === 'active_demo').length,
+    workers_total:          allWorkers.length,
+    workers_invited:        allWorkers.filter((w) => w.worker_account_status === 'invited').length,
+    workers_active:         allWorkers.filter((w) => w.worker_account_status === 'active_demo').length,
+    my_kora_enabled:        allWorkers.filter((w) => w.my_kora_enabled).length,
+    pib_private_enabled:    allWorkers.filter((w) => w.pib_private_enabled).length,
+    privacy_suppressed:     allWorkers.filter((w) => !w.privacy_threshold_cluster).length,
+    decision_packs_ready:   tenants.filter((t) => t.decision_pack_status === 'ready').length,
+    kora_index_available:   tenants.filter((t) => t.tenant_status === 'active' && t.data_readiness_status === 'high').length,
+    lifecycle_events:       lifecycleService.getAllEvents().length,
+  };
+  const riskFlags = [
+    pm.tenants_missing_admin > 0  && `${pm.tenants_missing_admin} aziend${pm.tenants_missing_admin > 1 ? 'e' : 'a'} senza primo admin`,
+    pm.draft_tenants > 0          && `${pm.draft_tenants} tenant in bozza — onboarding pendente`,
+    pm.workers_invited > 0        && `${pm.workers_invited} lavoratori invitati in attesa di accettazione`,
+    pm.tenants_no_roster > 0      && `${pm.tenants_no_roster} aziend${pm.tenants_no_roster > 1 ? 'e' : 'a'} senza roster lavoratori`,
+  ].filter(Boolean) as string[];
 
   function handleAction(
     fn: (id: string) => { success: boolean; note: string },
@@ -53,10 +86,64 @@ export default function AdminCompanyRegistry() {
       </div>
 
       {/* ── Admin identity ── */}
-      <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800 leading-relaxed">
-        <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
-        Il portale azienda mostra solo output e stato; il setup operativo resta lato KORA Admin.
-        Gli utenti aziendali sono company-scoped e vedono solo la propria azienda.
+      <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
+        <p><span className="font-semibold">KORA Admin governa la piattaforma, non sorveglia i lavoratori.</span></p>
+        <p>Il controllo generale KORA mostra stati, readiness, accessi e aggregati privacy-safe.</p>
+        <p>Il PIB individuale resta privato al lavoratore. L&apos;azienda vede solo aggregati sopra soglia privacy (N≥10).</p>
+      </div>
+
+      {/* ── Platform Control ── */}
+      <div className="space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+          Controllo Piattaforma — {new Date().toLocaleDateString('it-IT')}
+        </p>
+
+        {/* Metrics grid */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          {[
+            ['Tenant attivi',         String(pm.active_tenants),        'border-green-200 bg-green-50 text-green-800'],
+            ['Tenant in bozza',       String(pm.draft_tenants),         'border-amber-200 bg-amber-50 text-amber-800'],
+            ['Archiviati/Sospesi',    String(pm.archived_tenants),      'border-slate-200 bg-slate-50 text-slate-600'],
+            ['Senza admin',           String(pm.tenants_missing_admin), pm.tenants_missing_admin > 0 ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-slate-200 bg-slate-50 text-slate-500'],
+            ['Decision Pack pronti',  String(pm.decision_packs_ready),  'border-green-200 bg-green-50 text-green-700'],
+            ['KORA Index disponibile',String(pm.kora_index_available),  'border-indigo-200 bg-indigo-50 text-indigo-700'],
+          ].map(([label, value, style]) => (
+            <div key={label as string} className={`rounded-lg border p-2.5 text-center ${style}`}>
+              <p className="text-[9px] leading-tight opacity-70">{label}</p>
+              <p className="text-lg font-bold mt-0.5">{value}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          {[
+            ['Admin invitati',   String(pm.company_admins_invited), 'text-blue-700'],
+            ['Admin attivi',     String(pm.company_admins_active),  'text-green-700'],
+            ['Lavoratori totali',String(pm.workers_total),          'text-slate-700'],
+            ['Lavoratori invitati',String(pm.workers_invited),      pm.workers_invited > 0 ? 'text-amber-700' : 'text-slate-500'],
+            ['My KORA abilitati',String(pm.my_kora_enabled),        'text-indigo-700'],
+            ['Cluster soppressi',String(pm.privacy_suppressed),     'text-slate-500'],
+          ].map(([label, value, textColor]) => (
+            <div key={label as string} className="rounded-lg border border-slate-200 bg-white p-2.5 text-center">
+              <p className="text-[9px] text-slate-400 leading-tight">{label}</p>
+              <p className={`text-lg font-bold mt-0.5 ${textColor}`}>{value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Risk flags */}
+        {riskFlags.length > 0 && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">Azioni pendenti</p>
+            {riskFlags.map((flag) => (
+              <p key={flag} className="text-xs text-amber-800">· {flag}</p>
+            ))}
+          </div>
+        )}
+
+        <p className="text-[9px] font-mono text-slate-300">
+          lifecycle_events: {pm.lifecycle_events} · pib_private_enabled: {pm.pib_private_enabled} · synthetic_demo_data: true
+        </p>
       </div>
 
       {/* ── Action strip ── */}
@@ -81,21 +168,6 @@ export default function AdminCompanyRegistry() {
         </Link>
       </div>
 
-      {/* ── Stats strip ── */}
-      <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-        {[
-          ['Tenant totali', String(tenants.length)],
-          ['Attivi', String(tenants.filter(t => t.tenant_status === 'active').length)],
-          ['Bozze', String(tenants.filter(t => t.tenant_status === 'draft').length)],
-          ['Decision Pack pronti', String(tenants.filter(t => t.decision_pack_status === 'ready').length)],
-        ].map(([label, value]) => (
-          <div key={label as string} className="rounded-lg border border-slate-200 bg-white p-3 text-center">
-            <p className="text-[10px] text-slate-400">{label}</p>
-            <p className="text-xl font-bold text-slate-800 mt-0.5">{value}</p>
-          </div>
-        ))}
-      </div>
-
       {/* ── Tenant table ── */}
       <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
         <div className="px-4 py-2 bg-slate-50 border-b border-slate-200">
@@ -106,10 +178,11 @@ export default function AdminCompanyRegistry() {
         <div className="divide-y divide-slate-100">
           {tenants.map((tenant) => {
             const companyAccounts = accountProvisioningService.getAccountsForCompany(tenant.company_id);
-            const adminAccounts = companyAccounts.filter(u => u.role === 'COMPANY_ADMIN');
+            const adminAccounts = companyAccounts.filter((u) => u.role === 'COMPANY_ADMIN');
             const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(tenant.company_id);
             const statusBadge = tenantService.getTenantStatusBadge(tenant.tenant_status);
             const isFeedbackTarget = feedback?.tenantId === tenant.tenant_id;
+            const isDemoReference = ['meridiana-group', 'alba-manufacturing'].includes(tenant.company_id);
 
             return (
               <div key={tenant.tenant_id} className="px-4 py-4 space-y-3 hover:bg-slate-50 transition-colors">
@@ -122,6 +195,11 @@ export default function AdminCompanyRegistry() {
                       <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${statusBadge.classes}`}>
                         {statusBadge.label}
                       </span>
+                      {isDemoReference && (
+                        <span className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-500">
+                          demo/reference
+                        </span>
+                      )}
                     </div>
                     <p className="text-[10px] font-mono text-slate-400 mt-0.5">
                       tenant_id: {tenant.tenant_id} · company_id: {tenant.company_id}

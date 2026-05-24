@@ -1,11 +1,13 @@
+'use client';
+
 import Link from 'next/link';
+import { useRole } from '@/lib/demo-state';
 import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 
-const COMPANY_ID = 'meridiana-group';
 const SCENARIO = 'S2';
 
 const ONBOARDING_LABELS: Record<string, string> = {
@@ -31,16 +33,50 @@ const ONBOARDING_COLORS: Record<string, string> = {
 
 // C-17: Company Profile — company-scoped, read-only
 export default function CompanyProfilePage() {
+  const { activeRole } = useRole();
+
+  // Resolve company from current demo user — company-scoped
+  const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
+  const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
+
   const record = companyOnboardingService.getCompanyOnboardingRecord(COMPANY_ID);
-  const koraOutput = scoringSimulatorService.score(COMPANY_ID, SCENARIO, '2025');
+  const koraOutput = scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, SCENARIO);
   const tenant = tenantService.getTenant(COMPANY_ID);
   const companyAccounts = accountProvisioningService.getAccountsForCompany(COMPANY_ID);
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(COMPANY_ID);
   workerProvisioningService.assertEmployerCannotViewIndividualPIB(COMPANY_ID, '');
 
-  if (!record) return <div className="p-8 text-sm text-slate-500">Profilo non trovato.</div>;
+  // Handle companies with no onboarding record yet (new/draft tenants)
+  if (!tenant && !record) {
+    return (
+      <div className="space-y-4 max-w-3xl p-8">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Il Tuo Spazio KORA</p>
+        <h1 className="text-xl font-bold text-slate-900">Profilo azienda</h1>
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-xs text-amber-800 space-y-2">
+          <p className="font-semibold">Onboarding pendente</p>
+          <p>Il profilo aziendale non è ancora disponibile. L&apos;azienda è in fase di configurazione lato KORA Admin.</p>
+          <p className="font-mono text-[10px] text-amber-600">company_id: {COMPANY_ID} · synthetic_demo_data: true</p>
+        </div>
+      </div>
+    );
+  }
 
-  const { profile, workforce_baseline, readiness_checks } = record;
+  const profile = record?.profile ?? {
+    company_name: tenant?.company_name ?? COMPANY_ID,
+    legal_form: tenant?.legal_name ?? '—',
+    sector: tenant?.sector ?? '—',
+    location: tenant?.headquarters_location ?? '—',
+    foundation_year: '—',
+    contact_role: '—',
+    employee_count: tenant?.employee_count ?? 0,
+  };
+  const workforce_baseline = record?.workforce_baseline ?? {
+    total_employees: tenant?.employee_count ?? 0,
+    foundation_light_eligible: (tenant?.employee_count ?? 0) >= 30,
+    suppressed_cluster_count: 0,
+    eligibility_note: 'Baseline workforce non ancora caricata.',
+  };
+  const readiness_checks = record?.readiness_checks ?? [];
   const passedChecks  = readiness_checks.filter((c) => c.status === 'ok').length;
   const totalChecks   = readiness_checks.length;
 
@@ -129,42 +165,43 @@ export default function CompanyProfilePage() {
       <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Stato KORA</p>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-xs">
-          {/* KORA Index */}
-          <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-            <p className="text-[10px] text-slate-400">KORA Index</p>
-            <p className="text-2xl font-bold text-slate-900 mt-0.5">{koraOutput.kora_index_value}</p>
-            <p className="text-[9px] text-slate-400 font-mono mt-0.5">/100</p>
-          </div>
-
-          {/* Confidence Score */}
-          <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
-            <p className="text-[10px] text-blue-500">Confidence Score</p>
-            <p className="text-2xl font-bold text-blue-700 mt-0.5">{Math.round(koraOutput.confidence_score * 100)}%</p>
-            <p className="text-[9px] text-blue-400 mt-0.5">Indicatore esterno di affidabilità dati</p>
-          </div>
-
-          {/* Safeguard */}
-          <div className={`rounded-lg border p-3 ${
-            koraOutput.safeguard_status === 'CLEAR'
-              ? 'border-green-200 bg-green-50'
-              : koraOutput.safeguard_status === 'WARNING'
-              ? 'border-amber-200 bg-amber-50'
-              : 'border-rose-200 bg-rose-50'
-          }`}>
-            <p className="text-[10px] text-slate-400">Activation Safeguard</p>
-            <p className={`text-lg font-bold mt-0.5 ${
-              koraOutput.safeguard_status === 'CLEAR' ? 'text-green-700' :
-              koraOutput.safeguard_status === 'WARNING' ? 'text-amber-700' : 'text-rose-700'
-            }`}>
-              {koraOutput.safeguard_status}
+        {koraOutput ? (
+          <>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-xs">
+              <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
+                <p className="text-[10px] text-slate-400">KORA Index</p>
+                <p className="text-2xl font-bold text-slate-900 mt-0.5">{koraOutput.kora_index_value}</p>
+                <p className="text-[9px] text-slate-400 font-mono mt-0.5">/100</p>
+              </div>
+              <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
+                <p className="text-[10px] text-blue-500">Confidence Score</p>
+                <p className="text-2xl font-bold text-blue-700 mt-0.5">{Math.round(koraOutput.confidence_score * 100)}%</p>
+                <p className="text-[9px] text-blue-400 mt-0.5">Indicatore esterno di affidabilità dati</p>
+              </div>
+              <div className={`rounded-lg border p-3 ${
+                koraOutput.safeguard_status === 'CLEAR' ? 'border-green-200 bg-green-50' :
+                koraOutput.safeguard_status === 'WARNING' ? 'border-amber-200 bg-amber-50' : 'border-rose-200 bg-rose-50'
+              }`}>
+                <p className="text-[10px] text-slate-400">Activation Safeguard</p>
+                <p className={`text-lg font-bold mt-0.5 ${
+                  koraOutput.safeguard_status === 'CLEAR' ? 'text-green-700' :
+                  koraOutput.safeguard_status === 'WARNING' ? 'text-amber-700' : 'text-rose-700'
+                }`}>{koraOutput.safeguard_status}</p>
+              </div>
+            </div>
+            <p className="text-[10px] font-mono text-slate-400">
+              {koraOutput.methodology_version_id} · calibration_status: pre_empirical_calibration · synthetic_demo_data: true
+            </p>
+          </>
+        ) : (
+          <div className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
+            <p className="font-semibold">KORA Index non ancora disponibile</p>
+            <p>Il KORA Index sarà disponibile al termine della pipeline dati.</p>
+            <p className="font-mono text-[10px] text-amber-600">
+              onboarding: {tenant?.onboarding_status ?? 'not_started'} · data_readiness: {tenant?.data_readiness_status ?? '—'}
             </p>
           </div>
-        </div>
-
-        <p className="text-[10px] font-mono text-slate-400">
-          {koraOutput.methodology_version_id} · calibration_status: pre_empirical_calibration · synthetic_demo_data: true
-        </p>
+        )}
       </div>
 
       {/* ── Onboarding/data status summary ── */}
@@ -172,12 +209,20 @@ export default function CompanyProfilePage() {
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Stato Dati & Pipeline</p>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${ONBOARDING_COLORS[record.onboarding_status] ?? 'border-slate-200 text-slate-500'}`}>
-            {ONBOARDING_LABELS[record.onboarding_status] ?? record.onboarding_status}
-          </span>
-          <span className="text-xs text-slate-500">
-            {passedChecks}/{totalChecks} check superati
-          </span>
+          {record ? (
+            <>
+              <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${ONBOARDING_COLORS[record.onboarding_status] ?? 'border-slate-200 text-slate-500'}`}>
+                {ONBOARDING_LABELS[record.onboarding_status] ?? record.onboarding_status}
+              </span>
+              <span className="text-xs text-slate-500">
+                {passedChecks}/{totalChecks} check superati
+              </span>
+            </>
+          ) : (
+            <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+              onboarding non avviato
+            </span>
+          )}
         </div>
 
         {/* Workforce baseline summary */}
