@@ -13,19 +13,19 @@ import type { PillarCode } from '@/lib/types';
 // ─── Pillar styling ───────────────────────────────────────────────────────────
 
 const PILLAR_BAR: Record<string, string> = {
-  LIFE:       'bg-green-500',
-  GROWTH:     'bg-blue-500',
-  CONNECTION: 'bg-purple-500',
-  IMPACT:     'bg-orange-500',
-  LEGACY:     'bg-amber-500',
+  LIFE:       'bg-pillar-life',
+  GROWTH:     'bg-pillar-growth',
+  CONNECTION: 'bg-pillar-connection',
+  IMPACT:     'bg-kora-fun-green',
+  LEGACY:     'bg-pillar-legacy',
 };
 
 const PILLAR_TEXT: Record<string, string> = {
-  LIFE:       'text-green-700',
-  GROWTH:     'text-blue-700',
-  CONNECTION: 'text-purple-700',
-  IMPACT:     'text-orange-700',
-  LEGACY:     'text-amber-700',
+  LIFE:       'text-pillar-life',
+  GROWTH:     'text-pillar-growth',
+  CONNECTION: 'text-pillar-connection',
+  IMPACT:     'text-kora-cosmic-blue',
+  LEGACY:     'text-pillar-legacy',
 };
 
 function eur(val: number) {
@@ -59,7 +59,7 @@ const PILLAR_STATIC: Record<string, { debt: DebtLevel; recommendation: string }>
 };
 
 const DEBT_BADGE: Record<DebtLevel, { style: string; label: string }> = {
-  basso: { style: 'bg-green-50 text-green-700 border-green-200', label: 'Debt basso' },
+  basso: { style: 'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40', label: 'Debt basso' },
   medio: { style: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Debt medio' },
   alto:  { style: 'bg-red-50 text-red-700 border-red-200',       label: 'Debt alto'  },
 };
@@ -137,7 +137,7 @@ const HR_KPI_DATA: HrKpiRow[] = [
 ];
 
 const CONFIDENCE_BADGE: Record<ConfidenceLevel, { style: string }> = {
-  alta:  { style: 'bg-green-50 text-green-700 border-green-200' },
+  alta:  { style: 'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40' },
   media: { style: 'bg-amber-50 text-amber-700 border-amber-200' },
   bassa: { style: 'bg-slate-100 text-slate-500 border-slate-200' },
 };
@@ -169,8 +169,8 @@ const CORR_MATRIX: CorrStrength[][] = [
 ];
 
 const CORR_CELL: Record<CorrStrength, { symbol: string; style: string; tip: string }> = {
-  forte:      { symbol: '●●', style: 'text-green-600 font-bold',  tip: 'Associazione forte' },
-  moderata:   { symbol: '●',  style: 'text-teal-600 font-medium', tip: 'Associazione moderata' },
+  forte:      { symbol: '●●', style: 'text-kora-violet font-bold',  tip: 'Associazione forte' },
+  moderata:   { symbol: '●',  style: 'text-indigo-600 font-medium', tip: 'Associazione moderata' },
   debole:     { symbol: '○',  style: 'text-slate-300',            tip: 'Segnale debole' },
   monitorare: { symbol: '△',  style: 'text-amber-500 font-bold',  tip: 'Da monitorare' },
 };
@@ -195,7 +195,7 @@ const SCENARIOS_BTI = [
   {
     id: 'continuity',
     label: 'Scenario continuità',
-    badge: 'bg-green-100 text-green-700 border-green-200',
+    badge: 'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40',
     description: 'Introduzione iniziative ricorrenti GROWTH e mentoring LEGACY.',
     interpretation: 'Potenziale miglioramento CO, PB e continuità — segnale direzionale, non causale. Costo per IU atteso in riduzione con programmi ricorrenti consolidati.',
   },
@@ -253,7 +253,7 @@ const PRIORITY_BADGE: Record<Priority, string> = {
 const RISK_BADGE: Record<Risk, string> = {
   Alto:  'bg-red-50 text-red-700 border-red-200',
   Medio: 'bg-amber-50 text-amber-700 border-amber-200',
-  Basso: 'bg-green-50 text-green-700 border-green-200',
+  Basso: 'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40',
 };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -307,7 +307,7 @@ export default function FinancialGovernance() {
   }
 
   const utilizationColor =
-    rec.budget_utilization_rate >= 0.70 ? 'text-green-600' :
+    rec.budget_utilization_rate >= 0.70 ? 'text-kora-violet' :
     rec.budget_utilization_rate >= 0.50 ? 'text-yellow-600' : 'text-red-500';
 
   return (
@@ -316,7 +316,7 @@ export default function FinancialGovernance() {
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Impact Bridge</h1>
-          <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
+          <span className="rounded border border-kora-violet/20 bg-kora-violet/10 px-2 py-0.5 text-xs font-medium text-kora-violet">
             Foundation Light Preview
           </span>
         </div>
@@ -353,7 +353,7 @@ export default function FinancialGovernance() {
         </div>
         <div className="h-2 w-full rounded-full bg-slate-100">
           <div
-            className={cn('h-2 rounded-full', rec.budget_utilization_rate >= 0.70 ? 'bg-green-500' : 'bg-yellow-400')}
+            className={cn('h-2 rounded-full', rec.budget_utilization_rate >= 0.70 ? 'bg-kora-violet' : 'bg-yellow-400')}
             style={{ width: `${rec.budget_utilization_rate * 100}%` }}
           />
         </div>
@@ -511,7 +511,7 @@ export default function FinancialGovernance() {
             </p>
           )}
           {btiRecord?.non_budget_mediated_activation_note && (
-            <div className="mt-2 rounded border border-blue-100 bg-blue-50 px-3 py-2 text-[11px] text-blue-700 leading-relaxed max-w-2xl">
+            <div className="mt-2 rounded border border-kora-violet/20 bg-kora-violet/5 px-3 py-2 text-[11px] text-kora-violet leading-relaxed max-w-2xl">
               <span className="font-semibold">IU non-budget-mediated: </span>
               {btiRecord.non_budget_mediated_activation_note}
             </div>
@@ -608,7 +608,7 @@ export default function FinancialGovernance() {
                 {HR_KPI_DATA.map((row) => {
                   const conf = CONFIDENCE_BADGE[row.confidence];
                   const dirStyle = row.direction === 'up'
-                    ? 'text-green-600 font-semibold'
+                    ? 'text-kora-violet font-semibold'
                     : 'text-red-600 font-semibold';
                   const dirArrow = row.direction === 'up' ? '↑' : '↓';
                   return (
@@ -672,8 +672,8 @@ export default function FinancialGovernance() {
               </tbody>
             </table>
             <div className="border-t border-slate-100 px-3 py-2 flex flex-wrap gap-4 text-[10px] text-slate-400">
-              <span><span className="font-bold text-green-600">●●</span> Associazione forte</span>
-              <span><span className="font-medium text-teal-600">●</span> Associazione moderata</span>
+              <span><span className="font-bold text-kora-violet">●●</span> Associazione forte</span>
+              <span><span className="font-medium text-indigo-600">●</span> Associazione moderata</span>
               <span><span className="text-slate-300">○</span> Segnale debole</span>
               <span>Correlazione ≠ causalità · Dati sintetici</span>
             </div>

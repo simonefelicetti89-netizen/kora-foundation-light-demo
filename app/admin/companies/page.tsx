@@ -12,7 +12,7 @@ import type { CompanyRiskLevel } from '@/services/company-intelligence/CompanyIn
 import type { KoraTenant, KoraUserAccount, WorkerRosterRecord } from '@/lib/types';
 
 const ONBOARDING_PILL: Record<string, string> = {
-  decision_pack_ready:          'border-green-200 bg-green-50 text-green-700',
+  decision_pack_ready:          'border-kora-fun-green/40 bg-kora-fun-green/20 text-kora-cosmic-blue',
   pipeline_active:              'border-blue-200 bg-blue-50 text-blue-700',
   readiness_check_passed:       'border-blue-200 bg-blue-50 text-blue-700',
   program_data_loaded:          'border-indigo-200 bg-indigo-50 text-indigo-700',
@@ -22,14 +22,14 @@ const ONBOARDING_PILL: Record<string, string> = {
 };
 
 const RISK_BADGE: Record<CompanyRiskLevel, { label: string; classes: string }> = {
-  ready:           { label: 'Ready',           classes: 'border-green-200 bg-green-50 text-green-700' },
+  ready:           { label: 'Ready',           classes: 'border-kora-fun-green/40 bg-kora-fun-green/20 text-kora-cosmic-blue' },
   monitor:         { label: 'Monitor',         classes: 'border-blue-200 bg-blue-50 text-blue-700' },
   action_required: { label: 'Action Required', classes: 'border-amber-200 bg-amber-50 text-amber-700' },
   blocked:         { label: 'Bloccato',        classes: 'border-rose-200 bg-rose-50 text-rose-700' },
 };
 
 const SAFEGUARD_BADGE: Record<string, string> = {
-  CLEAR:   'text-green-700 bg-green-50 border-green-200',
+  CLEAR:   'text-kora-cosmic-blue bg-kora-fun-green/20 border-kora-fun-green/40',
   WARNING: 'text-amber-700 bg-amber-50 border-amber-200',
   FLAGGED: 'text-rose-700 bg-rose-50 border-rose-200',
 };
@@ -109,9 +109,9 @@ export default function AdminCompanyMissionControl() {
         {/* Hero KPIs */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: 'Tenant attivi',         value: String(portfolio.active_tenants),        style: 'border-green-200 bg-green-50 text-green-800' },
+            { label: 'Tenant attivi',         value: String(portfolio.active_tenants),        style: 'border-kora-violet/20 bg-kora-violet/10 text-kora-violet' },
             { label: 'KORA Index disponibile', value: String(portfolio.kora_index_available),  style: 'border-indigo-200 bg-indigo-50 text-indigo-700' },
-            { label: 'Decision Pack pronti',  value: String(portfolio.decision_pack_ready),   style: 'border-emerald-200 bg-emerald-50 text-emerald-700' },
+            { label: 'Decision Pack pronti',  value: String(portfolio.decision_pack_ready),   style: 'border-kora-fun-green/40 bg-kora-fun-green/20 text-kora-cosmic-blue' },
             { label: 'Azioni richieste',      value: String(portfolio.needing_kora_action),   style: portfolio.needing_kora_action > 0 ? 'border-amber-200 bg-amber-50 text-amber-800' : 'border-slate-200 bg-slate-50 text-slate-500' },
           ].map(({ label, value, style }) => (
             <div key={label} className={`rounded-xl border p-4 text-center ${style}`}>
@@ -125,7 +125,7 @@ export default function AdminCompanyMissionControl() {
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
           {[
             ['Tenant in bozza',     String(portfolio.draft_tenants),              portfolio.draft_tenants > 0 ? 'text-amber-700' : 'text-slate-400'],
-            ['Data intake pronti',  String(portfolio.data_intake_ready),          portfolio.data_intake_ready > 0 ? 'text-green-700' : 'text-slate-400'],
+            ['Data intake pronti',  String(portfolio.data_intake_ready),          portfolio.data_intake_ready > 0 ? 'text-kora-violet' : 'text-slate-400'],
             ['Roster ≥30 lavoratori', String(portfolio.worker_roster_complete),   'text-slate-700'],
             ['My KORA attive',      String(portfolio.my_kora_active_companies),   'text-indigo-600'],
             ['Senza dati',          String(portfolio.no_data_tenants),            portfolio.no_data_tenants > 0 ? 'text-rose-600' : 'text-slate-400'],
@@ -222,7 +222,7 @@ export default function AdminCompanyMissionControl() {
                   </div>
                   <div>
                     <p className="text-slate-400">Data Intake</p>
-                    <p className={`font-semibold ${rec.data_intake_status === 'ready_for_ingestion' ? 'text-green-700' : rec.data_intake_status === 'not_started' ? 'text-rose-600' : 'text-amber-700'}`}>
+                    <p className={`font-semibold ${rec.data_intake_status === 'ready_for_ingestion' ? 'text-kora-violet' : rec.data_intake_status === 'not_started' ? 'text-rose-600' : 'text-amber-700'}`}>
                       {rec.data_intake_status === 'ready_for_ingestion' ? 'Pronto' :
                        rec.data_intake_status === 'not_started' ? 'Non avviato' :
                        rec.data_intake_status.replace(/_/g, ' ')}
@@ -230,7 +230,7 @@ export default function AdminCompanyMissionControl() {
                   </div>
                   <div>
                     <p className="text-slate-400">Decision Pack</p>
-                    <p className={`font-semibold ${rec.decision_pack_status === 'ready' ? 'text-green-700' : 'text-slate-500'}`}>
+                    <p className={`font-semibold ${rec.decision_pack_status === 'ready' ? 'text-kora-violet' : 'text-slate-500'}`}>
                       {rec.decision_pack_status.replace(/_/g, ' ')}
                     </p>
                   </div>
@@ -293,16 +293,16 @@ export default function AdminCompanyMissionControl() {
                   <p className="text-slate-400 mt-0.5">{rec.onboarding_status.replace(/_/g, ' ')}</p>
                 </div>,
                 <div key={`${rec.company_id}-tenant`} className="px-3 py-3 border-b border-slate-100 flex items-center justify-center">
-                  <span className={`rounded-full w-2 h-2 ${rec.tenant_status === 'active' ? 'bg-green-500' : 'bg-amber-400'}`} />
+                  <span className={`rounded-full w-2 h-2 ${rec.tenant_status === 'active' ? 'bg-kora-violet' : 'bg-amber-400'}`} />
                 </div>,
                 <div key={`${rec.company_id}-roster`} className="px-3 py-3 border-b border-slate-100 text-center">
-                  <p className={`font-semibold ${rec.worker_count >= 30 ? 'text-green-700' : rec.worker_count > 0 ? 'text-amber-700' : 'text-rose-600'}`}>
+                  <p className={`font-semibold ${rec.worker_count >= 30 ? 'text-kora-violet' : rec.worker_count > 0 ? 'text-amber-700' : 'text-rose-600'}`}>
                     {rec.worker_count}
                   </p>
                 </div>,
                 <div key={`${rec.company_id}-intake`} className="px-3 py-3 border-b border-slate-100 text-center">
                   <span className={`rounded px-1.5 py-0.5 font-semibold ${
-                    rec.data_intake_status === 'ready_for_ingestion' ? 'bg-green-100 text-green-700' :
+                    rec.data_intake_status === 'ready_for_ingestion' ? 'bg-kora-fun-green/20 text-kora-cosmic-blue' :
                     rec.data_intake_status === 'validation_required' ? 'bg-amber-100 text-amber-700' :
                     rec.data_intake_status === 'blocked_missing_required_fields' ? 'bg-rose-100 text-rose-700' :
                     rec.data_intake_status === 'not_started' ? 'bg-slate-100 text-slate-500' :
@@ -384,11 +384,11 @@ export default function AdminCompanyMissionControl() {
             {[
               ['Lavoratori totali',   String(pm.workers_total),              'text-slate-700 bg-white border-slate-200'],
               ['Admin invitati',      String(pm.company_admins_invited),     pm.company_admins_invited > 0 ? 'text-blue-700 bg-blue-50 border-blue-200' : 'text-slate-400 bg-white border-slate-100'],
-              ['Admin attivi',        String(pm.company_admins_active),      'text-green-700 bg-white border-slate-200'],
-              ['Lavoratori attivi',   String(pm.workers_active),             'text-green-700 bg-white border-slate-200'],
+              ['Admin attivi',        String(pm.company_admins_active),      'text-kora-violet bg-white border-slate-200'],
+              ['Lavoratori attivi',   String(pm.workers_active),             'text-kora-violet bg-white border-slate-200'],
               ['My KORA abilitati',   String(pm.my_kora_enabled),            'text-indigo-700 bg-indigo-50 border-indigo-200'],
               ['Righe totali',        String(pm.total_raw_rows),             'text-slate-700 bg-white border-slate-200'],
-              ['Pronte ingestion',    String(pm.ready_for_ingestion_rows),   pm.ready_for_ingestion_rows > 0 ? 'text-green-700 bg-green-50 border-green-200' : 'text-slate-400 bg-white border-slate-100'],
+              ['Pronte ingestion',    String(pm.ready_for_ingestion_rows),   pm.ready_for_ingestion_rows > 0 ? 'text-kora-cosmic-blue bg-kora-fun-green/20 border-kora-fun-green/40' : 'text-slate-400 bg-white border-slate-100'],
               ['Review richieste',    String(pm.review_required_rows),       pm.review_required_rows > 0 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-slate-400 bg-white border-slate-100'],
               ['Policy strutturali',  String(pm.structural_policy_rows),     'text-indigo-700 bg-indigo-50 border-indigo-200'],
             ].map(([label, value, style]) => (
@@ -484,7 +484,7 @@ export default function AdminCompanyMissionControl() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-slate-500">Data Intake:</span>
                       <span className={`rounded px-1.5 py-0.5 font-semibold ${
-                        intakeSummary.intake_status === 'ready_for_ingestion'             ? 'bg-green-100 text-green-700' :
+                        intakeSummary.intake_status === 'ready_for_ingestion'             ? 'bg-kora-fun-green/20 text-kora-cosmic-blue' :
                         intakeSummary.intake_status === 'validation_required'             ? 'bg-amber-100 text-amber-700' :
                         intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'bg-rose-100 text-rose-700' :
                         intakeSummary.intake_status === 'partial'                         ? 'bg-blue-100 text-blue-700' :
@@ -517,7 +517,7 @@ export default function AdminCompanyMissionControl() {
                   {/* Feedback */}
                   {isFeedbackTarget && feedback && (
                     <div className={`rounded border px-2.5 py-1.5 text-[10px] ${
-                      feedback.type === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-rose-200 bg-rose-50 text-rose-700'
+                      feedback.type === 'success' ? 'border-kora-fun-green/40 bg-kora-fun-green/15 text-kora-cosmic-blue' : 'border-rose-200 bg-rose-50 text-rose-700'
                     }`}>
                       {feedback.message}
                     </div>
@@ -548,7 +548,7 @@ export default function AdminCompanyMissionControl() {
                         <button
                           type="button"
                           onClick={() => handleAction(tenantService.activateTenant.bind(tenantService), tenant, 'admin-001', 'activate')}
-                          className="text-xs text-emerald-600 hover:text-emerald-800 hover:underline font-medium"
+                          className="text-xs text-kora-violet hover:text-kora-cosmic-blue hover:underline font-medium"
                         >
                           Attiva
                         </button>

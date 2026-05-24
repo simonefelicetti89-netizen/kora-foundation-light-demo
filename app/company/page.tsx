@@ -59,33 +59,33 @@ export default function ExecutiveCockpit() {
     {
       code: 'REACH',
       label: 'Activation Reach',
-      accent: 'border-blue-200 bg-blue-50',
-      headingColor: 'text-blue-700',
-      tagClass: 'bg-blue-100 text-blue-700',
+      accent: 'border-violet-200 bg-violet-50',
+      headingColor: 'text-violet-700',
+      tagClass: 'bg-violet-100 text-violet-700',
       description: "Quanto l'attivazione raggiunge realmente la popolazione aziendale.",
     },
     {
       code: 'QUALITY',
       label: 'Activation Quality',
-      accent: 'border-violet-200 bg-violet-50',
-      headingColor: 'text-violet-700',
-      tagClass: 'bg-violet-100 text-violet-700',
+      accent: 'border-indigo-200 bg-indigo-50',
+      headingColor: 'text-indigo-700',
+      tagClass: 'bg-indigo-100 text-indigo-700',
       description: 'Quanto le iniziative generano attivazione significativa, verificabile e continuativa.',
     },
     {
       code: 'EQUITY',
       label: 'Distribution & Equity',
-      accent: 'border-teal-200 bg-teal-50',
-      headingColor: 'text-teal-700',
-      tagClass: 'bg-teal-100 text-teal-700',
+      accent: 'border-slate-200 bg-slate-50',
+      headingColor: 'text-slate-600',
+      tagClass: 'bg-slate-100 text-slate-600',
       description: "Quanto l'attivazione è distribuita in modo equilibrato tra pillar e popolazione.",
     },
     {
       code: 'BTI',
       label: 'Budget-to-Human-Impact',
-      accent: 'border-amber-200 bg-amber-50',
-      headingColor: 'text-amber-700',
-      tagClass: 'bg-amber-100 text-amber-700',
+      accent: 'border-purple-200 bg-purple-50',
+      headingColor: 'text-purple-700',
+      tagClass: 'bg-purple-100 text-purple-700',
       description: 'Quanto il budget people/welfare si trasforma in attivazione umana verificata.',
     },
   ];
@@ -159,8 +159,8 @@ export default function ExecutiveCockpit() {
           <div className="grid gap-3 sm:grid-cols-2">
             <div className={cn(
               'rounded-lg border p-4 flex items-start gap-3',
-              output.safeguard_status === 'CLEAR'   ? 'bg-green-50 border-green-200'  :
-              output.safeguard_status === 'FLAGGED' ? 'bg-red-50 border-red-200'      :
+              output.safeguard_status === 'CLEAR'   ? 'bg-kora-fun-green/15 border-kora-fun-green/40' :
+              output.safeguard_status === 'FLAGGED' ? 'bg-red-50 border-red-200'                    :
                                                        'bg-amber-50 border-amber-200',
             )}>
               <SafeguardBadge status={output.safeguard_status} className="shrink-0 mt-0.5" />
@@ -176,10 +176,10 @@ export default function ExecutiveCockpit() {
                 </p>
               </div>
             </div>
-            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
-              <p className="text-xs font-semibold text-indigo-800">Stato calibrazione</p>
-              <p className="text-xs font-mono text-indigo-700 mt-0.5">{output.calibration_status}</p>
-              <p className="text-[10px] text-indigo-600 mt-1.5 leading-snug">
+            <div className="rounded-lg border border-kora-violet/20 bg-kora-violet/10 p-4">
+              <p className="text-xs font-semibold text-kora-cosmic-blue">Stato calibrazione</p>
+              <p className="text-xs font-mono text-kora-violet mt-0.5">{output.calibration_status}</p>
+              <p className="text-[10px] text-slate-600 mt-1.5 leading-snug">
                 Metodologia v0.1 pre-empirica — non certificata, non validata per uso normativo o regolatorio.
                 Studio Delphi e calibrazione empirica previsti post-pilot.
               </p>
@@ -259,37 +259,37 @@ export default function ExecutiveCockpit() {
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Budget-to-Human-Impact
               </h2>
-              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <div className="rounded-lg border border-slate-200 bg-white p-4">
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div>
-                    <p className="text-xs text-amber-700">Budget people/welfare</p>
+                    <p className="text-xs text-slate-500">Budget people/welfare</p>
                     <p className="text-lg font-bold text-slate-800 mt-0.5">
                       {eur(btiResult.record.total_people_welfare_budget)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-amber-700">Deep activation share</p>
+                    <p className="text-xs text-slate-500">Deep activation share</p>
                     <p className="text-lg font-bold text-slate-800 mt-0.5">
                       {pct(btiResult.record.deep_activation_share)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-amber-700">Costo / Impact Unit</p>
+                    <p className="text-xs text-slate-500">Costo / Impact Unit</p>
                     <p className="text-lg font-bold text-slate-800 mt-0.5">
                       {eur(btiResult.record.cost_per_impact_unit)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-amber-700">Activation Debt</p>
+                    <p className="text-xs text-slate-500">Activation Debt</p>
                     <p className="text-lg font-bold text-rose-700 mt-0.5">
                       {eur(btiResult.record.activation_debt_eur)}
                     </p>
                   </div>
                 </div>
-                <p className="mt-3 pt-2 border-t border-amber-200 text-[10px] text-amber-600">
+                <p className="mt-3 pt-2 border-t border-slate-100 text-[10px] text-slate-500">
                   Informational only — non certificato, non costituisce rendicontazione ESG obbligatoria.
                   Dettaglio completo in{' '}
-                  <Link href="/company/financial" className="underline hover:text-amber-800">
+                  <Link href="/company/financial" className="underline hover:text-slate-700">
                     Budget-to-Impact
                   </Link>.
                 </p>
@@ -396,7 +396,7 @@ export default function ExecutiveCockpit() {
                     </Link>
                     <Link
                       href="/company/kora-index"
-                      className="rounded-md border border-indigo-300 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                      className="rounded-md border border-kora-violet/30 bg-kora-violet/10 px-4 py-2 text-xs font-semibold text-kora-violet hover:bg-kora-violet/20 transition-colors"
                     >
                       KORA Index →
                     </Link>
@@ -417,7 +417,7 @@ export default function ExecutiveCockpit() {
                     </Link>
                     <Link
                       href="/company/shared"
-                      className="rounded-md border border-indigo-300 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+                      className="rounded-md border border-kora-violet/30 bg-kora-violet/10 px-4 py-2 text-xs font-semibold text-kora-violet hover:bg-kora-violet/20 transition-colors"
                     >
                       KORA Shared View →
                     </Link>
@@ -446,8 +446,8 @@ export default function ExecutiveCockpit() {
           </div>
 
           {/* ── J: Methodology Boundary Footer ──────────────────────────────── */}
-          <div className="rounded-lg border border-indigo-100 bg-indigo-50 px-5 py-4 space-y-2 text-[10px] text-indigo-700">
-            <p className="font-semibold text-xs text-indigo-800">Confini metodologici</p>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-5 py-4 space-y-2 text-[10px] text-slate-600">
+            <p className="font-semibold text-xs text-slate-700">Confini metodologici</p>
             {output.limitations_text && <p>{output.limitations_text}</p>}
             <p>
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.

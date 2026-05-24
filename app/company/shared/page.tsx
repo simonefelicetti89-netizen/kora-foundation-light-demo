@@ -26,36 +26,36 @@ const PILLARS: Array<{
     code: 'LIFE',
     label: 'LIFE',
     description: 'Salute, benessere, prevenzione, supporto psicologico, nutrizione, attività fisica.',
-    accent: 'border-rose-200 bg-rose-50',
-    heading: 'text-rose-700',
+    accent: 'border-pillar-life/30 bg-pillar-life/10',
+    heading: 'text-pillar-life',
   },
   {
     code: 'GROWTH',
     label: 'GROWTH',
     description: 'Formazione, competenze, sviluppo professionale, certificazioni, upskilling digitale.',
-    accent: 'border-violet-200 bg-violet-50',
-    heading: 'text-violet-700',
+    accent: 'border-pillar-growth/30 bg-pillar-growth/10',
+    heading: 'text-pillar-growth',
   },
   {
     code: 'CONNECTION',
     label: 'CONNECTION',
     description: 'Mentoring, supporto tra colleghi, collaborazione, comunità interne, coesione di team.',
-    accent: 'border-blue-200 bg-blue-50',
-    heading: 'text-blue-700',
+    accent: 'border-pillar-connection/30 bg-pillar-connection/10',
+    heading: 'text-pillar-connection',
   },
   {
     code: 'IMPACT',
     label: 'IMPACT',
     description: 'Volontariato, progetti sociali, iniziative ambientali, contributo territoriale.',
-    accent: 'border-green-200 bg-green-50',
-    heading: 'text-green-700',
+    accent: 'border-kora-fun-green/40 bg-kora-fun-green/15',
+    heading: 'text-kora-cosmic-blue',
   },
   {
     code: 'LEGACY',
     label: 'LEGACY',
     description: 'Trasferimento di conoscenza, mentoring senior-junior, continuità culturale.',
-    accent: 'border-amber-200 bg-amber-50',
-    heading: 'text-amber-700',
+    accent: 'border-pillar-legacy/30 bg-pillar-legacy/10',
+    heading: 'text-pillar-legacy',
   },
 ];
 
@@ -72,29 +72,29 @@ const MACROBLOCKS: Array<{
     code: 'REACH',
     label: 'Activation Reach',
     description: 'Quanto l\'attivazione raggiunge realmente la forza lavoro. Una reach alta significa che l\'impatto è distribuito, non concentrato su pochi.',
-    accent: 'border-blue-200 bg-blue-50',
-    heading: 'text-blue-800',
+    accent: 'border-violet-200 bg-violet-50',
+    heading: 'text-violet-800',
   },
   {
     code: 'QUALITY',
     label: 'Activation Quality',
     description: 'Quanto le iniziative generano attivazione significativa, verificabile e continuativa. Qualità alta = profondità, non solo presenza.',
-    accent: 'border-violet-200 bg-violet-50',
-    heading: 'text-violet-800',
+    accent: 'border-indigo-200 bg-indigo-50',
+    heading: 'text-indigo-800',
   },
   {
     code: 'EQUITY',
     label: 'Distribution & Equity',
     description: 'Quanto l\'attivazione è distribuita equamente tra pillar e popolazione. Squilibri segnalano concentrazioni che riducono il valore organizzativo.',
-    accent: 'border-teal-200 bg-teal-50',
-    heading: 'text-teal-800',
+    accent: 'border-slate-200 bg-slate-50',
+    heading: 'text-slate-700',
   },
   {
     code: 'BTI',
     label: 'Budget-to-Human-Impact',
     description: 'Quanto il budget people/welfare si trasforma in attivazione umana reale. Economic Relief e compliance non equivalgono automaticamente a Deep Activation.',
-    accent: 'border-amber-200 bg-amber-50',
-    heading: 'text-amber-800',
+    accent: 'border-purple-200 bg-purple-50',
+    heading: 'text-purple-800',
   },
 ];
 
@@ -106,8 +106,8 @@ function macroblockStatusLabel(score: number): string {
 }
 
 function macroblockStatusClass(score: number): string {
-  if (score >= 70) return 'bg-green-100 text-green-700';
-  if (score >= 50) return 'bg-blue-100 text-blue-700';
+  if (score >= 70) return 'bg-kora-fun-green/20 text-kora-cosmic-blue';
+  if (score >= 50) return 'bg-violet-100 text-violet-700';
   if (score >= 35) return 'bg-amber-100 text-amber-700';
   return 'bg-red-100 text-red-700';
 }
@@ -443,7 +443,7 @@ export default function KoraSharedView() {
               <span className={cn(
                 'rounded px-2 py-0.5 text-xs font-semibold',
                 decisionPackStatus === 'ready'
-                  ? 'bg-green-100 text-green-700'
+                  ? 'bg-kora-fun-green/20 text-kora-cosmic-blue'
                   : decisionPackStatus === 'advisor_review_required'
                   ? 'bg-amber-100 text-amber-700'
                   : 'bg-slate-100 text-slate-500',

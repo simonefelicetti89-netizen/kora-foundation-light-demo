@@ -53,7 +53,7 @@ const STATUS_LABELS: Record<DecisionPackStatus, string> = {
 const STATUS_STYLES: Record<DecisionPackStatus, string> = {
   data_review_required:    'bg-rose-50 text-rose-700 border-rose-200',
   advisor_review_required: 'bg-amber-50 text-amber-700 border-amber-200',
-  ready:                   'bg-emerald-50 text-emerald-700 border-emerald-200',
+  ready:                   'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40',
   draft:                   'bg-slate-50 text-slate-500 border-slate-200',
   exported:                'bg-indigo-50 text-indigo-600 border-indigo-200',
   archived:                'bg-slate-50 text-slate-400 border-slate-200',
@@ -61,7 +61,7 @@ const STATUS_STYLES: Record<DecisionPackStatus, string> = {
 };
 
 const SAFEGUARD_STYLES: Record<string, string> = {
-  CLEAR:   'bg-emerald-50 text-emerald-700 border-emerald-200',
+  CLEAR:   'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40',
   WARNING: 'bg-amber-50 text-amber-700 border-amber-200',
   FLAGGED: 'bg-rose-50 text-rose-700 border-rose-200',
 };
@@ -79,7 +79,7 @@ function MetricGrid({ metrics }: { metrics: DecisionPackMetric[] }) {
             {m.value}{m.unit && <span className="text-xs font-normal text-slate-400 ml-0.5">{m.unit}</span>}
           </p>
           {m.delta !== undefined && (
-            <p className={`text-[11px] font-medium ${m.delta >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+            <p className={`text-[11px] font-medium ${m.delta >= 0 ? 'text-kora-violet' : 'text-rose-600'}`}>
               {m.delta >= 0 ? '+' : ''}{m.delta} vs S1
             </p>
           )}
@@ -194,7 +194,7 @@ function SectionDivider() {
 // ── Semester comparison ───────────────────────────────────────────────────────
 
 const TREND_CARD: Record<DecisionPackMetricTrend, { bg: string; label: string; icon: string }> = {
-  improved:       { bg: 'border-emerald-200 bg-emerald-50', label: 'Migliorato',    icon: '↑' },
+  improved:       { bg: 'border-kora-fun-green/40 bg-kora-fun-green/15', label: 'Migliorato',    icon: '↑' },
   stable:         { bg: 'border-slate-200 bg-slate-50',    label: 'Stabile',        icon: '→' },
   declined:       { bg: 'border-rose-200 bg-rose-50',      label: 'In calo',        icon: '↓' },
   not_comparable: { bg: 'border-amber-200 bg-amber-50',    label: 'Non comparabile',icon: '≈' },
@@ -202,7 +202,7 @@ const TREND_CARD: Record<DecisionPackMetricTrend, { bg: string; label: string; i
 };
 
 const TREND_ICON_COLOR: Record<DecisionPackMetricTrend, string> = {
-  improved:       'text-emerald-600',
+  improved:       'text-kora-violet',
   stable:         'text-slate-400',
   declined:       'text-rose-600',
   not_comparable: 'text-amber-600',
@@ -222,7 +222,7 @@ function DeltaCard({ delta }: { delta: DecisionPackMetricDelta }) {
           </span>
         )}
         {delta.delta_abs !== undefined && (
-          <span className={`text-[11px] font-semibold ${delta.delta_abs >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+          <span className={`text-[11px] font-semibold ${delta.delta_abs >= 0 ? 'text-kora-violet' : 'text-rose-700'}`}>
             {delta.delta_abs >= 0 ? '+' : ''}{delta.metric_id === 'confidence_score' ? `${delta.delta_abs}pt` : delta.delta_abs.toFixed(1)}
           </span>
         )}
@@ -270,7 +270,7 @@ function PeriodComparisonSection({ comparison }: { comparison: DecisionPackPerio
           {/* Comparability banner */}
           <div className={`rounded-lg border px-3 py-2 text-[10px] space-y-0.5 ${
             comparison.methodology_comparable
-              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+              ? 'border-kora-fun-green/40 bg-kora-fun-green/15 text-kora-cosmic-blue'
               : 'border-amber-200 bg-amber-50 text-amber-800'
           }`}>
             <p className="font-semibold">
@@ -509,7 +509,7 @@ export default function Reports() {
             {
               label: 'Può generare',
               value: factoryStatus.can_generate ? 'Sì' : 'No',
-              style: factoryStatus.can_generate ? 'border-green-200 bg-green-50 text-green-700' : 'border-rose-200 bg-rose-50 text-rose-600',
+              style: factoryStatus.can_generate ? 'border-kora-fun-green/40 bg-kora-fun-green/20 text-kora-cosmic-blue' : 'border-rose-200 bg-rose-50 text-rose-600',
             },
             {
               label: 'PDF Export',
@@ -575,12 +575,12 @@ export default function Reports() {
 
           {/* Change summary between versions */}
           {changeSummary && changeSummary.main_changes.length > 0 && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 space-y-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+            <div className="rounded-lg border border-kora-fun-green/40 bg-kora-fun-green/15 px-4 py-3 space-y-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-kora-cosmic-blue">
                 Variazioni v1 → v2
               </p>
               {changeSummary.main_changes.map((c, i) => (
-                <p key={i} className="text-xs text-emerald-800">· {c}</p>
+                <p key={i} className="text-xs text-kora-cosmic-blue">· {c}</p>
               ))}
             </div>
           )}

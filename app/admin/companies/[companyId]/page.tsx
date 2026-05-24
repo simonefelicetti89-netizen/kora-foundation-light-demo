@@ -14,13 +14,13 @@ import type { CompanyRiskLevel } from '@/services/company-intelligence/CompanyIn
 import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
 
 const SAFEGUARD_BADGE: Record<string, string> = {
-  CLEAR:   'border-green-200 bg-green-50 text-green-700',
+  CLEAR:   'border-kora-fun-green/40 bg-kora-fun-green/20 text-kora-cosmic-blue',
   WARNING: 'border-amber-200 bg-amber-50 text-amber-700',
   FLAGGED: 'border-rose-200 bg-rose-50 text-rose-700',
 };
 
 const RISK_BADGE: Record<CompanyRiskLevel, { label: string; classes: string }> = {
-  ready:           { label: 'Ready',           classes: 'border-green-200 bg-green-50 text-green-700' },
+  ready:           { label: 'Ready',           classes: 'border-kora-fun-green/40 bg-kora-fun-green/20 text-kora-cosmic-blue' },
   monitor:         { label: 'Monitor',         classes: 'border-blue-200 bg-blue-50 text-blue-700' },
   action_required: { label: 'Action Required', classes: 'border-amber-200 bg-amber-50 text-amber-700' },
   blocked:         { label: 'Bloccato',        classes: 'border-rose-200 bg-rose-50 text-rose-700' },
@@ -113,7 +113,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
       {/* Feedback */}
       {feedback && (
         <div className={`rounded border px-3 py-2 text-xs ${
-          feedback.type === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-rose-200 bg-rose-50 text-rose-700'
+          feedback.type === 'success' ? 'border-kora-fun-green/40 bg-kora-fun-green/15 text-kora-cosmic-blue' : 'border-rose-200 bg-rose-50 text-rose-700'
         }`}>
           {feedback.message}
         </div>
@@ -152,9 +152,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">C — Operational Readiness</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {/* Tile 1: Tenant Status */}
-          <div className={`rounded-lg border p-3 text-center ${tenant.tenant_status === 'active' ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}`}>
+          <div className={`rounded-lg border p-3 text-center ${tenant.tenant_status === 'active' ? 'border-kora-fun-green/40 bg-kora-fun-green/15' : 'border-amber-200 bg-amber-50'}`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Tenant Status</p>
-            <p className={`text-sm font-bold mt-1 ${tenant.tenant_status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
+            <p className={`text-sm font-bold mt-1 ${tenant.tenant_status === 'active' ? 'text-kora-cosmic-blue' : 'text-amber-700'}`}>
               {tenant.tenant_status}
             </p>
           </div>
@@ -165,7 +165,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           </div>
           {/* Tile 3: Data Intake */}
           <div className={`rounded-lg border p-3 text-center ${
-            intakeSummary.intake_status === 'ready_for_ingestion' ? 'border-green-200 bg-green-50' :
+            intakeSummary.intake_status === 'ready_for_ingestion' ? 'border-kora-fun-green/40 bg-kora-fun-green/15' :
             intakeSummary.intake_status === 'not_started' ? 'border-rose-200 bg-rose-50' :
             intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'border-rose-200 bg-rose-50' :
             intakeSummary.intake_status === 'validation_required' ? 'border-amber-200 bg-amber-50' :
@@ -173,7 +173,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           }`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Data Intake</p>
             <p className={`text-[10px] font-semibold mt-1 ${
-              intakeSummary.intake_status === 'ready_for_ingestion' ? 'text-green-700' :
+              intakeSummary.intake_status === 'ready_for_ingestion' ? 'text-kora-cosmic-blue' :
               intakeSummary.intake_status === 'not_started' ? 'text-rose-600' :
               intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'text-rose-700' :
               'text-amber-700'
@@ -182,9 +182,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             </p>
           </div>
           {/* Tile 4: Worker Roster */}
-          <div className={`rounded-lg border p-3 text-center ${workerSummary.total_workers >= 30 ? 'border-green-200 bg-green-50' : workerSummary.total_workers > 0 ? 'border-blue-200 bg-blue-50' : 'border-rose-200 bg-rose-50'}`}>
+          <div className={`rounded-lg border p-3 text-center ${workerSummary.total_workers >= 30 ? 'border-kora-fun-green/40 bg-kora-fun-green/15' : workerSummary.total_workers > 0 ? 'border-blue-200 bg-blue-50' : 'border-rose-200 bg-rose-50'}`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Roster Lavoratori</p>
-            <p className={`text-xl font-bold mt-1 ${workerSummary.total_workers >= 30 ? 'text-green-700' : workerSummary.total_workers > 0 ? 'text-blue-700' : 'text-rose-600'}`}>
+            <p className={`text-xl font-bold mt-1 ${workerSummary.total_workers >= 30 ? 'text-kora-cosmic-blue' : workerSummary.total_workers > 0 ? 'text-blue-700' : 'text-rose-600'}`}>
               {workerSummary.total_workers}
             </p>
           </div>
@@ -205,9 +205,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             )}
           </div>
           {/* Tile 7: Decision Pack */}
-          <div className={`rounded-lg border p-3 text-center ${tenant.decision_pack_status === 'ready' ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
+          <div className={`rounded-lg border p-3 text-center ${tenant.decision_pack_status === 'ready' ? 'border-kora-fun-green/40 bg-kora-fun-green/15' : 'border-slate-200 bg-white'}`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Decision Pack</p>
-            <p className={`text-[10px] font-semibold mt-1 ${tenant.decision_pack_status === 'ready' ? 'text-emerald-700' : 'text-slate-500'}`}>
+            <p className={`text-[10px] font-semibold mt-1 ${tenant.decision_pack_status === 'ready' ? 'text-kora-cosmic-blue' : 'text-slate-500'}`}>
               {tenant.decision_pack_status.replace(/_/g, ' ')}
             </p>
           </div>
@@ -244,7 +244,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                 <div>
                   <p className="text-slate-400">Stato intake</p>
                   <span className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-                    intakeSummary.intake_status === 'ready_for_ingestion'             ? 'bg-green-100 text-green-700' :
+                    intakeSummary.intake_status === 'ready_for_ingestion'             ? 'bg-kora-fun-green/20 text-kora-cosmic-blue' :
                     intakeSummary.intake_status === 'validation_required'             ? 'bg-amber-100 text-amber-700' :
                     intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'bg-rose-100 text-rose-700' :
                     intakeSummary.intake_status === 'partial'                         ? 'bg-blue-100 text-blue-700' :
@@ -256,7 +256,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                 <div><p className="text-slate-400">Piano fiscale</p><p className="text-slate-700 font-medium mt-0.5">{intakeSummary.fiscal_plan_status.replace(/_/g, ' ')}</p></div>
                 <div><p className="text-slate-400">Batch caricati</p><p className="text-slate-700 font-bold text-sm mt-0.5">{intakeSummary.batch_count}</p></div>
                 <div><p className="text-slate-400">Righe totali</p><p className="text-slate-700 font-bold text-sm mt-0.5">{intakeSummary.total_rows}</p></div>
-                <div><p className="text-slate-400">Pronte ingestion</p><p className="text-green-700 font-bold text-sm mt-0.5">{intakeSummary.ready_for_ingestion_rows}</p></div>
+                <div><p className="text-slate-400">Pronte ingestion</p><p className="text-kora-violet font-bold text-sm mt-0.5">{intakeSummary.ready_for_ingestion_rows}</p></div>
                 <div><p className="text-slate-400">Candidate eligible</p><p className="text-indigo-700 font-bold text-sm mt-0.5">{intakeSummary.eligible_candidate_rows}</p></div>
                 <div><p className="text-slate-400">Review required</p><p className={`font-bold text-sm mt-0.5 ${intakeSummary.review_required_rows > 0 ? 'text-amber-700' : 'text-slate-500'}`}>{intakeSummary.review_required_rows}</p></div>
                 <div><p className="text-slate-400">Quality score</p><p className="text-slate-700 font-bold text-sm mt-0.5">{(intakeSummary.data_quality_score * 100).toFixed(0)}%</p></div>
@@ -370,7 +370,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
               </div>
               <div>
                 <p className="text-slate-400">Opportunità riallocazione</p>
-                <p className="text-emerald-700 font-bold text-sm mt-0.5">{eur(btiRecord.reallocation_opportunity_eur)}</p>
+                <p className="text-kora-violet font-bold text-sm mt-0.5">{eur(btiRecord.reallocation_opportunity_eur)}</p>
               </div>
             </div>
             <p className="text-[9px] text-slate-400 italic">
@@ -397,7 +397,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             <div>
               <p className="text-slate-400">Stato factory</p>
               <span className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-                dpFactoryStatus.latest_status === 'ready'                  ? 'bg-emerald-100 text-emerald-700' :
+                dpFactoryStatus.latest_status === 'ready'                  ? 'bg-kora-fun-green/20 text-kora-cosmic-blue' :
                 dpFactoryStatus.latest_status === 'advisor_review_required' ? 'bg-amber-100 text-amber-700' :
                 dpFactoryStatus.latest_status === 'data_review_required'    ? 'bg-orange-100 text-orange-700' :
                 dpFactoryStatus.latest_status === 'blocked'                 ? 'bg-rose-100 text-rose-700' :
@@ -408,7 +408,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             </div>
             <div>
               <p className="text-slate-400">Può generare</p>
-              <p className={`font-semibold mt-0.5 ${dpFactoryStatus.can_generate ? 'text-emerald-700' : 'text-rose-600'}`}>
+              <p className={`font-semibold mt-0.5 ${dpFactoryStatus.can_generate ? 'text-kora-violet' : 'text-rose-600'}`}>
                 {dpFactoryStatus.can_generate ? 'Sì' : 'No'}
               </p>
             </div>
@@ -440,7 +440,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                 )}
                 {dpLatestVersion.activation_safeguard_status && (
                   <span>Safeguard: <strong className={
-                    dpLatestVersion.activation_safeguard_status === 'CLEAR'   ? 'text-emerald-700' :
+                    dpLatestVersion.activation_safeguard_status === 'CLEAR'   ? 'text-kora-cosmic-blue' :
                     dpLatestVersion.activation_safeguard_status === 'WARNING' ? 'text-amber-700' :
                     'text-rose-600'
                   }>{dpLatestVersion.activation_safeguard_status}</strong></span>
@@ -463,12 +463,12 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           {dpComparison && (
             <div className={`rounded border px-3 py-2 text-[10px] space-y-1 ${
               dpComparison.comparable_with_previous
-                ? 'border-emerald-100 bg-emerald-50'
+                ? 'border-kora-fun-green/30 bg-kora-fun-green/10'
                 : 'border-slate-100 bg-slate-50'
             }`}>
               <p className="font-semibold text-slate-600">
                 Confronto semestrale:{' '}
-                <span className={dpComparison.comparable_with_previous ? 'text-emerald-700' : 'text-slate-400'}>
+                <span className={dpComparison.comparable_with_previous ? 'text-kora-cosmic-blue' : 'text-slate-400'}>
                   {dpComparison.comparable_with_previous ? 'Disponibile' : 'Non disponibile'}
                 </span>
               </p>
@@ -479,7 +479,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                     {dpComparison.previous_period_label && (
                       <span>vs <strong className="text-slate-500">{dpComparison.previous_period_label}</strong></span>
                     )}
-                    <span>Metodologia: <strong className={dpComparison.methodology_comparable ? 'text-emerald-700' : 'text-amber-700'}>
+                    <span>Metodologia: <strong className={dpComparison.methodology_comparable ? 'text-kora-violet' : 'text-amber-700'}>
                       {dpComparison.methodology_comparable ? 'Comparabile' : 'Cambiata'}
                     </strong></span>
                   </div>
@@ -490,12 +490,12 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                     return (
                       <div className="flex flex-wrap gap-3 mt-1">
                         {ki?.delta_abs !== undefined && (
-                          <span>KORA Index delta: <strong className={ki.delta_abs >= 0 ? 'text-emerald-700' : 'text-rose-600'}>
+                          <span>KORA Index delta: <strong className={ki.delta_abs >= 0 ? 'text-kora-violet' : 'text-rose-600'}>
                             {ki.delta_abs >= 0 ? '+' : ''}{ki.delta_abs.toFixed(1)} pt
                           </strong></span>
                         )}
                         {cs?.delta_abs !== undefined && (
-                          <span>CS delta: <strong className={cs.delta_abs >= 0 ? 'text-emerald-700' : 'text-rose-600'}>
+                          <span>CS delta: <strong className={cs.delta_abs >= 0 ? 'text-kora-violet' : 'text-rose-600'}>
                             {cs.delta_abs >= 0 ? '+' : ''}{cs.delta_abs}pt
                           </strong></span>
                         )}

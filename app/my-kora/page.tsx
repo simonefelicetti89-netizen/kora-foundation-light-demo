@@ -11,34 +11,37 @@ import { cn } from '@/lib/utils';
 // ─── Pillar styling ───────────────────────────────────────────────────────────
 
 const PILLAR_COLORS: Record<string, string> = {
-  LIFE: 'bg-green-500', GROWTH: 'bg-blue-500', CONNECTION: 'bg-purple-500',
-  IMPACT: 'bg-orange-500', LEGACY: 'bg-amber-500',
+  LIFE: 'bg-pillar-life', GROWTH: 'bg-pillar-growth', CONNECTION: 'bg-pillar-connection',
+  IMPACT: 'bg-kora-fun-green', LEGACY: 'bg-pillar-legacy',
 };
 
 const PILLAR_LIGHT: Record<string, string> = {
-  LIFE: 'bg-green-50 text-green-700 border-green-200',
-  GROWTH: 'bg-blue-50 text-blue-700 border-blue-200',
-  CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-  IMPACT: 'bg-orange-50 text-orange-700 border-orange-200',
-  LEGACY: 'bg-amber-50 text-amber-700 border-amber-200',
+  LIFE:       'bg-pillar-life/10 text-pillar-life border-pillar-life/30',
+  GROWTH:     'bg-pillar-growth/10 text-pillar-growth border-pillar-growth/30',
+  CONNECTION: 'bg-pillar-connection/10 text-pillar-connection border-pillar-connection/30',
+  IMPACT:     'bg-kora-fun-green/15 text-kora-cosmic-blue border-kora-fun-green/40',
+  LEGACY:     'bg-pillar-legacy/10 text-pillar-legacy border-pillar-legacy/30',
 };
 
 const PILLAR_TEXT: Record<string, string> = {
-  LIFE: 'text-green-700', GROWTH: 'text-blue-700', CONNECTION: 'text-purple-700',
-  IMPACT: 'text-orange-700', LEGACY: 'text-amber-700',
+  LIFE:       'text-pillar-life',
+  GROWTH:     'text-pillar-growth',
+  CONNECTION: 'text-pillar-connection',
+  IMPACT:     'text-kora-cosmic-blue',
+  LEGACY:     'text-pillar-legacy',
 };
 
 const TREND_ICON: Record<string, string> = { up: '↑', stable: '→', down: '↓' };
-const TREND_COLOR: Record<string, string> = { up: 'text-green-500', stable: 'text-slate-400', down: 'text-red-400' };
+const TREND_COLOR: Record<string, string> = { up: 'text-kora-violet', stable: 'text-slate-400', down: 'text-red-400' };
 
 const VERIF_LABEL: Record<string, string> = {
   verified: 'Verificato', partial: 'Parziale', self_declared: 'Autodichiarato',
 };
 const VERIF_COLOR: Record<string, string> = {
-  verified: 'text-green-600', partial: 'text-yellow-600', self_declared: 'text-slate-400',
+  verified: 'text-kora-violet', partial: 'text-yellow-600', self_declared: 'text-slate-400',
 };
 const IU_COLOR: Record<string, string> = {
-  high: 'text-green-600', medium: 'text-blue-600', low: 'text-slate-400',
+  high: 'text-kora-violet', medium: 'text-indigo-600', low: 'text-slate-400',
 };
 
 // ─── Enhanced pillar detail — inline synthetic data extending service data ────
@@ -52,7 +55,7 @@ const PILLAR_ENHANCED: Record<string, { continuity: string; latest: string }> = 
 };
 
 const CONTINUITY_BADGE: Record<string, string> = {
-  alta:  'bg-green-50 text-green-700 border-green-200',
+  alta:  'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40',
   media: 'bg-amber-50 text-amber-700 border-amber-200',
   bassa: 'bg-red-50 text-red-600 border-red-200',
 };
@@ -362,7 +365,7 @@ export default function MyKoraHome() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-sm font-semibold text-slate-700">KORA Link / QR — Action Preview</h2>
-              <span className="rounded border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-500">
+              <span className="rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
                 Demo
               </span>
             </div>
@@ -382,20 +385,20 @@ export default function MyKoraHome() {
                 key={step.label}
                 className={cn(
                   'flex items-start gap-3 rounded-md border p-2.5 transition-colors',
-                  isComplete ? 'border-green-200 bg-green-50' : 'border-slate-100 bg-slate-50',
+                  isComplete ? 'border-kora-fun-green/40 bg-kora-fun-green/15' : 'border-slate-100 bg-slate-50',
                 )}
               >
                 <span className={cn(
                   'shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5',
-                  isComplete ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-500',
+                  isComplete ? 'bg-kora-fun-green text-kora-cosmic-blue' : 'bg-slate-200 text-slate-500',
                 )}>
                   {isComplete ? '✓' : stepNum}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className={cn('text-xs font-semibold', isComplete ? 'text-green-700' : 'text-slate-600')}>
+                  <p className={cn('text-xs font-semibold', isComplete ? 'text-kora-cosmic-blue' : 'text-slate-600')}>
                     {step.label}
                   </p>
-                  <p className={cn('text-[10px] leading-snug', isComplete ? 'text-green-600' : 'text-slate-400')}>
+                  <p className={cn('text-[10px] leading-snug', isComplete ? 'text-kora-cosmic-blue/70' : 'text-slate-400')}>
                     {step.desc}
                   </p>
                 </div>
@@ -432,8 +435,8 @@ export default function MyKoraHome() {
       <div>
         <h2 className="mb-3 text-sm font-semibold text-slate-700">Cosa vede l&apos;azienda?</h2>
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-            <p className="text-xs font-semibold text-green-800 mb-2">L&apos;azienda VEDE:</p>
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+            <p className="text-xs font-semibold text-slate-700 mb-2">L&apos;azienda VEDE:</p>
             <ul className="space-y-1.5">
               {[
                 'Aggregati sopra soglia privacy (≥10 lavoratori)',
@@ -443,8 +446,8 @@ export default function MyKoraHome() {
                 'Trend organizzativi e report aggregati',
                 'Raccomandazioni di investimento',
               ].map((item) => (
-                <li key={item} className="flex gap-1.5 text-xs text-green-700">
-                  <span className="text-green-400 shrink-0 mt-0.5">·</span>
+                <li key={item} className="flex gap-1.5 text-xs text-slate-600">
+                  <span className="text-slate-400 shrink-0 mt-0.5">·</span>
                   {item}
                 </li>
               ))}
@@ -476,10 +479,10 @@ export default function MyKoraHome() {
       </div>
 
       {/* ── Future Vision: KORA Activation Community ── */}
-      <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
+      <div className="rounded-lg border border-kora-violet/20 bg-kora-violet/5 p-4">
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          <p className="text-xs font-semibold text-orange-700">Opportunità dalla KORA Activation Community</p>
-          <span className="rounded border border-orange-300 bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-600">
+          <p className="text-xs font-semibold text-kora-violet">Opportunità dalla KORA Activation Community</p>
+          <span className="rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">
             Future Vision / Non attivo in Foundation Light
           </span>
         </div>
@@ -490,8 +493,8 @@ export default function MyKoraHome() {
             'Contributo aggregato a community — worker-controlled',
             'Badge collettivi portabili nel Dynamic Impact CV',
           ].map((item) => (
-            <li key={item} className="flex gap-1.5 text-xs text-orange-700">
-              <span className="text-orange-400 shrink-0 mt-0.5">·</span>
+            <li key={item} className="flex gap-1.5 text-xs text-kora-violet/80">
+              <span className="text-kora-violet/40 shrink-0 mt-0.5">·</span>
               {item}
             </li>
           ))}
