@@ -331,9 +331,9 @@ export default function AdminCompanyRegistry() {
                     className="text-xs font-semibold text-violet-600 hover:underline">
                     Data Intake
                   </Link>
-                  <Link href="/admin/companies/setup"
+                  <Link href={`/admin/companies/${tenant.company_id}/onboarding`}
                     className="text-xs text-slate-500 hover:text-slate-700 hover:underline">
-                    Enterprise Onboarding
+                    Onboarding Operativo
                   </Link>
                   <Link href="/admin/companies/workforce-baseline"
                     className="text-xs text-slate-500 hover:text-slate-700 hover:underline">
