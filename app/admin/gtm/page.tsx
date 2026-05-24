@@ -18,13 +18,13 @@ const SCENARIO_S1: ScenarioCard = {
   safeguardStyle: 'border-amber-300 bg-amber-100 text-amber-700',
   cardStyle: 'border-amber-200 bg-amber-50',
   metrics: [
-    ['KORA Index',      '47'],
+    ['KORA Index',      '34'],
     ['Confidence Score','60%'],
     ['Activation Rate', '38%'],
     ['MAR',             '22%'],
     ['Activation Debt', '€84k'],
   ],
-  copy: "Activation Rate 38%, Activation Safeguard WARNING, KORA Index 47, Activation Debt €84k. Il valore people è concentrato su pochi gruppi e il bottom 50% resta poco attivato.",
+  copy: "Activation Rate 38%, Activation Safeguard WARNING, KORA Index 34, Activation Debt €84k. Il valore people è concentrato su pochi gruppi e il bottom 50% resta poco attivato.",
 };
 
 const SCENARIO_S2: ScenarioCard = {
@@ -33,13 +33,13 @@ const SCENARIO_S2: ScenarioCard = {
   safeguardStyle: 'border-green-300 bg-green-100 text-green-700',
   cardStyle: 'border-green-200 bg-green-50',
   metrics: [
-    ['KORA Index',      '64'],
+    ['KORA Index',      '54'],
     ['Confidence Score','72%'],
     ['Activation Rate', '52%'],
     ['MAR',             '38%'],
     ['Activation Debt', 'ridotto'],
   ],
-  copy: "Activation Rate 52%, Activation Safeguard CLEAR, KORA Index 64, distribuzione più bilanciata e debito di attivazione ridotto.",
+  copy: "Activation Rate 52%, Activation Safeguard CLEAR, KORA Index 54, distribuzione più bilanciata e debito di attivazione ridotto.",
 };
 
 interface GTMTrackStep { n: number; label: string; href: string; roleNote?: string }

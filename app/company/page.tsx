@@ -488,9 +488,15 @@ export default function ExecutiveCockpit() {
       <div className="grid gap-4 lg:grid-cols-2">
         <PillarChart data={pillarData} />
         <div>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Breakdown 10 Componenti
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            KORA Index v3 — Componenti Analitici
           </h2>
+          <p className="mb-1 text-[10px] text-slate-400 leading-snug">
+            KORA Index v3 = 4 macroblocchi pesati. I componenti analitici spiegano il dettaglio, ma non sono tutti pesati allo stesso modo.
+          </p>
+          <p className="mb-3 text-[10px] text-slate-400 leading-snug">
+            KORA riconosce anche policy organizzative strutturali — come flessibilità, congedi migliorativi, diritto alla disconnessione o policy di fiducia — solo se formalizzate, verificabili, aggregate e privacy-safe.
+          </p>
           <ComponentBreakdown components={output.components} />
         </div>
       </div>

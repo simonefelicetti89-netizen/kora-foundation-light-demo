@@ -488,7 +488,7 @@ export function DemoGuideContent() {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
-              {[['KORA Index', '47'], ['Confidence', '60%'], ['Attivazione', '38%'], ['Significativa', '22%']].map(([l, v]) => (
+              {[['KORA Index', '34'], ['Confidence', '60%'], ['Attivazione', '38%'], ['Significativa', '22%']].map(([l, v]) => (
                 <div key={l} className="text-xs">
                   <span className="text-slate-500">{l}</span>
                   <span className="font-bold text-slate-800 ml-1.5">{v}</span>
@@ -509,7 +509,7 @@ export function DemoGuideContent() {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
-              {[['KORA Index', '64'], ['Confidence', '72%'], ['Attivazione', '52%'], ['Significativa', '38%']].map(([l, v]) => (
+              {[['KORA Index', '54'], ['Confidence', '72%'], ['Attivazione', '52%'], ['Significativa', '38%']].map(([l, v]) => (
                 <div key={l} className="text-xs">
                   <span className="text-slate-500">{l}</span>
                   <span className="font-bold text-slate-800 ml-1.5">{v}</span>

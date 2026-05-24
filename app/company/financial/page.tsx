@@ -450,6 +450,10 @@ export default function FinancialGovernance() {
             <span>{BTI_DOCTRINE.relief_neq_activation}</span>
           </div>
           <p className="mt-1 text-[11px] text-slate-500 italic max-w-2xl">{BTI_DOCTRINE.limited_reframe}</p>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-400 font-mono max-w-2xl">
+            <span>{BTI_DOCTRINE.policy_neq_partner}</span>
+            <span>{BTI_DOCTRINE.structural_recognizable}</span>
+          </div>
         </div>
 
         {/* ── BTI methodology boundary note ── */}
@@ -485,7 +489,7 @@ export default function FinancialGovernance() {
               <p className="text-2xl font-bold text-slate-800 mt-1">
                 {btiRecord ? `€${btiRecord.cost_per_impact_unit.toFixed(1)}` : '—'}
               </p>
-              <p className="text-xs text-slate-400 mt-0.5">per IU verificata</p>
+              <p className="text-xs text-slate-400 mt-0.5">per IU verificata — solo attivazioni budget-mediated</p>
               <p className="text-[10px] text-slate-300 mt-1 italic">Indicatore direzionale. Non ROI certificato.</p>
             </div>
             <div className="rounded-lg border border-red-200 bg-red-50 p-3">
@@ -501,6 +505,12 @@ export default function FinancialGovernance() {
             <p className="mt-2 text-[11px] text-slate-500 leading-relaxed max-w-2xl">
               {btiRecord.activation_debt_description_it}
             </p>
+          )}
+          {btiRecord?.non_budget_mediated_activation_note && (
+            <div className="mt-2 rounded border border-blue-100 bg-blue-50 px-3 py-2 text-[11px] text-blue-700 leading-relaxed max-w-2xl">
+              <span className="font-semibold">IU non-budget-mediated: </span>
+              {btiRecord.non_budget_mediated_activation_note}
+            </div>
           )}
           <p className="mt-2 text-[11px] text-slate-400 italic">
             Dati BTI service — scenario {activeScenario}. Non rappresentano ROI certificato, risparmio garantito o causalità.

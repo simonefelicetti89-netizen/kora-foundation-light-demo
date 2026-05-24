@@ -29,7 +29,7 @@
           "code": "PC",
           "label": "Pillar Coverage",
           "value": 0.60,
-          "explanation": "Tre pillar (LIFE, GROWTH, CONNECTION) hanno una partecipazione significativa. LIFE è solido grazie ai programmi di compliance sicurezza e benessere. GROWTH è supportato dall'attività LMS."
+          "explanation": "Tre pillar (LIFE, GROWTH, CONNECTION) hanno una partecipazione significativa. LIFE è supportato dai programmi benessere e salute volontari. GROWTH è supportato dall'attività LMS."
         },
         {
           "code": "NI",
@@ -61,7 +61,7 @@
           "code": "PB",
           "label": "Pillar Balance",
           "value": 0.34,
-          "explanation": "LIFE rappresenta il 44% di tutte le IU, principalmente attraverso la compliance sicurezza. CONNECTION e LEGACY sono quasi assenti. Il mix di programmi non distribuisce il coinvolgimento in modo uniforme tra i pillar del valore umano."
+          "explanation": "LIFE rappresenta il 44% di tutte le IU, principalmente attraverso i programmi benessere e salute. CONNECTION e LEGACY sono quasi assenti. Il mix di programmi non distribuisce il coinvolgimento in modo uniforme tra i pillar del valore umano."
         }
       ],
       "next_best_actions": [
