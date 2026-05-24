@@ -13,6 +13,10 @@ export function isAdminRole(role: KoraRole): boolean {
   return (ADMIN_ROLES as readonly string[]).includes(role);
 }
 
+export function isViewerRole(role: KoraRole): boolean {
+  return role === 'COMPANY_VIEWER';
+}
+
 // Resources that only a worker may access (never employer roles)
 const WORKER_PRIVATE_RESOURCES = new Set([
   'pib-records',

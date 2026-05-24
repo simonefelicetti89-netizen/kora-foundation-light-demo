@@ -48,7 +48,7 @@ export default function AIOnboardingPage() {
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-slate-900">AI Onboarding Engine</h1>
           <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
-            Founder / Interno
+            KORA Admin / Interno
           </span>
           <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-400">
             Solo dati sintetici

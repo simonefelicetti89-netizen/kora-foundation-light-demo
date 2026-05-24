@@ -89,6 +89,7 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/company/activation',   label: 'Attivazione & Partecipazione' },
           { href: '/company/contribution', label: 'KORA Contribution' },
           { href: '/company/pillars',      label: 'Pilastri & Iniziative' },
+          { href: '/company/onboarding',   label: 'Onboarding Room' },
         ],
       },
       {

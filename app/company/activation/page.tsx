@@ -1,10 +1,11 @@
 'use client';
 
-import { useScenario } from '@/lib/demo-state';
+import { useRole, useScenario } from '@/lib/demo-state';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { PILLAR_CODES } from '@/lib/constants/kora';
 import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import type { PillarCode } from '@/lib/types';
 
 const SAFE_AGGREGATION_THRESHOLD = 10;
@@ -113,9 +114,11 @@ function MetricCard({ label, value, sub, description }: { label: string; value: 
 
 // C-08: Activation & Participation
 export default function Activation() {
+  const { activeRole } = useRole();
   const { activeScenario } = useScenario();
-  const aggregate = scoringSimulatorService.getCompanyAggregate('meridiana-group', activeScenario);
-  const safeguard = activationSafeguardService.evaluateFromSeed('meridiana-group', activeScenario);
+  const companyId = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const aggregate = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
+  const safeguard = activationSafeguardService.evaluateFromSeed(companyId, activeScenario);
   const safeguardStyle = safeguard ? (SAFEGUARD_STYLE[safeguard.status] ?? SAFEGUARD_STYLE.WARNING) : SAFEGUARD_STYLE.WARNING;
 
   return (

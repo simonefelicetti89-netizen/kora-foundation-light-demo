@@ -1,7 +1,9 @@
 'use client';
 
-import { useScenario } from '@/lib/demo-state';
+import { useRole, useScenario } from '@/lib/demo-state';
 import { koraContributionService } from '@/services/kora-contribution/KoraContributionService';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { tenantService } from '@/services/tenant/TenantService';
 import { cn } from '@/lib/utils';
 import type { CollectiveInitiative } from '@/services/kora-contribution/KoraContributionService';
 
@@ -99,10 +101,14 @@ function InitiativeCard({ initiative }: { initiative: CollectiveInitiative }) {
 
 // C-03: KORA Contribution & Collective Initiatives
 export default function KoraContribution() {
+  const { activeRole } = useRole();
   const { activeScenario } = useScenario();
+  const companyId   = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const tenant      = tenantService.getTenant(companyId);
+  const companyName = tenant?.company_name ?? companyId;
 
-  const summary = koraContributionService.getContributionSummary('meridiana-group', activeScenario);
-  const allInitiatives = koraContributionService.getCollectiveInitiatives('meridiana-group', activeScenario);
+  const summary = koraContributionService.getContributionSummary(companyId, activeScenario);
+  const allInitiatives = koraContributionService.getCollectiveInitiatives(companyId, activeScenario);
 
   const levelStyle = LEVEL_STYLES[summary?.contribution_level ?? 'minimal'] ?? LEVEL_STYLES.minimal;
   const scorePct = summary ? Math.min(summary.contribution_score, 100) : 0;
@@ -117,7 +123,7 @@ export default function KoraContribution() {
           </span>
         </div>
         <p className="text-sm text-slate-500">
-          Meridiana Group S.r.l. — {summary?.reporting_period ?? activeScenario}
+          {companyName} — {summary?.reporting_period ?? activeScenario}
         </p>
       </div>
 

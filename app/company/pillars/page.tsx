@@ -1,9 +1,11 @@
 'use client';
 
-import { useScenario } from '@/lib/demo-state';
+import { useRole, useScenario } from '@/lib/demo-state';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { demoDataService } from '@/services/demo-data/DemoDataService';
 import { koraContributionService } from '@/services/kora-contribution/KoraContributionService';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { tenantService } from '@/services/tenant/TenantService';
 import { cn } from '@/lib/utils';
 import { PILLAR_CODES, PILLAR_LABELS } from '@/lib/constants/kora';
 import type { PillarCode } from '@/lib/types';
@@ -148,11 +150,15 @@ const INITIATIVE_PREVIEW: InitiativePreview[] = [
 
 // C-05: Pillars & Initiatives
 export default function PillarsInitiatives() {
+  const { activeRole } = useRole();
   const { activeScenario } = useScenario();
+  const companyId   = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const tenant      = tenantService.getTenant(companyId);
+  const companyName = tenant?.company_name ?? companyId;
 
-  const aggregate   = scoringSimulatorService.getCompanyAggregate('meridiana-group', activeScenario);
-  const programs    = demoDataService.getPrograms('meridiana-group');
-  const initiatives = koraContributionService.getCollectiveInitiatives('meridiana-group', activeScenario);
+  const aggregate   = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
+  const programs    = demoDataService.getPrograms(companyId);
+  const initiatives = koraContributionService.getCollectiveInitiatives(companyId, activeScenario);
 
   const pillarDist = aggregate?.pillar_distribution as Partial<Record<PillarCode, number>> | undefined;
 
@@ -161,7 +167,7 @@ export default function PillarsInitiatives() {
       <div>
         <h1 className="text-xl font-bold text-slate-900">Pilastri & Iniziative</h1>
         <p className="text-sm text-slate-500">
-          Meridiana Group S.r.l. — {aggregate?.reporting_period ?? activeScenario}
+          {companyName} — {aggregate?.reporting_period ?? activeScenario}
         </p>
       </div>
 

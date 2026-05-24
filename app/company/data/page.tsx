@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
 import { isAdminRole } from '@/lib/permissions';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { tenantService } from '@/services/tenant/TenantService';
 import { ingestionSimulatorService } from '@/services/ingestion-simulator/IngestionSimulatorService';
 import { cn } from '@/lib/utils';
 
@@ -247,6 +248,8 @@ export default function DataEvidence() {
   const isAdmin            = isAdminRole(activeRole);
 
   const companyId    = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const tenant       = tenantService.getTenant(companyId);
+  const companyName  = tenant?.company_name ?? companyId;
   const batches      = ingestionSimulatorService.getSourceBatches(companyId, activeScenario);
   const completeness = ingestionSimulatorService.getSourceCompletenessSummary(companyId, activeScenario);
   const mapping      = ingestionSimulatorService.getMappingConfidenceSummary(companyId, activeScenario);
@@ -265,7 +268,7 @@ export default function DataEvidence() {
           </span>
         </div>
         <p className="text-sm text-slate-500">
-          Meridiana Group S.r.l. — {activeScenario} — KORA Methodology v0.1 — pre_empirical_calibration
+          {companyName} — {activeScenario} — KORA Methodology v0.1 — pre_empirical_calibration
         </p>
       </div>
 

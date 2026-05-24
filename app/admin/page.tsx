@@ -33,7 +33,7 @@ export default function KoraOperatingConsole() {
           </span>
         </div>
         <p className="text-sm text-slate-500 max-w-2xl">
-          Vista operativa interna per i ruoli KORA Admin, Analyst e Founder.
+          Vista operativa interna per gli operatori KORA Admin.
           Non è il workspace aziendale — mostra lo stato dell&apos;ecosistema cross-azienda,
           la salute della piattaforma, la governance metodologica e la pipeline commerciale.
         </p>

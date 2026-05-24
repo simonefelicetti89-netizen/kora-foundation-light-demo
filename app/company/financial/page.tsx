@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { tenantService } from '@/services/tenant/TenantService';
 import { financialGovernanceService } from '@/services/financial-governance/FinancialGovernanceService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { cn } from '@/lib/utils';
@@ -262,7 +263,9 @@ export default function FinancialGovernance() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
 
-  const COMPANY_ID = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const COMPANY_ID   = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const tenant       = tenantService.getTenant(COMPANY_ID);
+  const companyName  = tenant?.company_name ?? COMPANY_ID;
 
   const result = financialGovernanceService.getFinancialGovernance(
     COMPANY_ID, activeScenario, activeRole,
@@ -280,7 +283,7 @@ export default function FinancialGovernance() {
       <div className="space-y-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Impact Bridge</h1>
-          <p className="text-sm text-slate-500">Meridiana Group S.r.l.</p>
+          <p className="text-sm text-slate-500">{companyName}</p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
           <p className="text-sm font-semibold text-slate-600">Accesso Limitato</p>
@@ -318,7 +321,7 @@ export default function FinancialGovernance() {
           </span>
         </div>
         <p className="text-sm text-slate-500">
-          Meridiana Group S.r.l. — {rec.reporting_period}
+          {companyName} — {rec.reporting_period}
         </p>
         <p className="text-xs text-slate-400 mt-1.5 leading-relaxed max-w-2xl">
           Vista informativa di governance KORA sull&apos;allocazione del budget e l&apos;allineamento all&apos;attivazione

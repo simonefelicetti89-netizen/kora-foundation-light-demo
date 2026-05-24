@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { cn } from '@/lib/utils';
 
 // ─── Pillar styling ───────────────────────────────────────────────────────────
@@ -123,7 +124,8 @@ export default function MyKoraHome() {
     activePersona?.id ?? 'persona-a',
     activeScenario,
   );
-  const aggregate = scoringSimulatorService.getCompanyAggregate('meridiana-group', activeScenario);
+  const workerCompanyId = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const aggregate = scoringSimulatorService.getCompanyAggregate(workerCompanyId, activeScenario);
 
   if (!preview) return null;
 

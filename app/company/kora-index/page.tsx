@@ -117,7 +117,7 @@ export default function KoraIndexDetail() {
             KORA Index v3 / KORA Methodology v0.1
           </p>
           <h1 className="text-xl font-bold text-slate-900 mt-0.5">KORA Index Detail</h1>
-          <p className="text-sm text-slate-500">Meridiana Group S.r.l. — {output.reporting_period}</p>
+          <p className="text-sm text-slate-500">{tenant?.company_name ?? COMPANY_ID} — {output.reporting_period}</p>
         </div>
         <p className="mt-3 text-xs font-semibold text-slate-600 italic">
           &quot;KORA misura ciò che accade dopo la spesa.&quot;

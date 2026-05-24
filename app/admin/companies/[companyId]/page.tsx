@@ -402,8 +402,8 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         <Link href={`/admin/companies/${companyId}/data-intake`} className="text-xs text-violet-600 hover:text-violet-800 underline underline-offset-2">
           Data Intake →
         </Link>
-        <Link href="/admin/companies/setup" className="text-xs text-indigo-500 hover:text-indigo-700 underline underline-offset-2">
-          Enterprise Onboarding →
+        <Link href={`/admin/companies/${companyId}/onboarding`} className="text-xs text-indigo-500 hover:text-indigo-700 underline underline-offset-2">
+          Onboarding Operativo →
         </Link>
         <Link href="/company/reports" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
           Decision Pack →
