@@ -52,6 +52,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
 
   const dpFactoryStatus = reportFactoryService.getDecisionPackFactoryStatus(companyId);
   const dpLatestVersion = reportFactoryService.getLatestDecisionPackVersion(companyId);
+  const dpComparison = dpLatestVersion
+    ? reportFactoryService.getDecisionPackPeriodComparison(companyId, dpLatestVersion.version_id)
+    : null;
 
   workerProvisioningService.assertEmployerCannotViewIndividualPIB(companyId, '');
 
@@ -442,7 +445,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                     'text-rose-600'
                   }>{dpLatestVersion.activation_safeguard_status}</strong></span>
                 )}
-                <span className="text-slate-400">{dpLatestVersion.period}</span>
+                <span className="text-slate-400">
+                  {dpLatestVersion.reporting_period_label ?? dpLatestVersion.period}
+                </span>
               </div>
               {dpLatestVersion.change_summary && (
                 <p className="text-slate-500 italic mt-1">{dpLatestVersion.change_summary}</p>
@@ -451,6 +456,58 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           ) : (
             <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-400">
               Nessuna versione Decision Pack generata per questa azienda.
+            </div>
+          )}
+
+          {/* Semester comparison summary */}
+          {dpComparison && (
+            <div className={`rounded border px-3 py-2 text-[10px] space-y-1 ${
+              dpComparison.comparable_with_previous
+                ? 'border-emerald-100 bg-emerald-50'
+                : 'border-slate-100 bg-slate-50'
+            }`}>
+              <p className="font-semibold text-slate-600">
+                Confronto semestrale:{' '}
+                <span className={dpComparison.comparable_with_previous ? 'text-emerald-700' : 'text-slate-400'}>
+                  {dpComparison.comparable_with_previous ? 'Disponibile' : 'Non disponibile'}
+                </span>
+              </p>
+              {dpComparison.comparable_with_previous && (
+                <>
+                  <div className="flex flex-wrap gap-3">
+                    <span>Periodo: <strong className="text-slate-700">{dpComparison.reporting_period_label}</strong></span>
+                    {dpComparison.previous_period_label && (
+                      <span>vs <strong className="text-slate-500">{dpComparison.previous_period_label}</strong></span>
+                    )}
+                    <span>Metodologia: <strong className={dpComparison.methodology_comparable ? 'text-emerald-700' : 'text-amber-700'}>
+                      {dpComparison.methodology_comparable ? 'Comparabile' : 'Cambiata'}
+                    </strong></span>
+                  </div>
+                  {dpComparison.metric_deltas.length > 0 && (() => {
+                    const ki = dpComparison.metric_deltas.find((d) => d.metric_id === 'kora_index');
+                    const cs = dpComparison.metric_deltas.find((d) => d.metric_id === 'confidence_score');
+                    const sg = dpComparison.metric_deltas.find((d) => d.metric_id === 'activation_safeguard');
+                    return (
+                      <div className="flex flex-wrap gap-3 mt-1">
+                        {ki?.delta_abs !== undefined && (
+                          <span>KORA Index delta: <strong className={ki.delta_abs >= 0 ? 'text-emerald-700' : 'text-rose-600'}>
+                            {ki.delta_abs >= 0 ? '+' : ''}{ki.delta_abs.toFixed(1)} pt
+                          </strong></span>
+                        )}
+                        {cs?.delta_abs !== undefined && (
+                          <span>CS delta: <strong className={cs.delta_abs >= 0 ? 'text-emerald-700' : 'text-rose-600'}>
+                            {cs.delta_abs >= 0 ? '+' : ''}{cs.delta_abs}pt
+                          </strong></span>
+                        )}
+                        {sg && <span>Safeguard trend: <strong className="text-slate-600">{sg.trend}</strong></span>}
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+              {!dpComparison.comparable_with_previous && (
+                <p className="text-slate-400">{dpComparison.comparability_notes}</p>
+              )}
             </div>
           )}
 

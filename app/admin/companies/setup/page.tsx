@@ -12,7 +12,7 @@ import type { CompanyAdminProvisioningDraft, ReadinessItemStatus } from '@/lib/t
 const STEPS = [
   { id: 1, label: 'Identità Azienda' },
   { id: 2, label: 'Perimetro Operativo' },
-  { id: 3, label: 'Budget & Fiscale' },
+  { id: 3, label: 'Contesto Budget' },
   { id: 4, label: 'Fonti Dati' },
   { id: 5, label: 'Policy Strutturali' },
   { id: 6, label: 'Primo Admin' },
@@ -146,7 +146,7 @@ function computeReadiness(s: WizardState): ReadinessItem[] {
   const headcount = parseInt(s.employee_count) || 0;
   const hasIdentity  = !!(s.company_name && s.legal_name && s.sector && s.headquarters_location);
   const hasScope     = !!(s.reporting_period_start && s.reporting_period_end);
-  const hasBudget    = !!(s.total_welfare_budget && s.budget_owner);
+  const hasBudget    = !!(s.total_welfare_budget);
   const hasSources   = s.data_sources.size >= 3;
   const hasPolicies  = s.structural_policies.size >= 1;
   const hasAdmin     = !!(s.admin_name && s.admin_email);
@@ -156,7 +156,7 @@ function computeReadiness(s: WizardState): ReadinessItem[] {
   return [
     { label: 'Identità azienda',           status: hasIdentity ? 'ready_for_pipeline' : 'draft' },
     { label: 'Perimetro operativo',         status: hasScope ? 'ready_for_pipeline' : 'draft' },
-    { label: 'Budget & perimetro fiscale',  status: hasBudget ? 'ready_for_pipeline' : 'data_required' },
+    { label: 'Contesto budget disponibile', status: hasBudget ? 'ready_for_pipeline' : 'draft' },
     { label: 'Fonti dati & evidenze',       status: hasSources ? 'ready_for_pipeline' : 'data_required' },
     { label: 'Policy strutturali',          status: hasPolicies ? 'ready_for_pipeline' : 'draft' },
     { label: 'Primo admin aziendale',       status: hasAdmin ? 'access_required' : 'access_required' },
@@ -463,37 +463,38 @@ export default function EnterpriseOnboardingWizard() {
         </section>
       )}
 
-      {/* STEP 3 — Budget & Perimetro fiscale */}
+      {/* STEP 3 — Contesto Budget & Fonti Disponibili */}
       {step === 3 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">3 — Budget & Perimetro Fiscale</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Il perimetro fiscale viene definito prima della scelta delle iniziative o dei partner.</p>
+            <h2 className="text-sm font-semibold text-slate-800">3 — Contesto Budget & Dati Disponibili</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Raccoglie il contesto operativo budget per attivare l&apos;azienda. Classificazione fiscale a seguire.</p>
           </div>
-          <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2.5 text-xs text-amber-800 leading-relaxed space-y-1">
-            <p><span className="font-semibold">Dottrina BTI:</span> KORA non parte dal catalogo servizi: parte dal budget, dal perimetro e dall&apos;obiettivo di attivazione.</p>
-            <p className="text-amber-700">Budget allocated ≠ Budget activated. Budget spent ≠ Human impact.</p>
+
+          <div className="rounded border border-blue-100 bg-blue-50 px-3 py-2.5 text-xs text-blue-800 leading-relaxed space-y-1">
+            <p className="font-semibold">Perimetro fiscale — non richiesto in onboarding.</p>
+            <p>L&apos;onboarding attiva l&apos;azienda e raccoglie il contesto operativo. Il perimetro fiscale viene classificato successivamente in Data Intake / Budget-to-Human-Impact.</p>
+            <p className="text-blue-600">L&apos;azienda può iniziare caricando file e documenti esterni senza scegliere subito una categoria fiscale.</p>
           </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Budget totale welfare/people (€)" value={state.total_welfare_budget} onChange={(v) => update('total_welfare_budget', v)} placeholder="es. 280000" required />
-            <Input label="Welfare benefit (€)" value={state.welfare_budget} onChange={(v) => update('welfare_budget', v)} placeholder="es. 120000" />
-            <Input label="Fringe benefit (€)" value={state.fringe_benefit_budget} onChange={(v) => update('fringe_benefit_budget', v)} placeholder="es. 60000" />
-            <Input label="Formazione (€)" value={state.training_budget} onChange={(v) => update('training_budget', v)} placeholder="es. 50000" />
-            <Input label="People / ESG (€)" value={state.esg_budget} onChange={(v) => update('esg_budget', v)} placeholder="es. 30000" />
-            <Input label="Budget owner" value={state.budget_owner} onChange={(v) => update('budget_owner', v)} placeholder="es. CFO / HR Director" required />
+            <Input label="Budget people/welfare disponibile — stima orientativa (€)" value={state.total_welfare_budget} onChange={(v) => update('total_welfare_budget', v)} placeholder="es. 280000" />
+            <Input label="Budget owner / referente Finance" value={state.budget_owner} onChange={(v) => update('budget_owner', v)} placeholder="es. CFO / HR Director" />
             <Input label="Referente Finance" value={state.finance_contact} onChange={(v) => update('finance_contact', v)} placeholder="es. Luca Moretti" />
           </div>
+
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-600">Note fiscali</label>
+            <label className="text-xs font-semibold text-slate-600">Note contesto budget (opzionale)</label>
             <textarea value={state.fiscal_notes} onChange={(e) => update('fiscal_notes', e.target.value)}
-              placeholder="es. Accordo integrativo detassazione, Piano Welfare ex D.Lgs. 50/2017..."
+              placeholder="es. Budget approssimato, accordi in corso di definizione, contatto Finance da coinvolgere..."
               rows={3}
               className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"
             />
           </div>
-          <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500">
-            Il perimetro fiscale viene gestito lato KORA Admin e Advisor. La classificazione
-            Eligible / Limited / Blocked è calcolata automaticamente dal pipeline.
+
+          <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500 space-y-1">
+            <p>Le categorie fiscali non sono un prerequisito di onboarding: servono nella fase di classificazione, allocazione budget e governance finanziaria.</p>
+            <p>La classificazione Eligible / Limited / Blocked e il perimetro welfare/fringe/people ESG vengono definiti in Data Intake, con supporto KORA Admin e Advisor.</p>
           </div>
         </section>
       )}

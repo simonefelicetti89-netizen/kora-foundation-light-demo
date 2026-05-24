@@ -948,6 +948,45 @@ export interface DecisionPackChangeSummary {
   limitations_changed: boolean;
 }
 
+// Semester comparison types (Block 5)
+export type DecisionPackComparisonMode =
+  | 'semester_over_semester'
+  | 'previous_version'
+  | 'not_available';
+
+export type DecisionPackMetricTrend =
+  | 'improved'
+  | 'stable'
+  | 'declined'
+  | 'not_comparable'
+  | 'not_available';
+
+export interface DecisionPackMetricDelta {
+  metric_id: string;
+  label: string;
+  current_value: number | null;
+  previous_value?: number | null;
+  delta_abs?: number;
+  delta_pct?: number;
+  trend: DecisionPackMetricTrend;
+  interpretation: string;
+  comparable: boolean;
+}
+
+export interface DecisionPackPeriodComparison {
+  comparison_mode: DecisionPackComparisonMode;
+  reporting_period: string;
+  reporting_period_label: string;
+  previous_version_id?: string;
+  previous_period_label?: string;
+  comparable_with_previous: boolean;
+  methodology_version_id_current: string;
+  methodology_version_id_previous?: string;
+  methodology_comparable: boolean;
+  comparability_notes: string;
+  metric_deltas: DecisionPackMetricDelta[];
+}
+
 export type DecisionPackSectionCode =
   | 'cover'
   | 'executive_summary'
@@ -1050,6 +1089,11 @@ export interface DecisionPackVersion {
   change_summary?: string;
   production_ready?: false;
   synthetic_demo_data?: true;
+  // Period comparison fields (Block 5)
+  reporting_period_label?: string;
+  previous_version_id?: string;
+  previous_period_label?: string;
+  comparison_mode?: DecisionPackComparisonMode;
 }
 
 export interface DecisionPackExportAction {

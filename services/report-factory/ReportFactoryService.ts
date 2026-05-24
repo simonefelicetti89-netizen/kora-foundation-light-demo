@@ -6,6 +6,10 @@ import type {
   DecisionPackStatus,
   CalibrationStatus,
   ScenarioId,
+  DecisionPackPeriodComparison,
+  DecisionPackMetricDelta,
+  DecisionPackMetricTrend,
+  DecisionPackComparisonMode,
 } from '@/lib/types';
 import { tenantService } from '@/services/tenant/TenantService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
@@ -42,6 +46,11 @@ interface SeedVersion {
   change_summary?: string;
   production_ready?: false;
   synthetic_demo_data?: true;
+  // Block 5 — period comparison fields
+  reporting_period_label?: string;
+  previous_version_id?: string | null;
+  previous_period_label?: string | null;
+  comparison_mode?: string;
 }
 
 const seedVersions = (versionsRaw as { data: SeedVersion[] }).data;
@@ -87,6 +96,9 @@ export interface IReportFactoryService {
   getDecisionPackSections(companyId: string, versionId: string): string[];
   getDecisionPackExportActions(companyId: string): DecisionPackExportAction[];
   getDecisionPackChangeSummary(companyId: string, fromVersionId: string, toVersionId: string): DecisionPackChangeSummary | null;
+  getPreviousComparableVersion(companyId: string, versionId: string): DecisionPackVersion | null;
+  getDecisionPackMetricDeltas(companyId: string, versionId: string): DecisionPackMetricDelta[];
+  getDecisionPackPeriodComparison(companyId: string, versionId: string): DecisionPackPeriodComparison | null;
   getDecisionPackLimitations(companyId: string): string[];
 }
 
@@ -333,6 +345,144 @@ export class ReportFactoryService implements IReportFactoryService {
       'correlazione ≠ causalità. Nessuna analisi causale inclusa.',
     ];
     return [...new Set([...specificLimitations, ...baseline])];
+  }
+
+  // ── Semester comparison methods ────────────────────────────────────────────
+
+  getPreviousComparableVersion(companyId: string, versionId: string): DecisionPackVersion | null {
+    const current = seedVersions.find((v) => v.company_id === companyId && v.version_id === versionId);
+    if (!current?.previous_version_id) return null;
+    const prev = seedVersions.find((v) => v.company_id === companyId && v.version_id === current.previous_version_id);
+    return prev ? mapSeedToVersion(prev) : null;
+  }
+
+  getDecisionPackMetricDeltas(companyId: string, versionId: string): DecisionPackMetricDelta[] {
+    const current = seedVersions.find((v) => v.company_id === companyId && v.version_id === versionId);
+    if (!current) return [];
+    if (!current.previous_version_id) return [];
+    const prev = seedVersions.find((v) => v.company_id === companyId && v.version_id === current.previous_version_id);
+    if (!prev) return [];
+
+    const methodologyMatch = current.methodology_version_id === prev.methodology_version_id;
+
+    function trendNum(cur: number | null | undefined, pre: number | null | undefined, higherIsBetter: boolean): DecisionPackMetricTrend {
+      if (cur == null || pre == null) return 'not_available';
+      if (!methodologyMatch) return 'not_comparable';
+      const delta = cur - pre;
+      if (Math.abs(delta) < 0.001) return 'stable';
+      return (delta > 0) === higherIsBetter ? 'improved' : 'declined';
+    }
+
+    function trendStr(cur: string | null | undefined, pre: string | null | undefined): DecisionPackMetricTrend {
+      if (!cur || !pre) return 'not_available';
+      if (!methodologyMatch) return 'not_comparable';
+      const ORDER: Record<string, number> = { FLAGGED: 0, WARNING: 1, CLEAR: 2 };
+      const cOrd = ORDER[cur] ?? -1;
+      const pOrd = ORDER[pre] ?? -1;
+      if (cOrd === pOrd) return 'stable';
+      return cOrd > pOrd ? 'improved' : 'declined';
+    }
+
+    const deltas: DecisionPackMetricDelta[] = [];
+
+    // KORA Index
+    const kiCur = current.kora_index_value ?? null;
+    const kiPrev = prev.kora_index_value ?? null;
+    const kiDelta = kiCur !== null && kiPrev !== null ? kiCur - kiPrev : undefined;
+    deltas.push({
+      metric_id: 'kora_index',
+      label: 'KORA Index',
+      current_value: kiCur,
+      previous_value: kiPrev,
+      delta_abs: kiDelta,
+      delta_pct: kiDelta !== undefined && kiPrev ? (kiDelta / kiPrev) * 100 : undefined,
+      trend: trendNum(kiCur, kiPrev, true),
+      interpretation: kiDelta !== undefined
+        ? `Variazione rispetto al semestre precedente: ${kiDelta >= 0 ? '+' : ''}${kiDelta.toFixed(1)} pt. Il confronto misura evoluzione direzionale, non causalità statistica.`
+        : 'Dato non disponibile per il periodo precedente.',
+      comparable: methodologyMatch && kiCur !== null && kiPrev !== null,
+    });
+
+    // Confidence Score
+    const csCur = current.confidence_score ?? null;
+    const csPrev = prev.confidence_score ?? null;
+    const csDelta = csCur !== null && csPrev !== null ? csCur - csPrev : undefined;
+    deltas.push({
+      metric_id: 'confidence_score',
+      label: 'Confidence Score',
+      current_value: csCur !== null ? Math.round(csCur * 100) : null,
+      previous_value: csPrev !== null ? Math.round(csPrev * 100) : null,
+      delta_abs: csDelta !== undefined ? Math.round(csDelta * 100) : undefined,
+      trend: trendNum(csCur, csPrev, true),
+      interpretation: csDelta !== undefined
+        ? `Variazione rispetto al semestre precedente: ${csDelta >= 0 ? '+' : ''}${Math.round(csDelta * 100)} pt. Indica miglioramento nella copertura e qualità dei dati.`
+        : 'Dato non disponibile per il periodo precedente.',
+      comparable: methodologyMatch && csCur !== null && csPrev !== null,
+    });
+
+    // Activation Safeguard
+    deltas.push({
+      metric_id: 'activation_safeguard',
+      label: 'Activation Safeguard',
+      current_value: null,
+      previous_value: null,
+      trend: trendStr(current.activation_safeguard_status, prev.activation_safeguard_status),
+      interpretation: current.activation_safeguard_status && prev.activation_safeguard_status
+        ? `${prev.activation_safeguard_status} → ${current.activation_safeguard_status}. Variazione rispetto al semestre precedente.`
+        : 'Dato non disponibile per il periodo precedente.',
+      comparable: methodologyMatch && !!current.activation_safeguard_status && !!prev.activation_safeguard_status,
+    });
+
+    // Sections included (as readiness proxy)
+    const sectCur = (current.sections_included ?? []).length;
+    const sectPrev = (prev.sections_included ?? []).length;
+    deltas.push({
+      metric_id: 'sections_included',
+      label: 'Sezioni Decision Pack incluse',
+      current_value: sectCur,
+      previous_value: sectPrev,
+      delta_abs: sectCur - sectPrev,
+      trend: trendNum(sectCur, sectPrev, true),
+      interpretation: `Copertura sezioni: ${sectPrev} → ${sectCur}. Indica maturità del pack rispetto al semestre precedente.`,
+      comparable: methodologyMatch,
+    });
+
+    return deltas;
+  }
+
+  getDecisionPackPeriodComparison(companyId: string, versionId: string): DecisionPackPeriodComparison | null {
+    const current = seedVersions.find((v) => v.company_id === companyId && v.version_id === versionId);
+    if (!current) return null;
+
+    const comparisonMode = (current.comparison_mode ?? 'not_available') as DecisionPackComparisonMode;
+    const hasPrevious = !!current.previous_version_id;
+    const prev = hasPrevious
+      ? seedVersions.find((v) => v.company_id === companyId && v.version_id === current.previous_version_id)
+      : undefined;
+
+    const methodologyMatch = prev ? current.methodology_version_id === prev.methodology_version_id : false;
+
+    const comparabilityNotes = !hasPrevious
+      ? 'Prima versione disponibile — nessun periodo precedente per il confronto.'
+      : !prev
+        ? 'Versione precedente non trovata nel registro.'
+        : !methodologyMatch
+          ? 'Il confronto è indicativo perché la metodologia è cambiata tra i due periodi.'
+          : 'Stessa metodologia — confronto diretto valido. Il confronto misura evoluzione direzionale aggregata, non causalità statistica.';
+
+    return {
+      comparison_mode:              comparisonMode,
+      reporting_period:             current.period ?? '',
+      reporting_period_label:       current.reporting_period_label ?? current.period ?? '',
+      previous_version_id:          current.previous_version_id ?? undefined,
+      previous_period_label:        current.previous_period_label ?? undefined,
+      comparable_with_previous:     hasPrevious && !!prev,
+      methodology_version_id_current:  current.methodology_version_id ?? '',
+      methodology_version_id_previous: prev?.methodology_version_id ?? undefined,
+      methodology_comparable:       methodologyMatch,
+      comparability_notes:          comparabilityNotes,
+      metric_deltas:                hasPrevious ? this.getDecisionPackMetricDeltas(companyId, versionId) : [],
+    };
   }
 }
 

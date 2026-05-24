@@ -17,6 +17,7 @@ import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafe
 import type {
   DecisionPackSection, DecisionPackMetric, DecisionPackInsight,
   DecisionPackRecommendation, DecisionPackStatus, DecisionPackVersion,
+  DecisionPackPeriodComparison, DecisionPackMetricDelta, DecisionPackMetricTrend,
 } from '@/lib/types';
 
 // ── Section navigation ────────────────────────────────────────────────────────
@@ -190,6 +191,122 @@ function SectionDivider() {
   return <div className="border-t border-slate-100 pt-6 mt-2" />;
 }
 
+// ── Semester comparison ───────────────────────────────────────────────────────
+
+const TREND_CARD: Record<DecisionPackMetricTrend, { bg: string; label: string; icon: string }> = {
+  improved:       { bg: 'border-emerald-200 bg-emerald-50', label: 'Migliorato',    icon: '↑' },
+  stable:         { bg: 'border-slate-200 bg-slate-50',    label: 'Stabile',        icon: '→' },
+  declined:       { bg: 'border-rose-200 bg-rose-50',      label: 'In calo',        icon: '↓' },
+  not_comparable: { bg: 'border-amber-200 bg-amber-50',    label: 'Non comparabile',icon: '≈' },
+  not_available:  { bg: 'border-slate-100 bg-slate-50',    label: 'N/D',            icon: '—' },
+};
+
+const TREND_ICON_COLOR: Record<DecisionPackMetricTrend, string> = {
+  improved:       'text-emerald-600',
+  stable:         'text-slate-400',
+  declined:       'text-rose-600',
+  not_comparable: 'text-amber-600',
+  not_available:  'text-slate-300',
+};
+
+function DeltaCard({ delta }: { delta: DecisionPackMetricDelta }) {
+  const style = TREND_CARD[delta.trend];
+  return (
+    <div className={`rounded-lg border px-3 py-2.5 space-y-1 ${style.bg}`}>
+      <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">{delta.label}</p>
+      <div className="flex items-center gap-1.5">
+        <span className={`text-base font-bold ${TREND_ICON_COLOR[delta.trend]}`}>{style.icon}</span>
+        {delta.current_value !== null && delta.current_value !== undefined && (
+          <span className="text-sm font-bold text-slate-800">
+            {delta.metric_id === 'confidence_score' ? `${delta.current_value}%` : delta.current_value}
+          </span>
+        )}
+        {delta.delta_abs !== undefined && (
+          <span className={`text-[11px] font-semibold ${delta.delta_abs >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+            {delta.delta_abs >= 0 ? '+' : ''}{delta.metric_id === 'confidence_score' ? `${delta.delta_abs}pt` : delta.delta_abs.toFixed(1)}
+          </span>
+        )}
+      </div>
+      {delta.previous_value !== null && delta.previous_value !== undefined && (
+        <p className="text-[10px] text-slate-400">
+          Precedente: {delta.metric_id === 'confidence_score' ? `${delta.previous_value}%` : delta.previous_value}
+        </p>
+      )}
+      <p className={`text-[9px] font-semibold ${TREND_ICON_COLOR[delta.trend]}`}>{style.label}</p>
+    </div>
+  );
+}
+
+function PeriodComparisonSection({ comparison }: { comparison: DecisionPackPeriodComparison }) {
+  const isAvailable = comparison.comparable_with_previous;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+          Variazione rispetto al semestre precedente
+        </p>
+        <div className="flex items-center gap-2 text-[10px]">
+          <span className="text-slate-400">{comparison.reporting_period_label}</span>
+          {comparison.previous_period_label && (
+            <>
+              <span className="text-slate-300">vs</span>
+              <span className="text-slate-400">{comparison.previous_period_label}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      {!isAvailable ? (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 text-center space-y-1">
+          <p className="text-sm font-semibold text-slate-500">Confronto semestrale non ancora disponibile</p>
+          <p className="text-xs text-slate-400">{comparison.comparability_notes}</p>
+          <p className="text-[10px] text-slate-400 mt-2">
+            Il Decision Pack può essere generato ogni semestre. Gli indicatori mostreranno miglioramento, stabilità o decrescita quando i dati saranno comparabili.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {/* Comparability banner */}
+          <div className={`rounded-lg border px-3 py-2 text-[10px] space-y-0.5 ${
+            comparison.methodology_comparable
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+              : 'border-amber-200 bg-amber-50 text-amber-800'
+          }`}>
+            <p className="font-semibold">
+              {comparison.methodology_comparable
+                ? 'Confronto diretto valido — stessa metodologia'
+                : 'Confronto indicativo — metodologia cambiata tra i periodi'}
+            </p>
+            <p>{comparison.comparability_notes}</p>
+            {comparison.methodology_version_id_previous && (
+              <p className="font-mono opacity-70">
+                {comparison.methodology_version_id_previous} → {comparison.methodology_version_id_current}
+              </p>
+            )}
+          </div>
+
+          {/* Delta cards */}
+          {comparison.metric_deltas.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {comparison.metric_deltas.map((d) => (
+                <DeltaCard key={d.metric_id} delta={d} />
+              ))}
+            </div>
+          )}
+
+          {/* Doctrine */}
+          <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500 space-y-0.5">
+            <p>Il confronto semestrale misura evoluzione aggregata dell&apos;organizzazione, non performance individuale.</p>
+            <p>Decision Pack misura l&apos;organizzazione, non gli individui. Il PIB individuale resta privato al lavoratore.</p>
+            <p className="italic">Se cambia la metodologia, il confronto viene marcato come non pienamente comparabile.</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Version card ──────────────────────────────────────────────────────────────
 
 function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLatest: boolean }) {
@@ -294,6 +411,11 @@ export default function Reports() {
   // Change summary between v1 and v2 (Meridiana only)
   const changeSummary = versionHistory.length >= 2
     ? reportFactoryService.getDecisionPackChangeSummary(COMPANY_ID, versionHistory[1].version_id, versionHistory[0].version_id)
+    : null;
+
+  // Semester comparison
+  const periodComparison = latestVersion
+    ? reportFactoryService.getDecisionPackPeriodComparison(COMPANY_ID, latestVersion.version_id)
     : null;
 
   return (
@@ -462,6 +584,16 @@ export default function Reports() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          SECTION C.2 — SEMESTER COMPARISON
+          Always rendered when at least one version exists
+      ═══════════════════════════════════════════════════════════════════════ */}
+      {periodComparison && (
+        <div className="mb-6">
+          <PeriodComparisonSection comparison={periodComparison} />
         </div>
       )}
 
