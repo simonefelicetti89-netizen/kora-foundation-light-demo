@@ -9,32 +9,16 @@ import accountsData from '@/data/synthetic/user-accounts.json';
 
 const records = (accountsData as { data: KoraUserAccount[] }).data;
 
-const ADMIN_ROLES: KoraUserRole[] = [
-  'KORA_SUPER_ADMIN', 'KORA_ADMIN', 'KORA_OPERATOR', 'KORA_ANALYST',
-  'KORA_ADVISOR', 'KORA_VIEWER', 'FOUNDER_INTERNAL',
-];
-const COMPANY_ROLES: KoraUserRole[] = [
-  'COMPANY_ADMIN', 'COMPANY_HR', 'COMPANY_FINANCE', 'COMPANY_ESG',
-  'COMPANY_EXECUTIVE', 'COMPANY_VIEWER',
-];
+const ADMIN_ROLES: KoraUserRole[] = ['KORA_ADMIN'];
+const COMPANY_ROLES: KoraUserRole[] = ['COMPANY_ADMIN', 'COMPANY_VIEWER'];
 
 const DEFAULT_VISIBLE_SECTIONS: Record<KoraUserRole, string[]> = {
-  COMPANY_ADMIN:    ['executive-cockpit', 'kora-index', 'reports', 'financial', 'pillars', 'activation', 'contribution', 'profile'],
-  COMPANY_HR:       ['executive-cockpit', 'kora-index', 'reports', 'pillars', 'activation', 'profile'],
-  COMPANY_FINANCE:  ['executive-cockpit', 'kora-index', 'financial', 'reports', 'profile'],
-  COMPANY_ESG:      ['executive-cockpit', 'kora-index', 'reports', 'pillars', 'activation', 'contribution', 'profile'],
-  COMPANY_EXECUTIVE:['executive-cockpit', 'kora-index', 'reports', 'profile'],
-  COMPANY_VIEWER:   ['executive-cockpit', 'kora-index', 'profile'],
-  KORA_SUPER_ADMIN: ['all'],
-  KORA_ADMIN:       ['all'],
-  KORA_OPERATOR:    ['all'],
-  KORA_ANALYST:     ['all'],
-  KORA_ADVISOR:     ['advisor', 'company-readonly'],
-  KORA_VIEWER:      ['all'],
-  FOUNDER_INTERNAL: ['all'],
-  WORKER:           ['my-kora', 'pib-private', 'dynamic-cv', 'privacy', 'opportunities'],
-  PARTNER_ADMIN:    ['partner'],
-  PARTNER_OPERATOR: ['partner'],
+  KORA_ADMIN:     ['all'],
+  COMPANY_ADMIN:  ['executive-cockpit', 'kora-index', 'reports', 'financial', 'pillars', 'activation', 'contribution', 'profile'],
+  COMPANY_VIEWER: ['executive-cockpit', 'kora-index', 'profile'],
+  WORKER:         ['my-kora', 'pib-private', 'dynamic-cv', 'privacy', 'opportunities'],
+  PARTNER:        ['partner'],
+  ADVISOR:        ['advisor', 'company-readonly'],
 };
 
 class AccountProvisioningService {
@@ -57,6 +41,52 @@ class AccountProvisioningService {
 
   getWorkerAccountsForCompany(companyId: string): KoraUserAccount[] {
     return records.filter((u) => u.company_id === companyId && u.role === 'WORKER');
+  }
+
+  getCompanyAdmins(companyId: string): KoraUserAccount[] {
+    return records.filter((u) => u.company_id === companyId && u.role === 'COMPANY_ADMIN');
+  }
+
+  getPrimaryCompanyAdmin(companyId: string): KoraUserAccount | null {
+    return this.getCompanyAdmins(companyId).find((u) => u.account_status === 'active_demo') ?? null;
+  }
+
+  getCompanyViewers(companyId: string): KoraUserAccount[] {
+    return records.filter((u) => u.company_id === companyId && u.role === 'COMPANY_VIEWER');
+  }
+
+  createCompanyUserDraft(
+    companyId: string,
+    tenantId: string,
+    input: {
+      admin_name: string;
+      admin_email: string;
+      admin_role?: KoraUserRole;
+      password_setup_mode?: CompanyAdminProvisioningDraft['password_setup_mode'];
+      visible_sections?: string[];
+    },
+  ): CompanyAdminProvisioningDraft {
+    const role = input.admin_role ?? 'COMPANY_ADMIN';
+    return {
+      provisioning_id: `prov-${Date.now()}`,
+      tenant_id: tenantId,
+      company_id: companyId,
+      admin_name: input.admin_name,
+      admin_email: input.admin_email,
+      admin_role: role,
+      access_scope: 'company_scoped',
+      invitation_status: 'not_sent',
+      default_route: '/company',
+      visible_sections: input.visible_sections ?? DEFAULT_VISIBLE_SECTIONS[role] ?? [],
+      hidden_sections: [
+        'company-setup', 'onboarding-studio', 'workforce-baseline-upload',
+        'ai-ingestion', 'uef-review', 'scoring-run', 'decision-pack-generation',
+      ],
+      password_setup_mode: input.password_setup_mode ?? 'invite_link',
+      security_notes: 'Nessuna password in chiaro salvata. Demo-only. Invito link non reale.',
+      production_ready: false,
+      demo_only: true,
+    };
   }
 
   createCompanyAdminDraft(

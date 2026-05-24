@@ -125,7 +125,7 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
   {
     id: 'worker',
     roleLabel: 'Rappresentante Lavoratori',
-    koraRole: 'WORKER_MY_KORA',
+    koraRole: 'WORKER',
     firstRoute: '/my-kora',
     goal: "Verificare che il lavoratore abbia valore personale e privacy, non sorveglianza.",
     keyMessage: "Il PIB individuale, la timeline personale e il Dynamic Impact CV restano nel layer personale del lavoratore.",
@@ -149,7 +149,7 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
   {
     id: 'partner',
     roleLabel: 'Partner',
-    koraRole: 'PARTNER_ADMIN_LIGHT',
+    koraRole: 'PARTNER',
     firstRoute: '/partner',
     goal: "Capire il ruolo operativo del partner nella pipeline KORA.",
     keyMessage: "Il partner abilita azioni verificabili, opera su coorti aggregate e protocolli evidenze, non vende in un marketplace.",
@@ -172,7 +172,7 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
   {
     id: 'advisor',
     roleLabel: 'Advisor',
-    koraRole: 'ADVISOR_EXTERNAL_LIGHT',
+    koraRole: 'ADVISOR',
     firstRoute: '/advisor',
     goal: "Capire il ruolo di audit processo, Evidence Protocol Review e Trust Ledger.",
     keyMessage: "L'Advisor non valida ogni azione: audita il processo, monitora periodicamente e gestisce sample check / re-review.",

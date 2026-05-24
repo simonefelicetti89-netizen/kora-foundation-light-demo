@@ -5,19 +5,15 @@ export const KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'NI', 'WB', 'PC', 'PB', 'EQ',
 // KORA Index v3 macroblock codes
 export const MACROBLOCK_CODES = ['REACH', 'QUALITY', 'EQUITY', 'BTI'] as const;
 
-// 11 active demo roles — KORA_PRIVACY_OFFICER excluded (Gate 3 / production only, doc 24)
+// Foundation Light active product roles are intentionally simplified.
+// Granular HR/ESG/Finance/Executive permissions are future permission layers, not active MVP roles.
 export const KORA_ROLES = [
   'KORA_ADMIN',
-  'KORA_ANALYST',
-  'FOUNDER_INTERNAL',
   'COMPANY_ADMIN',
-  'COMPANY_HR',
-  'COMPANY_ESG',
-  'COMPANY_FINANCE',
   'COMPANY_VIEWER',
-  'WORKER_MY_KORA',
-  'PARTNER_ADMIN_LIGHT',
-  'ADVISOR_EXTERNAL_LIGHT',
+  'WORKER',
+  'PARTNER',
+  'ADVISOR',
 ] as const;
 
 export const SAFEGUARD_THRESHOLDS = {
@@ -53,15 +49,12 @@ export const PILLAR_LABELS: Record<string, string> = {
 
 export const EMPLOYER_ROLES = [
   'COMPANY_ADMIN',
-  'COMPANY_HR',
-  'COMPANY_ESG',
-  'COMPANY_FINANCE',
   'COMPANY_VIEWER',
 ] as const;
 
-export const WORKER_ROLES = ['WORKER_MY_KORA'] as const;
+export const WORKER_ROLES = ['WORKER'] as const;
 
-export const ADMIN_ROLES = ['KORA_ADMIN', 'KORA_ANALYST', 'FOUNDER_INTERNAL'] as const;
+export const ADMIN_ROLES = ['KORA_ADMIN'] as const;
 
 // ── KORA Index v3 — Methodology versioning ─────────────────────────────────────
 

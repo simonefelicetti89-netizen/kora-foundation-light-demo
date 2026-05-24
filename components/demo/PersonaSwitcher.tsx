@@ -3,7 +3,7 @@
 import { usePersona, useRole } from '@/lib/demo-state';
 import { isWorkerRole } from '@/lib/permissions';
 
-// My KORA only — shown when active role is WORKER_MY_KORA
+// My KORA only — shown when active role is WORKER
 export function PersonaSwitcher() {
   const { activeRole } = useRole();
   const { activePersona, setPersona } = usePersona();

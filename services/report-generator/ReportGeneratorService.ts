@@ -566,7 +566,7 @@ function sectionUEFReviewDataQuality(
     }] : [],
     recommendations: [],
     limitations:       [
-      'UEF Review Foundation Light — revisore "ADVISOR_EXTERNAL_LIGHT" demo. Non equivalente a revisione advisor certificata.',
+      'UEF Review Foundation Light — revisore "ADVISOR" demo. Non equivalente a revisione advisor certificata.',
       'CQ e EV medi includono record bloccati (CQ=0, EV=0) — il valore aggregato sottostima la qualità dei soli record eleggibili.',
     ],
   };

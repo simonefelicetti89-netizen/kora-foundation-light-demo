@@ -1373,25 +1373,22 @@ export interface WorkforceBaselineRecord {
   pipeline_links: PipelineStageLink[];
 }
 
-// ── Access Control Foundation (Block 7B) ───────────────────────────────────────
+// ── Access Control Foundation ───────────────────────────────────────────────────
+// Foundation Light active product roles are intentionally simplified.
+// Granular HR/ESG/Finance/Executive permissions are future permission layers, not active MVP roles.
 
-export type KoraUserRole =
-  | 'KORA_SUPER_ADMIN'
+export type ActiveProductRole =
   | 'KORA_ADMIN'
-  | 'KORA_OPERATOR'
-  | 'KORA_ANALYST'
-  | 'KORA_ADVISOR'
-  | 'KORA_VIEWER'
-  | 'FOUNDER_INTERNAL'
   | 'COMPANY_ADMIN'
-  | 'COMPANY_HR'
-  | 'COMPANY_FINANCE'
-  | 'COMPANY_ESG'
-  | 'COMPANY_EXECUTIVE'
   | 'COMPANY_VIEWER'
-  | 'PARTNER_ADMIN'
-  | 'PARTNER_OPERATOR'
-  | 'WORKER';
+  | 'WORKER'
+  | 'PARTNER'
+  | 'ADVISOR';
+
+// KoraUserRole — canonical 6-role union for Foundation Light.
+// Broader internal roles (KORA_ANALYST, FOUNDER_INTERNAL, COMPANY_HR, COMPANY_FINANCE, etc.)
+// are future/internal permission layers and are not active product roles.
+export type KoraUserRole = ActiveProductRole;
 
 export type KoraAccessScope =
   | 'global_admin'
@@ -1598,3 +1595,193 @@ export type ReadinessItemStatus =
   | 'privacy_review_required'
   | 'ready_for_pipeline'
   | 'ready_for_company_portal';
+
+// ── Tenant-Scoped Admin Data Intake ─────────────────────────────────────────────
+
+export type CompanyDataIntakeStatus =
+  | 'not_started'
+  | 'draft'
+  | 'partial'
+  | 'validation_required'
+  | 'ready_for_ingestion'
+  | 'blocked_missing_required_fields';
+
+export type FiscalPerimeterCode =
+  | 'welfare'
+  | 'fringe_benefit'
+  | 'people_esg'
+  | 'training'
+  | 'territorial_community'
+  | 'pension_future'
+  | 'compliance_excluded'
+  | 'unknown';
+
+export type FiscalDefaultEligibility = 'eligible' | 'limited' | 'blocked' | 'review_required';
+export type FiscalActivationDepth = 'high' | 'medium' | 'low' | 'none';
+
+export interface FiscalPerimeterAllocation {
+  perimeter_code: FiscalPerimeterCode;
+  label: string;
+  description: string;
+  allocated_budget_eur: number;
+  committed_budget_eur: number;
+  spent_budget_eur: number;
+  available_budget_eur: number;
+  default_eligibility: FiscalDefaultEligibility;
+  activation_depth: FiscalActivationDepth;
+  compatible_pillars: PillarCode[];
+  compatible_partner_categories: string[];
+  compatible_action_families: ActionFamily[];
+  fiscal_notes: string;
+  methodology_notes: string;
+  risk_flags: string[];
+}
+
+export interface CompanyBudgetFiscalPlan {
+  company_id: string;
+  tenant_id: string;
+  period: string;
+  total_people_welfare_budget_eur: number;
+  fiscal_perimeters: FiscalPerimeterAllocation[];
+  economic_relief_budget_eur: number;
+  deep_activation_budget_eur: number;
+  structural_policy_non_budget_mediated_count: number;
+  compliance_excluded_budget_eur: number;
+  unallocated_budget_eur: number;
+  reallocation_opportunity_eur: number;
+  allocation_quality_score: number;
+  status: CompanyDataIntakeStatus;
+  next_action: string;
+  limitations: string[];
+  synthetic_demo_data: true;
+}
+
+export type RawDataSourceType =
+  | 'welfare_provider_export'
+  | 'lms_training_export'
+  | 'finance_budget_export'
+  | 'hr_people_program_file'
+  | 'esg_community_file'
+  | 'company_policy_register'
+  | 'collective_agreement_file'
+  | 'manual_admin_entry'
+  | 'synthetic_demo_file'
+  | 'future_api';
+
+export type RawDataRowCategory =
+  | 'welfare_program'
+  | 'training_program'
+  | 'people_program'
+  | 'budget_allocation'
+  | 'economic_relief'
+  | 'hse_compliance'
+  | 'legal_compliance'
+  | 'esg_community'
+  | 'provider_evidence'
+  | 'organizational_policy'
+  | 'structural_policy'
+  | 'unknown';
+
+export type RawDataMandatoryStatus =
+  | 'voluntary'
+  | 'mandatory_legal'
+  | 'mandatory_role'
+  | 'mandatory_company_policy'
+  | 'unknown';
+
+export type RawDataEvidenceStatus =
+  | 'formal_policy_document'
+  | 'collective_agreement_signed'
+  | 'board_approval_record'
+  | 'hr_policy_register'
+  | 'certified_partner'
+  | 'provider_report'
+  | 'invoice_or_budget_record'
+  | 'internal_admin_record'
+  | 'self_declared'
+  | 'missing'
+  | 'unknown';
+
+export type RawDataUploadStatus =
+  | 'draft'
+  | 'uploaded'
+  | 'validated'
+  | 'review_required'
+  | 'approved'
+  | 'rejected';
+
+export interface CompanyRawDataBatch {
+  batch_id: string;
+  tenant_id: string;
+  company_id: string;
+  company_name: string;
+  source_name: string;
+  source_type: RawDataSourceType;
+  source_file_name: string;
+  uploaded_at: string;
+  uploaded_by: string;
+  upload_status: RawDataUploadStatus;
+  total_rows: number;
+  valid_rows: number;
+  invalid_rows: number;
+  duplicate_rows: number;
+  missing_required_fields_count: number;
+  ready_for_ingestion_count: number;
+  blocked_candidate_count: number;
+  limited_candidate_count: number;
+  structural_policy_count: number;
+  review_required_candidate_count: number;
+  synthetic_demo_data: true;
+  production_ready: false;
+}
+
+export interface CompanyRawDataRow {
+  row_id: string;
+  tenant_id: string;
+  company_id: string;
+  batch_id: string;
+  raw_name: string;
+  raw_description: string;
+  source_type: RawDataSourceType;
+  row_category: RawDataRowCategory;
+  fiscal_perimeter: FiscalPerimeterCode;
+  mandatory_status: RawDataMandatoryStatus;
+  provider_name?: string;
+  amount_eur?: number;
+  period: string;
+  target_population: string;
+  site_or_cluster: string;
+  evidence_status: RawDataEvidenceStatus;
+  evidence_reference: string;
+  action_family_hint: ActionFamily;
+  event_nature_hint: EventNature;
+  expected_eligibility_hint: 'eligible' | 'limited' | 'blocked' | 'review_required';
+  budget_mediated: boolean;
+  individual_usage_visible: boolean;
+  missing_fields: string[];
+  validation_warnings: string[];
+  ready_for_ingestion: boolean;
+  notes: string;
+}
+
+export interface CompanyDataReadinessSummary {
+  tenant_id: string;
+  company_id: string;
+  intake_status: CompanyDataIntakeStatus;
+  fiscal_plan_status: 'not_started' | 'draft' | 'partial' | 'complete';
+  batch_count: number;
+  total_rows: number;
+  ready_for_ingestion_rows: number;
+  eligible_candidate_rows: number;
+  limited_candidate_rows: number;
+  blocked_candidate_rows: number;
+  structural_policy_rows: number;
+  review_required_rows: number;
+  missing_fields_count: number;
+  data_quality_score: number;
+  ingestion_ready: boolean;
+  kora_index_available: boolean;
+  decision_pack_available: boolean;
+  next_action: string;
+  limitations: string[];
+}

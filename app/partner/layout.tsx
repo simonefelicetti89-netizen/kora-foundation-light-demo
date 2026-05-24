@@ -5,8 +5,8 @@ import { AccessDeniedState } from '@/components/privacy/AccessDeniedState';
 
 export default function PartnerLayout({ children }: { children: React.ReactNode }) {
   const { activeRole } = useRole();
-  if (activeRole !== 'PARTNER_ADMIN_LIGHT') {
-    return <AccessDeniedState role={activeRole} route="/partner" requiredRole="PARTNER_ADMIN_LIGHT" reason="Il workspace partner è riservato al ruolo Partner Admin Light." />;
+  if (activeRole !== 'PARTNER') {
+    return <AccessDeniedState role={activeRole} route="/partner" requiredRole="PARTNER" reason="Il workspace partner è riservato al ruolo Partner." />;
   }
   return <>{children}</>;
 }

@@ -38,12 +38,12 @@ export function formatCalibrationStatus(status: string): string {
 
 export function formatRole(role: string): string {
   const labels: Record<string, string> = {
-    KORA_ADMIN: 'KORA Admin', KORA_ANALYST: 'KORA Analyst',
-    FOUNDER_INTERNAL: 'Founder / Internal', COMPANY_ADMIN: 'Company Admin',
-    COMPANY_HR: 'Company HR / People', COMPANY_ESG: 'Company ESG',
-    COMPANY_FINANCE: 'Company Finance', COMPANY_VIEWER: 'Company Viewer',
-    WORKER_MY_KORA: 'Worker / My KORA', PARTNER_ADMIN_LIGHT: 'Partner Admin Light',
-    ADVISOR_EXTERNAL_LIGHT: 'Advisor External Light',
+    KORA_ADMIN:     'KORA Admin',
+    COMPANY_ADMIN:  'Company Admin',
+    COMPANY_VIEWER: 'Company Viewer',
+    WORKER:         'Worker',
+    PARTNER:        'Partner',
+    ADVISOR:        'Advisor',
   };
   return labels[role] ?? role;
 }

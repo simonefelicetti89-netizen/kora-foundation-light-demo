@@ -113,7 +113,7 @@ export default function MyKoraHome() {
             sessione del lavoratore stesso.
           </p>
           <p className="mt-3 text-xs font-mono text-rose-400">Ruolo attivo: {activeRole}</p>
-          <p className="mt-1 text-xs text-rose-400">Passa al ruolo WORKER_MY_KORA per visualizzare questo spazio.</p>
+          <p className="mt-1 text-xs text-rose-400">Passa al ruolo WORKER per visualizzare questo spazio.</p>
         </div>
       </div>
     );

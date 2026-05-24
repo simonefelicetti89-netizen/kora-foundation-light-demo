@@ -63,7 +63,7 @@ function buildReviewRecord(row: PipelineAnalyzedRow): UEFReviewRecord {
     approved_for_impact_units:   row.kora_ready.approved_for_impact_units,
     review_decision:             decision,
     reviewer_notes:              notes,
-    reviewed_by:                 isReviewed ? 'ADVISOR_EXTERNAL_LIGHT' : null,
+    reviewed_by:                 isReviewed ? 'ADVISOR' : null,
     reviewed_at:                 isReviewed ? '2025-12-10T09:15:00Z' : null,
     data_completeness_score:     row.normalized.data_completeness_score,
     missing_fields:              row.normalized.missing_fields,

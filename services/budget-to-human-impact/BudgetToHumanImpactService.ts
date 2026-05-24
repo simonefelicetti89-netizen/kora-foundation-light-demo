@@ -12,12 +12,8 @@ import btiRaw from '@/data/synthetic/budget-to-human-impact.json';
 // ── Role gating ────────────────────────────────────────────────────────────────
 const ALLOWED_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>([
   'KORA_ADMIN',
-  'KORA_ANALYST',
-  'FOUNDER_INTERNAL',
   'COMPANY_ADMIN',
-  'COMPANY_FINANCE',
-  'COMPANY_HR',
-  'COMPANY_ESG',
+  'COMPANY_VIEWER',
 ]);
 
 // ── Seed shape (superset of BudgetToHumanImpactRecord) ─────────────────────────
@@ -229,7 +225,7 @@ export class BudgetToHumanImpactService implements IBudgetToHumanImpactService {
     if (!this.canAccess(role)) {
       return {
         allowed: false,
-        reason: `Role ${role} non ha accesso ai dati Budget-to-Human-Impact. Richiede COMPANY_FINANCE, COMPANY_ADMIN, o KORA_ADMIN.`,
+        reason: `Role ${role} non ha accesso ai dati Budget-to-Human-Impact. Richiede COMPANY_ADMIN, COMPANY_VIEWER, o KORA_ADMIN.`,
       };
     }
     const seed = this.findSeed(companyId, scenarioId);

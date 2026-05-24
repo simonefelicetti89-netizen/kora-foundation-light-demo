@@ -44,7 +44,7 @@ export function resolvePermission(role: KoraRole, resource: string): boolean {
   if (WORKER_PRIVATE_RESOURCES.has(resource)) return isWorkerRole(role);
   if (ADMIN_ONLY_RESOURCES.has(resource)) return isAdminRole(role) || role === 'COMPANY_ADMIN';
   if (FINANCE_ADMIN_RESOURCES.has(resource)) {
-    return isAdminRole(role) || role === 'COMPANY_ADMIN' || role === 'COMPANY_FINANCE' || role === 'COMPANY_HR';
+    return isAdminRole(role) || role === 'COMPANY_ADMIN' || role === 'COMPANY_VIEWER';
   }
   return true;
 }
@@ -61,25 +61,24 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
       '/company/data', '/company/financial',
     );
   }
-  if (isEmployerRole(role)) {
+  if (role === 'COMPANY_ADMIN') {
     routes.push(
       '/company', '/company/kora-index', '/company/reports', '/company/activation',
-      '/company/contribution', '/company/pillars',
+      '/company/contribution', '/company/pillars', '/company/data',
+      '/company/financial', '/company/profile',
     );
-    if (role === 'COMPANY_ADMIN' || role === 'COMPANY_HR') {
-      routes.push('/company/ingestion', '/company/ingestion/mapping-review',
-        '/company/uef-review', '/company/scoring', '/company/data');
-    }
-    if (role === 'COMPANY_ADMIN' || role === 'COMPANY_FINANCE') {
-      routes.push('/company/financial');
-    }
+  }
+  if (role === 'COMPANY_VIEWER') {
+    routes.push(
+      '/company', '/company/kora-index', '/company/profile',
+    );
   }
   if (isWorkerRole(role)) {
     routes.push('/my-kora', '/my-kora/privacy', '/my-kora/dynamic-cv',
       '/my-kora/opportunities', '/my-kora/bookings', '/my-kora/collective');
   }
-  if (role === 'PARTNER_ADMIN_LIGHT') routes.push('/partner');
-  if (role === 'ADVISOR_EXTERNAL_LIGHT') routes.push('/advisor');
+  if (role === 'PARTNER') routes.push('/partner');
+  if (role === 'ADVISOR') routes.push('/advisor');
   routes.push('/future-vision');
   return [...new Set(routes)];
 }

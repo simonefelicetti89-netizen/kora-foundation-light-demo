@@ -13,26 +13,6 @@ const DEMO_USERS: KoraDemoUser[] = [
     notes: 'Full platform access. Sees all companies.',
   },
   {
-    user_id: 'admin-002',
-    display_name: 'KORA Analyst',
-    role: 'KORA_ANALYST',
-    access_scope: 'global_admin',
-    can_access_admin: true,
-    can_access_company_portal: true,
-    allowed_routes: ['/admin', '/admin/companies', '/company'],
-    notes: 'Read-only admin access. Sees all companies.',
-  },
-  {
-    user_id: 'admin-003',
-    display_name: 'KORA Founder',
-    role: 'FOUNDER_INTERNAL',
-    access_scope: 'global_admin',
-    can_access_admin: true,
-    can_access_company_portal: true,
-    allowed_routes: ['/admin', '/admin/companies', '/company'],
-    notes: 'Founder access. Sees all companies and gates.',
-  },
-  {
     user_id: 'meridiana-admin-001',
     display_name: 'Meridiana Admin',
     role: 'COMPANY_ADMIN',
@@ -44,15 +24,15 @@ const DEMO_USERS: KoraDemoUser[] = [
     notes: 'Scoped to Meridiana Group only. Cannot see other companies.',
   },
   {
-    user_id: 'meridiana-hr-001',
-    display_name: 'Meridiana HR',
-    role: 'COMPANY_HR',
+    user_id: 'alba-viewer-001',
+    display_name: 'Alba Viewer',
+    role: 'COMPANY_VIEWER',
     access_scope: 'company_scoped',
-    company_id: 'meridiana-group',
+    company_id: 'alba-manufacturing',
     can_access_admin: false,
     can_access_company_portal: true,
-    allowed_routes: ['/company', '/company/kora-index', '/company/reports', '/company/profile'],
-    notes: 'Scoped to Meridiana Group. HR access only.',
+    allowed_routes: ['/company', '/company/kora-index', '/company/profile'],
+    notes: 'Read-only access to Alba Manufacturing KORA Index and Executive Cockpit.',
   },
 ];
 
@@ -60,7 +40,7 @@ const COMPANY_ACCESS_PROFILES: CompanyAccessProfile[] = [
   {
     company_id: 'meridiana-group',
     company_name: 'Meridiana Group S.r.l.',
-    allowed_company_roles: ['COMPANY_ADMIN', 'COMPANY_HR', 'COMPANY_FINANCE', 'COMPANY_ESG', 'COMPANY_VIEWER'],
+    allowed_company_roles: ['COMPANY_ADMIN', 'COMPANY_VIEWER'],
     default_company_route: '/company',
     visible_company_sections: [
       'executive-cockpit',
@@ -93,7 +73,7 @@ const COMPANY_ACCESS_PROFILES: CompanyAccessProfile[] = [
   {
     company_id: 'alba-manufacturing',
     company_name: 'Alba Manufacturing S.p.A.',
-    allowed_company_roles: ['COMPANY_ADMIN', 'COMPANY_HR', 'COMPANY_FINANCE'],
+    allowed_company_roles: ['COMPANY_ADMIN', 'COMPANY_VIEWER'],
     default_company_route: '/company',
     visible_company_sections: ['executive-cockpit', 'kora-index', 'reports', 'profile'],
     hidden_operational_sections: [
@@ -107,14 +87,8 @@ const COMPANY_ACCESS_PROFILES: CompanyAccessProfile[] = [
   },
 ];
 
-const ADMIN_ROLES: KoraUserRole[] = [
-  'KORA_SUPER_ADMIN', 'KORA_ADMIN', 'KORA_OPERATOR', 'KORA_ANALYST',
-  'KORA_ADVISOR', 'KORA_VIEWER', 'FOUNDER_INTERNAL',
-];
-const COMPANY_ROLES: KoraUserRole[] = [
-  'COMPANY_ADMIN', 'COMPANY_HR', 'COMPANY_FINANCE', 'COMPANY_ESG',
-  'COMPANY_EXECUTIVE', 'COMPANY_VIEWER',
-];
+const ADMIN_ROLES: KoraUserRole[] = ['KORA_ADMIN'];
+const COMPANY_ROLES: KoraUserRole[] = ['COMPANY_ADMIN', 'COMPANY_VIEWER'];
 
 class AccessControlService {
   getCurrentDemoUser(role?: string): KoraDemoUser {

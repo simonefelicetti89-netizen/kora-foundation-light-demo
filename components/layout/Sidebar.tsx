@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRole } from '@/lib/demo-state';
-import { isEmployerRole, isWorkerRole, isAdminRole } from '@/lib/permissions';
+import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -76,8 +76,8 @@ function buildNavGroups(role: string): NavGroup[] {
     ];
   }
 
-  if (isEmployerRole(role as Parameters<typeof isEmployerRole>[0])) {
-    const groups: NavGroup[] = [
+  if (role === 'COMPANY_ADMIN') {
+    return [
       DEMO_GROUP,
       {
         heading: 'Il Tuo Spazio KORA',
@@ -98,14 +98,29 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/company/reports',   label: 'Decision Pack' },
         ],
       },
+      {
+        heading: 'Altro',
+        items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
+      },
     ];
+  }
 
-    groups.push({
-      heading: 'Altro',
-      items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
-    });
-
-    return groups;
+  if (role === 'COMPANY_VIEWER') {
+    return [
+      DEMO_GROUP,
+      {
+        heading: 'Il Tuo Spazio KORA',
+        items: [
+          { href: '/company/profile',    label: 'Profilo & Stato KORA' },
+          { href: '/company',            label: 'Executive Cockpit' },
+          { href: '/company/kora-index', label: 'KORA Index' },
+        ],
+      },
+      {
+        heading: 'Altro',
+        items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
+      },
+    ];
   }
 
   if (isWorkerRole(role as Parameters<typeof isWorkerRole>[0])) {
@@ -129,7 +144,7 @@ function buildNavGroups(role: string): NavGroup[] {
     ];
   }
 
-  if (role === 'PARTNER_ADMIN_LIGHT') {
+  if (role === 'PARTNER') {
     return [
       DEMO_GROUP,
       {
@@ -143,7 +158,7 @@ function buildNavGroups(role: string): NavGroup[] {
     ];
   }
 
-  if (role === 'ADVISOR_EXTERNAL_LIGHT') {
+  if (role === 'ADVISOR') {
     return [
       DEMO_GROUP,
       {

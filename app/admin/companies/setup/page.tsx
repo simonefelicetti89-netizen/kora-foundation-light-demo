@@ -312,7 +312,7 @@ export default function EnterpriseOnboardingWizard() {
         {
           admin_name: state.admin_name,
           admin_email: state.admin_email,
-          admin_role: state.admin_role as 'COMPANY_ADMIN',
+          admin_role: state.admin_role as 'COMPANY_ADMIN' | 'COMPANY_VIEWER',
           password_setup_mode: state.password_setup_mode as CompanyAdminProvisioningDraft['password_setup_mode'],
         },
       );
@@ -542,6 +542,7 @@ export default function EnterpriseOnboardingWizard() {
             <p className="text-xs text-slate-400 mt-0.5">Configura il primo accesso company-scoped per il cliente.</p>
           </div>
           <div className="rounded border border-blue-100 bg-blue-50 px-3 py-2.5 text-xs text-blue-800 leading-relaxed space-y-0.5">
+            <p><span className="font-semibold">Foundation Light usa ruoli semplici ma supporta più utenti per azienda.</span></p>
             <p><span className="font-semibold">Scoping aziendale.</span> Gli utenti aziendali sono company-scoped: vedono solo la propria azienda.</p>
             <p>La creazione password reale richiede backend / auth provider. Questa versione prepara una bozza invito / accesso.</p>
           </div>
@@ -550,9 +551,8 @@ export default function EnterpriseOnboardingWizard() {
             <Input label="Email admin" value={state.admin_email} onChange={(v) => update('admin_email', v)} placeholder="es. m.bianchi@azienda.it" required />
             <Select label="Ruolo" value={state.admin_role} onChange={(v) => update('admin_role', v)}
               options={[
-                { value: 'COMPANY_ADMIN', label: 'COMPANY_ADMIN — accesso completo portale' },
-                { value: 'COMPANY_HR', label: 'COMPANY_HR — accesso HR e analytics' },
-                { value: 'COMPANY_EXECUTIVE', label: 'COMPANY_EXECUTIVE — Executive view' },
+                { value: 'COMPANY_ADMIN',  label: 'COMPANY_ADMIN — accesso completo portale aziendale' },
+                { value: 'COMPANY_VIEWER', label: 'COMPANY_VIEWER — sola lettura (Executive Cockpit e KORA Index)' },
               ]}
             />
             <Select label="Modalità accesso" value={state.password_setup_mode} onChange={(v) => update('password_setup_mode', v)}
@@ -571,7 +571,7 @@ export default function EnterpriseOnboardingWizard() {
             </div>
           )}
           <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500">
-            Sezioni visibili di default: executive-cockpit, kora-index, reports, financial, pillars, activation, contribution, profile.
+            COMPANY_ADMIN: executive-cockpit, kora-index, reports, financial, pillars, activation, contribution, profile. COMPANY_VIEWER: executive-cockpit, kora-index, profile. È possibile aggiungere ulteriori utenti con ruolo COMPANY_VIEWER per condividere l&apos;accesso in sola lettura.
             Sezioni operative (setup, ingestion, uef-review, scoring) rimangono gestite lato KORA Admin.
           </div>
         </section>

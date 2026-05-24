@@ -534,7 +534,7 @@ export function DemoGuideContent() {
         </p>
         <p className="text-sm text-slate-500 mb-4 leading-relaxed">
           Il datore di lavoro vede l&apos;organizzazione, non la persona.
-          Usa il WorkspaceSwitcher per passare al ruolo WORKER_MY_KORA e
+          Usa il WorkspaceSwitcher per passare al ruolo WORKER e
           esplorare il layer personale del lavoratore.
         </p>
 
@@ -587,7 +587,7 @@ export function DemoGuideContent() {
             Apri My KORA — demo
           </Link>
           <p className="text-[11px] text-slate-400">
-            Passa a WORKER_MY_KORA nel WorkspaceSwitcher prima di aprire My KORA per esplorare il layer personale.
+            Passa a WORKER nel WorkspaceSwitcher prima di aprire My KORA per esplorare il layer personale.
           </p>
         </div>
       </div>

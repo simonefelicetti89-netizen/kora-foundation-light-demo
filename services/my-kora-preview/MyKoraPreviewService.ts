@@ -304,7 +304,7 @@ const CV_ITEMS: DynamicCVItem[] = [
 ];
 
 class MyKoraPreviewService {
-  // Role guard — only WORKER_MY_KORA receives worker-private preview content
+  // Role guard — only WORKER receives worker-private preview content
   canAccess(role: KoraRole): boolean {
     return isWorkerRole(role);
   }
@@ -327,10 +327,12 @@ class MyKoraPreviewService {
     };
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getPrivacySummary(_workerPersonaId: string): PrivacySummary {
     return PRIVACY_SUMMARY;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getDynamicCvPreview(_workerPersonaId: string): DynamicCVPreview {
     const verified = CV_ITEMS.filter((i) => i.verification_status === 'verified').length;
     return {

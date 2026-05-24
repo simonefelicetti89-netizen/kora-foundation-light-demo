@@ -18,7 +18,7 @@ export interface IFounderValidationService {
 
 export class FounderValidationService implements IFounderValidationService {
   getPipeline(role: KoraRole): ValidationPipeline {
-    if (!isAdminRole(role) && role !== 'FOUNDER_INTERNAL') {
+    if (!isAdminRole(role)) {
       return { contacts: [], pipeline_kpis: { total_contacts: 0, meetings_set: 0, pilot_commitments: 0, positive_revenue_signals: 0 } };
     }
     return {

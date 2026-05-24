@@ -4,12 +4,8 @@ import financialGovernanceRaw from '@/data/synthetic/financial-governance.json';
 // Financial Governance is informational only — no payment execution, no KORA Index feed
 const ALLOWED_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>([
   'KORA_ADMIN',
-  'KORA_ANALYST',
-  'FOUNDER_INTERNAL',
   'COMPANY_ADMIN',
-  'COMPANY_FINANCE',
-  'COMPANY_HR',
-  'COMPANY_ESG',
+  'COMPANY_VIEWER',
 ]);
 
 interface SeedPillarBudget {
@@ -204,7 +200,7 @@ export class FinancialGovernanceService implements IFinancialGovernanceService {
     if (!this.canAccessFinancialGovernance(role)) {
       return {
         allowed: false,
-        reason: `Role ${role} does not have access to financial governance data. Requires COMPANY_FINANCE, COMPANY_HR, COMPANY_ESG, COMPANY_ADMIN, or KORA_ADMIN.`,
+        reason: `Role ${role} does not have access to financial governance data. Requires COMPANY_ADMIN, COMPANY_VIEWER, or KORA_ADMIN.`,
       };
     }
     const rec = this.findRecord(companyId, scenarioId);
