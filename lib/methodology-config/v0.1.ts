@@ -15,12 +15,14 @@ export function getCalibrationStatus(): string {
 }
 
 /**
- * @deprecated Legacy equal weights — NOT canonical for KORA Index v3.
- * Previous equal weights (0.10 × 10) were provisional scaffolding.
- * Use getMacroblockWeights() or getComponentEffectiveWeight() for v3 computation.
+ * @deprecated Removed — KORA Index v3 uses macroblock weights.
+ * Use getMacroblockWeights() or getAllComponentEffectiveWeights().
+ * @throws Always throws to prevent accidental usage of old equal-weight scaffold.
  */
-export function getWeights(): Record<string, number> {
-  return config.weights;
+export function getWeights(): never {
+  throw new Error(
+    'Deprecated: KORA Index v3 uses macroblock weights. Use getMacroblockWeights() / getAllComponentEffectiveWeights().',
+  );
 }
 
 export function getThresholds(): MethodologyConfig['safeguard_thresholds'] {

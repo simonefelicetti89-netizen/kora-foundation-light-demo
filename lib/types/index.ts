@@ -673,9 +673,8 @@ export interface UEFAuditEvent {
 export interface MethodologyConfig {
   version: string;
   calibration_status: CalibrationStatus;
-  // Legacy equal weights — retained for backwards compatibility only.
-  // Not canonical for KORA Index v3. Use kora_index_v3.macroblocks for v3 computation.
-  weights: Record<string, number>;
+  // Legacy equal weights — removed. Not canonical for KORA Index v3.
+  weights?: Record<string, number>;
   // KORA Index v3 macroblock structure — canonical for v3 computation
   kora_index_v3?: {
     macroblocks: Partial<Record<MacroblockCode, MacroblockConfig>>;

@@ -452,6 +452,12 @@ export default function FinancialGovernance() {
           <p className="mt-1 text-[11px] text-slate-500 italic max-w-2xl">{BTI_DOCTRINE.limited_reframe}</p>
         </div>
 
+        {/* ── BTI methodology boundary note ── */}
+        <div className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500 leading-relaxed max-w-2xl">
+          <span className="font-semibold">Nota metodologica: </span>
+          Gli indicatori BTI mostrati qui alimentano il motore Budget-to-Human-Impact — non entrano direttamente nel calcolo del KORA Index come componenti separati. Il punteggio BTI (macroblocco al 20%) è calcolato dal BudgetToHumanImpactEngine, non dai valori dei componenti analitici AR, MAR, NI, VR, CO, WB, PC, PB, EQ.
+        </div>
+
         {/* ── BTI Executive Hero — 4 cards — from BudgetToHumanImpactService ── */}
         <div>
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">

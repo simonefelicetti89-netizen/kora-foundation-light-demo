@@ -82,6 +82,30 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
       'Gate interpretativo applicato dopo il calcolo del KORA Index. Stati: CLEAR (AR ≥ 0,40 E MAR ≥ 0,30 — output interpretabile con piena fiducia), WARNING (AR < 0,40 O MAR < 0,30 — output disponibile ma con fiducia ridotta), FLAGGED (AR < 0,20 O MAR < 0,15 — base di partecipazione troppo bassa per un\'interpretazione affidabile). L\'Activation Safeguard non è un componente del KORA Index: è un\'etichetta interpretativa non bypassabile.',
     related_concepts: ['activation_rate', 'meaningful_activation_rate', 'kora_index'],
   },
+  activation_reach: {
+    key: 'activation_reach',
+    label_it: 'Activation Reach',
+    label_en: 'Activation Reach',
+    definition_it:
+      'Il primo macroblocco del KORA Index v3 (peso 25%). Misura se l\'attivazione raggiunge una quota significativa della forza lavoro. Sintetizza due componenti analitici: AR (Activation Rate, peso 50%) e MAR (Meaningful Activation Rate, peso 50%). Un macroblocco basso segnala che la maggior parte dei lavoratori non è stata raggiunta da alcun programma di attivazione verificata nel periodo. Il macroblocco è una sintesi aggregata: non coincide con il solo AR. Un AR elevato con MAR basso (partecipazione formale ma non significativa) produce un macroblocco Activation Reach moderato, non massimo.',
+    related_concepts: ['activation_rate', 'meaningful_activation_rate', 'kora_index'],
+  },
+  activation_quality: {
+    key: 'activation_quality',
+    label_it: 'Activation Quality',
+    label_en: 'Activation Quality',
+    definition_it:
+      'Il secondo macroblocco del KORA Index v3 (peso 30%). Misura se le azioni generano attivazione profonda, verificata, addizionale e continua. Sintetizza tre componenti analitici: NI (Normalized Intensity, peso 33%), VR (Verification Rate, peso 33%), CO (Continuity, peso 34%). Un macroblocco basso segnala che l\'attivazione è superficiale, non verificata o episodica. Il macroblocco è una sintesi aggregata: non coincide con il solo CO o con il solo NI. Un NI alto con CO basso segnala engagement intenso ma non ricorrente.',
+    related_concepts: ['normalized_intensity', 'verification_rate', 'continuity', 'kora_index'],
+  },
+  distribution_equity: {
+    key: 'distribution_equity',
+    label_it: 'Distribution & Equity',
+    label_en: 'Distribution & Equity',
+    definition_it:
+      'Il terzo macroblocco del KORA Index v3 (peso 25%). Misura se valore e attivazione sono distribuiti equamente tra lavoratori, sedi, dipartimenti e cluster. Sintetizza quattro componenti analitici: WB (Worker Balance, peso 25%), PC (Pillar Coverage, peso 25%), PB (Pillar Balance, peso 25%), EQ (Equity, peso 25%). Alta concentrazione tra pochi lavoratori o siti riduce questo macroblocco anche se il KORA Index totale è positivo. Non coincide con il solo EQ: un punteggio di Equity alto ma con bassa Pillar Coverage produce comunque un macroblocco Distribution & Equity moderato.',
+    related_concepts: ['worker_balance', 'pillar_coverage', 'pillar_balance', 'equity', 'kora_index'],
+  },
   activation_rate: {
     key: 'activation_rate',
     label_it: 'Tasso di Attivazione (AR)',

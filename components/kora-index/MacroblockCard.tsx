@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import type { MacroblockScore, MacroblockCode } from '@/lib/types';
+import { MACROBLOCK_COMPONENTS, COMPONENT_LABELS } from '@/lib/constants/kora';
 
 interface MacroblockCardProps {
   macroblock: MacroblockScore;
@@ -16,11 +17,11 @@ const MACROBLOCK_EXPLANATIONS: Record<string, string> = {
   BTI:     'Misura quanto efficacemente il budget people/welfare diventa valore umano reale.',
 };
 
-const MACROBLOCK_COLORS: Record<MacroblockCode, { border: string; accent: string; bar: string; score: string }> = {
-  REACH:   { border: 'border-blue-200',   accent: 'text-blue-700',   bar: 'bg-blue-500',   score: 'text-blue-900' },
-  QUALITY: { border: 'border-violet-200', accent: 'text-violet-700', bar: 'bg-violet-500', score: 'text-violet-900' },
-  EQUITY:  { border: 'border-teal-200',   accent: 'text-teal-700',   bar: 'bg-teal-500',   score: 'text-teal-900' },
-  BTI:     { border: 'border-amber-200',  accent: 'text-amber-700',  bar: 'bg-amber-500',  score: 'text-amber-900' },
+const MACROBLOCK_COLORS: Record<MacroblockCode, { border: string; accent: string; bar: string; score: string; bg: string }> = {
+  REACH:   { border: 'border-blue-200',   accent: 'text-blue-700',   bar: 'bg-blue-500',   score: 'text-blue-900',   bg: 'bg-blue-50/40' },
+  QUALITY: { border: 'border-violet-200', accent: 'text-violet-700', bar: 'bg-violet-500', score: 'text-violet-900', bg: 'bg-violet-50/40' },
+  EQUITY:  { border: 'border-teal-200',   accent: 'text-teal-700',   bar: 'bg-teal-500',   score: 'text-teal-900',   bg: 'bg-teal-50/40' },
+  BTI:     { border: 'border-amber-200',  accent: 'text-amber-700',  bar: 'bg-amber-500',  score: 'text-amber-900',  bg: 'bg-amber-50/40' },
 };
 
 function ScoreBar({ score, barClass }: { score: number; barClass: string }) {
@@ -36,16 +37,23 @@ function ScoreBar({ score, barClass }: { score: number; barClass: string }) {
 
 export function MacroblockCard({ macroblock, previousScore, className }: MacroblockCardProps) {
   const colors = MACROBLOCK_COLORS[macroblock.code as MacroblockCode] ?? {
-    border: 'border-slate-200', accent: 'text-slate-600', bar: 'bg-slate-400', score: 'text-slate-900',
+    border: 'border-slate-200', accent: 'text-slate-600', bar: 'bg-slate-400', score: 'text-slate-900', bg: 'bg-slate-50',
   };
   const explanation = MACROBLOCK_EXPLANATIONS[macroblock.code] ?? '';
   const delta = previousScore !== undefined ? macroblock.score - previousScore : null;
+  const componentCodes = MACROBLOCK_COMPONENTS[macroblock.code] ?? [];
+  const isBTI = macroblock.code === 'BTI';
 
   return (
     <div className={cn('rounded-lg border bg-white p-4 space-y-3', colors.border, className)}>
+
+      {/* ── Header: type badge + code + label + score ── */}
       <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className={cn('text-xs font-bold uppercase tracking-widest', colors.accent)}>
+        <div className="flex-1 min-w-0">
+          <span className="inline-flex items-center rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+            Macroblocco
+          </span>
+          <p className={cn('text-xs font-bold uppercase tracking-widest mt-1.5', colors.accent)}>
             {macroblock.code}
           </p>
           <p className="text-sm font-semibold text-slate-800 mt-0.5">{macroblock.label}</p>
@@ -65,9 +73,38 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
 
       <p className="text-xs text-slate-500 leading-relaxed">{explanation}</p>
 
-      <div className="flex items-center gap-2 pt-1 border-t border-slate-100">
-        <span className="text-xs text-slate-400">Peso</span>
-        <span className="text-xs font-semibold text-slate-700">{Math.round(macroblock.weight * 100)}%</span>
+      {/* ── Weight + component family + aggregate note ── */}
+      <div className={cn('rounded p-2.5 space-y-2', colors.bg)}>
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-slate-500">Peso KORA Index</span>
+          <span className="text-[10px] font-bold text-slate-700">{Math.round(macroblock.weight * 100)}%</span>
+        </div>
+
+        {componentCodes.length > 0 ? (
+          <div>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 mb-1">
+              Componenti analitici che lo alimentano
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {componentCodes.map((code) => (
+                <span
+                  key={code}
+                  className="rounded bg-white border border-slate-200 px-1.5 py-0.5 text-[9px] font-mono text-slate-500"
+                >
+                  {code} — {COMPONENT_LABELS[code] ?? code}
+                </span>
+              ))}
+            </div>
+          </div>
+        ) : isBTI ? (
+          <p className="text-[9px] text-slate-400 italic">
+            Punteggio calcolato dal BudgetToHumanImpactEngine — non derivato dai componenti analitici.
+          </p>
+        ) : null}
+
+        <p className="text-[9px] text-slate-400 italic leading-snug border-t border-white/60 pt-1.5">
+          Il macroblocco è una sintesi aggregata di più segnali. Non coincide con un singolo componente.
+        </p>
       </div>
 
       {macroblock.main_driver && (

@@ -36,12 +36,21 @@ import { financialGovernanceService } from '@/services/financial-governance/Fina
 import { ingestionPipelineService } from '@/services/ingestion-pipeline/IngestionPipelineService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { scenarioService } from '@/services/scenario/ScenarioService';
-import { getMethodologyVersion, getCalibrationStatus } from '@/lib/methodology-config/v0.1';
+import { getMethodologyVersion, getCalibrationStatus, getMacroblockWeights } from '@/lib/methodology-config/v0.1';
+import { MACROBLOCK_LABELS, MACROBLOCK_CODES } from '@/lib/constants/kora';
 
 export type ReportType =
   | 'executive_summary' | 'kora_index_detail' | 'activation_report'
   | 'pillar_breakdown' | 'financial_governance' | 'sustainability_annex'
   | 'welfare_statement' | 'advisor_evidence_summary';
+
+// ── Methodology notes builder — dynamic, never hardcoded ─────────────────────────
+function buildMacroblockWeightNotes(): string {
+  const weights = getMacroblockWeights();
+  return (MACROBLOCK_CODES as readonly string[])
+    .map((code) => `${MACROBLOCK_LABELS[code]} ${Math.round((weights[code as keyof typeof weights] ?? 0) * 100)}%`)
+    .join(' · ');
+}
 
 // ── Display name registry ─────────────────────────────────────────────────────────
 const COMPANY_NAMES: Record<string, string> = {
@@ -144,7 +153,7 @@ function sectionCover(
       `Metodologia ${methodologyVersion} · calibration_status: ${calibrationStatus}.`,
       'Dati sintetici demo — non rappresentano la situazione reale dell\'azienda.',
     ],
-    methodology_notes: `KORA Index v3: 4 macroblocks — Activation Reach 25%, Activation Quality 30%, Distribution & Equity 25%, Budget-to-Human-Impact 20%. Confidence Score esterno al calcolo — mostrato come indicatore di affidabilità dati.`,
+    methodology_notes: `KORA Index v3: 4 macroblocks — ${buildMacroblockWeightNotes()}. Confidence Score esterno al calcolo — mostrato come indicatore di affidabilità dati.`,
   };
 }
 
@@ -307,7 +316,7 @@ function sectionKoraIndexV3(
       'Confidence Score (CS) esterno al calcolo KORA Index v3 — peso = 0.',
       explanation?.limitations_statement ?? '',
     ].filter(Boolean),
-    methodology_notes: 'Activation Reach 25% · Activation Quality 30% · Distribution & Equity 25% · Budget-to-Human-Impact 20%.',
+    methodology_notes: buildMacroblockWeightNotes(),
   };
 }
 

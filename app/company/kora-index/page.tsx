@@ -14,6 +14,7 @@ import { EconomicReliefPanel } from '@/components/kora-index/EconomicReliefPanel
 import { BlockedByDesignPanel } from '@/components/kora-index/BlockedByDesignPanel';
 import { BudgetToHumanImpactPanel } from '@/components/kora-index/BudgetToHumanImpactPanel';
 import { RecommendationsPanel } from '@/components/kora-index/RecommendationsPanel';
+import { MethodologyGlossary } from '@/components/kora-index/MethodologyGlossary';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
@@ -132,9 +133,12 @@ export default function KoraIndexDetail() {
       <div className="space-y-3">
         <div>
           <h2 className="text-sm font-semibold text-slate-800">Macroblock Architecture — KORA Index v3</h2>
+          <p className="mt-1 text-xs font-semibold text-slate-600">
+            KORA Index v3 = 4 macroblocchi pesati. Ogni macroblocco sintetizza più componenti analitici.
+          </p>
           <p className="mt-1 text-xs text-slate-500 max-w-2xl">
-            Il KORA Index v3 è calcolato da quattro macroblocks. Ciascuno misura una dimensione distinta dell&apos;attivazione.
-            Il Confidence Score (CS) è esterno — indicatore di affidabilità, non componente pesato.
+            Ciascun macroblocco misura una dimensione distinta dell&apos;attivazione e aggrega più segnali — non coincide con un singolo componente.
+            Il Confidence Score (CS) è esterno — indicatore di affidabilità dei dati, non componente pesato nel calcolo.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -196,6 +200,9 @@ export default function KoraIndexDetail() {
 
         {/* Full explainability */}
         <ExplainabilityPanel record={explanation} />
+
+        {/* ── Methodology glossary ── */}
+        <MethodologyGlossary />
       </div>
     </div>
   );

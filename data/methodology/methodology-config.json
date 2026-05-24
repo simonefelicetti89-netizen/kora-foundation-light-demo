@@ -50,20 +50,6 @@
     }
   },
 
-  "legacy_equal_weights_note": "Deprecated. Not canonical for KORA Index v3. The previous equal-weight vector (0.10 × 10 components) was provisional scaffolding used in the Foundation Light pre-build phase. It is retained here for backwards compatibility only and must not be used for KORA Index v3 computation or documentation. Use kora_index_v3.macroblocks for v3 computation.",
-  "weights": {
-    "AR":  0.10,
-    "MAR": 0.10,
-    "NI":  0.10,
-    "WB":  0.10,
-    "PC":  0.10,
-    "PB":  0.10,
-    "EQ":  0.10,
-    "VR":  0.10,
-    "CO":  0.10,
-    "CS":  0.10
-  },
-
   "safeguard_thresholds": {
     "CLEAR":   { "AR": 0.40, "MAR": 0.30 },
     "WARNING": { "AR_min": 0.20, "AR_max": 0.40, "MAR_min": 0.15, "MAR_max": 0.30 },
