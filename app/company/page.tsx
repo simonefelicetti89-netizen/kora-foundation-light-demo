@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
 import { isAdminRole } from '@/lib/permissions';
 import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
-import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
 import { PillarChart } from '@/components/charts/PillarChart';
 import { WarningCard } from '@/components/cards/WarningCard';
 import { NextActionCard } from '@/components/cards/NextActionCard';
@@ -185,6 +184,7 @@ export default function ExecutiveCockpit() {
 
   const output      = scoringSimulatorService.score(companyId, activeScenario, '2025');
   const aggregate   = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
+  const macroblocks = scoringSimulatorService.getMacroblockScores(companyId, activeScenario);
   const warnings    = explainabilityService.getWarnings(companyId, activeScenario);
   const actions     = explainabilityService.getNextBestActions(companyId, activeScenario);
   const weakComps   = explainabilityService.getTopWeakComponents(companyId, activeScenario);
@@ -524,12 +524,15 @@ export default function ExecutiveCockpit() {
         </div>
       </div>
 
-      {/* Activation Summary */}
+      {/* Activation Summary — operational signals only, no weights */}
       {aggregate && (
         <div>
-          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
             Riepilogo Attivazione
           </h2>
+          <p className="mb-3 text-[10px] text-slate-400 leading-snug">
+            Questi sono segnali operativi di attivazione. Alimentano la lettura metodologica, ma nel cockpit non sono presentati come componenti pesati del KORA Index.
+          </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <MetricTile label="Activation Rate"       value={pct(aggregate.activation_rate)}            code="AR"  description="Quota della forza lavoro con almeno un'Impact Unit approvata." />
             <MetricTile label="Meaningful Activation" value={pct(aggregate.meaningful_activation_rate)} code="MAR" description="Quota che supera la soglia di materialità — non solo nominale." />
@@ -539,20 +542,102 @@ export default function ExecutiveCockpit() {
         </div>
       )}
 
-      {/* Pillar Distribution + Component Breakdown */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <PillarChart data={pillarData} />
-        <div>
-          <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            KORA Index v3 — Componenti Analitici
-          </h2>
-          <p className="mb-1 text-[10px] text-slate-400 leading-snug">
-            KORA Index v3 = 4 macroblocchi pesati. I componenti analitici spiegano il dettaglio, ma non sono tutti pesati allo stesso modo.
-          </p>
-          <p className="mb-3 text-[10px] text-slate-400 leading-snug">
-            KORA riconosce anche policy organizzative strutturali — come flessibilità, congedi migliorativi, diritto alla disconnessione o policy di fiducia — solo se formalizzate, verificabili, aggregate e privacy-safe.
-          </p>
-          <ComponentBreakdown components={output.components} />
+      {/* Pillar Distribution */}
+      <PillarChart data={pillarData} />
+
+      {/* KORA Index v3 — Executive Macroblock Summary */}
+      <div>
+        <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          KORA Index v3 — Sintesi Executive
+        </h2>
+        <p className="mb-4 text-[10px] text-slate-400 leading-snug max-w-2xl">
+          Il cockpit mostra la lettura executive dei 4 macroblocchi del KORA Index. La scomposizione metodologica completa è disponibile nella pagina KORA Index.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              code: 'REACH',
+              label: 'Activation Reach',
+              accent: 'border-blue-200 bg-blue-50',
+              headingColor: 'text-blue-700',
+              tagClass: 'bg-blue-100 text-blue-700',
+              description: 'Quanto l\'attivazione raggiunge realmente la popolazione aziendale.',
+              watch: 'Bassa reach significa che l\'impatto resta concentrato su pochi gruppi.',
+            },
+            {
+              code: 'QUALITY',
+              label: 'Activation Quality',
+              accent: 'border-violet-200 bg-violet-50',
+              headingColor: 'text-violet-700',
+              tagClass: 'bg-violet-100 text-violet-700',
+              description: 'Quanto le iniziative generano attivazione significativa, verificabile e continuativa.',
+              watch: 'Qualità bassa indica iniziative superficiali, poco ricorrenti o poco verificate.',
+            },
+            {
+              code: 'EQUITY',
+              label: 'Distribution & Equity',
+              accent: 'border-teal-200 bg-teal-50',
+              headingColor: 'text-teal-700',
+              tagClass: 'bg-teal-100 text-teal-700',
+              description: 'Quanto l\'attivazione è distribuita in modo equilibrato tra pillar e popolazione.',
+              watch: 'Squilibri e concentrazioni riducono la qualità dell\'impatto organizzativo.',
+            },
+            {
+              code: 'BTI',
+              label: 'Budget-to-Human-Impact',
+              accent: 'border-amber-200 bg-amber-50',
+              headingColor: 'text-amber-700',
+              tagClass: 'bg-amber-100 text-amber-700',
+              description: 'Quanto il budget people/welfare si trasforma in attivazione umana reale.',
+              watch: 'Economic Relief e compliance non equivalgono automaticamente a Deep Activation.',
+            },
+          ].map(({ code, label, accent, headingColor, tagClass, description, watch }) => {
+            const mb = macroblocks.find((m) => m.code === code);
+            return (
+              <div key={code} className={cn('rounded-lg border p-4 space-y-3', accent)}>
+                <div>
+                  <p className={cn('text-xs font-bold', headingColor)}>{label}</p>
+                  {mb && (
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-xl font-bold text-slate-800">{mb.score.toFixed(0)}</span>
+                      <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-semibold', tagClass)}>
+                        Peso {(mb.weight * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-700 leading-snug">{description}</p>
+                <div className="rounded bg-white/60 px-2.5 py-2">
+                  <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400 mb-0.5">Cosa osservare</p>
+                  <p className="text-[10px] text-slate-600 leading-snug">{watch}</p>
+                </div>
+                {mb?.main_driver && (
+                  <p className="text-[10px] text-slate-500 leading-snug">
+                    <span className="font-semibold">Driver principale:</span> {mb.main_driver}
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-3 flex items-center gap-3 flex-wrap">
+          <Link
+            href="/company/kora-index"
+            className="text-xs font-semibold text-indigo-600 hover:underline"
+          >
+            Vai al dettaglio KORA Index →
+          </Link>
+          <span className="text-[10px] text-slate-400">
+            La scomposizione analitica completa (AR, MAR, NI, VR, CO, WB, PC, PB, EQ) è disponibile nella pagina KORA Index.
+          </span>
+        </div>
+        {/* Doctrine notes */}
+        <div className="mt-3 rounded border border-slate-100 bg-slate-50 px-4 py-3 space-y-1.5 text-[10px] text-slate-500">
+          <p><span className="font-semibold">Confidence Score (CS):</span> indicatore esterno — peso = 0, non entra nel calcolo KORA Index. Misura affidabilità dei dati, non impatto.</p>
+          <p><span className="font-semibold">Activation Safeguard:</span> gate interpretativo — non è un componente pesato. Verifica che l&apos;attivazione sia abbastanza ampia prima di interpretare il KORA Index.</p>
+          <p><span className="font-semibold">Compliance:</span> baseline legale — 0 Impact Units, 0 contributo al KORA Index per design.</p>
+          <p><span className="font-semibold">Economic Relief:</span> supporto utile — non equivale automaticamente a Deep Activation.</p>
+          <p><span className="font-semibold">Policy strutturali:</span> riconosciute solo se formalizzate, verificabili, aggregate e privacy-safe — non costituiscono un nuovo indice.</p>
         </div>
       </div>
 
