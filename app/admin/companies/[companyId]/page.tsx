@@ -7,19 +7,47 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { lifecycleService } from '@/services/lifecycle/LifecycleService';
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
+import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
+import { companyIntelligenceService } from '@/services/company-intelligence/CompanyIntelligenceService';
+import type { CompanyRiskLevel } from '@/services/company-intelligence/CompanyIntelligenceService';
 
-// A-19: KORA Admin — Company Detail (Enterprise SaaS Backbone)
-export default function AdminCompanyDetail({ params }: { params: { companyId: string } }) {
+const SAFEGUARD_BADGE: Record<string, string> = {
+  CLEAR:   'border-green-200 bg-green-50 text-green-700',
+  WARNING: 'border-amber-200 bg-amber-50 text-amber-700',
+  FLAGGED: 'border-rose-200 bg-rose-50 text-rose-700',
+};
+
+const RISK_BADGE: Record<CompanyRiskLevel, { label: string; classes: string }> = {
+  ready:           { label: 'Ready',           classes: 'border-green-200 bg-green-50 text-green-700' },
+  monitor:         { label: 'Monitor',         classes: 'border-blue-200 bg-blue-50 text-blue-700' },
+  action_required: { label: 'Action Required', classes: 'border-amber-200 bg-amber-50 text-amber-700' },
+  blocked:         { label: 'Bloccato',        classes: 'border-rose-200 bg-rose-50 text-rose-700' },
+};
+
+function pct(v: number) { return `${(v * 100).toFixed(0)}%`; }
+function eur(v: number) { return `€${v.toLocaleString('it-IT')}`; }
+
+// A-19: KORA Admin — Company Control Room (per-company) v2
+export default function AdminCompanyControlRoom({ params }: { params: { companyId: string } }) {
   const { companyId } = params;
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const tenant = tenantService.getTenant(companyId);
-  const readiness = tenant ? tenantService.getTenantReadiness(companyId) : null;
   const intakeSummary = companyDataIntakeService.getDataReadinessSummary(companyId);
   const companyAccounts = accountProvisioningService.getAccountsForCompany(companyId);
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(companyId);
   const workerRoster = workerProvisioningService.getWorkersForCompany(companyId);
   const auditEvents = tenant ? lifecycleService.getLifecycleAuditForTenant(companyId) : [];
+  const intel = companyIntelligenceService.getCompanyIntelligenceRecord(companyId);
+
+  // KORA Index output: prefer S1, fallback S2
+  const koraIndex = scoringSimulatorService.getKoraIndexOutput(companyId, 'S1')
+    ?? scoringSimulatorService.getKoraIndexOutput(companyId, 'S2');
+
+  // BTI: KORA_ADMIN has full access
+  const btiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(companyId, 'S1', 'KORA_ADMIN');
+  const btiRecord = btiResult.allowed ? btiResult.record : undefined;
 
   workerProvisioningService.assertEmployerCannotViewIndividualPIB(companyId, '');
 
@@ -29,7 +57,7 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">KORA Admin</p>
         <h1 className="text-xl font-bold text-slate-900">Azienda non trovata</h1>
         <p className="text-sm text-slate-500">company_id: <span className="font-mono">{companyId}</span> non presente nel portfolio tenant.</p>
-        <Link href="/admin/companies" className="text-xs font-semibold text-indigo-600 hover:underline">← Company Registry</Link>
+        <Link href="/admin/companies" className="text-xs font-semibold text-indigo-600 hover:underline">← Company Mission Control</Link>
       </div>
     );
   }
@@ -46,44 +74,33 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
     setFeedback({ message: res.note, type: res.success ? 'success' : 'error' });
   }
 
-  const READINESS_BADGE: Record<string, string> = {
-    blocked:                  'text-rose-600',
-    draft:                    'text-slate-400',
-    data_required:            'text-amber-600',
-    access_required:          'text-blue-600',
-    privacy_review_required:  'text-purple-600',
-    ready_for_pipeline:       'text-green-600',
-    ready_for_company_portal: 'text-emerald-600',
-  };
-  const READINESS_LABEL: Record<string, string> = {
-    blocked: 'Bloccato', draft: 'Bozza', data_required: 'Dati richiesti',
-    access_required: 'Accesso da configurare', privacy_review_required: 'Privacy review',
-    ready_for_pipeline: 'Pronto pipeline', ready_for_company_portal: 'Pronto portale',
-  };
-
   return (
     <div className="space-y-6 max-w-4xl">
 
-      {/* ── Header ── */}
+      {/* ── SECTION A: Header ────────────────────────────────────────────────── */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          KORA Admin — Vista Operativa Azienda Cliente
+          KORA Admin — Company Control Room
         </p>
         <div className="flex items-center gap-3 mt-0.5 flex-wrap">
           <h1 className="text-xl font-bold text-slate-900">{tenant.company_name}</h1>
           <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${statusBadge.classes}`}>
             {statusBadge.label}
           </span>
+          {intel && (
+            <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${RISK_BADGE[intel.risk_level].classes}`}>
+              {RISK_BADGE[intel.risk_level].label}
+            </span>
+          )}
         </div>
         <p className="text-[10px] font-mono text-slate-400 mt-0.5">
-          tenant_id: {tenant.tenant_id} · company_id: {companyId}
+          tenant_id: {tenant.tenant_id} · company_id: {companyId} · {new Date().toLocaleDateString('it-IT')}
         </p>
       </div>
 
-      {/* ── Admin identity ── */}
       <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800 leading-relaxed">
         <span className="font-semibold">Vista operativa KORA Admin.</span>{' '}
-        Il cliente azienda non vede questa console tecnica.
+        Il cliente azienda non vede questa console tecnica. Il PIB individuale resta privato al lavoratore.
       </div>
 
       {/* Feedback */}
@@ -95,9 +112,9 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         </div>
       )}
 
-      {/* ── SECTION: Tenant Overview ── */}
+      {/* ── SECTION B: Tenant Overview ───────────────────────────────────────── */}
       <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Tenant Overview</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">B — Tenant Overview</p>
         <div className="rounded-lg border border-slate-200 bg-white p-4">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
             {[
@@ -123,29 +140,84 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         </div>
       </section>
 
-      {/* ── SECTION: Readiness Matrix ── */}
-      {readiness && (
-        <section className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Readiness Tenant</p>
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-            <div className="grid grid-cols-2 divide-x divide-y divide-slate-100">
-              {Object.entries(readiness).map(([key, status]) => (
-                <div key={key} className="flex items-center justify-between px-4 py-2.5">
-                  <p className="text-[10px] text-slate-600 capitalize">{key.replace(/_/g, ' ')}</p>
-                  <span className={`text-[10px] font-semibold ${READINESS_BADGE[status] ?? 'text-slate-400'}`}>
-                    {READINESS_LABEL[status] ?? status}
-                  </span>
-                </div>
-              ))}
-            </div>
+      {/* ── SECTION C: Operational Readiness (8 tiles) ───────────────────────── */}
+      <section className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">C — Operational Readiness</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {/* Tile 1: Tenant Status */}
+          <div className={`rounded-lg border p-3 text-center ${tenant.tenant_status === 'active' ? 'border-green-200 bg-green-50' : 'border-amber-200 bg-amber-50'}`}>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Tenant Status</p>
+            <p className={`text-sm font-bold mt-1 ${tenant.tenant_status === 'active' ? 'text-green-700' : 'text-amber-700'}`}>
+              {tenant.tenant_status}
+            </p>
           </div>
-        </section>
-      )}
+          {/* Tile 2: Onboarding */}
+          <div className="rounded-lg border border-slate-200 bg-white p-3 text-center">
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Onboarding</p>
+            <p className="text-[10px] font-semibold text-slate-700 mt-1">{tenant.onboarding_status.replace(/_/g, ' ')}</p>
+          </div>
+          {/* Tile 3: Data Intake */}
+          <div className={`rounded-lg border p-3 text-center ${
+            intakeSummary.intake_status === 'ready_for_ingestion' ? 'border-green-200 bg-green-50' :
+            intakeSummary.intake_status === 'not_started' ? 'border-rose-200 bg-rose-50' :
+            intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'border-rose-200 bg-rose-50' :
+            intakeSummary.intake_status === 'validation_required' ? 'border-amber-200 bg-amber-50' :
+            'border-slate-200 bg-white'
+          }`}>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Data Intake</p>
+            <p className={`text-[10px] font-semibold mt-1 ${
+              intakeSummary.intake_status === 'ready_for_ingestion' ? 'text-green-700' :
+              intakeSummary.intake_status === 'not_started' ? 'text-rose-600' :
+              intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'text-rose-700' :
+              'text-amber-700'
+            }`}>
+              {intakeSummary.intake_status.replace(/_/g, ' ')}
+            </p>
+          </div>
+          {/* Tile 4: Worker Roster */}
+          <div className={`rounded-lg border p-3 text-center ${workerSummary.total_workers >= 30 ? 'border-green-200 bg-green-50' : workerSummary.total_workers > 0 ? 'border-blue-200 bg-blue-50' : 'border-rose-200 bg-rose-50'}`}>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Roster Lavoratori</p>
+            <p className={`text-xl font-bold mt-1 ${workerSummary.total_workers >= 30 ? 'text-green-700' : workerSummary.total_workers > 0 ? 'text-blue-700' : 'text-rose-600'}`}>
+              {workerSummary.total_workers}
+            </p>
+          </div>
+          {/* Tile 5: My KORA Enabled */}
+          <div className={`rounded-lg border p-3 text-center ${workerSummary.my_kora_enabled_count > 0 ? 'border-indigo-200 bg-indigo-50' : 'border-slate-200 bg-white'}`}>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">My KORA Abilitati</p>
+            <p className={`text-xl font-bold mt-1 ${workerSummary.my_kora_enabled_count > 0 ? 'text-indigo-700' : 'text-slate-400'}`}>
+              {workerSummary.my_kora_enabled_count}
+            </p>
+          </div>
+          {/* Tile 6: KORA Index Available */}
+          <div className={`rounded-lg border p-3 text-center ${koraIndex ? 'border-indigo-200 bg-indigo-50' : 'border-slate-200 bg-white'}`}>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">KORA Index</p>
+            {koraIndex ? (
+              <p className="text-xl font-bold mt-1 text-indigo-700">{koraIndex.kora_index_value.toFixed(1)}</p>
+            ) : (
+              <p className="text-[10px] font-semibold text-slate-400 mt-1">Non disponibile</p>
+            )}
+          </div>
+          {/* Tile 7: Decision Pack */}
+          <div className={`rounded-lg border p-3 text-center ${tenant.decision_pack_status === 'ready' ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Decision Pack</p>
+            <p className={`text-[10px] font-semibold mt-1 ${tenant.decision_pack_status === 'ready' ? 'text-emerald-700' : 'text-slate-500'}`}>
+              {tenant.decision_pack_status.replace(/_/g, ' ')}
+            </p>
+          </div>
+          {/* Tile 8: Advisor Assigned */}
+          <div className={`rounded-lg border p-3 text-center ${tenant.assigned_advisor ? 'border-violet-200 bg-violet-50' : 'border-slate-200 bg-white'}`}>
+            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-500">Advisor Assegnato</p>
+            <p className={`text-[10px] font-semibold mt-1 ${tenant.assigned_advisor ? 'text-violet-700' : 'text-slate-400'}`}>
+              {tenant.assigned_advisor ?? '—'}
+            </p>
+          </div>
+        </div>
+      </section>
 
-      {/* ── SECTION: Data Intake ── */}
+      {/* ── SECTION D: Data Intake ───────────────────────────────────────────── */}
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Data Intake — Pre-Ingestion</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">D — Data Intake — Pre-Ingestion</p>
           <Link
             href={`/admin/companies/${companyId}/data-intake`}
             className="rounded-md bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-700 transition-colors"
@@ -190,10 +262,128 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         </div>
       </section>
 
-      {/* ── SECTION: Access & Users ── */}
+      {/* ── SECTION E: KORA Index Output Readiness ───────────────────────────── */}
+      <section className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">E — KORA Index Output Readiness</p>
+        {koraIndex ? (
+          <div className="rounded-lg border border-indigo-200 bg-white p-4 space-y-4">
+            {/* Hero row */}
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-[10px] text-indigo-500 font-semibold uppercase tracking-wide">KORA Index v3</p>
+                <div className="flex items-end gap-3 mt-1">
+                  <p className="text-3xl font-bold text-indigo-900">{koraIndex.kora_index_value.toFixed(1)}</p>
+                  <div className="mb-0.5 space-y-1">
+                    <p className="text-[10px] font-semibold text-indigo-600">
+                      Confidence Score: {(koraIndex.confidence_score * 100).toFixed(0)}%
+                    </p>
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${SAFEGUARD_BADGE[koraIndex.safeguard_status] ?? 'border-slate-200 text-slate-500'}`}>
+                      Activation Safeguard: {koraIndex.safeguard_status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="text-[10px] text-right space-y-1">
+                <p className="font-mono text-slate-400">{koraIndex.methodology_version_id}</p>
+                <p className="font-mono text-amber-600 font-semibold">{koraIndex.calibration_status}</p>
+                <p className="font-mono text-slate-400">synthetic_demo_data: true</p>
+              </div>
+            </div>
+
+            {/* Components summary */}
+            <div>
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-2">
+                Componenti KORA Index ({koraIndex.components.length}/10)
+              </p>
+              <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-5">
+                {koraIndex.components.map((c) => (
+                  <div key={c.code} className="rounded border border-slate-100 bg-slate-50 px-2 py-1.5 text-center">
+                    <p className="text-[9px] font-mono text-slate-400">{c.code}</p>
+                    <p className="text-sm font-bold text-slate-700 mt-0.5">
+                      {c.code === 'CS' ? (c.value * 100).toFixed(0) + '%' : (c.value * 100).toFixed(0) + '%'}
+                    </p>
+                    <p className="text-[9px] text-slate-400">w:{(c.weight * 100).toFixed(0)}%</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Limitations */}
+            {koraIndex.limitations_text && (
+              <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2 text-[10px] text-amber-700">
+                {koraIndex.limitations_text}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="rounded border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+              <p className="font-semibold mb-1">KORA Index non disponibile per questa azienda</p>
+              <p>{intel?.next_action ?? 'Completa data intake e worker roster per avviare il scoring.'}</p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ── SECTION F: BTI Summary ───────────────────────────────────────────── */}
+      <section className="space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">F — Budget-to-Human-Impact Summary</p>
+        {btiRecord ? (
+          <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
+              <div>
+                <p className="text-slate-400">Budget welfare totale</p>
+                <p className="text-slate-800 font-bold text-sm mt-0.5">{eur(btiRecord.total_people_welfare_budget)}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">Economic Relief</p>
+                <p className="text-indigo-700 font-bold text-sm mt-0.5">{pct(btiRecord.economic_relief_share)}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">Deep Activation</p>
+                <p className="text-indigo-700 font-bold text-sm mt-0.5">{pct(btiRecord.deep_activation_share)}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">BTI Score</p>
+                <p className="text-indigo-800 font-bold text-sm mt-0.5">{btiRecord.bti_score.toFixed(1)}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">Costo per Impact Unit</p>
+                <p className="text-slate-700 font-bold text-sm mt-0.5">{eur(btiRecord.cost_per_impact_unit)}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">Costo per lavoratore attivo</p>
+                <p className="text-slate-700 font-bold text-sm mt-0.5">{eur(btiRecord.cost_per_activated_worker)}</p>
+              </div>
+              <div>
+                <p className="text-slate-400">Activation Debt</p>
+                <p className={`font-bold text-sm mt-0.5 ${btiRecord.activation_debt_eur > 0 ? 'text-amber-700' : 'text-slate-400'}`}>
+                  {eur(btiRecord.activation_debt_eur)}
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-400">Opportunità riallocazione</p>
+                <p className="text-emerald-700 font-bold text-sm mt-0.5">{eur(btiRecord.reallocation_opportunity_eur)}</p>
+              </div>
+            </div>
+            <p className="text-[9px] text-slate-400 italic">
+              {btiRecord.disclaimer}
+            </p>
+          </div>
+        ) : (
+          <div className="rounded-lg border border-slate-200 bg-white p-4">
+            <div className="rounded border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-500">
+              <p className="font-semibold mb-1">BTI non disponibile per questa azienda</p>
+              <p>Budget-to-Human-Impact richiede dati di programma e KORA Index completati.</p>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* ── SECTION G: Access & Users ────────────────────────────────────────── */}
       <section className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          Access & Users — {companyAccounts.length} utenti
+          G — Access & Users — {companyAccounts.length} utenti
         </p>
         {companyAccounts.length === 0 ? (
           <div className="rounded border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-400">
@@ -273,10 +463,10 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         </div>
       </section>
 
-      {/* ── SECTION: Worker Provisioning ── */}
+      {/* ── SECTION H: Worker Provisioning ──────────────────────────────────── */}
       <section className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          Worker Provisioning
+          H — Worker Provisioning
         </p>
         <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
@@ -293,7 +483,7 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
           <p className="text-[10px] text-amber-700 font-medium">{workerSummary.next_action}</p>
         </div>
 
-        {/* Roster table */}
+        {/* Roster table — admin-only view, no individual PIB */}
         {workerRoster.length > 0 && (
           <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
             <div className="px-4 py-2 bg-slate-50 border-b border-slate-200">
@@ -347,25 +537,10 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         )}
       </section>
 
-      {/* ── SECTION: Company Portal Status ── */}
-      <section className="space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Company Portal Status</p>
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[10px]">
-            <div><p className="text-slate-400">Portale attivo</p><p className="text-slate-700 font-semibold">{tenant.tenant_status === 'active' ? 'Sì' : 'No'}</p></div>
-            <div><p className="text-slate-400">Admin configurato</p><p className="text-slate-700 font-semibold">{companyAccounts.some(u => u.role === 'COMPANY_ADMIN') ? 'Sì' : 'No'}</p></div>
-            <div><p className="text-slate-400">Sezioni operative</p><p className="text-slate-700 font-semibold">Gestite da KORA Admin</p></div>
-            <div><p className="text-slate-400">Portale company route</p><p className="text-slate-700 font-mono">/company</p></div>
-            <div><p className="text-slate-400">Advisor assegnato</p><p className="text-slate-700 font-semibold">{tenant.assigned_advisor ?? '—'}</p></div>
-            <div><p className="text-slate-400">Worker My KORA</p><p className="text-slate-700 font-semibold">{workerSummary.my_kora_enabled_count} abilitati</p></div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── SECTION: Lifecycle & Audit ── */}
+      {/* ── SECTION I: Lifecycle & Audit ─────────────────────────────────────── */}
       <section className="space-y-3">
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          Lifecycle / Audit — {auditEvents.length} eventi
+          I — Lifecycle / Audit — {auditEvents.length} eventi
         </p>
         {auditEvents.length === 0 ? (
           <div className="rounded border border-slate-100 bg-slate-50 px-4 py-3 text-xs text-slate-400">
@@ -394,10 +569,10 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         )}
       </section>
 
-      {/* ── Navigation ── */}
+      {/* ── Navigation ── — no /company/reports (scoping boundary: resolves through demo persona, not admin-selected company) */}
       <div className="border-t border-slate-100 pt-4 flex items-center gap-4 flex-wrap">
         <Link href="/admin/companies" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
-          ← Company Registry
+          ← Company Mission Control
         </Link>
         <Link href={`/admin/companies/${companyId}/data-intake`} className="text-xs text-violet-600 hover:text-violet-800 underline underline-offset-2">
           Data Intake →
@@ -405,13 +580,10 @@ export default function AdminCompanyDetail({ params }: { params: { companyId: st
         <Link href={`/admin/companies/${companyId}/onboarding`} className="text-xs text-indigo-500 hover:text-indigo-700 underline underline-offset-2">
           Onboarding Operativo →
         </Link>
-        <Link href="/company/reports" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
-          Decision Pack →
-        </Link>
       </div>
 
       <p className="text-[10px] font-mono text-slate-300">
-        KORA Admin · synthetic_demo_data: true · company_id: {companyId} · Enterprise SaaS Backbone
+        KORA Admin · synthetic_demo_data: true · company_id: {companyId} · Company Control Room v2
       </p>
     </div>
   );
