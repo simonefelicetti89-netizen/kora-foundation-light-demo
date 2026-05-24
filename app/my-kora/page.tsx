@@ -146,6 +146,9 @@ export default function MyKoraHome() {
           Il layer personale del lavoratore: PIB privato, timeline personale, opportunità e Dynamic Impact CV
           sotto controllo del lavoratore.
         </p>
+        <p className="text-[11px] text-indigo-600 font-semibold mt-1">
+          Questo spazio è personale: l&apos;azienda non vede il tuo PIB individuale.
+        </p>
       </div>
 
       {/* ── Core privacy statement — non-suppressible ── */}

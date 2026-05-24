@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { tenantService } from '@/services/tenant/TenantService';
+import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 
 const COMPANY_ID = 'meridiana-group';
 const SCENARIO = 'S2';
@@ -12,6 +15,7 @@ const ONBOARDING_LABELS: Record<string, string> = {
   program_data_loaded:         'Dati programma caricati',
   hr_kpi_loaded:               'HR KPI caricati',
   ready_for_scoring:           'Pronto per scoring',
+  decision_pack_ready:         'Decision Pack pronto',
   fully_onboarded:             'Completamente onboardato',
 };
 
@@ -21,13 +25,18 @@ const ONBOARDING_COLORS: Record<string, string> = {
   workforce_baseline_complete: 'border-blue-200 bg-blue-50 text-blue-700',
   program_data_loaded:         'border-indigo-200 bg-indigo-50 text-indigo-700',
   ready_for_scoring:           'border-amber-200 bg-amber-50 text-amber-700',
+  decision_pack_ready:         'border-green-200 bg-green-50 text-green-700',
   fully_onboarded:             'border-green-200 bg-green-50 text-green-700',
 };
 
-// C-17: Company Profile — read-only company-facing status
+// C-17: Company Profile — company-scoped, read-only
 export default function CompanyProfilePage() {
   const record = companyOnboardingService.getCompanyOnboardingRecord(COMPANY_ID);
   const koraOutput = scoringSimulatorService.score(COMPANY_ID, SCENARIO, '2025');
+  const tenant = tenantService.getTenant(COMPANY_ID);
+  const companyAccounts = accountProvisioningService.getAccountsForCompany(COMPANY_ID);
+  const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(COMPANY_ID);
+  workerProvisioningService.assertEmployerCannotViewIndividualPIB(COMPANY_ID, '');
 
   if (!record) return <div className="p-8 text-sm text-slate-500">Profilo non trovato.</div>;
 
@@ -49,34 +58,70 @@ export default function CompanyProfilePage() {
         </p>
       </div>
 
-      {/* ── Privacy / boundary note ── */}
+      {/* ── Company-scoped boundary note ── */}
       <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800 leading-relaxed space-y-1">
         <p>
-          <span className="font-semibold">KORA misura l&apos;organizzazione, non gli individui.</span>{' '}
-          Tutti i dati mostrati sono aggregati aziendali — nessun dato individuale è visibile.
+          <span className="font-semibold">Stai visualizzando lo spazio KORA della tua azienda.</span>{' '}
+          Gli utenti aziendali vedono solo la propria azienda.
+        </p>
+        <p>
+          Il PIB individuale resta privato al lavoratore. L&apos;azienda vede solo aggregati privacy-safe.
         </p>
         <p>
           Il setup operativo e la validazione dati sono gestiti lato KORA Admin.
         </p>
       </div>
 
-      {/* ── Company identity ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Profilo Aziendale</p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-xs">
-          {[
-            ['Forma giuridica', profile.legal_form],
-            ['Settore', profile.sector],
-            ['Sede principale', profile.location],
-            ['Anno fondazione', String(profile.foundation_year)],
-            ['Organico', `${profile.employee_count} lavoratori`],
-            ['company_id', COMPANY_ID],
-          ].map(([label, value]) => (
-            <div key={label as string}>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{label}</p>
-              <p className={`text-slate-700 mt-0.5 ${label === 'company_id' ? 'font-mono text-[10px]' : ''}`}>{value}</p>
-            </div>
-          ))}
+      {/* ── Tenant identity ── */}
+      {tenant && (
+        <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Identità Tenant</p>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-xs">
+            {[
+              ['Azienda', tenant.company_name],
+              ['Settore', tenant.sector],
+              ['Territorio', tenant.territory],
+              ['Sede principale', tenant.headquarters_location],
+              ['Dipendenti', String(tenant.employee_count)],
+              ['Piano KORA', tenant.kora_plan],
+              ['Periodo di analisi', tenant.analysis_period],
+              ['Stato tenant', tenant.tenant_status],
+              ['company_id', COMPANY_ID],
+            ].map(([label, value]) => (
+              <div key={label as string}>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{label}</p>
+                <p className={`text-slate-700 mt-0.5 capitalize ${label === 'company_id' ? 'font-mono text-[10px]' : ''}`}>{value}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Access scope ── */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Accesso & Utenti Aziendali</p>
+        <div className="grid grid-cols-2 gap-3 text-[10px]">
+          <div><p className="text-slate-400">Scope accesso</p><p className="text-slate-700 font-semibold">company_scoped</p></div>
+          <div><p className="text-slate-400">Utenti configurati</p><p className="text-slate-700 font-semibold">{companyAccounts.length}</p></div>
+          <div><p className="text-slate-400">Sezioni visibili</p><p className="text-slate-700 font-semibold">Intelligence, Reports, Financial</p></div>
+          <div><p className="text-slate-400">Sezioni operative</p><p className="text-slate-700 font-semibold">Gestite da KORA Admin</p></div>
+        </div>
+        <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500">
+          Il setup operativo, l&apos;ingestion e lo scoring sono gestiti lato KORA Admin e non sono visibili nel portale aziendale.
+        </div>
+      </div>
+
+      {/* ── Worker / My KORA status ── */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Worker & My KORA</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[10px]">
+          <div><p className="text-slate-400">My KORA abilitati</p><p className="text-slate-700 font-bold text-sm mt-0.5">{workerSummary.my_kora_enabled_count}</p></div>
+          <div><p className="text-slate-400">PIB privato</p><p className="text-slate-700 font-bold text-sm mt-0.5">{workerSummary.pib_private_enabled_count}</p></div>
+          <div><p className="text-slate-400">Lavoratori in roster</p><p className="text-slate-700 font-bold text-sm mt-0.5">{workerSummary.total_workers}</p></div>
+        </div>
+        <div className="rounded border border-indigo-100 bg-indigo-50 px-3 py-2 text-[10px] text-indigo-700 leading-relaxed">
+          Questo spazio è personale: l&apos;azienda non vede il PIB individuale del lavoratore.
+          L&apos;azienda vede solo aggregati anonimizzati sopra soglia privacy (N≥10).
         </div>
       </div>
 
@@ -124,7 +169,7 @@ export default function CompanyProfilePage() {
 
       {/* ── Onboarding/data status summary ── */}
       <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Stato Dati & Onboarding</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Stato Dati & Pipeline</p>
 
         <div className="flex items-center gap-3 flex-wrap">
           <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${ONBOARDING_COLORS[record.onboarding_status] ?? 'border-slate-200 text-slate-500'}`}>
@@ -140,7 +185,7 @@ export default function CompanyProfilePage() {
           {[
             ['Lavoratori totali', `${workforce_baseline.total_employees}`],
             ['Foundation Light', workforce_baseline.foundation_light_eligible ? 'Idonea' : 'Non idonea'],
-            ['Cluster privacy OK', `${readiness_checks.filter(c => c.check_id.includes('privacy') && c.status === 'ok').length > 0 ? 'Sì' : 'Verificare'}`],
+            ['Soglia privacy N≥10', 'Applicata su tutti i cluster'],
           ].map(([label, value]) => (
             <div key={label as string}>
               <p className="text-slate-400">{label}</p>
@@ -182,7 +227,7 @@ export default function CompanyProfilePage() {
       </div>
 
       <p className="text-[10px] font-mono text-slate-300">
-        Foundation Light v0.1 · pre_empirical_calibration · synthetic_demo_data: true
+        Foundation Light v0.1 · pre_empirical_calibration · synthetic_demo_data: true · company_scoped
       </p>
 
     </div>

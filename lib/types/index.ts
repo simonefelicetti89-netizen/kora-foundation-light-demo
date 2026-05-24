@@ -1421,3 +1421,180 @@ export interface CompanyAccessProfile {
   hidden_operational_sections: string[];
   admin_managed_sections: string[];
 }
+
+// ── Enterprise SaaS Backbone — Tenant & Account Lifecycle ──────────────────────
+
+export type KoraTenantStatus =
+  | 'draft'
+  | 'active'
+  | 'suspended'
+  | 'archived'
+  | 'deleted_demo';
+
+export type KoraAccountStatus =
+  | 'draft'
+  | 'invited'
+  | 'active_demo'
+  | 'suspended'
+  | 'disabled'
+  | 'revoked'
+  | 'deleted_demo';
+
+export type KoraInvitationStatus =
+  | 'not_sent'
+  | 'pending'
+  | 'accepted'
+  | 'revoked'
+  | 'expired';
+
+export interface KoraTenant {
+  tenant_id: string;
+  company_id: string;
+  company_name: string;
+  legal_name: string;
+  vat_number?: string;
+  fiscal_code?: string;
+  sector: string;
+  territory: string;
+  headquarters_location: string;
+  employee_count: number;
+  size_band: CompanySizeBand;
+  kora_plan: string;
+  analysis_period: string;
+  tenant_status: KoraTenantStatus;
+  onboarding_status: string;
+  data_readiness_status: string;
+  decision_pack_status: string;
+  assigned_advisor?: string;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string;
+  deleted_demo_at?: string;
+  production_ready: false;
+  synthetic_demo_data: true;
+}
+
+export interface KoraUserAccount {
+  user_id: string;
+  tenant_id?: string;
+  company_id?: string;
+  worker_id?: string;
+  display_name: string;
+  email: string;
+  role: KoraUserRole;
+  access_scope: KoraAccessScope;
+  account_status: KoraAccountStatus;
+  default_route: string;
+  visible_sections: string[];
+  hidden_sections: string[];
+  invitation_status: KoraInvitationStatus;
+  last_login_at?: string;
+  created_at: string;
+  updated_at: string;
+  disabled_at?: string;
+  revoked_at?: string;
+  deleted_demo_at?: string;
+  notes?: string;
+}
+
+export interface CompanyAdminProvisioningDraft {
+  provisioning_id: string;
+  tenant_id: string;
+  company_id: string;
+  admin_name: string;
+  admin_email: string;
+  admin_role: KoraUserRole;
+  access_scope: 'company_scoped';
+  invitation_status: KoraInvitationStatus;
+  default_route: string;
+  visible_sections: string[];
+  hidden_sections: string[];
+  password_setup_mode: 'invite_link' | 'temporary_password_manual_demo' | 'external_auth_pending';
+  security_notes: string;
+  production_ready: false;
+  demo_only: true;
+}
+
+export interface WorkerRosterRecord {
+  worker_id: string;
+  tenant_id: string;
+  company_id: string;
+  display_name?: string;
+  email?: string;
+  role_family: string;
+  site: string;
+  department: string;
+  cluster?: string;
+  worker_account_status: KoraAccountStatus;
+  consent_status: 'not_collected' | 'pending' | 'granted' | 'revoked';
+  my_kora_enabled: boolean;
+  pib_private_enabled: boolean;
+  employer_can_view_individual_pib: false;
+  included_in_aggregates: boolean;
+  privacy_threshold_cluster: boolean;
+  created_at: string;
+}
+
+export interface WorkerProvisioningSummary {
+  company_id: string;
+  total_workers: number;
+  invited_workers: number;
+  active_worker_accounts: number;
+  my_kora_enabled_count: number;
+  pib_private_enabled_count: number;
+  suppressed_clusters_count: number;
+  privacy_notes: string;
+  next_action: string;
+}
+
+export type TenantLifecycleAction =
+  | 'create_draft'
+  | 'activate'
+  | 'suspend'
+  | 'archive'
+  | 'restore'
+  | 'delete_demo';
+
+export type UserLifecycleAction =
+  | 'invite'
+  | 'activate_demo'
+  | 'suspend'
+  | 'disable'
+  | 'revoke_invite'
+  | 'reset_invite'
+  | 'delete_demo';
+
+export interface LifecycleAuditEvent {
+  event_id: string;
+  actor_role: KoraUserRole;
+  actor_id: string;
+  target_type: 'tenant' | 'user' | 'worker';
+  target_id: string;
+  action: TenantLifecycleAction | UserLifecycleAction;
+  reason?: string;
+  timestamp: string;
+  reversible: boolean;
+  notes?: string;
+}
+
+export interface TenantReadiness {
+  company_identity: string;
+  operating_scope: string;
+  budget_fiscal_perimeter: string;
+  data_sources: string;
+  structural_policies: string;
+  first_company_admin: string;
+  worker_roster: string;
+  privacy_boundary: string;
+  portal_activation: string;
+  pipeline_readiness: string;
+}
+
+export type ReadinessItemStatus =
+  | 'blocked'
+  | 'draft'
+  | 'data_required'
+  | 'access_required'
+  | 'privacy_review_required'
+  | 'ready_for_pipeline'
+  | 'ready_for_company_portal';

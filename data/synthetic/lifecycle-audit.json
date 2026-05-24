@@ -1,0 +1,94 @@
+{
+  "file": "lifecycle-audit.json",
+  "version": "1.0",
+  "synthetic_demo_data": true,
+  "generated_for": "foundation_light_demo",
+  "not_live_data": true,
+  "primary_consumer": "LifecycleService",
+  "data": [
+    {
+      "event_id": "evt-001",
+      "actor_role": "KORA_ADMIN",
+      "actor_id": "admin-001",
+      "target_type": "tenant",
+      "target_id": "tenant-meridiana-001",
+      "action": "create_draft",
+      "reason": "Onboarding pilota fondazione",
+      "timestamp": "2025-01-15T09:00:00Z",
+      "reversible": true,
+      "notes": "Primo tenant pilota Foundation Light"
+    },
+    {
+      "event_id": "evt-002",
+      "actor_role": "KORA_ADMIN",
+      "actor_id": "admin-001",
+      "target_type": "tenant",
+      "target_id": "tenant-meridiana-001",
+      "action": "activate",
+      "reason": "Dati baseline completati, pipeline pronta",
+      "timestamp": "2025-01-20T10:30:00Z",
+      "reversible": true,
+      "notes": null
+    },
+    {
+      "event_id": "evt-003",
+      "actor_role": "KORA_ADMIN",
+      "actor_id": "admin-001",
+      "target_type": "user",
+      "target_id": "meridiana-admin-001",
+      "action": "invite",
+      "reason": "Provisioning primo admin aziendale Meridiana",
+      "timestamp": "2025-01-21T09:00:00Z",
+      "reversible": true,
+      "notes": "Invito demo — nessuna email reale inviata"
+    },
+    {
+      "event_id": "evt-004",
+      "actor_role": "KORA_ADMIN",
+      "actor_id": "admin-001",
+      "target_type": "user",
+      "target_id": "meridiana-admin-001",
+      "action": "activate_demo",
+      "reason": "Accesso demo attivato",
+      "timestamp": "2025-01-22T08:00:00Z",
+      "reversible": true,
+      "notes": null
+    },
+    {
+      "event_id": "evt-005",
+      "actor_role": "KORA_ADMIN",
+      "actor_id": "admin-001",
+      "target_type": "tenant",
+      "target_id": "tenant-alba-001",
+      "action": "create_draft",
+      "reason": "Secondo pilota Foundation Light",
+      "timestamp": "2025-02-20T10:00:00Z",
+      "reversible": true,
+      "notes": "Alba Manufacturing — onboarding in corso"
+    },
+    {
+      "event_id": "evt-006",
+      "actor_role": "KORA_ADMIN",
+      "actor_id": "admin-001",
+      "target_type": "tenant",
+      "target_id": "tenant-alba-001",
+      "action": "activate",
+      "reason": "Tenant attivato per onboarding",
+      "timestamp": "2025-02-25T09:00:00Z",
+      "reversible": true,
+      "notes": null
+    },
+    {
+      "event_id": "evt-007",
+      "actor_role": "KORA_ADMIN",
+      "actor_id": "admin-001",
+      "target_type": "tenant",
+      "target_id": "tenant-nova-001",
+      "action": "create_draft",
+      "reason": "Nuovo prospect — onboarding avviato",
+      "timestamp": "2025-05-20T08:00:00Z",
+      "reversible": true,
+      "notes": "Draft — in attesa di completamento wizard"
+    }
+  ]
+}

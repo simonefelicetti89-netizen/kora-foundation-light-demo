@@ -43,7 +43,7 @@ function buildNavGroups(role: string): NavGroup[] {
         heading: 'Aziende Cliente',
         items: [
           { href: '/admin/companies',                      label: 'Company Registry' },
-          { href: '/admin/companies/setup',                label: 'Company Setup' },
+          { href: '/admin/companies/setup',                label: 'Enterprise Onboarding' },
           { href: '/admin/companies/onboarding',           label: 'Onboarding Studio' },
           { href: '/admin/companies/workforce-baseline',   label: 'Workforce Baseline' },
         ],
