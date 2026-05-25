@@ -23,19 +23,14 @@ import type {
 // ── Section navigation ────────────────────────────────────────────────────────
 
 const SECTION_NAV = [
-  { id: 'executive_summary',       label: 'B · Executive' },
-  { id: 'kora_index_v3',           label: 'C · KORA Index' },
-  { id: 'dynamic_scoring_preview', label: 'D · Preview' },
-  { id: 'eligibility_gate',        label: 'E · Eligibility' },
-  { id: 'budget_to_human_impact',  label: 'F · BTI' },
-  { id: 'economic_relief',         label: 'G · Relief' },
-  { id: 'uef_review_data_quality', label: 'H · UEF' },
-  { id: 'people_context_hr_kpi',   label: 'I · People' },
-  { id: 'workforce_activation',    label: 'J · Workforce' },
-  { id: 'pillar_analysis',         label: 'K · Pillar' },
-  { id: 'recommendations',         label: 'L · Rec.' },
-  { id: 'ninety_day_action_plan',  label: 'M · 90gg' },
-  { id: 'methodology_boundaries',  label: 'N · Metodologia' },
+  { id: 'executive_summary',      label: 'Executive Summary' },
+  { id: 'kora_index_v3',          label: 'KORA Index' },
+  { id: 'workforce_activation',   label: 'Activation & Workforce' },
+  { id: 'budget_to_human_impact', label: 'Budget-to-Human-Impact' },
+  { id: 'eligibility_gate',       label: 'Eligibility Gate' },
+  { id: 'pillar_analysis',        label: 'Pillar Balance' },
+  { id: 'recommendations',        label: 'Raccomandazioni' },
+  { id: 'methodology_boundaries', label: 'Metodologia & Confini' },
 ];
 
 // ── Status display ────────────────────────────────────────────────────────────
@@ -167,18 +162,6 @@ function SectionBlock({ section, children }: { section: DecisionPackSection; chi
           <InsightList insights={section.insights} />
           <RecList recommendations={section.recommendations} />
         </>
-      )}
-      {section.limitations.length > 0 && (
-        <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-1.5">Limiti</p>
-          <ul className="space-y-1">
-            {section.limitations.filter(Boolean).map((l, i) => (
-              <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
-                <span className="text-slate-300 shrink-0">·</span>{l}
-              </li>
-            ))}
-          </ul>
-        </div>
       )}
       {section.methodology_notes && (
         <p className="text-[11px] text-slate-400 font-mono border-t border-slate-100 pt-2">{section.methodology_notes}</p>
@@ -350,8 +333,10 @@ function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLa
         )}
         {version.confidence_score > 0 && (
           <div>
-            <p className="text-slate-400">Confidence</p>
-            <p className="font-semibold text-slate-700">{(version.confidence_score * 100).toFixed(0)}%</p>
+            <p className="text-slate-400">Confidence Score</p>
+            <p className="font-semibold text-slate-700">{(version.confidence_score * 100).toFixed(0)}%
+              <span className="text-[9px] font-normal text-slate-400 ml-1">esterno</span>
+            </p>
           </div>
         )}
         {version.activation_safeguard_status && (
@@ -379,6 +364,16 @@ function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLa
     </div>
   );
 }
+
+// ── Canonical pillar aggregate (S1 Baseline — KORA_DOCTRINE §4) ─────────────
+
+const CANONICAL_PILLAR_AGGREGATE = [
+  { pillar: 'LIFE',       share: 44, color: 'bg-blue-400' },
+  { pillar: 'GROWTH',     share: 27, color: 'bg-violet-400' },
+  { pillar: 'CONNECTION', share: 12, color: 'bg-purple-400' },
+  { pillar: 'IMPACT',     share: 11, color: 'bg-lime-400' },
+  { pillar: 'LEGACY',     share:  6, color: 'bg-indigo-400' },
+] as const;
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -452,6 +447,7 @@ export default function Reports() {
                 <div className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-center">
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">Confidence Score</p>
                   <p className="text-2xl font-bold text-white mt-0.5">{(koraIndex.confidence_score * 100).toFixed(0)}%</p>
+                  <p className="text-[9px] text-indigo-400 mt-0.5">indicatore esterno · peso 0</p>
                 </div>
                 <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-center">
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">Activation Safeguard</p>
@@ -492,70 +488,28 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          SECTION B — FACTORY STATUS CARDS
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <div className="mb-6 space-y-3">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-          Stato Report Factory
-        </p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          {[
-            {
-              label: 'Stato Pack',
-              value: STATUS_LABELS[factoryStatus.latest_status] ?? factoryStatus.latest_status,
-              style: STATUS_STYLES[factoryStatus.latest_status] ?? 'border-slate-200 bg-slate-50 text-slate-500',
-            },
-            {
-              label: 'Può generare',
-              value: factoryStatus.can_generate ? 'Sì' : 'No',
-              style: factoryStatus.can_generate ? 'border-kora-fun-green/40 bg-kora-fun-green/20 text-kora-cosmic-blue' : 'border-rose-200 bg-rose-50 text-rose-600',
-            },
-            {
-              label: 'PDF Export',
-              value: 'In arrivo',
-              style: 'border-slate-200 bg-slate-50 text-slate-400',
-            },
-            {
-              label: 'Share Link',
-              value: 'Futuro',
-              style: 'border-slate-200 bg-slate-50 text-slate-400',
-            },
-            {
-              label: 'Versioni',
-              value: String(versionHistory.length),
-              style: versionHistory.length > 0 ? 'border-indigo-200 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-400',
-            },
-          ].map(({ label, value, style }) => (
-            <div key={label} className={`rounded-lg border px-3 py-2.5 text-center ${style}`}>
-              <p className="text-[9px] font-semibold uppercase tracking-wide opacity-70 leading-tight">{label}</p>
-              <p className="text-sm font-bold mt-1">{value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Blocking reasons */}
-        {factoryStatus.blocking_reasons.length > 0 && (
-          <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 space-y-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-rose-700">Blocchi attivi</p>
-            {factoryStatus.blocking_reasons.map((r, i) => (
-              <p key={i} className="text-xs text-rose-800">· {r}</p>
-            ))}
+      {/* ── Stato Decision Pack ─────────────────────────────────────────────── */}
+      <div className="mb-6">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600">
+              Stato Decision Pack
+            </p>
+            <p className="text-sm font-semibold text-amber-900">
+              Bozza disponibile — revisione advisor richiesta prima del Board Pack finale
+            </p>
+            {factoryStatus.warnings.length > 0 && (
+              <p className="text-xs text-amber-700">{factoryStatus.warnings[0]}</p>
+            )}
           </div>
-        )}
-
-        {/* Warnings */}
-        {factoryStatus.warnings.length > 0 && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 space-y-1">
-            {factoryStatus.warnings.map((w, i) => (
-              <p key={i} className="text-xs text-amber-800">· {w}</p>
-            ))}
+          <div className="flex gap-2 text-[10px] shrink-0">
+            <span className="rounded border border-amber-200 bg-white px-2 py-1 text-amber-700 font-semibold">
+              {versionHistory.length} {versionHistory.length === 1 ? 'versione' : 'versioni'}
+            </span>
+            <span className="rounded border border-slate-200 bg-white px-2 py-1 text-slate-400">
+              PDF export · in arrivo
+            </span>
           </div>
-        )}
-
-        {/* Next action */}
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600">
-          <span className="font-semibold text-slate-500">Prossima azione:</span>{' '}{factoryStatus.next_action}
         </div>
       </div>
 
@@ -683,18 +637,12 @@ export default function Reports() {
         </div>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          SECTION F — REPORT BODY (14 sections, full content)
-          Only rendered when KORA Index is available
-      ═══════════════════════════════════════════════════════════════════════ */}
+      {/* ── Report body — 8 canonical sections ──────────────────────────────── */}
       {hasFullReport && pack && (
         <div className="space-y-8">
           <div className="border-t border-slate-200 pt-6">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-6">
-              Contenuto Decision Pack · {pack.sections.length} sezioni
-            </p>
 
-            {/* B: Executive Summary */}
+            {/* 1: Executive Summary */}
             {sectionMap.executive_summary && (
               <>
                 <SectionBlock section={sectionMap.executive_summary}>
@@ -715,7 +663,7 @@ export default function Reports() {
               </>
             )}
 
-            {/* C: KORA Index v3 */}
+            {/* 2: KORA Index */}
             {sectionMap.kora_index_v3 && (
               <>
                 <SectionBlock section={sectionMap.kora_index_v3}>
@@ -723,89 +671,27 @@ export default function Reports() {
                   <ComponentBreakdown components={pack.kora_index_output.components} />
                   <InsightList insights={sectionMap.kora_index_v3.insights} />
                   <RecList recommendations={sectionMap.kora_index_v3.recommendations} />
-                  {sectionMap.kora_index_v3.limitations.length > 0 && (
-                    <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
-                      <ul className="space-y-1">
-                        {sectionMap.kora_index_v3.limitations.filter(Boolean).map((l, i) => (
-                          <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
-                            <span className="text-slate-300 shrink-0">·</span>{l}
-                          </li>
-                        ))}
-                      </ul>
+                </SectionBlock>
+
+                {/* Technical Preview — collapsed, visually demoted, NOT an official KORA Index */}
+                {sectionMap.dynamic_scoring_preview && (
+                  <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                    <summary className="cursor-pointer text-[10px] font-semibold uppercase tracking-wide text-slate-400 select-none">
+                      Technical Preview / Methodology Debug — Non sostituisce il KORA Index v3
+                    </summary>
+                    <div className="mt-3 rounded border border-slate-200 bg-white px-3 py-2.5 font-mono text-[10px] text-slate-400 space-y-1">
+                      <p>calculation_mode: {pack.dynamic_preview.calculation_mode}</p>
+                      <p>production_ready: false · official_index_source: {pack.dynamic_preview.official_index_source}</p>
+                      <p>Preview Score: {pack.dynamic_preview.dynamic_preview_score}/100 · Canonical KORA Index: {pack.dynamic_preview.canonical_kora_index}/100 · Δ: {pack.dynamic_preview.delta_vs_canonical >= 0 ? '+' : ''}{pack.dynamic_preview.delta_vs_canonical}</p>
+                      <p className="italic text-slate-300">Low confidence technical preview · Non è il KORA Index ufficiale · Not production-ready</p>
                     </div>
-                  )}
-                </SectionBlock>
+                  </details>
+                )}
                 <SectionDivider />
               </>
             )}
 
-            {/* D: Dynamic Scoring Preview */}
-            {sectionMap.dynamic_scoring_preview && (
-              <>
-                <SectionBlock section={sectionMap.dynamic_scoring_preview}>
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
-                    <p className="font-bold">calculation_mode: {pack.dynamic_preview.calculation_mode}</p>
-                    <p>production_ready: false · official_index_source: {pack.dynamic_preview.official_index_source}</p>
-                    <p>Preview Score: <strong>{pack.dynamic_preview.dynamic_preview_score}</strong>/100 · Canonical: <strong>{pack.dynamic_preview.canonical_kora_index}</strong>/100 · Delta: {pack.dynamic_preview.delta_vs_canonical >= 0 ? '+' : ''}{pack.dynamic_preview.delta_vs_canonical}</p>
-                  </div>
-                  <MetricGrid metrics={sectionMap.dynamic_scoring_preview.metrics} />
-                  <InsightList insights={sectionMap.dynamic_scoring_preview.insights} />
-                  {sectionMap.dynamic_scoring_preview.limitations.length > 0 && (
-                    <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
-                      <ul className="space-y-1">
-                        {sectionMap.dynamic_scoring_preview.limitations.filter(Boolean).map((l, i) => (
-                          <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
-                            <span className="text-slate-300 shrink-0">·</span>{l}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </SectionBlock>
-                <SectionDivider />
-              </>
-            )}
-
-            {/* E: Eligibility Gate */}
-            {sectionMap.eligibility_gate && (
-              <>
-                <SectionBlock section={sectionMap.eligibility_gate}>
-                  <EligibilitySummaryReport summary={pack.eligibility_gate} />
-                  <InsightList insights={sectionMap.eligibility_gate.insights} />
-                </SectionBlock>
-                <SectionDivider />
-              </>
-            )}
-
-            {/* F: BTI */}
-            {sectionMap.budget_to_human_impact && (
-              <>
-                <SectionBlock section={sectionMap.budget_to_human_impact}>
-                  <BudgetImpactReport
-                    s1Record={pack.bti_record_s1 ?? undefined}
-                    s2Record={pack.bti_record_s2 ?? undefined}
-                    s1Macroblocks={pack.s1_macroblocks}
-                    s2Macroblocks={pack.s2_macroblocks}
-                    activeScenario={activeScenario}
-                  />
-                  <InsightList insights={sectionMap.budget_to_human_impact.insights} />
-                  <RecList recommendations={sectionMap.budget_to_human_impact.recommendations} />
-                </SectionBlock>
-                <SectionDivider />
-              </>
-            )}
-
-            {/* G–K: plain sections */}
-            {(['economic_relief', 'uef_review_data_quality', 'people_context_hr_kpi', 'pillar_analysis'] as const).map((code) => (
-              sectionMap[code] ? (
-                <div key={code}>
-                  <SectionBlock section={sectionMap[code]} />
-                  <SectionDivider />
-                </div>
-              ) : null
-            ))}
-
-            {/* J: Workforce Activation */}
+            {/* 3: Activation & Workforce */}
             {sectionMap.workforce_activation && (
               <>
                 <SectionBlock section={sectionMap.workforce_activation}>
@@ -818,20 +704,26 @@ export default function Reports() {
               </>
             )}
 
-            {/* L: Recommendations */}
-            {sectionMap.recommendations && (
+            {/* 4: Budget-to-Human-Impact (Economic Relief inline) */}
+            {sectionMap.budget_to_human_impact && (
               <>
-                <SectionBlock section={sectionMap.recommendations}>
-                  <RecList recommendations={sectionMap.recommendations.recommendations} />
-                  {sectionMap.recommendations.limitations.length > 0 && (
-                    <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2.5">
-                      <ul className="space-y-1">
-                        {sectionMap.recommendations.limitations.map((l, i) => (
-                          <li key={i} className="flex gap-1.5 text-[11px] text-slate-500">
-                            <span className="text-slate-300 shrink-0">·</span>{l}
-                          </li>
-                        ))}
-                      </ul>
+                <SectionBlock section={sectionMap.budget_to_human_impact}>
+                  <BudgetImpactReport
+                    s1Record={pack.bti_record_s1 ?? undefined}
+                    s2Record={pack.bti_record_s2 ?? undefined}
+                    s1Macroblocks={pack.s1_macroblocks}
+                    s2Macroblocks={pack.s2_macroblocks}
+                    activeScenario={activeScenario}
+                  />
+                  <InsightList insights={sectionMap.budget_to_human_impact.insights} />
+                  <RecList recommendations={sectionMap.budget_to_human_impact.recommendations} />
+                  {sectionMap.economic_relief && (
+                    <div className="mt-3 rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 space-y-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                        {sectionMap.economic_relief.title}
+                      </p>
+                      <p className="text-xs text-slate-600">{sectionMap.economic_relief.summary}</p>
+                      <InsightList insights={sectionMap.economic_relief.insights} />
                     </div>
                   )}
                 </SectionBlock>
@@ -839,23 +731,73 @@ export default function Reports() {
               </>
             )}
 
-            {/* M: 90-Day Action Plan */}
-            {sectionMap.ninety_day_action_plan && (
+            {/* 5: Eligibility Gate */}
+            {sectionMap.eligibility_gate && (
               <>
-                <SectionBlock section={sectionMap.ninety_day_action_plan}>
-                  <ActionPlanReport
-                    s1Record={pack.bti_record_s1 ?? undefined}
-                    s2Record={pack.bti_record_s2 ?? undefined}
-                    recommendations={pack.bti_recommendations}
-                    eligibilityGate={pack.eligibility_gate}
-                  />
-                  <RecList recommendations={sectionMap.ninety_day_action_plan.recommendations} />
+                <SectionBlock section={sectionMap.eligibility_gate}>
+                  <EligibilitySummaryReport summary={pack.eligibility_gate} />
+                  <InsightList insights={sectionMap.eligibility_gate.insights} />
                 </SectionBlock>
                 <SectionDivider />
               </>
             )}
 
-            {/* N: Methodology Boundaries */}
+            {/* 6: Pillar Balance — canonical aggregate share (not batch IU values) */}
+            {sectionMap.pillar_analysis && (
+              <>
+                <div id="pillar_analysis" className="scroll-mt-24 space-y-4">
+                  <div className="space-y-0.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">pillar_analysis</span>
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900">Pillar Balance</h3>
+                    <p className="text-xs text-slate-500">Distribuzione aggregata aziendale · dati sintetici demo canonici</p>
+                  </div>
+                  <div className="space-y-2">
+                    {CANONICAL_PILLAR_AGGREGATE.map(({ pillar, share, color }) => (
+                      <div key={pillar} className="flex items-center gap-3">
+                        <span className="w-24 text-xs font-mono text-slate-600">{pillar}</span>
+                        <div className="flex-1 h-2 rounded-full bg-slate-100">
+                          <div className={`h-2 rounded-full ${color}`} style={{ width: `${share}%` }} />
+                        </div>
+                        <span className="text-xs font-mono text-slate-500 w-10 text-right">{share}%</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-slate-400">
+                    Aggregato aziendale canonico Q1–Q3 2025 · Dati sintetici demo · Valori IU batch demo esclusi da questa vista.
+                  </p>
+                  <RecList recommendations={sectionMap.pillar_analysis.recommendations} />
+                </div>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* 7: Raccomandazioni + Piano 90gg */}
+            {sectionMap.recommendations && (
+              <>
+                <SectionBlock section={sectionMap.recommendations}>
+                  <RecList recommendations={sectionMap.recommendations.recommendations} />
+                  {sectionMap.ninety_day_action_plan && (
+                    <div className="mt-4 space-y-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                        Piano d&apos;azione 90 giorni
+                      </p>
+                      <ActionPlanReport
+                        s1Record={pack.bti_record_s1 ?? undefined}
+                        s2Record={pack.bti_record_s2 ?? undefined}
+                        recommendations={pack.bti_recommendations}
+                        eligibilityGate={pack.eligibility_gate}
+                      />
+                      <RecList recommendations={sectionMap.ninety_day_action_plan.recommendations} />
+                    </div>
+                  )}
+                </SectionBlock>
+                <SectionDivider />
+              </>
+            )}
+
+            {/* 8: Metodologia & Confini */}
             {sectionMap.methodology_boundaries && (
               <SectionBlock section={sectionMap.methodology_boundaries} />
             )}
@@ -877,11 +819,13 @@ export default function Reports() {
             Decision Pack misura l&apos;organizzazione, non gli individui.
           </p>
         </div>
-        <div className="space-y-2 text-xs text-indigo-800 leading-relaxed">
-          <p>· Il PIB individuale resta privato al lavoratore. Nessun dato individuale è incluso nel Decision Pack.</p>
-          <p>· Foundation Light v0.1 è in pre-empirical calibration: output direzionale, non certificazione pubblica o attestazione regolatoria.</p>
-          <p>· KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.</p>
-        </div>
+        <ul className="space-y-1.5 text-xs text-indigo-800 leading-relaxed">
+          <li>· Dati sintetici demo — non rappresentativi della situazione reale dell&apos;azienda.</li>
+          <li>· Foundation Light v0.1 · pre_empirical_calibration — output direzionale, non certificazione pubblica o attestazione regolatoria.</li>
+          <li>· Confidence Score: indicatore esterno di affidabilità dati, peso = 0 nel KORA Index v3. Non è una componente del punteggio.</li>
+          <li>· Correlazione ≠ causalità — tutti i segnali KORA sono associativi, non predittivi.</li>
+          <li>· KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.</li>
+        </ul>
         {limitations.length > 0 && (
           <div className="border-t border-indigo-200 pt-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400 mb-2">
