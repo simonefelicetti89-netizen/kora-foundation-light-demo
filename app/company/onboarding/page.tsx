@@ -11,12 +11,30 @@ import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSim
 import { cn } from '@/lib/utils';
 
 const ONBOARDING_STATUS_PILL: Record<string, string> = {
-  not_started:                   'bg-slate-100 text-slate-500 border-slate-200',
-  profile_complete:              'bg-blue-50 text-blue-700 border-blue-200',
-  workforce_baseline_complete:   'bg-blue-50 text-blue-700 border-blue-200',
-  program_data_loaded:           'bg-indigo-50 text-indigo-700 border-indigo-200',
-  ready_for_scoring:             'bg-amber-50 text-amber-700 border-amber-200',
-  fully_onboarded:               'bg-green-50 text-green-700 border-green-200',
+  not_started:                    'bg-slate-100 text-slate-500 border-slate-200',
+  profile_complete:               'bg-blue-50 text-blue-700 border-blue-200',
+  workforce_baseline_complete:    'bg-blue-50 text-blue-700 border-blue-200',
+  program_data_loaded:            'bg-indigo-50 text-indigo-700 border-indigo-200',
+  ready_for_scoring:              'bg-amber-50 text-amber-700 border-amber-200',
+  fully_onboarded:                'bg-green-50 text-green-700 border-green-200',
+  decision_pack_ready:            'bg-violet-50 text-violet-700 border-violet-200',
+  readiness_check_passed:         'bg-amber-50 text-amber-700 border-amber-200',
+  pipeline_active:                'bg-indigo-50 text-indigo-700 border-indigo-200',
+  blocked_insufficient_workforce: 'bg-rose-50 text-rose-700 border-rose-200',
+};
+
+const ONBOARDING_STATUS_LABEL: Record<string, string> = {
+  not_started:                    'Non avviato',
+  profile_complete:               'Profilo completato',
+  workforce_baseline_complete:    'Baseline completata',
+  program_data_loaded:            'Dati programmi caricati',
+  hr_kpi_added:                   'KPI HR aggiunti',
+  readiness_check_passed:         'Readiness verificata',
+  ready_for_scoring:              'Pronto per scoring',
+  pipeline_active:                'Pipeline attiva',
+  decision_pack_ready:            'Decision Pack disponibile',
+  fully_onboarded:                'Completamente onboardato',
+  blocked_insufficient_workforce: 'Organico insufficiente',
 };
 
 // C-14: Company Onboarding Room — COMPANY_ADMIN view of onboarding status
@@ -47,7 +65,7 @@ export default function CompanyOnboardingRoom() {
   }
 
   const statusBadge = tenantService.getTenantStatusBadge(tenant.tenant_status);
-  const onboardingLabel = tenant.onboarding_status.replace(/_/g, ' ');
+  const onboardingLabel = ONBOARDING_STATUS_LABEL[tenant.onboarding_status] ?? tenant.onboarding_status.replace(/_/g, ' ');
 
   const companyReadinessChecks = checks.filter((c) => !c.blocking || c.status !== 'ok');
   const allClear = checks.length > 0 && checks.every((c) => c.status === 'ok');
@@ -80,6 +98,14 @@ export default function CompanyOnboardingRoom() {
         <p className="text-indigo-600">Il PIB individuale resta privato al lavoratore.</p>
       </div>
 
+      {/* ── Coherent state banner ── */}
+      {hasIndex && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
+          <p className="font-semibold">Bozza disponibile — revisione advisor richiesta prima del Board Pack finale.</p>
+          <p>Il Decision Pack è stato generato. Un advisor KORA deve completare la revisione prima della versione certificata.</p>
+        </div>
+      )}
+
       {/* ── Next action ── */}
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">
@@ -105,7 +131,11 @@ export default function CompanyOnboardingRoom() {
             <p className={cn('text-sm font-semibold mt-1',
               intake.intake_status === 'ready_for_ingestion' ? 'text-green-700' :
               intake.intake_status === 'not_started' ? 'text-slate-400' : 'text-amber-700')}>
-              {intake.intake_status.replace(/_/g, ' ')}
+              {intake.intake_status === 'ready_for_ingestion'
+                ? 'Pronto'
+                : intake.intake_status === 'not_started'
+                ? 'Non avviato'
+                : hasIndex ? 'Revisione advisor' : intake.intake_status.replace(/_/g, ' ')}
             </p>
             <p className="text-[10px] text-slate-400 mt-0.5">
               {intake.total_rows} righe · {intake.ready_for_ingestion_rows} pronte
@@ -143,7 +173,7 @@ export default function CompanyOnboardingRoom() {
             <p className={cn('text-sm font-semibold mt-1',
               pipeline.status === 'ok' ? 'text-green-700' :
               pipeline.status === 'blocked' ? 'text-rose-700' : 'text-amber-700')}>
-              {pipeline.status === 'ok' ? 'Pronta' : pipeline.status === 'blocked' ? 'Bloccata' : 'In progress'}
+              {pipeline.status === 'ok' ? 'Pronta' : pipeline.status === 'blocked' ? 'Bloccata' : (hasIndex ? 'Advisor review' : 'In progress')}
             </p>
             <p className="text-[10px] text-slate-400 mt-0.5">Readiness metodologica KORA</p>
           </div>
@@ -170,7 +200,8 @@ export default function CompanyOnboardingRoom() {
             <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
               {companyReadinessChecks.slice(0, 5).map((c) => {
                 const isOk = c.status === 'ok';
-                const isBlocking = c.blocking && !isOk;
+                const isBlocking = c.blocking && !isOk && !hasIndex;
+                const isAdvisory = !isOk && !isBlocking;
                 return (
                   <div key={c.label} className={cn('flex items-start gap-3 px-4 py-3 border-b border-slate-100 last:border-0',
                     isOk ? '' : isBlocking ? 'bg-rose-50' : 'bg-amber-50')}>
@@ -184,6 +215,9 @@ export default function CompanyOnboardingRoom() {
                     </div>
                     {isBlocking && (
                       <span className="shrink-0 text-[9px] font-bold text-rose-600 uppercase tracking-wide">Richiesto</span>
+                    )}
+                    {isAdvisory && !isOk && (
+                      <span className="shrink-0 text-[9px] font-bold text-amber-600 uppercase tracking-wide">Revisione</span>
                     )}
                   </div>
                 );
