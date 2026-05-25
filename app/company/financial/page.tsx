@@ -183,7 +183,7 @@ const SCENARIOS_BTI = [
     label: 'Scenario attuale',
     badge: 'bg-amber-100 text-amber-700 border-amber-200',
     description: 'KORA Index stabile, Activation Debt alto, concentrazione elevata.',
-    interpretation: 'Il programma genera valore, ma coinvolge una parte limitata della workforce. Il top 10% genera il 61% degli IU — Activation Debt prioritario.',
+    interpretation: 'Il programma genera valore, ma coinvolge una parte limitata della workforce. Il top 12% genera il 64% degli IU — Activation Debt prioritario.',
   },
   {
     id: 'rebalance',
@@ -224,7 +224,7 @@ const INVESTMENT_RECS: InvestmentRec[] = [
   },
   {
     priority: 'Alta',
-    action: 'Ridurre concentrazione su top 10% con iniziative accessibili',
+    action: 'Ridurre concentrazione su top 12% con iniziative accessibili',
     budget_note: 'Riallocazione, non extra budget',
     expected_signal: 'Segnale atteso: riduzione Activation Debt',
     risk: 'Basso',

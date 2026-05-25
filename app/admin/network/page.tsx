@@ -303,7 +303,7 @@ const GAP_CARDS: GapCard[] = [
     id: 'gap-004',
     territory: 'Online / Nazionale',
     pillar: 'GROWTH',
-    problem: 'Copertura buona ma rischio concentrazione su top 10%.',
+    problem: 'Copertura buona ma rischio concentrazione su top 12%.',
     suggested_action: 'Disegnare iniziative accessibili al bottom 50%.',
     severity: 'media',
   },

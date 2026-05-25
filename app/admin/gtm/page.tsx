@@ -22,9 +22,9 @@ const SCENARIO_S1: ScenarioCard = {
     ['Confidence Score','60%'],
     ['Activation Rate', '38%'],
     ['MAR',             '22%'],
-    ['Activation Debt', '€84k'],
+    ['Activation Debt', '€45k'],
   ],
-  copy: "Activation Rate 38%, Activation Safeguard WARNING, KORA Index 34, Activation Debt €84k. Il valore people è concentrato su pochi gruppi e il bottom 50% resta poco attivato.",
+  copy: "Activation Rate 38%, Activation Safeguard WARNING, KORA Index 34, Activation Debt €45k. Il valore people è concentrato su pochi gruppi e il bottom 50% resta poco attivato.",
 };
 
 const SCENARIO_S2: ScenarioCard = {
