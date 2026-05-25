@@ -54,6 +54,7 @@ const SOURCE_TYPE_LABELS: Record<string, string> = {
   manual_upload:    'Caricamento Evidenze Manuale',
   partner_events:   'Flusso Evidenze Partner',
   hris_population:  'Fonte Popolazione Workforce',
+  hr_system:        'Sistema HR',
 };
 
 const ADDITIONALITY_BADGE: Record<string, string> = {
@@ -224,41 +225,65 @@ export default function PillarsInitiatives() {
                     ? prog.expected_participation_rate_s2
                     : prog.expected_participation_rate_s1;
                 const allPillars = [...prog.pillars_primary, ...prog.pillars_secondary];
+                const isBlocked = prog.kora_eligibility === 'blocked';
                 return (
-                  <tr key={prog.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                  <tr key={prog.id} className={cn(
+                    'border-b border-slate-100 last:border-0 hover:bg-slate-50',
+                    isBlocked && 'bg-rose-50/40',
+                  )}>
                     <td className="px-4 py-2.5">
                       <p className="font-medium text-slate-800">{prog.name}</p>
                       <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{prog.description}</p>
+                      {isBlocked && (
+                        <p className="text-[10px] text-rose-600 font-semibold mt-0.5">
+                          Blocked by Design · 0 IU · 0 KORA Index · 0 PIB · 0 Contribution
+                        </p>
+                      )}
                     </td>
                     <td className="px-4 py-2.5">
-                      <div className="flex gap-1 flex-wrap">
-                        {allPillars.map((p) => (
-                          <span
-                            key={p}
-                            className={cn(
-                              'rounded border px-1.5 py-0.5 text-xs font-mono',
-                              PILLAR_LIGHT[p as PillarCode] ?? 'bg-slate-100 text-slate-600 border-slate-200',
-                            )}
-                          >
-                            {p}
-                          </span>
-                        ))}
-                      </div>
+                      {isBlocked ? (
+                        <span className="rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-xs font-semibold text-rose-700">
+                          Escluso — governance baseline
+                        </span>
+                      ) : (
+                        <div className="flex gap-1 flex-wrap">
+                          {allPillars.map((p) => (
+                            <span
+                              key={p}
+                              className={cn(
+                                'rounded border px-1.5 py-0.5 text-xs font-mono',
+                                PILLAR_LIGHT[p as PillarCode] ?? 'bg-slate-100 text-slate-600 border-slate-200',
+                              )}
+                            >
+                              {p}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-2.5 text-xs text-slate-600">
                       {SOURCE_TYPE_LABELS[prog.source_type] ?? prog.source_type.replace(/_/g, ' ')}
                     </td>
                     <td className="px-4 py-2.5 text-right text-xs font-mono text-slate-700">
-                      {eur(prog.budget_eur_approx)}
+                      {isBlocked
+                        ? <span className="text-slate-400">{eur(prog.budget_eur_approx)}<br /><span className="text-[10px]">escl. da IU</span></span>
+                        : eur(prog.budget_eur_approx)
+                      }
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className={cn(
-                        'text-xs font-semibold',
-                        rate >= 0.40 ? 'text-green-600' :
-                        rate >= 0.20 ? 'text-yellow-600' : 'text-red-500',
-                      )}>
-                        {pct(rate)}
-                      </span>
+                      {isBlocked ? (
+                        <span className="text-xs text-slate-400">
+                          {pct(rate)}<br /><span className="text-[10px]">conformità</span>
+                        </span>
+                      ) : (
+                        <span className={cn(
+                          'text-xs font-semibold',
+                          rate >= 0.40 ? 'text-green-600' :
+                          rate >= 0.20 ? 'text-yellow-600' : 'text-red-500',
+                        )}>
+                          {pct(rate)}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-2.5">
                       <span className={cn(
@@ -355,8 +380,8 @@ export default function PillarsInitiatives() {
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
             Initiative Studio
           </h2>
-          <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
-            Foundation Light Preview
+          <span className="rounded border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+            Pilot Preview — non attivo in Foundation Light
           </span>
         </div>
         <p className="text-xs text-slate-500 mb-4 leading-relaxed max-w-2xl">

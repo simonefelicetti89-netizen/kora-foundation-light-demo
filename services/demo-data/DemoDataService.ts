@@ -43,6 +43,9 @@ interface DeptSiteRecord {
 interface ProgramRecord {
   id: string; company_id: string; name: string; description: string;
   pillars_primary: string[]; pillars_secondary: string[];
+  kora_eligibility?: 'eligible' | 'blocked' | 'limited' | 'mixed';
+  has_blocked_items?: boolean;
+  eligibility_note?: string;
   source_type: string; status: string;
   fiscal_category_label: string;
   fiscal_classification_informational_only: boolean;
