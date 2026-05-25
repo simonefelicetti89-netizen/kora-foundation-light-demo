@@ -44,7 +44,7 @@ function BudgetCard({
   );
 }
 
-// ─── Budget-to-Impact Bridge — per-pillar directional metadata ───────────────
+// ─── Budget-to-Human-Impact — per-pillar directional metadata ────────────────
 // Budget, share, and deep activation values come from BudgetToHumanImpactService.
 // Debt level and recommendation are directional demo labels — not computed from service.
 
@@ -258,7 +258,7 @@ const RISK_BADGE: Record<Risk, string> = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-// C-08: Financial Governance + Budget-to-Impact Bridge
+// C-08: Financial Governance + Budget-to-Human-Impact
 export default function FinancialGovernance() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
@@ -282,7 +282,7 @@ export default function FinancialGovernance() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Impact Bridge</h1>
+          <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Human-Impact</h1>
           <p className="text-sm text-slate-500">{companyName}</p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
@@ -300,7 +300,7 @@ export default function FinancialGovernance() {
   if (!rec) {
     return (
       <div className="space-y-4">
-        <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Impact Bridge</h1>
+        <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Human-Impact</h1>
         <p className="text-sm text-slate-400">Nessun dato di governance finanziaria disponibile per questo scenario.</p>
       </div>
     );
@@ -315,7 +315,7 @@ export default function FinancialGovernance() {
       {/* ── Header ── */}
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Impact Bridge</h1>
+          <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Human-Impact</h1>
           <span className="rounded border border-kora-violet/20 bg-kora-violet/10 px-2 py-0.5 text-xs font-medium text-kora-violet">
             Foundation Light Preview
           </span>
@@ -427,14 +427,14 @@ export default function FinancialGovernance() {
       </div>
 
       {/* ════════════════════════════════════════════════════════════════════════
-          BUDGET-TO-IMPACT BRIDGE
+          BUDGET-TO-HUMAN-IMPACT
           ════════════════════════════════════════════════════════════════════════ */}
       <div className="border-t-2 border-slate-200 pt-6 space-y-6">
 
         {/* ── Section header ── */}
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-lg font-bold text-slate-900">Budget-to-Impact Bridge</h2>
+            <h2 className="text-lg font-bold text-slate-900">Budget-to-Human-Impact</h2>
             <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-500">
               Dati sintetici demo
             </span>
@@ -755,7 +755,7 @@ export default function FinancialGovernance() {
             <div>
               <p className="text-sm font-semibold text-indigo-800">Porta questa lettura nel Board Pack</p>
               <p className="text-xs text-indigo-600 mt-0.5 leading-relaxed">
-                Il Budget-to-Impact Bridge può alimentare il CFO Budget View e il People Activation Report.
+                Il Budget-to-Human-Impact può alimentare il CFO Budget View e il People Activation Report.
                 Costo per IU, Activation Debt direzionale, correlazione ≠ causalità, nessun ROI garantito.
               </p>
             </div>

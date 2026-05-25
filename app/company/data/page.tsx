@@ -290,9 +290,9 @@ export default function DataEvidence() {
             color="text-slate-800"
           />
           <SummaryCard
-            label="Mapping Confidence media"
+            label="Mapping Confidence Fonti"
             value="82%"
-            sub="Fonti attive, sopra soglia"
+            sub="Media per fonte attiva (statica)"
             color="text-green-600"
           />
           <SummaryCard
@@ -535,7 +535,7 @@ export default function DataEvidence() {
             color={completeness.overall_completeness_pct >= 0.75 ? 'text-green-600' : 'text-yellow-600'}
           />
           <SummaryCard
-            label="Confidenza Mapping Media"
+            label="Confidenza Mapping Batch"
             value={pct(mapping.average_confidence)}
             sub={`${mapping.high_confidence_sources} alta / ${mapping.low_confidence_sources} bassa`}
             color={mapping.average_confidence >= 0.70 ? 'text-green-600' : 'text-yellow-600'}
@@ -569,7 +569,7 @@ export default function DataEvidence() {
                     <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Mappati</th>
                     <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Rifiutati</th>
                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Completezza</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Confidenza Mapping</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Confidenza Mapping Batch</th>
                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Evidenza</th>
                     <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">In Attesa</th>
                     <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Stato</th>

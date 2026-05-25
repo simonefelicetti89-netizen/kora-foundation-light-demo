@@ -176,10 +176,10 @@ export default function ExecutiveCockpit() {
                 facts={[
                   { label: 'Data readiness',  value: tenant.data_readiness_status.replace(/_/g, ' '),  highlight: 'positive' },
                   { label: 'Decision Pack',   value: tenant.decision_pack_status.replace(/_/g, ' '),   highlight: 'positive' },
-                  { label: 'Lavoratori',      value: String(workerSummary.total_workers),               highlight: 'neutral' },
-                  { label: 'My KORA attivi',  value: String(workerSummary.my_kora_enabled_count),       highlight: 'neutral' },
+                  { label: 'Account demo worker', value: String(workerSummary.total_workers),            highlight: 'neutral' },
+                  { label: 'My KORA (demo)',      value: String(workerSummary.my_kora_enabled_count),    highlight: 'neutral' },
                 ]}
-                interpretation="Solo aggregati aziendali — employer_can_view_individual_pib: false su ogni record."
+                interpretation="Account demo worker ≠ forza lavoro Meridiana (250). Solo aggregati aziendali — employer_can_view_individual_pib: false."
                 link={{ href: '/company/data', label: 'Data Room' }}
               />
             ) : null}

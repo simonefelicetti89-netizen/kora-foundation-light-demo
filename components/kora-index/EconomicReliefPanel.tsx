@@ -147,7 +147,7 @@ export function EconomicReliefPanel({
               </li>
               {s1BtiScore !== undefined && s2BtiScore !== undefined && (
                 <li>
-                  BTI Macroblock:{' '}
+                  BTI Score:{' '}
                   <span className="font-semibold">{s1BtiScore}</span>
                   {' '}→{' '}
                   <span className="font-semibold">{s2BtiScore}</span>
