@@ -54,7 +54,7 @@ These ten principles override any other consideration. Code, copy, and UX must r
 ## 3. Domain Model (Canonical Entities)
 
 ### Tenant types
-```
+```text
 tenant.type        = "demo" | "real"
 tenant.dataMode    = "synthetic_seed" | "uploaded_data" | "integration"
 tenant.scoringMode = "seeded_demo" | "computed" | "insufficient_data"
