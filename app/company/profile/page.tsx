@@ -1,14 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useRole } from '@/lib/demo-state';
+import { useRole, useScenario } from '@/lib/demo-state';
 import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
-
-const SCENARIO = 'S2';
 
 const ONBOARDING_LABELS: Record<string, string> = {
   not_started:                 'Non avviato',
@@ -33,14 +31,15 @@ const ONBOARDING_COLORS: Record<string, string> = {
 
 // C-17: Company Profile — company-scoped, read-only
 export default function CompanyProfilePage() {
-  const { activeRole } = useRole();
+  const { activeRole }     = useRole();
+  const { activeScenario } = useScenario();
 
   // Resolve company from current demo user — company-scoped
   const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
   const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
 
   const record = companyOnboardingService.getCompanyOnboardingRecord(COMPANY_ID);
-  const koraOutput = scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, SCENARIO);
+  const koraOutput = scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, activeScenario);
   const tenant = tenantService.getTenant(COMPANY_ID);
   const companyAccounts = accountProvisioningService.getAccountsForCompany(COMPANY_ID);
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(COMPANY_ID);

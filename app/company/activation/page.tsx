@@ -29,8 +29,7 @@ const DEPT_LABELS: Record<string, string> = {
 const DEBT_CONCENTRATION = {
   bottom_50_iu_pct: 0.12,
   next_40_iu_pct:   0.27,
-  top_10_iu_pct:    0.61,
-  estimated_debt_eur: 84_000,
+  top_12_iu_pct:    0.64,
 };
 
 const SAFEGUARD_STYLE: Record<string, { container: string; label: string; badge: string }> = {
@@ -58,11 +57,10 @@ const DEBT_LEVEL_BADGE: Record<DebtLevel, { style: string; label: string }> = {
 type SiteStatus = 'ok' | 'warning' | 'flagged' | 'suppressed';
 
 const SITE_ACTIVATION: { name: string; workers: number; ar: number; status: SiteStatus }[] = [
-  { name: 'Sede Bergamo',      workers: 210, ar: 0.41, status: 'warning' },
-  { name: 'Sede Milano',       workers:  95, ar: 0.63, status: 'ok' },
-  { name: 'Produzione',        workers: 180, ar: 0.28, status: 'flagged' },
-  { name: 'Staff centrale',    workers:  75, ar: 0.72, status: 'ok' },
-  { name: 'Reparto (piccolo)', workers:   7, ar: 0,    status: 'suppressed' },
+  { name: 'Sede Milano (HQ)',      workers: 100, ar: 0.60, status: 'ok' },
+  { name: 'Plant Bergamo',         workers:  90, ar: 0.11, status: 'flagged' },
+  { name: 'Sede Torino',           workers:  35, ar: 0.38, status: 'warning' },
+  { name: 'Remoto / distribuito',  workers:  25, ar: 0.55, status: 'ok' },
 ];
 
 const SITE_STATUS_BADGE: Record<SiteStatus, { style: string; label: string }> = {
@@ -73,7 +71,7 @@ const SITE_STATUS_BADGE: Record<SiteStatus, { style: string; label: string }> = 
 };
 
 const NEXT_ACTIONS: { priority: number; action: string; impact: string }[] = [
-  { priority: 1, action: 'Attivare programma LIFE / Produzione — reparto con AR 28%', impact: '+8–12 pp AR stimato' },
+  { priority: 1, action: 'Attivare programma LIFE / Plant Bergamo — sito con AR 11%', impact: '+8–12 pp AR stimato' },
   { priority: 2, action: 'Estendere programma LEGACY — copertura attuale 12%', impact: '+4–6 pp AR stimato' },
   { priority: 3, action: 'Revisione offerta CONNECTION — pillar sotto soglia materialità', impact: 'Qualità attivazione' },
   { priority: 4, action: 'Aumentare VR su evidenze auto-dichiarate — partner verificati', impact: 'Confidence Score' },
@@ -117,8 +115,9 @@ export default function Activation() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
   const companyId = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
-  const aggregate = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
-  const safeguard = activationSafeguardService.evaluateFromSeed(companyId, activeScenario);
+  const aggregate  = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
+  const safeguard  = activationSafeguardService.evaluateFromSeed(companyId, activeScenario);
+  const debtEur    = activeScenario === 'S2' ? 35_000 : 45_000;
   const safeguardStyle = safeguard ? (SAFEGUARD_STYLE[safeguard.status] ?? SAFEGUARD_STYLE.WARNING) : SAFEGUARD_STYLE.WARNING;
 
   return (
@@ -156,16 +155,16 @@ export default function Activation() {
                 <p className="text-xs font-mono text-amber-500 mt-0.5">degli IU totali</p>
               </div>
               <div className="rounded-md border border-amber-100 bg-amber-50 p-3">
-                <p className="text-xs text-amber-600">Top 10% lavoratori</p>
-                <p className="text-2xl font-bold text-amber-700 mt-1">{pct(DEBT_CONCENTRATION.top_10_iu_pct)}</p>
+                <p className="text-xs text-amber-600">Top 12% lavoratori</p>
+                <p className="text-2xl font-bold text-amber-700 mt-1">{pct(DEBT_CONCENTRATION.top_12_iu_pct)}</p>
                 <p className="text-xs font-mono text-amber-500 mt-0.5">degli IU totali</p>
               </div>
               <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Debt stimato (valore attivazione persa)</p>
+                <p className="text-xs text-slate-500">Activation Debt stimato</p>
                 <p className="text-2xl font-bold text-slate-700 mt-1">
-                  €{DEBT_CONCENTRATION.estimated_debt_eur.toLocaleString('it-IT')}
+                  €{debtEur.toLocaleString('it-IT')}
                 </p>
-                <p className="text-xs font-mono text-slate-400 mt-0.5">stima sintetica demo</p>
+                <p className="text-xs font-mono text-slate-400 mt-0.5">budget non convertito in IU</p>
               </div>
             </div>
           </div>
@@ -233,8 +232,8 @@ export default function Activation() {
             </p>
             <div className="space-y-3">
               {[
-                { label: 'Top 10% lavoratori', pct: DEBT_CONCENTRATION.top_10_iu_pct, color: 'bg-red-400' },
-                { label: 'Fascia 40–90%',       pct: DEBT_CONCENTRATION.next_40_iu_pct, color: 'bg-amber-300' },
+                { label: 'Top 12% lavoratori', pct: DEBT_CONCENTRATION.top_12_iu_pct, color: 'bg-red-400' },
+                { label: 'Fascia 38–88%',       pct: DEBT_CONCENTRATION.next_40_iu_pct, color: 'bg-amber-300' },
                 { label: 'Bottom 50%',           pct: DEBT_CONCENTRATION.bottom_50_iu_pct, color: 'bg-slate-300' },
               ].map((row) => (
                 <div key={row.label} className="flex items-center gap-3">
@@ -250,7 +249,7 @@ export default function Activation() {
               ))}
             </div>
             <p className="text-[11px] text-slate-400 mt-3">
-              Concentrazione IU: il top 10% genera {pct(DEBT_CONCENTRATION.top_10_iu_pct)} degli IU totali.
+              Concentrazione IU: il top 12% genera {pct(DEBT_CONCENTRATION.top_12_iu_pct)} degli IU totali.
               Activation Debt elevato — espansione della base di attivazione prioritaria.
             </p>
           </div>
