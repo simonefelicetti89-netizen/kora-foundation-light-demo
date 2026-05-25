@@ -3,7 +3,6 @@
 import { usePersona, useRole } from '@/lib/demo-state';
 import { isWorkerRole } from '@/lib/permissions';
 
-// My KORA only — shown when active role is WORKER
 export function PersonaSwitcher() {
   const { activeRole } = useRole();
   const { activePersona, setPersona } = usePersona();
@@ -12,30 +11,35 @@ export function PersonaSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-        PERSONA
+      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 select-none whitespace-nowrap">
+        Profilo
       </span>
-      <select
-        value={activePersona?.id ?? ''}
-        onChange={(e) => {
-          if (!e.target.value) { setPersona(null); return; }
-          setPersona({
-            id: e.target.value,
-            display_name: e.target.value,
-            department: 'Stub dept',
-            site: 'HQ Milano',
-            scenario_id: 'S1',
-            synthetic_demo_data: true,
-          });
-        }}
-        className="rounded border border-slate-200 bg-white px-2 py-1 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-        aria-label="Switch worker persona"
-      >
-        <option value="">— Select persona —</option>
-        <option value="persona-elena-m">Persona: Elena M.</option>
-        <option value="persona-marco-t">Persona: Marco T.</option>
-        <option value="persona-sofia-r">Persona: Sofia R.</option>
-      </select>
+      <div className="relative">
+        <select
+          value={activePersona?.id ?? ''}
+          onChange={(e) => {
+            if (!e.target.value) { setPersona(null); return; }
+            setPersona({
+              id: e.target.value,
+              display_name: e.target.value,
+              department: 'Stub dept',
+              site: 'HQ Milano',
+              scenario_id: 'S1',
+              synthetic_demo_data: true,
+            });
+          }}
+          className="appearance-none rounded-md border border-slate-200 bg-slate-50 pl-2.5 pr-6 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-300"
+          aria-label="Switch worker persona"
+        >
+          <option value="">— Seleziona profilo —</option>
+          <option value="persona-elena-m">Elena M.</option>
+          <option value="persona-marco-t">Marco T.</option>
+          <option value="persona-sofia-r">Sofia R.</option>
+        </select>
+        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-slate-400 text-[10px]">
+          ▾
+        </span>
+      </div>
     </div>
   );
 }
