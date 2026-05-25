@@ -32,7 +32,7 @@ const DEMO_12_MIN: {
     pitch: "Chi non è ancora attivato? KORA rende visibile la maggioranza silenziosa senza esporre individui.",
   },
   {
-    step: 5, label: 'Budget-to-Impact Bridge', href: '/company/financial', duration: '1.5 min',
+    step: 5, label: 'Budget-to-Human-Impact', href: '/company/financial', duration: '1.5 min',
     objective: 'Governance finanziaria · Budget per pillar · Costo per IU · HR KPI Correlation',
     pitch: "Il CFO collega budget people a Impact Units prodotti — senza claim di ROI garantito.",
   },
@@ -97,7 +97,7 @@ const STORY_90: { n: number; title: string; body: string; tag: string }[] = [
   {
     n: 6,
     title: 'KORA mostra dove manca attivazione',
-    body: 'Activation Debt identifica la maggioranza silenziosa. Budget-to-Impact Bridge collega spesa a IU prodotti per pillar.',
+    body: 'Activation Debt identifica la maggioranza silenziosa. Budget-to-Human-Impact collega spesa a IU prodotti per pillar.',
     tag: 'Explainability',
   },
   {
@@ -113,7 +113,7 @@ const READINESS: { label: string; status: 'active' | 'future' | 'blocked'; note?
   { label: 'KORA Index + Confidence Score',                     status: 'active' },
   { label: 'Activation Safeguard (CLEAR / WARNING / FLAGGED)',  status: 'active' },
   { label: 'Activation Debt / Silent Majority',                 status: 'active' },
-  { label: 'Budget-to-Impact Bridge + HR KPI Correlation',      status: 'active' },
+  { label: 'Budget-to-Human-Impact + HR KPI Correlation',      status: 'active' },
   { label: 'Board Pack / Board Narrative Generator',            status: 'active' },
   { label: 'My KORA privacy/value layer',                       status: 'active' },
   { label: 'Partner Operating Preview',                         status: 'active' },

@@ -83,7 +83,7 @@ const GTM_TRACKS: GTMTrack[] = [
     audience: 'CHRO + CFO',
     goal: 'Mostrare dal dato al KORA Index, dal debito di attivazione al budget, fino al report direzionale.',
     message: 'Dal dato al debt, dal budget al Board Pack — con privacy lavoratore garantita.',
-    deliverable: 'KORA Index, Activation Debt, Budget-to-Impact, Board Pack, privacy architecture',
+    deliverable: 'KORA Index, Activation Debt, Budget-to-Human-Impact, Board Pack, privacy architecture',
     presenterNote: 'Usare My KORA per chiudere il tema sorveglianza/privacy.',
     cardStyle: 'border-blue-200 bg-blue-50',
     letterStyle: 'text-blue-300',
@@ -92,7 +92,7 @@ const GTM_TRACKS: GTMTrack[] = [
       { n: 2, label: 'Company Workspace',        href: '/company' },
       { n: 3, label: 'KORA Index Detail',        href: '/company/kora-index' },
       { n: 4, label: 'Activation Debt',          href: '/company/activation' },
-      { n: 5, label: 'Budget-to-Impact Bridge',  href: '/company/financial' },
+      { n: 5, label: 'Budget-to-Human-Impact',  href: '/company/financial' },
       { n: 6, label: 'Reports & Board Pack',     href: '/company/reports' },
       { n: 7, label: 'My KORA Worker Layer',     href: '/my-kora',   roleNote: 'passa a WORKER' },
     ],
@@ -115,7 +115,7 @@ const GTM_TRACKS: GTMTrack[] = [
       { n: 4,  label: 'Dati & Evidenze',          href: '/company/data' },
       { n: 5,  label: 'Activation Debt',          href: '/company/activation' },
       { n: 6,  label: 'Pillar & Iniziative',      href: '/company/pillars' },
-      { n: 7,  label: 'Budget-to-Impact Bridge',  href: '/company/financial' },
+      { n: 7,  label: 'Budget-to-Human-Impact',  href: '/company/financial' },
       { n: 8,  label: 'Reports & Board Pack',     href: '/company/reports' },
       { n: 9,  label: 'My KORA Worker Layer',     href: '/my-kora',         roleNote: 'passa a WORKER' },
       { n: 10, label: 'Partner Workspace',        href: '/partner',         roleNote: 'passa a PARTNER' },
@@ -129,7 +129,7 @@ const GTM_TRACKS: GTMTrack[] = [
 const PILOT_INCLUDES = [
   { n: '01', title: 'Prima lettura KORA Index organizzativo',    body: '10 componenti, Confidence Score, Activation Safeguard, metodologia versionata.' },
   { n: '02', title: 'Activation Debt Diagnostic',               body: 'Silent Majority, concentrazione, pillar debt, gap per sede/reparto sopra soglia privacy.' },
-  { n: '03', title: 'Budget-to-Impact Bridge',                   body: 'Lettura direzionale della spesa people/welfare/training rispetto a Impact Units e priorità di investimento.' },
+  { n: '03', title: 'Budget-to-Human-Impact',                   body: 'Lettura direzionale della spesa people/welfare/training rispetto a Impact Units e priorità di investimento.' },
   { n: '04', title: 'HR KPI Correlation Preview',                body: 'Correlazioni aggregate e direzionali. Correlazione ≠ causalità.' },
   { n: '05', title: 'Board / Decision Pack',                     body: 'CEO Summary, CHRO Actions, CFO Budget View, ESG Annex, Worker Trust Note.' },
   { n: '06', title: 'My KORA Worker Layer Preview',              body: 'PIB privato, timeline personale, Dynamic Impact CV, Consent & Sharing Vault.' },
@@ -157,14 +157,14 @@ const PILOT_SOURCES = [
   { title: 'LMS / formazione',                       body: 'Completamenti, tipologie corso, periodi, mapping pillar.' },
   { title: 'HR population file',                     body: 'Perimetro workforce anonimizzato/pseudonimizzato, senza dati sensibili non necessari.' },
   { title: 'Iniziative people / ESG / CSR',          body: 'Eventi, programmi, iniziative territoriali, partecipazione aggregata.' },
-  { title: 'Budget welfare / training / people ESG', body: 'Budget allocato per area, se disponibile, per Budget-to-Impact.' },
+  { title: 'Budget welfare / training / people ESG', body: 'Budget allocato per area, se disponibile, per Budget-to-Human-Impact.' },
   { title: 'Partner / advisor evidence',             body: 'Protocollo evidenze, stato review, audit processo, sample check demo.' },
 ];
 
 const PILOT_CRITERIA = [
   'Prima lettura KORA Index prodotta entro finestra concordata',
   'Activation Debt identificato su almeno un segmento organizzativo',
-  'Budget-to-Impact generato per almeno un perimetro di spesa',
+  'Budget-to-Human-Impact generato per almeno un perimetro di spesa',
   'Board Pack generato e discusso con leadership',
   'Privacy architecture validata con HR/legal',
   'Next actions definiti',
@@ -458,7 +458,7 @@ export default function GtmPilotConsole() {
                 <p className="text-xs text-indigo-700 mt-1 leading-relaxed max-w-lg">
                   Percorso 60–90 giorni per trasformare dati people/welfare/training/CSR esistenti
                   in una prima intelligence KORA — con KORA Index, Activation Debt,
-                  Budget-to-Impact e Board Pack.
+                  Budget-to-Human-Impact e Board Pack.
                 </p>
                 <p className="text-[11px] text-indigo-500 mt-2">
                   Pricing da definire in base a perimetro, fonti dati e durata pilot.
