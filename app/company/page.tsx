@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
 import { isViewerRole } from '@/lib/permissions';
-import { KoraIndexCenterpiece } from '@/components/company/KoraIndexCenterpiece';
-import { KoraTrustStrip } from '@/components/company/KoraTrustStrip';
+import { ExecutiveCockpitHero } from '@/components/company/ExecutiveCockpitHero';
+import { KoraIndexCommandCenter } from '@/components/company/KoraIndexCommandCenter';
+import { TrustGovernanceStrip } from '@/components/company/TrustGovernanceStrip';
+import { ExecutiveIntelligenceBlock } from '@/components/company/ExecutiveIntelligenceBlock';
+import { PriorityActionPanel } from '@/components/company/PriorityActionPanel';
 import { PillarChart } from '@/components/charts/PillarChart';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
@@ -12,31 +15,16 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { tenantService } from '@/services/tenant/TenantService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
-import { cn } from '@/lib/utils';
 import type { PillarCode } from '@/lib/types';
 
 function pct(val: number) { return `${(val * 100).toFixed(0)}%`; }
 function eur(val: number) { return `€${val.toLocaleString('it-IT')}`; }
 
-const MACROBLOCK_LABELS: Record<string, string> = {
-  REACH:   'Activation Reach',
-  QUALITY: 'Activation Quality',
-  EQUITY:  'Distribution & Equity',
-  BTI:     'Budget-to-Human-Impact',
-};
-
-const MACROBLOCK_BAR: Record<string, string> = {
-  REACH:   'bg-violet-500',
-  QUALITY: 'bg-indigo-500',
-  EQUITY:  'bg-slate-400',
-  BTI:     'bg-purple-500',
-};
-
-// C-01: Executive Cockpit v4 — Radical Visual Redesign
+// C-01: Executive Cockpit — full rebuild with KORA logo + premium typography
 export default function ExecutiveCockpit() {
-  const { activeRole }    = useRole();
+  const { activeRole }     = useRole();
   const { activeScenario } = useScenario();
-  const isViewer          = isViewerRole(activeRole);
+  const isViewer           = isViewerRole(activeRole);
 
   const currentUser   = accountProvisioningService.getCurrentDemoUser(activeRole);
   const companyId     = currentUser.company_id ?? 'meridiana-group';
@@ -49,7 +37,7 @@ export default function ExecutiveCockpit() {
   const warnings    = explainabilityService.getWarnings(companyId, activeScenario);
   const actions     = explainabilityService.getNextBestActions(companyId, activeScenario);
 
-  const btiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(
+  const btiResult     = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(
     companyId, activeScenario, activeRole,
   );
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(companyId);
@@ -59,85 +47,25 @@ export default function ExecutiveCockpit() {
   const primaryAction  = actions[0] ?? null;
   const showBTI        = btiResult.allowed && btiResult.record != null;
 
-  // ──────────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-5">
 
-      {/* ── A: Executive Hero ─────────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-kora-cosmic-blue overflow-hidden">
-        <div className="px-8 py-8">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-kora-fun-green/60 mb-2">
-            Executive Cockpit · Cabina di Regia
-          </p>
-          <h1 className="text-3xl font-bold text-white leading-tight">
-            {tenant?.company_name ?? companyId}
-          </h1>
-
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            {tenant?.tenant_status === 'active' && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-kora-fun-green/30 px-3 py-1 text-xs font-semibold text-kora-fun-green">
-                <span className="h-1.5 w-1.5 rounded-full bg-kora-fun-green shrink-0" />
-                Tenant attivo
-              </span>
-            )}
-            <span className="text-xs font-mono text-white/30">
-              {output?.reporting_period ?? activeScenario} · synthetic_demo_data
-            </span>
-            {!hasKoraData && (
-              <span className="rounded border border-rose-400/30 bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-300">
-                KORA Index non disponibile
-              </span>
-            )}
-          </div>
-
-          {/* Primary + secondary CTAs */}
-          <div className="mt-7 flex flex-wrap gap-3">
-            {isViewer ? (
-              <>
-                <Link
-                  href="/company/shared"
-                  className="rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-kora-cosmic-blue hover:bg-kora-gray-base transition-colors"
-                >
-                  KORA Shared View →
-                </Link>
-                <Link
-                  href="/company/kora-index"
-                  className="rounded-lg border border-white/20 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
-                >
-                  KORA Index →
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/company/reports"
-                  className="rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-kora-cosmic-blue hover:bg-kora-gray-base transition-colors"
-                >
-                  Decision Pack →
-                </Link>
-                <Link
-                  href="/company/shared"
-                  className="rounded-lg border border-white/25 bg-white/8 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/15 transition-colors"
-                >
-                  Shared View →
-                </Link>
-                <Link
-                  href="/company/kora-index"
-                  className="rounded-lg border border-white/10 px-5 py-2.5 text-sm font-semibold text-white/50 hover:text-white/80 hover:border-white/20 transition-colors"
-                >
-                  KORA Index →
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      {/* ── 1. Executive Cockpit Hero ─────────────────────────────────────── */}
+      <ExecutiveCockpitHero
+        companyName={tenant?.company_name ?? companyId}
+        period={output?.reporting_period ?? activeScenario}
+        tenantStatus={tenant?.tenant_status}
+        isViewer={isViewer}
+        hasKoraData={hasKoraData}
+      />
 
       {/* ── No-data state ─────────────────────────────────────────────────── */}
       {!hasKoraData && tenant && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-7 py-6 space-y-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600 mb-1">Stato Pipeline</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600 mb-1">
+              Stato Pipeline
+            </p>
             <p className="text-base font-semibold text-amber-900">
               Dati non ancora disponibili per questo periodo
             </p>
@@ -167,300 +95,133 @@ export default function ExecutiveCockpit() {
       {hasKoraData && (
         <div className="space-y-5">
 
-          {/* ── B: KORA Index Centerpiece — the dominant signal ───────────── */}
-          <KoraIndexCenterpiece output={output} />
+          {/* ── 2. KORA Index Command Center — dominant signal ────────────── */}
+          <KoraIndexCommandCenter output={output} macroblocks={macroblocks} />
 
-          {/* ── C: Trust / Governance Strip ──────────────────────────────── */}
-          <KoraTrustStrip output={output} />
+          {/* ── 3. Trust & Governance Strip ──────────────────────────────── */}
+          <TrustGovernanceStrip output={output} />
 
-          {/* ── D: Priority Action Panel ─────────────────────────────────── */}
-          {(primaryWarning || primaryAction) && (
-            <div className="rounded-2xl border border-kora-violet/20 bg-kora-violet/5 px-6 py-5 space-y-4">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-kora-violet">
-                Prossima Azione Consigliata
-              </p>
+          {/* ── 4. Priority Action Panel ─────────────────────────────────── */}
+          <PriorityActionPanel
+            warning={primaryWarning}
+            action={primaryAction}
+            extraWarningsCount={Math.max(0, warnings.length - 1)}
+            extraActionsCount={Math.max(0, actions.length - 1)}
+            isViewer={isViewer}
+          />
 
-              {primaryWarning && (
-                <div className="flex items-start gap-4">
-                  <div className={cn(
-                    'w-1 shrink-0 self-stretch rounded-full',
-                    primaryWarning.severity === 'critical' ? 'bg-red-500' :
-                    primaryWarning.severity === 'high'     ? 'bg-orange-400' : 'bg-yellow-400',
-                  )} />
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 leading-snug">
-                      {primaryWarning.title}
-                    </p>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed line-clamp-2">
-                      {primaryWarning.message}
-                    </p>
-                    {primaryWarning.affected_components.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {primaryWarning.affected_components.map((code) => (
-                          <span
-                            key={code}
-                            className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-mono text-slate-600"
-                          >
-                            {code}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {primaryAction && (
-                <div className={cn(
-                  'flex items-start gap-4',
-                  primaryWarning && 'pt-4 border-t border-kora-violet/10',
-                )}>
-                  <div className="shrink-0 h-7 w-7 rounded-full bg-kora-violet flex items-center justify-center text-xs font-bold text-white mt-0.5">
-                    {primaryAction.priority}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-kora-cosmic-blue leading-snug">
-                      {primaryAction.action}
-                    </p>
-                    <p className="text-xs text-slate-600 mt-1 leading-relaxed line-clamp-2">
-                      {primaryAction.detail}
-                    </p>
-                    {primaryAction.target_components.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {primaryAction.target_components.map((code) => (
-                          <span
-                            key={code}
-                            className="rounded border border-kora-violet/20 bg-white px-1.5 py-0.5 text-[10px] font-mono text-kora-violet"
-                          >
-                            {code}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {(warnings.length > 1 || actions.length > 1) && (
-                <p className="text-[10px] text-slate-400 pt-1 border-t border-kora-violet/10">
-                  {warnings.length > 1 && `+${warnings.length - 1} segnali aggiuntivi · `}
-                  {actions.length > 1 && `+${actions.length - 1} azioni aggiuntive · `}
-                  Dettaglio in{' '}
-                  <Link href="/company/kora-index" className="underline hover:text-slate-600">
-                    KORA Index
-                  </Link>
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* ── E: Three Executive Modules ────────────────────────────────── */}
-          <div className={cn(
-            'grid gap-5',
-            showBTI && aggregate ? 'lg:grid-cols-3' : 'lg:grid-cols-2',
-          )}>
+          {/* ── 5. Three Executive Intelligence Blocks ───────────────────── */}
+          <div className="grid gap-5 lg:grid-cols-3">
 
             {/* Module 1 — Attivazione Organizzativa */}
             {aggregate ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col gap-5">
-                <div className="flex items-start justify-between">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                    Attivazione Organizzativa
-                  </p>
-                  <Link href="/company/activation" className="text-[10px] font-semibold text-kora-violet hover:underline shrink-0">
-                    Dettaglio →
-                  </Link>
-                </div>
-                <div>
-                  <p className="text-[10px] text-slate-400">Activation Rate</p>
-                  <p className="text-6xl font-bold text-kora-cosmic-blue leading-none mt-1 tabular-nums">
-                    {pct(aggregate.activation_rate)}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1.5">
-                    della forza lavoro attiva nel periodo
-                  </p>
-                </div>
-                <div className="space-y-2.5 pt-4 border-t border-slate-100 flex-1">
-                  {[
-                    ['MAR — Meaningful Activation', pct(aggregate.meaningful_activation_rate)],
-                    ['CO — Continuity',             pct(aggregate.continuity_rate)],
-                    ['VR — Verification Rate',       pct(aggregate.verification_rate)],
-                  ].map(([label, value]) => (
-                    <div key={label} className="flex items-center justify-between gap-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className="text-sm font-bold text-slate-800 tabular-nums">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[10px] text-slate-400 leading-snug pt-3 border-t border-slate-100">
-                  Segnali operativi aggregati — alimentano il KORA Index. PIB individuale privato al lavoratore.
-                </p>
-              </div>
+              <ExecutiveIntelligenceBlock
+                surface="light"
+                title="Attivazione Organizzativa"
+                mainValue={pct(aggregate.activation_rate)}
+                mainLabel="Activation Rate"
+                mainCaption="della forza lavoro attiva nel periodo"
+                facts={[
+                  { label: 'MAR — Meaningful Activation', value: pct(aggregate.meaningful_activation_rate), highlight: 'positive' },
+                  { label: 'CO — Continuity',             value: pct(aggregate.continuity_rate),            highlight: 'neutral' },
+                  { label: 'VR — Verification Rate',       value: pct(aggregate.verification_rate),          highlight: 'neutral' },
+                ]}
+                interpretation="Segnali operativi aggregati — alimentano il KORA Index. PIB individuale privato al lavoratore."
+                link={{ href: '/company/activation', label: 'Dettaglio' }}
+              />
             ) : null}
 
             {/* Module 2 — Budget-to-Human-Impact */}
             {showBTI && btiResult.record ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col gap-5">
-                <div className="flex items-start justify-between">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                    Budget-to-Human-Impact
-                  </p>
-                  <Link href="/company/financial" className="text-[10px] font-semibold text-kora-violet hover:underline shrink-0">
-                    Dettaglio →
-                  </Link>
-                </div>
-                <div>
-                  <p className="text-[10px] text-slate-400">Deep Activation Share</p>
-                  <p className="text-6xl font-bold text-kora-cosmic-blue leading-none mt-1 tabular-nums">
-                    {pct(btiResult.record.deep_activation_share)}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1.5">
-                    del budget in attivazione profonda
-                  </p>
-                </div>
-                <div className="space-y-2.5 pt-4 border-t border-slate-100 flex-1">
-                  {[
-                    ['Budget people/welfare',   eur(btiResult.record.total_people_welfare_budget)],
-                    ['Costo / Impact Unit',     eur(btiResult.record.cost_per_impact_unit)],
-                    ['Activation Debt (est.)',   eur(btiResult.record.activation_debt_eur)],
-                  ].map(([label, value]) => (
-                    <div key={label} className="flex items-center justify-between gap-3">
-                      <p className="text-xs text-slate-500">{label}</p>
-                      <p className={cn(
-                        'text-sm font-bold tabular-nums',
-                        label.includes('Debt') ? 'text-rose-700' : 'text-slate-800',
-                      )}>
-                        {value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[10px] text-slate-400 leading-snug pt-3 border-t border-slate-100">
-                  Informational only — non certificato, non costituisce rendicontazione ESG obbligatoria.
-                </p>
-              </div>
+              <ExecutiveIntelligenceBlock
+                surface="accent"
+                title="Budget-to-Human-Impact"
+                mainValue={pct(btiResult.record.deep_activation_share)}
+                mainLabel="Deep Activation Share"
+                mainCaption="del budget in attivazione profonda"
+                facts={[
+                  { label: 'Budget people/welfare',  value: eur(btiResult.record.total_people_welfare_budget), highlight: 'neutral' },
+                  { label: 'Costo / Impact Unit',    value: eur(btiResult.record.cost_per_impact_unit),        highlight: 'neutral' },
+                  { label: 'Activation Debt (est.)',  value: eur(btiResult.record.activation_debt_eur),         highlight: 'debt' },
+                ]}
+                interpretation="Informational only — non certificato, non costituisce rendicontazione ESG obbligatoria."
+                link={{ href: '/company/financial', label: 'Dettaglio' }}
+              />
+            ) : (
+              // Module 3 when BTI unavailable — Profilo Macroblocchi
+              <ExecutiveIntelligenceBlock
+                surface="accent"
+                title="Profilo KORA Index"
+                mainValue={output?.kora_index_value != null ? output.kora_index_value.toFixed(1) : '—'}
+                mainLabel="KORA Index v3"
+                mainCaption="punteggio organizzativo complessivo"
+                facts={macroblocks.slice(0, 3).map((mb) => ({
+                  label: mb.code,
+                  value: `${mb.score.toFixed(0)} / 100`,
+                  highlight: 'neutral' as const,
+                }))}
+                interpretation="Pesi pre-empirici v0.1 — non finalizzati. Scomposizione analitica dei 10 componenti."
+                link={{ href: '/company/kora-index', label: 'Scomposizione' }}
+              />
+            )}
+
+            {/* Module 3 — Readiness & Output */}
+            {tenant ? (
+              <ExecutiveIntelligenceBlock
+                surface="dark"
+                title="Readiness & Output"
+                mainValue={tenant.onboarding_status === 'active' ? 'Attivo' : tenant.onboarding_status.replace(/_/g, ' ')}
+                mainLabel="Onboarding status"
+                mainCaption="stato di onboarding organizzativo"
+                facts={[
+                  { label: 'Data readiness',  value: tenant.data_readiness_status.replace(/_/g, ' '),  highlight: 'positive' },
+                  { label: 'Decision Pack',   value: tenant.decision_pack_status.replace(/_/g, ' '),   highlight: 'positive' },
+                  { label: 'Lavoratori',      value: String(workerSummary.total_workers),               highlight: 'neutral' },
+                  { label: 'My KORA attivi',  value: String(workerSummary.my_kora_enabled_count),       highlight: 'neutral' },
+                ]}
+                interpretation="Solo aggregati aziendali — employer_can_view_individual_pib: false su ogni record."
+                link={{ href: '/company/data', label: 'Data Room' }}
+              />
             ) : null}
-
-            {/* Module 3 — Profilo KORA Index */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 flex flex-col gap-5">
-              <div className="flex items-start justify-between">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                  Profilo KORA Index
-                </p>
-                <Link href="/company/kora-index" className="text-[10px] font-semibold text-kora-violet hover:underline shrink-0">
-                  Scomposizione →
-                </Link>
-              </div>
-
-              {macroblocks.length > 0 ? (
-                <div className="space-y-3.5 flex-1">
-                  {macroblocks.map((mb) => (
-                    <div key={mb.code}>
-                      <div className="flex items-center justify-between mb-1.5">
-                        <p className="text-xs text-slate-600 font-medium">
-                          {MACROBLOCK_LABELS[mb.code] ?? mb.code}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-400 font-mono">
-                            {(mb.weight * 100).toFixed(0)}%
-                          </span>
-                          <span className="text-sm font-bold text-slate-800 tabular-nums w-7 text-right">
-                            {mb.score.toFixed(0)}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="h-1.5 w-full rounded-full bg-slate-100">
-                        <div
-                          className={cn('h-1.5 rounded-full', MACROBLOCK_BAR[mb.code] ?? 'bg-slate-400')}
-                          style={{ width: `${Math.min(mb.score, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-xs text-slate-400 flex-1">Macroblocchi non disponibili.</p>
-              )}
-
-              <p className="text-[10px] text-slate-400 pt-3 border-t border-slate-100">
-                Pesi pre-empirici v0.1 — non finalizzati. Scomposizione analitica dei 10 componenti in KORA Index.
-              </p>
-            </div>
           </div>
 
-          {/* ── F: Pillar Distribution ───────────────────────────────────── */}
+          {/* ── 6. Pillar Distribution ───────────────────────────────────── */}
           {pillarData && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-6">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            <div className="rounded-2xl border border-kora-cosmic-blue/8 p-6" style={{ background: '#F0F1F8' }}>
+              <div className="flex items-center justify-between mb-5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-kora-cosmic-blue/45">
                   Distribuzione per Pillar
                 </p>
-                <Link href="/company/pillars" className="text-[10px] font-semibold text-kora-violet hover:underline">
+                <Link
+                  href="/company/pillars"
+                  className="text-[10px] font-semibold text-kora-violet hover:underline"
+                >
                   Dettaglio →
                 </Link>
               </div>
               <PillarChart data={pillarData} />
-              <p className="mt-3 text-[10px] text-slate-400">
+              <p className="mt-4 text-[10px] text-kora-cosmic-blue/40">
                 Distribuzione degli Impact Unit aggregati per pillar nel periodo. Dati sintetici demo.
               </p>
             </div>
           )}
 
-          {/* ── G: Secondary — Pipeline & Workforce (compact 2-col) ──────── */}
-          {tenant && (
-            <div className="grid gap-4 sm:grid-cols-2">
-
-              <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
-                  Stato Pipeline
-                </p>
-                <div className="space-y-2">
-                  {([
-                    ['Onboarding',     tenant.onboarding_status.replace(/_/g, ' ')],
-                    ['Data readiness', tenant.data_readiness_status],
-                    ['Decision Pack',  tenant.decision_pack_status],
-                    ['Tenant',         tenant.tenant_status],
-                  ] as [string, string][]).map(([label, value]) => (
-                    <div key={label} className="flex items-center justify-between gap-3">
-                      <p className="text-xs text-slate-400">{label}</p>
-                      <p className="text-xs font-semibold text-slate-700">{value.replace(/_/g, ' ')}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3">
-                  Aggregato Forza Lavoro
-                </p>
-                <div className="space-y-2">
-                  {([
-                    ['Lavoratori nel roster',  String(workerSummary.total_workers)],
-                    ['My KORA abilitati',      String(workerSummary.my_kora_enabled_count)],
-                    ['Account attivi',         String(workerSummary.active_worker_accounts)],
-                  ] as [string, string][]).map(([label, value]) => (
-                    <div key={label} className="flex items-center justify-between gap-3">
-                      <p className="text-xs text-slate-400">{label}</p>
-                      <p className="text-xs font-semibold text-slate-700">{value}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-3 pt-2 border-t border-slate-100 text-[10px] text-slate-400">
-                  Solo aggregati aziendali — employer_can_view_individual_pib = false su ogni record.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ── H: Methodology Boundary Footer ──────────────────────────── */}
-          <div className="rounded-xl border border-slate-100 bg-slate-50 px-6 py-4 space-y-2 text-[10px] text-slate-500">
-            <p className="text-xs font-semibold text-slate-600">Confini metodologici</p>
-            {output.limitations_text && <p className="leading-relaxed">{output.limitations_text}</p>}
-            <p className="leading-relaxed">
+          {/* ── 7. Methodology Boundary Footer ──────────────────────────── */}
+          <div
+            className="rounded-xl border border-kora-cosmic-blue/10 px-6 py-5 space-y-2"
+            style={{ background: '#F0F1F8' }}
+          >
+            <p className="text-xs font-semibold text-kora-cosmic-blue/70">Confini metodologici</p>
+            {output.limitations_text && (
+              <p className="text-[10px] text-kora-cosmic-blue/50 leading-relaxed">
+                {output.limitations_text}
+              </p>
+            )}
+            <p className="text-[10px] text-kora-cosmic-blue/50 leading-relaxed">
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
               Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
             </p>
-            <p className="font-mono pt-2 border-t border-slate-200">
+            <p className="text-[10px] font-mono text-kora-cosmic-blue/35 pt-2 border-t border-kora-cosmic-blue/10">
               {output.methodology_version_id} · {output.calibration_status} · {output.reporting_period} · synthetic_demo_data: true
             </p>
           </div>

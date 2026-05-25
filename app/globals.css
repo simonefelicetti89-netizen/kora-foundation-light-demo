@@ -8,8 +8,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Base fonts */
+  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* KORA typography — substitute fonts; proprietary Register 2/3 not in repo */
+  --font-kora-editorial:  var(--font-space-grotesk), system-ui, sans-serif;
+  --font-kora-interface:  var(--font-dm-sans), system-ui, sans-serif;
 
   /* ── KORA core brand palette ──────────────────────────────────────── */
   /* CONFIRMED from SVG brandmark/wordmark in docs/Documenti grafici KORA/ */
@@ -37,5 +43,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
