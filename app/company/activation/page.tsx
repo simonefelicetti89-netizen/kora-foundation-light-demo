@@ -2,6 +2,7 @@
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { PILLAR_CODES } from '@/lib/constants/kora';
 import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
@@ -26,11 +27,7 @@ const DEPT_LABELS: Record<string, string> = {
   'dept-admin-finance': 'Admin & Finance',
 };
 
-const DEBT_CONCENTRATION = {
-  bottom_50_iu_pct: 0.12,
-  next_40_iu_pct:   0.27,
-  top_12_iu_pct:    0.64,
-};
+// Scenario-reactive — moved inside component function
 
 const SAFEGUARD_STYLE: Record<string, { container: string; label: string; badge: string }> = {
   CLEAR:   { container: 'border-green-200 bg-green-50',  label: 'text-green-800', badge: 'bg-green-100 text-green-700 border-green-300' },
@@ -39,14 +36,7 @@ const SAFEGUARD_STYLE: Record<string, { container: string; label: string; badge:
 };
 
 type DebtLevel = 'alto' | 'medio' | 'basso';
-
-const PILLAR_DEBT: { pillar: string; coverage: number; level: DebtLevel }[] = [
-  { pillar: 'LIFE',       coverage: 0.22, level: 'alto' },
-  { pillar: 'GROWTH',     coverage: 0.31, level: 'medio' },
-  { pillar: 'CONNECTION', coverage: 0.18, level: 'alto' },
-  { pillar: 'IMPACT',     coverage: 0.44, level: 'medio' },
-  { pillar: 'LEGACY',     coverage: 0.12, level: 'alto' },
-];
+// PILLAR_DEBT — scenario-reactive, moved inside component function
 
 const DEBT_LEVEL_BADGE: Record<DebtLevel, { style: string; label: string }> = {
   alto:  { style: 'bg-red-50 text-red-700 border-red-200',     label: 'Debt alto' },
@@ -55,13 +45,7 @@ const DEBT_LEVEL_BADGE: Record<DebtLevel, { style: string; label: string }> = {
 };
 
 type SiteStatus = 'ok' | 'warning' | 'flagged' | 'suppressed';
-
-const SITE_ACTIVATION: { name: string; workers: number; ar: number; status: SiteStatus }[] = [
-  { name: 'Sede Milano (HQ)',      workers: 100, ar: 0.60, status: 'ok' },
-  { name: 'Plant Bergamo',         workers:  90, ar: 0.11, status: 'flagged' },
-  { name: 'Sede Torino',           workers:  35, ar: 0.38, status: 'warning' },
-  { name: 'Remoto / distribuito',  workers:  25, ar: 0.55, status: 'ok' },
-];
+// SITE_ACTIVATION — scenario-reactive AR values, moved inside component function
 
 const SITE_STATUS_BADGE: Record<SiteStatus, { style: string; label: string }> = {
   ok:         { style: 'bg-green-50 text-green-700 border-green-200',   label: 'CLEAR' },
@@ -70,18 +54,8 @@ const SITE_STATUS_BADGE: Record<SiteStatus, { style: string; label: string }> = 
   suppressed: { style: 'bg-slate-50 text-slate-400 border-slate-200',   label: 'Soppressa' },
 };
 
-const NEXT_ACTIONS: { priority: number; action: string; impact: string }[] = [
-  { priority: 1, action: 'Attivare programma LIFE / Plant Bergamo — sito con AR 11%', impact: '+8–12 pp AR stimato' },
-  { priority: 2, action: 'Estendere programma LEGACY — copertura attuale 12%', impact: '+4–6 pp AR stimato' },
-  { priority: 3, action: 'Revisione offerta CONNECTION — pillar sotto soglia materialità', impact: 'Qualità attivazione' },
-  { priority: 4, action: 'Aumentare VR su evidenze auto-dichiarate — partner verificati', impact: 'Confidence Score' },
-];
-
-const PARTNER_SUGGESTIONS: { pillar: string; type: string; note: string }[] = [
-  { pillar: 'LIFE',       type: 'Prevenzione e benessere',     note: 'Copertura prod. insufficiente' },
-  { pillar: 'LEGACY',     type: 'Trasferimento knowledge',     note: 'Nessun partner attivo' },
-  { pillar: 'CONNECTION', type: 'Programma community interna', note: 'Bassa copertura cross-reparto' },
-];
+// NEXT_ACTIONS — served from explainabilityService (scenario-reactive)
+// PARTNER_SUGGESTIONS — scenario-reactive, moved inside component function
 
 const PILLAR_TEXT_BADGE: Record<string, string> = {
   LIFE:       'text-green-700',
@@ -120,6 +94,56 @@ export default function Activation() {
   const debtEur    = activeScenario === 'S2' ? 35_000 : 45_000;
   const safeguardStyle = safeguard ? (SAFEGUARD_STYLE[safeguard.status] ?? SAFEGUARD_STYLE.WARNING) : SAFEGUARD_STYLE.WARNING;
 
+  const isS2 = activeScenario === 'S2';
+
+  const debtConcentration = isS2
+    ? { bottom_50_iu_pct: 0.24, next_40_iu_pct: 0.28, top_12_iu_pct: 0.48 }
+    : { bottom_50_iu_pct: 0.12, next_40_iu_pct: 0.27, top_12_iu_pct: 0.64 };
+
+  const pillarDebt: { pillar: string; coverage: number; level: DebtLevel }[] = isS2
+    ? [
+        { pillar: 'LIFE',       coverage: 0.38, level: 'medio' },
+        { pillar: 'GROWTH',     coverage: 0.45, level: 'medio' },
+        { pillar: 'CONNECTION', coverage: 0.28, level: 'alto'  },
+        { pillar: 'IMPACT',     coverage: 0.52, level: 'basso' },
+        { pillar: 'LEGACY',     coverage: 0.18, level: 'alto'  },
+      ]
+    : [
+        { pillar: 'LIFE',       coverage: 0.22, level: 'alto'  },
+        { pillar: 'GROWTH',     coverage: 0.31, level: 'medio' },
+        { pillar: 'CONNECTION', coverage: 0.18, level: 'alto'  },
+        { pillar: 'IMPACT',     coverage: 0.44, level: 'medio' },
+        { pillar: 'LEGACY',     coverage: 0.12, level: 'alto'  },
+      ];
+
+  const siteActivation: { name: string; workers: number; ar: number; status: SiteStatus }[] = isS2
+    ? [
+        { name: 'Sede Milano (HQ)',     workers: 100, ar: 0.72, status: 'ok'      },
+        { name: 'Plant Bergamo',        workers:  90, ar: 0.22, status: 'warning' },
+        { name: 'Sede Torino',          workers:  35, ar: 0.48, status: 'ok'      },
+        { name: 'Remoto / distribuito', workers:  25, ar: 0.65, status: 'ok'      },
+      ]
+    : [
+        { name: 'Sede Milano (HQ)',     workers: 100, ar: 0.60, status: 'ok'      },
+        { name: 'Plant Bergamo',        workers:  90, ar: 0.11, status: 'flagged' },
+        { name: 'Sede Torino',          workers:  35, ar: 0.38, status: 'warning' },
+        { name: 'Remoto / distribuito', workers:  25, ar: 0.55, status: 'ok'      },
+      ];
+
+  const nextActions = explainabilityService.getNextBestActions(companyId, activeScenario);
+
+  const partnerSuggestions: { pillar: string; type: string; note: string }[] = isS2
+    ? [
+        { pillar: 'LEGACY',     type: 'Mentoring intergenerazionale',    note: 'Nessun partner attivo — priorità S2' },
+        { pillar: 'IMPACT',     type: 'Iniziative territoriali e ESG',   note: 'Espandere oltre partner esistenti'   },
+        { pillar: 'CONNECTION', type: 'Community interna cross-sito',    note: 'Estendere a Plant Bergamo'           },
+      ]
+    : [
+        { pillar: 'LIFE',       type: 'Prevenzione e benessere',         note: 'Copertura prodotto insufficiente'   },
+        { pillar: 'LEGACY',     type: 'Trasferimento knowledge',         note: 'Nessun partner attivo'              },
+        { pillar: 'CONNECTION', type: 'Programma community interna',     note: 'Bassa copertura cross-reparto'      },
+      ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -151,12 +175,12 @@ export default function Activation() {
               </div>
               <div className="rounded-md border border-amber-100 bg-amber-50 p-3">
                 <p className="text-xs text-amber-600">Bottom 50% lavoratori</p>
-                <p className="text-2xl font-bold text-amber-700 mt-1">{pct(DEBT_CONCENTRATION.bottom_50_iu_pct)}</p>
+                <p className="text-2xl font-bold text-amber-700 mt-1">{pct(debtConcentration.bottom_50_iu_pct)}</p>
                 <p className="text-xs font-mono text-amber-500 mt-0.5">degli IU totali</p>
               </div>
               <div className="rounded-md border border-amber-100 bg-amber-50 p-3">
                 <p className="text-xs text-amber-600">Top 12% lavoratori</p>
-                <p className="text-2xl font-bold text-amber-700 mt-1">{pct(DEBT_CONCENTRATION.top_12_iu_pct)}</p>
+                <p className="text-2xl font-bold text-amber-700 mt-1">{pct(debtConcentration.top_12_iu_pct)}</p>
                 <p className="text-xs font-mono text-amber-500 mt-0.5">degli IU totali</p>
               </div>
               <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
@@ -232,9 +256,9 @@ export default function Activation() {
             </p>
             <div className="space-y-3">
               {[
-                { label: 'Top 12% lavoratori', pct: DEBT_CONCENTRATION.top_12_iu_pct, color: 'bg-red-400' },
-                { label: 'Fascia 38–88%',       pct: DEBT_CONCENTRATION.next_40_iu_pct, color: 'bg-amber-300' },
-                { label: 'Bottom 50%',           pct: DEBT_CONCENTRATION.bottom_50_iu_pct, color: 'bg-slate-300' },
+                { label: 'Top 12% lavoratori', pct: debtConcentration.top_12_iu_pct, color: 'bg-red-400' },
+                { label: 'Fascia 38–88%',       pct: debtConcentration.next_40_iu_pct, color: 'bg-amber-300' },
+                { label: 'Bottom 50%',           pct: debtConcentration.bottom_50_iu_pct, color: 'bg-slate-300' },
               ].map((row) => (
                 <div key={row.label} className="flex items-center gap-3">
                   <span className="w-36 text-xs text-slate-600">{row.label}</span>
@@ -249,7 +273,7 @@ export default function Activation() {
               ))}
             </div>
             <p className="text-[11px] text-slate-400 mt-3">
-              Concentrazione IU: il top 12% genera {pct(DEBT_CONCENTRATION.top_12_iu_pct)} degli IU totali.
+              Concentrazione IU: il top 12% genera {pct(debtConcentration.top_12_iu_pct)} degli IU totali.
               Activation Debt elevato — espansione della base di attivazione prioritaria.
             </p>
           </div>
@@ -282,7 +306,7 @@ export default function Activation() {
               Copertura lavoratori attivi per pillar. Pillar con copertura bassa indicano aree di espansione prioritaria.
             </p>
             <div className="divide-y divide-slate-50">
-              {PILLAR_DEBT.map((row) => {
+              {pillarDebt.map((row) => {
                 const badge = DEBT_LEVEL_BADGE[row.level];
                 return (
                   <div key={row.pillar} className="flex items-center gap-3 py-2">
@@ -335,7 +359,7 @@ export default function Activation() {
               Visualizzate solo sedi con ≥{SAFE_AGGREGATION_THRESHOLD} lavoratori. I gruppi inferiori sono soppressi per privacy.
             </p>
             <div className="space-y-2">
-              {SITE_ACTIVATION.map((site) => {
+              {siteActivation.map((site) => {
                 if (site.status === 'suppressed') {
                   return (
                     <div key={site.name}>
@@ -373,15 +397,17 @@ export default function Activation() {
           <div className="rounded-lg border border-slate-200 bg-white p-4">
             <h2 className="text-sm font-semibold text-slate-700 mb-3">Azioni Prioritarie — Riduzione Activation Debt</h2>
             <div className="space-y-2">
-              {NEXT_ACTIONS.map((na) => (
+              {nextActions.map((na) => (
                 <div key={na.priority} className="flex items-start gap-3 py-2 border-b border-slate-50 last:border-0">
                   <span className="shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold flex items-center justify-center mt-0.5">
                     {na.priority}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-slate-700">{na.action}</p>
+                    <p className="text-xs font-medium text-slate-700">{na.action}</p>
+                    {na.detail && (
+                      <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">{na.detail}</p>
+                    )}
                   </div>
-                  <span className="shrink-0 text-[10px] font-mono text-slate-400 whitespace-nowrap">{na.impact}</span>
                 </div>
               ))}
             </div>
@@ -394,7 +420,7 @@ export default function Activation() {
               Suggerimenti basati sui pillar con Debt alto. Nessun marketplace, nessun prezzo, nessuna prenotazione.
             </p>
             <div className="space-y-2">
-              {PARTNER_SUGGESTIONS.map((ps) => (
+              {partnerSuggestions.map((ps) => (
                 <div key={ps.pillar} className="flex items-center gap-3 text-xs">
                   <span className={`w-20 font-mono font-semibold ${PILLAR_TEXT_BADGE[ps.pillar] ?? 'text-slate-600'}`}>
                     {ps.pillar}
@@ -435,6 +461,7 @@ export default function Activation() {
                 'Activation Debt è un indicatore diagnostico aggregato — non una valutazione individuale.',
                 'Stima valore Debt: modello sintetico demo — non un output economico certificato.',
                 'EQ (Equity) misura equità distributiva dell\'attivazione tra segmenti — non qualità evidenza.',
+                `Vista scenario-reactive: i valori mostrati riflettono lo scenario ${activeScenario} (S1 = baseline, S2 = migliorato). I dati restano sintetici demo.`,
               ].map((note) => (
                 <li key={note} className="flex gap-1.5 text-[11px] text-slate-400">
                   <span className="shrink-0 mt-0.5">·</span>

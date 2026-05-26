@@ -396,29 +396,7 @@ export default function FinancialGovernance() {
         </div>
       </div>
 
-      {/* ── KORA billing ── */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Fatturazione KORA (registro separato)
-        </h2>
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="grid grid-cols-3 gap-4 text-sm">
-            <div>
-              <p className="text-xs text-slate-400">Abbonamento</p>
-              <p className="font-mono font-semibold text-slate-700">{eur(rec.kora_billing.subscription)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Setup</p>
-              <p className="font-mono font-semibold text-slate-700">{eur(rec.kora_billing.setup)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Advisory</p>
-              <p className="font-mono font-semibold text-slate-700">{eur(rec.kora_billing.advisory)}</p>
-            </div>
-          </div>
-          <p className="mt-2 text-xs text-slate-400">{rec.kora_billing.note}</p>
-        </div>
-      </div>
+      {/* KORA Billing belongs in Admin / KORA Operating Console, not company-facing Financial. */}
 
       {/* ── Narrative context ── */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">

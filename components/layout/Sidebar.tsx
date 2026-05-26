@@ -20,7 +20,10 @@ interface NavGroup {
 
 const DEMO_GROUP: NavGroup = {
   heading: 'Demo',
-  items: [{ href: '/demo-guide', label: 'Demo Guide' }],
+  items: [
+    { href: '/demo-guide', label: 'Demo Guide' },
+    { href: '/pilot',      label: 'Foundation Light Pilot' },
+  ],
 };
 
 function buildNavGroups(role: string): NavGroup[] {
@@ -229,8 +232,11 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="border-t border-slate-200 px-4 py-3 text-xs text-slate-400">
-        Ruolo: {activeRole}
+      <div className="border-t border-slate-200 px-4 pt-3 pb-2 space-y-0.5">
+        <p className="text-[10px] font-semibold text-slate-500">Foundation Light v0.1</p>
+        <p className="text-[9px] font-mono text-slate-400">Dati sintetici demo</p>
+        <p className="text-[9px] font-mono text-slate-400">pre_empirical_calibration</p>
+        <p className="text-[9px] text-slate-400 pt-1">Ruolo: {activeRole}</p>
       </div>
     </aside>
   );
