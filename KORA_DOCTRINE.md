@@ -96,7 +96,133 @@ tenant.scoringMode = "seeded_demo" | "computed" | "insufficient_data"
 
 ---
 
-## 4. Canonical Scenarios — Single Source of Truth
+## 4. Budget Evidence & Economic Confidence
+
+### Core principle
+
+> **"Il budget non è un dato valido se non ha una fonte. In assenza di evidenza economica, KORA può classificare l'iniziativa e leggerne i segnali di attivazione, ma la componente economica entra nel Budget-to-Human-Impact solo come dato dichiarato o stimato, con confidence esplicita."**
+
+Operational equivalent: **"Budget is not a valid economic claim unless it has a source."**
+
+Budget allocated ≠ budget activated. Budget spent ≠ human impact. These are not optional disclaimers — they are the operating logic of the BTI Engine.
+
+---
+
+### Every economic value used by KORA must carry
+
+Every record that enters the BTI Engine must carry all of the following fields. If any is absent, the record may still be classified and analyzed for activation signals, but its economic contribution must be reduced, excluded, or marked low-confidence.
+
+| Field | Meaning |
+|---|---|
+| `amount` | Numeric amount in EUR (or null if not available) |
+| `source` | Document reference, file name, or system name |
+| `evidenceLevel` | L0–L4 tier (see below) |
+| `evidenceType` | Category of the source document |
+| `status` | `documented` / `declared` / `estimated` / `not_available` / `not_applicable` |
+| `confidence` | 0–1 numeric confidence assigned by the evidence tier |
+| `btiTreatment` | How this record enters the BTI Engine |
+| `estimationMethod` | Required if status = `estimated` — must name the method |
+| `notes` | Any limitations or context the Decision Pack must disclose |
+
+TypeScript contract: `BudgetEvidence` in `lib/kora-engine/types.ts`.
+
+---
+
+### Evidence levels (L0 → L4)
+
+| Level | Code | Description | Typical BTI treatment |
+|---|---|---|---|
+| 0 | `L0_NO_EVIDENCE` | No evidence available. Economic value cannot be treated as reliable. | `excluded_from_bti` |
+| 1 | `L1_SELF_DECLARED` | Company-declared value, HR estimate, self-declared spreadsheet. No supporting document. | `tracked_only` or low-confidence `confidence_weighted` |
+| 2 | `L2_INTERNAL_DOCUMENT` | Internal budget report, accounting export, payroll aggregate, internal cost center extract. | `confidence_weighted` (medium/high) |
+| 3 | `L3_THIRD_PARTY_DOCUMENT` | Invoice, contract, purchase order, welfare provider export, LMS export. Issued by an external party. | `confidence_weighted` or `full_weight` |
+| 4 | `L4_VERIFIED_EVIDENCE` | Advisor-reviewed or KORA-reviewed evidence with audit trail. Highest confidence. | `full_weight` |
+
+**L0 and L1 records never receive full BTI weight.** They contribute to the Evidence Debt / Trust Ledger and lower the Confidence Score.
+
+---
+
+### Budget status
+
+| Status | Meaning |
+|---|---|
+| `documented` | Amount is supported by an external or internal document. Tier L2–L4. |
+| `declared` | Amount supplied by the company without strong documentation. Tier L1. Usable with explicit confidence penalty. |
+| `estimated` | Amount estimated by KORA using a named method (e.g. sector benchmark, headcount formula). `estimationMethod` field is mandatory. |
+| `not_available` | No usable economic value exists. The record cannot contribute to BTI. Activation signals may still be analyzed. |
+| `not_applicable` | Policy or non-monetary record where no direct budget should be invented (e.g. smart working policy, right to disconnect). Budget is structurally absent, not merely missing. |
+
+---
+
+### BTI treatment
+
+| Treatment | When applied |
+|---|---|
+| `full_weight` | Documented Eligible spend (L3–L4) — enters BTI at full methodological weight. |
+| `confidence_weighted` | Declared or estimated Eligible spend — enters BTI with explicit confidence multiplier. |
+| `tracked_only` | Limited economic relief (buoni pasto, vouchers, fringe) — tracked as `economic_relief_spend` in BTI Engine. Generates 0 IU. |
+| `excluded_from_bti` | L0 evidence, Blocked compliance, or records where evidence is too weak for any economic contribution. |
+| `not_applicable` | Policy records or non-monetary activations. Budget is absent by nature, not by gap. Do not invent a value. |
+
+---
+
+### Missing budget evidence rule
+
+If budget evidence is missing or weak:
+
+1. The record **can still be classified** by the Eligibility Gate (Eligible / Limited / Blocked).
+2. **Pillar mapping can still occur** — the record contributes to pillar signals even without a budget value.
+3. **Activation signals can still be analyzed** — program presence, participation, and engagement are not dependent on budget documentation.
+4. The **economic BTI contribution must be reduced, excluded, or marked low-confidence** — never filled in with synthetic or assumed values.
+5. The **Decision Pack must disclose** the limitation: how much of the BTI input is documented vs. declared vs. estimated vs. non-valued.
+
+---
+
+### Policy records
+
+Structural organizational policies (smart working, right to disconnect, no-meeting zones, unlimited leave, flexible working, solidarity leave, hybrid work) must **not invent economic values**.
+
+These records may be:
+- **classified** by Eligibility Gate (most are Eligible if voluntary and formalized beyond legal minimum);
+- **mapped to pillars** (typically LIFE, CONNECTION, LEGACY);
+- **analyzed as activation / policy signals** (coverage, accessibility, equity of access);
+- **included in Future Readiness, Mental Capital Infrastructure, or Care Economy previews** when appropriate;
+
+but their `budgetStatus` must be `not_applicable` (if there is no direct spend) or `estimated` only with an explicit `estimationMethod`. The BTI treatment for policy records is `not_applicable`.
+
+Do not convert a "smart working" policy into a fictional EUR amount to fill the BTI calculation.
+
+---
+
+### Decision Pack requirement
+
+Every Decision Pack output that includes a BTI section must distinguish:
+
+- **Documented budget** — supported by L2–L4 evidence;
+- **Declared budget** — L1, company-stated, without external verification;
+- **Estimated budget** — explicit estimation method, no external source;
+- **Non-valued / not applicable** — structurally absent or non-monetary.
+
+Budget Evidence Quality must affect the **Confidence Score**. However, the Confidence Score remains **external to the KORA Index** (weight = 0). It signals data reliability — it does not alter the KORA Index value.
+
+---
+
+### Guardrail
+
+**Raw budget must never directly feed the KORA Index.**
+
+Only the methodological output of the `BudgetToHumanImpactEngine` may contribute to the KORA Index — as the BTI macroblock, at 20% weight, read from `lib/methodology-config/v0.1.ts`. No component or service may take a raw budget amount and add it to the Index computation directly.
+
+---
+
+### Cross-reference
+
+The TypeScript contract for this doctrine is in:
+- `lib/kora-engine/types.ts` — `BudgetEvidence`, `BudgetEvidenceLevel`, `BudgetStatus`, `BudgetEvidenceType`, `BTITreatment`, `BTIResult`
+
+---
+
+## 5. Canonical Scenarios — Single Source of Truth
 
 **All numbers below are AUTHORITATIVE. If you see different numbers elsewhere in the code, the code is wrong, not these numbers.**
 
@@ -205,7 +331,7 @@ The previously-existing value **€84.000** ("valore attivazione persa") on the 
 
 ---
 
-## 5. Forbidden Patterns
+## 6. Forbidden Patterns
 
 The following appear in current code (Vercel demo) or in agency drafts (kora.nxtcloud.it). They are doctrinal violations. **Never reintroduce. If found, remove.**
 
@@ -220,7 +346,7 @@ The following appear in current code (Vercel demo) or in agency drafts (kora.nxt
 
 ---
 
-## 6. Code Conventions
+## 7. Code Conventions
 
 - **All canonical numbers come from a single source file**: `lib/demo/demo-tenants.ts` (or equivalent — verify in audit).
 - **No hardcoded numbers in components.** Every `34`, `54`, `38%`, `€45.000` must be read from the seed.
@@ -230,7 +356,7 @@ The following appear in current code (Vercel demo) or in agency drafts (kora.nxt
 
 ---
 
-## 7. Voice & Tone
+## 8. Voice & Tone
 
 - Sober, infrastructural, executive. Not "feel-good HR".
 - Disclaimers: ONE methodology box at page footer, max 3 bullets. Never repeat the same disclaimer in multiple sections of the same page.
@@ -239,7 +365,7 @@ The following appear in current code (Vercel demo) or in agency drafts (kora.nxt
 
 ---
 
-## 8. When in Doubt
+## 9. When in Doubt
 
 If a request seems to:
 - Violate one of the 10 principles
@@ -252,4 +378,4 @@ If a request seems to:
 ---
 
 *This file is the contract between human intent and AI execution.*
-*Last update: Sprint 0 — initial doctrine.*
+*Last update: Sprint 4 — §4 Budget Evidence & Economic Confidence added.*
