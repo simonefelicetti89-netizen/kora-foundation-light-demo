@@ -18,6 +18,8 @@ export interface ParserExample {
   expectedHasWarnings: boolean;
   expectedColumnMappings: ColumnMapping[];
   expectedSensitiveFlags: SensitiveColumnFlag[];
+  expectedPreviewRowCount?: number;    // rows in previewRows; defaults to PREVIEW_ROW_COUNT (20 after Sprint 5B)
+  expectedParsingWarnings?: string[];  // substrings expected somewhere in parsingWarnings
   notes: string;
 }
 
@@ -230,10 +232,96 @@ export const EXAMPLE_STRUCTURAL_POLICY_CSV: ParserExample = {
   notes: 'Le policy strutturali non hanno budget diretto: budget_amount sarà null, btiTreatment = not_applicable. La colonna "nome policy" ha confidence 0.50 e richiede revisione manuale.',
 };
 
+export const EXAMPLE_US_CURRENCY_CSV: ParserExample = {
+  id: 'us_currency_csv',
+  title: 'CSV budget — formato valuta USA ($1,234.56)',
+  description: 'File CSV con importi in formato USA: prefisso dollaro, separatore migliaia virgola, decimale punto. Il parser converte correttamente mantenendo il comportamento italiano per i casi ambigui.',
+  fileType: 'csv',
+  scenario: 'Export da sistema ERP americano con colonna importo in formato "$1,234.56".',
+  expectedFileType: 'csv',
+  expectedDetectedRecordTypes: ['budget'],
+  expectedHasIssues: false,
+  expectedHasWarnings: false,
+  expectedPreviewRowCount: 20,
+  expectedColumnMappings: [
+    {
+      sourceColumn: 'nome iniziativa',
+      targetField: 'initiative_name',
+      confidence: 0.95,
+      mappingReason: 'Corrispondenza con alias "nome iniziativa" (score: 0.95)',
+      requiresReview: false,
+    },
+    {
+      sourceColumn: 'importo budget',
+      targetField: 'budget_amount',
+      confidence: 0.95,
+      mappingReason: 'Corrispondenza con alias "importo budget" (score: 0.95)',
+      requiresReview: false,
+    },
+  ],
+  expectedSensitiveFlags: [],
+  notes: [
+    'Conversioni attese: "$1,234.56" → 1234.56 (prefisso $ + comma-migliaia + punto-decimale).',
+    '"$1,234" → 1234 (prefisso $ senza decimale).',
+    '"1,234.56" senza $ → 1234.56 (comma-migliaia + punto-decimale rilevato automaticamente).',
+    '"1,234" senza $ e senza punto → 1.234 (italiano-first: letto come decimale italiano).',
+  ].join(' '),
+};
+
+export const EXAMPLE_AMBIGUOUS_ITALIAN_THOUSANDS: ParserExample = {
+  id: 'ambiguous_italian_thousands',
+  title: 'CSV con migliaia italiane ambigue (18.500)',
+  description: 'File CSV con valori come "18.500" ambigui tra migliaia italiane (18.500 EUR = 18.000+500) e decimali inglesi con zero finale (18.5). Il parser aggiunge un parsingWarning.',
+  fileType: 'csv',
+  scenario: 'Export budget con importi "18.500", "12.000", "6.750" — formato italiano senza virgola decimale.',
+  expectedFileType: 'csv',
+  expectedDetectedRecordTypes: ['budget'],
+  expectedHasIssues: false,
+  expectedHasWarnings: true,
+  expectedParsingWarnings: ['ambigui'],
+  expectedColumnMappings: [
+    {
+      sourceColumn: 'importo budget',
+      targetField: 'budget_amount',
+      confidence: 0.95,
+      mappingReason: 'Corrispondenza con alias "importo budget" (score: 0.95)',
+      requiresReview: false,
+    },
+  ],
+  expectedSensitiveFlags: [],
+  notes: 'Il parser converte "18.500" → 18500 (separatore migliaia italiano) e aggiunge un parsingWarning contenente "ambigui". Nessun cambio di comportamento — solo trasparenza. Se "18.500" significa 18.5 in notazione inglese, il file deve essere convertito prima del caricamento.',
+};
+
+export const EXAMPLE_GENERIC_INFO_UNMAPPED: ParserExample = {
+  id: 'generic_info_unmapped',
+  title: 'CSV con colonna "info" — non mappata dopo Sprint 5B',
+  description: 'Una colonna generica chiamata "info" non produce mapping automatico. Sprint 5B ha rimosso "info" dagli alias di notes e alzato la soglia minima dei token a 5 caratteri.',
+  fileType: 'csv',
+  scenario: 'File CSV welfare con colonna "info" aggiunta dall\'utente senza nome descrittivo.',
+  expectedFileType: 'csv',
+  expectedDetectedRecordTypes: ['welfare_program'],
+  expectedHasIssues: false,
+  expectedHasWarnings: false,
+  expectedColumnMappings: [
+    {
+      sourceColumn: 'nome iniziativa',
+      targetField: 'initiative_name',
+      confidence: 0.95,
+      mappingReason: 'Corrispondenza con alias "nome iniziativa" (score: 0.95)',
+      requiresReview: false,
+    },
+  ],
+  expectedSensitiveFlags: [],
+  notes: 'La colonna "info" non produce mapping: rimossa dagli alias di notes, e la soglia token ≥5 esclude il token "info" (4 chars) da "additional info". Colonne che si mappano a notes: "note", "annotazioni", "osservazioni", "informazioni aggiuntive", "comments", "remarks".',
+};
+
 export const ALL_EXAMPLES: ParserExample[] = [
   EXAMPLE_WELFARE_PROGRAMS_CSV,
   EXAMPLE_BUDGET_XLSX_ITALIAN_NUMBERS,
   EXAMPLE_HR_AGGREGATE_WITH_SENSITIVE_COLUMNS,
   EXAMPLE_MULTI_SHEET_XLSX,
   EXAMPLE_STRUCTURAL_POLICY_CSV,
+  EXAMPLE_US_CURRENCY_CSV,
+  EXAMPLE_AMBIGUOUS_ITALIAN_THOUSANDS,
+  EXAMPLE_GENERIC_INFO_UNMAPPED,
 ];

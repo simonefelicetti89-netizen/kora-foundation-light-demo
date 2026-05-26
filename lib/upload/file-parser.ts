@@ -30,14 +30,14 @@ export interface ParsedUploadResult {
   columnCount: number;
   headers: string[];
   rows: RawUploadedRecord[];
-  previewRows: RawUploadedRecord[];      // first 5 non-empty rows
+  previewRows: RawUploadedRecord[];      // first 20 non-empty rows
   validationIssues: UploadValidationIssue[];
   detectedRecordTypes: DetectedRecordType[];
   parsingWarnings: string[];
   availableSheets?: string[];            // xlsx only, when multiple sheets present
 }
 
-const PREVIEW_ROW_COUNT = 5;
+const PREVIEW_ROW_COUNT = 20;
 
 // ── Internal helpers ───────────────────────────────────────────────────────────
 
@@ -51,27 +51,37 @@ function isRowEmpty(record: Record<string, unknown>): boolean {
   );
 }
 
-// Parse Italian / mixed numeric formats without crashing.
-// 1.234,56 → 1234.56 | 1234,56 → 1234.56 | € 1.234,56 → 1234.56
+// Parse Italian / US / mixed numeric formats without crashing.
+// Italian: 1.234,56 → 1234.56 | 1234,56 → 1234.56 | € 1.234,56 → 1234.56
+// US: $1,234.56 → 1234.56 | 1,234.56 → 1234.56 | $1,234 → 1234
+// Ambiguous (18.500): treated as Italian thousands (18,500). See hasAmbiguousNumericValues.
 // Returns original value as-is if no numeric pattern is detected.
 function coerceNumericValue(v: unknown): unknown {
   if (typeof v === 'number') return v;
   if (typeof v !== 'string') return v;
 
-  const s = v.replace(/€/g, '').replace(/\s/g, '').trim();
+  const hasDollar = v.includes('$');
+  const s = v.replace(/[€$]/g, '').replace(/\s/g, '').trim();
   if (s === '') return v;
 
-  // Italian format: thousands dot + comma decimal (e.g. 1.234,56)
+  // US format: dollar prefix OR comma-thousands (+) with mandatory dot-decimal (e.g. $1,234.56 | 1,234.56).
+  // The + quantifier on (,\d{3}) requires at least one comma group — prevents "18.500" (no comma)
+  // from matching as US decimal. Bare "1,234" without $ stays Italian-first (→ 1.234).
+  if (hasDollar || /^\d{1,3}(,\d{3})+\.\d+$/.test(s)) {
+    const parsed = parseFloat(s.replace(/,/g, ''));
+    return isNaN(parsed) ? v : parsed;
+  }
+  // Italian format: thousands dot + comma decimal (e.g. 1.234,56 | 18.500)
   if (/^\d{1,3}(\.\d{3})*(,\d+)?$/.test(s)) {
     const parsed = parseFloat(s.replace(/\./g, '').replace(',', '.'));
     return isNaN(parsed) ? v : parsed;
   }
-  // Plain comma decimal (e.g. 1234,56)
+  // Plain comma decimal, no thousands separator (e.g. 1234,56)
   if (/^\d+(,\d+)$/.test(s)) {
     const parsed = parseFloat(s.replace(',', '.'));
     return isNaN(parsed) ? v : parsed;
   }
-  // Already English decimal (e.g. 1234.56)
+  // English decimal (e.g. 1234.56)
   if (/^\d+(\.\d+)?$/.test(s)) {
     const parsed = parseFloat(s);
     return isNaN(parsed) ? v : parsed;
@@ -85,6 +95,21 @@ function applyNumericCoercion(record: Record<string, unknown>): Record<string, u
     result[k] = coerceNumericValue(v);
   }
   return result;
+}
+
+// Detects values ambiguous between Italian thousands (18.500 = 18,500 EUR) and
+// English decimal with trailing zeros (18.500 = 18.5). Parser treats them as Italian thousands.
+// Used to surface a parsingWarning before coercion — no behavior change, only transparency.
+const AMBIGUOUS_NUMERIC_RE = /^\d{1,3}\.\d{3}$/;
+
+function hasAmbiguousNumericValues(records: Record<string, unknown>[]): boolean {
+  return records.some((record) =>
+    Object.values(record).some((v) => {
+      if (typeof v !== 'string') return false;
+      const s = v.replace(/[€$\s]/g, '').trim();
+      return AMBIGUOUS_NUMERIC_RE.test(s);
+    }),
+  );
 }
 
 function makeIssue(
@@ -189,6 +214,13 @@ async function parseCsv(
     issues.push(makeIssue('csv-no-headers', 'error', 'headers', 'Nessuna intestazione rilevata nel file CSV.', 'Il file deve avere una riga di intestazione.'));
   }
 
+  if (hasAmbiguousNumericValues(result.data)) {
+    warnings.push(
+      'Rilevati valori numerici ambigui (es. "18.500"): interpretati come separatore migliaia italiano. ' +
+      'Se i valori rappresentano decimali in formato inglese con zeri finali, convertire prima del caricamento.',
+    );
+  }
+
   const rows = toRows(result.data, headers, batchId);
   return { headers, rows };
 }
@@ -252,6 +284,13 @@ async function parseXlsx(
     defval: null,
     raw: false,  // Return formatted strings; we handle numeric coercion ourselves
   });
+
+  if (hasAmbiguousNumericValues(records)) {
+    warnings.push(
+      'Rilevati valori numerici ambigui (es. "18.500"): interpretati come separatore migliaia italiano. ' +
+      'Se i valori rappresentano decimali in formato inglese con zeri finali, convertire prima del caricamento.',
+    );
+  }
 
   // Re-key records using our normalized headers
   const normalizedRecords: Record<string, unknown>[] = records.map((record) => {

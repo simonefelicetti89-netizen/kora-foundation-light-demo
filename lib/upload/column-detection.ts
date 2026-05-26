@@ -82,12 +82,14 @@ const FIELD_ALIASES: Record<string, string[]> = {
   ],
   notes: [
     'informazioni aggiuntive', 'annotazioni', 'osservazioni', 'commenti',
-    'additional info', 'comments', 'remarks', 'notes', 'note', 'info',
+    'additional info', 'comments', 'remarks', 'notes', 'note',
   ],
 };
 
 // Returns the best alias match with a confidence score, or null if no match.
 // Confidence tiers: exact (0.95) → anchored (0.80) → contains (0.65) → token (0.50)
+// Token tier requires token length ≥ 5 to prevent generic short words (e.g. "info", "type")
+// from producing false-positive mappings at low confidence.
 function scoreMatch(header: string, aliases: string[]): { confidence: number; alias: string } | null {
   for (const alias of aliases) {
     if (header === alias) return { confidence: 0.95, alias };
@@ -99,7 +101,7 @@ function scoreMatch(header: string, aliases: string[]): { confidence: number; al
     if (header.includes(alias)) return { confidence: 0.65, alias };
   }
   for (const alias of aliases) {
-    const tokens = alias.split(' ').filter((t) => t.length > 2);
+    const tokens = alias.split(' ').filter((t) => t.length >= 5);
     if (tokens.length > 0 && tokens.some((t) => header.includes(t))) {
       return { confidence: 0.50, alias };
     }

@@ -405,7 +405,7 @@ export default function BoardPackPreview() {
                   { code: 'PB',  label: 'Pillar Balance',             val: '34',   mb: 'Distribution & Equity' },
                   { code: 'EQ',  label: 'Equity',                     val: '38',   mb: 'Distribution & Equity' },
                   { code: 'CS',  label: 'Confidence Score',           val: '60%',  mb: '— esterno, peso 0' },
-                ].map((c, i) => (
+                ].map((c) => (
                   <tr key={c.code} className={`border-b ${c.code === 'CS' ? 'border-slate-100 bg-slate-50/40' : 'border-slate-100'}`}>
                     <td className="py-1.5 pr-4 font-mono font-bold text-slate-700">{c.code}</td>
                     <td className={`py-1.5 pr-4 ${c.code === 'CS' ? 'text-slate-500 italic' : 'text-slate-800'}`}>{c.label}</td>
