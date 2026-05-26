@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import {
   ingestionPipelineService,
 } from '@/services/ingestion-pipeline/IngestionPipelineService';
@@ -146,6 +147,17 @@ export default function AIIngestionAssistant() {
           Foundation Light usa una pipeline rule-based su dati demo. La struttura è pronta per upload CSV/Excel e revisione umana.
           Nessuna chiamata LLM esterna — classificazione guidata dalla tassonomia BCM KORA e dall&apos;Eligibility Gate.
         </p>
+        <div className="mt-3">
+          <Link
+            href="/company/data/upload"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            Carica un file → Data Intake Studio
+          </Link>
+        </div>
       </div>
 
       {/* ── B: Pipeline flow ── */}

@@ -10,6 +10,10 @@ export interface SampleTemplate {
   detectedRecordType: string;
   headers: string[];
   sampleRows: Record<string, string>[];
+  requiredColumns: string[];
+  optionalColumns: string[];
+  privacyNotes: string;
+  helpsWith: string;
 }
 
 export const PROGRAMS_INITIATIVES_TEMPLATE: SampleTemplate = {
@@ -56,6 +60,10 @@ export const PROGRAMS_INITIATIVES_TEMPLATE: SampleTemplate = {
       'Note': 'Attestato di completamento disponibile su LMS',
     },
   ],
+  requiredColumns: ['Nome Iniziativa', 'Categoria', 'Partecipanti', 'Forza Lavoro Totale', 'Tipo Evidenza'],
+  optionalColumns: ['Descrizione', 'Fornitore', 'Data Inizio', 'Data Fine', 'Popolazione Eleggibile', 'Obbligatorio', 'Dipartimento', 'Sede', 'Note'],
+  privacyNotes: 'Solo dati aggregati. Non includere nomi, email, codici fiscali o qualsiasi dato identificativo individuale. I dati di partecipazione devono essere aggregati per iniziativa.',
+  helpsWith: 'Activation Rate (AR), Meaningful Activation Rate (MAR), Pillar Coverage (PC), Pillar Balance (PB), Normalized Intensity (NI)',
 };
 
 export const WORKFORCE_AGGREGATES_TEMPLATE: SampleTemplate = {
@@ -91,6 +99,10 @@ export const WORKFORCE_AGGREGATES_TEMPLATE: SampleTemplate = {
       'Fonte Dati': 'HR gestionale',
     },
   ],
+  requiredColumns: ['Periodo', 'Forza Lavoro Totale'],
+  optionalColumns: ['Headcount Attivi', 'Turnover', 'Assenteismo', 'Quota Smart Working', 'Dipartimento', 'Sede', 'Fonte Dati'],
+  privacyNotes: 'Solo metriche aggregate per periodo e segmento. Mai includere dati individuali. Segmenti con meno di 10 dipendenti vengono soppressi automaticamente (soglia privacy N≥10).',
+  helpsWith: 'Equity (EQ), Worker Balance (WB), Continuity (CO), Confidence Score (CS)',
 };
 
 export const HR_KPI_AGGREGATES_TEMPLATE: SampleTemplate = {
@@ -124,6 +136,10 @@ export const HR_KPI_AGGREGATES_TEMPLATE: SampleTemplate = {
       'Fonte': 'Survey interna HR — anonima',
     },
   ],
+  requiredColumns: ['Periodo', 'Fonte'],
+  optionalColumns: ['Score Engagement', 'Tasso Retention', 'Mobilità Interna', 'Ore Formazione Media', 'Score Benessere Survey', 'Dipartimento'],
+  privacyNotes: 'Solo KPI aggregati e anonimi. I punteggi survey devono provenire da survey anonime con N≥10. Non includere risposte individuali, commenti liberi identificativi o dati di singoli dipendenti.',
+  helpsWith: 'Indicatori di contesto HR: correlazione con KORA Index (non causale). Nota: HR KPI non alimentano il KORA Index direttamente.',
 };
 
 export const BUDGET_RECORDS_TEMPLATE: SampleTemplate = {
@@ -157,6 +173,10 @@ export const BUDGET_RECORDS_TEMPLATE: SampleTemplate = {
       'Note': 'Costo stimato da report budget interno — evidenza L2',
     },
   ],
+  requiredColumns: ['Nome Iniziativa', 'Importo Budget (€)', 'Fonte Budget', 'Tipo Evidenza Budget'],
+  optionalColumns: ['Periodo', 'Numero Fattura / Contratto', 'Fornitore', 'Note'],
+  privacyNotes: 'Dati economici aggregati per iniziativa. Non includere dati di spesa individuale, stipendi, rimborsi personali o dati identificativi dei dipendenti beneficiari.',
+  helpsWith: 'Budget-to-Human-Impact (BTI) — macroblocco 20% del KORA Index. L\'evidenza documentale determina il livello BTI: fattura → L3/L4, report interno → L2, dichiarazione → L1.',
 };
 
 export const CARE_ECONOMY_RECORDS_TEMPLATE: SampleTemplate = {
@@ -192,6 +212,10 @@ export const CARE_ECONOMY_RECORDS_TEMPLATE: SampleTemplate = {
       'Note': 'Policy strutturale senza costo diretto — BTI: not_applicable',
     },
   ],
+  requiredColumns: ['Nome Iniziativa', 'Tipo Supporto Cura', 'Partecipanti', 'Forza Lavoro Totale', 'Tipo Evidenza'],
+  optionalColumns: ['Popolazione Eleggibile', 'Importo (€)', 'Periodo', 'Note'],
+  privacyNotes: 'Solo dati aggregati. Non includere nomi o dati identificativi dei beneficiari. Iniziative con meno di 10 beneficiari: verificare con il responsabile privacy prima del caricamento.',
+  helpsWith: 'Activation Rate (AR), Pillar LIFE/CONNECTION, Equity (EQ) per segmento caregiver.',
 };
 
 export const ALL_TEMPLATES: SampleTemplate[] = [

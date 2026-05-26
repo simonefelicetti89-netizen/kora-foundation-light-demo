@@ -356,6 +356,16 @@ export default function PilotPage() {
           I file vengono ricevuti in formato Excel o CSV. Nessuna integrazione API richiesta in Foundation Light.
           Ogni file viene analizzato dalla pipeline KORA e classificato prima di entrare nel calcolo.
         </p>
+
+        <Link
+          href="/company/data/upload"
+          className="mt-3 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+        >
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+          </svg>
+          Prova l&apos;upload → KORA Data Intake Studio
+        </Link>
       </section>
 
       <Rule />
