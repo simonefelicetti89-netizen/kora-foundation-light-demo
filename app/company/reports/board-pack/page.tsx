@@ -1,713 +1,861 @@
-// C-07-BP: Board Pack Preview — print-ready route
-// Canonical S1 scenario values — Meridiana Group Q1–Q3 2025
-// All values from KORA_DOCTRINE.md §4 — do not derive from services.
-// This page is intentionally static: no backend, no PDF library.
+// C-07-BP: Board Pack Preview — print-ready, McKinsey-style strategic document
+// Canonical S1 values — Meridiana Group Q1–Q3 2025 — KORA_DOCTRINE.md §4
+// Static server component. No backend. No PDF library. Print-to-PDF via browser.
 
 import Link from 'next/link';
+import { PrintButton } from './PrintButton';
 
 export const metadata = {
   title: 'Board Pack Preview — Meridiana Group — KORA Foundation Light',
 };
 
-// ── Canonical S1 constants ────────────────────────────────────────────────────
-// Source: KORA_DOCTRINE.md §4
+// ── Canonical S1 constants ─────────────────────────────────────────────────────
 
-const COMPANY     = 'Meridiana Group S.r.l.';
-const PERIOD      = 'Q1–Q3 2025';
-const SCENARIO    = 'S1 Baseline';
-const METHOD_ID   = 'KORA-METHOD-v0.1.0';
-const CALIB       = 'pre_empirical_calibration';
-const GENERATED   = '2025-10-01';
+const COMPANY   = 'Meridiana Group S.r.l.';
+const PERIOD    = 'Q1–Q3 2025';
+const SCENARIO  = 'S1 Baseline';
+const METHOD_ID = 'KORA-METHOD-v0.1.0';
+const CALIB     = 'pre_empirical_calibration';
+const GENERATED = '1 ottobre 2025';
 
-const KORA_INDEX  = 34;
-const CS_PCT      = 60;
-const SAFEGUARD   = 'WARNING';
+const KORA_INDEX        = 34;
+const CS_PCT            = 60;
+const SAFEGUARD         = 'WARNING';
 
 const TOTAL_WORKERS     = 250;
 const ACTIVE_WORKERS    = 93;
 const MEANINGFUL_ACTIVE = 54;
-const NEVER_ACTIVATED   = 157;  // 250 − 93
+const NEVER_ACTIVATED   = 157;   // 250 − 93
 const TOP12_PCT_IU      = 64;
 const BOTTOM50_PCT_IU   = 12;
 
-const BUDGET_TOTAL            = 185_000;
-const BUDGET_USED             = 112_000;
-const DEEP_ACTIVATION_SPEND   = 58_000;
-const ECONOMIC_RELIEF_SPEND   = 54_000;
-const ACTIVATION_DEBT_EUR     = 45_000;
-const COST_PER_IU             = 22.4;
+const BUDGET_TOTAL           = 185_000;
+const BUDGET_USED            = 112_000;
+const DEEP_ACTIVATION_SPEND  = 58_000;
+const ECONOMIC_RELIEF_SPEND  = 54_000;
+const ACTIVATION_DEBT_EUR    = 45_000;
+const COST_PER_IU            = 22.4;
 
 const ELIGIBLE_RECORDS = 1_276;
 const LIMITED_RECORDS  = 3_820;
 const BLOCKED_RECORDS  = 318;
 
-const MACROBLOCKS = [
-  { label: 'Activation Reach',       weight: 25, value: 30, components: 'AR · MAR' },
-  { label: 'Activation Quality',      weight: 30, value: 37, components: 'NI · VR · CO' },
-  { label: 'Distribution & Equity',   weight: 25, value: 40, components: 'WB · PC · PB · EQ' },
-  { label: 'Budget-to-Human-Impact',  weight: 20, value: 28, components: 'BudgetToHumanImpactEngine' },
-] as const;
-
-const PILLARS = [
-  { code: 'LIFE',       share: 44 },
-  { code: 'GROWTH',     share: 27 },
-  { code: 'CONNECTION', share: 12 },
-  { code: 'IMPACT',     share: 11 },
-  { code: 'LEGACY',     share:  6 },
-] as const;
-
-const COMPONENTS = [
-  { code: 'AR',  label: 'Activation Rate',         value: 38, macroblock: 'Reach' },
-  { code: 'MAR', label: 'Meaningful Activation',   value: 22, macroblock: 'Reach' },
-  { code: 'NI',  label: 'Normalized Intensity',    value: 41, macroblock: 'Quality' },
-  { code: 'VR',  label: 'Verification Rate',        value: 41, macroblock: 'Quality' },
-  { code: 'CO',  label: 'Continuity',               value: 28, macroblock: 'Quality' },
-  { code: 'WB',  label: 'Worker Balance',           value: 29, macroblock: 'Equity' },
-  { code: 'PC',  label: 'Pillar Coverage',          value: 60, macroblock: 'Equity' },
-  { code: 'PB',  label: 'Pillar Balance',           value: 34, macroblock: 'Equity' },
-  { code: 'EQ',  label: 'Equity (distrib.)',        value: 38, macroblock: 'Equity' },
-  { code: 'CS',  label: 'Confidence Score',         value: 60, macroblock: '— esterno, peso 0' },
-] as const;
-
-const RECOMMENDATIONS = [
-  {
-    n: 1,
-    priority: 'Alta',
-    title: 'Chiudere il gap Plant Bergamo / Operations',
-    body: 'Activation Rate Operations: 11% — il più basso tra tutti i dipartimenti. Plant Bergamo è il sito con AR più critico. Priorità: programmi LIFE e CONNECTION specifici per questo cluster.',
-  },
-  {
-    n: 2,
-    priority: 'Alta',
-    title: 'Ribilanciare Economic Relief verso Deep Activation',
-    body: '48% della spesa (€54.000) è classificata Economic Relief — genera 0 IU. Convertire €20k–25k in programmi Eligible può migliorare significativamente il KORA Index.',
-  },
-  {
-    n: 3,
-    priority: 'Media',
-    title: 'Rafforzare i programmi GROWTH e CONNECTION',
-    body: 'GROWTH (27%) e CONNECTION (12%) sono sottorappresentati rispetto al potenziale. Upskilling, mentoring e community interna sono i pillar con il maggiore potenziale di espansione.',
-  },
-  {
-    n: 4,
-    priority: 'Media',
-    title: 'Completare la revisione advisor prima del Board Pack finale',
-    body: 'Il Decision Pack è in stato Bozza. Revisione advisor KORA richiesta prima della versione certificata. Nessun output da presentare a Board o ESG officer senza revisione completata.',
-  },
-  {
-    n: 5,
-    priority: 'Bassa',
-    title: 'Preparare lo scenario S2 per confronto direzionale',
-    body: 'Lo scenario S2 (KORA Index = 54, Safeguard CLEAR) mostra l\'effetto di una riallocazione strategica. Usarlo come target operativo nel workshop esecutivo.',
-  },
-] as const;
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────────
 
 function eur(n: number) {
   return `€${n.toLocaleString('it-IT')}`;
 }
 
-function Divider() {
-  return <div className="border-t border-slate-200 my-6" />;
+// Section-level page footer (prints on every section)
+function DocFooter({ page, of = 8 }: { page: number; of?: number }) {
+  return (
+    <div className="mt-8 pt-3 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-mono print-footer">
+      <span>KORA Foundation Light · Decision Pack Preview · {COMPANY} · {PERIOD}</span>
+      <span className="text-slate-300 italic">Demo sintetica — non condividere come report certificato</span>
+      <span>Pag. {page} / {of}</span>
+    </div>
+  );
 }
 
-function SectionHeading({ n, title, sub }: { n: string; title: string; sub?: string }) {
+// Exhibit-style label (consulting "Exhibit N — Title")
+function Exhibit({ n, title, src }: { n: string; title: string; src?: string }) {
   return (
-    <div className="mb-4">
-      <div className="flex items-baseline gap-2">
-        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">{n}</span>
-        <h2 className="text-base font-bold text-slate-900 leading-tight">{title}</h2>
+    <div className="mb-3">
+      <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400 font-semibold">
+        Exhibit {n}{src ? ` · ${src}` : ''}
+      </p>
+      <p className="text-[11px] font-bold text-slate-700 mt-0.5">{title}</p>
+    </div>
+  );
+}
+
+// Strong section heading: thick top rule + title
+function SectionTitle({ n, title, sub }: { n: string; title: string; sub?: string }) {
+  return (
+    <div className="mb-5">
+      <div className="border-t-2 border-slate-900 pt-3">
+        <div className="flex items-baseline gap-2.5">
+          <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">{n}</span>
+          <h2 className="text-[15px] font-bold tracking-tight text-slate-900 leading-tight">{title}</h2>
+        </div>
+        {sub && <p className="text-[10px] text-slate-500 mt-0.5 ml-7">{sub}</p>}
       </div>
-      {sub && <p className="text-xs text-slate-500 mt-0.5 ml-8">{sub}</p>}
     </div>
   );
 }
 
-function MetricBlock({ label, value, sub, note }: { label: string; value: string; sub?: string; note?: string }) {
+// Clean key metric — no card border, pure typographic
+function KPI({ label, value, unit, note }: { label: string; value: string; unit?: string; note?: string }) {
   return (
-    <div className="border border-slate-200 rounded p-3 space-y-0.5">
-      <p className="text-[10px] text-slate-400 uppercase tracking-wide font-semibold leading-tight">{label}</p>
-      <p className="text-2xl font-bold text-slate-900 leading-tight">{value}</p>
-      {sub && <p className="text-[10px] font-mono text-slate-400">{sub}</p>}
-      {note && <p className="text-[10px] text-slate-500 italic leading-snug">{note}</p>}
+    <div className="space-y-0.5">
+      <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold leading-none">{label}</p>
+      <div className="flex items-baseline gap-1">
+        <span className="text-[26px] font-bold text-slate-900 leading-none tracking-tight">{value}</span>
+        {unit && <span className="text-[11px] text-slate-500 font-normal">{unit}</span>}
+      </div>
+      {note && <p className="text-[9px] text-slate-500 leading-tight">{note}</p>}
     </div>
   );
 }
 
-function BarRow({ label, pct, color = 'bg-slate-400' }: { label: string; pct: number; color?: string }) {
+// Inline bar (single-row horizontal bar)
+function Bar({ label, pct, dark = false }: { label: string; pct: number; dark?: boolean }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="w-28 text-[11px] font-mono text-slate-600 shrink-0">{label}</span>
-      <div className="flex-1 h-2 rounded-full bg-slate-100">
-        <div className={`h-2 rounded-full ${color}`} style={{ width: `${pct}%` }} />
+      <span className="w-32 text-[10px] text-slate-600 shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 bg-slate-100 rounded-full">
+        <div
+          className={`h-1.5 rounded-full ${dark ? 'bg-slate-800' : 'bg-slate-400'}`}
+          style={{ width: `${pct}%` }}
+        />
       </div>
-      <span className="text-[11px] font-mono text-slate-500 w-8 text-right">{pct}%</span>
+      <span className="w-8 text-right text-[10px] font-mono text-slate-500">{pct}%</span>
     </div>
   );
 }
 
-function PriorityBadge({ p }: { p: string }) {
-  const style =
-    p === 'Alta'  ? 'bg-slate-900 text-white border-slate-900' :
-    p === 'Media' ? 'bg-slate-200 text-slate-700 border-slate-300' :
-                    'bg-slate-100 text-slate-400 border-slate-200';
-  return (
-    <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${style}`}>
-      {p}
-    </span>
-  );
-}
-
-// ── Page ─────────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function BoardPackPreview() {
   return (
     <>
-      {/* ── Print CSS: hide app chrome, expose content ── */}
+      {/* ── Print & screen CSS ──────────────────────────────────────────────── */}
       <style>{`
         @media print {
           [role="banner"], header, aside, .no-print { display: none !important; }
           main { padding: 0 !important; overflow: visible !important; height: auto !important; }
-          body, html { background: white !important; height: auto !important; }
-          .page-break { page-break-before: always; break-before: page; padding-top: 0; }
+          body, html { background: white !important; height: auto !important; overflow: visible !important; }
+          .bp-doc { max-width: 100% !important; box-shadow: none !important; margin: 0 !important; }
+          .page-break { page-break-before: always; break-before: page; }
           .avoid-break { page-break-inside: avoid; break-inside: avoid; }
-          .board-pack-root { max-width: 100% !important; }
+          .print-footer { display: flex !important; }
+          table { border-collapse: collapse; }
+          td, th { padding: 4px 8px !important; }
         }
         @page { size: A4 portrait; margin: 14mm 18mm; }
+        .print-footer { }
       `}</style>
 
-      <div className="board-pack-root max-w-3xl mx-auto text-slate-900 pb-16">
-
-        {/* ── Screen-only nav ──────────────────────────────────────────────── */}
-        <div className="no-print mb-6 flex items-center justify-between gap-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5">
-          <Link
-            href="/company/reports"
-            className="text-xs text-slate-500 hover:text-slate-800 underline underline-offset-2 transition-colors"
-          >
-            ← Decision Pack Console
-          </Link>
-          <p className="text-[11px] text-slate-400 italic text-right">
-            Preview stampabile — usare il browser per <strong className="font-semibold text-slate-600">Salva come PDF</strong>.
+      {/* ── Screen-only top bar ─────────────────────────────────────────────── */}
+      <div className="no-print mb-4 flex items-center justify-between gap-4 border-b border-slate-200 pb-3">
+        <Link
+          href="/company/reports"
+          className="text-xs text-slate-500 hover:text-slate-900 underline underline-offset-2 transition-colors"
+        >
+          ← Decision Pack Console
+        </Link>
+        <div className="flex items-center gap-3">
+          <p className="text-[10px] text-slate-400 italic">
+            Documento ottimizzato per stampa A4 · salva come PDF dal browser
           </p>
+          <PrintButton />
         </div>
+      </div>
+
+      {/* ── Document body ───────────────────────────────────────────────────── */}
+      <div className="bp-doc max-w-[794px] mx-auto bg-white text-slate-900 pb-8">
 
         {/* ══════════════════════════════════════════════════════════════════
-            SECTION 1 — COVER
+            PAGE 1 — COVER
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="avoid-break border border-slate-300 rounded-xl p-8 space-y-5 mb-8">
+        <div className="avoid-break min-h-[900px] flex flex-col px-1">
 
-          <div>
-            <p className="text-[10px] font-mono uppercase tracking-widest text-slate-400 mb-1">
-              KORA Foundation Light · Decision Pack
-            </p>
-            <h1 className="text-3xl font-bold text-slate-900 leading-tight">{COMPANY}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="rounded border border-slate-300 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-600">
-                {PERIOD}
+          {/* Top rule + eyebrow */}
+          <div className="border-t-4 border-slate-900 pt-5 mb-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.15em] text-slate-400 font-semibold mb-1">
+                  KORA Foundation Light · Decision Pack Preview
+                </p>
+                <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400">
+                  Preparato per: Executive / HR / Finance / ESG
+                </p>
+              </div>
+              <div className="text-right text-[9px] text-slate-400 font-mono space-y-0.5">
+                <p>Draft Preview · {GENERATED}</p>
+                <p>{METHOD_ID}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Company + period */}
+          <div className="mb-6">
+            <h1 className="text-[42px] font-bold tracking-tight text-slate-900 leading-none mb-2">
+              {COMPANY}
+            </h1>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="text-[11px] font-semibold text-slate-600 border border-slate-300 rounded px-2 py-0.5">{PERIOD}</span>
+              <span className="text-[11px] font-semibold text-slate-600 border border-slate-300 rounded px-2 py-0.5">{SCENARIO}</span>
+              <span className="text-[11px] text-amber-700 border border-amber-200 bg-amber-50 rounded px-2 py-0.5">
+                Bozza — revisione advisor richiesta
               </span>
-              <span className="rounded border border-slate-300 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-600">
-                {SCENARIO}
-              </span>
             </div>
           </div>
 
-          <div className="border-t border-slate-200 pt-5 grid grid-cols-3 gap-4">
-            <div className="text-center border border-slate-200 rounded-lg p-4">
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">KORA Index v3</p>
-              <p className="text-5xl font-bold text-slate-900 mt-1 leading-none">{KORA_INDEX}</p>
-              <p className="text-[10px] text-slate-400 mt-1">/100</p>
+          {/* Horizontal rule */}
+          <div className="border-t border-slate-300 mb-8" />
+
+          {/* Thesis statement */}
+          <div className="mb-10">
+            <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400 font-semibold mb-2">
+              Diagnosi principale
+            </p>
+            <p className="text-[22px] font-light text-slate-800 leading-snug tracking-tight">
+              La spesa esiste.<br />
+              L&apos;attivazione significativa è ancora concentrata.
+            </p>
+          </div>
+
+          {/* Key metrics row */}
+          <div className="grid grid-cols-4 gap-6 mb-10">
+            <div className="space-y-1 avoid-break">
+              <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">KORA Index v3</p>
+              <p className="text-[52px] font-bold text-slate-900 leading-none">{KORA_INDEX}</p>
+              <p className="text-[10px] text-slate-500">/ 100 · pre-calibration</p>
             </div>
-            <div className="text-center border border-slate-200 rounded-lg p-4">
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">Confidence Score</p>
-              <p className="text-4xl font-bold text-slate-700 mt-1 leading-none">{CS_PCT}%</p>
-              <p className="text-[10px] text-slate-400 mt-1">esterno · peso&nbsp;0</p>
+            <div className="space-y-1 avoid-break border-l border-slate-200 pl-6">
+              <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">Confidence Score</p>
+              <p className="text-[40px] font-bold text-slate-700 leading-none">{CS_PCT}%</p>
+              <p className="text-[10px] text-slate-500">esterno · peso 0</p>
             </div>
-            <div className="text-center border border-amber-200 bg-amber-50 rounded-lg p-4">
-              <p className="text-[10px] text-amber-600 font-semibold uppercase tracking-wide">Activation Safeguard</p>
-              <p className="text-3xl font-bold text-amber-700 mt-1 leading-none">{SAFEGUARD}</p>
-              <p className="text-[10px] text-amber-500 mt-1">soglia CLEAR non raggiunta</p>
+            <div className="space-y-1 avoid-break border-l border-slate-200 pl-6">
+              <p className="text-[9px] uppercase tracking-[0.1em] text-amber-600 font-semibold">Activation Safeguard</p>
+              <p className="text-[28px] font-bold text-amber-700 leading-none mt-1">{SAFEGUARD}</p>
+              <p className="text-[10px] text-amber-600">soglia CLEAR non raggiunta</p>
+            </div>
+            <div className="space-y-1 avoid-break border-l border-slate-200 pl-6">
+              <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">Activation Debt</p>
+              <p className="text-[28px] font-bold text-slate-900 leading-none mt-1">{eur(ACTIVATION_DEBT_EUR)}</p>
+              <p className="text-[10px] text-slate-500">budget non convertito in IU</p>
             </div>
           </div>
 
-          <div className="border-t border-slate-200 pt-4 space-y-1 text-[11px] text-slate-500">
-            <div className="flex flex-wrap gap-4">
-              <span>Status: <span className="font-semibold text-slate-700">Bozza disponibile — revisione advisor richiesta</span></span>
-              <span>Generato: <span className="font-mono">{GENERATED}</span></span>
-            </div>
-            <div className="flex flex-wrap gap-4 font-mono">
-              <span>{METHOD_ID}</span>
-              <span className="text-amber-600">{CALIB}</span>
-              <span className="text-slate-400">production_ready: false</span>
-              <span className="text-slate-400">synthetic_demo_data: true</span>
+          {/* Document metadata */}
+          <div className="mt-auto border-t border-slate-200 pt-5">
+            <div className="grid grid-cols-3 gap-6 text-[10px] text-slate-500">
+              <div className="space-y-1">
+                <p className="font-semibold text-slate-700">Preparato per</p>
+                <p>Executive Leadership<br />HR · Finance · ESG</p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-slate-700">Preparato da</p>
+                <p>KORA Foundation Light<br />Human Impact Intelligence Platform</p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-slate-700">Versione</p>
+                <p className="font-mono">{METHOD_ID}<br />{CALIB}</p>
+              </div>
             </div>
           </div>
+
+          <DocFooter page={1} />
         </div>
 
         {/* ══════════════════════════════════════════════════════════════════
-            SECTION 2 — EXECUTIVE SUMMARY
+            PAGE 2 — EXECUTIVE SUMMARY
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="avoid-break mb-8">
-          <SectionHeading n="02" title="Executive Summary" />
+        <div className="page-break avoid-break px-1 pt-6">
+          <SectionTitle n="01" title="Executive Summary" />
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-4">
-            <MetricBlock label="KORA Index" value={`${KORA_INDEX}/100`} sub="S1 Baseline" />
-            <MetricBlock label="Confidence Score" value={`${CS_PCT}%`} sub="esterno · peso 0" />
-            <MetricBlock label="Activation Safeguard" value={SAFEGUARD} sub="soglia CLEAR non raggiunta" />
-            <MetricBlock label="Activation Debt" value={eur(ACTIVATION_DEBT_EUR)} sub="budget non convertito in IU" />
+          {/* Memo header */}
+          <div className="border border-slate-200 rounded px-5 py-4 mb-5 text-[11px] avoid-break">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+              {[
+                ['A:', 'Executive Leadership · HR · Finance · ESG'],
+                ['Da:', 'KORA Foundation Light'],
+                ['Oggetto:', `${COMPANY} — Decision Pack ${PERIOD}`],
+                ['Data:', GENERATED],
+              ].map(([k, v]) => (
+                <div key={k} className="flex gap-3">
+                  <span className="font-semibold text-slate-500 w-14 shrink-0">{k}</span>
+                  <span className="text-slate-800">{v}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="border border-slate-200 rounded-lg px-5 py-4 bg-slate-50 space-y-2">
-            <p className="text-xs font-semibold text-slate-700">Diagnosi principale</p>
-            <p className="text-sm text-slate-700 leading-relaxed">
-              La spesa esiste, ma l&apos;attivazione significativa è concentrata e non raggiunge in modo equilibrato tutta la workforce.
-              Il top 12% dei lavoratori genera il {TOP12_PCT_IU}% degli Impact Units totali.
-              Il {NEVER_ACTIVATED} lavoratori ({Math.round(NEVER_ACTIVATED / TOTAL_WORKERS * 100)}% della forza lavoro) non ha ancora generato alcun Impact Unit nel periodo.
-            </p>
-            <p className="text-[11px] text-slate-500 italic">
-              Il KORA Index misura l&apos;organizzazione — non gli individui. Nessun dato individuale è visibile a questo livello.
-              Confidence Score esterno (CS = {CS_PCT}%): dati parzialmente verificati. Revisione advisor consigliata.
+          {/* 4 key findings */}
+          <div className="grid grid-cols-4 gap-4 mb-6 avoid-break">
+            <div className="border-t-2 border-slate-800 pt-3 space-y-1">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">KORA Index</p>
+              <p className="text-[28px] font-bold text-slate-900 leading-none">34<span className="text-[13px] font-normal text-slate-400">/100</span></p>
+              <p className="text-[10px] text-slate-600">Activation Reach 30 · Quality 37 · Equity 40 · BTI 28</p>
+            </div>
+            <div className="border-t-2 border-slate-300 pt-3 space-y-1">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Attivazione</p>
+              <p className="text-[28px] font-bold text-slate-900 leading-none">38<span className="text-[13px] font-normal text-slate-400">%</span></p>
+              <p className="text-[10px] text-slate-600">{NEVER_ACTIVATED} lavoratori mai attivati su {TOTAL_WORKERS}</p>
+            </div>
+            <div className="border-t-2 border-amber-400 pt-3 space-y-1">
+              <p className="text-[9px] uppercase tracking-wider text-amber-600 font-semibold">Safeguard</p>
+              <p className="text-[28px] font-bold text-amber-700 leading-none">WARN</p>
+              <p className="text-[10px] text-amber-700">AR 38% (soglia CLEAR: 40%)</p>
+            </div>
+            <div className="border-t-2 border-slate-300 pt-3 space-y-1">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Budget</p>
+              <p className="text-[28px] font-bold text-slate-900 leading-none">€185k</p>
+              <p className="text-[10px] text-slate-600">Utilizzato {eur(BUDGET_USED)} · Debt {eur(ACTIVATION_DEBT_EUR)}</p>
+            </div>
+          </div>
+
+          {/* What this means */}
+          <div className="mb-5 avoid-break">
+            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Cosa significa</p>
+            <p className="text-[12px] text-slate-700 leading-relaxed">
+              Meridiana Group investe in persone e welfare — ma l&apos;attivazione significativa è
+              concentrata in una minoranza della workforce. Il top 12% dei lavoratori genera il {TOP12_PCT_IU}%
+              degli Impact Units totali. Il {Math.round(NEVER_ACTIVATED / TOTAL_WORKERS * 100)}% della forza lavoro
+              (157 persone su 250) non ha generato Impact Units nel periodo Q1–Q3 2025.
+              Il Plant Bergamo ha un Activation Rate dell&apos;11% — il gap critico del portfolio.
+              Il budget allocato esiste; la conversione in attivazione profonda è incompleta.
             </p>
           </div>
+
+          {/* Three columns: risks / opportunities / decisions */}
+          <div className="grid grid-cols-3 gap-5 avoid-break">
+            <div>
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">
+                Rischi principali
+              </p>
+              <ul className="space-y-2 text-[11px] text-slate-700">
+                <li className="flex gap-2"><span className="text-slate-300 shrink-0">1.</span>Plant Bergamo/Operations: AR 11% — rischio concentrazione attivazione in sede HQ.</li>
+                <li className="flex gap-2"><span className="text-slate-300 shrink-0">2.</span>48% del budget classificato Economic Relief (0 IU) — ROI people limitato.</li>
+                <li className="flex gap-2"><span className="text-slate-300 shrink-0">3.</span>Confidence Score 60% — dati parzialmente non verificati. Board Pack non certificabile senza revisione advisor.</li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">
+                Opportunità immediate
+              </p>
+              <ul className="space-y-2 text-[11px] text-slate-700">
+                <li className="flex gap-2"><span className="text-slate-300 shrink-0">1.</span>Riallocare €20k–25k da Economic Relief a programmi Eligible aumenta KORA Index stimato +8–12 punti.</li>
+                <li className="flex gap-2"><span className="text-slate-300 shrink-0">2.</span>Programmi LIFE+CONNECTION mirati a Plant Bergamo portano AR sopra soglia CLEAR.</li>
+                <li className="flex gap-2"><span className="text-slate-300 shrink-0">3.</span>Scenario S2 già modellato: KORA Index 54, Safeguard CLEAR — usarlo come target 6 mesi.</li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">
+                Decisioni necessarie
+              </p>
+              <ul className="space-y-2 text-[11px] text-slate-700">
+                <li className="flex gap-2"><span className="text-slate-300 shrink-0">1.</span>Autorizzare revisione advisor KORA prima della distribuzione formale del Board Pack.</li>
+                <li className="flex gap-2"><span className="text-slate-300 shrink-0">2.</span>Avviare workshop esecutivo per validare scenario S2 come target operativo Q4–Q1.</li>
+              </ul>
+            </div>
+          </div>
+
+          <DocFooter page={2} />
         </div>
 
-        <Divider />
-
         {/* ══════════════════════════════════════════════════════════════════
-            SECTION 3 — KORA INDEX SNAPSHOT
+            PAGE 3 — KORA INDEX SNAPSHOT
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="avoid-break mb-8">
-          <SectionHeading
-            n="03"
-            title="KORA Index Snapshot"
+        <div className="page-break px-1 pt-6">
+          <SectionTitle
+            n="02"
+            title="KORA Index v3 — Snapshot"
             sub="4 macroblocchi · 9 componenti analitici · Confidence Score esterno"
           />
 
           {/* Macroblocks */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            {MACROBLOCKS.map((mb) => (
-              <div key={mb.label} className="border border-slate-200 rounded-lg p-4 space-y-2 avoid-break">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-xs font-semibold text-slate-800 leading-snug">{mb.label}</p>
-                  <span className="shrink-0 rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">
-                    {mb.weight}%
-                  </span>
+          <Exhibit n="2.1" title="Decomposizione KORA Index per macroblocco" />
+          <div className="grid grid-cols-4 gap-4 mb-6 avoid-break">
+            {[
+              { label: 'Activation Reach',      weight: 25, value: 30, comps: 'AR · MAR',           note: 'AR 38% · MAR 22%' },
+              { label: 'Activation Quality',     weight: 30, value: 37, comps: 'NI · VR · CO',       note: 'NI 41 · VR 41 · CO 28' },
+              { label: 'Distribution & Equity',  weight: 25, value: 40, comps: 'WB · PC · PB · EQ',  note: 'PC 60 · EQ 38' },
+              { label: 'Budget-to-Human-Impact', weight: 20, value: 28, comps: 'BTI Engine',          note: `BTI Score ${ACTIVATION_DEBT_EUR > 0 ? 'limitato da Activation Debt' : ''}` },
+            ].map((mb) => (
+              <div key={mb.label} className="avoid-break border-t-2 border-slate-200 pt-3 space-y-2">
+                <div className="flex items-baseline justify-between gap-1">
+                  <p className="text-[10px] font-bold text-slate-800 leading-tight">{mb.label}</p>
+                  <span className="text-[9px] font-mono text-slate-400 shrink-0">peso {mb.weight}%</span>
                 </div>
-                <p className="text-3xl font-bold text-slate-900 leading-none">{mb.value}</p>
-                <p className="text-[10px] font-mono text-slate-400">{mb.components}</p>
-                <div className="h-1.5 rounded-full bg-slate-100">
-                  <div className="h-1.5 rounded-full bg-slate-700" style={{ width: `${mb.value}%` }} />
+                <p className="text-[32px] font-bold text-slate-900 leading-none">{mb.value}</p>
+                <div className="h-1.5 bg-slate-100 rounded-full">
+                  <div className="h-1.5 bg-slate-700 rounded-full" style={{ width: `${mb.value}%` }} />
                 </div>
+                <p className="text-[9px] font-mono text-slate-400">{mb.comps}</p>
+                <p className="text-[9px] text-slate-500">{mb.note}</p>
               </div>
             ))}
           </div>
 
-          {/* 10 components table */}
-          <div className="border border-slate-200 rounded-lg overflow-hidden">
-            <table className="w-full text-xs">
+          {/* 10-component table */}
+          <Exhibit n="2.2" title="Dettaglio 10 componenti — valori S1 Baseline" />
+          <div className="avoid-break mb-4">
+            <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-slate-500">Codice</th>
-                  <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-slate-500">Componente</th>
-                  <th className="px-3 py-2 text-center text-[10px] font-semibold uppercase tracking-wide text-slate-500">Valore</th>
-                  <th className="px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wide text-slate-500">Macroblocco</th>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Cod.</th>
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Componente</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Valore</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Macroblocco</th>
                 </tr>
               </thead>
               <tbody>
-                {COMPONENTS.map((c, i) => (
-                  <tr key={c.code} className={i < COMPONENTS.length - 1 ? 'border-b border-slate-100' : ''}>
-                    <td className="px-3 py-1.5 font-mono font-semibold text-slate-700">{c.code}</td>
-                    <td className="px-3 py-1.5 text-slate-600">{c.label}</td>
-                    <td className="px-3 py-1.5 text-center font-mono font-bold text-slate-900">
-                      {c.code === 'CS' ? `${c.value}%` : c.value}
-                    </td>
-                    <td className={`px-3 py-1.5 text-[10px] font-mono ${c.code === 'CS' ? 'text-slate-400 italic' : 'text-slate-500'}`}>
-                      {c.macroblock}
-                    </td>
+                {[
+                  { code: 'AR',  label: 'Activation Rate',           val: '38%',  mb: 'Activation Reach' },
+                  { code: 'MAR', label: 'Meaningful Activation Rate', val: '22%',  mb: 'Activation Reach' },
+                  { code: 'NI',  label: 'Normalized Intensity',       val: '41',   mb: 'Activation Quality' },
+                  { code: 'VR',  label: 'Verification Rate',          val: '41',   mb: 'Activation Quality' },
+                  { code: 'CO',  label: 'Continuity',                 val: '28',   mb: 'Activation Quality' },
+                  { code: 'WB',  label: 'Worker Balance',             val: '29',   mb: 'Distribution & Equity' },
+                  { code: 'PC',  label: 'Pillar Coverage',            val: '60',   mb: 'Distribution & Equity' },
+                  { code: 'PB',  label: 'Pillar Balance',             val: '34',   mb: 'Distribution & Equity' },
+                  { code: 'EQ',  label: 'Equity',                     val: '38',   mb: 'Distribution & Equity' },
+                  { code: 'CS',  label: 'Confidence Score',           val: '60%',  mb: '— esterno, peso 0' },
+                ].map((c, i) => (
+                  <tr key={c.code} className={`border-b ${c.code === 'CS' ? 'border-slate-100 bg-slate-50/40' : 'border-slate-100'}`}>
+                    <td className="py-1.5 pr-4 font-mono font-bold text-slate-700">{c.code}</td>
+                    <td className={`py-1.5 pr-4 ${c.code === 'CS' ? 'text-slate-500 italic' : 'text-slate-800'}`}>{c.label}</td>
+                    <td className={`py-1.5 pr-4 text-right font-mono font-bold ${c.code === 'CS' ? 'text-slate-400' : 'text-slate-900'}`}>{c.val}</td>
+                    <td className={`py-1.5 text-[10px] ${c.code === 'CS' ? 'text-slate-400 italic' : 'text-slate-500'}`}>{c.mb}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="text-[10px] text-slate-400 mt-2 font-mono">
-            CS (Confidence Score) è esterno al KORA Index v3 — peso = 0 — indicatore di affidabilità dati, non di impatto.
-            Activation Safeguard è un gate interpretivo, non una componente del punteggio.
-          </p>
+
+          {/* CS external note */}
+          <div className="border border-slate-200 bg-slate-50 rounded px-4 py-3 avoid-break">
+            <div className="flex items-start gap-4">
+              <div className="shrink-0">
+                <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Confidence Score</p>
+                <p className="text-[24px] font-bold text-slate-700 leading-none">{CS_PCT}%</p>
+                <p className="text-[9px] text-slate-500">External indicator · weight 0</p>
+              </div>
+              <div className="text-[11px] text-slate-600 leading-relaxed border-l border-slate-200 pl-4">
+                Il Confidence Score è <strong>esterno</strong> al KORA Index v3: peso = 0.
+                Indica la qualità e completezza dei dati usati per il calcolo.
+                CS 60% = dati parzialmente verificati — alcuni record basati su dichiarazione interna.
+                Non influenza il KORA Index, ma deve essere mostrato in ogni output formale.
+              </div>
+            </div>
+          </div>
+
+          <DocFooter page={3} />
         </div>
 
-        <Divider />
-
         {/* ══════════════════════════════════════════════════════════════════
-            SECTION 4 — ACTIVATION DEBT & WORKFORCE
+            PAGE 4 — ACTIVATION DEBT & WORKFORCE
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="page-break avoid-break mb-8">
-          <SectionHeading
-            n="04"
+        <div className="page-break px-1 pt-6">
+          <SectionTitle
+            n="03"
             title="Activation Debt & Forza Lavoro"
-            sub="Vista aggregata — nessun dato individuale · N ≥ 10 per segmento"
+            sub="Vista aggregata azienda · nessun dato individuale · N ≥ 10 per segmento"
           />
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-5">
-            <MetricBlock label="Forza Lavoro Totale" value={`${TOTAL_WORKERS}`} sub="Meridiana Group S.r.l." />
-            <MetricBlock label="Lavoratori Attivi" value={`${ACTIVE_WORKERS}`} sub={`AR = ${Math.round(ACTIVE_WORKERS / TOTAL_WORKERS * 100)}%`} />
-            <MetricBlock label="Attivazione Significativa" value={`${MEANINGFUL_ACTIVE}`} sub={`MAR = ${Math.round(MEANINGFUL_ACTIVE / TOTAL_WORKERS * 100)}%`} />
-            <MetricBlock label="Mai Attivati" value={`${NEVER_ACTIVATED}`} sub={`${Math.round(NEVER_ACTIVATED / TOTAL_WORKERS * 100)}% della forza lavoro`} note="Maggioranza silenziosa" />
+          {/* Key metrics */}
+          <div className="grid grid-cols-4 gap-6 mb-6 avoid-break">
+            <KPI label="Forza lavoro" value={`${TOTAL_WORKERS}`} note="Meridiana Group S.r.l." />
+            <KPI label="Lavoratori attivi" value={`${ACTIVE_WORKERS}`} unit={`AR ${Math.round(ACTIVE_WORKERS / TOTAL_WORKERS * 100)}%`} />
+            <KPI label="Attivazione significativa" value={`${MEANINGFUL_ACTIVE}`} unit={`MAR ${Math.round(MEANINGFUL_ACTIVE / TOTAL_WORKERS * 100)}%`} />
+            <KPI label="Mai attivati" value={`${NEVER_ACTIVATED}`} note={`${Math.round(NEVER_ACTIVATED / TOTAL_WORKERS * 100)}% della forza lavoro`} />
           </div>
 
-          {/* IU Concentration */}
-          <div className="border border-slate-200 rounded-lg p-4 mb-4 space-y-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
-              Concentrazione Impact Units — distribuzione interna (aggregata)
-            </p>
-            <div className="space-y-2.5">
-              <BarRow label={`Top 12% (${Math.round(TOTAL_WORKERS * 0.12)} lav.)`}    pct={TOP12_PCT_IU}    color="bg-slate-700" />
-              <BarRow label="Fascia 38–88%"                                             pct={100 - TOP12_PCT_IU - BOTTOM50_PCT_IU} color="bg-slate-400" />
-              <BarRow label="Bottom 50%"                                                pct={BOTTOM50_PCT_IU} color="bg-slate-200" />
-            </div>
-            <p className="text-[10px] text-slate-500 italic">
+          {/* IU concentration */}
+          <Exhibit n="3.1" title="Concentrazione Impact Units — distribuzione aggregata interna" />
+          <div className="mb-5 space-y-2.5 avoid-break border border-slate-100 rounded px-4 py-4">
+            <Bar label={`Top 12% (${Math.round(TOTAL_WORKERS * 0.12)} lav.)`} pct={TOP12_PCT_IU} dark />
+            <Bar label="Fascia media (38–88%)" pct={100 - TOP12_PCT_IU - BOTTOM50_PCT_IU} />
+            <Bar label="Bottom 50%" pct={BOTTOM50_PCT_IU} />
+            <p className="text-[10px] text-slate-500 pt-1">
               Il top 12% genera il {TOP12_PCT_IU}% degli Impact Units totali. Alta concentrazione = Activation Debt strutturale.
-              Nessun nominativo. Nessun PIB individuale.
+              Nessun nominativo. Nessun PIB individuale visibile.
             </p>
           </div>
 
-          {/* Site gap */}
-          <div className="border border-amber-100 bg-amber-50 rounded-lg p-4 space-y-2 avoid-break">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700">
-              Gap critico — Plant Bergamo / Operations
-            </p>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              {[
-                { site: 'Sede Milano (HQ)',     workers: 100, ar: 60 },
-                { site: 'Plant Bergamo',         workers:  90, ar: 11, critical: true },
-                { site: 'Sede Torino',           workers:  35, ar: 38 },
-                { site: 'Remoto / distribuito',  workers:  25, ar: 55 },
-              ].map((s) => (
-                <div key={s.site} className={`rounded border p-2.5 space-y-1 ${s.critical ? 'border-red-200 bg-white' : 'border-amber-200/60 bg-white/60'}`}>
-                  <div className="flex items-center justify-between gap-1">
-                    <p className="font-semibold text-slate-800 text-[11px] leading-tight">{s.site}</p>
-                    {s.critical && <span className="rounded border border-red-200 bg-red-50 px-1 py-0.5 text-[9px] font-bold text-red-600">CRITICO</span>}
-                  </div>
-                  <p className="text-[10px] text-slate-500">{s.workers} lav. · AR <span className={`font-bold ${s.critical ? 'text-red-600' : 'text-slate-700'}`}>{s.ar}%</span></p>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] text-amber-700">
-              Sedi con &lt;10 lavoratori soppresse per soglia privacy (safe_aggregation_threshold = 10).
-              Plant Bergamo: AR 11% — intervento prioritario.
-            </p>
+          {/* Site gap table */}
+          <Exhibit n="3.2" title="Activation Rate per sede — gap critico Plant Bergamo" />
+          <div className="avoid-break mb-5">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Sede</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Lavoratori</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Activation Rate</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { site: 'Sede Milano (HQ)',    n: 100, ar: 60, status: 'CLEAR', flag: false },
+                  { site: 'Plant Bergamo',        n: 90,  ar: 11, status: 'CRITICO', flag: true },
+                  { site: 'Sede Torino',          n: 35,  ar: 38, status: 'WARNING', flag: false },
+                  { site: 'Remoto / distribuito', n: 25,  ar: 55, status: 'CLEAR', flag: false },
+                ].map((s) => (
+                  <tr key={s.site} className={`border-b border-slate-100 ${s.flag ? 'bg-red-50/60' : ''}`}>
+                    <td className={`py-2 pr-4 font-semibold ${s.flag ? 'text-red-800' : 'text-slate-800'}`}>{s.site}</td>
+                    <td className="py-2 pr-4 text-right font-mono text-slate-600">{s.n}</td>
+                    <td className={`py-2 pr-4 text-right font-mono font-bold ${s.flag ? 'text-red-700' : s.ar >= 40 ? 'text-slate-800' : 'text-amber-700'}`}>{s.ar}%</td>
+                    <td className="py-2">
+                      <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
+                        s.flag ? 'border-red-200 bg-red-50 text-red-700' :
+                        s.status === 'CLEAR' ? 'border-slate-200 bg-slate-50 text-slate-600' :
+                        'border-amber-200 bg-amber-50 text-amber-700'
+                      }`}>{s.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-[9px] text-slate-400 mt-1">Sedi con N &lt; 10 soppresse per safe_aggregation_threshold = 10. Nessun nominativo.</p>
           </div>
+
+          {/* Implications */}
+          <div className="border-t border-slate-200 pt-4 avoid-break">
+            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Implicazioni operative</p>
+            <ul className="space-y-1.5 text-[11px] text-slate-700">
+              <li className="flex gap-2"><span className="text-slate-300 shrink-0">·</span>Plant Bergamo (90 lavoratori, AR 11%) richiede intervento prioritario. Senza azione, il gap sito/HQ si consolida.</li>
+              <li className="flex gap-2"><span className="text-slate-300 shrink-0">·</span>Worker Balance (WB = 29) segnala distribuzione irregolare degli IU — intervento di equità necessario.</li>
+              <li className="flex gap-2"><span className="text-slate-300 shrink-0">·</span>157 lavoratori mai attivati rappresentano il principale potenziale inespresso del portfolio.</li>
+            </ul>
+          </div>
+
+          <DocFooter page={4} />
         </div>
 
-        <Divider />
-
         {/* ══════════════════════════════════════════════════════════════════
-            SECTION 5 — BUDGET-TO-HUMAN-IMPACT
+            PAGE 5 — BUDGET-TO-HUMAN-IMPACT + BUDGET EVIDENCE
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="avoid-break mb-8">
-          <SectionHeading
-            n="05"
+        <div className="page-break px-1 pt-6">
+          <SectionTitle
+            n="04"
             title="Budget-to-Human-Impact"
-            sub="Peso nel KORA Index: 20% (macroblocco BTI) · Valore S1: 28/100"
+            sub={`Peso KORA Index: 20% (macroblocco BTI) · Valore S1: 28/100 · ${PERIOD}`}
           />
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 mb-4">
-            <MetricBlock label="Budget Totale"          value={eur(BUDGET_TOTAL)}           sub="welfare + people Q1–Q3 2025" />
-            <MetricBlock label="Budget Utilizzato"      value={eur(BUDGET_USED)}            sub={`${Math.round(BUDGET_USED / BUDGET_TOTAL * 100)}% del totale`} />
-            <MetricBlock label="Activation Debt"        value={eur(ACTIVATION_DEBT_EUR)}    sub="budget non convertito in IU" note="Priorità di intervento" />
-            <MetricBlock label="Deep Activation Spend"  value={eur(DEEP_ACTIVATION_SPEND)}  sub={`${Math.round(DEEP_ACTIVATION_SPEND / BUDGET_USED * 100)}% del budget usato`} />
-            <MetricBlock label="Economic Relief Spend"  value={eur(ECONOMIC_RELIEF_SPEND)}  sub={`${Math.round(ECONOMIC_RELIEF_SPEND / BUDGET_USED * 100)}% del budget usato · 0 IU`} />
-            <MetricBlock label="Costo per Impact Unit"  value={`€${COST_PER_IU}`}          sub="deep_activation_spend / IU totali" />
+          {/* BTI metrics */}
+          <div className="grid grid-cols-3 gap-6 mb-6 avoid-break">
+            <KPI label="Budget totale welfare/people" value={eur(BUDGET_TOTAL)} note="allocato Q1–Q3 2025" />
+            <KPI label="Budget utilizzato" value={eur(BUDGET_USED)} note={`${Math.round(BUDGET_USED / BUDGET_TOTAL * 100)}% del totale allocato`} />
+            <KPI label="Activation Debt" value={eur(ACTIVATION_DEBT_EUR)} note="budget non convertito in IU" />
+            <KPI label="Deep Activation Spend" value={eur(DEEP_ACTIVATION_SPEND)} note={`${Math.round(DEEP_ACTIVATION_SPEND / BUDGET_USED * 100)}% del budget usato`} />
+            <KPI label="Economic Relief Spend" value={eur(ECONOMIC_RELIEF_SPEND)} note={`${Math.round(ECONOMIC_RELIEF_SPEND / BUDGET_USED * 100)}% del budget usato · 0 IU`} />
+            <KPI label="Costo per Impact Unit" value={`€${COST_PER_IU}`} note="deep_activation_spend / IU totali" />
           </div>
 
-          {/* BTI split bar */}
-          <div className="border border-slate-200 rounded-lg p-4 space-y-2 mb-3">
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 mb-1">
-              Composizione budget utilizzato ({eur(BUDGET_USED)})
-            </p>
-            <div className="h-5 rounded flex overflow-hidden border border-slate-200">
-              <div className="bg-slate-700 flex items-center justify-center"
-                style={{ width: `${Math.round(DEEP_ACTIVATION_SPEND / BUDGET_USED * 100)}%` }}>
-                <span className="text-[9px] font-bold text-white px-1">
-                  Deep Activation {Math.round(DEEP_ACTIVATION_SPEND / BUDGET_USED * 100)}%
-                </span>
-              </div>
-              <div className="bg-slate-300 flex items-center justify-center flex-1">
-                <span className="text-[9px] font-semibold text-slate-600">
-                  Economic Relief {Math.round(ECONOMIC_RELIEF_SPEND / BUDGET_USED * 100)}%
-                </span>
-              </div>
+          {/* Segmented bar */}
+          <Exhibit n="4.1" title={`Composizione budget utilizzato — ${eur(BUDGET_USED)}`} />
+          <div className="h-8 rounded flex overflow-hidden border border-slate-200 mb-2 avoid-break">
+            <div
+              className="bg-slate-900 flex items-center justify-center"
+              style={{ width: `${Math.round(DEEP_ACTIVATION_SPEND / BUDGET_USED * 100)}%` }}
+            >
+              <span className="text-[9px] font-bold text-white px-1">
+                Deep Activation · {Math.round(DEEP_ACTIVATION_SPEND / BUDGET_USED * 100)}%
+              </span>
+            </div>
+            <div className="bg-slate-400 flex items-center justify-center flex-1">
+              <span className="text-[9px] font-semibold text-white">
+                Economic Relief · {Math.round(ECONOMIC_RELIEF_SPEND / BUDGET_USED * 100)}%
+              </span>
             </div>
           </div>
+          <p className="text-[10px] text-slate-500 mb-6">
+            Economic Relief (buoni pasto, voucher, fringe) = 0 Impact Units. Tracciato come <span className="font-mono">economic_relief_spend</span> nel BTI Engine — non convertito in attivazione.
+          </p>
 
-          <div className="border border-slate-100 bg-slate-50 rounded px-4 py-3 text-[11px] text-slate-600 leading-relaxed">
-            Le cifre di budget sono informative. Il budget grezzo non alimenta direttamente il KORA Index: entra solo attraverso
-            il Budget-to-Human-Impact Score (macroblocco BTI, peso 20%). Economic Relief genera 0 Impact Units —
-            è tracciato nel BTI engine come <span className="font-mono">economic_relief_spend</span>.
-            Correlazione ≠ causalità.
+          {/* Budget Evidence Quality */}
+          <div className="border-t-2 border-slate-900 pt-3 mb-3">
+            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-0.5">Budget Evidence Quality</p>
+            <p className="text-[10px] text-slate-500">Preview metodologica — valori non certificati nel dataset demo</p>
           </div>
-        </div>
+          <Exhibit n="4.2" title="Qualità della fonte budget — distribuzione per tier" src="KORA Budget Evidence Model v0.1" />
 
-        <Divider />
-
-        {/* ══════════════════════════════════════════════════════════════════
-            SECTION 6 — BUDGET EVIDENCE QUALITY
-        ══════════════════════════════════════════════════════════════════ */}
-        <div className="avoid-break mb-8">
-          <SectionHeading
-            n="06"
-            title="Budget Evidence Quality"
-            sub="Preview metodologica — valori non certificati nel dataset demo"
-          />
-
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            {[
-              { label: 'Documentato',           desc: 'Budget con fonte documentata (fatture, accordi, contratti firmati)',               pct: 62, color: 'bg-slate-700' },
-              { label: 'Dichiarato',             desc: 'Budget da dichiarazione HR / reportistica interna — non verificato da terzi',     pct: 24, color: 'bg-slate-400' },
-              { label: 'Stimato',               desc: 'Budget stimato — senza fonte strutturata. Limita il Confidence Score.',           pct: 10, color: 'bg-slate-300' },
-              { label: 'Non valorizzato / N/A', desc: 'Spesa non quantificata o non applicabile (es. programmi in natura)',              pct:  4, color: 'bg-slate-200' },
-            ].map((row) => (
-              <div key={row.label} className="border border-slate-200 rounded-lg p-3 space-y-1.5 avoid-break">
-                <div className="flex items-center justify-between gap-1">
-                  <p className="text-[11px] font-semibold text-slate-700">{row.label}</p>
-                  <span className="text-[11px] font-mono font-bold text-slate-700">{row.pct}%</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-slate-100">
-                  <div className={`h-1.5 rounded-full ${row.color}`} style={{ width: `${row.pct}%` }} />
-                </div>
-                <p className="text-[10px] text-slate-500 leading-snug">{row.desc}</p>
-              </div>
-            ))}
+          <div className="avoid-break mb-5">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Tier</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Share</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Descrizione</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { tier: 'Documentato (L3–L4)',     pct: 62, desc: 'Fatture, contratti, accordi firmati, export provider verificato' },
+                  { tier: 'Dichiarato (L1–L2)',       pct: 24, desc: 'Dichiarazione HR / reportistica interna — non verificato da terzi' },
+                  { tier: 'Stimato (L0–L1)',          pct: 10, desc: 'Stima senza fonte strutturata — abbassa il Confidence Score' },
+                  { tier: 'Non valorizzato / N/A',   pct: 4,  desc: 'Spesa non quantificata o non applicabile (programmi in natura)' },
+                ].map((r) => (
+                  <tr key={r.tier} className="border-b border-slate-100">
+                    <td className="py-2 pr-4 font-semibold text-slate-800">{r.tier}</td>
+                    <td className="py-2 pr-4 text-right font-mono font-bold text-slate-900">{r.pct}%</td>
+                    <td className="py-2 text-slate-600">{r.desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          <div className="border border-slate-200 bg-slate-50 rounded px-4 py-3 text-[11px] text-slate-600 space-y-1">
-            <p className="font-semibold text-slate-700">Il budget non è un dato valido se non ha una fonte.</p>
-            <p>
-              La qualità della fonte budget determina il peso di ciascun record nel Budget-to-Human-Impact engine.
-              Un budget stimato o dichiarato ha un trust score inferiore rispetto a un budget documentato —
+          <div className="border border-slate-200 rounded px-4 py-3 avoid-break">
+            <p className="text-[11px] font-bold text-slate-800 mb-1">Il budget non è un dato valido se non ha una fonte.</p>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              La qualità della fonte budget determina il peso di ogni record nel BTI Engine.
+              Un budget stimato o dichiarato riceve un trust score inferiore rispetto a uno documentato —
               questo si riflette nel Confidence Score (CS = {CS_PCT}% in questo scenario).
-            </p>
-            <p className="text-[10px] text-slate-400 font-mono mt-1">
-              Preview metodologica — valori non certificati nel dataset demo · Source quality ≠ Budget amount
+              Correlazione ≠ causalità. Budget invested ≠ Human impact.
             </p>
           </div>
+
+          <DocFooter page={5} />
         </div>
 
-        <Divider />
-
         {/* ══════════════════════════════════════════════════════════════════
-            SECTION 7 — ELIGIBILITY GATE
+            PAGE 6 — ELIGIBILITY GATE + CARE ECONOMY SIGNAL
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="page-break avoid-break mb-8">
-          <SectionHeading
-            n="07"
+        <div className="page-break px-1 pt-6">
+          <SectionTitle
+            n="05"
             title="Eligibility Gate"
             sub="Classificazione metodologica di ogni record — nessuna discrezionalità"
           />
 
-          <div className="grid grid-cols-3 gap-3 mb-4">
-            <div className="border border-slate-200 rounded-lg p-4 text-center space-y-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Eligible</p>
-              <p className="text-4xl font-bold text-slate-900">{ELIGIBLE_RECORDS.toLocaleString('it-IT')}</p>
-              <p className="text-[10px] text-slate-500">record · generano IU</p>
+          {/* Gate counts */}
+          <div className="grid grid-cols-3 gap-6 mb-6 avoid-break">
+            <div className="border-t-2 border-slate-900 pt-3">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Eligible</p>
+              <p className="text-[40px] font-bold text-slate-900 leading-none">{ELIGIBLE_RECORDS.toLocaleString('it-IT')}</p>
+              <p className="text-[10px] text-slate-600 mt-1">record · generano Impact Units</p>
             </div>
-            <div className="border border-slate-200 rounded-lg p-4 text-center space-y-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Limited</p>
-              <p className="text-4xl font-bold text-slate-700">{LIMITED_RECORDS.toLocaleString('it-IT')}</p>
-              <p className="text-[10px] text-slate-500">record · 0 IU · solo BTI</p>
+            <div className="border-t-2 border-slate-300 pt-3">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Limited</p>
+              <p className="text-[40px] font-bold text-slate-700 leading-none">{LIMITED_RECORDS.toLocaleString('it-IT')}</p>
+              <p className="text-[10px] text-slate-600 mt-1">record · 0 IU · solo BTI engine</p>
             </div>
-            <div className="border border-slate-200 rounded-lg p-4 text-center space-y-1">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Blocked</p>
-              <p className="text-4xl font-bold text-slate-400">{BLOCKED_RECORDS.toLocaleString('it-IT')}</p>
-              <p className="text-[10px] text-slate-500">record · 0 IU · governance only</p>
+            <div className="border-t-2 border-slate-200 pt-3">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Blocked</p>
+              <p className="text-[40px] font-bold text-slate-400 leading-none">{BLOCKED_RECORDS.toLocaleString('it-IT')}</p>
+              <p className="text-[10px] text-slate-500 mt-1">record · 0 IU · governance only</p>
             </div>
           </div>
 
-          <div className="border border-slate-200 rounded-lg overflow-hidden">
-            {[
-              {
-                gate: 'Eligible',
-                badge: 'border-slate-800 bg-slate-900 text-white',
-                title: 'Genera Impact Units → KORA Index',
-                body: 'Programmi volontari, aggiuntivi e verificabili: upskilling, mentoring, prevenzione, supporto psicologico, volontariato, inclusione, community, future/pension. Generano IU e contribuiscono al KORA Index.',
-              },
-              {
-                gate: 'Limited',
-                badge: 'border-slate-400 bg-slate-100 text-slate-700',
-                title: '0 IU — Economic Relief → BTI engine',
-                body: 'Benefit cash-like: buoni pasto, card carburante, fringe generici, voucher. Non è spesa sbagliata — è spesa che può diventare più intelligente. Tracciata nel Budget-to-Human-Impact engine come economic_relief_spend.',
-              },
-              {
-                gate: 'Blocked',
-                badge: 'border-slate-300 bg-slate-50 text-slate-500',
-                title: '0 IU — Blocked by Design',
-                body: 'Compliance obbligatoria per legge: D.Lgs 81/08, DVR/DUVRI, DPI, sorveglianza sanitaria obbligatoria, GDPR mandatory. La conformità legale è una baseline, non impatto. Non penalizzato — escluso per design.',
-              },
-            ].map((row, i) => (
-              <div key={row.gate} className={i < 2 ? 'border-b border-slate-100' : ''}>
-                <div className="flex gap-4 items-start px-4 py-3">
-                  <span className={`shrink-0 rounded border px-2 py-0.5 text-[10px] font-bold mt-0.5 ${row.badge}`}>
-                    {row.gate}
-                  </span>
-                  <div className="space-y-0.5 min-w-0">
-                    <p className="text-xs font-semibold text-slate-800">{row.title}</p>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">{row.body}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* Gate logic table */}
+          <Exhibit n="5.1" title="Logica dell'Eligibility Gate — classificazione per record" />
+          <div className="avoid-break mb-6">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Gate</th>
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Logica</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Esempi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  {
+                    gate: 'Eligible',
+                    logic: 'Volontario, aggiuntivo rispetto al minimo legale, verificabile. Genera IU → KORA Index.',
+                    ex: 'Upskilling, mentoring, prevenzione, supporto psicologico, volontariato, inclusione, KM transfer',
+                  },
+                  {
+                    gate: 'Limited',
+                    logic: 'Cash-like o fringe. 0 IU. Tracciato nel BTI Engine come economic_relief_spend. Non è spesa sbagliata — è spesa che può diventare più intelligente.',
+                    ex: 'Buoni pasto, card carburante, voucher shopping, fringe benefit generici',
+                  },
+                  {
+                    gate: 'Blocked',
+                    logic: 'Compliance obbligatoria per legge (D.Lgs 81/08, DVR, DPI, GDPR mandatory). 0 IU per design. La conformità è una baseline, non impatto.',
+                    ex: 'DVR, DUVRI, sorveglianza sanitaria obbligatoria, DPI, formazione sicurezza cogente',
+                  },
+                ].map((r, i) => (
+                  <tr key={r.gate} className={i < 2 ? 'border-b border-slate-100' : ''}>
+                    <td className="py-2.5 pr-4 align-top">
+                      <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
+                        r.gate === 'Eligible' ? 'border-slate-800 bg-slate-900 text-white' :
+                        r.gate === 'Limited'  ? 'border-slate-300 bg-slate-100 text-slate-700' :
+                                                'border-slate-200 bg-slate-50 text-slate-400'
+                      }`}>{r.gate}</span>
+                    </td>
+                    <td className="py-2.5 pr-4 align-top text-slate-700">{r.logic}</td>
+                    <td className="py-2.5 align-top text-slate-500">{r.ex}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
 
-        <Divider />
+          {/* Care Economy Signal */}
+          <div className="border-t-2 border-slate-200 pt-4 avoid-break">
+            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-0.5">Care Economy Signal</p>
+            <p className="text-[10px] text-slate-500 mb-3">Preview · modulo premium non attivo in Foundation Light · aggregato aziendale · nessun dato familiare individuale</p>
 
-        {/* ══════════════════════════════════════════════════════════════════
-            SECTION 8 — CARE ECONOMY SIGNAL PREVIEW
-        ══════════════════════════════════════════════════════════════════ */}
-        <div className="avoid-break mb-8">
-          <SectionHeading n="08" title="Care Economy Signal" sub="Preview — modulo non certificato in Foundation Light" />
-
-          <div className="border border-slate-200 rounded-lg p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="rounded border border-slate-300 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-500 uppercase tracking-wide">
-                Preview metodologica
-              </span>
-              <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-mono text-slate-400">
-                non certificato · Foundation Light v0.1
-              </span>
-            </div>
-
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Il Care Economy Signal è un indicatore direzionale aggregato che misura la presenza aziendale
-              in programmi di supporto alla cura (caregiving, childcare, supporto familiare, flessibilità per caregiver).
-              Non è un modulo attivo in Foundation Light — è una preview dell&apos;intelligenza disponibile in fasi successive.
-            </p>
-
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4 text-[11px]">
               {[
-                { label: 'Childcare & Supporto Famiglia',  desc: 'Presenza di programmi di supporto alla genitorialità e caregiving aziendale. Rilevanza: alta (pillar LIFE, LEGACY).' },
-                { label: 'Equity di Accesso',              desc: 'I programmi care sono accessibili equamente a tutti i segmenti della workforce? Indicatore futuro — modulo premium.' },
-                { label: 'Solo dati aggregati',            desc: 'Nessun dato familiare individuale è raccolto o elaborato. Aggregazioni solo sopra soglia N ≥ 10 per privacy.' },
-                { label: 'Non certificato',                desc: 'Questo modulo non è validato empiricamente. Non usare per rendicontazione ESG o HR formale. Output direzionale.' },
+                { label: 'Childcare & Supporto Genitorialità', body: 'Presenza di programmi aziendali per genitori e caregivers. Pillar LIFE + LEGACY. Equity di accesso da verificare.' },
+                { label: 'Flessibilità per Cura', body: 'Smart working strutturato, ROL aggiuntivi caregiver, diritto alla disconnessione. Già classificabili come Eligible se formalizzati.' },
+                { label: 'Solo dati aggregati', body: 'Nessun dato familiare individuale raccolto. Aggregazioni sopra soglia N ≥ 10. Nessun profiling individuale.' },
+                { label: 'Modulo non certificato', body: 'Non validato empiricamente. Non usare per rendicontazione ESG/HR formale. Output direzionale. Preview metodologica.' },
               ].map((item) => (
-                <div key={item.label} className="border border-slate-100 rounded p-3 space-y-1">
-                  <p className="text-[11px] font-semibold text-slate-700">{item.label}</p>
-                  <p className="text-[10px] text-slate-500 leading-snug">{item.desc}</p>
+                <div key={item.label} className="border-l-2 border-slate-200 pl-3 space-y-0.5">
+                  <p className="font-semibold text-slate-700">{item.label}</p>
+                  <p className="text-slate-500">{item.body}</p>
                 </div>
               ))}
             </div>
-
-            <p className="text-[10px] text-slate-400 font-mono">
-              Care Economy Signal · preview · nessun dato familiare individuale · aggregato aziendale solo · non certificato
-            </p>
           </div>
+
+          <DocFooter page={6} />
         </div>
 
-        <Divider />
-
         {/* ══════════════════════════════════════════════════════════════════
-            SECTION 9 — PILLAR BALANCE & RECOMMENDATIONS
+            PAGE 7 — RECOMMENDATIONS & 90-DAY ROADMAP
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="page-break mb-8">
-          <SectionHeading
-            n="09"
-            title="Distribuzione Pillar & Raccomandazioni"
-            sub="Pillar = grammatica dell'impatto KORA · 5 pillar · Q1–Q3 2025"
+        <div className="page-break px-1 pt-6">
+          <SectionTitle
+            n="06"
+            title="Raccomandazioni & Piano 90 Giorni"
+            sub="Output direzionale — non garantisce risultati · pre_empirical_calibration"
           />
 
-          {/* Pillar bars */}
-          <div className="border border-slate-200 rounded-lg p-4 mb-5 space-y-2.5 avoid-break">
-            {PILLARS.map((p) => (
-              <BarRow
-                key={p.code}
-                label={p.code}
-                pct={p.share}
-                color={
-                  p.code === 'LIFE'       ? 'bg-slate-700' :
-                  p.code === 'GROWTH'     ? 'bg-slate-500' :
-                  p.code === 'CONNECTION' ? 'bg-slate-400' :
-                  p.code === 'IMPACT'     ? 'bg-slate-300' :
-                                            'bg-slate-200'
-                }
-              />
-            ))}
-            <p className="text-[10px] text-slate-400 pt-1">
-              LIFE dominante (44%) — parzialmente Economic Relief classificato Limited.
-              CONNECTION (12%) e LEGACY (6%) sottorappresentati.
-            </p>
+          {/* Recommendations table */}
+          <Exhibit n="6.1" title="Piano d'azione prioritario" />
+          <div className="avoid-break mb-6">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Prior.</th>
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Azione</th>
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Effetto atteso</th>
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Owner</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Orizzonte</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  {
+                    p: 'Alta', action: 'Attivare programmi LIFE e CONNECTION per Plant Bergamo / Operations',
+                    effect: 'AR Operations: da 11% verso soglia WARNING (20%). Riduce gap sito più critico.',
+                    owner: 'HR · Plant Manager', horizon: '0–30 gg',
+                  },
+                  {
+                    p: 'Alta', action: 'Ribilanciare €20k–25k da Economic Relief verso programmi Eligible',
+                    effect: 'KORA Index stimato +8–12 punti. BTI Score migliora. Activation Debt ridotto.',
+                    owner: 'HR · CFO', horizon: '30–60 gg',
+                  },
+                  {
+                    p: 'Media', action: 'Rafforzare programmi GROWTH e CONNECTION su HQ e Torino',
+                    effect: 'Pillar Balance (PB) migliora. Pillar Coverage mantiene 5/5. Growth sottorappresentato (27%).',
+                    owner: 'HR · L&D', horizon: '30–60 gg',
+                  },
+                  {
+                    p: 'Media', action: 'Completare revisione advisor KORA prima della distribuzione formale',
+                    effect: 'CS può salire da 60% a 70%+. Board Pack diventa distribuibile formalmente.',
+                    owner: 'HR · Advisor KORA', horizon: '0–30 gg',
+                  },
+                  {
+                    p: 'Media', action: 'Raccogliere evidenze documentali per budget classificato Stimato (10%)',
+                    effect: 'Abbatte Evidence Debt. CS migliora. BTI Engine più preciso.',
+                    owner: 'Finance · HR', horizon: '30–60 gg',
+                  },
+                  {
+                    p: 'Bassa', action: 'Validare scenario S2 come target operativo Q4–Q1 in workshop esecutivo',
+                    effect: 'S2: KORA Index 54, Safeguard CLEAR. Framework decisionale per riallocazione budget.',
+                    owner: 'C-Suite · HR', horizon: '60–90 gg',
+                  },
+                ].map((r, idx) => (
+                  <tr key={idx} className={idx < 5 ? 'border-b border-slate-100' : ''}>
+                    <td className="py-2 pr-3 align-top">
+                      <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
+                        r.p === 'Alta'  ? 'border-slate-800 bg-slate-900 text-white' :
+                        r.p === 'Media' ? 'border-slate-300 bg-slate-100 text-slate-700' :
+                                          'border-slate-200 bg-white text-slate-400'
+                      }`}>{r.p}</span>
+                    </td>
+                    <td className="py-2 pr-3 align-top font-semibold text-slate-800">{r.action}</td>
+                    <td className="py-2 pr-3 align-top text-slate-600">{r.effect}</td>
+                    <td className="py-2 pr-3 align-top text-slate-500 whitespace-nowrap">{r.owner}</td>
+                    <td className="py-2 align-top font-mono text-slate-500 whitespace-nowrap">{r.horizon}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {/* Recommendations */}
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-3">
-            Piano d&apos;azione — 90 giorni
-          </p>
-          <div className="space-y-2">
-            {RECOMMENDATIONS.map((rec) => (
-              <div key={rec.n} className="border border-slate-200 rounded-lg px-4 py-3 flex gap-4 items-start avoid-break">
-                <div className="flex flex-col items-center gap-1.5 shrink-0 pt-0.5">
-                  <span className="w-6 h-6 rounded-full bg-slate-900 text-white text-[10px] font-bold flex items-center justify-center">
-                    {rec.n}
-                  </span>
-                  <PriorityBadge p={rec.priority} />
-                </div>
-                <div className="flex-1 min-w-0 space-y-0.5">
-                  <p className="text-xs font-semibold text-slate-800 leading-snug">{rec.title}</p>
-                  <p className="text-[11px] text-slate-600 leading-relaxed">{rec.body}</p>
-                </div>
-              </div>
-            ))}
+          {/* 90-day cadence */}
+          <Exhibit n="6.2" title="Cadenza operativa suggerita — 90 giorni" />
+          <div className="avoid-break">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Fase</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Attività</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { phase: 'Settimane 1–2', activity: 'Revisione advisor KORA · Raccolta evidenze budget Stimato · Briefing HR su gap Plant Bergamo' },
+                  { phase: 'Settimane 3–4', activity: 'Redesign programmi LIFE/CONNECTION per Operations · Riallocazione budget Relief→Eligible · Approvazione piano' },
+                  { phase: 'Settimane 5–8', activity: 'Lancio programmi nuovi · Attivazione push Plant Bergamo · Monitoraggio AR settimanale' },
+                  { phase: 'Settimane 9–12', activity: 'Misurazione intermedia · Scenario S2 — confronto direzionale · Workshop C-Suite · Preparazione Board Pack Q4' },
+                ].map((r, i) => (
+                  <tr key={i} className={i < 3 ? 'border-b border-slate-100' : ''}>
+                    <td className="py-2 pr-4 font-semibold text-slate-700 whitespace-nowrap align-top">{r.phase}</td>
+                    <td className="py-2 text-slate-600">{r.activity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
+
+          <DocFooter page={7} />
         </div>
 
-        <Divider />
-
         {/* ══════════════════════════════════════════════════════════════════
-            SECTION 10 — METHODOLOGY & BOUNDARIES
+            PAGE 8 — METHODOLOGY & BOUNDARIES
         ══════════════════════════════════════════════════════════════════ */}
-        <div className="avoid-break mb-8">
-          <SectionHeading n="10" title="Metodologia & Confini" />
+        <div className="page-break px-1 pt-6">
+          <SectionTitle n="07" title="Metodologia & Confini" />
 
-          <div className="border border-slate-200 rounded-lg px-5 py-4 space-y-3">
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-              {[
-                ['Metodologia',       `${METHOD_ID} · ${CALIB}`],
-                ['Calibrazione',      'Delphi Study post-pilot — non ancora eseguita'],
-                ['Dati',              'Sintetici demo — non dati reali aziendali'],
-                ['Produzione',        'production_ready: false · Foundation Light v0.1'],
-                ['Confidence Score',  'Esterno al KORA Index v3 · peso = 0 · indicatore affidabilità dati'],
-                ['Activation Safeguard', 'Gate interpretivo — non componente del punteggio'],
-                ['Causalità',         'Correlazione ≠ causalità — tutti i segnali KORA sono associativi'],
-                ['Sorveglianza',      'Nessun dato individuale lavoratore esposto al datore di lavoro'],
-                ['Privacy',           'N ≥ 10 per segmento · PIB worker-private · pseudonimizzazione'],
-                ['Assurance ESG',     'KORA non garantisce conformità normativa ESG/CSR'],
-                ['Consulenza',        'Non sostituisce consulenza legale, fiscale o assurance'],
-                ['Output',            'Direzionale · non certificazione pubblica · non attestazione regolatoria'],
-              ].map(([label, value]) => (
-                <div key={label} className="flex gap-2 text-[11px]">
-                  <span className="shrink-0 font-semibold text-slate-500 w-36">{label}</span>
-                  <span className="text-slate-700 leading-snug">{value}</span>
-                </div>
-              ))}
-            </div>
+          <div className="avoid-break mb-5">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold w-44">Elemento</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Valore / nota</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ['Metodologia',          `${METHOD_ID} · ${CALIB}`],
+                  ['Dati',                 'Sintetici demo — non dati reali di Meridiana Group'],
+                  ['Produzione',           'production_ready: false · Foundation Light v0.1'],
+                  ['Calibrazione',         'Delphi Study post-pilot — non ancora eseguita. Pesi v0.1 pre-empirici.'],
+                  ['Confidence Score',     'Esterno al KORA Index v3 · peso = 0 · indicatore affidabilità dati'],
+                  ['Activation Safeguard', 'Gate interpretivo — non una componente del punteggio KORA Index'],
+                  ['Causalità',            'Correlazione ≠ causalità — tutti i segnali KORA sono associativi, non predittivi'],
+                  ['Sorveglianza',         'Nessun dato individuale lavoratore esposto al datore di lavoro. PIB è worker-private.'],
+                  ['Privacy',              'N ≥ 10 per segmento · pseudonimizzazione · PIB non visibile employer'],
+                  ['Assurance ESG',        'KORA non garantisce conformità normativa ESG/CSR'],
+                  ['Consulenza',           'Non sostituisce consulenza legale, fiscale o assurance esterna'],
+                  ['Output',               'Direzionale · non certificazione pubblica · non attestazione regolatoria'],
+                  ['Compliance',           'La conformità legale (Blocked) è una baseline, non impatto. KORA non la trasforma in IU.'],
+                  ['Economic Relief',      'Budget Limited (buoni pasto, voucher) tracciato nel BTI Engine — 0 Impact Units per design'],
+                ].map(([label, value]) => (
+                  <tr key={label} className="border-b border-slate-100">
+                    <td className="py-1.5 pr-4 font-semibold text-slate-600 align-top">{label}</td>
+                    <td className="py-1.5 text-slate-700">{value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            <div className="border-t border-slate-200 pt-3">
-              <p className="text-[10px] text-slate-500 leading-relaxed">
-                KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
-                Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
-                Il Decision Pack è un output direzionale in pre_empirical_calibration. Revisione advisor KORA raccomandata prima di ogni uso formale.
-              </p>
-            </div>
-
-            <p className="text-[10px] font-mono text-slate-400 pt-1">
+          <div className="border border-slate-200 rounded px-4 py-3 avoid-break">
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
+              Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
+              Il Decision Pack è un output direzionale in {CALIB}. Revisione advisor KORA raccomandata prima di ogni uso formale.
+            </p>
+            <p className="text-[9px] font-mono text-slate-400 mt-2">
               {METHOD_ID} · {CALIB} · production_ready: false · synthetic_demo_data: true · {GENERATED}
             </p>
           </div>
-        </div>
 
-        {/* ── Footer ─────────────────────────────────────────────────────── */}
-        <div className="border-t border-slate-200 pt-4 flex items-center justify-between gap-4 text-[10px] text-slate-400">
-          <span className="font-mono">{METHOD_ID} · {COMPANY} · {PERIOD}</span>
-          <span className="no-print italic">Preview stampabile — usare il browser per Salva come PDF.</span>
-          <span className="font-mono">pre_empirical_calibration</span>
+          <DocFooter page={8} />
         </div>
 
       </div>
