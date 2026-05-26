@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useDemoState } from '@/lib/demo-state';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
 import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
@@ -502,13 +503,16 @@ export default function Reports() {
               <p className="text-xs text-amber-700">{factoryStatus.warnings[0]}</p>
             )}
           </div>
-          <div className="flex gap-2 text-[10px] shrink-0">
+          <div className="flex gap-2 text-[10px] shrink-0 items-center flex-wrap">
             <span className="rounded border border-amber-200 bg-white px-2 py-1 text-amber-700 font-semibold">
               {versionHistory.length} {versionHistory.length === 1 ? 'versione' : 'versioni'}
             </span>
-            <span className="rounded border border-slate-200 bg-white px-2 py-1 text-slate-400">
-              Board Pack Preview
-            </span>
+            <Link
+              href="/company/reports/board-pack"
+              className="rounded border border-slate-800 bg-slate-900 px-3 py-1 text-white font-semibold hover:bg-slate-700 transition-colors whitespace-nowrap"
+            >
+              Board Pack Preview →
+            </Link>
           </div>
         </div>
       </div>
@@ -605,8 +609,16 @@ export default function Reports() {
         </p>
         <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
           <p className="text-xs text-slate-500">
-            PDF Export sarà abilitato nel blocco successivo. Questa sezione prepara versioning, governance e readiness del Decision Pack.
+            Il Board Pack Preview è disponibile come pagina stampabile.
+            Export PDF automatico non attivo in Foundation Light — usare il browser per Salva come PDF.
           </p>
+          <Link
+            href="/company/reports/board-pack"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 transition-colors"
+          >
+            Board Pack Preview →
+            <span className="font-normal text-slate-400 text-[10px]">Preview stampabile · export PDF automatico non attivo in Foundation Light</span>
+          </Link>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
             {exportActions.map((action) => (
               <div

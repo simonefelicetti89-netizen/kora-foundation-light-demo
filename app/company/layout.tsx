@@ -10,6 +10,7 @@ const VIEWER_BLOCKED_ROUTES = [
   '/company/data',
   '/company/financial',
   '/company/reports',
+  '/company/reports/board-pack',
   '/company/activation',
   '/company/contribution',
   '/company/pillars',
