@@ -101,7 +101,7 @@ export default function CompanyOnboardingRoom() {
       {/* ── Coherent state banner ── */}
       {hasIndex && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
-          <p className="font-semibold">Bozza disponibile — revisione advisor richiesta prima del Board Pack finale.</p>
+          <p className="font-semibold">Bozza disponibile — revisione advisor richiesta</p>
           <p>Il Decision Pack è stato generato. Un advisor KORA deve completare la revisione prima della versione certificata.</p>
         </div>
       )}

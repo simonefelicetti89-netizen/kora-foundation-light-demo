@@ -335,7 +335,7 @@
         "label": "Decision Pack",
         "href": "/company/reports",
         "status": "active",
-        "description": "Company Decision Pack — 14 sezioni, scenario S1/S2"
+        "description": "Company Decision Pack — 8 sezioni executive, scenario S1/S2"
       }
     ]
   },
@@ -621,7 +621,7 @@
         "label": "Decision Pack",
         "href": "/company/reports",
         "status": "not_started",
-        "description": "Company Decision Pack — 14 sezioni, scenario S1/S2"
+        "description": "Company Decision Pack — 8 sezioni executive, scenario S1/S2"
       }
     ]
   }

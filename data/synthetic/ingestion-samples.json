@@ -251,7 +251,7 @@
     {
       "id": "ing-016",
       "raw_name": "Policy Ferie Illimitate — approvata CDA",
-      "raw_description": "Accordo strutturale di autonomia del tempo: ferie illimitate per tutti i dipendenti a tempo indeterminato. Approvato dal CDA in data 2025-01-15. Copertura: 312 lavoratori eleggibili (popolazione totale esclusi contratti a termine).",
+      "raw_description": "Accordo strutturale di autonomia del tempo: ferie illimitate per tutti i dipendenti a tempo indeterminato. Approvato dal CDA in data 2025-01-15. Copertura: 220 lavoratori eleggibili su 250 (contratti a tempo indeterminato).",
       "source_file": "policy register aziendale 2025.pdf",
       "source_system": "Company Policy Register",
       "source_type": "company_policy_register",
@@ -273,7 +273,7 @@
     {
       "id": "ing-017",
       "raw_name": "Accordo Integrativo Smart Working — 3 giorni/settimana",
-      "raw_description": "Accordo integrativo sindacale che estende il diritto allo smart working a 3 giorni settimana per tutte le posizioni compatibili. Firmato con RSU in data 2025-02-01. Copertura aggregata: 287 lavoratori eleggibili su 350 totali.",
+      "raw_description": "Accordo integrativo sindacale che estende il diritto allo smart working a 3 giorni settimana per tutte le posizioni compatibili. Firmato con RSU in data 2025-02-01. Copertura aggregata: 190 lavoratori eleggibili su 250 totali.",
       "source_file": "accordo integrativo sw 2025.pdf",
       "source_system": "Company Policy Register",
       "source_type": "company_policy_register",
@@ -295,7 +295,7 @@
     {
       "id": "ing-018",
       "raw_name": "No Meeting Friday — Policy Aziendale",
-      "raw_description": "Policy strutturale di igiene delle riunioni: nessuna riunione il venerdì per tutti i team. Approvata dalla Direzione HR in data 2025-03-01. Copertura: 100% della popolazione aziendale (350 lavoratori).",
+      "raw_description": "Policy strutturale di igiene delle riunioni: nessuna riunione il venerdì per tutti i team. Approvata dalla Direzione HR in data 2025-03-01. Copertura: 210 lavoratori applicabili su 250 (tutti i team con meeting strutturati).",
       "source_file": "policy register aziendale 2025.pdf",
       "source_system": "Company Policy Register",
       "source_type": "company_policy_register",
@@ -317,7 +317,7 @@
     {
       "id": "ing-019",
       "raw_name": "Diritto alla Disconnessione — Accordo Sindacale",
-      "raw_description": "Accordo sindacale integrativo che formalizza il diritto alla disconnessione fuori orario lavorativo. Nessun obbligo di risposta a email o messaggi dopo le 19:00 e nei weekend. Firmato RSU 2025-01-20. Copertura: intera forza lavoro.",
+      "raw_description": "Accordo sindacale integrativo che formalizza il diritto alla disconnessione fuori orario lavorativo. Nessun obbligo di risposta a email o messaggi dopo le 19:00 e nei weekend. Firmato RSU 2025-01-20. Copertura: intera forza lavoro — 250 lavoratori.",
       "source_file": "accordo integrativo people 2025.pdf",
       "source_system": "Company Policy Register",
       "source_type": "company_policy_register",

@@ -229,7 +229,7 @@
         "label": "Decision Pack",
         "href": "/company/reports",
         "status": "active",
-        "description": "Company Decision Pack con 14 sezioni, scenario S1/S2, raccomandazioni"
+        "description": "Company Decision Pack con 8 sezioni executive, scenario S1/S2, raccomandazioni"
       },
       {
         "stage": "5-kora-index",
@@ -445,7 +445,7 @@
         "label": "Decision Pack",
         "href": "/company/reports",
         "status": "not_started",
-        "description": "Company Decision Pack con 14 sezioni, scenario S1/S2, raccomandazioni"
+        "description": "Company Decision Pack con 8 sezioni executive, scenario S1/S2, raccomandazioni"
       },
       {
         "stage": "5-kora-index",

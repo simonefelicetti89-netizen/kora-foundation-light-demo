@@ -358,7 +358,7 @@ function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLa
       <div className="flex items-center justify-between text-[10px] text-slate-400">
         <span>{new Date(version.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
         {version.sections_included && version.sections_included.length > 0 && (
-          <span>{version.sections_included.length} sezioni · {version.data_readiness} readiness</span>
+          <span>{SECTION_NAV.length} sezioni executive · {version.data_readiness} readiness</span>
         )}
       </div>
     </div>
@@ -496,7 +496,7 @@ export default function Reports() {
               Stato Decision Pack
             </p>
             <p className="text-sm font-semibold text-amber-900">
-              Bozza disponibile — revisione advisor richiesta prima del Board Pack finale
+              Bozza disponibile — revisione advisor richiesta
             </p>
             {factoryStatus.warnings.length > 0 && (
               <p className="text-xs text-amber-700">{factoryStatus.warnings[0]}</p>
@@ -507,7 +507,7 @@ export default function Reports() {
               {versionHistory.length} {versionHistory.length === 1 ? 'versione' : 'versioni'}
             </span>
             <span className="rounded border border-slate-200 bg-white px-2 py-1 text-slate-400">
-              PDF export · in arrivo
+              Board Pack Preview
             </span>
           </div>
         </div>
