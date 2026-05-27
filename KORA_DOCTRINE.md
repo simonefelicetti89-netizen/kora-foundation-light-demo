@@ -383,7 +383,7 @@ If a request seems to:
 
 > KORA non esiste per sapere cosa fanno i lavoratori nella loro vita privata — esiste per verificare come i fondi, le iniziative, i benefit, le policy e i servizi partner abilitati dall'azienda vengono spesi, raggiunti e attivati dai lavoratori.
 
-> Il perimetro KORA è definito dall'azienda: solo le iniziative aziendalmente abilitate, finanziate o promosse entrano nel calcolo del KORA Index, delle Impact Units e del PIB.
+> Il perimetro KORA è definito dall'azienda: solo le iniziative aziendalmente abilitate, finanziate o promosse entrano nel calcolo del KORA Index, delle Impact Units e del PIB. **Company-enabled non significa company-uploaded** — i programmi welfare erogati da provider (es. Easy Welfare, Jointly, LMS) rientrano nel perimetro se abilitati e finanziati dall'azienda, indipendentemente dalla fonte del dato (`company_upload` o `provider_export`).
 
 > My KORA registra esclusivamente l'attivazione su iniziative company-enabled — non raccoglie, non deduce e non misura alcuna dimensione della vita privata del lavoratore fuori dal perimetro aziendale.
 
@@ -420,11 +420,13 @@ Il Foundation Light Pilot lavora sul pacchetto dati minimo:
 | File | Formato | Obbligatorio | Note |
 |------|---------|--------------|------|
 | Workers (aggregato) | Excel/CSV | Sì | Headcount per dipartimento e sede. Nessun nominativo. N ≥ 10 per segmento. |
-| Initiatives | Excel/CSV | Sì | Lista iniziative/programmi aziendali con tipologia e budget (anche dichiarato). |
+| Initiatives | Excel/CSV | Sì | Lista iniziative/programmi aziendali con tipologia e pillar indicativo. |
 | Participation | Excel/CSV | Sì | Utilizzo aggregato per iniziativa, dipartimento, sede. N ≥ 10 per segmento. |
+| Budget / Evidenze | Excel/CSV | Sì | Budget allocato per categoria di iniziativa. Anche dichiarato — verrà classificato nella Budget Evidence review. |
 | HR KPI Aggregates | Excel/CSV | No (opzionale) | Turnover, assenteismo, engagement. Arricchisce la lettura HR KPI preview. |
+| Export provider / LMS | Excel/CSV | No (opzionale) | Export da provider welfare o LMS. Supplemento — non sostituisce il Data Pack aziendale. |
 
-Export da provider welfare o LMS sono benvenuti come supplemento (`provider_export`) ma non sostituiscono né si aggiungono come requisito al Data Pack aziendale.
+Export da provider welfare o LMS (`provider_export`) sono supplementi opzionali — non obbligatori per avviare il pilot. Un file aziendale Excel ben strutturato è sufficiente.
 
 ---
 

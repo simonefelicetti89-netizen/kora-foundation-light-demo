@@ -37,9 +37,11 @@ The minimal input for a Foundation Light Pilot is the **Foundation Light Data Pa
 | File | Type | Required | Description |
 |------|------|----------|-------------|
 | Workers (aggregated) | `company_upload` | Yes | Headcount by department and site. No individual names. N ≥ 10 per segment. |
-| Initiatives | `company_upload` | Yes | List of company welfare/people initiatives with category and budget. |
+| Initiatives | `company_upload` | Yes | List of company welfare/people initiatives with category and pillar. |
 | Participation | `company_upload` | Yes | Aggregate usage per initiative, department, site. N ≥ 10 per segment. |
+| Budget / Evidence | `company_upload` | Yes | Allocated budget by initiative category, with evidence level (also declared). |
 | HR KPI Aggregates | `company_upload` | Optional | Turnover, absenteeism, engagement. Enriches HR KPI preview only. |
+| Provider/LMS export | `provider_export` | Optional | Welfare provider or LMS export. Supplemental — enriches the company Data Pack. |
 
 Provider welfare/LMS exports (`provider_export`) are **supplemental** — they enrich the Data Pack but are not required to start the pilot. A well-structured company Excel file is sufficient.
 
@@ -112,9 +114,11 @@ A record with `BudgetStatus: 'not_available'` must show `BTITreatment: 'excluded
 
 The upload pipeline distinguishes two categories of sensitive columns:
 
-### 6a. Identity fields — pseudonymize, do not exclude
+### 6a. Identity fields — permitted, must not appear in employer outputs
 
-Identity fields (nome, cognome, email, matricola, employee id, badge, worker id) are permitted in the upload for the purpose of **record deduplication** and future **My KORA PIB construction**. They must be **pseudonymized before entering the pipeline** and must **never appear in any employer-facing output**.
+Identity fields (nome, cognome, email, matricola, employee id, badge, worker id) are permitted in the upload for the purpose of **record deduplication** and future **My KORA PIB construction**. They must **never appear in any employer-facing output**.
+
+**Technical pseudonymization/hashing is a future pipeline implementation requirement** — it is not active in Foundation Light v0. The `recommendedAction: 'pseudonymize'` flag signals what the production pipeline must do; it does not mean Foundation Light currently executes it.
 
 Detection rule: `riskType: 'personal_identifiable'`, `severity: 'medium'`, `recommendedAction: 'pseudonymize'`, `excludedByDefault: false`.
 
@@ -132,7 +136,7 @@ Detection rule: `riskType: 'health_data' | 'psychological' | 'personal_identifia
 The advisor may not override exclusion for health or psychological data.
 
 All data that enters the KORA pipeline from uploads:
-- Must be pseudonymized at the record level before any aggregation
+- Identity fields must not appear in employer-facing outputs (pseudonymization is a future production requirement)
 - Must pass `PrivacyVisibilityService.isSuppressed()` before any segment rendering
 - Groups below N=10 are suppressed per `SAFE_AGGREGATION_THRESHOLD`
 

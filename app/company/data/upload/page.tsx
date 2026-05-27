@@ -213,14 +213,14 @@ export default function UploadPage() {
             <div className="grid grid-cols-2 gap-0 sm:grid-cols-4">
               {[
                 { label: 'Workers (aggregato)', note: 'Headcount per dipartimento e sede. Nessun nominativo. N ≥ 10.', required: true },
-                { label: 'Initiatives', note: 'Lista iniziative aziendali con tipologia e budget (anche dichiarato).', required: true },
-                { label: 'Participation', note: 'Utilizzo aggregato per iniziativa, dipartimento, sede.', required: true },
-                { label: 'HR KPI Aggregates', note: 'Turnover, engagement, assenteismo. Opzionale — arricchisce HR KPI preview.', required: false },
+                { label: 'Initiatives', note: 'Lista iniziative/programmi aziendali con tipologia e pillar indicativo.', required: true },
+                { label: 'Participation', note: 'Utilizzo aggregato per iniziativa, dipartimento, sede. N ≥ 10.', required: true },
+                { label: 'Budget / Evidenze', note: 'Budget allocato per categoria. Anche dichiarato — classificato nella Budget Evidence review.', required: true },
               ].map((item, i) => (
                 <div key={item.label} className={`px-3.5 py-3 space-y-0.5 ${i < 3 ? 'border-b sm:border-b-0 sm:border-r border-slate-100' : ''}`}>
                   <div className="flex items-center gap-1.5">
-                    <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide whitespace-nowrap ${item.required ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-400'}`}>
-                      {item.required ? 'Richiesto' : 'Opzionale'}
+                    <span className="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide whitespace-nowrap border-slate-800 bg-slate-900 text-white">
+                      Richiesto
                     </span>
                   </div>
                   <p className="text-xs font-semibold text-slate-700">{item.label}</p>
@@ -229,7 +229,7 @@ export default function UploadPage() {
               ))}
             </div>
             <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/60 text-[10px] text-slate-500">
-              Export provider welfare o LMS sono supplementi opzionali — non sostitutiscono né aggiungono requisiti al Data Pack aziendale.
+              Opzionali: HR KPI aggregati (turnover, engagement) · export provider welfare/LMS come supplemento.
               I lavoratori non caricano file: upload individuale fuori perimetro in Foundation Light Pilot.
             </div>
           </div>
@@ -573,8 +573,8 @@ export default function UploadPage() {
                     </h2>
                     <p className="text-xs text-red-600 mt-0.5">
                       {highSensitiveCount > 0
-                        ? `${highSensitiveCount} colonne ad alto rischio da escludere · campi identità da pseudonimizzare prima dell'ingestion.`
-                        : 'Campi identità rilevati — da pseudonimizzare prima dell\'ingestion.'}
+                        ? `${highSensitiveCount} colonne ad alto rischio da escludere · campi identità non ammessi in output employer.`
+                        : 'Campi identità rilevati — non ammessi in output employer.'}
                     </p>
                   </div>
                 </div>
@@ -582,10 +582,11 @@ export default function UploadPage() {
                 {/* Identity fields panel */}
                 {sensitiveFlags.some((f) => f.recommendedAction === 'pseudonymize') && (
                   <div className="px-6 pt-5 pb-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-2">Campi identità — pseudonimizzare</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-2">Campi identità — non esporre in output employer</p>
                     <p className="text-xs text-slate-600 mb-3 leading-relaxed">
                       I campi nome, cognome, email, matricola sono ammessi nel Data Pack per la <strong>deduplicazione dei record</strong>.
-                      Devono essere pseudonimizzati prima di entrare nella pipeline KORA e non appaiono mai in output employer.
+                      Non devono apparire in nessun output employer.
+                      La pseudonimizzazione tecnica è un requisito di implementazione futura — non ancora attiva in Foundation Light v0.
                     </p>
                     <div className="space-y-2">
                       {sensitiveFlags.filter((f) => f.recommendedAction === 'pseudonymize').map((flag) => (
@@ -600,7 +601,7 @@ export default function UploadPage() {
                               </div>
                               <p className="text-xs text-slate-500">{flag.reason}</p>
                             </div>
-                            <span className="text-xs text-amber-700 shrink-0 font-medium">Pseudonimizza</span>
+                            <span className="text-xs text-amber-700 shrink-0 font-medium">Non in output employer</span>
                           </div>
                         </div>
                       ))}

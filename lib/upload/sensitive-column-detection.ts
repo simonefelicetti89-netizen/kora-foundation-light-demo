@@ -33,7 +33,8 @@ const SENSITIVE_RULES: SensitiveRule[] = [
     recommendedAction: 'exclude',
     excludedByDefault: true,
   },
-  // Identity fields — pseudonymize: permitted for deduplication and future My KORA PIB, never in employer outputs
+  // Identity fields — permitted for deduplication and future My KORA PIB, never in employer outputs
+  // Pseudonymization is a future pipeline implementation requirement — not active in Foundation Light v0.
   {
     keywords: [
       'nome dipendente', 'nome e cognome', 'nome lavoratore', 'cognome', 'full name', 'nominativo',
@@ -42,7 +43,7 @@ const SENSITIVE_RULES: SensitiveRule[] = [
     ],
     riskType: 'personal_identifiable',
     severity: 'medium',
-    reason: 'Campo identità lavoratore: ammesso per deduplicazione dei record e costruzione del PIB in My KORA. Deve essere pseudonimizzato prima di entrare nella pipeline KORA. Non appare mai in output employer.',
+    reason: 'Campo identità lavoratore: ammesso nel Data Pack per la deduplicazione dei record e la preparazione del PIB in My KORA. Non deve apparire in nessun output employer. Pseudonimizzazione tecnica: requisito di implementazione futura — non ancora attiva in Foundation Light v0.',
     recommendedAction: 'pseudonymize',
     excludedByDefault: false,
   },
