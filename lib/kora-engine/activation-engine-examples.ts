@@ -85,13 +85,13 @@ const SCENARIO_01: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.62, max: 0.66 },
-  expectedMeaningfulReach:  { min: 0.62, max: 0.66 },
-  expectedActiveWorkers:    { min: 158, max: 162 },
-  expectedMeaningfulWorkers: { min: 158, max: 162 },
+  expectedActivationReach:  { min: 0.41, max: 0.45 },
+  expectedMeaningfulReach:  { min: 0.41, max: 0.45 },
+  expectedActiveWorkers:    { min: 106, max: 110 },
+  expectedMeaningfulWorkers: { min: 106, max: 110 },
   expectedSafeguard: 'CLEAR',
   expectedWarningsContain: [],
-  doctrineNote: 'AR=MAR=0.64. AR≥0.40 AND MAR≥0.30 → CLEAR. Nessuna condizione di prevention.',
+  doctrineNote: 'bounded_estimate: 3 categorie, no siti → cf=0.35. lb=80, ub=160, reach=108. AR=MAR=0.432 ≥ 0.40 AND ≥ 0.30 → CLEAR.',
 };
 
 // ── Scenario 2 — Weak activation (FLAGGED) ───────────────────────────────────
@@ -137,13 +137,13 @@ const SCENARIO_03: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.60, max: 0.68 },
+  expectedActivationReach:  { min: 0.51, max: 0.55 },
   expectedMeaningfulReach:  { min: 0.14, max: 0.18 },
-  expectedActiveWorkers:    { min: 155, max: 165 },
+  expectedActiveWorkers:    { min: 132, max: 136 },
   expectedMeaningfulWorkers: { min: 38, max: 42 },
   expectedSafeguard: 'WARNING',
   expectedWarningsContain: ['limited', 'sollievo economico'],
-  doctrineNote: 'Limited buoni pasto → active reach ma non meaningful. MAR=0.16 < 0.30 → WARNING non CLEAR.',
+  doctrineNote: 'bounded_estimate active (2 cats, cf=0.35): lb=120, ub=160, reach=134. Meaningful: 1 eligible (40). MAR=0.16 < 0.30 → WARNING.',
 };
 
 // ── Scenario 4 — Compliance-heavy (FLAGGED) ──────────────────────────────────
@@ -203,13 +203,13 @@ const SCENARIO_05: ActivationScenario = {
     makeRaw('s05-r10', 9, { 'Categoria': 'iniziativa hr varia' }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.65, max: 0.72 },
-  expectedMeaningfulReach:  { min: 0.65, max: 0.72 },
-  expectedActiveWorkers:    { min: 165, max: 175 },
-  expectedMeaningfulWorkers: { min: 165, max: 175 },
+  expectedActivationReach:  { min: 0.44, max: 0.50 },
+  expectedMeaningfulReach:  { min: 0.44, max: 0.50 },
+  expectedActiveWorkers:    { min: 116, max: 120 },
+  expectedMeaningfulWorkers: { min: 116, max: 120 },
   expectedSafeguard: 'WARNING',
   expectedWarningsContain: ['review_required'],
-  doctrineNote: 'AR=MAR≈0.68 supera soglie CLEAR ma 8/10 review_required (80%>25%) → WARNING non CLEAR.',
+  doctrineNote: 'bounded_estimate: 2 eligible (90+80), 2 cats, cf=0.35. lb=90, ub=170, reach=118. AR=MAR=0.472 supera soglie CLEAR ma 8/10 review_required (80%>25%) → WARNING.',
 };
 
 // ── Scenario 6 — Workforce unknown (insufficient_data) ───────────────────────
@@ -233,11 +233,11 @@ const SCENARIO_06: ActivationScenario = {
   // workforcePopulation: intentionally omitted
   expectedActivationReach:  { min: 0, max: 0 },
   expectedMeaningfulReach:  { min: 0, max: 0 },
-  expectedActiveWorkers:    { min: 120, max: 130 },   // uncapped sum
-  expectedMeaningfulWorkers: { min: 120, max: 130 },
+  expectedActiveWorkers:    { min: 94, max: 98 },   // bounded_estimate uncapped: cf=0.35, lb=80, ub=125, reach=96
+  expectedMeaningfulWorkers: { min: 94, max: 98 },
   expectedSafeguard: 'WARNING',
   expectedWarningsContain: ['workforce population non disponibile'],
-  doctrineNote: 'Senza workforce baseline, AR=MAR=0 e safeguard non può essere CLEAR. Dato strutturalmente mancante.',
+  doctrineNote: 'bounded_estimate no-wf: 2 cats, cf=0.35. lb=80, ub=125, reach=96. AR=MAR=0 (workforce mancante). Safeguard non può essere CLEAR.',
 };
 
 // ── Scenario 7 — Department gaps ─────────────────────────────────────────────
@@ -267,13 +267,13 @@ const SCENARIO_07: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.40, max: 0.45 },
-  expectedMeaningfulReach:  { min: 0.40, max: 0.45 },
-  expectedActiveWorkers:    { min: 105, max: 110 },
-  expectedMeaningfulWorkers: { min: 105, max: 110 },
-  expectedSafeguard: 'CLEAR',
+  expectedActivationReach:  { min: 0.28, max: 0.32 },
+  expectedMeaningfulReach:  { min: 0.28, max: 0.32 },
+  expectedActiveWorkers:    { min: 74, max: 78 },
+  expectedMeaningfulWorkers: { min: 74, max: 78 },
+  expectedSafeguard: 'WARNING',
   expectedWarningsContain: [],
-  doctrineNote: 'departmentGaps ha 3 chiavi: ingegneria(60) > sales(35) > operations(12). Gap visibile per dipartimento.',
+  doctrineNote: 'bounded_estimate: 3 cats, no siti (dipartimento ≠ sede) → cf=0.35. lb=60, ub=107, reach=76. AR=MAR=0.304 < 0.40 → WARNING. departmentGaps ha 3 chiavi: ingegneria(60) > sales(35) > operations(12).',
 };
 
 // ── Scenario 8 — Site gaps ───────────────────────────────────────────────────
@@ -303,13 +303,13 @@ const SCENARIO_08: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.46, max: 0.50 },
-  expectedMeaningfulReach:  { min: 0.46, max: 0.50 },
-  expectedActiveWorkers:    { min: 115, max: 122 },
-  expectedMeaningfulWorkers: { min: 115, max: 122 },
+  expectedActivationReach:  { min: 0.38, max: 0.43 },
+  expectedMeaningfulReach:  { min: 0.38, max: 0.43 },
+  expectedActiveWorkers:    { min: 99, max: 103 },
+  expectedMeaningfulWorkers: { min: 99, max: 103 },
   expectedSafeguard: 'CLEAR',
   expectedWarningsContain: [],
-  doctrineNote: 'siteGaps ha 3 chiavi. HQ(85) >> Plant(10). AR=MAR=0.48 ≥ 0.40 e ≥ 0.30 → CLEAR. Gap visibile ma safeguard soddisfatto.',
+  doctrineNote: 'bounded_estimate: 3 cats + 3 siti → cf=0.45. lb=85, ub=120, reach=101. AR=MAR=0.404 ≥ 0.40 → CLEAR. siteGaps: HQ(85) >> Plant(10).',
 };
 
 // ── Scenario 9 — High concentration prevents CLEAR ───────────────────────────
@@ -436,13 +436,13 @@ const SCENARIO_13: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.40, max: 0.44 },
-  expectedMeaningfulReach:  { min: 0.40, max: 0.44 },
-  expectedActiveWorkers:    { min: 103, max: 107 },
-  expectedMeaningfulWorkers: { min: 103, max: 107 },
-  expectedSafeguard: 'CLEAR',
+  expectedActivationReach:  { min: 0.28, max: 0.32 },
+  expectedMeaningfulReach:  { min: 0.28, max: 0.32 },
+  expectedActiveWorkers:    { min: 74, max: 78 },
+  expectedMeaningfulWorkers: { min: 74, max: 78 },
+  expectedSafeguard: 'WARNING',
   expectedWarningsContain: [],
-  doctrineNote: 'Care Economy 3 programmi eligible totale 105 partecipanti. AR=MAR=0.42 → CLEAR.',
+  doctrineNote: 'bounded_estimate: 3 cats (nido/caregiver/eldercare), no siti → cf=0.35. lb=60, ub=105, reach=76. AR=MAR=0.304 < 0.40 → WARNING.',
 };
 
 // ── Scenario 14 — Growth pillar activation ────────────────────────────────────
@@ -464,13 +464,13 @@ const SCENARIO_14: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.66, max: 0.70 },
-  expectedMeaningfulReach:  { min: 0.66, max: 0.70 },
-  expectedActiveWorkers:    { min: 165, max: 172 },
-  expectedMeaningfulWorkers: { min: 165, max: 172 },
+  expectedActivationReach:  { min: 0.55, max: 0.59 },
+  expectedMeaningfulReach:  { min: 0.55, max: 0.59 },
+  expectedActiveWorkers:    { min: 142, max: 146 },
+  expectedMeaningfulWorkers: { min: 142, max: 146 },
   expectedSafeguard: 'CLEAR',
   expectedWarningsContain: [],
-  doctrineNote: 'GROWTH: academy(130) + digital skills(40) = 170 partecipanti eligible. AR=MAR=0.68 → CLEAR.',
+  doctrineNote: 'bounded_estimate: 2 cats (academy/digital skills), cf=0.35. lb=130, ub=170, reach=144. AR=MAR=0.576 → CLEAR.',
 };
 
 // ── Scenario 15 — Impact pillar activation (WARNING) ─────────────────────────
@@ -492,13 +492,13 @@ const SCENARIO_15: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.32, max: 0.36 },
-  expectedMeaningfulReach:  { min: 0.32, max: 0.36 },
-  expectedActiveWorkers:    { min: 82, max: 87 },
-  expectedMeaningfulWorkers: { min: 82, max: 87 },
+  expectedActivationReach:  { min: 0.26, max: 0.30 },
+  expectedMeaningfulReach:  { min: 0.26, max: 0.30 },
+  expectedActiveWorkers:    { min: 67, max: 71 },
+  expectedMeaningfulWorkers: { min: 67, max: 71 },
   expectedSafeguard: 'WARNING',
   expectedWarningsContain: [],
-  doctrineNote: 'IMPACT: 85 partecipanti eligible. AR=MAR=0.34. AR<0.40 → non CLEAR. AR≥0.20 → non FLAGGED. WARNING.',
+  doctrineNote: 'bounded_estimate: 2 cats (volontariato/territoriale), cf=0.35. lb=60, ub=85, reach=69. AR=MAR=0.276. 0.20≤AR<0.40 → WARNING.',
 };
 
 // ── Scenario 16 — Legacy pillar activation ────────────────────────────────────
@@ -520,13 +520,13 @@ const SCENARIO_16: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.64, max: 0.68 },
-  expectedMeaningfulReach:  { min: 0.64, max: 0.68 },
-  expectedActiveWorkers:    { min: 163, max: 167 },
-  expectedMeaningfulWorkers: { min: 163, max: 167 },
+  expectedActivationReach:  { min: 0.45, max: 0.50 },
+  expectedMeaningfulReach:  { min: 0.45, max: 0.50 },
+  expectedActiveWorkers:    { min: 118, max: 122 },
+  expectedMeaningfulWorkers: { min: 118, max: 122 },
   expectedSafeguard: 'CLEAR',
   expectedWarningsContain: [],
-  doctrineNote: 'LEGACY: knowledge transfer(70) + previdenza(95) = 165. AR=MAR=0.66 → CLEAR.',
+  doctrineNote: 'bounded_estimate: 2 cats (knowledge transfer/previdenza), cf=0.35. lb=95, ub=165, reach=120. AR=MAR=0.48 → CLEAR.',
 };
 
 // ── Scenario 17 — Mixed realistic pilot ──────────────────────────────────────
@@ -567,13 +567,13 @@ const SCENARIO_17: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.73, max: 0.77 },
-  expectedMeaningfulReach:  { min: 0.42, max: 0.46 },
-  expectedActiveWorkers:    { min: 183, max: 192 },
-  expectedMeaningfulWorkers: { min: 105, max: 112 },
-  expectedSafeguard: 'CLEAR',
+  expectedActivationReach:  { min: 0.45, max: 0.50 },
+  expectedMeaningfulReach:  { min: 0.26, max: 0.30 },
+  expectedActiveWorkers:    { min: 117, max: 121 },
+  expectedMeaningfulWorkers: { min: 69, max: 73 },
+  expectedSafeguard: 'WARNING',
   expectedWarningsContain: ['blocked', 'limited'],
-  doctrineNote: 'eligible(50+35+25=110) + limited(80) = 190 active. MAR=110/250=0.44≥0.30. review 1/6=17%<25% → CLEAR.',
+  doctrineNote: 'bounded_estimate active (4 cats, cf=0.35): lb=80, ub=190, reach=119. Meaningful (3 eligible, cf=0.35): lb=50, ub=110, reach=71. MAR=0.284 < 0.30 → WARNING.',
 };
 
 // ── Scenario 18 — Duplicate participant risk ──────────────────────────────────
@@ -601,13 +601,13 @@ const SCENARIO_18: ActivationScenario = {
     }),
   ],
   workforcePopulation: 250,
-  expectedActivationReach:  { min: 0.98, max: 1.01 },
-  expectedMeaningfulReach:  { min: 0.98, max: 1.01 },
-  expectedActiveWorkers:    { min: 249, max: 251 },
-  expectedMeaningfulWorkers: { min: 249, max: 251 },
+  expectedActivationReach:  { min: 0.84, max: 0.90 },
+  expectedMeaningfulReach:  { min: 0.84, max: 0.90 },
+  expectedActiveWorkers:    { min: 216, max: 220 },
+  expectedMeaningfulWorkers: { min: 216, max: 220 },
   expectedSafeguard: 'CLEAR',
   expectedWarningsContain: ['doppio conteggio'],
-  doctrineNote: 'rawSum=600 > 250×1.5=375 → warning doppio conteggio. Capped a 250. AR=MAR=1.0 → CLEAR ma warning attivo.',
+  doctrineNote: 'bounded_estimate: 3 cats, cf=0.35. lb=200, ub=min(600,250)=250, reach=218. AR=MAR=0.872 → CLEAR. rawSum(600)>wf×1.5(375) → doppio conteggio warning.',
 };
 
 // ── Scenario 19 — Eligible population, no workforce ──────────────────────────
@@ -624,11 +624,11 @@ const SCENARIO_19: ActivationScenario = {
   // workforcePopulation: intentionally omitted
   expectedActivationReach:  { min: 0, max: 0 },
   expectedMeaningfulReach:  { min: 0, max: 0 },
-  expectedActiveWorkers:    { min: 298, max: 302 },   // uncapped sum
-  expectedMeaningfulWorkers: { min: 298, max: 302 },
+  expectedActiveWorkers:    { min: 168, max: 172 },   // bounded_estimate uncapped: cf=0.35, lb=100, ub=300, reach=170
+  expectedMeaningfulWorkers: { min: 168, max: 172 },
   expectedSafeguard: 'WARNING',
   expectedWarningsContain: ['workforce population non disponibile'],
-  doctrineNote: 'Senza workforce, activeWorkers = somma non cappata (300). AR=MAR=0. Safeguard non può essere CLEAR.',
+  doctrineNote: 'bounded_estimate no-wf: 3 cats, cf=0.35. lb=100, ub=300, reach=170. AR=MAR=0 (workforce mancante). Safeguard non può essere CLEAR.',
 };
 
 // ── Scenario 20 — Zero workforce (safe division handling) ────────────────────
@@ -654,6 +654,146 @@ const SCENARIO_20: ActivationScenario = {
   doctrineNote: 'workforce=0 trattato come assenza dato (non >0). Nessuna divisione per zero. AR=MAR=0. Safeguard=WARNING.',
 };
 
+// ── Sprint 12B scenarios — Reach Quality integration ─────────────────────────
+
+// ── Scenario 21 — Single category cf=0.25 ─────────────────────────────────────
+// Two eligible records, same category → bounded_estimate uses cf=0.25 (high overlap assumed).
+
+const SCENARIO_21: ActivationScenario = {
+  id: 'sc21_single_category_cf025',
+  title: 'Single-category — cf=0.25 conservativo alta sovrapposizione',
+  inputRecords: [
+    makeRaw('s21-r01', 0, {
+      'Nome Iniziativa': 'Academy Upskilling A',
+      'Categoria': 'upskilling',
+      'Partecipanti': '100',
+    }),
+    makeRaw('s21-r02', 1, {
+      'Nome Iniziativa': 'Academy Upskilling B',
+      'Categoria': 'upskilling',
+      'Partecipanti': '60',
+    }),
+  ],
+  workforcePopulation: 250,
+  // cf=0.25. lb=100, ub=min(160,250)=160, reach=round(100+60*0.25)=round(115)=115
+  expectedActivationReach:  { min: 0.44, max: 0.48 },
+  expectedMeaningfulReach:  { min: 0.44, max: 0.48 },
+  expectedActiveWorkers:    { min: 113, max: 117 },
+  expectedMeaningfulWorkers: { min: 113, max: 117 },
+  expectedSafeguard: 'CLEAR',
+  expectedWarningsContain: [],
+  doctrineNote: '1 categoria, no siti → cf=0.25. lb=100, ub=160, reach=115. AR=MAR=0.46 ≥ 0.40 → CLEAR.',
+};
+
+// ── Scenario 22 — Multiple categories + sites cf=0.45 ─────────────────────────
+// Three eligible records with 3 different categories AND 3 different sites → cf=0.45.
+
+const SCENARIO_22: ActivationScenario = {
+  id: 'sc22_multi_cat_site_cf045',
+  title: 'Multi-categoria + multi-sede — cf=0.45 sovrapposizione ridotta',
+  inputRecords: [
+    makeRaw('s22-r01', 0, {
+      'Nome Iniziativa': 'Wellbeing Milano',
+      'Categoria': 'wellbeing volontario',
+      'Partecipanti': '80',
+      'Sede': 'sede_milano',
+    }),
+    makeRaw('s22-r02', 1, {
+      'Nome Iniziativa': 'Upskilling Roma',
+      'Categoria': 'upskilling',
+      'Partecipanti': '30',
+      'Sede': 'sede_roma',
+    }),
+    makeRaw('s22-r03', 2, {
+      'Nome Iniziativa': 'Mentoring Torino',
+      'Categoria': 'mentoring',
+      'Partecipanti': '40',
+      'Sede': 'sede_torino',
+    }),
+  ],
+  workforcePopulation: 250,
+  // cf=0.45. lb=80, ub=min(150,250)=150, reach=round(80+70*0.45)=round(80+31.5)=round(111.5)=112
+  expectedActivationReach:  { min: 0.43, max: 0.47 },
+  expectedMeaningfulReach:  { min: 0.43, max: 0.47 },
+  expectedActiveWorkers:    { min: 110, max: 114 },
+  expectedMeaningfulWorkers: { min: 110, max: 114 },
+  expectedSafeguard: 'CLEAR',
+  expectedWarningsContain: [],
+  doctrineNote: '3 cats + 3 siti → cf=0.45. lb=80, ub=150, reach=112. AR=MAR=0.448 ≥ 0.40 → CLEAR.',
+};
+
+// ── Scenario 23 — Meaningful ≤ active invariant ────────────────────────────────
+// Two limited + one eligible. bounded_estimate active reach (higher) vs meaningful (lower).
+// Tests that meaningfullyActiveWorkers ≤ activeWorkers is always enforced.
+
+const SCENARIO_23: ActivationScenario = {
+  id: 'sc23_meaningful_le_active',
+  title: 'Invariant meaningful ≤ active — limited+eligible vs eligible-only reach',
+  inputRecords: [
+    makeRaw('s23-r01', 0, {
+      'Nome Iniziativa': 'Buoni Pasto',
+      'Categoria': 'buoni pasto',
+      'Partecipanti': '90',
+    }),
+    makeRaw('s23-r02', 1, {
+      'Nome Iniziativa': 'Ticket Restaurant',
+      'Categoria': 'ticket restaurant',
+      'Partecipanti': '70',
+    }),
+    makeRaw('s23-r03', 2, {
+      'Nome Iniziativa': 'Upskilling',
+      'Categoria': 'upskilling',
+      'Partecipanti': '40',
+    }),
+  ],
+  workforcePopulation: 250,
+  // Active (limited+eligible, 3 cats, cf=0.35): lb=90, ub=200, reach=round(90+110*0.35)=round(128.5)=129
+  // Meaningful (1 eligible, single record): lb=ub=40, reach=40
+  // meaningfullyActiveWorkers = min(40, 129) = 40
+  expectedActivationReach:  { min: 0.49, max: 0.53 },
+  expectedMeaningfulReach:  { min: 0.14, max: 0.18 },
+  expectedActiveWorkers:    { min: 127, max: 131 },
+  expectedMeaningfulWorkers: { min: 38, max: 42 },
+  expectedSafeguard: 'WARNING',
+  expectedWarningsContain: ['limited'],
+  doctrineNote: 'Active cf=0.35: lb=90, ub=200, reach=129. Meaningful (1 eligible): reach=40. min(40,129)=40 → invariant enforced. MAR=0.16 → WARNING.',
+};
+
+// ── Scenario 24 — Conservative cf=0.25 with gross=wf ─────────────────────────
+// Three eligible, same category, gross=250=wf. bounded_estimate still < gross.
+// Shows single-category conservatism even when sum equals workforce.
+
+const SCENARIO_24: ActivationScenario = {
+  id: 'sc24_single_cat_gross_equals_wf',
+  title: 'Gross=wf, 1 categoria — cf=0.25 produce stima conservativa',
+  inputRecords: [
+    makeRaw('s24-r01', 0, {
+      'Nome Iniziativa': 'Wellbeing A',
+      'Categoria': 'wellbeing volontario',
+      'Partecipanti': '100',
+    }),
+    makeRaw('s24-r02', 1, {
+      'Nome Iniziativa': 'Wellbeing B',
+      'Categoria': 'wellbeing volontario',
+      'Partecipanti': '80',
+    }),
+    makeRaw('s24-r03', 2, {
+      'Nome Iniziativa': 'Wellbeing C',
+      'Categoria': 'wellbeing volontario',
+      'Partecipanti': '70',
+    }),
+  ],
+  workforcePopulation: 250,
+  // cf=0.25. lb=100, ub=min(250,250)=250, reach=round(100+150*0.25)=round(137.5)=138
+  expectedActivationReach:  { min: 0.53, max: 0.57 },
+  expectedMeaningfulReach:  { min: 0.53, max: 0.57 },
+  expectedActiveWorkers:    { min: 136, max: 140 },
+  expectedMeaningfulWorkers: { min: 136, max: 140 },
+  expectedSafeguard: 'CLEAR',
+  expectedWarningsContain: [],
+  doctrineNote: '1 categoria, cf=0.25. gross=250=wf. lb=100, ub=250, reach=138. AR=MAR=0.552 → CLEAR. Stima conservativa vs somma naïve (250).',
+};
+
 // ── All scenarios ─────────────────────────────────────────────────────────────
 
 export const ACTIVATION_SCENARIOS: ActivationScenario[] = [
@@ -661,6 +801,7 @@ export const ACTIVATION_SCENARIOS: ActivationScenario[] = [
   SCENARIO_06, SCENARIO_07, SCENARIO_08, SCENARIO_09, SCENARIO_10,
   SCENARIO_11, SCENARIO_12, SCENARIO_13, SCENARIO_14, SCENARIO_15,
   SCENARIO_16, SCENARIO_17, SCENARIO_18, SCENARIO_19, SCENARIO_20,
+  SCENARIO_21, SCENARIO_22, SCENARIO_23, SCENARIO_24,
 ];
 
 // ── Runner ────────────────────────────────────────────────────────────────────

@@ -492,3 +492,36 @@ export type EventContributionScope =
   | 'excluded_by_design'        // Blocked events — compliance obligations, 0 contribution
   | 'out_of_perimeter'          // Worker-private events — outside company-enabled scope
   | 'insufficient_evidence';    // Evidence too weak to determine contribution scope
+
+// ── Part 9 — Reach Quality types (Sprint 12B) ─────────────────────────────────
+//
+// ReachQualityResult models how the Activation Engine estimates unique worker reach
+// from aggregate participation data (no individual records in Foundation Light v0).
+// Identity keys are used only for counting — never returned in any output.
+
+// Method used to estimate unique worker reach.
+// identity_deduplication: Set<string> of normalized identity keys (wid/email/name) — count only, keys never returned.
+// aggregate_unique: explicit unique participant count provided in record field (partecipanti_unici etc.).
+// bounded_estimate: conservative interval [lb, ub] estimate from participant counts and category/site diversity.
+// none: insufficient data — reach cannot be estimated.
+export type ReachMethod =
+  | 'identity_deduplication'
+  | 'aggregate_unique'
+  | 'bounded_estimate'
+  | 'none';
+
+// Risk of overcounting unique workers in the reach estimate.
+export type OvercountRisk = 'low' | 'medium' | 'high' | 'unknown';
+
+export interface ReachQualityResult {
+  method: ReachMethod;
+  lowerBound: number;
+  upperBound: number;
+  // Conservative point estimate used for activation reach preview in Foundation Light v0.
+  // For bounded_estimate: lb + (ub − lb) × conservativeFactor.
+  // For identity_deduplication and aggregate_unique: equals both bounds.
+  selectedReachForPreview: number;
+  overcountRisk: OvercountRisk;
+  conservativeFactor: number;  // 0 for non-bounded methods; 0.25–0.50 for bounded_estimate
+  rationale: string;
+}

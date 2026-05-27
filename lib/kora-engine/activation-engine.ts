@@ -27,6 +27,7 @@ import type {
 } from './types';
 import { classifyEligibilityBatch } from './eligibility-gate';
 import { isRawUploadedRecord } from './pillar-mapping';
+import { computeReachQuality } from './reach-quality';
 
 // ── Version metadata ──────────────────────────────────────────────────────────
 
@@ -324,9 +325,43 @@ export function computeActivation(params: {
 
   const wfKnown = workforcePopulation > 0;
 
-  // 3. Process records — aggregate by eligibility bucket
-  let nonBlockedParticipants = 0;  // eligible + limited (active reach proxy)
-  let eligibleParticipants   = 0;  // eligible only (meaningful activation)
+  // 3. Build modifiedEligibility: mark sensitive records as blocked before reach computation.
+  // This ensures hasSensitiveSignal records are excluded from computeReachQuality without
+  // exposing sensitive signals into the reach engine.
+  const modifiedEligibility: EligibilityResult[] = records.map((_, i) => {
+    const base = eligibilityResults[i] ?? {
+      recordId: getRecordId(records[i]),
+      status: 'review_required' as const,
+      reason: 'no eligibility result',
+      doctrineReference: '',
+      confidence: 0,
+      impactTreatment: 'excluded' as const,
+      budgetTreatmentSuggestion: 'excluded_no_evidence' as const,
+      reviewRequired: true,
+    };
+    if (fields[i].hasSensitiveSignal) {
+      return { ...base, status: 'blocked' as const };
+    }
+    return base;
+  });
+
+  // 4. Reach quality — bounded_estimate replaces naive participant sum.
+  // Called twice: once for active reach (eligible+limited), once for meaningful reach (eligible only).
+  const activeReachQuality = computeReachQuality({
+    records,
+    eligibilityResults: modifiedEligibility,
+    workforcePopulation: wfKnown ? workforcePopulation : undefined,
+    meaningfulOnly: false,
+  });
+  const meaningfulReachQuality = computeReachQuality({
+    records,
+    eligibilityResults: modifiedEligibility,
+    workforcePopulation: wfKnown ? workforcePopulation : undefined,
+    meaningfulOnly: true,
+  });
+
+  // 5. Process records — aggregate auxiliary signals (dept/site maps, concentration, quality signals,
+  //    warning counts). rawParticipantSum retained for duplicate-detection heuristic.
   let reviewRequiredCount    = 0;
   let missingParticipantCount = 0;
   let sensitiveExcludedCount  = 0;
@@ -341,7 +376,7 @@ export function computeActivation(params: {
   let recurrenceCount  = 0;
   let continuityCount  = 0;
   let totalDurationHours = 0;
-  let rawParticipantSum  = 0;  // for duplicate-detection heuristic
+  let rawParticipantSum  = 0;
 
   for (let i = 0; i < records.length; i++) {
     const f          = fields[i];
@@ -360,7 +395,7 @@ export function computeActivation(params: {
     if (f.continuitySignal) continuityCount++;
     if (f.durationHours !== null) totalDurationHours += f.durationHours;
 
-    // Individual-sensitive: exclude immediately, log warning once per record
+    // Individual-sensitive: warn and skip contribution
     if (f.hasSensitiveSignal) {
       sensitiveExcludedCount++;
       warnings.push(
@@ -372,13 +407,11 @@ export function computeActivation(params: {
 
     const status = eligibility?.status ?? 'review_required';
 
-    // Blocked by design: no activation contribution
     if (status === 'blocked') {
       blockedCount++;
       continue;
     }
 
-    // review_required: conservative — excluded from all activation counts
     if (status === 'review_required') {
       reviewRequiredCount++;
       continue;
@@ -394,21 +427,16 @@ export function computeActivation(params: {
     rawParticipantSum += pax;
 
     if (status === 'limited') {
-      // Limited counts toward active reach ONLY — not meaningful activation
       limitedCount++;
-      nonBlockedParticipants += pax;
       if (f.department) deptMap.set(f.department, (deptMap.get(f.department) ?? 0) + pax);
       if (f.site)       siteMap.set(f.site,       (siteMap.get(f.site)       ?? 0) + pax);
     } else if (status === 'eligible') {
-      // Eligible counts toward both active reach and meaningful activation
-      nonBlockedParticipants += pax;
-      eligibleParticipants   += pax;
       if (f.department) deptMap.set(f.department, (deptMap.get(f.department) ?? 0) + pax);
       if (f.site)       siteMap.set(f.site,       (siteMap.get(f.site)       ?? 0) + pax);
     }
   }
 
-  // 4. Cap at workforcePopulation — warn on likely double-counting
+  // 6. Duplicate-counting heuristic — warn when raw participant sum >> workforce
   if (wfKnown && rawParticipantSum > workforcePopulation * 1.5) {
     warnings.push(
       `Potenziale doppio conteggio rilevato: somma partecipanti nei record (${rawParticipantSum}) ` +
@@ -418,16 +446,20 @@ export function computeActivation(params: {
     );
   }
 
+  // 7. Apply reach quality results for activeWorkers and meaningfullyActiveWorkers.
+  // bounded_estimate gives a conservative unique-reach estimate that avoids naive pax summation.
   const activeWorkers = wfKnown
-    ? Math.min(nonBlockedParticipants, workforcePopulation)
-    : nonBlockedParticipants;
+    ? Math.min(activeReachQuality.selectedReachForPreview, workforcePopulation)
+    : activeReachQuality.selectedReachForPreview;
 
-  // Meaningful ≤ active by construction (eligible ⊆ non-blocked, both capped at wf)
-  const meaningfullyActiveWorkers = wfKnown
-    ? Math.min(eligibleParticipants, workforcePopulation)
-    : eligibleParticipants;
+  // Meaningful ≤ active invariant enforced explicitly — the two reach quality calls are independent.
+  const meaningfullyActiveWorkers = Math.min(
+    meaningfulReachQuality.selectedReachForPreview,
+    activeWorkers,
+    wfKnown ? workforcePopulation : Infinity,
+  );
 
-  // 5. Reach metrics
+  // 8. Reach metrics
   const activationReach           = wfKnown ? activeWorkers           / workforcePopulation : 0;
   const meaningfulActivationReach = wfKnown ? meaningfullyActiveWorkers / workforcePopulation : 0;
   const neverActivatedWorkers     = wfKnown ? Math.max(0, workforcePopulation - activeWorkers) : 0;
@@ -438,7 +470,7 @@ export function computeActivation(params: {
     );
   }
 
-  // 6. Concentration data warnings
+  // 9. Concentration data warnings
   if (concentrationTopShare !== null && concentrationTopShare > PREVENT_CLEAR_TOP_CONC) {
     warnings.push(
       `Alta concentrazione attivazione: top decile genera ${Math.round(concentrationTopShare * 100)}% ` +
@@ -465,7 +497,7 @@ export function computeActivation(params: {
     );
   }
 
-  // 7. Department/site gap data warnings
+  // 10. Department/site gap data warnings
   if (deptMap.size === 0) {
     warnings.push(
       'Dati per dipartimento non disponibili. ' +
@@ -478,7 +510,7 @@ export function computeActivation(params: {
     );
   }
 
-  // 8. Excluded-record warnings (batched summaries)
+  // 11. Excluded-record warnings (batched summaries)
   if (reviewRequiredCount > 0) {
     const pct = Math.round((reviewRequiredCount / records.length) * 100);
     warnings.push(
@@ -510,7 +542,7 @@ export function computeActivation(params: {
     );
   }
 
-  // 9. Activation quality signals (informational — for future Activation Quality macroblock)
+  // 12. Activation quality signals (informational — for future Activation Quality macroblock)
   if (recurrenceCount > 0) {
     warnings.push(
       `[SEGNALE QUALITÀ] ${recurrenceCount} record con segnali di ricorrenza / frequenza. ` +
@@ -528,7 +560,7 @@ export function computeActivation(params: {
     );
   }
 
-  // 10. Safeguard status — D-21 thresholds
+  // 13. Safeguard status — D-21 thresholds
   const reviewRequiredRatio = records.length > 0 ? reviewRequiredCount / records.length : 0;
   const highConcentration   = concentrationTopShare !== null && concentrationTopShare > PREVENT_CLEAR_TOP_CONC;
   const lowBottom50         = bottomFiftyShare !== null && bottomFiftyShare < PREVENT_CLEAR_LOW_BOTTOM50;
