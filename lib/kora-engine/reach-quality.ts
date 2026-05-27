@@ -1,22 +1,28 @@
 // lib/kora-engine/reach-quality.ts
-// Reach Quality Engine v0.1 — estimates unique worker reach from aggregate participation data.
+// Reach Quality Engine v0.2 — estimates unique worker reach from aggregate participation data.
 //
-// Supports 4 methods in priority order:
-//   1. identity_deduplication — Set<string> of normalized identity keys (worker_id/email/name)
-//   2. aggregate_unique — explicit unique participant field in record (partecipanti_unici etc.)
-//   3. bounded_estimate — conservative interval from participation counts + category/site diversity
-//   4. none — data insufficient to estimate reach
+// Supports 5 methods in priority order:
+//   1. identity_deduplication — union-find alias resolution across wid/email/nome+cognome signals
+//   2. aggregate_unique — single record with explicit unique participant count (partecipanti_unici etc.)
+//   3. aggregate_unique_bounded — multiple records with unique counts: conservative estimate using auFactor
+//   4. bounded_estimate — conservative interval from participation counts + category/site diversity
+//   5. none — data insufficient to estimate reach
 //
-// Privacy invariant: identity keys are used only for Set counting — never returned in any output.
+// Privacy invariant: identity signals exist only inside the deduplication block — never returned.
 // All outputs are aggregate counts. No individual key, name, or identifier is ever exposed.
 //
-// bounded_estimate conservative factor:
+// bounded_estimate conservative factor (cf):
 //   cf = 0.25 — single category (high overlap risk)
 //   cf = 0.35 — multiple categories (moderate overlap risk)
 //   cf = 0.45 — multiple categories AND multiple sites (lower overlap risk)
 //   cap = 0.50 (safety ceiling)
-// selectedReachForPreview = round(lb + (ub − lb) × cf)
-// where lb = max single-record pax, ub = min(gross, wf) if wf known, else gross.
+//
+// aggregate_unique_bounded factor (auFactor):
+//   au = 0.25 — same category (high overlap risk)
+//   au = 0.35 — no category info (default)
+//   au = 0.50 — distinct categories or sites (lower overlap risk)
+// selectedReachForPreview = round(lb + (ub − lb) × factor)
+// where lb = max single-record value, ub = min(sum, wf) if wf known, else sum.
 
 import type {
   RawUploadedRecord,
@@ -161,6 +167,41 @@ function selectCF(categories: Set<string>, sites: Set<string>): number {
   return CF_DEFAULT;
 }
 
+// ── Aggregate unique factor ───────────────────────────────────────────────────
+
+const AU_SINGLE_CAT = 0.25;  // same category — high overlap risk
+const AU_DEFAULT    = 0.35;  // no category info — default
+const AU_DISTINCT   = 0.50;  // distinct categories or sites — lower overlap risk
+
+function selectAuFactor(categories: Set<string>, sites: Set<string>): number {
+  if (categories.size > 1 || sites.size > 1) return AU_DISTINCT;
+  if (categories.size === 1)                  return AU_SINGLE_CAT;
+  return AU_DEFAULT;
+}
+
+// ── Union-find helpers for cross-scheme identity resolution ───────────────────
+// Privacy invariant: signal strings are scoped to computeReachQuality — never returned.
+
+function ufFind(parent: Map<string, string>, x: string): string {
+  let root = x;
+  while (parent.get(root) !== root) root = parent.get(root)!;
+  let cur = x;
+  while (cur !== root) { const next = parent.get(cur)!; parent.set(cur, root); cur = next; }
+  return root;
+}
+
+function ufUnion(parent: Map<string, string>, a: string, b: string): void {
+  const ra = ufFind(parent, a);
+  const rb = ufFind(parent, b);
+  if (ra !== rb) parent.set(ra, rb);
+}
+
+function ufUniqueRoots(parent: Map<string, string>): number {
+  const roots = new Set<string>();
+  for (const key of parent.keys()) roots.add(ufFind(parent, key));
+  return roots.size;
+}
+
 // ── Main function ─────────────────────────────────────────────────────────────
 
 export function computeReachQuality(params: {
@@ -196,18 +237,40 @@ export function computeReachQuality(params: {
     };
   }
 
-  // ── Step 2: identity_deduplication — highest priority ────────────────────
-  // Privacy invariant: identitySet keys are never returned in any output field.
-  // Each record contributes at most ONE canonical key (wid > email > ns) to prevent
-  // a single record with multiple identity fields from inflating the unique count.
-  const identitySet = new Set<string>();
+  // ── Step 2: identity_deduplication — union-find alias resolution ─────────
+  // Each record contributes all identity signals it contains (wid, email, nome+cognome).
+  // Signals within the same record are unioned (same physical person).
+  // Cross-record: signals are unioned only when a record carries multiple signals already
+  // present from other records, enabling alias bridges without exposing identity values.
+  // Privacy: all signal strings are scoped to this block — never returned in any field.
+  const ufParent = new Map<string, string>();
+  const schemesSeen = new Set<'wid' | 'email' | 'ns'>();
+  let missingIdentityCount = 0;
+
   for (const f of includedFields) {
-    if (f.workerId)              identitySet.add(`wid:${f.workerId}`);
-    else if (f.email)            identitySet.add(`email:${f.email}`);
-    else if (f.nome && f.cognome) identitySet.add(`ns:${f.nome}|${f.cognome}`);
+    const signals: string[] = [];
+    if (f.workerId)          { signals.push(`wid:${f.workerId}`);         schemesSeen.add('wid'); }
+    if (f.email)             { signals.push(`email:${f.email}`);          schemesSeen.add('email'); }
+    if (f.nome && f.cognome) { signals.push(`ns:${f.nome}|${f.cognome}`); schemesSeen.add('ns'); }
+
+    if (signals.length === 0) { missingIdentityCount++; continue; }
+
+    for (const s of signals) { if (!ufParent.has(s)) ufParent.set(s, s); }
+    for (let i = 1; i < signals.length; i++) ufUnion(ufParent, signals[0], signals[i]);
   }
-  if (identitySet.size > 0) {
-    const reach = wf !== null ? Math.min(identitySet.size, wf) : identitySet.size;
+
+  if (ufParent.size > 0) {
+    const uniqueCount = ufUniqueRoots(ufParent);
+    const reach = wf !== null ? Math.min(uniqueCount, wf) : uniqueCount;
+
+    const warnings: string[] = [];
+    if (schemesSeen.size > 1)
+      warnings.push('Schemi identità misti rilevati: risoluzione alias applicata su record con segnali multipli.');
+    if (schemesSeen.size === 1 && schemesSeen.has('ns'))
+      warnings.push('Solo nome+cognome disponibile. Rischio omonimia: verificare con ID univoci.');
+    if (missingIdentityCount > 0)
+      warnings.push(`${missingIdentityCount} record privi di segnale identità non inclusi nella deduplication.`);
+
     return {
       method: 'identity_deduplication',
       lowerBound: reach,
@@ -216,30 +279,62 @@ export function computeReachQuality(params: {
       overcountRisk: 'low',
       conservativeFactor: 0,
       rationale:
-        `${identitySet.size} lavoratori unici identificati tramite chiave identità. ` +
-        'Chiavi identità usate solo per conteggio — non incluse in nessun output.',
+        `${uniqueCount} lavoratori unici (risoluzione alias union-find). ` +
+        `Schemi: ${[...schemesSeen].join('+')}. ` +
+        'Segnali identità usati solo per conteggio — non inclusi in nessun output.' +
+        (warnings.length > 0 ? ' ' + warnings.join(' ') : ''),
     };
   }
 
-  // ── Step 3: aggregate_unique — explicit deduped count ────────────────────
-  const hasUnique = includedFields.some((f) => f.uniquePax !== null && f.uniquePax > 0);
-  if (hasUnique) {
-    const uniqueSum = includedFields.reduce(
-      (sum, f) => sum + (f.uniquePax !== null && f.uniquePax > 0 ? f.uniquePax : (f.pax ?? 0)),
-      0,
-    );
-    const reach = wf !== null ? Math.min(uniqueSum, wf) : uniqueSum;
+  // ── Step 3: aggregate_unique / aggregate_unique_bounded ──────────────────
+  // Single unique-count source: treat as verified reach, no cross-record overlap possible.
+  // Multiple unique-count sources: apply auFactor-based bounded estimate to correct for overlap.
+  const recordsWithUnique = includedFields.filter((f) => f.uniquePax !== null && f.uniquePax > 0);
+
+  if (recordsWithUnique.length === 1) {
+    const uPax = recordsWithUnique[0].uniquePax!;
+    const reach = wf !== null ? Math.min(uPax, wf) : uPax;
     return {
       method: 'aggregate_unique',
       lowerBound: reach,
       upperBound: reach,
       selectedReachForPreview: reach,
-      overcountRisk: 'medium',
+      overcountRisk: 'low',
       conservativeFactor: 0,
       rationale:
-        `Partecipanti unici dichiarati dal sistema sorgente: ${uniqueSum}. ` +
-        (wf !== null && reach < uniqueSum ? `Cappato a forza lavoro: ${reach}. ` : '') +
-        'Sovrapposizione cross-record non eliminata.',
+        `Partecipanti unici dichiarati: ${uPax}.` +
+        (wf !== null && reach < uPax ? ` Cappato a forza lavoro: ${reach}.` : '') +
+        ' Fonte singola — nessuna sovrapposizione cross-record.',
+    };
+  }
+
+  if (recordsWithUnique.length > 1) {
+    const auCats  = new Set<string>();
+    const auSites = new Set<string>();
+    for (const f of recordsWithUnique) {
+      if (f.category) auCats.add(f.category);
+      if (f.site)     auSites.add(f.site);
+    }
+    const auFactor  = selectAuFactor(auCats, auSites);
+    const uniqueSum = recordsWithUnique.reduce((sum, f) => sum + f.uniquePax!, 0);
+    const ubRaw     = wf !== null ? Math.min(uniqueSum, wf) : uniqueSum;
+    const lbRaw     = Math.max(...recordsWithUnique.map((f) => f.uniquePax!));
+    const lb        = Math.min(lbRaw, ubRaw);
+    const selected  = Math.round(lb + (ubRaw - lb) * auFactor);
+    return {
+      method: 'aggregate_unique_bounded',
+      lowerBound: lb,
+      upperBound: ubRaw,
+      selectedReachForPreview: selected,
+      overcountRisk: 'medium',
+      conservativeFactor: auFactor,
+      rationale:
+        `${recordsWithUnique.length} record con partecipanti unici dichiarati. ` +
+        `Sum grezzo: ${uniqueSum}. auFactor=${auFactor} ` +
+        `(${auCats.size} categori${auCats.size === 1 ? 'a' : 'e'}, ` +
+        `${auSites.size} sit${auSites.size === 1 ? 'o' : 'i'}). ` +
+        `lb=${lb}, ub=${ubRaw}, reach=${selected}. ` +
+        'Conteggi unici multipli potrebbero includere lavoratori sovrapposti.',
     };
   }
 

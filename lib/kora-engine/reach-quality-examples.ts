@@ -1,7 +1,7 @@
 // lib/kora-engine/reach-quality-examples.ts
-// 18 reference scenarios for computeReachQuality v0.1.
-// Covers all 4 methods, conservative factor progression (0.25 → 0.35 → 0.45),
-// workforce caps, identity deduplication, aggregate_unique, and edge cases.
+// 26 reference scenarios for computeReachQuality v0.2.
+// Covers all 5 methods, cf progression (0.25→0.35→0.45), auFactor (0.25→0.35→0.50),
+// workforce caps, union-find identity resolution, aggregate_unique_bounded, and edge cases.
 // Use with runReachQualityExamples() for automated verification.
 
 import type {
@@ -194,23 +194,25 @@ const RQ07: ReachQualityScenario = {
   expectedMethod: 'identity_deduplication',
   expectedSelectedReach: { min: 1, max: 3 },
   expectedOvercountRisk: 'low',
-  doctrineNote: 'worker_id w001+w002 → Set.size=2. Keys mai restituiti in output. reach=2.',
+  doctrineNote: 'worker_id w001+w002 → union-find identity grouping resolves the distinct workers without exposing identity values. reach=2.',
 };
 
-// rq08 — Records with unique_participants field → aggregate_unique.
+// rq08 — Two records each with partecipanti_unici, distinct categories → aggregate_unique_bounded, auFactor=0.50.
 const RQ08: ReachQualityScenario = {
-  id: 'rq08_aggregate_unique',
-  title: 'partecipanti_unici presenti — aggregate_unique, sum=50',
+  id: 'rq08_aggregate_unique_bounded',
+  title: 'partecipanti_unici su record multipli — aggregate_unique_bounded, auFactor=0.50',
   records: [
     makeRaw('rq08-r01', { 'Categoria': 'upskilling', 'Partecipanti': '40', 'partecipanti_unici': '30' }),
     makeRaw('rq08-r02', { 'Categoria': 'mentoring',  'Partecipanti': '30', 'partecipanti_unici': '20' }),
   ],
   eligibilityStatuses: ['eligible', 'eligible'],
   workforcePopulation: 100,
-  expectedMethod: 'aggregate_unique',
-  expectedSelectedReach: { min: 49, max: 51 },
+  expectedMethod: 'aggregate_unique_bounded',
+  // lb=max(30,20)=30, ub=min(50,100)=50, auFactor=0.50 (distinct categories: upskilling+mentoring)
+  // selected=round(30+(50-30)×0.50)=round(30+10)=40
+  expectedSelectedReach: { min: 38, max: 42 },
   expectedOvercountRisk: 'medium',
-  doctrineNote: 'unique_pax: 30+20=50. Preferito su bounded_estimate. reach=50. Sovrapposizione cross-record non eliminata.',
+  doctrineNote: 'unique_pax multipli: lb=max(30,20)=30, ub=min(50,100)=50. Categorie distinte → auFactor=0.50. reach=round(30+10)=40.',
 };
 
 // rq09 — All records blocked → none method, reach=0.
@@ -301,7 +303,7 @@ const RQ13: ReachQualityScenario = {
   // Set: {wid:w001, wid:w002} → size=2
   expectedSelectedReach: { min: 1, max: 3 },
   expectedOvercountRisk: 'low',
-  doctrineNote: 'w001 appare 2 volte → Set.size=2. reach=2. Chiavi mai restituite in output.',
+  doctrineNote: 'w001 appare 2 volte → union-find identity grouping resolves the distinct workers without exposing identity values. reach=2.',
 };
 
 // rq14 — All records have null participants → none method.
@@ -386,12 +388,150 @@ const RQ18: ReachQualityScenario = {
   doctrineNote: '2 categorie, no siti → cf=0.35 (non 0.45). lb=60, ub=100, reach=74.',
 };
 
+// rq19 — wid + email on same record → union-find merges to 1 group, reach=1.
+const RQ19: ReachQualityScenario = {
+  id: 'rq19_alias_same_record_wid_email',
+  title: 'worker_id + email nello stesso record — 1 gruppo, reach=1',
+  records: [
+    makeRaw('rq19-r01', { 'worker_id': 'w001', 'email': 'mario@co.it', 'Categoria': 'upskilling', 'Partecipanti': '1' }),
+  ],
+  eligibilityStatuses: ['eligible'],
+  workforcePopulation: 50,
+  expectedMethod: 'identity_deduplication',
+  // wid:w001 + email:mario@co.it → ufUnion → 1 root → reach=1
+  expectedSelectedReach: { min: 1, max: 1 },
+  expectedOvercountRisk: 'low',
+  doctrineNote: 'wid:w001 + email:mario@co.it stesso record → union-find unisce in 1 gruppo. reach=1.',
+};
+
+// rq20 — Two workers with different identity schemes on separate records → 2 groups.
+const RQ20: ReachQualityScenario = {
+  id: 'rq20_two_workers_mixed_schemes',
+  title: 'Due lavoratori con schemi diversi su record separati — 2 gruppi',
+  records: [
+    makeRaw('rq20-r01', { 'worker_id': 'w001', 'Categoria': 'upskilling', 'Partecipanti': '1' }),
+    makeRaw('rq20-r02', { 'email': 'bianchi@co.it', 'Categoria': 'mentoring', 'Partecipanti': '1' }),
+  ],
+  eligibilityStatuses: ['eligible', 'eligible'],
+  workforcePopulation: 50,
+  expectedMethod: 'identity_deduplication',
+  // wid:w001 on r01, email:bianchi on r02 — no record links them → 2 separate groups
+  expectedSelectedReach: { min: 1, max: 3 },
+  expectedOvercountRisk: 'low',
+  doctrineNote: 'wid:w001 e email:bianchi su record separati → nessun link → 2 gruppi distinti. reach=2.',
+};
+
+// rq21 — Partial identity: 2 records with wid, 1 missing any signal → warn on missing, reach from 2.
+const RQ21: ReachQualityScenario = {
+  id: 'rq21_partial_identity_missing',
+  title: 'Identità parziale — 2 wid + 1 record senza segnale',
+  records: [
+    makeRaw('rq21-r01', { 'worker_id': 'w001', 'Categoria': 'upskilling',  'Partecipanti': '1' }),
+    makeRaw('rq21-r02', { 'worker_id': 'w002', 'Categoria': 'mentoring',   'Partecipanti': '1' }),
+    makeRaw('rq21-r03', { 'Categoria': 'volontariato', 'Partecipanti': '30' }),
+  ],
+  eligibilityStatuses: ['eligible', 'eligible', 'eligible'],
+  workforcePopulation: 100,
+  expectedMethod: 'identity_deduplication',
+  // r01+r02 → 2 groups; r03 no signal → missingIdentityCount=1, warning in rationale
+  expectedSelectedReach: { min: 1, max: 3 },
+  expectedOvercountRisk: 'low',
+  doctrineNote: 'r01/r02 con wid → 2 gruppi. r03 senza segnale → warning missingIdentityCount=1. reach=2.',
+};
+
+// rq22 — Same nome+cognome repeated in two records → 1 group (deduped).
+const RQ22: ReachQualityScenario = {
+  id: 'rq22_name_dedup_repeated',
+  title: 'Nome+cognome ripetuto in due record — 1 lavoratore unico',
+  records: [
+    makeRaw('rq22-r01', { 'nome': 'Mario', 'cognome': 'Rossi', 'Categoria': 'upskilling', 'Partecipanti': '1' }),
+    makeRaw('rq22-r02', { 'nome': 'Mario', 'cognome': 'Rossi', 'Categoria': 'mentoring',  'Partecipanti': '1' }),
+  ],
+  eligibilityStatuses: ['eligible', 'eligible'],
+  workforcePopulation: 50,
+  expectedMethod: 'identity_deduplication',
+  // ns:mario|rossi appears twice → same node → 1 root → reach=1
+  expectedSelectedReach: { min: 1, max: 1 },
+  expectedOvercountRisk: 'low',
+  doctrineNote: 'ns:mario|rossi in entrambi i record → stesso nodo union-find → 1 gruppo. reach=1.',
+};
+
+// rq23 — Only nome+cognome as identity scheme → name-fallback warning in rationale, reach=2.
+const RQ23: ReachQualityScenario = {
+  id: 'rq23_name_only_fallback_warning',
+  title: 'Solo nome+cognome come identità — warning fallback, reach=2',
+  records: [
+    makeRaw('rq23-r01', { 'nome': 'Mario', 'cognome': 'Rossi',   'Categoria': 'upskilling', 'Partecipanti': '1' }),
+    makeRaw('rq23-r02', { 'nome': 'Luigi', 'cognome': 'Bianchi', 'Categoria': 'mentoring',  'Partecipanti': '1' }),
+  ],
+  eligibilityStatuses: ['eligible', 'eligible'],
+  workforcePopulation: 50,
+  expectedMethod: 'identity_deduplication',
+  // ns:mario|rossi + ns:luigi|bianchi → 2 distinct groups; schemesSeen={'ns'} → name-only warning
+  expectedSelectedReach: { min: 1, max: 3 },
+  expectedOvercountRisk: 'low',
+  doctrineNote: '2 gruppi nome+cognome distinti. Solo schema "ns" rilevato → warning omonimia nel rationale.',
+};
+
+// rq24 — Multiple aggregate unique, SAME category → auFactor=0.25 (most conservative).
+const RQ24: ReachQualityScenario = {
+  id: 'rq24_aggregate_unique_same_cat',
+  title: 'Unique multipli stessa categoria — auFactor=0.25 conservativo',
+  records: [
+    makeRaw('rq24-r01', { 'Categoria': 'upskilling', 'Partecipanti': '40', 'partecipanti_unici': '30' }),
+    makeRaw('rq24-r02', { 'Categoria': 'upskilling', 'Partecipanti': '30', 'partecipanti_unici': '20' }),
+  ],
+  eligibilityStatuses: ['eligible', 'eligible'],
+  workforcePopulation: 100,
+  expectedMethod: 'aggregate_unique_bounded',
+  // lb=max(30,20)=30, ub=min(50,100)=50, auFactor=0.25 (single category)
+  // selected=round(30+(50-30)×0.25)=round(30+5)=35
+  expectedSelectedReach: { min: 34, max: 36 },
+  expectedOvercountRisk: 'medium',
+  doctrineNote: 'Stessa categoria (upskilling) → auFactor=0.25. lb=30, ub=50, reach=round(30+5)=35.',
+};
+
+// rq25 — Multiple aggregate unique, distinct categories + sites → auFactor=0.50 (less conservative).
+const RQ25: ReachQualityScenario = {
+  id: 'rq25_aggregate_unique_distinct',
+  title: 'Unique multipli categorie/siti distinti — auFactor=0.50',
+  records: [
+    makeRaw('rq25-r01', { 'Categoria': 'upskilling', 'Sede': 'hq_milano', 'Partecipanti': '40', 'partecipanti_unici': '30' }),
+    makeRaw('rq25-r02', { 'Categoria': 'mentoring',  'Sede': 'plant_bg',  'Partecipanti': '25', 'partecipanti_unici': '20' }),
+  ],
+  eligibilityStatuses: ['eligible', 'eligible'],
+  workforcePopulation: 100,
+  expectedMethod: 'aggregate_unique_bounded',
+  // lb=max(30,20)=30, ub=min(50,100)=50, auFactor=0.50 (distinct categories)
+  // selected=round(30+(50-30)×0.50)=round(30+10)=40
+  expectedSelectedReach: { min: 39, max: 41 },
+  expectedOvercountRisk: 'medium',
+  doctrineNote: 'Categorie distinte (upskilling+mentoring) + siti distinti → auFactor=0.50. lb=30, ub=50, reach=40.',
+};
+
+// rq26 — Single record with partecipanti_unici → aggregate_unique, overcountRisk=low.
+const RQ26: ReachQualityScenario = {
+  id: 'rq26_single_aggregate_unique',
+  title: 'Singolo record con partecipanti_unici — aggregate_unique, overcountRisk=low',
+  records: [
+    makeRaw('rq26-r01', { 'Categoria': 'benessere', 'Partecipanti': '60', 'partecipanti_unici': '45' }),
+  ],
+  eligibilityStatuses: ['eligible'],
+  workforcePopulation: 100,
+  expectedMethod: 'aggregate_unique',
+  // single source: reach=min(45,100)=45
+  expectedSelectedReach: { min: 44, max: 46 },
+  expectedOvercountRisk: 'low',
+  doctrineNote: 'Fonte singola: partecipanti_unici=45. Nessuna sovrapposizione cross-record. reach=45, overcountRisk=low.',
+};
+
 // ── All scenarios ─────────────────────────────────────────────────────────────
 
 export const REACH_QUALITY_SCENARIOS: ReachQualityScenario[] = [
   RQ01, RQ02, RQ03, RQ04, RQ05, RQ06,
   RQ07, RQ08, RQ09, RQ10, RQ11, RQ12,
   RQ13, RQ14, RQ15, RQ16, RQ17, RQ18,
+  RQ19, RQ20, RQ21, RQ22, RQ23, RQ24, RQ25, RQ26,
 ];
 
 // ── Runner ────────────────────────────────────────────────────────────────────

@@ -500,13 +500,15 @@ export type EventContributionScope =
 // Identity keys are used only for counting — never returned in any output.
 
 // Method used to estimate unique worker reach.
-// identity_deduplication: Set<string> of normalized identity keys (wid/email/name) — count only, keys never returned.
-// aggregate_unique: explicit unique participant count provided in record field (partecipanti_unici etc.).
-// bounded_estimate: conservative interval [lb, ub] estimate from participant counts and category/site diversity.
+// identity_deduplication: union-find alias resolution across wid/email/nome+cognome — count only, signals never returned.
+// aggregate_unique: single record with explicit unique participant count (partecipanti_unici etc.) — treated as verified.
+// aggregate_unique_bounded: multiple records with unique counts — conservative estimate using auFactor to correct overlap.
+// bounded_estimate: conservative interval [lb, ub] from participation counts and category/site diversity.
 // none: insufficient data — reach cannot be estimated.
 export type ReachMethod =
   | 'identity_deduplication'
   | 'aggregate_unique'
+  | 'aggregate_unique_bounded'
   | 'bounded_estimate'
   | 'none';
 
@@ -522,6 +524,6 @@ export interface ReachQualityResult {
   // For identity_deduplication and aggregate_unique: equals both bounds.
   selectedReachForPreview: number;
   overcountRisk: OvercountRisk;
-  conservativeFactor: number;  // 0 for non-bounded methods; 0.25–0.50 for bounded_estimate
+  conservativeFactor: number;  // 0 for non-bounded methods; 0.25–0.50 for bounded_estimate; 0.25–0.50 for aggregate_unique_bounded (auFactor)
   rationale: string;
 }
