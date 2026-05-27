@@ -22,7 +22,6 @@ import type {
   RawUploadedRecord,
   NormalizedUEFRecord,
   EligibilityResult,
-  ReachMethod,
   OvercountRisk,
   ReachQualityResult,
 } from './types';
@@ -199,11 +198,13 @@ export function computeReachQuality(params: {
 
   // ── Step 2: identity_deduplication — highest priority ────────────────────
   // Privacy invariant: identitySet keys are never returned in any output field.
+  // Each record contributes at most ONE canonical key (wid > email > ns) to prevent
+  // a single record with multiple identity fields from inflating the unique count.
   const identitySet = new Set<string>();
   for (const f of includedFields) {
-    if (f.workerId) identitySet.add(`wid:${f.workerId}`);
-    if (f.email)    identitySet.add(`email:${f.email}`);
-    if (f.nome && f.cognome) identitySet.add(`ns:${f.nome}|${f.cognome}`);
+    if (f.workerId)              identitySet.add(`wid:${f.workerId}`);
+    else if (f.email)            identitySet.add(`email:${f.email}`);
+    else if (f.nome && f.cognome) identitySet.add(`ns:${f.nome}|${f.cognome}`);
   }
   if (identitySet.size > 0) {
     const reach = wf !== null ? Math.min(identitySet.size, wf) : identitySet.size;
