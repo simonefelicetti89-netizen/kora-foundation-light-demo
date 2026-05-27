@@ -21,19 +21,30 @@ interface SensitiveRule {
 
 // Rules ordered high → low severity. First matching rule wins per column.
 const SENSITIVE_RULES: SensitiveRule[] = [
-  // Personal identifiers — high risk, exclude by default
+  // High-risk personal identifiers — exclude: fiscal code, phone, direct contacts not needed in pilot
   {
     keywords: [
-      'nome dipendente', 'nome e cognome', 'cognome', 'full name', 'nominativo',
-      'indirizzo email', 'email', 'e-mail', 'pec', 'telefono', 'cellulare', 'phone',
-      'codice fiscale', 'fiscal code', 'tax id', 'cf', 'matricola', 'employee id',
-      'badge', 'username', 'user id', 'worker id',
+      'codice fiscale', 'fiscal code', 'tax id', 'cf dipendente',
+      'telefono', 'cellulare', 'phone', 'numero di telefono', 'contatto telefonico',
     ],
     riskType: 'personal_identifiable',
     severity: 'high',
-    reason: 'Colonna potenzialmente identificativa: può rivelare l\'identità individuale del lavoratore.',
+    reason: 'Identificatore personale ad alto rischio: non necessario in Foundation Light Pilot. Rimuovere dal file prima del caricamento.',
     recommendedAction: 'exclude',
     excludedByDefault: true,
+  },
+  // Identity fields — pseudonymize: permitted for deduplication and future My KORA PIB, never in employer outputs
+  {
+    keywords: [
+      'nome dipendente', 'nome e cognome', 'nome lavoratore', 'cognome', 'full name', 'nominativo',
+      'matricola', 'employee id', 'badge', 'worker id', 'username', 'user id',
+      'indirizzo email', 'email dipendente', 'email lavoratore', 'e-mail', 'pec dipendente',
+    ],
+    riskType: 'personal_identifiable',
+    severity: 'medium',
+    reason: 'Campo identità lavoratore: ammesso per deduplicazione dei record e costruzione del PIB in My KORA. Deve essere pseudonimizzato prima di entrare nella pipeline KORA. Non appare mai in output employer.',
+    recommendedAction: 'pseudonymize',
+    excludedByDefault: false,
   },
   // Health data — high risk, exclude by default
   {

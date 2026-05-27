@@ -95,14 +95,14 @@ const CLUSTERS: Cluster[] = [
     phaseStyle: 'border-amber-100 bg-amber-50/30',
     titleStyle: 'text-amber-900',
     purposeColor: 'text-amber-700',
-    purpose: 'Rendere il dato di impatto portabile, privato e posseduto dal lavoratore.',
+    purpose: 'Rendere il dato di impatto portabile, privato e posseduto dal lavoratore — esclusivamente su iniziative company-enabled.',
     modules: [
-      { name: 'Worker PIB',                   desc: 'Personal Impact Balance — aggregato per pillar, privato e worker-owned.' },
-      { name: 'Dynamic Impact CV',            desc: 'CV verificato di impatto umano, portabile e controllato dal lavoratore.' },
-      { name: 'Consent Vault',                desc: 'Gestione del consenso granulare per ogni dimensione del dato di impatto.' },
-      { name: 'Portable Verified Credentials', desc: 'Credenziali verificate esportabili verso mercato del lavoro e network.' },
-      { name: 'KORA Link (NFC/QR)',            desc: 'Attivazione fisico-digitale — punti di contatto per worker self-declaration.' },
-      { name: 'KORA Impact Pledge',            desc: 'Impegni collettivi di livello governance con evidenza verificata.' },
+      { name: 'Worker PIB',                   desc: 'Personal Impact Balance — aggregato per pillar, privato e worker-owned. Solo iniziative company-enabled, mai attività privata.' },
+      { name: 'Dynamic Impact CV',            desc: 'CV verificato di impatto umano, portabile e controllato dal lavoratore. Riflette l\'attivazione su iniziative aziendali, non la vita privata.' },
+      { name: 'Consent Vault',                desc: 'Gestione del consenso granulare per ogni dimensione del dato di impatto. Il lavoratore sceglie cosa condividere con chi.' },
+      { name: 'Portable Verified Credentials', desc: 'Credenziali verificate esportabili verso mercato del lavoro e network — basate su evidenza company-enabled.' },
+      { name: 'KORA Link (NFC/QR)',            desc: 'Attivazione fisico-digitale — punti di contatto per worker confirmation su iniziative company-enabled.' },
+      { name: 'KORA Impact Pledge',            desc: 'Impegni collettivi di livello governance con evidenza verificata su iniziative aziendali.' },
     ],
   },
 ];
@@ -293,6 +293,7 @@ export default function FutureVision() {
           <li className="list-disc leading-relaxed">I moduli futuri non sono attivi in Foundation Light.</li>
           <li className="list-disc leading-relaxed">Nessuna funzionalità futura è un production claim.</li>
           <li className="list-disc leading-relaxed">Il dato worker-owned rimane privato — mai esposto a ruoli employer senza consenso esplicito.</li>
+          <li className="list-disc leading-relaxed">My KORA misura l&apos;attivazione su iniziative company-enabled — non raccoglie né deduce dati sulla vita privata del lavoratore.</li>
           <li className="list-disc leading-relaxed">Lo scoring ecosistemico richiede evidenze verificate e calibrazione empirica.</li>
           <li className="list-disc leading-relaxed">Foundation Light è il punto di ingresso attuale — la roadmap si attiva progressivamente.</li>
         </ul>

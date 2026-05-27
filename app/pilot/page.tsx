@@ -115,18 +115,18 @@ const WHAT_YOU_GET = [
 
 const DATA_REQUIRED = [
   {
-    label: 'Export welfare / benefit',
-    desc: 'File dal provider welfare (es. Easy Welfare, Jointly, Eudaimon) o gestionale HR. Formato Excel o CSV. Include tipologia benefit, utilizzo aggregato, budget.',
+    label: 'Workers aggregati',
+    desc: 'Headcount per dipartimento e sede — organigramma sintetico. Nessun nominativo individuale. N ≥ 10 per segmento. Necessario per AR/MAR e segmentazione privacy-safe.',
     required: true,
   },
   {
-    label: 'Export formazione / LMS',
-    desc: 'Log corsi completati, certificazioni, ore formazione. Formato standard LMS o export HR. Aggregato per tipologia e dipartimento.',
+    label: 'Initiatives',
+    desc: 'Lista iniziative/programmi aziendali con tipologia, pillar indicativo e budget (anche dichiarato). Anche in forma di policy o accordo sindacale.',
     required: true,
   },
   {
-    label: 'Dati HR aggregati',
-    desc: 'Struttura organizzativa: dipartimenti, siti, headcount per cluster. Nessun dato individuale nominale richiesto. Aggregati sopra soglia N ≥ 10.',
+    label: 'Participation',
+    desc: 'Utilizzo aggregato per iniziativa, dipartimento e sede. Nessun nominativo. N ≥ 10 per segmento. Base per la stima AR/MAR e Activation Debt.',
     required: true,
   },
   {
@@ -135,19 +135,14 @@ const DATA_REQUIRED = [
     required: true,
   },
   {
-    label: 'Dati provider / servizi attivi',
-    desc: 'Lista dei programmi e servizi attivi (prevenzione, supporto psicologico, mentoring, volontariato, ecc.). Anche in forma di policy o accordo sindacale.',
-    required: true,
-  },
-  {
-    label: 'HR KPI aggregati',
-    desc: 'Turnover, assenteismo, engagement survey (se disponibili). Non obbligatori — arricchiscono l\'HR KPI preview. Aggregati di dipartimento, non individuali.',
+    label: 'Export provider welfare / LMS',
+    desc: 'File dal provider welfare (es. Easy Welfare, Jointly) o LMS. Supplemento opzionale — integra il Data Pack aziendale ma non è richiesto per avviare il pilot.',
     required: false,
   },
   {
-    label: 'Struttura aziendale',
-    desc: 'Organigramma sintetico: dipartimenti, siti, tipologie contrattuali principali, headcount totale. Necessario per segmentazione privacy-safe dell\'Activation Debt.',
-    required: true,
+    label: 'HR KPI aggregati',
+    desc: 'Turnover, assenteismo, engagement survey (se disponibili). Opzionale — arricchisce l\'HR KPI preview. Aggregati di dipartimento, non individuali.',
+    required: false,
   },
 ] as const;
 
@@ -323,11 +318,12 @@ export default function PilotPage() {
 
         <div className="rounded-lg border border-green-100 bg-green-50 px-4 py-3 mb-4">
           <p className="text-xs font-semibold text-green-800">
-            Nessun dato individuale dei lavoratori è richiesto per il pilot.
+            Perimetro company-enabled — nessun dato individuale richiesto.
           </p>
           <p className="text-[10px] text-green-700 mt-0.5 leading-relaxed">
-            Foundation Light lavora su dati aggregati per tipologia di iniziativa, dipartimento e sede.
-            Nessun file con nomi, codici fiscali o dati personali nominali è necessario o accettato.
+            Foundation Light misura come fondi e iniziative aziendali vengono attivati dai lavoratori — non cosa fanno nella loro vita privata.
+            Input attesi: Workers aggregati, Initiatives, Participation (+ Registri budget). Export provider welfare/LMS opzionali.
+            Nessun upload individuale lavoratore: i lavoratori non inviano file alla pipeline KORA in Foundation Light Pilot.
           </p>
         </div>
 

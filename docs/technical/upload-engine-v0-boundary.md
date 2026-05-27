@@ -30,12 +30,29 @@ The Foundation Light upload flow is **guided and asynchronous**:
 
 **Upload v0 is not a self-serve SaaS upload form.** It is a structured intake process for the pilot.
 
+### Foundation Light Data Pack — primary input
+
+The minimal input for a Foundation Light Pilot is the **Foundation Light Data Pack** — 4 company-provided files:
+
+| File | Type | Required | Description |
+|------|------|----------|-------------|
+| Workers (aggregated) | `company_upload` | Yes | Headcount by department and site. No individual names. N ≥ 10 per segment. |
+| Initiatives | `company_upload` | Yes | List of company welfare/people initiatives with category and budget. |
+| Participation | `company_upload` | Yes | Aggregate usage per initiative, department, site. N ≥ 10 per segment. |
+| HR KPI Aggregates | `company_upload` | Optional | Turnover, absenteeism, engagement. Enriches HR KPI preview only. |
+
+Provider welfare/LMS exports (`provider_export`) are **supplemental** — they enrich the Data Pack but are not required to start the pilot. A well-structured company Excel file is sufficient.
+
+**Worker document upload is out of scope in Foundation Light Pilot.** Workers do not upload files or send records to the KORA pipeline. Worker input (`worker_confirmation`) is a future My KORA capability, not part of Foundation Light.
+
 Upload types are defined in `lib/kora-engine/types.ts`:
 - `UploadedFileBatch` — one file per upload session
 - `RawUploadedRecord` — one row per source record
 - `ColumnMapping` — human-assisted or AI-suggested column → KORA field mapping
 - `SensitiveColumnFlag` — columns detected as potentially sensitive, excluded by default
 - `UploadValidationIssue` — data quality issues surfaced before ingestion
+- `EventDataSource` — source type classification for uploaded events
+- `EventPerimeter` — company-enabled vs out-of-scope perimeter classification
 
 ---
 
@@ -93,14 +110,26 @@ A record with `BudgetStatus: 'not_available'` must show `BTITreatment: 'excluded
 
 ## 6. Sensitive Data Exclusion
 
-The upload pipeline automatically flags columns that match patterns for:
+The upload pipeline distinguishes two categories of sensitive columns:
 
+### 6a. Identity fields — pseudonymize, do not exclude
+
+Identity fields (nome, cognome, email, matricola, employee id, badge, worker id) are permitted in the upload for the purpose of **record deduplication** and future **My KORA PIB construction**. They must be **pseudonymized before entering the pipeline** and must **never appear in any employer-facing output**.
+
+Detection rule: `riskType: 'personal_identifiable'`, `severity: 'medium'`, `recommendedAction: 'pseudonymize'`, `excludedByDefault: false`.
+
+### 6b. High-risk identifiers and sensitive data — exclude
+
+The following must be excluded from all uploads. They are not needed in Foundation Light Pilot and represent high re-identification or GDPR Art. 9 risk:
+
+- **High-risk personal identifiers**: codice fiscale, fiscal code, tax ID, CF, telefono, cellulare, phone
 - **Health data**: diagnosis, therapy, prescription, health condition, disability status
-- **Personal identifiable**: full name + ID combinations, fiscal code, phone, email (individual)
+- **Psychological data**: individual psychological support records, therapy notes, burnout individual records
 - **Financial individual**: individual salary, personal bank details
-- **Psychological**: psychological support session records, therapy notes
 
-Flagged columns have `excludedByDefault: true` in `SensitiveColumnFlag`. The advisor may not override exclusion for health or psychological data. Employer-facing pipeline outputs must never expose these fields.
+Detection rule: `riskType: 'health_data' | 'psychological' | 'personal_identifiable' (high)`, `severity: 'high'`, `recommendedAction: 'exclude'`, `excludedByDefault: true`.
+
+The advisor may not override exclusion for health or psychological data.
 
 All data that enters the KORA pipeline from uploads:
 - Must be pseudonymized at the record level before any aggregation

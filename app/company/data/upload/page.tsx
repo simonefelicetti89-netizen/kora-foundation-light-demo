@@ -198,9 +198,39 @@ export default function UploadPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
             </svg>
             <div className="text-blue-800">
-              <span className="font-semibold">Confine privacy attivo —</span>{' '}
-              Solo dati aggregati. Il sistema rileva e segnala automaticamente colonne con dati individuali
-              o sensibili prima di qualsiasi elaborazione. Nessun dato viene inviato a server in questa versione.
+              <span className="font-semibold">Perimetro company-enabled —</span>{' '}
+              KORA misura come fondi, iniziative e benefit aziendali vengono attivati dai lavoratori.
+              Upload attesi: file aziendali (Workers aggregati, Initiatives, Participation) e opzionalmente export provider welfare/LMS.
+              Nessun upload individuale lavoratore. Nessun dato inviato a server in questa versione.
+            </div>
+          </div>
+
+          {/* Data Pack Guidance */}
+          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+            <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Foundation Light Data Pack — input minimo</p>
+            </div>
+            <div className="grid grid-cols-2 gap-0 sm:grid-cols-4">
+              {[
+                { label: 'Workers (aggregato)', note: 'Headcount per dipartimento e sede. Nessun nominativo. N ≥ 10.', required: true },
+                { label: 'Initiatives', note: 'Lista iniziative aziendali con tipologia e budget (anche dichiarato).', required: true },
+                { label: 'Participation', note: 'Utilizzo aggregato per iniziativa, dipartimento, sede.', required: true },
+                { label: 'HR KPI Aggregates', note: 'Turnover, engagement, assenteismo. Opzionale — arricchisce HR KPI preview.', required: false },
+              ].map((item, i) => (
+                <div key={item.label} className={`px-3.5 py-3 space-y-0.5 ${i < 3 ? 'border-b sm:border-b-0 sm:border-r border-slate-100' : ''}`}>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide whitespace-nowrap ${item.required ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-200 bg-slate-50 text-slate-400'}`}>
+                      {item.required ? 'Richiesto' : 'Opzionale'}
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-700">{item.label}</p>
+                  <p className="text-[10px] text-slate-500 leading-relaxed">{item.note}</p>
+                </div>
+              ))}
+            </div>
+            <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/60 text-[10px] text-slate-500">
+              Export provider welfare o LMS sono supplementi opzionali — non sostitutiscono né aggiungono requisiti al Data Pack aziendale.
+              I lavoratori non caricano file: upload individuale fuori perimetro in Foundation Light Pilot.
             </div>
           </div>
         </div>
@@ -543,54 +573,77 @@ export default function UploadPage() {
                     </h2>
                     <p className="text-xs text-red-600 mt-0.5">
                       {highSensitiveCount > 0
-                        ? `${highSensitiveCount} colonne ad alto rischio devono essere escluse prima del caricamento.`
-                        : 'Revisione consigliata prima del caricamento.'}
+                        ? `${highSensitiveCount} colonne ad alto rischio da escludere · campi identità da pseudonimizzare prima dell'ingestion.`
+                        : 'Campi identità rilevati — da pseudonimizzare prima dell\'ingestion.'}
                     </p>
                   </div>
                 </div>
-                <div className="p-6 space-y-3">
-                  {sensitiveFlags.map((flag) => (
-                    <div
-                      key={flag.columnName}
-                      className={`rounded-lg border p-4 ${
-                        flag.severity === 'high'
-                          ? 'border-red-300 bg-white'
-                          : 'border-amber-200 bg-white'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono text-sm font-semibold text-slate-800">
-                              {flag.columnName}
-                            </span>
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityBadgeCls(flag.severity)}`}>
-                              {flag.severity === 'high' ? 'Alto rischio' : flag.severity === 'medium' ? 'Medio rischio' : 'Basso rischio'}
-                            </span>
-                            {flag.excludedByDefault && (
-                              <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 border border-red-200">
-                                Escludi
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-600">{flag.reason}</p>
-                        </div>
-                        <div className="text-xs text-slate-500 shrink-0 text-right">
-                          {flag.recommendedAction === 'exclude' && 'Rimuovi dal file'}
-                          {flag.recommendedAction === 'aggregate_only' && 'Solo aggregati'}
-                          {flag.recommendedAction === 'pseudonymize' && 'Pseudonimizza'}
-                          {flag.recommendedAction === 'review_required' && 'Revisione richiesta'}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
 
-                  <div className="p-3.5 rounded-lg border border-red-200 bg-red-100/60 text-xs text-red-800">
-                    <strong>Azione richiesta:</strong> Rimuovi le colonne ad alto rischio dal file originale
-                    e ricarica. KORA misura le organizzazioni, non gli individui — nessun dato
-                    identificativo deve entrare nella pipeline.
+                {/* Identity fields panel */}
+                {sensitiveFlags.some((f) => f.recommendedAction === 'pseudonymize') && (
+                  <div className="px-6 pt-5 pb-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-2">Campi identità — pseudonimizzare</p>
+                    <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                      I campi nome, cognome, email, matricola sono ammessi nel Data Pack per la <strong>deduplicazione dei record</strong>.
+                      Devono essere pseudonimizzati prima di entrare nella pipeline KORA e non appaiono mai in output employer.
+                    </p>
+                    <div className="space-y-2">
+                      {sensitiveFlags.filter((f) => f.recommendedAction === 'pseudonymize').map((flag) => (
+                        <div key={flag.columnName} className="rounded-lg border border-amber-200 bg-white p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-0.5 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-semibold text-slate-800">{flag.columnName}</span>
+                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityBadgeCls(flag.severity)}`}>
+                                  Campo identità
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500">{flag.reason}</p>
+                            </div>
+                            <span className="text-xs text-amber-700 shrink-0 font-medium">Pseudonimizza</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* High-risk excluded panel */}
+                {sensitiveFlags.some((f) => f.excludedByDefault) && (
+                  <div className="px-6 pt-3 pb-5">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-red-600 mb-2">Dati ad alto rischio — da escludere</p>
+                    <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                      Le colonne seguenti non sono necessarie in Foundation Light Pilot e rappresentano rischio GDPR elevato.
+                      Rimuoverle dal file originale prima del caricamento.
+                    </p>
+                    <div className="space-y-2">
+                      {sensitiveFlags.filter((f) => f.excludedByDefault).map((flag) => (
+                        <div key={flag.columnName} className="rounded-lg border border-red-300 bg-white p-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-0.5 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-xs font-semibold text-slate-800">{flag.columnName}</span>
+                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityBadgeCls(flag.severity)}`}>
+                                  Alto rischio
+                                </span>
+                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 border border-red-200">
+                                  Escludi
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-500">{flag.reason}</p>
+                            </div>
+                            <span className="text-xs text-red-700 shrink-0 font-medium">Rimuovi dal file</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 p-3.5 rounded-lg border border-red-200 bg-red-100/60 text-xs text-red-800">
+                      <strong>Azione richiesta:</strong> Rimuovi le colonne ad alto rischio dal file originale
+                      e ricarica. KORA misura le organizzazioni, non gli individui — nessun dato
+                      identificativo ad alto rischio deve entrare nella pipeline.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

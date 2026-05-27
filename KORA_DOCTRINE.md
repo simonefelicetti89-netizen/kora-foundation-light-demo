@@ -377,5 +377,69 @@ If a request seems to:
 
 ---
 
+## 10. Company-Enabled Perimeter, Data Sources & My KORA Boundary
+
+### Canonical positioning (3 sentences)
+
+> KORA non esiste per sapere cosa fanno i lavoratori nella loro vita privata — esiste per verificare come i fondi, le iniziative, i benefit, le policy e i servizi partner abilitati dall'azienda vengono spesi, raggiunti e attivati dai lavoratori.
+
+> Il perimetro KORA è definito dall'azienda: solo le iniziative aziendalmente abilitate, finanziate o promosse entrano nel calcolo del KORA Index, delle Impact Units e del PIB.
+
+> My KORA registra esclusivamente l'attivazione su iniziative company-enabled — non raccoglie, non deduce e non misura alcuna dimensione della vita privata del lavoratore fuori dal perimetro aziendale.
+
+---
+
+### Data source classes (5)
+
+| Classe | Codice | Descrizione |
+|--------|--------|-------------|
+| Upload aziendale | `company_upload` | File caricati dall'azienda (Excel/CSV) con programmi, partecipazioni, budget. Fonte primaria in Foundation Light. |
+| Export provider | `provider_export` | File esportati da provider welfare, LMS o piattaforme partner. Opzionale — integra l'upload aziendale. |
+| Verifica partner | `partner_verification` | Conferma di erogazione del servizio fornita direttamente dal partner. Non disponibile in Foundation Light Pilot. |
+| Conferma lavoratore | `worker_confirmation` | Segnale di partecipazione confermato dal lavoratore tramite My KORA. Out of scope in Foundation Light Pilot. |
+| Revisione advisor KORA | `kora_advisor_review` | Classificazione o rettifica effettuata da un advisor KORA certificato. Disponibile nei pacchetti Pilot e Strategic. |
+
+---
+
+### Event perimeter classes (5)
+
+| Classe | Codice | Genera IU | Descrizione |
+|--------|--------|-----------|-------------|
+| Company-enabled | `company_enabled` | Sì (se Eligible) | Iniziativa aziendale finanziata, promossa o abilitata dall'azienda. |
+| Provider-verified + Company-enabled | `provider_verified_company_enabled` | Sì (se Eligible) | Erogata da provider esterno, abilitata e finanziata dall'azienda. |
+| Worker-confirmed + Company-enabled | `worker_confirmed_company_enabled` | Sì (se Eligible) | Partecipazione confermata dal lavoratore su iniziativa company-enabled. |
+| Worker-private (out of scope) | `worker_private_out_of_scope` | No | Attività privata del lavoratore non abilitata dall'azienda. Non rientra nel perimetro KORA. |
+| Blocked (compliance) | `blocked_compliance` | No | Obblighi normativi (D.Lgs 81/08, GDPR, DVR, DPI). Esclusi per design — non penalizzati. |
+
+---
+
+### Minimal Foundation Light Data Pack
+
+Il Foundation Light Pilot lavora sul pacchetto dati minimo:
+
+| File | Formato | Obbligatorio | Note |
+|------|---------|--------------|------|
+| Workers (aggregato) | Excel/CSV | Sì | Headcount per dipartimento e sede. Nessun nominativo. N ≥ 10 per segmento. |
+| Initiatives | Excel/CSV | Sì | Lista iniziative/programmi aziendali con tipologia e budget (anche dichiarato). |
+| Participation | Excel/CSV | Sì | Utilizzo aggregato per iniziativa, dipartimento, sede. N ≥ 10 per segmento. |
+| HR KPI Aggregates | Excel/CSV | No (opzionale) | Turnover, assenteismo, engagement. Arricchisce la lettura HR KPI preview. |
+
+Export da provider welfare o LMS sono benvenuti come supplemento (`provider_export`) ma non sostituiscono né si aggiungono come requisito al Data Pack aziendale.
+
+---
+
+### Worker input boundary
+
+In Foundation Light Pilot, **i lavoratori non caricano documenti e non inviano file alla pipeline KORA**.
+
+Il confine è netto:
+- Upload aziendali (`company_upload`, `provider_export`): sì
+- Upload individuale lavoratore: **fuori perimetro in Foundation Light**
+- Conferme di partecipazione lavoratore (`worker_confirmation`): **fuori perimetro in Foundation Light** (future: My KORA layer)
+
+Il lavoratore accede a My KORA per consultare il proprio PIB e Dynamic Impact CV — non per alimentare la pipeline di scoring aziendale.
+
+---
+
 *This file is the contract between human intent and AI execution.*
-*Last update: Sprint 4 — §4 Budget Evidence & Economic Confidence added.*
+*Last update: Sprint 12A — §10 Company-Enabled Perimeter, Data Sources & My KORA Boundary added.*

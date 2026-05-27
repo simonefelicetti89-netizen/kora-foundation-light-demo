@@ -452,3 +452,43 @@ export interface MentalCapitalInfrastructureSignal {
   privacyBoundary: string;                  // non-suppressible: must be shown alongside this signal
   warnings: string[];
 }
+
+// ── Part 8 — Event perimeter types (Sprint 12A) ───────────────────────────────
+//
+// These types encode the company-enabled perimeter doctrine:
+// KORA measures how company-provided funds and initiatives are activated by workers.
+// Worker-private activity outside the company-enabled perimeter is out of scope.
+
+// Source of a company event entering the KORA pipeline.
+// company_upload: primary source in Foundation Light Pilot — Excel/CSV from company.
+// provider_export: supplemental welfare/LMS export from provider — optional in Foundation Light.
+// partner_verification: direct service confirmation from partner — not available in Foundation Light Pilot.
+// worker_confirmation: participation confirmed by worker via My KORA — out of scope in Foundation Light Pilot.
+// kora_advisor_review: classification or correction by certified KORA advisor.
+export type EventDataSource =
+  | 'company_upload'
+  | 'provider_export'
+  | 'partner_verification'
+  | 'worker_confirmation'
+  | 'kora_advisor_review';
+
+// Perimeter classification: whether an event is company-enabled or outside KORA scope.
+// company_enabled: financed or enabled by the company — eligible for KORA Index contribution.
+// provider_verified_company_enabled: delivered by external provider, enabled and financed by company.
+// worker_confirmed_company_enabled: participation confirmed by worker on a company-enabled initiative.
+// worker_private_out_of_scope: private worker activity not enabled by company — excluded from all computation.
+// blocked_compliance: mandatory legal obligation (D.Lgs 81/08, GDPR, DVR, DPI) — excluded by design, not penalized.
+export type EventPerimeter =
+  | 'company_enabled'
+  | 'provider_verified_company_enabled'
+  | 'worker_confirmed_company_enabled'
+  | 'worker_private_out_of_scope'
+  | 'blocked_compliance';
+
+// Whether an event contributes to KORA Index computation, BTI tracking only, or is excluded.
+export type EventContributionScope =
+  | 'contributes_to_index'      // Eligible events — generate IU, enter all four macroblocks
+  | 'bti_tracked_only'          // Limited events (economic relief) — tracked in BTI engine, 0 IU
+  | 'excluded_by_design'        // Blocked events — compliance obligations, 0 contribution
+  | 'out_of_perimeter'          // Worker-private events — outside company-enabled scope
+  | 'insufficient_evidence';    // Evidence too weak to determine contribution scope
