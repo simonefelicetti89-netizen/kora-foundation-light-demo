@@ -197,8 +197,8 @@ function scenario02(): KoraPipelineExampleResult {
     {
       recordId: 's02_r4', batchId, rowIndex: 3, detectedRecordType: 'training',
       raw: {
-        nome_evento: 'Corso di aggiornamento professionale',
-        categoria: 'formazione aggiornamento professionale',
+        nome_evento: 'Corso di formazione professionalizzante volontaria',
+        categoria: 'formazione professionalizzante volontaria addizionale upskilling',
         partecipanti: 30,
         importo: 8000, fonte_budget: 'contratto provider formazione',
       },
@@ -206,8 +206,8 @@ function scenario02(): KoraPipelineExampleResult {
     {
       recordId: 's02_r5', batchId, rowIndex: 4, detectedRecordType: 'welfare_program',
       raw: {
-        nome_evento: 'Programma benessere e wellness aziendale',
-        categoria: 'wellness benessere salute',
+        nome_evento: 'Programma benessere psicologico e wellbeing volontario aziendale',
+        categoria: 'wellbeing volontario benessere psicologico salute',
         partecipanti: 20,
         importo: 5000, fonte_budget: 'budget interno rendiconto',
       },
@@ -599,8 +599,8 @@ function scenario08(): KoraPipelineExampleResult {
     assertEq('scoringMode',                             'computed', result.scoringMode),
     assertGte('eligibilitySummary.reviewRequiredCount', 3,          result.eligibilitySummary.reviewRequiredCount),
     assertGte('eligibilitySummary.eligibleCount',       1,          result.eligibilitySummary.eligibleCount),
-    // CLEAR is blocked when review_required > 25% of records
-    assertEq('activation.safeguardStatus', result.activation.activationReach >= 0.40 ? 'WARNING' : result.activation.safeguardStatus, result.activation.safeguardStatus),
+    // CLEAR blocked: review_required = 3/5 = 60% > 25% threshold. AR ≈ 0.36, not FLAGGED (AR ≥ 0.20). → WARNING.
+    assertEq('activation.safeguardStatus', 'WARNING', result.activation.safeguardStatus),
   ];
 
   return {

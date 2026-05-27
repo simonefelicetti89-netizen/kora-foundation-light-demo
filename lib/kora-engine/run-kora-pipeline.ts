@@ -33,6 +33,7 @@ import { computeActivation } from './activation-engine';
 import { computeKoraIndex } from './kora-index-engine';
 import { computeConfidence } from './confidence-engine';
 import { buildExplainabilityTrace } from './explainability';
+import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 
 const PIPELINE_SOURCE = 'KoraPipeline_v0.1';
 
@@ -63,7 +64,7 @@ function buildInsufficientDataResult(
   const zeroKoraIndex: KoraIndexResult = {
     value: 0,
     macroblocks: { activationReach: 0, activationQuality: 0, distributionEquity: 0, budgetToHumanImpact: 0 },
-    weights: { REACH: 0.25, QUALITY: 0.30, EQUITY: 0.25, BTI: 0.20 },
+    weights: getMacroblockWeights(),
     methodologyVersion: 'KORA-METHOD-v0.1.0',
     calibrationStatus: 'pre_empirical_calibration',
     productionReady: false,
