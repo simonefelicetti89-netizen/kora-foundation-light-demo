@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { parseUploadedFile } from '@/lib/upload/file-parser';
 import type { ParsedUploadResult } from '@/lib/upload/file-parser';
@@ -14,8 +14,14 @@ import type {
   KoraComputationResult,
   RawUploadedRecord,
   ExplainabilityTraceItem,
+  EligibilityStatus,
+  BTITreatment,
+  BudgetEvidenceLevel,
 } from '@/lib/kora-engine/types';
 import { runKoraPipeline } from '@/lib/kora-engine/run-kora-pipeline';
+import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
+import { mapPillarBatch } from '@/lib/kora-engine/pillar-mapping';
+import { assessBudgetEvidenceBatch } from '@/lib/kora-engine/budget-evidence';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -129,6 +135,177 @@ const PILLAR_CONFIG: Record<string, { label: string; color: string; barColor: st
   LEGACY:     { label: 'LEGACY',     color: 'text-slate-600',  barColor: 'bg-slate-400' },
 };
 
+// ── Sprint 15: Eligibility & Evidence Review helpers ──────────────────────────
+
+interface ReviewDisplayRow {
+  idx: number;
+  label: string;
+  eligibilityStatus: EligibilityStatus;
+  eligibilityReason: string;
+  eligibilityConfidence: number;
+  primaryPillar: string | null;
+  pillarRationale: string;
+  pillarConfidence: number;
+  budgetEvidenceLevel: BudgetEvidenceLevel;
+  btiTreatment: BTITreatment;
+  budgetAmount: number | null;
+  budgetConfidence: number;
+  budgetNotes: string;
+  reviewRequired: boolean;
+  recommendedAction: string;
+  missingBudgetSource: boolean;
+  isCareEconomy: boolean;
+  isLowConfidence: boolean;
+}
+
+function isIdentityLikeColumn(key: string): boolean {
+  const k = key.toLowerCase().replace(/[\s_\-.]/g, '');
+  return [
+    'name', 'nome', 'surname', 'cognome', 'email', 'matricola',
+    'employeeid', 'workerid', 'codicefiscale', 'taxcode', 'codfisc',
+    'phone', 'telefono', 'participanthash', 'anonymousworkerid',
+    'firstname', 'lastname', 'badge',
+  ].some((s) => k.includes(s));
+}
+
+const INITIATIVE_NAME_NORMALIZED = [
+  'nomeiniziativa', 'initiativename', 'nomeprogramma', 'programname',
+  'eventname', 'nomeevento', 'denominazione', 'titolo', 'label',
+  'nomepolicy', 'nomeattivita', 'initiative', 'programma',
+];
+
+function extractSafeLabel(row: RawUploadedRecord, idx: number): string {
+  const raw = row.raw;
+  for (const [k, v] of Object.entries(raw)) {
+    if (isIdentityLikeColumn(k)) continue;
+    const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
+    if (INITIATIVE_NAME_NORMALIZED.some((ik) => nk.includes(ik))) {
+      const val = String(v ?? '').trim();
+      if (val && val.length > 1 && val.length < 120 && isNaN(Number(val))) return val;
+    }
+  }
+  for (const [k, v] of Object.entries(raw)) {
+    if (isIdentityLikeColumn(k)) continue;
+    const nk = k.toLowerCase();
+    if (nk.includes('categ') || nk.includes('tipo') || nk.includes('desc')) {
+      const val = String(v ?? '').trim();
+      if (val && val.length > 1 && val.length < 80 && isNaN(Number(val))) {
+        return val.charAt(0).toUpperCase() + val.slice(1);
+      }
+    }
+  }
+  return `Record #${idx + 1}`;
+}
+
+const CARE_ECONOMY_REVIEW_KEYS = [
+  'asilo nido', 'childcare', 'child care', 'caregiver', 'eldercare',
+  'assistenza anziani', 'centri estivi', 'campus estivo', 'summer camp',
+  'supporto famiglia', 'family support', 'congedo solidarieta',
+  'congedo aggiuntivo', 'mental health service', 'supporto psicologico',
+];
+
+function isCareEconomyRow(row: RawUploadedRecord): boolean {
+  const combined = Object.values(row.raw)
+    .map((v) => String(v ?? '').toLowerCase())
+    .join(' ');
+  return CARE_ECONOMY_REVIEW_KEYS.some((k) => combined.includes(k));
+}
+
+function eligibilityStatusConfig(status: EligibilityStatus): { label: string; cls: string; dot: string } {
+  switch (status) {
+    case 'eligible':        return { label: 'Eligible',        cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' };
+    case 'limited':         return { label: 'Limited',         cls: 'bg-amber-100 text-amber-700 border-amber-200',       dot: 'bg-amber-400'   };
+    case 'blocked':         return { label: 'Blocked',         cls: 'bg-red-100 text-red-700 border-red-200',             dot: 'bg-red-500'     };
+    case 'review_required': return { label: 'Review Required', cls: 'bg-slate-100 text-slate-600 border-slate-200',       dot: 'bg-slate-400'   };
+  }
+}
+
+function btiTreatmentLabel(t: BTITreatment): string {
+  const map: Record<BTITreatment, string> = {
+    full_weight: 'full_weight',
+    confidence_weighted: 'confidence_weighted',
+    tracked_only: 'tracked_only',
+    excluded_from_bti: 'excluded_from_bti',
+    not_applicable: 'not_applicable',
+  };
+  return map[t] ?? t;
+}
+
+function btiTreatmentCls(t: BTITreatment): string {
+  if (t === 'full_weight' || t === 'confidence_weighted') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (t === 'tracked_only') return 'bg-amber-50 text-amber-700 border-amber-200';
+  if (t === 'not_applicable') return 'bg-blue-50 text-blue-700 border-blue-200';
+  return 'bg-slate-100 text-slate-500 border-slate-200';
+}
+
+function evidenceLevelLabel(level: BudgetEvidenceLevel): string {
+  const map: Record<BudgetEvidenceLevel, string> = {
+    L4_VERIFIED_EVIDENCE:    'L4 verificata',
+    L3_THIRD_PARTY_DOCUMENT: 'L3 terza parte',
+    L2_INTERNAL_DOCUMENT:    'L2 doc. interno',
+    L1_SELF_DECLARED:        'L1 dichiarato',
+    L0_NO_EVIDENCE:          'L0 nessuna evidenza',
+  };
+  return map[level] ?? level;
+}
+
+function evidenceLevelCls(level: BudgetEvidenceLevel): string {
+  if (level === 'L4_VERIFIED_EVIDENCE' || level === 'L3_THIRD_PARTY_DOCUMENT') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (level === 'L2_INTERNAL_DOCUMENT') return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (level === 'L1_SELF_DECLARED') return 'bg-amber-50 text-amber-700 border-amber-200';
+  return 'bg-red-50 text-red-600 border-red-200';
+}
+
+function deriveRecommendedAction(
+  eligStatus: EligibilityStatus,
+  btiTreatment: BTITreatment,
+  evidenceLevel: BudgetEvidenceLevel,
+  budgetAmount: number | null,
+): string {
+  if (eligStatus === 'blocked')         return 'Mantenere come baseline governance, escluso da KORA Index.';
+  if (eligStatus === 'limited')         return 'Tracciare come economic relief; valutare riallocazione verso deep activation.';
+  if (eligStatus === 'review_required') return 'Validare categoria, volontarietà e perimetro company-enabled.';
+  if (btiTreatment === 'not_applicable') return 'Analizzare come segnale di attivazione, non come budget economico diretto.';
+  if (budgetAmount === null || btiTreatment === 'excluded_from_bti') return 'Aggiungere fonte budget o documento/provider export.';
+  if (evidenceLevel === 'L0_NO_EVIDENCE' || evidenceLevel === 'L1_SELF_DECLARED') return 'Può contribuire, ma la confidence aumenta con evidenza L2–L4.';
+  if (evidenceLevel === 'L2_INTERNAL_DOCUMENT') return 'Può contribuire con confidenza media. Raccomandato: integrare con evidenza terza parte (L3+).';
+  return 'Record eligibile con buona evidenza. Nessuna azione prioritaria.';
+}
+
+function buildReviewRows(rows: RawUploadedRecord[]): ReviewDisplayRow[] {
+  const eligibilityResults = classifyEligibilityBatch(rows);
+  const pillarResults      = mapPillarBatch(rows, eligibilityResults);
+  const budgetResults      = assessBudgetEvidenceBatch(rows);
+
+  return rows.map((row, idx) => {
+    const elig   = eligibilityResults[idx];
+    const pillar = pillarResults[idx];
+    const budget = budgetResults[idx];
+    const missingBudgetSource = budget.btiTreatment === 'excluded_from_bti' || budget.evidenceLevel === 'L0_NO_EVIDENCE' || budget.amount === null;
+    const isLowConfidence     = elig.confidence < 0.50 || budget.confidence < 0.40;
+    return {
+      idx,
+      label:                extractSafeLabel(row, idx),
+      eligibilityStatus:    elig.status,
+      eligibilityReason:    elig.reason,
+      eligibilityConfidence:elig.confidence,
+      primaryPillar:        pillar.primaryPillar,
+      pillarRationale:      pillar.rationale,
+      pillarConfidence:     pillar.confidence,
+      budgetEvidenceLevel:  budget.evidenceLevel,
+      btiTreatment:         budget.btiTreatment,
+      budgetAmount:         budget.amount,
+      budgetConfidence:     budget.confidence,
+      budgetNotes:          budget.notes ?? '',
+      reviewRequired:       elig.reviewRequired,
+      recommendedAction:    deriveRecommendedAction(elig.status, budget.btiTreatment, budget.evidenceLevel, budget.amount),
+      missingBudgetSource,
+      isCareEconomy:        isCareEconomyRow(row),
+      isLowConfidence,
+    };
+  });
+}
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function UploadPage() {
@@ -145,13 +322,15 @@ export default function UploadPage() {
 
   // ── Derived state ────────────────────────────────────────────────────────────
 
-  const columnMappings: ColumnMapping[] = parseResult
-    ? detectColumnMappings(parseResult.headers)
-    : [];
+  const columnMappings: ColumnMapping[] = useMemo(
+    () => (parseResult ? detectColumnMappings(parseResult.headers) : []),
+    [parseResult],
+  );
 
-  const sensitiveFlags: SensitiveColumnFlag[] = parseResult
-    ? detectSensitiveColumns(parseResult.headers)
-    : [];
+  const sensitiveFlags: SensitiveColumnFlag[] = useMemo(
+    () => (parseResult ? detectSensitiveColumns(parseResult.headers) : []),
+    [parseResult],
+  );
 
   const sensitiveColNames = new Set(sensitiveFlags.map((f) => f.columnName));
 
@@ -873,12 +1052,17 @@ export default function UploadPage() {
               <KoraPreviewSection result={koraResult} />
             )}
 
+            {/* ── Section 11: Eligibility & Evidence Review ────────────────── */}
+            {koraStatus === 'done' && koraResult && parseResult.rows.length > 0 && (
+              <EligibilityReviewSection rows={parseResult.rows} result={koraResult} />
+            )}
+
             {/* ── Section 10: Next steps ────────────────────────────────────── */}
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
               <div className="space-y-1 mb-5">
                 <h2 className="text-sm font-semibold text-slate-700">Prossimi passi</h2>
                 <p className="text-xs text-slate-400 max-w-lg">
-                  Questa preview dimostra il motore. Salvataggio dataset, report history e Board Pack generato da upload richiedono la fase SaaS/pilot operativo.
+                  Il salvataggio della review, la cronologia e il Board Pack generato da dataset caricato richiedono backend/SaaS o export locale dedicato.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -887,8 +1071,8 @@ export default function UploadPage() {
                   className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-left cursor-not-allowed"
                 >
                   <div>
-                    <p className="text-sm font-medium text-slate-400">Apri Eligibility Preview</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Revisione record per record con classificazione eligibility</p>
+                    <p className="text-sm font-medium text-slate-400">Conferma review e genera Board Pack</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Salva le classificazioni e genera report esecutivo aggregato</p>
                   </div>
                   <span className="text-xs text-slate-400 border border-slate-200 rounded px-2 py-0.5 shrink-0 ml-3">Prossimo sprint</span>
                 </button>
@@ -897,8 +1081,8 @@ export default function UploadPage() {
                   className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-left cursor-not-allowed"
                 >
                   <div>
-                    <p className="text-sm font-medium text-slate-400">Prepara Board Pack da dataset caricato</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Report esecutivo aggregato basato sui dati caricati</p>
+                    <p className="text-sm font-medium text-slate-400">Esporta checklist Advisor</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Lista record da revisionare con classificazioni KORA per il team Advisor</p>
                   </div>
                   <span className="text-xs text-slate-400 border border-slate-200 rounded px-2 py-0.5 shrink-0 ml-3">Prossimo sprint</span>
                 </button>
@@ -1499,6 +1683,297 @@ function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
           Indica l&apos;affidabilità del dato, non il livello di attivazione.
           CS basso non annulla il KORA Index ma segnala che i risultati devono essere interpretati con cautela.
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EligibilityReviewSection ───────────────────────────────────────────────────
+
+function EligibilityReviewSection({
+  rows,
+  result,
+}: {
+  rows: RawUploadedRecord[];
+  result: KoraComputationResult;
+}) {
+  const [activeFilter, setActiveFilter] = useState<string>('all');
+  const [secondaryFilters, setSecondaryFilters] = useState<Set<string>>(new Set());
+
+  const reviewRows = useMemo(() => buildReviewRows(rows), [rows]);
+
+  const identityColCount = useMemo(
+    () => rows.filter((r) => Object.keys(r.raw).some((k) => isIdentityLikeColumn(k))).length,
+    [rows],
+  );
+
+  const counts = useMemo(() => ({
+    eligible:        reviewRows.filter((r) => r.eligibilityStatus === 'eligible').length,
+    limited:         reviewRows.filter((r) => r.eligibilityStatus === 'limited').length,
+    blocked:         reviewRows.filter((r) => r.eligibilityStatus === 'blocked').length,
+    review_required: reviewRows.filter((r) => r.eligibilityStatus === 'review_required').length,
+    missingBudget:   reviewRows.filter((r) => r.missingBudgetSource).length,
+    lowConfidence:   reviewRows.filter((r) => r.isLowConfidence).length,
+    careEconomy:     reviewRows.filter((r) => r.isCareEconomy).length,
+    l0l1:            reviewRows.filter((r) => r.budgetEvidenceLevel === 'L0_NO_EVIDENCE' || r.budgetEvidenceLevel === 'L1_SELF_DECLARED').length,
+  }), [reviewRows]);
+
+  const filtered = useMemo(() => {
+    let r = reviewRows;
+    if (activeFilter !== 'all') r = r.filter((row) => row.eligibilityStatus === activeFilter);
+    if (secondaryFilters.has('missing_budget'))     r = r.filter((row) => row.missingBudgetSource);
+    if (secondaryFilters.has('low_confidence'))     r = r.filter((row) => row.isLowConfidence);
+    if (secondaryFilters.has('care_economy'))       r = r.filter((row) => row.isCareEconomy);
+    if (secondaryFilters.has('high_risk_excluded')) r = r.filter((row) => row.eligibilityStatus === 'blocked');
+    return r;
+  }, [reviewRows, activeFilter, secondaryFilters]);
+
+  function toggleSecondary(key: string) {
+    setSecondaryFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
+
+  const REVIEW_MAX_DISPLAY = 100;
+  const displayRows = filtered.slice(0, REVIEW_MAX_DISPLAY);
+  const isTruncated = filtered.length > REVIEW_MAX_DISPLAY;
+
+  return (
+    <div className="rounded-xl border-2 border-slate-200 bg-white shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/80">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="space-y-1">
+            <h2 className="text-base font-semibold text-slate-900">
+              7 — Eligibility &amp; Evidence Review
+            </h2>
+            <p className="text-xs text-slate-500 max-w-2xl leading-relaxed">
+              Rilettura metodologica dei record caricati: eleggibilità, pillar, evidenza budget,
+              trattamento BTI e punti che richiedono revisione.
+            </p>
+          </div>
+          <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 self-start">
+            {reviewRows.length} record analizzati
+          </span>
+        </div>
+        <div className="mt-3 flex items-start gap-2 p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs text-blue-800">
+          <svg className="w-3.5 h-3.5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+          </svg>
+          <span>
+            Questa vista non espone dati individuali del lavoratore.
+            I campi identità sono usati solo internamente per deduplica/My KORA e non compaiono negli output employer.
+            Le etichette mostrate si riferiscono a iniziative/programmi, non a singoli lavoratori.
+          </span>
+        </div>
+      </div>
+
+      <div className="p-5 space-y-5">
+
+        {/* Data Quality Board */}
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+            Data Quality Board
+          </p>
+          <p className="text-xs text-slate-500 mb-3">
+            KORA espone i punti deboli del dataset prima di produrre un Decision Pack.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {[
+              { label: 'Record in review',     value: counts.review_required, dotCls: 'bg-amber-400', valCls: 'text-amber-700', sub: 'Revisione umana necessaria' },
+              { label: 'Budget mancante',      value: counts.missingBudget,   dotCls: 'bg-red-400',   valCls: 'text-red-600',   sub: 'Fonte budget assente o L0' },
+              { label: 'Esclusi per design',   value: counts.blocked,         dotCls: 'bg-slate-300', valCls: 'text-slate-500', sub: 'Compliance obbligatoria baseline' },
+              { label: 'Evidenza L0 / L1',     value: counts.l0l1,            dotCls: 'bg-amber-300', valCls: 'text-amber-600', sub: 'Bassa qualità evidenza budget' },
+              { label: 'Campi identità',       value: identityColCount,       dotCls: 'bg-blue-300',  valCls: 'text-blue-600',  sub: "Nelle colonne raw — esclusi dall'output" },
+              { label: 'Bassa confidence',     value: counts.lowConfidence,   dotCls: 'bg-slate-400', valCls: 'text-slate-600', sub: 'Eligibility o budget < 50%' },
+            ].map((item) => (
+              <div key={item.label} className="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50">
+                <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${item.dotCls}`} />
+                <div>
+                  <p className={`text-lg font-bold leading-none ${item.valCls}`}>{item.value}</p>
+                  <p className="text-[10px] font-semibold text-slate-600 mt-1 leading-tight">{item.label}</p>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">{item.sub}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Primary filter tabs */}
+        <div className="space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Filtra per status</p>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { key: 'all',             label: `Tutti (${reviewRows.length})` },
+              { key: 'eligible',        label: `Eligible (${counts.eligible})` },
+              { key: 'limited',         label: `Limited (${counts.limited})` },
+              { key: 'blocked',         label: `Blocked (${counts.blocked})` },
+              { key: 'review_required', label: `Review Required (${counts.review_required})` },
+            ].map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setActiveFilter(f.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  activeFilter === f.key
+                    ? 'bg-slate-800 text-white shadow-sm'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Secondary filters */}
+        <div className="space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Filtri secondari</p>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { key: 'missing_budget',     label: `Budget mancante (${counts.missingBudget})` },
+              { key: 'low_confidence',     label: `Bassa confidence (${counts.lowConfidence})` },
+              { key: 'care_economy',       label: `Care Economy (${counts.careEconomy})` },
+              { key: 'high_risk_excluded', label: `Esclusi high-risk (${counts.blocked})` },
+            ].map((f) => (
+              <button
+                key={f.key}
+                onClick={() => toggleSecondary(f.key)}
+                className={`px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors ${
+                  secondaryFilters.has(f.key)
+                    ? 'bg-indigo-100 text-indigo-700 border-indigo-200'
+                    : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                {secondaryFilters.has(f.key) ? '✕ ' : ''}{f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Review table */}
+        <div className="rounded-lg border border-slate-200 overflow-hidden">
+          <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+              Record Preview — output aggregato per iniziativa · nessun dato identità
+            </p>
+            {isTruncated && (
+              <p className="text-[10px] text-amber-600 font-medium">
+                Mostrando {REVIEW_MAX_DISPLAY} di {filtered.length}
+              </p>
+            )}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left border-b border-slate-200 bg-slate-50/60">
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[140px]">Iniziativa / Record</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[120px]">Eligibility</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[80px]">Pillar</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[120px]">Budget Evidence</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[130px]">BTI Treatment</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[70px]">Revisione</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[180px]">Azione consigliata</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {displayRows.map((row) => {
+                  const eligCfg  = eligibilityStatusConfig(row.eligibilityStatus);
+                  const pillarCfg = row.primaryPillar ? PILLAR_CONFIG[row.primaryPillar] : null;
+                  return (
+                    <tr key={row.idx} className="hover:bg-slate-50/60 align-top">
+                      <td className="px-3 py-2.5">
+                        <p className="font-medium text-slate-700 max-w-[180px] break-words leading-snug">{row.label}</p>
+                        {row.isCareEconomy && (
+                          <span className="inline-block mt-1 text-[9px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                            care economy
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold border ${eligCfg.cls}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${eligCfg.dot}`} />
+                          {eligCfg.label}
+                        </span>
+                        <p className="text-[10px] text-slate-400 mt-1 leading-relaxed max-w-[200px]">
+                          {row.eligibilityReason.length > 110
+                            ? row.eligibilityReason.slice(0, 110) + '…'
+                            : row.eligibilityReason}
+                        </p>
+                        <p className="text-[10px] text-slate-400 mt-0.5 font-mono">{Math.round(row.eligibilityConfidence * 100)}% conf</p>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {pillarCfg ? (
+                          <>
+                            <span className={`text-xs font-bold ${pillarCfg.color}`}>{pillarCfg.label}</span>
+                            <p className="text-[10px] text-slate-400 mt-0.5">{Math.round(row.pillarConfidence * 100)}%</p>
+                          </>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium border ${evidenceLevelCls(row.budgetEvidenceLevel)}`}>
+                          {evidenceLevelLabel(row.budgetEvidenceLevel)}
+                        </span>
+                        {row.budgetAmount !== null && (
+                          <p className="text-[10px] text-slate-500 mt-1 font-mono">{formatEur(row.budgetAmount)}</p>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono border ${btiTreatmentCls(row.btiTreatment)}`}>
+                          {btiTreatmentLabel(row.btiTreatment)}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {row.reviewRequired ? (
+                          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                            Sì
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">No</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <p className="text-[11px] text-slate-600 leading-relaxed max-w-[230px]">{row.recommendedAction}</p>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {displayRows.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-3 py-8 text-center text-xs text-slate-400">
+                      Nessun record corrisponde ai filtri selezionati.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {/* Status legend */}
+          <div className="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500">
+            <span><strong className="text-emerald-700">Eligible</strong> — può contribuire se evidenza e attivazione sono sufficienti</span>
+            <span><strong className="text-amber-700">Limited</strong> — sollievo economico / bassa profondità di attivazione</span>
+            <span><strong className="text-red-600">Blocked</strong> — baseline legale/compliance, 0 impatto per design</span>
+            <span><strong className="text-slate-600">Review Required</strong> — revisione umana/advisor necessaria</span>
+          </div>
+        </div>
+
+        {/* Advisor-ready framing */}
+        <div className="p-4 rounded-lg border border-slate-200 bg-slate-50 space-y-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Framing Advisor — pre-empirical</p>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            Questa vista prepara il futuro Advisor Review: le classificazioni sono rule-based e pre-empirical,
+            ma i record Review Required richiedono validazione umana prima di Board Pack finale.
+            Le evidenze budget L0/L1 devono essere upgrade a L2+ prima che il BTI Score sia considerato affidabile per rendicontazione.
+          </p>
+          <p className="text-[10px] text-slate-400 font-mono">
+            Engine: deterministic · no LLM · no external calls ·
+            {result.koraIndex.methodologyVersion} · {result.koraIndex.calibrationStatus}
+          </p>
+        </div>
+
       </div>
     </div>
   );
