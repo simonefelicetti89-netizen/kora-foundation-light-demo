@@ -137,27 +137,6 @@ const PILLAR_CONFIG: Record<string, { label: string; color: string; barColor: st
 
 // ── Sprint 15: Eligibility & Evidence Review helpers ──────────────────────────
 
-interface ReviewDisplayRow {
-  idx: number;
-  label: string;
-  eligibilityStatus: EligibilityStatus;
-  eligibilityReason: string;
-  eligibilityConfidence: number;
-  primaryPillar: string | null;
-  pillarRationale: string;
-  pillarConfidence: number;
-  budgetEvidenceLevel: BudgetEvidenceLevel;
-  btiTreatment: BTITreatment;
-  budgetAmount: number | null;
-  budgetConfidence: number;
-  budgetNotes: string;
-  reviewRequired: boolean;
-  recommendedAction: string;
-  missingBudgetSource: boolean;
-  isCareEconomy: boolean;
-  isLowConfidence: boolean;
-}
-
 function isIdentityLikeColumn(key: string): boolean {
   const k = key.toLowerCase().replace(/[\s_\-.]/g, '');
   return [
@@ -166,35 +145,6 @@ function isIdentityLikeColumn(key: string): boolean {
     'phone', 'telefono', 'participanthash', 'anonymousworkerid',
     'firstname', 'lastname', 'badge',
   ].some((s) => k.includes(s));
-}
-
-const INITIATIVE_NAME_NORMALIZED = [
-  'nomeiniziativa', 'initiativename', 'nomeprogramma', 'programname',
-  'eventname', 'nomeevento', 'denominazione', 'titolo', 'label',
-  'nomepolicy', 'nomeattivita', 'initiative', 'programma',
-];
-
-function extractSafeLabel(row: RawUploadedRecord, idx: number): string {
-  const raw = row.raw;
-  for (const [k, v] of Object.entries(raw)) {
-    if (isIdentityLikeColumn(k)) continue;
-    const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
-    if (INITIATIVE_NAME_NORMALIZED.some((ik) => nk.includes(ik))) {
-      const val = String(v ?? '').trim();
-      if (val && val.length > 1 && val.length < 120 && isNaN(Number(val))) return val;
-    }
-  }
-  for (const [k, v] of Object.entries(raw)) {
-    if (isIdentityLikeColumn(k)) continue;
-    const nk = k.toLowerCase();
-    if (nk.includes('categ') || nk.includes('tipo') || nk.includes('desc')) {
-      const val = String(v ?? '').trim();
-      if (val && val.length > 1 && val.length < 80 && isNaN(Number(val))) {
-        return val.charAt(0).toUpperCase() + val.slice(1);
-      }
-    }
-  }
-  return `Record #${idx + 1}`;
 }
 
 const CARE_ECONOMY_REVIEW_KEYS = [
@@ -211,16 +161,18 @@ function isCareEconomyRow(row: RawUploadedRecord): boolean {
   return CARE_ECONOMY_REVIEW_KEYS.some((k) => combined.includes(k));
 }
 
-function eligibilityStatusConfig(status: EligibilityStatus): { label: string; cls: string; dot: string } {
+function eligibilityStatusConfig(status: EligibilityStatus | 'mixed'): { label: string; cls: string; dot: string } {
   switch (status) {
     case 'eligible':        return { label: 'Eligible',        cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' };
     case 'limited':         return { label: 'Limited',         cls: 'bg-amber-100 text-amber-700 border-amber-200',       dot: 'bg-amber-400'   };
     case 'blocked':         return { label: 'Blocked',         cls: 'bg-red-100 text-red-700 border-red-200',             dot: 'bg-red-500'     };
     case 'review_required': return { label: 'Review Required', cls: 'bg-slate-100 text-slate-600 border-slate-200',       dot: 'bg-slate-400'   };
+    case 'mixed':           return { label: 'Mixed — Review',  cls: 'bg-purple-100 text-purple-700 border-purple-200',    dot: 'bg-purple-400'  };
   }
 }
 
-function btiTreatmentLabel(t: BTITreatment): string {
+function btiTreatmentLabel(t: BTITreatment | 'mixed'): string {
+  if (t === 'mixed') return 'mixed';
   const map: Record<BTITreatment, string> = {
     full_weight: 'full_weight',
     confidence_weighted: 'confidence_weighted',
@@ -231,7 +183,8 @@ function btiTreatmentLabel(t: BTITreatment): string {
   return map[t] ?? t;
 }
 
-function btiTreatmentCls(t: BTITreatment): string {
+function btiTreatmentCls(t: BTITreatment | 'mixed'): string {
+  if (t === 'mixed') return 'bg-purple-50 text-purple-700 border-purple-200';
   if (t === 'full_weight' || t === 'confidence_weighted') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
   if (t === 'tracked_only') return 'bg-amber-50 text-amber-700 border-amber-200';
   if (t === 'not_applicable') return 'bg-blue-50 text-blue-700 border-blue-200';
@@ -256,54 +209,282 @@ function evidenceLevelCls(level: BudgetEvidenceLevel): string {
   return 'bg-red-50 text-red-600 border-red-200';
 }
 
-function deriveRecommendedAction(
-  eligStatus: EligibilityStatus,
-  btiTreatment: BTITreatment,
-  evidenceLevel: BudgetEvidenceLevel,
-  budgetAmount: number | null,
-): string {
-  if (eligStatus === 'blocked')         return 'Mantenere come baseline governance, escluso da KORA Index.';
-  if (eligStatus === 'limited')         return 'Tracciare come economic relief; valutare riallocazione verso deep activation.';
-  if (eligStatus === 'review_required') return 'Validare categoria, volontarietà e perimetro company-enabled.';
-  if (btiTreatment === 'not_applicable') return 'Analizzare come segnale di attivazione, non come budget economico diretto.';
-  if (budgetAmount === null || btiTreatment === 'excluded_from_bti') return 'Aggiungere fonte budget o documento/provider export.';
-  if (evidenceLevel === 'L0_NO_EVIDENCE' || evidenceLevel === 'L1_SELF_DECLARED') return 'Può contribuire, ma la confidence aumenta con evidenza L2–L4.';
-  if (evidenceLevel === 'L2_INTERNAL_DOCUMENT') return 'Può contribuire con confidenza media. Raccomandato: integrare con evidenza terza parte (L3+).';
-  return 'Record eligibile con buona evidenza. Nessuna azione prioritaria.';
+// ── Sprint 15B: Initiative-level grouping ────────────────────────────────────
+
+const EVIDENCE_LEVEL_ORDER: Record<BudgetEvidenceLevel, number> = {
+  L0_NO_EVIDENCE: 0,
+  L1_SELF_DECLARED: 1,
+  L2_INTERNAL_DOCUMENT: 2,
+  L3_THIRD_PARTY_DOCUMENT: 3,
+  L4_VERIFIED_EVIDENCE: 4,
+};
+
+interface InitiativeReviewGroup {
+  groupKey: string;
+  groupLabel: string;
+  recordCount: number;
+  participationCount: number | null;
+  uniqueWorkerEstimate: number | null;
+  hasIdentityFields: boolean;
+  provider: string | null;
+  period: string | null;
+  primaryEligibility: EligibilityStatus | 'mixed';
+  eligibilityMix: Record<string, number>;
+  primaryPillar: string | null;
+  isMixedPillar: boolean;
+  strongestEvidence: BudgetEvidenceLevel;
+  weakestEvidence: BudgetEvidenceLevel;
+  hasWeakEvidence: boolean;
+  primaryBtiTreatment: BTITreatment | 'mixed';
+  reviewRequired: boolean;
+  isMixedStatus: boolean;
+  confidence: number;
+  isCareEconomy: boolean;
+  missingBudgetSource: boolean;
+  isLowConfidence: boolean;
+  recommendedAction: string;
 }
 
-function buildReviewRows(rows: RawUploadedRecord[]): ReviewDisplayRow[] {
+const GROUP_KEY_SIGNALS_NORMALIZED = [
+  'initiativeid', 'idiniziativa', 'codiceiniziativa',
+  'initiativename', 'nomeiniziativa',
+  'programname', 'nomeprogramma',
+  'eventname', 'nomeevento',
+  'denominazione',
+];
+
+function extractGroupKey(row: RawUploadedRecord): string {
+  const raw = row.raw;
+  for (const [k, v] of Object.entries(raw)) {
+    if (isIdentityLikeColumn(k)) continue;
+    const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
+    if (GROUP_KEY_SIGNALS_NORMALIZED.some((sig) => nk === sig || nk.includes(sig))) {
+      const val = String(v ?? '').trim();
+      if (val && val.length > 1 && val.length < 120 && isNaN(Number(val))) return val;
+    }
+  }
+  let catVal = '';
+  let provVal = '';
+  for (const [k, v] of Object.entries(raw)) {
+    if (isIdentityLikeColumn(k)) continue;
+    const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
+    if (!catVal && (nk.includes('categ') || nk.includes('tipoiniz') || nk.includes('kind'))) {
+      const val = String(v ?? '').trim();
+      if (val && val.length > 1 && isNaN(Number(val))) catVal = val;
+    }
+    if (!provVal && (nk.includes('provider') || nk.includes('fornitore') || nk.includes('erogatore') || nk.includes('vendor'))) {
+      const val = String(v ?? '').trim();
+      if (val && val.length > 1 && isNaN(Number(val))) provVal = val;
+    }
+  }
+  if (catVal) return [catVal, provVal].filter(Boolean).join(' · ');
+  return '__ungrouped__';
+}
+
+function extractParticipationCount(row: RawUploadedRecord): number | null {
+  const PAX = ['participants', 'partecipanti', 'fruitori', 'users', 'activeworkers', 'attivi', 'usage'];
+  for (const [k, v] of Object.entries(row.raw)) {
+    if (isIdentityLikeColumn(k)) continue;
+    const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
+    if (PAX.some((pk) => nk.includes(pk))) {
+      const n = typeof v === 'number' ? v : parseFloat(String(v ?? ''));
+      if (Number.isFinite(n) && n > 0 && n < 1_000_000) return Math.round(n);
+    }
+  }
+  return null;
+}
+
+function extractSafeMetaValue(row: RawUploadedRecord, type: 'provider' | 'period'): string | null {
+  const SIGS: Record<string, string[]> = {
+    provider: ['provider', 'fornitore', 'vendor', 'erogatore', 'supplier'],
+    period:   ['period', 'periodo', 'anno', 'year', 'mese', 'month', 'trimestre'],
+  };
+  for (const [k, v] of Object.entries(row.raw)) {
+    if (isIdentityLikeColumn(k)) continue;
+    const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
+    if (SIGS[type].some((sig) => nk.includes(sig))) {
+      const val = String(v ?? '').trim();
+      if (val && val.length > 0) return val.slice(0, 40);
+    }
+  }
+  return null;
+}
+
+function countUniqueWorkersInGroup(rows: RawUploadedRecord[]): number | null {
+  // Uses identity fields only for counting — count returned, values never exposed.
+  const WID_KEYS   = ['workerid', 'wid', 'idlavoratore', 'matricola', 'employeeid', 'badge'];
+  const EMAIL_KEYS = ['email', 'emaildipendente'];
+  const NOME_KEYS  = ['nomelavoratore', 'nomeworker'];
+  const COGN_KEYS  = ['cognome', 'surname', 'lastname'];
+
+  const seen = new Set<string>();
+
+  for (const row of rows) {
+    const raw = row.raw;
+    let found = false;
+
+    for (const [k, v] of Object.entries(raw)) {
+      const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
+      if (WID_KEYS.some((wk) => nk.includes(wk))) {
+        const val = String(v ?? '').trim();
+        if (val && val !== 'null' && val !== '') { seen.add(`w:${val}`); found = true; break; }
+      }
+    }
+    if (found) continue;
+
+    for (const [k, v] of Object.entries(raw)) {
+      const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
+      if (EMAIL_KEYS.some((ek) => nk.includes(ek))) {
+        const val = String(v ?? '').trim().toLowerCase();
+        if (val && val.includes('@')) { seen.add(`e:${val}`); found = true; break; }
+      }
+    }
+    if (found) continue;
+
+    let nome = '';
+    let cogn = '';
+    for (const [k, v] of Object.entries(raw)) {
+      const nk = k.toLowerCase().replace(/[\s_\-.]/g, '');
+      if (!nome && NOME_KEYS.some((nk2) => nk.includes(nk2))) nome = String(v ?? '').trim().toLowerCase();
+      if (!cogn && COGN_KEYS.some((ck)  => nk.includes(ck)))  cogn = String(v ?? '').trim().toLowerCase();
+    }
+    if (nome && cogn) seen.add(`nc:${nome}:${cogn}`);
+  }
+
+  return seen.size > 0 ? seen.size : null;
+}
+
+function deriveGroupRecommendedAction(
+  primaryEligibility: EligibilityStatus | 'mixed',
+  primaryBtiTreatment: BTITreatment | 'mixed',
+  weakestEvidence: BudgetEvidenceLevel,
+  missingBudgetSource: boolean,
+  hasWeakEvidence: boolean,
+  isMixedStatus: boolean,
+  confidence: number,
+): string {
+  if (isMixedStatus)                                return 'Validare classificazione mista prima del Board Pack.';
+  if (primaryEligibility === 'blocked')             return 'Esclusa by design: compliance/baseline legale.';
+  if (primaryEligibility === 'limited')             return 'Tracciare come economic relief; valutare riallocazione verso deep activation.';
+  if (primaryEligibility === 'review_required')     return 'Validare categoria, volontarietà e perimetro company-enabled.';
+  if (primaryBtiTreatment === 'not_applicable')     return 'Analizzare come segnale di attivazione, non come budget economico diretto.';
+  if (missingBudgetSource)                          return 'Aggiungere fonte budget per questa iniziativa.';
+  if (hasWeakEvidence)                              return 'Evidenza debole: migliorare con export provider o documento L2–L4.';
+  if (confidence < 0.55)                            return 'Aumentare la copertura dati prima del Board Pack.';
+  return 'Nessuna azione critica.';
+}
+
+function buildInitiativeReviewGroups(rows: RawUploadedRecord[]): InitiativeReviewGroup[] {
+  if (rows.length === 0) return [];
+
   const eligibilityResults = classifyEligibilityBatch(rows);
   const pillarResults      = mapPillarBatch(rows, eligibilityResults);
   const budgetResults      = assessBudgetEvidenceBatch(rows);
 
-  return rows.map((row, idx) => {
-    const elig   = eligibilityResults[idx];
-    const pillar = pillarResults[idx];
-    const budget = budgetResults[idx];
-    const missingBudgetSource = budget.btiTreatment === 'excluded_from_bti' || budget.evidenceLevel === 'L0_NO_EVIDENCE' || budget.amount === null;
-    const isLowConfidence     = elig.confidence < 0.50 || budget.confidence < 0.40;
-    return {
-      idx,
-      label:                extractSafeLabel(row, idx),
-      eligibilityStatus:    elig.status,
-      eligibilityReason:    elig.reason,
-      eligibilityConfidence:elig.confidence,
-      primaryPillar:        pillar.primaryPillar,
-      pillarRationale:      pillar.rationale,
-      pillarConfidence:     pillar.confidence,
-      budgetEvidenceLevel:  budget.evidenceLevel,
-      btiTreatment:         budget.btiTreatment,
-      budgetAmount:         budget.amount,
-      budgetConfidence:     budget.confidence,
-      budgetNotes:          budget.notes ?? '',
-      reviewRequired:       elig.reviewRequired,
-      recommendedAction:    deriveRecommendedAction(elig.status, budget.btiTreatment, budget.evidenceLevel, budget.amount),
-      missingBudgetSource,
-      isCareEconomy:        isCareEconomyRow(row),
-      isLowConfidence,
-    };
+  const groupMap = new Map<string, { rows: RawUploadedRecord[]; rowIdxs: number[] }>();
+  let soloSeq = 0;
+
+  rows.forEach((row, idx) => {
+    let key = extractGroupKey(row);
+    if (key === '__ungrouped__') key = `__solo_${soloSeq++}__`;
+    if (!groupMap.has(key)) groupMap.set(key, { rows: [], rowIdxs: [] });
+    groupMap.get(key)!.rows.push(row);
+    groupMap.get(key)!.rowIdxs.push(idx);
   });
+
+  const result: InitiativeReviewGroup[] = [];
+  let gIdx = 0;
+
+  for (const [rawKey, { rows: gRows, rowIdxs }] of groupMap) {
+    const isUngrouped = rawKey.startsWith('__solo_');
+    const groupLabel  = isUngrouped ? 'Iniziativa non nominata' : rawKey;
+
+    const eligStatuses = rowIdxs.map((i) => eligibilityResults[i].status);
+    const allSameElig  = eligStatuses.every((s) => s === eligStatuses[0]);
+    const primaryEligibility: EligibilityStatus | 'mixed' = allSameElig ? eligStatuses[0] : 'mixed';
+    const eligibilityMix: Record<string, number> = {};
+    for (const s of eligStatuses) eligibilityMix[s] = (eligibilityMix[s] ?? 0) + 1;
+    const isMixedStatus  = !allSameElig;
+    const reviewRequired = primaryEligibility === 'review_required' || primaryEligibility === 'mixed';
+
+    const pillarCounts: Record<string, number> = {};
+    for (const i of rowIdxs) {
+      const p = pillarResults[i].primaryPillar;
+      if (p) pillarCounts[p] = (pillarCounts[p] ?? 0) + 1;
+    }
+    const pillarEntries = Object.entries(pillarCounts).sort(([, a], [, b]) => b - a);
+    const primaryPillar = pillarEntries[0]?.[0] ?? null;
+    const isMixedPillar = pillarEntries.length >= 2 &&
+      pillarEntries[1][1] >= Math.max(1, pillarEntries[0][1] * 0.5);
+
+    const evLevels = rowIdxs.map((i) => budgetResults[i].evidenceLevel);
+    const orderOf  = (l: BudgetEvidenceLevel) => EVIDENCE_LEVEL_ORDER[l];
+    const strongestEvidence = evLevels.reduce((b, l) => orderOf(l) > orderOf(b) ? l : b, 'L0_NO_EVIDENCE' as BudgetEvidenceLevel);
+    const weakestEvidence   = evLevels.reduce((w, l) => orderOf(l) < orderOf(w) ? l : w, 'L4_VERIFIED_EVIDENCE' as BudgetEvidenceLevel);
+    const hasWeakEvidence   = evLevels.some((l) => l === 'L0_NO_EVIDENCE' || l === 'L1_SELF_DECLARED');
+
+    const btiTreatments     = rowIdxs.map((i) => budgetResults[i].btiTreatment);
+    const allSameBTI        = btiTreatments.every((t) => t === btiTreatments[0]);
+    const primaryBtiTreatment: BTITreatment | 'mixed' = allSameBTI ? btiTreatments[0] : 'mixed';
+
+    const eligConfs  = rowIdxs.map((i) => eligibilityResults[i].confidence);
+    const budgConfs  = rowIdxs.map((i) => budgetResults[i].confidence);
+    const allConfs   = [...eligConfs, ...budgConfs];
+    const avgConf    = allConfs.reduce((s, c) => s + c, 0) / allConfs.length;
+    const minConf    = Math.min(...allConfs);
+    const confidence = isMixedStatus ? Math.min(avgConf, 0.65) : minConf;
+    const isLowConfidence = confidence < 0.50;
+
+    const missingBudgetSource = rowIdxs.some((i) =>
+      budgetResults[i].btiTreatment === 'excluded_from_bti' ||
+      budgetResults[i].evidenceLevel === 'L0_NO_EVIDENCE' ||
+      budgetResults[i].amount === null,
+    );
+
+    const isCareEconomy = gRows.some((r) => isCareEconomyRow(r));
+
+    const paxCounts = gRows.map((r) => extractParticipationCount(r)).filter((n): n is number => n !== null);
+    const participationCount = paxCounts.length > 0 ? paxCounts.reduce((s, n) => s + n, 0) : null;
+
+    const uniqueWorkerEstimate = countUniqueWorkersInGroup(gRows);
+    const hasIdentityFields    = gRows.some((r) => Object.keys(r.raw).some((k) => isIdentityLikeColumn(k)));
+
+    const provider = gRows.map((r) => extractSafeMetaValue(r, 'provider')).find((v) => v !== null) ?? null;
+    const period   = gRows.map((r) => extractSafeMetaValue(r, 'period')).find((v) => v !== null) ?? null;
+
+    const recommendedAction = deriveGroupRecommendedAction(
+      primaryEligibility, primaryBtiTreatment, weakestEvidence,
+      missingBudgetSource, hasWeakEvidence, isMixedStatus, confidence,
+    );
+
+    result.push({
+      groupKey: `g_${gIdx++}`,
+      groupLabel,
+      recordCount: gRows.length,
+      participationCount,
+      uniqueWorkerEstimate,
+      hasIdentityFields,
+      provider,
+      period,
+      primaryEligibility,
+      eligibilityMix,
+      primaryPillar,
+      isMixedPillar,
+      strongestEvidence,
+      weakestEvidence,
+      hasWeakEvidence,
+      primaryBtiTreatment,
+      reviewRequired,
+      isMixedStatus,
+      confidence,
+      isCareEconomy,
+      missingBudgetSource,
+      isLowConfidence,
+      recommendedAction,
+    });
+  }
+
+  return result;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -1700,7 +1881,7 @@ function EligibilityReviewSection({
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [secondaryFilters, setSecondaryFilters] = useState<Set<string>>(new Set());
 
-  const reviewRows = useMemo(() => buildReviewRows(rows), [rows]);
+  const groups = useMemo(() => buildInitiativeReviewGroups(rows), [rows]);
 
   const identityColCount = useMemo(
     () => rows.filter((r) => Object.keys(r.raw).some((k) => isIdentityLikeColumn(k))).length,
@@ -1708,25 +1889,31 @@ function EligibilityReviewSection({
   );
 
   const counts = useMemo(() => ({
-    eligible:        reviewRows.filter((r) => r.eligibilityStatus === 'eligible').length,
-    limited:         reviewRows.filter((r) => r.eligibilityStatus === 'limited').length,
-    blocked:         reviewRows.filter((r) => r.eligibilityStatus === 'blocked').length,
-    review_required: reviewRows.filter((r) => r.eligibilityStatus === 'review_required').length,
-    missingBudget:   reviewRows.filter((r) => r.missingBudgetSource).length,
-    lowConfidence:   reviewRows.filter((r) => r.isLowConfidence).length,
-    careEconomy:     reviewRows.filter((r) => r.isCareEconomy).length,
-    l0l1:            reviewRows.filter((r) => r.budgetEvidenceLevel === 'L0_NO_EVIDENCE' || r.budgetEvidenceLevel === 'L1_SELF_DECLARED').length,
-  }), [reviewRows]);
+    eligible:        groups.filter((g) => g.primaryEligibility === 'eligible').length,
+    limited:         groups.filter((g) => g.primaryEligibility === 'limited').length,
+    blocked:         groups.filter((g) => g.primaryEligibility === 'blocked').length,
+    review_required: groups.filter((g) => g.primaryEligibility === 'review_required').length,
+    mixed:           groups.filter((g) => g.primaryEligibility === 'mixed').length,
+    missingBudget:   groups.filter((g) => g.missingBudgetSource).length,
+    lowConfidence:   groups.filter((g) => g.isLowConfidence).length,
+    careEconomy:     groups.filter((g) => g.isCareEconomy).length,
+    l0l1:            groups.filter((g) => g.weakestEvidence === 'L0_NO_EVIDENCE' || g.weakestEvidence === 'L1_SELF_DECLARED').length,
+    totalRecords:    rows.length,
+  }), [groups, rows]);
 
   const filtered = useMemo(() => {
-    let r = reviewRows;
-    if (activeFilter !== 'all') r = r.filter((row) => row.eligibilityStatus === activeFilter);
-    if (secondaryFilters.has('missing_budget'))     r = r.filter((row) => row.missingBudgetSource);
-    if (secondaryFilters.has('low_confidence'))     r = r.filter((row) => row.isLowConfidence);
-    if (secondaryFilters.has('care_economy'))       r = r.filter((row) => row.isCareEconomy);
-    if (secondaryFilters.has('high_risk_excluded')) r = r.filter((row) => row.eligibilityStatus === 'blocked');
-    return r;
-  }, [reviewRows, activeFilter, secondaryFilters]);
+    let g = groups;
+    if (activeFilter === 'eligible')        g = g.filter((gr) => gr.primaryEligibility === 'eligible');
+    else if (activeFilter === 'limited')    g = g.filter((gr) => gr.primaryEligibility === 'limited');
+    else if (activeFilter === 'blocked')    g = g.filter((gr) => gr.primaryEligibility === 'blocked');
+    else if (activeFilter === 'review_required') g = g.filter((gr) => gr.primaryEligibility === 'review_required');
+    else if (activeFilter === 'mixed')      g = g.filter((gr) => gr.primaryEligibility === 'mixed');
+    if (secondaryFilters.has('missing_budget'))     g = g.filter((gr) => gr.missingBudgetSource);
+    if (secondaryFilters.has('low_confidence'))     g = g.filter((gr) => gr.isLowConfidence);
+    if (secondaryFilters.has('care_economy'))       g = g.filter((gr) => gr.isCareEconomy);
+    if (secondaryFilters.has('high_risk_excluded')) g = g.filter((gr) => gr.primaryEligibility === 'blocked');
+    return g;
+  }, [groups, activeFilter, secondaryFilters]);
 
   function toggleSecondary(key: string) {
     setSecondaryFilters((prev) => {
@@ -1737,7 +1924,7 @@ function EligibilityReviewSection({
   }
 
   const REVIEW_MAX_DISPLAY = 100;
-  const displayRows = filtered.slice(0, REVIEW_MAX_DISPLAY);
+  const displayGroups = filtered.slice(0, REVIEW_MAX_DISPLAY);
   const isTruncated = filtered.length > REVIEW_MAX_DISPLAY;
 
   return (
@@ -1747,16 +1934,21 @@ function EligibilityReviewSection({
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="space-y-1">
             <h2 className="text-base font-semibold text-slate-900">
-              7 — Eligibility &amp; Evidence Review
+              7 — Eligibility &amp; Evidence Review per Iniziativa
             </h2>
             <p className="text-xs text-slate-500 max-w-2xl leading-relaxed">
-              Rilettura metodologica dei record caricati: eleggibilità, pillar, evidenza budget,
-              trattamento BTI e punti che richiedono revisione.
+              Rilettura metodologica raggruppata per iniziativa: eleggibilità, pillar, evidenza budget,
+              trattamento BTI e punti che richiedono revisione. I record raw vengono aggregati per iniziativa.
             </p>
           </div>
-          <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 self-start">
-            {reviewRows.length} record analizzati
-          </span>
+          <div className="shrink-0 flex flex-col items-end gap-1">
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+              {groups.length} iniziative
+            </span>
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-50 text-slate-500 border border-slate-200">
+              {counts.totalRecords} record raw
+            </span>
+          </div>
         </div>
         <div className="mt-3 flex items-start gap-2 p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs text-blue-800">
           <svg className="w-3.5 h-3.5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1764,8 +1956,8 @@ function EligibilityReviewSection({
           </svg>
           <span>
             Questa vista non espone dati individuali del lavoratore.
-            I campi identità sono usati solo internamente per deduplica/My KORA e non compaiono negli output employer.
-            Le etichette mostrate si riferiscono a iniziative/programmi, non a singoli lavoratori.
+            I segnali identità sono usati solo per stimare lavoratori unici — il conteggio è restituito, mai i valori.
+            Le etichette si riferiscono a iniziative/programmi, non a singoli lavoratori.
           </span>
         </div>
       </div>
@@ -1778,16 +1970,16 @@ function EligibilityReviewSection({
             Data Quality Board
           </p>
           <p className="text-xs text-slate-500 mb-3">
-            KORA espone i punti deboli del dataset prima di produrre un Decision Pack.
+            KORA espone i punti deboli del dataset prima di produrre un Decision Pack. I conteggi si riferiscono a iniziative, non a record raw.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {[
-              { label: 'Record in review',     value: counts.review_required, dotCls: 'bg-amber-400', valCls: 'text-amber-700', sub: 'Revisione umana necessaria' },
-              { label: 'Budget mancante',      value: counts.missingBudget,   dotCls: 'bg-red-400',   valCls: 'text-red-600',   sub: 'Fonte budget assente o L0' },
-              { label: 'Esclusi per design',   value: counts.blocked,         dotCls: 'bg-slate-300', valCls: 'text-slate-500', sub: 'Compliance obbligatoria baseline' },
-              { label: 'Evidenza L0 / L1',     value: counts.l0l1,            dotCls: 'bg-amber-300', valCls: 'text-amber-600', sub: 'Bassa qualità evidenza budget' },
-              { label: 'Campi identità',       value: identityColCount,       dotCls: 'bg-blue-300',  valCls: 'text-blue-600',  sub: "Nelle colonne raw — esclusi dall'output" },
-              { label: 'Bassa confidence',     value: counts.lowConfidence,   dotCls: 'bg-slate-400', valCls: 'text-slate-600', sub: 'Eligibility o budget < 50%' },
+              { label: 'Iniziative in review',  value: counts.review_required + counts.mixed, dotCls: 'bg-amber-400', valCls: 'text-amber-700', sub: 'Classificazione mista o incompleta' },
+              { label: 'Budget mancante',        value: counts.missingBudget,                  dotCls: 'bg-red-400',   valCls: 'text-red-600',   sub: 'Fonte budget assente o L0' },
+              { label: 'Escluse per design',     value: counts.blocked,                        dotCls: 'bg-slate-300', valCls: 'text-slate-500', sub: 'Compliance obbligatoria baseline' },
+              { label: 'Evidenza debole (L0/L1)',value: counts.l0l1,                           dotCls: 'bg-amber-300', valCls: 'text-amber-600', sub: 'Qualità evidenza budget bassa' },
+              { label: 'Campi identità',         value: identityColCount,                      dotCls: 'bg-blue-300',  valCls: 'text-blue-600',  sub: "Record con campi identità — esclusi dall'output" },
+              { label: 'Bassa confidence',       value: counts.lowConfidence,                  dotCls: 'bg-slate-400', valCls: 'text-slate-600', sub: 'Confidence aggregata < 50%' },
             ].map((item) => (
               <div key={item.label} className="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50">
                 <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${item.dotCls}`} />
@@ -1803,14 +1995,15 @@ function EligibilityReviewSection({
 
         {/* Primary filter tabs */}
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Filtra per status</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Filtra per status iniziativa</p>
           <div className="flex flex-wrap gap-1.5">
             {[
-              { key: 'all',             label: `Tutti (${reviewRows.length})` },
+              { key: 'all',             label: `Tutte (${groups.length})` },
               { key: 'eligible',        label: `Eligible (${counts.eligible})` },
               { key: 'limited',         label: `Limited (${counts.limited})` },
               { key: 'blocked',         label: `Blocked (${counts.blocked})` },
               { key: 'review_required', label: `Review Required (${counts.review_required})` },
+              { key: 'mixed',           label: `Mixed (${counts.mixed})` },
             ].map((f) => (
               <button
                 key={f.key}
@@ -1835,7 +2028,7 @@ function EligibilityReviewSection({
               { key: 'missing_budget',     label: `Budget mancante (${counts.missingBudget})` },
               { key: 'low_confidence',     label: `Bassa confidence (${counts.lowConfidence})` },
               { key: 'care_economy',       label: `Care Economy (${counts.careEconomy})` },
-              { key: 'high_risk_excluded', label: `Esclusi high-risk (${counts.blocked})` },
+              { key: 'high_risk_excluded', label: `Escluse high-risk (${counts.blocked})` },
             ].map((f) => (
               <button
                 key={f.key}
@@ -1852,15 +2045,15 @@ function EligibilityReviewSection({
           </div>
         </div>
 
-        {/* Review table */}
+        {/* Review table — grouped by initiative */}
         <div className="rounded-lg border border-slate-200 overflow-hidden">
           <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-              Record Preview — output aggregato per iniziativa · nessun dato identità
+              Review per iniziativa · output aggregato · nessun dato identità individuale
             </p>
             {isTruncated && (
               <p className="text-[10px] text-amber-600 font-medium">
-                Mostrando {REVIEW_MAX_DISPLAY} di {filtered.length}
+                Mostrando {REVIEW_MAX_DISPLAY} di {filtered.length} iniziative
               </p>
             )}
           </div>
@@ -1868,66 +2061,117 @@ function EligibilityReviewSection({
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-left border-b border-slate-200 bg-slate-50/60">
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[140px]">Iniziativa / Record</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[160px]">Iniziativa</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[100px]">Records / Part.</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[80px]">Lavoratori</th>
                   <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[120px]">Eligibility</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[80px]">Pillar</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[120px]">Budget Evidence</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[70px]">Pillar</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[130px]">Budget Evidence</th>
                   <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[130px]">BTI Treatment</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[70px]">Revisione</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[70px]">Review</th>
                   <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[180px]">Azione consigliata</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {displayRows.map((row) => {
-                  const eligCfg  = eligibilityStatusConfig(row.eligibilityStatus);
-                  const pillarCfg = row.primaryPillar ? PILLAR_CONFIG[row.primaryPillar] : null;
+                {displayGroups.map((grp) => {
+                  const eligCfg   = eligibilityStatusConfig(grp.primaryEligibility);
+                  const pillarCfg = grp.primaryPillar ? PILLAR_CONFIG[grp.primaryPillar] : null;
+                  const confBadge = confidenceBadge(grp.confidence);
                   return (
-                    <tr key={row.idx} className="hover:bg-slate-50/60 align-top">
+                    <tr key={grp.groupKey} className="hover:bg-slate-50/60 align-top">
+                      {/* Iniziativa */}
                       <td className="px-3 py-2.5">
-                        <p className="font-medium text-slate-700 max-w-[180px] break-words leading-snug">{row.label}</p>
-                        {row.isCareEconomy && (
-                          <span className="inline-block mt-1 text-[9px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
-                            care economy
-                          </span>
+                        <p className="font-medium text-slate-700 max-w-[200px] break-words leading-snug">{grp.groupLabel}</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {grp.isCareEconomy && (
+                            <span className="text-[9px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                              care economy
+                            </span>
+                          )}
+                          {grp.provider && (
+                            <span className="text-[9px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 max-w-[120px] truncate">
+                              {grp.provider}
+                            </span>
+                          )}
+                          {grp.period && (
+                            <span className="text-[9px] text-slate-400 font-mono bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                              {grp.period}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      {/* Records / Partecipazioni */}
+                      <td className="px-3 py-2.5">
+                        <p className="font-mono text-slate-700">{grp.recordCount}</p>
+                        {grp.participationCount !== null && (
+                          <p className="text-[10px] text-slate-400 mt-0.5">{grp.participationCount} part.</p>
                         )}
                       </td>
+                      {/* Lavoratori unici */}
                       <td className="px-3 py-2.5">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold border ${eligCfg.cls}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${eligCfg.dot}`} />
-                          {eligCfg.label}
-                        </span>
-                        <p className="text-[10px] text-slate-400 mt-1 leading-relaxed max-w-[200px]">
-                          {row.eligibilityReason.length > 110
-                            ? row.eligibilityReason.slice(0, 110) + '…'
-                            : row.eligibilityReason}
-                        </p>
-                        <p className="text-[10px] text-slate-400 mt-0.5 font-mono">{Math.round(row.eligibilityConfidence * 100)}% conf</p>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        {pillarCfg ? (
+                        {grp.uniqueWorkerEstimate !== null ? (
                           <>
-                            <span className={`text-xs font-bold ${pillarCfg.color}`}>{pillarCfg.label}</span>
-                            <p className="text-[10px] text-slate-400 mt-0.5">{Math.round(row.pillarConfidence * 100)}%</p>
+                            <p className="font-mono text-slate-700">~{grp.uniqueWorkerEstimate}</p>
+                            {grp.hasIdentityFields && (
+                              <p className="text-[9px] text-blue-500 mt-0.5">da campi id</p>
+                            )}
                           </>
                         ) : (
                           <span className="text-[10px] text-slate-400">—</span>
                         )}
                       </td>
+                      {/* Eligibility */}
                       <td className="px-3 py-2.5">
-                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium border ${evidenceLevelCls(row.budgetEvidenceLevel)}`}>
-                          {evidenceLevelLabel(row.budgetEvidenceLevel)}
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold border ${eligCfg.cls}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${eligCfg.dot}`} />
+                          {eligCfg.label}
                         </span>
-                        {row.budgetAmount !== null && (
-                          <p className="text-[10px] text-slate-500 mt-1 font-mono">{formatEur(row.budgetAmount)}</p>
+                        {grp.isMixedStatus && (
+                          <div className="mt-1 flex flex-wrap gap-0.5">
+                            {Object.entries(grp.eligibilityMix).map(([s, n]) => (
+                              <span key={s} className="text-[9px] text-slate-400 font-mono">{s.replace('_', ' ')}: {n}</span>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-[10px] text-slate-400 mt-0.5 font-mono">
+                          <span className={confBadge.cls + ' px-1 py-0.5 rounded text-[9px]'}>{confBadge.label}</span>
+                        </p>
+                      </td>
+                      {/* Pillar */}
+                      <td className="px-3 py-2.5">
+                        {pillarCfg ? (
+                          <>
+                            <span className={`text-xs font-bold ${pillarCfg.color}`}>{pillarCfg.label}</span>
+                            {grp.isMixedPillar && (
+                              <p className="text-[9px] text-purple-500 mt-0.5">mixed</p>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">—</span>
                         )}
                       </td>
+                      {/* Budget Evidence */}
                       <td className="px-3 py-2.5">
-                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono border ${btiTreatmentCls(row.btiTreatment)}`}>
-                          {btiTreatmentLabel(row.btiTreatment)}
+                        <div className="flex flex-wrap gap-0.5">
+                          <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium border ${evidenceLevelCls(grp.strongestEvidence)}`}>
+                            ↑ {evidenceLevelLabel(grp.strongestEvidence)}
+                          </span>
+                          {grp.weakestEvidence !== grp.strongestEvidence && (
+                            <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium border ${evidenceLevelCls(grp.weakestEvidence)}`}>
+                              ↓ {evidenceLevelLabel(grp.weakestEvidence)}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      {/* BTI Treatment */}
+                      <td className="px-3 py-2.5">
+                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono border ${btiTreatmentCls(grp.primaryBtiTreatment)}`}>
+                          {btiTreatmentLabel(grp.primaryBtiTreatment)}
                         </span>
                       </td>
+                      {/* Review */}
                       <td className="px-3 py-2.5">
-                        {row.reviewRequired ? (
+                        {grp.reviewRequired ? (
                           <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
                             Sì
                           </span>
@@ -1935,16 +2179,17 @@ function EligibilityReviewSection({
                           <span className="text-[10px] text-slate-400">No</span>
                         )}
                       </td>
+                      {/* Azione consigliata */}
                       <td className="px-3 py-2.5">
-                        <p className="text-[11px] text-slate-600 leading-relaxed max-w-[230px]">{row.recommendedAction}</p>
+                        <p className="text-[11px] text-slate-600 leading-relaxed max-w-[230px]">{grp.recommendedAction}</p>
                       </td>
                     </tr>
                   );
                 })}
-                {displayRows.length === 0 && (
+                {displayGroups.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-8 text-center text-xs text-slate-400">
-                      Nessun record corrisponde ai filtri selezionati.
+                    <td colSpan={9} className="px-3 py-8 text-center text-xs text-slate-400">
+                      Nessuna iniziativa corrisponde ai filtri selezionati.
                     </td>
                   </tr>
                 )}
@@ -1957,6 +2202,7 @@ function EligibilityReviewSection({
             <span><strong className="text-amber-700">Limited</strong> — sollievo economico / bassa profondità di attivazione</span>
             <span><strong className="text-red-600">Blocked</strong> — baseline legale/compliance, 0 impatto per design</span>
             <span><strong className="text-slate-600">Review Required</strong> — revisione umana/advisor necessaria</span>
+            <span><strong className="text-purple-700">Mixed</strong> — record con classificazioni eterogenee — richiede validazione</span>
           </div>
         </div>
 
@@ -1965,8 +2211,8 @@ function EligibilityReviewSection({
           <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Framing Advisor — pre-empirical</p>
           <p className="text-xs text-slate-600 leading-relaxed">
             Questa vista prepara il futuro Advisor Review: le classificazioni sono rule-based e pre-empirical,
-            ma i record Review Required richiedono validazione umana prima di Board Pack finale.
-            Le evidenze budget L0/L1 devono essere upgrade a L2+ prima che il BTI Score sia considerato affidabile per rendicontazione.
+            raggruppate per iniziativa per facilitare la validazione umana prima del Board Pack finale.
+            Le iniziative con evidenza L0/L1 o BTI mixed devono essere validate e aggiornate con export provider (L3+).
           </p>
           <p className="text-[10px] text-slate-400 font-mono">
             Engine: deterministic · no LLM · no external calls ·
