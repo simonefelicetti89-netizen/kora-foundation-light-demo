@@ -8,7 +8,14 @@ import { detectColumnMappings } from '@/lib/upload/column-detection';
 import { detectSensitiveColumns } from '@/lib/upload/sensitive-column-detection';
 import { ALL_TEMPLATES } from '@/lib/upload/sample-templates';
 import type { SampleTemplate } from '@/lib/upload/sample-templates';
-import type { ColumnMapping, SensitiveColumnFlag } from '@/lib/kora-engine/types';
+import type {
+  ColumnMapping,
+  SensitiveColumnFlag,
+  KoraComputationResult,
+  RawUploadedRecord,
+  ExplainabilityTraceItem,
+} from '@/lib/kora-engine/types';
+import { runKoraPipeline } from '@/lib/kora-engine/run-kora-pipeline';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -22,7 +29,7 @@ const CRITICAL_BTI_LABELS: Record<string, string> = {
 const ACCEPTED_TYPES = '.csv,.xlsx,.xls';
 const MAX_FILE_MB = 10;
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+// ── Existing helpers ───────────────────────────────────────────────────────────
 
 function confidenceBadge(confidence: number): { label: string; cls: string } {
   if (confidence >= 0.90) return { label: `${Math.round(confidence * 100)}%`, cls: 'bg-emerald-100 text-emerald-700 border border-emerald-200' };
@@ -68,6 +75,60 @@ function btiStatusConfig(criticalMapped: number): { label: string; sublabel: str
   };
 }
 
+// ── KORA Preview helpers ───────────────────────────────────────────────────────
+
+function formatEur(n: number): string {
+  if (n === 0) return '€ 0';
+  return n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+}
+
+function formatPct(n: number): string {
+  return `${Math.round(n * 100)}%`;
+}
+
+function inferWorkforcePopulation(rows: RawUploadedRecord[], mappings: ColumnMapping[]): number | undefined {
+  const wfMapping = mappings.find((m) => m.targetField === 'workforce_population');
+  if (!wfMapping) return undefined;
+  const col = wfMapping.sourceColumn;
+  const values = rows
+    .map((r) => r.raw[col])
+    .filter((v): v is number => typeof v === 'number' && v > 0 && v < 1_000_000);
+  if (values.length === 0) return undefined;
+  return Math.max(...values);
+}
+
+function safeguardCls(status: string): { bg: string; text: string; border: string } {
+  if (status === 'CLEAR')   return { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200' };
+  if (status === 'FLAGGED') return { bg: 'bg-red-100',     text: 'text-red-700',     border: 'border-red-200'     };
+  return                           { bg: 'bg-amber-100',   text: 'text-amber-700',   border: 'border-amber-200'   };
+}
+
+function koraIndexTextCls(value: number): string {
+  if (value >= 60) return 'text-emerald-600';
+  if (value >= 35) return 'text-amber-600';
+  return 'text-slate-600';
+}
+
+function barCls(value: number, max: number = 100): string {
+  const pct = max > 0 ? value / max : 0;
+  if (pct >= 0.6) return 'bg-emerald-500';
+  if (pct >= 0.35) return 'bg-amber-400';
+  return 'bg-red-400';
+}
+
+function barW(value: number, max: number = 100): string {
+  const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
+  return `${Math.round(pct)}%`;
+}
+
+const PILLAR_CONFIG: Record<string, { label: string; color: string; barColor: string }> = {
+  LIFE:       { label: 'LIFE',       color: 'text-blue-700',   barColor: 'bg-blue-500' },
+  GROWTH:     { label: 'GROWTH',     color: 'text-emerald-700', barColor: 'bg-emerald-500' },
+  CONNECTION: { label: 'CONNECTION', color: 'text-purple-700', barColor: 'bg-purple-500' },
+  IMPACT:     { label: 'IMPACT',     color: 'text-orange-700', barColor: 'bg-orange-500' },
+  LEGACY:     { label: 'LEGACY',     color: 'text-slate-600',  barColor: 'bg-slate-400' },
+};
+
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export default function UploadPage() {
@@ -77,6 +138,10 @@ export default function UploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [activeTemplate, setActiveTemplate] = useState<string>(ALL_TEMPLATES[0].id);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [koraStatus, setKoraStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
+  const [koraResult, setKoraResult] = useState<KoraComputationResult | null>(null);
+  const [koraError, setKoraError] = useState<string | null>(null);
 
   // ── Derived state ────────────────────────────────────────────────────────────
 
@@ -99,6 +164,8 @@ export default function UploadPage() {
   const criticalMapped = CRITICAL_BTI_FIELDS.filter((f) => mappedTargetFields.has(f)).length;
   const btiStatus = btiStatusConfig(criticalMapped);
 
+  const canRunKora = status === 'parsed' && parseResult !== null && parseResult.rows.length > 0;
+
   // ── File handling ────────────────────────────────────────────────────────────
 
   const handleFile = useCallback(async (file: File) => {
@@ -115,6 +182,9 @@ export default function UploadPage() {
     }
     setStatus('parsing');
     setParseError(null);
+    setKoraStatus('idle');
+    setKoraResult(null);
+    setKoraError(null);
     try {
       const result = await parseUploadedFile(file);
       setParseResult(result);
@@ -148,8 +218,35 @@ export default function UploadPage() {
     setStatus('idle');
     setParseResult(null);
     setParseError(null);
+    setKoraStatus('idle');
+    setKoraResult(null);
+    setKoraError(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
+
+  const handleRunKoraPreview = useCallback(() => {
+    if (!parseResult || parseResult.rows.length === 0) return;
+    setKoraStatus('running');
+    setKoraError(null);
+    setKoraResult(null);
+    // Defer to allow the 'running' state to paint before synchronous computation.
+    setTimeout(() => {
+      try {
+        const workforcePopulation = inferWorkforcePopulation(parseResult.rows, columnMappings);
+        const result = runKoraPipeline({
+          tenantId: 'preview-tenant',
+          batchId: parseResult.fileName.replace(/[^a-z0-9]/gi, '_').slice(0, 60),
+          records: parseResult.rows,
+          workforcePopulation,
+        });
+        setKoraResult(result);
+        setKoraStatus('done');
+      } catch (err) {
+        setKoraError(err instanceof Error ? err.message : 'Errore interno pipeline.');
+        setKoraStatus('error');
+      }
+    }, 0);
+  }, [parseResult, columnMappings]);
 
   const selectedTemplate = ALL_TEMPLATES.find((t) => t.id === activeTemplate) ?? ALL_TEMPLATES[0];
 
@@ -420,10 +517,10 @@ export default function UploadPage() {
           <TemplatePanel template={selectedTemplate} />
         </div>
 
-        {/* ── Sections 4-8: Only shown after parsing ────────────────────────── */}
+        {/* ── Sections 4-10: Only shown after parsing ───────────────────────── */}
         {status === 'parsed' && parseResult && (
           <>
-            {/* ── Section 4: Data preview ─────────────────────────────────── */}
+            {/* ── Section 4: Data preview ──────────────────────────────────── */}
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
@@ -490,7 +587,7 @@ export default function UploadPage() {
               </div>
             </div>
 
-            {/* ── Section 5: Column mapping ────────────────────────────────── */}
+            {/* ── Section 5: Column mapping ─────────────────────────────────── */}
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <div className="px-6 py-4 border-b border-slate-100">
                 <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
@@ -558,7 +655,7 @@ export default function UploadPage() {
               )}
             </div>
 
-            {/* ── Section 6: Sensitive columns ────────────────────────────── */}
+            {/* ── Section 6: Sensitive columns ─────────────────────────────── */}
             {sensitiveFlags.length > 0 && (
               <div className="rounded-xl border-2 border-red-200 bg-red-50 shadow-sm overflow-hidden">
                 <div className="px-6 py-4 border-b border-red-200 flex items-center gap-3">
@@ -579,7 +676,6 @@ export default function UploadPage() {
                   </div>
                 </div>
 
-                {/* Identity fields panel */}
                 {sensitiveFlags.some((f) => f.recommendedAction === 'pseudonymize') && (
                   <div className="px-6 pt-5 pb-3">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-2">Campi identità — non esporre in output employer</p>
@@ -609,7 +705,6 @@ export default function UploadPage() {
                   </div>
                 )}
 
-                {/* High-risk excluded panel */}
                 {sensitiveFlags.some((f) => f.excludedByDefault) && (
                   <div className="px-6 pt-3 pb-5">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-red-600 mb-2">Dati ad alto rischio — da escludere</p>
@@ -648,7 +743,7 @@ export default function UploadPage() {
               </div>
             )}
 
-            {/* ── Section 7: BTI readiness ─────────────────────────────────── */}
+            {/* ── Section 7: BTI readiness ──────────────────────────────────── */}
             <div className={`rounded-xl border-2 bg-white shadow-sm overflow-hidden ${btiStatus.cls}`}>
               <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                 <div>
@@ -673,7 +768,6 @@ export default function UploadPage() {
               <div className="p-6 space-y-5">
                 <p className="text-sm text-slate-600">{btiStatus.sublabel}</p>
 
-                {/* BTI bar */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between text-xs text-slate-500">
                     <span>Colonne critiche BTI</span>
@@ -687,7 +781,6 @@ export default function UploadPage() {
                   </div>
                 </div>
 
-                {/* Critical fields checklist */}
                 <div className="space-y-2">
                   {CRITICAL_BTI_FIELDS.map((field) => {
                     const found = mappedTargetFields.has(field);
@@ -727,51 +820,103 @@ export default function UploadPage() {
               </div>
             </div>
 
-            {/* ── Section 8: Next step ─────────────────────────────────────── */}
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <h2 className="text-sm font-semibold text-slate-700">Prossimo passo</h2>
-                  <p className="text-xs text-slate-400 mt-1 max-w-md">
-                    Il caricamento definitivo al server e la pipeline UEF sono attivi dal Gate 2.
-                    In questa versione il file viene analizzato localmente senza persistenza.
+            {/* ── Section 8: Run KORA Preview ───────────────────────────────── */}
+            <div className="rounded-xl border-2 border-indigo-200 bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="space-y-1">
+                  <h2 className="text-base font-semibold text-slate-900">
+                    6 — KORA Computation Preview
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Elaborazione locale nel browser · nessun dato salvato · output azienda aggregato
                   </p>
-                </div>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
-                  {highSensitiveCount > 0 && (
-                    <div className="flex items-center gap-1.5 text-xs text-red-600 font-medium">
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                      </svg>
-                      Risolvi colonne sensibili prima
-                    </div>
+                  {koraStatus === 'done' && koraResult && (
+                    <p className="text-xs text-emerald-600 font-medium">
+                      Preview completata · {koraResult.bti.totalBudget > 0 ? `${parseResult.rowCount} record elaborati` : `${parseResult.rowCount} record — nessun importo budget rilevato`}
+                    </p>
                   )}
+                  {koraStatus === 'error' && koraError && (
+                    <p className="text-xs text-red-600">{koraError}</p>
+                  )}
+                </div>
+                <div className="shrink-0">
                   <button
-                    disabled
-                    className="px-5 py-2.5 rounded-lg text-sm font-medium bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-                    title="Disponibile dal Gate 2"
+                    onClick={handleRunKoraPreview}
+                    disabled={!canRunKora || koraStatus === 'running'}
+                    className={`
+                      px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150
+                      ${!canRunKora || koraStatus === 'running'
+                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                        : koraStatus === 'done'
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+                      }
+                    `}
                   >
-                    Invia alla pipeline UEF
-                    <span className="ml-2 text-xs font-normal opacity-70">(Gate 2)</span>
+                    {koraStatus === 'running' ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+                        Elaborazione…
+                      </span>
+                    ) : koraStatus === 'done' ? (
+                      'Riesegui KORA Preview'
+                    ) : (
+                      'Run KORA Preview'
+                    )}
                   </button>
                 </div>
               </div>
+            </div>
 
-              {/* Synthetic data reminder */}
+            {/* ── Section 9: KORA Computation Preview ──────────────────────── */}
+            {koraStatus === 'done' && koraResult && (
+              <KoraPreviewSection result={koraResult} />
+            )}
+
+            {/* ── Section 10: Next steps ────────────────────────────────────── */}
+            <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
+              <div className="space-y-1 mb-5">
+                <h2 className="text-sm font-semibold text-slate-700">Prossimi passi</h2>
+                <p className="text-xs text-slate-400 max-w-lg">
+                  Questa preview dimostra il motore. Salvataggio dataset, report history e Board Pack generato da upload richiedono la fase SaaS/pilot operativo.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  disabled
+                  className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-left cursor-not-allowed"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-slate-400">Apri Eligibility Preview</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Revisione record per record con classificazione eligibility</p>
+                  </div>
+                  <span className="text-xs text-slate-400 border border-slate-200 rounded px-2 py-0.5 shrink-0 ml-3">Prossimo sprint</span>
+                </button>
+                <button
+                  disabled
+                  className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-left cursor-not-allowed"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-slate-400">Prepara Board Pack da dataset caricato</p>
+                    <p className="text-xs text-slate-400 mt-0.5">Report esecutivo aggregato basato sui dati caricati</p>
+                  </div>
+                  <span className="text-xs text-slate-400 border border-slate-200 rounded px-2 py-0.5 shrink-0 ml-3">Prossimo sprint</span>
+                </button>
+              </div>
               <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
                 <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                 </svg>
                 <span>
                   Foundation Light · Modalità pilot · Nessun dato viene trasmesso a server.
-                  Il parsing avviene interamente nel browser.
+                  Il parsing e il calcolo avvengono interamente nel browser.
                 </span>
               </div>
             </div>
           </>
         )}
 
-        {/* ── Idle state: quick guidance ───────────────────────────────────── */}
+        {/* ── Idle state: quick guidance ────────────────────────────────────── */}
         {status === 'idle' && (
           <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6">
             <h3 className="text-sm font-semibold text-slate-700 mb-3">Come funziona</h3>
@@ -781,7 +926,8 @@ export default function UploadPage() {
                 'Il sistema rileva le intestazioni e le mappa ai campi UEF di KORA',
                 'Le colonne sensibili vengono segnalate prima di qualsiasi elaborazione',
                 'La qualità dell\'evidenza budget determina il peso nel macroblocco BTI (20%)',
-                'L\'invio alla pipeline UEF sarà disponibile dal Gate 2',
+                'Esegui il KORA Preview nel browser — KORA Index, Confidence, BTI, Attivazione e Pillar calcolati localmente',
+                'Salvataggio, report history e Board Pack: disponibili dalla fase SaaS/pilot operativo',
               ].map((step, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
                   <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -812,11 +958,8 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
-        {/* Required columns */}
         <div>
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
-            Colonne obbligatorie
-          </h4>
+          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Colonne obbligatorie</h4>
           <ul className="space-y-1">
             {template.requiredColumns.map((col) => (
               <li key={col} className="flex items-center gap-2 text-xs">
@@ -826,12 +969,8 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
             ))}
           </ul>
         </div>
-
-        {/* Optional columns */}
         <div>
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
-            Colonne opzionali
-          </h4>
+          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Colonne opzionali</h4>
           <ul className="space-y-1">
             {template.optionalColumns.map((col) => (
               <li key={col} className="flex items-center gap-2 text-xs">
@@ -843,17 +982,13 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
         </div>
       </div>
 
-      {/* Privacy notes */}
       <div className="p-3 rounded-lg border border-blue-100 bg-blue-50 text-xs text-blue-800">
         <span className="font-semibold">Nota privacy: </span>
         {template.privacyNotes}
       </div>
 
-      {/* Column headers preview */}
       <div>
-        <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
-          Intestazioni del template
-        </h4>
+        <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Intestazioni del template</h4>
         <div className="overflow-x-auto">
           <div className="inline-flex gap-1.5 pb-1">
             {template.headers.map((h) => (
@@ -870,6 +1005,571 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
             ))}
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── KoraPreviewSection ─────────────────────────────────────────────────────────
+
+function KoraPreviewSection({ result }: { result: KoraComputationResult }) {
+  const isInsufficient = result.scoringMode === 'insufficient_data';
+
+  // Extract care signal count from explainability trace
+  const careStage = result.explainabilityTrace.find((t) => t.id === 'stage_03_care_economy');
+  const careSignalCount = careStage
+    ? parseInt(careStage.output.replace('careSignals=', '').trim(), 10) || 0
+    : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Boundary note */}
+      <div className="flex items-start gap-3 p-4 rounded-lg border border-indigo-200 bg-indigo-50 text-sm">
+        <svg className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+        </svg>
+        <div className="text-indigo-800 space-y-1">
+          <p className="font-semibold">KORA Computation Preview — output aggregato aziendale</p>
+          <p className="text-xs text-indigo-700">
+            Preview calcolata localmente su dati caricati in sessione. Non è un report certificato e non salva dati.
+            Metodologia: <span className="font-mono">{result.koraIndex.methodologyVersion}</span> ·{' '}
+            <span className="font-medium">{result.koraIndex.calibrationStatus}</span> · produzione_ready=false
+          </p>
+        </div>
+      </div>
+
+      {isInsufficient ? (
+        <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-6 text-center space-y-2">
+          <p className="text-lg font-semibold text-amber-800">Dataset insufficiente</p>
+          <p className="text-sm text-amber-700">
+            I dati caricati non sono sufficienti per calcolare il KORA Index.
+            Assicurarsi che il file contenga iniziative aziendali con nome, categoria e possibilmente importo.
+          </p>
+          {result.warnings.length > 0 && (
+            <ul className="mt-3 space-y-1 text-xs text-amber-700 text-left max-w-lg mx-auto">
+              {result.warnings.map((w, i) => <li key={i} className="flex gap-2"><span>·</span><span>{w}</span></li>)}
+            </ul>
+          )}
+        </div>
+      ) : (
+        <>
+          <KoraSummaryCards result={result} />
+          <KoraEligibilityPanel result={result} />
+          <KoraPillarPanel result={result} />
+          <KoraBTIPanel result={result} />
+          <KoraActivationPanel result={result} />
+          <KoraCarePanel careSignalCount={careSignalCount} />
+          <KoraWarningsPanel result={result} />
+          <KoraExplainPanel trace={result.explainabilityTrace} />
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── KoraSummaryCards ───────────────────────────────────────────────────────────
+
+function KoraSummaryCards({ result }: { result: KoraComputationResult }) {
+  const sg = safeguardCls(result.activation.safeguardStatus);
+  const cards = [
+    {
+      label: 'KORA Index Preview',
+      value: `${result.koraIndex.value}`,
+      unit: '/100',
+      sublabel: result.koraIndex.calibrationStatus,
+      cls: koraIndexTextCls(result.koraIndex.value),
+      note: 'pre_empirical_calibration',
+    },
+    {
+      label: 'Confidence Score',
+      value: `${result.confidence.score}`,
+      unit: '/100',
+      sublabel: 'Esterno al KORA Index · peso=0',
+      cls: koraIndexTextCls(result.confidence.score),
+      note: 'externalToIndex=true',
+    },
+    {
+      label: 'BTI Score',
+      value: `${result.bti.btiScore}`,
+      unit: '/100',
+      sublabel: 'Budget-to-Human-Impact',
+      cls: koraIndexTextCls(result.bti.btiScore),
+      note: '20% macroblocco',
+    },
+    {
+      label: 'Activation Reach',
+      value: formatPct(result.activation.activationReach),
+      unit: '',
+      sublabel: `${result.activation.activeWorkers} lavoratori attivi`,
+      cls: result.activation.activationReach >= 0.40 ? 'text-emerald-600' : result.activation.activationReach >= 0.20 ? 'text-amber-600' : 'text-red-600',
+      note: 'AR · soglia CLEAR ≥ 40%',
+    },
+    {
+      label: 'Meaningful AR',
+      value: formatPct(result.activation.meaningfulActivationReach),
+      unit: '',
+      sublabel: `${result.activation.meaningfullyActiveWorkers} lavoratori`,
+      cls: result.activation.meaningfulActivationReach >= 0.30 ? 'text-emerald-600' : result.activation.meaningfulActivationReach >= 0.15 ? 'text-amber-600' : 'text-red-600',
+      note: 'MAR · soglia CLEAR ≥ 30%',
+    },
+    {
+      label: 'Activation Debt',
+      value: formatEur(result.bti.activationDebt),
+      unit: '',
+      sublabel: 'Budget non convertito in attivazione',
+      cls: result.bti.activationDebt > 0 ? 'text-amber-700 text-base' : 'text-slate-500 text-base',
+      note: result.bti.activationDebt > 0 ? 'Ottimizzazione consigliata' : 'Nessun debito rilevato',
+    },
+  ];
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Sintesi risultati</h3>
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${sg.bg} ${sg.text} ${sg.border}`}>
+          Safeguard: {result.activation.safeguardStatus}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 divide-y divide-x divide-slate-100">
+        {cards.map((card) => (
+          <div key={card.label} className="p-4 space-y-0.5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{card.label}</p>
+            <p className={`text-2xl font-bold leading-none ${card.cls}`}>
+              {card.value}
+              {card.unit && <span className="text-sm font-normal text-slate-400 ml-0.5">{card.unit}</span>}
+            </p>
+            <p className="text-xs text-slate-500">{card.sublabel}</p>
+            <p className="text-[10px] text-slate-400 font-mono">{card.note}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── KoraEligibilityPanel ───────────────────────────────────────────────────────
+
+function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
+  const { eligibilitySummary: es } = result;
+  const total = es.totalCount || 1;
+  const buckets = [
+    {
+      label: 'Eligible',
+      count: es.eligibleCount,
+      desc: 'Può contribuire al KORA Index se l\'evidenza lo supporta',
+      cls: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+      barCls: 'bg-emerald-500',
+    },
+    {
+      label: 'Limited',
+      count: es.limitedCount,
+      desc: 'Sollievo economico — tracciato in BTI, 0 Impact Unit',
+      cls: 'bg-amber-100 text-amber-700 border-amber-200',
+      barCls: 'bg-amber-400',
+    },
+    {
+      label: 'Blocked',
+      count: es.blockedCount,
+      desc: 'Baseline normativa obbligatoria — escluso per design',
+      cls: 'bg-red-100 text-red-700 border-red-200',
+      barCls: 'bg-red-400',
+    },
+    {
+      label: 'Review Required',
+      count: es.reviewRequiredCount,
+      desc: 'Classificazione ambigua — validazione umana necessaria',
+      cls: 'bg-slate-100 text-slate-600 border-slate-200',
+      barCls: 'bg-slate-400',
+    },
+  ];
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Eligibility Gate</h3>
+        <span className="text-xs text-slate-400">{es.totalCount} record totali</span>
+      </div>
+      <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {buckets.map((b) => (
+          <div key={b.label} className={`rounded-lg border p-3 space-y-2 ${b.cls}`}>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold">{b.label}</span>
+              <span className="text-lg font-bold">{b.count}</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-white/50 overflow-hidden">
+              <div className={`h-full rounded-full ${b.barCls}`} style={{ width: barW(b.count, total) }} />
+            </div>
+            <p className="text-[10px] leading-relaxed opacity-80">{b.desc}</p>
+          </div>
+        ))}
+      </div>
+      {es.reviewRequiredCount > es.totalCount * 0.25 && (
+        <div className="px-6 py-3 border-t border-slate-100 bg-amber-50 text-xs text-amber-700">
+          <strong>{Math.round((es.reviewRequiredCount / es.totalCount) * 100)}% di record in review_required</strong> — la classificazione è incompleta.
+          Il KORA Index sottostima il potenziale reale fino alla revisione umana.
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── KoraPillarPanel ────────────────────────────────────────────────────────────
+
+function KoraPillarPanel({ result }: { result: KoraComputationResult }) {
+  const dist = result.pillarDistribution;
+  const total = Object.values(dist).reduce((s, v) => s + v, 0) || 1;
+  const pillars = Object.entries(dist) as [string, number][];
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Distribuzione Pillar</h3>
+        <span className="text-xs text-slate-400">{total} record classificati</span>
+      </div>
+      <div className="p-4 space-y-3">
+        {pillars.map(([pillar, count]) => {
+          const cfg = PILLAR_CONFIG[pillar] ?? { label: pillar, color: 'text-slate-600', barColor: 'bg-slate-400' };
+          return (
+            <div key={pillar} className="flex items-center gap-3">
+              <span className={`text-xs font-bold w-24 shrink-0 ${cfg.color}`}>{cfg.label}</span>
+              <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className={`h-full rounded-full transition-all duration-500 ${cfg.barColor}`} style={{ width: barW(count, total) }} />
+              </div>
+              <span className="text-xs text-slate-500 w-8 text-right shrink-0">{count}</span>
+              <span className="text-xs text-slate-400 w-8 text-right shrink-0">{formatPct(count / total)}</span>
+            </div>
+          );
+        })}
+        {total === 0 && (
+          <p className="text-xs text-slate-400 text-center py-2">Nessun segnale pillar rilevato nel dataset.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── KoraBTIPanel ───────────────────────────────────────────────────────────────
+
+function KoraBTIPanel({ result }: { result: KoraComputationResult }) {
+  const { bti } = result;
+  const rows = [
+    { label: 'Budget totale', value: formatEur(bti.totalBudget), note: '' },
+    { label: 'Deep Activation Spend', value: formatEur(bti.deepActivationSpend), note: 'Attivazione profonda' },
+    { label: 'Economic Relief Spend', value: formatEur(bti.economicReliefSpend), note: 'Sollievo economico — 0 IU' },
+    { label: 'Blocked Compliance Spend', value: formatEur(bti.blockedComplianceSpend), note: 'Obbligatorio legale — 0 IU' },
+    { label: 'Activation Debt', value: formatEur(bti.activationDebt), note: 'Budget non convertito in attivazione', highlight: bti.activationDebt > 0 },
+  ];
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Budget-to-Human-Impact (BTI)</h3>
+          <p className="text-xs text-slate-400 mt-0.5">Macroblocco 4 · peso 20% nel KORA Index v3</p>
+        </div>
+        <span className={`text-2xl font-bold ${koraIndexTextCls(bti.btiScore)}`}>
+          {bti.btiScore}<span className="text-sm font-normal text-slate-400">/100</span>
+        </span>
+      </div>
+
+      <div className="p-4 space-y-4">
+        <div className="space-y-2">
+          {rows.map((row) => (
+            <div key={row.label} className={`flex items-center justify-between py-2 px-3 rounded-lg text-sm ${row.highlight ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50'}`}>
+              <div>
+                <span className={`font-medium ${row.highlight ? 'text-amber-800' : 'text-slate-700'}`}>{row.label}</span>
+                {row.note && <span className="text-xs text-slate-400 ml-2">{row.note}</span>}
+              </div>
+              <span className={`font-mono text-sm ${row.highlight && row.label === 'Activation Debt' && bti.activationDebt > 0 ? 'text-amber-700 font-semibold' : 'text-slate-600'}`}>
+                {row.value}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-xs text-slate-500">
+            <span>Budget Evidence Quality</span>
+            <span>{Math.round(bti.budgetEvidenceQuality * 100)}/100</span>
+          </div>
+          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div className={`h-full rounded-full ${barCls(bti.budgetEvidenceQuality * 100)}`} style={{ width: barW(bti.budgetEvidenceQuality * 100) }} />
+          </div>
+        </div>
+
+        <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
+          <strong className="text-slate-600">Dottrina:</strong>{' '}
+          Il budget non è trattato come impatto. Entra nel BTI solo in base a evidenza, eleggibilità e attivazione.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── KoraActivationPanel ────────────────────────────────────────────────────────
+
+function KoraActivationPanel({ result }: { result: KoraComputationResult }) {
+  const { activation } = result;
+  const sg = safeguardCls(activation.safeguardStatus);
+  const hasBoundedWarning = activation.warnings.some((w) =>
+    w.includes('bounded') || w.includes('overlap') || w.includes('deduplicat') || w.includes('stima'),
+  );
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Activation & Reach Quality</h3>
+          <p className="text-xs text-slate-400 mt-0.5">Output aggregato — nessun valore identità restituito</p>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${sg.bg} ${sg.text} ${sg.border}`}>
+          {activation.safeguardStatus}
+        </span>
+      </div>
+
+      <div className="p-4 space-y-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Lavoratori attivi', value: activation.activeWorkers },
+            { label: 'Attivazione significativa', value: activation.meaningfullyActiveWorkers },
+            { label: 'Mai attivati', value: activation.neverActivatedWorkers },
+            { label: 'Concentrazione top', value: `${formatPct(activation.concentrationTopShare)}`, raw: true },
+          ].map((m) => (
+            <div key={m.label} className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center">
+              <p className="text-lg font-bold text-slate-700">{m.value}</p>
+              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">{m.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          {[
+            { label: 'Activation Reach (AR)', value: activation.activationReach, threshold: 0.40, thresholdLabel: 'CLEAR ≥ 40%' },
+            { label: 'Meaningful AR (MAR)', value: activation.meaningfulActivationReach, threshold: 0.30, thresholdLabel: 'CLEAR ≥ 30%' },
+          ].map((metric) => (
+            <div key={metric.label} className="space-y-1">
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>{metric.label}</span>
+                <span className="font-medium">{formatPct(metric.value)} <span className="font-normal opacity-60">({metric.thresholdLabel})</span></span>
+              </div>
+              <div className="relative h-2 rounded-full bg-slate-100 overflow-visible">
+                <div className={`h-full rounded-full ${barCls(metric.value * 100)}`} style={{ width: barW(metric.value * 100) }} />
+                {/* Threshold marker */}
+                <div
+                  className="absolute top-0 bottom-0 w-0.5 bg-slate-400 opacity-60"
+                  style={{ left: `${metric.threshold * 100}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {hasBoundedWarning && (
+          <div className="p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs text-blue-800">
+            KORA distingue partecipazioni lorde, reach deduplicata e stima conservativa quando l&apos;identità non è sufficiente
+            o i conteggi unici si sovrappongono.
+          </div>
+        )}
+
+        {activation.safeguardStatus !== 'CLEAR' && (
+          <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
+            <strong className="text-slate-600">D-21 Activation Safeguard:</strong>{' '}
+            CLEAR = AR ≥ 40% AND MAR ≥ 30% · WARNING = sotto soglia · FLAGGED = AR &lt; 20% OR MAR &lt; 15%.
+            CLEAR è bloccato anche se review_required &gt; 25% o concentrazione top &gt; 60%.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── KoraCarePanel ──────────────────────────────────────────────────────────────
+
+function KoraCarePanel({ careSignalCount }: { careSignalCount: number }) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Care Economy</h3>
+          <p className="text-xs text-slate-400 mt-0.5">Modulo premium — segnali informativi, non nel KORA Index v3</p>
+        </div>
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+          careSignalCount > 0
+            ? 'bg-blue-100 text-blue-700 border-blue-200'
+            : 'bg-slate-100 text-slate-500 border-slate-200'
+        }`}>
+          {careSignalCount} segnali
+        </span>
+      </div>
+      <div className="p-4">
+        {careSignalCount > 0 ? (
+          <div className="space-y-3">
+            <p className="text-sm text-slate-700">
+              <strong>{careSignalCount} segnali care economy</strong> rilevati nel dataset.
+              Childcare, eldercare, caregiver, family support, flessibilità, accesso equo.
+            </p>
+            <div className="p-3 rounded-lg border border-blue-200 bg-blue-50 text-xs text-blue-800">
+              Care Economy misura solo segnali aggregati nel perimetro aziendale/KORA-enabled.
+              Non inferisce stato familiare o carichi di cura individuali.
+            </div>
+          </div>
+        ) : (
+          <p className="text-sm text-slate-400 text-center py-2">
+            Nessun segnale Care Economy rilevato in questo dataset.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── KoraWarningsPanel ──────────────────────────────────────────────────────────
+
+function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
+  const allWarnings = [
+    ...result.warnings,
+    ...result.bti.warnings,
+    ...result.activation.warnings,
+    ...result.koraIndex.warnings,
+    ...result.confidence.warnings,
+  ].filter((w) =>
+    !w.startsWith('Fonte:') &&
+    !w.includes('KORA-METHOD-v0.1.0') &&
+    !w.includes('calibration_status=') &&
+    !w.includes('CS è ESTERNO') &&
+    !w.includes('production_ready=false'),
+  );
+
+  const { confidence: cs } = result;
+  const subscores = [
+    { label: 'Budget Evidence', value: cs.budgetEvidenceConfidence },
+    { label: 'Data Completeness', value: cs.dataCompleteness },
+    { label: 'Mapping Quality', value: cs.mappingConfidence },
+    { label: 'Verification', value: cs.verificationConfidence },
+    { label: 'Review (Advisor)', value: cs.reviewConfidence },
+  ];
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Confidence & Avvertenze</h3>
+          <p className="text-xs text-slate-400 mt-0.5">
+            KORA espone i limiti del dataset invece di nasconderli.
+          </p>
+        </div>
+        <span className={`text-xl font-bold ${koraIndexTextCls(cs.score)}`}>
+          CS {cs.score}<span className="text-sm font-normal text-slate-400">/100</span>
+        </span>
+      </div>
+
+      <div className="p-4 space-y-4">
+        {/* Confidence sub-scores */}
+        <div className="space-y-2">
+          {subscores.map((s) => (
+            <div key={s.label} className="space-y-0.5">
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>{s.label}</span>
+                <span className="font-medium">{Math.round(s.value * 100)}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                <div className={`h-full rounded-full ${barCls(s.value * 100)}`} style={{ width: barW(s.value * 100) }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Warnings */}
+        {allWarnings.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Avvertenze diagnostiche</p>
+            <ul className="space-y-1.5">
+              {allWarnings.map((w, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                  <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 mt-1.5" />
+                  {w}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
+          Confidence Score è <strong>esterno al KORA Index</strong> — peso=0 nel calcolo.
+          Indica l&apos;affidabilità del dato, non il livello di attivazione.
+          CS basso non annulla il KORA Index ma segnala che i risultati devono essere interpretati con cautela.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── KoraExplainPanel ───────────────────────────────────────────────────────────
+
+function KoraExplainPanel({ trace }: { trace: ExplainabilityTraceItem[] }) {
+  const [open, setOpen] = useState<string | null>(null);
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100">
+        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Explainability Trace</h3>
+        <p className="text-xs text-slate-400 mt-0.5">
+          9 stage — solo valori aggregati. Nessun dato identità. Per revisione Advisor / Data Room.
+        </p>
+      </div>
+      <div className="divide-y divide-slate-100">
+        {trace.map((item) => (
+          <div key={item.id} className="group">
+            <button
+              onClick={() => setOpen(open === item.id ? null : item.id)}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50/80 transition-colors"
+            >
+              <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.warning ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-slate-700 truncate">{item.stage}</p>
+                <p className="text-[10px] text-slate-400 font-mono truncate">{item.output}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border font-mono ${
+                  item.confidence >= 0.7
+                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                    : item.confidence >= 0.4
+                    ? 'bg-amber-50 text-amber-600 border-amber-200'
+                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                }`}>
+                  {Math.round(item.confidence * 100)}%
+                </span>
+                <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${open === item.id ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            {open === item.id && (
+              <div className="px-4 pb-4 space-y-2">
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-2 text-xs text-slate-600">
+                  <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-0.5">Input</span>
+                    <span className="font-mono">{item.input}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-0.5">Output</span>
+                    <span className="font-mono">{item.output}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-0.5">Regola applicata</span>
+                    <span>{item.ruleApplied}</span>
+                  </div>
+                  {item.warning && (
+                    <div className="flex items-start gap-2 p-2 rounded border border-amber-200 bg-amber-50 text-amber-700">
+                      <span className="shrink-0">⚠</span>
+                      <span>{item.warning}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
