@@ -251,7 +251,7 @@ export interface EligibilityResult {
 
 export interface PillarMappingResult {
   recordId: string;
-  primaryPillar: Pillar;
+  primaryPillar: Pillar | null;   // null for blocked records or when no signal found
   secondaryPillars: Pillar[];
   confidence: number;         // 0–1
   rationale: string;
@@ -421,7 +421,11 @@ export interface CareEconomySignal {
   accessEquity: number | null;               // 0–1, null if data unavailable
   actualUsage: number | null;                // 0–1, aggregate only, N≥10 enforced
   budgetEvidenceQuality: number;             // 0–1
-  careActivationScorePreview: number | null; // 0–100, preview only — not production score
+  careActivationScorePreview: number | null; // 0–100, preview only — not production score; null at record level
+  detectedCareTags: string[];                // care tag codes detected for this record
+  reachSignals: string[];                    // text signals indicating population reach
+  accessEquitySignals: string[];             // text signals indicating equitable access
+  privacyBoundary: string;                   // non-suppressible privacy statement
   warnings: string[];
 }
 
