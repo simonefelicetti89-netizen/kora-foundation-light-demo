@@ -238,13 +238,19 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="border-t border-slate-200 px-4 pt-3 pb-2 space-y-0.5">
-        <p className="text-[10px] font-semibold text-slate-500">Foundation Light v0.1</p>
-        <p className="text-[9px] font-mono text-slate-400">pre_empirical_calibration</p>
-        <p className="text-[9px] font-semibold text-slate-500 pt-1">
+      <div
+        className="px-4 pt-3 pb-2 space-y-0.5"
+        style={{ borderTop: '2px solid var(--env-accent)' }}
+      >
+        <p
+          className="text-[10px] font-bold uppercase tracking-wide"
+          style={{ color: 'var(--env-accent)' }}
+        >
           {ENV_SIDEBAR_LABEL[activeEnvironment] ?? 'Ambiente demo'}
         </p>
-        <p className="text-[9px] text-slate-400">Ruolo: {activeRole}</p>
+        <p className="text-[9px] font-semibold text-slate-500">Foundation Light v0.1</p>
+        <p className="text-[9px] font-mono text-slate-400">pre_empirical_calibration</p>
+        <p className="text-[9px] text-slate-400 pt-0.5">Ruolo: {activeRole}</p>
       </div>
     </aside>
   );

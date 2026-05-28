@@ -6,11 +6,12 @@ import { ScenarioSwitcher } from '@/components/demo/ScenarioSwitcher';
 import { PersonaSwitcher } from '@/components/demo/PersonaSwitcher';
 import { EnvironmentSwitcher } from '@/components/demo/EnvironmentSwitcher';
 import { isEmployerRole, isAdminRole } from '@/lib/permissions';
+import type { Environment } from '@/lib/types';
 
-const ENV_BADGE: Record<string, { text: string; cls: string }> = {
-  demo:   { text: 'DEMO · dati simulati',                         cls: 'border-blue-200 bg-blue-50 text-blue-600' },
-  live:   { text: 'LIVE · service-assisted · operato da KORA',    cls: 'border-slate-300 bg-slate-100 text-slate-700' },
-  future: { text: 'FUTURE · roadmap · non attivo',                cls: 'border-slate-200 bg-slate-50 text-slate-400' },
+const ENV_BADGE_TEXT: Record<Environment, string> = {
+  demo:   'DEMO · dati simulati',
+  live:   'LIVE · service-assisted · operato da KORA',
+  future: 'FUTURE · roadmap · non attivo',
 };
 
 export function Header() {
@@ -20,14 +21,19 @@ export function Header() {
   const showScenarioSwitcher =
     (isEmployerRole(activeRole) || isAdminRole(activeRole)) && activeEnvironment === 'demo';
 
-  const badge = ENV_BADGE[activeEnvironment] ?? ENV_BADGE.demo;
-
   return (
     <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
       <div className="flex items-center gap-3">
         <span className="text-sm font-bold text-slate-800">KORA Foundation Light</span>
-        <span className={`rounded border px-2 py-0.5 text-[10px] font-medium whitespace-nowrap ${badge.cls}`}>
-          {badge.text}
+        <span
+          className="rounded border px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap"
+          style={{
+            borderColor:      'var(--env-border)',
+            backgroundColor:  'var(--env-soft)',
+            color:            'var(--env-text)',
+          }}
+        >
+          {ENV_BADGE_TEXT[activeEnvironment]}
         </span>
       </div>
       <div className="flex items-center gap-4">

@@ -8,7 +8,7 @@ const ENVS: Environment[] = ['demo', 'live', 'future'];
 
 const ENV_CONFIG: Record<Environment, { label: string; title: string }> = {
   demo:   { label: 'DEMO',   title: 'Dati simulati · demo commerciale' },
-  live:   { label: 'LIVE',   title: 'Piattaforma reale service-assisted · operata da KORA' },
+  live:   { label: 'LIVE',   title: 'Service-assisted · operata da KORA' },
   future: { label: 'FUTURE', title: 'Roadmap · non attivo' },
 };
 
@@ -20,7 +20,7 @@ export function EnvironmentSwitcher() {
       <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 select-none whitespace-nowrap">
         Ambiente
       </span>
-      <div className="flex rounded-md border border-slate-200 overflow-hidden shadow-sm">
+      <div className="flex rounded-md border border-[var(--env-border)] overflow-hidden shadow-sm">
         {ENVS.map((env, i) => {
           const isActive = activeEnvironment === env;
           const { label, title } = ENV_CONFIG[env];
@@ -32,11 +32,12 @@ export function EnvironmentSwitcher() {
               aria-pressed={isActive}
               className={cn(
                 'px-3 py-1.5 text-[11px] font-bold tracking-wide transition-colors whitespace-nowrap',
-                i > 0 && 'border-l border-slate-200',
+                i > 0 && 'border-l border-[var(--env-border)]',
                 isActive
-                  ? 'bg-slate-900 text-white'
+                  ? 'text-white'
                   : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600',
               )}
+              style={isActive ? { backgroundColor: 'var(--env-accent)' } : undefined}
             >
               {label}
             </button>

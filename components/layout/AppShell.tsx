@@ -1,27 +1,31 @@
 'use client';
 
-import { DemoStateProvider } from '@/lib/demo-state';
+import { DemoStateProvider, useEnvironment } from '@/lib/demo-state';
 import { SyntheticDataBanner } from '@/components/demo/SyntheticDataBanner';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 
-interface AppShellProps {
-  children: React.ReactNode;
+// Inner component so it can read useEnvironment() which requires DemoStateProvider above it.
+function AppShellContent({ children }: { children: React.ReactNode }) {
+  const { activeEnvironment } = useEnvironment();
+  return (
+    <div className={`flex min-h-screen flex-col env-${activeEnvironment}`}>
+      <SyntheticDataBanner />
+      <Header />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto bg-white p-6">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <DemoStateProvider>
-      <div className="flex min-h-screen flex-col">
-        <SyntheticDataBanner />
-        <Header />
-        <div className="flex flex-1 overflow-hidden">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto bg-white p-6">
-            {children}
-          </main>
-        </div>
-      </div>
+      <AppShellContent>{children}</AppShellContent>
     </DemoStateProvider>
   );
 }

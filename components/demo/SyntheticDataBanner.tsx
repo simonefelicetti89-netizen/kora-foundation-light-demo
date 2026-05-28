@@ -3,32 +3,34 @@
 import { useEnvironment } from '@/lib/demo-state';
 import type { Environment } from '@/lib/types';
 
-const ENV_BANNER: Record<Environment, { text: string; cls: string }> = {
+const ENV_BANNER: Record<Environment, { main: string; secondary: string }> = {
   demo: {
-    text: 'DEMO · DATI SIMULATI · Foundation Light v0.1 · Pre-Calibrazione Empirica · Non Dati Reali',
-    cls:  'bg-blue-600 text-white',
+    main:      'DEMO · DATI SIMULATI · Foundation Light v0.1 · Pre-Calibrazione Empirica',
+    secondary: 'Il pilot reale usa dati ricevuti e processati da KORA Operator.',
   },
   live: {
-    text: 'LIVE · Service-Assisted · KORA Operator gestisce la pipeline · il cliente consuma output · KORA Methodology v0.1',
-    cls:  'bg-slate-800 text-white',
+    main:      'LIVE · SERVICE-ASSISTED · KORA Methodology v0.1',
+    secondary: 'KORA Operator gestisce intake, review, scoring e Decision Pack. Il cliente consuma output.',
   },
   future: {
-    text: 'FUTURE · ROADMAP · NON ATTIVO · Funzionalità non disponibili in Foundation Light',
-    cls:  'bg-slate-500 text-white',
+    main:      'FUTURE · ROADMAP · NON ATTIVO',
+    secondary: 'Le funzionalità future non sono disponibili in Foundation Light.',
   },
 };
 
 export function SyntheticDataBanner() {
   const { activeEnvironment } = useEnvironment();
-  const { text, cls } = ENV_BANNER[activeEnvironment];
+  const { main, secondary } = ENV_BANNER[activeEnvironment];
 
   return (
     <div
-      className={`w-full px-4 py-1.5 text-center text-xs font-medium ${cls}`}
+      className="w-full px-4 py-2 text-center text-white"
+      style={{ backgroundColor: 'var(--env-accent)' }}
       role="banner"
       aria-label={`Ambiente corrente: ${activeEnvironment}`}
     >
-      {text}
+      <p className="text-xs font-bold tracking-wide">{main}</p>
+      <p className="text-[10px] font-normal opacity-85 mt-0.5">{secondary}</p>
     </div>
   );
 }
