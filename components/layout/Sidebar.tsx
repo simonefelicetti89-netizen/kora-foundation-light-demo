@@ -63,14 +63,14 @@ function buildNavGroups(role: string): NavGroup[] {
         ],
       },
       {
-        heading: 'Strumenti Interni',
+        heading: 'Pipeline Operativa',
         items: [
-          { href: '/company/ingestion',          label: 'AI Ingestion' },
-          { href: '/company/uef-review',         label: 'UEF Review' },
-          { href: '/company/scoring',            label: 'Scoring Run' },
-          { href: '/company/reports',            label: 'Decision Pack' },
-          { href: '/company/data',               label: 'Dati & Evidenze' },
-          { href: '/company/financial',          label: 'Governance Finanziaria' },
+          { href: '/admin/companies/data-intake',        label: 'Data Intake Studio' },
+          { href: '/company/ingestion',                  label: 'AI Ingestion' },
+          { href: '/company/uef-review',                 label: 'UEF Review' },
+          { href: '/company/scoring',                    label: 'Scoring Run' },
+          { href: '/company/reports',                    label: 'Decision Pack' },
+          { href: '/company/financial',                  label: 'Governance Finanziaria' },
         ],
       },
       {
@@ -93,13 +93,12 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/company/activation',   label: 'Attivazione & Partecipazione' },
           { href: '/company/contribution', label: 'KORA Contribution' },
           { href: '/company/pillars',      label: 'Pilastri & Iniziative' },
-          { href: '/company/onboarding',   label: 'Onboarding Room' },
+          { href: '/company/onboarding',   label: 'Stato Progetto' },
         ],
       },
       {
-        heading: 'Dati & Governance',
+        heading: 'Governance & Output',
         items: [
-          { href: '/company/data',      label: 'Dati & Evidenze' },
           { href: '/company/financial', label: 'Governance Finanziaria' },
           { href: '/company/reports',   label: 'Decision Pack' },
         ],

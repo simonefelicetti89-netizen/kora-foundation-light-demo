@@ -7,20 +7,20 @@ import { scenarioService } from '@/services/scenario/ScenarioService';
 const PIPELINE_STEPS = [
   {
     num: 1,
-    label: 'Upload Studio',
-    sublabel: 'caricamento fonti',
-    href: '/company/ingestion',
+    label: 'Data Intake',
+    sublabel: 'KORA Operator carica fonti',
+    href: '/admin/companies/data-intake',
   },
   {
     num: 2,
-    label: 'AI Mapping Review',
-    sublabel: 'AI assiste, umano approva',
-    href: '/company/ingestion/mapping-review',
+    label: 'AI Ingestion',
+    sublabel: 'AI assiste, Operator approva',
+    href: '/company/ingestion',
   },
   {
     num: 3,
     label: 'UEF Review',
-    sublabel: 'record approvati',
+    sublabel: 'record approvati da Operator',
     href: '/company/uef-review',
   },
   {
@@ -32,7 +32,7 @@ const PIPELINE_STEPS = [
   {
     num: 5,
     label: 'Executive Cockpit',
-    sublabel: 'KORA Index + Confidence',
+    sublabel: 'output aggregato azienda',
     href: '/company',
   },
 ] as const;

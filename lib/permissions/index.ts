@@ -68,7 +68,7 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
   if (role === 'COMPANY_ADMIN') {
     routes.push(
       '/company', '/company/shared', '/company/kora-index', '/company/reports', '/company/activation',
-      '/company/contribution', '/company/pillars', '/company/data',
+      '/company/contribution', '/company/pillars', '/company/onboarding',
       '/company/financial', '/company/profile',
     );
   }

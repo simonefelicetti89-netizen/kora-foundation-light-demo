@@ -126,6 +126,20 @@ export default function AIIngestionAssistant() {
   return (
     <div className="space-y-6">
 
+      {/* ── Operator boundary banner ─────────────────────────────────────── */}
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
+        <svg className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+        <div>
+          <p className="text-xs font-semibold text-amber-800">Strumento operativo KORA — non area self-service cliente</p>
+          <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+            Nel modello Foundation Light, i file sono inviati a KORA. L&apos;operatore KORA carica, revisiona e genera il Decision Pack.
+            L&apos;azienda vede solo output aggregati.
+          </p>
+        </div>
+      </div>
+
       {/* ── A: Header ── */}
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -149,13 +163,13 @@ export default function AIIngestionAssistant() {
         </p>
         <div className="mt-3">
           <Link
-            href="/company/data/upload"
+            href="/admin/companies/data-intake"
             className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
-            Carica un file → Data Intake Studio
+            KORA Operator: Data Intake Studio →
           </Link>
         </div>
       </div>

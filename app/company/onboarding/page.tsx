@@ -76,7 +76,7 @@ export default function CompanyOnboardingRoom() {
       {/* ── Header ── */}
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          Onboarding Room
+          Stato Progetto
         </p>
         <h1 className="text-xl font-bold text-slate-900 mt-0.5">{tenant.company_name}</h1>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -90,11 +90,14 @@ export default function CompanyOnboardingRoom() {
         </div>
       </div>
 
-      {/* ── Doctrine banner ── */}
+      {/* ── Service-assisted model notice ── */}
       <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800 space-y-1">
-        <p className="font-semibold">Questa è la Onboarding Room della tua azienda.</p>
-        <p>KORA gestisce l&apos;onboarding operativo — setup, validazione dati e readiness metodologica.</p>
-        <p>Il KORA Index sarà disponibile dopo data intake, validazione e scoring readiness.</p>
+        <p className="font-semibold">Stato del progetto KORA per la tua azienda.</p>
+        <p>
+          KORA opera la pipeline sui dati ricevuti dal cliente. L&apos;azienda visualizza output aggregati e Decision Pack,
+          senza operare intake, review o scoring.
+        </p>
+        <p>Il KORA Operator gestisce data intake, validazione UEF e scoring readiness. L&apos;azienda invia i file a KORA.</p>
         <p className="text-indigo-600">Il PIB individuale resta privato al lavoratore.</p>
       </div>
 

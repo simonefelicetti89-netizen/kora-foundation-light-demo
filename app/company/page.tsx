@@ -180,7 +180,7 @@ export default function ExecutiveCockpit() {
                   { label: 'My KORA (demo)',      value: String(workerSummary.my_kora_enabled_count),    highlight: 'neutral' },
                 ]}
                 interpretation="Account demo worker ≠ forza lavoro Meridiana (250). Solo aggregati aziendali — employer_can_view_individual_pib: false."
-                link={{ href: '/company/data', label: 'Data Room' }}
+                link={{ href: '/company/onboarding', label: 'Stato Progetto' }}
               />
             ) : null}
           </div>

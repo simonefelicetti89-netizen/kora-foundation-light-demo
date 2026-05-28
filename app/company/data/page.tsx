@@ -272,23 +272,22 @@ export default function DataEvidence() {
         </p>
       </div>
 
-      {/* ── Upload CTA ───────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-4 rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-4">
-        <div>
-          <p className="text-sm font-semibold text-indigo-800">Carica nuovi dati</p>
-          <p className="text-xs text-indigo-600 mt-0.5">
-            Importa file CSV o Excel — il sistema rileva colonne, segnala dati sensibili e valuta l&apos;evidenza budget.
-          </p>
-        </div>
-        <Link
-          href="/company/data/upload"
-          className="shrink-0 inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50 transition-colors shadow-sm"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-          </svg>
-          Data Intake Studio
-        </Link>
+      {/* ── Service-Assisted Boundary Notice ─────────────────────────── */}
+      <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
+        <p className="text-xs font-semibold text-slate-600 mb-1">Pipeline gestita da KORA Operator</p>
+        <p className="text-xs text-slate-500 leading-relaxed">
+          KORA opera la pipeline sui dati ricevuti dal cliente. L&apos;azienda visualizza output aggregati e Decision Pack,
+          senza operare intake, review o scoring.
+          Il Data Intake Studio è uno strumento dell&apos;Operatore KORA — accessibile dalla Console Operativa.
+        </p>
+        {isAdmin && (
+          <Link
+            href="/admin/companies/data-intake"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+          >
+            KORA Operator: Data Intake Studio →
+          </Link>
+        )}
       </div>
 
       {/* ── Readiness Hero — 4 cards ─────────────────────────────────── */}
