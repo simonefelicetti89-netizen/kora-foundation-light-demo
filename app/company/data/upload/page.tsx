@@ -500,6 +500,7 @@ export default function UploadPage() {
   const [koraStatus, setKoraStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [koraResult, setKoraResult] = useState<KoraComputationResult | null>(null);
   const [koraError, setKoraError] = useState<string | null>(null);
+  const [showBoardPack, setShowBoardPack] = useState(false);
 
   // ── Derived state ────────────────────────────────────────────────────────────
 
@@ -581,6 +582,7 @@ export default function UploadPage() {
     setKoraStatus('idle');
     setKoraResult(null);
     setKoraError(null);
+    setShowBoardPack(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
@@ -1236,6 +1238,38 @@ export default function UploadPage() {
             {/* ── Section 11: Eligibility & Evidence Review ────────────────── */}
             {koraStatus === 'done' && koraResult && parseResult.rows.length > 0 && (
               <EligibilityReviewSection rows={parseResult.rows} result={koraResult} />
+            )}
+
+            {/* ── Board Pack CTA ────────────────────────────────────────────── */}
+            {koraStatus === 'done' && koraResult && (
+              <div className="rounded-xl border-2 border-slate-900 bg-white shadow-sm overflow-hidden">
+                <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="space-y-1">
+                    <h2 className="text-base font-semibold text-slate-900">
+                      Prepara Board Pack Preview
+                    </h2>
+                    <p className="text-xs text-slate-500">
+                      Documento stampabile generato localmente dal dataset caricato · nessun dato salvato
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowBoardPack((v) => !v)}
+                    className="shrink-0 px-6 py-2.5 rounded-lg text-sm font-semibold bg-slate-900 text-white hover:bg-slate-700 transition-colors shadow-sm"
+                  >
+                    {showBoardPack ? 'Chiudi Preview' : 'Prepara Board Pack Preview'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── Board Pack Preview ────────────────────────────────────────── */}
+            {koraStatus === 'done' && koraResult && showBoardPack && parseResult && (
+              <UploadedBoardPackPreview
+                result={koraResult}
+                fileName={parseResult.fileName}
+                totalRecords={parseResult.rowCount}
+                rows={parseResult.rows}
+              />
             )}
 
             {/* ── Section 10: Next steps ────────────────────────────────────── */}
@@ -2222,6 +2256,704 @@ function EligibilityReviewSection({
 
       </div>
     </div>
+  );
+}
+
+// ── Sprint 16: Board Pack helpers ─────────────────────────────────────────────
+
+interface UploadRec { priority: 'Alta' | 'Media' | 'Bassa'; title: string; body: string; }
+
+function generateUploadRecommendations(result: KoraComputationResult): UploadRec[] {
+  const { bti, activation, eligibilitySummary, confidence } = result;
+  const recs: UploadRec[] = [];
+
+  if (bti.totalBudget === 0 || bti.budgetEvidenceQuality < 0.25) {
+    recs.push({ priority: 'Alta', title: 'Fonte budget assente o insufficiente', body: 'Nessuna evidenza economica rilevata. Aggiungere budget_amount, budget_source, budget_evidence_type per abilitare il macroblocco BTI (peso 20%).' });
+  }
+  if (bti.totalBudget > 0 && bti.economicReliefSpend / bti.totalBudget > 0.35) {
+    const pct = Math.round((bti.economicReliefSpend / bti.totalBudget) * 100);
+    recs.push({ priority: 'Alta', title: `${pct}% del budget classificato Economic Relief (0 IU)`, body: 'Buoni pasto e voucher generici non generano Impact Units. Riallocare verso programmi Eligible per incrementare il KORA Index.' });
+  }
+  if (eligibilitySummary.totalCount > 0 && eligibilitySummary.reviewRequiredCount / eligibilitySummary.totalCount > 0.2) {
+    const pct = Math.round((eligibilitySummary.reviewRequiredCount / eligibilitySummary.totalCount) * 100);
+    recs.push({ priority: 'Alta', title: `${pct}% di iniziative in Review Required`, body: 'Classificazione incompleta. Validare con Advisor KORA prima di distribuire il Board Pack. Il KORA Index attuale potrebbe sottostimare il potenziale.' });
+  }
+  if (eligibilitySummary.totalCount > 0 && eligibilitySummary.blockedCount / eligibilitySummary.totalCount > 0.15) {
+    const pct = Math.round((eligibilitySummary.blockedCount / eligibilitySummary.totalCount) * 100);
+    recs.push({ priority: 'Media', title: `${pct}% Blocked — verificare classificazione compliance`, body: 'Assicurarsi che nessun programma Eligible sia classificato erroneamente come compliance obbligatoria. La baseline legale è esclusa per design — non penalizzata.' });
+  }
+  if (confidence.score < 50) {
+    recs.push({ priority: 'Alta', title: `Confidence Score ${confidence.score}/100 — migliorare qualità evidenza`, body: 'Sostituire stime (L0/L1) con export provider (L3) o documentazione interna (L2+). Board Pack non distribuibile formalmente con CS < 50%.' });
+  }
+  if (bti.activationDebt > 0) {
+    recs.push({ priority: 'Media', title: `Activation Debt: ${formatEur(bti.activationDebt)}`, body: 'Budget non convertito in attivazione profonda. Ottimizzare verso programmi Eligible ad alta partecipazione per ridurre il debito e migliorare il BTI Score.' });
+  }
+  if (result.warnings.some((w) => w.toLowerCase().includes('care economy'))) {
+    recs.push({ priority: 'Bassa', title: 'Opportunità Care Economy rilevata', body: 'Segnali childcare, eldercare o family support presenti. Classificare come Eligible (pillar LIFE + LEGACY) per contribuire al KORA Index.' });
+  }
+  if (activation.activeWorkers > 0 && activation.activeWorkers + activation.neverActivatedWorkers < 10) {
+    recs.push({ priority: 'Media', title: 'Baseline forza lavoro mancante', body: 'Workforce totale non rilevata. Aggiungere workforce_population per calcolare correttamente Activation Rate e Meaningful Activation Rate.' });
+  }
+
+  return recs.slice(0, 5);
+}
+
+// ── BpDocFooter / BpSectionTitle / BpExhibit ──────────────────────────────────
+
+function BpDocFooter({ fileName }: { fileName: string }) {
+  return (
+    <div className="mt-8 pt-3 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-mono">
+      <span>KORA Foundation Light · Board Pack Preview · {fileName.slice(0, 48)}</span>
+      <span className="text-slate-300 italic">Preview locale — non distribuire come report certificato</span>
+    </div>
+  );
+}
+
+function BpSectionTitle({ n, title, sub }: { n: string; title: string; sub?: string }) {
+  return (
+    <div className="mb-5">
+      <div className="border-t-2 border-slate-900 pt-3">
+        <div className="flex items-baseline gap-2.5">
+          <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">{n}</span>
+          <h2 className="text-[15px] font-bold tracking-tight text-slate-900 leading-tight">{title}</h2>
+        </div>
+        {sub && <p className="text-[10px] text-slate-500 mt-0.5 ml-7">{sub}</p>}
+      </div>
+    </div>
+  );
+}
+
+function BpExhibit({ n, title }: { n: string; title: string }) {
+  return (
+    <div className="mb-3">
+      <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Exhibit {n}</p>
+      <p className="text-[11px] font-bold text-slate-700 mt-0.5">{title}</p>
+    </div>
+  );
+}
+
+// ── UploadedBoardPackPreview ───────────────────────────────────────────────────
+
+interface UploadedBoardPackPreviewProps {
+  result: KoraComputationResult;
+  fileName: string;
+  totalRecords: number;
+  rows: RawUploadedRecord[];
+}
+
+function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: UploadedBoardPackPreviewProps) {
+  const groups = useMemo(() => buildInitiativeReviewGroups(rows), [rows]);
+  const generatedAt = useMemo(() => new Date().toLocaleString('it-IT', { dateStyle: 'long', timeStyle: 'short' }), []);
+  const recs = useMemo(() => generateUploadRecommendations(result), [result]);
+
+  const { bti, activation, eligibilitySummary, confidence, koraIndex } = result;
+  const METHOD_ID = koraIndex.methodologyVersion;
+  const CALIB = koraIndex.calibrationStatus;
+  const sg = safeguardCls(activation.safeguardStatus);
+  const isInsufficient = result.scoringMode === 'insufficient_data';
+
+  const boardPackGroups = useMemo(() => {
+    const score = (g: InitiativeReviewGroup) => {
+      let s = 0;
+      if (g.reviewRequired || g.isMixedStatus) s += 30;
+      if (g.missingBudgetSource) s += 20;
+      if (g.isLowConfidence) s += 10;
+      if (g.primaryEligibility === 'blocked') s -= 10;
+      return s;
+    };
+    return [...groups].sort((a, b) => score(b) - score(a)).slice(0, 15);
+  }, [groups]);
+
+  const isTruncated = groups.length > 15;
+
+  const csSubscores = [
+    { label: 'Budget Evidence',  pct: Math.round(confidence.budgetEvidenceConfidence * 100) },
+    { label: 'Data Completeness', pct: Math.round(confidence.dataCompleteness * 100) },
+    { label: 'Mapping Quality',  pct: Math.round(confidence.mappingConfidence * 100) },
+    { label: 'Verification',     pct: Math.round(confidence.verificationConfidence * 100) },
+    { label: 'Advisor Review',   pct: Math.round(confidence.reviewConfidence * 100) },
+  ];
+
+  return (
+    <>
+      {/* Print isolation CSS */}
+      <style>{`
+        @media print {
+          [role="banner"], header, aside { display: none !important; }
+          main { padding: 0 !important; overflow: visible !important; height: auto !important; }
+          body, html { background: white !important; height: auto !important; overflow: visible !important; }
+          body * { visibility: hidden; }
+          .bp-upload-print, .bp-upload-print * { visibility: visible; }
+          .bp-upload-print { position: absolute; top: 0; left: 0; width: 100%; }
+          .bp-upload-no-print { display: none !important; }
+          .bp-page-break { page-break-before: always; break-before: page; }
+          .bp-avoid-break { page-break-inside: avoid; break-inside: avoid; }
+          table { border-collapse: collapse; }
+          td, th { padding: 3px 7px !important; }
+        }
+        @page { size: A4 portrait; margin: 14mm 18mm; }
+      `}</style>
+
+      {/* Screen-only bar */}
+      <div className="bp-upload-no-print flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-6 py-4">
+        <div>
+          <p className="text-sm font-semibold text-slate-800">KORA Board Pack Preview — Dataset caricato</p>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Preview locale, pre-empirical, non certificata. Nessun dato viene salvato.
+          </p>
+        </div>
+        <button
+          onClick={() => window.print()}
+          className="shrink-0 px-4 py-2 rounded-lg border border-slate-900 bg-slate-900 text-xs font-semibold text-white hover:bg-slate-700 transition-colors"
+        >
+          Stampa / salva PDF
+        </button>
+      </div>
+
+      {/* ── Document body ── */}
+      <div className="bp-upload-print max-w-[794px] mx-auto bg-white text-slate-900 pb-8">
+
+        {/* ═══ PAGE 1 — COVER ═══ */}
+        <div className="bp-avoid-break px-1 pt-6 min-h-[820px] flex flex-col">
+          <div className="border-t-4 border-slate-900 pt-5 mb-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-[9px] uppercase tracking-[0.15em] text-slate-400 font-semibold mb-0.5">
+                  KORA Foundation Light · Board Pack Preview · Dataset caricato
+                </p>
+                <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400">
+                  Preparato per: Executive / HR / Finance / ESG
+                </p>
+              </div>
+              <div className="text-right text-[9px] text-slate-400 font-mono space-y-0.5">
+                <p>{generatedAt}</p>
+                <p>{METHOD_ID}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-5">
+            <h1 className="text-[38px] font-bold tracking-tight text-slate-900 leading-none mb-2">
+              Board Pack Preview
+            </h1>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-mono text-slate-500 border border-slate-200 rounded px-2 py-0.5 bg-slate-50 max-w-xs truncate">{fileName}</span>
+              <span className="text-[10px] font-semibold text-amber-700 border border-amber-200 bg-amber-50 rounded px-2 py-0.5">{CALIB}</span>
+              <span className="text-[10px] text-slate-500 border border-slate-200 rounded px-2 py-0.5">production_ready: false</span>
+              <span className="text-[10px] text-slate-500 border border-slate-200 rounded px-2 py-0.5">Uploaded dataset preview</span>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-200 mb-8" />
+
+          <div className="mb-10">
+            <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400 font-semibold mb-2">Diagnosi principale</p>
+            <p className="text-[20px] font-light text-slate-800 leading-snug tracking-tight">
+              {isInsufficient
+                ? 'Dataset insufficiente — KORA Index non calcolabile.'
+                : activation.safeguardStatus === 'CLEAR'
+                  ? 'Attivazione sufficiente. Budget-to-Human-Impact verificabile.'
+                  : activation.safeguardStatus === 'FLAGGED'
+                    ? 'Attivazione critica. Intervento prioritario richiesto.'
+                    : 'Attivazione parziale. Potenziale non ancora convertito.'}
+            </p>
+          </div>
+
+          {!isInsufficient && (
+            <div className="grid grid-cols-4 gap-5 mb-10 bp-avoid-break">
+              <div className="space-y-1">
+                <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">KORA Index Preview</p>
+                <p className="text-[44px] font-bold text-slate-900 leading-none">{koraIndex.value}</p>
+                <p className="text-[10px] text-slate-500">/ 100 · pre-calibration</p>
+              </div>
+              <div className="space-y-1 border-l border-slate-200 pl-5">
+                <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">Confidence Score</p>
+                <p className="text-[36px] font-bold text-slate-700 leading-none">{confidence.score}</p>
+                <p className="text-[10px] text-slate-500">/ 100 · esterno · peso 0</p>
+              </div>
+              <div className="space-y-1 border-l border-slate-200 pl-5">
+                <p className={`text-[9px] uppercase tracking-[0.1em] font-semibold ${activation.safeguardStatus !== 'CLEAR' ? 'text-amber-600' : 'text-slate-400'}`}>Activation Safeguard</p>
+                <p className={`text-[24px] font-bold leading-none mt-1 ${sg.text}`}>{activation.safeguardStatus}</p>
+                <p className="text-[10px] text-slate-500">AR {formatPct(activation.activationReach)} · MAR {formatPct(activation.meaningfulActivationReach)}</p>
+              </div>
+              <div className="space-y-1 border-l border-slate-200 pl-5">
+                <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">BTI Score</p>
+                <p className="text-[24px] font-bold text-slate-900 leading-none mt-1">{bti.btiScore}</p>
+                <p className="text-[10px] text-slate-500">/ 100 · macroblocco 20%</p>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-auto border-t border-slate-200 pt-5">
+            <div className="grid grid-cols-3 gap-6 text-[10px] text-slate-500">
+              <div className="space-y-1">
+                <p className="font-semibold text-slate-700">Sorgente dati</p>
+                <p>File caricato in sessione<br />Nessun dato trasmesso a server<br />{totalRecords} record analizzati</p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-slate-700">Generato da</p>
+                <p>KORA Foundation Light<br />Human Impact Intelligence Platform</p>
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold text-slate-700">Metodologia</p>
+                <p className="font-mono">{METHOD_ID}<br />{CALIB}</p>
+              </div>
+            </div>
+          </div>
+
+          <BpDocFooter fileName={fileName} />
+        </div>
+
+        {/* ═══ PAGE 2 — EXECUTIVE SUMMARY ═══ */}
+        <div className="bp-page-break bp-avoid-break px-1 pt-6">
+          <BpSectionTitle n="01" title="Executive Summary" sub={`Dataset: ${fileName} · ${totalRecords} record · ${groups.length} iniziative`} />
+
+          {isInsufficient ? (
+            <div className="border border-amber-200 bg-amber-50 rounded p-4 text-[12px] text-amber-800">
+              <p className="font-bold mb-1">Dataset insufficiente — KORA Index non calcolabile</p>
+              <p>I dati caricati non contengono iniziative sufficienti per il calcolo del KORA Index. Assicurarsi che il file includa nome iniziativa, categoria e almeno un importo budget.</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-4 gap-4 mb-5 bp-avoid-break">
+                <div className="border-t-2 border-slate-800 pt-3 space-y-1">
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">KORA Index</p>
+                  <p className="text-[28px] font-bold text-slate-900 leading-none">{koraIndex.value}<span className="text-[12px] font-normal text-slate-400">/100</span></p>
+                  <p className="text-[10px] text-slate-600">{CALIB}</p>
+                </div>
+                <div className="border-t-2 border-slate-300 pt-3 space-y-1">
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Confidence</p>
+                  <p className="text-[28px] font-bold text-slate-700 leading-none">{confidence.score}<span className="text-[12px] font-normal text-slate-400">/100</span></p>
+                  <p className="text-[10px] text-slate-600">Esterno · peso 0</p>
+                </div>
+                <div className={`border-t-2 pt-3 space-y-1 ${activation.safeguardStatus === 'CLEAR' ? 'border-emerald-400' : activation.safeguardStatus === 'FLAGGED' ? 'border-red-400' : 'border-amber-400'}`}>
+                  <p className={`text-[9px] uppercase tracking-wider font-semibold ${activation.safeguardStatus === 'CLEAR' ? 'text-emerald-600' : activation.safeguardStatus === 'FLAGGED' ? 'text-red-600' : 'text-amber-600'}`}>Safeguard</p>
+                  <p className={`text-[24px] font-bold leading-none ${sg.text}`}>{activation.safeguardStatus}</p>
+                  <p className="text-[10px] text-slate-600">AR {formatPct(activation.activationReach)} · MAR {formatPct(activation.meaningfulActivationReach)}</p>
+                </div>
+                <div className="border-t-2 border-slate-200 pt-3 space-y-1">
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Activation Debt</p>
+                  <p className="text-[22px] font-bold text-slate-900 leading-none mt-1">{formatEur(bti.activationDebt)}</p>
+                  <p className="text-[10px] text-slate-600">Budget non convertito</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-5 bp-avoid-break">
+                <div>
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">Macroblocks</p>
+                  <ul className="space-y-1.5 text-[11px] text-slate-700">
+                    <li className="flex justify-between"><span>Activation Reach (25%)</span><span className="font-mono font-bold">{koraIndex.macroblocks.activationReach}</span></li>
+                    <li className="flex justify-between"><span>Activation Quality (30%)</span><span className="font-mono font-bold">{koraIndex.macroblocks.activationQuality}</span></li>
+                    <li className="flex justify-between"><span>Distribution & Equity (25%)</span><span className="font-mono font-bold">{koraIndex.macroblocks.distributionEquity}</span></li>
+                    <li className="flex justify-between"><span>Budget-to-Human-Impact (20%)</span><span className="font-mono font-bold">{koraIndex.macroblocks.budgetToHumanImpact}</span></li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">Eligibility Gate</p>
+                  <ul className="space-y-1.5 text-[11px] text-slate-700">
+                    <li className="flex justify-between"><span>Eligible</span><span className="font-mono font-bold text-emerald-700">{eligibilitySummary.eligibleCount}</span></li>
+                    <li className="flex justify-between"><span>Limited (0 IU)</span><span className="font-mono font-bold text-amber-600">{eligibilitySummary.limitedCount}</span></li>
+                    <li className="flex justify-between"><span>Blocked</span><span className="font-mono font-bold text-slate-400">{eligibilitySummary.blockedCount}</span></li>
+                    <li className="flex justify-between"><span>Review Required</span><span className="font-mono font-bold text-slate-600">{eligibilitySummary.reviewRequiredCount}</span></li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">Segnali chiave</p>
+                  <ul className="space-y-1.5 text-[11px] text-slate-700">
+                    {recs.slice(0, 3).map((r, i) => (
+                      <li key={i} className="flex gap-2"><span className="text-slate-300 shrink-0">{i + 1}.</span><span className="leading-tight">{r.title}</span></li>
+                    ))}
+                    {recs.length === 0 && <li className="text-slate-400">Nessun segnale critico rilevato.</li>}
+                  </ul>
+                </div>
+              </div>
+            </>
+          )}
+
+          <BpDocFooter fileName={fileName} />
+        </div>
+
+        {/* ═══ PAGE 3 — DATASET READINESS ═══ */}
+        <div className="bp-page-break px-1 pt-6">
+          <BpSectionTitle n="02" title="Dataset Readiness" sub="Qualità del dataset caricato · nessun dato individuale esposto" />
+
+          <div className="grid grid-cols-3 gap-6 mb-5 bp-avoid-break">
+            <div className="border-t-2 border-slate-800 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Record totali</p>
+              <p className="text-[32px] font-bold text-slate-900 leading-none">{totalRecords}</p>
+              <p className="text-[10px] text-slate-500">righe nel file caricato</p>
+            </div>
+            <div className="border-t-2 border-slate-300 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Iniziative rilevate</p>
+              <p className="text-[32px] font-bold text-slate-700 leading-none">{groups.length}</p>
+              <p className="text-[10px] text-slate-500">gruppi per nome/categoria</p>
+            </div>
+            <div className="border-t-2 border-slate-200 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">In Review Required</p>
+              <p className="text-[32px] font-bold text-slate-700 leading-none">{groups.filter((g) => g.reviewRequired || g.isMixedStatus).length}</p>
+              <p className="text-[10px] text-slate-500">iniziative da validare</p>
+            </div>
+          </div>
+
+          <BpExhibit n="2.1" title="Indicatori di qualità dataset" />
+          <div className="bp-avoid-break mb-5">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Indicatore</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Conteggio</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Nota</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  ['Record totali', `${totalRecords}`, 'Righe nel file caricato'],
+                  ['Iniziative rilevate', `${groups.length}`, 'Gruppi per nome/categoria iniziativa'],
+                  ['In Review Required', `${groups.filter((g) => g.reviewRequired || g.isMixedStatus).length}`, 'Classificazione ambigua o mista'],
+                  ['Budget mancante (L0)', `${groups.filter((g) => g.missingBudgetSource).length}`, 'Nessuna fonte budget documentata'],
+                  ['Evidenza debole (L0/L1)', `${groups.filter((g) => g.weakestEvidence === 'L0_NO_EVIDENCE' || g.weakestEvidence === 'L1_SELF_DECLARED').length}`, 'Abbassa il Confidence Score'],
+                  ['Blocked (compliance)', `${groups.filter((g) => g.primaryEligibility === 'blocked').length}`, 'Escluse per design — non penalizzate'],
+                  ['Campi identità rilevati', `${groups.filter((g) => g.hasIdentityFields).length}`, 'Usati solo per stima unici — mai in output employer'],
+                ] as [string, string, string][]).map(([label, val, note]) => (
+                  <tr key={label} className="border-b border-slate-100">
+                    <td className="py-1.5 pr-4 font-semibold text-slate-700">{label}</td>
+                    <td className="py-1.5 pr-4 text-right font-mono font-bold text-slate-900">{val}</td>
+                    <td className="py-1.5 text-slate-500 text-[10px]">{note}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <BpExhibit n="2.2" title="Confidence sub-scores" />
+          <div className="space-y-2 bp-avoid-break mb-4">
+            {csSubscores.map((s) => (
+              <div key={s.label} className="flex items-center gap-4">
+                <span className="w-36 text-[10px] text-slate-600 shrink-0">{s.label}</span>
+                <div className="flex-1 h-1.5 bg-slate-100 rounded-full">
+                  <div className={`h-1.5 rounded-full ${s.pct >= 60 ? 'bg-slate-700' : s.pct >= 35 ? 'bg-amber-400' : 'bg-red-400'}`} style={{ width: `${s.pct}%` }} />
+                </div>
+                <span className="w-10 text-right text-[10px] font-mono text-slate-500">{s.pct}%</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="border border-slate-200 rounded px-4 py-3 text-[11px] text-slate-600">
+            <strong className="text-slate-800">Nota privacy:</strong> I campi identità (nome, cognome, email, matricola) sono usati esclusivamente per stimare il conteggio di lavoratori unici. I valori non sono mai restituiti né visualizzati in questo Board Pack. Output employer: solo conteggi aggregati.
+          </div>
+
+          <BpDocFooter fileName={fileName} />
+        </div>
+
+        {/* ═══ PAGE 4 — ELIGIBILITY & EVIDENCE ═══ */}
+        <div className="bp-page-break px-1 pt-6">
+          <BpSectionTitle n="03" title="Eligibility & Evidence Review" sub="Per iniziativa · output aggregato · nessun dato individuale" />
+
+          <div className="grid grid-cols-4 gap-4 mb-5 bp-avoid-break">
+            {([
+              { label: 'Eligible', count: eligibilitySummary.eligibleCount, note: 'Genera IU → KORA Index', border: 'border-slate-800' },
+              { label: 'Limited', count: eligibilitySummary.limitedCount, note: '0 IU · solo BTI engine', border: 'border-slate-300' },
+              { label: 'Blocked', count: eligibilitySummary.blockedCount, note: 'Compliance · escluso per design', border: 'border-slate-200' },
+              { label: 'Review Required', count: eligibilitySummary.reviewRequiredCount, note: 'Validazione advisor necessaria', border: 'border-amber-300' },
+            ] as { label: string; count: number; note: string; border: string }[]).map((b) => (
+              <div key={b.label} className={`border-t-2 pt-3 space-y-0.5 ${b.border}`}>
+                <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">{b.label}</p>
+                <p className="text-[28px] font-bold text-slate-900 leading-none">{b.count}</p>
+                <p className="text-[10px] text-slate-500">{b.note}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mb-4 border-l-4 border-slate-800 pl-4 py-1">
+            <p className="text-[11px] text-slate-700 leading-relaxed">
+              <strong>KORA non trasforma compliance o budget non documentato in impatto.</strong>{' '}
+              La conformità legale obbligatoria è esclusa per design. Il budget non documentato entra nel BTI solo come dichiarato o stimato, con confidence esplicita.
+            </p>
+          </div>
+
+          <BpExhibit n="3.1" title={`Iniziative per eleggibilità ed evidenza${isTruncated ? ` — top 15 di ${groups.length}` : ` — ${groups.length} totali`}`} />
+          <div className="bp-avoid-break overflow-x-auto mb-3">
+            <table className="w-full text-[10px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Iniziativa</th>
+                  <th className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Rec.</th>
+                  <th className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Lav. unici</th>
+                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Eligibility</th>
+                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Pillar</th>
+                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Evidenza</th>
+                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">BTI</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Azione</th>
+                </tr>
+              </thead>
+              <tbody>
+                {boardPackGroups.map((grp) => (
+                  <tr key={grp.groupKey} className="border-b border-slate-100">
+                    <td className="py-1.5 pr-3 align-top">
+                      <p className="font-semibold text-slate-800 max-w-[150px] leading-tight">{grp.groupLabel}</p>
+                      {grp.isCareEconomy && <span className="text-[9px] text-blue-600">care economy</span>}
+                    </td>
+                    <td className="py-1.5 pr-2 text-right font-mono text-slate-600 align-top">{grp.recordCount}</td>
+                    <td className="py-1.5 pr-2 text-right font-mono text-slate-600 align-top">
+                      {grp.uniqueWorkerEstimate !== null ? `~${grp.uniqueWorkerEstimate}` : '—'}
+                    </td>
+                    <td className="py-1.5 pr-2 align-top">
+                      <span className={`text-[9px] font-bold rounded px-1 py-0.5 ${
+                        grp.primaryEligibility === 'eligible' ? 'bg-slate-900 text-white' :
+                        grp.primaryEligibility === 'limited' ? 'bg-slate-200 text-slate-700' :
+                        grp.primaryEligibility === 'blocked' ? 'bg-slate-100 text-slate-400' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>{grp.primaryEligibility}</span>
+                    </td>
+                    <td className="py-1.5 pr-2 align-top text-[10px] font-semibold text-slate-600">{grp.primaryPillar ?? '—'}</td>
+                    <td className="py-1.5 pr-2 align-top text-[9px] font-mono text-slate-500">{evidenceLevelLabel(grp.strongestEvidence)}</td>
+                    <td className="py-1.5 pr-2 align-top text-[9px] font-mono text-slate-500">{btiTreatmentLabel(grp.primaryBtiTreatment)}</td>
+                    <td className="py-1.5 align-top text-[9px] text-slate-600 max-w-[120px] leading-tight">{grp.recommendedAction}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {isTruncated && (
+            <p className="text-[9px] text-slate-400 mb-3">
+              Prime 15 iniziative per priorità di revisione. Dataset completo: {groups.length} iniziative · nessuna riga raw · nessun dato identità.
+            </p>
+          )}
+
+          <BpDocFooter fileName={fileName} />
+        </div>
+
+        {/* ═══ PAGE 5 — BUDGET-TO-HUMAN-IMPACT ═══ */}
+        <div className="bp-page-break px-1 pt-6">
+          <BpSectionTitle n="04" title="Budget-to-Human-Impact (BTI)" sub="Macroblocco 4 · peso 20% nel KORA Index v3 · nessun budget inventato" />
+
+          <div className="grid grid-cols-3 gap-5 mb-5 bp-avoid-break">
+            <div className="border-t-2 border-slate-800 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Budget totale rilevato</p>
+              <p className="text-[26px] font-bold text-slate-900 leading-none">{formatEur(bti.totalBudget)}</p>
+              <p className="text-[10px] text-slate-500">da colonne budget nel dataset</p>
+            </div>
+            <div className="border-t-2 border-slate-300 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Deep Activation Spend</p>
+              <p className="text-[26px] font-bold text-slate-700 leading-none">{formatEur(bti.deepActivationSpend)}</p>
+              <p className="text-[10px] text-slate-500">{bti.totalBudget > 0 ? `${Math.round((bti.deepActivationSpend / bti.totalBudget) * 100)}%` : '—'} del totale</p>
+            </div>
+            <div className="border-t-2 border-slate-200 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Activation Debt</p>
+              <p className="text-[26px] font-bold text-slate-900 leading-none">{formatEur(bti.activationDebt)}</p>
+              <p className="text-[10px] text-slate-500">budget non convertito in IU</p>
+            </div>
+          </div>
+
+          <BpExhibit n="4.1" title="Composizione budget per categoria BTI" />
+          <div className="bp-avoid-break mb-5">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Categoria</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Importo</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Share</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Trattamento BTI</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  { label: 'Deep Activation Spend', amount: bti.deepActivationSpend, treatment: 'Genera IU → KORA Index' },
+                  { label: 'Economic Relief Spend', amount: bti.economicReliefSpend, treatment: '0 IU · tracciato in BTI engine' },
+                  { label: 'Blocked Compliance Spend', amount: bti.blockedComplianceSpend, treatment: '0 IU · escluso per design' },
+                  { label: 'Activation Debt', amount: bti.activationDebt, treatment: 'Budget non convertito in attivazione' },
+                ] as { label: string; amount: number; treatment: string }[]).map((r) => (
+                  <tr key={r.label} className="border-b border-slate-100">
+                    <td className="py-2 pr-4 font-semibold text-slate-800">{r.label}</td>
+                    <td className="py-2 pr-4 text-right font-mono font-bold text-slate-900">{formatEur(r.amount)}</td>
+                    <td className="py-2 pr-4 text-right font-mono text-slate-600">
+                      {bti.totalBudget > 0 ? `${Math.round((r.amount / bti.totalBudget) * 100)}%` : '—'}
+                    </td>
+                    <td className="py-2 text-slate-600 text-[10px]">{r.treatment}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <BpExhibit n="4.2" title="Budget Evidence Quality" />
+          <div className="flex items-center gap-4 mb-2 bp-avoid-break">
+            <div className="flex-1 h-3 bg-slate-100 rounded-full">
+              <div
+                className={`h-3 rounded-full ${bti.budgetEvidenceQuality >= 0.6 ? 'bg-slate-800' : bti.budgetEvidenceQuality >= 0.35 ? 'bg-amber-400' : 'bg-red-400'}`}
+                style={{ width: `${Math.round(bti.budgetEvidenceQuality * 100)}%` }}
+              />
+            </div>
+            <span className="text-[13px] font-bold font-mono text-slate-900 w-10 text-right">{Math.round(bti.budgetEvidenceQuality * 100)}%</span>
+          </div>
+          <p className="text-[10px] text-slate-500 mb-4">
+            {bti.totalBudget === 0
+              ? 'Nessun importo budget rilevato nel dataset. Aggiungere budget_amount, budget_source, budget_evidence_type per abilitare il BTI Engine.'
+              : bti.budgetEvidenceQuality < 0.4
+                ? 'Qualità evidenza bassa (L0/L1 prevalente). BTI Score penalizzato. Sostituire con export provider (L3) o documentazione interna (L2+).'
+                : 'Qualità evidenza accettabile. Verificare con Advisor KORA per full_weight nel BTI Engine.'}
+          </p>
+
+          <div className="border border-slate-200 rounded px-4 py-3 bp-avoid-break">
+            <p className="text-[11px] font-bold text-slate-800 mb-1">Il budget non è un dato valido se non ha una fonte.</p>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              La qualità della fonte budget (L0–L4) determina il peso di ogni record nel BTI Engine. Budget stimato o dichiarato riceve un trust score inferiore — si riflette nel Confidence Score (esterno al KORA Index, peso = 0).
+            </p>
+          </div>
+
+          <BpDocFooter fileName={fileName} />
+        </div>
+
+        {/* ═══ PAGE 6 — ACTIVATION & REACH ═══ */}
+        <div className="bp-page-break px-1 pt-6">
+          <BpSectionTitle n="05" title="Activation & Reach" sub="Output aggregato · nessun dato individuale · nessun nominativo" />
+
+          <div className="grid grid-cols-4 gap-4 mb-5 bp-avoid-break">
+            <div className="border-t-2 border-slate-800 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Lavoratori attivi</p>
+              <p className="text-[28px] font-bold text-slate-900 leading-none">{activation.activeWorkers}</p>
+              <p className="text-[10px] text-slate-500">AR {formatPct(activation.activationReach)}</p>
+            </div>
+            <div className="border-t-2 border-slate-300 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Attivazione significativa</p>
+              <p className="text-[28px] font-bold text-slate-700 leading-none">{activation.meaningfullyActiveWorkers}</p>
+              <p className="text-[10px] text-slate-500">MAR {formatPct(activation.meaningfulActivationReach)}</p>
+            </div>
+            <div className="border-t-2 border-slate-200 pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Mai attivati</p>
+              <p className="text-[28px] font-bold text-slate-700 leading-none">{activation.neverActivatedWorkers}</p>
+              <p className="text-[10px] text-slate-500">potenziale non convertito</p>
+            </div>
+            <div className={`border-t-2 pt-3 space-y-0.5 ${activation.safeguardStatus === 'CLEAR' ? 'border-emerald-400' : activation.safeguardStatus === 'FLAGGED' ? 'border-red-400' : 'border-amber-400'}`}>
+              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Safeguard</p>
+              <p className={`text-[22px] font-bold leading-none mt-1 ${sg.text}`}>{activation.safeguardStatus}</p>
+              <p className="text-[10px] text-slate-500">D-21 threshold</p>
+            </div>
+          </div>
+
+          <BpExhibit n="5.1" title="Activation Rate vs soglie Safeguard (D-21)" />
+          <div className="space-y-3 mb-5 bp-avoid-break border border-slate-100 rounded px-4 py-4">
+            {([
+              { label: 'Activation Rate (AR)', val: activation.activationReach, threshold: 0.40, note: 'CLEAR ≥ 40%' },
+              { label: 'Meaningful Activation Rate (MAR)', val: activation.meaningfulActivationReach, threshold: 0.30, note: 'CLEAR ≥ 30%' },
+            ] as { label: string; val: number; threshold: number; note: string }[]).map((m) => (
+              <div key={m.label} className="space-y-1">
+                <div className="flex justify-between text-[10px] text-slate-500">
+                  <span>{m.label}</span>
+                  <span className="font-mono font-medium">{formatPct(m.val)} <span className="font-normal opacity-60">({m.note})</span></span>
+                </div>
+                <div className="relative h-2 rounded-full bg-slate-100">
+                  <div
+                    className={`h-2 rounded-full ${m.val >= m.threshold ? 'bg-emerald-500' : m.val >= m.threshold * 0.5 ? 'bg-amber-400' : 'bg-red-400'}`}
+                    style={{ width: `${Math.min(100, Math.round(m.val * 100))}%` }}
+                  />
+                  <div className="absolute top-0 bottom-0 w-px bg-slate-600 opacity-40" style={{ left: `${m.threshold * 100}%` }} />
+                </div>
+              </div>
+            ))}
+            <p className="text-[9px] text-slate-400 pt-1">
+              Nessun nominativo. Nessun PIB individuale. Solo conteggi aggregati.
+              {activation.warnings.some((w) => w.includes('stima') || w.includes('bounded')) ? ' Reach stimata: dati identità parziali, stima conservativa.' : ''}
+            </p>
+          </div>
+
+          <div className="border border-slate-200 rounded px-4 py-3 bp-avoid-break">
+            <p className="text-[11px] font-bold text-slate-800 mb-1">Confine privacy — output employer</p>
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              Output employer: solo conteggi aggregati sopra soglia N ≥ 10. Nessun campo identità (nome, email, matricola) è incluso in questo Board Pack.
+              I campi identità nei dati caricati sono stati usati esclusivamente per stimare il conteggio di lavoratori unici — i valori non sono mai restituiti.
+            </p>
+          </div>
+
+          <BpDocFooter fileName={fileName} />
+        </div>
+
+        {/* ═══ PAGE 7 — RECOMMENDATIONS + METHODOLOGY ═══ */}
+        <div className="bp-page-break px-1 pt-6">
+          <BpSectionTitle n="06" title="Raccomandazioni & Confini Metodologici" sub={`${recs.length} raccomandazioni deterministiche · pre_empirical_calibration`} />
+
+          <BpExhibit n="6.1" title="Raccomandazioni prioritarie — output deterministico dai risultati" />
+          <div className="bp-avoid-break mb-6">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold w-16">Prior.</th>
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Azione</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Razionale</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recs.map((r, i) => (
+                  <tr key={i} className={i < recs.length - 1 ? 'border-b border-slate-100' : ''}>
+                    <td className="py-2 pr-3 align-top">
+                      <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
+                        r.priority === 'Alta'  ? 'border-slate-800 bg-slate-900 text-white' :
+                        r.priority === 'Media' ? 'border-slate-300 bg-slate-100 text-slate-700' :
+                                                 'border-slate-200 bg-white text-slate-400'
+                      }`}>{r.priority}</span>
+                    </td>
+                    <td className="py-2 pr-3 align-top font-semibold text-slate-800">{r.title}</td>
+                    <td className="py-2 align-top text-slate-600">{r.body}</td>
+                  </tr>
+                ))}
+                {recs.length === 0 && (
+                  <tr>
+                    <td colSpan={3} className="py-4 text-center text-[10px] text-slate-400">
+                      Nessuna raccomandazione critica rilevata. Procedere con revisione Advisor KORA.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <BpExhibit n="6.2" title="Confini metodologici — non derogabili" />
+          <div className="bp-avoid-break mb-4">
+            <table className="w-full text-[11px] border-collapse">
+              <thead>
+                <tr className="border-b-2 border-slate-900">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold w-48">Elemento</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Nota</th>
+                </tr>
+              </thead>
+              <tbody>
+                {([
+                  ['Calibrazione', `${METHOD_ID} · ${CALIB} · pesi v0.1 pre-empirici`],
+                  ['Confidence Score', 'Esterno al KORA Index v3 · peso = 0 · indicatore affidabilità dati'],
+                  ['Activation Safeguard', 'Gate interpretivo — non componente del KORA Index'],
+                  ['Worker ranking', 'KORA non produce ranking. PIB è worker-private. Nessun dato individuale in questo Board Pack.'],
+                  ['Output employer', 'Solo aggregati sopra N ≥ 10 · nessun PIB · nessun dato identità individuale'],
+                  ['Causalità', 'Correlazione ≠ causalità — tutti i segnali KORA sono associativi, non predittivi'],
+                  ['Assurance ESG', 'KORA non garantisce conformità normativa ESG/CSR'],
+                  ['Certificazione', 'Board Pack Preview non certificato. Revisione Advisor KORA richiesta prima di uso formale.'],
+                  ['Dati salvati', 'Nessun dato trasmesso a server o salvato. Elaborazione interamente client-side in questa sessione.'],
+                ] as [string, string][]).map(([label, val]) => (
+                  <tr key={label} className="border-b border-slate-100">
+                    <td className="py-1.5 pr-4 font-semibold text-slate-600 align-top">{label}</td>
+                    <td className="py-1.5 text-slate-700">{val}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="border border-slate-200 rounded px-4 py-3 bp-avoid-break">
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
+              Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
+              Questo Board Pack Preview è generato localmente dal dataset caricato in sessione. È pre-empirical e non certificato.
+              Revisione Advisor KORA raccomandata prima di qualsiasi uso formale o distribuzione.
+            </p>
+            <p className="text-[9px] font-mono text-slate-400 mt-2">
+              {METHOD_ID} · {CALIB} · production_ready: false · foundation_light_dynamic_preview · {generatedAt}
+            </p>
+          </div>
+
+          <BpDocFooter fileName={fileName} />
+        </div>
+
+      </div>
+    </>
   );
 }
 
