@@ -2,9 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useRole } from '@/lib/demo-state';
+import { useRole, useEnvironment } from '@/lib/demo-state';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
+
+const ENV_SIDEBAR_LABEL: Record<string, string> = {
+  demo:   'Ambiente demo',
+  live:   'Ambiente live',
+  future: 'Roadmap',
+};
 
 interface NavItem {
   href: string;
@@ -189,6 +195,7 @@ function buildNavGroups(role: string): NavGroup[] {
 
 export function Sidebar() {
   const { activeRole } = useRole();
+  const { activeEnvironment } = useEnvironment();
   const pathname = usePathname();
   const groups = buildNavGroups(activeRole);
 
@@ -233,9 +240,11 @@ export function Sidebar() {
       </nav>
       <div className="border-t border-slate-200 px-4 pt-3 pb-2 space-y-0.5">
         <p className="text-[10px] font-semibold text-slate-500">Foundation Light v0.1</p>
-        <p className="text-[9px] font-mono text-slate-400">Dati sintetici demo</p>
         <p className="text-[9px] font-mono text-slate-400">pre_empirical_calibration</p>
-        <p className="text-[9px] text-slate-400 pt-1">Ruolo: {activeRole}</p>
+        <p className="text-[9px] font-semibold text-slate-500 pt-1">
+          {ENV_SIDEBAR_LABEL[activeEnvironment] ?? 'Ambiente demo'}
+        </p>
+        <p className="text-[9px] text-slate-400">Ruolo: {activeRole}</p>
       </div>
     </aside>
   );

@@ -10,6 +10,8 @@ export type PillarCode     = (typeof PILLAR_CODES)[number];
 export type ComponentCode  = (typeof KORA_INDEX_COMPONENTS)[number];
 export type MacroblockCode = (typeof MACROBLOCK_CODES)[number];
 
+export type Environment = 'demo' | 'live' | 'future';
+
 export type SafeguardStatus = 'CLEAR' | 'WARNING' | 'FLAGGED';
 export type CalibrationStatus =
   | 'pre_empirical_calibration'
