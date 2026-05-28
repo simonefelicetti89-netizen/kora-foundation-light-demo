@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { uefReviewService } from '@/services/uef-review/UEFReviewService';
 import { OperatorToolBoundary } from '@/components/demo/OperatorToolBoundary';
+import { DataLineagePreview } from '@/components/demo/DataLineagePreview';
 import { cn } from '@/lib/utils';
 import { ACTION_FAMILY_LABELS } from '@/lib/constants/kora';
 import type {
@@ -721,6 +722,11 @@ export default function UEFReview() {
       {selectedRecord && (
         <DetailPanel record={selectedRecord} onClose={() => setSelectedId(null)} />
       )}
+
+      {/* ── Part 2 (Sprint 23): Data Lineage Preview ─────────────────────────── */}
+      <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <DataLineagePreview showHeader showMethodologyNote />
+      </div>
 
       {/* ── Part 5: Advisor Review Preview ───────────────────────────────────── */}
       <div className="rounded-lg border border-blue-200 bg-blue-50/30 p-4 space-y-3">

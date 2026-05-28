@@ -15,6 +15,7 @@ import { BlockedByDesignPanel } from '@/components/kora-index/BlockedByDesignPan
 import { BudgetToHumanImpactPanel } from '@/components/kora-index/BudgetToHumanImpactPanel';
 import { RecommendationsPanel } from '@/components/kora-index/RecommendationsPanel';
 import { MethodologyGlossary } from '@/components/kora-index/MethodologyGlossary';
+import Link from 'next/link';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
@@ -246,6 +247,35 @@ export default function KoraIndexDetail() {
 
         {/* ── Methodology glossary ── */}
         <MethodologyGlossary />
+
+        {/* ── Company-safe lineage note ── */}
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs text-slate-500">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <p className="font-semibold text-slate-600 text-[11px] uppercase tracking-wide">
+              Tracciabilità dell&apos;output
+            </p>
+            <Link
+              href="/company/scoring"
+              className="text-[10px] text-slate-400 hover:text-slate-600 underline whitespace-nowrap"
+            >
+              Lineage operativa →
+            </Link>
+          </div>
+          <p>
+            La vista Company mostra lineage aggregata e semplificata.
+            La lineage completa è strumento KORA Operator / Advisor.
+          </p>
+          <ul className="list-disc list-inside space-y-0.5 text-[11px] pl-1">
+            <li>Ogni componente del KORA Index deriva da record classificati e aggregati per pillar.</li>
+            <li>Eligible → IU generati → Activation Reach e componenti analitici.</li>
+            <li>Limited → economic_relief_spend in BTI Engine → macroblocco BTI (20%).</li>
+            <li>Blocked → baseline legale, escluso per design, non penalizzato.</li>
+            <li>Company vede solo aggregati sopra soglia privacy N≥10 — nessun record individuale.</li>
+          </ul>
+          <p className="text-[10px] font-mono text-slate-400 border-t border-slate-100 pt-2">
+            KORA Methodology v0.1 · pre_empirical_calibration · lineage semplificata Company
+          </p>
+        </div>
       </div>
     </div>
   );
