@@ -23,6 +23,7 @@ import { runKoraPipeline } from '@/lib/kora-engine/run-kora-pipeline';
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { mapPillarBatch } from '@/lib/kora-engine/pillar-mapping';
 import { assessBudgetEvidenceBatch } from '@/lib/kora-engine/budget-evidence';
+import { cn } from '@/lib/utils';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -503,6 +504,17 @@ export default function UploadPage() {
   const [koraError, setKoraError] = useState<string | null>(null);
   const [showBoardPack, setShowBoardPack] = useState(false);
 
+  // Collapsible section state — template, preview table and mapping default collapsed
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    new Set(['template', 'preview', 'mapping']),
+  );
+  const toggleSection = (key: string) =>
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) { next.delete(key); } else { next.add(key); }
+      return next;
+    });
+
   // ── Derived state ────────────────────────────────────────────────────────────
 
   const columnMappings: ColumnMapping[] = useMemo(
@@ -622,49 +634,42 @@ export default function UploadPage() {
         {/* ── Operator boundary banner ───────────────────────────────────────── */}
         <OperatorToolBoundary />
 
+        {/* ── Workflow Stepper ──────────────────────────────────────────────── */}
+        <WorkflowStepper
+          uploadStatus={status}
+          koraStatus={koraStatus}
+          showBoardPack={showBoardPack}
+        />
+
         {/* ── Section 1: Header ─────────────────────────────────────────────── */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Link href="/company/data" className="hover:text-slate-700 transition-colors">
-              Readiness
+            <Link href="/admin/companies/data-intake" className="hover:text-slate-700 transition-colors">
+              Data Intake
             </Link>
             <span>/</span>
-            <span className="text-slate-700 font-medium">Data Intake Studio</span>
+            <span className="text-slate-700 font-medium">KORA Operator Studio</span>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                KORA Data Intake Studio
+                KORA Operator Data Intake Studio
               </h1>
               <p className="mt-1 text-slate-500 text-sm leading-relaxed max-w-xl">
-                Carica i file HR, welfare e budget dell&apos;azienda. Il sistema analizza le colonne,
-                segnala i dati sensibili e valuta la qualità dell&apos;evidenza per il calcolo BTI.
+                Carica i file ricevuti dall&apos;azienda, verifica qualità e privacy, lancia la preview metodologica e prepara il Decision Pack.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 border border-indigo-200">
-                Upload V0
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white border border-slate-700">
+                KORA Operator
               </span>
               <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
-                Client-side
+                Client-side v0
               </span>
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
+              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--env-soft)] text-[var(--env-text)] border border-[var(--env-border)]">
                 Foundation Light
               </span>
-            </div>
-          </div>
-
-          {/* Privacy boundary notice */}
-          <div className="flex items-start gap-3 p-3.5 rounded-lg border border-blue-200 bg-blue-50 text-sm">
-            <svg className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.955 11.955 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-            </svg>
-            <div className="text-blue-800">
-              <span className="font-semibold">Perimetro company-enabled —</span>{' '}
-              KORA misura come fondi, iniziative e benefit aziendali vengono attivati dai lavoratori.
-              Upload attesi: file aziendali (Workers aggregati, Initiatives, Participation) e opzionalmente export provider welfare/LMS.
-              Nessun upload individuale lavoratore. Nessun dato inviato a server in questa versione.
             </div>
           </div>
 
@@ -693,7 +698,7 @@ export default function UploadPage() {
             </div>
             <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/60 text-[10px] text-slate-500">
               Opzionali: HR KPI aggregati (turnover, engagement) · export provider welfare/LMS come supplemento.
-              I lavoratori non caricano file: upload individuale fuori perimetro in Foundation Light Pilot.
+              Foundation Light non richiede self-service cliente. L&apos;azienda invia il Data Pack a KORA; KORA Operator lo normalizza e lo processa.
             </div>
           </div>
         </div>
@@ -729,9 +734,9 @@ export default function UploadPage() {
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium text-slate-700">
-                    {isDragging ? 'Rilascia il file qui' : 'Trascina il file qui o clicca per selezionare'}
+                    {isDragging ? 'Rilascia il file qui' : 'Carica file ricevuto dal cliente'}
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">CSV, XLSX, XLS — max {MAX_FILE_MB} MB</p>
+                  <p className="text-xs text-slate-400 mt-1">CSV, XLSX, XLS — max {MAX_FILE_MB} MB · trascina o clicca per selezionare</p>
                 </div>
                 <input
                   ref={fileInputRef}
@@ -839,7 +844,7 @@ export default function UploadPage() {
                   { label: 'Colonne sensibili', value: sensitiveFlags.length, total: null, cls: sensitiveFlags.length > 0 ? 'text-red-600' : 'text-slate-400' },
                 ].map((stat) => (
                   <div key={stat.label} className="rounded-lg border border-slate-200 bg-white p-3 text-center">
-                    <p className={`text-xl font-bold ${stat.cls}`}>
+                    <p className={`text-xl font-bold font-mono ${stat.cls}`}>
                       {stat.value}{stat.total !== null && <span className="text-slate-400 font-normal text-sm">/{stat.total}</span>}
                     </p>
                     <p className="text-xs text-slate-500 mt-0.5 leading-tight">{stat.label}</p>
@@ -850,17 +855,103 @@ export default function UploadPage() {
           )}
         </div>
 
+        {/* ── Operator Decision Board ────────────────────────────────────────── */}
+        {status === 'parsed' && parseResult && (
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="px-6 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Operator Decision Board</p>
+              <button
+                onClick={handleRunKoraPreview}
+                disabled={koraStatus === 'running'}
+                className={cn(
+                  'px-4 py-1.5 rounded-md text-xs font-semibold transition-colors',
+                  koraStatus === 'running'
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : koraStatus === 'done'
+                    ? 'bg-slate-700 text-white hover:bg-slate-600'
+                    : 'bg-slate-900 text-white hover:bg-slate-700',
+                )}
+              >
+                {koraStatus === 'running' ? 'Elaborazione…' : koraStatus === 'done' ? 'Riesegui Preview' : 'Run KORA Preview →'}
+              </button>
+            </div>
+            <div className="px-6 py-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {[
+                {
+                  label: 'File analizzato',
+                  value: 'Sì',
+                  sub: `${parseResult.rowCount} righe · ${parseResult.columnCount} colonne`,
+                  ok: true,
+                },
+                {
+                  label: 'Campi richiesti (BTI)',
+                  value: criticalMapped === 3 ? 'Forte' : criticalMapped >= 1 ? 'Parziale' : 'Assente',
+                  sub: `${criticalMapped}/3 colonne critiche budget`,
+                  ok: criticalMapped >= 2,
+                },
+                {
+                  label: 'Campi identità',
+                  value: sensitiveFlags.filter((f) => f.recommendedAction === 'pseudonymize').length > 0
+                    ? `${sensitiveFlags.filter((f) => f.recommendedAction === 'pseudonymize').length} rilevati`
+                    : 'Nessuno',
+                  sub: 'Ammessi per deduplica — non in output employer',
+                  ok: true,
+                },
+                {
+                  label: 'Campi alto rischio',
+                  value: highSensitiveCount > 0 ? `${highSensitiveCount} da escludere` : 'Nessuno',
+                  sub: highSensitiveCount > 0 ? 'Rimuovere dal file prima di procedere' : 'Pronto',
+                  ok: highSensitiveCount === 0,
+                },
+                {
+                  label: 'Budget Evidence',
+                  value: btiStatus.label,
+                  sub: `${criticalMapped}/3 colonne BTI presenti`,
+                  ok: criticalMapped >= 2,
+                },
+                {
+                  label: 'Pronto per Preview',
+                  value: canRunKora ? 'Sì' : 'No',
+                  sub: canRunKora ? 'Clicca Run KORA Preview →' : 'Dati insufficienti',
+                  ok: canRunKora,
+                },
+              ].map((item) => (
+                <div key={item.label} className={cn(
+                  'rounded-lg border p-3',
+                  item.ok ? 'border-slate-200 bg-white' : 'border-amber-200 bg-amber-50',
+                )}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{item.label}</p>
+                  <p className={cn('text-sm font-bold mt-0.5 font-mono', item.ok ? 'text-slate-800' : 'text-amber-700')}>
+                    {item.value}
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">{item.sub}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ── Section 3: Template guidance ──────────────────────────────────── */}
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100">
-            <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-              Template di riferimento
-            </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Struttura attesa per ogni tipo di file. Usa come guida per la preparazione dei dati.
-            </p>
-          </div>
+          <button
+            onClick={() => toggleSection('template')}
+            className="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between text-left"
+          >
+            <div>
+              <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                Template di riferimento
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Struttura attesa per ogni tipo di file. Usa come guida per la preparazione dei dati.
+              </p>
+            </div>
+            <span className="text-slate-400 text-xs font-mono shrink-0 ml-4">
+              {collapsed.has('template') ? '▶ espandi' : '▼ comprimi'}
+            </span>
+          </button>
 
+          {!collapsed.has('template') && (
+          <>
           {/* Template tabs */}
           <div className="border-b border-slate-100 overflow-x-auto">
             <div className="flex gap-0 px-4">
@@ -881,6 +972,8 @@ export default function UploadPage() {
           </div>
 
           <TemplatePanel template={selectedTemplate} />
+          </>
+          )}
         </div>
 
         {/* ── Sections 4-10: Only shown after parsing ───────────────────────── */}
@@ -888,10 +981,13 @@ export default function UploadPage() {
           <>
             {/* ── Section 4: Data preview ──────────────────────────────────── */}
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <button
+                onClick={() => toggleSection('preview')}
+                className="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between text-left"
+              >
                 <div>
                   <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                    2 — Anteprima dati
+                    2 — Anteprima dati raw
                   </h2>
                   <p className="text-xs text-slate-400 mt-0.5">
                     Prime {parseResult.previewRows.length} righe non vuote.
@@ -902,10 +998,14 @@ export default function UploadPage() {
                     )}
                   </p>
                 </div>
-                <span className="text-xs text-slate-400">
-                  {parseResult.rowCount} righe totali
-                </span>
-              </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-xs text-slate-400 font-mono">{parseResult.rowCount} righe</span>
+                  <span className="text-slate-400 text-xs font-mono">
+                    {collapsed.has('preview') ? '▶ espandi' : '▼ comprimi'}
+                  </span>
+                </div>
+              </button>
+              {!collapsed.has('preview') && (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
@@ -951,18 +1051,29 @@ export default function UploadPage() {
                   </tbody>
                 </table>
               </div>
+              )}
             </div>
 
             {/* ── Section 5: Column mapping ─────────────────────────────────── */}
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-100">
-                <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                  3 — Mappatura colonne
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Il sistema ha mappato automaticamente le intestazioni verso i campi UEF canonici di KORA.
-                </p>
-              </div>
+              <button
+                onClick={() => toggleSection('mapping')}
+                className="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between text-left"
+              >
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                    3 — Mappatura colonne
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Intestazioni mappate automaticamente ai campi UEF canonici di KORA.
+                    {reviewCount > 0 && <span className="text-amber-600 ml-1">{reviewCount} colonne richiedono revisione.</span>}
+                  </p>
+                </div>
+                <span className="text-slate-400 text-xs font-mono shrink-0 ml-4">
+                  {collapsed.has('mapping') ? '▶ espandi' : '▼ comprimi'}
+                </span>
+              </button>
+              {!collapsed.has('mapping') && (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
@@ -1014,10 +1125,6 @@ export default function UploadPage() {
                   </tbody>
                 </table>
               </div>
-              {reviewCount > 0 && (
-                <div className="px-6 py-3 border-t border-slate-100 bg-amber-50 text-xs text-amber-700">
-                  <strong>{reviewCount} colonne</strong> con confidenza &lt;70% richiedono revisione manuale prima del caricamento definitivo.
-                </div>
               )}
             </div>
 
@@ -1344,6 +1451,88 @@ export default function UploadPage() {
         )}
 
       </div>
+    </div>
+  );
+}
+
+// ── WorkflowStepper ────────────────────────────────────────────────────────────
+
+type StepState = 'pending' | 'active' | 'done' | 'blocked';
+
+interface WorkflowStep { label: string; state: StepState }
+
+function WorkflowStepper({
+  uploadStatus,
+  koraStatus,
+  showBoardPack,
+}: {
+  uploadStatus: 'idle' | 'parsing' | 'parsed' | 'error';
+  koraStatus: 'idle' | 'running' | 'done' | 'error';
+  showBoardPack: boolean;
+}) {
+  const steps: WorkflowStep[] = [
+    {
+      label: 'Upload file',
+      state: uploadStatus === 'parsing' ? 'active'
+           : uploadStatus === 'parsed'  ? 'done'
+           : uploadStatus === 'error'   ? 'blocked'
+           : 'pending',
+    },
+    {
+      label: 'Parse & rileva',
+      state: uploadStatus === 'parsing' ? 'active'
+           : uploadStatus === 'parsed'  ? 'done'
+           : uploadStatus === 'error'   ? 'blocked'
+           : 'pending',
+    },
+    {
+      label: 'Privacy scan',
+      state: uploadStatus === 'parsed' ? 'done' : 'pending',
+    },
+    {
+      label: 'KORA Preview',
+      state: koraStatus === 'running' ? 'active'
+           : koraStatus === 'done'    ? 'done'
+           : koraStatus === 'error'   ? 'blocked'
+           : uploadStatus === 'parsed' ? 'pending'
+           : 'pending',
+    },
+    {
+      label: 'Eligibility Review',
+      state: koraStatus === 'done' ? 'done' : 'pending',
+    },
+    {
+      label: 'Board Pack',
+      state: showBoardPack       ? 'done'
+           : koraStatus === 'done' ? 'pending'
+           : 'pending',
+    },
+  ];
+
+  const DOT: Record<StepState, string> = {
+    done:    'bg-slate-900 text-white',
+    active:  'bg-indigo-600 text-white animate-pulse',
+    pending: 'bg-slate-100 text-slate-400 border border-slate-200',
+    blocked: 'bg-red-100 text-red-600 border border-red-200',
+  };
+  const TEXT: Record<StepState, string> = {
+    done:    'text-slate-900 font-semibold',
+    active:  'text-indigo-700 font-semibold',
+    pending: 'text-slate-400',
+    blocked: 'text-red-600',
+  };
+
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center gap-2">
+      {steps.map((step, i) => (
+        <div key={step.label} className="flex items-center gap-1.5">
+          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${DOT[step.state]}`}>
+            {step.state === 'done' ? '✓' : step.state === 'blocked' ? '✕' : String(i + 1)}
+          </span>
+          <span className={`text-xs whitespace-nowrap ${TEXT[step.state]}`}>{step.label}</span>
+          {i < steps.length - 1 && <span className="text-slate-200 text-sm ml-1">→</span>}
+        </div>
+      ))}
     </div>
   );
 }

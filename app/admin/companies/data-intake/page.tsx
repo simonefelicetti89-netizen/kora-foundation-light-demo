@@ -13,16 +13,17 @@ export default function AdminDataIntakeLanding() {
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          KORA Admin — Data Intake
+          KORA Operator Console — Data Intake
         </p>
-        <h1 className="text-xl font-bold text-slate-900 mt-0.5">Data Intake per Azienda</h1>
+        <h1 className="text-xl font-bold text-slate-900 mt-0.5">KORA Operator Data Intake Studio</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Seleziona un&apos;azienda per accedere al perimetro fiscale, ai batch di dati e alla pipeline di ingestion.
+          Seleziona un&apos;azienda per caricare i file ricevuti, verificarne qualità e privacy, eseguire la preview metodologica e preparare il Decision Pack.
         </p>
       </div>
 
-      <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800">
-        Il Data Intake è configurato per singola azienda/tenant. Seleziona un&apos;azienda per proseguire.
+      <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-600">
+        <span className="font-semibold">Strumento operativo KORA — non area self-service cliente.</span>{' '}
+        L&apos;azienda invia i file a KORA; KORA Operator li carica, normalizza, classifica e produce il Decision Pack.
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white divide-y divide-slate-100 overflow-hidden">
