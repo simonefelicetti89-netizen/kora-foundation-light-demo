@@ -27,11 +27,11 @@ const ONBOARDING_STATUS_LABEL: Record<string, string> = {
   not_started:                    'Non avviato',
   profile_complete:               'Profilo completato',
   workforce_baseline_complete:    'Baseline completata',
-  program_data_loaded:            'Dati programmi caricati',
-  hr_kpi_added:                   'KPI HR aggiunti',
+  program_data_loaded:            'Dati programmi ricevuti',
+  hr_kpi_added:                   'KPI HR ricevuti',
   readiness_check_passed:         'Readiness verificata',
-  ready_for_scoring:              'Pronto per scoring',
-  pipeline_active:                'Pipeline attiva',
+  ready_for_scoring:              'Output in preparazione',
+  pipeline_active:                'Elaborazione attiva',
   decision_pack_ready:            'Decision Pack disponibile',
   fully_onboarded:                'Completamente onboardato',
   blocked_insufficient_workforce: 'Organico insufficiente',
@@ -125,23 +125,23 @@ export default function CompanyOnboardingRoom() {
       {/* ── Status grid ── */}
       <section>
         <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">
-          Stato Onboarding
+          Stato Progetto
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {/* Data Intake */}
+          {/* Dati ricevuti */}
           <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <p className="text-xs text-slate-400">Data Intake</p>
+            <p className="text-xs text-slate-400">Dati ricevuti</p>
             <p className={cn('text-sm font-semibold mt-1',
               intake.intake_status === 'ready_for_ingestion' ? 'text-green-700' :
               intake.intake_status === 'not_started' ? 'text-slate-400' : 'text-amber-700')}>
               {intake.intake_status === 'ready_for_ingestion'
-                ? 'Pronto'
+                ? 'Ricevuti'
                 : intake.intake_status === 'not_started'
-                ? 'Non avviato'
+                ? 'In attesa'
                 : hasIndex ? 'Revisione advisor' : intake.intake_status.replace(/_/g, ' ')}
             </p>
             <p className="text-[10px] text-slate-400 mt-0.5">
-              {intake.total_rows} righe · {intake.ready_for_ingestion_rows} pronte
+              {intake.total_rows} righe · {intake.ready_for_ingestion_rows} elaborate
             </p>
           </div>
           {/* Worker Roster */}
@@ -157,7 +157,7 @@ export default function CompanyOnboardingRoom() {
               {hasIndex ? 'Disponibile' : 'Non disponibile'}
             </p>
             <p className="text-[10px] text-slate-400 mt-0.5">
-              {hasIndex ? 'Scoring completato' : 'In attesa di dati e validazione'}
+              {hasIndex ? 'Elaborazione completata' : 'In attesa di dati e validazione'}
             </p>
           </div>
           {/* Decision Pack */}
@@ -167,18 +167,18 @@ export default function CompanyOnboardingRoom() {
               {hasIndex ? 'Disponibile' : 'Non disponibile'}
             </p>
             <p className="text-[10px] text-slate-400 mt-0.5">
-              {hasIndex ? 'Report pronto' : 'Disponibile dopo scoring'}
+              {hasIndex ? 'Report pronto' : 'Disponibile dopo elaborazione KORA'}
             </p>
           </div>
-          {/* Pipeline */}
+          {/* Elaborazione KORA */}
           <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <p className="text-xs text-slate-400">Pipeline KORA</p>
+            <p className="text-xs text-slate-400">Elaborazione KORA</p>
             <p className={cn('text-sm font-semibold mt-1',
               pipeline.status === 'ok' ? 'text-green-700' :
               pipeline.status === 'blocked' ? 'text-rose-700' : 'text-amber-700')}>
-              {pipeline.status === 'ok' ? 'Pronta' : pipeline.status === 'blocked' ? 'Bloccata' : (hasIndex ? 'Advisor review' : 'In progress')}
+              {pipeline.status === 'ok' ? 'Completata' : pipeline.status === 'blocked' ? 'Bloccata' : (hasIndex ? 'Advisor review' : 'In corso')}
             </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Readiness metodologica KORA</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Stato elaborazione KORA</p>
           </div>
           {/* Onboarding stage */}
           <div className="rounded-lg border border-slate-200 bg-white p-3">
@@ -197,7 +197,7 @@ export default function CompanyOnboardingRoom() {
           </h2>
           {allClear ? (
             <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-              <p className="text-sm font-semibold text-green-800">Tutti i requisiti soddisfatti — pronto per scoring.</p>
+              <p className="text-sm font-semibold text-green-800">Tutti i requisiti soddisfatti — elaborazione KORA attiva.</p>
             </div>
           ) : (
             <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
@@ -232,10 +232,10 @@ export default function CompanyOnboardingRoom() {
 
       {/* ── What KORA does ── */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500 space-y-1">
-        <p className="font-semibold text-slate-600">Come funziona l&apos;onboarding KORA</p>
-        <p>KORA configura il tenant, valida i dati, costruisce la workforce baseline e produce il KORA Index.</p>
-        <p>L&apos;azienda collabora fornendo dati, evidenze e approvazioni — non gestisce il backstage metodologico.</p>
-        <p>Il PIB individuale dei lavoratori non è visibile qui. KORA mostra solo stato aggregato e pipeline readiness.</p>
+        <p className="font-semibold text-slate-600">Come funziona il processo KORA</p>
+        <p>KORA riceve i file aziendali, valida i dati, costruisce la workforce baseline e produce il KORA Index.</p>
+        <p>L&apos;azienda collabora fornendo dati ed evidenze a KORA — non gestisce intake, review o scoring.</p>
+        <p>Il PIB individuale dei lavoratori non è visibile qui. KORA mostra solo stato aggregato e output.</p>
       </div>
 
       {/* ── CTAs ── */}

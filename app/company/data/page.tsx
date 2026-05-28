@@ -262,7 +262,7 @@ export default function DataEvidence() {
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <h1 className="text-xl font-bold text-slate-900">KORA Readiness &amp; Data Inventory</h1>
+          <h1 className="text-xl font-bold text-slate-900">Stato Dati &amp; Evidenze</h1>
           <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-400 font-mono">
             synthetic_demo_data: true
           </span>
@@ -274,7 +274,7 @@ export default function DataEvidence() {
 
       {/* ── Service-Assisted Boundary Notice ─────────────────────────── */}
       <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
-        <p className="text-xs font-semibold text-slate-600 mb-1">Pipeline gestita da KORA Operator</p>
+        <p className="text-xs font-semibold text-slate-600 mb-1">Elaborazione gestita da KORA Operator</p>
         <p className="text-xs text-slate-500 leading-relaxed">
           KORA opera la pipeline sui dati ricevuti dal cliente. L&apos;azienda visualizza output aggregati e Decision Pack,
           senza operare intake, review o scoring.
@@ -321,7 +321,7 @@ export default function DataEvidence() {
           />
         </div>
         <p className="mt-2 text-xs text-slate-400 italic">
-          Il Readiness Score non è il KORA Index. Misura la preparazione del dato per il pipeline — non l&apos;attivazione organizzativa.
+          Il Readiness Score non è il KORA Index. Misura la preparazione del dato per l&apos;elaborazione KORA — non l&apos;attivazione organizzativa.
         </p>
       </section>
 
@@ -384,7 +384,7 @@ export default function DataEvidence() {
         </h2>
         <div className="rounded-lg border border-red-100 bg-red-50 p-4">
           <p className="text-xs font-semibold text-red-800 mb-3">
-            Le seguenti categorie di dati non entrano mai nel pipeline KORA — per architettura, non per configurazione.
+            Le seguenti categorie di dati non entrano mai nel processo KORA — per architettura, non per configurazione.
           </p>
           <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
             {EXCLUDED_DATA.map((item) => (
@@ -527,19 +527,19 @@ export default function DataEvidence() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
-          DIVIDER — Stato Ingestione
+          DIVIDER — Stato Elaborazione KORA
       ══════════════════════════════════════════════════════════════════ */}
       <div className="border-t border-slate-200 pt-6">
-        <h2 className="mb-1 text-sm font-bold text-slate-700">Stato Ingestione</h2>
+        <h2 className="mb-1 text-sm font-bold text-slate-700">Stato Elaborazione KORA</h2>
         <p className="text-xs text-slate-400 mb-4">
-          Dati prodotti dall&apos;IngestionSimulatorService — metadati a livello batch, senza record UEF individuali.
+          Riepilogo delle fonti dati ricevute — metadati a livello batch, senza record UEF individuali.
         </p>
 
         {/* Batch-level only notice */}
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 mb-4">
           <p className="text-xs font-semibold text-blue-800">Solo metadati a livello batch</p>
           <p className="text-xs text-blue-700 mt-0.5">
-            Questa sezione mostra i riepiloghi delle fonti di ingestione. Non espone record UEF individuali,
+            Questa sezione mostra i riepiloghi delle fonti dati ricevute da KORA. Non espone record UEF individuali,
             identificatori lavoratori o contenuto grezzo dei file.
           </p>
         </div>

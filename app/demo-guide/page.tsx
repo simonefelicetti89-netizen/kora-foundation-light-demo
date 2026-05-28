@@ -31,10 +31,10 @@ const EVALUATE_ITEMS = [
     why: 'Connette la spesa people al segnale di attivazione — non promette ROI garantito.',
   },
   {
-    label: 'Data Room',
+    label: 'Stato Dati & Evidenze',
     href: '/company/data',
-    shows: 'Pipeline di ingestion, status UEF, scoring readiness e data quality layer.',
-    why: 'Mostra il backstage della metodologia — da dati grezzi a IU computati.',
+    shows: 'Stato dati & evidenze — elaborazione gestita da KORA Operator. Lettura aggregata post-intake.',
+    why: 'Mostra lo stato delle fonti ricevute — non un\'area self-service cliente.',
   },
   {
     label: 'Decision Pack',
@@ -82,7 +82,7 @@ const NEXT_ROUTE = [
   { step: 2, label: 'KORA Index Detail',        href: '/company/kora-index',  note: '10 componenti, macroblocks, explainability' },
   { step: 3, label: 'Activation Debt',          href: '/company/activation',  note: 'Maggioranza silenziosa, concentrazione, siti' },
   { step: 4, label: 'Budget-to-Human-Impact',   href: '/company/financial',   note: 'BTI, costo per IU, governance finanziaria' },
-  { step: 5, label: 'Data Room',                href: '/company/data',        note: 'Ingestion, UEF, scoring readiness' },
+  { step: 5, label: 'Stato Dati & Evidenze',     href: '/company/data',        note: 'Stato dati & evidenze — elaborazione KORA' },
   { step: 6, label: 'Decision Pack',            href: '/company/reports',     note: 'Report board-ready, pillar, raccomandazioni' },
   { step: 7, label: 'KORA Contribution',        href: '/company/contribution', note: 'Companion indicator — ecosistema e territorio' },
   { step: 8, label: 'Future Vision',            href: '/future-vision',        note: 'Roadmap architetturale in 4 fasi' },

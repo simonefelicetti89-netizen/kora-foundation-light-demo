@@ -155,8 +155,8 @@ const PHASES = [
   },
   {
     n: '02',
-    title: 'Upload / Mapping & Budget Evidence',
-    desc: 'Normalizzazione dei file ricevuti. Classificazione Budget Evidence (Documentato / Dichiarato / Stimato). Preparazione per l\'Eligibility Gate.',
+    title: 'Invio File & Mapping / Budget Evidence',
+    desc: 'L\'azienda invia i file a KORA. KORA normalizza e classifica la Budget Evidence (Documentato / Dichiarato / Stimato). Preparazione per l\'Eligibility Gate.',
     output: 'Budget Evidence classification',
   },
   {
@@ -213,7 +213,7 @@ const FAQS = [
 const OUTPUT_LINKS = [
   { label: 'Board Pack Preview',        href: '/company/reports/board-pack', desc: 'Visualizza il Board Pack del pilot demo — Meridiana Group S1' },
   { label: 'Executive Cockpit',         href: '/company',                    desc: 'KORA Index, CS, Safeguard, priorità operative' },
-  { label: 'Data Room / Upload',        href: '/company/data',               desc: 'Vista della pipeline dati e stato ingestion' },
+  { label: 'Stato Dati & Evidenze',     href: '/company/data',               desc: 'Stato dati ricevuti da KORA — elaborazione Operator' },
   { label: 'KORA Index — Dettaglio',    href: '/company/kora-index',         desc: '10 componenti, macroblocchi, Eligibility Gate' },
   { label: 'Activation & Debt',         href: '/company/activation',         desc: 'Distribuzione per pillar e sede, Activation Debt' },
   { label: 'Budget-to-Human-Impact',    href: '/company/financial',          desc: 'Budget-to-activation, deep activation share, HR KPI' },
@@ -349,18 +349,18 @@ export default function PilotPage() {
         </div>
 
         <p className="text-[10px] text-slate-400 mt-2">
-          I file vengono ricevuti in formato Excel o CSV. Nessuna integrazione API richiesta in Foundation Light.
-          Ogni file viene analizzato dalla pipeline KORA e classificato prima di entrare nel calcolo.
+          I file vengono inviati a KORA in formato Excel o CSV. Nessuna integrazione API richiesta in Foundation Light.
+          KORA Operator analizza, classifica ed elabora i file prima di produrre il KORA Index.
         </p>
 
         <Link
-          href="/company/data/upload"
-          className="mt-3 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+          href="/admin/companies/data-intake"
+          className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-medium text-slate-600 hover:bg-slate-100 transition-colors"
         >
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
           </svg>
-          Prova l&apos;upload → KORA Data Intake Studio
+          Demo: Data Intake Studio (strumento KORA Operator) →
         </Link>
       </section>
 
