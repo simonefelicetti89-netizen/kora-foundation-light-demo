@@ -158,17 +158,22 @@ export default function FutureVision() {
         </p>
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
           <span className="rounded border border-slate-300 bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
-            Roadmap architetturale
+            FUTURE · Roadmap architetturale
           </span>
-          <span className="rounded border border-orange-200 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-600">
-            Non attivo in Foundation Light
+          <span className="rounded border border-slate-300 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+            NON ATTIVO in Foundation Light
           </span>
-          <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
-            Dipendenze future
+          <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+            Dipendenze sequenziali — non current product
           </span>
           <span className="rounded border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10px] font-semibold text-rose-600">
-            No production claim
+            Nessun production claim
           </span>
+        </div>
+        <div className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-500 max-w-xl">
+          <span className="font-semibold text-slate-600">ROADMAP · NON ATTIVO — </span>
+          Questi moduli sono dipendenze sequenziali future, non funzionalità attuali di Foundation Light.
+          Nessun modulo in Fase 02–04 è disponibile, contrattualizzabile o promesso.
         </div>
       </div>
 

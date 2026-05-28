@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { uefReviewService } from '@/services/uef-review/UEFReviewService';
+import { OperatorToolBoundary } from '@/components/demo/OperatorToolBoundary';
 import { cn } from '@/lib/utils';
 import { ACTION_FAMILY_LABELS } from '@/lib/constants/kora';
 import type {
@@ -294,6 +295,9 @@ export default function UEFReview() {
 
   return (
     <div className="space-y-6">
+
+      {/* ── Operator boundary banner ─────────────────────────────────────── */}
+      <OperatorToolBoundary />
 
       {/* ── A: Header ── */}
       <div>

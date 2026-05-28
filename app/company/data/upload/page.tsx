@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import { OperatorToolBoundary } from '@/components/demo/OperatorToolBoundary';
 import { parseUploadedFile } from '@/lib/upload/file-parser';
 import type { ParsedUploadResult } from '@/lib/upload/file-parser';
 import { detectColumnMappings } from '@/lib/upload/column-detection';
@@ -619,18 +620,7 @@ export default function UploadPage() {
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 
         {/* ── Operator boundary banner ───────────────────────────────────────── */}
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-3">
-          <svg className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-          </svg>
-          <div>
-            <p className="text-xs font-semibold text-amber-800">Strumento operativo KORA — non area self-service cliente</p>
-            <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
-              Nel modello Foundation Light, i file sono inviati a KORA. L&apos;operatore KORA carica, revisiona e genera il Decision Pack.
-              L&apos;azienda vede solo output aggregati.
-            </p>
-          </div>
-        </div>
+        <OperatorToolBoundary />
 
         {/* ── Section 1: Header ─────────────────────────────────────────────── */}
         <div className="space-y-3">

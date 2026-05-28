@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useRole } from '@/lib/demo-state';
 import { isAdminRole } from '@/lib/permissions';
+import { OperatorToolBoundary } from '@/components/demo/OperatorToolBoundary';
 
 // C-06 (boundary): Scoring Preview è uno strumento interno KORA Admin.
 // L'azienda vede solo output validati, readiness e report.
@@ -13,6 +14,8 @@ export default function ScoringBoundaryNotice() {
 
   return (
     <div className="space-y-6 max-w-xl">
+
+      <OperatorToolBoundary />
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">

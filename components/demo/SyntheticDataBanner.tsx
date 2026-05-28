@@ -5,16 +5,16 @@ import type { Environment } from '@/lib/types';
 
 const ENV_BANNER: Record<Environment, { main: string; secondary: string }> = {
   demo: {
-    main:      'DEMO · DATI SIMULATI · Foundation Light v0.1 · Pre-Calibrazione Empirica',
-    secondary: 'Il pilot reale usa dati ricevuti e processati da KORA Operator.',
+    main:      'DEMO · DATI SIMULATI',
+    secondary: 'Ambiente commerciale dimostrativo. Il pilot reale usa dati ricevuti e processati da KORA Operator.',
   },
   live: {
-    main:      'LIVE · SERVICE-ASSISTED · KORA Methodology v0.1',
-    secondary: 'KORA Operator gestisce intake, review, scoring e Decision Pack. Il cliente consuma output.',
+    main:      'LIVE · SERVICE-ASSISTED',
+    secondary: 'KORA Operator gestisce intake, review, scoring e Decision Pack. Il cliente consuma output aggregati.',
   },
   future: {
     main:      'FUTURE · ROADMAP · NON ATTIVO',
-    secondary: 'Le funzionalità future non sono disponibili in Foundation Light.',
+    secondary: 'Funzionalità future non disponibili in Foundation Light. Nessun production claim.',
   },
 };
 
