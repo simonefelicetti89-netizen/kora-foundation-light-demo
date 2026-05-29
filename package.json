@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.10.3",
+    "@supabase/supabase-js": "^2.106.2",
     "@types/papaparse": "^5.5.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -28,6 +30,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "playwright": "^1.60.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

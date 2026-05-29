@@ -16,7 +16,7 @@ import { BudgetToHumanImpactPanel } from '@/components/kora-index/BudgetToHumanI
 import { RecommendationsPanel } from '@/components/kora-index/RecommendationsPanel';
 import { MethodologyGlossary } from '@/components/kora-index/MethodologyGlossary';
 import Link from 'next/link';
-import { useScoringResult } from '@/lib/scoring-result';
+import { useScoringResult, useDemoScenarioComparison } from '@/lib/scoring-result';
 import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
@@ -35,10 +35,9 @@ export default function KoraIndexDetail() {
   const tenant      = tenantService.getTenant(COMPANY_ID);
 
   // All hooks at the top — React rules require hooks before any conditional return.
-  // Phase 1: synchronous. Phase 2: replace useScoringResult body with useEffect + fetch.
-  const { data: scoring }   = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
-  const { data: scoringS1 } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: 'S1' });
-  const { data: scoringS2 } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: 'S2' });
+  const { data: scoring } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
+  // Demo-only scenario comparison (S1/S2). Returns null in live/future — never crashes.
+  const { s1: scoringS1, s2: scoringS2, isDemo } = useDemoScenarioComparison(COMPANY_ID);
 
   const hasKoraData = scoring?.status === 'ok';
 
@@ -90,11 +89,12 @@ export default function KoraIndexDetail() {
   // Macroblock scores for active scenario
   const macroblocks: MacroblockScore[] = output.macroblocks ?? [];
 
-  // Both scenarios for S1→S2 comparison — guaranteed non-null for demo tenant.
-  const s1Output = scoringS1!.koraIndex!;
-  const s2Output = scoringS2!.koraIndex!;
-  const s1Macroblocks = s1Output.macroblocks ?? [];
-  const s2Macroblocks = s2Output.macroblocks ?? [];
+  // Demo-only: S1/S2 comparison — null-safe for live/future environments.
+  // In live mode isDemo === false and both are null, so the comparison strip is hidden.
+  const s1Output = scoringS1?.koraIndex ?? null;
+  const s2Output = scoringS2?.koraIndex ?? null;
+  const s1Macroblocks: MacroblockScore[] = s1Output?.macroblocks ?? [];
+  const s2Macroblocks: MacroblockScore[] = s2Output?.macroblocks ?? [];
 
   // BTI data (both scenarios for comparison panels)
   const s1BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S1', activeRole);
@@ -143,11 +143,12 @@ export default function KoraIndexDetail() {
           <KoraIndexHero output={output} variant="dark" />
         </div>
 
-        {/* S1 → S2 scenario comparison strip */}
+        {/* S1 → S2 scenario comparison strip — demo-only, hidden in live environment */}
         <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
           <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Confronto Scenari</p>
-          {(['S1', 'S2'] as const).map((sid) => {
+          {isDemo && (['S1', 'S2'] as const).map((sid) => {
             const out = sid === 'S1' ? s1Output : s2Output;
+            if (!out) return null;
             const isActive = sid === activeScenario;
             return (
               <div
