@@ -7,7 +7,7 @@ import { tenantService } from '@/services/tenant/TenantService';
 import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { useScoringResult } from '@/lib/scoring-result';
 import { cn } from '@/lib/utils';
 
 const ONBOARDING_STATUS_PILL: Record<string, string> = {
@@ -49,7 +49,8 @@ export default function CompanyOnboardingRoom() {
   const nextAction  = companyOnboardingService.getNextBestAction(companyId);
   const pipeline    = companyOnboardingService.getPipelineReadiness(companyId);
   const checks      = companyOnboardingService.getReadinessChecks(companyId);
-  const hasIndex    = !!scoringSimulatorService.getKoraIndexOutput(companyId, activeScenario);
+  const { data: scoring } = useScoringResult({ tenantId: companyId, scenarioId: activeScenario });
+  const hasIndex = scoring?.status === 'ok';
 
   workerProvisioningService.assertEmployerCannotViewIndividualPIB(companyId, '');
 

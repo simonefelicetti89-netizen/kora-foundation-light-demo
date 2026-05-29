@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
 import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { useScoringResult } from '@/lib/scoring-result';
 import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
@@ -39,7 +39,8 @@ export default function CompanyProfilePage() {
   const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
 
   const record = companyOnboardingService.getCompanyOnboardingRecord(COMPANY_ID);
-  const koraOutput = scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, activeScenario);
+  const { data: scoring } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
+  const koraOutput = scoring?.koraIndex;
   const tenant = tenantService.getTenant(COMPANY_ID);
   const companyAccounts = accountProvisioningService.getAccountsForCompany(COMPANY_ID);
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(COMPANY_ID);

@@ -9,7 +9,7 @@ import { TrustGovernanceStrip } from '@/components/company/TrustGovernanceStrip'
 import { ExecutiveIntelligenceBlock } from '@/components/company/ExecutiveIntelligenceBlock';
 import { PriorityActionPanel } from '@/components/company/PriorityActionPanel';
 import { PillarChart } from '@/components/charts/PillarChart';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { useScoringResult } from '@/lib/scoring-result';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
@@ -29,11 +29,11 @@ export default function ExecutiveCockpit() {
   const currentUser   = accountProvisioningService.getCurrentDemoUser(activeRole);
   const companyId     = currentUser.company_id ?? 'meridiana-group';
   const tenant        = tenantService.getTenant(companyId);
-  const hasKoraData   = !!scoringSimulatorService.getKoraIndexOutput(companyId, activeScenario);
-
-  const output      = scoringSimulatorService.score(companyId, activeScenario, '2025');
-  const aggregate   = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
-  const macroblocks = scoringSimulatorService.getMacroblockScores(companyId, activeScenario);
+  const { data: scoring } = useScoringResult({ tenantId: companyId, scenarioId: activeScenario });
+  const hasKoraData = scoring?.status === 'ok';
+  const output      = scoring?.koraIndex;
+  const aggregate   = scoring?.aggregate;
+  const macroblocks = output?.macroblocks ?? [];
   const warnings    = explainabilityService.getWarnings(companyId, activeScenario);
   const actions     = explainabilityService.getNextBestActions(companyId, activeScenario);
 
@@ -92,7 +92,7 @@ export default function ExecutiveCockpit() {
       )}
 
       {/* ── Full cockpit — only when KORA Index is available ──────────────── */}
-      {hasKoraData && (
+      {hasKoraData && output && (
         <div className="space-y-5">
 
           {/* ── 2. KORA Index Command Center — dominant signal ────────────── */}

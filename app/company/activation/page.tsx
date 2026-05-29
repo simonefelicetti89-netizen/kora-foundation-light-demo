@@ -1,7 +1,7 @@
 'use client';
 
 import { useRole, useScenario } from '@/lib/demo-state';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { useScoringResult } from '@/lib/scoring-result';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { PILLAR_CODES } from '@/lib/constants/kora';
 import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
@@ -89,7 +89,8 @@ export default function Activation() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
   const companyId = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
-  const aggregate  = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
+  const { data: scoring } = useScoringResult({ tenantId: companyId, scenarioId: activeScenario });
+  const aggregate  = scoring?.aggregate;
   const safeguard  = activationSafeguardService.evaluateFromSeed(companyId, activeScenario);
   const debtEur    = activeScenario === 'S2' ? 35_000 : 45_000;
   const safeguardStyle = safeguard ? (SAFEGUARD_STYLE[safeguard.status] ?? SAFEGUARD_STYLE.WARNING) : SAFEGUARD_STYLE.WARNING;

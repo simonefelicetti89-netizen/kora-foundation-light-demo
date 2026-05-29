@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useDemoState } from '@/lib/demo-state';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
 import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { useScoringResult } from '@/lib/scoring-result';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
 import { DecisionPackHero } from '@/components/reports/DecisionPackHero';
@@ -394,9 +394,10 @@ export default function Reports() {
   const tenant = tenantService.getTenant(COMPANY_ID);
   const companyName = tenant?.company_name ?? COMPANY_ID;
 
-  // Determine if we can render the full report
-  const koraIndex = scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, activeScenario)
-    ?? scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, 'S1');
+  const { data: scoring }   = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
+  const { data: scoringS1 } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: 'S1' });
+  // Determine if we can render the full report — fallback to S1 when active scenario has no data
+  const koraIndex = scoring?.koraIndex ?? scoringS1?.koraIndex ?? null;
   const hasFullReport = koraIndex !== null;
 
   // Full pack — only generated when KORA Index is available

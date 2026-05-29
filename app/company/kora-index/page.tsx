@@ -16,7 +16,8 @@ import { BudgetToHumanImpactPanel } from '@/components/kora-index/BudgetToHumanI
 import { RecommendationsPanel } from '@/components/kora-index/RecommendationsPanel';
 import { MethodologyGlossary } from '@/components/kora-index/MethodologyGlossary';
 import Link from 'next/link';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { useScoringResult } from '@/lib/scoring-result';
+import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { ingestionSimulatorService } from '@/services/ingestion-simulator/IngestionSimulatorService';
@@ -32,7 +33,14 @@ export default function KoraIndexDetail() {
   const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
   const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
   const tenant      = tenantService.getTenant(COMPANY_ID);
-  const hasKoraData = !!scoringSimulatorService.getKoraIndexOutput(COMPANY_ID, activeScenario);
+
+  // All hooks at the top — React rules require hooks before any conditional return.
+  // Phase 1: synchronous. Phase 2: replace useScoringResult body with useEffect + fetch.
+  const { data: scoring }   = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
+  const { data: scoringS1 } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: 'S1' });
+  const { data: scoringS2 } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: 'S2' });
+
+  const hasKoraData = scoring?.status === 'ok';
 
   // If this company has no KORA Index data yet, show onboarding-pending state
   if (!hasKoraData) {
@@ -71,20 +79,20 @@ export default function KoraIndexDetail() {
     );
   }
 
-  // Active scenario data
-  const output     = scoringSimulatorService.score(COMPANY_ID, activeScenario, '2025');
-  const safeguard  = scoringSimulatorService.getActivationSafeguard(COMPANY_ID, activeScenario);
-  const aggregate  = scoringSimulatorService.getCompanyAggregate(COMPANY_ID, activeScenario);
-  const confidence = scoringSimulatorService.getConfidenceRecord(COMPANY_ID, activeScenario);
+  // Active scenario data — koraIndex is non-null past the hasKoraData guard above.
+  const output     = scoring!.koraIndex!;
+  const aggregate  = scoring!.aggregate;
+  const confidence = scoring!.confidence;
+  const safeguard  = activationSafeguardService.evaluateFromSeed(COMPANY_ID, activeScenario);
   const explanation = explainabilityService.getExplanation(COMPANY_ID, activeScenario);
   const weakCodes  = (explanation?.weak_components ?? []).map((c) => c.code);
 
   // Macroblock scores for active scenario
   const macroblocks: MacroblockScore[] = output.macroblocks ?? [];
 
-  // Both scenarios for S1→S2 comparison surfaces
-  const s1Output = scoringSimulatorService.score(COMPANY_ID, 'S1', '2025');
-  const s2Output = scoringSimulatorService.score(COMPANY_ID, 'S2', '2025');
+  // Both scenarios for S1→S2 comparison — guaranteed non-null for demo tenant.
+  const s1Output = scoringS1!.koraIndex!;
+  const s2Output = scoringS2!.koraIndex!;
   const s1Macroblocks = s1Output.macroblocks ?? [];
   const s2Macroblocks = s2Output.macroblocks ?? [];
 

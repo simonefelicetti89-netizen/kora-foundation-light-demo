@@ -6,7 +6,7 @@ import { isViewerRole } from '@/lib/permissions';
 import { SafeguardBadge } from '@/components/badges/SafeguardBadge';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { useScoringResult } from '@/lib/scoring-result';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
@@ -128,11 +128,11 @@ export default function KoraSharedView() {
   const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
   const companyId   = currentUser.company_id ?? 'meridiana-group';
   const tenant      = tenantService.getTenant(companyId);
-  const hasKoraData = !!scoringSimulatorService.getKoraIndexOutput(companyId, activeScenario);
-
-  const output      = scoringSimulatorService.score(companyId, activeScenario, '2025');
-  const aggregate   = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
-  const macroblocks = scoringSimulatorService.getMacroblockScores(companyId, activeScenario);
+  const { data: scoring } = useScoringResult({ tenantId: companyId, scenarioId: activeScenario });
+  const hasKoraData = scoring?.status === 'ok';
+  const output      = scoring?.koraIndex;
+  const aggregate   = scoring?.aggregate;
+  const macroblocks = output?.macroblocks ?? [];
 
   const btiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(
     companyId, activeScenario, activeRole,
@@ -194,10 +194,10 @@ export default function KoraSharedView() {
             synthetic_demo_data: true · Foundation Light v0.1
           </span>
           <span className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-500">
-            {output.methodology_version_id}
+            {output?.methodology_version_id}
           </span>
           <span className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-500">
-            {output.calibration_status}
+            {output?.calibration_status}
           </span>
         </div>
       </div>
@@ -236,7 +236,7 @@ export default function KoraSharedView() {
               <p className="text-[10px] text-slate-400 mb-1">KORA Index v3</p>
               <div className="flex items-baseline gap-2">
                 <span className="text-5xl font-bold text-slate-900">
-                  {output.kora_index_value}
+                  {output?.kora_index_value}
                 </span>
                 <span className="text-lg text-slate-400 font-medium">/100</span>
               </div>
@@ -254,7 +254,7 @@ export default function KoraSharedView() {
                 <p className="text-[10px] text-slate-400 mb-1">Confidence Score</p>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-bold text-slate-700">
-                    {(output.confidence_score * 100).toFixed(0)}%
+                    {((output?.confidence_score ?? 0) * 100).toFixed(0)}%
                   </span>
                   <span className="rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 text-[9px] font-semibold text-slate-500">
                     ESTERNO · peso = 0
@@ -267,14 +267,14 @@ export default function KoraSharedView() {
 
               <div>
                 <p className="text-[10px] text-slate-400 mb-1">Activation Safeguard</p>
-                <SafeguardBadge status={output.safeguard_status} />
+                {output && <SafeguardBadge status={output.safeguard_status} />}
               </div>
             </div>
           </div>
 
           <div className="border-t border-slate-100 pt-4 space-y-1 text-[10px] text-slate-400">
-            <p>{output.methodology_version_id} · {output.calibration_status}</p>
-            <p className="leading-snug">{output.limitations_text}</p>
+            <p>{output?.methodology_version_id} · {output?.calibration_status}</p>
+            <p className="leading-snug">{output?.limitations_text}</p>
           </div>
         </div>
       )}
@@ -537,7 +537,7 @@ export default function KoraSharedView() {
         </p>
         <div className="grid gap-2 sm:grid-cols-2 text-[10px] text-slate-500">
           <p>
-            <span className="font-semibold">Metodologia:</span> {output.methodology_version_id}
+            <span className="font-semibold">Metodologia:</span> {output?.methodology_version_id}
           </p>
           <p>
             <span className="font-semibold">Stato calibrazione:</span>{' '}

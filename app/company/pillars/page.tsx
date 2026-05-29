@@ -1,7 +1,7 @@
 'use client';
 
 import { useRole, useScenario } from '@/lib/demo-state';
-import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { useScoringResult } from '@/lib/scoring-result';
 import { demoDataService } from '@/services/demo-data/DemoDataService';
 import { koraContributionService } from '@/services/kora-contribution/KoraContributionService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
@@ -157,7 +157,8 @@ export default function PillarsInitiatives() {
   const tenant      = tenantService.getTenant(companyId);
   const companyName = tenant?.company_name ?? companyId;
 
-  const aggregate   = scoringSimulatorService.getCompanyAggregate(companyId, activeScenario);
+  const { data: scoring } = useScoringResult({ tenantId: companyId, scenarioId: activeScenario });
+  const aggregate   = scoring?.aggregate;
   const programs    = demoDataService.getPrograms(companyId);
   const initiatives = koraContributionService.getCollectiveInitiatives(companyId, activeScenario);
 
