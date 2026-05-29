@@ -25,6 +25,12 @@
 --   - No gov.kip_records — explicitly excluded from Foundation Light
 -- ═══════════════════════════════════════════════════════════════════════════════
 
+-- PSEUDONYMIZATION BOUNDARY (da confermare con DPA):
+-- KORA conserva solo pseudonym_id + raw_hash, mai identità reale.
+-- La mappa di re-identificazione NON è detenuta da KORA: la pseudonimizzazione
+-- avviene all'origine (lato cliente/titolare) prima dell'upload; la chiave resta
+-- al titolare del trattamento.
+
 
 -- ── 0. Schemas ────────────────────────────────────────────────────────────────
 
@@ -32,27 +38,21 @@ CREATE SCHEMA IF NOT EXISTS analytics;
 CREATE SCHEMA IF NOT EXISTS personal;
 CREATE SCHEMA IF NOT EXISTS gov;
 CREATE SCHEMA IF NOT EXISTS audit;
+CREATE SCHEMA IF NOT EXISTS kora;
 
 
--- ── 1. JWT claim helpers ──────────────────────────────────────────────────────
+-- ── 1. JWT claim helpers (schema kora) ───────────────────────────────────────
 
-CREATE OR REPLACE FUNCTION auth.tenant_id() RETURNS uuid
-  LANGUAGE sql STABLE
-AS $$
-  SELECT COALESCE(
-    (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid,
-    NULL
-  );
+CREATE OR REPLACE FUNCTION kora.tenant_id() RETURNS uuid LANGUAGE sql STABLE AS $$
+  SELECT NULLIF(current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id', '')::uuid;
 $$;
 
-CREATE OR REPLACE FUNCTION auth.kora_role() RETURNS text
-  LANGUAGE sql STABLE
-AS $$
-  SELECT COALESCE(
-    current_setting('request.jwt.claims', true)::jsonb ->> 'kora_role',
-    'anonymous'
-  );
+CREATE OR REPLACE FUNCTION kora.kora_role() RETURNS text LANGUAGE sql STABLE AS $$
+  SELECT COALESCE(current_setting('request.jwt.claims', true)::jsonb ->> 'kora_role', 'anonymous');
 $$;
+
+GRANT USAGE ON SCHEMA kora TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION kora.tenant_id(), kora.kora_role() TO authenticated, anon;
 
 
 -- ── 2. analytics.tenant ───────────────────────────────────────────────────────
@@ -79,12 +79,12 @@ CREATE INDEX idx_tenant_code ON analytics.tenant (tenant_code);
 ALTER TABLE analytics.tenant ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_tenants" ON analytics.tenant
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_tenant_read" ON analytics.tenant
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER', 'ADVISOR')
-    AND id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER', 'ADVISOR')
+    AND id = kora.tenant_id()
   );
 
 
@@ -115,12 +115,12 @@ CREATE INDEX idx_workforce_baseline_tenant ON personal.workforce_baseline (tenan
 ALTER TABLE personal.workforce_baseline ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_baselines" ON personal.workforce_baseline
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_baseline_read" ON personal.workforce_baseline
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
   );
 
 
@@ -157,12 +157,12 @@ CREATE INDEX idx_source_batch_period ON analytics.source_batch (tenant_id, repor
 ALTER TABLE analytics.source_batch ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_batches" ON analytics.source_batch
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_batches_read" ON analytics.source_batch
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
   );
 
 
@@ -199,7 +199,7 @@ ALTER TABLE personal.uploaded_record ENABLE ROW LEVEL SECURITY;
 -- PRIVACY BOUNDARY: only KORA_ADMIN can read/write uploaded_record rows.
 -- No COMPANY_ADMIN or COMPANY_VIEWER policy exists — intentional.
 CREATE POLICY "kora_admin_only_uploaded_records" ON personal.uploaded_record
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 
 -- ── 6. analytics.uef_record ───────────────────────────────────────────────────
@@ -238,12 +238,12 @@ CREATE INDEX idx_uef_record_status  ON analytics.uef_record (tenant_id, review_s
 ALTER TABLE analytics.uef_record ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_uef" ON analytics.uef_record
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "advisor_tenant_uef_read" ON analytics.uef_record
   FOR SELECT USING (
-    auth.kora_role() = 'ADVISOR'
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() = 'ADVISOR'
+    AND tenant_id = kora.tenant_id()
   );
 
 -- No COMPANY_ADMIN / COMPANY_VIEWER policy — employers see only aggregated outputs,
@@ -280,12 +280,12 @@ CREATE INDEX idx_activation_result_tenant ON analytics.activation_result (tenant
 ALTER TABLE analytics.activation_result ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_activation" ON analytics.activation_result
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_activation_read" ON analytics.activation_result
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
   );
 
 
@@ -316,12 +316,12 @@ CREATE INDEX idx_confidence_result_tenant ON analytics.confidence_result (tenant
 ALTER TABLE analytics.confidence_result ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_confidence" ON analytics.confidence_result
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_confidence_read" ON analytics.confidence_result
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
   );
 
 
@@ -351,12 +351,12 @@ CREATE INDEX idx_bti_result_tenant ON analytics.bti_result (tenant_id);
 ALTER TABLE analytics.bti_result ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_bti" ON analytics.bti_result
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_bti_read" ON analytics.bti_result
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
   );
 
 
@@ -399,12 +399,12 @@ CREATE UNIQUE INDEX idx_kora_index_result_one_current
 ALTER TABLE analytics.kora_index_result ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_kora_index" ON analytics.kora_index_result
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_kora_index_read" ON analytics.kora_index_result
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
     AND is_current = true
   );
 
@@ -441,12 +441,12 @@ CREATE INDEX idx_decision_pack_status ON analytics.decision_pack_version (tenant
 ALTER TABLE analytics.decision_pack_version ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_dp" ON analytics.decision_pack_version
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_dp_ready_read" ON analytics.decision_pack_version
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
     AND status IN ('ready', 'exported')
   );
 
@@ -476,12 +476,12 @@ CREATE INDEX idx_budget_gov_tenant ON gov.budget_governance (tenant_id);
 ALTER TABLE gov.budget_governance ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "kora_admin_all_budget_gov" ON gov.budget_governance
-  FOR ALL USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "company_own_budget_gov_read" ON gov.budget_governance
   FOR SELECT USING (
-    auth.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = auth.tenant_id()
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
   );
 
 
@@ -514,12 +514,10 @@ ALTER TABLE audit.audit_log ENABLE ROW LEVEL SECURITY;
 
 -- KORA_ADMIN can read the audit trail.
 CREATE POLICY "kora_admin_read_audit" ON audit.audit_log
-  FOR SELECT USING (auth.kora_role() = 'KORA_ADMIN');
+  FOR SELECT USING (kora.kora_role() = 'KORA_ADMIN');
 
--- INSERT is allowed from the application layer (service role or privileged context).
--- No application-layer actor can INSERT with arbitrary content — enforced in Phase 2B.
-CREATE POLICY "application_insert_audit" ON audit.audit_log
-  FOR INSERT WITH CHECK (true);
+-- audit writes: solo service role (server-side, bypassa RLS). Nessuna policy INSERT
+-- per authenticated/anon: i client non possono inserire log.
 
 -- No UPDATE, no DELETE — the table is immutable after insert.
 -- Enforce also at DB level: revoke UPDATE/DELETE from all non-superuser roles.
