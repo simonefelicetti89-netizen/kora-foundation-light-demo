@@ -1,0 +1,245 @@
+// lib/live/persistence.ts
+// Server-side only. Writes KoraComputationResult to the Supabase LIVE schema
+// using the service role client (bypasses RLS — runs from trusted server contexts).
+//
+// Phase 2B — pending supabase gen types (Task 7): Supabase client calls use
+// 'as any' casts for multi-schema operations. Types will be generated once the
+// project is provisioned and 001+002 migrations are applied.
+//
+// KoraIndexResult is_current logic:
+//   On each scoring run, the previous is_current = true row is set to false,
+//   then the new row is inserted with is_current = true.
+//   The partial unique index idx_kora_index_result_one_current enforces this at DB level.
+
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import type { KoraComputationResult, KoraIndexMacroblocks } from '@/lib/kora-engine/types';
+import type { KoraIndexComponent, MacroblockScore, MacroblockCode } from '@/lib/types';
+import {
+  getMethodologyVersion,
+  getCalibrationStatus,
+  getAllComponentEffectiveWeights,
+} from '@/lib/methodology-config/v0.1';
+import { COMPONENT_LABELS, MACROBLOCK_LABELS } from '@/lib/constants/kora';
+
+// ── Component array builder (v0.1 approximations) ─────────────────────────────
+// Individual component values derived from available engine outputs.
+// Phase 2B note: NI, WB, PB, EQ are proxies — full component engine is post-pilot.
+
+function buildComponentArray(
+  result: KoraComputationResult,
+  weights: Record<string, number>,
+): KoraIndexComponent[] {
+  const { activation, confidence, pillarDistribution, koraIndex } = result;
+
+  // PC: fraction of 5 pillars with ≥1 event
+  const activePillarCount = (Object.values(pillarDistribution) as number[]).filter(c => c > 0).length;
+  const pcValue = activePillarCount / 5;
+
+  // PB: 1 − coefficient of variation across active pillars
+  const activeCounts = (Object.values(pillarDistribution) as number[]).filter(c => c > 0);
+  let pbValue = 0;
+  if (activeCounts.length >= 2) {
+    const mean = activeCounts.reduce((a, b) => a + b, 0) / activeCounts.length;
+    const variance = activeCounts.reduce((a, b) => a + (b - mean) ** 2, 0) / activeCounts.length;
+    const cv = mean > 0 ? Math.sqrt(variance) / mean : 1;
+    pbValue = Math.max(0, Math.min(1, 1 - cv));
+  } else if (activeCounts.length === 1) {
+    pbValue = 0.2;
+  }
+
+  // WB: worker balance — bottomFiftyShare as equity proxy (0–1)
+  const wbValue = Math.max(0, Math.min(1, activation.bottomFiftyShare));
+
+  // EQ: 1 − max(departmentGap) proxy
+  const gapValues = Object.values(activation.departmentGaps) as number[];
+  const eqValue = gapValues.length > 0
+    ? Math.max(0, Math.min(1, 1 - Math.max(...gapValues)))
+    : 0.5;
+
+  // NI: normalized intensity proxy from QUALITY macroblock score
+  const niValue = Math.max(0, Math.min(1, koraIndex.macroblocks.activationQuality / 100));
+
+  const w = weights;
+
+  return [
+    { code: 'AR',  label: COMPONENT_LABELS['AR'],  value: activation.activationReach,          weight: w['AR']  ?? 0, macroblock: 'REACH'  as MacroblockCode },
+    { code: 'MAR', label: COMPONENT_LABELS['MAR'], value: activation.meaningfulActivationReach, weight: w['MAR'] ?? 0, macroblock: 'REACH'  as MacroblockCode },
+    { code: 'NI',  label: COMPONENT_LABELS['NI'],  value: niValue,                             weight: w['NI']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'VR',  label: COMPONENT_LABELS['VR'],  value: confidence.verificationConfidence,   weight: w['VR']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'CO',  label: COMPONENT_LABELS['CO'],  value: confidence.reviewConfidence,         weight: w['CO']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'WB',  label: COMPONENT_LABELS['WB'],  value: wbValue,                             weight: w['WB']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'PC',  label: COMPONENT_LABELS['PC'],  value: pcValue,                             weight: w['PC']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'PB',  label: COMPONENT_LABELS['PB'],  value: pbValue,                             weight: w['PB']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'EQ',  label: COMPONENT_LABELS['EQ'],  value: eqValue,                             weight: w['EQ']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'CS',  label: COMPONENT_LABELS['CS'],  value: confidence.score / 100,              weight: 0,             external: true },
+  ] as KoraIndexComponent[];
+}
+
+function buildMacroblockArray(mb: KoraIndexMacroblocks): MacroblockScore[] {
+  return [
+    { code: 'REACH'   as MacroblockCode, label: MACROBLOCK_LABELS['REACH'],   weight: 0.25, score: mb.activationReach,      component_codes: ['AR', 'MAR'] },
+    { code: 'QUALITY' as MacroblockCode, label: MACROBLOCK_LABELS['QUALITY'],  weight: 0.30, score: mb.activationQuality,    component_codes: ['NI', 'VR', 'CO'] },
+    { code: 'EQUITY'  as MacroblockCode, label: MACROBLOCK_LABELS['EQUITY'],   weight: 0.25, score: mb.distributionEquity,   component_codes: ['WB', 'PC', 'PB', 'EQ'] },
+    { code: 'BTI'     as MacroblockCode, label: MACROBLOCK_LABELS['BTI'],      weight: 0.20, score: mb.budgetToHumanImpact,  component_codes: [] },
+  ];
+}
+
+// ── PersistenceResult ─────────────────────────────────────────────────────────
+
+export interface PersistenceResult {
+  activationResultId:  string;
+  confidenceResultId:  string;
+  btiResultId:         string;
+  koraIndexResultId:   string;
+}
+
+// ── persistKoraComputationResult ──────────────────────────────────────────────
+
+export async function persistKoraComputationResult(params: {
+  tenantId:            string;
+  batchId:             string;
+  reportingPeriod:     string;
+  workforcePopulation: number;
+  result:              KoraComputationResult;
+}): Promise<PersistenceResult> {
+  const { tenantId, batchId, reportingPeriod, workforcePopulation, result } = params;
+
+  // Phase 2B: 'as any' for multi-schema ops — pending supabase gen types (Task 7).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = getSupabaseServiceClient() as any;
+
+  const methodologyVersion = getMethodologyVersion();
+  const calibrationStatus  = getCalibrationStatus();
+
+  // ── 1. activation_result ────────────────────────────────────────────────────
+
+  const { data: actData, error: actErr } = await db
+    .schema('analytics')
+    .from('activation_result')
+    .insert({
+      tenant_id:                      tenantId,
+      reporting_period:               reportingPeriod,
+      total_workers:                  workforcePopulation,
+      eligible_worker_count:          result.eligibilitySummary.eligibleCount,
+      active_worker_count:            result.activation.activeWorkers,
+      meaningful_active_worker_count: result.activation.meaningfullyActiveWorkers,
+      activation_rate:                result.activation.activationReach,
+      meaningful_activation_rate:     result.activation.meaningfulActivationReach,
+      // continuity_rate and verification_rate: derived from confidence in v0.1
+      continuity_rate:                result.confidence.reviewConfidence,
+      verification_rate:              result.confidence.verificationConfidence,
+      pillar_distribution:            result.pillarDistribution,
+      department_activation: {
+        ...result.activation.departmentGaps,
+        ...result.activation.siteGaps,
+      },
+      privacy_threshold_met:  true,
+      methodology_version_id: methodologyVersion,
+      calibration_status:     calibrationStatus,
+    })
+    .select('id')
+    .single();
+
+  if (actErr || !actData) throw new Error(`[KORA persist] activation_result: ${actErr?.message ?? 'no data'}`);
+  const activationResultId = actData.id as string;
+
+  // ── 2. confidence_result ────────────────────────────────────────────────────
+  // Engine produces score 0–100; DB stores as numeric(5,4) → divide by 100.
+
+  const cs01 = result.confidence.score / 100;
+  const confidenceLevel = cs01 >= 0.70 ? 'high' : cs01 >= 0.40 ? 'medium' : 'low';
+
+  const { data: confData, error: confErr } = await db
+    .schema('analytics')
+    .from('confidence_result')
+    .insert({
+      tenant_id:             tenantId,
+      reporting_period:      reportingPeriod,
+      confidence_score:      cs01,
+      confidence_level:      confidenceLevel,
+      data_completeness:     result.confidence.dataCompleteness,
+      evidence_quality:      result.confidence.budgetEvidenceConfidence,
+      mapping_confidence:    result.confidence.mappingConfidence,
+      verification_weight:   result.confidence.verificationConfidence,
+      source_coverage:       {},
+      gaps_identified:       result.confidence.warnings.slice(0, 10),
+      limitations:           result.confidence.warnings.join('; ').slice(0, 500) || 'pre_empirical_calibration',
+      methodology_version_id: methodologyVersion,
+      calibration_status:    calibrationStatus,
+    })
+    .select('id')
+    .single();
+
+  if (confErr || !confData) throw new Error(`[KORA persist] confidence_result: ${confErr?.message ?? 'no data'}`);
+  const confidenceResultId = confData.id as string;
+
+  // ── 3. bti_result ───────────────────────────────────────────────────────────
+
+  const deepActivationShare = result.bti.totalBudget > 0
+    ? Math.min(1, result.bti.deepActivationSpend / result.bti.totalBudget)
+    : 0;
+
+  const { data: btiData, error: btiErr } = await db
+    .schema('analytics')
+    .from('bti_result')
+    .insert({
+      tenant_id:                   tenantId,
+      reporting_period:            reportingPeriod,
+      total_people_welfare_budget: result.bti.totalBudget,
+      deep_activation_spend:       result.bti.deepActivationSpend,
+      economic_relief_spend:       result.bti.economicReliefSpend,
+      blocked_compliance_spend:    result.bti.blockedComplianceSpend,
+      activation_debt_eur:         result.bti.activationDebt,
+      deep_activation_share:       deepActivationShare,
+      budget_evidence_quality:     result.bti.budgetEvidenceQuality,
+      bti_score:                   result.bti.btiScore,
+      cost_per_impact_unit:        null,
+      payload:                     { scoring_batch_id: batchId, warnings: result.bti.warnings.slice(0, 5) },
+    })
+    .select('id')
+    .single();
+
+  if (btiErr || !btiData) throw new Error(`[KORA persist] bti_result: ${btiErr?.message ?? 'no data'}`);
+  const btiResultId = btiData.id as string;
+
+  // ── 4. kora_index_result — is_current logic ──────────────────────────────────
+  // Supersede any existing current result for this tenant × period.
+
+  await db
+    .schema('analytics')
+    .from('kora_index_result')
+    .update({ is_current: false })
+    .eq('tenant_id', tenantId)
+    .eq('reporting_period', reportingPeriod)
+    .eq('is_current', true);
+
+  const weights    = getAllComponentEffectiveWeights();
+  const components = buildComponentArray(result, weights);
+  const macroblocks = buildMacroblockArray(result.koraIndex.macroblocks);
+
+  const { data: kiData, error: kiErr } = await db
+    .schema('analytics')
+    .from('kora_index_result')
+    .insert({
+      tenant_id:              tenantId,
+      reporting_period:       reportingPeriod,
+      methodology_version_id: methodologyVersion,
+      kora_index_value:       result.koraIndex.value,
+      safeguard_status:       result.activation.safeguardStatus,
+      calibration_status:     calibrationStatus,
+      limitations_text:       result.koraIndex.warnings.join('; ').slice(0, 500) || null,
+      components,
+      macroblocks,
+      scoring_run_id:         batchId,
+      confidence_result_id:   confidenceResultId,
+      activation_result_id:   activationResultId,
+      is_current:             true,
+    })
+    .select('id')
+    .single();
+
+  if (kiErr || !kiData) throw new Error(`[KORA persist] kora_index_result: ${kiErr?.message ?? 'no data'}`);
+  const koraIndexResultId = kiData.id as string;
+
+  return { activationResultId, confidenceResultId, btiResultId, koraIndexResultId };
+}

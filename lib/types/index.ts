@@ -180,7 +180,7 @@ export interface KoraIndexOutput {
   confidence_score: number;         // 0–1, external to KORA Index v3 computation
   safeguard_status: SafeguardStatus;
   generated_at: string;
-  synthetic_demo_data: true;
+  synthetic_demo_data?: true;   // omitted for live rows
   confidence_score_id?: string;
   activation_safeguard_result_id?: string;
   scoring_run_id?: string;
@@ -205,9 +205,9 @@ export interface CompanyAggregateExtended {
   privacy_threshold_met: boolean;
   methodology_version_id: string;
   calibration_status: CalibrationStatus;
-  synthetic_demo_data: true;
-  generated_for: string;
-  not_live_data: true;
+  synthetic_demo_data?: true;   // omitted for live rows
+  generated_for?: string;        // omitted for live rows
+  not_live_data?: true;          // omitted for live rows
 }
 
 export interface UEFRecord {

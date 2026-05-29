@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useEnvironment } from '@/lib/demo-state';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import type { ConfidenceRecord } from '@/services/scoring-simulator/ScoringSimulatorService';
+import { mapDbRow, type LiveRow } from '@/lib/live/scoring-mapper';
 import type {
   KoraIndexOutput, KoraIndexComponent, MacroblockScore,
   CompanyAggregateExtended,
@@ -93,17 +94,12 @@ export interface UseScoringResultReturn {
  *   };
  */
 function mapDbRowToScoringResult(
-  _row: unknown,
+  row: LiveRow,
   tenantId: string,
   scenarioId: ScenarioId,
 ): ScoringResult {
-  void _row;
-  // TODO Phase 2B: implement after lib/types update.
-  return {
-    status: 'insufficient_data',
-    tenantId, scenarioId, environment: 'live',
-    koraIndex: null, aggregate: null, confidence: null,
-  };
+  const mapped = mapDbRow(row, tenantId, scenarioId);
+  return { ...mapped, tenantId, scenarioId, environment: 'live' };
 }
 
 // ── Live fetch (async, Phase 2B) ───────────────────────────────────────────────
