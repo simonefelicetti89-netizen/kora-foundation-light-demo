@@ -318,31 +318,24 @@ export function DataLineagePreview({
         </div>
       )}
 
-      {/* Pipeline strip */}
-      <div className="overflow-x-auto">
-        <div className="flex items-start gap-0 min-w-max">
-          {STEPS.map((step, i) => (
-            <div key={step.num} className="flex items-center">
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-center w-[110px]">
-                <p className="text-[10px] font-mono font-bold text-slate-400">
-                  {String(step.num).padStart(2, '0')}
-                </p>
-                <p className="text-[10px] font-semibold text-slate-700 mt-0.5 leading-tight">
-                  {step.label}
-                </p>
-                <p className="text-[8px] text-slate-400 mt-0.5 leading-tight">
-                  {step.sublabel}
-                </p>
-                <p className="text-[8px] text-slate-300 mt-1 leading-tight border-t border-slate-50 pt-1">
-                  {step.rule}
-                </p>
-              </div>
-              {i < STEPS.length - 1 && (
-                <div className="flex items-center px-1 text-slate-200 text-xs">→</div>
-              )}
-            </div>
-          ))}
-        </div>
+      {/* Pipeline strip — responsive grid, no horizontal scroll */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+        {STEPS.map((step) => (
+          <div key={step.num} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-center">
+            <p className="text-[10px] font-mono font-bold text-slate-400">
+              {String(step.num).padStart(2, '0')}
+            </p>
+            <p className="text-[10px] font-semibold text-slate-700 mt-0.5 leading-tight">
+              {step.label}
+            </p>
+            <p className="text-[8px] text-slate-400 mt-0.5 leading-tight">
+              {step.sublabel}
+            </p>
+            <p className="text-[8px] text-slate-300 mt-1 leading-tight border-t border-slate-50 pt-1">
+              {step.rule}
+            </p>
+          </div>
+        ))}
       </div>
 
       {/* Example cards */}

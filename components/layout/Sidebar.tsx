@@ -72,9 +72,9 @@ function buildNavGroups(role: string): NavGroup[] {
         heading: 'Pipeline Operativa',
         items: [
           { href: '/admin/companies/data-intake',        label: 'Data Intake Studio' },
-          { href: '/company/ingestion',                  label: 'AI Ingestion' },
-          { href: '/company/uef-review',                 label: 'UEF Review' },
-          { href: '/company/scoring',                    label: 'Scoring Run' },
+          { href: '/company/ingestion',                  label: 'Ingestion Preview' },
+          { href: '/company/uef-review',                 label: 'Operator Review Queue' },
+          { href: '/company/scoring',                    label: 'Scoring Preview' },
           { href: '/company/reports',                    label: 'Decision Pack' },
           { href: '/company/financial',                  label: 'Governance Finanziaria' },
         ],

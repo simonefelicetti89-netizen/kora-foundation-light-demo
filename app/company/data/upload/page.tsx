@@ -1383,6 +1383,26 @@ export default function UploadPage() {
               />
             )}
 
+            {/* ── Operator flow link ────────────────────────────────────────── */}
+            {koraStatus === 'done' && koraResult && (
+              <div className="rounded-xl border border-slate-300 bg-slate-50 p-5 space-y-3">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-1">
+                    Flusso KORA Operator
+                  </p>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    Data Intake produce la coda di review. La Review Queue prepara Scoring e Decision Pack.
+                  </p>
+                </div>
+                <Link
+                  href="/company/uef-review"
+                  className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition-colors"
+                >
+                  Vai a Operator Review Queue →
+                </Link>
+              </div>
+            )}
+
             {/* ── Section 10: Next steps ────────────────────────────────────── */}
             <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
               <div className="space-y-1 mb-5">

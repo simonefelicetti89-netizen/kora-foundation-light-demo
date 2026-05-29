@@ -48,7 +48,7 @@ export default function ScoringBoundaryNotice() {
           href="/company/uef-review"
           className="flex items-center gap-1.5 rounded border border-slate-200 bg-white px-3 py-1.5 text-slate-600 hover:bg-slate-50 transition-colors"
         >
-          ← Review Queue
+          ← Operator Review Queue
         </Link>
         <span className="text-slate-300 font-mono">·</span>
         <span className="rounded border border-slate-400 bg-slate-100 px-3 py-1.5 font-semibold text-slate-700">

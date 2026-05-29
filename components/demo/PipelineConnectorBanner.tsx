@@ -7,33 +7,33 @@ import { scenarioService } from '@/services/scenario/ScenarioService';
 const PIPELINE_STEPS = [
   {
     num: 1,
-    label: 'Data Intake',
-    sublabel: 'KORA Operator carica fonti',
+    label: 'Data Intake Studio',
+    sublabel: 'KORA Operator gestisce intake',
     href: '/admin/companies/data-intake',
   },
   {
     num: 2,
-    label: 'AI Ingestion',
-    sublabel: 'AI assiste, Operator approva',
+    label: 'Ingestion Preview',
+    sublabel: 'AI classifica, Operator approva',
     href: '/company/ingestion',
   },
   {
     num: 3,
-    label: 'UEF Review',
-    sublabel: 'record approvati da Operator',
+    label: 'Operator Review Queue',
+    sublabel: 'review metodologica Operator',
     href: '/company/uef-review',
   },
   {
     num: 4,
-    label: 'Scoring Run',
+    label: 'Scoring Preview',
     sublabel: 'IU → PIB → aggregazione',
     href: '/company/scoring',
   },
   {
     num: 5,
-    label: 'Executive Cockpit',
-    sublabel: 'output aggregato azienda',
-    href: '/company',
+    label: 'Decision Pack',
+    sublabel: 'output direzionale azienda',
+    href: '/company/reports',
   },
 ] as const;
 
@@ -72,11 +72,11 @@ export function PipelineConnectorBanner() {
     <div className="rounded-lg border border-indigo-100 bg-indigo-50 p-5 space-y-4">
       <div>
         <h2 className="text-sm font-semibold text-indigo-900">
-          Dalle azioni all&apos;intelligence KORA
+          Flusso operativo KORA Operator
         </h2>
         <p className="mt-1 text-xs text-indigo-700 leading-relaxed max-w-2xl">
-          Prima delle dashboard c&apos;è una pipeline: KORA trasforma azioni grezze e dati sorgente in
-          evidenze, Impact Units, aggregazione aziendale e KORA Index.
+          KORA Operator gestisce l&apos;intero flusso: Data Intake, Ingestion Preview, Review Queue e Scoring Preview.
+          L&apos;azienda riceve solo gli output aggregati validati — nessun self-service.
         </p>
         {scenario && (
           <p className="mt-1.5 text-xs font-medium text-indigo-600">

@@ -488,7 +488,7 @@ export default function UEFReview() {
         </Link>
         <span className="text-slate-300 font-mono">·</span>
         <span className="rounded border border-slate-400 bg-slate-100 px-3 py-1.5 font-semibold text-slate-700">
-          Review Queue
+          Operator Review Queue
         </span>
         <span className="text-slate-300 font-mono">·</span>
         <Link
