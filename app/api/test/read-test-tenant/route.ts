@@ -30,9 +30,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // Phase 2B: 'as any' for multi-schema ops — pending supabase gen types (Task 7).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = getSupabaseServiceClient() as any;
+  const db = getSupabaseServiceClient();
 
   try {
     // ── Resolve tenantId from tenant_code ──────────────────────────────────────

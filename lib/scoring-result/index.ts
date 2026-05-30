@@ -120,14 +120,17 @@ async function fetchLiveScoringResult({
   const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
   const supabase = getSupabaseBrowserClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: row, error } = await (supabase as any)
+  // Typed schema access — Database type now includes 'analytics' schema.
+  // The join select result is cast to LiveRow because Supabase JS cannot infer
+  // nested join shapes from the select string at compile time.
+  // TODO: remove LiveRow cast after Supabase multi-schema type narrowing for join selects
+  const { data: row, error } = await supabase
     .schema('analytics')
     .from('kora_index_result')
     .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*)')
     .eq('tenant_id', tenantId)
     .eq('is_current', true)
-    .maybeSingle();
+    .maybeSingle() as unknown as { data: import('@/lib/live/scoring-mapper').LiveRow | null; error: { message: string } | null };
 
   if (error) throw new Error(`[KORA live] ${error.message}`);
   if (!row) {

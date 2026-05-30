@@ -11,7 +11,7 @@
 //   then the new row is inserted with is_current = true.
 //   The partial unique index idx_kora_index_result_one_current enforces this at DB level.
 
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServiceClient, type ServiceDb } from '@/lib/supabase/server';
 import type { KoraComputationResult, KoraIndexMacroblocks } from '@/lib/kora-engine/types';
 import type { KoraIndexComponent, MacroblockScore, MacroblockCode } from '@/lib/types';
 import {
@@ -118,9 +118,7 @@ export async function persistKoraComputationResult(params: {
 }): Promise<PersistenceResult> {
   const { tenantId, batchId, reportingPeriod, workforcePopulation, result } = params;
 
-  // Phase 2B: 'as any' for multi-schema ops — pending supabase gen types (Task 7).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = getSupabaseServiceClient() as any;
+  const db: ServiceDb = getSupabaseServiceClient();
 
   const methodologyVersion = getMethodologyVersion();
   const calibrationStatus  = getCalibrationStatus();

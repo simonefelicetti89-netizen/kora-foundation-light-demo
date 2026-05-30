@@ -55,8 +55,7 @@ export async function POST(request: NextRequest) {
     }, { status: 400 });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = getSupabaseServiceClient() as any;
+  const db = getSupabaseServiceClient();
 
   // Service-role admin client for auth operations.
   const adminAuth = createClient(

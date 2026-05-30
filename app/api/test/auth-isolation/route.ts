@@ -27,6 +27,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/supabase/types';
 
 const SUPABASE_URL  = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -58,7 +59,7 @@ interface CaseResult {
 // ── Create authenticated user client ─────────────────────────────────────────
 
 interface SignInResult {
-  client: SupabaseClient | null;
+  client: SupabaseClient<Database> | null;
   error: string | null;
   jwtClaims: {
     kora_role_top_level: string | null;
@@ -69,7 +70,7 @@ interface SignInResult {
 }
 
 async function signInAsUser(email: string, password: string): Promise<SignInResult> {
-  const client = createClient(SUPABASE_URL, SUPABASE_ANON, {
+  const client = createClient<Database>(SUPABASE_URL, SUPABASE_ANON, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const { data: signInData, error } = await client.auth.signInWithPassword({ email, password });
@@ -93,26 +94,23 @@ async function signInAsUser(email: string, password: string): Promise<SignInResu
   return { client, error: null, jwtClaims };
 }
 
-// ── Query helpers (schema-qualified via as any — pending supabase gen types) ──
+// ── Query helpers — typed via updated Database type ───────────────────────────
 
-async function queryTenantByCode(client: SupabaseClient, tenantCode: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (client as any).schema('analytics').from('tenant')
+async function queryTenantByCode(client: SupabaseClient<Database>, tenantCode: string) {
+  return client.schema('analytics').from('tenant')
     .select('id,tenant_code')
     .eq('tenant_code', tenantCode)
     .eq('is_active', true);
 }
 
-async function queryUploadedRecord(client: SupabaseClient) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (client as any).schema('personal').from('uploaded_record')
+async function queryUploadedRecord(client: SupabaseClient<Database>) {
+  return client.schema('personal').from('uploaded_record')
     .select('id')
     .limit(5);
 }
 
-async function queryAuditLog(client: SupabaseClient) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (client as any).schema('audit').from('audit_log')
+async function queryAuditLog(client: SupabaseClient<Database>) {
+  return client.schema('audit').from('audit_log')
     .select('id')
     .limit(5);
 }
@@ -179,12 +177,9 @@ export async function GET(request: NextRequest) {
   };
 
   // ── Fetch tenant IDs using service role ───────────────────────────────────────
-  // Phase 2B note: as any for multi-schema ops — pending supabase gen types (Task 7).
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  const svcDb = createClient(SUPABASE_URL, SERVICE_KEY, {
+  const svcDb = createClient<Database>(SUPABASE_URL, SERVICE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
-  }) as any;
-  /* eslint-enable @typescript-eslint/no-explicit-any */
+  });
 
   const { data: tenantA } = await svcDb.schema('analytics').from('tenant').select('id').eq('tenant_code', 'TEST-A').maybeSingle();
   const { data: tenantB } = await svcDb.schema('analytics').from('tenant').select('id').eq('tenant_code', 'TEST-B').maybeSingle();

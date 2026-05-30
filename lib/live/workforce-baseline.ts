@@ -16,10 +16,10 @@ import {
   DEFAULT_MIN_GROUP_SIZE,
   type NestedSuppressionResult,
 } from '@/lib/privacy/group-threshold';
+import type { ServiceDb } from '@/lib/supabase/server';
 
 export interface WorkforceBaselineParams {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: any;
+  db: ServiceDb;
   tenantId: string;
   reportingPeriod: string;
   totalWorkers: number;

@@ -57,3 +57,12 @@ export function getSupabaseServiceClient() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }
+
+// ── ServiceDb type ────────────────────────────────────────────────────────────
+// Typed alias for the service-role client. Replaces blanket `as any` casts so
+// multi-schema .schema() calls keep compile-time awareness of the Database type.
+// Individual query result casts may still be needed for complex join selects —
+// those are narrowed at the call site, not at the client level.
+
+import { createClient as _createClientForType } from '@supabase/supabase-js';
+export type ServiceDb = ReturnType<typeof _createClientForType<Database>>;

@@ -8,10 +8,10 @@
 // RLS: KORA_ADMIN full access; company roles see only 'ready'|'exported' packs.
 
 import type { PersistenceResult } from '@/lib/live/persistence';
+import type { ServiceDb } from '@/lib/supabase/server';
 
 export interface DecisionPackParams {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: any;
+  db: ServiceDb;
   tenantId: string;
   reportingPeriod: string;
   persistenceResult: PersistenceResult;

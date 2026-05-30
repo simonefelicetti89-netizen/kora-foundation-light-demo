@@ -1,6 +1,17 @@
 // ─── KORA Supabase Database Types ─────────────────────────────────────────────
-// Hand-written TypeScript types matching supabase/migrations/001_live_v1_foundation.sql.
-// In Phase 2B: replace with `npx supabase gen types typescript` output.
+// Hand-written TypeScript types matching supabase/migrations/ canonical state.
+// Schema verified against live Supabase DB (all tables HTTP 200, 2026-05-30).
+//
+// Generated-type status:
+//   npx supabase gen types typescript requires SUPABASE_ACCESS_TOKEN (personal
+//   access token from Supabase dashboard), which is not available in this env.
+//   Types are hand-maintained and verified against information_schema.
+//   See docs/test-routes-removal-before-production.md for full context.
+//
+// Format: matches @supabase/supabase-js v2 GenericDatabase constraint so that
+//   createClient<Database> enables typed .schema() → .from() → .select() chains
+//   without blanket `as any` on the entire client.
+//   Each schema must include: Tables, Views, Functions, Enums, CompositeTypes.
 // ──────────────────────────────────────────────────────────────────────────────
 
 export type Json = string | number | boolean | null | { [key: string]: Json } | Json[];
@@ -250,35 +261,83 @@ export interface AuditLogRow {
   // No updated_at — append-only by design
 }
 
-// ── Database type map (used by createBrowserClient<Database>) ─────────────────
+// ── Database type map ─────────────────────────────────────────────────────────
+// Conforms to @supabase/supabase-js v2 GenericDatabase constraint.
+// Each schema entry includes Views/Functions/Enums/CompositeTypes (required
+// by GenericSchema) so .schema('analytics').from('tenant') is typed without
+// blanket `as any` on the entire client.
 
 export interface Database {
+  // ── analytics schema ──────────────────────────────────────────────────────
   analytics: {
     Tables: {
-      tenant:                 { Row: TenantRow;              Insert: TenantInsert;       Update: Partial<TenantInsert> };
-      source_batch:           { Row: SourceBatchRow;         Insert: Omit<SourceBatchRow,  'id'|'created_at'|'updated_at'>; Update: Partial<SourceBatchRow> };
-      uef_record:             { Row: UefRecordRow;           Insert: Omit<UefRecordRow,    'id'|'created_at'|'updated_at'>; Update: Partial<UefRecordRow> };
-      kora_index_result:      { Row: KoraIndexResultRow;     Insert: Omit<KoraIndexResultRow, 'id'|'created_at'>; Update: Partial<KoraIndexResultRow> };
-      bti_result:             { Row: BtiResultRow;           Insert: Omit<BtiResultRow,    'id'|'created_at'|'updated_at'>; Update: Partial<BtiResultRow> };
-      activation_result:      { Row: ActivationResultRow;    Insert: Omit<ActivationResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ActivationResultRow> };
-      confidence_result:      { Row: ConfidenceResultRow;    Insert: Omit<ConfidenceResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ConfidenceResultRow> };
-      decision_pack_version:  { Row: DecisionPackVersionRow; Insert: Omit<DecisionPackVersionRow,'id'|'created_at'|'updated_at'>; Update: Partial<DecisionPackVersionRow> };
+      tenant:                 { Row: TenantRow;              Insert: TenantInsert;       Update: Partial<TenantInsert>; Relationships: [] };
+      source_batch:           { Row: SourceBatchRow;         Insert: Omit<SourceBatchRow,  'id'|'created_at'|'updated_at'>; Update: Partial<SourceBatchRow>; Relationships: [] };
+      uef_record:             { Row: UefRecordRow;           Insert: Omit<UefRecordRow,    'id'|'created_at'|'updated_at'>; Update: Partial<UefRecordRow>; Relationships: [] };
+      kora_index_result:      { Row: KoraIndexResultRow;     Insert: Omit<KoraIndexResultRow, 'id'|'created_at'>; Update: Partial<KoraIndexResultRow>; Relationships: [] };
+      bti_result:             { Row: BtiResultRow;           Insert: Omit<BtiResultRow,    'id'|'created_at'|'updated_at'>; Update: Partial<BtiResultRow>; Relationships: [] };
+      activation_result:      { Row: ActivationResultRow;    Insert: Omit<ActivationResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ActivationResultRow>; Relationships: [] };
+      confidence_result:      { Row: ConfidenceResultRow;    Insert: Omit<ConfidenceResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ConfidenceResultRow>; Relationships: [] };
+      decision_pack_version:  { Row: DecisionPackVersionRow; Insert: Omit<DecisionPackVersionRow,'id'|'created_at'|'updated_at'>; Update: Partial<DecisionPackVersionRow>; Relationships: [] };
     };
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
+
+  // ── personal schema ───────────────────────────────────────────────────────
   personal: {
     Tables: {
-      workforce_baseline: { Row: WorkforceBaselineRow; Insert: Omit<WorkforceBaselineRow,'id'|'created_at'|'updated_at'>; Update: Partial<WorkforceBaselineRow> };
-      uploaded_record:    { Row: UploadedRecordRow;    Insert: Omit<UploadedRecordRow,   'id'|'created_at'|'updated_at'>; Update: Partial<UploadedRecordRow> };
+      workforce_baseline: { Row: WorkforceBaselineRow; Insert: Omit<WorkforceBaselineRow,'id'|'created_at'|'updated_at'>; Update: Partial<WorkforceBaselineRow>; Relationships: [] };
+      uploaded_record:    { Row: UploadedRecordRow;    Insert: Omit<UploadedRecordRow,   'id'|'created_at'|'updated_at'>; Update: Partial<UploadedRecordRow>; Relationships: [] };
     };
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
+
+  // ── gov schema ────────────────────────────────────────────────────────────
   gov: {
     Tables: {
-      budget_governance: { Row: BudgetGovernanceRow; Insert: Omit<BudgetGovernanceRow,'id'|'created_at'|'updated_at'>; Update: Partial<BudgetGovernanceRow> };
+      budget_governance: { Row: BudgetGovernanceRow; Insert: Omit<BudgetGovernanceRow,'id'|'created_at'|'updated_at'>; Update: Partial<BudgetGovernanceRow>; Relationships: [] };
     };
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
+
+  // ── audit schema ──────────────────────────────────────────────────────────
   audit: {
     Tables: {
-      audit_log: { Row: AuditLogRow; Insert: Omit<AuditLogRow,'id'|'created_at'>; Update: never };
+      audit_log: { Row: AuditLogRow; Insert: Omit<AuditLogRow,'id'|'created_at'>; Update: never; Relationships: [] };
     };
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+
+  // ── kora schema — claim helper functions ──────────────────────────────────
+  kora: {
+    Tables:  Record<string, never>;
+    Views:   Record<string, never>;
+    Functions: {
+      kora_role:  { Args: Record<string, never>; Returns: string };
+      tenant_id:  { Args: Record<string, never>; Returns: string | null };
+    };
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+
+  // ── public schema — required default for Supabase JS client typing ────────
+  public: {
+    Tables:         Record<string, never>;
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 }
