@@ -29,6 +29,11 @@ import { persistKoraComputationResult } from '@/lib/live/persistence';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
 import { persistDecisionPack } from '@/lib/live/decision-pack';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
+import {
+  detectPiiInPayload,
+  sanitizePayload,
+  summarizePiiFindings,
+} from '@/lib/privacy/pii-guard';
 
 const SYNTHETIC_WORKFORCE_DEFAULT = 50;
 
@@ -206,27 +211,62 @@ export async function POST(request: NextRequest) {
       resourceType: 'analytics.source_batch', resourceId: batchId,
       metadata: { batch_label: batchLabel } }));
 
-    // ── Step 4: Uploaded records (pseudonymized) ────────────────────────────
+    // ── Step 4: Uploaded records (pseudonymized) + PII guard ───────────────
+    // PII guard runs on each record payload before persist.
+    // Behavior: review_required + redaction (Foundation Light dev policy).
+    // For Gate 3B real data: strict reject is the recommended policy (see TODO-003).
 
     const uploadedRows = Array.from({ length: 10 }, (_, i) => {
       const n = String(i + 1).padStart(3, '0');
+      const rawPayload: Record<string, unknown> = { synthetic: true, tenant_code: tenantCode, row_index: i };
+
+      const piiResult = detectPiiInPayload(rawPayload);
+      const finalPayload = piiResult.hasPii ? sanitizePayload(rawPayload).sanitized : rawPayload;
+
       return {
         tenant_id: tenantId, batch_id: batchId,
         pseudonym_id: `PSY-OP-${tenantCode}-${n}`,
         raw_hash: `sha256:synthetic:op:${tenantCode}:${n}`,
-        eligibility_status: i < 8 ? 'eligible' : 'limited',
+        eligibility_status: piiResult.hasPii ? 'review_required' : (i < 8 ? 'eligible' : 'limited'),
         primary_pillar: ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY','LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'][i],
         event_nature: 'consumed_service',
-        review_status: 'approved',
-        payload: { synthetic: true, tenant_code: tenantCode, row_index: i },
+        review_status: piiResult.hasPii ? 'needs_more_data' : 'approved',
+        payload: finalPayload,
         privacy_redacted: true,
       };
     });
+
+    // PII guard audit events — no values, only metadata
+    const piiFindings = uploadedRows
+      .map((_, i) => detectPiiInPayload(uploadedRows[i].payload as Record<string, unknown>))
+      .flatMap(r => r.findings);
+    const anyPii = piiFindings.length > 0;
+
+    if (anyPii) {
+      const summary = summarizePiiFindings(piiFindings);
+      auditRows.push(auditEvent({ tenantId,
+        action: 'pii_guard_flagged',
+        resourceType: 'personal.uploaded_record',
+        metadata: {
+          total_findings: summary.total,
+          high_severity: summary.highSeverityCount,
+          by_risk_type: summary.byRiskType,
+          field_paths: summary.fieldPaths,  // paths only, no values
+          policy: 'review_required_plus_redaction',
+          // pii values are NEVER logged here
+        },
+      }));
+    } else {
+      auditRows.push(auditEvent({ tenantId, action: 'pii_guard_checked',
+        resourceType: 'personal.uploaded_record',
+        metadata: { record_count: uploadedRows.length, pii_found: false } }));
+    }
+
     const { error: urErr } = await db.schema('personal').from('uploaded_record').insert(uploadedRows);
     if (urErr) return NextResponse.json({ error: `uploaded_record: ${urErr.message}` }, { status: 500 });
     auditRows.push(auditEvent({ tenantId, action: 'uploaded_records_inserted',
       resourceType: 'personal.uploaded_record',
-      metadata: { count: 10, pseudonym_prefix: `PSY-OP-${tenantCode}-`, pii_present: false } }));
+      metadata: { count: uploadedRows.length, pseudonym_prefix: `PSY-OP-${tenantCode}-`, pii_present: anyPii } }));
 
     // ── Step 5: EligibilityGate → UEF records ──────────────────────────────
 
@@ -322,6 +362,12 @@ export async function POST(request: NextRequest) {
       privacy: {
         n_threshold:            10,
         segment_breakdown_safe: !wbResult.suppression.anyUnsafe,
+      },
+      pii_guard: {
+        checked: true,
+        pii_found: anyPii,
+        policy: 'review_required_plus_redaction',
+        // no PII values in response
       },
       audit_events_written: auditRows.length,
       audit_actions:        auditRows.map(r => r.action),

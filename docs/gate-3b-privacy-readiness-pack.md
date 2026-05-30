@@ -2,8 +2,9 @@
 
 **Stato:** OPEN — preparation pack documentale  
 **Creato:** 2026-05-30  
+**Aggiornato:** 2026-05-30 — aggiunta sezione H: PII Upload Guard  
 **Prerequisito:** nessun dato reale prima che questo gate sia chiuso  
-**Riferimento backlog:** `docs/technical-backlog.md` TODO-003
+**Riferimento backlog:** `docs/technical-backlog.md` TODO-003, TODO-004
 
 ---
 
@@ -123,7 +124,66 @@ Questa checklist deve essere completata prima di qualunque onboarding di dati re
 - [ ] Processo manual di hard delete / right-to-erasure documentato (fino ad automazione)
 - [ ] Lifecycle file sorgente durante upload documentato
 - [ ] Decisione su validatore anti-PII presa (Opzione 1 o 2, sezione E)
+- [x] **PII Upload Guard implementato** (Foundation Light: review_required + redaction) — vedi sezione H
+- [ ] **PII Guard production policy definita**: strict reject vs review_required per dati reali (TODO-004)
 - [ ] Generated types Supabase rivalutati (TODO-001)
 - [ ] Audit log accessibilità verificata per KORA_ADMIN in ambiente reale
 - [ ] Utenti test (`*@example.test`) rimossi da Supabase Auth
 - [ ] Tenant sintetici (`TEST-001`, `TEST-A`, `TEST-B`, `OP-*`) rimossi prima dell'ambiente reale
+
+---
+
+## H. PII Upload Guard — technical safety layer
+
+Implementato in `lib/privacy/pii-guard.ts`. Attivo nell'operator flow e nel seed route TEST-001.
+
+### Cosa rileva
+
+| Tipo PII | Metodo | Severità |
+|---|---|---|
+| Email | Pattern regex | HIGH |
+| Telefono (IT/int.) | Regex con minimo 9 cifre o prefisso internazionale | MEDIUM |
+| Codice Fiscale IT | Pattern 16 char specifico | HIGH |
+| IBAN | Pattern formato IBAN | HIGH |
+| Chiavi nome/cognome | Match esatto su key: nome, cognome, full_name, ecc. | MEDIUM |
+| Identificativi diretti | Match esatto su key: email, telefono, codice_fiscale, iban, ecc. | HIGH |
+| Campi indirizzo | Match esatto su key: indirizzo, via, address, ecc. | LOW |
+
+### Invariante di sicurezza
+
+**I valori PII rilevati non vengono mai salvati** in:
+- `audit_log.payload`
+- response JSON
+- `console.log`
+- test output
+- metadata degli audit events
+
+Gli audit events contengono solo: `field_path`, `risk_type`, `severity`, conteggi. Mai il valore originale.
+
+### Comportamento in Foundation Light
+
+**Policy: `review_required + redaction`**
+
+- PII rilevata → valore nel payload sostituito con `[REDACTED_PII:TIPO]`
+- `eligibility_status` del record → `review_required`
+- Audit event `pii_guard_flagged` scritto (senza valori)
+- Pipeline continua (non bloccata)
+- Dati sintetici OP-001 e TEST-001: tutti safe, nessuna regressione
+
+### Cosa non garantisce
+
+1. **Non sostituisce la pseudonimizzazione all'origine** — il guard opera a valle; se il cliente carica PII, il guard la intercetta ma non la elimina dall'origine.
+2. **Non è un sistema di anonimizzazione** — rileva pattern evidenti; non rileva PII implicita o codificata in modo non standard.
+3. **Non sostituisce il DPA** — è un guardrail tecnico complementare, non un obbligo legale adempiuto.
+4. **Non copre tutti i formati PII** — non rileva immagini, PDF, dati biometrici, audio.
+5. **Falsi negativi possono esistere** — pseudonimi mal formati o PII offuscata possono non essere rilevati.
+
+### Decisione aperta: policy per dati reali (Gate 3B)
+
+Per dati reali, la policy raccomandata è **strict reject**:
+- Se PII rilevata → rifiutare il batch/record completamente
+- Non persistere nulla
+- Notificare l'operatore
+- Non marcare `review_required` (che implica che qualcuno leggerà il dato)
+
+Questa policy è documentata in `docs/technical-backlog.md` TODO-004 e dovrà essere confermata prima dell'onboarding di dati reali.

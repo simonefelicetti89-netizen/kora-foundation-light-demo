@@ -149,4 +149,54 @@ Vedere checklist completa in `docs/gate-3b-privacy-readiness-pack.md`.
 
 ---
 
-*Nuovi TODO vanno aggiunti in coda con numerazione progressiva (TODO-004, TODO-005, ...).*
+---
+
+## TODO-004 — PII Guard production policy
+
+| Campo | Valore |
+|---|---|
+| **Stato** | DEFERRED — mandatory before real data |
+| **Priorità** | Bloccante per qualunque dato reale cliente |
+| **Aggiunto** | 2026-05-30 |
+| **Blocco di riferimento** | PII Upload Guard — Data Intake Safety Layer |
+
+### Stato attuale
+
+PII Guard implementato in `lib/privacy/pii-guard.ts` con policy **`review_required + redaction`** (Foundation Light).
+
+- Email, telefono, CF, IBAN, chiavi sospette: rilevati e redatti
+- Valori PII non salvati in audit, log o response
+- OP-001 e TEST-001: safe, nessuna regressione
+- Test: 42/42 PASS via `npx tsx scripts/test-pii-guard.ts`
+
+### Decisione da prendere prima dei dati reali
+
+Per Gate 3B con dati reali, la policy raccomandata è **strict reject**:
+- Se PII rilevata → batch/record rifiutato, niente persistenza
+- Operatore notificato
+- Nessun `review_required` (che implica accesso al dato da parte di un operatore)
+
+`review_required + redaction` è accettabile solo in dev con dati sintetici dove non ci sono reali implicazioni privacy.
+
+### Azione richiesta
+
+1. Confermare con legal/DPO la policy per dati reali (strict reject raccomandato)
+2. Aggiornare `lib/privacy/pii-guard.ts` con behavior configurabile (env var `KORA_PII_POLICY=strict|review`)
+3. Aggiornare operator-flow e seed-route per usare la policy configurata
+4. Testare con fixture sintetiche che simulano il comportamento strict
+5. Documentare la policy in DPA / istruzioni operative
+6. Aggiornare questo TODO a DONE
+
+### Non blocker per
+
+- Demo Foundation Light
+- Operator flow sintetico
+- Test automatici
+
+### Bloccante per
+
+- Qualunque onboarding di dati reali
+
+---
+
+*Nuovi TODO vanno aggiunti in coda con numerazione progressiva (TODO-005, TODO-006, ...).*

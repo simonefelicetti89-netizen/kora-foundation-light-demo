@@ -22,6 +22,7 @@ import { runKoraPipeline } from '@/lib/kora-engine';
 import { persistKoraComputationResult } from '@/lib/live/persistence';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
+import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guard';
 
 const TEST_TENANT_CODE     = 'TEST-001';
 const TEST_TENANT_NAME     = '[SYNTHETIC TEST] KORA Pipeline Verification Tenant';
@@ -274,9 +275,31 @@ export async function POST(request: NextRequest) {
       metadata:     { source_type: 'welfare_provider', row_count: 20 },
     }));
 
-    // ── Step 1d: Insert personal.uploaded_record (20 synthetic rows) ─────────
+    // ── Step 1d: Insert personal.uploaded_record (20 synthetic rows) + PII guard
 
     const uploadedRows = buildUploadedRecordRows(tenantId, batchId);
+
+    // PII guard: scan each payload before persist — no values in audit events.
+    const allPiiFindings = uploadedRows
+      .flatMap(row => detectPiiInPayload(row.payload as Record<string, unknown>).findings);
+    const anyPii = allPiiFindings.length > 0;
+
+    if (anyPii) {
+      const summary = summarizePiiFindings(allPiiFindings);
+      auditRows.push(auditEvent({
+        tenantId, action: 'pii_guard_flagged',
+        resourceType: 'personal.uploaded_record',
+        metadata: { total_findings: summary.total, high_severity: summary.highSeverityCount,
+          by_risk_type: summary.byRiskType, field_paths: summary.fieldPaths, policy: 'review_required_plus_redaction' },
+      }));
+    } else {
+      auditRows.push(auditEvent({
+        tenantId, action: 'pii_guard_checked',
+        resourceType: 'personal.uploaded_record',
+        metadata: { record_count: uploadedRows.length, pii_found: false },
+      }));
+    }
+
     const { error: urErr } = await db
       .schema('personal')
       .from('uploaded_record')
@@ -290,7 +313,7 @@ export async function POST(request: NextRequest) {
       tenantId,
       action:       'uploaded_records_inserted',
       resourceType: 'personal.uploaded_record',
-      metadata:     { count: 20, pseudonym_prefix: 'PSY-T001-', pii_present: false },
+      metadata:     { count: 20, pseudonym_prefix: 'PSY-T001-', pii_present: anyPii },
     }));
 
     // ── Step 2: Generate analytics.uef_record via EligibilityGate ────────────
