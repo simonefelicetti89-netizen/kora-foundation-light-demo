@@ -1,4 +1,6 @@
 // app/api/test/read-test-tenant/route.ts
+// DEV/TEST ONLY — remove or isolate before production.
+// Uses service_role server-side. Never expose in production.
 // SERVER-SIDE TEST ROUTE — service role, NOT for production use.
 //
 // Reads back the current KORA Index result for tenant TEST-001 and maps it

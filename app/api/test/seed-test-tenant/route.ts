@@ -1,4 +1,6 @@
 // app/api/test/seed-test-tenant/route.ts
+// DEV/TEST ONLY — remove or isolate before production.
+// Uses service_role server-side. Never expose in production.
 // SERVER-SIDE TEST ROUTE — service role, NOT for production use.
 //
 // Demonstrates the full round-trip: create tenant → baseline → batch →
@@ -18,11 +20,8 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { runKoraPipeline } from '@/lib/kora-engine';
 import { persistKoraComputationResult } from '@/lib/live/persistence';
+import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
-import {
-  suppressNestedGroupMap,
-  DEFAULT_MIN_GROUP_SIZE,
-} from '@/lib/privacy/group-threshold';
 
 const TEST_TENANT_CODE     = 'TEST-001';
 const TEST_TENANT_NAME     = '[SYNTHETIC TEST] KORA Pipeline Verification Tenant';
@@ -194,75 +193,50 @@ export async function POST(request: NextRequest) {
     }));
 
     // ── Step 1b: Insert personal.workforce_baseline ──────────────────────────
-    // N≥10 enforcement: suppress any segment dimension group below threshold
-    // before persisting employer-visible segment_breakdown.
+    // N≥10 enforcement via canonical persistWorkforceBaseline().
+    // All segment_breakdown suppression logic lives in lib/live/workforce-baseline.ts.
 
-    const rawSegmentBreakdown = {
-      departments:    { 'dept-tech': 20, 'dept-sales': 15, 'dept-ops': 15 },
-      contract_types: { full_time: 40, part_time: 10 },
-    };
-    const nestedSuppressionResult = suppressNestedGroupMap(rawSegmentBreakdown, DEFAULT_MIN_GROUP_SIZE);
-    const safeSegmentBreakdown = nestedSuppressionResult.safe;
-
-    auditRows.push(auditEvent({
-      tenantId,
-      action:       'privacy_threshold_checked',
-      resourceType: 'personal.workforce_baseline',
-      metadata: {
-        dimension_count:        Object.keys(rawSegmentBreakdown).length,
-        any_unsafe:             nestedSuppressionResult.anyUnsafe,
-        suppression_by_dimension: Object.fromEntries(
-          Object.entries(nestedSuppressionResult.suppressionByDimension).map(([dim, r]) => [
-            dim,
-            { all_safe: r.allSafe, suppressed_group_count: r.suppressedGroupCount },
-          ]),
-        ),
-        min_group_size: DEFAULT_MIN_GROUP_SIZE,
-      },
-    }));
-
-    if (nestedSuppressionResult.anyUnsafe) {
-      auditRows.push(auditEvent({
+    let wbResult: Awaited<ReturnType<typeof persistWorkforceBaseline>>;
+    try {
+      wbResult = await persistWorkforceBaseline({
+        db,
         tenantId,
-        action:       'privacy_threshold_suppressed',
-        resourceType: 'personal.workforce_baseline',
-        metadata: {
-          // suppressed group names are NOT included here — that would defeat the purpose.
-          suppressed_totals_by_dimension: Object.fromEntries(
-            Object.entries(nestedSuppressionResult.suppressionByDimension)
-              .filter(([, r]) => !r.allSafe)
-              .map(([dim, r]) => [dim, { suppressed_total: r.suppressedTotal, bucket_created: r.hasSuppressedBucket }]),
-          ),
-          min_group_size: DEFAULT_MIN_GROUP_SIZE,
+        reportingPeriod:      TEST_REPORTING_PERIOD,
+        totalWorkers:         WORKFORCE_POPULATION,
+        rawSegmentBreakdown: {
+          departments:    { 'dept-tech': 20, 'dept-sales': 15, 'dept-ops': 15 },
+          contract_types: { full_time: 40, part_time: 10 },
         },
-      }));
+        createdBy: 'system-test-seed-route',
+      });
+    } catch (e) {
+      return NextResponse.json({ error: `workforce_baseline failed: ${(e as Error).message}` }, { status: 500 });
     }
 
-    const { data: wbData, error: wbErr } = await db
-      .schema('personal')
-      .from('workforce_baseline')
-      .upsert({
-        tenant_id:                tenantId,
-        reporting_period:         TEST_REPORTING_PERIOD,
-        total_workers:            WORKFORCE_POPULATION,
-        segment_breakdown:        safeSegmentBreakdown,
-        privacy_threshold_applied: true,
-        minimum_group_size:        DEFAULT_MIN_GROUP_SIZE,
-        created_by:                'system-test-seed-route',
-      }, { onConflict: 'tenant_id,reporting_period' })
-      .select('id')
-      .single();
-
-    if (wbErr || !wbData) {
-      return NextResponse.json({ error: `workforce_baseline failed: ${wbErr?.message}` }, { status: 500 });
+    // Audit: privacy threshold check (no suppressed group names in metadata).
+    for (const s of wbResult.suppressionAuditSummary) {
+      auditRows.push(auditEvent({
+        tenantId,
+        action:       s.hadSuppression ? 'privacy_threshold_suppressed' : 'privacy_threshold_checked',
+        resourceType: 'personal.workforce_baseline',
+        resourceId:   wbResult.id,
+        metadata: {
+          dimension:             s.dimension,
+          had_suppression:       s.hadSuppression,
+          suppressed_group_count: s.suppressedGroupCount,
+          suppressed_total:      s.suppressedTotal,
+          bucket_created:        s.bucketCreated,
+          min_group_size:        wbResult.minimumGroupSize,
+        },
+      }));
     }
 
     auditRows.push(auditEvent({
       tenantId,
       action:       'workforce_baseline_inserted',
       resourceType: 'personal.workforce_baseline',
-      resourceId:   wbData.id as string,
-      metadata:     { total_workers: WORKFORCE_POPULATION, segments_all_gte_10: !nestedSuppressionResult.anyUnsafe },
+      resourceId:   wbResult.id,
+      metadata:     { total_workers: WORKFORCE_POPULATION, segments_all_gte_10: !wbResult.suppression.anyUnsafe },
     }));
 
     // ── Step 1c: Insert analytics.source_batch ───────────────────────────────
@@ -473,8 +447,8 @@ export async function POST(request: NextRequest) {
         koraIndexResultId:   persistResult.koraIndexResultId,
       },
       privacy: {
-        n_threshold:              DEFAULT_MIN_GROUP_SIZE,
-        segment_breakdown_safe:   !nestedSuppressionResult.anyUnsafe,
+        n_threshold:              wbResult.minimumGroupSize,
+        segment_breakdown_safe:   !wbResult.suppression.anyUnsafe,
         department_activation_safe: persistResult.segmentSuppression.every(s => !s.summary.hadSuppression),
       },
       audit_events_written: auditRows.length,

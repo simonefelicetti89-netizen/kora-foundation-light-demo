@@ -1,4 +1,6 @@
 // app/api/test/privacy-threshold/route.ts
+// DEV/TEST ONLY — remove or isolate before production.
+// Uses service_role server-side. Never expose in production.
 // SERVER-SIDE TEST ROUTE — validates N≥10 enforcement in lib/privacy/group-threshold.ts.
 //
 // Protection: same secret header as other test routes.

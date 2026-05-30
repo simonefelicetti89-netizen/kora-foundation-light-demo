@@ -1,4 +1,6 @@
 // app/api/test/auth-isolation/route.ts
+// DEV/TEST ONLY — remove or isolate before production.
+// Uses service_role server-side. Never expose in production.
 // SERVER-SIDE TEST ROUTE — Gate 3A RLS isolation end-to-end.
 //
 // Signs in as each synthetic test user and verifies:

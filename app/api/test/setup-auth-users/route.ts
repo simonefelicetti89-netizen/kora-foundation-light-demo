@@ -1,4 +1,6 @@
 // app/api/test/setup-auth-users/route.ts
+// DEV/TEST ONLY — remove or isolate before production.
+// Uses service_role server-side. Never expose in production.
 // SERVER-SIDE TEST ROUTE — Gate 3A Auth setup.
 //
 // Creates synthetic test tenants (TEST-A, TEST-B) and fake auth users

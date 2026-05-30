@@ -116,30 +116,28 @@ async function fetchLiveScoringResult({
   tenantId: string;
   scenarioId: ScenarioId;
 }): Promise<ScoringResult> {
-  // TODO Phase 2B: wire full Supabase query.
-  //
-  //   const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
-  //   const supabase = getSupabaseBrowserClient();
-  //   const { data: row, error } = await supabase
-  //     .schema('analytics')
-  //     .from('kora_index_result')
-  //     .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*)')
-  //     .eq('tenant_id', tenantId)
-  //     .eq('is_current', true)
-  //     .maybeSingle();
-  //   if (error) throw new Error(`[KORA live] ${error.message}`);
-  //   if (!row) return { status: 'insufficient_data', tenantId, scenarioId, environment: 'live',
-  //                       koraIndex: null, aggregate: null, confidence: null };
-  //   return mapDbRowToScoringResult(row, tenantId, scenarioId);
-  //
   // LIVE must NEVER fallback to demo seed data.
+  const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
+  const supabase = getSupabaseBrowserClient();
 
-  void mapDbRowToScoringResult; // prevent unused-var lint for the Phase 2B TODO above
-  return {
-    status: 'not_implemented',
-    tenantId, scenarioId, environment: 'live',
-    koraIndex: null, aggregate: null, confidence: null,
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: row, error } = await (supabase as any)
+    .schema('analytics')
+    .from('kora_index_result')
+    .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*)')
+    .eq('tenant_id', tenantId)
+    .eq('is_current', true)
+    .maybeSingle();
+
+  if (error) throw new Error(`[KORA live] ${error.message}`);
+  if (!row) {
+    return {
+      status: 'insufficient_data',
+      tenantId, scenarioId, environment: 'live',
+      koraIndex: null, aggregate: null, confidence: null,
+    };
+  }
+  return mapDbRowToScoringResult(row as import('@/lib/live/scoring-mapper').LiveRow, tenantId, scenarioId);
 }
 
 // ── Demo resolver (sync, no Supabase) ─────────────────────────────────────────
