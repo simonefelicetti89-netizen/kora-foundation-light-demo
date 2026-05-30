@@ -74,6 +74,47 @@ This document tracks all `/api/test/*` routes that exist for development and val
 
 ---
 
+### 6. `GET /api/test/auth-access-check`
+
+**Purpose:** Validates session-based access control for `/api/admin/operator-flow`: KORA_ADMIN → 200, COMPANY_ADMIN → 403, no session → 401. Added after Auth UI minima (Gate 3A+).
+
+**Why it exists:** Automated proof that the operator API enforces session-based auth and rejects non-KORA_ADMIN users.
+
+**Protection:** `NODE_ENV === 'production' → 404`, `x-kora-test-secret` header.
+
+**Uses:** Supabase Auth sign-in (anon key). No direct service_role for auth — validates via session tokens.
+
+**Remove when:** A CI integration test suite covers the operator API access control.
+
+---
+
+## Security Posture: Non-Session Auth Paths
+
+### `/api/admin/operator-flow` — current status
+
+| Auth path | Dev | Production |
+|---|---|---|
+| KORA_ADMIN session (cookie or Bearer token) | ✅ Allowed | ✅ Allowed |
+| `x-kora-operator-secret` header fallback | ⚠️ Allowed (DEPRECATED, warns in log) | 🚫 Blocked (`NODE_ENV === 'production'`) |
+| No auth | ❌ 401 | ❌ 401 |
+| Company/wrong role | ❌ 403 | ❌ 403 |
+
+The deprecated secret fallback is blocked at the code level in production — `checkAuth()` returns the 401/403 from `requireKoraAdmin()` directly without checking the header. See `docs/technical-backlog.md` TODO-002 for removal plan.
+
+### `/api/test/*` — current status
+
+All 6 routes:
+- Return `404` in `NODE_ENV === 'production'`
+- Require `x-kora-test-secret` header matching `KORA_TEST_SEED_SECRET` env var
+- Use `service_role` server-side only
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser
+
+### `/api/auth/logout` — current status
+
+Safe for production: calls `signOut()` on the user's own session, redirects to `/admin/login`. No secret required, no service_role.
+
+---
+
 ## What Replaces These Routes in Production
 
 | Test route | Replaced by |
@@ -83,6 +124,7 @@ This document tracks all `/api/test/*` routes that exist for development and val
 | `privacy-threshold` | `scripts/test-privacy-threshold.ts` + CI test suite |
 | `setup-auth-users` | Operator onboarding UI + Supabase Auth admin panel |
 | `auth-isolation` | CI integration tests against staging environment |
+| `auth-access-check` | CI integration tests for operator API access control |
 
 ## Pre-Production Checklist
 
@@ -91,6 +133,9 @@ Before any real company or worker data enters the system:
 - [ ] Delete synthetic test users from Supabase Auth (`*@example.test`)
 - [ ] Delete synthetic test tenants (`TEST-001`, `TEST-A`, `TEST-B`, `OP-*`)
 - [ ] Remove or disable all `/api/test/*` routes
+- [ ] Remove `x-kora-operator-secret` fallback from `/api/admin/operator-flow` (see TODO-002)
 - [ ] Verify `NODE_ENV === 'production'` is correctly set in the deployment environment
-- [ ] Confirm `KORA_TEST_SEED_SECRET` and `KORA_TEST_USER_PASSWORD` are not set in production env
+- [ ] Confirm `KORA_TEST_SEED_SECRET`, `KORA_TEST_USER_PASSWORD`, `KORA_OPERATOR_SECRET` not set in production env
+- [ ] Verify `SUPABASE_SERVICE_ROLE_KEY` is NOT exposed in any client-side bundle
 - [ ] Run Gate 3A auth-isolation equivalent against staging before prod deploy
+- [ ] Confirm `/api/admin/operator-flow` 200/403/401 behavior on staging with real KORA_ADMIN session

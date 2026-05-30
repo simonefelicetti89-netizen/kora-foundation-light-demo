@@ -90,9 +90,15 @@ async function checkAuth(request: NextRequest): Promise<NextResponse | null> {
   if (process.env.NODE_ENV === 'production') {
     return authResult; // return 401/403 directly — no secret fallback in production
   }
-  // [DEV ONLY] Accept deprecated secret as fallback
+  // [DEV ONLY] Accept deprecated secret as fallback — MUST be removed before production.
+  // See docs/technical-backlog.md TODO-002.
   const secret = request.headers.get('x-kora-operator-secret');
   if (secret && secret === process.env.KORA_OPERATOR_SECRET) {
+    console.warn(
+      '[KORA operator-flow] DEPRECATED: authorized via x-kora-operator-secret fallback. ' +
+      'This path is blocked in production. Migrate to KORA_ADMIN session auth. ' +
+      'See docs/technical-backlog.md TODO-002.',
+    );
     return null; // authorized via deprecated secret
   }
 
