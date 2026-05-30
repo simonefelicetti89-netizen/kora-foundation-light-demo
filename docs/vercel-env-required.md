@@ -34,14 +34,17 @@ These must be set for every environment (Production, Preview, Development on Ver
 
 ## Dev/test only — do NOT set in production
 
-These variables are used exclusively by `/api/test/*` routes, which return `404` in production regardless.
+These variables are used exclusively by `/api/test/*` routes, which return `404` in production regardless (triple-gate: `NODE_ENV`, `KORA_ENABLE_TEST_ROUTES`, and the secret header).
 
 | Variable | Scope | Purpose |
 |---|---|---|
 | `KORA_TEST_SEED_SECRET` | Server-side only | Shared secret for all `/api/test/*` route guards |
 | `KORA_TEST_USER_PASSWORD` | Server-side only | Password for synthetic test auth users (`*@example.test`) |
+| `KORA_ENABLE_TEST_ROUTES` | Server-side only | Must be `true` to enable test routes in dev. Set only in `.env.local`. |
 
-**Security:** Do not set these in the Vercel Production environment. If accidentally set, they pose no risk since the test routes return `404` in production — but it is cleaner to omit them.
+**Security:** Do not set any of these in the Vercel Production environment. Even if accidentally set, Gate 1 (`NODE_ENV === 'production' → 404`) blocks all test routes before other gates are evaluated.
+
+`KORA_ENABLE_TEST_ROUTES=true` is a dev-only explicit opt-in. Without it, test routes return `404` even in dev/staging.
 
 ---
 
@@ -60,9 +63,10 @@ These variables are used exclusively by `/api/test/*` routes, which return `404`
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ Required | ✅ Required | ✅ Required |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Required | ✅ Required | ✅ Required |
 | `SUPABASE_SERVICE_ROLE_KEY` | ✅ Required | ✅ Required | ✅ Required |
-| `KORA_OPERATOR_SECRET` | ⚠️ Optional (blocked anyway) | ⚠️ Optional | ✅ Set for dev |
+| `KORA_OPERATOR_SECRET` | ❌ Remove | ❌ Omit | ❌ No longer used |
 | `KORA_TEST_SEED_SECRET` | ❌ Omit | ❌ Omit | ✅ Set for dev |
 | `KORA_TEST_USER_PASSWORD` | ❌ Omit | ❌ Omit | ✅ Set for dev |
+| `KORA_ENABLE_TEST_ROUTES` | ❌ Omit | ❌ Omit | ✅ Set to `true` for dev |
 
 ---
 

@@ -26,6 +26,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { testRouteGuard } from '@/lib/auth/test-route-guard';
 
 const TEST_TENANT_A_CODE = 'TEST-A';
 const TEST_TENANT_B_CODE = 'TEST-B';
@@ -39,14 +40,9 @@ const TEST_USERS = [
 ] as const;
 
 export async function POST(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
+  const blocked = testRouteGuard(request);
+  if (blocked) return blocked;
 
-  const clientSecret = request.headers.get('x-kora-test-secret');
-  if (!clientSecret || clientSecret !== process.env.KORA_TEST_SEED_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
 
   const testPassword = process.env.KORA_TEST_USER_PASSWORD;
   if (!testPassword) {

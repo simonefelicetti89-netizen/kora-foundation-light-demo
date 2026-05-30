@@ -101,13 +101,17 @@ This document tracks all `/api/test/*` routes that exist for development and val
 
 The deprecated secret fallback is blocked at the code level in production — `checkAuth()` returns the 401/403 from `requireKoraAdmin()` directly without checking the header. See `docs/technical-backlog.md` TODO-002 for removal plan.
 
-### `/api/test/*` — current status
+### `/api/test/*` — current status (triple-gate)
 
-All 6 routes:
-- Return `404` in `NODE_ENV === 'production'`
-- Require `x-kora-test-secret` header matching `KORA_TEST_SEED_SECRET` env var
+All 7 routes use `lib/auth/test-route-guard.ts` (centralised):
+- Gate 1: Return `404` in `NODE_ENV === 'production'` (unconditional)
+- Gate 2: Return `404` if `KORA_ENABLE_TEST_ROUTES !== 'true'` (even in dev/staging)
+- Gate 3: Return `401` if `x-kora-test-secret` header is missing or wrong
 - Use `service_role` server-side only
 - Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser
+
+Set `KORA_ENABLE_TEST_ROUTES=true` in `.env.local` for local dev only.
+**Do NOT set this in Vercel Production or Preview environments.**
 
 ### `/api/auth/logout` — current status
 

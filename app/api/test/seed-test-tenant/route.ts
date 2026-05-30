@@ -23,6 +23,7 @@ import { persistKoraComputationResult } from '@/lib/live/persistence';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guard';
+import { testRouteGuard } from '@/lib/auth/test-route-guard';
 
 const TEST_TENANT_CODE     = 'TEST-001';
 const TEST_TENANT_NAME     = '[SYNTHETIC TEST] KORA Pipeline Verification Tenant';
@@ -128,16 +129,9 @@ function auditEvent(params: {
 // ── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  // Protection 1: block in production
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
+  const blocked = testRouteGuard(request);
+  if (blocked) return blocked;
 
-  // Protection 2: secret header
-  const clientSecret = request.headers.get('x-kora-test-secret');
-  if (!clientSecret || clientSecret !== process.env.KORA_TEST_SEED_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
 
   const db = getSupabaseServiceClient();
 

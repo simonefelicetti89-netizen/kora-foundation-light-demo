@@ -6,10 +6,9 @@
 //   uploaded records → UEF classification → runKoraPipeline → persist results →
 //   persist Decision Pack (draft) → audit log
 //
-// Auth (priority order):
-//   1. PRIMARY: KORA_ADMIN Supabase session (cookie or Authorization: Bearer <token>)
-//   2. DEPRECATED fallback: x-kora-operator-secret (dev-only, BLOCKED in production)
-//      See docs/technical-backlog.md TODO-002 for removal plan.
+// Auth: KORA_ADMIN Supabase session only (cookie or Authorization: Bearer <token>).
+//   x-kora-operator-secret fallback has been removed (TODO-002 DONE).
+//   Production and dev: KORA_ADMIN session is the only valid access path.
 //
 // Uses service_role server-side only — SUPABASE_SERVICE_ROLE_KEY never exposed to client.
 //
@@ -81,40 +80,11 @@ function auditEvent(params: {
   };
 }
 
-// ── Auth check ────────────────────────────────────────────────────────────────
-// Primary: KORA_ADMIN session (cookie or Authorization header).
-// Fallback: x-kora-operator-secret — DEPRECATED, dev-only, BLOCKED in production.
-//   See docs/technical-backlog.md TODO-002.
-
-async function checkAuth(request: NextRequest): Promise<NextResponse | null> {
-  // 1. Primary: KORA_ADMIN session
-  const authResult = await requireKoraAdmin(request);
-  if (!isKoraAuthError(authResult)) return null; // authorized — proceed
-
-  // 2. DEPRECATED fallback — BLOCKED in production
-  if (process.env.NODE_ENV === 'production') {
-    return authResult; // return 401/403 directly — no secret fallback in production
-  }
-  // [DEV ONLY] Accept deprecated secret as fallback — MUST be removed before production.
-  // See docs/technical-backlog.md TODO-002.
-  const secret = request.headers.get('x-kora-operator-secret');
-  if (secret && secret === process.env.KORA_OPERATOR_SECRET) {
-    console.warn(
-      '[KORA operator-flow] DEPRECATED: authorized via x-kora-operator-secret fallback. ' +
-      'This path is blocked in production. Migrate to KORA_ADMIN session auth. ' +
-      'See docs/technical-backlog.md TODO-002.',
-    );
-    return null; // authorized via deprecated secret
-  }
-
-  return authResult; // unauthorized
-}
-
 // ── POST: run full operator flow ─────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  const authError = await checkAuth(request);
-  if (authError) return authError;
+  const authError = await requireKoraAdmin(request);
+  if (isKoraAuthError(authError)) return authError;
 
   let body: {
     tenantCode?: string;
@@ -384,8 +354,8 @@ export async function POST(request: NextRequest) {
 // ── GET: read current scoring result for a tenant ────────────────────────────
 
 export async function GET(request: NextRequest) {
-  const authError = await checkAuth(request);
-  if (authError) return authError;
+  const authError = await requireKoraAdmin(request);
+  if (isKoraAuthError(authError)) return authError;
 
   const { searchParams } = new URL(request.url);
   const tenantCode      = searchParams.get('tenantCode');

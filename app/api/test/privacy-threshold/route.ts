@@ -17,6 +17,7 @@ import {
   SUPPRESSED_BUCKET_KEY,
   DEFAULT_MIN_GROUP_SIZE,
 } from '@/lib/privacy/group-threshold';
+import { testRouteGuard } from '@/lib/auth/test-route-guard';
 
 interface CaseResult {
   name: string;
@@ -30,14 +31,9 @@ function assert(check: string, expected: unknown, actual: unknown): CaseResult['
 }
 
 export async function GET(request: NextRequest) {
-  if (process.env.NODE_ENV === 'production') {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  }
+  const blocked = testRouteGuard(request);
+  if (blocked) return blocked;
 
-  const clientSecret = request.headers.get('x-kora-test-secret');
-  if (!clientSecret || clientSecret !== process.env.KORA_TEST_SEED_SECRET) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
 
   const cases: CaseResult[] = [];
 

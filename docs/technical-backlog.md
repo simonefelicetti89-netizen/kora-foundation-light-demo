@@ -59,11 +59,11 @@ Aggiornato a mano al termine di ogni blocco di lavoro significativo.
 
 ---
 
-## TODO-002 — Rimozione fallback `x-kora-operator-secret` da operator-flow
+## TODO-002 — Rimozione fallback `x-kora-operator-secret` da operator-flow ✅ DONE
 
 | Campo | Valore |
 |---|---|
-| **Stato** | DEFERRED — mandatory before production |
+| **Stato** | ~~DEFERRED~~ **DONE** — commit Security Boundary Final Closure |
 | **Priorità** | High — shared secret fallback non è acceptable in produzione |
 | **Aggiunto** | 2026-05-30 |
 | **Blocco di riferimento** | Auth UI Minima — KORA Admin Login (commit post-auth-ui) |
@@ -72,11 +72,12 @@ Aggiornato a mano al termine di ogni blocco di lavoro significativo.
 
 La route `/api/admin/operator-flow` supporta temporaneamente `x-kora-operator-secret` come fallback dev-only per compatibilità con i flussi di test che esistevano prima dell'auth UI. Il fallback è marcato DEPRECATED e bloccato in production (`NODE_ENV === 'production'` → fallback ignorato), ma deve essere rimosso completamente prima del deploy in produzione.
 
-### Stato attuale
+### Stato finale
 
-- **Auth primaria: sessione KORA_ADMIN** — `requireKoraAdmin()` via cookie o Authorization header.
-- **Fallback DEPRECATED**: `x-kora-operator-secret` — consentito solo in `NODE_ENV !== 'production'`.
-- **In production**: il secret non autorizza nulla — qualsiasi richiesta senza sessione KORA_ADMIN riceve 401/403.
+- **`checkAuth()` rimossa** — `requireKoraAdmin(request)` chiamata direttamente in POST e GET.
+- **`x-kora-operator-secret` rimosso** — nessun riferimento in codice, solo commento storico.
+- **`KORA_OPERATOR_SECRET`** — può essere rimossa da `.env.local` e CI (non più letta).
+- **Auth unica**: sessione KORA_ADMIN sia in production che in dev.
 
 ### Non blocker per
 
