@@ -200,4 +200,53 @@ Per Gate 3B con dati reali, la policy raccomandata è **strict reject**:
 
 ---
 
-*Nuovi TODO vanno aggiunti in coda con numerazione progressiva (TODO-005, TODO-006, ...).*
+---
+
+## TODO-005 — Decision Pack PDF — Production hardening
+
+| Campo | Valore |
+|---|---|
+| **Stato** | DEFERRED — CONDITIONAL PASS locale |
+| **Priorità** | Medium — richiesto per board delivery reale |
+| **Aggiunto** | 2026-05-31 |
+| **Blocco di riferimento** | Decision Pack PDF — Synthetic Live v1 |
+
+### Stato attuale
+
+PDF endpoint implementato e funzionante localmente (dev/staging):
+- `GET /api/admin/decision-pack/pdf` → `application/pdf` 382KB, KORA_ADMIN only
+- `GET /api/admin/decision-pack/preview` → `text/html` (Vercel-compatible fallback)
+- Auth: no session → 401, company role → 403, KORA_ADMIN → 200
+- PDF: 6 pagine A4 executive-grade, nessun secret/PII, dati live OP-001
+- Console `/admin/operator`: bottoni Download PDF + HTML Preview
+
+### Limitation corrente
+
+Playwright chromium non disponibile su Vercel serverless senza setup aggiuntivo.
+In ambiente Vercel il PDF endpoint ritorna 501 con hint alla preview HTML.
+
+### Azioni richieste per PDF production-grade
+
+1. **Vercel PDF engine**: valutare `@sparticuz/chromium` + `playwright-core` (~50MB Lambda layer) oppure dedicated PDF microservice
+2. **10-component breakdown**: aggiungere tabella completa dei componenti KORA Index v3 al template (values + weights)
+3. **Company logo management**: upload logo cliente, storage, passaggio a `buildDecisionPackHtml`
+4. **Advisor review flow**: promuovere Decision Pack da `draft` a `ready` dopo sign-off advisor
+5. **Audit event `decision_pack.pdf_generated`**: scrivere evento audit al momento del download (tenant_id, period, version_id, role — nessun PII)
+6. **PDF signing/watermarking**: firma crittografica per document integrity board-ready
+7. **Full Italian localization**: tradurre tutte le label ancora in inglese nel template
+8. **Retention/cleanup**: policy di pulizia automatica dei PDF generati temporaneamente
+
+### Non blocker per
+
+- Demo Foundation Light
+- Pilot discussion con investitori / potenziali clienti (HTML preview usable)
+- Gate 3A / Gate 3B documentale
+
+### Bloccante per
+
+- Board delivery reale di Decision Pack
+- Client-facing PDF con dati reali
+
+---
+
+*Nuovi TODO vanno aggiunti in coda con numerazione progressiva (TODO-006, TODO-007, ...).*

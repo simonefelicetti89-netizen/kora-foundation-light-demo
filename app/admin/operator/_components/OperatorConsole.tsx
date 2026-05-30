@@ -133,6 +133,9 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
   const PERIOD      = '2026-Q1';
   const isLoading   = status === 'running' || status === 'reading';
 
+  const pdfUrl     = `/api/admin/decision-pack/pdf?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`;
+  const previewUrl = `/api/admin/decision-pack/preview?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`;
+
   async function handleRun() {
     setStatus('running'); setErrorMsg(null); setRunResult(null);
     try {
@@ -215,7 +218,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
         </div>
 
         {/* ── C. Action panel ── */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
           <button onClick={handleRun} disabled={isLoading}
             className="flex-1 bg-slate-800 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {status === 'running' ? '⏳ Esecuzione…' : '▶ Run operator flow'}
@@ -224,6 +227,25 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
             className="flex-1 border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {status === 'reading' ? '⏳ Lettura…' : '↻ Read current result'}
           </button>
+        </div>
+
+        {/* ── C2. Decision Pack export ── */}
+        <div className="flex gap-2 pt-1 border-t border-slate-100 mt-1 flex-wrap">
+          <a
+            href={pdfUrl}
+            download={`kora-decision-pack-${TENANT}-${PERIOD}.pdf`}
+            className="inline-flex items-center gap-1.5 bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#1a1756] transition-colors"
+          >
+            ↓ Download Decision Pack PDF
+          </a>
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 border border-[#6156F5] text-[#6156F5] rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#f5f4ff] transition-colors"
+          >
+            ↗ HTML Preview
+          </a>
         </div>
       </div>
 
