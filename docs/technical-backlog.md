@@ -206,45 +206,56 @@ Per Gate 3B con dati reali, la policy raccomandata è **strict reject**:
 
 | Campo | Valore |
 |---|---|
-| **Stato** | DEFERRED — CONDITIONAL PASS locale |
-| **Priorità** | Medium — richiesto per board delivery reale |
+| **Stato** | PARTIALLY CLOSED — Vercel Pro: PASS expected · Vercel Hobby: CONDITIONAL |
+| **Priorità** | Medium — richiesto per board delivery reale con dati reali |
 | **Aggiunto** | 2026-05-31 |
-| **Blocco di riferimento** | Decision Pack PDF — Synthetic Live v1 |
+| **Aggiornato** | 2026-05-31 |
+| **Blocco di riferimento** | Decision Pack PDF — Production Hardening for Vercel |
 
-### Stato attuale
+### Stato attuale (aggiornato)
 
-PDF endpoint implementato e funzionante localmente (dev/staging):
-- `GET /api/admin/decision-pack/pdf` → `application/pdf` 382KB, KORA_ADMIN only
-- `GET /api/admin/decision-pack/preview` → `text/html` (Vercel-compatible fallback)
-- Auth: no session → 401, company role → 403, KORA_ADMIN → 200
-- PDF: 6 pagine A4 executive-grade, nessun secret/PII, dati live OP-001
-- Console `/admin/operator`: bottoni Download PDF + HTML Preview
+Implementato `lib/decision-pack/pdf-runtime.ts` con dual-path strategy:
+- **Linux / Vercel** → `@sparticuz/chromium` (67MB, binary bundled) + `puppeteer-core` (7.7MB)
+- **macOS / dev** → `playwright` (Chromium installato localmente)
+- **Platform detection**: `process.platform === 'linux'`
+- **Fallback controllato**: se il runtime non si avvia → 501 JSON con hint alla preview HTML
 
-### Limitation corrente
+Bundle analysis confermata:
+- `.next/server/` = 44MB (nessun binary bundled in chunk)
+- `@sparticuz/chromium` binary (67MB) rimane in `node_modules`
+- `next.config.ts` → `serverExternalPackages` per entrambi i pacchetti
 
-Playwright chromium non disponibile su Vercel serverless senza setup aggiuntivo.
-In ambiente Vercel il PDF endpoint ritorna 501 con hint alla preview HTML.
+Test locali (macOS): tutti PASS — PDF 382KB, valid, no secret/PII, auth 401/403/200.
 
-### Azioni richieste per PDF production-grade
+### Comportamento atteso per tier Vercel
 
-1. **Vercel PDF engine**: valutare `@sparticuz/chromium` + `playwright-core` (~50MB Lambda layer) oppure dedicated PDF microservice
-2. **10-component breakdown**: aggiungere tabella completa dei componenti KORA Index v3 al template (values + weights)
-3. **Company logo management**: upload logo cliente, storage, passaggio a `buildDecisionPackHtml`
-4. **Advisor review flow**: promuovere Decision Pack da `draft` a `ready` dopo sign-off advisor
-5. **Audit event `decision_pack.pdf_generated`**: scrivere evento audit al momento del download (tenant_id, period, version_id, role — nessun PII)
-6. **PDF signing/watermarking**: firma crittografica per document integrity board-ready
-7. **Full Italian localization**: tradurre tutte le label ancora in inglese nel template
-8. **Retention/cleanup**: policy di pulizia automatica dei PDF generati temporaneamente
+| Tier | Limit | Totale stimato | Esito PDF endpoint |
+|---|---|---|---|
+| **Pro** | 250MB | ~125MB | **EXPECTED PASS** — @sparticuz/chromium avviabile |
+| **Hobby** | 50MB | ~125MB (supera) | **501 + fallback HTML preview** |
+
+Cold start Vercel Pro: prima richiesta decomprime il binary (~3–8s). Warm start: rapido.
+
+### Azioni ancora aperte (residue)
+
+1. **Verifica deploy Vercel Pro**: confermare PASS effettivo su Vercel dopo push e primo deploy
+2. **Vercel Hobby hardening** (se necessario): microservice PDF dedicato o cloud HTML-to-PDF (Gotenberg, WeasyPrint)
+3. **10-component breakdown**: aggiungere tabella completa componenti KORA Index v3 al template
+4. **Company logo management**: upload logo cliente, storage, passaggio a `buildDecisionPackHtml`
+5. **Advisor review flow**: promuovere Decision Pack da `draft` a `ready` dopo sign-off advisor
+6. **Audit event `decision_pack.pdf_generated`**: scrivere evento audit al momento del download
+7. **PDF signing/watermarking**: firma crittografica per document integrity
+8. **Full Italian localization**: tradurre label inglesi residue nel template
 
 ### Non blocker per
 
 - Demo Foundation Light
-- Pilot discussion con investitori / potenziali clienti (HTML preview usable)
+- Pilot discussion con investitori / potenziali clienti (HTML preview sempre disponibile)
 - Gate 3A / Gate 3B documentale
 
 ### Bloccante per
 
-- Board delivery reale di Decision Pack
+- Board delivery reale con garanzia PDF su qualsiasi tier Vercel
 - Client-facing PDF con dati reali
 
 ---

@@ -1,22 +1,26 @@
 // app/api/admin/decision-pack/pdf/route.ts
 // Decision Pack PDF download — KORA_ADMIN only.
 //
-// Reads persisted OP-001 data (no scoring recalculation),
-// builds executive-grade HTML, renders to PDF via Playwright chromium.
-//
 // Auth: KORA_ADMIN Supabase session (cookie or Authorization: Bearer).
-//   company roles → 403; no session → 401.
+//   no session → 401 | company role → 403 | KORA_ADMIN → PDF generation
 //
-// Vercel note: Playwright chromium is not available on Vercel serverless
-//   by default. If launch fails, returns 501 with hint to use the
-//   HTML preview endpoint instead (/api/admin/decision-pack/preview).
+// PDF runtime (lib/decision-pack/pdf-runtime.ts):
+//   Linux / Vercel Pro → @sparticuz/chromium + puppeteer-core
+//   macOS / dev        → playwright (local installation)
+//
+// Fallback: if PDF generation fails, returns 501 JSON with preview hint.
+//   No crash. No stack trace exposed.
+
+export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { fetchPdfData } from '@/lib/decision-pack/pdf-data';
 import { buildDecisionPackHtml } from '@/lib/decision-pack/html-template';
+import { renderHtmlToPdf } from '@/lib/decision-pack/pdf-runtime';
 
 export async function GET(request: NextRequest) {
+  // Auth before any PDF work — 401/403 returned here if not authorized
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 
@@ -36,22 +40,13 @@ export async function GET(request: NextRequest) {
 
   let pdfBuffer: Buffer;
   try {
-    const { chromium } = await import('playwright');
-    const browser = await chromium.launch({ headless: true });
-    const page    = await browser.newPage();
-    // networkidle ensures base64 images and CSS are fully processed
-    await page.setContent(html, { waitUntil: 'networkidle' });
-    pdfBuffer = await page.pdf({
-      format:          'A4',
-      printBackground: true,
-      margin:          { top: '0', right: '0', bottom: '0', left: '0' },
-    });
-    await browser.close();
+    pdfBuffer = await renderHtmlToPdf(html);
   } catch {
+    // Controlled 501 — no internal errors or stack traces exposed
     return NextResponse.json(
       {
         error:   'PDF generation unavailable in this environment.',
-        detail:  'Playwright chromium could not be launched. Use the HTML preview instead.',
+        detail:  'The PDF runtime could not be launched. Use the HTML preview instead.',
         preview: `/api/admin/decision-pack/preview?tenantCode=${tenantCode}&reportingPeriod=${reportingPeriod}`,
       },
       { status: 501 },

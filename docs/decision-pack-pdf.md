@@ -3,7 +3,7 @@
 **Status:** Implemented · Synthetic Live v1  
 **Auth:** KORA_ADMIN session only  
 **Data:** Live synthetic OP-001 (no recalculation)  
-**PDF engine:** Playwright chromium (local/dev) · HTML preview (Vercel fallback)
+**PDF engine:** `@sparticuz/chromium` + `puppeteer-core` (Linux/Vercel Pro) · Playwright (macOS dev) · HTML preview (Vercel Hobby / fallback)
 
 ---
 
@@ -106,18 +106,46 @@ No marketing brochure style, no dashboard screenshot look, no heavy borders.
 
 ---
 
-## Playwright / Vercel note
+## PDF runtime — platform strategy
 
-Playwright `^1.60.0` is installed and confirmed working locally.  
-On Vercel serverless, headless Chromium is not available without additional setup:
-- Option A: Use `@sparticuz/chromium` + `playwright-core` (adds ~50MB Lambda layer)
-- Option B: Use the HTML preview endpoint as Vercel-compatible export path
-- Current status: **CONDITIONAL PASS** — PDF works locally/dev; Vercel uses HTML preview
+`lib/decision-pack/pdf-runtime.ts` abstracts browser launch per environment:
 
-For production board-ready PDF at scale, evaluate:
-- Vercel + `@sparticuz/chromium` integration
-- Dedicated PDF microservice (separate Node.js instance)
-- Cloud-based HTML-to-PDF service (e.g. Gotenberg, WeasyPrint)
+| Environment | Detection | PDF engine |
+|---|---|---|
+| Vercel / Linux | `process.platform === 'linux'` | `@sparticuz/chromium` + `puppeteer-core` |
+| macOS / Windows dev | otherwise | `playwright` (local installed Chromium) |
+
+**Isolation rule:** `@sparticuz/chromium` and `puppeteer-core` are imported **only** in `lib/decision-pack/pdf-runtime.ts`. No other file in the project imports these packages.  
+`next.config.ts` marks both as `serverExternalPackages` — they stay in `node_modules` and are never bundled into JS chunks.
+
+---
+
+## Vercel deployment — bundle size analysis
+
+| Package | Size in `node_modules` |
+|---|---|
+| `@sparticuz/chromium` | **67MB** (Linux Chromium binary, Brotli-compressed) |
+| `puppeteer-core` | 7.7MB |
+| Total added | ~75MB |
+
+Build output: `.next/server/` is **44MB** — the 67MB binary is NOT bundled into chunks. It stays in `node_modules` and is deployed as a runtime dependency.
+
+### Vercel tier behaviour
+
+| Vercel Tier | Function size limit | Estimated total | PDF endpoint |
+|---|---|---|---|
+| **Pro** | 250MB | ~125MB (fits) | **EXPECTED PASS** — @sparticuz/chromium runs |
+| **Hobby** | 50MB | ~125MB (exceeds) | **501 fallback** — HTML preview is the export path |
+
+**Vercel Pro cold start note:** first request decompresses the 67MB Chromium binary to `/tmp`. Subsequent warm invocations reuse the cached binary — fast. Cold start adds ~3–8s latency on first PDF request.
+
+---
+
+## HTML preview — Vercel-compatible fallback
+
+`GET /api/admin/decision-pack/preview` always works on any Vercel tier.  
+Returns `text/html` → open in browser → File → Print → Save as PDF.  
+This is the production export path on Vercel Hobby.
 
 ---
 
@@ -128,7 +156,7 @@ For production board-ready PDF at scale, evaluate:
 3. **Company logo management** — upload + store client logo, pass to template
 4. **Advisor review flow** — promote Decision Pack from `draft` to `ready` after advisor sign-off
 5. **PDF signing / watermarking** — cryptographic signature for board-ready document integrity
-6. **Vercel PDF hardening** — `@sparticuz/chromium` integration or dedicated PDF service
+6. **Vercel Hobby hardening** — dedicated PDF microservice or cloud HTML-to-PDF (Gotenberg, WeasyPrint) if Hobby tier is required
 7. **Localization** — full Italian language for all template text (currently mixed IT/EN)
 8. **10-component breakdown** — add KORA Index v3 full component table to PDF
 9. **Audit event** — `decision_pack.pdf_generated` event (currently TODO, documented below)
@@ -160,8 +188,10 @@ No PII, no token, no secret values in the audit event.
 |---|---|
 | `lib/decision-pack/pdf-data.ts` | Server-side data contract — reads from DB, no recalculation |
 | `lib/decision-pack/html-template.ts` | Executive HTML template with inline base64 logos |
-| `app/api/admin/decision-pack/pdf/route.ts` | PDF download endpoint (Playwright) |
-| `app/api/admin/decision-pack/preview/route.ts` | HTML preview endpoint (Vercel-compatible) |
+| `lib/decision-pack/pdf-runtime.ts` | Browser launch abstraction (sparticuz/Linux ↔ playwright/dev) |
+| `app/api/admin/decision-pack/pdf/route.ts` | PDF download endpoint (Node.js runtime, KORA_ADMIN) |
+| `app/api/admin/decision-pack/preview/route.ts` | HTML preview endpoint (Vercel-compatible, KORA_ADMIN) |
 | `public/kora/logo-white.png` | KORA white logo for dark cover background |
 | `public/kora/logo-dark.png` | KORA dark logo for content page headers |
 | `app/admin/operator/_components/OperatorConsole.tsx` | Console with Download + Preview buttons |
+| `next.config.ts` | `serverExternalPackages` for chromium/puppeteer/playwright |
