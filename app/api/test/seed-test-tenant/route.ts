@@ -19,6 +19,10 @@ import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { runKoraPipeline } from '@/lib/kora-engine';
 import { persistKoraComputationResult } from '@/lib/live/persistence';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
+import {
+  suppressNestedGroupMap,
+  DEFAULT_MIN_GROUP_SIZE,
+} from '@/lib/privacy/group-threshold';
 
 const TEST_TENANT_CODE     = 'TEST-001';
 const TEST_TENANT_NAME     = '[SYNTHETIC TEST] KORA Pipeline Verification Tenant';
@@ -190,7 +194,49 @@ export async function POST(request: NextRequest) {
     }));
 
     // ── Step 1b: Insert personal.workforce_baseline ──────────────────────────
-    // All segments ≥ 10 — N≥10 boundary respected by construction.
+    // N≥10 enforcement: suppress any segment dimension group below threshold
+    // before persisting employer-visible segment_breakdown.
+
+    const rawSegmentBreakdown = {
+      departments:    { 'dept-tech': 20, 'dept-sales': 15, 'dept-ops': 15 },
+      contract_types: { full_time: 40, part_time: 10 },
+    };
+    const nestedSuppressionResult = suppressNestedGroupMap(rawSegmentBreakdown, DEFAULT_MIN_GROUP_SIZE);
+    const safeSegmentBreakdown = nestedSuppressionResult.safe;
+
+    auditRows.push(auditEvent({
+      tenantId,
+      action:       'privacy_threshold_checked',
+      resourceType: 'personal.workforce_baseline',
+      metadata: {
+        dimension_count:        Object.keys(rawSegmentBreakdown).length,
+        any_unsafe:             nestedSuppressionResult.anyUnsafe,
+        suppression_by_dimension: Object.fromEntries(
+          Object.entries(nestedSuppressionResult.suppressionByDimension).map(([dim, r]) => [
+            dim,
+            { all_safe: r.allSafe, suppressed_group_count: r.suppressedGroupCount },
+          ]),
+        ),
+        min_group_size: DEFAULT_MIN_GROUP_SIZE,
+      },
+    }));
+
+    if (nestedSuppressionResult.anyUnsafe) {
+      auditRows.push(auditEvent({
+        tenantId,
+        action:       'privacy_threshold_suppressed',
+        resourceType: 'personal.workforce_baseline',
+        metadata: {
+          // suppressed group names are NOT included here — that would defeat the purpose.
+          suppressed_totals_by_dimension: Object.fromEntries(
+            Object.entries(nestedSuppressionResult.suppressionByDimension)
+              .filter(([, r]) => !r.allSafe)
+              .map(([dim, r]) => [dim, { suppressed_total: r.suppressedTotal, bucket_created: r.hasSuppressedBucket }]),
+          ),
+          min_group_size: DEFAULT_MIN_GROUP_SIZE,
+        },
+      }));
+    }
 
     const { data: wbData, error: wbErr } = await db
       .schema('personal')
@@ -199,12 +245,9 @@ export async function POST(request: NextRequest) {
         tenant_id:                tenantId,
         reporting_period:         TEST_REPORTING_PERIOD,
         total_workers:            WORKFORCE_POPULATION,
-        segment_breakdown: {
-          departments:    { 'dept-tech': 20, 'dept-sales': 15, 'dept-ops': 15 },
-          contract_types: { full_time: 40, part_time: 10 },
-        },
+        segment_breakdown:        safeSegmentBreakdown,
         privacy_threshold_applied: true,
-        minimum_group_size:        10,
+        minimum_group_size:        DEFAULT_MIN_GROUP_SIZE,
         created_by:                'system-test-seed-route',
       }, { onConflict: 'tenant_id,reporting_period' })
       .select('id')
@@ -219,7 +262,7 @@ export async function POST(request: NextRequest) {
       action:       'workforce_baseline_inserted',
       resourceType: 'personal.workforce_baseline',
       resourceId:   wbData.id as string,
-      metadata:     { total_workers: WORKFORCE_POPULATION, segments_all_gte_10: true },
+      metadata:     { total_workers: WORKFORCE_POPULATION, segments_all_gte_10: !nestedSuppressionResult.anyUnsafe },
     }));
 
     // ── Step 1c: Insert analytics.source_batch ───────────────────────────────
@@ -377,6 +420,26 @@ export async function POST(request: NextRequest) {
       },
     }));
 
+    // Audit N≥10 enforcement applied inside persistKoraComputationResult.
+    for (const seg of persistResult.segmentSuppression) {
+      auditRows.push(auditEvent({
+        tenantId,
+        action:       seg.summary.hadSuppression
+          ? 'privacy_threshold_suppressed'
+          : 'privacy_threshold_checked',
+        resourceType: 'analytics.activation_result',
+        resourceId:   persistResult.activationResultId,
+        metadata: {
+          dimension:              seg.dimension,
+          had_suppression:        seg.summary.hadSuppression,
+          suppressed_group_count: seg.summary.suppressedGroupCount,
+          suppressed_total:       seg.summary.suppressedTotal,
+          bucket_created:         seg.summary.hasSuppressedBucket,
+          min_group_size:         seg.summary.minGroupSize,
+        },
+      }));
+    }
+
     // ── Flush audit log (all 7 events, service role) ──────────────────────────
 
     const { error: auditErr } = await db
@@ -403,7 +466,17 @@ export async function POST(request: NextRequest) {
       confidence_score:    pipelineResult.confidence.score,
       activation_rate:     pipelineResult.activation.activationReach,
       eligibility: { eligible: eligibleCount, limited: limitedCount, blocked: blockedCount },
-      persisted: persistResult,
+      persisted: {
+        activationResultId:  persistResult.activationResultId,
+        confidenceResultId:  persistResult.confidenceResultId,
+        btiResultId:         persistResult.btiResultId,
+        koraIndexResultId:   persistResult.koraIndexResultId,
+      },
+      privacy: {
+        n_threshold:              DEFAULT_MIN_GROUP_SIZE,
+        segment_breakdown_safe:   !nestedSuppressionResult.anyUnsafe,
+        department_activation_safe: persistResult.segmentSuppression.every(s => !s.summary.hadSuppression),
+      },
       audit_events_written: auditRows.length,
       synthetic_test: true,
     });

@@ -20,6 +20,12 @@ import {
   getAllComponentEffectiveWeights,
 } from '@/lib/methodology-config/v0.1';
 import { COMPONENT_LABELS, MACROBLOCK_LABELS } from '@/lib/constants/kora';
+import {
+  suppressSmallGroups,
+  summarizeSuppression,
+  DEFAULT_MIN_GROUP_SIZE,
+  type SuppressionSummary,
+} from '@/lib/privacy/group-threshold';
 
 // ── Component array builder (v0.1 approximations) ─────────────────────────────
 // Individual component values derived from available engine outputs.
@@ -86,11 +92,19 @@ function buildMacroblockArray(mb: KoraIndexMacroblocks): MacroblockScore[] {
 
 // ── PersistenceResult ─────────────────────────────────────────────────────────
 
+export interface SegmentSuppressionMeta {
+  dimension: string;
+  summary: SuppressionSummary;
+}
+
 export interface PersistenceResult {
-  activationResultId:  string;
-  confidenceResultId:  string;
-  btiResultId:         string;
-  koraIndexResultId:   string;
+  activationResultId:    string;
+  confidenceResultId:    string;
+  btiResultId:           string;
+  koraIndexResultId:     string;
+  // N≥10 suppression applied to department_activation before persist.
+  // Caller should write audit events using this metadata.
+  segmentSuppression:    SegmentSuppressionMeta[];
 }
 
 // ── persistKoraComputationResult ──────────────────────────────────────────────
@@ -112,6 +126,20 @@ export async function persistKoraComputationResult(params: {
   const calibrationStatus  = getCalibrationStatus();
 
   // ── 1. activation_result ────────────────────────────────────────────────────
+  // N≥10 enforcement: suppress any department/site segment with count < 10
+  // before persisting employer-visible department_activation data.
+
+  const rawDeptActivation: Record<string, number> = {
+    ...result.activation.departmentGaps,
+    ...result.activation.siteGaps,
+  };
+  const deptSuppressionResult = suppressSmallGroups(rawDeptActivation, DEFAULT_MIN_GROUP_SIZE);
+  const segmentSuppression: SegmentSuppressionMeta[] = [
+    {
+      dimension: 'department_activation',
+      summary: summarizeSuppression(deptSuppressionResult, DEFAULT_MIN_GROUP_SIZE),
+    },
+  ];
 
   const { data: actData, error: actErr } = await db
     .schema('analytics')
@@ -129,13 +157,10 @@ export async function persistKoraComputationResult(params: {
       continuity_rate:                result.confidence.reviewConfidence,
       verification_rate:              result.confidence.verificationConfidence,
       pillar_distribution:            result.pillarDistribution,
-      department_activation: {
-        ...result.activation.departmentGaps,
-        ...result.activation.siteGaps,
-      },
-      privacy_threshold_met:  true,
-      methodology_version_id: methodologyVersion,
-      calibration_status:     calibrationStatus,
+      department_activation:          deptSuppressionResult.safe,
+      privacy_threshold_met:          true,
+      methodology_version_id:         methodologyVersion,
+      calibration_status:             calibrationStatus,
     })
     .select('id')
     .single();
@@ -241,5 +266,5 @@ export async function persistKoraComputationResult(params: {
   if (kiErr || !kiData) throw new Error(`[KORA persist] kora_index_result: ${kiErr?.message ?? 'no data'}`);
   const koraIndexResultId = kiData.id as string;
 
-  return { activationResultId, confidenceResultId, btiResultId, koraIndexResultId };
+  return { activationResultId, confidenceResultId, btiResultId, koraIndexResultId, segmentSuppression };
 }
