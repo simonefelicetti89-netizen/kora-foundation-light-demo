@@ -300,11 +300,12 @@ export async function POST(request: NextRequest) {
       reporting_period: reportingPeriod,
       batch_id:        batchId,
       scoring: {
-        mode:              pipelineResult.scoringMode,
-        kora_index_value:  pipelineResult.koraIndex.value,
-        safeguard_status:  pipelineResult.activation.safeguardStatus,
-        confidence_score:  pipelineResult.confidence.score,
-        activation_rate:   pipelineResult.activation.activationReach,
+        mode:                       pipelineResult.scoringMode,
+        kora_index_value:           pipelineResult.koraIndex.value,
+        safeguard_status:           pipelineResult.activation.safeguardStatus,
+        confidence_score:           pipelineResult.confidence.score,  // 0–100
+        activation_rate:            pipelineResult.activation.activationReach,
+        meaningful_activation_rate: pipelineResult.activation.meaningfulActivationReach,
       },
       persisted: {
         activation_result_id: persistResult.activationResultId,
@@ -313,15 +314,17 @@ export async function POST(request: NextRequest) {
         kora_index_result_id: persistResult.koraIndexResultId,
       },
       decision_pack: {
-        id:         decisionPack.id,
-        version_id: decisionPack.versionId,
-        status:     decisionPack.status,
+        id:                  decisionPack.id,
+        version_id:          decisionPack.versionId,
+        status:              decisionPack.status,
+        kora_index_result_id: persistResult.koraIndexResultId,
       },
       privacy: {
-        n_threshold:           10,
+        n_threshold:            10,
         segment_breakdown_safe: !wbResult.suppression.anyUnsafe,
       },
       audit_events_written: auditRows.length,
+      audit_actions:        auditRows.map(r => r.action),
       synthetic_test: true,
     });
 
@@ -361,26 +364,51 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
   if (!ki) return NextResponse.json({ ok: false, status: 'no_result' });
 
+  // Expand decision_pack to include created_at and kora_index_result_id.
   const { data: dp } = await db.schema('analytics').from('decision_pack_version')
-    .select('id,version_id,status').eq('tenant_id', tenant.id)
-    .eq('reporting_period', reportingPeriod).order('created_at', { ascending: false }).limit(1).maybeSingle();
+    .select('id,version_id,status,created_at,kora_index_result_id')
+    .eq('tenant_id', tenant.id)
+    .eq('reporting_period', reportingPeriod)
+    .order('created_at', { ascending: false }).limit(1).maybeSingle();
+
+  // Audit summary: last 10 events for this tenant — read-only, no new logic.
+  const { data: auditEvents } = await db.schema('audit').from('audit_log')
+    .select('action, resource_type, created_at')
+    .eq('tenant_id', tenant.id)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  // Extract activation rates from joined activation_result row.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const actRow = (ki as any).activation_result as {
+    activation_rate?: number;
+    meaningful_activation_rate?: number;
+  } | null;
 
   return NextResponse.json({
     ok: true,
-    tenant_id:       tenant.id,
-    tenant_code:     tenantCode,
+    tenant_id:        tenant.id,
+    tenant_code:      tenantCode,
     reporting_period: reportingPeriod,
     kora_index: {
-      id:              ki.id,
-      value:           ki.kora_index_value,
-      safeguard:       ki.safeguard_status,
-      calibration:     ki.calibration_status,
-      methodology:     ki.methodology_version_id,
-      confidence:      ki.confidence_result?.confidence_score ?? null,
-      component_count: (ki.components ?? []).length,
-      is_current:      ki.is_current,
+      id:                         ki.id,
+      value:                      ki.kora_index_value,
+      safeguard:                  ki.safeguard_status,
+      calibration:                ki.calibration_status,
+      methodology:                ki.methodology_version_id,
+      confidence:                 (ki as any).confidence_result?.confidence_score ?? null, // eslint-disable-line @typescript-eslint/no-explicit-any
+      component_count:            (ki.components ?? []).length,
+      is_current:                 ki.is_current,
+      created_at:                 ki.created_at,
+      activation_rate:            actRow?.activation_rate ?? null,
+      meaningful_activation_rate: actRow?.meaningful_activation_rate ?? null,
     },
-    decision_pack: dp ?? null,
+    decision_pack:  dp ?? null,
+    audit_summary:  (auditEvents ?? []).map(e => ({
+      action:        (e as any).action as string, // eslint-disable-line @typescript-eslint/no-explicit-any
+      resource_type: (e as any).resource_type as string | null, // eslint-disable-line @typescript-eslint/no-explicit-any
+      created_at:    (e as any).created_at as string, // eslint-disable-line @typescript-eslint/no-explicit-any
+    })),
     synthetic_test: true,
   });
 }
