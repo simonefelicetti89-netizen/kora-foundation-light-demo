@@ -98,4 +98,55 @@ Auth UI KORA_ADMIN stabile: login, sessione persistente, logout funzionante in a
 
 ---
 
-*Nuovi TODO vanno aggiunti in coda con numerazione progressiva (TODO-003, TODO-004, ...).*
+---
+
+## TODO-003 — Gate 3B Privacy Readiness Pack
+
+| Campo | Valore |
+|---|---|
+| **Stato** | DEFERRED — mandatory before real data |
+| **Priorità** | Bloccante per qualunque dato reale cliente |
+| **Aggiunto** | 2026-05-30 |
+| **Documento di riferimento** | `docs/gate-3b-privacy-readiness-pack.md` |
+
+### Nota chiave: distinzione enforce-by-code vs enforce-by-contract
+
+KORA garantisce tecnicamente (enforce-by-code):
+- N≥10 privacy threshold su segmenti employer-visible
+- nessun accesso employer a `personal.uploaded_record`
+- isolamento tenant via RLS + claims JWT
+- accesso operator solo con sessione KORA_ADMIN
+- audit log scritto da ogni step dell'operator flow
+- production guard su tutte le route test (`NODE_ENV === 'production' → 404`)
+- operator flow accessibile solo con sessione KORA_ADMIN verificata server-side
+
+**Non** garantisce tecnicamente (enforce-by-contract/process):
+- pseudonimizzazione all'origine (avviene prima dell'upload, fuori da KORA)
+- divieto upload PII (policy contrattuale, non validazione tecnica completa)
+- retention e cancellazione (non automatizzate)
+- DPA / nomina responsabile / istruzioni del titolare (documenti legali)
+- gestione file sorgenti del cliente
+
+### Reminder tecnici specifici
+
+- **Right-to-erasure / hard delete**: `analytics.tenant` ha `deleted_at` (soft-delete) e cascade FK, ma il hard delete di `personal.uploaded_record` per singolo pseudonym non è ancora automatizzato. Processo manuale oggi.
+- **Audit explorer**: audit log scritto e accessibile a KORA_ADMIN via query diretta e console (ultimi 10 eventi). Non esiste ancora un audit explorer completo con filtri, export, ricerca per range di date.
+
+### Non blocker per
+
+- Demo Foundation Light
+- Operator flow sintetico
+- Auth UI KORA_ADMIN
+
+### Bloccante per
+
+- Qualunque onboarding di dati reali di aziende o lavoratori
+- Gate 3 operativo (legal/privacy)
+
+### Azione richiesta
+
+Vedere checklist completa in `docs/gate-3b-privacy-readiness-pack.md`.
+
+---
+
+*Nuovi TODO vanno aggiunti in coda con numerazione progressiva (TODO-004, TODO-005, ...).*
