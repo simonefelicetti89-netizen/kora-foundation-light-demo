@@ -6,9 +6,10 @@
 //   uploaded records → UEF classification → runKoraPipeline → persist results →
 //   persist Decision Pack (draft) → audit log
 //
-// This is the production operator API endpoint, NOT a test route.
-// Auth: x-kora-operator-secret header (Phase 1 / pre-auth-UI).
-//       Will be replaced by KORA_ADMIN JWT session auth when auth UI is ready.
+// Auth (priority order):
+//   1. PRIMARY: KORA_ADMIN Supabase session (cookie or Authorization: Bearer <token>)
+//   2. DEPRECATED fallback: x-kora-operator-secret (dev-only, BLOCKED in production)
+//      See docs/technical-backlog.md TODO-002 for removal plan.
 //
 // Uses service_role server-side only — SUPABASE_SERVICE_ROLE_KEY never exposed to client.
 //
@@ -21,6 +22,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
+import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { runKoraPipeline } from '@/lib/kora-engine';
 import { persistKoraComputationResult } from '@/lib/live/persistence';
@@ -75,20 +77,33 @@ function auditEvent(params: {
 }
 
 // ── Auth check ────────────────────────────────────────────────────────────────
-// Phase 1: accept x-kora-operator-secret matching KORA_OPERATOR_SECRET env var.
-// Future: replace with Supabase session check (KORA_ADMIN JWT from cookies).
+// Primary: KORA_ADMIN session (cookie or Authorization header).
+// Fallback: x-kora-operator-secret — DEPRECATED, dev-only, BLOCKED in production.
+//   See docs/technical-backlog.md TODO-002.
 
-function isAuthorized(request: NextRequest): boolean {
+async function checkAuth(request: NextRequest): Promise<NextResponse | null> {
+  // 1. Primary: KORA_ADMIN session
+  const authResult = await requireKoraAdmin(request);
+  if (!isKoraAuthError(authResult)) return null; // authorized — proceed
+
+  // 2. DEPRECATED fallback — BLOCKED in production
+  if (process.env.NODE_ENV === 'production') {
+    return authResult; // return 401/403 directly — no secret fallback in production
+  }
+  // [DEV ONLY] Accept deprecated secret as fallback
   const secret = request.headers.get('x-kora-operator-secret');
-  return !!secret && secret === process.env.KORA_OPERATOR_SECRET;
+  if (secret && secret === process.env.KORA_OPERATOR_SECRET) {
+    return null; // authorized via deprecated secret
+  }
+
+  return authResult; // unauthorized
 }
 
 // ── POST: run full operator flow ─────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const authError = await checkAuth(request);
+  if (authError) return authError;
 
   let body: {
     tenantCode?: string;
@@ -314,9 +329,8 @@ export async function POST(request: NextRequest) {
 // ── GET: read current scoring result for a tenant ────────────────────────────
 
 export async function GET(request: NextRequest) {
-  if (!isAuthorized(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const authError = await checkAuth(request);
+  if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
   const tenantCode      = searchParams.get('tenantCode');
