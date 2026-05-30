@@ -3,6 +3,9 @@
 -- Migration:   003_claim_functions_app_metadata
 -- Created:     2026-05-30
 -- Gate:        Gate 3A — Supabase Auth + Claims + Tenant Isolation
+-- SUPERSEDED:  004_gate3a_claims_and_grants re-applies these functions with
+--              the same logic plus GRANT SELECT on personal.uploaded_record.
+--              Apply 004 only; 003 is retained for audit trail.
 -- ───────────────────────────────────────────────────────────────────────────────
 -- PROBLEM (migration 001):
 --   kora.kora_role() and kora.tenant_id() read only top-level JWT claims.

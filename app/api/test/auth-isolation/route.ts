@@ -55,16 +55,40 @@ interface CaseResult {
 
 // ── Create authenticated user client ─────────────────────────────────────────
 
-async function signInAsUser(email: string, password: string): Promise<{
+interface SignInResult {
   client: SupabaseClient | null;
   error: string | null;
-}> {
+  jwtClaims: {
+    kora_role_top_level: string | null;
+    kora_role_app_meta:  string | null;
+    tenant_id_top_level: string | null;
+    tenant_id_app_meta:  string | null;
+  } | null;
+}
+
+async function signInAsUser(email: string, password: string): Promise<SignInResult> {
   const client = createClient(SUPABASE_URL, SUPABASE_ANON, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { error } = await client.auth.signInWithPassword({ email, password });
-  if (error) return { client: null, error: error.message };
-  return { client, error: null };
+  const { data: signInData, error } = await client.auth.signInWithPassword({ email, password });
+  if (error || !signInData.session) return { client: null, error: error?.message ?? 'no session', jwtClaims: null };
+
+  // Decode JWT payload (not the signature) to inspect what Supabase actually issued.
+  // This is not a secret — JWT payload is always base64-decodable by anyone who holds the token.
+  let jwtClaims: SignInResult['jwtClaims'] = null;
+  try {
+    const payloadB64 = signInData.session.access_token.split('.')[1];
+    const payload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString('utf-8')) as Record<string, unknown>;
+    const appMeta = (payload['app_metadata'] ?? {}) as Record<string, unknown>;
+    jwtClaims = {
+      kora_role_top_level: (payload['kora_role'] as string) ?? null,
+      kora_role_app_meta:  (appMeta['kora_role'] as string) ?? null,
+      tenant_id_top_level: (payload['tenant_id'] as string) ?? null,
+      tenant_id_app_meta:  (appMeta['tenant_id'] as string) ?? null,
+    };
+  } catch { jwtClaims = null; }
+
+  return { client, error: null, jwtClaims };
 }
 
 // ── Query helpers (schema-qualified via as any — pending supabase gen types) ──
@@ -184,7 +208,7 @@ export async function GET(request: NextRequest) {
 
   {
     const email = 'company-admin-a@example.test';
-    const { client, error: signInErr } = await signInAsUser(email, testPassword);
+    const { client, error: signInErr, jwtClaims: claimsA } = await signInAsUser(email, testPassword);
 
     if (signInErr || !client) {
       cases.push({ user: email, role: 'COMPANY_ADMIN', pass: false, assertions: [], error: signInErr ?? 'sign-in failed' });
@@ -202,13 +226,14 @@ export async function GET(request: NextRequest) {
       const rowsUp = (rUpload.data ?? []) as unknown[];
 
       const assertions: Assertion[] = [
+        ok('jwt.app_metadata.kora_role = COMPANY_ADMIN', 'COMPANY_ADMIN', claimsA?.kora_role_app_meta),
+        ok('jwt.app_metadata.tenant_id = TEST-A', tenantAId, claimsA?.tenant_id_app_meta),
         ok('can read analytics.tenant TEST-A',  1, rowsA.length,
            rA.error ? `error: ${rA.error.message}` : `tenant_id=${tenantAId}`),
         ok('cannot read analytics.tenant TEST-B', 0, rowsB.length,
            rB.error ? `error: ${rB.error.message}` : 'RLS correctly filters other tenant'),
         ok('cannot read personal.uploaded_record', 0, rowsUp.length,
            rUpload.error ? `error: ${rUpload.error.message}` : 'no SELECT policy for COMPANY_ADMIN'),
-        // Audit log: COMPANY_ADMIN has no READ policy → 0 rows (not error)
         ok('cannot read audit.audit_log', 0, ((rAudit.data ?? []) as unknown[]).length,
            rAudit.error ? `error: ${rAudit.error.message}` : 'no SELECT policy for COMPANY_ADMIN'),
       ];
@@ -224,7 +249,7 @@ export async function GET(request: NextRequest) {
 
   {
     const email = 'company-admin-b@example.test';
-    const { client, error: signInErr } = await signInAsUser(email, testPassword);
+    const { client, error: signInErr, jwtClaims: claimsB } = await signInAsUser(email, testPassword);
 
     if (signInErr || !client) {
       cases.push({ user: email, role: 'COMPANY_ADMIN', pass: false, assertions: [], error: signInErr ?? 'sign-in failed' });
@@ -241,6 +266,8 @@ export async function GET(request: NextRequest) {
       const rowsUp = (rUpload.data ?? []) as unknown[];
 
       const assertions: Assertion[] = [
+        ok('jwt.app_metadata.kora_role = COMPANY_ADMIN', 'COMPANY_ADMIN', claimsB?.kora_role_app_meta),
+        ok('jwt.app_metadata.tenant_id = TEST-B', tenantBId, claimsB?.tenant_id_app_meta),
         ok('cannot read analytics.tenant TEST-A', 0, rowsA.length,
            rA.error ? `error: ${rA.error.message}` : 'RLS correctly filters other tenant'),
         ok('can read analytics.tenant TEST-B',    1, rowsB.length,
@@ -260,7 +287,7 @@ export async function GET(request: NextRequest) {
 
   {
     const email = 'company-viewer-a@example.test';
-    const { client, error: signInErr } = await signInAsUser(email, testPassword);
+    const { client, error: signInErr, jwtClaims: claimsV } = await signInAsUser(email, testPassword);
 
     if (signInErr || !client) {
       cases.push({ user: email, role: 'COMPANY_VIEWER', pass: false, assertions: [], error: signInErr ?? 'sign-in failed' });
@@ -277,6 +304,8 @@ export async function GET(request: NextRequest) {
       const rowsUp = (rUpload.data ?? []) as unknown[];
 
       const assertions: Assertion[] = [
+        ok('jwt.app_metadata.kora_role = COMPANY_VIEWER', 'COMPANY_VIEWER', claimsV?.kora_role_app_meta),
+        ok('jwt.app_metadata.tenant_id = TEST-A', tenantAId, claimsV?.tenant_id_app_meta),
         ok('can read analytics.tenant TEST-A',    1, rowsA.length,
            rA.error ? `error: ${rA.error.message}` : 'COMPANY_VIEWER has SELECT on own tenant'),
         ok('cannot read analytics.tenant TEST-B', 0, rowsB.length,
@@ -296,7 +325,7 @@ export async function GET(request: NextRequest) {
 
   {
     const email = 'kora-admin@example.test';
-    const { client, error: signInErr } = await signInAsUser(email, testPassword);
+    const { client, error: signInErr, jwtClaims: claimsK } = await signInAsUser(email, testPassword);
 
     if (signInErr || !client) {
       cases.push({ user: email, role: 'KORA_ADMIN', pass: false, assertions: [], error: signInErr ?? 'sign-in failed' });
@@ -315,12 +344,11 @@ export async function GET(request: NextRequest) {
       const rowsAudit = (rAudit.data ?? []) as unknown[];
 
       const assertions: Assertion[] = [
+        ok('jwt.app_metadata.kora_role = KORA_ADMIN', 'KORA_ADMIN', claimsK?.kora_role_app_meta),
         ok('can read analytics.tenant TEST-A', 1, rowsA.length,
            rA.error ? `error: ${rA.error.message}` : 'KORA_ADMIN cross-tenant policy'),
         ok('can read analytics.tenant TEST-B', 1, rowsB.length,
            rB.error ? `error: ${rB.error.message}` : 'KORA_ADMIN cross-tenant policy'),
-        // personal.uploaded_record: KORA_ADMIN policy exists; rows present if seed was run.
-        // We assert no error (data !== null), not a specific count (depends on DB state).
         ok('personal.uploaded_record query succeeds', true, rUpload.data !== null,
            rUpload.error ? `error: ${rUpload.error.message}` : `${rowsUp.length} rows visible to KORA_ADMIN`),
         ok('audit.audit_log query succeeds', true, rAudit.data !== null,
