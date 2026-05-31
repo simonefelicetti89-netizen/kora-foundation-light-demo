@@ -1,64 +1,101 @@
 @import "tailwindcss";
 
-:root {
-  --background: #F5F6FA;  /* KORA Gray Base */
-  --foreground: #06032B;  /* KORA Cosmic Blue */
+/* ══════════════════════════════════════════════════════════════════
+   KORA Design System — Avorio / Inchiostro / Viola
+   Token authority: lib/design/kora-design-tokens.ts
+   ══════════════════════════════════════════════════════════════════ */
 
-  /* ── Environment tokens — DEMO defaults (amber) ───────────────────── */
+:root {
+  /* ── Canvas & surface ───────────────────────────────────────── */
+  --kora-canvas:  #F4F1E9;   /* page background — warm ivory     */
+  --kora-surface: #FFFFFF;   /* card / panel background          */
+
+  /* ── Ink scale ──────────────────────────────────────────────── */
+  --kora-ink:           #14122E;
+  --kora-ink-secondary: rgba(20,18,46,0.60);
+  --kora-ink-tertiary:  rgba(20,18,46,0.42);
+  --kora-ink-hint:      rgba(20,18,46,0.40);
+  --kora-ink-border:    rgba(20,18,46,0.08);
+  --kora-ink-track:     rgba(20,18,46,0.08);
+
+  /* ── Accent — violet: instruments, links, brandmark only ────── */
+  --kora-accent: #6156F5;
+
+  /* ── Safeguard states ───────────────────────────────────────── */
+  --safeguard-pass-bg:   rgba(99,153,34,0.13);
+  --safeguard-pass-text: #3B6D11;
+  --safeguard-pass-dot:  #6f9e1f;
+
+  --safeguard-watch-bg:   rgba(186,117,23,0.14);
+  --safeguard-watch-text: #854F0B;
+  --safeguard-watch-dot:  #ba7517;
+
+  --safeguard-cap-bg:   rgba(163,45,45,0.12);
+  --safeguard-cap-text: #791F1F;
+  --safeguard-cap-dot:  #a32d2d;
+
+  /* ── Environment tokens — DEMO defaults (amber) ─────────────── */
   --env-accent:    #B8843A;
   --env-soft:      #FBF3E6;
   --env-border:    #E7C890;
   --env-text:      #7A5623;
-  --env-watermark: rgba(184, 132, 58, 0.08);
+  --env-watermark: rgba(184,132,58,0.08);
+
+  /* Legacy alias — preserved for components not yet migrated */
+  --background: var(--kora-canvas);
+  --foreground: var(--kora-ink);
 }
 
-/* ── LIVE environment — navy/blue ─────────────────────────────────────── */
+/* ── LIVE environment — navy/blue ──────────────────────────────── */
 .env-live {
   --env-accent:    #2B5CE6;
   --env-soft:      #EAF0FE;
   --env-border:    #BFD0FF;
   --env-text:      #1B2A4A;
-  --env-watermark: rgba(43, 92, 230, 0.06);
+  --env-watermark: rgba(43,92,230,0.06);
 }
 
-/* ── FUTURE environment — slate/blueprint ─────────────────────────────── */
+/* ── FUTURE environment — slate/blueprint ──────────────────────── */
 .env-future {
   --env-accent:    #6B7A92;
   --env-soft:      #EEF1F5;
   --env-border:    #CBD2DC;
   --env-text:      #344256;
-  --env-watermark: rgba(107, 122, 146, 0.08);
+  --env-watermark: rgba(107,122,146,0.08);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* ── Environment color tokens — generates bg-env-*, text-env-*, border-env-* ── */
+  /* ── Canvas & surface tokens ─────────────────────────────────── */
+  --color-kora-canvas:  var(--kora-canvas);
+  --color-kora-surface: var(--kora-surface);
+  --color-kora-ink:     var(--kora-ink);
+  --color-kora-accent:  var(--kora-accent);
+
+  /* ── Environment color tokens ────────────────────────────────── */
   --color-env-accent: var(--env-accent);
   --color-env-soft:   var(--env-soft);
   --color-env-border: var(--env-border);
   --color-env-text:   var(--env-text);
 
-  /* Base fonts */
-  --font-sans: var(--font-geist-sans), system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-
-  /* KORA typography — substitute fonts; proprietary Register 2/3 not in repo */
-  --font-kora-editorial:  var(--font-space-grotesk), system-ui, sans-serif;
-  --font-kora-interface:  var(--font-dm-sans), system-ui, sans-serif;
-  /* Instrument Serif — editorial voice; cockpit headline only; zero regressions */
+  /* ── Typography ──────────────────────────────────────────────── */
+  /* Instrument Serif — editorial voice: page mastheads, section titles */
   --font-kora-serif:      var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
+  /* Inter — all numbers, data, body text, labels */
+  --font-kora-editorial:  var(--font-inter), system-ui, sans-serif;
+  /* Mono — provenance footers, methodology stamps */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Geist Mono', monospace;
 
-  /* ── KORA core brand palette ──────────────────────────────────────── */
-  /* CONFIRMED from SVG brandmark/wordmark in docs/Documenti grafici KORA/ */
+  /* ── KORA core brand palette ─────────────────────────────────── */
   --color-kora-violet:      #6156F5;
-  --color-kora-cosmic-blue: #06032B;
-  /* INFERRED from official color swatch screenshot — TODO: designer confirm */
+  --color-kora-cosmic-blue: #14122E;
   --color-kora-gray-base:   #F5F6FA;
   --color-kora-fun-green:   #C8FF47;
 
-  /* ── Pillar colors — DERIVED from Violet per Doc 17; provisional ─── */
+  /* ── Pillar colors ───────────────────────────────────────────── */
   --color-pillar-life:       #5185EE;
   --color-pillar-growth:     #7B61F5;
   --color-pillar-connection: #9574EA;
@@ -66,15 +103,8 @@
   --color-pillar-legacy:     #3F3A8F;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #06032B;  /* KORA Cosmic Blue — dark surface */
-    --foreground: #F5F6FA;  /* KORA Gray Base — dark text */
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--kora-canvas);
+  color: var(--kora-ink);
+  font-family: var(--font-inter), system-ui, sans-serif;
 }

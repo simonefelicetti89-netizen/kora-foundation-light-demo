@@ -5,6 +5,7 @@ import { RoleSwitcher } from '@/components/demo/RoleSwitcher';
 import { ScenarioSwitcher } from '@/components/demo/ScenarioSwitcher';
 import { PersonaSwitcher } from '@/components/demo/PersonaSwitcher';
 import { EnvironmentSwitcher } from '@/components/demo/EnvironmentSwitcher';
+import { KoraLogo } from '@/components/brand/KoraLogo';
 import { isEmployerRole, isAdminRole } from '@/lib/permissions';
 import type { Environment } from '@/lib/types';
 
@@ -22,15 +23,20 @@ export function Header() {
     (isEmployerRole(activeRole) || isAdminRole(activeRole)) && activeEnvironment === 'demo';
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4">
+    <header
+      className="flex h-14 items-center justify-between px-5 bg-kora-surface"
+      style={{ borderBottom: '1px solid rgba(20,18,46,0.08)' }}
+    >
       <div className="flex items-center gap-3">
-        <span className="text-sm font-bold text-slate-800">KORA Foundation Light</span>
+        <KoraLogo variant="on-light" className="h-[26px] w-auto" />
         <span
-          className="rounded border px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap"
+          className="rounded px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap"
           style={{
-            borderColor:      'var(--env-border)',
-            backgroundColor:  'var(--env-soft)',
-            color:            'var(--env-text)',
+            borderWidth:     1,
+            borderStyle:     'solid',
+            borderColor:     'var(--env-border)',
+            backgroundColor: 'var(--env-soft)',
+            color:           'var(--env-text)',
           }}
         >
           {ENV_BADGE_TEXT[activeEnvironment]}

@@ -145,7 +145,7 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/my-kora/privacy',       label: 'Privacy & Condivisione' },
           { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV' },
           { href: '/my-kora/opportunities', label: 'Opportunità' },
-          { href: '/my-kora/bookings',      label: 'Prenotazioni',     comingSoon: true },
+          { href: '/my-kora/bookings',      label: 'Prenotazioni',      comingSoon: true },
           { href: '/my-kora/collective',    label: 'Impatto Collettivo', comingSoon: true },
         ],
       },
@@ -200,11 +200,17 @@ export function Sidebar() {
   const groups = buildNavGroups(activeRole);
 
   return (
-    <aside className="flex w-56 flex-col border-r border-slate-200 bg-slate-50">
+    <aside
+      className="flex w-56 flex-col bg-kora-canvas"
+      style={{ borderRight: '1px solid rgba(20,18,46,0.08)' }}
+    >
       <nav className="flex-1 overflow-y-auto py-3">
         {groups.map((group) => (
           <div key={group.heading} className="mb-4">
-            <p className="px-4 pb-1 text-xs font-semibold uppercase tracking-widest text-slate-400">
+            <p
+              className="px-4 pb-1 text-[10px] font-semibold uppercase tracking-widest"
+              style={{ color: 'rgba(20,18,46,0.38)' }}
+            >
               {group.heading}
             </p>
             {group.items.map((item) => {
@@ -214,21 +220,43 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center justify-between rounded-md mx-2 px-3 py-2 text-sm transition-colors',
+                    'flex items-center justify-between rounded-[10px] mx-2 px-3 py-2 text-sm transition-colors',
                     isActive
-                      ? 'bg-white border border-slate-200 text-slate-900 font-medium shadow-sm'
-                      : 'text-slate-600 hover:bg-slate-200 hover:text-slate-900',
-                    (item.comingSoon || item.inactive) && 'opacity-60',
+                      ? 'bg-kora-surface font-medium shadow-sm'
+                      : 'hover:bg-white/60',
+                    (item.comingSoon || item.inactive) && 'opacity-50',
                   )}
+                  style={
+                    isActive
+                      ? {
+                          color:  '#14122E',
+                          border: '1px solid rgba(20,18,46,0.08)',
+                        }
+                      : {
+                          color: 'rgba(20,18,46,0.58)',
+                        }
+                  }
                 >
                   <span className="truncate">{item.label}</span>
                   {item.comingSoon && (
-                    <span className="ml-1 shrink-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[10px] font-medium text-slate-400">
+                    <span
+                      className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px] font-medium"
+                      style={{
+                        background: 'rgba(20,18,46,0.06)',
+                        color:      'rgba(20,18,46,0.38)',
+                      }}
+                    >
                       presto
                     </span>
                   )}
                   {item.inactive && (
-                    <span className="ml-1 shrink-0 rounded border border-orange-200 bg-orange-50 px-1 py-0.5 text-[10px] font-medium text-orange-400">
+                    <span
+                      className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px] font-medium"
+                      style={{
+                        background: 'rgba(186,117,23,0.10)',
+                        color:      '#854F0B',
+                      }}
+                    >
                       inattivo
                     </span>
                   )}
@@ -248,9 +276,15 @@ export function Sidebar() {
         >
           {ENV_SIDEBAR_LABEL[activeEnvironment] ?? 'Ambiente demo'}
         </p>
-        <p className="text-[9px] font-semibold text-slate-500">Foundation Light v0.1</p>
-        <p className="text-[9px] font-mono text-slate-400">pre_empirical_calibration</p>
-        <p className="text-[9px] text-slate-400 pt-0.5">Ruolo: {activeRole}</p>
+        <p className="text-[9px] font-semibold" style={{ color: 'rgba(20,18,46,0.45)' }}>
+          Foundation Light v0.1
+        </p>
+        <p className="font-mono text-[9px]" style={{ color: 'rgba(20,18,46,0.32)' }}>
+          pre_empirical_calibration
+        </p>
+        <p className="text-[9px] pt-0.5" style={{ color: 'rgba(20,18,46,0.30)' }}>
+          Ruolo: {activeRole}
+        </p>
       </div>
     </aside>
   );

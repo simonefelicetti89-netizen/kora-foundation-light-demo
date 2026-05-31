@@ -9,7 +9,7 @@ interface KoraLogoProps {
 // Background rects removed; brandmark uses compound path + fillRule="evenodd"
 // so the inner ring is transparent on any background.
 export function KoraLogo({ variant = 'on-dark', className }: KoraLogoProps) {
-  const t = variant === 'on-dark' ? '#FFFFFF' : '#06032B';
+  const t = variant === 'on-dark' ? '#FFFFFF' : '#14122E';
 
   return (
     <svg
