@@ -7,6 +7,13 @@ import { useScoringResult } from '@/lib/scoring-result';
 import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { PageMasthead } from '@/components/ui/PageMasthead';
+import { SectionLabel } from '@/components/ui/SectionLabel';
+import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
+import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
+
+// ── Onboarding status → KORA tokens ──────────────────────────────────────────
 
 const ONBOARDING_LABELS: Record<string, string> = {
   not_started:                 'Non avviato',
@@ -19,43 +26,53 @@ const ONBOARDING_LABELS: Record<string, string> = {
   fully_onboarded:             'Completamente onboardato',
 };
 
-const ONBOARDING_COLORS: Record<string, string> = {
-  not_started:                 'border-slate-200 bg-slate-50 text-slate-500',
-  profile_complete:            'border-blue-200 bg-blue-50 text-blue-700',
-  workforce_baseline_complete: 'border-blue-200 bg-blue-50 text-blue-700',
-  program_data_loaded:         'border-indigo-200 bg-indigo-50 text-indigo-700',
-  ready_for_scoring:           'border-amber-200 bg-amber-50 text-amber-700',
-  decision_pack_ready:         'border-green-200 bg-green-50 text-green-700',
-  fully_onboarded:             'border-green-200 bg-green-50 text-green-700',
-};
+function onboardingToken(status: string): { bg: string; text: string } {
+  if (['fully_onboarded', 'decision_pack_ready'].includes(status)) return { bg: TOKENS.safeguard.pass.bg, text: TOKENS.safeguard.pass.text };
+  if (['not_started'].includes(status)) return { bg: TOKENS.inkBorder, text: TOKENS.inkHint };
+  if (status.startsWith('blocked')) return { bg: TOKENS.safeguard.cap.bg, text: TOKENS.safeguard.cap.text };
+  return { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text };
+}
+
+function safeguardToken(status: string): { bg: string; text: string; label: string } {
+  if (status === 'CLEAR')   return { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  label: 'Clear'   };
+  if (status === 'FLAGGED') return { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   label: 'Flagged' };
+  return                           { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, label: 'Warning' };
+}
+
+function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>{label}</p>
+      <p style={{ fontSize: mono ? '10px' : '12px', color: TOKENS.ink, marginTop: 3, fontFamily: mono ? 'monospace' : undefined }}>{value}</p>
+    </div>
+  );
+}
 
 // C-17: Company Profile — company-scoped, read-only
 export default function CompanyProfilePage() {
   const { activeRole }     = useRole();
   const { activeScenario } = useScenario();
 
-  // Resolve company from current demo user — company-scoped
   const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
   const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
 
-  const record = companyOnboardingService.getCompanyOnboardingRecord(COMPANY_ID);
+  const record        = companyOnboardingService.getCompanyOnboardingRecord(COMPANY_ID);
   const { data: scoring } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
-  const koraOutput = scoring?.koraIndex;
-  const tenant = tenantService.getTenant(COMPANY_ID);
+  const koraOutput    = scoring?.koraIndex;
+  const tenant        = tenantService.getTenant(COMPANY_ID);
   const companyAccounts = accountProvisioningService.getAccountsForCompany(COMPANY_ID);
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(COMPANY_ID);
   workerProvisioningService.assertEmployerCannotViewIndividualPIB(COMPANY_ID, '');
 
-  // Handle companies with no onboarding record yet (new/draft tenants)
+  // No record/tenant state
   if (!tenant && !record) {
     return (
-      <div className="space-y-4 max-w-3xl p-8">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Il Tuo Spazio KORA</p>
-        <h1 className="text-xl font-bold text-slate-900">Profilo azienda</h1>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-xs text-amber-800 space-y-2">
-          <p className="font-semibold">Onboarding pendente</p>
-          <p>Il profilo aziendale non è ancora disponibile. L&apos;azienda è in fase di configurazione lato KORA Admin.</p>
-          <p className="font-mono text-[10px] text-amber-600">company_id: {COMPANY_ID} · synthetic_demo_data: true</p>
+      <div className="space-y-5">
+        <PageMasthead eyebrow="Il tuo spazio KORA" title="Profilo & Stato" subline="Configurazione aziendale e stato della pipeline KORA." />
+        <div style={{ background: TOKENS.safeguard.watch.bg, border: `1px solid ${TOKENS.safeguard.watch.dot}44`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.safeguard.watch.text }}>Onboarding pendente</p>
+          <p style={{ fontSize: '12px', color: TOKENS.safeguard.watch.text, marginTop: 6, lineHeight: 1.6 }}>Il profilo aziendale non è ancora disponibile. L&apos;azienda è in fase di configurazione lato KORA Admin.</p>
+          <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.safeguard.watch.text, opacity: 0.75, marginTop: 8 }}>company_id: {COMPANY_ID} · synthetic_demo_data: true</p>
         </div>
       </div>
     );
@@ -77,204 +94,193 @@ export default function CompanyProfilePage() {
     eligibility_note: 'Baseline workforce non ancora caricata.',
   };
   const readiness_checks = record?.readiness_checks ?? [];
-  const passedChecks  = readiness_checks.filter((c) => c.status === 'ok').length;
-  const totalChecks   = readiness_checks.length;
+  const passedChecks = readiness_checks.filter((c) => c.status === 'ok').length;
+  const totalChecks  = readiness_checks.length;
+  const obToken = record ? onboardingToken(record.onboarding_status) : { bg: TOKENS.inkBorder, text: TOKENS.inkHint };
 
   return (
-    <div className="space-y-8 max-w-3xl">
+    <div className="space-y-5">
 
-      {/* ── Header ── */}
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-          Il Tuo Spazio KORA
-        </p>
-        <h1 className="text-xl font-bold text-slate-900 mt-0.5">{profile.company_name}</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Stai visualizzando lo spazio KORA della tua azienda.
-        </p>
+      {/* 1. PageMasthead */}
+      <PageMasthead
+        eyebrow="Il tuo spazio KORA · Profilo & Stato"
+        title={profile.company_name as string}
+        subline="Configurazione aziendale, stato della pipeline KORA e accesso al workspace."
+        meta={`${activeScenario} · dati sintetici demo · company-scoped`}
+      />
+
+      {/* 2. Company-scoped boundary note */}
+      <div style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.accent}33`, borderRadius: TOKENS.cardRadius, padding: '1rem 1.25rem', fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65 }}>
+        <p><span style={{ fontWeight: 600, color: TOKENS.ink }}>Stai visualizzando lo spazio KORA della tua azienda.</span> Gli utenti aziendali vedono solo la propria azienda.</p>
+        <p style={{ marginTop: 4 }}>Il PIB individuale resta privato al lavoratore. L&apos;azienda vede solo aggregati privacy-safe (N≥10).</p>
+        <p style={{ marginTop: 4 }}>Il setup operativo e la validazione dati sono gestiti lato KORA Admin.</p>
       </div>
 
-      {/* ── Company-scoped boundary note ── */}
-      <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-800 leading-relaxed space-y-1">
-        <p>
-          <span className="font-semibold">Stai visualizzando lo spazio KORA della tua azienda.</span>{' '}
-          Gli utenti aziendali vedono solo la propria azienda.
-        </p>
-        <p>
-          Il PIB individuale resta privato al lavoratore. L&apos;azienda vede solo aggregati privacy-safe.
-        </p>
-        <p>
-          Il setup operativo e la validazione dati sono gestiti lato KORA Admin.
-        </p>
-      </div>
-
-      {/* ── Tenant identity ── */}
+      {/* 3. Tenant identity */}
       {tenant && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Identità Tenant</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-xs">
-            {[
-              ['Azienda', tenant.company_name],
-              ['Settore', tenant.sector],
-              ['Territorio', tenant.territory],
-              ['Sede principale', tenant.headquarters_location],
-              ['Dipendenti', String(tenant.employee_count)],
-              ['Piano KORA', tenant.kora_plan],
-              ['Periodo di analisi', tenant.analysis_period],
-              ['Stato tenant', tenant.tenant_status],
-              ['company_id', COMPANY_ID],
-            ].map(([label, value]) => (
-              <div key={label as string}>
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{label}</p>
-                <p className={`text-slate-700 mt-0.5 capitalize ${label === 'company_id' ? 'font-mono text-[10px]' : ''}`}>{value}</p>
-              </div>
-            ))}
+        <>
+          <SectionLabel>Identità tenant</SectionLabel>
+          <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              <InfoRow label="Azienda"           value={tenant.company_name} />
+              <InfoRow label="Settore"            value={tenant.sector} />
+              <InfoRow label="Territorio"         value={tenant.territory} />
+              <InfoRow label="Sede principale"    value={tenant.headquarters_location} />
+              <InfoRow label="Dipendenti"         value={String(tenant.employee_count)} />
+              <InfoRow label="Piano KORA"         value={tenant.kora_plan} />
+              <InfoRow label="Periodo di analisi" value={tenant.analysis_period} />
+              <InfoRow label="Stato tenant"       value={tenant.tenant_status} />
+              <InfoRow label="company_id"         value={COMPANY_ID} mono />
+            </div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* ── Access scope ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Accesso & Utenti Aziendali</p>
-        <div className="grid grid-cols-2 gap-3 text-[10px]">
-          <div><p className="text-slate-400">Scope accesso</p><p className="text-slate-700 font-semibold">company_scoped</p></div>
-          <div><p className="text-slate-400">Utenti configurati</p><p className="text-slate-700 font-semibold">{companyAccounts.length}</p></div>
-          <div><p className="text-slate-400">Sezioni visibili</p><p className="text-slate-700 font-semibold">Intelligence, Reports, Financial</p></div>
-          <div><p className="text-slate-400">Sezioni operative</p><p className="text-slate-700 font-semibold">Gestite da KORA Admin</p></div>
+      {/* 4. Access scope */}
+      <SectionLabel>Accesso & utenti aziendali</SectionLabel>
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+        <div className="grid grid-cols-2 gap-4">
+          <InfoRow label="Scope accesso"   value="company_scoped" />
+          <InfoRow label="Utenti configurati" value={String(companyAccounts.length)} />
+          <InfoRow label="Sezioni visibili"   value="Intelligence, Reports, Financial" />
+          <InfoRow label="Sezioni operative"  value="Gestite da KORA Admin" />
         </div>
-        <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500">
+        <div style={{ marginTop: 12, background: TOKENS.inkBorder, borderRadius: 8, padding: '10px 12px', fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Il setup operativo, l&apos;ingestion e lo scoring sono gestiti lato KORA Admin e non sono visibili nel portale aziendale.
         </div>
       </div>
 
-      {/* ── Worker / My KORA status ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Worker & My KORA</p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[10px]">
-          <div><p className="text-slate-400">My KORA abilitati</p><p className="text-slate-700 font-bold text-sm mt-0.5">{workerSummary.my_kora_enabled_count}</p></div>
-          <div><p className="text-slate-400">PIB privato</p><p className="text-slate-700 font-bold text-sm mt-0.5">{workerSummary.pib_private_enabled_count}</p></div>
-          <div><p className="text-slate-400">Lavoratori in roster</p><p className="text-slate-700 font-bold text-sm mt-0.5">{workerSummary.total_workers}</p></div>
-        </div>
-        <div className="rounded border border-indigo-100 bg-indigo-50 px-3 py-2 text-[10px] text-indigo-700 leading-relaxed">
-          Questo spazio è personale: l&apos;azienda non vede il PIB individuale del lavoratore.
-          L&apos;azienda vede solo aggregati anonimizzati sopra soglia privacy (N≥10).
-        </div>
-      </div>
-
-      {/* ── KORA Status ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Stato KORA</p>
-
-        {koraOutput ? (
-          <>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-xs">
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-3">
-                <p className="text-[10px] text-slate-400">KORA Index</p>
-                <p className="text-2xl font-bold text-slate-900 mt-0.5">{koraOutput.kora_index_value}</p>
-                <p className="text-[9px] text-slate-400 font-mono mt-0.5">/100</p>
-              </div>
-              <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
-                <p className="text-[10px] text-blue-500">Confidence Score</p>
-                <p className="text-2xl font-bold text-blue-700 mt-0.5">{Math.round(koraOutput.confidence_score * 100)}%</p>
-                <p className="text-[9px] text-blue-400 mt-0.5">Indicatore esterno di affidabilità dati</p>
-              </div>
-              <div className={`rounded-lg border p-3 ${
-                koraOutput.safeguard_status === 'CLEAR' ? 'border-green-200 bg-green-50' :
-                koraOutput.safeguard_status === 'WARNING' ? 'border-amber-200 bg-amber-50' : 'border-rose-200 bg-rose-50'
-              }`}>
-                <p className="text-[10px] text-slate-400">Activation Safeguard</p>
-                <p className={`text-lg font-bold mt-0.5 ${
-                  koraOutput.safeguard_status === 'CLEAR' ? 'text-green-700' :
-                  koraOutput.safeguard_status === 'WARNING' ? 'text-amber-700' : 'text-rose-700'
-                }`}>{koraOutput.safeguard_status}</p>
-              </div>
+      {/* 5. Worker & My KORA */}
+      <SectionLabel>Worker & My KORA</SectionLabel>
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: 'My KORA abilitati',   value: workerSummary.my_kora_enabled_count },
+            { label: 'PIB privato',         value: workerSummary.pib_private_enabled_count },
+            { label: 'Lavoratori in roster', value: workerSummary.total_workers },
+          ].map(({ label, value }) => (
+            <div key={label}>
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{label}</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.875rem', color: TOKENS.ink, lineHeight: 1, marginTop: 6, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
             </div>
-            <p className="text-[10px] font-mono text-slate-400">
-              {koraOutput.methodology_version_id} · calibration_status: pre_empirical_calibration · synthetic_demo_data: true
-            </p>
-          </>
-        ) : (
-          <div className="rounded-lg border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800 space-y-1">
-            <p className="font-semibold">KORA Index non ancora disponibile</p>
-            <p>Il KORA Index sarà disponibile al termine della pipeline dati.</p>
-            <p className="font-mono text-[10px] text-amber-600">
-              onboarding: {tenant?.onboarding_status ?? 'not_started'} · data_readiness: {tenant?.data_readiness_status ?? '—'}
-            </p>
-          </div>
-        )}
+          ))}
+        </div>
+        <div style={{ marginTop: 12, background: `${TOKENS.accent}08`, border: `1px solid ${TOKENS.accent}22`, borderRadius: 8, padding: '10px 12px', fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          Questo spazio è personale: l&apos;azienda non vede il PIB individuale del lavoratore. L&apos;azienda vede solo aggregati anonimizzati sopra soglia privacy (N≥10).
+        </div>
       </div>
 
-      {/* ── Onboarding/data status summary ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Stato Dati & Pipeline</p>
+      {/* 6. Stato KORA */}
+      <SectionLabel>Stato KORA</SectionLabel>
+      {koraOutput ? (
+        <div className="grid grid-cols-3 gap-4">
+          {/* KORA Index */}
+          <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
+            <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>KORA Index</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
+              {koraOutput.kora_index_value}
+            </p>
+            <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>/100</p>
+          </div>
+          {/* Confidence Score */}
+          <div style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.accent}33`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
+            <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>Confidence Score</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.accent, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
+              {Math.round(koraOutput.confidence_score * 100)}%
+            </p>
+            <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>Indicatore esterno di affidabilità dati</p>
+          </div>
+          {/* Activation Safeguard */}
+          {(() => {
+            const sg = safeguardToken(koraOutput.safeguard_status);
+            return (
+              <div style={{ background: sg.bg, border: `1px solid ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
+                <p style={{ fontSize: '11px', color: sg.text, opacity: 0.75 }}>Activation Safeguard</p>
+                <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: sg.text, lineHeight: 1, margin: '8px 0 4px' }}>
+                  {sg.label}
+                </p>
+                <p style={{ fontSize: '11px', color: sg.text, opacity: 0.75 }}>Stato soglia attivazione</p>
+              </div>
+            );
+          })()}
+        </div>
+      ) : (
+        <div style={{ background: TOKENS.safeguard.watch.bg, border: `1px solid ${TOKENS.safeguard.watch.dot}44`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.safeguard.watch.text }}>KORA Index non ancora disponibile</p>
+          <p style={{ fontSize: '12px', color: TOKENS.safeguard.watch.text, opacity: 0.85, marginTop: 6 }}>Il KORA Index sarà disponibile al termine della pipeline dati.</p>
+          <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.safeguard.watch.text, opacity: 0.65, marginTop: 8 }}>
+            onboarding: {tenant?.onboarding_status ?? 'not_started'} · data_readiness: {tenant?.data_readiness_status ?? '—'}
+          </p>
+        </div>
+      )}
 
-        <div className="flex items-center gap-3 flex-wrap">
+      {/* 7. Stato Dati & Pipeline */}
+      <SectionLabel>Stato dati & pipeline</SectionLabel>
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+        <div className="flex items-center gap-3 flex-wrap mb-4">
           {record ? (
             <>
-              <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${ONBOARDING_COLORS[record.onboarding_status] ?? 'border-slate-200 text-slate-500'}`}>
+              <span style={{ fontSize: '11px', fontWeight: 500, background: obToken.bg, color: obToken.text, borderRadius: 4, padding: '3px 8px' }}>
                 {ONBOARDING_LABELS[record.onboarding_status] ?? record.onboarding_status}
               </span>
-              <span className="text-xs text-slate-500">
+              <span style={{ fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
                 {passedChecks}/{totalChecks} check superati
               </span>
             </>
           ) : (
-            <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-              onboarding non avviato
+            <span style={{ fontSize: '11px', fontWeight: 500, background: TOKENS.inkBorder, color: TOKENS.inkHint, borderRadius: 4, padding: '3px 8px' }}>
+              Onboarding non avviato
             </span>
           )}
         </div>
-
-        {/* Workforce baseline summary */}
-        <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 grid grid-cols-2 gap-2 sm:grid-cols-3 text-[10px]">
+        {/* Workforce baseline grid */}
+        <div className="grid grid-cols-3 gap-4" style={{ background: TOKENS.inkBorder, borderRadius: 8, padding: '12px' }}>
           {[
-            ['Lavoratori totali', `${workforce_baseline.total_employees}`],
-            ['Foundation Light', workforce_baseline.foundation_light_eligible ? 'Idonea' : 'Non idonea'],
+            ['Lavoratori totali',   String(workforce_baseline.total_employees)],
+            ['Foundation Light',    workforce_baseline.foundation_light_eligible ? 'Idonea' : 'Non idonea'],
             ['Soglia privacy N≥10', 'Applicata su tutti i cluster'],
           ].map(([label, value]) => (
             <div key={label as string}>
-              <p className="text-slate-400">{label}</p>
-              <p className="text-slate-700 font-semibold mt-0.5">{value}</p>
+              <p style={{ fontSize: '10px', color: TOKENS.inkHint }}>{label}</p>
+              <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink, marginTop: 3 }}>{value}</p>
             </div>
           ))}
         </div>
-
-        <div className="rounded border border-slate-200 bg-white px-3 py-2 text-[10px] text-slate-500 leading-relaxed">
-          Il setup operativo e la validazione dati sono gestiti lato KORA Admin.
-          Contatta il tuo referente KORA per aggiornamenti sui dati.
+        <div style={{ marginTop: 12, fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          Il setup operativo e la validazione dati sono gestiti lato KORA Admin. Contatta il tuo referente KORA per aggiornamenti sui dati.
         </div>
       </div>
 
-      {/* ── Navigation to company portal sections ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Il Tuo Portale KORA</p>
-        <div className="grid gap-2 sm:grid-cols-2">
-          {[
-            { href: '/company', label: 'Executive Cockpit', desc: 'Panoramica KORA Index e attivazione.' },
-            { href: '/company/kora-index', label: 'KORA Index', desc: 'Dettaglio completo del KORA Index.' },
-            { href: '/company/reports', label: 'Decision Pack', desc: 'Report e Decision Pack.' },
-            { href: '/company/financial', label: 'Governance Finanziaria', desc: 'Budget-to-Human-Impact e BTI.' },
-            { href: '/company/pillars', label: 'Pilastri & Iniziative', desc: 'Distribuzione per pillar KORA.' },
-            { href: '/company/activation', label: 'Attivazione', desc: 'Dati di attivazione e partecipazione.' },
-          ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-start gap-3 rounded-lg border border-slate-100 bg-slate-50 p-3 hover:bg-slate-100 transition-colors"
-            >
-              <div>
-                <p className="text-xs font-semibold text-slate-800">{item.label}</p>
-                <p className="text-[10px] text-slate-500 mt-0.5">{item.desc}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+      {/* 8. Portale KORA */}
+      <SectionLabel>Il tuo portale KORA</SectionLabel>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {[
+          { href: '/company',             label: 'Executive Cockpit',     desc: 'Panoramica KORA Index e attivazione.' },
+          { href: '/company/kora-index',  label: 'KORA Index',            desc: 'Dettaglio completo del KORA Index.' },
+          { href: '/company/reports',     label: 'Decision Pack',         desc: 'Report e Decision Pack.' },
+          { href: '/company/financial',   label: 'Governance Finanziaria',desc: 'Budget-to-Human-Impact e BTI.' },
+          { href: '/company/pillars',     label: 'Pilastri & Iniziative', desc: 'Distribuzione per pillar KORA.' },
+          { href: '/company/activation',  label: 'Attivazione',           desc: 'Dati di attivazione e partecipazione.' },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            style={{ display: 'block', background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '0.875rem', textDecoration: 'none', transition: 'border-color 0.15s' }}
+          >
+            <p style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.ink }}>{item.label}</p>
+            <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 3 }}>{item.desc}</p>
+          </Link>
+        ))}
       </div>
 
-      <p className="text-[10px] font-mono text-slate-300">
-        Foundation Light v0.1 · pre_empirical_calibration · synthetic_demo_data: true · company_scoped
-      </p>
+      <ExplainabilityHint />
 
+      {/* 9. ProvenanceFooter */}
+      <ProvenanceFooter
+        methodologyVersionId={koraOutput?.methodology_version_id ?? 'KORA Methodology v0.1'}
+        calibrationStatus={koraOutput?.calibration_status ?? 'pre_empirical_calibration'}
+        reportingPeriod={koraOutput?.reporting_period ?? activeScenario}
+      />
     </div>
   );
 }
