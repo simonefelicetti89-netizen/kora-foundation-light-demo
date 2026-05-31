@@ -62,13 +62,13 @@ function ScenarioColumn({ label, summary, btiScore, highlight }: {
         )}
       </div>
       <div className="space-y-3">
-        <ShareBar share={summary.economic_relief_share} label="Economic Relief Share" />
-        <ShareBar share={summary.deep_activation_share} label="Deep Activation Share" isAccent />
+        <ShareBar share={summary.economic_relief_share} label="Quota benefit monetari" />
+        <ShareBar share={summary.deep_activation_share} label="Quota attivazione profonda" isAccent />
       </div>
       <div className="space-y-1.5 text-xs">
         {[
-          ['Economic Relief Spend', <EurAmount key="er" value={summary.economic_relief_spend} currency={summary.currency} />],
-          ['Deep Activation Spend', <EurAmount key="da" value={summary.deep_activation_spend} currency={summary.currency} />],
+          ['Spesa benefit monetari', <EurAmount key="er" value={summary.economic_relief_spend} currency={summary.currency} />],
+          ['Spesa attivazione profonda', <EurAmount key="da" value={summary.deep_activation_spend} currency={summary.currency} />],
           ['Budget usato totale',   <EurAmount key="bt" value={summary.total_used_budget}      currency={summary.currency} />],
         ].map(([lbl, val]) => (
           <div key={lbl as string} className="flex justify-between" style={{ borderTop: highlight ? '1px solid rgba(255,255,255,0.08)' : TOKENS.cardBorder, paddingTop: 6 }}>
@@ -89,7 +89,7 @@ export function EconomicReliefPanel({ s1, s2, s1BtiScore, s2BtiScore }: Economic
     >
       <div>
         <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
-          Economic Relief &amp; Activation Opportunity
+          Benefit monetari &amp; opportunità di attivazione
         </p>
         <p className="mt-0.5 text-xs" style={{ color: TOKENS.inkHint }}>Sollievo economico e opportunità di attivazione</p>
         <p className="mt-2 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
@@ -110,8 +110,8 @@ export function EconomicReliefPanel({ s1, s2, s1BtiScore, s2BtiScore }: Economic
           >
             <p className="font-semibold">Cosa è cambiato in S2:</p>
             <ul className="space-y-1 list-disc list-inside">
-              <li>Economic Relief Share: <span className="font-semibold">{Math.round(s1.economic_relief_share * 100)}%</span> → <span className="font-semibold">{Math.round(s2.economic_relief_share * 100)}%</span> (−{Math.round((s1.economic_relief_share - s2.economic_relief_share) * 100)} pp)</li>
-              <li>Deep Activation Share: <span className="font-semibold">{Math.round(s1.deep_activation_share * 100)}%</span> → <span className="font-semibold">{Math.round(s2.deep_activation_share * 100)}%</span> (+{Math.round((s2.deep_activation_share - s1.deep_activation_share) * 100)} pp)</li>
+              <li>Quota benefit monetari: <span className="font-semibold">{Math.round(s1.economic_relief_share * 100)}%</span> → <span className="font-semibold">{Math.round(s2.economic_relief_share * 100)}%</span> (−{Math.round((s1.economic_relief_share - s2.economic_relief_share) * 100)} pp)</li>
+              <li>Quota attivazione profonda: <span className="font-semibold">{Math.round(s1.deep_activation_share * 100)}%</span> → <span className="font-semibold">{Math.round(s2.deep_activation_share * 100)}%</span> (+{Math.round((s2.deep_activation_share - s1.deep_activation_share) * 100)} pp)</li>
               {s1BtiScore !== undefined && s2BtiScore !== undefined && (
                 <li>BTI Score: <span className="font-semibold">{s1BtiScore}</span> → <span className="font-semibold">{s2BtiScore}</span> (+{s2BtiScore - s1BtiScore} punti)</li>
               )}

@@ -118,8 +118,8 @@
           "weight": 0.25,
           "score": 30,
           "component_codes": ["AR", "MAR"],
-          "main_driver": "AR=0.38 below CLEAR threshold. MAR=0.22 signals limited meaningful engagement across workforce.",
-          "risk_opportunity": "Opportunity: activating Operations site (11% AR, 90 workers) could materially shift REACH score."
+          "main_driver": "AR=0.38 è sotto la soglia CLEAR. MAR=0.22 segnala un engagement significativo limitato nella forza lavoro.",
+          "risk_opportunity": "Attivare il sito Operations (AR 11%, 90 lavoratori) potrebbe spostare materialmente il punteggio REACH."
         },
         {
           "code": "QUALITY",
@@ -127,8 +127,8 @@
           "weight": 0.30,
           "score": 37,
           "component_codes": ["NI", "VR", "CO"],
-          "main_driver": "CO=0.28 is the primary drag — workers who engage do not sustain participation across periods.",
-          "risk_opportunity": "VR=0.41 reflects high self-declared proportion — routing IMPACT events through advisor review would lift this."
+          "main_driver": "CO=0.28 è il freno principale — i lavoratori che si attivano non mantengono la partecipazione nei periodi successivi.",
+          "risk_opportunity": "VR=0.41 riflette un'alta quota autodichiarata — instradare gli eventi IMPACT nella revisione advisor migliorerebbe questo valore."
         },
         {
           "code": "EQUITY",
@@ -136,8 +136,8 @@
           "weight": 0.25,
           "score": 40,
           "component_codes": ["WB", "PC", "PB", "EQ"],
-          "main_driver": "WB=0.29 — top 12% generate 64% of IU. Structural concentration is the dominant signal.",
-          "risk_opportunity": "EQ=0.38 driven by Operations site imbalance — addressable through accessible in-plant programs."
+          "main_driver": "WB=0.29 — il 12% dei lavoratori genera il 64% delle IU. La concentrazione strutturale è il segnale dominante.",
+          "risk_opportunity": "EQ=0.38 determinato dallo squilibrio del sito Operations — affrontabile con programmi accessibili in stabilimento."
         },
         {
           "code": "BTI",
@@ -145,8 +145,8 @@
           "weight": 0.20,
           "score": 28,
           "component_codes": [],
-          "main_driver": "48% della spesa welfare (€54.000) è in economic_relief — non genera IU. Solo €58.000 su €112.000 spesi va a programmi di deep_activation. €45.000 di budget non speso.",
-          "risk_opportunity": "Riorientare la spesa economic_relief verso deep_activation è la singola azione con il più alto potenziale di miglioramento del BTI score."
+          "main_driver": "48% della spesa welfare (€54.000) è in benefit monetari — non genera IU. Solo €58.000 su €112.000 spesi va a programmi di attivazione profonda. €45.000 di budget non speso.",
+          "risk_opportunity": "Riorientare la spesa in benefit monetari verso l'attivazione profonda è la singola azione con il più alto potenziale di miglioramento del BTI score."
         }
       ]
     },
@@ -258,8 +258,8 @@
           "weight": 0.25,
           "score": 45,
           "component_codes": ["AR", "MAR"],
-          "main_driver": "AR=0.52 meets CLEAR threshold. MAR=0.38 confirms meaningful engagement breadth.",
-          "risk_opportunity": "LEGACY pillar still underrepresented — structured senior-junior mentoring could further lift meaningful reach."
+          "main_driver": "AR=0.52 raggiunge la soglia CLEAR. MAR=0.38 conferma l'ampiezza dell'engagement significativo.",
+          "risk_opportunity": "Il pillar LEGACY è ancora sottorappresentato — un mentoring senior-junior strutturato potrebbe aumentare ulteriormente il reach significativo."
         },
         {
           "code": "QUALITY",
@@ -267,8 +267,8 @@
           "weight": 0.30,
           "score": 54,
           "component_codes": ["NI", "VR", "CO"],
-          "main_driver": "VR=0.61 driven by expanded advisor review. CO=0.44 improving but still below 0.50.",
-          "risk_opportunity": "CO improvement path: structured continuity nudges and My KORA milestone tracking could push above 0.50."
+          "main_driver": "VR=0.61 trainato dall'espansione della revisione advisor. CO=0.44 in miglioramento ma ancora sotto 0.50.",
+          "risk_opportunity": "Percorso di miglioramento CO: nudge di continuità strutturati e il tracking delle milestone My KORA potrebbero portare il valore sopra 0.50."
         },
         {
           "code": "EQUITY",
@@ -276,8 +276,8 @@
           "weight": 0.25,
           "score": 60,
           "component_codes": ["WB", "PC", "PB", "EQ"],
-          "main_driver": "PC=0.80 — 4 pillars now active. EQ improvement driven by Operations site activation (11%→22%).",
-          "risk_opportunity": "LEGACY pillar absence limits PC ceiling at 0.80. WB still shows concentration in top workers."
+          "main_driver": "PC=0.80 — 4 pillar ora attivi. Il miglioramento di EQ è trainato dall'attivazione del sito Operations (11%→22%).",
+          "risk_opportunity": "L'assenza del pillar LEGACY limita il tetto di PC a 0.80. WB mostra ancora concentrazione nei lavoratori di punta."
         },
         {
           "code": "BTI",
@@ -285,8 +285,8 @@
           "weight": 0.20,
           "score": 58,
           "component_codes": [],
-          "main_driver": "Quota economic_relief ridotta 48%→30%. Cost per IU migliorato da 22,4 a 13,8. Deep activation share aumentata al 70%. Riallocazione parziale realizzata in Q4.",
-          "risk_opportunity": "Residual budget (€35,000) and partial LEGACY activation represent continued reallocation opportunity."
+          "main_driver": "Quota di benefit monetari ridotta 48%→30%. Cost per IU migliorato da 22,4 a 13,8. Quota di attivazione profonda aumentata al 70%. Riallocazione parziale realizzata in Q4.",
+          "risk_opportunity": "Il budget residuo (€35.000) e l'attivazione parziale del pillar LEGACY rappresentano un'ulteriore opportunità di riallocazione."
         }
       ]
     }

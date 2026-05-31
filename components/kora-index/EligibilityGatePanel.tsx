@@ -62,7 +62,7 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
             {summary.limited_count.toLocaleString('it-IT')}
           </p>
           <p className="text-xs text-amber-700 leading-relaxed">
-            Benefit economici utili, ma a bassa profondità di attivazione. 0 IU — tracciati come economic_relief_spend nel BTI engine.
+            Benefit monetari utili, ma a bassa profondità di attivazione. 0 IU — tracciati come spesa in benefit monetari nel motore BTI.
           </p>
         </div>
         <div className="rounded-[10px] border border-rose-200 bg-rose-50 p-4 space-y-2">

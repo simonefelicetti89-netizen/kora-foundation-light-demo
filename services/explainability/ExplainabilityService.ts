@@ -183,23 +183,23 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Budget-to-Human-Impact (BTI)',
     label_en: 'Budget-to-Human-Impact macroblock',
     definition_it:
-      'Il quarto macroblock del KORA Index v3 (peso 20%). Il punteggio BTI è calcolato dal BudgetToHumanImpactEngine — non deriva dai valori dei componenti. Misura l\'efficienza di conversione della spesa welfare in attivazione umana reale. Budget allocato ≠ Budget attivato. La spesa economic relief (buoni pasto, fringe) non genera Impact Units.',
+      'Il quarto macroblocco del KORA Index v3 (peso 20%). Il punteggio BTI è calcolato dal motore Budget-to-Human-Impact — non deriva dai valori dei componenti. Misura l\'efficienza di conversione della spesa welfare in attivazione umana reale. Budget allocato ≠ Budget attivato. La spesa in benefit monetari (buoni pasto, fringe) non genera Impact Units.',
     related_concepts: ['economic_relief', 'deep_activation', 'activation_debt', 'reallocation_opportunity'],
   },
   economic_relief: {
     key: 'economic_relief',
-    label_it: 'Economic Relief',
+    label_it: 'Benefit monetari',
     label_en: 'Economic Relief',
     definition_it:
-      'Categoria di spesa welfare a bassa attivazione: voucher alimentari, buoni carburante, fringe benefit generici, card shopping. Gli item economic relief sono classificati Limited all\'Eligibility Gate — generano 0 Impact Units ma sono tracciati nel BTI engine come economic_relief_spend. Non è spesa sbagliata: è spesa che può diventare più intelligente attraverso la riallocazione verso programmi di deep_activation.',
+      'Categoria di spesa welfare a bassa attivazione: voucher alimentari, buoni carburante, fringe benefit generici, card shopping. I benefit monetari sono classificati Limited all\'Eligibility Gate — generano 0 Impact Units ma sono tracciati nel motore BTI come spesa in benefit monetari. Non è spesa sbagliata: è spesa che può diventare più intelligente attraverso la riallocazione verso programmi di attivazione profonda.',
     related_concepts: ['eligibility_gate', 'deep_activation', 'bti_macroblock'],
   },
   deep_activation: {
     key: 'deep_activation',
-    label_it: 'Deep Activation',
+    label_it: 'Attivazione profonda',
     label_en: 'Deep Activation',
     definition_it:
-      'Spesa welfare orientata a programmi che generano Impact Units verificate: formazione, benessere strutturato, mentoring, volontariato, programmi di comunità. Contrapposta all\'economic relief, la deep_activation è la quota di budget che si converte in attivazione reale misurabile dal KORA Index. Il rapporto deep_activation_share / economic_relief_share è il principale segnale diagnostico del macroblock BTI.',
+      'Spesa welfare orientata a programmi che generano Impact Units verificate: formazione, benessere strutturato, mentoring, volontariato, programmi di comunità. Contrapposta ai benefit monetari, l\'attivazione profonda è la quota di budget che si converte in attivazione reale misurabile dal KORA Index. Il rapporto quota di attivazione profonda / quota di benefit monetari è il principale segnale diagnostico del macroblocco BTI.',
     related_concepts: ['economic_relief', 'impact_unit', 'bti_macroblock'],
   },
   activation_debt: {
@@ -207,7 +207,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Activation Debt',
     label_en: 'Activation Debt',
     definition_it:
-      'Budget allocato ma non convertito in attivazione verificata nel periodo. Include budget non speso e quota di spesa economic relief che non genera IU. KORA misura ciò che accade dopo la spesa. Activation Debt è il segnale che il budget teorico non si traduce in impatto umano reale. Ridurre l\'Activation Debt richiede sia una maggiore spesa in deep_activation sia una migliore verifica degli eventi.',
+      'Budget allocato ma non convertito in attivazione verificata nel periodo. Include budget non speso e quota di spesa in benefit monetari che non genera IU. KORA misura ciò che accade dopo la spesa. Activation Debt è il segnale che il budget teorico non si traduce in impatto umano reale. Ridurre l\'Activation Debt richiede sia una maggiore spesa in attivazione profonda sia una migliore verifica degli eventi.',
     related_concepts: ['reallocation_opportunity', 'bti_macroblock', 'economic_relief'],
   },
   reallocation_opportunity: {
@@ -215,7 +215,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Reallocation Opportunity',
     label_en: 'Reallocation Opportunity',
     definition_it:
-      'Quota dell\'economic_relief_spend che potrebbe essere riorientata verso programmi di deep_activation, aumentando il BTI score senza incrementare il budget totale. La Reallocation Opportunity non è una critica alla spesa esistente ma un\'indicazione quantitativa del potenziale di ottimizzazione. La riallocazione parziale (es. 50% dell\'economic relief) può generare miglioramenti materiali nell\'Activation Quality e nel KORA Index.',
+      'Quota della spesa in benefit monetari che potrebbe essere riorientata verso programmi di attivazione profonda, aumentando il BTI score senza incrementare il budget totale. La Reallocation Opportunity non è una critica alla spesa esistente ma un\'indicazione quantitativa del potenziale di ottimizzazione. La riallocazione parziale (es. 50% dei benefit monetari) può generare miglioramenti materiali nell\'Activation Quality e nel KORA Index.',
     related_concepts: ['activation_debt', 'economic_relief', 'deep_activation'],
   },
   impact_unit: {
@@ -231,7 +231,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Eligibility Gate',
     label_en: 'Eligibility Gate',
     definition_it:
-      'Classificazione pre-scoring applicata a ogni item caricato prima del calcolo delle Impact Units. Tre classi: Eligible (genera IU piena — programmi di attivazione profonda), Limited (0 IU — benefit economici come buoni pasto e fringe; tracciati come economic_relief_spend nel BTI engine), Blocked (0 IU, 0 KORA Contribution — eventi obbligatori per legge o ruolo: DVR, DPI, DUVRI, formazione HSE obbligatoria). Il gate è obbligatorio e non bypassabile.',
+      'Classificazione pre-scoring applicata a ogni item caricato prima del calcolo delle Impact Units. Tre classi: Eligible (genera IU piena — programmi di attivazione profonda), Limited (0 IU — benefit monetari come buoni pasto e fringe; tracciati come spesa in benefit monetari nel motore BTI), Blocked (0 IU, 0 KORA Contribution — eventi obbligatori per legge o ruolo: DVR, DPI, DUVRI, formazione HSE obbligatoria). Il gate è obbligatorio e non bypassabile.',
     related_concepts: ['economic_relief', 'impact_unit', 'deep_activation'],
   },
   pre_empirical_calibration: {
@@ -268,10 +268,10 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
   },
   limited: {
     key: 'limited',
-    label_it: 'Limited — Sollievo Economico',
+    label_it: 'Limited — Benefit monetari',
     label_en: 'Limited',
     definition_it:
-      'Classe Eligibility Gate per benefit economici utili ma a bassa profondità di attivazione: buoni pasto, card carburante, voucher shopping, fringe benefit generici. Gli item Limited generano 0 Impact Units ma sono tracciati nel BTI engine come economic_relief_spend. Non è spesa sbagliata: è spesa che può diventare più intelligente attraverso la riallocazione verso programmi di deep_activation.',
+      'Classe Eligibility Gate per benefit monetari utili ma a bassa profondità di attivazione: buoni pasto, card carburante, voucher shopping, fringe benefit generici. Gli item Limited generano 0 Impact Units ma sono tracciati nel motore BTI come spesa in benefit monetari. Non è spesa sbagliata: è spesa che può diventare più intelligente attraverso la riallocazione verso programmi di attivazione profonda.',
     related_concepts: ['eligibility_gate', 'economic_relief', 'bti_macroblock'],
   },
   blocked: {
@@ -292,10 +292,10 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
   },
   economic_relief_activation_opportunity: {
     key: 'economic_relief_activation_opportunity',
-    label_it: 'Economic Relief & Activation Opportunity',
+    label_it: 'Benefit monetari & opportunità di attivazione',
     label_en: 'Economic Relief & Activation Opportunity',
     definition_it:
-      'Sezione diagnostica del KORA Index v3 che confronta la quota di spesa welfare destinata a sollievo economico (Limited) con quella destinata a programmi di deep_activation (Eligible). Un\'alta economic_relief_share (es. 48% in S1) segnala che il budget è concentrato in benefit a bassa attivazione. La riduzione verso S2 (30%) attraverso parziale riallocazione verso deep_activation migliora il BTI score, la qualità dell\'attivazione e l\'equità della spesa. Il frame corretto: non è spesa sbagliata, è spesa che può diventare più intelligente.',
+      'Sezione diagnostica del KORA Index v3 che confronta la quota di spesa welfare destinata a benefit monetari (Limited) con quella destinata a programmi di attivazione profonda (Eligible). Un\'alta quota di benefit monetari (es. 48% in S1) segnala che il budget è concentrato in benefit a bassa attivazione. La riduzione verso S2 (30%) attraverso parziale riallocazione verso l\'attivazione profonda migliora il BTI score, la qualità dell\'attivazione e l\'equità della spesa. Il frame corretto: non è spesa sbagliata, è spesa che può diventare più intelligente.',
     related_concepts: ['economic_relief', 'deep_activation', 'reallocation_opportunity', 'bti_macroblock'],
   },
   budget_to_human_impact: {
@@ -303,7 +303,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Budget-to-Human-Impact',
     label_en: 'Budget-to-Human-Impact',
     definition_it:
-      'Pannello diagnostico del macroblock BTI che mostra i principali indicatori di efficienza della conversione budget → attivazione: spesa totale welfare, economic_relief_spend, deep_activation_spend, Activation Debt, Reallocation Opportunity, cost per IU, cost per deep activated worker, pillar investment balance e equity of spend. I dati provengono dal BudgetToHumanImpactEngine — non dai component values del KORA Index. Informational only: KORA non gestisce pagamenti, non custodisce fondi e non fornisce consulenza fiscale.',
+      'Pannello diagnostico del macroblocco BTI che mostra i principali indicatori di efficienza della conversione budget → attivazione: spesa totale welfare, spesa in benefit monetari, spesa in attivazione profonda, Activation Debt, Reallocation Opportunity, costo per IU, costo per lavoratore attivato in profondità, bilanciamento degli investimenti per pillar e equità della spesa. I dati provengono dal motore Budget-to-Human-Impact — non dai valori dei componenti del KORA Index. Solo informativo: KORA non gestisce pagamenti, non custodisce fondi e non fornisce consulenza fiscale.',
     related_concepts: ['bti_macroblock', 'activation_debt', 'reallocation_opportunity', 'cost_per_deep_activated_worker'],
   },
   cost_per_deep_activated_worker: {
@@ -311,7 +311,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Costo per Lavoratore Profondamente Attivato',
     label_en: 'Cost per Deep Activated Worker',
     definition_it:
-      'Spesa deep_activation / numero di lavoratori con attivazione profonda verificata. Un aumento di questo indicatore non implica inefficienza: può riflettere l\'espansione dell\'accesso a programmi più strutturati e profondi per una platea più ampia. Leggere sempre insieme al cost_per_impact_unit: se quest\'ultimo diminuisce, l\'efficienza complessiva dell\'attivazione è migliorata. In S1→S2: cost_per_deep_worker +€181, ma cost_per_IU −8.6 — segnale di efficienza complessiva migliorata, non peggiorata.',
+      'Spesa di attivazione profonda / numero di lavoratori con attivazione profonda verificata. Un aumento di questo indicatore non implica inefficienza: può riflettere l\'espansione dell\'accesso a programmi più strutturati e profondi per una platea più ampia. Leggere sempre insieme al costo per Impact Unit: se quest\'ultimo diminuisce, l\'efficienza complessiva dell\'attivazione è migliorata. In S1→S2: costo per lavoratore attivato +€181, ma costo per IU −8.6 — segnale di efficienza complessiva migliorata, non peggiorata.',
     related_concepts: ['deep_activation', 'budget_to_human_impact', 'bti_macroblock'],
   },
   structural_policy_activation: {

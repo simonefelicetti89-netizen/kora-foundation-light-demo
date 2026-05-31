@@ -9,7 +9,7 @@
   "role_access_note": "BTI data accessible to company_finance, company_admin, and kora_admin roles only. Not accessible to company_hr, company_viewer, worker, partner, or advisor roles.",
   "constitutional_rule": "KORA misura ciò che accade dopo la spesa. Budget allocato ≠ Budget attivato. Budget speso ≠ Impatto umano. Tutti i valori sono indicatori direzionali informational only. Non costituiscono consulenza finanziaria, fiscale, o legale.",
   "bti_macroblock_note": "BTI macroblock score feeds KORA Index v3 at 20% weight. Score is computed by BudgetToHumanImpactEngine — not derived from any of the 9 operational component values.",
-  "spend_taxonomy_note": "economic_relief_spend = benefit monetari a bassa attivazione (buoni pasto, fringe generici, card carburante) classificati Limited al Eligibility Gate. deep_activation_spend = spesa su programmi eligible che generano Impact Units verificati. La somma economic_relief + deep_activation = budget_used_total.",
+  "spend_taxonomy_note": "Spesa in benefit monetari = benefit monetari a bassa attivazione (buoni pasto, fringe generici, card carburante) classificati Limited all'Eligibility Gate. Spesa in attivazione profonda = spesa su programmi eligible che generano Impact Units verificati. La somma benefit monetari + attivazione profonda = budget_used_total.",
   "data": [
     {
       "id": "bti-meridiana-S1-2025",
@@ -70,8 +70,8 @@
       "recommendations": [
         {
           "priority": "alta",
-          "action_it": "Converti progressivamente la spesa economic_relief in programmi di deep_activation — il 48% di budget speso non genera Impact Units",
-          "expected_signal_it": "Riduzione economic_relief_share (48%→30%), aumento deep_activation_share, calo cost_per_impact_unit da 22,4, miglioramento BTI score",
+          "action_it": "Converti progressivamente la spesa in benefit monetari verso programmi di attivazione profonda — il 48% di budget speso non genera Impact Units",
+          "expected_signal_it": "Riduzione della quota di benefit monetari (48%→30%), aumento della quota di attivazione profonda, calo del costo per Impact Unit da 22,4, miglioramento BTI score",
           "budget_note": "Non è necessario ridurre il budget totale — redistribuirlo. Anche una conversione parziale del 30% dell'economic_relief genera un segnale BTI misurabile",
           "target_macroblock": "BTI"
         },
@@ -171,8 +171,8 @@
         },
         {
           "priority": "alta",
-          "action_it": "Continua a ridurre la quota economic_relief — la direzione 48%→30% è corretta, l'obiettivo è <20%",
-          "expected_signal_it": "Ulteriore miglioramento BTI score, riduzione cost_per_impact_unit sotto 10, maggiore deep_activation_share",
+          "action_it": "Continua a ridurre la quota di benefit monetari — la direzione 48%→30% è corretta, l'obiettivo è <20%",
+          "expected_signal_it": "Ulteriore miglioramento BTI score, riduzione del costo per Impact Unit sotto 10, maggiore quota di attivazione profonda",
           "budget_note": "Conversione dei buoni pasto residui (€50.000) in benefit esperienziali — verificare perimetro fiscale con advisor prima della conversione",
           "target_macroblock": "BTI"
         },
