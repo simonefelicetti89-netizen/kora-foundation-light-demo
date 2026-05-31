@@ -47,29 +47,56 @@ function ScenarioStrip({ activeScenario, s1Output, s2Output }: {
 }) {
   const scenarios = [{ id: 'S1', out: s1Output }, { id: 'S2', out: s2Output }] as const;
   return (
-    <div className="p-5 space-y-4" style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}>
-      <p className="font-mono uppercase" style={{ fontSize: '9px', letterSpacing: '0.18em', color: TOKENS.inkHint }}>
+    <div className="flex flex-col p-6 space-y-4" style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}>
+      {/* §3 — eyebrow Inter non mono */}
+      <p className="uppercase" style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.inkHint }}>
         Confronto scenari · solo demo
       </p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 flex-1">
         {scenarios.map(({ id, out }) => {
           if (!out) return null;
           const isActive = id === activeScenario;
           const ss = SAFEGUARD_STYLE[out.safeguard_status] ?? SAFEGUARD_STYLE['WARNING'];
           return (
-            <div key={id} className="rounded-[10px] p-4"
-              style={{ background: isActive ? TOKENS.ink : TOKENS.inkBorder, border: isActive ? 'none' : TOKENS.cardBorder }}>
+            <div
+              key={id}
+              className="rounded-[10px] p-4"
+              style={
+                isActive
+                  ? {
+                      background:  TOKENS.surface,
+                      border:      `2px solid ${TOKENS.accent}`,
+                      borderLeft:  `3px solid ${TOKENS.accent}`,
+                    }
+                  : { background: TOKENS.inkBorder, border: TOKENS.cardBorder }
+              }
+            >
               <div className="flex items-center justify-between mb-2">
-                <span className="font-mono font-semibold" style={{ fontSize: '10px', color: isActive ? 'rgba(244,241,233,0.55)' : TOKENS.inkHint }}>{id}</span>
-                {isActive && <span className="font-mono" style={{ fontSize: '8px', letterSpacing: '0.12em', color: TOKENS.safeguard.pass.dot }}>ATTIVO</span>}
+                {/* §3 — Inter non mono per scenario ID */}
+                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', color: isActive ? TOKENS.ink : TOKENS.inkHint }}>{id}</span>
+                {/* §6/§7 — chip "Attivo": sentence case, colore violet non verde */}
+                {isActive && (
+                  <span
+                    className="rounded"
+                    style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 500, padding: '2px 6px', background: 'rgba(97,86,245,0.10)', color: TOKENS.accent }}
+                  >
+                    Attivo
+                  </span>
+                )}
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '28px', color: isActive ? '#FFFFFF' : TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1 }}>{out.kora_index_value}</span>
-                <span style={{ fontSize: '11px', color: isActive ? 'rgba(255,255,255,0.35)' : TOKENS.inkHint }}>/100</span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '28px', color: TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1 }}>{out.kora_index_value}</span>
+                <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>/100</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
-                <span className="rounded font-mono" style={{ fontSize: '7.5px', padding: '2px 6px', background: isActive ? 'rgba(255,255,255,0.10)' : ss.bg, color: isActive ? 'rgba(255,255,255,0.65)' : ss.text }}>{out.safeguard_status}</span>
-                <span style={{ fontSize: '10px', color: isActive ? 'rgba(255,255,255,0.35)' : TOKENS.inkHint }}>CS {formatConfidenceScore(out.confidence_score)}</span>
+                {/* Safeguard pill — Inter, sentence case */}
+                <span
+                  className="rounded"
+                  style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '9px', padding: '2px 6px', background: ss.bg, color: ss.text }}
+                >
+                  {out.safeguard_status.charAt(0) + out.safeguard_status.slice(1).toLowerCase()}
+                </span>
+                <span style={{ fontSize: '10px', color: TOKENS.inkHint }}>CS {formatConfidenceScore(out.confidence_score)}</span>
               </div>
             </div>
           );
@@ -86,7 +113,10 @@ function ScenarioStrip({ activeScenario, s1Output, s2Output }: {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="font-mono uppercase pt-2" style={{ fontSize: '9px', letterSpacing: '0.20em', color: TOKENS.inkHint }}>
+    <p
+      className="uppercase pt-2"
+      style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.inkHint }}
+    >
       {children}
     </p>
   );
@@ -176,9 +206,9 @@ export default function KoraIndexDetail() {
         subline="Scomposizione analitica dell'indice"
       />
 
-      {/* 2. Hero: IndexRing + ScenarioStrip side by side (demo only) */}
+      {/* 2. Hero: IndexRing + ScenarioStrip side by side (demo only) — §9 items-stretch */}
       {isDemo && (s1Output ?? s2Output) ? (
-        <div className="grid grid-cols-2 gap-4 items-start">
+        <div className="grid grid-cols-2 gap-4 items-stretch">
           <IndexRingCard
             value={output.kora_index_value}
             safeguardStatus={output.safeguard_status}
@@ -194,9 +224,9 @@ export default function KoraIndexDetail() {
         />
       )}
 
-      {/* 3. Macroblock cards — 4 col grid */}
+      {/* 3. Macroblock cards — §8 subgrid alignment via gap-x/gap-y split */}
       <SectionLabel>Architettura macroblocchi</SectionLabel>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
         {macroblocks.map((mb) => {
           const prevScore = activeScenario === 'S2' ? s1Mbs.find((m) => m.code === mb.code)?.score : undefined;
           return <MacroblockCard key={mb.code} macroblock={mb} previousScore={prevScore} />;

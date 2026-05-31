@@ -2,7 +2,6 @@
 
 import { DemoStateProvider, useEnvironment } from '@/lib/demo-state';
 import { SyntheticDataBanner } from '@/components/demo/SyntheticDataBanner';
-import { EnvironmentWatermark } from '@/components/demo/EnvironmentWatermark';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 
@@ -11,7 +10,6 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const { activeEnvironment } = useEnvironment();
   return (
     <div className={`flex min-h-screen flex-col env-${activeEnvironment}`}>
-      <EnvironmentWatermark />
       <SyntheticDataBanner />
       <Header />
       <div className="flex flex-1 overflow-hidden">

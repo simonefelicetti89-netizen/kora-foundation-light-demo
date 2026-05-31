@@ -18,23 +18,36 @@ const MACROBLOCK_EXPLANATIONS: Record<string, string> = {
   BTI:     'Misura quanto efficacemente il budget people/welfare diventa valore umano reale.',
 };
 
+// §8 — CSS subgrid alignment across 4-column grid.
+// This card uses grid-row: span 6 + grid-template-rows: subgrid so all 4 cards
+// share the same 6 parent row tracks → sections align at identical baseline.
+// Fallback (no subgrid support): sections stack naturally, still readable.
 export function MacroblockCard({ macroblock, previousScore, className }: MacroblockCardProps) {
-  const explanation  = MACROBLOCK_EXPLANATIONS[macroblock.code] ?? '';
-  const delta        = previousScore !== undefined ? macroblock.score - previousScore : null;
+  const explanation    = MACROBLOCK_EXPLANATIONS[macroblock.code] ?? '';
+  const delta          = previousScore !== undefined ? macroblock.score - previousScore : null;
   const componentCodes = MACROBLOCK_COMPONENTS[macroblock.code as MacroblockCode] ?? [];
-  const isBTI        = macroblock.code === 'BTI';
+  const isBTI          = macroblock.code === 'BTI';
 
   return (
     <div
-      className={cn('p-4 space-y-3', className)}
-      style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
+      className={cn('p-4', className)}
+      style={{
+        background:          TOKENS.surface,
+        border:              TOKENS.cardBorder,
+        borderRadius:        TOKENS.cardRadius,
+        display:             'grid',
+        gridRow:             'span 6',
+        gridTemplateRows:    'subgrid',
+      }}
     >
-      {/* Header */}
+
+      {/* Row 1 — Header: code eyebrow + label + score */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
+          {/* §3 — eyebrow: Inter non mono; §5 — resta viola (macroblock code) */}
           <p
-            className="font-mono uppercase font-semibold"
-            style={{ fontSize: '9px', letterSpacing: '0.14em', color: TOKENS.accent }}
+            className="uppercase font-semibold"
+            style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.accent }}
           >
             {macroblock.code}
           </p>
@@ -58,7 +71,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
         </div>
       </div>
 
-      {/* Bar — ink */}
+      {/* Row 2 — Bar */}
       <div className="h-1.5 w-full rounded-full" style={{ background: TOKENS.inkTrack }}>
         <div
           className="h-1.5 rounded-full"
@@ -66,9 +79,10 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
         />
       </div>
 
+      {/* Row 3 — Description */}
       <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{explanation}</p>
 
-      {/* Weight + components */}
+      {/* Row 4 — Weight + components block */}
       <div className="rounded-[8px] p-2.5 space-y-2" style={{ background: TOKENS.inkBorder }}>
         <div className="flex items-center gap-3 text-[10px]">
           <span style={{ color: TOKENS.inkSecondary }}>Peso KORA Index</span>
@@ -77,7 +91,8 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
 
         {componentCodes.length > 0 ? (
           <div>
-            <p className="text-[9px] font-semibold uppercase tracking-wide mb-1" style={{ color: TOKENS.inkHint }}>
+            {/* §3 — Inter non mono */}
+            <p className="text-[9px] font-semibold uppercase tracking-wide mb-1" style={{ fontFamily: 'var(--font-inter)', color: TOKENS.inkHint }}>
               Componenti analitici
             </p>
             <div className="flex flex-wrap gap-1">
@@ -94,27 +109,32 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
           </div>
         ) : isBTI ? (
           <p className="text-[9px] italic" style={{ color: TOKENS.inkHint }}>
-            Punteggio calcolato dal BudgetToHumanImpactEngine — non derivato dai componenti analitici.
+            Calcolato dal motore — non derivato dai componenti analitici.
           </p>
         ) : null}
       </div>
 
-      {macroblock.main_driver && (
+      {/* Row 5 — Driver principale (empty div preserves subgrid row when absent) */}
+      {macroblock.main_driver ? (
         <div className="rounded-[8px] p-2.5 space-y-1" style={{ background: TOKENS.inkBorder }}>
-          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.inkHint }}>Driver principale</p>
+          {/* §3 — Inter non mono */}
+          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-inter)', color: TOKENS.inkHint }}>Driver principale</p>
           <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{macroblock.main_driver}</p>
         </div>
-      )}
+      ) : <div />}
 
-      {macroblock.risk_opportunity && (
+      {/* Row 6 — Opportunità (empty div preserves subgrid row when absent) */}
+      {macroblock.risk_opportunity ? (
         <div
           className="rounded-[8px] p-2.5 space-y-1"
           style={{ background: 'rgba(97,86,245,0.06)', border: '1px solid rgba(97,86,245,0.12)' }}
         >
-          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ color: TOKENS.accent }}>Opportunità</p>
+          {/* §3 Inter non mono; §5 — header Opportunità: ink non viola */}
+          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-inter)', color: TOKENS.ink }}>Opportunità</p>
           <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{macroblock.risk_opportunity}</p>
         </div>
-      )}
+      ) : <div />}
+
     </div>
   );
 }

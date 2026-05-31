@@ -11,8 +11,8 @@ export function PageMasthead({ eyebrow, title, subline, meta }: PageMastheadProp
   return (
     <div className="mb-7">
       <p
-        className="font-mono uppercase mb-2.5"
-        style={{ fontSize: '11px', letterSpacing: '0.18em', color: 'rgba(20,18,46,0.50)' }}
+        className="uppercase mb-2.5"
+        style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: 'rgba(20,18,46,0.50)' }}
       >
         {eyebrow}
       </p>

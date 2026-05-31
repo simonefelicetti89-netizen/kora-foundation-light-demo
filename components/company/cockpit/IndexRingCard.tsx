@@ -11,9 +11,9 @@ interface IndexRingCardProps {
 }
 
 const SAFEGUARD_CONFIG: Record<SafeguardStatus, { bg: string; text: string; dot: string; label: string }> = {
-  CLEAR:   { ...TOKENS.safeguard.pass,  label: 'CLEAR'   },
-  WARNING: { ...TOKENS.safeguard.watch, label: 'WARNING' },
-  FLAGGED: { ...TOKENS.safeguard.cap,   label: 'FLAGGED' },
+  CLEAR:   { ...TOKENS.safeguard.pass,  label: 'Clear'   },
+  WARNING: { ...TOKENS.safeguard.watch, label: 'Warning' },
+  FLAGGED: { ...TOKENS.safeguard.cap,   label: 'Flagged' },
 };
 
 const R    = 54;
@@ -25,13 +25,30 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
 
   return (
     <div
-      className="flex items-center gap-6 p-6"
+      className="relative flex items-center gap-6 p-6"
       style={{
         background:   TOKENS.surface,
         border:       TOKENS.cardBorder,
         borderRadius: TOKENS.cardRadius,
       }}
     >
+      {/* Brandmark firma discreta — KORA Index tool signature */}
+      <svg
+        viewBox="108 100 212 220"
+        height="22"
+        width="22"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+        style={{ position: 'absolute', top: 14, right: 14, opacity: 1 }}
+      >
+        <path
+          fillRule="evenodd"
+          clipRule="evenodd"
+          d="M148.606 117.911C188.736 101.225 233.839 101.225 273.955 117.911C286.755 123.25 296.922 133.456 302.228 146.29C318.85 186.571 318.85 231.844 302.228 272.112C296.908 284.96 286.741 295.165 273.955 300.491C233.825 317.176 188.722 317.176 148.606 300.491C135.807 295.151 125.639 284.946 120.334 272.112C103.711 231.83 103.711 186.557 120.334 146.29C125.653 133.442 135.821 123.236 148.606 117.911ZM211.095 124.946C190.123 124.946 171.492 138.323 159.759 158.999C139.147 170.776 125.835 189.477 125.835 210.529C125.835 231.58 139.161 250.282 159.759 262.059C171.492 282.749 190.123 296.111 211.095 296.111C232.067 296.111 250.698 282.735 262.431 262.059C283.043 250.282 296.355 231.58 296.355 210.529C296.355 189.477 283.029 170.776 262.431 158.999C250.698 138.309 232.067 124.946 211.095 124.946Z"
+          fill="#6156F5"
+        />
+      </svg>
       {/* Ring gauge */}
       <div className="relative flex-shrink-0" style={{ width: 140, height: 140 }}>
         <svg viewBox="0 0 140 140" width="140" height="140" style={{ display: 'block' }}>
@@ -96,12 +113,13 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
         {/* Safeguard pill */}
         <div className="flex items-center gap-1.5 flex-wrap">
           <span
-            className="inline-flex items-center gap-1.5 rounded font-mono font-medium"
+            className="inline-flex items-center gap-1.5 rounded font-medium"
             style={{
+              fontFamily:    'var(--font-inter)',
               background:    safeg.bg,
               color:         safeg.text,
-              fontSize:      '8px',
-              letterSpacing: '0.07em',
+              fontSize:      '10px',
+              letterSpacing: '0.01em',
               padding:       '3px 8px',
             }}
           >
@@ -116,9 +134,10 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
           <span
             className="inline-flex items-center gap-1 rounded"
             style={{
+              fontFamily:    'var(--font-inter)',
               background:    TOKENS.inkBorder,
-              fontSize:      '8px',
-              letterSpacing: '0.04em',
+              fontSize:      '10px',
+              letterSpacing: '0.01em',
               padding:       '3px 8px',
               color:         'rgba(20,18,46,0.55)',
             }}
@@ -130,13 +149,6 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
           </span>
         </div>
 
-        {/* Methodology stamp */}
-        <p
-          className="font-mono"
-          style={{ fontSize: '7px', color: 'rgba(20,18,46,0.30)', letterSpacing: '0.06em' }}
-        >
-          KORA Methodology v0.1&nbsp;·&nbsp;pre-empirical-calibration
-        </p>
       </div>
     </div>
   );

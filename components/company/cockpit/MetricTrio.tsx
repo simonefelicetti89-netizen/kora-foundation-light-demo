@@ -38,8 +38,8 @@ export function MetricTrio({ activationRate, meaningfulActivationRate, verificat
           }}
         >
           <p
-            className="font-mono uppercase mb-2"
-            style={{ fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(20,18,46,0.40)' }}
+            className="uppercase mb-2"
+            style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: 'rgba(20,18,46,0.40)' }}
           >
             {code}
           </p>

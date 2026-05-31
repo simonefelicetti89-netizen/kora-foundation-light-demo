@@ -5,7 +5,6 @@ import { RoleSwitcher } from '@/components/demo/RoleSwitcher';
 import { ScenarioSwitcher } from '@/components/demo/ScenarioSwitcher';
 import { PersonaSwitcher } from '@/components/demo/PersonaSwitcher';
 import { EnvironmentSwitcher } from '@/components/demo/EnvironmentSwitcher';
-import { KoraLogo } from '@/components/brand/KoraLogo';
 import { isEmployerRole, isAdminRole } from '@/lib/permissions';
 import type { Environment } from '@/lib/types';
 
@@ -28,7 +27,6 @@ export function Header() {
       style={{ borderBottom: '1px solid rgba(20,18,46,0.08)' }}
     >
       <div className="flex items-center gap-3">
-        <KoraLogo variant="on-light" className="h-[26px] w-auto" />
         <span
           className="rounded px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap"
           style={{

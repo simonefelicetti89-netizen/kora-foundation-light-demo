@@ -240,7 +240,7 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center justify-between py-[8px] text-[13.5px] transition-colors',
+                    'flex items-center justify-between py-[8px] text-[14.5px] transition-colors',
                     isActive
                       ? 'font-medium'
                       : 'hover:text-white/65',
@@ -294,23 +294,31 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
+      {/* Footer — ancorato in fondo via mt-auto su nav flex-1 */}
       <div
-        className="px-[16px] pt-3 pb-3"
-        style={{ borderTop: `2px solid var(--env-accent)` }}
+        className="px-[16px] pt-3 pb-4 mt-auto"
+        style={{ borderTop: `1px solid rgba(255,255,255,0.08)` }}
       >
         <p
-          className="text-[9px] font-bold uppercase tracking-[0.12em] mb-0.5"
+          className="text-[10.5px] font-medium leading-snug"
+          style={{ color: 'rgba(244,241,233,0.72)' }}
+        >
+          {roleLabel}
+        </p>
+        <p
+          className="text-[9px] font-semibold uppercase tracking-[0.10em] mt-0.5"
           style={{ color: 'var(--env-accent)' }}
         >
           {ENV_LABEL[activeEnvironment] ?? 'DEMO'}
         </p>
-        <p
-          className="font-mono text-[8px]"
-          style={{ color: 'rgba(255,255,255,0.22)' }}
+        <button
+          className="mt-2 text-[10.5px] transition-opacity hover:opacity-80"
+          style={{ color: 'rgba(244,241,233,0.35)' }}
+          onClick={() => {}}
+          type="button"
         >
-          {roleLabel}
-        </p>
+          Esci
+        </button>
       </div>
     </aside>
   );
