@@ -1,27 +1,36 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import type { SafeguardStatus } from '@/lib/types';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface SafeguardBadgeProps {
   status: SafeguardStatus;
   className?: string;
 }
 
-const SAFEGUARD_STYLES: Record<SafeguardStatus, string> = {
-  CLEAR:   'bg-kora-fun-green text-kora-cosmic-blue border-kora-fun-green',
-  WARNING: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-  FLAGGED: 'bg-red-100 text-red-800 border-red-300',
+const SAFEGUARD_TOKEN: Record<SafeguardStatus, { bg: string; text: string; border: string }> = {
+  CLEAR:   { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}55`  },
+  WARNING: { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}55` },
+  FLAGGED: { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   border: `1px solid ${TOKENS.safeguard.cap.dot}55`   },
 };
 
 export function SafeguardBadge({ status, className }: SafeguardBadgeProps) {
+  const tk = SAFEGUARD_TOKEN[status] ?? SAFEGUARD_TOKEN['WARNING'];
   return (
     <span
-      className={cn(
-        'inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold border',
-        SAFEGUARD_STYLES[status],
-        className,
-      )}
+      className={className}
+      style={{
+        display:       'inline-flex',
+        alignItems:    'center',
+        borderRadius:  4,
+        padding:       '3px 9px',
+        fontSize:      '12px',
+        fontFamily:    'var(--font-inter)',
+        fontWeight:    600,
+        background:    tk.bg,
+        color:         tk.text,
+        border:        tk.border,
+      }}
     >
       Activation Safeguard: {status}
     </span>

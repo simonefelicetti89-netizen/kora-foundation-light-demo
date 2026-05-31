@@ -28,7 +28,7 @@
       "calibration_status": "pre_empirical_calibration",
       "methodology_notes": "KORA Index v3 — macroblock architecture: REACH 25% (AR+MAR), QUALITY 30% (NI+VR+CO), EQUITY 25% (WB+PC+PB+EQ), BTI 20% (BudgetToHumanImpactEngine). CS external, weight=0. Pre-Delphi calibration.",
       "generated_at": "2025-10-15T09:00:00Z",
-      "limitations_text": "This KORA Index is a provisional diagnostic output produced under pre-empirical-calibration conditions (KORA Methodology v0.1). Macroblock weights are provisional — not yet empirically calibrated via Delphi Study. Outputs are not empirically validated, not regulatory-grade, and not suitable for legal, fiscal, or comparative claims. Presented for pilot-grade diagnostic intelligence only.",
+      "limitations_text": "Questo KORA Index è un output diagnostico provvisorio prodotto in condizioni di pre-calibrazione empirica (KORA Methodology v0.1). I pesi dei macroblocchi sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output non sono validati empiricamente, non sono di grado regolatorio e non sono adatti a claim legali, fiscali o comparativi. Presentato esclusivamente per intelligence diagnostica pilot-grade.",
       "components": [
         {
           "code": "AR",
@@ -168,7 +168,7 @@
       "calibration_status": "pre_empirical_calibration",
       "methodology_notes": "KORA Index v3 — macroblock architecture: REACH 25% (AR+MAR), QUALITY 30% (NI+VR+CO), EQUITY 25% (WB+PC+PB+EQ), BTI 20% (BudgetToHumanImpactEngine). CS external, weight=0. Pre-Delphi calibration.",
       "generated_at": "2026-01-20T09:00:00Z",
-      "limitations_text": "This KORA Index is a provisional diagnostic output produced under pre-empirical-calibration conditions (KORA Methodology v0.1). Macroblock weights are provisional — not yet empirically calibrated via Delphi Study. Outputs are not empirically validated, not regulatory-grade, and not suitable for legal, fiscal, or comparative claims. Presented for pilot-grade diagnostic intelligence only.",
+      "limitations_text": "Questo KORA Index è un output diagnostico provvisorio prodotto in condizioni di pre-calibrazione empirica (KORA Methodology v0.1). I pesi dei macroblocchi sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output non sono validati empiricamente, non sono di grado regolatorio e non sono adatti a claim legali, fiscali o comparativi. Presentato esclusivamente per intelligence diagnostica pilot-grade.",
       "components": [
         {
           "code": "AR",
