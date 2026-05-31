@@ -24,14 +24,14 @@ import type {
 // ── Section navigation ────────────────────────────────────────────────────────
 
 const SECTION_NAV = [
-  { id: 'executive_summary',      label: 'Executive Summary',         description: 'Qual è lo stato attuale dell\'attivazione organizzativa?' },
-  { id: 'kora_index_v3',          label: 'KORA Index',                description: 'Perché il punteggio è questo e cosa lo determina?' },
-  { id: 'workforce_activation',   label: 'Activation & Workforce',    description: 'Chi si attiva, quanto profondamente e con quale continuità?' },
-  { id: 'budget_to_human_impact', label: 'Budget-to-Human-Impact',    description: 'Quanto della spesa si traduce in attivazione verificata?' },
-  { id: 'eligibility_gate',       label: 'Eligibility Gate',          description: 'Quali eventi sono eleggibili, limitati o esclusi per design?' },
-  { id: 'pillar_analysis',        label: 'Pillar Balance',             description: 'Come si distribuisce l\'attivazione tra i 5 pillar?' },
-  { id: 'recommendations',        label: 'Raccomandazioni',            description: 'Quali azioni prioritarie possono migliorare l\'indice?' },
-  { id: 'methodology_boundaries', label: 'Metodologia & Confini',     description: 'Cosa KORA misura, cosa esclude, cosa non certifica.' },
+  { id: 'executive_summary',      label: 'Executive Summary' },
+  { id: 'kora_index_v3',          label: 'KORA Index' },
+  { id: 'workforce_activation',   label: 'Activation & Workforce' },
+  { id: 'budget_to_human_impact', label: 'Budget-to-Human-Impact' },
+  { id: 'eligibility_gate',       label: 'Eligibility Gate' },
+  { id: 'pillar_analysis',        label: 'Pillar Balance' },
+  { id: 'recommendations',        label: 'Raccomandazioni' },
+  { id: 'methodology_boundaries', label: 'Metodologia & Confini' },
 ];
 
 // ── Status display ────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ const STATUS_STYLES: Record<DecisionPackStatus, string> = {
   advisor_review_required: 'bg-amber-50 text-amber-700 border-amber-200',
   ready:                   'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40',
   draft:                   'bg-slate-50 text-slate-500 border-slate-200',
-  exported:                'bg-kora-violet/8 text-kora-violet border-kora-violet/20',
+  exported:                'bg-indigo-50 text-indigo-600 border-indigo-200',
   archived:                'bg-slate-50 text-slate-400 border-slate-200',
   blocked:                 'bg-rose-50 text-rose-600 border-rose-200',
 };
@@ -150,7 +150,7 @@ function SectionBlock({ section, children }: { section: DecisionPackSection; chi
         <div className="flex flex-wrap items-center gap-2">
           <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">{section.code}</span>
           {section.audience.map((a) => (
-            <span key={a} className="rounded bg-kora-violet/8 border border-kora-violet/15 px-1.5 py-0.5 text-[10px] text-kora-violet">{a}</span>
+            <span key={a} className="rounded bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 text-[10px] text-indigo-600">{a}</span>
           ))}
         </div>
         <h3 className="text-base font-bold text-slate-900">{section.title}</h3>
@@ -295,19 +295,17 @@ function PeriodComparisonSection({ comparison }: { comparison: DecisionPackPerio
 
 function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLatest: boolean }) {
   return (
-    <div
-      className="rounded-xl border p-4 space-y-3 transition-colors"
-      style={isLatest
-        ? { borderColor: 'rgba(97,86,245,0.25)', background: 'rgba(97,86,245,0.04)' }
-        : { borderColor: 'rgba(6,3,43,0.1)', background: '#FFFFFF' }
-      }
-    >
+    <div className={`rounded-xl border p-4 space-y-3 transition-colors ${
+      isLatest
+        ? 'border-indigo-200 bg-indigo-50'
+        : 'border-slate-200 bg-white'
+    }`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-[10px] font-mono text-slate-400">{version.version_id}</p>
             {isLatest && (
-              <span className="rounded-full px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wide" style={{ background: '#6156F5' }}>
+              <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-[9px] font-bold text-white uppercase tracking-wide">
                 Corrente
               </span>
             )}
@@ -326,7 +324,7 @@ function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLa
         {version.kora_index_value !== null && version.kora_index_value !== undefined ? (
           <div>
             <p className="text-slate-400">KORA Index</p>
-            <p className="font-bold text-base" style={{ color: '#6156F5' }}>{version.kora_index_value}</p>
+            <p className="font-bold text-indigo-700 text-base">{version.kora_index_value}</p>
           </div>
         ) : (
           <div>
@@ -421,120 +419,101 @@ export default function Reports() {
     <div className="space-y-0 max-w-4xl">
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          SECTION A — DECISION PACK IDENTITY HERO
-          2-zone: left identity, right current output + primary CTA
+          SECTION A — REPORT HERO
+          Premium cover: company identity + governance metadata
       ═══════════════════════════════════════════════════════════════════════ */}
-      <div
-        className="rounded-2xl overflow-hidden mb-6"
-        style={{ background: 'linear-gradient(155deg, #06032B 0%, #0D0A3B 55%, #080620 100%)' }}
-      >
-        <div className="flex flex-col lg:flex-row lg:items-stretch gap-0">
+      <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 p-8 mb-6 text-white">
+        <div className="flex flex-col gap-6">
 
-          {/* Left: Identity */}
-          <div className="flex-1 px-8 py-8 space-y-4 lg:border-r lg:border-white/10">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.28em] text-white/30">
-              KORA Decision Pack · Foundation Light v0.1
+          {/* Eyebrow */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-300 mb-1">
+              KORA Company Decision Pack · Foundation Light v0.1
             </p>
-            <div>
-              <h1
-                className="font-kora-editorial font-bold text-white leading-tight"
-                style={{ fontSize: 'clamp(1.4rem, 3vw, 2rem)', letterSpacing: '-0.02em' }}
-              >
-                {companyName}
-              </h1>
-              <p className="text-sm text-white/40 mt-1.5 max-w-sm leading-relaxed">
-                Da attivazione organizzativa verificata a output direzionale board-ready.
-              </p>
-            </div>
+            <h1 className="text-2xl font-bold text-white leading-tight">{companyName}</h1>
+            <p className="text-sm text-slate-300 mt-1">
+              Decision Pack versionato — output direzionale company-scoped.
+              Foundation Light v0.1 è in pre-empirical calibration.
+            </p>
+          </div>
+
+          {/* Key metrics row */}
+          <div className="flex flex-wrap items-center gap-4">
+            {hasFullReport && koraIndex ? (
+              <>
+                <div className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">KORA Index v3</p>
+                  <p className="text-3xl font-bold text-white mt-0.5">{koraIndex.kora_index_value}</p>
+                  <p className="text-[10px] text-indigo-300">/100</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">Confidence Score</p>
+                  <p className="text-2xl font-bold text-white mt-0.5">{(koraIndex.confidence_score * 100).toFixed(0)}%</p>
+                  <p className="text-[9px] text-indigo-400 mt-0.5">indicatore esterno · peso 0</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-center">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">Activation Safeguard</p>
+                  <span className={`mt-1 inline-block rounded border px-2 py-0.5 text-[11px] font-bold ${SAFEGUARD_STYLES[koraIndex.safeguard_status] ?? 'border-white/20 text-white'}`}>
+                    {koraIndex.safeguard_status}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="rounded-xl border border-amber-400/30 bg-amber-500/10 px-5 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-300">KORA Index</p>
+                <p className="text-sm font-semibold text-amber-200 mt-0.5">Non disponibile</p>
+                <p className="text-[10px] text-amber-300/70 mt-0.5">{factoryStatus.next_action}</p>
+              </div>
+            )}
+
             {latestVersion && (
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className="text-[10px] font-mono text-white/25">{latestVersion.version_id}</span>
-                <span className="text-white/15">·</span>
-                <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${STATUS_STYLES[latestVersion.status]}`}>
+              <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-indigo-300">Versione corrente</p>
+                <p className="text-xs font-mono text-white mt-0.5">{latestVersion.version_id}</p>
+                <span className={`mt-1 inline-block rounded border px-1.5 py-0.5 text-[10px] font-semibold ${STATUS_STYLES[latestVersion.status]}`}>
                   {STATUS_LABELS[latestVersion.status]}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Right: Current output + primary CTA */}
-          <div className="px-8 py-8 flex flex-col justify-between gap-6 lg:w-72 shrink-0">
-            {hasFullReport && koraIndex ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white/30">KORA Index v3</p>
-                    <div className="flex items-end gap-1.5 mt-0.5">
-                      <span className="text-3xl font-bold font-kora-editorial text-white tabular-nums">
-                        {koraIndex.kora_index_value}
-                      </span>
-                      <span className="text-xs text-white/20 mb-0.5">/100</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white/30">Confidence</p>
-                    <span className="text-xl font-bold tabular-nums mt-0.5 block" style={{ color: '#6156F5' }}>
-                      {(koraIndex.confidence_score * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`rounded border px-2 py-0.5 text-[11px] font-bold ${SAFEGUARD_STYLES[koraIndex.safeguard_status] ?? 'border-white/20 text-white'}`}>
-                    {koraIndex.safeguard_status}
-                  </span>
-                  <span className="text-[9px] text-white/20 font-mono">Activation Safeguard</span>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-amber-400/25 bg-amber-500/8 px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-300">KORA Index</p>
-                <p className="text-sm font-semibold text-amber-200 mt-0.5">Non disponibile</p>
-                <p className="text-[10px] text-amber-300/60 mt-0.5">{factoryStatus.next_action}</p>
-              </div>
+          {/* Governance footer */}
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-white/10">
+            {pack && (
+              <span className="text-[10px] font-mono text-slate-400">{pack.methodology_version}</span>
             )}
-            {/* Primary CTA */}
-            <div className="space-y-2">
-              <Link
-                href="/company/reports/board-pack"
-                className="flex items-center justify-center rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-kora-cosmic-blue hover:bg-kora-gray-base transition-colors"
-              >
-                Apri Board Pack →
-              </Link>
-              <p className="text-[9px] text-center text-white/20">
-                PDF-ready · Stampa da browser · Foundation Light
-              </p>
-            </div>
+            <span className="text-[10px] font-mono text-amber-400/80">pre_empirical_calibration</span>
+            <span className="text-[10px] font-mono text-rose-400/80">production_ready: false</span>
+            <span className="text-[10px] font-mono text-slate-400">synthetic_demo_data: true</span>
+            {pack && <span className="text-[10px] font-mono text-slate-400">{pack.period}</span>}
           </div>
-        </div>
-
-        {/* Governance footer strip */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-8 py-3 border-t border-white/8">
-          {pack && <span className="text-[9px] font-mono text-white/25">{pack.methodology_version}</span>}
-          <span className="text-[9px] font-mono text-amber-400/60">pre_empirical_calibration</span>
-          <span className="text-[9px] font-mono text-white/20">production_ready: false</span>
-          <span className="text-[9px] font-mono text-white/20">synthetic_demo_data: true</span>
-          {pack && <span className="text-[9px] font-mono text-white/20">{pack.period}</span>}
         </div>
       </div>
 
-      {/* ── Stato Decision Pack — compact strip ─────────────────────────────── */}
+      {/* ── Stato Decision Pack ─────────────────────────────────────────────── */}
       <div className="mb-6">
-        <div className="rounded-xl border border-amber-200/70 bg-amber-50/60 px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3 flex-wrap">
-            <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-amber-600">
-              Stato
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600">
+              Stato Decision Pack
             </p>
-            <p className="text-xs font-semibold text-amber-900">
+            <p className="text-sm font-semibold text-amber-900">
               Bozza disponibile — revisione advisor richiesta
             </p>
             {factoryStatus.warnings.length > 0 && (
-              <p className="text-[10px] text-amber-700">{factoryStatus.warnings[0]}</p>
+              <p className="text-xs text-amber-700">{factoryStatus.warnings[0]}</p>
             )}
           </div>
           <div className="flex gap-2 text-[10px] shrink-0 items-center flex-wrap">
             <span className="rounded border border-amber-200 bg-white px-2 py-1 text-amber-700 font-semibold">
               {versionHistory.length} {versionHistory.length === 1 ? 'versione' : 'versioni'}
             </span>
+            <Link
+              href="/company/reports/board-pack"
+              className="rounded border border-slate-800 bg-slate-900 px-3 py-1 text-white font-semibold hover:bg-slate-700 transition-colors whitespace-nowrap"
+            >
+              Board Pack Preview →
+            </Link>
           </div>
         </div>
       </div>
@@ -599,34 +578,25 @@ export default function Reports() {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          SECTION D — INTELLIGENCE MODULES OVERVIEW
-          Not chip links — modules with purpose descriptions
+          SECTION D — CHAPTER NAVIGATION (only when report available)
       ═══════════════════════════════════════════════════════════════════════ */}
       {hasFullReport && (
         <div className="mb-6 space-y-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-kora-cosmic-blue/40">
-              Moduli di intelligence
-            </p>
-            <p className="text-xs text-kora-cosmic-blue/50 mt-0.5">
-              Questo Decision Pack risponde a 8 domande organizzative chiave
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 print:hidden">
-            {SECTION_NAV.map((nav) => (
-              <a
-                key={nav.id}
-                href={`#${nav.id}`}
-                className="group rounded-xl border border-kora-cosmic-blue/8 bg-white px-4 py-3 space-y-1 hover:border-kora-violet/25 hover:bg-kora-violet/3 transition-colors"
-              >
-                <p className="text-[10px] font-semibold text-kora-cosmic-blue group-hover:text-kora-violet transition-colors">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            Sezioni Decision Pack
+          </p>
+          <div className="overflow-x-auto -mx-1 px-1 print:hidden">
+            <div className="flex gap-1.5 min-w-max pb-1">
+              {SECTION_NAV.map((nav) => (
+                <a
+                  key={nav.id}
+                  href={`#${nav.id}`}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-colors whitespace-nowrap"
+                >
                   {nav.label}
-                </p>
-                {nav.description && (
-                  <p className="text-[9px] text-kora-cosmic-blue/45 leading-snug">{nav.description}</p>
-                )}
-              </a>
-            ))}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -853,19 +823,16 @@ export default function Reports() {
       {/* ═══════════════════════════════════════════════════════════════════════
           SECTION G — LIMITATIONS / METHODOLOGY BOUNDARIES
       ═══════════════════════════════════════════════════════════════════════ */}
-      <div
-        className="mt-8 rounded-xl border border-kora-cosmic-blue/10 p-6 space-y-4"
-        style={{ background: 'rgba(6,3,43,0.03)' }}
-      >
+      <div className="mt-8 rounded-xl border border-indigo-100 bg-indigo-50 p-6 space-y-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-kora-violet mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-500 mb-1">
             Confini Metodologici
           </p>
-          <p className="text-sm font-semibold text-kora-cosmic-blue">
+          <p className="text-sm font-semibold text-indigo-900">
             Decision Pack misura l&apos;organizzazione, non gli individui.
           </p>
         </div>
-        <ul className="space-y-1.5 text-xs text-kora-cosmic-blue/70 leading-relaxed">
+        <ul className="space-y-1.5 text-xs text-indigo-800 leading-relaxed">
           <li>· Dati sintetici demo — non rappresentativi della situazione reale dell&apos;azienda.</li>
           <li>· Foundation Light v0.1 · pre_empirical_calibration — output direzionale, non certificazione pubblica o attestazione regolatoria.</li>
           <li>· Confidence Score: indicatore esterno di affidabilità dati, peso = 0 nel KORA Index v3. Non è una componente del punteggio.</li>
@@ -873,20 +840,20 @@ export default function Reports() {
           <li>· KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.</li>
         </ul>
         {limitations.length > 0 && (
-          <div className="border-t border-kora-cosmic-blue/10 pt-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-kora-cosmic-blue/40 mb-2">
+          <div className="border-t border-indigo-200 pt-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-indigo-400 mb-2">
               Limitazioni specifiche
             </p>
             <ul className="space-y-1">
               {limitations.slice(0, 6).map((l, i) => (
-                <li key={i} className="flex gap-1.5 text-[11px] text-kora-cosmic-blue/60">
-                  <span className="text-kora-cosmic-blue/25 shrink-0">·</span>{l}
+                <li key={i} className="flex gap-1.5 text-[11px] text-indigo-700">
+                  <span className="text-indigo-300 shrink-0">·</span>{l}
                 </li>
               ))}
             </ul>
           </div>
         )}
-        <p className="text-[10px] font-mono text-kora-cosmic-blue/35">
+        <p className="text-[10px] font-mono text-indigo-400">
           {pack?.methodology_version ?? 'KORA Methodology v0.1'} · pre_empirical_calibration · production_ready: false · synthetic_demo_data: true
         </p>
       </div>
