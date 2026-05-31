@@ -39,6 +39,9 @@ export const TOKENS = {
   // Accent — violet, instruments/links/brandmark only
   accent: '#6156F5',
 
+  // Sidebar
+  sidebar: '#16142B',
+
   // Card
   cardRadius:  '14px',
   cardBorder:  '1px solid rgba(20,18,46,0.08)',

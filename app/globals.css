@@ -7,8 +7,9 @@
 
 :root {
   /* ── Canvas & surface ───────────────────────────────────────── */
-  --kora-canvas:  #F4F1E9;   /* page background — warm ivory     */
-  --kora-surface: #FFFFFF;   /* card / panel background          */
+  --kora-canvas:   #F4F1E9;   /* page background — warm ivory     */
+  --kora-surface:  #FFFFFF;   /* card / panel background          */
+  --kora-sidebar:  #16142B;   /* sidebar dark navy                */
 
   /* ── Ink scale ──────────────────────────────────────────────── */
   --kora-ink:           #14122E;
@@ -69,10 +70,11 @@
   --color-foreground: var(--foreground);
 
   /* ── Canvas & surface tokens ─────────────────────────────────── */
-  --color-kora-canvas:  var(--kora-canvas);
-  --color-kora-surface: var(--kora-surface);
-  --color-kora-ink:     var(--kora-ink);
-  --color-kora-accent:  var(--kora-accent);
+  --color-kora-canvas:   var(--kora-canvas);
+  --color-kora-surface:  var(--kora-surface);
+  --color-kora-sidebar:  var(--kora-sidebar);
+  --color-kora-ink:      var(--kora-ink);
+  --color-kora-accent:   var(--kora-accent);
 
   /* ── Environment color tokens ────────────────────────────────── */
   --color-env-accent: var(--env-accent);

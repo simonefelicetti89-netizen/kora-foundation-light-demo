@@ -4,12 +4,22 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRole, useEnvironment } from '@/lib/demo-state';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
+import { KoraLogo } from '@/components/brand/KoraLogo';
 import { cn } from '@/lib/utils';
 
-const ENV_SIDEBAR_LABEL: Record<string, string> = {
-  demo:   'Ambiente demo',
-  live:   'Ambiente live',
-  future: 'Roadmap',
+const ENV_LABEL: Record<string, string> = {
+  demo:   'DEMO',
+  live:   'LIVE',
+  future: 'ROADMAP',
+};
+
+const ROLE_DISPLAY: Record<string, string> = {
+  KORA_ADMIN:    'Operatore · KORA Admin',
+  COMPANY_ADMIN: 'Company Admin',
+  COMPANY_VIEWER:'Company Viewer',
+  WORKER:        'Lavoratore',
+  PARTNER:       'Partner',
+  ADVISOR:       'Advisor',
 };
 
 interface NavItem {
@@ -51,11 +61,11 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Aziende Cliente',
         items: [
-          { href: '/admin/companies',                      label: 'Company Registry' },
-          { href: '/admin/companies/setup',                label: 'Enterprise Onboarding' },
-          { href: '/admin/companies/onboarding',           label: 'Onboarding Studio' },
-          { href: '/admin/companies/workforce-baseline',   label: 'Workforce Baseline' },
-          { href: '/admin/companies/data-intake',          label: 'Data Intake' },
+          { href: '/admin/companies',                    label: 'Company Registry' },
+          { href: '/admin/companies/setup',              label: 'Enterprise Onboarding' },
+          { href: '/admin/companies/onboarding',         label: 'Onboarding Studio' },
+          { href: '/admin/companies/workforce-baseline', label: 'Workforce Baseline' },
+          { href: '/admin/companies/data-intake',        label: 'Data Intake' },
         ],
       },
       {
@@ -71,12 +81,12 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Pipeline Operativa',
         items: [
-          { href: '/admin/companies/data-intake',        label: 'Data Intake Studio' },
-          { href: '/company/ingestion',                  label: 'Ingestion Preview' },
-          { href: '/company/uef-review',                 label: 'Operator Review Queue' },
-          { href: '/company/scoring',                    label: 'Scoring Preview' },
-          { href: '/company/reports',                    label: 'Decision Pack' },
-          { href: '/company/financial',                  label: 'Governance Finanziaria' },
+          { href: '/admin/companies/data-intake', label: 'Data Intake Studio' },
+          { href: '/company/ingestion',           label: 'Ingestion Preview' },
+          { href: '/company/uef-review',          label: 'Operator Review Queue' },
+          { href: '/company/scoring',             label: 'Scoring Preview' },
+          { href: '/company/reports',             label: 'Decision Pack' },
+          { href: '/company/financial',           label: 'Governance Finanziaria' },
         ],
       },
       {
@@ -198,18 +208,28 @@ export function Sidebar() {
   const { activeEnvironment } = useEnvironment();
   const pathname = usePathname();
   const groups = buildNavGroups(activeRole);
+  const roleLabel = ROLE_DISPLAY[activeRole] ?? activeRole;
 
   return (
     <aside
-      className="flex w-56 flex-col bg-kora-canvas"
-      style={{ borderRight: '1px solid rgba(20,18,46,0.08)' }}
+      className="flex w-56 flex-col bg-kora-sidebar"
+      style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}
     >
+      {/* Logo header */}
+      <div
+        className="flex items-center px-[18px] py-[18px]"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        <KoraLogo variant="on-dark" className="h-[28px] w-auto" />
+      </div>
+
+      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-3">
         {groups.map((group) => (
-          <div key={group.heading} className="mb-4">
+          <div key={group.heading} className="mb-3">
             <p
-              className="px-4 pb-1 text-[10px] font-semibold uppercase tracking-widest"
-              style={{ color: 'rgba(20,18,46,0.38)' }}
+              className="px-[18px] pb-1 text-[9px] font-medium uppercase tracking-[0.20em]"
+              style={{ color: 'rgba(255,255,255,0.22)' }}
             >
               {group.heading}
             </p>
@@ -220,30 +240,37 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center justify-between rounded-[10px] mx-2 px-3 py-2 text-sm transition-colors',
+                    'flex items-center justify-between py-[7px] text-[11.5px] transition-colors',
                     isActive
-                      ? 'bg-kora-surface font-medium shadow-sm'
-                      : 'hover:bg-white/60',
+                      ? 'font-medium'
+                      : 'hover:text-white/65',
                     (item.comingSoon || item.inactive) && 'opacity-50',
                   )}
                   style={
                     isActive
                       ? {
-                          color:  '#14122E',
-                          border: '1px solid rgba(20,18,46,0.08)',
+                          color:           '#FFFFFF',
+                          background:      'rgba(255,255,255,0.07)',
+                          borderLeft:      '2px solid #6156F5',
+                          paddingLeft:     16,
+                          paddingRight:    14,
+                          marginRight:     6,
+                          borderRadius:    '0 5px 5px 0',
                         }
                       : {
-                          color: 'rgba(20,18,46,0.58)',
+                          color:           'rgba(244,241,233,0.62)',
+                          paddingLeft:     18,
+                          paddingRight:    14,
                         }
                   }
                 >
                   <span className="truncate">{item.label}</span>
                   {item.comingSoon && (
                     <span
-                      className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px] font-medium"
+                      className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px]"
                       style={{
-                        background: 'rgba(20,18,46,0.06)',
-                        color:      'rgba(20,18,46,0.38)',
+                        background: 'rgba(255,255,255,0.07)',
+                        color:      'rgba(255,255,255,0.30)',
                       }}
                     >
                       presto
@@ -251,10 +278,10 @@ export function Sidebar() {
                   )}
                   {item.inactive && (
                     <span
-                      className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px] font-medium"
+                      className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px]"
                       style={{
-                        background: 'rgba(186,117,23,0.10)',
-                        color:      '#854F0B',
+                        background: 'rgba(186,117,23,0.18)',
+                        color:      '#ba7517',
                       }}
                     >
                       inattivo
@@ -266,24 +293,23 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
+
+      {/* Footer */}
       <div
-        className="px-4 pt-3 pb-2 space-y-0.5"
-        style={{ borderTop: '2px solid var(--env-accent)' }}
+        className="px-[16px] pt-3 pb-3"
+        style={{ borderTop: `2px solid var(--env-accent)` }}
       >
         <p
-          className="text-[10px] font-bold uppercase tracking-wide"
+          className="text-[9px] font-bold uppercase tracking-[0.12em] mb-0.5"
           style={{ color: 'var(--env-accent)' }}
         >
-          {ENV_SIDEBAR_LABEL[activeEnvironment] ?? 'Ambiente demo'}
+          {ENV_LABEL[activeEnvironment] ?? 'DEMO'}
         </p>
-        <p className="text-[9px] font-semibold" style={{ color: 'rgba(20,18,46,0.45)' }}>
-          Foundation Light v0.1
-        </p>
-        <p className="font-mono text-[9px]" style={{ color: 'rgba(20,18,46,0.32)' }}>
-          pre_empirical_calibration
-        </p>
-        <p className="text-[9px] pt-0.5" style={{ color: 'rgba(20,18,46,0.30)' }}>
-          Ruolo: {activeRole}
+        <p
+          className="font-mono text-[8px]"
+          style={{ color: 'rgba(255,255,255,0.22)' }}
+        >
+          {roleLabel}
         </p>
       </div>
     </aside>
