@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KORA /company — Executive Editorial Ledger · Final Candidate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   KORA Executive Editorial Ledger — Final Candidate · Polish Pass
+   Serif: Instrument Serif — editorial headline only (company voice, not marketing)
+   Primary: Space Grotesk — all UI, signals, body, navigation
+   Mono: JetBrains Mono — boundary row, badge codes, technical metadata only
+   Score: 32px max · No chart above fold · No dark dominant · Structure unchanged
+───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --navy:    #06032B;
+  --violet:  #6156F5;
+  --lime:    #C8FF47;
+  --amber:   #B45309;
+  --surface: #F7F7F3;
+  --card:    #FFFFFF;
+
+  --t1: #06032B;
+  --t2: rgba(6,3,43,0.65);
+  --t3: rgba(6,3,43,0.42);
+  --t4: rgba(6,3,43,0.26);
+
+  --b1: rgba(6,3,43,0.08);
+  --b2: rgba(6,3,43,0.042);
+
+  --tint-violet: rgba(97,86,245,0.052);
+  --tint-lime:   rgba(200,255,71,0.13);
+  --tint-amber:  rgba(180,83,9,0.055);
+
+  /* Three-tier type system: Instrument Serif (editorial voice) ·
+     Space Grotesk (UI/data) · JetBrains Mono (technical metadata) */
+  --serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+  --f:     'Space Grotesk', system-ui, sans-serif;
+  --mono:  'JetBrains Mono', ui-monospace, monospace;
+
+  --sidebar-w: 156px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { text-decoration: none; color: inherit; cursor: default; }
+button { border: none; background: none; cursor: pointer; }
+
+body {
+  font-family: var(--f);
+  background: #C8CCDF;
+  color: var(--t1);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Review bar ─────────────────────────────────────────────────────────────── */
+.review-bar {
+  position: sticky;
+  top: 0;
+  z-index: 400;
+  background: var(--navy);
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.10em;
+  color: rgba(255,255,255,0.24);
+}
+.review-stamp {
+  background: rgba(200,255,71,0.09);
+  border: 1px solid rgba(200,255,71,0.22);
+  color: rgba(200,255,71,0.70);
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 6.5px;
+  letter-spacing: 0.16em;
+}
+
+/* ── Viewport wrapper ───────────────────────────────────────────────────────── */
+.vp-wrap { padding: 24px 18px 56px; }
+
+.vp {
+  max-width: 1280px;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.05),
+    0 4px 16px rgba(0,0,0,0.08),
+    0 16px 48px rgba(0,0,0,0.10),
+    0 0 0 1px rgba(0,0,0,0.04);
+}
+
+.vp-note {
+  text-align: center;
+  margin-top: 9px;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.11em;
+  color: rgba(6,3,43,0.26);
+}
+
+/* ── Shell ──────────────────────────────────────────────────────────────────── */
+.shell { display: flex; min-height: 808px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   SIDEBAR — premium dark rail
+   Gradient depth (not flat navy) · More air · Refined active state
+   Brand area more legible · Section labels in Space Grotesk (less admin)
+═══════════════════════════════════════════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  /* Subtle gradient creates depth without darkness — top slightly cooler */
+  background: linear-gradient(175deg, #0C0930 0%, #06032B 55%);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Brand / logo area — more generous, less placeholder */
+.sidebar-brand {
+  padding: 24px 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+/* Brandmark container — violet tint gives it a real "logo slot" feel */
+.brand-mark-wrap {
+  width: 32px;
+  height: 32px;
+  background: rgba(97,86,245,0.14);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.brand-mark {
+  width: 18px;
+  height: 18px;
+  opacity: 0.92;
+}
+
+.brand-wordmark { line-height: 1; }
+.brand-name {
+  font-family: var(--f);
+  font-weight: 700;
+  font-size: 15px;
+  color: #FFFFFF;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.brand-name sup {
+  font-weight: 400;
+  font-size: 8px;
+  vertical-align: super;
+  opacity: 0.35;
+  letter-spacing: 0;
+}
+.brand-sub {
+  display: block;
+  font-family: var(--f);
+  font-size: 8.5px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.22);
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+/* Navigation */
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0 14px;
+}
+
+/* Section label — Space Grotesk (not mono) for warmer, less admin feel */
+.nav-section {
+  padding: 0 15px 6px;
+  font-family: var(--f);
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  color: rgba(255,255,255,0.18);
+  text-transform: uppercase;
+  margin-top: 18px;
+}
+.nav-section:first-child { margin-top: 0; }
+
+.nav-item {
+  display: block;
+  padding: 10px 15px;
+  font-family: var(--f);
+  font-size: 11.5px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.34);
+  line-height: 1.30;
+  position: relative;
+  transition: color 0.12s;
+}
+.nav-item:hover { color: rgba(255,255,255,0.60); }
+.nav-item.active {
+  color: rgba(255,255,255,0.88);
+  font-weight: 500;
+  /* Subtle background — less harsh than bright highlight */
+  background: rgba(255,255,255,0.045);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  background: var(--violet);
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-sep {
+  height: 1px;
+  background: rgba(255,255,255,0.04);
+  margin: 10px 15px;
+}
+
+/* Footer */
+.sidebar-foot {
+  padding: 10px 15px 13px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+.foot-env {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: rgba(245,158,11,0.50);
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+.foot-role {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  color: rgba(255,255,255,0.16);
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MAIN AREA
+═══════════════════════════════════════════════════════════════════════════════ */
+.main {
+  flex: 1;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Topbar */
+.topbar {
+  flex-shrink: 0;
+  height: 40px;
+  background: var(--card);
+  border-bottom: 1px solid var(--b1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+}
+.topbar-crumb {
+  font-family: var(--f);
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--t3);
+}
+.topbar-right { display: flex; align-items: center; gap: 7px; }
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 7.5px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  border-radius: 3px;
+  padding: 2px 7px;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+.badge-clear {
+  background: rgba(200,255,71,0.11);
+  border: 1px solid rgba(200,255,71,0.36);
+  color: #2B4A00;
+}
+.badge-clear::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #588A00;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+.badge-demo {
+  background: rgba(180,83,9,0.065);
+  border: 1px solid rgba(180,83,9,0.18);
+  color: #7A390C;
+}
+.badge-neutral {
+  background: rgba(6,3,43,0.038);
+  border: 1px solid var(--b1);
+  color: var(--t4);
+}
+
+/* Avatar */
+.avatar {
+  width: 27px; height: 27px;
+  border-radius: 50%;
+  background: rgba(6,3,43,0.07);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--f);
+  font-size: 10px; font-weight: 600;
+  color: var(--t3);
+}
+
+/* Page content */
+.page { padding: 36px 48px 36px; flex: 1; }
+
+/* Dividers */
+.div     { height: 1px; background: var(--b1); margin: 22px 0; }
+.div-sub { height: 1px; background: var(--b2); margin: 0; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   B. CONTEXT ROW
+═══════════════════════════════════════════════════════════════════════════════ */
+.ctx-eyebrow {
+  font-family: var(--f);
+  font-size: 9.5px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-bottom: 10px;
+}
+.company-name {
+  font-family: var(--f);
+  font-size: 2.0625rem; /* 33px */
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+.ctx-chips {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  padding-bottom: 3px;
+}
+.ctx-chip-sep { width: 1px; height: 9px; background: var(--b1); }
+.ctx-chip { font-family: var(--f); font-size: 11px; color: var(--t3); }
+.ctx-chip-dp { font-family: var(--f); font-size: 11px; color: rgba(97,86,245,0.68); font-weight: 500; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   C. EXECUTIVE READING — Instrument Serif headline + Space Grotesk body
+   The serif headline is the KORA editorial voice moment.
+   "Non un indice." creates a pause before the data reading.
+═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Editorial headline — Instrument Serif, sober, institutional */
+.editorial-headline {
+  font-family: var(--serif);
+  font-size: 1.4375rem; /* 23px */
+  font-weight: 400; /* Instrument Serif regular is already expressive */
+  color: var(--navy);
+  letter-spacing: -0.01em;
+  line-height: 1.28;
+  margin-bottom: 12px;
+}
+/* The em-dash phrase in italic for a subtle two-tone feel */
+.editorial-headline em {
+  font-style: italic;
+  opacity: 0.72;
+}
+
+.reading-text {
+  font-family: var(--f);
+  font-size: 0.9375rem; /* 15px */
+  font-weight: 400;
+  color: var(--t2);
+  line-height: 1.80;
+  max-width: 668px;
+  letter-spacing: -0.004em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   D+E. KORA INDEX INTELLIGENCE UNIT
+   Left violet border: continuous signature across KI card + ledger
+   Top gradient wash: makes the header feel branded, not form-like
+   Brandmark watermark: proprietary identity mark, opacity 0.05
+═══════════════════════════════════════════════════════════════════════════════ */
+.ki-card {
+  background: var(--card);
+  /* Subtle violet gradient wash at the top — makes header feel KORA, not generic */
+  background: linear-gradient(180deg, rgba(97,86,245,0.032) 0px, #FFFFFF 56px);
+  border: 1px solid var(--b1);
+  border-left: 3px solid var(--violet);
+  border-radius: 0 8px 0 0;
+  border-bottom: none;
+  padding: 22px 26px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Proprietary brandmark watermark — top-right, barely there */
+.ki-watermark {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 38px; height: 38px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+/* Header: dot · label · rule — the KORA Index v3 section signature */
+.ki-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+.ki-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--violet);
+  opacity: 0.80;
+  flex-shrink: 0;
+}
+.ki-label {
+  font-family: var(--f);
+  font-size: 9.5px;
+  font-weight: 600;
+  color: rgba(97,86,245,0.75);
+  letter-spacing: 0.01em;
+}
+.ki-rule {
+  flex: 1;
+  height: 1px;
+  background: rgba(97,86,245,0.10);
+}
+
+/* Score row */
+.score-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.score-num {
+  font-family: var(--f);
+  font-size: 2rem; /* 32px — hard ceiling */
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.score-denom {
+  font-family: var(--f);
+  font-size: 13px;
+  color: var(--t4);
+  font-weight: 300;
+}
+.cs-inline {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-left: 10px;
+}
+.cs-label { font-family: var(--f); font-size: 10px; color: var(--t3); }
+.cs-value { font-family: var(--f); font-size: 15px; font-weight: 700; color: var(--violet); letter-spacing: -0.02em; }
+.cs-note  { font-family: var(--mono); font-size: 7px; color: var(--t4); letter-spacing: 0.05em; margin-left: 2px; }
+
+/* Signal grid — thin separator before grid creates distinction from score */
+.signal-sep {
+  height: 1px;
+  background: var(--b2);
+  margin-bottom: 14px;
+}
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 18px;
+  margin-bottom: 16px;
+}
+.signal-code {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--t4);
+  margin-bottom: 4px;
+}
+.signal-value {
+  font-family: var(--f);
+  font-size: 1.0625rem; /* 17px */
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.signal-desc {
+  font-family: var(--f);
+  font-size: 10px;
+  color: var(--t3);
+  margin-top: 3px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+/* Evidence & DP strip */
+.ev-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 11px;
+  background: var(--surface);
+  border-radius: 4px;
+  border: 1px solid var(--b2);
+  margin-bottom: 12px;
+}
+.ev-label { font-family: var(--f); font-size: 10.5px; color: var(--t3); }
+.ev-val   { font-family: var(--f); font-size: 10.5px; font-weight: 600; color: var(--t2); }
+.ev-sep   { width: 1px; height: 9px; background: var(--b1); }
+.ev-dp    { font-family: var(--f); font-size: 10.5px; font-weight: 600; color: rgba(97,86,245,0.65); }
+
+.method-note {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: var(--t4);
+  letter-spacing: 0.06em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MINI BOARD LEDGER — continuous violet left border with KI card
+═══════════════════════════════════════════════════════════════════════════════ */
+.ledger {
+  background: var(--card);
+  border: 1px solid var(--b1);
+  border-left: 3px solid var(--violet);
+  border-top: none;
+  border-radius: 0 0 0 8px;
+  overflow: hidden;
+}
+.ledger-head {
+  display: grid;
+  grid-template-columns: 116px 136px 1fr;
+  padding: 6px 26px;
+  background: rgba(6,3,43,0.016);
+  border-bottom: 1px solid var(--b1);
+}
+.ledger-th {
+  font-family: var(--mono);
+  font-size: 6px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--t4);
+}
+.ledger-row {
+  display: grid;
+  grid-template-columns: 116px 136px 1fr;
+  padding: 13px 26px;
+  border-bottom: 1px solid var(--b2);
+  align-items: center;
+  gap: 8px;
+}
+.ledger-row:last-child { border-bottom: none; }
+.lr-signal { font-family: var(--f); font-size: 11px; font-weight: 600; color: var(--t3); }
+.lr-value  { font-family: var(--f); font-size: 12.5px; font-weight: 600; color: var(--navy); display: flex; align-items: center; gap: 5px; }
+.lr-read   { font-family: var(--f); font-size: 11px; color: var(--t2); line-height: 1.48; font-weight: 400; }
+
+.ledger-row.driver { background: rgba(6,3,43,0.010); }
+.ledger-row.driver .lr-signal { color: rgba(97,86,245,0.68); }
+
+.ledger-row.constraint { background: var(--tint-amber); }
+.ledger-row.constraint .lr-signal { color: var(--amber); }
+.ledger-row.constraint .lr-value  { color: var(--amber); }
+
+.ledger-row.decision {
+  background: var(--tint-violet);
+  padding: 15px 26px;
+  border-top: 1px solid rgba(97,86,245,0.09);
+  border-bottom: none;
+}
+.ledger-row.decision .lr-signal { color: var(--violet); font-weight: 700; font-size: 10.5px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   DECISION CARD (right column)
+═══════════════════════════════════════════════════════════════════════════════ */
+.dec-card {
+  background: var(--card);
+  border: 1px solid var(--b1);
+  border-radius: 8px;
+  padding: 24px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dec-eyebrow {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--t4);
+  margin-bottom: 7px;
+}
+.dec-title {
+  font-family: var(--f);
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.34;
+  letter-spacing: -0.015em;
+}
+.dec-body {
+  font-family: var(--f);
+  font-size: 12.5px;
+  color: var(--t2);
+  line-height: 1.68;
+  font-weight: 400;
+}
+
+/* Scenario delta */
+.delta-box {
+  background: var(--surface);
+  border: 1px solid var(--b1);
+  border-radius: 5px;
+  padding: 10px 12px;
+}
+.delta-eyebrow {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--t4);
+  margin-bottom: 7px;
+}
+.delta-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px; }
+.delta-row:last-child { margin-bottom: 0; }
+.delta-up   { font-family: var(--f); font-size: 11px; font-weight: 600; color: var(--violet); }
+.delta-ok   { font-family: var(--f); font-size: 11px; font-weight: 600; color: #558C00; }
+.delta-desc { font-family: var(--f); font-size: 10.5px; color: var(--t3); }
+
+/* Decision Pack box */
+.dp-box {
+  background: rgba(97,86,245,0.038);
+  border: 1px solid rgba(97,86,245,0.11);
+  border-radius: 5px;
+  padding: 10px 12px;
+}
+.dp-sublabel { font-family: var(--f); font-size: 10px; color: var(--t3); margin-bottom: 3px; }
+.dp-title    { font-family: var(--f); font-size: 12.5px; font-weight: 700; color: var(--navy); letter-spacing: -0.01em; margin-bottom: 2px; }
+.dp-meta     { font-family: var(--f); font-size: 10px; color: var(--t3); }
+
+/* CTAs — institutional, not SaaS
+   Primary: navy, no rounded pill, clean inner glow
+   The "View Decision Pack" label communicates output, not imperative action */
+.cta-primary {
+  display: block;
+  background: var(--navy);
+  /* Subtle inner highlight makes it feel tactile, not flat */
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+  color: #FFFFFF;
+  text-align: center;
+  padding: 11px 16px;
+  border-radius: 4px;
+  font-family: var(--f);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+.cta-arrow { opacity: 0.44; margin-left: 6px; letter-spacing: 0; }
+
+.cta-secondary {
+  display: block;
+  border: 1px solid var(--b1);
+  color: var(--t3);
+  text-align: center;
+  padding: 9px 16px;
+  border-radius: 4px;
+  font-family: var(--f);
+  font-size: 12px;
+  font-weight: 400;
+}
+.cta-link {
+  display: block;
+  text-align: center;
+  padding: 5px;
+  font-family: var(--f);
+  font-size: 11px;
+  color: var(--violet);
+  opacity: 0.68;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   F. BOUNDARY / IDENTITY ROW — Perché non è sorveglianza
+   Lime accent = KORA governance identity. Not a disclaimer.
+═══════════════════════════════════════════════════════════════════════════════ */
+.boundary-row {
+  border-left: 3px solid rgba(200,255,71,0.42);
+  background: rgba(200,255,71,0.022);
+  border-top: 1px solid rgba(200,255,71,0.11);
+  border-bottom: 1px solid rgba(200,255,71,0.11);
+  padding: 9px 14px 9px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.boundary-items {
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  color: var(--t4);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.bsep { margin: 0 6px; opacity: 0.34; }
+.boundary-method {
+  font-family: var(--mono);
+  font-size: 7px;
+  color: rgba(200,255,71,0.42);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   G. NAVIGATION AFFORDANCE
+═══════════════════════════════════════════════════════════════════════════════ */
+.nav-afford { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.nav-afford-prefix {
+  font-family: var(--mono);
+  font-size: 6.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t4);
+  margin-right: 3px;
+}
+.nav-pill {
+  font-family: var(--f);
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--t3);
+  padding: 4px 10px;
+  border: 1px solid var(--b1);
+  border-radius: 4px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ── Review bar ──────────────────────────────────────────────────────────── -->
+<div class="review-bar">
+  <span>KORA · Executive Editorial Ledger · Final Candidate · /company above-the-fold · docs/visual-concepts/</span>
+  <span class="review-stamp">STATIC MOCKUP — NOT PRODUCTION</span>
+</div>
+
+<div class="vp-wrap">
+<div class="vp">
+<div class="shell">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       A. SIDEBAR — brand / navigation rail
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="sidebar">
+
+    <!-- Logo: brandmark in violet-tint slot + wordmark -->
+    <div class="sidebar-brand">
+      <div class="brand-mark-wrap">
+        <svg class="brand-mark" viewBox="0 0 424 418" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="KORA brandmark">
+          <path fill-rule="evenodd" clip-rule="evenodd"
+            d="M148.768 117.887C189.054 101.199 234.334 101.199 274.606 117.887C287.456 123.227 297.663 133.434 302.989 146.27C319.677 186.556 319.677 231.836 302.989 272.108C297.649 284.958 287.442 295.165 274.606 300.491C234.32 317.179 189.04 317.179 148.768 300.491C135.918 295.151 125.711 284.944 120.385 272.108C103.697 231.822 103.697 186.542 120.385 146.27C125.725 133.42 135.932 123.213 148.768 117.887ZM211.498 124.924C190.444 124.924 171.74 138.302 159.961 158.98C139.268 170.759 125.904 189.463 125.904 210.518C125.904 231.572 139.282 250.276 159.961 262.055C171.74 282.747 190.444 296.111 211.498 296.111C232.552 296.111 251.257 282.733 263.035 262.055C283.728 250.276 297.092 231.572 297.092 210.518C297.092 189.463 283.714 170.759 263.035 158.98C251.257 138.288 232.552 124.924 211.498 124.924Z"
+            fill="#6156F5"/>
+        </svg>
+      </div>
+      <div class="brand-wordmark">
+        <div class="brand-name">kora<sup>™</sup></div>
+        <span class="brand-sub">Foundation Light</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <div class="nav-section">Company</div>
+      <a class="nav-item active">Executive Cockpit</a>
+      <a class="nav-item">KORA Index</a>
+      <a class="nav-item">Activation</a>
+      <div class="nav-sep"></div>
+      <a class="nav-item">Decision Pack</a>
+      <a class="nav-item">Evidence &amp; Governance</a>
+      <a class="nav-item">Data Intake</a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="foot-env">Demo</div>
+      <div class="foot-role">Company Admin</div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MAIN AREA
+  ══════════════════════════════════════════════════════════════ -->
+  <div class="main">
+
+    <div class="topbar">
+      <span class="topbar-crumb">Executive Cockpit</span>
+      <div class="topbar-right">
+        <span class="badge badge-demo">synthetic_demo_data</span>
+        <span class="badge badge-neutral">KORA v0.1</span>
+        <div class="avatar">SF</div>
+      </div>
+    </div>
+
+    <div class="page">
+
+      <!-- ───────────────────────────────────────────────────────────
+           B. CONTEXT ROW — Dove siamo?
+      ─────────────────────────────────────────────────────────── -->
+      <div style="margin-bottom: 20px;">
+        <div class="ctx-eyebrow">Cabina di Regia &nbsp;·&nbsp; Q1–Q3 2025</div>
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
+          <div class="company-name">Meridiana Group</div>
+          <div class="ctx-chips">
+            <span class="badge badge-clear">CLEAR</span>
+            <span class="ctx-chip-sep"></span>
+            <span class="ctx-chip">Tenant attivo</span>
+            <span class="ctx-chip-sep"></span>
+            <span class="ctx-chip">5.000 lavoratori · dati sintetici</span>
+            <span class="ctx-chip-sep"></span>
+            <span class="ctx-chip-dp">Decision Pack v2 disponibile</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="div"></div>
+
+      <!-- ───────────────────────────────────────────────────────────
+           C. EXECUTIVE READING
+           Instrument Serif headline — la voce KORA, non marketing
+           Sobria, istituzionale, introduce la lettura dati sotto
+      ─────────────────────────────────────────────────────────── -->
+      <div style="margin-bottom: 24px;">
+
+        <!-- KORA editorial headline — Instrument Serif moment -->
+        <!-- Chosen: "Non un indice. Una lettura organizzativa."
+             Alternativa scartata A: "Dove il dato diventa decisione." — più marketing
+             Alternativa scartata B: "L'attivazione organizzativa, in chiaro." — descrittivo ma piatto
+             Scelta: rimarca la distinzione di KORA senza essere advertising copy -->
+        <div class="editorial-headline">Non un indice. <em>Una lettura organizzativa.</em></div>
+
+        <p class="reading-text">
+          Il KORA Index di 54 riflette un miglioramento misurabile nel periodo Q4: il tasso di attivazione
+          supera per la prima volta la soglia CLEAR, segnalando un'espansione reale dell'attivazione
+          organizzativa. Persiste un gap strutturale nel pillar LEGACY — al 6% del totale — che comprime
+          il macroblocco Distribution &amp; Equity e mantiene il punteggio sotto il potenziale dell'organizzazione.
+        </p>
+      </div>
+
+      <div class="div"></div>
+
+      <!-- ───────────────────────────────────────────────────────────
+           D + E. TWO-COLUMN — Intelligence Unit + Decision
+      ─────────────────────────────────────────────────────────── -->
+      <div style="display: grid; grid-template-columns: 1fr 288px; gap: 20px; align-items: start; margin-bottom: 22px;">
+
+        <!-- LEFT — KI Intelligence Unit + Mini Board Ledger -->
+        <div>
+
+          <!-- KORA Index Intelligence Card
+               Violet gradient wash top → white → signals
+               Left violet border + watermark = proprietary signature -->
+          <div class="ki-card">
+
+            <svg class="ki-watermark" viewBox="0 0 424 418" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path fill-rule="evenodd" clip-rule="evenodd"
+                d="M148.768 117.887C189.054 101.199 234.334 101.199 274.606 117.887C287.456 123.227 297.663 133.434 302.989 146.27C319.677 186.556 319.677 231.836 302.989 272.108C297.649 284.958 287.442 295.165 274.606 300.491C234.32 317.179 189.04 317.179 148.768 300.491C135.918 295.151 125.711 284.944 120.385 272.108C103.697 231.822 103.697 186.542 120.385 146.27C125.725 133.42 135.932 123.213 148.768 117.887ZM211.498 124.924C190.444 124.924 171.74 138.302 159.961 158.98C139.268 170.759 125.904 189.463 125.904 210.518C125.904 231.572 139.282 250.276 159.961 262.055C171.74 282.747 190.444 296.111 211.498 296.111C232.552 296.111 251.257 282.733 263.035 262.055C283.728 250.276 297.092 231.572 297.092 210.518C297.092 189.463 283.714 170.759 263.035 158.98C251.257 138.288 232.552 124.924 211.498 124.924Z"
+                fill="#6156F5"/>
+            </svg>
+
+            <div class="ki-header">
+              <div class="ki-dot"></div>
+              <span class="ki-label">KORA Index v3</span>
+              <div class="ki-rule"></div>
+            </div>
+
+            <div class="score-row">
+              <span class="score-num">54</span>
+              <span class="score-denom">/100</span>
+              <span class="badge badge-clear" style="margin-left: 2px;">CLEAR</span>
+              <div class="cs-inline">
+                <span class="cs-label">Confidence</span>
+                <span class="cs-value">72%</span>
+                <span class="cs-note">esterno · peso 0</span>
+              </div>
+            </div>
+
+            <!-- Thin separator between score and signal grid — removes form-like feel -->
+            <div class="signal-sep"></div>
+
+            <div class="signal-grid">
+              <div>
+                <div class="signal-code">AR</div>
+                <div class="signal-value">52%</div>
+                <div class="signal-desc">Activation Rate</div>
+              </div>
+              <div>
+                <div class="signal-code">MAR</div>
+                <div class="signal-value">38%</div>
+                <div class="signal-desc">Meaningful Activation</div>
+              </div>
+              <div>
+                <div class="signal-code">VR</div>
+                <div class="signal-value">41%</div>
+                <div class="signal-desc">Verification Rate</div>
+              </div>
+            </div>
+
+            <div class="ev-strip">
+              <span class="ev-label">Qualità evidenza: <span class="ev-val">moderata</span></span>
+              <div class="ev-sep"></div>
+              <span class="ev-dp">Decision Pack v2 · board preview pronto</span>
+            </div>
+
+            <div class="method-note">KORA Methodology v0.1 · pre-calibration</div>
+
+          </div><!-- /ki-card -->
+
+          <!-- Mini Board Ledger — continuous violet left border -->
+          <div class="ledger">
+            <div class="ledger-head">
+              <div class="ledger-th">Segnale</div>
+              <div class="ledger-th">Valore</div>
+              <div class="ledger-th">Lettura board</div>
+            </div>
+            <div class="ledger-row">
+              <div class="lr-signal">Stato attuale</div>
+              <div class="lr-value">KI 54 <span class="badge badge-clear" style="font-size:7px;padding:1px 5px;">CLEAR</span></div>
+              <div class="lr-read">+20 pts vs S1. Activation quality in crescita.</div>
+            </div>
+            <div class="ledger-row driver">
+              <div class="lr-signal">Driver primario</div>
+              <div class="lr-value">AR 52%</div>
+              <div class="lr-read">Soglia CLEAR superata. Continuity (CO 28%) ancora debole.</div>
+            </div>
+            <div class="ledger-row constraint">
+              <div class="lr-signal">Vincolo strutturale</div>
+              <div class="lr-value">LEGACY 6%</div>
+              <div class="lr-read">Gap pillar — comprime PB e Distribution &amp; Equity.</div>
+            </div>
+            <div class="ledger-row decision">
+              <div class="lr-signal">Decisione</div>
+              <div class="lr-value">Ribilanciare spesa</div>
+              <div class="lr-read">Shift verso CONNECTION e LEGACY. Stima +8 pt Pillar Balance.</div>
+            </div>
+          </div><!-- /ledger -->
+
+        </div><!-- /left column -->
+
+        <!-- RIGHT — Decision card -->
+        <div class="dec-card">
+
+          <div>
+            <div class="dec-eyebrow">Decisione richiesta</div>
+            <div class="dec-title">Ribilanciare la spesa verso attivazione profonda</div>
+          </div>
+
+          <p class="dec-body">
+            LEGACY al 6% e Continuity al 28% segnalano budget concentrato in eventi a bassa
+            profondità. Riallineare verso programmi senior-junior e CONNECTION può portare
+            il Pillar Balance sopra i 56 punti nel prossimo periodo.
+          </p>
+
+          <div class="delta-box">
+            <div class="delta-eyebrow">Variazione vs S1</div>
+            <div class="delta-row">
+              <span class="delta-up">↑ +20 pts</span>
+              <span class="delta-desc">KORA Index (34 → 54)</span>
+            </div>
+            <div class="delta-row">
+              <span class="delta-up">↑ +12 pts</span>
+              <span class="delta-desc">Confidence (60% → 72%)</span>
+            </div>
+            <div class="delta-row">
+              <span class="delta-ok">✓</span>
+              <span class="delta-desc">Safeguard WARNING → CLEAR</span>
+            </div>
+          </div>
+
+          <div class="dp-box">
+            <div class="dp-sublabel">Output disponibile</div>
+            <div class="dp-title">KORA Decision Pack v2</div>
+            <div class="dp-meta">Board-ready · 8 sezioni · Q1–Q3 2025</div>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 7px;">
+            <!-- CTA: "View Decision Pack" — institutional, not imperative SaaS verb -->
+            <a class="cta-primary">View Decision Pack<span class="cta-arrow">→</span></a>
+            <a class="cta-secondary">Board Pack Preview</a>
+            <a class="cta-link">KORA Index Detail →</a>
+          </div>
+
+        </div><!-- /dec-card -->
+
+      </div><!-- /two-col -->
+
+      <!-- ───────────────────────────────────────────────────────────
+           F. BOUNDARY / IDENTITY ROW
+      ─────────────────────────────────────────────────────────── -->
+      <div class="boundary-row">
+        <div class="boundary-items">
+          <span>N≥10 enforced</span>
+          <span class="bsep">·</span>
+          <span>PII Guard active</span>
+          <span class="bsep">·</span>
+          <span>Organization-level only</span>
+          <span class="bsep">·</span>
+          <span>No individual surveillance</span>
+          <span class="bsep">·</span>
+          <span>synthetic_demo_data: true</span>
+          <span class="bsep">·</span>
+          <span>Confidence Score: esterno al KORA Index v3</span>
+        </div>
+        <div class="boundary-method">KORA Methodology v0.1</div>
+      </div>
+
+      <!-- ───────────────────────────────────────────────────────────
+           G. NAVIGATION AFFORDANCE
+      ─────────────────────────────────────────────────────────── -->
+      <div class="nav-afford">
+        <span class="nav-afford-prefix">Esplora</span>
+        <a class="nav-pill">KORA Index Detail</a>
+        <a class="nav-pill">Activation</a>
+        <a class="nav-pill">Pillar Balance</a>
+        <a class="nav-pill">Data Intake</a>
+        <a class="nav-pill">Evidence &amp; Governance</a>
+      </div>
+
+    </div><!-- /page -->
+  </div><!-- /main -->
+
+</div><!-- /shell -->
+</div><!-- /vp -->
+
+<div class="vp-note">
+  Executive Editorial Ledger · Final Candidate · Polish Pass · /company above-the-fold · 1280 × 808px · STATIC MOCKUP — NOT PRODUCTION
+</div>
+</div><!-- /vp-wrap -->
+
+</body>
+</html>
