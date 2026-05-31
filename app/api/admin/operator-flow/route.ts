@@ -27,7 +27,7 @@ import { runKoraPipeline } from '@/lib/kora-engine';
 import { persistKoraComputationResult } from '@/lib/live/persistence';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
 import { persistDecisionPack } from '@/lib/live/decision-pack';
-import type { RawUploadedRecord } from '@/lib/kora-engine/types';
+import { getOp001SyntheticRecords, getOp001UploadedPayloads } from '@/lib/live/op001-synthetic-records';
 import {
   detectPiiInPayload,
   sanitizePayload,
@@ -41,28 +41,6 @@ const DEFAULT_SEGMENT_BREAKDOWN = {
   departments:    { 'dept-tech': 20, 'dept-sales': 15, 'dept-ops': 15 },
   contract_types: { full_time: 40, part_time: 10 },
 };
-
-// Default synthetic records — covers all 5 pillars + limited.
-function buildDefaultRecords(batchId: string): RawUploadedRecord[] {
-  const make = (
-    id: string, idx: number, nome: string, categoria: string, tipo: string,
-    extra?: Record<string, unknown>,
-  ): RawUploadedRecord => ({
-    recordId:           `r-op-${id}`,
-    batchId,
-    rowIndex:           idx,
-    detectedRecordType: 'welfare_program',
-    raw: { nome_iniziativa: nome, categoria, tipo, ...extra },
-  });
-  return [
-    make('01', 0,  'Programma di supporto psicologico',      'salute e benessere', 'consumed_service',      { partecipanti: 25 }),
-    make('02', 1,  'Formazione professionale avanzata',       'crescita',           'training',              { partecipanti: 20 }),
-    make('03', 2,  'Programma di mentoring inter-funzionale', 'mentoring',          'policy',                { partecipanti: 14 }),
-    make('04', 3,  'Volontariato aziendale territoriale',     'impatto territoriale','collective_initiative', { partecipanti: 18 }),
-    make('05', 4,  'Trasferimento competenze senior-junior',  'legacy conoscenza',  'training',              { partecipanti: 10 }),
-    make('06', 5,  'Buoni pasto e welfare voucher',           'sollievo economico', 'monetary_benefit',      { partecipanti: 50 }),
-  ];
-}
 
 // Audit event factory.
 function auditEvent(params: {
@@ -186,19 +164,17 @@ export async function POST(request: NextRequest) {
     // Behavior: review_required + redaction (Foundation Light dev policy).
     // For Gate 3B real data: strict reject is the recommended policy (see TODO-003).
 
-    const uploadedRows = Array.from({ length: 10 }, (_, i) => {
+    const uploadedRows = getOp001UploadedPayloads(tenantCode).map(({ pseudonymId, pillar, rawPayload }, i) => {
       const n = String(i + 1).padStart(3, '0');
-      const rawPayload: Record<string, unknown> = { synthetic: true, tenant_code: tenantCode, row_index: i };
-
       const piiResult = detectPiiInPayload(rawPayload);
       const finalPayload = piiResult.hasPii ? sanitizePayload(rawPayload).sanitized : rawPayload;
 
       return {
         tenant_id: tenantId, batch_id: batchId,
-        pseudonym_id: `PSY-OP-${tenantCode}-${n}`,
+        pseudonym_id: pseudonymId,
         raw_hash: `sha256:synthetic:op:${tenantCode}:${n}`,
         eligibility_status: piiResult.hasPii ? 'review_required' : (i < 8 ? 'eligible' : 'limited'),
-        primary_pillar: ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY','LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'][i],
+        primary_pillar: pillar,
         event_nature: 'consumed_service',
         review_status: piiResult.hasPii ? 'needs_more_data' : 'approved',
         payload: finalPayload,
@@ -240,7 +216,7 @@ export async function POST(request: NextRequest) {
 
     // ── Step 5: EligibilityGate → UEF records ──────────────────────────────
 
-    const syntheticRecords = buildDefaultRecords(batchId);
+    const syntheticRecords = getOp001SyntheticRecords(batchId);
     const eligibilityResults = classifyEligibilityBatch(syntheticRecords);
     const uefRows = syntheticRecords.map((rec, i) => {
       const elig = eligibilityResults[i];

@@ -260,4 +260,47 @@ Cold start Vercel Pro: prima richiesta decomprime il binary (~3–8s). Warm star
 
 ---
 
-*Nuovi TODO vanno aggiunti in coda con numerazione progressiva (TODO-006, TODO-007, ...).*
+---
+
+## TODO-006 — Data Intake reale — Gate 3B prerequisito
+
+| Campo | Valore |
+|---|---|
+| **Stato** | BLOCKED — Gate 3B required before any real upload |
+| **Priorità** | Bloccante per qualunque dato reale |
+| **Aggiunto** | 2026-05-31 |
+| **Blocco di riferimento** | Data Intake UI Minima — Synthetic Live v1 |
+
+### Stato attuale
+
+Data Intake Studio (`/admin/data-intake`) implementato come UI didattica su dati sintetici OP-001:
+- Batch preview: 6 record sintetici deterministici
+- PII Guard status: riusa `lib/privacy/pii-guard.ts`
+- Eligibility Gate preview: riusa `lib/kora-engine/eligibility-gate.ts`
+- UEF preview: costruito senza scritture DB
+- Nessun upload reale. Nessun CSV/XLSX. Nessun dato reale.
+
+### Azioni richieste per data intake reale
+
+1. **Gate 3B chiuso** — legal/privacy review completa: pseudonimizzazione all'origine, DPA, consenso worker, retention, right-to-erasure
+2. **Upload form sicuro** — validazione, limite dimensione, tipi file consentiti (no esecuzione server-side)
+3. **CSV/XLSX parser server-side** — con strict PII check prima di qualsiasi persistenza (TODO-004 policy: strict reject)
+4. **Source pseudonymization pipeline** — pseudonimizzazione all'origine prima del caricamento su DB
+5. **Batch management UI** — gestione batch multipli, storico, rollback
+6. **Worker consent check** — verifica consenso per ogni record prima della classificazione
+7. **DPA e clausole contrattuali** — prerequisiti legali per dati reali di aziende e lavoratori
+
+### Non blocker per
+
+- Demo Foundation Light
+- Pilot discussion con dati sintetici
+- Data Intake Studio UI (già implementato su dati sintetici)
+
+### Bloccante per
+
+- Qualunque caricamento di dati reali di lavoratori o aziende
+- Gate 3B operativo
+
+---
+
+*Nuovi TODO vanno aggiunti in coda con numerazione progressiva (TODO-007, TODO-008, ...).*

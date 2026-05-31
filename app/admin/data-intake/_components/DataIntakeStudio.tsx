@@ -1,0 +1,473 @@
+'use client';
+
+// app/admin/data-intake/_components/DataIntakeStudio.tsx
+// KORA Data Intake Studio — KORA_ADMIN client component.
+//
+// Fetches /api/admin/data-intake/preview for batch/PII/Eligibility/UEF preview data.
+// Calls /api/admin/operator-flow GET/POST for run actions and result snapshot.
+// Links to Decision Pack preview and PDF download.
+//
+// No file upload. No CSV/XLSX input. No scoring recalculation. No PII exposed.
+
+import { useEffect, useState } from 'react';
+
+// ── API response types ─────────────────────────────────────────────────────
+
+interface BatchRecord {
+  recordId: string;
+  rowIndex: number;
+  nomeInitiativa: string;
+  categoria: string;
+  tipo: string;
+  partecipanti: number | null;
+  detectedRecordType: string;
+  eligibilityStatus: string;
+}
+
+interface PiiGuardStatus {
+  checked:       boolean;
+  piiFound:      boolean;
+  recordCount:   number;
+  policy:        string;
+  totalFindings: number;
+  status:        string;
+  summary: { total: number; highSeverityCount: number; byRiskType: Record<string,number>; fieldPaths: string[] };
+}
+
+interface EligRecord {
+  recordId: string; nomeInitiativa: string; status: string;
+  confidence: number; impactTreatment: string; budgetTreatment: string; reason: string;
+}
+
+interface UefRecord {
+  recordId: string; rawName: string; eligibility: string; actionFamily: string;
+  eventNature: string; approvedForScoring: boolean; approvedForBTI: boolean;
+  confidence: number; impactTreatment: string;
+}
+
+interface ResultSnapshot {
+  koraIndex: number; safeguardStatus: string; confidenceScore: number;
+  activationRate: number; meaningfulActivationRate: number;
+  calibrationStatus: string; methodologyVersionId: string;
+  decisionPack: { id: string; versionId: string; status: string };
+}
+
+interface PreviewData {
+  meta: { tenantCode: string; reportingPeriod: string; generatedAt: string };
+  batch: { totalCount: number; batchLabel: string; records: BatchRecord[] };
+  piiGuard: PiiGuardStatus;
+  eligibility: { eligible: number; limited: number; blocked: number; reviewRequired: number; total: number; records: EligRecord[] };
+  uefPreview: { total: number; approvedForScoring: number; approvedForBTI: number; categoryDistribution: Record<string,number>; records: UefRecord[] };
+  resultSnapshot: ResultSnapshot | null;
+}
+
+interface OperatorResult {
+  ok: boolean;
+  scoring?: { kora_index_value?: number; safeguard_status?: string; confidence_score?: number; activation_rate?: number; meaningful_activation_rate?: number };
+  kora_index?: { value?: number; safeguard?: string; confidence?: number; activation_rate?: number; meaningful_activation_rate?: number };
+  decision_pack?: { version_id?: string; status?: string };
+  error?: string;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function pct(n: number | null | undefined) { return n != null ? `${Math.round(n * 100)}%` : '—'; }
+function fmt(n: number | null | undefined, d = 1) { return n != null ? n.toFixed(d) : '—'; }
+
+const ELIGIBILITY_COLOR: Record<string, string> = {
+  eligible:        'bg-green-100 text-green-800 border-green-200',
+  limited:         'bg-amber-100 text-amber-800 border-amber-200',
+  blocked:         'bg-red-100 text-red-800 border-red-200',
+  review_required: 'bg-purple-100 text-purple-800 border-purple-200',
+};
+const SAFEGUARD_COLOR: Record<string, string> = {
+  CLEAR:   'bg-green-100 text-green-800 border-green-200',
+  WARNING: 'bg-amber-100 text-amber-800 border-amber-200',
+  FLAGGED: 'bg-red-100 text-red-800 border-red-200',
+};
+function badge(val: string, colorMap: Record<string,string>, fallback = 'bg-slate-100 text-slate-600 border-slate-200') {
+  const cls = colorMap[val] ?? fallback;
+  return <span className={`inline-block rounded border px-2 py-0.5 text-xs font-semibold ${cls}`}>{val}</span>;
+}
+
+// ── Flow timeline phases ────────────────────────────────────────────────────
+
+const FLOW_PHASES = [
+  { id: 'batch',       label: 'Synthetic Batch',   icon: '📦' },
+  { id: 'pii',         label: 'PII Guard',          icon: '🛡️' },
+  { id: 'eligibility', label: 'Eligibility Gate',   icon: '⚙️' },
+  { id: 'uef',         label: 'UEF Preview',        icon: '📋' },
+  { id: 'scoring',     label: 'Scoring Run',        icon: '📊' },
+  { id: 'decpack',     label: 'Decision Pack',      icon: '🗂️' },
+];
+
+// ── Props ──────────────────────────────────────────────────────────────────
+
+interface Props { userEmail: string; userRole: string; }
+
+// ── Main component ─────────────────────────────────────────────────────────
+
+export function DataIntakeStudio({ userEmail, userRole }: Props) {
+  const TENANT = 'OP-001';
+  const PERIOD = '2026-Q1';
+
+  const [preview, setPreview]     = useState<PreviewData | null>(null);
+  const [loadErr, setLoadErr]     = useState<string | null>(null);
+  const [opStatus, setOpStatus]   = useState<'idle'|'running'|'reading'|'done'|'error'>('idle');
+  const [opResult, setOpResult]   = useState<OperatorResult | null>(null);
+  const [opErr, setOpErr]         = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // loading is derived — true only while we have neither data nor an error
+  const loading = !preview && !loadErr;
+
+  // All setState calls inside .then()/.catch() — no synchronous setState in effect.
+  useEffect(() => {
+    let active = true;
+    fetch(
+      `/api/admin/data-intake/preview?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`,
+      { credentials: 'include' },
+    )
+      .then(res => {
+        if (!res.ok) return Promise.reject(new Error(`HTTP ${res.status}`));
+        return res.json() as Promise<PreviewData>;
+      })
+      .then(data => { if (active) { setPreview(data); setLoadErr(null); } })
+      .catch((e: Error) => { if (active) setLoadErr(e.message); });
+    return () => { active = false; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
+
+  function refreshPreview() {
+    setPreview(null);   // clear data so loading indicator shows during refresh
+    setLoadErr(null);
+    setRefreshKey(k => k + 1);
+  }
+
+  async function handleRun() {
+    setOpStatus('running'); setOpErr(null); setOpResult(null);
+    try {
+      const res  = await fetch('/api/admin/operator-flow', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantCode: TENANT, reportingPeriod: PERIOD }),
+      });
+      const data = await res.json() as OperatorResult;
+      if (!res.ok || !data.ok) { setOpErr(data.error ?? `HTTP ${res.status}`); setOpStatus('error'); return; }
+      setOpResult(data); setOpStatus('done');
+      refreshPreview();
+    } catch (e) { setOpErr(e instanceof Error ? e.message : String(e)); setOpStatus('error'); }
+  }
+
+  async function handleRead() {
+    setOpStatus('reading'); setOpErr(null);
+    try {
+      const res  = await fetch(`/api/admin/operator-flow?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`, { credentials: 'include' });
+      const data = await res.json() as OperatorResult;
+      if (!res.ok) { setOpErr(`HTTP ${res.status}`); setOpStatus('error'); return; }
+      setOpResult(data); setOpStatus('done');
+      refreshPreview();
+    } catch (e) { setOpErr(e instanceof Error ? e.message : String(e)); setOpStatus('error'); }
+  }
+
+  const snapshot = opResult?.scoring
+    ? { ki: opResult.scoring.kora_index_value, sf: opResult.scoring.safeguard_status, cs: (opResult.scoring.confidence_score ?? 0) / 100, ar: opResult.scoring.activation_rate, mar: opResult.scoring.meaningful_activation_rate }
+    : opResult?.kora_index
+    ? { ki: opResult.kora_index.value, sf: opResult.kora_index.safeguard, cs: opResult.kora_index.confidence, ar: opResult.kora_index.activation_rate, mar: opResult.kora_index.meaningful_activation_rate }
+    : preview?.resultSnapshot
+    ? { ki: preview.resultSnapshot.koraIndex, sf: preview.resultSnapshot.safeguardStatus, cs: preview.resultSnapshot.confidenceScore, ar: preview.resultSnapshot.activationRate, mar: preview.resultSnapshot.meaningfulActivationRate }
+    : null;
+
+  const phaseStatus = (id: string): string => {
+    if (!preview) return 'not-run';
+    if (id === 'batch')       return 'ready';
+    if (id === 'pii')         return preview.piiGuard.status === 'passed' ? 'passed' : 'review';
+    if (id === 'eligibility') return 'passed';
+    if (id === 'uef')         return 'passed';
+    if (id === 'scoring')     return snapshot ? 'completed' : 'not-run';
+    if (id === 'decpack')     return snapshot ? 'completed' : 'not-run';
+    return 'not-run';
+  };
+  const PHASE_BADGE: Record<string, string> = {
+    ready:     'bg-blue-100 text-blue-700 border-blue-200',
+    passed:    'bg-green-100 text-green-700 border-green-200',
+    completed: 'bg-[#06032B] text-white border-[#06032B]',
+    review:    'bg-amber-100 text-amber-700 border-amber-200',
+    'not-run': 'bg-slate-100 text-slate-500 border-slate-200',
+  };
+  const PHASE_LABEL: Record<string, string> = {
+    ready: 'Ready', passed: 'Passed', completed: 'Completed', review: 'Review required', 'not-run': 'Not run yet',
+  };
+
+  const isOp = opStatus === 'running' || opStatus === 'reading';
+
+  return (
+    <div className="max-w-4xl mx-auto py-6 px-3 space-y-5">
+
+      {/* ── A. HEADER ── */}
+      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold tracking-widest uppercase text-[#6156F5]">KORA</span>
+            <span className="text-xs text-white/30">·</span>
+            <span className="text-xs font-semibold tracking-widest uppercase text-white/40">Admin</span>
+          </div>
+          <h1 className="text-xl font-bold text-white tracking-tight">Data Intake Studio</h1>
+          <p className="text-sm text-white/45 mt-0.5">Synthetic Live v1 · {TENANT} · {PERIOD}</p>
+        </div>
+        <div className="flex flex-col items-end gap-2 mt-1">
+          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="text-xs text-white/25 font-mono">{userEmail}</span>
+          <span className="rounded border border-[#C8FF47]/40 bg-[#C8FF47]/10 px-2 py-0.5 text-xs font-semibold text-[#d4ff6b]">Synthetic data only</span>
+        </div>
+      </div>
+
+      {/* ── B. FLOW TIMELINE ── */}
+      <div className="rounded-lg border border-slate-200 bg-white px-5 py-4">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Data Intake Flow</p>
+        <div className="flex items-start gap-0 overflow-x-auto pb-1">
+          {FLOW_PHASES.map((ph, i) => {
+            const st = phaseStatus(ph.id);
+            return (
+              <div key={ph.id} className="flex items-center flex-shrink-0">
+                <div className="flex flex-col items-center gap-1.5 w-[90px]">
+                  <div className="text-lg leading-none">{ph.icon}</div>
+                  <span className="text-[10px] font-semibold text-slate-600 text-center leading-tight">{ph.label}</span>
+                  <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold tracking-wide ${PHASE_BADGE[st]}`}>
+                    {PHASE_LABEL[st]}
+                  </span>
+                </div>
+                {i < FLOW_PHASES.length - 1 && (
+                  <div className="flex-shrink-0 w-6 h-px bg-slate-200 mx-1 mt-[-18px]" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {loading && (
+        <div className="rounded-lg border border-slate-100 bg-slate-50 px-5 py-4 text-sm text-slate-500 flex gap-2 items-center">
+          <span className="animate-spin">⏳</span> Caricamento preview…
+        </div>
+      )}
+      {loadErr && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-5 py-3 text-sm text-red-700">⚠ {loadErr}</div>
+      )}
+
+      {preview && <>
+
+        {/* ── C. BATCH PREVIEW ── */}
+        <Section title="Synthetic Batch Preview" sub={`${preview.batch.totalCount} record sintetici · ${preview.batch.batchLabel}`}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  {['#','Iniziativa','Categoria','Tipo','Partecipanti','Eligibility'].map(h => (
+                    <th key={h} className="text-left py-2 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {preview.batch.records.map(rec => (
+                  <tr key={rec.recordId} className="border-b border-slate-100 hover:bg-slate-50">
+                    <td className="py-2 px-3 font-mono text-slate-400">{rec.rowIndex + 1}</td>
+                    <td className="py-2 px-3 font-medium text-slate-700 max-w-[200px] truncate">{rec.nomeInitiativa}</td>
+                    <td className="py-2 px-3 text-slate-500">{rec.categoria}</td>
+                    <td className="py-2 px-3 text-slate-500">{rec.tipo}</td>
+                    <td className="py-2 px-3 text-slate-600 text-right">{rec.partecipanti ?? '—'}</td>
+                    <td className="py-2 px-3">{badge(rec.eligibilityStatus, ELIGIBILITY_COLOR)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[10px] text-slate-400 mt-2">Dati sintetici generati deterministicamente. Nessun dato reale o PII.</p>
+        </Section>
+
+        {/* ── D. PII GUARD ── */}
+        <Section title="PII Guard" sub={`${preview.piiGuard.recordCount} record uploaded · policy: ${preview.piiGuard.policy}`}>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-3">
+            <KPICard label="Checked" value={preview.piiGuard.checked ? '✓ Yes' : 'No'} accent />
+            <KPICard label="PII Found" value={preview.piiGuard.piiFound ? '⚠ Yes' : '✓ No'} ok={!preview.piiGuard.piiFound} />
+            <KPICard label="Findings" value={String(preview.piiGuard.totalFindings)} />
+            <KPICard label="Status" value={preview.piiGuard.status === 'passed' ? '✓ Passed' : '⚠ Review'} ok={preview.piiGuard.status === 'passed'} />
+          </div>
+          <div className="rounded bg-[#f5f4ff] border border-[#c7c4f8] px-4 py-2.5 text-xs text-[#3d3a6a]">
+            <strong>PII Guard</strong> è un livello di sicurezza tecnico, non un sostituto per la pseudonimizzazione all&apos;origine, il DPA o le clausole contrattuali.
+            Sostituisce i valori PII rilevati con <code className="bg-white/60 px-1 rounded">[REDACTED_PII:TYPE]</code> — nessun valore viene mai salvato in audit o response.
+          </div>
+        </Section>
+
+        {/* ── E. ELIGIBILITY GATE ── */}
+        <Section title="Eligibility Gate" sub={`${preview.eligibility.total} record classificati`}>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-4">
+            <KPICard label="Eligible" value={String(preview.eligibility.eligible)} ok />
+            <KPICard label="Limited" value={String(preview.eligibility.limited)} />
+            <KPICard label="Blocked" value={String(preview.eligibility.blocked)} warn={preview.eligibility.blocked > 0} />
+            <KPICard label="Review req." value={String(preview.eligibility.reviewRequired)} />
+          </div>
+          <div className="space-y-1.5">
+            {preview.eligibility.records.map(r => (
+              <div key={r.recordId} className="flex items-start gap-3 py-2 px-3 rounded border border-slate-100 bg-slate-50 text-xs">
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium text-slate-700 truncate block">{r.nomeInitiativa}</span>
+                  <span className="text-slate-400">{r.impactTreatment} · conf {(r.confidence * 100).toFixed(0)}%</span>
+                  {r.reason && <span className="block text-slate-400 italic truncate">{r.reason}</span>}
+                </div>
+                {badge(r.status, ELIGIBILITY_COLOR)}
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-slate-400 mt-2">Eligibility Gate riusa <code>lib/kora-engine/eligibility-gate.ts</code> — nessuna logica duplicata.</p>
+        </Section>
+
+        {/* ── F. UEF PREVIEW ── */}
+        <Section title="UEF Preview" sub={`${preview.uefPreview.total} UEF records · ${preview.uefPreview.approvedForScoring} approved for scoring`}>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <KPICard label="Tot. UEF" value={String(preview.uefPreview.total)} />
+            <KPICard label="→ Scoring" value={String(preview.uefPreview.approvedForScoring)} ok />
+            <KPICard label="→ BTI Gov." value={String(preview.uefPreview.approvedForBTI)} />
+          </div>
+          <div className="mb-3">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Distribuzione categorie</p>
+            <div className="flex flex-wrap gap-1.5">
+              {Object.entries(preview.uefPreview.categoryDistribution).map(([cat, n]) => (
+                <span key={cat} className="rounded border border-[#6156F5]/30 bg-[#f5f4ff] px-2 py-0.5 text-xs text-[#4d48d0] font-medium">
+                  {cat}: {n}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  {['Iniziativa','Categoria','Event Nature','Eligibility','Impact Treatment','Conf.','Scoring'].map(h => (
+                    <th key={h} className="text-left py-2 px-2.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {preview.uefPreview.records.map(r => (
+                  <tr key={r.recordId} className="border-b border-slate-100 hover:bg-slate-50">
+                    <td className="py-2 px-2.5 font-medium text-slate-700 max-w-[160px] truncate">{r.rawName}</td>
+                    <td className="py-2 px-2.5 text-slate-500">{r.actionFamily}</td>
+                    <td className="py-2 px-2.5 text-slate-500">{r.eventNature}</td>
+                    <td className="py-2 px-2.5">{badge(r.eligibility, ELIGIBILITY_COLOR)}</td>
+                    <td className="py-2 px-2.5 text-slate-500 text-[10px]">{r.impactTreatment}</td>
+                    <td className="py-2 px-2.5 text-slate-500 text-right">{(r.confidence * 100).toFixed(0)}%</td>
+                    <td className="py-2 px-2.5">
+                      <span className={`text-xs font-semibold ${r.approvedForScoring ? 'text-green-700' : 'text-slate-400'}`}>
+                        {r.approvedForScoring ? '✓' : '—'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+
+        {/* ── G. ACTIONS ── */}
+        <div className="rounded-lg border border-slate-200 bg-white px-5 py-4">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Actions</p>
+          <div className="flex flex-wrap gap-2.5">
+            <button onClick={handleRun} disabled={isOp}
+              className="bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#1a1756] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+              {opStatus === 'running' ? '⏳ Esecuzione…' : '▶ Run operator flow'}
+            </button>
+            <button onClick={handleRead} disabled={isOp}
+              className="border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-50 transition-colors">
+              {opStatus === 'reading' ? '⏳ Lettura…' : '↻ Read current result'}
+            </button>
+            <a href={`/api/admin/decision-pack/preview?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`}
+              target="_blank" rel="noopener noreferrer"
+              className="border border-[#6156F5] text-[#6156F5] rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#f5f4ff] transition-colors">
+              ↗ Decision Pack Preview
+            </a>
+            <a href={`/api/admin/decision-pack/pdf?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`}
+              download={`kora-decision-pack-${TENANT}-${PERIOD}.pdf`}
+              className="bg-[#6156F5] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#4d48d0] transition-colors">
+              ↓ Download Decision Pack PDF
+            </a>
+          </div>
+          {opStatus === 'error' && opErr && (
+            <div className="mt-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">⚠ {opErr}</div>
+          )}
+        </div>
+
+        {/* ── H. RESULT SNAPSHOT ── */}
+        {snapshot && (
+          <Section title="Result Snapshot" sub={`OP-001 · ${PERIOD} · dati live sintetici persistiti`}>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 mb-3">
+              <div className="col-span-2 sm:col-span-1 rounded-lg bg-[#06032B] px-5 py-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">KORA Index</p>
+                <p className="text-4xl font-bold text-white tracking-tight leading-none">{fmt(snapshot.ki)}</p>
+                <p className="text-[10px] text-white/30 mt-2 font-mono">pre_empirical_calibration</p>
+              </div>
+              <KPICard label="Activation Safeguard" value={snapshot.sf ?? '—'} raw>
+                {snapshot.sf && <span className={`rounded border px-2 py-0.5 text-xs font-bold mt-1 inline-block ${SAFEGUARD_COLOR[snapshot.sf] ?? 'bg-slate-100 text-slate-600 border-slate-200'}`}>{snapshot.sf}</span>}
+              </KPICard>
+              <KPICard label="Confidence Score" value={pct(snapshot.cs)} />
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <KPICard label="Activation Rate"     value={pct(snapshot.ar)} />
+              <KPICard label="Meaningful AR"        value={pct(snapshot.mar)} />
+              {preview.resultSnapshot && <>
+                <KPICard label="Decision Pack" value={preview.resultSnapshot.decisionPack.status.toUpperCase()} />
+                <KPICard label="Metodologia"   value="v0.1" />
+              </>}
+            </div>
+          </Section>
+        )}
+
+        {/* ── I. SAFETY BOUNDARIES ── */}
+        <div className="rounded-lg border border-slate-100 bg-slate-50 px-5 py-3">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Safety Boundaries</p>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              'No real data', 'No file upload', 'No CSV/XLSX', 'N≥10 enforced',
+              'PII Guard active', 'KORA_ADMIN only', 'No scoring recalculation',
+              'Gate 3B required before real data',
+            ].map(n => (
+              <span key={n} className="text-[10px] border border-slate-200 bg-white rounded px-2 py-0.5 text-slate-500 font-medium">{n}</span>
+            ))}
+          </div>
+        </div>
+
+      </>}
+
+    </div>
+  );
+}
+
+// ── Layout sub-components ──────────────────────────────────────────────────
+
+function Section({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
+      <div className="flex items-center gap-2.5">
+        <div className="w-0.5 h-4 bg-[#6156F5] rounded-full flex-shrink-0" />
+        <div>
+          <p className="text-xs font-bold text-slate-700 uppercase tracking-wide leading-none">{title}</p>
+          {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function KPICard({ label, value, ok, warn, accent, raw, children }: {
+  label: string; value?: string; ok?: boolean; warn?: boolean; accent?: boolean; raw?: boolean; children?: React.ReactNode;
+}) {
+  const valColor = ok ? 'text-green-700' : warn ? 'text-amber-700' : accent ? 'text-[#6156F5]' : 'text-slate-900';
+  return (
+    <div className="rounded border border-slate-200 bg-[#fafafa] px-3 py-2.5">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1">{label}</p>
+      {!raw && value && <p className={`text-base font-bold ${valColor} leading-tight`}>{value}</p>}
+      {children}
+    </div>
+  );
+}
