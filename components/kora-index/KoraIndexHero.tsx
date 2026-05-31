@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import type { KoraIndexOutput } from '@/lib/types';
 import { SafeguardBadge } from '@/components/badges/SafeguardBadge';
 import { CalibrationBadge } from '@/components/badges/CalibrationBadge';
-import { MethodologyLabel } from '@/components/kora-index/MethodologyLabel';
 import { formatKoraIndex, formatConfidenceScore } from '@/lib/formatters';
 import { METHODOLOGY_VERSION, CALIBRATION_STATUS } from '@/lib/constants/kora';
 
@@ -58,10 +57,9 @@ export function KoraIndexHero({ output, className, variant = 'light' }: KoraInde
 
       {/* Methodology version — non-suppressible */}
       <div className={cn('mt-4 border-t pt-3', dark ? 'border-slate-700' : 'border-slate-100')}>
-        <MethodologyLabel
-          methodologyVersionId={methodologyVersionId}
-          calibrationStatus={calibrationStatus}
-        />
+        <p className={cn('text-[10px] font-mono', dark ? 'text-slate-500' : 'text-slate-400')}>
+          {methodologyVersionId}&nbsp;·&nbsp;{calibrationStatus}
+        </p>
       </div>
     </div>
   );

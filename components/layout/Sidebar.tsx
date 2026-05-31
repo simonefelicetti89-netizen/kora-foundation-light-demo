@@ -228,7 +228,7 @@ export function Sidebar() {
         {groups.map((group) => (
           <div key={group.heading} className="mb-3">
             <p
-              className="px-[18px] pb-1 text-[9px] font-medium uppercase tracking-[0.20em]"
+              className="px-[18px] pb-1 text-[11px] font-medium uppercase tracking-[0.20em]"
               style={{ color: 'rgba(255,255,255,0.22)' }}
             >
               {group.heading}
@@ -240,7 +240,7 @@ export function Sidebar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center justify-between py-[7px] text-[11.5px] transition-colors',
+                    'flex items-center justify-between py-[8px] text-[13.5px] transition-colors',
                     isActive
                       ? 'font-medium'
                       : 'hover:text-white/65',

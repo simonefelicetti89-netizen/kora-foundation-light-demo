@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KORA /company — Executive Editorial Ledger · Final Candidate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   KORA Executive Editorial Ledger — Design Token System
+   Off-white dominant (80-85%) · Navy as selective anchor · Violet as signal
+   Lime as precision marker only · Score max 32px · No isolated numerals
+───────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Core palette */
+  --navy:        #06032B;
+  --violet:      #6156F5;
+  --lime:        #C8FF47;
+  --surface:     #F7F7F3;   /* warm paper off-white — one tone, consistent */
+  --card:        #FFFFFF;
+
+  /* Text scale — all derived from navy */
+  --t1: #06032B;                  /* primary text */
+  --t2: rgba(6,3,43,0.70);       /* secondary text */
+  --t3: rgba(6,3,43,0.44);       /* muted text */
+  --t4: rgba(6,3,43,0.28);       /* faint text / metadata */
+
+  /* Border */
+  --b1: rgba(6,3,43,0.09);       /* standard border */
+  --b2: rgba(6,3,43,0.05);       /* subtle divider */
+
+  /* Semantic tints */
+  --tint-violet:  rgba(97,86,245,0.06);
+  --tint-lime:    rgba(200,255,71,0.16);
+  --tint-amber:   rgba(180,83,9,0.07);
+  --amber:        #B45309;
+
+  /* Sidebar */
+  --sidebar-bg:   #06032B;
+  --sidebar-w:    168px;
+
+  /* Type families */
+  --f-ed:   'Space Grotesk', system-ui, sans-serif;
+  --f-ui:   'DM Sans', system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Type scale — 4px grid base */
+  --fs-company: clamp(1.75rem, 3vw, 2.125rem); /* company name — largest */
+  --fs-score:   2rem;          /* 32px — KORA Index score */
+  --fs-body:    0.9375rem;     /* 15px — executive reading */
+  --fs-ui:      0.8125rem;     /* 13px — body/card text */
+  --fs-sm:      0.75rem;       /* 12px — small UI */
+  --fs-label:   0.625rem;      /* 10px — uppercase labels */
+  --fs-meta:    0.5625rem;     /* 9px — metadata / ledger header */
+  --fs-evidence:0.5rem;        /* 8px — evidence row */
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+a { text-decoration: none; cursor: default; color: inherit; }
+button { cursor: pointer; border: none; background: none; }
+
+body {
+  font-family: var(--f-ui);
+  background: #D8D9E6;
+  color: var(--t1);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Review chrome ──────────────────────────────────────────────────────────── */
+.review-bar {
+  position: sticky;
+  top: 0;
+  z-index: 300;
+  background: var(--navy);
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-family: var(--f-mono);
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.32);
+}
+.review-bar .chip {
+  background: rgba(200,255,71,0.12);
+  border: 1px solid rgba(200,255,71,0.28);
+  color: var(--lime);
+  padding: 2px 9px;
+  border-radius: 3px;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+}
+
+.tab-bar {
+  position: sticky;
+  top: 34px;
+  z-index: 200;
+  background: var(--card);
+  border-bottom: 1px solid var(--b1);
+  display: flex;
+  padding: 0 24px;
+}
+.tab-btn {
+  padding: 12px 20px;
+  font-size: var(--fs-sm);
+  font-family: var(--f-ui);
+  font-weight: 500;
+  color: var(--t3);
+  border-bottom: 2px solid transparent;
+  transition: color 0.12s, border-color 0.12s;
+}
+.tab-btn:hover { color: var(--t1); }
+.tab-btn.active { color: var(--t1); border-bottom-color: var(--violet); font-weight: 600; }
+
+.concept { display: none; padding: 32px 24px 72px; }
+.concept.active { display: block; }
+
+/* ── Viewport frame ─────────────────────────────────────────────────────────── */
+.vp {
+  max-width: 1280px;
+  margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.06),
+    0 8px 32px rgba(0,0,0,0.10),
+    0 24px 64px rgba(0,0,0,0.08),
+    0 0 0 1px rgba(0,0,0,0.04);
+}
+.vp-note {
+  text-align: center;
+  margin-top: 12px;
+  font-family: var(--f-mono);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: rgba(6,3,43,0.32);
+}
+
+/* ── Shell ──────────────────────────────────────────────────────────────────── */
+.shell { display: flex; min-height: 808px; }
+
+/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--sidebar-bg);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Logo area */
+.sidebar-brand {
+  padding: 18px 16px 15px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.brand-mark {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  opacity: 0.90;
+}
+.brand-word {
+  font-family: var(--f-ed);
+  font-weight: 800;
+  font-size: 15px;
+  color: #FFFFFF;
+  letter-spacing: -0.025em;
+  line-height: 1;
+}
+.brand-word sup {
+  font-size: 9px;
+  vertical-align: super;
+  font-weight: 400;
+  opacity: 0.55;
+  letter-spacing: 0;
+}
+.brand-tagline {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 7px;
+  color: rgba(255,255,255,0.20);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-top: 2px;
+  line-height: 1;
+}
+
+/* Nav */
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 0 12px;
+  overflow-y: auto;
+}
+.nav-section-label {
+  padding: 0 14px 5px;
+  font-family: var(--f-mono);
+  font-size: 7px;
+  letter-spacing: 0.22em;
+  color: rgba(255,255,255,0.18);
+  text-transform: uppercase;
+  margin-top: 16px;
+}
+.nav-section-label:first-child { margin-top: 0; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 7px 16px;
+  font-size: 11.5px;
+  font-family: var(--f-ui);
+  color: rgba(255,255,255,0.38);
+  transition: color 0.1s, background 0.1s;
+  position: relative;
+}
+.nav-item:hover { color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.04); }
+.nav-item.active {
+  color: rgba(255,255,255,0.92);
+  font-weight: 500;
+  background: rgba(255,255,255,0.07);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--violet);
+  border-radius: 0 2px 2px 0;
+}
+.nav-sep { height: 1px; background: rgba(255,255,255,0.05); margin: 10px 14px; }
+
+/* Sidebar footer */
+.sidebar-foot {
+  padding: 10px 14px;
+  border-top: 2px solid rgba(245,158,11,0.32);
+}
+.foot-env {
+  font-family: var(--f-mono);
+  font-size: 8px;
+  color: rgba(245,158,11,0.60);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.foot-role {
+  font-family: var(--f-mono);
+  font-size: 7.5px;
+  color: rgba(255,255,255,0.18);
+  margin-top: 2px;
+}
+
+/* ── Main area ──────────────────────────────────────────────────────────────── */
+.main {
+  flex: 1;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  min-width: 0;
+}
+
+/* ── Topbar ─────────────────────────────────────────────────────────────────── */
+.topbar {
+  flex-shrink: 0;
+  height: 42px;
+  background: var(--card);
+  border-bottom: 1px solid var(--b1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 44px;
+}
+.topbar-crumb {
+  font-size: 11.5px;
+  color: var(--t3);
+  font-family: var(--f-ui);
+}
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+
+/* ── Badges ─────────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--f-mono);
+  font-weight: 500;
+  border-radius: 3px;
+  padding: 2px 8px;
+  letter-spacing: 0.06em;
+  font-size: 8.5px;
+  white-space: nowrap;
+}
+.badge-clear {
+  background: var(--tint-lime);
+  border: 1px solid rgba(200,255,71,0.42);
+  color: #2D4A00;
+}
+.badge-clear::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #5A9C00;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+.badge-demo {
+  background: rgba(245,158,11,0.09);
+  border: 1px solid rgba(245,158,11,0.24);
+  color: #92400E;
+}
+.badge-neutral {
+  background: rgba(6,3,43,0.04);
+  border: 1px solid var(--b1);
+  color: var(--t3);
+}
+
+/* ── Eyebrow ────────────────────────────────────────────────────────────────── */
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: var(--fs-meta);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--t3);
+}
+
+/* ── Page content ───────────────────────────────────────────────────────────── */
+.page-content { padding: 40px 48px 36px; flex: 1; }
+
+/* ── Separators ─────────────────────────────────────────────────────────────── */
+.sep { height: 1px; background: var(--b1); margin: 22px 0; }
+.sep-subtle { height: 1px; background: var(--b2); margin: 14px 0; }
+
+/* ── Comparison section ─────────────────────────────────────────────────────── */
+.comp-wrap { max-width: 1080px; margin: 0 auto; }
+.comp-h1 { font-family: var(--f-ed); font-size: 1.375rem; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.comp-sub { font-size: var(--fs-ui); color: var(--t3); margin-bottom: 32px; }
+.comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+.comp-card {
+  background: var(--card);
+  border: 1px solid var(--b1);
+  border-radius: 9px;
+  padding: 22px;
+}
+.comp-card h3 { font-family: var(--f-ed); font-size: 13px; font-weight: 700; margin-bottom: 16px; color: var(--navy); }
+.comp-row { display: flex; gap: 10px; margin-bottom: 9px; font-size: 12px; }
+.comp-key {
+  font-size: 8.5px; font-family: var(--f-mono); letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--violet); width: 88px; flex-shrink: 0; padding-top: 1px; font-weight: 500;
+}
+.comp-val { color: var(--t2); line-height: 1.55; }
+.verdict {
+  background: var(--navy);
+  color: white;
+  border-radius: 9px;
+  padding: 26px 30px;
+}
+.verdict h3 { font-family: var(--f-ed); font-size: 13px; font-weight: 700; margin-bottom: 14px; color: white; }
+.verdict p { font-size: 12.5px; color: rgba(255,255,255,0.60); line-height: 1.7; }
+.verdict strong { color: white; }
+
+</style>
+</head>
+<body>
+
+<!-- ── Review bar ──────────────────────────────────────────────────────────── -->
+<div class="review-bar">
+  <span>KORA · Executive Editorial Ledger · Final Candidate · /company above-the-fold · docs/visual-concepts/</span>
+  <span class="chip">STATIC MOCKUP — NOT PRODUCTION</span>
+</div>
+
+<!-- ── Tab bar ─────────────────────────────────────────────────────────────── -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="show(0)">Executive Editorial Ledger</button>
+  <button class="tab-btn" onclick="show(1)">Confronto vs C1 e C4</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     EXECUTIVE EDITORIAL LEDGER
+     Fonde l'impianto visivo di C1 con la grammar informativa di C4.
+     Base estetica: editoriale, caldo, respirato.
+     Densità: controllata, gerarchizzata, board-grade.
+     KORA Index: segnale autorevole in un sistema — non numero totem.
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div class="concept active" id="c0">
+
+  <div style="max-width:960px; margin:0 auto 12px; padding:0 2px;">
+    <div style="font-family:var(--f-mono); font-size:8.5px; letter-spacing:0.18em; color:rgba(6,3,43,0.38); text-transform:uppercase;">
+      Executive Editorial Ledger — C1 estetica · C4 densità · KORA identity
+    </div>
+  </div>
+
+  <div class="vp">
+    <div class="shell">
+
+      <!-- ── SIDEBAR ── A. Brand / navigation rail ──────────────────────── -->
+      <div class="sidebar">
+
+        <!-- Logo: KORA brandmark SVG + wordmark -->
+        <div class="sidebar-brand">
+          <svg class="brand-mark" viewBox="0 0 424 418" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="KORA brandmark">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+              d="M148.768 117.887C189.054 101.199 234.334 101.199 274.606 117.887C287.456 123.227 297.663 133.434 302.989 146.27C319.677 186.556 319.677 231.836 302.989 272.108C297.649 284.958 287.442 295.165 274.606 300.491C234.32 317.179 189.04 317.179 148.768 300.491C135.918 295.151 125.711 284.944 120.385 272.108C103.697 231.822 103.697 186.542 120.385 146.27C125.725 133.42 135.932 123.213 148.768 117.887ZM211.498 124.924C190.444 124.924 171.74 138.302 159.961 158.98C139.268 170.759 125.904 189.463 125.904 210.518C125.904 231.572 139.282 250.276 159.961 262.055C171.74 282.747 190.444 296.111 211.498 296.111C232.552 296.111 251.257 282.733 263.035 262.055C283.728 250.276 297.092 231.572 297.092 210.518C297.092 189.463 283.714 170.759 263.035 158.98C251.257 138.288 232.552 124.924 211.498 124.924Z"
+              fill="#6156F5"/>
+          </svg>
+          <div>
+            <div class="brand-word">kora<sup>™</sup></div>
+            <span class="brand-tagline">Foundation Light</span>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+          <div class="nav-section-label">Company</div>
+          <a class="nav-item active">Executive Cockpit</a>
+          <a class="nav-item">KORA Index</a>
+          <a class="nav-item">Activation</a>
+          <div class="nav-sep"></div>
+          <a class="nav-item">Decision Pack</a>
+          <a class="nav-item">Evidence &amp; Governance</a>
+          <a class="nav-item">Data Intake</a>
+        </nav>
+
+        <!-- Status foot -->
+        <div class="sidebar-foot">
+          <div class="foot-env">Demo</div>
+          <div class="foot-role">COMPANY_ADMIN</div>
+        </div>
+      </div>
+
+      <!-- ── MAIN AREA ───────────────────────────────────────────────────── -->
+      <div class="main">
+
+        <!-- Topbar -->
+        <div class="topbar">
+          <span class="topbar-crumb">Executive Cockpit</span>
+          <div class="topbar-right">
+            <span class="badge badge-demo">synthetic_demo_data</span>
+            <span class="badge badge-neutral">KORA v0.1</span>
+            <div style="width:28px;height:28px;border-radius:50%;background:rgba(6,3,43,0.08);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:600;color:var(--t3);font-family:var(--f-ed);">SF</div>
+          </div>
+        </div>
+
+        <div class="page-content">
+
+          <!-- ─────────────────────────────────────────────────────────────
+               B. CONTEXT ROW — Dove siamo?
+               Company name is the largest element on the page.
+               ───────────────────────────────────────────────────────── -->
+          <div style="margin-bottom:22px;">
+            <div class="eyebrow" style="margin-bottom:10px; letter-spacing:0.26em;">
+              Cabina di Regia &nbsp;·&nbsp; Q1–Q3 2025
+            </div>
+            <div style="display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+              <div style="font-family:var(--f-ed); font-size:var(--fs-company); font-weight:800; color:var(--navy); letter-spacing:-0.026em; line-height:1.04;">
+                Meridiana Group
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding-bottom:3px;">
+                <span class="badge badge-clear">CLEAR</span>
+                <span style="width:1px;height:10px;background:var(--b1);"></span>
+                <span style="font-size:11.5px;color:var(--t3);">Tenant attivo</span>
+                <span style="width:1px;height:10px;background:var(--b1);"></span>
+                <span style="font-size:11.5px;color:var(--t3);">5.000 lavoratori · dati sintetici</span>
+                <span style="width:1px;height:10px;background:var(--b1);"></span>
+                <span style="font-size:11.5px;color:rgba(97,86,245,0.75);font-weight:500;">Decision Pack v2 disponibile</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- ─────────────────────────────────────────────────────────────
+               C. EXECUTIVE READING — Cosa sta succedendo?
+               Il cuore della schermata. Sempre prima delle metriche.
+               ───────────────────────────────────────────────────────── -->
+          <div style="margin-bottom:22px;">
+            <div class="eyebrow" style="margin-bottom:10px; color:var(--t3);">Lettura executive</div>
+            <p style="font-family:var(--f-ui); font-size:var(--fs-body); font-weight:400; color:var(--t2); line-height:1.75; max-width:700px;">
+              Il KORA Index di 54 riflette un miglioramento misurabile nel periodo Q4: il tasso di attivazione
+              supera per la prima volta la soglia CLEAR, segnalando un'espansione reale dell'attivazione
+              organizzativa. Persiste un gap strutturale nel pillar LEGACY — al 6% del totale — che comprime
+              il macroblocco Distribution &amp; Equity e mantiene il punteggio sotto il potenziale dell'organizzazione.
+            </p>
+          </div>
+
+          <div class="sep"></div>
+
+          <!-- ─────────────────────────────────────────────────────────────
+               D + E. TWO-COLUMN: Intelligence + Decision
+               LEFT: KORA Index unit + mini Board Ledger
+               RIGHT: Decision required + delta + CTA
+               ───────────────────────────────────────────────────────── -->
+          <div style="display:grid; grid-template-columns:1fr 288px; gap:20px; align-items:start; margin-bottom:22px;">
+
+            <!-- LEFT COLUMN -->
+            <div style="display:flex; flex-direction:column; gap:0;">
+
+              <!-- KI Intelligence Unit — 3. Quanto è affidabile? / driver / vincolo -->
+              <div style="background:var(--card); border:1px solid var(--b1); border-left:3px solid var(--violet); border-radius:0 9px 0 0; padding:20px 24px;">
+
+                <div class="eyebrow" style="margin-bottom:13px; color:rgba(97,86,245,0.70);">KORA Index v3</div>
+
+                <!-- Score row — 32px max -->
+                <div style="display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; margin-bottom:13px;">
+                  <span style="font-family:var(--f-ed); font-size:var(--fs-score); font-weight:800; color:var(--navy); letter-spacing:-0.035em; line-height:1;">54</span>
+                  <span style="font-size:12.5px; color:var(--t4); font-weight:300;">/100</span>
+                  <span class="badge badge-clear" style="margin-left:2px;">CLEAR</span>
+                  <!-- Confidence — inline, never separate card -->
+                  <span style="display:flex; align-items:baseline; gap:5px; margin-left:8px;">
+                    <span style="font-size:10.5px; color:var(--t3); font-family:var(--f-ui);">Confidence</span>
+                    <span style="font-size:14px; font-weight:700; color:var(--violet); font-family:var(--f-ed);">72%</span>
+                    <span style="font-size:8.5px; color:var(--t4); font-family:var(--f-mono);">esterno · peso 0</span>
+                  </span>
+                </div>
+
+                <!-- Signal grid: AR, MAR, VR + Evidence marker -->
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px 16px; margin-bottom:13px;">
+                  <div>
+                    <div style="font-family:var(--f-mono); font-size:var(--fs-meta); color:var(--t4); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:3px;">AR</div>
+                    <div style="font-family:var(--f-ed); font-size:1rem; font-weight:700; color:var(--navy);">52%</div>
+                    <div style="font-size:10.5px; color:var(--t3); margin-top:1px;">Activation Rate</div>
+                  </div>
+                  <div>
+                    <div style="font-family:var(--f-mono); font-size:var(--fs-meta); color:var(--t4); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:3px;">MAR</div>
+                    <div style="font-family:var(--f-ed); font-size:1rem; font-weight:700; color:var(--navy);">38%</div>
+                    <div style="font-size:10.5px; color:var(--t3); margin-top:1px;">Meaningful Activation</div>
+                  </div>
+                  <div>
+                    <div style="font-family:var(--f-mono); font-size:var(--fs-meta); color:var(--t4); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:3px;">VR</div>
+                    <div style="font-family:var(--f-ed); font-size:1rem; font-weight:700; color:var(--navy);">41%</div>
+                    <div style="font-size:10.5px; color:var(--t3); margin-top:1px;">Verification Rate</div>
+                  </div>
+                </div>
+
+                <!-- Evidence marker + DP status — compact -->
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:9px 12px; background:var(--surface); border-radius:5px;">
+                  <span style="font-size:10.5px; color:var(--t3); font-family:var(--f-ui);">Qualità evidenza: <span style="font-weight:600; color:var(--t2);">moderata</span></span>
+                  <span style="width:1px;height:10px;background:var(--b1);"></span>
+                  <span style="font-size:10.5px; color:rgba(97,86,245,0.75); font-weight:500;">Decision Pack v2 · board preview pronto</span>
+                </div>
+
+                <!-- Methodology footer -->
+                <div style="margin-top:12px; font-family:var(--f-mono); font-size:8px; color:var(--t4);">
+                  KORA Methodology v0.1 · pre_empirical_calibration · Confidence Score: indicatore esterno, peso = 0 nel KORA Index v3
+                </div>
+              </div>
+
+              <!-- Mini Board Ledger — 4 righe · E. Board Ledger mini-section -->
+              <!-- Integra la grammar informativa di C4 senza raffreddare il layout -->
+              <div style="background:var(--card); border:1px solid var(--b1); border-left:3px solid var(--violet); border-top:none; border-radius:0 0 9px 0; overflow:hidden;">
+
+                <!-- Ledger header -->
+                <div style="display:grid; grid-template-columns:130px 150px 1fr; padding:7px 24px; background:var(--surface); border-bottom:1px solid var(--b1);">
+                  <div style="font-family:var(--f-mono); font-size:7.5px; letter-spacing:0.2em; text-transform:uppercase; color:var(--t4);">Segnale</div>
+                  <div style="font-family:var(--f-mono); font-size:7.5px; letter-spacing:0.2em; text-transform:uppercase; color:var(--t4);">Valore</div>
+                  <div style="font-family:var(--f-mono); font-size:7.5px; letter-spacing:0.2em; text-transform:uppercase; color:var(--t4);">Lettura board</div>
+                </div>
+
+                <!-- Row 1: Current state — 3. Quanto è affidabile? -->
+                <div style="display:grid; grid-template-columns:130px 150px 1fr; padding:11px 24px; border-bottom:1px solid var(--b2); align-items:center; gap:8px;">
+                  <div style="font-size:10.5px; font-weight:600; color:var(--t3); font-family:var(--f-ui);">Stato attuale</div>
+                  <div style="font-size:var(--fs-ui); font-weight:600; color:var(--navy); display:flex; align-items:center; gap:6px;">
+                    KI 54
+                    <span class="badge badge-clear" style="font-size:8px; padding:1px 6px;">CLEAR</span>
+                  </div>
+                  <div style="font-size:var(--fs-sm); color:var(--t2); line-height:1.45;">
+                    Miglioramento significativo vs S1 (34). Activation quality in crescita.
+                  </div>
+                </div>
+
+                <!-- Row 2: Primary driver — 4. Qual è il vincolo? (driver) -->
+                <div style="display:grid; grid-template-columns:130px 150px 1fr; padding:11px 24px; border-bottom:1px solid var(--b2); align-items:center; gap:8px; background:rgba(6,3,43,0.012);">
+                  <div style="font-size:10.5px; font-weight:600; color:rgba(97,86,245,0.75); font-family:var(--f-ui);">Driver primario</div>
+                  <div style="font-size:var(--fs-ui); font-weight:600; color:var(--navy);">AR 52%</div>
+                  <div style="font-size:var(--fs-sm); color:var(--t2); line-height:1.45;">
+                    Soglia CLEAR superata per la prima volta. Continuity (CO 28%) ancora debole.
+                  </div>
+                </div>
+
+                <!-- Row 3: Main constraint — 4. Qual è il vincolo? -->
+                <div style="display:grid; grid-template-columns:130px 150px 1fr; padding:11px 24px; border-bottom:1px solid var(--b2); align-items:center; gap:8px; background:var(--tint-amber);">
+                  <div style="font-size:10.5px; font-weight:600; color:var(--amber); font-family:var(--f-ui);">Vincolo</div>
+                  <div style="font-size:var(--fs-ui); font-weight:600; color:var(--amber);">LEGACY 6%</div>
+                  <div style="font-size:var(--fs-sm); color:var(--t2); line-height:1.45;">
+                    Gap strutturale nel pillar — comprime PB e Distribution &amp; Equity (68/100).
+                  </div>
+                </div>
+
+                <!-- Row 4: Required decision — 5. Cosa deve decidere l'azienda? (decision climax) -->
+                <div style="display:grid; grid-template-columns:130px 150px 1fr; padding:13px 24px; align-items:center; gap:8px; background:var(--tint-violet); border-left:2px solid var(--violet);">
+                  <div style="font-size:10px; font-weight:700; color:var(--violet); font-family:var(--f-ui); letter-spacing:0.03em;">Decisione</div>
+                  <div style="font-size:var(--fs-ui); font-weight:600; color:var(--navy);">Ribilanciare spesa</div>
+                  <div style="font-size:var(--fs-sm); color:var(--t2); line-height:1.45;">
+                    Shift verso attivazione profonda — CONNECTION e LEGACY. Stima +8pt PB.
+                  </div>
+                </div>
+
+              </div><!-- /mini ledger -->
+            </div><!-- /left col -->
+
+            <!-- RIGHT COLUMN — 5. Cosa deve decidere? / 6. Quale output aprire? -->
+            <div style="background:var(--card); border:1px solid var(--b1); border-radius:9px; padding:22px 20px; display:flex; flex-direction:column; gap:16px;">
+
+              <div>
+                <div class="eyebrow" style="color:var(--t4); margin-bottom:8px;">Decisione richiesta</div>
+                <p style="font-family:var(--f-ed); font-size:15px; font-weight:700; color:var(--navy); line-height:1.38; margin-bottom:0;">
+                  Ribilanciare la spesa verso attivazione profonda
+                </p>
+              </div>
+
+              <p style="font-size:var(--fs-sm); color:var(--t2); line-height:1.65;">
+                LEGACY al 6% e Continuity al 28% segnalano budget concentrato in eventi a bassa
+                profondità. Riallineare verso programmi senior-junior e CONNECTION può portare
+                il Pillar Balance sopra i 56 punti nel prossimo periodo.
+              </p>
+
+              <!-- Scenario movement — cosa è cambiato -->
+              <div style="background:var(--surface); border-radius:6px; padding:10px 12px; border:1px solid var(--b1);">
+                <div style="font-family:var(--f-mono); font-size:7.5px; letter-spacing:0.18em; text-transform:uppercase; color:var(--t4); margin-bottom:7px;">Variazione vs periodo S1</div>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                  <div style="display:flex; align-items:baseline; gap:6px;">
+                    <span style="font-size:11px; font-weight:600; color:var(--violet);">↑ +20 pts</span>
+                    <span style="font-size:10.5px; color:var(--t3);">KORA Index (34 → 54)</span>
+                  </div>
+                  <div style="display:flex; align-items:baseline; gap:6px;">
+                    <span style="font-size:11px; font-weight:600; color:var(--violet);">↑ +12 pts</span>
+                    <span style="font-size:10.5px; color:var(--t3);">Confidence (60% → 72%)</span>
+                  </div>
+                  <div style="display:flex; align-items:baseline; gap:6px;">
+                    <span style="font-size:11px; font-weight:600; color:#5A9C00;">✓</span>
+                    <span style="font-size:10.5px; color:var(--t3);">Safeguard WARNING → CLEAR</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Output description -->
+              <div style="background:rgba(97,86,245,0.04); border-radius:6px; padding:10px 12px; border:1px solid rgba(97,86,245,0.14);">
+                <div style="font-size:11px; color:var(--t3); margin-bottom:4px;">Output disponibile</div>
+                <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:1px;">KORA Decision Pack v2</div>
+                <div style="font-size:10.5px; color:var(--t3);">Board-ready · 8 sezioni · Q1–Q3 2025</div>
+              </div>
+
+              <!-- CTAs — 6. Quale output aprire? -->
+              <div style="display:flex; flex-direction:column; gap:8px;">
+                <a style="display:block; background:var(--navy); color:white; text-align:center; padding:11px 16px; border-radius:7px; font-size:12.5px; font-weight:600; font-family:var(--f-ui); letter-spacing:0.01em;">
+                  Apri Decision Pack
+                </a>
+                <a style="display:block; border:1px solid var(--b1); color:var(--t3); text-align:center; padding:9px 16px; border-radius:7px; font-size:12px; font-family:var(--f-ui);">
+                  Board Pack Preview
+                </a>
+                <a style="display:block; text-align:center; padding:7px; font-size:11.5px; color:var(--violet); font-family:var(--f-ui);">
+                  KORA Index Detail →
+                </a>
+              </div>
+
+            </div><!-- /right col -->
+          </div><!-- /two-col -->
+
+          <!-- ─────────────────────────────────────────────────────────────
+               F. EVIDENCE / BOUNDARY ROW — 7. Perché non è sorveglianza?
+               Riga identitaria — non disclaimer. Accento lime = KORA marker.
+               ───────────────────────────────────────────────────────── -->
+          <div style="border-left:3px solid rgba(200,255,71,0.50); background:rgba(200,255,71,0.03); border-top:1px solid rgba(200,255,71,0.15); border-bottom:1px solid rgba(200,255,71,0.15); padding:9px 14px; margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+            <div style="font-family:var(--f-mono); font-size:var(--fs-evidence); color:var(--t4); letter-spacing:0.09em; display:flex; align-items:center; flex-wrap:wrap; gap:0;">
+              <span>N≥10 enforced</span>
+              <span style="margin:0 6px; opacity:0.4;">·</span>
+              <span>PII Guard active</span>
+              <span style="margin:0 6px; opacity:0.4;">·</span>
+              <span>Organization-level only</span>
+              <span style="margin:0 6px; opacity:0.4;">·</span>
+              <span>No individual surveillance</span>
+              <span style="margin:0 6px; opacity:0.4;">·</span>
+              <span>synthetic_demo_data: true</span>
+              <span style="margin:0 6px; opacity:0.4;">·</span>
+              <span>Confidence Score: esterno al KORA Index v3</span>
+            </div>
+            <div style="font-family:var(--f-mono); font-size:var(--fs-evidence); color:rgba(200,255,71,0.50); letter-spacing:0.08em; flex-shrink:0;">KORA Methodology v0.1</div>
+          </div>
+
+          <!-- ─────────────────────────────────────────────────────────────
+               G. NAVIGATION AFFORDANCE — percorso naturale
+               ───────────────────────────────────────────────────────── -->
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span style="font-family:var(--f-mono); font-size:var(--fs-meta); color:var(--t4); margin-right:2px; letter-spacing:0.12em; text-transform:uppercase;">Esplora</span>
+            <a style="font-size:var(--fs-sm); color:var(--t3); padding:4px 10px; border:1px solid var(--b1); border-radius:5px; font-family:var(--f-ui);">KORA Index Detail</a>
+            <a style="font-size:var(--fs-sm); color:var(--t3); padding:4px 10px; border:1px solid var(--b1); border-radius:5px;">Activation</a>
+            <a style="font-size:var(--fs-sm); color:var(--t3); padding:4px 10px; border:1px solid var(--b1); border-radius:5px;">Pillar Balance</a>
+            <a style="font-size:var(--fs-sm); color:var(--t3); padding:4px 10px; border:1px solid var(--b1); border-radius:5px;">Data Intake</a>
+            <a style="font-size:var(--fs-sm); color:var(--t3); padding:4px 10px; border:1px solid var(--b1); border-radius:5px;">Evidence &amp; Governance</a>
+          </div>
+
+        </div><!-- /page-content -->
+      </div><!-- /main -->
+    </div><!-- /shell -->
+  </div><!-- /vp -->
+
+  <div class="vp-note">
+    Executive Editorial Ledger · /company above-the-fold · 1280 × 808px · STATIC MOCKUP — NOT PRODUCTION
+  </div>
+</div><!-- /c0 -->
+
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     CONFRONTO — Executive Editorial Ledger vs C1 vs C4
+     ══════════════════════════════════════════════════════════════════════════ -->
+<div class="concept" id="c1">
+  <div class="comp-wrap">
+
+    <div class="comp-h1">Confronto — Executive Editorial Ledger vs C1 vs C4</div>
+    <div class="comp-sub">Final candidate analysis · docs/visual-concepts/company-executive-editorial-ledger.html</div>
+
+    <div class="comp-grid">
+
+      <div class="comp-card">
+        <h3>C1 — Executive Editorial (precedente)</h3>
+        <div class="comp-row"><div class="comp-key">Punti forti</div><div class="comp-val">Elegante, respirato, molto leggibile. Il 2-col lettura+decisione funziona bene.</div></div>
+        <div class="comp-row"><div class="comp-key">Problema</div><div class="comp-val">Troppo povero informativamente per un board. Solo score + 3 signal + CTA. Non mostra i driver, il vincolo, il delta vs S1, l'evidence quality.</div></div>
+        <div class="comp-row"><div class="comp-key">Mancava</div><div class="comp-val">Mini ledger · scenario delta · evidence row · AR/MAR/VR signals · DP status marker</div></div>
+        <div class="comp-row"><div class="comp-key">Superato da EEL</div><div class="comp-val">EEL porta la stessa eleganza editoriale con densità informativa board-grade.</div></div>
+      </div>
+
+      <div class="comp-card">
+        <h3>C4 — Board Intelligence Ledger (precedente)</h3>
+        <div class="comp-row"><div class="comp-key">Punti forti</div><div class="comp-val">Massima originalità, governance-grade, struttura register proprietaria. Il formato non esiste nei competitor.</div></div>
+        <div class="comp-row"><div class="comp-key">Problema</div><div class="comp-val">Come homepage aveva rischio freddezza: tutto-tabella, tutto-documento, poca lettura editoriale immediata. Troppo compliance-portal come first-screen.</div></div>
+        <div class="comp-row"><div class="comp-key">Integrato in EEL</div><div class="comp-val">La grammar del ledger (4 righe signal/value/interpretation + decision row climax) è intatta in EEL come mini-section sotto il KI unit.</div></div>
+        <div class="comp-row"><div class="comp-key">Cosa è rimasto fuori</div><div class="comp-val">Il formato full-register come homepage. Il layout "solo tabella". La freddezza totale.</div></div>
+      </div>
+
+    </div><!-- /comp-grid -->
+
+    <!-- Detailed comparison: what changed -->
+    <div style="background:var(--card); border:1px solid var(--b1); border-radius:9px; overflow:hidden; margin-bottom:28px;">
+      <div style="background:var(--surface); padding:14px 22px; border-bottom:1px solid var(--b1);">
+        <div style="font-family:var(--f-ed); font-size:13px; font-weight:700; color:var(--navy);">Cosa è cambiato — C1 → Executive Editorial Ledger</div>
+      </div>
+      <div style="padding:0;">
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0;">
+
+          <!-- Column headers -->
+          <div style="padding:10px 22px; border-bottom:1px solid var(--b2); border-right:1px solid var(--b2); background:rgba(6,3,43,0.02);">
+            <div style="font-family:var(--f-mono); font-size:8px; letter-spacing:0.18em; color:var(--t4); text-transform:uppercase;">C1 precedente</div>
+          </div>
+          <div style="padding:10px 22px; border-bottom:1px solid var(--b2); background:rgba(97,86,245,0.03);">
+            <div style="font-family:var(--f-mono); font-size:8px; letter-spacing:0.18em; color:rgba(97,86,245,0.70); text-transform:uppercase;">Executive Editorial Ledger</div>
+          </div>
+
+          <!-- Row: KI unit -->
+          <div style="padding:12px 22px; border-bottom:1px solid var(--b2); border-right:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--t3); margin-bottom:4px;">KI Unit</div>
+            <div style="font-size:12px; color:var(--t2);">Score + Confidence + CLEAR badge. Solo 3 segnali.</div>
+          </div>
+          <div style="padding:12px 22px; border-bottom:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--violet); margin-bottom:4px;">KI Unit — ampliata</div>
+            <div style="font-size:12px; color:var(--t2);">Score + CS + CLEAR + AR + MAR + VR + evidence marker + DP status. 7 segnali strutturati.</div>
+          </div>
+
+          <!-- Row: Mini ledger -->
+          <div style="padding:12px 22px; border-bottom:1px solid var(--b2); border-right:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--t3); margin-bottom:4px;">Board Ledger</div>
+            <div style="font-size:12px; color:var(--t2);">Assente.</div>
+          </div>
+          <div style="padding:12px 22px; border-bottom:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--violet); margin-bottom:4px;">Mini Board Ledger — 4 righe</div>
+            <div style="font-size:12px; color:var(--t2);">Stato attuale · Driver · Vincolo · Decisione (climax violet). Grammar C4 integrata sotto il KI unit.</div>
+          </div>
+
+          <!-- Row: Scenario delta -->
+          <div style="padding:12px 22px; border-bottom:1px solid var(--b2); border-right:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--t3); margin-bottom:4px;">Scenario delta</div>
+            <div style="font-size:12px; color:var(--t2);">Assente.</div>
+          </div>
+          <div style="padding:12px 22px; border-bottom:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--violet); margin-bottom:4px;">Scenario delta — presente</div>
+            <div style="font-size:12px; color:var(--t2);">+20 KI pts · +12 CS pts · WARNING → CLEAR. Nella colonna decision right.</div>
+          </div>
+
+          <!-- Row: Evidence row -->
+          <div style="padding:12px 22px; border-bottom:1px solid var(--b2); border-right:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--t3); margin-bottom:4px;">Evidence row</div>
+            <div style="font-size:12px; color:var(--t2);">Presente, ma trattata come footer generico.</div>
+          </div>
+          <div style="padding:12px 22px; border-bottom:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--violet); margin-bottom:4px;">Evidence row — identitaria</div>
+            <div style="font-size:12px; color:var(--t2);">Accento lime 3px sx · background lime faint. Non disclaimer: riga KORA proprietaria di identità e governance.</div>
+          </div>
+
+          <!-- Row: CTA -->
+          <div style="padding:12px 22px; border-right:1px solid var(--b2);">
+            <div style="font-size:11px; font-weight:600; color:var(--t3); margin-bottom:4px;">CTA</div>
+            <div style="font-size:12px; color:var(--t2);">"Apri Decision Pack →" — bottone standard navy.</div>
+          </div>
+          <div style="padding:12px 22px;">
+            <div style="font-size:11px; font-weight:600; color:var(--violet); margin-bottom:4px;">CTA — più contesto</div>
+            <div style="font-size:12px; color:var(--t2);">"Apri Decision Pack" + DP v2 description box prima del CTA. Più chiaro perché cliccare.</div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /comparison table -->
+
+    <!-- Verdict -->
+    <div class="verdict">
+      <h3>Raccomandazione — da approvare prima di qualsiasi implementazione</h3>
+      <p>
+        <strong>Executive Editorial Ledger supera C1 e C4</strong> su tutti e 14 i criteri PASS:<br><br>
+
+        Il mockup è board-ready: può essere mostrato al CFO, all'ESG Lead, al board di un'azienda da 5.000 dipendenti
+        senza imbarazzo. La gerarchia è chiara in 10 secondi: Company name → Reading → KORA Index unit → Ledger → Decision.<br><br>
+
+        <strong>Non è una dashboard.</strong> Non ci sono chart dominanti, KPI grid uguali, o numeri giganti isolati.
+        Il KORA Index a 32px è autorevole ma non totem.<br><br>
+
+        <strong>Non è un report freddo.</strong> La lettura executive in 3 righe, il respiro editoriale, il logo KORA,
+        la palette warm off-white mantengono il calore di C1.<br><br>
+
+        <strong>Cosa resta da decidere prima dell'implementazione:</strong><br>
+        1. Approvare questo layout come pattern master per <code>/company</code>.<br>
+        2. Confermare che C4 (ledger full) sia il pattern per <code>/company/kora-index</code>.<br>
+        3. Decidere se la sidebar vuole il brandmark violet o white on dark (SVG variant).<br>
+        4. Allineamento con designer/NEXT su font proprietari KORA (Space Grotesk è il sostituto attuale).<br><br>
+
+        <strong>Solo dopo approvazione esplicita del founder si procede con l'implementazione React/Tailwind.</strong>
+      </p>
+    </div>
+
+    <div style="text-align:center; margin-top:22px; font-family:var(--f-mono); font-size:8px; color:var(--t4); letter-spacing:0.1em;">
+      docs/visual-concepts/company-executive-editorial-ledger.html · STATIC MOCKUP — NOT PRODUCTION
+    </div>
+
+  </div><!-- /comp-wrap -->
+</div><!-- /c1 (comparison tab) -->
+
+
+<script>
+const ids = ['c0','c1'];
+function show(idx) {
+  ids.forEach((id,i) => document.getElementById(id).classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+}
+</script>
+</body>
+</html>

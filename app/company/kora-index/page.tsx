@@ -1,291 +1,475 @@
 'use client';
 
 import { useDemoState } from '@/lib/demo-state';
-import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
-import { KoraIndexBuildCard } from '@/components/kora-index/KoraIndexBuildCard';
-import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
-import { ComponentBreakdownChart } from '@/components/charts/ComponentBreakdownChart';
-import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
-import { ConfidenceBreakdown } from '@/components/kora-index/ConfidenceBreakdown';
-import { ExplainabilityPanel } from '@/components/kora-index/ExplainabilityPanel';
-import { MacroblockCard } from '@/components/kora-index/MacroblockCard';
-import { EligibilityGatePanel } from '@/components/kora-index/EligibilityGatePanel';
-import { EconomicReliefPanel } from '@/components/kora-index/EconomicReliefPanel';
-import { BlockedByDesignPanel } from '@/components/kora-index/BlockedByDesignPanel';
-import { BudgetToHumanImpactPanel } from '@/components/kora-index/BudgetToHumanImpactPanel';
-import { RecommendationsPanel } from '@/components/kora-index/RecommendationsPanel';
-import { MethodologyGlossary } from '@/components/kora-index/MethodologyGlossary';
-import Link from 'next/link';
 import { useScoringResult, useDemoScenarioComparison } from '@/lib/scoring-result';
-import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
-import { explainabilityService } from '@/services/explainability/ExplainabilityService';
-import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
-import { ingestionSimulatorService } from '@/services/ingestion-simulator/IngestionSimulatorService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
-import { tenantService } from '@/services/tenant/TenantService';
-import type { MacroblockScore } from '@/lib/types';
+import { tenantService }              from '@/services/tenant/TenantService';
+import { formatConfidenceScore }      from '@/lib/formatters';
+import { TOKENS }                     from '@/lib/design/kora-design-tokens';
+import type { KoraIndexComponent, MacroblockScore } from '@/lib/types';
+
+// ── Reused cockpit components ─────────────────────────────────────────────────
+import { PageMasthead }    from '@/components/ui/PageMasthead';
+import { IndexRingCard }   from '@/components/company/cockpit/IndexRingCard';
+import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
+
+// ── Local helpers ─────────────────────────────────────────────────────────────
+
+const MB_DESC: Record<string, string> = {
+  REACH:   'Share e intensità dell\'attivazione nella forza lavoro',
+  QUALITY: 'Qualità, continuità e verificabilità delle attivazioni',
+  EQUITY:  'Distribuzione equa tra segmenti della workforce',
+  BTI:     'Efficienza del budget people in attivazione profonda',
+};
+
+const COMP_DESC: Record<string, string> = {
+  AR:  'Activation Rate — share workforce con almeno un IU',
+  MAR: 'Meaningful Activation Rate — share sopra soglia materialità',
+  NI:  'Normalized Intensity — IU medi per worker attivo',
+  WB:  'Worker Balance — equità distribuzione IU tra worker attivi',
+  PC:  'Pillar Coverage — n. pillar con presenza significativa',
+  PB:  'Pillar Balance — equità distribuzione IU tra pillar coperti',
+  EQ:  'Equity — distribuzione equa tra segmenti workforce',
+  VR:  'Verification Rate — share IU con evidenza verificata',
+  CO:  'Continuity — share worker con engagement multi-periodo',
+  CS:  'Confidence Score — affidabilità dati (esterno, peso 0)',
+};
+
+function fmtPct(v: number) { return `${Math.round(v * 100)}%`; }
+function fmtWeight(w: number) { return `${Math.round(w * 100)}%`; }
+
+// ── MacroblockDetailSection ───────────────────────────────────────────────────
+
+interface MacroblockDetailSectionProps {
+  mb: MacroblockScore;
+  components: KoraIndexComponent[];
+  prevScore?: number;
+}
+
+function MacroblockDetailSection({ mb, components, prevScore }: MacroblockDetailSectionProps) {
+  const mbComponents = components.filter(
+    (c) => c.macroblock === mb.code && !c.external,
+  );
+  const delta = prevScore != null ? mb.score - prevScore : null;
+
+  return (
+    <div
+      className="p-6"
+      style={{
+        background:   TOKENS.surface,
+        border:       TOKENS.cardBorder,
+        borderRadius: TOKENS.cardRadius,
+      }}
+    >
+      {/* Macroblock header */}
+      <div className="flex items-baseline justify-between gap-4 mb-4">
+        <div>
+          <p
+            className="font-kora-serif text-kora-ink"
+            style={{ fontSize: '1.25rem', letterSpacing: '-0.01em' }}
+          >
+            {mb.label}
+          </p>
+          <p style={{ fontSize: '11px', color: 'rgba(20,18,46,0.42)', marginTop: 2 }}>
+            {MB_DESC[mb.code]}
+          </p>
+        </div>
+        <div className="flex items-baseline gap-2 flex-shrink-0">
+          <span style={{ fontSize: '11px', color: 'rgba(20,18,46,0.50)' }}>
+            peso {fmtWeight(mb.weight)}
+          </span>
+          <span
+            style={{
+              fontFamily:    'var(--font-inter)',
+              fontWeight:    700,
+              fontSize:      '22px',
+              color:         TOKENS.ink,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {mb.score}
+          </span>
+          {delta != null && (
+            <span
+              style={{
+                fontSize:   '11px',
+                fontWeight: 600,
+                color:      delta >= 0 ? TOKENS.safeguard.pass.text : TOKENS.safeguard.cap.text,
+              }}
+            >
+              {delta >= 0 ? '+' : ''}{delta}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Macroblock bar */}
+      <div
+        className="rounded-full h-1.5 overflow-hidden mb-5"
+        style={{ background: TOKENS.inkTrack }}
+      >
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${mb.score}%`, background: TOKENS.ink }}
+        />
+      </div>
+
+      {/* Component rows */}
+      {mbComponents.length > 0 && (
+        <div className="space-y-3">
+          <p
+            className="font-mono uppercase"
+            style={{ fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(20,18,46,0.38)' }}
+          >
+            Componenti
+          </p>
+          {mbComponents.map((c) => (
+            <div key={c.code}>
+              <div className="flex items-baseline justify-between gap-3 mb-1">
+                <div className="flex items-baseline gap-2 min-w-0">
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-inter)',
+                      fontWeight: 600,
+                      fontSize:   '12px',
+                      color:      TOKENS.ink,
+                    }}
+                  >
+                    {c.code}
+                  </span>
+                  <span
+                    className="truncate"
+                    style={{ fontSize: '11px', color: 'rgba(20,18,46,0.42)' }}
+                  >
+                    {COMP_DESC[c.code] ?? c.label}
+                  </span>
+                </div>
+                <div className="flex items-baseline gap-1.5 flex-shrink-0">
+                  <span style={{ fontSize: '10px', color: 'rgba(20,18,46,0.40)' }}>
+                    w {fmtWeight(c.weight)}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-inter)',
+                      fontWeight: 700,
+                      fontSize:   '13px',
+                      color:      TOKENS.ink,
+                      minWidth:   '34px',
+                      textAlign:  'right',
+                    }}
+                  >
+                    {fmtPct(c.value)}
+                  </span>
+                </div>
+              </div>
+              <div
+                className="rounded-full h-1 overflow-hidden"
+                style={{ background: TOKENS.inkTrack }}
+              >
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: fmtPct(c.value), background: 'rgba(20,18,46,0.30)' }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ConfidenceBlock ───────────────────────────────────────────────────────────
+
+interface ConfidenceBlockProps {
+  score: number;
+}
+
+function ConfidenceBlock({ score }: ConfidenceBlockProps) {
+  return (
+    <div
+      className="p-6"
+      style={{
+        background:   TOKENS.surface,
+        border:       TOKENS.cardBorder,
+        borderRadius: TOKENS.cardRadius,
+      }}
+    >
+      <div className="flex items-baseline justify-between gap-4 mb-3">
+        <p
+          className="font-kora-serif text-kora-ink"
+          style={{ fontSize: '1.25rem', letterSpacing: '-0.01em' }}
+        >
+          Confidence Score
+        </p>
+        <div className="flex items-baseline gap-1.5">
+          <span
+            style={{
+              fontFamily: 'var(--font-inter)',
+              fontWeight: 700,
+              fontSize:   '22px',
+              color:      TOKENS.accent,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {formatConfidenceScore(score)}
+          </span>
+          <span
+            className="font-mono"
+            style={{ fontSize: '8px', color: 'rgba(20,18,46,0.38)', letterSpacing: '0.05em' }}
+          >
+            esterno&nbsp;·&nbsp;peso&nbsp;0
+          </span>
+        </div>
+      </div>
+      <p style={{ fontSize: '12.5px', color: 'rgba(20,18,46,0.58)', lineHeight: 1.65, maxWidth: 580 }}>
+        Il Confidence Score non è un componente del KORA Index v3 — è un indicatore di affidabilità
+        esterno che accompagna il valore ma non lo influenza. Riflette la completezza dei dati,
+        la qualità delle evidenze e la profondità del mapping.
+      </p>
+      <div
+        className="flex gap-4 mt-4 pt-4"
+        style={{ borderTop: TOKENS.cardBorder }}
+      >
+        {[
+          ['Completezza dati',    'Copertura e densità dei record fonte'],
+          ['Qualità evidenze',    'Verifica e attendibilità delle fonti'],
+          ['Profondità mapping',  'Precisione classificazione BCM taxonomy'],
+        ].map(([label, desc]) => (
+          <div key={label} className="flex-1">
+            <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink }}>{label}</p>
+            <p style={{ fontSize: '10.5px', color: 'rgba(20,18,46,0.45)', marginTop: 2 }}>{desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── ScenarioStrip ─────────────────────────────────────────────────────────────
+
+interface ScenarioStripProps {
+  activeScenario: string;
+  s1Output: { kora_index_value: number; safeguard_status: string; confidence_score: number } | null;
+  s2Output: { kora_index_value: number; safeguard_status: string; confidence_score: number } | null;
+}
+
+const SAFEGUARD_STYLE: Record<string, { bg: string; text: string }> = {
+  CLEAR:   { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text  },
+  WARNING: { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text },
+  FLAGGED: { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text   },
+};
+
+function ScenarioStrip({ activeScenario, s1Output, s2Output }: ScenarioStripProps) {
+  const scenarios = [
+    { id: 'S1', out: s1Output },
+    { id: 'S2', out: s2Output },
+  ] as const;
+
+  return (
+    <div
+      className="p-5"
+      style={{
+        background:   TOKENS.surface,
+        border:       TOKENS.cardBorder,
+        borderRadius: TOKENS.cardRadius,
+      }}
+    >
+      <p
+        className="font-mono uppercase mb-4"
+        style={{ fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(20,18,46,0.40)' }}
+      >
+        Confronto scenari · solo demo
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        {scenarios.map(({ id, out }) => {
+          if (!out) return null;
+          const isActive   = id === activeScenario;
+          const safStyle   = SAFEGUARD_STYLE[out.safeguard_status] ?? SAFEGUARD_STYLE['WARNING'];
+          return (
+            <div
+              key={id}
+              className="rounded-[10px] p-4"
+              style={{
+                background: isActive ? TOKENS.ink : TOKENS.inkBorder,
+                border:     isActive ? 'none' : TOKENS.cardBorder,
+              }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span
+                  className="font-mono font-semibold"
+                  style={{ fontSize: '10px', color: isActive ? 'rgba(244,241,233,0.55)' : 'rgba(20,18,46,0.45)' }}
+                >
+                  {id}
+                </span>
+                {isActive && (
+                  <span
+                    className="font-mono"
+                    style={{ fontSize: '8px', letterSpacing: '0.12em', color: TOKENS.safeguard.pass.dot }}
+                  >
+                    ATTIVO
+                  </span>
+                )}
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span
+                  style={{
+                    fontFamily:    'var(--font-inter)',
+                    fontWeight:    700,
+                    fontSize:      '28px',
+                    color:         isActive ? '#FFFFFF' : TOKENS.ink,
+                    letterSpacing: '-0.025em',
+                    lineHeight:    1,
+                  }}
+                >
+                  {out.kora_index_value}
+                </span>
+                <span style={{ fontSize: '11px', color: isActive ? 'rgba(255,255,255,0.35)' : 'rgba(20,18,46,0.35)' }}>
+                  /100
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <span
+                  className="rounded font-mono"
+                  style={{
+                    fontSize:    '7.5px',
+                    padding:     '2px 6px',
+                    background:  isActive ? 'rgba(255,255,255,0.10)' : safStyle.bg,
+                    color:       isActive ? 'rgba(255,255,255,0.65)' : safStyle.text,
+                  }}
+                >
+                  {out.safeguard_status}
+                </span>
+                <span style={{ fontSize: '10px', color: isActive ? 'rgba(255,255,255,0.35)' : 'rgba(20,18,46,0.35)' }}>
+                  CS {formatConfidenceScore(out.confidence_score)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p
+        className="mt-3"
+        style={{ fontSize: '10.5px', color: 'rgba(20,18,46,0.42)', lineHeight: 1.5 }}
+      >
+        Confidence Score esterno al KORA Index v3 — indicatore di affidabilità dati, non componente pesato.
+      </p>
+    </div>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 // C-02: KORA Index Detail — v3
 export default function KoraIndexDetail() {
   const { activeScenario, activeRole } = useDemoState();
 
-  // Resolve company from current demo user — company-scoped
   const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
   const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
   const tenant      = tenantService.getTenant(COMPANY_ID);
 
-  // All hooks at the top — React rules require hooks before any conditional return.
-  const { data: scoring } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
-  // Demo-only scenario comparison (S1/S2). Returns null in live/future — never crashes.
+  const { data: scoring }                      = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
   const { s1: scoringS1, s2: scoringS2, isDemo } = useDemoScenarioComparison(COMPANY_ID);
 
   const hasKoraData = scoring?.status === 'ok';
 
-  // If this company has no KORA Index data yet, show onboarding-pending state
+  // No-data state
   if (!hasKoraData) {
     return (
-      <div className="space-y-6 max-w-3xl">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">KORA Index</p>
-          <h1 className="text-xl font-bold text-slate-900 mt-0.5">
-            {tenant?.company_name ?? COMPANY_ID}
-          </h1>
-        </div>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 space-y-3">
-          <p className="text-sm font-semibold text-amber-800">KORA Index non ancora disponibile</p>
-          <p className="text-xs text-amber-700 leading-relaxed">
-            Il KORA Index sarà disponibile al termine della pipeline dati (onboarding → UEF Review → Scoring Run).
+      <div className="max-w-3xl space-y-5">
+        <PageMasthead
+          eyebrow="KORA Index v3"
+          title={tenant?.company_name ?? COMPANY_ID}
+          subline="Scomposizione analitica dell'indice"
+        />
+        <div
+          className="rounded-2xl px-7 py-6 space-y-3"
+          style={{ background: 'rgba(186,117,23,0.07)', border: '1px solid rgba(186,117,23,0.20)' }}
+        >
+          <p className="text-sm font-semibold" style={{ color: '#5C3509' }}>
+            KORA Index non ancora disponibile
+          </p>
+          <p className="text-xs leading-relaxed" style={{ color: '#7A4A1A' }}>
+            Il KORA Index sarà disponibile al termine della pipeline dati.
             Questa azienda non ha ancora completato il caricamento dati.
           </p>
-          <div className="grid grid-cols-2 gap-2 text-[10px]">
+          <div className="grid grid-cols-2 gap-2 text-[11px] pt-2" style={{ borderTop: '1px solid rgba(186,117,23,0.15)' }}>
             {[
-              ['Onboarding', tenant?.onboarding_status?.replace(/_/g, ' ') ?? 'non avviato'],
-              ['Readiness dati', tenant?.data_readiness_status ?? '—'],
-              ['Decision Pack', tenant?.decision_pack_status ?? '—'],
+              ['Onboarding',      tenant?.onboarding_status?.replace(/_/g, ' ') ?? 'non avviato'],
+              ['Readiness dati',  tenant?.data_readiness_status ?? '—'],
+              ['Decision Pack',   tenant?.decision_pack_status ?? '—'],
               ['Prossima azione', tenant ? tenantService.getNextAction(tenant) : 'Contatta KORA Admin'],
             ].map(([label, value]) => (
               <div key={label as string}>
-                <p className="text-amber-600">{label}</p>
-                <p className="text-amber-800 font-semibold mt-0.5">{value}</p>
+                <p style={{ color: '#854F0B' }}>{label}</p>
+                <p className="font-semibold mt-0.5" style={{ color: '#5C3509' }}>{value}</p>
               </div>
             ))}
           </div>
         </div>
-        <p className="text-[10px] font-mono text-slate-300">
-          KORA Methodology v0.1 · pre_empirical_calibration · synthetic_demo_data: true · onboarding pending
-        </p>
       </div>
     );
   }
 
-  // Active scenario data — koraIndex is non-null past the hasKoraData guard above.
-  const output     = scoring!.koraIndex!;
-  const aggregate  = scoring!.aggregate;
-  const confidence = scoring!.confidence;
-  const safeguard  = activationSafeguardService.evaluateFromSeed(COMPANY_ID, activeScenario);
-  const explanation = explainabilityService.getExplanation(COMPANY_ID, activeScenario);
-  const weakCodes  = (explanation?.weak_components ?? []).map((c) => c.code);
-
-  // Macroblock scores for active scenario
+  const output      = scoring!.koraIndex!;
+  const components  = output.components ?? [];
   const macroblocks: MacroblockScore[] = output.macroblocks ?? [];
 
-  // Demo-only: S1/S2 comparison — null-safe for live/future environments.
-  // In live mode isDemo === false and both are null, so the comparison strip is hidden.
   const s1Output = scoringS1?.koraIndex ?? null;
   const s2Output = scoringS2?.koraIndex ?? null;
-  const s1Macroblocks: MacroblockScore[] = s1Output?.macroblocks ?? [];
-  const s2Macroblocks: MacroblockScore[] = s2Output?.macroblocks ?? [];
-
-  // BTI data (both scenarios for comparison panels)
-  const s1BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S1', activeRole);
-  const s2BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S2', activeRole);
-  const s1BtiRecord = s1BtiResult.record;
-  const s2BtiRecord = s2BtiResult.record;
-
-  // Economic relief summaries (both scenarios)
-  const s1EconRelief = budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S1', activeRole);
-  const s2EconRelief = budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S2', activeRole);
-
-  // Recommendations for active scenario
-  const btiRecommendations = budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
-
-  // Eligibility gate summary for active scenario
-  const eligibilityGate = ingestionSimulatorService.getEligibilityGateSummary(COMPANY_ID, activeScenario);
-
-  // S1/S2 BTI scores for delta display
-  const s1BtiScore = s1Macroblocks.find((m) => m.code === 'BTI')?.score;
-  const s2BtiScore = s2Macroblocks.find((m) => m.code === 'BTI')?.score;
+  const s1Mbs: MacroblockScore[] = s1Output?.macroblocks ?? [];
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-3xl space-y-5">
 
-      {/* ── HEADER ─────────────────────────────────────────────────────────────── */}
-      <div>
-        <div className="mb-1">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-            KORA Index v3 / KORA Methodology v0.1
-          </p>
-          <h1 className="text-xl font-bold text-slate-900 mt-0.5">KORA Index Detail</h1>
-          <p className="text-sm text-slate-500">{tenant?.company_name ?? COMPANY_ID} — {output.reporting_period}</p>
-        </div>
-        <p className="mt-3 text-xs font-semibold text-slate-600 italic">
-          &quot;KORA misura ciò che accade dopo la spesa.&quot;
-        </p>
-        <p className="mt-1 text-xs text-slate-500 leading-relaxed max-w-2xl">
-          KORA Index v3 misura la capacità dell&apos;organizzazione di trasformare risorse people/welfare in
-          attivazione umana verificata, distribuita e continua.
-        </p>
-      </div>
-
-      {/* ── KORA INDEX HERO ─────────────────────────────────────────────────────── */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <KoraIndexHero output={output} variant="dark" />
-        </div>
-
-        {/* S1 → S2 scenario comparison strip — demo-only, hidden in live environment */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Confronto Scenari</p>
-          {isDemo && (['S1', 'S2'] as const).map((sid) => {
-            const out = sid === 'S1' ? s1Output : s2Output;
-            if (!out) return null;
-            const isActive = sid === activeScenario;
-            return (
-              <div
-                key={sid}
-                className={`rounded-lg border p-3 ${isActive ? 'border-slate-700 bg-slate-900' : 'border-slate-100 bg-slate-50'}`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className={`text-xs font-bold ${isActive ? 'text-slate-300' : 'text-slate-500'}`}>{sid}</span>
-                  {isActive && (
-                    <span className="text-[10px] font-semibold text-emerald-400 uppercase tracking-wide">attivo</span>
-                  )}
-                </div>
-                <div className="flex items-end gap-2 mt-1">
-                  <span className={`text-2xl font-bold ${isActive ? 'text-white' : 'text-slate-700'}`}>
-                    {out.kora_index_value}
-                  </span>
-                  <span className={`text-xs mb-0.5 ${isActive ? 'text-slate-500' : 'text-slate-400'}`}>/100</span>
-                  <span className={`text-xs mb-0.5 font-semibold ${out.safeguard_status === 'CLEAR' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                    {out.safeguard_status}
-                  </span>
-                </div>
-                <div className={`text-[10px] mt-0.5 ${isActive ? 'text-slate-400' : 'text-slate-400'}`}>
-                  CS {Math.round(out.confidence_score * 100)}%
-                </div>
-              </div>
-            );
-          })}
-          <div className="rounded border border-blue-100 bg-blue-50 p-2 text-[10px] text-blue-700 leading-relaxed">
-            Confidence Score è esterno al calcolo del KORA Index v3 — indicatore di affidabilità dei dati, non punteggio pesato.
-          </div>
-        </div>
-      </div>
-
-      {/* ── MACROBLOCKS ─────────────────────────────────────────────────────────── */}
-      <div className="space-y-3">
-        <div>
-          <h2 className="text-sm font-semibold text-slate-800">Macroblock Architecture — KORA Index v3</h2>
-          <p className="mt-1 text-xs font-semibold text-slate-600">
-            KORA Index v3 = 4 macroblocchi pesati. Ogni macroblocco sintetizza più componenti analitici.
-          </p>
-          <p className="mt-1 text-xs text-slate-500 max-w-2xl">
-            Ciascun macroblocco misura una dimensione distinta dell&apos;attivazione e aggrega più segnali — non coincide con un singolo componente.
-            Il Confidence Score (CS) è esterno — indicatore di affidabilità dei dati, non componente pesato nel calcolo.
-          </p>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {macroblocks.map((mb) => {
-            const prevMb = (activeScenario === 'S2' ? s1Macroblocks : []).find((m) => m.code === mb.code);
-            return (
-              <MacroblockCard
-                key={mb.code}
-                macroblock={mb}
-                previousScore={prevMb?.score}
-              />
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ── ELIGIBILITY GATE ─────────────────────────────────────────────────────── */}
-      <EligibilityGatePanel summary={eligibilityGate} />
-
-      {/* ── ECONOMIC RELIEF & ACTIVATION OPPORTUNITY ────────────────────────────── */}
-      <EconomicReliefPanel
-        s1={s1EconRelief}
-        s2={s2EconRelief}
-        s1BtiScore={s1BtiScore}
-        s2BtiScore={s2BtiScore}
+      {/* 1. Masthead */}
+      <PageMasthead
+        eyebrow={`KORA Index v3 · ${output.reporting_period}`}
+        title={tenant?.company_name ?? COMPANY_ID}
+        subline="Scomposizione analitica dell'indice"
       />
 
-      {/* ── BLOCKED BY DESIGN ────────────────────────────────────────────────────── */}
-      <BlockedByDesignPanel
-        blockedCount={eligibilityGate.blocked_count}
-        blockedNote={eligibilityGate.blocked_note}
+      {/* 2. Hero ring */}
+      <IndexRingCard
+        value={output.kora_index_value}
+        safeguardStatus={output.safeguard_status}
+        confidenceScore={output.confidence_score}
       />
 
-      {/* ── BUDGET-TO-HUMAN-IMPACT PANEL ─────────────────────────────────────────── */}
-      <BudgetToHumanImpactPanel s1={s1BtiRecord} s2={s2BtiRecord} />
+      {/* 3. S1/S2 comparison — demo only */}
+      {isDemo && (s1Output ?? s2Output) && (
+        <ScenarioStrip
+          activeScenario={activeScenario}
+          s1Output={s1Output}
+          s2Output={s2Output}
+        />
+      )}
 
-      {/* ── RECOMMENDATIONS ──────────────────────────────────────────────────────── */}
-      <RecommendationsPanel btiRecommendations={btiRecommendations} />
-
-      {/* ── TECHNICAL DETAIL ─────────────────────────────────────────────────────── */}
-      <div className="space-y-4 border-t border-slate-100 pt-6">
-        <h2 className="text-sm font-semibold text-slate-700">Dettaglio Tecnico</h2>
-
-        {/* Pipeline trace */}
-        <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
-
-        {/* Component chart + 10-component grid */}
-        <ComponentBreakdownChart components={output.components} weakCodes={weakCodes} />
-        <ComponentBreakdown components={output.components} />
-
-        {/* Safeguard + Confidence panels side by side */}
-        <div className="grid gap-4 lg:grid-cols-2">
-          <ActivationSafeguardPanel
-            result={safeguard}
-            explanation={explanation?.safeguard_explanation}
+      {/* 4. Macroblocchi dettaglio */}
+      {macroblocks.map((mb) => {
+        const prevScore = activeScenario === 'S2'
+          ? s1Mbs.find((m) => m.code === mb.code)?.score
+          : undefined;
+        return (
+          <MacroblockDetailSection
+            key={mb.code}
+            mb={mb}
+            components={components}
+            prevScore={prevScore}
           />
-          <ConfidenceBreakdown record={confidence} />
-        </div>
+        );
+      })}
 
-        {/* Full explainability */}
-        <ExplainabilityPanel record={explanation} />
+      {/* 5. Confidence block */}
+      <ConfidenceBlock score={output.confidence_score} />
 
-        {/* ── Methodology glossary ── */}
-        <MethodologyGlossary />
+      {/* 6. Provenance footer */}
+      <ProvenanceFooter
+        methodologyVersionId={output.methodology_version_id}
+        calibrationStatus={output.calibration_status}
+        reportingPeriod={output.reporting_period}
+      />
 
-        {/* ── Company-safe lineage note ── */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-2 text-xs text-slate-500">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <p className="font-semibold text-slate-600 text-[11px] uppercase tracking-wide">
-              Tracciabilità dell&apos;output
-            </p>
-            <Link
-              href="/company/scoring"
-              className="text-[10px] text-slate-400 hover:text-slate-600 underline whitespace-nowrap"
-            >
-              Lineage operativa →
-            </Link>
-          </div>
-          <p>
-            La vista Company mostra lineage aggregata e semplificata.
-            La lineage completa è strumento KORA Operator / Advisor.
-          </p>
-          <ul className="list-disc list-inside space-y-0.5 text-[11px] pl-1">
-            <li>Ogni componente del KORA Index deriva da record classificati e aggregati per pillar.</li>
-            <li>Eligible → IU generati → Activation Reach e componenti analitici.</li>
-            <li>Limited → economic_relief_spend in BTI Engine → macroblocco BTI (20%).</li>
-            <li>Blocked → baseline legale, escluso per design, non penalizzato.</li>
-            <li>Company vede solo aggregati sopra soglia privacy N≥10 — nessun record individuale.</li>
-          </ul>
-          <p className="text-[10px] font-mono text-slate-400 border-t border-slate-100 pt-2">
-            KORA Methodology v0.1 · pre_empirical_calibration · lineage semplificata Company
-          </p>
-        </div>
-      </div>
     </div>
   );
 }
