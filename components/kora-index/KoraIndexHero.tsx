@@ -26,26 +26,59 @@ export function KoraIndexHero({ output, className, variant = 'light' }: KoraInde
   const dark = variant === 'dark';
 
   return (
-    <div className={cn(
-      'rounded-xl border p-6',
-      dark ? 'border-slate-700 bg-slate-900 shadow-lg' : 'border-slate-200 bg-white shadow-sm',
-      className,
-    )}>
+    <div
+      className={cn('rounded-xl border p-6', className)}
+      style={dark
+        ? { background: '#06032B', borderColor: 'rgba(97,86,245,0.2)' }
+        : { background: '#FFFFFF', borderColor: 'rgba(6,3,43,0.1)' }
+      }
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">KORA Index</p>
-          <div className="mt-1 flex items-end gap-3">
-            <span className={cn('text-5xl font-bold', dark ? 'text-white' : 'text-slate-900')}>
+          <p
+            className="text-[10px] font-semibold uppercase tracking-[0.2em]"
+            style={{ color: dark ? 'rgba(255,255,255,0.35)' : 'rgba(6,3,43,0.4)' }}
+          >
+            KORA Index v3
+          </p>
+          <div className="mt-1.5 flex items-end gap-3 leading-none">
+            <span
+              className="font-kora-editorial font-black tabular-nums"
+              style={{
+                fontSize: 'clamp(2.75rem, 6vw, 3.5rem)',
+                letterSpacing: '-0.03em',
+                color: dark ? '#FFFFFF' : '#06032B',
+              }}
+            >
               {indexValue !== null ? formatKoraIndex(indexValue) : '—'}
             </span>
-            <span className={cn('mb-1 text-sm', dark ? 'text-slate-500' : 'text-slate-400')}>/ 100</span>
+            <span
+              className="mb-1 text-sm font-light"
+              style={{ color: dark ? 'rgba(255,255,255,0.2)' : 'rgba(6,3,43,0.3)' }}
+            >
+              / 100
+            </span>
           </div>
 
           {/* Confidence Score — always beside KORA Index, never omitted (doc 21b) */}
-          <div className={cn('mt-2 flex items-center gap-1.5 text-sm', dark ? 'text-slate-400' : 'text-slate-500')}>
-            <span>Confidence Score:</span>
-            <span className={cn('font-semibold', dark ? 'text-slate-100' : 'text-slate-700')}>
+          <div className="mt-3 flex items-center gap-1.5">
+            <span
+              className="text-[10px] font-semibold uppercase tracking-[0.15em]"
+              style={{ color: dark ? 'rgba(255,255,255,0.3)' : 'rgba(6,3,43,0.4)' }}
+            >
+              Confidence Score
+            </span>
+            <span
+              className="text-sm font-bold tabular-nums"
+              style={{ color: '#6156F5' }}
+            >
               {confidenceScore !== null ? formatConfidenceScore(confidenceScore) : '—'}
+            </span>
+            <span
+              className="text-[9px]"
+              style={{ color: dark ? 'rgba(255,255,255,0.2)' : 'rgba(6,3,43,0.3)' }}
+            >
+              indicatore esterno
             </span>
           </div>
         </div>
@@ -57,7 +90,10 @@ export function KoraIndexHero({ output, className, variant = 'light' }: KoraInde
       </div>
 
       {/* Methodology version — non-suppressible */}
-      <div className={cn('mt-4 border-t pt-3', dark ? 'border-slate-700' : 'border-slate-100')}>
+      <div
+        className="mt-4 border-t pt-3"
+        style={{ borderColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(6,3,43,0.08)' }}
+      >
         <MethodologyLabel
           methodologyVersionId={methodologyVersionId}
           calibrationStatus={calibrationStatus}
