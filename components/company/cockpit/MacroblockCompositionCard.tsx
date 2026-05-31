@@ -34,14 +34,14 @@ export function MacroblockCompositionCard({ macroblocks }: MacroblockComposition
         Composizione dell&apos;Index
       </p>
 
-      {/* Macroblock rows */}
-      <div className="space-y-4">
+      {/* Macroblock grid — 2×2 at wider viewports, 1 col on small */}
+      <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
         {macroblocks.map((mb) => {
           const desc = MB_DESC[mb.code] ?? mb.label;
           return (
             <div key={mb.code}>
               {/* Row top: label + weight% + score */}
-              <div className="flex items-baseline justify-between mb-0.5 gap-3">
+              <div className="flex items-baseline justify-between mb-1 gap-3">
                 <div className="flex items-baseline gap-2 min-w-0">
                   <span
                     style={{

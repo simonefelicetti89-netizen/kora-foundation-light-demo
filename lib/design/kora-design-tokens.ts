@@ -25,7 +25,7 @@ export const KORA_COLORS = {
 
 export const TOKENS = {
   // Canvas & surface
-  canvas:  '#F4F1E9',   // page background — warm ivory
+  canvas:  '#F7F5EF',   // page background — warm ivory (lighter)
   surface: '#FFFFFF',   // card / panel background
 
   // Ink scale — #14122E at opacity levels

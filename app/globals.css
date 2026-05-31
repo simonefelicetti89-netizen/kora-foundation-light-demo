@@ -7,7 +7,7 @@
 
 :root {
   /* ── Canvas & surface ───────────────────────────────────────── */
-  --kora-canvas:   #F4F1E9;   /* page background — warm ivory     */
+  --kora-canvas:   #F7F5EF;   /* page background — warm ivory (lighter) */
   --kora-surface:  #FFFFFF;   /* card / panel background          */
   --kora-sidebar:  #16142B;   /* sidebar dark navy                */
 

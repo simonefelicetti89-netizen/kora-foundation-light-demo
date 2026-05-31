@@ -16,7 +16,7 @@ const SAFEGUARD_CONFIG: Record<SafeguardStatus, { bg: string; text: string; dot:
   FLAGGED: { ...TOKENS.safeguard.cap,   label: 'Flagged' },
 };
 
-const R    = 54;
+const R    = 68;
 const CIRC = 2 * Math.PI * R;
 
 export function IndexRingCard({ value, safeguardStatus, confidenceScore }: IndexRingCardProps) {
@@ -50,24 +50,24 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
         />
       </svg>
       {/* Ring gauge */}
-      <div className="relative flex-shrink-0" style={{ width: 140, height: 140 }}>
-        <svg viewBox="0 0 140 140" width="140" height="140" style={{ display: 'block' }}>
+      <div className="relative flex-shrink-0" style={{ width: 180, height: 180 }}>
+        <svg viewBox="0 0 180 180" width="180" height="180" style={{ display: 'block' }}>
           {/* Track */}
           <circle
-            cx="70" cy="70" r={R}
+            cx="90" cy="90" r={R}
             fill="none"
             stroke="rgba(20,18,46,0.10)"
-            strokeWidth="9"
+            strokeWidth="10"
           />
           {/* Arc — violet accent */}
           <circle
-            cx="70" cy="70" r={R}
+            cx="90" cy="90" r={R}
             fill="none"
             stroke={TOKENS.accent}
-            strokeWidth="9"
+            strokeWidth="10"
             strokeLinecap="round"
             strokeDasharray={`${dash} ${CIRC}`}
-            transform="rotate(-90 70 70)"
+            transform="rotate(-90 90 90)"
           />
         </svg>
         {/* Center value — HTML overlay for correct Inter rendering */}
@@ -79,7 +79,7 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
             style={{
               fontFamily: 'var(--font-inter)',
               fontWeight: 700,
-              fontSize:   42,
+              fontSize:   54,
               color:      TOKENS.ink,
               lineHeight: 1,
             }}
@@ -89,10 +89,10 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
           <span
             style={{
               fontFamily: 'var(--font-inter)',
-              fontSize:   11,
+              fontSize:   13,
               color:      'rgba(20,18,46,0.38)',
               lineHeight: 1,
-              marginTop:  3,
+              marginTop:  4,
             }}
           >
             /100

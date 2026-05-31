@@ -41,7 +41,7 @@ export default function ExecutiveCockpit() {
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(companyId);
 
   return (
-    <div className="max-w-3xl space-y-4">
+    <div className="space-y-5">
 
       {/* Masthead — always shown */}
       <CockpitMasthead
