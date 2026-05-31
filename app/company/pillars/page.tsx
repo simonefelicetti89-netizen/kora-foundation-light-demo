@@ -6,46 +6,18 @@ import { demoDataService } from '@/services/demo-data/DemoDataService';
 import { koraContributionService } from '@/services/kora-contribution/KoraContributionService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
-import { cn } from '@/lib/utils';
 import { PILLAR_CODES, PILLAR_LABELS } from '@/lib/constants/kora';
+import { PageMasthead } from '@/components/ui/PageMasthead';
+import { SectionLabel } from '@/components/ui/SectionLabel';
+import { ChartFrame } from '@/components/charts/ChartFrame';
+import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
+import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { cn } from '@/lib/utils';
 import type { PillarCode } from '@/lib/types';
 
-const PILLAR_COLORS: Record<PillarCode, string> = {
-  LIFE:       'bg-green-500',
-  GROWTH:     'bg-blue-500',
-  CONNECTION: 'bg-purple-500',
-  IMPACT:     'bg-orange-500',
-  LEGACY:     'bg-amber-500',
-};
-
-const PILLAR_LIGHT: Record<PillarCode, string> = {
-  LIFE:       'bg-green-50 border-green-200 text-green-700',
-  GROWTH:     'bg-blue-50 border-blue-200 text-blue-700',
-  CONNECTION: 'bg-purple-50 border-purple-200 text-purple-700',
-  IMPACT:     'bg-orange-50 border-orange-200 text-orange-700',
-  LEGACY:     'bg-amber-50 border-amber-200 text-amber-700',
-};
-
-const STATUS_BADGE: Record<string, string> = {
-  active:    'bg-green-50 text-green-700 border-green-200',
-  completed: 'bg-slate-100 text-slate-600 border-slate-200',
-  planning:  'bg-yellow-50 text-yellow-700 border-yellow-200',
-  archived:  'bg-slate-50 text-slate-400 border-slate-200',
-};
-
-const VERIFICATION_BADGE: Record<string, string> = {
-  verified:     'text-green-600',
-  partial:      'text-yellow-600',
-  not_started:  'text-slate-400',
-};
-
-function pct(val: number) {
-  return `${(val * 100).toFixed(0)}%`;
-}
-
-function eur(val: number) {
-  return `€${val.toLocaleString('it-IT')}`;
-}
+function pct(val: number) { return `${(val * 100).toFixed(0)}%`; }
+function eur(val: number) { return `€${val.toLocaleString('it-IT')}`; }
 
 const SOURCE_TYPE_LABELS: Record<string, string> = {
   welfare_provider: 'Initiative Provider',
@@ -57,51 +29,53 @@ const SOURCE_TYPE_LABELS: Record<string, string> = {
   hr_system:        'Sistema HR',
 };
 
-const ADDITIONALITY_BADGE: Record<string, string> = {
-  mandatory_legal_minimum:       'bg-rose-50 text-rose-700 border-rose-200',
-  additional_beyond_requirement: 'bg-green-50 text-green-700 border-green-200',
-  strategic_company_initiative:  'bg-blue-50 text-blue-700 border-blue-200',
-  collective_verified_initiative:'bg-indigo-50 text-indigo-700 border-indigo-200',
+const ADDITIONALITY_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  mandatory_legal_minimum:        { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   label: 'Minimo legale'       },
+  additional_beyond_requirement:  { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  label: 'Oltre il minimo'     },
+  strategic_company_initiative:   { bg: 'rgba(43,92,230,0.10)',    text: '#1B2A4A',                   label: 'Iniziativa strategica' },
+  collective_verified_initiative: { bg: 'rgba(97,86,245,0.10)',    text: TOKENS.accent,               label: 'Collettiva verificata' },
 };
 
-const REVIEW_STATUS_BADGE: Record<string, string> = {
-  approved:                   'bg-green-50 text-green-700 border-green-200',
-  under_kora_review:          'bg-yellow-50 text-yellow-700 border-yellow-200',
-  advisor_review_required:    'bg-orange-50 text-orange-700 border-orange-200',
-  partner_validation_required:'bg-purple-50 text-purple-700 border-purple-200',
-  blocked_by_design:          'bg-rose-50 text-rose-700 border-rose-200',
+const REVIEW_STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
+  approved:                    { bg: TOKENS.safeguard.pass.bg,   text: TOKENS.safeguard.pass.text,  label: 'Approvato KORA'              },
+  under_kora_review:           { bg: TOKENS.safeguard.watch.bg,  text: TOKENS.safeguard.watch.text, label: 'In Revisione KORA'           },
+  advisor_review_required:     { bg: 'rgba(186,117,23,0.12)',    text: '#854F0B',                   label: 'Revisione Advisor Richiesta' },
+  partner_validation_required: { bg: 'rgba(97,86,245,0.10)',     text: TOKENS.accent,               label: 'Validazione Partner Richiesta' },
+  blocked_by_design:           { bg: TOKENS.safeguard.cap.bg,    text: TOKENS.safeguard.cap.text,   label: 'Escluso per Design'          },
 };
 
-const REVIEW_STATUS_LABELS: Record<string, string> = {
-  approved:                   'Approvato KORA',
-  under_kora_review:          'In Revisione KORA',
-  advisor_review_required:    'Revisione Advisor Richiesta',
-  partner_validation_required:'Validazione Partner Richiesta',
-  blocked_by_design:          'Escluso per Design',
+const STATUS_BADGE: Record<string, { bg: string; text: string }> = {
+  active:    { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text  },
+  completed: { bg: TOKENS.inkBorder,          text: TOKENS.inkSecondary         },
+  planning:  { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text },
+  archived:  { bg: TOKENS.inkBorder,          text: TOKENS.inkHint              },
 };
+
+const VERIFICATION_STYLE: Record<string, string> = {
+  verified:    TOKENS.safeguard.pass.text,
+  partial:     TOKENS.safeguard.watch.text,
+  not_started: TOKENS.inkHint,
+};
+
+// Pillar color ramp — sorted by share descending, rank 0 gets accent
+function pillarFill(rank: number): string {
+  if (rank === 0) return TOKENS.accent;
+  const opacities = [0, 0.65, 0.50, 0.35, 0.22];
+  return `rgba(20,18,46,${opacities[rank] ?? 0.22})`;
+}
 
 interface InitiativePreview {
-  id: string;
-  title: string;
-  type: string;
-  pillars: string[];
-  additionality: string;
-  additionality_label: string;
-  review_status: string;
-  evidence_requirement: string;
-  kora_relevance: string;
-  economic_contribution: string | null;
-  kora_note: string | null;
+  id: string; title: string; type: string; pillars: string[];
+  additionality: string; additionality_label: string; review_status: string;
+  evidence_requirement: string; kora_relevance: string;
+  economic_contribution: string | null; kora_note: string | null;
 }
 
 const INITIATIVE_PREVIEW: InitiativePreview[] = [
   {
-    id: 'ip-01',
-    title: 'Workshop Cultura della Sicurezza Avanzata',
-    type: 'Iniziativa Aziendale Interna',
-    pillars: ['LIFE', 'CONNECTION'],
-    additionality: 'additional_beyond_requirement',
-    additionality_label: 'Oltre il minimo legale',
+    id: 'ip-01', title: 'Workshop Cultura della Sicurezza Avanzata',
+    type: 'Iniziativa Aziendale Interna', pillars: ['LIFE', 'CONNECTION'],
+    additionality: 'additional_beyond_requirement', additionality_label: 'Oltre il minimo legale',
     review_status: 'advisor_review_required',
     evidence_requirement: 'Presenze verificate + evidenza di sessione strutturata',
     kora_relevance: 'Migliora MAR e CO — attivazione significativa con segnale di continuità su LIFE e CONNECTION',
@@ -109,25 +83,18 @@ const INITIATIVE_PREVIEW: InitiativePreview[] = [
     kora_note: 'KORA premia l\'addizionalità. I corsi obbligatori per legge (es. D.Lgs. 81/2008) sono classificati Blocked — generano 0 IU. Questo workshop va oltre il minimo legale: è addizionale, verificabile e può generare IU reali su LIFE e CONNECTION.',
   },
   {
-    id: 'ip-02',
-    title: 'Giornata della Sostenibilità',
-    type: 'Iniziativa Aziendale Interna',
-    pillars: ['IMPACT', 'CONNECTION'],
-    additionality: 'strategic_company_initiative',
-    additionality_label: 'Iniziativa strategica',
+    id: 'ip-02', title: 'Giornata della Sostenibilità',
+    type: 'Iniziativa Aziendale Interna', pillars: ['IMPACT', 'CONNECTION'],
+    additionality: 'strategic_company_initiative', additionality_label: 'Iniziativa strategica',
     review_status: 'under_kora_review',
     evidence_requirement: 'Registro aggregato delle presenze + evidenza attività strutturata',
     kora_relevance: 'Copre il gap del pillar IMPACT — migliora PC (Pillar Coverage) e PB (Pillar Balance)',
-    economic_contribution: null,
-    kora_note: null,
+    economic_contribution: null, kora_note: null,
   },
   {
-    id: 'ip-03',
-    title: 'Iniziativa Cross-Azienda di Volontariato',
-    type: 'Iniziativa Collettiva',
-    pillars: ['IMPACT', 'LEGACY', 'CONNECTION'],
-    additionality: 'collective_verified_initiative',
-    additionality_label: 'Collettiva — verificata',
+    id: 'ip-03', title: 'Iniziativa Cross-Azienda di Volontariato',
+    type: 'Iniziativa Collettiva', pillars: ['IMPACT', 'LEGACY', 'CONNECTION'],
+    additionality: 'collective_verified_initiative', additionality_label: 'Collettiva — verificata',
     review_status: 'partner_validation_required',
     evidence_requirement: 'Verifica partner + partecipazione aggregata sopra soglia',
     kora_relevance: 'Alta rilevanza KORA Contribution — portata cross-aziendale, territoriale, evidenza partner richiesta',
@@ -135,12 +102,9 @@ const INITIATIVE_PREVIEW: InitiativePreview[] = [
     kora_note: 'Ammissibile a KORA Contribution se verificata e sopra la soglia di partecipazione. Il denaro da solo non è impatto — il contributo economico si attiva solo se abbinato a partecipazione verificata dei lavoratori.',
   },
   {
-    id: 'ip-04',
-    title: 'Corso di Sicurezza Obbligatorio (D.Lgs. 81/2008)',
-    type: 'Attività di Compliance',
-    pillars: [],
-    additionality: 'mandatory_legal_minimum',
-    additionality_label: 'Minimo legale',
+    id: 'ip-04', title: 'Corso di Sicurezza Obbligatorio (D.Lgs. 81/2008)',
+    type: 'Attività di Compliance', pillars: [],
+    additionality: 'mandatory_legal_minimum', additionality_label: 'Minimo legale',
     review_status: 'blocked_by_design',
     evidence_requirement: 'Registro presenze — contesto evidenza obbligatorio, non attivante',
     kora_relevance: '0 IU · 0 KORA Index · 0 PIB · 0 Contribution · Blocked by Design. KORA non trasforma la compliance in impatto.',
@@ -161,324 +125,290 @@ export default function PillarsInitiatives() {
   const aggregate   = scoring?.aggregate;
   const programs    = demoDataService.getPrograms(companyId);
   const initiatives = koraContributionService.getCollectiveInitiatives(companyId, activeScenario);
-
-  const pillarDist = aggregate?.pillar_distribution as Partial<Record<PillarCode, number>> | undefined;
+  const pillarDist  = aggregate?.pillar_distribution as Partial<Record<PillarCode, number>> | undefined;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Pilastri & Iniziative</h1>
-        <p className="text-sm text-slate-500">
-          {companyName} — {aggregate?.reporting_period ?? activeScenario}
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PageMasthead
+        eyebrow={`Pilastri & Iniziative · ${activeScenario}`}
+        title="Pilastri & Iniziative"
+        subline={`${companyName} · ${aggregate?.reporting_period ?? activeScenario} · distribuzione aggregata`}
+      />
 
-      {/* Pillar distribution overview */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Distribuzione Pillar — IU Aggregato
-        </h2>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
-          {PILLAR_CODES.map((code) => {
-            const val = pillarDist?.[code] ?? 0;
-            const barColor = PILLAR_COLORS[code];
-            return (
-              <div key={code}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="font-medium text-slate-700">{PILLAR_LABELS[code]}</span>
-                  <span className="font-mono font-semibold text-slate-600">{pct(val)}</span>
-                </div>
-                <div className="h-2 w-full rounded-full bg-slate-100">
-                  <div className={cn('h-2 rounded-full', barColor)} style={{ width: `${val * 100}%` }} />
-                </div>
-              </div>
-            );
-          })}
-          <p className="text-xs text-slate-400 pt-1">
-            Distribuzione aggregata a livello aziendale. Nessun dato individuale del lavoratore.
-          </p>
-        </div>
-      </div>
-
-      {/* Program portfolio */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Portfolio Programmi
-        </h2>
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Programma</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Pillar</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Fonte</th>
-                <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Budget</th>
-                <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">
-                  Tasso Part. ({activeScenario})
-                </th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Stato</th>
-              </tr>
-            </thead>
-            <tbody>
-              {programs.map((prog) => {
-                const rate =
-                  activeScenario === 'S2'
-                    ? prog.expected_participation_rate_s2
-                    : prog.expected_participation_rate_s1;
-                const allPillars = [...prog.pillars_primary, ...prog.pillars_secondary];
-                const isBlocked = prog.kora_eligibility === 'blocked';
-                return (
-                  <tr key={prog.id} className={cn(
-                    'border-b border-slate-100 last:border-0 hover:bg-slate-50',
-                    isBlocked && 'bg-rose-50/40',
-                  )}>
-                    <td className="px-4 py-2.5">
-                      <p className="font-medium text-slate-800">{prog.name}</p>
-                      <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">{prog.description}</p>
-                      {isBlocked && (
-                        <p className="text-[10px] text-rose-600 font-semibold mt-0.5">
-                          Blocked by Design · 0 IU · 0 KORA Index · 0 PIB · 0 Contribution
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5">
-                      {isBlocked ? (
-                        <span className="rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-xs font-semibold text-rose-700">
-                          Escluso — governance baseline
-                        </span>
-                      ) : (
-                        <div className="flex gap-1 flex-wrap">
-                          {allPillars.map((p) => (
-                            <span
-                              key={p}
-                              className={cn(
-                                'rounded border px-1.5 py-0.5 text-xs font-mono',
-                                PILLAR_LIGHT[p as PillarCode] ?? 'bg-slate-100 text-slate-600 border-slate-200',
-                              )}
-                            >
-                              {p}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-600">
-                      {SOURCE_TYPE_LABELS[prog.source_type] ?? prog.source_type.replace(/_/g, ' ')}
-                    </td>
-                    <td className="px-4 py-2.5 text-right text-xs font-mono text-slate-700">
-                      {isBlocked
-                        ? <span className="text-slate-400">{eur(prog.budget_eur_approx)}<br /><span className="text-[10px]">escl. da IU</span></span>
-                        : eur(prog.budget_eur_approx)
-                      }
-                    </td>
-                    <td className="px-4 py-2.5 text-right">
-                      {isBlocked ? (
-                        <span className="text-xs text-slate-400">
-                          {pct(rate)}<br /><span className="text-[10px]">conformità</span>
-                        </span>
-                      ) : (
-                        <span className={cn(
-                          'text-xs font-semibold',
-                          rate >= 0.40 ? 'text-green-600' :
-                          rate >= 0.20 ? 'text-yellow-600' : 'text-red-500',
-                        )}>
-                          {pct(rate)}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5">
-                      <span className={cn(
-                        'rounded border px-1.5 py-0.5 text-xs capitalize',
-                        STATUS_BADGE[prog.status] ?? STATUS_BADGE.active,
-                      )}>
-                        {prog.status}
+      {/* ── Distribuzione pillar ── */}
+      <SectionLabel>Distribuzione IU per pillar</SectionLabel>
+      <ChartFrame subtitle="Distribuzione aggregata a livello aziendale. Nessun dato individuale del lavoratore.">
+        {(() => {
+          const sorted = PILLAR_CODES.map((code) => ({
+            code,
+            label: PILLAR_LABELS[code],
+            val: pillarDist?.[code] ?? 0,
+          })).sort((a, b) => b.val - a.val);
+          return (
+            <div className="space-y-3">
+              {sorted.map(({ code, label, val }, rank) => (
+                <div key={code}>
+                  <div className="flex justify-between mb-1.5">
+                    <span style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.ink }}>
+                      {label}
+                      <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 400, fontSize: '11px', color: TOKENS.inkHint, marginLeft: 6 }}>
+                        {code}
                       </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <p className="mt-1.5 text-xs text-slate-400">
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: rank === 0 ? TOKENS.accent : TOKENS.ink }}>
+                      {pct(val)}
+                    </span>
+                  </div>
+                  <div style={{ height: 7, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
+                    <div style={{ height: 7, borderRadius: 9999, width: `${val * 100}%`, background: pillarFill(rank), transition: 'width 0.3s ease' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
+      </ChartFrame>
+
+      {/* ── Portfolio programmi ── */}
+      <SectionLabel>Portfolio programmi</SectionLabel>
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, overflow: 'hidden' }}>
+        <table className="w-full" style={{ fontSize: '12px' }}>
+          <thead>
+            <tr style={{ borderBottom: `2px solid ${TOKENS.ink}` }}>
+              {['Programma', 'Pillar', 'Fonte', 'Budget', `Partecipazione (${activeScenario})`, 'Stato'].map((h, i) => (
+                <th key={h} className={i > 2 ? 'text-right' : 'text-left'} style={{ padding: '10px 16px', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint }}>
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {programs.map((prog) => {
+              const rate = activeScenario === 'S2' ? prog.expected_participation_rate_s2 : prog.expected_participation_rate_s1;
+              const allPillars = [...prog.pillars_primary, ...prog.pillars_secondary];
+              const isBlocked = prog.kora_eligibility === 'blocked';
+              return (
+                <tr
+                  key={prog.id}
+                  style={{
+                    borderBottom: TOKENS.cardBorder,
+                    background: isBlocked ? TOKENS.safeguard.cap.bg : undefined,
+                  }}
+                >
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
+                    <p style={{ fontWeight: 600, color: TOKENS.ink }}>{prog.name}</p>
+                    <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 2 }} className="line-clamp-1">{prog.description}</p>
+                    {isBlocked && (
+                      <p style={{ fontSize: '10px', color: TOKENS.safeguard.cap.text, fontWeight: 600, marginTop: 2 }}>
+                        Blocked by Design · 0 IU · 0 KORA Index · 0 PIB · 0 Contribution
+                      </p>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
+                    {isBlocked ? (
+                      <span style={{ fontSize: '10px', background: TOKENS.safeguard.cap.bg, color: TOKENS.safeguard.cap.text, borderRadius: 4, padding: '2px 6px', fontWeight: 600 }}>
+                        Escluso — governance baseline
+                      </span>
+                    ) : (
+                      <div className="flex gap-1 flex-wrap">
+                        {allPillars.map((p) => (
+                          <span key={p} style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top', color: TOKENS.inkSecondary }}>
+                    {SOURCE_TYPE_LABELS[prog.source_type] ?? prog.source_type.replace(/_/g, ' ')}
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top', textAlign: 'right', fontFamily: 'var(--font-inter)', color: isBlocked ? TOKENS.inkHint : TOKENS.ink }}>
+                    {eur(prog.budget_eur_approx)}
+                    {isBlocked && <span style={{ display: 'block', fontSize: '10px', color: TOKENS.inkHint }}>escl. da IU</span>}
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top', textAlign: 'right' }}>
+                    <span style={{
+                      fontFamily: 'var(--font-inter)', fontWeight: 700,
+                      color: isBlocked ? TOKENS.inkHint : rate >= 0.40 ? TOKENS.safeguard.pass.text : rate >= 0.20 ? TOKENS.safeguard.watch.text : TOKENS.safeguard.cap.text,
+                    }}>
+                      {pct(rate)}
+                    </span>
+                    {isBlocked && <span style={{ display: 'block', fontSize: '10px', color: TOKENS.inkHint }}>conformità</span>}
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
+                    {(() => {
+                      const sb = STATUS_BADGE[prog.status] ?? STATUS_BADGE.active;
+                      return (
+                        <span style={{ fontSize: '10px', fontWeight: 500, background: sb.bg, color: sb.text, borderRadius: 4, padding: '2px 7px' }}>
+                          {prog.status}
+                        </span>
+                      );
+                    })()}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <p style={{ fontSize: '11px', color: TOKENS.inkHint, padding: '10px 16px', borderTop: TOKENS.cardBorder }}>
           I valori del budget sono indicativi. I tassi di partecipazione sono stime di scenario.
         </p>
       </div>
 
-      {/* Collective initiatives */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Iniziative Collettive
-        </h2>
-        {initiatives.length > 0 ? (
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Iniziativa</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Pillar</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Territorio</th>
-                  <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Partecipanti</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Verifica</th>
-                  <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Stato</th>
-                </tr>
-              </thead>
-              <tbody>
-                {initiatives.map((init) => {
-                  const verifStyle = VERIFICATION_BADGE[init.verification_status] ?? 'text-slate-400';
-                  const statusStyle = STATUS_BADGE[init.status] ?? STATUS_BADGE.planning;
-                  const pillarStyle = PILLAR_LIGHT[init.pillar as PillarCode] ?? 'bg-slate-100 text-slate-600 border-slate-200';
-                  return (
-                    <tr key={init.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
-                      <td className="px-4 py-2.5">
-                        <p className="font-medium text-slate-800">{init.name}</p>
-                        {init.companies_involved.length > 1 && (
-                          <p className="text-xs text-indigo-500 mt-0.5">Cross-azienda</p>
-                        )}
-                        {init.partner_name && (
-                          <p className="text-xs text-slate-400 mt-0.5">Partner: {init.partner_name}</p>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className={cn('rounded border px-1.5 py-0.5 text-xs font-mono', pillarStyle)}>
-                          {init.pillar}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-xs text-slate-600">{init.territory}</td>
-                      <td className="px-4 py-2.5 text-right text-xs font-mono text-slate-700">
-                        {init.aggregate_participation_count}
-                        <span className="text-slate-400"> / {init.aggregate_target_participants}</span>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className={cn('text-xs font-medium capitalize', verifStyle)}>
-                          {init.verification_status.replace(/_/g, ' ')}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <span className={cn('rounded border px-1.5 py-0.5 text-xs capitalize', statusStyle)}>
+      {/* ── Iniziative collettive ── */}
+      <SectionLabel>Iniziative collettive</SectionLabel>
+      {initiatives.length > 0 ? (
+        <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, overflow: 'hidden' }}>
+          <table className="w-full" style={{ fontSize: '12px' }}>
+            <thead>
+              <tr style={{ borderBottom: `2px solid ${TOKENS.ink}` }}>
+                {['Iniziativa', 'Pillar', 'Territorio', 'Partecipanti', 'Verifica', 'Stato'].map((h, i) => (
+                  <th key={h} className={i === 3 ? 'text-right' : 'text-left'} style={{ padding: '10px 16px', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {initiatives.map((init) => (
+                <tr key={init.id} style={{ borderBottom: TOKENS.cardBorder }}>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
+                    <p style={{ fontWeight: 600, color: TOKENS.ink }}>{init.name}</p>
+                    {init.companies_involved.length > 1 && (
+                      <p style={{ fontSize: '11px', color: TOKENS.accent, marginTop: 2 }}>Cross-azienda</p>
+                    )}
+                    {init.partner_name && (
+                      <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 2 }}>Partner: {init.partner_name}</p>
+                    )}
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
+                      {init.pillar}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top', color: TOKENS.inkSecondary }}>{init.territory}</td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top', textAlign: 'right', fontFamily: 'var(--font-inter)' }}>
+                    <span style={{ fontWeight: 700, color: TOKENS.ink }}>{init.aggregate_participation_count}</span>
+                    <span style={{ color: TOKENS.inkHint }}> / {init.aggregate_target_participants}</span>
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 500, color: VERIFICATION_STYLE[init.verification_status] ?? TOKENS.inkHint }}>
+                      {init.verification_status.replace(/_/g, ' ')}
+                    </span>
+                  </td>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
+                    {(() => {
+                      const sb = STATUS_BADGE[init.status] ?? STATUS_BADGE.planning;
+                      return (
+                        <span style={{ fontSize: '10px', fontWeight: 500, background: sb.bg, color: sb.text, borderRadius: 4, padding: '2px 7px' }}>
                           {init.status}
                         </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
-            Nessuna iniziativa collettiva registrata per questo scenario.
-          </div>
-        )}
-        <p className="mt-1.5 text-xs text-slate-400">
-          Solo partecipazione aggregata. Nessun dato individuale del lavoratore è mostrato.
+                      );
+                    })()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p style={{ fontSize: '11px', color: TOKENS.inkHint, padding: '10px 16px', borderTop: TOKENS.cardBorder }}>
+            Solo partecipazione aggregata. Nessun dato individuale del lavoratore è mostrato.
+          </p>
+        </div>
+      ) : (
+        <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.5rem', textAlign: 'center', color: TOKENS.inkHint }}>
+          Nessuna iniziativa collettiva registrata per questo scenario.
+        </div>
+      )}
+
+      {/* ── Initiative Studio Preview ── */}
+      <SectionLabel>Initiative Studio</SectionLabel>
+      <div style={{ background: 'rgba(186,117,23,0.06)', border: '1px solid rgba(186,117,23,0.20)', borderRadius: TOKENS.cardRadius, padding: '12px 16px', marginBottom: 4 }}>
+        <p style={{ fontSize: '11px', color: '#854F0B' }}>
+          <span style={{ fontWeight: 600 }}>Pilot Preview — non attivo in Foundation Light. </span>
+          Crea, proponi o unisciti a iniziative che KORA può validare, orchestrare e misurare.
         </p>
       </div>
-
-      {/* Initiative Studio Preview */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Initiative Studio
-          </h2>
-          <span className="rounded border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
-            Pilot Preview — non attivo in Foundation Light
-          </span>
-        </div>
-        <p className="text-xs text-slate-500 mb-4 leading-relaxed max-w-2xl">
-          Crea, proponi o unisciti a iniziative che KORA può validare, orchestrare e misurare.
-          KORA passa dal misurare ciò che è accaduto all&apos;orchestrare ciò che dovrebbe accadere dopo.
-        </p>
-
-        <div className="space-y-3">
-          {INITIATIVE_PREVIEW.map((init) => (
-            <div key={init.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
-              {/* Header row */}
-              <div className="flex flex-wrap items-start gap-2">
-                <p className="text-sm font-semibold text-slate-800 flex-1 min-w-0">{init.title}</p>
-                <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-xs text-slate-500 shrink-0">
+      <div className="space-y-3">
+        {INITIATIVE_PREVIEW.map((init) => {
+          const isBlocked = init.review_status === 'blocked_by_design';
+          const rsb = REVIEW_STATUS_BADGE[init.review_status] ?? REVIEW_STATUS_BADGE.under_kora_review;
+          const ab  = ADDITIONALITY_BADGE[init.additionality] ?? ADDITIONALITY_BADGE.strategic_company_initiative;
+          return (
+            <div key={init.id} style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+              {/* Header */}
+              <div className="flex flex-wrap items-start gap-2 mb-3">
+                <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink, flex: 1, minWidth: 0 }}>{init.title}</p>
+                <span style={{ fontSize: '10px', color: TOKENS.inkSecondary, background: TOKENS.inkBorder, borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>
                   {init.type}
                 </span>
-                <span className={cn(
-                  'rounded border px-1.5 py-0.5 text-xs font-medium shrink-0',
-                  REVIEW_STATUS_BADGE[init.review_status] ?? 'bg-slate-50 text-slate-500 border-slate-200',
-                )}>
-                  {REVIEW_STATUS_LABELS[init.review_status] ?? init.review_status}
+                <span style={{ fontSize: '10px', fontWeight: 500, background: rsb.bg, color: rsb.text, borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>
+                  {rsb.label}
                 </span>
               </div>
-
               {/* Pillars + additionality */}
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5 mb-3">
                 {init.pillars.map((p) => (
-                  <span key={p} className={cn(
-                    'rounded border px-1.5 py-0.5 text-xs font-mono',
-                    PILLAR_LIGHT[p as PillarCode] ?? 'bg-slate-100 text-slate-600 border-slate-200',
-                  )}>
+                  <span key={p} style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
                     {p}
                   </span>
                 ))}
-                <span className={cn(
-                  'rounded border px-1.5 py-0.5 text-xs font-medium',
-                  ADDITIONALITY_BADGE[init.additionality] ?? 'bg-slate-50 text-slate-500 border-slate-200',
-                )}>
-                  {init.additionality_label}
+                <span style={{ fontSize: '10px', fontWeight: 500, background: ab.bg, color: ab.text, borderRadius: 4, padding: '2px 7px' }}>
+                  {ab.label}
                 </span>
               </div>
-
-              {/* Evidence + relevance grid */}
-              <div className="grid gap-1.5 sm:grid-cols-2 text-xs">
-                <div className="text-slate-600">
-                  <span className="font-medium text-slate-400">Evidenza richiesta: </span>
+              {/* Evidence + relevance */}
+              <div className="grid gap-1.5 sm:grid-cols-2 mb-3">
+                <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>
+                  <span style={{ fontWeight: 500, color: TOKENS.inkHint }}>Evidenza richiesta: </span>
                   {init.evidence_requirement}
-                </div>
-                <div className="text-slate-600">
-                  <span className="font-medium text-slate-400">Rilevanza KORA: </span>
+                </p>
+                <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>
+                  <span style={{ fontWeight: 500, color: TOKENS.inkHint }}>Rilevanza KORA: </span>
                   {init.kora_relevance}
-                </div>
+                </p>
                 {init.economic_contribution && (
-                  <div className="sm:col-span-2 text-slate-600">
-                    <span className="font-medium text-slate-400">Contributo economico: </span>
-                    <span className="text-indigo-600">{init.economic_contribution}</span>
-                    <span className="text-slate-400 ml-1">— solo intento di governance, non esecuzione di pagamento</span>
-                  </div>
+                  <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }} className="sm:col-span-2">
+                    <span style={{ fontWeight: 500, color: TOKENS.inkHint }}>Contributo economico: </span>
+                    <span style={{ color: TOKENS.accent }}>{init.economic_contribution}</span>
+                    <span style={{ color: TOKENS.inkHint }}> — solo intento di governance, non esecuzione di pagamento</span>
+                  </p>
                 )}
               </div>
-
-              {/* KORA methodology note */}
+              {/* KORA note */}
               {init.kora_note && (
-                <div className={cn(
-                  'rounded border px-3 py-2 text-xs leading-relaxed',
-                  init.review_status === 'blocked_by_design'
-                    ? 'border-rose-100 bg-rose-50 text-rose-700'
-                    : 'border-amber-100 bg-amber-50 text-amber-700',
-                )}>
+                <div style={{
+                  borderRadius: 8, padding: '10px 12px', fontSize: '11px', lineHeight: 1.6, marginBottom: 12,
+                  background: isBlocked ? TOKENS.safeguard.cap.bg : 'rgba(186,117,23,0.08)',
+                  color:      isBlocked ? TOKENS.safeguard.cap.text : '#854F0B',
+                  border:     isBlocked ? `1px solid ${TOKENS.safeguard.cap.dot}33` : '1px solid rgba(186,117,23,0.20)',
+                }}>
                   {init.kora_note}
                 </div>
               )}
-
-              {/* Disabled CTA */}
-              <div>
-                <button
-                  disabled
-                  className="rounded border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 cursor-not-allowed"
-                >
-                  {init.additionality === 'mandatory_legal_minimum'
-                    ? 'Registra Attività Compliance — Disponibile in fase pilot'
-                    : 'Proponi Iniziativa — Disponibile in fase pilot'}
-                </button>
-              </div>
+              <button
+                disabled
+                style={{ borderRadius: 6, border: TOKENS.cardBorder, background: TOKENS.inkBorder, padding: '6px 12px', fontSize: '11px', color: TOKENS.inkHint, cursor: 'not-allowed' }}
+              >
+                {init.additionality === 'mandatory_legal_minimum'
+                  ? 'Registra Attività Compliance — Disponibile in fase pilot'
+                  : 'Proponi Iniziativa — Disponibile in fase pilot'}
+              </button>
             </div>
-          ))}
-        </div>
-
-        <div className="mt-3 rounded border border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="text-xs text-amber-800">
-            <span className="font-semibold">Foundation Light Preview. </span>
-            Nessuna iniziativa viene inviata, approvata, finanziata o attivata da questa schermata.
-            L&apos;Initiative Studio e i workflow di orchestrazione KORA sono disponibili in fase pilot.
-          </p>
-        </div>
+          );
+        })}
       </div>
+
+      {/* ── Explainability hint ── */}
+      <ExplainabilityHint />
+
+      {/* ── Provenance footer ── */}
+      {aggregate && (
+        <ProvenanceFooter
+          methodologyVersionId={aggregate.methodology_version_id}
+          calibrationStatus={aggregate.calibration_status}
+          reportingPeriod={aggregate.reporting_period}
+        />
+      )}
     </div>
   );
 }

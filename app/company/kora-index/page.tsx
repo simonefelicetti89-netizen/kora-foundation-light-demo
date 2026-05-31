@@ -14,6 +14,7 @@ import type { MacroblockScore }        from '@/lib/types';
 
 // ── Shared components — reused from cockpit ────────────────────────────────────
 import { PageMasthead }    from '@/components/ui/PageMasthead';
+import { SectionLabel }    from '@/components/ui/SectionLabel';
 import { IndexRingCard }   from '@/components/company/cockpit/IndexRingCard';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 
@@ -110,17 +111,6 @@ function ScenarioStrip({ activeScenario, s1Output, s2Output }: {
 }
 
 // ── Section divider ────────────────────────────────────────────────────────────
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p
-      className="uppercase pt-2"
-      style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.inkHint }}
-    >
-      {children}
-    </p>
-  );
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 

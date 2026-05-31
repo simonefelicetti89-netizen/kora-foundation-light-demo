@@ -7,79 +7,88 @@ import { PILLAR_CODES } from '@/lib/constants/kora';
 import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { PageMasthead } from '@/components/ui/PageMasthead';
+import { SectionLabel } from '@/components/ui/SectionLabel';
+import { ChartFrame } from '@/components/charts/ChartFrame';
+import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
+import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import type { PillarCode } from '@/lib/types';
 
 const SAFE_AGGREGATION_THRESHOLD = 10;
 
-const PILLAR_BAR_COLORS: Record<string, string> = {
-  LIFE:       'bg-green-400',
-  GROWTH:     'bg-blue-400',
-  CONNECTION: 'bg-purple-400',
-  IMPACT:     'bg-orange-400',
-  LEGACY:     'bg-amber-400',
-};
-
 const DEPT_LABELS: Record<string, string> = {
-  'dept-operations': 'Operations',
-  'dept-sales': 'Sales',
-  'dept-hr-people': 'HR & People',
+  'dept-operations':          'Operations',
+  'dept-sales':               'Sales',
+  'dept-hr-people':           'HR & People',
   'dept-product-engineering': 'Product & Engineering',
-  'dept-admin-finance': 'Admin & Finance',
-};
-
-// Scenario-reactive — moved inside component function
-
-const SAFEGUARD_STYLE: Record<string, { container: string; label: string; badge: string }> = {
-  CLEAR:   { container: 'border-green-200 bg-green-50',  label: 'text-green-800', badge: 'bg-green-100 text-green-700 border-green-300' },
-  WARNING: { container: 'border-amber-200 bg-amber-50',  label: 'text-amber-800', badge: 'bg-amber-100 text-amber-700 border-amber-300' },
-  FLAGGED: { container: 'border-red-200 bg-red-50',      label: 'text-red-800',   badge: 'bg-red-100 text-red-700 border-red-300' },
+  'dept-admin-finance':       'Admin & Finance',
 };
 
 type DebtLevel = 'alto' | 'medio' | 'basso';
-// PILLAR_DEBT — scenario-reactive, moved inside component function
-
-const DEBT_LEVEL_BADGE: Record<DebtLevel, { style: string; label: string }> = {
-  alto:  { style: 'bg-red-50 text-red-700 border-red-200',     label: 'Debt alto' },
-  medio: { style: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Debt medio' },
-  basso: { style: 'bg-green-50 text-green-700 border-green-200', label: 'Debt basso' },
-};
-
 type SiteStatus = 'ok' | 'warning' | 'flagged' | 'suppressed';
-// SITE_ACTIVATION — scenario-reactive AR values, moved inside component function
 
-const SITE_STATUS_BADGE: Record<SiteStatus, { style: string; label: string }> = {
-  ok:         { style: 'bg-green-50 text-green-700 border-green-200',   label: 'CLEAR' },
-  warning:    { style: 'bg-amber-50 text-amber-700 border-amber-200',   label: 'WARNING' },
-  flagged:    { style: 'bg-red-50 text-red-700 border-red-200',         label: 'FLAGGED' },
-  suppressed: { style: 'bg-slate-50 text-slate-400 border-slate-200',   label: 'Soppressa' },
+// Debt level → KORA semantic token mapping
+const DEBT_BADGE: Record<DebtLevel, { bg: string; text: string; dot: string; label: string }> = {
+  alto:  { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   dot: TOKENS.safeguard.cap.dot,   label: 'Debt alto'  },
+  medio: { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, dot: TOKENS.safeguard.watch.dot, label: 'Debt medio' },
+  basso: { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  dot: TOKENS.safeguard.pass.dot,  label: 'Debt basso' },
 };
 
-// NEXT_ACTIONS — served from explainabilityService (scenario-reactive)
-// PARTNER_SUGGESTIONS — scenario-reactive, moved inside component function
-
-const PILLAR_TEXT_BADGE: Record<string, string> = {
-  LIFE:       'text-green-700',
-  GROWTH:     'text-blue-700',
-  CONNECTION: 'text-purple-700',
-  IMPACT:     'text-orange-700',
-  LEGACY:     'text-amber-700',
+const SITE_BADGE: Record<SiteStatus, { bg: string; text: string; label: string }> = {
+  ok:         { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  label: 'Clear'     },
+  warning:    { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, label: 'Warning'   },
+  flagged:    { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   label: 'Flagged'   },
+  suppressed: { bg: TOKENS.inkBorder,          text: TOKENS.inkHint,              label: 'Soppressa' },
 };
 
-function pct(val: number): string {
-  return `${(val * 100).toFixed(0)}%`;
+function pct(val: number): string { return `${(val * 100).toFixed(0)}%`; }
+
+// Pillar ink scale — ranked by share value; top pillar gets accent
+function pillarFill(rank: number): string {
+  const opacities = [1, 0.65, 0.50, 0.35, 0.22];
+  const op = opacities[rank] ?? 0.22;
+  return `rgba(20,18,46,${op})`;
 }
 
-function MetricCard({ label, value, sub, description }: { label: string; value: string; sub: string; description?: string }) {
+// Metric card — KORA style
+function MetricCard({ label, value, code, description }: {
+  label: string; value: string; code: string; description?: string;
+}) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="text-2xl font-bold text-slate-800 mt-1">{value}</p>
-      <p className="text-xs font-mono text-slate-400 mt-0.5">{sub}</p>
+    <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint }}>
+        {code}
+      </p>
+      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, letterSpacing: '-0.025em', margin: '8px 0 4px' }}>
+        {value}
+      </p>
+      <p style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>{label}</p>
       {description && (
-        <p className="text-xs text-slate-400 mt-1.5 leading-snug border-t border-slate-100 pt-1.5">
+        <p style={{ fontSize: '11px', color: TOKENS.inkTertiary, lineHeight: 1.55, marginTop: '10px', paddingTop: '10px', borderTop: TOKENS.cardBorder }}>
           {description}
         </p>
       )}
+    </div>
+  );
+}
+
+// Horizontal bar row
+function BarRow({ label, value, fill, suffix, rightSlot }: {
+  label: string; value: number; fill: string; suffix?: string; rightSlot?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span style={{ width: 160, fontSize: '12px', color: TOKENS.inkSecondary, flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {label}
+      </span>
+      <div style={{ flex: 1, height: 6, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
+        <div style={{ height: 6, borderRadius: 9999, width: `${Math.min(value * 100, 100)}%`, background: fill }} />
+      </div>
+      <span style={{ width: 40, textAlign: 'right', fontSize: '11px', fontFamily: 'var(--font-inter)', color: TOKENS.inkSecondary, flexShrink: 0 }}>
+        {suffix ?? pct(value)}
+      </span>
+      {rightSlot}
     </div>
   );
 }
@@ -88,14 +97,13 @@ function MetricCard({ label, value, sub, description }: { label: string; value: 
 export default function Activation() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
-  const companyId = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const companyId  = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
   const { data: scoring } = useScoringResult({ tenantId: companyId, scenarioId: activeScenario });
   const aggregate  = scoring?.aggregate;
   const safeguard  = activationSafeguardService.evaluateFromSeed(companyId, activeScenario);
-  const debtEur    = activeScenario === 'S2' ? 35_000 : 45_000;
-  const safeguardStyle = safeguard ? (SAFEGUARD_STYLE[safeguard.status] ?? SAFEGUARD_STYLE.WARNING) : SAFEGUARD_STYLE.WARNING;
 
   const isS2 = activeScenario === 'S2';
+  const debtEur = isS2 ? 35_000 : 45_000;
 
   const debtConcentration = isS2
     ? { bottom_50_iu_pct: 0.24, next_40_iu_pct: 0.28, top_12_iu_pct: 0.48 }
@@ -135,278 +143,258 @@ export default function Activation() {
 
   const partnerSuggestions: { pillar: string; type: string; note: string }[] = isS2
     ? [
-        { pillar: 'LEGACY',     type: 'Mentoring intergenerazionale',    note: 'Nessun partner attivo — priorità S2' },
-        { pillar: 'IMPACT',     type: 'Iniziative territoriali e ESG',   note: 'Espandere oltre partner esistenti'   },
-        { pillar: 'CONNECTION', type: 'Community interna cross-sito',    note: 'Estendere a Plant Bergamo'           },
+        { pillar: 'LEGACY',     type: 'Mentoring intergenerazionale',  note: 'Nessun partner attivo — priorità S2' },
+        { pillar: 'IMPACT',     type: 'Iniziative territoriali e ESG', note: 'Espandere oltre partner esistenti'   },
+        { pillar: 'CONNECTION', type: 'Community interna cross-sito',  note: 'Estendere a Plant Bergamo'           },
       ]
     : [
-        { pillar: 'LIFE',       type: 'Prevenzione e benessere',         note: 'Copertura prodotto insufficiente'   },
-        { pillar: 'LEGACY',     type: 'Trasferimento knowledge',         note: 'Nessun partner attivo'              },
-        { pillar: 'CONNECTION', type: 'Programma community interna',     note: 'Bassa copertura cross-reparto'      },
+        { pillar: 'LIFE',       type: 'Prevenzione e benessere',       note: 'Copertura prodotto insufficiente' },
+        { pillar: 'LEGACY',     type: 'Trasferimento knowledge',       note: 'Nessun partner attivo'           },
+        { pillar: 'CONNECTION', type: 'Programma community interna',   note: 'Bassa copertura cross-reparto'   },
       ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-slate-900">Attivazione & Partecipazione</h1>
-        <p className="text-sm text-slate-500">
-          Vista solo aggregata. I gruppi con meno di {SAFE_AGGREGATION_THRESHOLD} lavoratori sono soppressi.
-        </p>
-      </div>
+    <div className="space-y-5">
+      <PageMasthead
+        eyebrow={`Attivazione & Partecipazione · ${activeScenario}`}
+        title="Attivazione & Partecipazione"
+        subline={`Vista aggregata — gruppi < ${SAFE_AGGREGATION_THRESHOLD} lavoratori soppressi · nessun PIB individuale`}
+      />
 
       {aggregate ? (
         <>
           {/* ── Activation Debt Hero ── */}
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-slate-700">Activation Debt — Maggioranza Silenziosa</h2>
-              <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
-                Dati sintetici demo
-              </span>
+          <SectionLabel>Activation Debt — Maggioranza Silenziosa</SectionLabel>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {/* Lavoratori mai attivati */}
+            <div style={{ background: TOKENS.safeguard.cap.bg, border: `1px solid ${TOKENS.safeguard.cap.dot}22`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+              <p style={{ fontSize: '11px', color: TOKENS.safeguard.cap.text, fontWeight: 500 }}>
+                Lavoratori mai attivati
+              </p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.cap.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
+                {Math.round((1 - aggregate.activation_rate) * aggregate.total_workers)}
+              </p>
+              <p style={{ fontSize: '11px', color: TOKENS.safeguard.cap.text, opacity: 0.75 }}>
+                {pct(1 - aggregate.activation_rate)} forza lavoro
+              </p>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="rounded-md border border-red-100 bg-red-50 p-3">
-                <p className="text-xs text-red-500">Lavoratori mai attivati</p>
-                <p className="text-2xl font-bold text-red-700 mt-1">
-                  {Math.round((1 - aggregate.activation_rate) * aggregate.total_workers)}
-                </p>
-                <p className="text-xs font-mono text-red-400 mt-0.5">
-                  {pct(1 - aggregate.activation_rate)} forza lavoro
-                </p>
-              </div>
-              <div className="rounded-md border border-amber-100 bg-amber-50 p-3">
-                <p className="text-xs text-amber-600">Bottom 50% lavoratori</p>
-                <p className="text-2xl font-bold text-amber-700 mt-1">{pct(debtConcentration.bottom_50_iu_pct)}</p>
-                <p className="text-xs font-mono text-amber-500 mt-0.5">degli IU totali</p>
-              </div>
-              <div className="rounded-md border border-amber-100 bg-amber-50 p-3">
-                <p className="text-xs text-amber-600">Top 12% lavoratori</p>
-                <p className="text-2xl font-bold text-amber-700 mt-1">{pct(debtConcentration.top_12_iu_pct)}</p>
-                <p className="text-xs font-mono text-amber-500 mt-0.5">degli IU totali</p>
-              </div>
-              <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">Activation Debt stimato</p>
-                <p className="text-2xl font-bold text-slate-700 mt-1">
-                  €{debtEur.toLocaleString('it-IT')}
-                </p>
-                <p className="text-xs font-mono text-slate-400 mt-0.5">budget non convertito in IU</p>
-              </div>
+            {/* Bottom 50% */}
+            <div style={{ background: TOKENS.safeguard.watch.bg, border: `1px solid ${TOKENS.safeguard.watch.dot}22`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+              <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, fontWeight: 500 }}>Bottom 50% lavoratori</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.watch.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
+                {pct(debtConcentration.bottom_50_iu_pct)}
+              </p>
+              <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, opacity: 0.75 }}>degli IU totali</p>
+            </div>
+            {/* Top 12% */}
+            <div style={{ background: TOKENS.safeguard.watch.bg, border: `1px solid ${TOKENS.safeguard.watch.dot}22`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+              <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, fontWeight: 500 }}>Top 12% lavoratori</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.watch.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
+                {pct(debtConcentration.top_12_iu_pct)}
+              </p>
+              <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, opacity: 0.75 }}>degli IU totali</p>
+            </div>
+            {/* Activation Debt EUR */}
+            <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+              <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, fontWeight: 500 }}>Activation Debt stimato</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
+                €{debtEur.toLocaleString('it-IT')}
+              </p>
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>budget non convertito in IU</p>
             </div>
           </div>
 
-          {/* ── Activation Safeguard ── */}
+          {/* ── Safeguard ── */}
           {safeguard && (
-            <div className={`rounded-lg border p-4 ${safeguardStyle.container}`}>
-              <div className="flex items-center justify-between mb-2">
-                <p className={`text-xs font-semibold uppercase tracking-wide ${safeguardStyle.label}`}>
-                  Activation Safeguard
-                </p>
-                <span className={`rounded border px-2 py-0.5 text-xs font-bold ${safeguardStyle.badge}`}>
-                  {safeguard.status}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-4 text-xs">
-                <span className={safeguardStyle.label}>
-                  AR: <span className="font-mono font-semibold">{pct(safeguard.ar_value)}</span>
-                  {' '}(soglia CLEAR ≥ 40%)
-                </span>
-                <span className={safeguardStyle.label}>
-                  MAR: <span className="font-mono font-semibold">{pct(safeguard.mar_value)}</span>
-                  {' '}(soglia CLEAR ≥ 30%)
-                </span>
-              </div>
-              {safeguard.status !== 'CLEAR' && (
-                <p className={`text-xs mt-2 leading-snug ${safeguardStyle.label}`}>
-                  Soglia non raggiunta — attivazione insufficiente per almeno un indicatore primario.
-                  Il Board Pack includerà questo alert.
-                </p>
-              )}
-            </div>
+            <>
+              <SectionLabel>Activation Safeguard</SectionLabel>
+              {(() => {
+                const sc = TOKENS.safeguard[safeguard.status === 'CLEAR' ? 'pass' : safeguard.status === 'WARNING' ? 'watch' : 'cap'];
+                return (
+                  <div style={{ background: sc.bg, border: `1px solid ${sc.dot}44`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: sc.text }}>
+                        Activation Safeguard
+                      </p>
+                      <span className="inline-flex items-center gap-1.5 rounded-md font-medium" style={{ fontFamily: 'var(--font-inter)', background: `${sc.dot}22`, color: sc.text, fontSize: '13px', padding: '4px 10px' }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
+                        {safeguard.status === 'CLEAR' ? 'Clear' : safeguard.status === 'WARNING' ? 'Warning' : 'Flagged'}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-6">
+                      <span style={{ fontSize: '12px', color: sc.text }}>
+                        AR: <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700 }}>{pct(safeguard.ar_value)}</span>
+                        <span style={{ opacity: 0.70 }}> (soglia CLEAR ≥ 40%)</span>
+                      </span>
+                      <span style={{ fontSize: '12px', color: sc.text }}>
+                        MAR: <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700 }}>{pct(safeguard.mar_value)}</span>
+                        <span style={{ opacity: 0.70 }}> (soglia CLEAR ≥ 30%)</span>
+                      </span>
+                    </div>
+                    {safeguard.status !== 'CLEAR' && (
+                      <p style={{ fontSize: '12px', color: sc.text, marginTop: 12, lineHeight: 1.55, opacity: 0.85 }}>
+                        Soglia non raggiunta — attivazione insufficiente per almeno un indicatore primario. Il Board Pack includerà questo alert.
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
+            </>
           )}
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <MetricCard label="Activation Rate"       value={pct(aggregate.activation_rate)}             sub="AR"  description="Quota della forza lavoro idonea con almeno un'Impact Unit approvata nel periodo." />
-            <MetricCard label="Meaningful Activation" value={pct(aggregate.meaningful_activation_rate)}  sub="MAR" description="Quota di lavoratori la cui partecipazione supera la soglia di materialità — non solo nominale." />
-            <MetricCard label="Continuity Rate"       value={pct(aggregate.continuity_rate)}             sub="CO"  description="Quota di lavoratori con engagement sostenuto in più periodi di rendicontazione." />
-            <MetricCard label="Verification Rate"     value={pct(aggregate.verification_rate)}           sub="VR"  description="Quota di attività registrata supportata da evidenze verificate o parzialmente verificate." />
+          {/* ── Metriche principali ── */}
+          <SectionLabel>Metriche di attivazione</SectionLabel>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <MetricCard label="Activation Rate" value={pct(aggregate.activation_rate)} code="AR"
+              description="Quota della forza lavoro idonea con almeno un'Impact Unit approvata nel periodo." />
+            <MetricCard label="Meaningful Activation" value={pct(aggregate.meaningful_activation_rate)} code="MAR"
+              description="Quota di lavoratori la cui partecipazione supera la soglia di materialità." />
+            <MetricCard label="Continuity Rate" value={pct(aggregate.continuity_rate)} code="CO"
+              description="Quota di lavoratori con engagement sostenuto in più periodi di rendicontazione." />
+            <MetricCard label="Verification Rate" value={pct(aggregate.verification_rate)} code="VR"
+              description="Quota di attività supportata da evidenze verificate o parzialmente verificate." />
           </div>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">Popolazione Lavoratori</h2>
-            <div className="grid grid-cols-3 gap-4 text-sm">
-              <div>
-                <p className="text-xs text-slate-400">Lavoratori Totali</p>
-                <p className="font-mono font-semibold text-slate-800">{aggregate.total_workers}</p>
+          {/* ── Popolazione ── */}
+          <SectionLabel>Popolazione lavoratori</SectionLabel>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: 'Lavoratori totali',    value: aggregate.total_workers },
+              { label: 'Lavoratori attivi',    value: aggregate.active_worker_count },
+              { label: 'Attivi significativi', value: aggregate.meaningful_active_worker_count },
+            ].map(({ label, value }) => (
+              <div key={label} style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+                <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>{label}</p>
+                <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, marginTop: 8, letterSpacing: '-0.02em' }}>
+                  {value}
+                </p>
               </div>
-              <div>
-                <p className="text-xs text-slate-400">Lavoratori Attivi</p>
-                <p className="font-mono font-semibold text-slate-800">{aggregate.active_worker_count}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400">Attivi Significativi</p>
-                <p className="font-mono font-semibold text-slate-800">{aggregate.meaningful_active_worker_count}</p>
-              </div>
-            </div>
+            ))}
           </div>
 
-          {/* ── Concentration Distribution ── */}
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-1">Concentrazione IU — Distribuzione Interna</h2>
-            <p className="text-xs text-slate-400 mb-3">
-              Distribuzione aggregata degli Impact Unit tra fasce di lavoratori. Nessun nominativo. Nessun PIB individuale.
-            </p>
+          {/* ── Concentrazione IU ── */}
+          <SectionLabel>Concentrazione IU — distribuzione interna</SectionLabel>
+          <ChartFrame
+            subtitle="Distribuzione aggregata degli Impact Unit tra fasce di lavoratori. Nessun nominativo. Nessun PIB individuale."
+          >
             <div className="space-y-3">
               {[
-                { label: 'Top 12% lavoratori', pct: debtConcentration.top_12_iu_pct, color: 'bg-red-400' },
-                { label: 'Fascia 38–88%',       pct: debtConcentration.next_40_iu_pct, color: 'bg-amber-300' },
-                { label: 'Bottom 50%',           pct: debtConcentration.bottom_50_iu_pct, color: 'bg-slate-300' },
+                { label: 'Top 12% lavoratori', value: debtConcentration.top_12_iu_pct,   fill: TOKENS.ink },
+                { label: 'Fascia 38–88%',       value: debtConcentration.next_40_iu_pct,  fill: `rgba(20,18,46,0.50)` },
+                { label: 'Bottom 50%',           value: debtConcentration.bottom_50_iu_pct, fill: `rgba(20,18,46,0.25)` },
               ].map((row) => (
-                <div key={row.label} className="flex items-center gap-3">
-                  <span className="w-36 text-xs text-slate-600">{row.label}</span>
-                  <div className="flex-1 h-3 rounded-full bg-slate-100">
-                    <div
-                      className={`h-3 rounded-full ${row.color}`}
-                      style={{ width: `${row.pct * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-mono text-slate-500 w-10 text-right">{pct(row.pct)}</span>
-                </div>
+                <BarRow key={row.label} label={row.label} value={row.value} fill={row.fill} />
               ))}
             </div>
-            <p className="text-[11px] text-slate-400 mt-3">
-              Concentrazione IU: il top 12% genera {pct(debtConcentration.top_12_iu_pct)} degli IU totali.
-              Activation Debt elevato — espansione della base di attivazione prioritaria.
+            <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 12 }}>
+              Il top 12% genera {pct(debtConcentration.top_12_iu_pct)} degli IU totali. Activation Debt elevato — espansione della base di attivazione prioritaria.
             </p>
-          </div>
+          </ChartFrame>
 
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">Distribuzione Pillar</h2>
-            <div className="space-y-2">
-              {PILLAR_CODES.map((pillar) => {
-                const share = aggregate.pillar_distribution[pillar as PillarCode] ?? 0;
+          {/* ── Distribuzione pillar ── */}
+          <SectionLabel>Distribuzione pillar</SectionLabel>
+          <ChartFrame subtitle="Distribuzione aggregata a livello aziendale. Nessun dato individuale del lavoratore.">
+            {(() => {
+              const pillarShares = PILLAR_CODES.map((p) => ({
+                pillar: p,
+                share: aggregate.pillar_distribution[p as PillarCode] ?? 0,
+              })).sort((a, b) => b.share - a.share);
+              return (
+                <div className="space-y-3">
+                  {pillarShares.map(({ pillar, share }, rank) => (
+                    <BarRow
+                      key={pillar}
+                      label={pillar}
+                      value={share}
+                      fill={rank === 0 ? TOKENS.accent : pillarFill(rank)}
+                    />
+                  ))}
+                </div>
+              );
+            })()}
+          </ChartFrame>
+
+          {/* ── Activation Debt per pillar ── */}
+          <SectionLabel>Activation Debt per pillar</SectionLabel>
+          <ChartFrame subtitle="Copertura lavoratori attivi per pillar. Pillar con copertura bassa indicano aree di espansione prioritaria.">
+            <div className="space-y-3">
+              {pillarDebt.map((row, rank) => {
+                const badge = DEBT_BADGE[row.level];
                 return (
-                  <div key={pillar} className="flex items-center gap-3">
-                    <span className="w-24 text-xs font-mono text-slate-600">{pillar}</span>
-                    <div className="flex-1 h-2 rounded-full bg-slate-100">
-                      <div
-                        className={`h-2 rounded-full ${PILLAR_BAR_COLORS[pillar] ?? 'bg-slate-400'}`}
-                        style={{ width: `${share * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-slate-500 w-10 text-right">{pct(share)}</span>
-                  </div>
+                  <BarRow
+                    key={row.pillar}
+                    label={row.pillar}
+                    value={row.coverage}
+                    fill={rank === 0 ? TOKENS.accent : pillarFill(rank)}
+                    rightSlot={
+                      <span className="inline-flex items-center gap-1 rounded shrink-0" style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 500, background: badge.bg, color: badge.text, padding: '2px 7px', marginLeft: 8 }}>
+                        {badge.label}
+                      </span>
+                    }
+                  />
                 );
               })}
             </div>
-          </div>
+          </ChartFrame>
 
-          {/* ── Pillar Debt Table ── */}
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-1">Activation Debt per Pillar</h2>
-            <p className="text-xs text-slate-400 mb-3">
-              Copertura lavoratori attivi per pillar. Pillar con copertura bassa indicano aree di espansione prioritaria.
-            </p>
-            <div className="divide-y divide-slate-50">
-              {pillarDebt.map((row) => {
-                const badge = DEBT_LEVEL_BADGE[row.level];
-                return (
-                  <div key={row.pillar} className="flex items-center gap-3 py-2">
-                    <span className={`w-24 text-xs font-mono font-semibold ${PILLAR_TEXT_BADGE[row.pillar] ?? 'text-slate-600'}`}>
-                      {row.pillar}
-                    </span>
-                    <div className="flex-1 h-2 rounded-full bg-slate-100">
-                      <div
-                        className={`h-2 rounded-full ${PILLAR_BAR_COLORS[row.pillar] ?? 'bg-slate-400'}`}
-                        style={{ width: `${row.coverage * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-mono text-slate-500 w-10 text-right">{pct(row.coverage)}</span>
-                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${badge.style}`}>
-                      {badge.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-1">Tasso di Attivazione per Dipartimento</h2>
-            <p className="text-xs text-slate-400 mb-3">
-              Visualizzati solo i dipartimenti con ≥{SAFE_AGGREGATION_THRESHOLD} lavoratori.
-            </p>
-            <div className="space-y-2">
+          {/* ── AR per dipartimento ── */}
+          <SectionLabel>Tasso di attivazione per dipartimento</SectionLabel>
+          <ChartFrame subtitle={`Visualizzati solo i dipartimenti con ≥${SAFE_AGGREGATION_THRESHOLD} lavoratori.`}>
+            <div className="space-y-3">
               {Object.entries(aggregate.department_activation).map(([deptId, rate]) => (
-                <div key={deptId} className="flex items-center gap-3">
-                  <span className="w-44 text-xs text-slate-600 truncate">
-                    {DEPT_LABELS[deptId] ?? deptId}
-                  </span>
-                  <div className="flex-1 h-2 rounded-full bg-slate-100">
-                    <div
-                      className="h-2 rounded-full bg-teal-400"
-                      style={{ width: `${rate * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-slate-500 w-10 text-right">{pct(rate)}</span>
-                </div>
+                <BarRow
+                  key={deptId}
+                  label={DEPT_LABELS[deptId] ?? deptId}
+                  value={rate}
+                  fill={TOKENS.ink}
+                />
               ))}
             </div>
-          </div>
+          </ChartFrame>
 
-          {/* ── Site / Location Gap ── */}
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-1">Gap per Sede / Sito</h2>
-            <p className="text-xs text-slate-400 mb-3">
-              Visualizzate solo sedi con ≥{SAFE_AGGREGATION_THRESHOLD} lavoratori. I gruppi inferiori sono soppressi per privacy.
-            </p>
-            <div className="space-y-2">
+          {/* ── Gap per sede ── */}
+          <SectionLabel>Gap per sede / sito</SectionLabel>
+          <ChartFrame subtitle={`Visualizzate solo sedi con ≥${SAFE_AGGREGATION_THRESHOLD} lavoratori. I gruppi inferiori sono soppressi per privacy.`}>
+            <div className="space-y-3">
               {siteActivation.map((site) => {
                 if (site.status === 'suppressed') {
                   return (
                     <div key={site.name}>
-                      <PrivacyBoundaryNotice
-                        reason="group_too_small"
-                        dataType={site.name}
-                        groupSize={site.workers}
-                        className="py-2"
-                      />
+                      <PrivacyBoundaryNotice reason="group_too_small" dataType={site.name} groupSize={site.workers} className="py-1" />
                     </div>
                   );
                 }
-                const sb = SITE_STATUS_BADGE[site.status];
+                const sb = SITE_BADGE[site.status];
                 return (
-                  <div key={site.name} className="flex items-center gap-3">
-                    <span className="w-36 text-xs text-slate-600 truncate">{site.name}</span>
-                    <span className="text-xs font-mono text-slate-400 w-16">{site.workers} lav.</span>
-                    <div className="flex-1 h-2 rounded-full bg-slate-100">
-                      <div
-                        className="h-2 rounded-full bg-teal-400"
-                        style={{ width: `${site.ar * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-mono text-slate-500 w-10 text-right">{pct(site.ar)}</span>
-                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${sb.style}`}>
-                      {sb.label}
-                    </span>
-                  </div>
+                  <BarRow
+                    key={site.name}
+                    label={`${site.name} (${site.workers} lav.)`}
+                    value={site.ar}
+                    fill={TOKENS.ink}
+                    rightSlot={
+                      <span className="rounded shrink-0 font-medium" style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', background: sb.bg, color: sb.text, padding: '2px 7px', marginLeft: 8 }}>
+                        {sb.label}
+                      </span>
+                    }
+                  />
                 );
               })}
             </div>
-          </div>
+          </ChartFrame>
 
-          {/* ── Next Actions ── */}
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-700 mb-3">Azioni Prioritarie — Riduzione Activation Debt</h2>
-            <div className="space-y-2">
+          {/* ── Azioni prioritarie ── */}
+          <SectionLabel>Azioni prioritarie — riduzione Activation Debt</SectionLabel>
+          <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+            <div className="divide-y" style={{ borderColor: TOKENS.inkBorder }}>
               {nextActions.map((na) => (
-                <div key={na.priority} className="flex items-start gap-3 py-2 border-b border-slate-50 last:border-0">
-                  <span className="shrink-0 w-5 h-5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold flex items-center justify-center mt-0.5">
+                <div key={na.priority} className="flex items-start gap-4 py-3 first:pt-0 last:pb-0">
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold" style={{ background: 'rgba(97,86,245,0.10)', color: TOKENS.accent, marginTop: 1 }}>
                     {na.priority}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-slate-700">{na.action}</p>
+                    <p style={{ fontSize: '13px', fontWeight: 500, color: TOKENS.ink }}>{na.action}</p>
                     {na.detail && (
-                      <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">{na.detail}</p>
+                      <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 4, lineHeight: 1.6 }}>{na.detail}</p>
                     )}
                   </div>
                 </div>
@@ -414,70 +402,57 @@ export default function Activation() {
             </div>
           </div>
 
-          {/* ── Partner Suggestions ── */}
-          <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
-            <h2 className="text-sm font-semibold text-blue-800 mb-2">Partner suggeriti — Copertura Pillar mancante</h2>
-            <p className="text-xs text-blue-600 mb-3">
+          {/* ── Partner suggeriti ── */}
+          <SectionLabel>Partner suggeriti — copertura pillar mancante</SectionLabel>
+          <div style={{ background: 'rgba(97,86,245,0.04)', border: '1px solid rgba(97,86,245,0.12)', borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+            <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginBottom: 12 }}>
               Suggerimenti basati sui pillar con Debt alto. Nessun marketplace, nessun prezzo, nessuna prenotazione.
             </p>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {partnerSuggestions.map((ps) => (
-                <div key={ps.pillar} className="flex items-center gap-3 text-xs">
-                  <span className={`w-20 font-mono font-semibold ${PILLAR_TEXT_BADGE[ps.pillar] ?? 'text-slate-600'}`}>
+                <div key={ps.pillar} className="flex items-baseline gap-3">
+                  <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '11px', color: TOKENS.accent, width: 80, flexShrink: 0 }}>
                     {ps.pillar}
                   </span>
-                  <span className="text-blue-800">{ps.type}</span>
-                  <span className="text-blue-500 italic">{ps.note}</span>
+                  <span style={{ fontSize: '12px', color: TOKENS.ink }}>{ps.type}</span>
+                  <span style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic' }}>{ps.note}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ── Board Pack Link ── */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold text-slate-700">Board Pack — Activation Debt Report</p>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Esporta la vista Activation Debt in formato Board Pack. Solo dati aggregati. Nessun dato individuale.
-              </p>
-            </div>
-            <button
-              disabled
-              className="shrink-0 rounded border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-400 cursor-not-allowed"
-              title="Demo — export non attivo in Foundation Light."
-            >
-              Preview stampabile
-            </button>
-          </div>
+          {/* ── Explainability hint ── */}
+          <ExplainabilityHint />
 
-          {/* ── Disclaimer ── */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-1">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
-              Note metodologiche
-            </p>
-            <ul className="space-y-0.5">
+          {/* ── Note metodologiche ── */}
+          <SectionLabel>Note metodologiche</SectionLabel>
+          <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+            <ul className="space-y-1.5">
               {[
                 'Nessun PIB individuale visualizzato — vista esclusivamente aggregata.',
-                'Gruppi < 10 lavoratori soppressi per soglia privacy (safe_aggregation_threshold = 10).',
+                `Gruppi < ${SAFE_AGGREGATION_THRESHOLD} lavoratori soppressi per soglia privacy (safe_aggregation_threshold = ${SAFE_AGGREGATION_THRESHOLD}).`,
                 'Activation Debt è un indicatore diagnostico aggregato — non una valutazione individuale.',
                 'Stima valore Debt: modello sintetico demo — non un output economico certificato.',
                 'EQ (Equity) misura equità distributiva dell\'attivazione tra segmenti — non qualità evidenza.',
-                `Vista scenario-reactive: i valori mostrati riflettono lo scenario ${activeScenario} (S1 = baseline, S2 = migliorato). I dati restano sintetici demo.`,
+                `Vista scenario-reactive: i valori mostrano lo scenario ${activeScenario} (S1 = baseline, S2 = migliorato). Dati sintetici demo.`,
               ].map((note) => (
-                <li key={note} className="flex gap-1.5 text-[11px] text-slate-400">
-                  <span className="shrink-0 mt-0.5">·</span>
+                <li key={note} className="flex gap-2" style={{ fontSize: '11px', color: TOKENS.inkHint, lineHeight: 1.6 }}>
+                  <span style={{ flexShrink: 0, marginTop: 1 }}>·</span>
                   {note}
                 </li>
               ))}
             </ul>
           </div>
 
-          <p className="text-xs text-slate-400">
-            {aggregate.methodology_version_id} · {aggregate.calibration_status} · Dati demo sintetici · synthetic_demo_data: true
-          </p>
+          {/* ── Provenance footer ── */}
+          <ProvenanceFooter
+            methodologyVersionId={aggregate.methodology_version_id}
+            calibrationStatus={aggregate.calibration_status}
+            reportingPeriod={aggregate.reporting_period}
+          />
         </>
       ) : (
-        <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
+        <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '2rem', textAlign: 'center', color: TOKENS.inkHint }}>
           Nessun dato aggregato disponibile per questo scenario.
         </div>
       )}
