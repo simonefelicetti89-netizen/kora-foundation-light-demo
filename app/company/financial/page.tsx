@@ -6,255 +6,200 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { tenantService } from '@/services/tenant/TenantService';
 import { financialGovernanceService } from '@/services/financial-governance/FinancialGovernanceService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
-import { cn } from '@/lib/utils';
 import { PILLAR_LABELS, BTI_DOCTRINE } from '@/lib/constants/kora';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { PageMasthead } from '@/components/ui/PageMasthead';
+import { SectionLabel } from '@/components/ui/SectionLabel';
+import { ChartFrame } from '@/components/charts/ChartFrame';
+import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
+import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
 import type { PillarCode } from '@/lib/types';
 
-// ─── Pillar styling ───────────────────────────────────────────────────────────
-
-const PILLAR_BAR: Record<string, string> = {
-  LIFE:       'bg-pillar-life',
-  GROWTH:     'bg-pillar-growth',
-  CONNECTION: 'bg-pillar-connection',
-  IMPACT:     'bg-kora-fun-green',
-  LEGACY:     'bg-pillar-legacy',
-};
-
-const PILLAR_TEXT: Record<string, string> = {
-  LIFE:       'text-pillar-life',
-  GROWTH:     'text-pillar-growth',
-  CONNECTION: 'text-pillar-connection',
-  IMPACT:     'text-kora-cosmic-blue',
-  LEGACY:     'text-pillar-legacy',
-};
+// ─── Formatters ───────────────────────────────────────────────────────────────
 
 function eur(val: number) {
   return `€${val.toLocaleString('it-IT')}`;
 }
 
-function BudgetCard({
-  label, value, sub, color,
-}: { label: string; value: string; sub?: string; color?: string }) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className={cn('text-xl font-bold mt-1', color ?? 'text-slate-800')}>{value}</p>
-      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
-    </div>
-  );
+function pct(val: number, decimals = 0) {
+  return `${(val * 100).toFixed(decimals)}%`;
 }
 
-// ─── Budget-to-Human-Impact — per-pillar directional metadata ────────────────
-// Budget, share, and deep activation values come from BudgetToHumanImpactService.
-// Debt level and recommendation are directional demo labels — not computed from service.
+// ─── Pillar ink ramp — no rainbow ─────────────────────────────────────────────
 
-type DebtLevel = 'basso' | 'medio' | 'alto';
+const PILLAR_RANK_FILL = [
+  TOKENS.accent,                // 1° (leader) — viola accento
+  'rgba(20,18,46,0.65)',
+  'rgba(20,18,46,0.50)',
+  'rgba(20,18,46,0.35)',
+  'rgba(20,18,46,0.22)',
+];
+
+function pillarFill(rank: number): string {
+  return PILLAR_RANK_FILL[rank] ?? 'rgba(20,18,46,0.18)';
+}
+
+// ─── Debt/Priority/Risk → KORA semantic tokens ────────────────────────────────
+
+type DebtLevel     = 'basso' | 'medio' | 'alto';
+type Priority      = 'Alta'  | 'Media';
+type Risk          = 'Alto'  | 'Medio' | 'Basso';
+type ConfidenceLevel = 'alta' | 'media' | 'bassa';
+
+const DEBT_TOKEN: Record<DebtLevel, { bg: string; text: string; dot: string; label: string }> = {
+  alto:  { ...TOKENS.safeguard.cap,   label: 'Debt alto'  },
+  medio: { ...TOKENS.safeguard.watch, label: 'Debt medio' },
+  basso: { ...TOKENS.safeguard.pass,  label: 'Debt basso' },
+};
+
+const PRIORITY_TOKEN: Record<Priority, { bg: string; text: string }> = {
+  Alta:  { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text   },
+  Media: { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text },
+};
+
+const RISK_TOKEN: Record<Risk, { bg: string; text: string }> = {
+  Alto:  { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text   },
+  Medio: { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text },
+  Basso: { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text  },
+};
+
+const CONFIDENCE_TOKEN: Record<ConfidenceLevel, { bg: string; text: string }> = {
+  alta:  { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text  },
+  media: { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text },
+  bassa: { bg: TOKENS.inkBorder,          text: TOKENS.inkSecondary          },
+};
+
+// ─── Per-pillar static metadata (debt + raccomandazione) ─────────────────────
+// Debt level e recommendation sono etichette direzionali demo — non calcolate dal service.
 
 const PILLAR_STATIC: Record<string, { debt: DebtLevel; recommendation: string }> = {
-  LIFE:       { debt: 'alto',  recommendation: 'Espandere accesso alle sedi con bassa partecipazione — elevata concentrazione economic_relief in questo pillar' },
+  LIFE:       { debt: 'alto',  recommendation: 'Espandere accesso alle sedi con bassa partecipazione — elevata concentrazione di benefit monetari in questo pillar' },
   GROWTH:     { debt: 'medio', recommendation: 'Programmi ricorrenti per il bottom 50% — indicatore direzionale CO / continuità — non causale' },
   CONNECTION: { debt: 'alto',  recommendation: 'Attivare Partner Network CONNECTION — copertura cross-reparto insufficiente' },
   IMPACT:     { debt: 'basso', recommendation: 'Pillar più efficiente — mantenere e ampliare il perimetro attuale' },
   LEGACY:     { debt: 'medio', recommendation: 'Attivare mentoring LEGACY — potenziale PB e CO, budget attuale sotto soglia di segnale' },
 };
 
-const DEBT_BADGE: Record<DebtLevel, { style: string; label: string }> = {
-  basso: { style: 'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40', label: 'Debt basso' },
-  medio: { style: 'bg-amber-50 text-amber-700 border-amber-200', label: 'Debt medio' },
-  alto:  { style: 'bg-red-50 text-red-700 border-red-200',       label: 'Debt alto'  },
-};
-
-// ─── HR KPI Correlation — synthetic aggregate demo constants ─────────────────
-
-type ConfidenceLevel = 'alta' | 'media' | 'bassa';
+// ─── HR KPI Data ──────────────────────────────────────────────────────────────
 
 interface HrKpiRow {
-  kpi: string;
-  direction: 'up' | 'down';
-  change: string;
-  period: string;
-  confidence: ConfidenceLevel;
-  interpretation: string;
+  kpi: string; direction: 'up' | 'down';
+  change: string; period: string;
+  confidence: ConfidenceLevel; interpretation: string;
 }
 
 const HR_KPI_DATA: HrKpiRow[] = [
-  {
-    kpi: 'Assenteismo',
-    direction: 'down',
-    change: '-4,2%',
-    period: 'vs periodo precedente',
-    confidence: 'media',
-    interpretation: 'Segnale direzionale osservato in correlazione con incremento attivazione LIFE. Correlazione ≠ causalità.',
-  },
-  {
-    kpi: 'Turnover volontario',
-    direction: 'down',
-    change: '-2,1%',
-    period: 'vs periodo precedente',
-    confidence: 'bassa',
-    interpretation: 'Segnale da monitorare. Associato a miglioramento CO (Continuity) — lettura aggregata, non causalità.',
-  },
-  {
-    kpi: 'Retention 12 mesi',
-    direction: 'up',
-    change: '+3,8%',
-    period: 'vs periodo precedente',
-    confidence: 'media',
-    interpretation: 'Correlazione direzionale positiva con programmi GROWTH ricorrenti e engagement continuativo.',
-  },
-  {
-    kpi: 'Engagement survey',
-    direction: 'up',
-    change: '+6 punti',
-    period: 'vs anno precedente',
-    confidence: 'alta',
-    interpretation: 'Segnale più robusto — associato a programmi con alta VR e partecipazione distribuita su più pillar.',
-  },
-  {
-    kpi: 'Partecipazione formazione',
-    direction: 'up',
-    change: '+18%',
-    period: 'vs anno precedente',
-    confidence: 'alta',
-    interpretation: 'Trend osservato su GROWTH e LEGACY. Correlazione con iniziative verificate e ricorrenti.',
-  },
-  {
-    kpi: 'Distribuzione attivazione bottom 50%',
-    direction: 'up',
-    change: '+7 punti',
-    period: 'vs periodo precedente',
-    confidence: 'media',
-    interpretation: 'Miglioramento EQ (Equity) — attivazione meno concentrata, segnale positivo sulla distribuzione workforce.',
-  },
-  {
-    kpi: 'Diversity participation gap',
-    direction: 'down',
-    change: '-5 punti',
-    period: 'vs anno precedente',
-    confidence: 'bassa',
-    interpretation: 'Segnale preliminare su EQ — da monitorare con più periodi di dati per validazione.',
-  },
+  { kpi: 'Assenteismo',                         direction: 'down', change: '-4,2%',    period: 'vs periodo precedente', confidence: 'media', interpretation: 'Segnale direzionale osservato in correlazione con incremento attivazione LIFE. Correlazione ≠ causalità.' },
+  { kpi: 'Turnover volontario',                  direction: 'down', change: '-2,1%',    period: 'vs periodo precedente', confidence: 'bassa', interpretation: 'Segnale da monitorare. Associato a miglioramento CO (Continuity) — lettura aggregata, non causalità.' },
+  { kpi: 'Retention 12 mesi',                    direction: 'up',   change: '+3,8%',   period: 'vs periodo precedente', confidence: 'media', interpretation: 'Correlazione direzionale positiva con programmi GROWTH ricorrenti e engagement continuativo.' },
+  { kpi: 'Engagement survey',                    direction: 'up',   change: '+6 punti', period: 'vs anno precedente',   confidence: 'alta',  interpretation: 'Segnale più robusto — associato a programmi con alta VR e partecipazione distribuita su più pillar.' },
+  { kpi: 'Partecipazione formazione',            direction: 'up',   change: '+18%',    period: 'vs anno precedente',   confidence: 'alta',  interpretation: 'Trend osservato su GROWTH e LEGACY. Correlazione con iniziative verificate e ricorrenti.' },
+  { kpi: 'Distribuzione attivazione bottom 50%', direction: 'up',   change: '+7 punti', period: 'vs periodo precedente', confidence: 'media', interpretation: 'Miglioramento EQ (Equity) — attivazione meno concentrata, segnale positivo sulla distribuzione workforce.' },
+  { kpi: 'Diversity participation gap',          direction: 'down', change: '-5 punti', period: 'vs anno precedente',   confidence: 'bassa', interpretation: 'Segnale preliminare su EQ — da monitorare con più periodi di dati per validazione.' },
 ];
-
-const CONFIDENCE_BADGE: Record<ConfidenceLevel, { style: string }> = {
-  alta:  { style: 'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40' },
-  media: { style: 'bg-amber-50 text-amber-700 border-amber-200' },
-  bassa: { style: 'bg-slate-100 text-slate-500 border-slate-200' },
-};
 
 // ─── Correlation matrix ───────────────────────────────────────────────────────
 
 type CorrStrength = 'forte' | 'moderata' | 'debole' | 'monitorare';
 
-const CORR_ROWS = [
-  'KORA Index',
-  'Activation Debt ↓',
-  'LIFE activation',
-  'GROWTH activation',
-  'CONNECTION activation',
-  'Continuity (CO)',
-  'Equity (EQ)',
-] as const;
-
+const CORR_ROWS = ['KORA Index', 'Activation Debt ↓', 'LIFE activation', 'GROWTH activation', 'CONNECTION activation', 'Continuity (CO)', 'Equity (EQ)'] as const;
 const CORR_COLS = ['Assenteismo', 'Turnover', 'Retention', 'Engagement', 'Formazione'] as const;
 
 const CORR_MATRIX: CorrStrength[][] = [
-  ['moderata',  'moderata',  'moderata',  'forte',     'moderata'],
-  ['moderata',  'debole',    'debole',    'moderata',  'debole'],
-  ['forte',     'moderata',  'moderata',  'forte',     'debole'],
-  ['debole',    'moderata',  'forte',     'forte',     'forte'],
-  ['debole',    'debole',    'moderata',  'forte',     'debole'],
-  ['moderata',  'forte',     'forte',     'forte',     'moderata'],
-  ['moderata',  'debole',    'moderata',  'moderata',  'moderata'],
+  ['moderata', 'moderata', 'moderata', 'forte',    'moderata'],
+  ['moderata', 'debole',   'debole',   'moderata', 'debole'  ],
+  ['forte',    'moderata', 'moderata', 'forte',    'debole'  ],
+  ['debole',   'moderata', 'forte',    'forte',    'forte'   ],
+  ['debole',   'debole',   'moderata', 'forte',    'debole'  ],
+  ['moderata', 'forte',    'forte',    'forte',    'moderata'],
+  ['moderata', 'debole',   'moderata', 'moderata', 'moderata'],
 ];
 
-const CORR_CELL: Record<CorrStrength, { symbol: string; style: string; tip: string }> = {
-  forte:      { symbol: '●●', style: 'text-kora-violet font-bold',  tip: 'Associazione forte' },
-  moderata:   { symbol: '●',  style: 'text-indigo-600 font-medium', tip: 'Associazione moderata' },
-  debole:     { symbol: '○',  style: 'text-slate-300',            tip: 'Segnale debole' },
-  monitorare: { symbol: '△',  style: 'text-amber-500 font-bold',  tip: 'Da monitorare' },
+const CORR_CELL: Record<CorrStrength, { symbol: string; color: string; tip: string }> = {
+  forte:      { symbol: '●●', color: TOKENS.accent,                   tip: 'Associazione forte'    },
+  moderata:   { symbol: '●',  color: 'rgba(20,18,46,0.60)',           tip: 'Associazione moderata' },
+  debole:     { symbol: '○',  color: 'rgba(20,18,46,0.22)',           tip: 'Segnale debole'        },
+  monitorare: { symbol: '△',  color: TOKENS.safeguard.watch.text,     tip: 'Da monitorare'         },
 };
 
 // ─── Directional scenarios ────────────────────────────────────────────────────
 
 const SCENARIOS_BTI = [
-  {
-    id: 'current',
-    label: 'Scenario attuale',
-    badge: 'bg-amber-100 text-amber-700 border-amber-200',
-    description: 'KORA Index stabile, Activation Debt alto, concentrazione elevata.',
-    interpretation: 'Il programma genera valore, ma coinvolge una parte limitata della workforce. Il top 12% genera il 64% degli IU — Activation Debt prioritario.',
-  },
-  {
-    id: 'rebalance',
-    label: 'Scenario ribilanciamento',
-    badge: 'bg-blue-100 text-blue-700 border-blue-200',
-    description: '+15% budget LIFE / CONNECTION verso sedi sotto target.',
-    interpretation: 'Potenziale aumento AR/MAR e riduzione silent majority. Segnale atteso: miglioramento EQ e AR. Correlazione direzionale, non garantita.',
-  },
-  {
-    id: 'continuity',
-    label: 'Scenario continuità',
-    badge: 'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40',
-    description: 'Introduzione iniziative ricorrenti GROWTH e mentoring LEGACY.',
-    interpretation: 'Potenziale miglioramento CO, PB e continuità — segnale direzionale, non causale. Costo per IU atteso in riduzione con programmi ricorrenti consolidati.',
-  },
+  { id: 'current',   label: 'Scenario attuale',        isActive: true,  description: 'KORA Index stabile, Activation Debt alto, concentrazione elevata.',                        interpretation: 'Il programma genera valore, ma coinvolge una parte limitata della workforce. Il top 12% genera il 64% degli IU — Activation Debt prioritario.' },
+  { id: 'rebalance', label: 'Scenario ribilanciamento', isActive: false, description: '+15% budget LIFE / CONNECTION verso sedi sotto target.',                                   interpretation: 'Potenziale aumento AR/MAR e riduzione silent majority. Segnale atteso: miglioramento EQ e AR. Correlazione direzionale, non garantita.'         },
+  { id: 'continuity',label: 'Scenario continuità',      isActive: false, description: 'Introduzione iniziative ricorrenti GROWTH e mentoring LEGACY.',                            interpretation: 'Potenziale miglioramento CO, PB e continuità — segnale direzionale, non causale. Costo per IU atteso in riduzione con programmi ricorrenti consolidati.' },
 ] as const;
 
 // ─── Investment recommendations ──────────────────────────────────────────────
 
-type Priority = 'Alta' | 'Media';
-type Risk = 'Alto' | 'Medio' | 'Basso';
-
-interface InvestmentRec {
-  priority: Priority;
-  action: string;
-  budget_note: string;
-  expected_signal: string;
-  risk: Risk;
-}
+interface InvestmentRec { priority: Priority; action: string; budget_note: string; expected_signal: string; risk: Risk; }
 
 const INVESTMENT_RECS: InvestmentRec[] = [
-  {
-    priority: 'Alta',
-    action: 'Ribilanciare budget LIFE su sedi a basso accesso',
-    budget_note: '+€25.000 demo',
-    expected_signal: 'Potenziale miglioramento AR / MAR',
-    risk: 'Medio',
-  },
-  {
-    priority: 'Alta',
-    action: 'Ridurre concentrazione su top 12% con iniziative accessibili',
-    budget_note: 'Riallocazione, non extra budget',
-    expected_signal: 'Segnale atteso: riduzione Activation Debt',
-    risk: 'Basso',
-  },
-  {
-    priority: 'Media',
-    action: 'Ampliare GROWTH ricorrente per il bottom 50%',
-    budget_note: '+€18.000 demo',
-    expected_signal: 'Segnale direzionale: miglioramento CO / continuità — non causale',
-    risk: 'Medio',
-  },
-  {
-    priority: 'Media',
-    action: 'Attivare Partner Network su CONNECTION',
-    budget_note: '+€12.000 demo',
-    expected_signal: 'Segnale atteso: miglioramento PB / cross-pillar spread',
-    risk: 'Basso',
-  },
+  { priority: 'Alta',  action: 'Ribilanciare budget LIFE su sedi a basso accesso',               budget_note: '+€25.000 demo',          expected_signal: 'Potenziale miglioramento AR / MAR',                               risk: 'Medio' },
+  { priority: 'Alta',  action: 'Ridurre concentrazione su top 12% con iniziative accessibili',   budget_note: 'Riallocazione, non extra budget',  expected_signal: 'Segnale atteso: riduzione Activation Debt',              risk: 'Basso' },
+  { priority: 'Media', action: 'Ampliare GROWTH ricorrente per il bottom 50%',                   budget_note: '+€18.000 demo',          expected_signal: 'Segnale direzionale: miglioramento CO / continuità — non causale', risk: 'Medio' },
+  { priority: 'Media', action: 'Attivare Partner Network su CONNECTION',                          budget_note: '+€12.000 demo',          expected_signal: 'Segnale atteso: miglioramento PB / cross-pillar spread',          risk: 'Basso' },
 ];
 
-const PRIORITY_BADGE: Record<Priority, string> = {
-  Alta:  'bg-red-50 text-red-700 border-red-200',
-  Media: 'bg-amber-50 text-amber-700 border-amber-200',
-};
+// ─── Shared primitive components ─────────────────────────────────────────────
 
-const RISK_BADGE: Record<Risk, string> = {
-  Alto:  'bg-red-50 text-red-700 border-red-200',
-  Medio: 'bg-amber-50 text-amber-700 border-amber-200',
-  Basso: 'bg-kora-fun-green/20 text-kora-cosmic-blue border-kora-fun-green/40',
-};
+function FinCard({ label, value, sub, note, accent }: {
+  label: string; value: string; sub?: string; note?: string; accent?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        background:   TOKENS.surface,
+        border:       accent ? `1px solid ${TOKENS.accent}33` : TOKENS.cardBorder,
+        borderRadius: TOKENS.cardRadius,
+        padding:      '1.125rem',
+      }}
+    >
+      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: TOKENS.inkHint }}>
+        {label}
+      </p>
+      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.625rem', color: accent ? TOKENS.accent : TOKENS.ink, lineHeight: 1, marginTop: 8, marginBottom: 4, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums' }}>
+        {value}
+      </p>
+      {sub  && <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>{sub}</p>}
+      {note && <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 6, fontStyle: 'italic', lineHeight: 1.5 }}>{note}</p>}
+    </div>
+  );
+}
+
+function Pill({ label, bg, text }: { label: string; bg: string; text: string }) {
+  return (
+    <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 500, background: bg, color: text, borderRadius: 4, padding: '2px 7px' }}>
+      {label}
+    </span>
+  );
+}
+
+function TableHead({ cols }: { cols: { label: string; align?: 'left' | 'right' | 'center' }[] }) {
+  return (
+    <thead>
+      <tr style={{ borderBottom: `2px solid ${TOKENS.ink}` }}>
+        {cols.map((c) => (
+          <th
+            key={c.label}
+            style={{
+              padding: '10px 14px',
+              fontSize: '10px',
+              fontWeight: 600,
+              textTransform: 'uppercase' as const,
+              letterSpacing: '0.06em',
+              color: TOKENS.inkHint,
+              textAlign: c.align ?? 'left',
+              whiteSpace: 'nowrap' as const,
+            }}
+          >
+            {c.label}
+          </th>
+        ))}
+      </tr>
+    </thead>
+  );
+}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -263,34 +208,34 @@ export default function FinancialGovernance() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
 
-  const COMPANY_ID   = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
-  const tenant       = tenantService.getTenant(COMPANY_ID);
-  const companyName  = tenant?.company_name ?? COMPANY_ID;
+  const COMPANY_ID  = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const tenant      = tenantService.getTenant(COMPANY_ID);
+  const companyName = tenant?.company_name ?? COMPANY_ID;
 
-  const result = financialGovernanceService.getFinancialGovernance(
-    COMPANY_ID, activeScenario, activeRole,
-  );
+  const result = financialGovernanceService.getFinancialGovernance(COMPANY_ID, activeScenario, activeRole);
 
-  const btiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(
-    COMPANY_ID, activeScenario, activeRole,
-  );
-  const btiRecord = btiResult.allowed ? btiResult.record : undefined;
-  const spendByPillar = btiRecord?.spend_by_pillar ?? {};
+  const btiResult  = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, activeScenario, activeRole);
+  const btiRecord  = btiResult.allowed ? btiResult.record : undefined;
+  const spendByPillar = btiRecord?.spend_by_pillar   ?? {};
   const deepByPillar  = btiRecord?.deep_activation_by_pillar ?? {};
 
+  // ── Access denied state ──────────────────────────────────────────────────────
   if (!result.allowed) {
     return (
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Human-Impact</h1>
-          <p className="text-sm text-slate-500">{companyName}</p>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-center">
-          <p className="text-sm font-semibold text-slate-600">Accesso Limitato</p>
-          <p className="mt-1 text-xs text-slate-400 max-w-sm mx-auto">
+      <div className="space-y-5">
+        <PageMasthead
+          eyebrow="Governance finanziaria"
+          title="Governance finanziaria"
+          subline="Lettura informativa del rapporto tra budget people, attivazione profonda e opportunità di riallocazione."
+        />
+        <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '2rem', textAlign: 'center' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink }}>Accesso limitato</p>
+          <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 6, maxWidth: 400, margin: '8px auto 0' }}>
             {result.reason ?? 'I dati di governance finanziaria sono riservati ai ruoli Finance, HR e Admin.'}
           </p>
-          <p className="mt-3 text-xs font-mono text-slate-400">Ruolo attivo: {activeRole}</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: TOKENS.inkHint, marginTop: 12 }}>
+            Ruolo attivo: {activeRole}
+          </p>
         </div>
       </div>
     );
@@ -299,481 +244,670 @@ export default function FinancialGovernance() {
   const rec = result.record;
   if (!rec) {
     return (
-      <div className="space-y-4">
-        <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Human-Impact</h1>
-        <p className="text-sm text-slate-400">Nessun dato di governance finanziaria disponibile per questo scenario.</p>
+      <div className="space-y-5">
+        <PageMasthead
+          eyebrow="Governance finanziaria"
+          title="Governance finanziaria"
+          subline="Lettura informativa del rapporto tra budget people, attivazione profonda e opportunità di riallocazione."
+        />
+        <p style={{ fontSize: '13px', color: TOKENS.inkHint }}>
+          Nessun dato di governance finanziaria disponibile per questo scenario.
+        </p>
       </div>
     );
   }
 
-  const utilizationColor =
-    rec.budget_utilization_rate >= 0.70 ? 'text-kora-violet' :
-    rec.budget_utilization_rate >= 0.50 ? 'text-yellow-600' : 'text-red-500';
+  // Pillar spend sorted for ink ramp
+  const pillarOrder: PillarCode[] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
+  const pillarRanked = [...pillarOrder].sort((a, b) => {
+    const ba = (spendByPillar as Record<string, number>)[a] ?? 0;
+    const bb = (spendByPillar as Record<string, number>)[b] ?? 0;
+    return bb - ba;
+  });
+  const pillarRankMap: Record<string, number> = {};
+  pillarRanked.forEach((p, i) => { pillarRankMap[p] = i; });
+
+  const utilizationAbove70 = rec.budget_utilization_rate >= 0.70;
 
   return (
-    <div className="space-y-6">
-      {/* ── Header ── */}
-      <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-slate-900">Financial Governance & Budget-to-Human-Impact</h1>
-          <span className="rounded border border-kora-violet/20 bg-kora-violet/10 px-2 py-0.5 text-xs font-medium text-kora-violet">
-            Foundation Light Preview
-          </span>
-        </div>
-        <p className="text-sm text-slate-500">
-          {companyName} — {rec.reporting_period}
+    <div className="space-y-5">
+
+      {/* ── 1. PageMasthead ────────────────────────────────────────────────── */}
+      <PageMasthead
+        eyebrow={`Governance finanziaria · ${activeScenario} · ${rec.reporting_period}`}
+        title="Governance finanziaria"
+        subline="Lettura informativa del rapporto tra budget people, attivazione profonda e opportunità di riallocazione."
+        meta={`${companyName} · Foundation Light Preview · dati sintetici demo`}
+      />
+
+      {/* ── 2. Executive Reading Block ─────────────────────────────────────── */}
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       TOKENS.cardBorder,
+          borderRadius: TOKENS.cardRadius,
+          padding:      '1.25rem 1.5rem',
+        }}
+      >
+        <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '13px', color: TOKENS.ink, marginBottom: 8 }}>
+          Lettura di governance — non certificativa
         </p>
-        <p className="text-xs text-slate-400 mt-1.5 leading-relaxed max-w-2xl">
-          Vista informativa di governance KORA sull&apos;allocazione del budget e l&apos;allineamento all&apos;attivazione
-          — non uno strumento di pagamento, wallet o gestione fondi welfare.
+        <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.7, maxWidth: '72ch' }}>
+          La spesa people mostra margini di riallocazione verso programmi a maggiore profondità di attivazione.
+          KORA distingue benefit monetari, attivazione profonda e debito di attivazione stimato,
+          senza produrre rendicontazione certificativa.
+          Questa pagina è uno strumento di lettura direzionale a supporto di decisioni interne —
+          non sostituisce analisi fiscale, legale o ESG obbligatoria.
+        </p>
+        <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 10, lineHeight: 1.6 }}>
+          {rec.disclaimer}
         </p>
       </div>
 
-      {/* ── Mandatory disclaimer — non-suppressible ── */}
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-        <p className="text-xs font-semibold text-amber-700">Solo Informativo</p>
-        <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">{rec.disclaimer}</p>
+      {/* ── 3. Financial Intelligence Row ──────────────────────────────────── */}
+      <SectionLabel>Quadro finanziario — {activeScenario}</SectionLabel>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <FinCard
+          label="Budget allocato"
+          value={eur(rec.budget_allocated_total)}
+          sub={rec.currency}
+          note="Budget allocato ≠ Budget attivato"
+        />
+        <FinCard
+          label="Budget utilizzato"
+          value={eur(rec.budget_used_total)}
+          sub={`${(rec.budget_utilization_rate * 100).toFixed(0)}% utilizzo`}
+          accent={utilizationAbove70}
+        />
+        <FinCard
+          label="Impegnato"
+          value={eur(rec.budget_committed_total)}
+          sub="in attesa di conferma"
+        />
+        <FinCard
+          label="Residuo"
+          value={eur(rec.budget_residual)}
+          sub="non convertito in attivazione"
+          note="Componente dell'Activation Debt"
+        />
+        <FinCard
+          label="Costo per IU"
+          value={`€${rec.cost_per_iu_indicator}`}
+          sub="per IU verificata"
+          note="Solo attivazioni budget-mediated"
+        />
+        <FinCard
+          label="Quota benefit monetari"
+          value={btiRecord ? pct(btiRecord.economic_relief_share) : '—'}
+          sub="spesa che non genera IU"
+          note="Non è spesa sbagliata — può diventare più intelligente"
+        />
       </div>
 
-      {/* ── Budget summary ── */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <BudgetCard label="Budget Allocato"   value={eur(rec.budget_allocated_total)}  sub={rec.currency} />
-        <BudgetCard label="Budget Utilizzato"  value={eur(rec.budget_used_total)}       sub={`${(rec.budget_utilization_rate * 100).toFixed(0)}% utilizzo`} color={utilizationColor} />
-        <BudgetCard label="Impegnato"          value={eur(rec.budget_committed_total)}  sub="in attesa di conferma" />
-        <BudgetCard label="Residuo"            value={eur(rec.budget_residual)}         sub="non allocato o inutilizzato" />
+      {/* ── 4. Barra utilizzo + narrative ──────────────────────────────────── */}
+      <SectionLabel>Utilizzo e composizione del budget</SectionLabel>
+      <ChartFrame>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Barra utilizzo */}
+          <div>
+            <div className="flex justify-between items-baseline mb-2">
+              <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink }}>Utilizzo budget</p>
+              <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '18px', color: utilizationAbove70 ? TOKENS.accent : TOKENS.safeguard.watch.text, fontVariantNumeric: 'tabular-nums' }}>
+                {(rec.budget_utilization_rate * 100).toFixed(0)}%
+              </span>
+            </div>
+            <div style={{ height: 8, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
+              <div style={{ height: 8, borderRadius: 9999, width: `${rec.budget_utilization_rate * 100}%`, background: utilizationAbove70 ? TOKENS.accent : TOKENS.safeguard.watch.dot }} />
+            </div>
+            <div className="flex justify-between mt-1.5">
+              <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>{eur(rec.budget_used_total)} utilizzati</span>
+              <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>{eur(rec.budget_allocated_total)} allocati</span>
+            </div>
+            <div className="mt-3" style={{ borderTop: TOKENS.cardBorder, paddingTop: 12 }}>
+              <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
+                Costo per IU (informativo): <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, color: TOKENS.ink }}>€{rec.cost_per_iu_indicator}</span>
+              </p>
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.55 }}>{rec.cost_per_iu_note}</p>
+            </div>
+          </div>
+
+          {/* Narrative */}
+          <div>
+            <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink, marginBottom: 8 }}>Contesto periodo</p>
+            <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.7 }}>{rec.narrative}</p>
+          </div>
+        </div>
+      </ChartFrame>
+
+      {/* ── 5. Natura dei dati — boundary ─────────────────────────────────── */}
+      <SectionLabel>Natura dei dati — misurato · stimato · informativo · non certificato</SectionLabel>
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       TOKENS.cardBorder,
+          borderRadius: TOKENS.cardRadius,
+          overflow:     'hidden',
+        }}
+      >
+        <table className="w-full">
+          <TableHead cols={[
+            { label: 'Categoria' },
+            { label: 'Cosa include' },
+            { label: 'Natura' },
+            { label: 'Perimetro' },
+          ]} />
+          <tbody>
+            {[
+              { cat: 'Misurato',        include: 'AR, MAR, VR, CO, WB, PC, PB, EQ, KORA Index, BTI score',   nature: 'Calcolato dal motore KORA su dati verificati',   perimetro: 'Aggregato aziendale · ≥10 lavoratori per segmento' },
+              { cat: 'Stimato',         include: 'Activation Debt €, Costo per IU, Reallocation Opportunity', nature: 'Direzionale · stima da modello sintetico demo',   perimetro: 'Indicativo — non garantito' },
+              { cat: 'Informativo',     include: 'Budget allocato, correlazioni KPI People, scenari',          nature: 'Lettura aggregata su dati sintetici',             perimetro: 'Non alimenta il KORA Index · non causale' },
+              { cat: 'Non certificato', include: 'ROI, retention, engagement, compliance ESG/fiscale',         nature: 'Fuori perimetro KORA Foundation Light',           perimetro: 'Richiede analisi indipendente e consulenza specialistica' },
+            ].map((row, i) => (
+              <tr key={row.cat} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                <td style={{ padding: '11px 14px', fontSize: '12px', fontWeight: 600, color: TOKENS.ink, whiteSpace: 'nowrap' }}>{row.cat}</td>
+                <td style={{ padding: '11px 14px', fontSize: '11px', color: TOKENS.inkSecondary }}>{row.include}</td>
+                <td style={{ padding: '11px 14px', fontSize: '11px', color: TOKENS.inkSecondary }}>{row.nature}</td>
+                <td style={{ padding: '11px 14px', fontSize: '11px', color: TOKENS.inkHint }}>{row.perimetro}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* ── Utilization bar ── */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <div className="flex justify-between text-xs mb-2">
-          <span className="font-semibold text-slate-700">Utilizzo Budget</span>
-          <span className={cn('font-mono font-semibold', utilizationColor)}>
-            {(rec.budget_utilization_rate * 100).toFixed(0)}%
-          </span>
-        </div>
-        <div className="h-2 w-full rounded-full bg-slate-100">
-          <div
-            className={cn('h-2 rounded-full', rec.budget_utilization_rate >= 0.70 ? 'bg-kora-violet' : 'bg-yellow-400')}
-            style={{ width: `${rec.budget_utilization_rate * 100}%` }}
-          />
-        </div>
-        <p className="mt-2 text-xs text-slate-400">
-          Costo per IU (informativo): <span className="font-mono text-slate-600">€{rec.cost_per_iu_indicator}</span>
+      {/* ── 6. Budget-to-Human-Impact ──────────────────────────────────────── */}
+      <SectionLabel>Budget-to-Human-Impact</SectionLabel>
+
+      {/* BTI doctrine + boundary */}
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       TOKENS.cardBorder,
+          borderRadius: TOKENS.cardRadius,
+          padding:      '1.25rem',
+        }}
+      >
+        <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.0625rem', letterSpacing: '-0.01em', marginBottom: 12 }}>
+          Dal budget all&apos;attivazione profonda
         </p>
-        <p className="text-xs text-slate-400">{rec.cost_per_iu_note}</p>
+        <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.7, maxWidth: '80ch', marginBottom: 16 }}>
+          KORA collega la spesa people e welfare all&apos;attivazione verificata, alle Impact Units
+          e alle priorità di riallocazione.
+          Il motore BTI non misura ROI e non dimostra causalità — fornisce una lettura
+          direzionale aggregata a supporto di decisioni interne.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" style={{ marginBottom: 16 }}>
+          {[
+            { key: BTI_DOCTRINE.budget_neq_activation },
+            { key: BTI_DOCTRINE.spend_neq_impact },
+            { key: BTI_DOCTRINE.relief_neq_activation },
+            { key: BTI_DOCTRINE.limited_reframe },
+          ].map(({ key }) => (
+            <div key={key} style={{ background: 'rgba(97,86,245,0.04)', border: '1px solid rgba(97,86,245,0.12)', borderRadius: 8, padding: '10px 12px', fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55, fontStyle: 'italic' }}>
+              {key}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-4" style={{ paddingTop: 12, borderTop: TOKENS.cardBorder }}>
+          <span style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic' }}>{BTI_DOCTRINE.policy_neq_partner}</span>
+          <span style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic' }}>{BTI_DOCTRINE.structural_recognizable}</span>
+        </div>
+        <div style={{ marginTop: 12, padding: '10px 12px', background: TOKENS.inkBorder, borderRadius: 8, fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          <span style={{ fontWeight: 600, color: TOKENS.ink }}>Nota metodologica: </span>
+          Gli indicatori BTI mostrati qui alimentano il motore BTI — non entrano direttamente nel calcolo del KORA Index come componenti separati.
+          Il punteggio BTI (macroblocco al 20%) è calcolato dal motore BTI,
+          non dai valori dei componenti analitici AR, MAR, NI, VR, CO, WB, PC, PB, EQ.
+        </div>
       </div>
 
-      {/* ── Pillar budget breakdown ── */}
-      <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          Suddivisione Budget per Pillar
-        </h2>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-4">
-          {rec.pillar_budget.map((line) => {
-            const label = PILLAR_LABELS[line.pillar as PillarCode] ?? line.pillar;
-            const barColor = PILLAR_BAR[line.pillar] ?? 'bg-slate-400';
-            const usedPct = line.allocated > 0 ? (line.used / line.allocated) * 100 : 0;
+      {/* BTI Executive Hero — 4 KPI cards */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <FinCard
+          label="Budget people / welfare"
+          value={btiRecord ? eur(btiRecord.total_people_welfare_budget) : '—'}
+          sub="welfare, formazione, iniziative people"
+          note="Budget allocated ≠ Budget activated"
+        />
+        <FinCard
+          label="Quota benefit monetari"
+          value={btiRecord ? pct(btiRecord.economic_relief_share) : '—'}
+          sub="spesa che non genera Impact Units"
+          note="Non è spesa sbagliata — può diventare più intelligente"
+        />
+        <FinCard
+          label="Costo per Impact Unit"
+          value={btiRecord ? `€${btiRecord.cost_per_impact_unit.toFixed(1)}` : '—'}
+          sub="per IU verificata · solo budget-mediated"
+          note="Indicatore direzionale — non ROI certificato"
+        />
+        <FinCard
+          label="Activation Debt"
+          value={btiRecord ? eur(btiRecord.activation_debt_eur) : '—'}
+          sub="budget non convertito in attivazione"
+          note="Stima direzionale — non garantito"
+        />
+      </div>
+
+      {/* Activation Debt description + non-budget-mediated note */}
+      {btiRecord?.activation_debt_description_it && (
+        <div
+          style={{
+            background:   TOKENS.surface,
+            border:       TOKENS.cardBorder,
+            borderRadius: TOKENS.cardRadius,
+            padding:      '1rem 1.25rem',
+            fontSize:     '12px',
+            color:        TOKENS.inkSecondary,
+            lineHeight:   1.7,
+          }}
+        >
+          <span style={{ fontWeight: 600, color: TOKENS.ink }}>Activation Debt — dettaglio: </span>
+          {btiRecord.activation_debt_description_it}
+        </div>
+      )}
+      {btiRecord?.non_budget_mediated_activation_note && (
+        <div
+          style={{
+            background:   'rgba(97,86,245,0.05)',
+            border:       '1px solid rgba(97,86,245,0.14)',
+            borderRadius: TOKENS.cardRadius,
+            padding:      '1rem 1.25rem',
+            fontSize:     '12px',
+            color:        TOKENS.ink,
+            lineHeight:   1.7,
+          }}
+        >
+          <span style={{ fontWeight: 600, color: TOKENS.accent }}>IU non-budget-mediated: </span>
+          {btiRecord.non_budget_mediated_activation_note}
+        </div>
+      )}
+      <p style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic' }}>
+        Dati BTI service — scenario {activeScenario}. Non rappresentano ROI certificato, risparmio garantito o causalità.
+      </p>
+
+      {/* ── 7. Suddivisione budget per pillar ─────────────────────────────── */}
+      <SectionLabel>Suddivisione budget per pillar</SectionLabel>
+
+      {/* Barre pillar — ink ramp */}
+      <ChartFrame subtitle="Budget e attivazione profonda da BTI service · Debt e raccomandazioni: etichette direzionali demo · synthetic_demo_data: true">
+        <div className="space-y-3">
+          {pillarOrder.map((pillar) => {
+            const budget = (spendByPillar as Record<string, number>)[pillar] ?? 0;
+            const total  = btiRecord?.total_people_welfare_budget ?? 0;
+            const share  = total > 0 ? budget / total : 0;
+            const rank   = pillarRankMap[pillar] ?? 4;
+            const label  = PILLAR_LABELS[pillar as PillarCode] ?? pillar;
             return (
-              <div key={line.pillar}>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="font-medium text-slate-700">{label}</span>
-                  <span className="text-slate-500 font-mono">
-                    {eur(line.used)} / {eur(line.allocated)}
-                    <span className="ml-2 text-slate-400">
-                      ({line.utilization_rate * 100 < 1 ? (line.utilization_rate * 100).toFixed(1) : Math.round(line.utilization_rate * 100)}%)
+              <div key={pillar}>
+                <div className="flex justify-between items-baseline mb-1.5">
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink }}>
+                    {label}
+                    <span style={{ fontSize: '11px', fontWeight: 400, color: TOKENS.inkHint, marginLeft: 6 }}>{pillar}</span>
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: rank === 0 ? TOKENS.accent : TOKENS.ink, fontVariantNumeric: 'tabular-nums' }}>
+                    {budget > 0 ? eur(budget) : '—'}
+                    <span style={{ fontWeight: 400, color: TOKENS.inkHint, marginLeft: 6 }}>
+                      {budget > 0 ? `(${(share * 100).toFixed(0)}%)` : ''}
                     </span>
                   </span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-slate-100">
-                  <div className={cn('h-1.5 rounded-full', barColor)} style={{ width: `${usedPct}%` }} />
+                <div style={{ height: 6, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
+                  <div style={{ height: 6, borderRadius: 9999, width: `${share * 100}%`, background: pillarFill(rank) }} />
                 </div>
               </div>
             );
           })}
-          <p className="text-xs text-slate-400 pt-1">
-            Le cifre di budget sono solo informative. Non alimentano il calcolo del KORA Index.
+        </div>
+      </ChartFrame>
+
+      {/* Pillar table — budget/deep/debt/raccomandazione */}
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       TOKENS.cardBorder,
+          borderRadius: TOKENS.cardRadius,
+          overflow:     'hidden',
+        }}
+      >
+        <table className="w-full">
+          <TableHead cols={[
+            { label: 'Pillar' },
+            { label: 'Budget spend', align: 'right' },
+            { label: '%', align: 'right' },
+            { label: 'Attivazione profonda', align: 'right' },
+            { label: 'Debt', align: 'center' },
+            { label: 'Raccomandazione direzionale' },
+          ]} />
+          <tbody>
+            {pillarOrder.map((pillar, i) => {
+              const budget = (spendByPillar as Record<string, number>)[pillar] ?? 0;
+              const deep   = (deepByPillar  as Record<string, number>)[pillar] ?? 0;
+              const total  = btiRecord?.total_people_welfare_budget ?? 0;
+              const share  = total > 0 ? budget / total : 0;
+              const label  = PILLAR_LABELS[pillar as PillarCode] ?? pillar;
+              const rank   = pillarRankMap[pillar] ?? 4;
+              const staticData = PILLAR_STATIC[pillar];
+              const dt = DEBT_TOKEN[staticData?.debt ?? 'medio'];
+              return (
+                <tr key={pillar} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                  <td style={{ padding: '12px 14px', verticalAlign: 'top' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 4, height: 28, borderRadius: 2, background: pillarFill(rank), flexShrink: 0 }} />
+                      <div>
+                        <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink }}>{label}</p>
+                        <p style={{ fontSize: '10px', color: TOKENS.inkHint }}>{pillar}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '12px', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                    {budget > 0 ? eur(budget) : '—'}
+                  </td>
+                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-inter)', fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
+                    {budget > 0 ? `${(share * 100).toFixed(0)}%` : '—'}
+                  </td>
+                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '12px', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                    {deep > 0 ? eur(deep) : '—'}
+                  </td>
+                  <td style={{ padding: '12px 14px', textAlign: 'center', verticalAlign: 'top' }}>
+                    <Pill label={dt.label} bg={dt.bg} text={dt.text} />
+                  </td>
+                  <td style={{ padding: '12px 14px', verticalAlign: 'top', fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+                    {staticData?.recommendation ?? '—'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <p style={{ padding: '10px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder }}>
+          Le cifre di budget sono solo informative. Non alimentano il calcolo del KORA Index.
+          {rec.pillar_budget_note && <span style={{ marginLeft: 8 }}>{rec.pillar_budget_note}</span>}
+        </p>
+      </div>
+
+      {/* ── 8. People KPI Correlation ──────────────────────────────────────── */}
+      <SectionLabel>People KPI — lettura direzionale</SectionLabel>
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       TOKENS.cardBorder,
+          borderRadius: TOKENS.cardRadius,
+          overflow:     'hidden',
+        }}
+      >
+        <div style={{ padding: '1rem 1.25rem', borderBottom: TOKENS.cardBorder }}>
+          <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+            Lettura aggregata tra attivazione KORA e KPI HR su dati sintetici.{' '}
+            <span style={{ fontWeight: 600, color: TOKENS.safeguard.watch.text }}>Correlazione ≠ causalità.</span>{' '}
+            Nessuna performance individuale.
+          </p>
+        </div>
+        <table className="w-full">
+          <TableHead cols={[
+            { label: 'KPI People' },
+            { label: 'Variazione osservata', align: 'right' },
+            { label: 'Confidenza', align: 'center' },
+            { label: 'Interpretazione direzionale' },
+          ]} />
+          <tbody>
+            {HR_KPI_DATA.map((row, i) => {
+              const ct = CONFIDENCE_TOKEN[row.confidence];
+              const dirColor = row.direction === 'up' ? TOKENS.safeguard.pass.text : TOKENS.safeguard.cap.text;
+              const dirArrow = row.direction === 'up' ? '↑' : '↓';
+              return (
+                <tr key={row.kpi} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                  <td style={{ padding: '11px 14px', fontSize: '12px', fontWeight: 500, color: TOKENS.ink }}>{row.kpi}</td>
+                  <td style={{ padding: '11px 14px', textAlign: 'right', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: dirColor, fontVariantNumeric: 'tabular-nums' }}>
+                      {dirArrow} {row.change}
+                    </span>
+                    <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 2 }}>{row.period}</p>
+                  </td>
+                  <td style={{ padding: '11px 14px', textAlign: 'center', verticalAlign: 'top' }}>
+                    <Pill label={row.confidence} bg={ct.bg} text={ct.text} />
+                  </td>
+                  <td style={{ padding: '11px 14px', fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>{row.interpretation}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <div style={{ padding: '10px 14px', borderTop: TOKENS.cardBorder, background: TOKENS.safeguard.watch.bg }}>
+          <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, lineHeight: 1.6 }}>
+            <span style={{ fontWeight: 600 }}>Nota metodologica: </span>
+            Le variazioni KPI sono osservate su dati sintetici aggregati. KORA non afferma causalità, non garantisce retention,
+            non prevede performance individuale. La lettura è direzionale — da confrontare con dati HR interni e analisi indipendente.
           </p>
         </div>
       </div>
 
-      {/* KORA Billing belongs in Admin / KORA Operating Console, not company-facing Financial. */}
-
-      {/* ── Narrative context ── */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-        <p className="text-xs font-semibold text-slate-600 mb-1">Contesto</p>
-        <p className="text-xs text-slate-600 leading-relaxed">{rec.narrative}</p>
-      </div>
-
-      {/* ════════════════════════════════════════════════════════════════════════
-          BUDGET-TO-HUMAN-IMPACT
-          ════════════════════════════════════════════════════════════════════════ */}
-      <div className="border-t-2 border-slate-200 pt-6 space-y-6">
-
-        {/* ── Section header ── */}
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h2 className="text-lg font-bold text-slate-900">Budget-to-Human-Impact</h2>
-            <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-semibold text-slate-500">
-              Dati sintetici demo
-            </span>
-          </div>
-          <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
-            Collega budget people, welfare e formazione all&apos;attivazione verificata,
-            alle Impact Units e alle priorità di investimento.
-          </p>
-          <div className="mt-2 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700 leading-relaxed max-w-2xl">
-            <span className="font-semibold">Nota metodologica obbligatoria: </span>
-            KORA non garantisce ROI e non dimostra causalità. Questa vista mostra una lettura
-            direzionale su dati aggregati e sintetici demo.
-          </div>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500 font-mono max-w-2xl">
-            <span>{BTI_DOCTRINE.budget_neq_activation}</span>
-            <span>{BTI_DOCTRINE.spend_neq_impact}</span>
-            <span>{BTI_DOCTRINE.relief_neq_activation}</span>
-          </div>
-          <p className="mt-1 text-[11px] text-slate-500 italic max-w-2xl">{BTI_DOCTRINE.limited_reframe}</p>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-400 font-mono max-w-2xl">
-            <span>{BTI_DOCTRINE.policy_neq_partner}</span>
-            <span>{BTI_DOCTRINE.structural_recognizable}</span>
-          </div>
-        </div>
-
-        {/* ── BTI methodology boundary note ── */}
-        <div className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-500 leading-relaxed max-w-2xl">
-          <span className="font-semibold">Nota metodologica: </span>
-          Gli indicatori BTI mostrati qui alimentano il motore Budget-to-Human-Impact — non entrano direttamente nel calcolo del KORA Index come componenti separati. Il punteggio BTI (macroblocco al 20%) è calcolato dal BudgetToHumanImpactEngine, non dai valori dei componenti analitici AR, MAR, NI, VR, CO, WB, PC, PB, EQ.
-        </div>
-
-        {/* ── BTI Executive Hero — 4 cards — from BudgetToHumanImpactService ── */}
-        <div>
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            Executive CFO / CHRO — vista di sintesi ({activeScenario})
-          </h3>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <p className="text-xs text-slate-400">Budget People/Welfare</p>
-              <p className="text-2xl font-bold text-slate-800 mt-1">
-                {btiRecord ? eur(btiRecord.total_people_welfare_budget) : '—'}
-              </p>
-              <p className="text-xs text-slate-400 mt-0.5">welfare, formazione, iniziative people/ESG</p>
-              <p className="text-[10px] text-slate-300 mt-1 italic">Budget allocated ≠ Budget activated.</p>
-            </div>
-            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
-              <p className="text-xs text-indigo-500">Economic Relief Share</p>
-              <p className="text-2xl font-bold text-indigo-800 mt-1">
-                {btiRecord ? `${Math.round(btiRecord.economic_relief_share * 100)}%` : '—'}
-              </p>
-              <p className="text-xs text-indigo-500 mt-0.5">spesa che non genera Impact Units</p>
-              <p className="text-[10px] text-indigo-400 mt-1 italic">Non è spesa sbagliata. È spesa che può diventare più intelligente.</p>
-            </div>
-            <div className="rounded-lg border border-slate-200 bg-white p-3">
-              <p className="text-xs text-slate-400">Costo per Impact Unit</p>
-              <p className="text-2xl font-bold text-slate-800 mt-1">
-                {btiRecord ? `€${btiRecord.cost_per_impact_unit.toFixed(1)}` : '—'}
-              </p>
-              <p className="text-xs text-slate-400 mt-0.5">per IU verificata — solo attivazioni budget-mediated</p>
-              <p className="text-[10px] text-slate-300 mt-1 italic">Indicatore direzionale. Non ROI certificato.</p>
-            </div>
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-              <p className="text-xs text-red-500">Activation Debt</p>
-              <p className="text-2xl font-bold text-red-700 mt-1">
-                {btiRecord ? eur(btiRecord.activation_debt_eur) : '—'}
-              </p>
-              <p className="text-xs text-red-400 mt-0.5">budget non convertito in attivazione</p>
-              <p className="text-[10px] text-red-300 mt-1 italic">Valore direzionale. Non garantito.</p>
-            </div>
-          </div>
-          {btiRecord?.activation_debt_description_it && (
-            <p className="mt-2 text-[11px] text-slate-500 leading-relaxed max-w-2xl">
-              {btiRecord.activation_debt_description_it}
-            </p>
-          )}
-          {btiRecord?.non_budget_mediated_activation_note && (
-            <div className="mt-2 rounded border border-kora-violet/20 bg-kora-violet/5 px-3 py-2 text-[11px] text-kora-violet leading-relaxed max-w-2xl">
-              <span className="font-semibold">IU non-budget-mediated: </span>
-              {btiRecord.non_budget_mediated_activation_note}
-            </div>
-          )}
-          <p className="mt-2 text-[11px] text-slate-400 italic">
-            Dati BTI service — scenario {activeScenario}. Non rappresentano ROI certificato, risparmio garantito o causalità.
-          </p>
-        </div>
-
-        {/* ── Budget allocation by pillar — from BudgetToHumanImpactService ── */}
-        <div>
-          <h3 className="mb-1 text-sm font-semibold text-slate-700">Allocazione budget per pillar — {activeScenario}</h3>
-          <p className="text-xs text-slate-400 mb-3">
-            Budget e deep activation da BTI service. Debt e raccomandazioni sono etichette direzionali demo — non calcolate per pillar dal service.
-          </p>
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Pillar</th>
-                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">Budget spend</th>
-                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">%</th>
-                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">Deep Activation</th>
-                  <th className="px-3 py-2.5 text-center font-semibold text-slate-500">Debt</th>
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Raccomandazione</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as PillarCode[]).map((pillar) => {
-                  const budget = (spendByPillar as Record<string, number>)[pillar] ?? 0;
-                  const deep   = (deepByPillar  as Record<string, number>)[pillar] ?? 0;
-                  const total  = btiRecord?.total_people_welfare_budget ?? 0;
-                  const share  = total > 0 ? budget / total : 0;
-                  const label  = PILLAR_LABELS[pillar] ?? pillar;
-                  const staticData = PILLAR_STATIC[pillar];
-                  const debt = DEBT_BADGE[staticData?.debt ?? 'medio'];
-                  return (
-                    <tr key={pillar} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                      <td className="px-3 py-3">
-                        <span className={cn('font-mono font-semibold', PILLAR_TEXT[pillar] ?? 'text-slate-700')}>
-                          {label}
-                        </span>
-                        <div className="mt-1 h-1 w-24 rounded-full bg-slate-100">
-                          <div
-                            className={cn('h-1 rounded-full', PILLAR_BAR[pillar] ?? 'bg-slate-400')}
-                            style={{ width: `${share * 100}%` }}
-                          />
-                        </div>
-                      </td>
-                      <td className="px-3 py-3 text-right font-mono text-slate-700">{budget > 0 ? eur(budget) : '—'}</td>
-                      <td className="px-3 py-3 text-right font-mono text-slate-500">{budget > 0 ? `${(share * 100).toFixed(0)}%` : '—'}</td>
-                      <td className="px-3 py-3 text-right font-mono text-slate-700">{deep > 0 ? eur(deep) : '—'}</td>
-                      <td className="px-3 py-3 text-center">
-                        <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', debt.style)}>
-                          {debt.label}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 text-slate-500 leading-snug max-w-xs">{staticData?.recommendation ?? '—'}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <p className="mt-2 text-[11px] text-slate-400">
-            Budget e deep activation da BTI service · Debt e raccomandazioni: etichette direzionali demo · synthetic_demo_data: true
-          </p>
-        </div>
-
-        {/* ════════════════════════════════════════════════════════════════════
-            HR KPI CORRELATION PREVIEW
-            ════════════════════════════════════════════════════════════════════ */}
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-sm font-semibold text-slate-700">People KPI Correlation — preview</h3>
-            <span className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400">
-              Dati sintetici demo
-            </span>
-          </div>
-          <p className="text-xs text-slate-400 mb-3">
-            Lettura aggregata tra attivazione KORA e KPI HR. <span className="font-semibold text-amber-600">Correlazione ≠ causalità.</span> Nessuna performance individuale.
-          </p>
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">KPI People</th>
-                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">Variazione osservata</th>
-                  <th className="px-3 py-2.5 text-center font-semibold text-slate-500">Confidenza</th>
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Interpretazione direzionale</th>
-                </tr>
-              </thead>
-              <tbody>
-                {HR_KPI_DATA.map((row) => {
-                  const conf = CONFIDENCE_BADGE[row.confidence];
-                  const dirStyle = row.direction === 'up'
-                    ? 'text-kora-violet font-semibold'
-                    : 'text-red-600 font-semibold';
-                  const dirArrow = row.direction === 'up' ? '↑' : '↓';
-                  return (
-                    <tr key={row.kpi} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                      <td className="px-3 py-3 font-medium text-slate-700">{row.kpi}</td>
-                      <td className="px-3 py-3 text-right">
-                        <span className={dirStyle}>{dirArrow} {row.change}</span>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{row.period}</p>
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', conf.style)}>
-                          {row.confidence}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 text-slate-500 leading-snug max-w-xs">{row.interpretation}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-2 rounded border border-amber-100 bg-amber-50 px-3 py-2 text-[11px] text-amber-700 leading-relaxed">
-            <span className="font-semibold">Nota metodologica: </span>
-            Le variazioni KPI sono osservate su dati sintetici aggregati. KORA non afferma causalità, non garantisce retention, non prevede performance individuale. La lettura è direzionale — da confrontare con dati HR interni e analisi indipendente.
-          </div>
-        </div>
-
-        {/* ── Correlation matrix ── */}
-        <div>
-          <h3 className="mb-1 text-sm font-semibold text-slate-700">Matrice di correlazione direzionale</h3>
-          <p className="text-xs text-slate-400 mb-3">
+      {/* ── 9. Correlation matrix ──────────────────────────────────────────── */}
+      <SectionLabel>Matrice di correlazione direzionale</SectionLabel>
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       TOKENS.cardBorder,
+          borderRadius: TOKENS.cardRadius,
+          overflow:     'hidden',
+        }}
+      >
+        <div style={{ padding: '0.75rem 1.25rem', borderBottom: TOKENS.cardBorder }}>
+          <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
             La matrice usa dati sintetici aggregati. Serve a orientare domande e priorità, non a dimostrare causalità.
             Per Activation Debt la correlazione è letta in direzione inversa — riduzione del Debt si associa a segnali KPI positivi.
           </p>
-          <div className="rounded-lg border border-slate-200 bg-white overflow-x-auto">
-            <table className="min-w-full text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500 whitespace-nowrap">Segnale KORA</th>
-                  {CORR_COLS.map((col) => (
-                    <th key={col} className="px-3 py-2.5 text-center font-semibold text-slate-500 whitespace-nowrap">
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {CORR_ROWS.map((row, ri) => (
-                  <tr key={row} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                    <td className="px-3 py-2.5 font-medium text-slate-700 whitespace-nowrap">{row}</td>
-                    {CORR_MATRIX[ri].map((strength, ci) => {
-                      const cell = CORR_CELL[strength];
-                      return (
-                        <td key={ci} className="px-3 py-2.5 text-center" title={cell.tip}>
-                          <span className={cell.style}>{cell.symbol}</span>
-                        </td>
-                      );
-                    })}
-                  </tr>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="min-w-full">
+            <thead>
+              <tr style={{ borderBottom: `2px solid ${TOKENS.ink}` }}>
+                <th style={{ padding: '10px 14px', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint, textAlign: 'left', whiteSpace: 'nowrap' }}>
+                  Segnale KORA
+                </th>
+                {CORR_COLS.map((col) => (
+                  <th key={col} style={{ padding: '10px 14px', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                    {col}
+                  </th>
                 ))}
-              </tbody>
-            </table>
-            <div className="border-t border-slate-100 px-3 py-2 flex flex-wrap gap-4 text-[10px] text-slate-400">
-              <span><span className="font-bold text-kora-violet">●●</span> Associazione forte</span>
-              <span><span className="font-medium text-indigo-600">●</span> Associazione moderata</span>
-              <span><span className="text-slate-300">○</span> Segnale debole</span>
-              <span>Correlazione ≠ causalità · Dati sintetici</span>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Scenario interpretation ── */}
-        <div>
-          <h3 className="mb-1 text-sm font-semibold text-slate-700">Scenario direzionale</h3>
-          <p className="text-xs text-slate-400 mb-3">
-            Gli scenari sono simulazioni demo. Non rappresentano previsioni garantite.
-          </p>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {SCENARIOS_BTI.map((sc) => (
-              <div key={sc.id} className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-slate-700">{sc.label}</p>
-                  <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium shrink-0', sc.badge)}>
-                    {sc.id === 'current' ? 'Attuale' : 'Direzionale'}
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-slate-600 italic">{sc.description}</p>
-                <p className="text-xs text-slate-500 leading-relaxed">{sc.interpretation}</p>
-              </div>
+              </tr>
+            </thead>
+            <tbody>
+              {CORR_ROWS.map((row, ri) => (
+                <tr key={row} style={{ background: ri % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                  <td style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 500, color: TOKENS.ink, whiteSpace: 'nowrap' }}>{row}</td>
+                  {CORR_MATRIX[ri].map((strength, ci) => {
+                    const cell = CORR_CELL[strength];
+                    return (
+                      <td key={ci} title={cell.tip} style={{ padding: '10px 14px', textAlign: 'center' }}>
+                        <span style={{ fontWeight: strength === 'forte' ? 700 : 500, color: cell.color, fontSize: '14px' }}>
+                          {cell.symbol}
+                        </span>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ padding: '8px 14px', borderTop: TOKENS.cardBorder, display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+            {[
+              { symbol: '●●', color: TOKENS.accent,             label: 'Associazione forte'    },
+              { symbol: '●',  color: 'rgba(20,18,46,0.60)',     label: 'Associazione moderata' },
+              { symbol: '○',  color: 'rgba(20,18,46,0.22)',     label: 'Segnale debole'        },
+            ].map(({ symbol, color, label }) => (
+              <span key={label} style={{ fontSize: '11px', color: TOKENS.inkHint }}>
+                <span style={{ fontWeight: 700, color, marginRight: 4 }}>{symbol}</span>{label}
+              </span>
             ))}
+            <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>Correlazione ≠ causalità · Dati sintetici</span>
           </div>
-          <p className="mt-2 text-[11px] text-slate-400 italic">
-            Scenari direzionali su dati sintetici. Non sono previsioni garantite né impegni di risultato.
-          </p>
         </div>
+      </div>
 
-        {/* ── Investment recommendations ── */}
-        <div>
-          <h3 className="mb-1 text-sm font-semibold text-slate-700">Raccomandazioni di investimento</h3>
-          <p className="text-xs text-slate-400 mb-3">
+      {/* ── 10. Scenario direzionale ────────────────────────────────────────── */}
+      <SectionLabel>Scenari direzionali</SectionLabel>
+      <div className="grid gap-4 sm:grid-cols-3">
+        {SCENARIOS_BTI.map((sc) => (
+          <div
+            key={sc.id}
+            style={{
+              background:   TOKENS.surface,
+              border:       sc.isActive ? `1px solid ${TOKENS.accent}44` : TOKENS.cardBorder,
+              borderRadius: TOKENS.cardRadius,
+              padding:      '1.125rem',
+            }}
+          >
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink }}>{sc.label}</p>
+              <Pill
+                label={sc.isActive ? 'Attuale' : 'Direzionale'}
+                bg={sc.isActive ? `${TOKENS.accent}18` : TOKENS.inkBorder}
+                text={sc.isActive ? TOKENS.accent : TOKENS.inkSecondary}
+              />
+            </div>
+            <p style={{ fontSize: '12px', color: TOKENS.ink, fontStyle: 'italic', marginBottom: 8 }}>{sc.description}</p>
+            <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>{sc.interpretation}</p>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic' }}>
+        Scenari direzionali su dati sintetici. Non sono previsioni garantite né impegni di risultato.
+      </p>
+
+      {/* ── 11. Raccomandazioni di investimento ────────────────────────────── */}
+      <SectionLabel>Raccomandazioni di allocazione</SectionLabel>
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       TOKENS.cardBorder,
+          borderRadius: TOKENS.cardRadius,
+          overflow:     'hidden',
+        }}
+      >
+        <div style={{ padding: '0.75rem 1.25rem', borderBottom: TOKENS.cardBorder }}>
+          <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
             Indicazioni direzionali basate su Activation Debt, distribuzione pillar e segnali KPI aggregati.
             Tutti i valori budget sono scenari demo.
           </p>
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-3 py-2.5 text-center font-semibold text-slate-500">Priorità</th>
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Azione raccomandata</th>
-                  <th className="px-3 py-2.5 text-right font-semibold text-slate-500">Budget indicativo</th>
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Segnale atteso</th>
-                  <th className="px-3 py-2.5 text-center font-semibold text-slate-500">Rischio</th>
+        </div>
+        <table className="w-full">
+          <TableHead cols={[
+            { label: 'Priorità', align: 'center' },
+            { label: 'Azione raccomandata' },
+            { label: 'Budget indicativo', align: 'right' },
+            { label: 'Segnale atteso' },
+            { label: 'Rischio', align: 'center' },
+          ]} />
+          <tbody>
+            {INVESTMENT_RECS.map((r, i) => {
+              const pt = PRIORITY_TOKEN[r.priority];
+              const rt = RISK_TOKEN[r.risk];
+              return (
+                <tr key={i} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                  <td style={{ padding: '12px 14px', textAlign: 'center', verticalAlign: 'top' }}>
+                    <Pill label={r.priority} bg={pt.bg} text={pt.text} />
+                  </td>
+                  <td style={{ padding: '12px 14px', fontSize: '12px', fontWeight: 500, color: TOKENS.ink, verticalAlign: 'top' }}>{r.action}</td>
+                  <td style={{ padding: '12px 14px', textAlign: 'right', fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                    {r.budget_note}
+                  </td>
+                  <td style={{ padding: '12px 14px', fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, verticalAlign: 'top' }}>{r.expected_signal}</td>
+                  <td style={{ padding: '12px 14px', textAlign: 'center', verticalAlign: 'top' }}>
+                    <Pill label={r.risk} bg={rt.bg} text={rt.text} />
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {INVESTMENT_RECS.map((rec, i) => (
-                  <tr key={i} className="border-b border-slate-50 last:border-0 hover:bg-slate-50">
-                    <td className="px-3 py-3 text-center">
-                      <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-bold', PRIORITY_BADGE[rec.priority])}>
-                        {rec.priority}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 font-medium text-slate-700">{rec.action}</td>
-                    <td className="px-3 py-3 text-right font-mono text-slate-500">{rec.budget_note}</td>
-                    <td className="px-3 py-3 text-slate-500 leading-snug">{rec.expected_signal}</td>
-                    <td className="px-3 py-3 text-center">
-                      <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', RISK_BADGE[rec.risk])}>
-                        {rec.risk}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <p className="mt-2 text-[11px] text-slate-400">
-            Wording obbligatorio: &quot;potenziale&quot;, &quot;segnale atteso&quot;, &quot;scenario&quot;, &quot;da monitorare&quot; — nessuna garanzia di risultato.
-          </p>
-        </div>
-
-        {/* ── Board Pack CTA ── */}
-        <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="text-sm font-semibold text-indigo-800">Porta questa lettura nel Board Pack</p>
-              <p className="text-xs text-indigo-600 mt-0.5 leading-relaxed">
-                Il Budget-to-Human-Impact può alimentare il CFO Budget View e il People Activation Report.
-                Costo per IU, Activation Debt direzionale, correlazione ≠ causalità, nessun ROI garantito.
-              </p>
-            </div>
-            <Link
-              href="/company/reports"
-              className="shrink-0 rounded border border-indigo-300 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
-            >
-              Vai a Report & Board Pack →
-            </Link>
-          </div>
-        </div>
-
-        {/* ── Mandatory synthetic data and limitations block ── */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-2">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
-            Dati sintetici — Limitazioni obbligatorie
-          </p>
-          <p className="text-xs text-slate-500 leading-relaxed">
-            Dati sintetici demo. Questa vista non dimostra causalità, non garantisce ROI, non misura performance
-            individuale e non sostituisce analisi HR, legale, fiscale o ESG. Serve a supportare decisioni
-            direzionali su dati aggregati.
-          </p>
-          <ul className="space-y-0.5 pt-1">
-            {[
-              'Nessun PIB individuale — tutti i valori sono aggregati sopra soglia privacy (≥10 lavoratori).',
-              'Correlazione ≠ causalità — le variazioni KPI osservate non sono attribuibili a KORA.',
-              'KORA non garantisce ROI, riduzione assenteismo, retention o engagement.',
-              'Budget figures informative only — non alimentano il KORA Index e non rappresentano fiscal compliance.',
-              'EQ = Equity (equità distributiva dell\'attivazione) — non Evidence Quality.',
-              'synthetic_demo_data: true · KORA Methodology v0.1 · pre_empirical_calibration',
-            ].map((note) => (
-              <li key={note} className="flex gap-1.5 text-[11px] text-slate-400">
-                <span className="shrink-0 mt-0.5">·</span>
-                {note}
-              </li>
-            ))}
-          </ul>
-        </div>
-
+              );
+            })}
+          </tbody>
+        </table>
+        <p style={{ padding: '10px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder }}>
+          Wording obbligatorio: «potenziale», «segnale atteso», «scenario», «da monitorare» — nessuna garanzia di risultato.
+        </p>
       </div>
+
+      {/* ── 12. Board Pack CTA ─────────────────────────────────────────────── */}
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       `1px solid ${TOKENS.accent}33`,
+          borderRadius: TOKENS.cardRadius,
+          padding:      '1.125rem 1.25rem',
+          display:      'flex',
+          alignItems:   'center',
+          justifyContent: 'space-between',
+          gap:          '1rem',
+          flexWrap:     'wrap',
+        }}
+      >
+        <div>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink }}>Porta questa lettura nel Board Pack</p>
+          <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 4, lineHeight: 1.6, maxWidth: '60ch' }}>
+            Il Budget-to-Human-Impact può alimentare il CFO Budget View e il People Activation Report.
+            Costo per IU, Activation Debt direzionale, correlazione ≠ causalità, nessun ROI garantito.
+          </p>
+        </div>
+        <Link
+          href="/company/reports"
+          style={{
+            flexShrink: 0,
+            borderRadius: 6,
+            border: `1px solid ${TOKENS.accent}55`,
+            background: `${TOKENS.accent}0a`,
+            padding: '8px 14px',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: TOKENS.accent,
+            textDecoration: 'none',
+          }}
+        >
+          Vai a Report & Board Pack →
+        </Link>
+      </div>
+
+      {/* ── 13. Perimetro informativo e limitazioni ─────────────────────────── */}
+      <SectionLabel>Perimetro informativo e limitazioni</SectionLabel>
+      <div
+        style={{
+          background:   TOKENS.surface,
+          border:       TOKENS.cardBorder,
+          borderRadius: TOKENS.cardRadius,
+          padding:      '1.25rem',
+        }}
+      >
+        <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink, marginBottom: 10 }}>
+          Dati sintetici — limitazioni obbligatorie
+        </p>
+        <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.7, marginBottom: 12, maxWidth: '80ch' }}>
+          Questa vista non dimostra causalità, non garantisce ROI, non misura performance individuale
+          e non sostituisce analisi HR, legale, fiscale o ESG. Serve a supportare decisioni direzionali
+          su dati aggregati sintetici.
+        </p>
+        <ul style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[
+            'Nessun PIB individuale — tutti i valori sono aggregati sopra soglia privacy (≥10 lavoratori).',
+            'Correlazione ≠ causalità — le variazioni KPI osservate non sono attribuibili a KORA.',
+            'KORA non garantisce ROI, riduzione assenteismo, retention o engagement.',
+            'Budget figures informative only — non alimentano il KORA Index e non rappresentano fiscal compliance.',
+            'EQ = Equity (equità distributiva dell\'attivazione) — non Evidence Quality.',
+            'synthetic_demo_data: true · KORA Methodology v0.1 · pre_empirical_calibration',
+          ].map((note) => (
+            <li key={note} style={{ display: 'flex', gap: 8, fontSize: '11.5px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+              <span style={{ flexShrink: 0, marginTop: 2, color: TOKENS.inkHint }}>·</span>
+              {note}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* ── 14. ExplainabilityHint ─────────────────────────────────────────── */}
+      <ExplainabilityHint />
+
+      {/* ── 15. ProvenanceFooter ───────────────────────────────────────────── */}
+      <ProvenanceFooter
+        methodologyVersionId="KORA Index v3 / KORA Methodology v0.1"
+        calibrationStatus="pre_empirical_calibration"
+        reportingPeriod={rec.reporting_period}
+      />
+
     </div>
   );
 }
