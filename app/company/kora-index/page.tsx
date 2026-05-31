@@ -2,257 +2,37 @@
 
 import { useDemoState } from '@/lib/demo-state';
 import { useScoringResult, useDemoScenarioComparison } from '@/lib/scoring-result';
-import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
-import { tenantService }              from '@/services/tenant/TenantService';
-import { formatConfidenceScore }      from '@/lib/formatters';
-import { TOKENS }                     from '@/lib/design/kora-design-tokens';
-import type { KoraIndexComponent, MacroblockScore } from '@/lib/types';
+import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
+import { explainabilityService }       from '@/services/explainability/ExplainabilityService';
+import { budgetToHumanImpactService }  from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
+import { ingestionSimulatorService }   from '@/services/ingestion-simulator/IngestionSimulatorService';
+import { accountProvisioningService }  from '@/services/account/AccountProvisioningService';
+import { tenantService }               from '@/services/tenant/TenantService';
+import { formatConfidenceScore }       from '@/lib/formatters';
+import { TOKENS }                      from '@/lib/design/kora-design-tokens';
+import type { MacroblockScore }        from '@/lib/types';
 
-// ── Reused cockpit components ─────────────────────────────────────────────────
+// ── Shared components — reused from cockpit ────────────────────────────────────
 import { PageMasthead }    from '@/components/ui/PageMasthead';
 import { IndexRingCard }   from '@/components/company/cockpit/IndexRingCard';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 
-// ── Local helpers ─────────────────────────────────────────────────────────────
+// ── Restored analytical panels ─────────────────────────────────────────────────
+import { MacroblockCard }          from '@/components/kora-index/MacroblockCard';
+import { KoraIndexBuildCard }      from '@/components/kora-index/KoraIndexBuildCard';
+import { ComponentBreakdown }      from '@/components/kora-index/ComponentBreakdown';
+import { ComponentBreakdownChart } from '@/components/charts/ComponentBreakdownChart';
+import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
+import { ConfidenceBreakdown }     from '@/components/kora-index/ConfidenceBreakdown';
+import { ExplainabilityPanel }     from '@/components/kora-index/ExplainabilityPanel';
+import { EligibilityGatePanel }    from '@/components/kora-index/EligibilityGatePanel';
+import { EconomicReliefPanel }     from '@/components/kora-index/EconomicReliefPanel';
+import { BlockedByDesignPanel }    from '@/components/kora-index/BlockedByDesignPanel';
+import { BudgetToHumanImpactPanel } from '@/components/kora-index/BudgetToHumanImpactPanel';
+import { RecommendationsPanel }    from '@/components/kora-index/RecommendationsPanel';
+import { MethodologyGlossary }     from '@/components/kora-index/MethodologyGlossary';
 
-const MB_DESC: Record<string, string> = {
-  REACH:   'Share e intensità dell\'attivazione nella forza lavoro',
-  QUALITY: 'Qualità, continuità e verificabilità delle attivazioni',
-  EQUITY:  'Distribuzione equa tra segmenti della workforce',
-  BTI:     'Efficienza del budget people in attivazione profonda',
-};
-
-const COMP_DESC: Record<string, string> = {
-  AR:  'Activation Rate — share workforce con almeno un IU',
-  MAR: 'Meaningful Activation Rate — share sopra soglia materialità',
-  NI:  'Normalized Intensity — IU medi per worker attivo',
-  WB:  'Worker Balance — equità distribuzione IU tra worker attivi',
-  PC:  'Pillar Coverage — n. pillar con presenza significativa',
-  PB:  'Pillar Balance — equità distribuzione IU tra pillar coperti',
-  EQ:  'Equity — distribuzione equa tra segmenti workforce',
-  VR:  'Verification Rate — share IU con evidenza verificata',
-  CO:  'Continuity — share worker con engagement multi-periodo',
-  CS:  'Confidence Score — affidabilità dati (esterno, peso 0)',
-};
-
-function fmtPct(v: number) { return `${Math.round(v * 100)}%`; }
-function fmtWeight(w: number) { return `${Math.round(w * 100)}%`; }
-
-// ── MacroblockDetailSection ───────────────────────────────────────────────────
-
-interface MacroblockDetailSectionProps {
-  mb: MacroblockScore;
-  components: KoraIndexComponent[];
-  prevScore?: number;
-}
-
-function MacroblockDetailSection({ mb, components, prevScore }: MacroblockDetailSectionProps) {
-  const mbComponents = components.filter(
-    (c) => c.macroblock === mb.code && !c.external,
-  );
-  const delta = prevScore != null ? mb.score - prevScore : null;
-
-  return (
-    <div
-      className="p-6"
-      style={{
-        background:   TOKENS.surface,
-        border:       TOKENS.cardBorder,
-        borderRadius: TOKENS.cardRadius,
-      }}
-    >
-      {/* Macroblock header */}
-      <div className="flex items-baseline justify-between gap-4 mb-4">
-        <div>
-          <p
-            className="font-kora-serif text-kora-ink"
-            style={{ fontSize: '1.25rem', letterSpacing: '-0.01em' }}
-          >
-            {mb.label}
-          </p>
-          <p style={{ fontSize: '11px', color: 'rgba(20,18,46,0.42)', marginTop: 2 }}>
-            {MB_DESC[mb.code]}
-          </p>
-        </div>
-        <div className="flex items-baseline gap-2 flex-shrink-0">
-          <span style={{ fontSize: '11px', color: 'rgba(20,18,46,0.50)' }}>
-            peso {fmtWeight(mb.weight)}
-          </span>
-          <span
-            style={{
-              fontFamily:    'var(--font-inter)',
-              fontWeight:    700,
-              fontSize:      '22px',
-              color:         TOKENS.ink,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            {mb.score}
-          </span>
-          {delta != null && (
-            <span
-              style={{
-                fontSize:   '11px',
-                fontWeight: 600,
-                color:      delta >= 0 ? TOKENS.safeguard.pass.text : TOKENS.safeguard.cap.text,
-              }}
-            >
-              {delta >= 0 ? '+' : ''}{delta}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Macroblock bar */}
-      <div
-        className="rounded-full h-1.5 overflow-hidden mb-5"
-        style={{ background: TOKENS.inkTrack }}
-      >
-        <div
-          className="h-full rounded-full"
-          style={{ width: `${mb.score}%`, background: TOKENS.ink }}
-        />
-      </div>
-
-      {/* Component rows */}
-      {mbComponents.length > 0 && (
-        <div className="space-y-3">
-          <p
-            className="font-mono uppercase"
-            style={{ fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(20,18,46,0.38)' }}
-          >
-            Componenti
-          </p>
-          {mbComponents.map((c) => (
-            <div key={c.code}>
-              <div className="flex items-baseline justify-between gap-3 mb-1">
-                <div className="flex items-baseline gap-2 min-w-0">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-inter)',
-                      fontWeight: 600,
-                      fontSize:   '12px',
-                      color:      TOKENS.ink,
-                    }}
-                  >
-                    {c.code}
-                  </span>
-                  <span
-                    className="truncate"
-                    style={{ fontSize: '11px', color: 'rgba(20,18,46,0.42)' }}
-                  >
-                    {COMP_DESC[c.code] ?? c.label}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-1.5 flex-shrink-0">
-                  <span style={{ fontSize: '10px', color: 'rgba(20,18,46,0.40)' }}>
-                    w {fmtWeight(c.weight)}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-inter)',
-                      fontWeight: 700,
-                      fontSize:   '13px',
-                      color:      TOKENS.ink,
-                      minWidth:   '34px',
-                      textAlign:  'right',
-                    }}
-                  >
-                    {fmtPct(c.value)}
-                  </span>
-                </div>
-              </div>
-              <div
-                className="rounded-full h-1 overflow-hidden"
-                style={{ background: TOKENS.inkTrack }}
-              >
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: fmtPct(c.value), background: 'rgba(20,18,46,0.30)' }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── ConfidenceBlock ───────────────────────────────────────────────────────────
-
-interface ConfidenceBlockProps {
-  score: number;
-}
-
-function ConfidenceBlock({ score }: ConfidenceBlockProps) {
-  return (
-    <div
-      className="p-6"
-      style={{
-        background:   TOKENS.surface,
-        border:       TOKENS.cardBorder,
-        borderRadius: TOKENS.cardRadius,
-      }}
-    >
-      <div className="flex items-baseline justify-between gap-4 mb-3">
-        <p
-          className="font-kora-serif text-kora-ink"
-          style={{ fontSize: '1.25rem', letterSpacing: '-0.01em' }}
-        >
-          Confidence Score
-        </p>
-        <div className="flex items-baseline gap-1.5">
-          <span
-            style={{
-              fontFamily: 'var(--font-inter)',
-              fontWeight: 700,
-              fontSize:   '22px',
-              color:      TOKENS.accent,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            {formatConfidenceScore(score)}
-          </span>
-          <span
-            className="font-mono"
-            style={{ fontSize: '8px', color: 'rgba(20,18,46,0.38)', letterSpacing: '0.05em' }}
-          >
-            esterno&nbsp;·&nbsp;peso&nbsp;0
-          </span>
-        </div>
-      </div>
-      <p style={{ fontSize: '12.5px', color: 'rgba(20,18,46,0.58)', lineHeight: 1.65, maxWidth: 580 }}>
-        Il Confidence Score non è un componente del KORA Index v3 — è un indicatore di affidabilità
-        esterno che accompagna il valore ma non lo influenza. Riflette la completezza dei dati,
-        la qualità delle evidenze e la profondità del mapping.
-      </p>
-      <div
-        className="flex gap-4 mt-4 pt-4"
-        style={{ borderTop: TOKENS.cardBorder }}
-      >
-        {[
-          ['Completezza dati',    'Copertura e densità dei record fonte'],
-          ['Qualità evidenze',    'Verifica e attendibilità delle fonti'],
-          ['Profondità mapping',  'Precisione classificazione BCM taxonomy'],
-        ].map(([label, desc]) => (
-          <div key={label} className="flex-1">
-            <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink }}>{label}</p>
-            <p style={{ fontSize: '10.5px', color: 'rgba(20,18,46,0.45)', marginTop: 2 }}>{desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ── ScenarioStrip ─────────────────────────────────────────────────────────────
-
-interface ScenarioStripProps {
-  activeScenario: string;
-  s1Output: { kora_index_value: number; safeguard_status: string; confidence_score: number } | null;
-  s2Output: { kora_index_value: number; safeguard_status: string; confidence_score: number } | null;
-}
+// ── Local: S1/S2 scenario strip ───────────────────────────────────────────────
 
 const SAFEGUARD_STYLE: Record<string, { bg: string; text: string }> = {
   CLEAR:   { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text  },
@@ -260,101 +40,55 @@ const SAFEGUARD_STYLE: Record<string, { bg: string; text: string }> = {
   FLAGGED: { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text   },
 };
 
-function ScenarioStrip({ activeScenario, s1Output, s2Output }: ScenarioStripProps) {
-  const scenarios = [
-    { id: 'S1', out: s1Output },
-    { id: 'S2', out: s2Output },
-  ] as const;
-
+function ScenarioStrip({ activeScenario, s1Output, s2Output }: {
+  activeScenario: string;
+  s1Output: { kora_index_value: number; safeguard_status: string; confidence_score: number } | null;
+  s2Output: { kora_index_value: number; safeguard_status: string; confidence_score: number } | null;
+}) {
+  const scenarios = [{ id: 'S1', out: s1Output }, { id: 'S2', out: s2Output }] as const;
   return (
-    <div
-      className="p-5"
-      style={{
-        background:   TOKENS.surface,
-        border:       TOKENS.cardBorder,
-        borderRadius: TOKENS.cardRadius,
-      }}
-    >
-      <p
-        className="font-mono uppercase mb-4"
-        style={{ fontSize: '9px', letterSpacing: '0.18em', color: 'rgba(20,18,46,0.40)' }}
-      >
+    <div className="p-5 space-y-4" style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}>
+      <p className="font-mono uppercase" style={{ fontSize: '9px', letterSpacing: '0.18em', color: TOKENS.inkHint }}>
         Confronto scenari · solo demo
       </p>
       <div className="grid grid-cols-2 gap-3">
         {scenarios.map(({ id, out }) => {
           if (!out) return null;
-          const isActive   = id === activeScenario;
-          const safStyle   = SAFEGUARD_STYLE[out.safeguard_status] ?? SAFEGUARD_STYLE['WARNING'];
+          const isActive = id === activeScenario;
+          const ss = SAFEGUARD_STYLE[out.safeguard_status] ?? SAFEGUARD_STYLE['WARNING'];
           return (
-            <div
-              key={id}
-              className="rounded-[10px] p-4"
-              style={{
-                background: isActive ? TOKENS.ink : TOKENS.inkBorder,
-                border:     isActive ? 'none' : TOKENS.cardBorder,
-              }}
-            >
+            <div key={id} className="rounded-[10px] p-4"
+              style={{ background: isActive ? TOKENS.ink : TOKENS.inkBorder, border: isActive ? 'none' : TOKENS.cardBorder }}>
               <div className="flex items-center justify-between mb-2">
-                <span
-                  className="font-mono font-semibold"
-                  style={{ fontSize: '10px', color: isActive ? 'rgba(244,241,233,0.55)' : 'rgba(20,18,46,0.45)' }}
-                >
-                  {id}
-                </span>
-                {isActive && (
-                  <span
-                    className="font-mono"
-                    style={{ fontSize: '8px', letterSpacing: '0.12em', color: TOKENS.safeguard.pass.dot }}
-                  >
-                    ATTIVO
-                  </span>
-                )}
+                <span className="font-mono font-semibold" style={{ fontSize: '10px', color: isActive ? 'rgba(244,241,233,0.55)' : TOKENS.inkHint }}>{id}</span>
+                {isActive && <span className="font-mono" style={{ fontSize: '8px', letterSpacing: '0.12em', color: TOKENS.safeguard.pass.dot }}>ATTIVO</span>}
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span
-                  style={{
-                    fontFamily:    'var(--font-inter)',
-                    fontWeight:    700,
-                    fontSize:      '28px',
-                    color:         isActive ? '#FFFFFF' : TOKENS.ink,
-                    letterSpacing: '-0.025em',
-                    lineHeight:    1,
-                  }}
-                >
-                  {out.kora_index_value}
-                </span>
-                <span style={{ fontSize: '11px', color: isActive ? 'rgba(255,255,255,0.35)' : 'rgba(20,18,46,0.35)' }}>
-                  /100
-                </span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '28px', color: isActive ? '#FFFFFF' : TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1 }}>{out.kora_index_value}</span>
+                <span style={{ fontSize: '11px', color: isActive ? 'rgba(255,255,255,0.35)' : TOKENS.inkHint }}>/100</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
-                <span
-                  className="rounded font-mono"
-                  style={{
-                    fontSize:    '7.5px',
-                    padding:     '2px 6px',
-                    background:  isActive ? 'rgba(255,255,255,0.10)' : safStyle.bg,
-                    color:       isActive ? 'rgba(255,255,255,0.65)' : safStyle.text,
-                  }}
-                >
-                  {out.safeguard_status}
-                </span>
-                <span style={{ fontSize: '10px', color: isActive ? 'rgba(255,255,255,0.35)' : 'rgba(20,18,46,0.35)' }}>
-                  CS {formatConfidenceScore(out.confidence_score)}
-                </span>
+                <span className="rounded font-mono" style={{ fontSize: '7.5px', padding: '2px 6px', background: isActive ? 'rgba(255,255,255,0.10)' : ss.bg, color: isActive ? 'rgba(255,255,255,0.65)' : ss.text }}>{out.safeguard_status}</span>
+                <span style={{ fontSize: '10px', color: isActive ? 'rgba(255,255,255,0.35)' : TOKENS.inkHint }}>CS {formatConfidenceScore(out.confidence_score)}</span>
               </div>
             </div>
           );
         })}
       </div>
-      <p
-        className="mt-3"
-        style={{ fontSize: '10.5px', color: 'rgba(20,18,46,0.42)', lineHeight: 1.5 }}
-      >
+      <p style={{ fontSize: '10.5px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
         Confidence Score esterno al KORA Index v3 — indicatore di affidabilità dati, non componente pesato.
       </p>
     </div>
+  );
+}
+
+// ── Section divider ────────────────────────────────────────────────────────────
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-mono uppercase pt-2" style={{ fontSize: '9px', letterSpacing: '0.20em', color: TOKENS.inkHint }}>
+      {children}
+    </p>
   );
 }
 
@@ -368,30 +102,24 @@ export default function KoraIndexDetail() {
   const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
   const tenant      = tenantService.getTenant(COMPANY_ID);
 
-  const { data: scoring }                      = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
+  const { data: scoring }                        = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
   const { s1: scoringS1, s2: scoringS2, isDemo } = useDemoScenarioComparison(COMPANY_ID);
 
   const hasKoraData = scoring?.status === 'ok';
 
-  // No-data state
   if (!hasKoraData) {
     return (
-      <div className="max-w-3xl space-y-5">
+      <div className="space-y-5">
         <PageMasthead
           eyebrow="KORA Index v3"
           title={tenant?.company_name ?? COMPANY_ID}
           subline="Scomposizione analitica dell'indice"
         />
-        <div
-          className="rounded-2xl px-7 py-6 space-y-3"
-          style={{ background: 'rgba(186,117,23,0.07)', border: '1px solid rgba(186,117,23,0.20)' }}
-        >
-          <p className="text-sm font-semibold" style={{ color: '#5C3509' }}>
-            KORA Index non ancora disponibile
-          </p>
+        <div className="rounded-2xl px-7 py-6 space-y-3"
+          style={{ background: 'rgba(186,117,23,0.07)', border: '1px solid rgba(186,117,23,0.20)' }}>
+          <p className="text-sm font-semibold" style={{ color: '#5C3509' }}>KORA Index non ancora disponibile</p>
           <p className="text-xs leading-relaxed" style={{ color: '#7A4A1A' }}>
-            Il KORA Index sarà disponibile al termine della pipeline dati.
-            Questa azienda non ha ancora completato il caricamento dati.
+            Il KORA Index sarà disponibile al termine della pipeline dati. Questa azienda non ha ancora completato il caricamento dati.
           </p>
           <div className="grid grid-cols-2 gap-2 text-[11px] pt-2" style={{ borderTop: '1px solid rgba(186,117,23,0.15)' }}>
             {[
@@ -412,15 +140,34 @@ export default function KoraIndexDetail() {
   }
 
   const output      = scoring!.koraIndex!;
-  const components  = output.components ?? [];
+  const aggregate   = scoring!.aggregate;
+  const confidence  = scoring!.confidence;
+  const safeguard   = activationSafeguardService.evaluateFromSeed(COMPANY_ID, activeScenario);
+  const explanation = explainabilityService.getExplanation(COMPANY_ID, activeScenario);
+  const weakCodes   = (explanation?.weak_components ?? []).map((c) => c.code);
+
   const macroblocks: MacroblockScore[] = output.macroblocks ?? [];
 
-  const s1Output = scoringS1?.koraIndex ?? null;
-  const s2Output = scoringS2?.koraIndex ?? null;
-  const s1Mbs: MacroblockScore[] = s1Output?.macroblocks ?? [];
+  const s1Output    = scoringS1?.koraIndex ?? null;
+  const s2Output    = scoringS2?.koraIndex ?? null;
+  const s1Mbs: MacroblockScore[] = scoringS1?.koraIndex?.macroblocks ?? [];
+
+  const s1BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S1', activeRole);
+  const s2BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S2', activeRole);
+  const s1BtiRecord = s1BtiResult.record;
+  const s2BtiRecord = s2BtiResult.record;
+
+  const s1EconRelief = budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S1', activeRole);
+  const s2EconRelief = budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S2', activeRole);
+
+  const btiRecommendations = budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
+  const eligibilityGate    = ingestionSimulatorService.getEligibilityGateSummary(COMPANY_ID, activeScenario);
+
+  const s1BtiScore = s1Mbs.find((m) => m.code === 'BTI')?.score;
+  const s2BtiScore = (scoringS2?.koraIndex?.macroblocks ?? []).find((m) => m.code === 'BTI')?.score;
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="space-y-5">
 
       {/* 1. Masthead */}
       <PageMasthead
@@ -429,41 +176,78 @@ export default function KoraIndexDetail() {
         subline="Scomposizione analitica dell'indice"
       />
 
-      {/* 2. Hero ring */}
-      <IndexRingCard
-        value={output.kora_index_value}
-        safeguardStatus={output.safeguard_status}
-        confidenceScore={output.confidence_score}
-      />
-
-      {/* 3. S1/S2 comparison — demo only */}
-      {isDemo && (s1Output ?? s2Output) && (
-        <ScenarioStrip
-          activeScenario={activeScenario}
-          s1Output={s1Output}
-          s2Output={s2Output}
+      {/* 2. Hero: IndexRing + ScenarioStrip side by side (demo only) */}
+      {isDemo && (s1Output ?? s2Output) ? (
+        <div className="grid grid-cols-2 gap-4 items-start">
+          <IndexRingCard
+            value={output.kora_index_value}
+            safeguardStatus={output.safeguard_status}
+            confidenceScore={output.confidence_score}
+          />
+          <ScenarioStrip activeScenario={activeScenario} s1Output={s1Output} s2Output={s2Output} />
+        </div>
+      ) : (
+        <IndexRingCard
+          value={output.kora_index_value}
+          safeguardStatus={output.safeguard_status}
+          confidenceScore={output.confidence_score}
         />
       )}
 
-      {/* 4. Macroblocchi dettaglio */}
-      {macroblocks.map((mb) => {
-        const prevScore = activeScenario === 'S2'
-          ? s1Mbs.find((m) => m.code === mb.code)?.score
-          : undefined;
-        return (
-          <MacroblockDetailSection
-            key={mb.code}
-            mb={mb}
-            components={components}
-            prevScore={prevScore}
-          />
-        );
-      })}
+      {/* 3. Macroblock cards — 4 col grid */}
+      <SectionLabel>Architettura macroblocchi</SectionLabel>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {macroblocks.map((mb) => {
+          const prevScore = activeScenario === 'S2' ? s1Mbs.find((m) => m.code === mb.code)?.score : undefined;
+          return <MacroblockCard key={mb.code} macroblock={mb} previousScore={prevScore} />;
+        })}
+      </div>
 
-      {/* 5. Confidence block */}
-      <ConfidenceBlock score={output.confidence_score} />
+      {/* 4. Chart + Component breakdown — 2 col */}
+      <SectionLabel>10 componenti analitici</SectionLabel>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ComponentBreakdownChart components={output.components} weakCodes={weakCodes} />
+        <ComponentBreakdown components={output.components} />
+      </div>
 
-      {/* 6. Provenance footer */}
+      {/* 5. Pipeline build card — full width */}
+      <SectionLabel>Pipeline di costruzione</SectionLabel>
+      <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
+
+      {/* 6. Eligibility gate — full width */}
+      <SectionLabel>Eligibility gate</SectionLabel>
+      <EligibilityGatePanel summary={eligibilityGate} />
+
+      {/* 7. Economic relief + Blocked — 2 col */}
+      <SectionLabel>Economic relief & compliance</SectionLabel>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <EconomicReliefPanel s1={s1EconRelief} s2={s2EconRelief} s1BtiScore={s1BtiScore} s2BtiScore={s2BtiScore} />
+        <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
+      </div>
+
+      {/* 8. BTI table — full width */}
+      <SectionLabel>Budget-to-Human-Impact</SectionLabel>
+      <BudgetToHumanImpactPanel s1={s1BtiRecord ?? undefined} s2={s2BtiRecord ?? undefined} />
+
+      {/* 9. Recommendations — full width */}
+      <SectionLabel>Raccomandazioni</SectionLabel>
+      <RecommendationsPanel btiRecommendations={btiRecommendations} />
+
+      {/* 10. Safeguard + Confidence — 2 col */}
+      <SectionLabel>Safeguard & confidence</SectionLabel>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ActivationSafeguardPanel result={safeguard} explanation={explanation?.safeguard_explanation} />
+        <ConfidenceBreakdown record={confidence} />
+      </div>
+
+      {/* 11. Explainability — full width */}
+      <SectionLabel>Spiegabilità del punteggio</SectionLabel>
+      <ExplainabilityPanel record={explanation} />
+
+      {/* 12. Glossary — full width, collapsible */}
+      <MethodologyGlossary />
+
+      {/* 13. Provenance footer */}
       <ProvenanceFooter
         methodologyVersionId={output.methodology_version_id}
         calibrationStatus={output.calibration_status}
