@@ -47,6 +47,8 @@
   /* KORA typography — substitute fonts; proprietary Register 2/3 not in repo */
   --font-kora-editorial:  var(--font-space-grotesk), system-ui, sans-serif;
   --font-kora-interface:  var(--font-dm-sans), system-ui, sans-serif;
+  /* Instrument Serif — editorial voice; cockpit headline only; zero regressions */
+  --font-kora-serif:      var(--font-instrument-serif), Georgia, 'Times New Roman', serif;
 
   /* ── KORA core brand palette ──────────────────────────────────────── */
   /* CONFIRMED from SVG brandmark/wordmark in docs/Documenti grafici KORA/ */
