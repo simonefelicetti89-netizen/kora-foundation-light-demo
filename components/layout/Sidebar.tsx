@@ -44,49 +44,30 @@ const DEMO_GROUP: NavGroup = {
 
 function buildNavGroups(role: string): NavGroup[] {
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
+    // B9.2: Live Pilot Flow in cima, Demo/Synthetic separato, Admin Tools separato.
     return [
-      DEMO_GROUP,
       {
-        heading: 'KORA Console',
+        heading: 'Live Pilot Flow',
         items: [
-          { href: '/admin',                label: 'Console Operativa' },
-          { href: '/admin/portfolio',      label: 'Portfolio Aziendale' },
-          { href: '/admin/index-registry', label: 'Registro Index' },
-          { href: '/admin/benchmarks',     label: 'Benchmark' },
-          { href: '/admin/network',        label: 'Advisor & Partner' },
-          { href: '/admin/gtm',            label: 'GTM Pipeline' },
-          { href: '/admin/ai-onboarding',  label: 'AI Onboarding' },
+          { href: '/admin/tenants',     label: 'Tenants & Onboarding' },
+          { href: '/admin/data-intake', label: 'Data Intake' },
+          { href: '/admin/uef-review',  label: 'UEF Review & Scoring' },
         ],
       },
       {
-        heading: 'Aziende Cliente',
+        heading: 'Demo & Synthetic',
         items: [
-          { href: '/admin/companies',                    label: 'Company Registry' },
-          { href: '/admin/companies/setup',              label: 'Enterprise Onboarding' },
-          { href: '/admin/companies/onboarding',         label: 'Onboarding Studio' },
-          { href: '/admin/companies/workforce-baseline', label: 'Workforce Baseline' },
-          { href: '/admin/companies/data-intake',        label: 'Data Intake' },
+          { href: '/admin/operator',  label: 'Synthetic Operator' },
+          { href: '/company',         label: 'Company Cockpit' },
+          { href: '/company/reports', label: 'Decision Pack' },
+          { href: '/demo-guide',      label: 'Demo Guide' },
         ],
       },
       {
-        heading: 'Intelligence Aziendale',
+        heading: 'Admin Tools',
         items: [
-          { href: '/company',              label: 'Executive Cockpit' },
-          { href: '/company/kora-index',   label: 'KORA Index' },
-          { href: '/company/activation',   label: 'Attivazione & Partecipazione' },
-          { href: '/company/contribution', label: 'KORA Contribution' },
-          { href: '/company/pillars',      label: 'Pilastri & Iniziative' },
-        ],
-      },
-      {
-        heading: 'Pipeline Operativa',
-        items: [
-          { href: '/admin/companies/data-intake', label: 'Data Intake Studio' },
-          { href: '/company/ingestion',           label: 'Ingestion Preview' },
-          { href: '/company/uef-review',          label: 'Operator Review Queue' },
-          { href: '/company/scoring',             label: 'Scoring Preview' },
-          { href: '/company/reports',             label: 'Decision Pack' },
-          { href: '/company/financial',           label: 'Governance Finanziaria' },
+          { href: '/admin',           label: 'Admin Console' },
+          { href: '/admin/companies', label: 'Company Registry' },
         ],
       },
       {

@@ -10,6 +10,7 @@
 // No file upload. No CSV/XLSX input. No scoring recalculation. No PII exposed.
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 // ── API response types ─────────────────────────────────────────────────────
 
@@ -148,10 +149,13 @@ interface Props { userEmail: string; userRole: string; }
 interface TenantOption { id: string; tenantCode: string; companyName: string; }
 
 export function DataIntakeStudio({ userEmail, userRole }: Props) {
+  // B9.2: read query params for pre-selection (e.g. from /admin/tenants CTA)
+  const searchParams = useSearchParams();
+
   // B9: tenant selector — defaults to OP-001 for backwards compat
   const [tenantList, setTenantList]       = useState<TenantOption[]>([]);
-  const [TENANT, setTENANT]               = useState('OP-001');
-  const [PERIOD, setPERIOD]               = useState('2026-Q1');
+  const [TENANT, setTENANT]               = useState(() => searchParams?.get('tenantCode') ?? 'OP-001');
+  const [PERIOD, setPERIOD]               = useState(() => searchParams?.get('reportingPeriod') ?? '2026-Q1');
 
   // Load available tenants on mount
   useEffect(() => {
@@ -444,8 +448,18 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <div className="space-y-0.5">
               <p className="text-[10px] text-green-700 font-medium">Batch created for review. Scoring remains locked until B5.</p>
               <p className="text-[10px] text-slate-400">Scoring is not executed in B4.2.</p>
-              <p className="text-[10px] text-slate-400">Batch will be available for UEF Review in B5.</p>
             </div>
+            {/* B9.2: next-step CTA with batchId query param */}
+            {acceptResult.batchId && (
+              <div className="pt-1 border-t border-green-100">
+                <a
+                  href={`/admin/uef-review?batchId=${encodeURIComponent(acceptResult.batchId)}`}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+                >
+                  Go to UEF Review →
+                </a>
+              </div>
+            )}
           </div>
         )}
 

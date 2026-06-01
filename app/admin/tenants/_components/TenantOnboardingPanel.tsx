@@ -215,9 +215,14 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                 {createResult.baselineWarning && (
                   <p className="text-[10px] text-amber-700">⚠ {createResult.baselineWarning}</p>
                 )}
-                <div className="flex gap-2 pt-1 border-t border-green-100">
-                  <a href="/admin/data-intake" className="text-[10px] text-[#6156F5] underline">→ Data Intake</a>
-                  <a href="/admin/uef-review" className="text-[10px] text-[#6156F5] underline">→ UEF Review</a>
+                {/* B9.2: dynamic CTA with query params for seamless next-step navigation */}
+                <div className="pt-2 border-t border-green-100">
+                  <a
+                    href={`/admin/data-intake?tenantCode=${encodeURIComponent(createResult.tenantCode ?? '')}&reportingPeriod=${encodeURIComponent(createResult.reportingPeriod ?? '')}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+                  >
+                    Go to Data Intake →
+                  </a>
                 </div>
               </div>
             )}
@@ -266,7 +271,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                 <span>Created: {ts(t.createdAt)}</span>
               </div>
               <div className="flex gap-2 pt-1 border-t border-slate-100">
-                <a href="/admin/data-intake" className="text-[10px] text-[#6156F5] underline">Data Intake</a>
+                <a href={`/admin/data-intake?tenantCode=${encodeURIComponent(t.tenantCode)}`} className="text-[10px] text-[#6156F5] underline">Data Intake</a>
                 <a href="/admin/uef-review" className="text-[10px] text-[#6156F5] underline">UEF Review</a>
               </div>
             </div>

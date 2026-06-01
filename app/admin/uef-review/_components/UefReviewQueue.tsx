@@ -6,6 +6,7 @@
 // Human review gates approved_for_scoring — actual scoring runs in B6.
 
 import { useEffect, useState, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,9 @@ function Badge({ label, cls }: { label: string; cls: string }) {
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export function UefReviewQueue({ userEmail, userRole }: Props) {
+  // B9.2: read ?batchId= from URL for auto-selection (e.g. from Data Intake CTA)
+  const searchParams = useSearchParams();
+
   const [batches, setBatches]               = useState<BatchSummary[]>([]);
   const [batchesLoading, setBatchesLoading] = useState(true);  // true on mount — no sync setState needed
   const [batchesErr, setBatchesErr]         = useState<string | null>(null);
@@ -161,6 +165,31 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
     setSelectedBatchId(batchId);
     loadCandidates(batchId);
   }
+
+  // B9.2: auto-select batch from ?batchId= query param after batches load.
+  // Uses Promise chain to keep setState calls out of the synchronous effect body.
+  useEffect(() => {
+    if (batchesLoading || selectedBatchId) return;
+    const qBatchId = searchParams?.get('batchId');
+    if (!qBatchId) return;
+    const exists = batches.some(b => b.batchId === qBatchId);
+    if (!exists) return;
+    // Defer state updates to async context — setSelectedBatchId then fetch candidates
+    Promise.resolve().then(() => {
+      setSelectedBatchId(qBatchId);
+      setCandidates([]); setSummary(null); setCandidatesErr(null);
+      setCandidatesLoading(true);
+      fetch(`/api/admin/uef/review?batchId=${qBatchId}`, { credentials: 'include' })
+        .then(r => r.json())
+        .then((d: { ok?: boolean; candidates?: UefCandidate[]; summary?: ReviewSummary; error?: string }) => {
+          if (d.ok) { setCandidates(d.candidates ?? []); setSummary(d.summary ?? null); }
+          else setCandidatesErr(d.error ?? 'Error loading candidates');
+        })
+        .catch((e: Error) => setCandidatesErr(e.message))
+        .finally(() => setCandidatesLoading(false));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [batches, batchesLoading]);
 
   // ── Generate candidates ───────────────────────────────────────────────────────
   async function handleGenerate(batchId: string) {
