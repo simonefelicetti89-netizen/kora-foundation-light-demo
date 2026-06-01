@@ -745,7 +745,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* ── H. RESULT SNAPSHOT ── */}
         {snapshot && (
-          <Section title="Result Snapshot" sub={`OP-001 · ${PERIOD} · dati live sintetici persistiti`}>
+          <Section title="Result Snapshot" sub={`${TENANT} · ${PERIOD} · dati live persistiti`}>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 mb-3">
               <div className="col-span-2 sm:col-span-1 rounded-lg bg-[#06032B] px-5 py-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">KORA Index</p>

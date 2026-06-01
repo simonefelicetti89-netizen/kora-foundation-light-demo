@@ -52,11 +52,25 @@ export async function GET(request: NextRequest) {
 
     if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });
 
+    // Resolve tenant_code + company_name for all batches (single lookup, not N queries)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const uniqueTenantIds = [...new Set((batches ?? []).map((b: any) => b.tenant_id as string))];
+    const tenantMap: Record<string, { tenantCode: string; companyName: string }> = {};
+    if (uniqueTenantIds.length > 0) {
+      const { data: tenantRows } = await db.schema('analytics').from('tenant')
+        .select('id, tenant_code, company_name').in('id', uniqueTenantIds);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      for (const t of (tenantRows ?? []) as any[]) {
+        tenantMap[t.id as string] = { tenantCode: t.tenant_code, companyName: t.company_name };
+      }
+    }
+
     // For each batch, count uef_record candidates
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const enriched = await Promise.all((batches ?? []).map(async (b: any) => {
       const { count } = await db.schema('analytics').from('uef_record')
         .select('id', { count: 'exact', head: true }).eq('batch_id', b.id);
+      const tenant = tenantMap[b.tenant_id as string];
       return {
         batchId:         b.id,
         sourceName:      b.source_name,
@@ -66,6 +80,8 @@ export async function GET(request: NextRequest) {
         candidateCount:  count ?? 0,
         createdAt:       b.created_at,
         createdBy:       b.created_by,
+        tenantCode:      tenant?.tenantCode  ?? null,   // B9.1: tenant visibility
+        companyName:     tenant?.companyName ?? null,
         canGenerate:     b.batch_status === 'pending' && (count ?? 0) === 0,
         canReview:       (count ?? 0) > 0,
       };

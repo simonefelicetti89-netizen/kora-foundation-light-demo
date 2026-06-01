@@ -20,6 +20,8 @@ interface BatchSummary {
   canReview:       boolean;
   createdAt:       string;
   createdBy:       string | null;
+  tenantCode:      string | null;   // B9.1: tenant visibility in batch selector
+  companyName:     string | null;
 }
 
 interface UefCandidate {
@@ -283,7 +285,13 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               onClick={() => b.canReview && selectBatch(b.batchId)}
               className={`rounded-lg border px-4 py-3 space-y-2 cursor-pointer transition-colors ${selectedBatchId === b.batchId ? 'border-[#6156F5] bg-[#f5f4ff]' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
               <div className="flex items-start justify-between gap-2">
-                <p className="text-xs font-semibold text-slate-800 break-all">{b.sourceName ?? b.batchId.slice(0, 12) + '…'}</p>
+                <div>
+                  {/* B9.1: tenant label for multi-tenant clarity */}
+                  {b.companyName && (
+                    <p className="text-[10px] font-semibold text-[#6156F5] mb-0.5">{b.companyName} <span className="font-mono opacity-75">· {b.tenantCode}</span></p>
+                  )}
+                  <p className="text-xs font-semibold text-slate-800 break-all">{b.sourceName ?? b.batchId.slice(0, 12) + '…'}</p>
+                </div>
                 <Badge label={b.batchStatus} cls={b.batchStatus === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-amber-50 text-amber-700 border-amber-200'} />
               </div>
               <div className="flex flex-wrap gap-2 text-[10px] text-slate-500">

@@ -88,7 +88,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     },
     {
       label: 'Posizionamento metodologico',
-      text: `Questo Decision Pack è generato da KORA Foundation Light con dati sintetici su tenant OP-001. La fase attuale è pre-empirical calibration: i valori rappresentano intelligence diagnostica di pilot, non output certificati né raccomandazioni operative formali. La validazione empirica dei pesi del KORA Index v3 è pianificata post-pilot. Ogni interpretazione deve essere validata con il team metodologico KORA prima di presentazioni a board o stakeholder.`,
+      text: `Questo Decision Pack è generato da KORA Foundation Light con dati sintetici su tenant ${meta.tenantCode}. La fase attuale è pre-empirical calibration: i valori rappresentano intelligence diagnostica di pilot, non output certificati né raccomandazioni operative formali. La validazione empirica dei pesi del KORA Index v3 è pianificata post-pilot. Ogni interpretazione deve essere validata con il team metodologico KORA prima di presentazioni a board o stakeholder.`,
     },
   ];
 
@@ -508,7 +508,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
   <div class="pc">
     <p style="font-size:8.5pt;color:#555670;line-height:1.6;margin-bottom:14pt;max-width:430pt;">
-      Messaggi sintetici derivati dalla lettura dei dati live sintetici OP-001. Intelligence diagnostica di pilot — non raccomandazioni operative certificate. Validare con il team metodologico KORA prima di qualsiasi utilizzo formale.
+      Messaggi sintetici derivati dalla lettura dei dati live sintetici ${escHtml(meta.tenantCode)}. Intelligence diagnostica di pilot — non raccomandazioni operative certificate. Validare con il team metodologico KORA prima di qualsiasi utilizzo formale.
     </p>
     <div class="insight-list">
       ${insights.map((ins, i) => `
@@ -524,7 +524,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
       <span style="font-size:7pt;color:#9899b3;line-height:1.5;">
         <span style="display:inline-block;width:5pt;height:5pt;border-radius:50%;background:#C8FF47;margin-right:4pt;vertical-align:middle;"></span>
         <strong style="color:#3d3a6a;">Nota metodologica:</strong>
-        Questo Decision Pack è generato da dati sintetici su tenant OP-001 a scopo dimostrativo.
+        Questo Decision Pack è generato da dati sintetici su tenant ${escHtml(meta.tenantCode)} a scopo dimostrativo.
         Nessun valore si riferisce a dati reali o a specifiche organizzazioni.
       </span>
     </div>
@@ -647,7 +647,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     <div style="font-size:7.5pt;color:#9899b3;margin-bottom:14pt;">
       Totale eventi classificati: <strong style="color:#06032B;">${pillarTotal}</strong>
       &nbsp;·&nbsp; Periodo: ${escHtml(meta.reportingPeriod)}
-      &nbsp;·&nbsp; Dati sintetici OP-001
+      &nbsp;·&nbsp; Dati sintetici ${escHtml(meta.tenantCode)}
     </div>
     ` : `<div class="pb-stub">Dati pillar non disponibili — eseguire scoring run per generare la distribuzione.</div>`}
     <div style="padding:9pt 13pt;background:#f8f8fc;border:1px solid #eaebf4;border-radius:4pt;">
@@ -681,7 +681,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
   <div class="pc">
     <p style="font-size:8.5pt;color:#555670;line-height:1.6;margin-bottom:16pt;max-width:440pt;">
       Lettura informativa del rapporto tra budget people/welfare e attivazione verificata.
-      KORA non dimostra causalità, non garantisce ROI. Correlazione ≠ causalità. Dati sintetici OP-001.
+      KORA non dimostra causalità, non garantisce ROI. Correlazione ≠ causalità. Dati sintetici ${escHtml(meta.tenantCode)}.
     </p>
     ${bti ? `
     <div class="fg-grid">
