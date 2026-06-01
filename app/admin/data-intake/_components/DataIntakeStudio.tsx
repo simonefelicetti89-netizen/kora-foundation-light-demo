@@ -184,6 +184,16 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const [acceptStatus, setAcceptStatus] = useState<'idle'|'loading'|'created'|'rejected'|'error'>('idle');
   const [acceptResult, setAcceptResult] = useState<AcceptResult | null>(null);
 
+  // B11.3: batch-level financial metadata — collected here, sent with accept
+  // financialNotes is local only — intentionally NOT sent to server (privacy boundary)
+  const [finSourceType,    setFinSourceType]    = useState<string>('unknown');
+  const [finEvidLevel,     setFinEvidLevel]     = useState<string>('L0');
+  const [finBudgetScope,   setFinBudgetScope]   = useState<string>('unknown');
+  const [finContainsAmt,   setFinContainsAmt]   = useState<string>('unknown');
+  const [finEconRelief,    setFinEconRelief]     = useState<string>('unknown');
+  const [finComplianceSpd, setFinComplianceSpd] = useState<string>('unknown');
+  const [finNotes,         setFinNotes]          = useState<string>(''); // never sent to server
+
   // loading is derived — true only while we have neither data nor an error
   const loading = !preview && !loadErr;
 
@@ -245,6 +255,21 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       fd.append('file', csvFile);
       fd.append('tenantCode', TENANT);
       fd.append('reportingPeriod', PERIOD);
+      // B11.3: append financial metadata — financialNotes intentionally excluded
+      const hasAnyMeta = finSourceType !== 'unknown' || finEvidLevel !== 'L0'
+        || finBudgetScope !== 'unknown' || finContainsAmt !== 'unknown'
+        || finEconRelief !== 'unknown' || finComplianceSpd !== 'unknown';
+      if (hasAnyMeta) {
+        fd.append('financialMetadata', JSON.stringify({
+          currency:                'EUR',
+          financialSourceType:     finSourceType,
+          defaultEvidenceLevel:    finEvidLevel,
+          budgetScope:             finBudgetScope,
+          containsAmounts:         finContainsAmt,
+          containsEconomicRelief:  finEconRelief,
+          containsComplianceSpend: finComplianceSpd,
+        }));
+      }
       const res  = await fetch('/api/admin/data-intake/accept', {
         method: 'POST', credentials: 'include', body: fd,
       });
@@ -405,6 +430,114 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] text-slate-400 border-t border-green-100 pt-2">
               {csvResult.dryRunNote} · Live scoring remains locked until B4.2/B5.
             </p>
+          </div>
+        )}
+
+        {/* B11.3 — Financial metadata panel (shown after dry-run passed, before accept) */}
+        {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
+          <div className="rounded-lg border border-[#6156F5]/25 bg-[#f5f4ff] px-4 py-4 space-y-3">
+            <div>
+              <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">Metadati finanziari del batch</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                Questi metadati aiutano KORA a interpretare la qualità finanziaria del batch. Non sovrascrivono i dati riga-per-riga e non inventano importi mancanti.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Valuta */}
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Valuta</label>
+                <div className="rounded border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 font-mono">EUR</div>
+              </div>
+
+              {/* Fonte finanziaria */}
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Fonte finanziaria prevalente</label>
+                <select value={finSourceType} onChange={e => setFinSourceType(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  <option value="unknown">Non specificata</option>
+                  <option value="provider_export">Export fornitore welfare</option>
+                  <option value="lms_export">Export piattaforma LMS</option>
+                  <option value="internal_accounting">Contabilità interna</option>
+                  <option value="invoice_consuntivo">Fattura / Consuntivo</option>
+                  <option value="hr_declaration">Dichiarazione HR</option>
+                </select>
+              </div>
+
+              {/* Evidence level di default */}
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Evidence level di default</label>
+                <select value={finEvidLevel} onChange={e => setFinEvidLevel(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  <option value="L0">L0 — Nessuna evidenza (default)</option>
+                  <option value="L1">L1 — Auto-dichiarato / Spreadsheet</option>
+                  <option value="L2">L2 — Documento interno</option>
+                  <option value="L3">L3 — Export terze parti / Verificato</option>
+                </select>
+              </div>
+
+              {/* Ambito budget */}
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Ambito budget</label>
+                <select value={finBudgetScope} onChange={e => setFinBudgetScope(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  <option value="unknown">Non specificato</option>
+                  <option value="welfare">Welfare</option>
+                  <option value="fringe_benefit">Fringe benefit</option>
+                  <option value="hr_learning">Formazione / HR Learning</option>
+                  <option value="esg_volunteering">ESG / Volontariato</option>
+                  <option value="compliance_hse">Compliance / HSE</option>
+                  <option value="mixed">Misto</option>
+                </select>
+              </div>
+
+              {/* Contiene importi? */}
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Il file contiene importi?</label>
+                <select value={finContainsAmt} onChange={e => setFinContainsAmt(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  <option value="unknown">Non noto</option>
+                  <option value="yes">Sì</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+
+              {/* Benefit monetari */}
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Contiene benefit monetari / fringe / voucher?</label>
+                <select value={finEconRelief} onChange={e => setFinEconRelief(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  <option value="unknown">Non noto</option>
+                  <option value="yes">Sì</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+
+              {/* Compliance/HSE */}
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Contiene spese compliance / HSE?</label>
+                <select value={finComplianceSpd} onChange={e => setFinComplianceSpd(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  <option value="unknown">Non noto</option>
+                  <option value="yes">Sì</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Note finanziarie interne — locale only, mai inviato al server */}
+            <div>
+              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+                Note finanziarie interne
+                <span className="ml-1.5 rounded bg-amber-100 text-amber-700 px-1 py-0.5 text-[9px] font-bold">Solo locale — non salvato</span>
+              </label>
+              <textarea
+                value={finNotes} onChange={e => setFinNotes(e.target.value)}
+                rows={2}
+                placeholder="Note operative interne (non vengono salvate nel sistema)"
+                className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-[#6156F5] resize-none"
+              />
+            </div>
           </div>
         )}
 

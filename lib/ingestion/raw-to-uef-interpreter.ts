@@ -12,6 +12,30 @@ export type Pillar = 'LIFE' | 'GROWTH' | 'CONNECTION' | 'IMPACT' | 'LEGACY';
 export type EligibilityProposal = 'eligible' | 'limited' | 'blocked';
 export type EvidenceLevel = 'L0' | 'L1' | 'L2' | 'L3';
 
+// ── B11.3: Batch-level financial context ─────────────────────────────────────
+// Stored in analytics.source_batch.payload_sample (JSONB, _b11_3: true marker).
+// Bridge storage pre-Gate-2 — migrate to financial_metadata jsonb when Gate 2 opens.
+// financialNotes is intentionally absent: never persisted (privacy boundary).
+
+export type FinancialSourceType =
+  | 'hr_declaration' | 'provider_export' | 'lms_export'
+  | 'internal_accounting' | 'invoice_consuntivo' | 'unknown';
+
+export type BudgetScope =
+  | 'welfare' | 'fringe_benefit' | 'hr_learning'
+  | 'esg_volunteering' | 'compliance_hse' | 'mixed' | 'unknown';
+
+export interface BatchFinancialContext {
+  currency:                'EUR';
+  financialSourceType:     FinancialSourceType;
+  defaultEvidenceLevel:    EvidenceLevel;
+  budgetScope:             BudgetScope;
+  containsAmounts:         'yes' | 'no' | 'unknown';
+  containsEconomicRelief:  'yes' | 'no' | 'unknown';
+  containsComplianceSpend: 'yes' | 'no' | 'unknown';
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ── B11: Initiative domain + budget class taxonomies ──────────────────────────
 export type InitiativeDomain =
   | 'welfare' | 'fringe_benefit' | 'economic_relief' | 'hr_learning'
@@ -117,6 +141,25 @@ const KW_SOURCE_L1 = [
   'dichiarato', 'self-declared', 'self_declared', 'stima hr',
   'autodichiarato', 'spreadsheet', 'excel aziendale', 'input manuale',
 ];
+
+// ── B11.3: Batch context conversion maps ─────────────────────────────────────
+
+const FINANCIAL_SOURCE_TO_TIER: Record<FinancialSourceType, string | null> = {
+  provider_export:      'welfare_provider_export',
+  lms_export:           'lms_platform_export',
+  internal_accounting:  'internal_accounting',
+  invoice_consuntivo:   'invoice_document',
+  hr_declaration:       'hr_declaration',
+  unknown:              null,
+};
+
+const BUDGET_SCOPE_TO_DOMAIN: Partial<Record<BudgetScope, InitiativeDomain>> = {
+  welfare:          'welfare',
+  fringe_benefit:   'fringe_benefit',
+  hr_learning:      'hr_learning',
+  esg_volunteering: 'esg_volunteering',
+  compliance_hse:   'compliance_hse',
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -249,6 +292,7 @@ export function interpretUploadedRecord(
   record: UploadedRecordInput,
   // methodologyVersion retained for future versioned config reads
   _methodologyVersion = 'KORA Methodology v0.1',
+  batchContext?: BatchFinancialContext,
 ): UefCandidateProposal {
   const p = record.payload;
 
@@ -270,14 +314,37 @@ export function interpretUploadedRecord(
 
   const budgetAmount = extractNumber(p['amount'] ?? p['importo'] ?? p['budget_amount'] ?? p['cost']);
   const participants = extractNumber(p['participants'] ?? p['partecipanti']);
-  if (budgetAmount   !== null) reasonCodes.push('budget_amount_detected');
-  if (participants   !== null) reasonCodes.push('participants_detected');
-  if (budgetAmount   === null) warnings.push('warning:missing_budget_amount');
-  if (participants   === null) warnings.push('warning:missing_participants');
+  if (budgetAmount !== null) reasonCodes.push('budget_amount_detected');
+  if (participants !== null) reasonCodes.push('participants_detected');
+  if (budgetAmount === null) {
+    warnings.push('warning:missing_budget_amount');
+    // B11.3: batch context never invents amounts — budget_amount stays null
+    if (batchContext) reasonCodes.push('batch_financial_metadata:amount_not_provided');
+  }
+  if (participants === null) warnings.push('warning:missing_participants');
 
-  const { level: evidenceLevel, sourceTier, code: evidRC } = detectEvidence(p);
+  // B11.3: evidence level and source tier — record-level data takes priority.
+  // Batch context is used only as fallback when record has no source (L0).
+  let { level: evidenceLevel, sourceTier, code: evidRC } = detectEvidence(p);
   reasonCodes.push(evidRC);
-  if (evidenceLevel === 'L0') warnings.push('warning:missing_source');
+
+  if (batchContext) {
+    if (evidenceLevel === 'L0' && batchContext.defaultEvidenceLevel !== 'L0') {
+      // Record has no source — use batch default evidence level as fallback
+      evidenceLevel = batchContext.defaultEvidenceLevel;
+      sourceTier    = FINANCIAL_SOURCE_TO_TIER[batchContext.financialSourceType] ?? sourceTier;
+      reasonCodes.push('batch_financial_metadata:evidence_level');
+    } else {
+      if (evidenceLevel === 'L0') warnings.push('warning:missing_source');
+      // Source tier fallback: record has no tier but batch identifies a source
+      if (!sourceTier && batchContext.financialSourceType !== 'unknown') {
+        sourceTier = FINANCIAL_SOURCE_TO_TIER[batchContext.financialSourceType] ?? null;
+        if (sourceTier) reasonCodes.push('batch_financial_metadata:source_type');
+      }
+    }
+  } else {
+    if (evidenceLevel === 'L0') warnings.push('warning:missing_source');
+  }
 
   // ── Rule matching — BLOCKED > LIMITED > ELIGIBLE ─────────────────────────
 
@@ -357,8 +424,16 @@ export function interpretUploadedRecord(
   const eventNature  = record.event_nature  || str(p['type'] ?? p['tipo']) || null;
 
   // ── B11: derive domain, budget class, enrichment status ──────────────────
-  const initiativeDomain = deriveInitiativeDomain(eventType, eligibility);
-  const budgetClass      = deriveBudgetClass(eligibility, budgetAmount);
+  let initiativeDomain = deriveInitiativeDomain(eventType, eligibility);
+  // B11.3: budget scope fallback — only if domain is still unknown after rule derivation
+  if (initiativeDomain === 'unknown' && batchContext?.budgetScope) {
+    const scopeDomain = BUDGET_SCOPE_TO_DOMAIN[batchContext.budgetScope];
+    if (scopeDomain) {
+      initiativeDomain = scopeDomain;
+      reasonCodes.push('batch_financial_metadata:budget_scope');
+    }
+  }
+  const budgetClass = deriveBudgetClass(eligibility, budgetAmount);
 
   const { needsEnrichment, missingFields } = computeEnrichmentStatus({
     eligibility, budgetAmount, sourceTier, evidenceLevel,

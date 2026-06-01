@@ -18,6 +18,59 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guard';
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
+import type {
+  BatchFinancialContext, FinancialSourceType, BudgetScope, EvidenceLevel,
+} from '@/lib/ingestion/raw-to-uef-interpreter';
+
+// ── B11.3: Financial metadata validation ─────────────────────────────────────
+// financialNotes is deliberately excluded — never persisted (privacy boundary).
+
+const VALID_FINANCIAL_SOURCE: FinancialSourceType[] = [
+  'hr_declaration', 'provider_export', 'lms_export',
+  'internal_accounting', 'invoice_consuntivo', 'unknown',
+];
+const VALID_EVIDENCE_LEVELS: EvidenceLevel[] = ['L0', 'L1', 'L2', 'L3'];
+const VALID_BUDGET_SCOPES: BudgetScope[] = [
+  'welfare', 'fringe_benefit', 'hr_learning',
+  'esg_volunteering', 'compliance_hse', 'mixed', 'unknown',
+];
+const VALID_TRISTATE = ['yes', 'no', 'unknown'];
+
+function parseAndValidateFinancialMetadata(raw: string): BatchFinancialContext {
+  let obj: Record<string, unknown>;
+  try { obj = JSON.parse(raw); }
+  catch { throw new Error('financialMetadata must be valid JSON.'); }
+
+  const fst = String(obj['financialSourceType'] ?? 'unknown');
+  const del = String(obj['defaultEvidenceLevel'] ?? 'L0');
+  const bs  = String(obj['budgetScope'] ?? 'unknown');
+  const ca  = String(obj['containsAmounts'] ?? 'unknown');
+  const cer = String(obj['containsEconomicRelief'] ?? 'unknown');
+  const ccs = String(obj['containsComplianceSpend'] ?? 'unknown');
+
+  if (!VALID_FINANCIAL_SOURCE.includes(fst as FinancialSourceType))
+    throw new Error(`Invalid financialSourceType: '${fst}'. Must be one of: ${VALID_FINANCIAL_SOURCE.join(', ')}`);
+  if (!VALID_EVIDENCE_LEVELS.includes(del as EvidenceLevel))
+    throw new Error(`Invalid defaultEvidenceLevel: '${del}'. Must be one of: ${VALID_EVIDENCE_LEVELS.join(', ')}`);
+  if (!VALID_BUDGET_SCOPES.includes(bs as BudgetScope))
+    throw new Error(`Invalid budgetScope: '${bs}'. Must be one of: ${VALID_BUDGET_SCOPES.join(', ')}`);
+  if (!VALID_TRISTATE.includes(ca))
+    throw new Error(`Invalid containsAmounts: '${ca}'. Must be yes | no | unknown`);
+  if (!VALID_TRISTATE.includes(cer))
+    throw new Error(`Invalid containsEconomicRelief: '${cer}'. Must be yes | no | unknown`);
+  if (!VALID_TRISTATE.includes(ccs))
+    throw new Error(`Invalid containsComplianceSpend: '${ccs}'. Must be yes | no | unknown`);
+
+  return {
+    currency:                'EUR',
+    financialSourceType:     fst as FinancialSourceType,
+    defaultEvidenceLevel:    del as EvidenceLevel,
+    budgetScope:             bs  as BudgetScope,
+    containsAmounts:         ca  as 'yes' | 'no' | 'unknown',
+    containsEconomicRelief:  cer as 'yes' | 'no' | 'unknown',
+    containsComplianceSpend: ccs as 'yes' | 'no' | 'unknown',
+  };
+}
 
 // ── Limits (same as upload-preview — re-validated here) ───────────────────────
 
@@ -152,6 +205,17 @@ export async function POST(request: NextRequest) {
   const tenantCode       = String(formData.get('tenantCode')      ?? 'OP-001');
   const reportingPeriod  = String(formData.get('reportingPeriod') ?? '2026-Q1');
   const batchLabelInput  = formData.get('batchLabel');
+
+  // B11.3: optional financial metadata (financialNotes intentionally excluded)
+  let batchFinancialMeta: BatchFinancialContext | null = null;
+  const financialMetadataRaw = formData.get('financialMetadata');
+  if (financialMetadataRaw && String(financialMetadataRaw).trim() !== '') {
+    try {
+      batchFinancialMeta = parseAndValidateFinancialMetadata(String(financialMetadataRaw));
+    } catch (err) {
+      return NextResponse.json({ error: String(err) }, { status: 400 });
+    }
+  }
   const batchLabel       = batchLabelInput ? String(batchLabelInput) : `[CSV] ${file.name}`;
 
   // ── 3. Validate file type ────────────────────────────────────────────────────
@@ -318,7 +382,10 @@ export async function POST(request: NextRequest) {
       evidence_attached_pct:  null,
       pending_review_count:   rows.length,
       source_notes:           'B4.2 CSV live intake · strict-reject PII policy · pending UEF review (B5)',
-      payload_sample:         null,
+      // B11.3: store validated financial metadata — no financialNotes, no PII
+      payload_sample:         batchFinancialMeta
+        ? { _b11_3: true, ...batchFinancialMeta }
+        : null,
       created_by:             authResult.email,
       processed_at:           null,
     })
@@ -346,6 +413,23 @@ export async function POST(request: NextRequest) {
       reporting_period: reportingPeriod,
     },
   }));
+
+  // B11.3: audit financial metadata — partial only, financialNotes never logged
+  if (batchFinancialMeta) {
+    auditRows.push(makeAudit({
+      tenantId, actorId: authResult.id,
+      action: 'batch_financial_metadata_attached',
+      resourceType: 'analytics.source_batch', resourceId: batchId,
+      metadata: {
+        financial_metadata_provided: true,
+        keys_present:          Object.keys(batchFinancialMeta),
+        currency:              batchFinancialMeta.currency,
+        financialSourceType:   batchFinancialMeta.financialSourceType,
+        defaultEvidenceLevel:  batchFinancialMeta.defaultEvidenceLevel,
+        budgetScope:           batchFinancialMeta.budgetScope,
+      },
+    }));
+  }
 
   // ── 12. Build + insert uploaded_record rows ───────────────────────────────────
   // pseudonym_id: non-reversible, not derived from personal data.

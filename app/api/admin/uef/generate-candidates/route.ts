@@ -18,7 +18,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { interpretUploadedRecord, type UploadedRecordInput } from '@/lib/ingestion/raw-to-uef-interpreter';
+import {
+  interpretUploadedRecord,
+  type UploadedRecordInput,
+  type BatchFinancialContext,
+  type FinancialSourceType,
+  type EvidenceLevel,
+  type BudgetScope,
+} from '@/lib/ingestion/raw-to-uef-interpreter';
 
 function makeAudit(p: {
   tenantId: string; actorId: string; action: string;
@@ -53,7 +60,7 @@ export async function POST(request: NextRequest) {
   // ── Lookup source_batch ──────────────────────────────────────────────────────
   const { data: batch, error: batchErr } = await db
     .schema('analytics').from('source_batch')
-    .select('id, tenant_id, batch_status, reporting_period, source_type, row_count')
+    .select('id, tenant_id, batch_status, reporting_period, source_type, row_count, payload_sample')
     .eq('id', batchId)
     .maybeSingle();
 
@@ -72,6 +79,21 @@ export async function POST(request: NextRequest) {
 
   const tenantId        = b.tenant_id as string;
   const reportingPeriod = b.reporting_period as string;
+
+  // B11.3: extract batch financial context from payload_sample (_b11_3 marker)
+  let batchContext: BatchFinancialContext | undefined;
+  const ps = b.payload_sample as Record<string, unknown> | null;
+  if (ps && ps['_b11_3'] === true) {
+    batchContext = {
+      currency:                'EUR',
+      financialSourceType:     (ps['financialSourceType'] as FinancialSourceType) ?? 'unknown',
+      defaultEvidenceLevel:    (ps['defaultEvidenceLevel'] as EvidenceLevel)      ?? 'L0',
+      budgetScope:             (ps['budgetScope'] as BudgetScope)                 ?? 'unknown',
+      containsAmounts:         (ps['containsAmounts']        as 'yes'|'no'|'unknown') ?? 'unknown',
+      containsEconomicRelief:  (ps['containsEconomicRelief'] as 'yes'|'no'|'unknown') ?? 'unknown',
+      containsComplianceSpend: (ps['containsComplianceSpend'] as 'yes'|'no'|'unknown') ?? 'unknown',
+    };
+  }
 
   // ── Idempotency: check if candidates already exist for this batch ────────────
   const { count: existingCount } = await db
@@ -113,7 +135,7 @@ export async function POST(request: NextRequest) {
       eligibility_status: row.eligibility_status ?? null,
     };
 
-    const proposal = interpretUploadedRecord(input, 'KORA Methodology v0.1');
+    const proposal = interpretUploadedRecord(input, 'KORA Methodology v0.1', batchContext);
 
     // uef_record.eligibility is 'eligible'|'limited'|'blocked' — no 'review_required'
     const eligibility = proposal.eligibility;
