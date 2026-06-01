@@ -69,6 +69,23 @@ interface OperatorResult {
   error?: string;
 }
 
+// B4.2 — Accept batch result type
+interface AcceptResult {
+  ok: boolean;
+  batchId?: string;
+  tenantCode?: string;
+  reportingPeriod?: string;
+  rowCount?: number;
+  eligibilitySummary?: { eligible: number; limited: number; blocked: number; reviewRequired: number; total: number };
+  batchStatus?: string;
+  message?: string;
+  warnings?: string[];
+  forbiddenHeaders?: string[];
+  findings?: Array<{ rowIndex: number; fieldPath: string; riskType: string; severity: string }>;
+  error?: string;
+  note?: string;
+}
+
 // B4.1 — CSV dry-run types
 interface DryRunFinding {
   rowIndex: number; fieldPath: string; riskType: string; severity: string;
@@ -143,6 +160,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const [csvStatus, setCsvStatus]       = useState<'idle'|'loading'|'passed'|'rejected'|'error'>('idle');
   const [csvResult, setCsvResult]       = useState<DryRunResult | null>(null);
 
+  // B4.2 — Accept batch state
+  const [acceptStatus, setAcceptStatus] = useState<'idle'|'loading'|'created'|'rejected'|'error'>('idle');
+  const [acceptResult, setAcceptResult] = useState<AcceptResult | null>(null);
+
   // loading is derived — true only while we have neither data nor an error
   const loading = !preview && !loadErr;
 
@@ -193,6 +214,27 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       setOpResult(data); setOpStatus('done');
       refreshPreview();
     } catch (e) { setOpErr(e instanceof Error ? e.message : String(e)); setOpStatus('error'); }
+  }
+
+  // B4.2 — Accept batch: sends CSV again (server reruns all checks — never trusts dry-run)
+  async function handleAcceptBatch() {
+    if (!csvFile) return;
+    setAcceptStatus('loading'); setAcceptResult(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', csvFile);
+      fd.append('tenantCode', TENANT);
+      fd.append('reportingPeriod', PERIOD);
+      const res  = await fetch('/api/admin/data-intake/accept', {
+        method: 'POST', credentials: 'include', body: fd,
+      });
+      const data = await res.json() as AcceptResult;
+      setAcceptResult(data);
+      setAcceptStatus(data.ok ? 'created' : 'rejected');
+    } catch (e) {
+      setAcceptResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
+      setAcceptStatus('error');
+    }
   }
 
   // B4.1 — CSV dry-run handler
@@ -286,7 +328,11 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <input
             type="file"
             accept=".csv"
-            onChange={e => { setCsvFile(e.target.files?.[0] ?? null); setCsvStatus('idle'); setCsvResult(null); }}
+            onChange={e => {
+              setCsvFile(e.target.files?.[0] ?? null);
+              setCsvStatus('idle'); setCsvResult(null);
+              setAcceptStatus('idle'); setAcceptResult(null);
+            }}
             className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:text-xs file:font-medium file:text-slate-700 file:cursor-pointer hover:file:bg-slate-100"
           />
           <button
@@ -339,6 +385,84 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] text-slate-400 border-t border-green-100 pt-2">
               {csvResult.dryRunNote} · Live scoring remains locked until B4.2/B5.
             </p>
+          </div>
+        )}
+
+        {/* B4.2 — Accept batch section (shown after dry-run passed) */}
+        {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-2">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Create Intake Batch</p>
+            <p className="text-[10px] text-slate-400">Only PII-free / pseudonymized files can be persisted. Scoring is not executed in B4.2.</p>
+            <button
+              onClick={handleAcceptBatch}
+              className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+            >
+              ↓ Create intake batch
+            </button>
+          </div>
+        )}
+
+        {/* Accept: loading */}
+        {acceptStatus === 'loading' && (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-500">
+            ⏳ Creating batch — re-validating file server-side…
+          </div>
+        )}
+
+        {/* Accept: created */}
+        {acceptStatus === 'created' && acceptResult?.ok && (
+          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-green-700">✓ Batch created</span>
+              <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-[10px] font-mono text-green-700">{acceptResult.batchId?.slice(0, 8)}…</span>
+              <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">status: {acceptResult.batchStatus}</span>
+            </div>
+            {acceptResult.eligibilitySummary && (
+              <div className="flex flex-wrap gap-2 text-[10px]">
+                <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-green-700 font-medium">Eligible: {acceptResult.eligibilitySummary.eligible}</span>
+                <span className="rounded border border-amber-200 bg-white px-2 py-0.5 text-amber-700 font-medium">Limited: {acceptResult.eligibilitySummary.limited}</span>
+                <span className="rounded border border-red-200 bg-white px-2 py-0.5 text-red-700 font-medium">Blocked: {acceptResult.eligibilitySummary.blocked}</span>
+                <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-600 font-medium">Total: {acceptResult.rowCount}</span>
+              </div>
+            )}
+            <div className="space-y-0.5">
+              <p className="text-[10px] text-green-700 font-medium">Batch created for review. Scoring remains locked until B5.</p>
+              <p className="text-[10px] text-slate-400">Scoring is not executed in B4.2.</p>
+              <p className="text-[10px] text-slate-400">Batch will be available for UEF Review in B5.</p>
+            </div>
+          </div>
+        )}
+
+        {/* Accept: rejected (PII found on re-run) */}
+        {acceptStatus === 'rejected' && acceptResult && !acceptResult.ok && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 space-y-2">
+            <p className="text-xs font-bold text-red-700">⚠ {acceptResult.error ?? 'Batch rejected during server-side re-validation.'}</p>
+            {acceptResult.forbiddenHeaders && acceptResult.forbiddenHeaders.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                <span className="text-[10px] text-red-600 font-medium">Forbidden headers:</span>
+                {acceptResult.forbiddenHeaders.map(h => (
+                  <span key={h} className="rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-mono text-red-700">{h}</span>
+                ))}
+              </div>
+            )}
+            {acceptResult.findings && acceptResult.findings.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold text-red-600 mb-1">PII findings (field paths only — no values):</p>
+                {acceptResult.findings.slice(0, 8).map((f, i) => (
+                  <p key={i} className="text-[10px] font-mono text-red-600">Row {f.rowIndex} · {f.fieldPath} · {f.riskType} · {f.severity}</p>
+                ))}
+              </div>
+            )}
+            <p className="text-[10px] text-red-600 border-t border-red-100 pt-1">
+              {acceptResult.note ?? 'No data has been stored.'}
+            </p>
+          </div>
+        )}
+
+        {/* Accept: error */}
+        {acceptStatus === 'error' && acceptResult && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700">
+            ⚠ {acceptResult.error ?? 'Unknown error during batch creation.'}
           </div>
         )}
 
