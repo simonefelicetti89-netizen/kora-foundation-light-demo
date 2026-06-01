@@ -225,23 +225,48 @@ export default function KoraIndexDetail() {
         })}
       </div>
 
-      {/* 4. Chart + Component breakdown — 2 col */}
-      <SectionLabel>10 componenti analitici</SectionLabel>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ComponentBreakdownChart components={output.components} weakCodes={weakCodes} />
-        <ComponentBreakdown components={output.components} />
+      {/* 4. Vincolo primario + CTA anchor verso la derivazione */}
+      <div
+        className="flex items-center justify-between gap-4 flex-wrap"
+        style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '0.875rem 1.125rem' }}
+      >
+        <p style={{ fontSize: '12px', color: TOKENS.ink }}>
+          <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint, marginRight: 10 }}>
+            Vincolo primario
+          </span>
+          {explanation?.weak_components[0]
+            ? `${explanation.weak_components[0].label} · ${explanation.weak_components[0].code}`
+            : 'Nessun vincolo critico rilevato'}
+        </p>
+        <a
+          href="#componenti"
+          style={{ flexShrink: 0, fontSize: '12px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none', whiteSpace: 'nowrap' }}
+        >
+          Vedi i 10 componenti →
+        </a>
       </div>
 
-      {/* ── GRUPPO SECONDARIO — Pipeline, eligibility, safeguard, BTI ──────────── */}
+      {/* ── GRUPPO SECONDARIO — Componenti, pipeline, eligibility, safeguard, BTI ── */}
       <div style={{ borderTop: '1px solid rgba(20,18,46,0.10)', marginTop: '2.5rem', paddingTop: '2.5rem' }}>
 
-        {/* 5. Pipeline build card — full width */}
-        <SectionLabel>Pipeline di costruzione</SectionLabel>
-        <div className="mt-4">
-          <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
+        {/* 5. 10 componenti analitici — spostati dal gruppo primario */}
+        <div id="componenti" className="scroll-mt-24">
+          <SectionLabel>10 componenti analitici</SectionLabel>
+          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+            <ComponentBreakdownChart components={output.components} weakCodes={weakCodes} />
+            <ComponentBreakdown components={output.components} />
+          </div>
         </div>
 
-        {/* 6. Eligibility gate — full width */}
+        {/* 6. Pipeline build card — full width */}
+        <div className="mt-6">
+          <SectionLabel>Pipeline di costruzione</SectionLabel>
+          <div className="mt-4">
+            <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
+          </div>
+        </div>
+
+        {/* 7. Eligibility gate — full width */}
         <div className="mt-6">
           <SectionLabel>Eligibility gate</SectionLabel>
           <div className="mt-4">
