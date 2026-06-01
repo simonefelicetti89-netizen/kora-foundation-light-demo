@@ -144,9 +144,25 @@ interface Props { userEmail: string; userRole: string; }
 
 // ── Main component ─────────────────────────────────────────────────────────
 
+// B9: tenant option shape for selector
+interface TenantOption { id: string; tenantCode: string; companyName: string; }
+
 export function DataIntakeStudio({ userEmail, userRole }: Props) {
-  const TENANT = 'OP-001';
-  const PERIOD = '2026-Q1';
+  // B9: tenant selector — defaults to OP-001 for backwards compat
+  const [tenantList, setTenantList]       = useState<TenantOption[]>([]);
+  const [TENANT, setTENANT]               = useState('OP-001');
+  const [PERIOD, setPERIOD]               = useState('2026-Q1');
+
+  // Load available tenants on mount
+  useEffect(() => {
+    fetch('/api/admin/tenants', { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: { ok?: boolean; tenants?: TenantOption[] }) => {
+        if (d.ok && d.tenants) setTenantList(d.tenants);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [preview, setPreview]     = useState<PreviewData | null>(null);
   const [loadErr, setLoadErr]     = useState<string | null>(null);
@@ -505,6 +521,51 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             ⚠ {csvResult.error ?? 'Unknown error during validation.'}
           </div>
         )}
+      </div>
+
+      {/* ── B9. TENANT SELECTOR ── */}
+      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-end gap-4">
+        <div>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Tenant</p>
+          {tenantList.length > 0 ? (
+            <select
+              value={TENANT}
+              onChange={e => {
+                setTENANT(e.target.value);
+                setPreview(null); setLoadErr(null); setOpResult(null);
+                setAcceptResult(null); setAcceptStatus('idle');
+                setCsvResult(null); setCsvStatus('idle');
+              }}
+              className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 min-w-[160px]"
+            >
+              {tenantList.map(t => (
+                <option key={t.tenantCode} value={t.tenantCode}>
+                  {t.tenantCode} — {t.companyName}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              value={TENANT}
+              onChange={e => setTENANT(e.target.value.toUpperCase())}
+              placeholder="OP-001"
+              className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 w-36"
+            />
+          )}
+        </div>
+        <div>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Reporting Period</p>
+          <input
+            value={PERIOD}
+            onChange={e => setPERIOD(e.target.value)}
+            placeholder="2026-Q1"
+            className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 w-28"
+          />
+        </div>
+        <a href="/admin/tenants"
+          className="text-[10px] text-[#6156F5] underline underline-offset-2 hover:text-[#4a41d4] pb-1.5">
+          + Create tenant
+        </a>
       </div>
 
       {/* ── B. FLOW TIMELINE ── */}
