@@ -116,6 +116,31 @@ export async function POST(request: NextRequest) {
   const r = rec as any;
   const tenantId = r.tenant_id as string;
 
+  // ── Guard: rejected records cannot be enriched ────────────────────────────
+  if (r.review_status === 'rejected') {
+    const { error: blockAuditErr } = await db.schema('audit').from('audit_log').insert({
+      tenant_id:     tenantId,
+      actor_role:    'KORA_ADMIN',
+      actor_id:      authResult.id,
+      action:        'uef_record_enrichment_blocked_rejected',
+      resource_type: 'analytics.uef_record',
+      resource_id:   uefRecordId,
+      payload: {
+        uef_record_id: uefRecordId,
+        batch_id:      r.batch_id,
+        review_status: 'rejected',
+      },
+      ip_address: null,
+    });
+    if (blockAuditErr) console.error('[uef/enrich] block audit:', blockAuditErr.message);
+
+    return NextResponse.json({
+      error: 'Cannot enrich a rejected UEF record. Reopen or regenerate the candidate first.',
+      uefRecordId,
+      reviewStatus: 'rejected',
+    }, { status: 409 });
+  }
+
   // ── Merge enrichment into payload ─────────────────────────────────────────
   const currentPayload = (r.payload ?? {}) as Record<string, unknown>;
   const currentReasonCodes: string[] = Array.isArray(currentPayload['reason_codes'])
