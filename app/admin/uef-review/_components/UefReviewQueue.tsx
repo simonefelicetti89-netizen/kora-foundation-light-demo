@@ -50,6 +50,24 @@ interface ReviewSummary {
 
 interface Props { userEmail: string; userRole: string; }
 
+// B6 — scoring result type
+interface ScoringResult {
+  ok:                       boolean;
+  koraIndex?:               number;
+  confidenceScore?:         number;
+  safeguard?:               string;
+  activationRate?:          number;
+  meaningfulActivationRate?: number;
+  scoringMode?:             string;
+  approvedUefCount?:        number;
+  workforcePopulation?:     number;
+  decisionPack?: { id: string; versionId: string; status: string };
+  previewUrl?:  string;
+  pdfUrl?:      string;
+  error?:       string;
+  hint?:        string;
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 function confColor(c: number) {
@@ -91,6 +109,11 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
   const [genStatus, setGenStatus] = useState<'idle'|'loading'|'done'|'error'>('idle');
   const [genMsg, setGenMsg]       = useState<string | null>(null);
+
+  // B6 — live scoring state
+  const [scoringWfPop, setScoringWfPop]   = useState<string>('');
+  const [scoringStatus, setScoringStatus] = useState<'idle'|'loading'|'done'|'error'>('idle');
+  const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
 
   const [actionState, setActionState] = useState<Record<string, 'loading'|'done'|'error'>>({});
 
@@ -155,6 +178,28 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
         loadCandidates(batchId);
       }
     } catch (e) { setGenStatus('error'); setGenMsg(e instanceof Error ? e.message : String(e)); }
+  }
+
+  // ── B6: Run live scoring from approved UEF ────────────────────────────────────
+  async function handleRunScoring(batchId: string) {
+    setScoringStatus('loading'); setScoringResult(null);
+    const body: Record<string, unknown> = { batchId };
+    const wf = parseInt(scoringWfPop, 10);
+    if (!isNaN(wf) && wf > 0) body['workforcePopulation'] = wf;
+    try {
+      const res  = await fetch('/api/admin/scoring/run-approved-batch', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json() as ScoringResult;
+      setScoringResult(data);
+      setScoringStatus(data.ok ? 'done' : 'error');
+      if (data.ok && batchId) { loadCandidates(batchId); }
+    } catch (e) {
+      setScoringResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
+      setScoringStatus('error');
+    }
   }
 
   // ── Review action ─────────────────────────────────────────────────────────────
@@ -369,6 +414,89 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
         </div>
       </div>
+
+      {/* ── B6: Live Scoring panel ── */}
+      {selectedBatchId && summary && summary.approved > 0 && (
+        <div className="rounded-lg border border-[#06032B] bg-white px-5 py-4 space-y-3">
+          <div className="flex items-start justify-between flex-wrap gap-2">
+            <div>
+              <p className="text-xs font-bold text-[#06032B] uppercase tracking-wide">Run Live Scoring</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Only approved UEF records enter scoring.</p>
+            </div>
+            <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
+              {summary.approved} approved
+            </span>
+          </div>
+
+          <p className="text-[10px] text-amber-700 border border-amber-200 bg-amber-50 rounded px-2 py-1">
+            Provide workforcePopulation if no workforce baseline exists for this tenant/period.
+          </p>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <input
+              type="number" min={10}
+              placeholder="workforcePopulation (≥10)"
+              value={scoringWfPop}
+              onChange={e => setScoringWfPop(e.target.value)}
+              className="rounded border border-slate-300 px-3 py-1.5 text-xs text-slate-700 w-56 focus:outline-none focus:ring-1 focus:ring-slate-400"
+            />
+            <button
+              onClick={() => handleRunScoring(selectedBatchId)}
+              disabled={scoringStatus === 'loading'}
+              className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors">
+              {scoringStatus === 'loading' ? '⏳ Running scoring…' : '▶ Run scoring from approved UEF'}
+            </button>
+          </div>
+
+          {/* Success result */}
+          {scoringStatus === 'done' && scoringResult?.ok && (
+            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 space-y-2">
+              <p className="text-xs font-bold text-green-700">✓ Decision Pack generated from approved UEF records.</p>
+              <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-[10px]">
+                <span className="text-slate-500">KORA Index <strong className="text-slate-900 tabular-nums text-base">{scoringResult.koraIndex ?? '—'}</strong></span>
+                <span className="text-slate-500">Confidence <strong className="text-slate-900 tabular-nums">{scoringResult.confidenceScore != null ? `${scoringResult.confidenceScore}%` : '—'}</strong></span>
+                <span className="text-slate-500">Safeguard <strong className="text-slate-900">{scoringResult.safeguard ?? '—'}</strong></span>
+                <span className="text-slate-500">AR <strong className="tabular-nums text-slate-900">{scoringResult.activationRate != null ? `${Math.round(scoringResult.activationRate * 100)}%` : '—'}</strong></span>
+                <span className="text-slate-500">MAR <strong className="tabular-nums text-slate-900">{scoringResult.meaningfulActivationRate != null ? `${Math.round(scoringResult.meaningfulActivationRate * 100)}%` : '—'}</strong></span>
+                <span className="text-slate-500">UEF count <strong className="text-slate-900">{scoringResult.approvedUefCount}</strong></span>
+              </div>
+              {scoringResult.decisionPack && (
+                <p className="text-[10px] text-slate-500">
+                  Decision Pack: <span className="font-mono text-slate-700">{scoringResult.decisionPack.versionId}</span> · <span className="font-semibold">{scoringResult.decisionPack.status}</span>
+                </p>
+              )}
+              <div className="flex gap-2 flex-wrap pt-1 border-t border-green-100">
+                {scoringResult.previewUrl && (
+                  <a href={scoringResult.previewUrl} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 border border-[#6156F5] text-[#6156F5] rounded px-3 py-1 text-[11px] font-medium hover:bg-[#f5f4ff] transition-colors">
+                    ↗ HTML Preview
+                  </a>
+                )}
+                {scoringResult.pdfUrl && (
+                  <a href={scoringResult.pdfUrl} download
+                    className="inline-flex items-center gap-1 bg-[#06032B] text-white rounded px-3 py-1 text-[11px] font-medium hover:bg-[#1a1756] transition-colors">
+                    ↓ Download PDF
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Error / blocked */}
+          {scoringStatus === 'error' && scoringResult && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 space-y-1">
+              <p className="text-xs font-bold text-red-700">⚠ {scoringResult.error}</p>
+              {scoringResult.hint && <p className="text-[10px] text-red-600">{scoringResult.hint}</p>}
+            </div>
+          )}
+        </div>
+      )}
+
+      {selectedBatchId && summary && summary.approved === 0 && summary.total > 0 && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-400">
+          No approved records yet. Approve UEF candidates above to enable scoring.
+        </div>
+      )}
 
     </div>
   );
