@@ -122,15 +122,24 @@ export async function GET(request: NextRequest) {
       reviewedBy:            r.reviewed_by,
       reviewedAt:            r.reviewed_at,
       // Extended fields from interpreter payload (safe — no PII)
-      eventType:             pl['event_type'] ?? null,
-      reasonCodes:           pl['reason_codes'] ?? [],
-      budgetAmount:          pl['budget_amount'] ?? null,
-      participants:          pl['participants'] ?? null,
-      evidenceLevel:         pl['evidence_level'] ?? null,
-      sourceTier:            pl['source_tier'] ?? null,
-      interpreterVersion:    pl['interpreter_version'] ?? null,
-      scoringLocked:         pl['scoring_locked'] ?? true,
-      createdAt:             r.created_at,
+      eventType:                pl['event_type'] ?? null,
+      reasonCodes:              pl['reason_codes'] ?? [],
+      budgetAmount:             pl['budget_amount'] ?? null,
+      participants:             pl['participants'] ?? null,
+      evidenceLevel:            pl['evidence_level'] ?? null,
+      sourceTier:               pl['source_tier'] ?? null,
+      interpreterVersion:       pl['interpreter_version'] ?? null,
+      scoringLocked:            pl['scoring_locked'] ?? true,
+      // ── B11: enrichment classification fields ─────────────────────────────────
+      initiativeDomain:         pl['initiative_domain']         ?? null,
+      budgetClass:              pl['budget_class']              ?? null,
+      needsEnrichment:          pl['needs_enrichment']          ?? false,
+      financialConfidence:      pl['financial_confidence']      ?? null,
+      enrichmentMissingFields:  pl['enrichment_missing_fields'] ?? [],
+      enrichedBy:               pl['enriched_by']               ?? null,
+      enrichedAt:               pl['enriched_at']               ?? null,
+      b11Enriched:              pl['b11_enriched']              ?? false,
+      createdAt:                r.created_at,
     };
   });
 

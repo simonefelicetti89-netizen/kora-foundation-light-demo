@@ -12,6 +12,15 @@ export type Pillar = 'LIFE' | 'GROWTH' | 'CONNECTION' | 'IMPACT' | 'LEGACY';
 export type EligibilityProposal = 'eligible' | 'limited' | 'blocked';
 export type EvidenceLevel = 'L0' | 'L1' | 'L2' | 'L3';
 
+// ── B11: Initiative domain + budget class taxonomies ──────────────────────────
+export type InitiativeDomain =
+  | 'welfare' | 'fringe_benefit' | 'economic_relief' | 'hr_learning'
+  | 'esg_volunteering' | 'compliance_hse' | 'previdenza_future'
+  | 'wellbeing_mental_health' | 'unknown';
+
+export type BudgetClass =
+  | 'deep_activation' | 'economic_relief' | 'compliance_blocked' | 'unknown';
+
 export interface UefCandidateProposal {
   rawName:                string;
   eventType:              string;
@@ -24,6 +33,13 @@ export interface UefCandidateProposal {
   evidenceLevel:          EvidenceLevel | null;
   sourceTier:             string | null;
   mappingConfidence:      number;        // 0.30–0.95
+  // ── B11: enrichment classification ──────────────────────────────────────
+  initiativeDomain:       InitiativeDomain;
+  budgetClass:            BudgetClass;
+  needsEnrichment:        boolean;
+  financialConfidence:    number;        // 0.10–0.90 (budget-aware)
+  enrichmentMissingFields: string[];
+  // ─────────────────────────────────────────────────────────────────────────
   reasonCodes:            string[];      // machine-readable
   warnings:               string[];
   approvedForScoring:     false;         // always false — requires human approval
@@ -165,6 +181,68 @@ function computeConfidence(p: {
   return Math.max(0.30, Math.min(0.95, Math.round(c * 100) / 100));
 }
 
+// ── B11: Domain + budget class derivation ────────────────────────────────────
+
+function deriveInitiativeDomain(eventType: string, eligibility: EligibilityProposal): InitiativeDomain {
+  if (eligibility === 'blocked') return 'compliance_hse';
+  if (eligibility === 'limited') return 'fringe_benefit';
+  switch (eventType) {
+    case 'mental_health_support':    return 'wellbeing_mental_health';
+    case 'health_wellness_program':  return 'welfare';
+    case 'professional_training':    return 'hr_learning';
+    case 'mentoring_program':        return 'hr_learning';
+    case 'knowledge_transfer':       return 'hr_learning';
+    case 'volunteering':             return 'esg_volunteering';
+    case 'economic_relief':          return 'fringe_benefit';
+    case 'compliance_baseline':      return 'compliance_hse';
+    default:                         return 'unknown';
+  }
+}
+
+function deriveBudgetClass(eligibility: EligibilityProposal, budgetAmount: number | null): BudgetClass {
+  if (eligibility === 'blocked')                            return 'compliance_blocked';
+  if (eligibility === 'limited')                            return 'economic_relief';
+  if (eligibility === 'eligible' && budgetAmount !== null)  return 'deep_activation';
+  return 'unknown';
+}
+
+function computeEnrichmentStatus(params: {
+  eligibility:     EligibilityProposal;
+  budgetAmount:    number | null;
+  sourceTier:      string | null;
+  evidenceLevel:   EvidenceLevel | null;
+  initiativeDomain: InitiativeDomain;
+  eventType:       string;
+  pillar:          Pillar | null;
+}): { needsEnrichment: boolean; missingFields: string[] } {
+  const { eligibility, budgetAmount, sourceTier, evidenceLevel, initiativeDomain, eventType, pillar } = params;
+  const missing: string[] = [];
+
+  // Non-compliance records need a budget amount for BTI contribution
+  if (eligibility !== 'blocked' && budgetAmount === null) missing.push('budget_amount');
+  // Source/evidence needed for credible financial reporting
+  if (eligibility !== 'blocked' && (!sourceTier || !evidenceLevel || evidenceLevel === 'L0')) {
+    missing.push('budget_source');
+  }
+  if (initiativeDomain === 'unknown') missing.push('initiative_domain');
+  if (eventType === 'unclassified')   missing.push('event_type');
+  if (!pillar && eligibility !== 'blocked') missing.push('pillar');
+
+  return { needsEnrichment: missing.length > 0, missingFields: missing };
+}
+
+function computeFinancialConfidence(
+  mappingConfidence: number,
+  budgetAmount:  number | null,
+  evidenceLevel: EvidenceLevel | null,
+): number {
+  let fc = mappingConfidence;
+  if (budgetAmount === null)                          fc -= 0.20;
+  if (!evidenceLevel || evidenceLevel === 'L0')       fc -= 0.15;
+  else if (evidenceLevel === 'L1')                    fc -= 0.05;
+  return Math.max(0.10, Math.min(0.90, Math.round(fc * 100) / 100));
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export function interpretUploadedRecord(
@@ -278,6 +356,29 @@ export function interpretUploadedRecord(
   const actionFamily = record.action_family || str(p['category'] ?? p['categoria']) || null;
   const eventNature  = record.event_nature  || str(p['type'] ?? p['tipo']) || null;
 
+  // ── B11: derive domain, budget class, enrichment status ──────────────────
+  const initiativeDomain = deriveInitiativeDomain(eventType, eligibility);
+  const budgetClass      = deriveBudgetClass(eligibility, budgetAmount);
+
+  const { needsEnrichment, missingFields } = computeEnrichmentStatus({
+    eligibility, budgetAmount, sourceTier, evidenceLevel,
+    initiativeDomain, eventType, pillar,
+  });
+
+  const financialConfidence = computeFinancialConfidence(mappingConfidence, budgetAmount, evidenceLevel);
+
+  if (needsEnrichment) {
+    reasonCodes.push('needs_enrichment:manual_review_required');
+    warnings.push(`needs_enrichment:missing_fields:${missingFields.join(',')}`);
+  }
+  if (initiativeDomain !== 'unknown') {
+    reasonCodes.push(`domain_rule:${initiativeDomain}`);
+  }
+  if (budgetClass !== 'unknown') {
+    reasonCodes.push(`budget_class:${budgetClass}`);
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
   return {
     rawName,
     eventType,
@@ -290,6 +391,13 @@ export function interpretUploadedRecord(
     evidenceLevel,
     sourceTier,
     mappingConfidence,
+    // ── B11 fields ──────────────────────────────────────────────────────────
+    initiativeDomain,
+    budgetClass,
+    needsEnrichment,
+    financialConfidence,
+    enrichmentMissingFields: missingFields,
+    // ────────────────────────────────────────────────────────────────────────
     reasonCodes:            [...new Set(reasonCodes)],
     warnings,
     approvedForScoring:     false,

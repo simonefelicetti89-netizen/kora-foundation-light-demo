@@ -44,7 +44,42 @@ interface UefCandidate {
   participants:      number | null;
   evidenceLevel:     string | null;
   createdAt:         string;
+  // B11: enrichment classification
+  initiativeDomain:        string | null;
+  budgetClass:             string | null;
+  needsEnrichment:         boolean;
+  financialConfidence:     number | null;
+  enrichmentMissingFields: string[];
+  enrichedBy:              string | null;
+  enrichedAt:              string | null;
+  b11Enriched:             boolean;
 }
+
+// B11 enrichment form state
+interface EnrichmentForm {
+  initiativeDomain: string;
+  eventType:        string;
+  eligibilityClass: string;
+  pillar:           string;
+  budgetClass:      string;
+  budgetAmount:     string;
+  budgetSource:     string;
+  evidenceLevel:    string;
+  notes:            string;
+}
+const EMPTY_ENRICHMENT: EnrichmentForm = {
+  initiativeDomain: '', eventType: '', eligibilityClass: '',
+  pillar: '', budgetClass: '', budgetAmount: '',
+  budgetSource: '', evidenceLevel: '', notes: '',
+};
+
+const DOMAIN_OPTIONS   = ['welfare','fringe_benefit','economic_relief','hr_learning','esg_volunteering','compliance_hse','previdenza_future','wellbeing_mental_health'];
+const BUDGET_CLS_OPTS  = ['deep_activation','economic_relief','compliance_blocked'];
+const PILLAR_OPTIONS   = ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'];
+const EVID_OPTS        = ['L0','L1','L2','L3','L4'];
+const ELIG_OPTS        = ['eligible','limited','blocked'];
+const EVENT_TYPE_OPTS  = ['mental_health_support','professional_training','mentoring_program','volunteering','economic_relief','compliance_baseline','health_wellness_program','knowledge_transfer','pension_future_support','caregiver_support','childcare_support'];
+
 
 interface ReviewSummary {
   total: number; approved: number; rejected: number;
@@ -122,6 +157,62 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
   const [scoringResult, setScoringResult] = useState<ScoringResult | null>(null);
 
   const [actionState, setActionState] = useState<Record<string, 'loading'|'done'|'error'>>({});
+
+  // B11: enrichment panel state
+  const [enrichOpen, setEnrichOpen]       = useState<string | null>(null);  // uefRecordId
+  const [enrichForm, setEnrichForm]       = useState<EnrichmentForm>(EMPTY_ENRICHMENT);
+  const [enrichStatus, setEnrichStatus]   = useState<Record<string, 'idle'|'loading'|'done'|'error'>>({});
+  const [enrichMsg, setEnrichMsg]         = useState<Record<string, string>>({});
+
+  function openEnrich(c: UefCandidate) {
+    setEnrichOpen(c.id);
+    setEnrichForm({
+      initiativeDomain: c.initiativeDomain ?? '',
+      eventType:        c.eventType        ?? '',
+      eligibilityClass: c.eligibility      ?? '',
+      pillar:           c.pillar           ?? '',
+      budgetClass:      c.budgetClass      ?? '',
+      budgetAmount:     c.budgetAmount     != null ? String(c.budgetAmount) : '',
+      budgetSource:     '',
+      evidenceLevel:    c.evidenceLevel    ?? '',
+      notes:            '',
+    });
+  }
+
+  async function handleEnrich(uefRecordId: string) {
+    setEnrichStatus(s => ({ ...s, [uefRecordId]: 'loading' }));
+    setEnrichMsg(s => ({ ...s, [uefRecordId]: '' }));
+    const body: Record<string, unknown> = { uefRecordId };
+    if (enrichForm.initiativeDomain) body['initiativeDomain'] = enrichForm.initiativeDomain;
+    if (enrichForm.eventType)        body['eventType']        = enrichForm.eventType;
+    if (enrichForm.eligibilityClass) body['eligibilityClass'] = enrichForm.eligibilityClass;
+    if (enrichForm.pillar)           body['pillar']           = enrichForm.pillar;
+    if (enrichForm.budgetClass)      body['budgetClass']      = enrichForm.budgetClass;
+    if (enrichForm.budgetAmount)     body['budgetAmount']     = parseFloat(enrichForm.budgetAmount);
+    if (enrichForm.budgetSource)     body['budgetSource']     = enrichForm.budgetSource;
+    if (enrichForm.evidenceLevel)    body['evidenceLevel']    = enrichForm.evidenceLevel;
+    if (enrichForm.notes)            body['notes']            = enrichForm.notes;
+    try {
+      const res  = await fetch('/api/admin/uef/enrich', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json() as { ok?: boolean; needsEnrichment?: boolean; financialConfidence?: number; error?: string };
+      if (!res.ok || !data.ok) {
+        setEnrichStatus(s => ({ ...s, [uefRecordId]: 'error' }));
+        setEnrichMsg(s => ({ ...s, [uefRecordId]: data.error ?? `HTTP ${res.status}` }));
+      } else {
+        setEnrichStatus(s => ({ ...s, [uefRecordId]: 'done' }));
+        const still = data.needsEnrichment ? ' · ancora incompleto' : ' · completato';
+        setEnrichMsg(s => ({ ...s, [uefRecordId]: `✓ Enrichment saved. Confidence: ${data.financialConfidence != null ? Math.round(data.financialConfidence * 100) + '%' : '—'}${still}` }));
+        if (selectedBatchId) loadCandidates(selectedBatchId);
+      }
+    } catch (e) {
+      setEnrichStatus(s => ({ ...s, [uefRecordId]: 'error' }));
+      setEnrichMsg(s => ({ ...s, [uefRecordId]: e instanceof Error ? e.message : String(e) }));
+    }
+  }
 
   // ── Load batches ──────────────────────────────────────────────────────────────
   // Used by refresh button (event handler context — no ESLint effect rule applies).
@@ -391,11 +482,126 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
               {/* Details grid */}
               <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[10px] text-slate-500">
-                {c.budgetAmount   != null && <span>Budget: <strong>€{c.budgetAmount.toLocaleString('it-IT')}</strong></span>}
-                {c.participants   != null && <span>Participants: <strong>{c.participants}</strong></span>}
-                {c.evidenceLevel  != null && <span>Evidence: <strong>{c.evidenceLevel}</strong></span>}
-                {c.actionFamily   != null && <span>Category: <strong>{c.actionFamily}</strong></span>}
+                {c.budgetAmount      != null && <span>Budget: <strong>€{c.budgetAmount.toLocaleString('it-IT')}</strong></span>}
+                {c.participants      != null && <span>Participants: <strong>{c.participants}</strong></span>}
+                {c.evidenceLevel     != null && <span>Evidence: <strong>{c.evidenceLevel}</strong></span>}
+                {c.actionFamily      != null && <span>Category: <strong>{c.actionFamily}</strong></span>}
+                {c.initiativeDomain  != null && <span>Domain: <strong>{c.initiativeDomain}</strong></span>}
+                {c.budgetClass       != null && <span>Budget class: <strong>{c.budgetClass}</strong></span>}
+                {c.financialConfidence != null && <span>Fin. confidence: <strong>{Math.round(c.financialConfidence * 100)}%</strong></span>}
               </div>
+
+              {/* B11: needs_enrichment pill */}
+              {c.needsEnrichment && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="rounded border border-orange-300 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700">
+                    ⚡ Enrichment needed: {c.enrichmentMissingFields.join(', ')}
+                  </span>
+                  {c.b11Enriched && <span className="text-[9px] text-slate-400">Partially enriched by {c.enrichedBy ?? '—'}</span>}
+                  <button
+                    onClick={() => enrichOpen === c.id ? setEnrichOpen(null) : openEnrich(c)}
+                    className="text-[10px] font-medium text-[#6156F5] underline hover:no-underline transition-all">
+                    {enrichOpen === c.id ? '▲ Chiudi' : '▼ Arricchisci manualmente'}
+                  </button>
+                </div>
+              )}
+              {!c.needsEnrichment && c.b11Enriched && (
+                <p className="text-[9px] text-green-700">✓ Enriched — all classification fields present</p>
+              )}
+
+              {/* B11: enrichment panel */}
+              {enrichOpen === c.id && (
+                <div className="rounded-lg border border-orange-200 bg-orange-50/30 px-4 py-3 space-y-3">
+                  <p className="text-[10px] font-bold text-orange-700 uppercase tracking-wide">Enrichment manuale</p>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]">
+                    <label className="space-y-0.5">
+                      <span className="text-slate-500 font-medium">Initiative Domain</span>
+                      <select value={enrichForm.initiativeDomain} onChange={e => setEnrichForm(f => ({ ...f, initiativeDomain: e.target.value }))}
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        <option value="">— non cambiare —</option>
+                        {DOMAIN_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </label>
+                    <label className="space-y-0.5">
+                      <span className="text-slate-500 font-medium">Event Type</span>
+                      <select value={enrichForm.eventType} onChange={e => setEnrichForm(f => ({ ...f, eventType: e.target.value }))}
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        <option value="">— non cambiare —</option>
+                        {EVENT_TYPE_OPTS.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </label>
+                    <label className="space-y-0.5">
+                      <span className="text-slate-500 font-medium">Eligibility</span>
+                      <select value={enrichForm.eligibilityClass} onChange={e => setEnrichForm(f => ({ ...f, eligibilityClass: e.target.value }))}
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        <option value="">— non cambiare —</option>
+                        {ELIG_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    </label>
+                    <label className="space-y-0.5">
+                      <span className="text-slate-500 font-medium">Pillar</span>
+                      <select value={enrichForm.pillar} onChange={e => setEnrichForm(f => ({ ...f, pillar: e.target.value }))}
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        <option value="">— non cambiare —</option>
+                        {PILLAR_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </label>
+                    <label className="space-y-0.5">
+                      <span className="text-slate-500 font-medium">Budget Class</span>
+                      <select value={enrichForm.budgetClass} onChange={e => setEnrichForm(f => ({ ...f, budgetClass: e.target.value }))}
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        <option value="">— non cambiare —</option>
+                        {BUDGET_CLS_OPTS.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </label>
+                    <label className="space-y-0.5">
+                      <span className="text-slate-500 font-medium">Evidence Level</span>
+                      <select value={enrichForm.evidenceLevel} onChange={e => setEnrichForm(f => ({ ...f, evidenceLevel: e.target.value }))}
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        <option value="">— non cambiare —</option>
+                        {EVID_OPTS.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </label>
+                    <label className="space-y-0.5">
+                      <span className="text-slate-500 font-medium">Budget Amount (€)</span>
+                      <input type="number" min={0} value={enrichForm.budgetAmount}
+                        onChange={e => setEnrichForm(f => ({ ...f, budgetAmount: e.target.value }))}
+                        placeholder="es. 12500"
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                    </label>
+                    <label className="space-y-0.5">
+                      <span className="text-slate-500 font-medium">Budget Source</span>
+                      <input type="text" value={enrichForm.budgetSource}
+                        onChange={e => setEnrichForm(f => ({ ...f, budgetSource: e.target.value }))}
+                        placeholder="es. export fornitore welfare"
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                    </label>
+                  </div>
+                  <label className="block space-y-0.5 text-[10px]">
+                    <span className="text-slate-500 font-medium">Note enrichment (max 500 car.)</span>
+                    <textarea rows={2} value={enrichForm.notes} maxLength={500}
+                      onChange={e => setEnrichForm(f => ({ ...f, notes: e.target.value }))}
+                      className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 resize-none focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                  </label>
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      onClick={() => handleEnrich(c.id)}
+                      disabled={enrichStatus[c.id] === 'loading'}
+                      className="rounded border border-[#6156F5] bg-[#6156F5] text-white px-4 py-1.5 text-[11px] font-semibold hover:bg-[#4d43d4] disabled:opacity-50 transition-colors">
+                      {enrichStatus[c.id] === 'loading' ? '⏳ Saving…' : '✓ Salva enrichment'}
+                    </button>
+                    <button onClick={() => setEnrichOpen(null)}
+                      className="text-[10px] text-slate-400 underline hover:text-slate-600 transition-colors">
+                      Annulla
+                    </button>
+                  </div>
+                  {enrichMsg[c.id] && (
+                    <p className={`text-[10px] ${enrichStatus[c.id] === 'done' ? 'text-green-700' : 'text-red-600'}`}>
+                      {enrichMsg[c.id]}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Reason codes */}
               {c.reasonCodes.length > 0 && (

@@ -138,18 +138,30 @@ export async function POST(request: NextRequest) {
       reviewed_at:                 null,
       payload: {
         // Extended fields stored in payload — no schema migration needed
-        uploaded_record_id:  row.id,
-        event_type:          proposal.eventType,
-        reason_codes:        proposal.reasonCodes,
-        budget_amount:       proposal.budgetAmount,
-        participants:        proposal.participants,
-        evidence_level:      proposal.evidenceLevel,
-        source_tier:         proposal.sourceTier,
-        interpreter_version: proposal.interpreterVersion,
-        generated_by:        proposal.generatedBy,
-        methodology_version: 'KORA Methodology v0.1',
-        b5_candidate:        true,
-        scoring_locked:      true,  // locked until B6
+        uploaded_record_id:         row.id,
+        event_type:                 proposal.eventType,
+        reason_codes:               proposal.reasonCodes,
+        budget_amount:              proposal.budgetAmount,
+        participants:               proposal.participants,
+        evidence_level:             proposal.evidenceLevel,
+        source_tier:                proposal.sourceTier,
+        // ── B11: enrichment classification ──────────────────────────────
+        initiative_domain:          proposal.initiativeDomain,
+        budget_class:               proposal.budgetClass,
+        needs_enrichment:           proposal.needsEnrichment,
+        financial_confidence:       proposal.financialConfidence,
+        enrichment_missing_fields:  proposal.enrichmentMissingFields,
+        mapping_confidence:         proposal.mappingConfidence,
+        enriched_by:                null,
+        enriched_at:                null,
+        enrichment_notes:           null,
+        b11_enriched:               false,
+        // ──────────────────────────────────────────────────────────────────
+        interpreter_version:        proposal.interpreterVersion,
+        generated_by:               proposal.generatedBy,
+        methodology_version:        'KORA Methodology v0.1',
+        b5_candidate:               true,
+        scoring_locked:             true,  // locked until B6
       },
     };
   });

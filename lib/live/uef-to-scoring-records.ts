@@ -79,6 +79,13 @@ export function buildScoringRecordsFromApprovedUef(
       department_group: pl['department_group'] ?? null,
       site:             pl['site']             ?? null,
 
+      // ── B11: enrichment classification passthrough ───────────────────────────
+      budget_source:       pl['budget_source']       ?? null,
+      initiative_domain:   pl['initiative_domain']   ?? null,
+      budget_class:        pl['budget_class']        ?? null,
+      needs_enrichment:    pl['needs_enrichment']    ?? false,
+      financial_confidence: pl['financial_confidence'] ?? null,
+
       // ── B6 traceability metadata (non-PII) ──────────────────────────────────
       b6_source:          'approved_uef_record',
       b6_uef_record_id:   row.id,
@@ -87,6 +94,7 @@ export function buildScoringRecordsFromApprovedUef(
       b6_reason_codes:    pl['reason_codes']   ?? [],
       b6_interpreter:     pl['interpreter_version'] ?? '0.1',
       b6_approved_for_scoring: true,
+      b11_enriched:       pl['b11_enriched']   ?? false,
     };
 
     return {
