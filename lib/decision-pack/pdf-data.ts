@@ -31,6 +31,20 @@ export interface PdfData {
     createdAt: string;
     componentCount: number;
   };
+  pillarDistribution: {
+    LIFE:       number;
+    GROWTH:     number;
+    CONNECTION: number;
+    IMPACT:     number;
+    LEGACY:     number;
+  } | null;
+  bti: {
+    totalPeopleWelfareBudget: number;
+    economicReliefSpend:      number;
+    activationDebtEur:        number;
+    btiScore:                 number;
+    costPerImpactUnit:        number | null;
+  } | null;
   auditSummary: Array<{
     action: string;
     resourceType: string | null;
@@ -53,7 +67,7 @@ export async function fetchPdfData(
   if (!tenant) return null;
 
   const { data: ki } = await db.schema('analytics').from('kora_index_result')
-    .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*)')
+    .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*), bti_result:bti_result_id(*)')
     .eq('tenant_id', (tenant as { id: string }).id)
     .eq('reporting_period', reportingPeriod)
     .eq('is_current', true)
@@ -78,12 +92,45 @@ export async function fetchPdfData(
   const actRow = (ki as any).activation_result as {
     activation_rate?: number;
     meaningful_activation_rate?: number;
+    pillar_distribution?: Record<string, number> | null;
   } | null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const confRow = (ki as any).confidence_result as {
     confidence_score?: number;
   } | null;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const btiRow = (ki as any).bti_result as {
+    total_people_welfare_budget?: number;
+    economic_relief_spend?: number;
+    activation_debt_eur?: number;
+    bti_score?: number;
+    cost_per_impact_unit?: number | null;
+  } | null;
+
+  // Pillar distribution — from activation_result.pillar_distribution (Record<PillarCode, number>)
+  const rawPillar = actRow?.pillar_distribution;
+  const pillarDistribution: PdfData['pillarDistribution'] = rawPillar
+    ? {
+        LIFE:       Number((rawPillar as Record<string, unknown>)['LIFE']       ?? 0),
+        GROWTH:     Number((rawPillar as Record<string, unknown>)['GROWTH']     ?? 0),
+        CONNECTION: Number((rawPillar as Record<string, unknown>)['CONNECTION'] ?? 0),
+        IMPACT:     Number((rawPillar as Record<string, unknown>)['IMPACT']     ?? 0),
+        LEGACY:     Number((rawPillar as Record<string, unknown>)['LEGACY']     ?? 0),
+      }
+    : null;
+
+  // BTI — from analytics.bti_result (joined via bti_result_id FK)
+  const bti: PdfData['bti'] = btiRow
+    ? {
+        totalPeopleWelfareBudget: btiRow.total_people_welfare_budget ?? 0,
+        economicReliefSpend:      btiRow.economic_relief_spend ?? 0,
+        activationDebtEur:        btiRow.activation_debt_eur ?? 0,
+        btiScore:                 btiRow.bti_score ?? 0,
+        costPerImpactUnit:        btiRow.cost_per_impact_unit ?? null,
+      }
+    : null;
 
   // Normalize confidence: DB may store 0–1 or 0–100 depending on pipeline version.
   const rawConf = confRow?.confidence_score ?? 0;
@@ -102,6 +149,8 @@ export async function fetchPdfData(
       syntheticData: true,
       notCertification: true,
     },
+    pillarDistribution,
+    bti,
     koraIndex: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       value: (ki as any).kora_index_value ?? 0,

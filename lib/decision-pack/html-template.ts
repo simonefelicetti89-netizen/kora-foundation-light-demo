@@ -61,7 +61,7 @@ function escHtml(s: string) {
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, auditSummary } = data;
+  const { meta, koraIndex, pillarDistribution, bti, auditSummary } = data;
 
   const generatedAt   = fmtDateTime(meta.generatedAt);
   const sf            = koraIndex.safeguardStatus;
@@ -289,7 +289,71 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .ri-n { font-size:8.5pt; font-weight:700; color:#6156F5; letter-spacing:.06em; flex-shrink:0; width:16pt; margin-top:1pt; }
     .ri-title { font-size:9pt; font-weight:700; color:#06032B; letter-spacing:-.01em; margin-bottom:2pt; }
     .ri-text { font-size:7.5pt; color:#555670; line-height:1.5; }
+
+    /* ── PILLAR BALANCE ── */
+    .pb-list { display:flex; flex-direction:column; gap:13pt; margin-bottom:18pt; }
+    .pb-row { display:flex; flex-direction:column; gap:4pt; }
+    .pb-header { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:3pt; }
+    .pb-name { font-size:9pt; font-weight:700; color:#06032B; letter-spacing:.01em; }
+    .pb-pct  { font-size:10pt; font-weight:700; color:#6156F5; letter-spacing:-.01em; }
+    .pb-track { height:8pt; background:#eaebf4; border-radius:4pt; overflow:hidden; }
+    .pb-fill  { height:8pt; border-radius:4pt; }
+    .pb-count { font-size:6.5pt; color:#9899b3; margin-top:2pt; }
+    .pb-stub  { padding:18pt; text-align:center; color:#9899b3; font-size:8.5pt; border:1px dashed #eaebf4; border-radius:4pt; }
+
+    /* ── FINANCIAL GOVERNANCE ── */
+    .fg-grid { display:grid; grid-template-columns:1fr 1fr; gap:10pt; margin-bottom:18pt; }
+    .fg-cell { padding:13pt 15pt; border:1px solid #eaebf4; border-radius:4pt; background:#fafafa; }
+    .fg-cell-hi { border-color:#c7c4f8; background:#f5f4ff; }
+    .fg-lbl { font-size:6.5pt; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:#9899b3; margin-bottom:5pt; }
+    .fg-val { font-size:20pt; font-weight:700; color:#06032B; letter-spacing:-.025em; line-height:1; }
+    .fg-sub { font-size:7.5pt; color:#9899b3; margin-top:3pt; }
+    .fg-bar-section { margin-bottom:18pt; }
+    .fg-bar-lbl { font-size:7pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#9899b3; margin-bottom:8pt; }
+    .fg-stacked { display:flex; height:14pt; border-radius:4pt; overflow:hidden; }
+    .fg-seg-a { background:#06032B; height:14pt; display:flex; align-items:center; justify-content:center; }
+    .fg-seg-b { background:#eaebf4; height:14pt; display:flex; align-items:center; justify-content:center; }
+    .fg-seg-txt { font-size:6.5pt; font-weight:700; color:#fff; padding:0 5pt; white-space:nowrap; overflow:hidden; }
+    .fg-seg-txt-b { font-size:6.5pt; font-weight:700; color:#9899b3; padding:0 5pt; white-space:nowrap; overflow:hidden; }
+    .fg-legend { display:flex; gap:12pt; margin-top:6pt; }
+    .fg-leg-item { display:flex; align-items:center; gap:4pt; font-size:7pt; color:#555670; }
+    .fg-leg-dot { width:7pt; height:7pt; border-radius:50%; flex-shrink:0; }
+    .fg-stub { padding:18pt; text-align:center; color:#9899b3; font-size:8.5pt; border:1px dashed #eaebf4; border-radius:4pt; }
+    .fg-note { padding:10pt 14pt; background:#f5f4ff; border:1px solid #c7c4f8; border-radius:4pt; font-size:7.5pt; color:#3d3a6a; line-height:1.52; }
   `;
+
+  // ── Pillar Balance helpers ─────────────────────────────────────────────────
+  const PILLAR_ORDER = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
+  const PILLAR_FULL: Record<string, string> = {
+    LIFE:       'LIFE — Salute & Benessere',
+    GROWTH:     'GROWTH — Crescita & Formazione',
+    CONNECTION: 'CONNECTION — Mentoring & Comunità',
+    IMPACT:     'IMPACT — Impatto Territoriale',
+    LEGACY:     'LEGACY — Trasferimento Conoscenza',
+  };
+  const PILLAR_COLOR: Record<string, string> = {
+    LIFE:       '#5185EE',
+    GROWTH:     '#7B61F5',
+    CONNECTION: '#9574EA',
+    IMPACT:     '#3F3A8F',
+    LEGACY:     '#06032B',
+  };
+  const pillarTotal = pillarDistribution
+    ? PILLAR_ORDER.reduce((s, k) => s + (pillarDistribution[k] ?? 0), 0)
+    : 0;
+  const pillarPct = (k: typeof PILLAR_ORDER[number]) =>
+    pillarTotal > 0 ? Math.round(((pillarDistribution?.[k] ?? 0) / pillarTotal) * 100) : 0;
+
+  // ── BTI helpers ────────────────────────────────────────────────────────────
+  function fmtEur(n: number): string {
+    return `€${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+  }
+  const deepActivationPct = bti && bti.totalPeopleWelfareBudget > 0
+    ? Math.round(((bti.totalPeopleWelfareBudget - bti.economicReliefSpend) / bti.totalPeopleWelfareBudget) * 100)
+    : null;
+  const economicReliefPct = bti && bti.totalPeopleWelfareBudget > 0
+    ? Math.round((bti.economicReliefSpend / bti.totalPeopleWelfareBudget) * 100)
+    : null;
 
   const activationInterpText = sf === 'CLEAR'
     ? `L'organizzazione soddisfa i criteri dell'Activation Safeguard (AR ≥ 40%, MAR ≥ 30%). Il KORA Index è qualificato per la generazione di output interpretativi nella fase pilot.`
@@ -544,7 +608,137 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
 
 <!-- ═══════════════════════════════════════════
-     PAGE 5 — METHODOLOGICAL & PRIVACY BOUNDARY
+     PAGE 5 — PILLAR BALANCE
+     ═══════════════════════════════════════════ -->
+<div class="page cp">
+  <div class="ph">
+    <div class="ph-left"><div class="ph-bar"></div><span class="ph-label">Pillar Balance</span></div>
+    <div class="ph-right">
+      <span class="ph-tenant">${escHtml(meta.tenantCode)} &nbsp;·&nbsp; ${escHtml(meta.reportingPeriod)}</span>
+      <img src="${logoDark}" class="ph-logo" alt="KORA">
+    </div>
+  </div>
+  <div class="pc">
+    <p style="font-size:8.5pt;color:#555670;line-height:1.6;margin-bottom:16pt;max-width:440pt;">
+      Distribuzione dell&apos;attivazione sui 5 pillar KORA per il periodo ${escHtml(meta.reportingPeriod)}.
+      Valori aggregati aziendali — nessun dato individuale. Evento classificato per pillar in base alla tassonomia BCM.
+    </p>
+    ${pillarDistribution ? `
+    <div class="pb-list">
+      ${PILLAR_ORDER
+        .slice()
+        .sort((a, b) => (pillarDistribution[b] ?? 0) - (pillarDistribution[a] ?? 0))
+        .map(k => {
+          const val = pillarDistribution[k] ?? 0;
+          const pc  = pillarPct(k);
+          return `
+      <div class="pb-row">
+        <div class="pb-header">
+          <span class="pb-name">${escHtml(PILLAR_FULL[k] ?? k)}</span>
+          <span class="pb-pct">${pc}%</span>
+        </div>
+        <div class="pb-track">
+          <div class="pb-fill" style="width:${pc}%;background:${PILLAR_COLOR[k]};"></div>
+        </div>
+        <div class="pb-count">${val} eventi classificati</div>
+      </div>`;
+        }).join('')}
+    </div>
+    <div style="font-size:7.5pt;color:#9899b3;margin-bottom:14pt;">
+      Totale eventi classificati: <strong style="color:#06032B;">${pillarTotal}</strong>
+      &nbsp;·&nbsp; Periodo: ${escHtml(meta.reportingPeriod)}
+      &nbsp;·&nbsp; Dati sintetici OP-001
+    </div>
+    ` : `<div class="pb-stub">Dati pillar non disponibili — eseguire scoring run per generare la distribuzione.</div>`}
+    <div style="padding:9pt 13pt;background:#f8f8fc;border:1px solid #eaebf4;border-radius:4pt;">
+      <div style="font-size:6.5pt;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#9899b3;margin-bottom:4pt;">Nota metodologica</div>
+      <p style="font-size:7.5pt;color:#555670;line-height:1.5;">
+        La distribuzione per pillar indica la concentrazione relativa degli eventi nel periodo.
+        Un pillar con alta presenza non implica necessariamente alta qualità dell&apos;attivazione —
+        la qualità è misurata dai componenti AR, MAR, VR, CO. Un Pillar Balance equilibrato (PB elevato)
+        indica copertura multi-dimensionale dell&apos;attivazione organizzativa.
+      </p>
+    </div>
+  </div>
+  <div class="pf">
+    <span class="pf-text">KORA Foundation Light &nbsp;·&nbsp; Synthetic Data Only &nbsp;·&nbsp; Not a Certification</span>
+    <span class="pf-badge">pre_empirical_calibration</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE 6 — FINANCIAL GOVERNANCE
+     ═══════════════════════════════════════════ -->
+<div class="page cp">
+  <div class="ph">
+    <div class="ph-left"><div class="ph-bar"></div><span class="ph-label">Financial Governance</span></div>
+    <div class="ph-right">
+      <span class="ph-tenant">${escHtml(meta.tenantCode)} &nbsp;·&nbsp; ${escHtml(meta.reportingPeriod)}</span>
+      <img src="${logoDark}" class="ph-logo" alt="KORA">
+    </div>
+  </div>
+  <div class="pc">
+    <p style="font-size:8.5pt;color:#555670;line-height:1.6;margin-bottom:16pt;max-width:440pt;">
+      Lettura informativa del rapporto tra budget people/welfare e attivazione verificata.
+      KORA non dimostra causalità, non garantisce ROI. Correlazione ≠ causalità. Dati sintetici OP-001.
+    </p>
+    ${bti ? `
+    <div class="fg-grid">
+      <div class="fg-cell fg-cell-hi">
+        <div class="fg-lbl">Budget People / Welfare</div>
+        <div class="fg-val">${escHtml(fmtEur(bti.totalPeopleWelfareBudget))}</div>
+        <div class="fg-sub">welfare, formazione, iniziative people</div>
+      </div>
+      <div class="fg-cell">
+        <div class="fg-lbl">BTI Score</div>
+        <div class="fg-val" style="color:#6156F5;">${fmtNum(bti.btiScore)}</div>
+        <div class="fg-sub">Budget-to-Human-Impact</div>
+      </div>
+      <div class="fg-cell">
+        <div class="fg-lbl">Activation Debt</div>
+        <div class="fg-val" style="color:#d97706;">${escHtml(fmtEur(bti.activationDebtEur))}</div>
+        <div class="fg-sub">stima budget non convertito in IU</div>
+      </div>
+      <div class="fg-cell">
+        <div class="fg-lbl">Costo per Impact Unit</div>
+        <div class="fg-val">${bti.costPerImpactUnit != null ? escHtml(fmtEur(bti.costPerImpactUnit)) : '—'}</div>
+        <div class="fg-sub">per IU verificata · solo budget-mediated</div>
+      </div>
+    </div>
+    ${deepActivationPct !== null ? `
+    <div class="fg-bar-section">
+      <div class="fg-bar-lbl">Composizione spesa — Deep Activation vs Economic Relief</div>
+      <div class="fg-stacked">
+        <div class="fg-seg-a" style="width:${deepActivationPct}%;">
+          ${deepActivationPct > 12 ? `<span class="fg-seg-txt">${deepActivationPct}% Deep</span>` : ''}
+        </div>
+        <div class="fg-seg-b" style="width:${economicReliefPct ?? 0}%;">
+          ${(economicReliefPct ?? 0) > 12 ? `<span class="fg-seg-txt-b">${economicReliefPct}% Relief</span>` : ''}
+        </div>
+      </div>
+      <div class="fg-legend">
+        <div class="fg-leg-item"><div class="fg-leg-dot" style="background:#06032B;"></div>Attivazione profonda (${deepActivationPct}%)</div>
+        <div class="fg-leg-item"><div class="fg-leg-dot" style="background:#eaebf4;border:1px solid #c7c8dc;"></div>Economic relief (${economicReliefPct}%)</div>
+      </div>
+    </div>` : ''}
+    ` : `<div class="fg-stub">Dati BTI non disponibili — eseguire scoring run per generare la governance finanziaria.</div>`}
+    <div class="fg-note">
+      <strong>Nota metodologica:</strong> L&apos;Activation Debt è una stima direzionale del budget non convertito in Impact Units.
+      Il BTI Score è un indicatore informativo — non dimostra causalità né garantisce ROI. Economic relief (buoni pasto, fringe benefits)
+      non genera Impact Units ma è legittima spesa welfare. Budget allocated ≠ Budget activated.
+      <br><span style="color:#7778a0;font-size:7pt;">Dati sintetici generati per uso dimostrativo. Non basato su dati reali.</span>
+    </div>
+  </div>
+  <div class="pf">
+    <span class="pf-text">KORA Foundation Light &nbsp;·&nbsp; Synthetic Data Only &nbsp;·&nbsp; Not a Certification</span>
+    <span class="pf-badge">pre_empirical_calibration</span>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE 7 — METHODOLOGICAL & PRIVACY BOUNDARY
      ═══════════════════════════════════════════ -->
 <div class="page cp">
   <div class="ph">
@@ -618,7 +812,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
 
 <!-- ═══════════════════════════════════════════
-     PAGE 6 — RECOMMENDATIONS & NEXT ACTIONS
+     PAGE 8 — RECOMMENDATIONS & NEXT ACTIONS
      ═══════════════════════════════════════════ -->
 <div class="page cp" style="page-break-after:avoid;break-after:avoid;">
   <div class="ph">
