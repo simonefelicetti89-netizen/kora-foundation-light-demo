@@ -28,7 +28,7 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
       className="relative flex flex-col p-6"
       style={{
         background:   TOKENS.surface,
-        border:       TOKENS.cardBorder,
+        border:       TOKENS.cardBorderStrong,
         borderRadius: TOKENS.cardRadius,
       }}
     >

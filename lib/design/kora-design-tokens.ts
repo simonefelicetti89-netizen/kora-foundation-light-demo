@@ -43,8 +43,9 @@ export const TOKENS = {
   sidebar: '#16142B',
 
   // Card
-  cardRadius:  '14px',
-  cardBorder:  '1px solid rgba(20,18,46,0.08)',
+  cardRadius:       '14px',
+  cardBorder:       '1px solid rgba(20,18,46,0.08)',
+  cardBorderStrong: '1px solid rgba(20,18,46,0.14)',
 
   // Safeguard states — canonical tokens
   safeguard: {

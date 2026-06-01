@@ -87,7 +87,7 @@ function MetricGrid({ metrics }: { metrics: DecisionPackMetric[] }) {
           <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 6 }}>
             {m.label}
           </p>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.25rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.625rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
             {m.value}{m.unit && <span style={{ fontSize: '11px', fontWeight: 400, color: TOKENS.inkHint, marginLeft: 3 }}>{m.unit}</span>}
           </p>
           {m.delta !== undefined && (
@@ -227,7 +227,7 @@ function DeltaCard({ delta }: { delta: DecisionPackMetricDelta }) {
       <div className="flex items-center gap-1.5">
         <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.125rem', color: tt.iconColor }}>{tt.icon}</span>
         {delta.current_value !== null && delta.current_value !== undefined && (
-          <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '0.9375rem', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.125rem', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>
             {delta.metric_id === 'confidence_score' ? `${delta.current_value}%` : delta.current_value}
           </span>
         )}

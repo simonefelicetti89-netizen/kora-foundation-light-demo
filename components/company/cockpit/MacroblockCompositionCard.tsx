@@ -78,12 +78,15 @@ export function MacroblockCompositionCard({ macroblocks }: MacroblockComposition
                   </span>
                   <span
                     style={{
-                      fontFamily: 'var(--font-inter)',
-                      fontWeight: 700,
-                      fontSize:   '14px',
-                      color:      TOKENS.ink,
-                      minWidth:   '28px',
-                      textAlign:  'right',
+                      fontFamily:        'var(--font-inter)',
+                      fontWeight:        700,
+                      fontSize:          '22px',
+                      color:             TOKENS.ink,
+                      minWidth:          '36px',
+                      textAlign:         'right',
+                      lineHeight:        1,
+                      letterSpacing:     '-0.02em',
+                      fontVariantNumeric:'tabular-nums',
                     }}
                   >
                     {mb.score}

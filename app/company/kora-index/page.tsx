@@ -196,6 +196,8 @@ export default function KoraIndexDetail() {
         subline="Scomposizione analitica dell'indice"
       />
 
+      {/* ── GRUPPO PRIMARIO — Indice, macroblocchi, componenti ────────────────── */}
+
       {/* 2. Hero: IndexRing + ScenarioStrip side by side (demo only) — §9 items-stretch */}
       {isDemo && (s1Output ?? s2Output) ? (
         <div className="grid grid-cols-2 gap-4 items-stretch">
@@ -230,42 +232,88 @@ export default function KoraIndexDetail() {
         <ComponentBreakdown components={output.components} />
       </div>
 
-      {/* 5. Pipeline build card — full width */}
-      <SectionLabel>Pipeline di costruzione</SectionLabel>
-      <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
+      {/* ── GRUPPO SECONDARIO — Pipeline, eligibility, safeguard, BTI ──────────── */}
+      <div style={{ borderTop: '1px solid rgba(20,18,46,0.10)', marginTop: '2.5rem', paddingTop: '2.5rem' }}>
 
-      {/* 6. Eligibility gate — full width */}
-      <SectionLabel>Eligibility gate</SectionLabel>
-      <EligibilityGatePanel summary={eligibilityGate} />
+        {/* 5. Pipeline build card — full width */}
+        <SectionLabel>Pipeline di costruzione</SectionLabel>
+        <div className="mt-4">
+          <KoraIndexBuildCard output={output} safeguard={safeguard} aggregate={aggregate} />
+        </div>
 
-      {/* 7. Economic relief + Blocked — 2 col */}
-      <SectionLabel>Economic relief & compliance</SectionLabel>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <EconomicReliefPanel s1={s1EconRelief} s2={s2EconRelief} s1BtiScore={s1BtiScore} s2BtiScore={s2BtiScore} />
-        <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
+        {/* 6. Eligibility gate — full width */}
+        <div className="mt-6">
+          <SectionLabel>Eligibility gate</SectionLabel>
+          <div className="mt-4">
+            <EligibilityGatePanel summary={eligibilityGate} />
+          </div>
+        </div>
+
+        {/* 7. Economic relief + Blocked — 2 col */}
+        <div className="mt-6">
+          <SectionLabel>Economic relief & compliance</SectionLabel>
+          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+            <EconomicReliefPanel s1={s1EconRelief} s2={s2EconRelief} s1BtiScore={s1BtiScore} s2BtiScore={s2BtiScore} />
+            <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
+          </div>
+        </div>
+
+        {/* 8. BTI table — full width */}
+        <div className="mt-6">
+          <SectionLabel>Budget-to-Human-Impact</SectionLabel>
+          <div className="mt-4">
+            <BudgetToHumanImpactPanel s1={s1BtiRecord ?? undefined} s2={s2BtiRecord ?? undefined} />
+          </div>
+        </div>
+
+        {/* 10. Safeguard + Confidence — 2 col */}
+        <div className="mt-6">
+          <SectionLabel>Safeguard & confidence</SectionLabel>
+          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+            <ActivationSafeguardPanel result={safeguard} explanation={explanation?.safeguard_explanation} />
+            <ConfidenceBreakdown record={confidence} />
+          </div>
+        </div>
+
       </div>
 
-      {/* 8. BTI table — full width */}
-      <SectionLabel>Budget-to-Human-Impact</SectionLabel>
-      <BudgetToHumanImpactPanel s1={s1BtiRecord ?? undefined} s2={s2BtiRecord ?? undefined} />
+      {/* ── GRUPPO REFERENZA — Raccomandazioni, spiegabilità, glossario ─────────── */}
+      <div style={{ borderTop: '1px solid rgba(20,18,46,0.10)', marginTop: '2.5rem', paddingTop: '2.5rem' }}>
 
-      {/* 9. Recommendations — full width */}
-      <SectionLabel>Raccomandazioni</SectionLabel>
-      <RecommendationsPanel btiRecommendations={btiRecommendations} />
+        <p
+          style={{
+            fontFamily:    'var(--font-inter)',
+            fontWeight:    500,
+            fontSize:      '10px',
+            letterSpacing: '0.10em',
+            textTransform: 'uppercase',
+            color:         'rgba(20,18,46,0.30)',
+            marginBottom:  '1.25rem',
+          }}
+        >
+          Appendice metodologica
+        </p>
 
-      {/* 10. Safeguard + Confidence — 2 col */}
-      <SectionLabel>Safeguard & confidence</SectionLabel>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ActivationSafeguardPanel result={safeguard} explanation={explanation?.safeguard_explanation} />
-        <ConfidenceBreakdown record={confidence} />
+        {/* 9. Recommendations — full width */}
+        <SectionLabel>Raccomandazioni</SectionLabel>
+        <div className="mt-4">
+          <RecommendationsPanel btiRecommendations={btiRecommendations} />
+        </div>
+
+        {/* 11. Explainability — full width */}
+        <div className="mt-6">
+          <SectionLabel>Spiegabilità del punteggio</SectionLabel>
+          <div className="mt-4">
+            <ExplainabilityPanel record={explanation} />
+          </div>
+        </div>
+
+        {/* 12. Glossary — full width, collapsible */}
+        <div className="mt-6">
+          <MethodologyGlossary />
+        </div>
+
       </div>
-
-      {/* 11. Explainability — full width */}
-      <SectionLabel>Spiegabilità del punteggio</SectionLabel>
-      <ExplainabilityPanel record={explanation} />
-
-      {/* 12. Glossary — full width, collapsible */}
-      <MethodologyGlossary />
 
       {/* 13. Provenance footer */}
       <ProvenanceFooter

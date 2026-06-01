@@ -27,7 +27,7 @@ export function MetricTrio({ activationRate, meaningfulActivationRate, verificat
 
   return (
     <div className="grid grid-cols-3 gap-4">
-      {METRICS.map(({ key, label, code }) => (
+      {METRICS.map(({ key, label, code }, idx) => (
         <div
           key={code}
           className="p-5"
@@ -35,6 +35,7 @@ export function MetricTrio({ activationRate, meaningfulActivationRate, verificat
             background:   TOKENS.surface,
             border:       TOKENS.cardBorder,
             borderRadius: TOKENS.cardRadius,
+            borderLeft:   idx === 0 ? `3px solid ${TOKENS.accent}` : undefined,
           }}
         >
           <p
@@ -45,12 +46,13 @@ export function MetricTrio({ activationRate, meaningfulActivationRate, verificat
           </p>
           <p
             style={{
-              fontFamily: 'var(--font-inter)',
-              fontWeight: 700,
-              fontSize:   '25px',
-              color:      TOKENS.ink,
-              lineHeight: 1,
-              letterSpacing: '-0.02em',
+              fontFamily:         'var(--font-inter)',
+              fontWeight:         700,
+              fontSize:           '32px',
+              color:              TOKENS.ink,
+              lineHeight:         1,
+              letterSpacing:      '-0.02em',
+              fontVariantNumeric: 'tabular-nums',
             }}
           >
             {values[key]}

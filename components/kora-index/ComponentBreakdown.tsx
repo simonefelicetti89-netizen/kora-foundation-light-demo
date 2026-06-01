@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { COMPONENT_LABELS, COMPONENT_MACROBLOCK, MACROBLOCK_LABELS } from '@/lib/constants/kora';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import type { KoraIndexComponent } from '@/lib/types';
 import { formatPercentage } from '@/lib/formatters';
 
@@ -23,17 +24,18 @@ const COMPONENT_SHORT_DEFS: Record<string, string> = {
   EQ:  'Equità distributiva dell\'attivazione tra segmenti aggregati (dipartimenti, siti, seniority — solo gruppi ≥ 10 lavoratori).',
 };
 
-const MACROBLOCK_ACCENT: Record<string, string> = {
-  REACH:   'text-violet-600 bg-violet-50 border-violet-200',
-  QUALITY: 'text-indigo-600 bg-indigo-50 border-indigo-200',
-  EQUITY:  'text-slate-600 bg-slate-50 border-slate-200',
-  BTI:     'text-purple-600 bg-purple-50 border-purple-200',
+// Macroblock → KORA token tints (ink-based, not rainbow)
+const MACROBLOCK_STYLE: Record<string, { bg: string; text: string; border: string }> = {
+  REACH:   { bg: `${TOKENS.accent}0D`, text: TOKENS.accent,        border: `${TOKENS.accent}33`       },
+  QUALITY: { bg: TOKENS.inkBorder,     text: TOKENS.inkSecondary,  border: 'rgba(20,18,46,0.14)'      },
+  EQUITY:  { bg: TOKENS.inkBorder,     text: TOKENS.inkSecondary,  border: 'rgba(20,18,46,0.14)'      },
+  BTI:     { bg: `${TOKENS.accent}0D`, text: TOKENS.accent,        border: `${TOKENS.accent}33`       },
 };
 
 const OPERATIONAL_CODES = ['AR', 'MAR', 'NI', 'VR', 'CO', 'WB', 'PC', 'PB', 'EQ'] as const;
 
 export function ComponentBreakdown({ components, className }: ComponentBreakdownProps) {
-  const csComp = components?.find((c) => c.code === 'CS');
+  const csComp  = components?.find((c) => c.code === 'CS');
   const csValue = csComp?.value ?? null;
 
   return (
@@ -41,43 +43,124 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
 
       {/* ── 9 operational components ── */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
+        <p
+          style={{
+            fontFamily:    'var(--font-inter)',
+            fontSize:      '10px',
+            fontWeight:    500,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color:         TOKENS.inkHint,
+            marginBottom:  '8px',
+          }}
+        >
           Componenti analitici (9) — ogni componente alimenta il proprio macroblocco, non il KORA Index direttamente
         </p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
           {OPERATIONAL_CODES.map((code) => {
-            const comp = components?.find((c) => c.code === code);
-            const value = comp?.value ?? null;
-            const weight = comp?.weight ?? null;
-            const macroblockCode = COMPONENT_MACROBLOCK[code];
+            const comp          = components?.find((c) => c.code === code);
+            const value         = comp?.value ?? null;
+            const weight        = comp?.weight ?? null;
+            const macroblockCode  = COMPONENT_MACROBLOCK[code];
             const macroblockLabel = MACROBLOCK_LABELS[macroblockCode] ?? macroblockCode;
-            const accentClass = MACROBLOCK_ACCENT[macroblockCode] ?? 'text-slate-500 bg-slate-50 border-slate-200';
+            const mbStyle       = MACROBLOCK_STYLE[macroblockCode] ?? MACROBLOCK_STYLE['QUALITY'];
 
             return (
-              <div key={code} className="rounded-md border border-slate-100 bg-white p-3 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <span className="inline-flex items-center rounded border border-slate-100 bg-slate-50 px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-slate-400">
+              <div
+                key={code}
+                style={{
+                  background:   TOKENS.surface,
+                  border:       TOKENS.cardBorder,
+                  borderRadius: '8px',
+                  padding:      '12px',
+                  display:      'flex',
+                  flexDirection:'column',
+                  gap:          '8px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span
+                      style={{
+                        display:       'inline-flex',
+                        alignItems:    'center',
+                        borderRadius:  '4px',
+                        border:        TOKENS.cardBorder,
+                        background:    TOKENS.inkBorder,
+                        padding:       '1px 6px',
+                        fontSize:      '8px',
+                        fontWeight:    600,
+                        letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        color:         TOKENS.inkHint,
+                      }}
+                    >
                       Componente analitico
                     </span>
-                    <p className="text-sm font-bold text-slate-800 mt-1">{code}</p>
-                    <p className="text-[10px] text-slate-400">{COMPONENT_LABELS[code]}</p>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginTop: '4px' }}>
+                      {code}
+                    </p>
+                    <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: '1px' }}>
+                      {COMPONENT_LABELS[code]}
+                    </p>
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xl font-bold text-slate-800">
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <p
+                      style={{
+                        fontFamily:         'var(--font-inter)',
+                        fontWeight:         700,
+                        fontSize:           '20px',
+                        color:              TOKENS.ink,
+                        lineHeight:         1,
+                        fontVariantNumeric: 'tabular-nums',
+                        letterSpacing:      '-0.02em',
+                      }}
+                    >
                       {value !== null ? formatPercentage(value) : '—'}
                     </p>
                     {weight !== null && (
-                      <p className="text-[9px] text-slate-300 font-mono">w: {formatPercentage(weight)}</p>
+                      <p
+                        style={{
+                          fontFamily:    'monospace',
+                          fontSize:      '9px',
+                          color:         TOKENS.inkHint,
+                          marginTop:     '2px',
+                        }}
+                      >
+                        w: {formatPercentage(weight)}
+                      </p>
                     )}
                   </div>
                 </div>
 
-                <div className="rounded bg-slate-50 px-2 py-1.5 space-y-1">
-                  <span className={cn('inline-flex items-center rounded border px-1.5 py-0.5 text-[9px] font-semibold', accentClass)}>
+                <div
+                  style={{
+                    borderRadius: '6px',
+                    background:   TOKENS.inkBorder,
+                    padding:      '6px 8px',
+                    display:      'flex',
+                    flexDirection:'column',
+                    gap:          '4px',
+                  }}
+                >
+                  <span
+                    style={{
+                      display:       'inline-flex',
+                      alignItems:    'center',
+                      borderRadius:  '4px',
+                      border:        `1px solid ${mbStyle.border}`,
+                      background:    mbStyle.bg,
+                      padding:       '1px 6px',
+                      fontSize:      '9px',
+                      fontWeight:    600,
+                      color:         mbStyle.text,
+                    }}
+                  >
                     → {macroblockLabel}
                   </span>
-                  <p className="text-[9px] text-slate-400 leading-snug">{COMPONENT_SHORT_DEFS[code]}</p>
+                  <p style={{ fontSize: '9px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+                    {COMPONENT_SHORT_DEFS[code]}
+                  </p>
                 </div>
               </div>
             );
@@ -86,31 +169,89 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
       </div>
 
       {/* ── CS — external indicator, visually separated ── */}
-      <div className="rounded-lg border border-violet-200 bg-violet-50/30 p-3">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-400 mb-2">
+      <div
+        style={{
+          borderRadius: TOKENS.cardRadius,
+          border:       `1px solid ${TOKENS.accent}33`,
+          background:   `${TOKENS.accent}07`,
+          padding:      '12px',
+        }}
+      >
+        <p
+          style={{
+            fontFamily:    'var(--font-inter)',
+            fontSize:      '10px',
+            fontWeight:    500,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            color:         TOKENS.accent,
+            marginBottom:  '8px',
+          }}
+        >
           Indicatore esterno — non entra nel calcolo KORA Index
         </p>
-        <div className="flex items-start gap-4">
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
           <div>
-            <span className="inline-flex items-center rounded border border-violet-200 bg-white px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-violet-500">
+            <span
+              style={{
+                display:       'inline-flex',
+                alignItems:    'center',
+                borderRadius:  '4px',
+                border:        `1px solid ${TOKENS.accent}33`,
+                background:    TOKENS.surface,
+                padding:       '1px 6px',
+                fontSize:      '8px',
+                fontWeight:    600,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color:         TOKENS.accent,
+              }}
+            >
               Indicatore esterno
             </span>
-            <p className="text-sm font-bold text-slate-800 mt-1">CS</p>
-            <p className="text-[10px] text-slate-500">{COMPONENT_LABELS['CS']}</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginTop: '4px' }}>CS</p>
+            <p style={{ fontSize: '10px', color: TOKENS.inkSecondary, marginTop: '1px' }}>{COMPONENT_LABELS['CS']}</p>
           </div>
-          <div className="flex-1 space-y-1.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-xl font-bold text-slate-700">
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <p
+                style={{
+                  fontFamily:         'var(--font-inter)',
+                  fontWeight:         700,
+                  fontSize:           '20px',
+                  color:              TOKENS.ink,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
                 {csValue !== null ? formatPercentage(csValue) : '—'}
               </p>
-              <span className="rounded border border-violet-200 bg-white px-1.5 py-0.5 text-[9px] font-bold text-violet-600">
+              <span
+                style={{
+                  borderRadius: '4px',
+                  border:       `1px solid ${TOKENS.accent}33`,
+                  background:   TOKENS.surface,
+                  padding:      '1px 6px',
+                  fontSize:     '9px',
+                  fontWeight:   700,
+                  color:        TOKENS.accent,
+                }}
+              >
                 Peso = 0
               </span>
-              <span className="rounded border border-violet-200 bg-white px-1.5 py-0.5 text-[9px] text-violet-500">
+              <span
+                style={{
+                  borderRadius: '4px',
+                  border:       `1px solid ${TOKENS.accent}33`,
+                  background:   TOKENS.surface,
+                  padding:      '1px 6px',
+                  fontSize:     '9px',
+                  color:        TOKENS.accent,
+                }}
+              >
                 Non entra nel KORA Index
               </span>
             </div>
-            <p className="text-[9px] text-violet-600 leading-snug">
+            <p style={{ fontSize: '9px', color: TOKENS.accent, lineHeight: 1.55 }}>
               CS è esterno al KORA Index: misura affidabilità/qualità dei dati, non impatto. Peso = 0.
               Un Confidence Score basso riduce la fiducia interpretativa nell&apos;output — non ne modifica il valore numerico.
             </p>

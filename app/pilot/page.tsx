@@ -154,7 +154,7 @@ export default function PilotPage() {
         ].map(({ label, value }) => (
           <div key={label} style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem', textAlign: 'center' }}>
             <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>{label}</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.125rem', color: TOKENS.ink, marginTop: 6 }}>{value}</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.5rem', color: TOKENS.ink, marginTop: 6, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
           </div>
         ))}
       </div>
@@ -256,7 +256,7 @@ export default function PilotPage() {
           <div
             key={pkg.id}
             style={{
-              background:   TOKENS.surface,
+              background:   pkg.highlight ? `rgba(97,86,245,0.04)` : TOKENS.surface,
               border:       pkg.highlight ? `2px solid ${TOKENS.accent}` : TOKENS.cardBorder,
               borderRadius: TOKENS.cardRadius,
               padding:      '1.25rem',
@@ -284,7 +284,7 @@ export default function PilotPage() {
               ))}
             </ul>
             <div style={{ borderTop: pkg.highlight ? `1px solid ${TOKENS.accent}33` : TOKENS.cardBorder, paddingTop: 12 }}>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.25rem', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums' }}>{pkg.price}</p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.025em', lineHeight: 1 }}>{pkg.price}</p>
               <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 3, lineHeight: 1.5 }}>{pkg.priceNote}</p>
               <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.inkSecondary, marginTop: 6 }}>Deliverable: {pkg.deliverable}</p>
             </div>

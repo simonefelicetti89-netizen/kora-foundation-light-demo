@@ -17,8 +17,11 @@ export function SectionLabel({ children, className }: SectionLabelProps) {
         fontSize:      '11px',
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
-        color:         TOKENS.inkHint,
+        color:         TOKENS.inkSecondary,
         paddingTop:    '0.5rem',
+        paddingBottom: '6px',
+        marginBottom:  '4px',
+        borderBottom:  '1px solid rgba(20,18,46,0.10)',
       }}
     >
       {children}
