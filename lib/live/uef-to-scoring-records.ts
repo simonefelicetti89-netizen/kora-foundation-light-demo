@@ -95,6 +95,11 @@ export function buildScoringRecordsFromApprovedUef(
       b6_interpreter:     pl['interpreter_version'] ?? '0.1',
       b6_approved_for_scoring: true,
       b11_enriched:       pl['b11_enriched']   ?? false,
+
+      // B15: UEF-approved classification — eligibility-gate must not re-classify these records.
+      // Only the approved_uef_record adapter can set this flag (never from raw CSV upload).
+      reviewed_by_uef:      true,
+      reviewed_eligibility: row.eligibility,   // 'eligible' | 'limited' | 'blocked'
     };
 
     return {

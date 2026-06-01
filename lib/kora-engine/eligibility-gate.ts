@@ -410,12 +410,56 @@ function classifyRecord(recordId: string, fields: ExtractedFields): EligibilityR
   );
 }
 
+// ── B15: UEF-reviewed classification passthrough ─────────────────────────────
+//
+// Records arriving from the approved UEF pipeline carry reviewed_by_uef=true
+// and reviewed_eligibility set by buildScoringRecordsFromApprovedUef.
+// These records have already been classified by the Raw-to-UEF Interpreter
+// and validated by a human operator in UEF Review — the gate must not
+// re-classify them via keyword matching.
+//
+// Only the uef-to-scoring-records adapter can set reviewed_by_uef=true.
+// Raw CSV uploads never carry this flag, so spoofing is structurally impossible.
+
+const REVIEWED_TREATMENT: Record<string, { impact: ImpactTreatment; budget: BudgetTreatmentSuggestion; reason: string }> = {
+  eligible: { impact: 'generates_iu',  budget: 'include_in_bti',   reason: 'UEF Review human-approved as eligible — generates Impact Units.' },
+  limited:  { impact: 'bti_only',      budget: 'partial_inclusion', reason: 'UEF Review human-approved as limited (economic relief) — BTI only, no IU.' },
+  blocked:  { impact: 'excluded',      budget: 'exclude_from_bti',  reason: 'UEF Review human-approved as blocked (compliance baseline) — 0 IU, excluded from BTI.' },
+};
+
+function buildReviewedResult(recordId: string, eligibility: 'eligible' | 'limited' | 'blocked'): EligibilityResult {
+  const t = REVIEWED_TREATMENT[eligibility];
+  return {
+    recordId,
+    status:                   eligibility,
+    reason:                   t.reason,
+    doctrineReference:        'KORA_DOCTRINE §2 · B15: UEF Review governs scoring · reviewed_uef:eligibility_authoritative',
+    confidence:               0.95,
+    impactTreatment:          t.impact,
+    budgetTreatmentSuggestion: t.budget,
+    reviewRequired:           false,
+  };
+}
+
 // ── Public API ────────────────────────────────────────────────────────────────
 
 export function classifyEligibility(
   record: RawUploadedRecord | NormalizedUEFRecord,
 ): EligibilityResult {
   const recordId = isRawUploadedRecord(record) ? record.recordId : record.uefId;
+
+  // B15: UEF-approved records bypass keyword re-classification.
+  // reviewed_by_uef can only be set by the approved UEF scoring adapter.
+  if (isRawUploadedRecord(record)) {
+    const raw = record.raw;
+    if (raw['reviewed_by_uef'] === true) {
+      const reviewedElig = String(raw['reviewed_eligibility'] ?? '');
+      if (reviewedElig === 'eligible' || reviewedElig === 'limited' || reviewedElig === 'blocked') {
+        return buildReviewedResult(recordId, reviewedElig);
+      }
+    }
+  }
+
   const fields = extractFields(record);
   return classifyRecord(recordId, fields);
 }
