@@ -112,8 +112,8 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">KORA · Admin</p>
-          <h1 className="text-xl font-bold text-white tracking-tight">Tenant Onboarding</h1>
-          <p className="text-sm text-white/45 mt-0.5">B9 — Create new company/tenant for live pilot</p>
+          <h1 className="text-xl font-bold text-white tracking-tight">Onboarding Azienda</h1>
+          <p className="text-sm text-white/45 mt-0.5">B9 — Registra nuova azienda per il pilot live</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
           <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
@@ -130,12 +130,12 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
 
         {/* ── Left: create form ── */}
         <div className="space-y-3">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Create new tenant</p>
+          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Registra nuova azienda</p>
           <form onSubmit={handleCreate} className="rounded-lg border border-slate-200 bg-white px-5 py-5 space-y-3.5">
 
             <div>
               <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
-                Tenant Code *
+                Codice azienda *
               </label>
               <input
                 required value={tenantCode}
@@ -198,13 +198,13 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
 
             <button type="submit" disabled={createStatus === 'loading'}
               className="w-full rounded-lg bg-[#06032B] text-white px-4 py-2 text-sm font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors">
-              {createStatus === 'loading' ? '⏳ Creating…' : '+ Create tenant'}
+              {createStatus === 'loading' ? '⏳ Creazione…' : '+ Crea azienda'}
             </button>
 
             {/* Success */}
             {createStatus === 'created' && createResult?.ok && (
               <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 space-y-1.5">
-                <p className="text-xs font-bold text-green-700">✓ Tenant created</p>
+                <p className="text-xs font-bold text-green-700">✓ Azienda creata</p>
                 <div className="text-[10px] text-green-600 space-y-0.5">
                   <p>Code: <strong className="font-mono">{createResult.tenantCode}</strong></p>
                   <p>Company: {createResult.companyName}</p>
@@ -239,18 +239,18 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
         {/* ── Right: tenant list ── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Active tenants</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Aziende attive</p>
             <button onClick={refreshTenants}
               className="text-[10px] text-slate-400 underline hover:text-slate-700 transition-colors">
               ↻ Refresh
             </button>
           </div>
 
-          {tenantsLoading && <p className="text-xs text-slate-400">Loading tenants…</p>}
+          {tenantsLoading && <p className="text-xs text-slate-400">Caricamento aziende…</p>}
 
           {!tenantsLoading && tenants.length === 0 && (
             <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-400">
-              No tenants yet. Create the first one.
+              Nessuna azienda ancora. Creane una.
             </div>
           )}
 

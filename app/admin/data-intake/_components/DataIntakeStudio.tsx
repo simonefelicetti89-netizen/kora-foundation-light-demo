@@ -540,7 +540,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       {/* ── B9. TENANT SELECTOR ── */}
       <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-end gap-4">
         <div>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Tenant</p>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Azienda</p>
           {tenantList.length > 0 ? (
             <select
               value={TENANT}
@@ -578,7 +578,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         </div>
         <a href="/admin/tenants"
           className="text-[10px] text-[#6156F5] underline underline-offset-2 hover:text-[#4a41d4] pb-1.5">
-          + Create tenant
+          + Crea azienda
         </a>
       </div>
 

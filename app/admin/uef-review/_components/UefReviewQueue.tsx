@@ -672,7 +672,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           </div>
 
           <p className="text-[10px] text-amber-700 border border-amber-200 bg-amber-50 rounded px-2 py-1">
-            Provide workforcePopulation if no workforce baseline exists for this tenant/period.
+            Provide workforcePopulation if no workforce baseline exists for this company/period.
           </p>
 
           <div className="flex items-center gap-3 flex-wrap">

@@ -608,7 +608,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
         <div class="cv-mv">${esc(meta.companyName)}</div>
       </div>
       <div>
-        <div class="cv-ml">Tenant</div>
+        <div class="cv-ml">Azienda</div>
         <div class="cv-mv" style="font-family:'Courier New',monospace;font-size:9pt;">${esc(meta.tenantCode)}</div>
       </div>
       <div>
@@ -1131,7 +1131,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
         <div class="mp-prov-val">${esc(meta.companyName)}</div>
       </div>
       <div class="mp-prov-item">
-        <div class="mp-prov-lbl">Tenant Code</div>
+        <div class="mp-prov-lbl">Codice azienda</div>
         <div class="mp-prov-val">${esc(meta.tenantCode)}</div>
       </div>
       <div class="mp-prov-item">

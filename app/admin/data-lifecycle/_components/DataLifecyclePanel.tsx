@@ -125,7 +125,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
           <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
-            {['No tenant delete', 'No PII', 'Audit required'].map(m => (
+            {['No company delete', 'No PII', 'Audit required'].map(m => (
               <span key={m} className="rounded border border-white/12 bg-white/5 px-2 py-0.5 text-[10px] text-white/38">{m}</span>
             ))}
           </div>

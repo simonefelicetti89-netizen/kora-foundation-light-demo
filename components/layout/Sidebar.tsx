@@ -49,7 +49,7 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Live Pilot Flow',
         items: [
-          { href: '/admin/tenants',     label: 'Tenants & Onboarding' },
+          { href: '/admin/tenants',     label: 'Aziende & Onboarding' },
           { href: '/admin/data-intake', label: 'Data Intake' },
           { href: '/admin/uef-review',  label: 'UEF Review & Scoring' },
         ],
