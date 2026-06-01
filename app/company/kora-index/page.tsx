@@ -15,7 +15,7 @@ import type { MacroblockScore }        from '@/lib/types';
 // ── Shared components — reused from cockpit ────────────────────────────────────
 import { PageMasthead }    from '@/components/ui/PageMasthead';
 import { SectionLabel }    from '@/components/ui/SectionLabel';
-import { IndexRingCard }   from '@/components/company/cockpit/IndexRingCard';
+
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 
 // ── Restored analytical panels ─────────────────────────────────────────────────
@@ -110,7 +110,90 @@ function ScenarioStrip({ activeScenario, s1Output, s2Output }: {
   );
 }
 
-// ── Section divider ────────────────────────────────────────────────────────────
+// ── Board Summary Block ───────────────────────────────────────────────────────
+
+function BoardSummaryBlock({
+  value,
+  safeguardStatus,
+  confidenceScore,
+  editorialReading,
+}: {
+  value: number;
+  safeguardStatus: string;
+  confidenceScore: number;
+  editorialReading: string;
+}) {
+  const sg = SAFEGUARD_STYLE[safeguardStatus] ?? SAFEGUARD_STYLE['WARNING'];
+  const safeguardLabel = safeguardStatus.charAt(0) + safeguardStatus.slice(1).toLowerCase();
+  return (
+    <div
+      style={{
+        background:   TOKENS.surface,
+        border:       `1.5px solid ${TOKENS.ink}`,
+        borderRadius: TOKENS.cardRadius,
+        padding:      '1.5rem',
+      }}
+    >
+      {/* Frase editoriale — Serif, lettura primaria */}
+      <p
+        className="font-kora-serif text-kora-ink"
+        style={{ fontSize: '1.0625rem', letterSpacing: '-0.01em', lineHeight: 1.5, maxWidth: '68ch', marginBottom: '1.25rem' }}
+      >
+        {editorialReading}
+      </p>
+
+      {/* 3 metriche — KI · CS · Safeguard */}
+      <div
+        className="flex flex-wrap gap-x-8 gap-y-4 items-end"
+        style={{ borderTop: `1px solid ${TOKENS.inkBorder}`, paddingTop: '1rem' }}
+      >
+        <div>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint, marginBottom: 4 }}>
+            KORA Index v3
+          </p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+            <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.25rem', color: TOKENS.ink, lineHeight: 1, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
+              {value}
+            </span>
+            <span style={{ fontSize: '12px', color: TOKENS.inkHint }}>/100</span>
+          </div>
+        </div>
+
+        <div>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint, marginBottom: 4 }}>
+            Confidence Score
+          </p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+            <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.5rem', color: TOKENS.accent, lineHeight: 1, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
+              {formatConfidenceScore(confidenceScore)}
+            </span>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', color: TOKENS.inkHint }}>esterno</span>
+          </div>
+        </div>
+
+        <div>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint, marginBottom: 4 }}>
+            Activation Safeguard
+          </p>
+          <span
+            style={{
+              display:      'inline-block',
+              fontFamily:   'var(--font-inter)',
+              fontWeight:   600,
+              fontSize:     '13px',
+              background:   sg.bg,
+              color:        sg.text,
+              borderRadius: 4,
+              padding:      '4px 12px',
+            }}
+          >
+            {safeguardLabel}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -133,7 +216,7 @@ export default function KoraIndexDetail() {
         <PageMasthead
           eyebrow="KORA Index v3"
           title={tenant?.company_name ?? COMPANY_ID}
-          subline="Scomposizione analitica dell'indice"
+          subline="Lettura esecutiva · attivazione organizzativa"
         />
         <div className="rounded-2xl px-7 py-6 space-y-3"
           style={{ background: 'rgba(186,117,23,0.07)', border: '1px solid rgba(186,117,23,0.20)' }}>
@@ -186,6 +269,14 @@ export default function KoraIndexDetail() {
   const s1BtiScore = s1Mbs.find((m) => m.code === 'BTI')?.score;
   const s2BtiScore = (scoringS2?.koraIndex?.macroblocks ?? []).find((m) => m.code === 'BTI')?.score;
 
+  const editorialFirstSentence = explanation?.kora_index_explanation
+    ? explanation.kora_index_explanation.split('. ')[0] + '.'
+    : `Il KORA Index di ${output.kora_index_value}/100 è disponibile per questo periodo.`;
+  const vincoloLabel     = explanation?.weak_components[0]?.label;
+  const editorialReading = vincoloLabel
+    ? `${editorialFirstSentence} Il vincolo principale è ${vincoloLabel}.`
+    : editorialFirstSentence;
+
   return (
     <div className="space-y-5">
 
@@ -193,30 +284,20 @@ export default function KoraIndexDetail() {
       <PageMasthead
         eyebrow={`KORA Index v3 · ${output.reporting_period}`}
         title={tenant?.company_name ?? COMPANY_ID}
-        subline="Scomposizione analitica dell'indice"
+        subline="Lettura esecutiva · attivazione organizzativa"
       />
 
-      {/* ── GRUPPO PRIMARIO — Indice, macroblocchi, componenti ────────────────── */}
+      {/* ── GRUPPO PRIMARIO — Board summary, macroblocchi, scenario strip ───────── */}
 
-      {/* 2. Hero: IndexRing + ScenarioStrip side by side (demo only) — §9 items-stretch */}
-      {isDemo && (s1Output ?? s2Output) ? (
-        <div className="grid grid-cols-2 gap-4 items-stretch">
-          <IndexRingCard
-            value={output.kora_index_value}
-            safeguardStatus={output.safeguard_status}
-            confidenceScore={output.confidence_score}
-          />
-          <ScenarioStrip activeScenario={activeScenario} s1Output={s1Output} s2Output={s2Output} />
-        </div>
-      ) : (
-        <IndexRingCard
-          value={output.kora_index_value}
-          safeguardStatus={output.safeguard_status}
-          confidenceScore={output.confidence_score}
-        />
-      )}
+      {/* 2. Board Summary Block — lettura editoriale primaria */}
+      <BoardSummaryBlock
+        value={output.kora_index_value}
+        safeguardStatus={output.safeguard_status}
+        confidenceScore={output.confidence_score}
+        editorialReading={editorialReading}
+      />
 
-      {/* 3. Macroblock cards — §8 subgrid alignment via gap-x/gap-y split */}
+      {/* 3. Macroblock cards */}
       <SectionLabel>Architettura macroblocchi</SectionLabel>
       <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4">
         {macroblocks.map((mb) => {
@@ -225,24 +306,18 @@ export default function KoraIndexDetail() {
         })}
       </div>
 
-      {/* 4. Vincolo primario + CTA anchor verso la derivazione */}
-      <div
-        className="flex items-center justify-between gap-4 flex-wrap"
-        style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '0.875rem 1.125rem' }}
-      >
-        <p style={{ fontSize: '12px', color: TOKENS.ink }}>
-          <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint, marginRight: 10 }}>
-            Vincolo primario
-          </span>
-          {explanation?.weak_components[0]
-            ? `${explanation.weak_components[0].label} · ${explanation.weak_components[0].code}`
-            : 'Nessun vincolo critico rilevato'}
-        </p>
+      {/* 4. ScenarioStrip — contesto demo, dopo i macroblocchi */}
+      {isDemo && (s1Output ?? s2Output) && (
+        <ScenarioStrip activeScenario={activeScenario} s1Output={s1Output} s2Output={s2Output} />
+      )}
+
+      {/* 5. CTA anchor verso derivazione analitica */}
+      <div className="flex justify-end">
         <a
           href="#componenti"
-          style={{ flexShrink: 0, fontSize: '12px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none', whiteSpace: 'nowrap' }}
+          style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
         >
-          Vedi i 10 componenti →
+          Vedi derivazione completa →
         </a>
       </div>
 
