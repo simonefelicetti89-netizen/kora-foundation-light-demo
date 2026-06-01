@@ -31,13 +31,15 @@ export function getOp001SyntheticRecords(batchId: string): RawUploadedRecord[] {
     raw: { nome_iniziativa: nome, categoria, tipo, ...extra },
   });
 
+  // importo/fonte fields are read by assessBudgetEvidence via AMOUNT_KEY_SIGNALS / SOURCE_KEY_SIGNALS.
+  // Record 03 (mentoring/policy) has no budget — KORA doctrine: never invent budget for policy records.
   return [
-    make('01', 0, 'Programma di supporto psicologico',      'salute e benessere',    'consumed_service',      { partecipanti: 25 }),
-    make('02', 1, 'Formazione professionale avanzata',       'crescita',              'training',              { partecipanti: 20 }),
+    make('01', 0, 'Programma di supporto psicologico',      'salute e benessere',    'consumed_service',      { partecipanti: 25, importo: 18000, fonte: 'export fornitore welfare' }),
+    make('02', 1, 'Formazione professionale avanzata',       'crescita',              'training',              { partecipanti: 20, importo: 24000, fonte: 'export piattaforma lms' }),
     make('03', 2, 'Programma di mentoring inter-funzionale', 'mentoring',             'policy',                { partecipanti: 14 }),
-    make('04', 3, 'Volontariato aziendale territoriale',     'impatto territoriale',  'collective_initiative', { partecipanti: 18 }),
-    make('05', 4, 'Trasferimento competenze senior-junior',  'legacy conoscenza',     'training',              { partecipanti: 10 }),
-    make('06', 5, 'Buoni pasto e welfare voucher',           'sollievo economico',    'monetary_benefit',      { partecipanti: 50 }),
+    make('04', 3, 'Volontariato aziendale territoriale',     'impatto territoriale',  'collective_initiative', { partecipanti: 18, importo: 8500,  fonte: 'dichiarato ufficio hr' }),
+    make('05', 4, 'Trasferimento competenze senior-junior',  'legacy conoscenza',     'training',              { partecipanti: 10, importo: 12000, fonte: 'consuntivo interno hr' }),
+    make('06', 5, 'Buoni pasto e welfare voucher',           'sollievo economico',    'monetary_benefit',      { partecipanti: 50, importo: 48000, fonte: 'dichiarato hr' }),
   ];
 }
 
