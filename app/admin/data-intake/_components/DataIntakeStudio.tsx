@@ -69,6 +69,26 @@ interface OperatorResult {
   error?: string;
 }
 
+// B4.1 — CSV dry-run types
+interface DryRunFinding {
+  rowIndex: number; fieldPath: string; riskType: string; severity: string;
+  // NEVER includes value
+}
+interface DryRunResult {
+  ok: boolean;
+  mode?: string;
+  dryRunNote?: string;
+  rowCount?: number;
+  piiStatus?: 'passed' | 'rejected';
+  eligibilityPreview?: { eligible: number; limited: number; blocked: number; reviewRequired: number; total: number };
+  sampleRows?: Array<Record<string, string | number>>;
+  warnings?: string[];
+  forbiddenHeaders?: string[];
+  findings?: DryRunFinding[];
+  error?: string;
+  note?: string;
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function pct(n: number | null | undefined) { return n != null ? `${Math.round(n * 100)}%` : '—'; }
@@ -117,6 +137,11 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const [opResult, setOpResult]   = useState<OperatorResult | null>(null);
   const [opErr, setOpErr]         = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // B4.1 — CSV dry-run state
+  const [csvFile, setCsvFile]           = useState<File | null>(null);
+  const [csvStatus, setCsvStatus]       = useState<'idle'|'loading'|'passed'|'rejected'|'error'>('idle');
+  const [csvResult, setCsvResult]       = useState<DryRunResult | null>(null);
 
   // loading is derived — true only while we have neither data nor an error
   const loading = !preview && !loadErr;
@@ -170,6 +195,27 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     } catch (e) { setOpErr(e instanceof Error ? e.message : String(e)); setOpStatus('error'); }
   }
 
+  // B4.1 — CSV dry-run handler
+  async function handleValidateCsv() {
+    if (!csvFile) return;
+    setCsvStatus('loading'); setCsvResult(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', csvFile);
+      fd.append('tenantCode', TENANT);
+      fd.append('reportingPeriod', PERIOD);
+      const res  = await fetch('/api/admin/data-intake/upload-preview', {
+        method: 'POST', credentials: 'include', body: fd,
+      });
+      const data = await res.json() as DryRunResult;
+      setCsvResult(data);
+      setCsvStatus(data.ok ? 'passed' : 'rejected');
+    } catch (e) {
+      setCsvResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
+      setCsvStatus('error');
+    }
+  }
+
   const snapshot = opResult?.scoring
     ? { ki: opResult.scoring.kora_index_value, sf: opResult.scoring.safeguard_status, cs: (opResult.scoring.confidence_score ?? 0) / 100, ar: opResult.scoring.activation_rate, mar: opResult.scoring.meaningful_activation_rate }
     : opResult?.kora_index
@@ -220,6 +266,121 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <span className="rounded border border-[#C8FF47]/40 bg-[#C8FF47]/10 px-2 py-0.5 text-xs font-semibold text-[#d4ff6b]">Synthetic data only</span>
         </div>
+      </div>
+
+      {/* ── B4.1. CSV DRY-RUN PREVIEW ── */}
+      <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
+        <div className="flex items-start justify-between flex-wrap gap-2">
+          <div>
+            <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Live Intake Preview — dry run</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Validate a CSV file against KORA intake rules. No data is stored.</p>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Dry-run only: no data is stored.</span>
+            <span className="rounded border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold text-red-700">PII direct identifiers are strictly rejected.</span>
+          </div>
+        </div>
+
+        {/* File input + action */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <input
+            type="file"
+            accept=".csv"
+            onChange={e => { setCsvFile(e.target.files?.[0] ?? null); setCsvStatus('idle'); setCsvResult(null); }}
+            className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:text-xs file:font-medium file:text-slate-700 file:cursor-pointer hover:file:bg-slate-100"
+          />
+          <button
+            onClick={handleValidateCsv}
+            disabled={!csvFile || csvStatus === 'loading'}
+            className="rounded-lg bg-slate-800 text-white px-4 py-1.5 text-xs font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {csvStatus === 'loading' ? '⏳ Validating…' : '✓ Validate CSV'}
+          </button>
+          {csvFile && <span className="text-[10px] text-slate-400 font-mono">{csvFile.name} · {(csvFile.size / 1024).toFixed(0)} KB</span>}
+        </div>
+
+        {/* Result: passed */}
+        {csvStatus === 'passed' && csvResult?.ok && (
+          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 space-y-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs font-bold text-green-700">✓ File validation passed</span>
+              <span className="rounded border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">PII: passed</span>
+              <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-mono text-slate-600">{csvResult.rowCount} rows</span>
+            </div>
+            {csvResult.eligibilityPreview && (
+              <div className="flex flex-wrap gap-2 text-[10px]">
+                <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-green-700 font-medium">Eligible: {csvResult.eligibilityPreview.eligible}</span>
+                <span className="rounded border border-amber-200 bg-white px-2 py-0.5 text-amber-700 font-medium">Limited: {csvResult.eligibilityPreview.limited}</span>
+                <span className="rounded border border-red-200 bg-white px-2 py-0.5 text-red-700 font-medium">Blocked: {csvResult.eligibilityPreview.blocked}</span>
+                {csvResult.eligibilityPreview.reviewRequired > 0 && (
+                  <span className="rounded border border-purple-200 bg-white px-2 py-0.5 text-purple-700 font-medium">Review required: {csvResult.eligibilityPreview.reviewRequired}</span>
+                )}
+              </div>
+            )}
+            {csvResult.sampleRows && csvResult.sampleRows.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Sample rows (max 5)</p>
+                <div className="space-y-0.5">
+                  {csvResult.sampleRows.map((row, i) => (
+                    <div key={i} className="text-[10px] font-mono text-slate-500 bg-white border border-slate-100 rounded px-2 py-1 truncate">
+                      {Object.entries(row).slice(0, 6).map(([k, v]) => `${k}=${v}`).join(' · ')}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {csvResult.warnings && csvResult.warnings.length > 0 && (
+              <div className="space-y-0.5">
+                {csvResult.warnings.map((w, i) => (
+                  <p key={i} className="text-[10px] text-amber-700">⚠ {w}</p>
+                ))}
+              </div>
+            )}
+            <p className="text-[10px] text-slate-400 border-t border-green-100 pt-2">
+              {csvResult.dryRunNote} · Live scoring remains locked until B4.2/B5.
+            </p>
+          </div>
+        )}
+
+        {/* Result: rejected */}
+        {csvStatus === 'rejected' && csvResult && !csvResult.ok && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 space-y-2">
+            <p className="text-xs font-bold text-red-700">⚠ {csvResult.error ?? 'Batch rejected.'}</p>
+            {csvResult.forbiddenHeaders && csvResult.forbiddenHeaders.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                <span className="text-[10px] text-red-600 font-medium">Forbidden headers:</span>
+                {csvResult.forbiddenHeaders.map(h => (
+                  <span key={h} className="rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-mono text-red-700">{h}</span>
+                ))}
+              </div>
+            )}
+            {csvResult.findings && csvResult.findings.length > 0 && (
+              <div>
+                <p className="text-[10px] font-semibold text-red-600 mb-1">PII findings (field paths only — no values shown):</p>
+                <div className="space-y-0.5">
+                  {csvResult.findings.slice(0, 10).map((f, i) => (
+                    <p key={i} className="text-[10px] font-mono text-red-600">
+                      Row {f.rowIndex} · {f.fieldPath} · {f.riskType} · {f.severity}
+                    </p>
+                  ))}
+                  {csvResult.findings.length > 10 && (
+                    <p className="text-[10px] text-red-500">…and {csvResult.findings.length - 10} more findings.</p>
+                  )}
+                </div>
+              </div>
+            )}
+            <p className="text-[10px] text-red-600 border-t border-red-100 pt-2">
+              {csvResult.note ?? 'No data has been stored. Remove direct personal identifiers and re-submit.'}
+            </p>
+          </div>
+        )}
+
+        {/* Result: error */}
+        {csvStatus === 'error' && csvResult && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700">
+            ⚠ {csvResult.error ?? 'Unknown error during validation.'}
+          </div>
+        )}
       </div>
 
       {/* ── B. FLOW TIMELINE ── */}
