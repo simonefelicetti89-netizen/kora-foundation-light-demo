@@ -67,7 +67,7 @@ export async function fetchPdfData(
   if (!tenant) return null;
 
   const { data: ki } = await db.schema('analytics').from('kora_index_result')
-    .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*), bti_result:bti_result_id(*)')
+    .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*)')
     .eq('tenant_id', (tenant as { id: string }).id)
     .eq('reporting_period', reportingPeriod)
     .eq('is_current', true)
