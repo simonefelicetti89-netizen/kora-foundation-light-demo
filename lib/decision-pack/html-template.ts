@@ -85,7 +85,7 @@ const PILLAR_ORDER = ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'] as const;
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, pillarDistribution, bti } = data;
+  const { meta, koraIndex, pillarDistribution, bti, enrichment } = data;
 
   const sf       = koraIndex.safeguardStatus;
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
@@ -390,6 +390,54 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .fg-note{
       padding:11pt 14pt; background:#fffbeb; border:1px solid #fde68a;
       border-radius:4pt; font-size:9.5pt; color:#92400e; line-height:1.52;
+    }
+    .fg-seg-c{ background:#fde68a; height:16pt; display:flex; align-items:center; justify-content:center; }
+    .fg-seg-d{ background:#eaebf4; height:16pt; display:flex; align-items:center; justify-content:center; }
+    .fg-seg-txt-c{ font-size:6.5pt; font-weight:700; color:#92400e; padding:0 6pt; white-space:nowrap; overflow:hidden; }
+    .fg-seg-txt-d{ font-size:6.5pt; font-weight:700; color:#9899b3; padding:0 6pt; white-space:nowrap; overflow:hidden; }
+    .fg-class-grid{
+      display:grid; grid-template-columns:1fr 1fr 1fr 1fr;
+      gap:8pt; margin-top:10pt; margin-bottom:14pt;
+    }
+    .fg-class-card{
+      padding:10pt 12pt; border:1px solid #eaebf4; border-radius:4pt; background:#fafafa;
+    }
+    .fg-class-label{ font-size:6.5pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#9899b3; margin-bottom:5pt; }
+    .fg-class-count{ font-size:16pt; font-weight:700; color:#06032B; letter-spacing:-.02em; line-height:1; }
+    .fg-class-amount{ font-size:7.5pt; color:#7778a0; margin-top:3pt; }
+    .fg-board-note{
+      padding:11pt 14pt; background:#f5f4ff; border:1px solid #c7c4f8;
+      border-radius:4pt; font-size:9pt; color:#3d3a6a; line-height:1.52; margin-bottom:12pt;
+    }
+    .fg-warning{
+      padding:10pt 14pt; background:#fef2f2; border:1px solid #fca5a5;
+      border-radius:4pt; font-size:9pt; color:#991b1b; line-height:1.52; margin-bottom:10pt;
+    }
+
+    /* ── EVIDENCE ENRICHMENT ───────────────────────────────────────────────── */
+    .ev-enrich-section{ margin-top:14pt; }
+    .ev-enrich-title{ font-size:8pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#9899b3; margin-bottom:10pt; }
+    .ev-lvl-row{ display:flex; gap:8pt; margin-bottom:10pt; }
+    .ev-lvl-card{
+      flex:1; padding:10pt 8pt; border:1px solid #eaebf4; border-radius:4pt;
+      text-align:center; background:#fafafa;
+    }
+    .ev-lvl-label{ font-size:6.5pt; font-weight:700; letter-spacing:.12em; text-transform:uppercase; margin-bottom:5pt; }
+    .ev-lvl-count{ font-size:18pt; font-weight:700; letter-spacing:-.02em; line-height:1; }
+    .ev-meta-row{ display:flex; gap:10pt; margin-bottom:12pt; flex-wrap:wrap; }
+    .ev-meta-card{
+      padding:10pt 14pt; border:1px solid #eaebf4; border-radius:4pt; background:#fafafa; flex:1; min-width:100pt;
+    }
+    .ev-meta-label{ font-size:6.5pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#9899b3; margin-bottom:5pt; }
+    .ev-meta-val{ font-size:16pt; font-weight:700; color:#06032B; letter-spacing:-.02em; line-height:1; }
+    .ev-meta-sub{ font-size:7pt; color:#9899b3; margin-top:3pt; }
+    .ev-enrich-warning{
+      padding:10pt 14pt; background:#fffbeb; border:1px solid #fde68a;
+      border-radius:4pt; font-size:9pt; color:#92400e; line-height:1.52; margin-bottom:10pt;
+    }
+    .ev-enrich-stub{
+      padding:14pt; text-align:center; color:#9899b3; font-size:9pt;
+      border:1px dashed #eaebf4; border-radius:4pt;
     }
 
     /* ── EVIDENCE & CONFIDENCE ─────────────────────────────────────────── */
@@ -740,7 +788,13 @@ export function buildDecisionPackHtml(data: PdfData): string {
       Correlazione ≠ causalità.
     </p>
 
-    ${bti ? `
+    ${bti ? (() => {
+      const totalB     = bti.totalPeopleWelfareBudget;
+      const deepPct    = totalB > 0 ? Math.round((bti.deepActivationSpend    / totalB) * 100) : 0;
+      const reliefPct  = totalB > 0 ? Math.round((bti.economicReliefSpend    / totalB) * 100) : 0;
+      const blockedPct = totalB > 0 ? Math.round((bti.blockedComplianceSpend / totalB) * 100) : 0;
+      const unknownPct = Math.max(0, 100 - deepPct - reliefPct - blockedPct);
+      return `
     <div class="fg-kpi-row">
       <div class="fg-kpi fg-kpi-hi">
         <div class="fg-kpi-label">Budget People / Welfare</div>
@@ -764,40 +818,77 @@ export function buildDecisionPackHtml(data: PdfData): string {
       </div>
     </div>
 
-    ${bti.totalPeopleWelfareBudget > 0 ? (() => {
-      const totalB = bti.totalPeopleWelfareBudget;
-      const deepB  = Math.max(0, totalB - bti.economicReliefSpend);
-      const deepPct = Math.round((deepB / totalB) * 100);
-      const reliefPct = Math.round((bti.economicReliefSpend / totalB) * 100);
-      return `
+    ${totalB > 0 ? `
     <div class="fg-bar-section">
-      <div class="fg-bar-lbl">Composizione spesa — Attivazione profonda vs Economic Relief</div>
+      <div class="fg-bar-lbl">Classificazione budget — Deep Activation · Economic Relief · Compliance Blocked · Unknown</div>
       <div class="fg-stacked">
         <div class="fg-seg-a" style="width:${deepPct}%;">
-          ${deepPct > 12 ? `<span class="fg-seg-txt">${deepPct}% Attivazione</span>` : ''}
+          ${deepPct > 10 ? `<span class="fg-seg-txt">${deepPct}% Deep</span>` : ''}
         </div>
         <div class="fg-seg-b" style="width:${reliefPct}%;">
-          ${reliefPct > 12 ? `<span class="fg-seg-txt-b">${reliefPct}% Relief</span>` : ''}
+          ${reliefPct > 10 ? `<span class="fg-seg-txt-b">${reliefPct}% Relief</span>` : ''}
+        </div>
+        <div class="fg-seg-c" style="width:${blockedPct}%;">
+          ${blockedPct > 10 ? `<span class="fg-seg-txt-c">${blockedPct}% Blocked</span>` : ''}
+        </div>
+        <div class="fg-seg-d" style="width:${unknownPct}%;">
+          ${unknownPct > 10 ? `<span class="fg-seg-txt-d">${unknownPct}% N/D</span>` : ''}
         </div>
       </div>
       <div class="fg-legend">
-        <div class="fg-leg"><div class="fg-leg-dot" style="background:#06032B;"></div>Attivazione profonda (${deepPct}%)</div>
-        <div class="fg-leg"><div class="fg-leg-dot" style="background:#eaebf4;border:1px solid #c7c8dc;"></div>Economic relief / benefit monetari (${reliefPct}%)</div>
+        <div class="fg-leg"><div class="fg-leg-dot" style="background:#06032B;"></div>Deep Activation — ${esc(fmtEur(bti.deepActivationSpend))} (${deepPct}%)</div>
+        <div class="fg-leg"><div class="fg-leg-dot" style="background:#c7c8dc;border:1px solid #b0b1cc;"></div>Economic Relief — ${esc(fmtEur(bti.economicReliefSpend))} (${reliefPct}%)</div>
+        <div class="fg-leg"><div class="fg-leg-dot" style="background:#fde68a;border:1px solid #f59e0b;"></div>Compliance Blocked — ${esc(fmtEur(bti.blockedComplianceSpend))} (${blockedPct}%)</div>
+        ${unknownPct > 0 ? `<div class="fg-leg"><div class="fg-leg-dot" style="background:#eaebf4;border:1px solid #c7c8dc;"></div>Non classificato (${unknownPct}%)</div>` : ''}
       </div>
-    </div>`;
-    })() : ''}
+    </div>` : ''}
+
+    ${enrichment && enrichment.approvedUefRecords > 0 ? `
+    <div class="fg-class-grid">
+      <div class="fg-class-card" style="border-color:#06032B22;background:#f8f8fc;">
+        <div class="fg-class-label" style="color:#06032B;">Deep Activation</div>
+        <div class="fg-class-count">${enrichment.budgetClassBreakdown.deepActivation.count}</div>
+        <div class="fg-class-amount">${enrichment.budgetClassBreakdown.deepActivation.count > 0 ? esc(fmtEur(enrichment.budgetClassBreakdown.deepActivation.amount)) : '—'} · iniziative</div>
+      </div>
+      <div class="fg-class-card" style="border-color:#c7c8dc;">
+        <div class="fg-class-label">Economic Relief</div>
+        <div class="fg-class-count">${enrichment.budgetClassBreakdown.economicRelief.count}</div>
+        <div class="fg-class-amount">${enrichment.budgetClassBreakdown.economicRelief.count > 0 ? esc(fmtEur(enrichment.budgetClassBreakdown.economicRelief.amount)) : '—'} · iniziative</div>
+      </div>
+      <div class="fg-class-card" style="border-color:#fde68a;background:#fffbeb;">
+        <div class="fg-class-label" style="color:#92400e;">Compliance Blocked</div>
+        <div class="fg-class-count" style="color:#92400e;">${enrichment.budgetClassBreakdown.complianceBlocked.count}</div>
+        <div class="fg-class-amount">${enrichment.budgetClassBreakdown.complianceBlocked.count > 0 ? esc(fmtEur(enrichment.budgetClassBreakdown.complianceBlocked.amount)) : '—'} · iniziative</div>
+      </div>
+      <div class="fg-class-card">
+        <div class="fg-class-label">Unknown / To Review</div>
+        <div class="fg-class-count" style="color:#9899b3;">${enrichment.budgetClassBreakdown.unknown.count}</div>
+        <div class="fg-class-amount">${enrichment.budgetClassBreakdown.unknown.count > 0 && enrichment.budgetClassBreakdown.unknown.amount > 0 ? esc(fmtEur(enrichment.budgetClassBreakdown.unknown.amount)) : '—'} · iniziative</div>
+      </div>
+    </div>
+
+    <div class="fg-board-note">
+      Questo budget non è semplice spesa: è classificato per qualità di attivazione e livello di evidenza.
+      Deep Activation genera Impact Units verificabili. Economic Relief è spesa welfare legittima ma non genera IU.
+      Compliance Blocked è budget bloccato da requisiti normativi — non riallocabile senza revisione legale.
+    </div>` : ''}
+
+    ${enrichment?.needsEnrichmentOpen && enrichment.needsEnrichmentOpen > 0 ? `
+    <div class="fg-warning">
+      <strong>Attenzione board:</strong> L'interpretazione finanziaria è direzionalmente utile ma non definitiva — ${enrichment.needsEnrichmentOpen} iniziative richiedono ancora enrichment budget/evidenza prima di finalizzare la classificazione.
+    </div>` : ''}
 
     <div class="fg-note">
       <strong>Nota:</strong> L'Activation Debt è una stima direzionale — non garantito.
       Il BTI Score è un indicatore informativo: non dimostra causalità, non certifica ROI, non sostituisce analisi finanziaria indipendente.
       Economic relief (buoni pasto, voucher generici) non genera Impact Units ma è spesa welfare legittima.
+      ${bti.budgetEvidenceQuality > 0 ? `Qualità evidenze budget: ${Math.round(bti.budgetEvidenceQuality * 100)}%.` : ''}
     </div>
-
-    ` : `
+`;
+    })() : `
     <div class="fg-stub">
       Financial Governance non disponibile per questo batch.
-      Verificare che il batch sia stato creato con file CSV contenente dati budget (importo, fonte)
-      e che il BTI sia stato calcolato in fase di scoring.
+      ${enrichment === null ? 'Batch lineage non disponibile: riepilogo classificazione finanziaria non generato.' : 'Verificare che il batch sia stato creato con dati budget (importo, fonte) e che il BTI sia stato calcolato in fase di scoring.'}
     </div>
     `}
 
@@ -852,6 +943,78 @@ export function buildDecisionPackHtml(data: PdfData): string {
       <div class="ev-not-item"><span class="ev-not-x">✕</span>ROI garantito o relazione causale tra spesa e outcome</div>
       <div class="ev-not-item"><span class="ev-not-x">✕</span>Dati sanitari individuali — solo programmi aggregati</div>
       <div class="ev-not-item"><span class="ev-not-x">✕</span>Validità legale o assurance contabile</div>
+    </div>
+
+    <div class="ev-enrich-section">
+    ${enrichment ? (() => {
+      const evl = enrichment.evidenceLevelBreakdown;
+      const totalEvl = evl.L0 + evl.L1 + evl.L2 + evl.L3 + evl.L4;
+      return `
+      <div class="ev-enrich-title">Enrichment Trace — Approvati per scoring (${enrichment.approvedUefRecords} su ${enrichment.totalUefRecords} record totali)</div>
+
+      <div class="ev-lvl-row">
+        <div class="ev-lvl-card" style="border-color:#059669;background:#ecfdf5;">
+          <div class="ev-lvl-label" style="color:#059669;">L3 / L4</div>
+          <div class="ev-lvl-count" style="color:#059669;">${evl.L3 + evl.L4}</div>
+          <div style="font-size:7pt;color:#059669;margin-top:3pt;">Terze parti / Verificato</div>
+        </div>
+        <div class="ev-lvl-card" style="border-color:#6156F5;background:#f5f4ff;">
+          <div class="ev-lvl-label" style="color:#6156F5;">L2</div>
+          <div class="ev-lvl-count" style="color:#6156F5;">${evl.L2}</div>
+          <div style="font-size:7pt;color:#6156F5;margin-top:3pt;">Documento interno</div>
+        </div>
+        <div class="ev-lvl-card" style="border-color:#d97706;background:#fffbeb;">
+          <div class="ev-lvl-label" style="color:#d97706;">L1</div>
+          <div class="ev-lvl-count" style="color:#d97706;">${evl.L1}</div>
+          <div style="font-size:7pt;color:#d97706;margin-top:3pt;">Auto-dichiarato</div>
+        </div>
+        <div class="ev-lvl-card" style="border-color:#fca5a5;background:#fef2f2;">
+          <div class="ev-lvl-label" style="color:#dc2626;">L0</div>
+          <div class="ev-lvl-count" style="color:#dc2626;">${evl.L0}</div>
+          <div style="font-size:7pt;color:#dc2626;margin-top:3pt;">Nessuna evidenza</div>
+        </div>
+        <div class="ev-lvl-card">
+          <div class="ev-lvl-label">Totale</div>
+          <div class="ev-lvl-count">${totalEvl}</div>
+          <div style="font-size:7pt;color:#9899b3;margin-top:3pt;">record classificati</div>
+        </div>
+      </div>
+
+      <div class="ev-meta-row">
+        <div class="ev-meta-card">
+          <div class="ev-meta-label">Enrichment manuale</div>
+          <div class="ev-meta-val">${enrichment.manualEnrichmentCount}</div>
+          <div class="ev-meta-sub">record con override budget/evidenza manuale</div>
+        </div>
+        <div class="ev-meta-card">
+          <div class="ev-meta-label">Enrichment completato (B11)</div>
+          <div class="ev-meta-val">${enrichment.enrichedRecords}</div>
+          <div class="ev-meta-sub">record arricchiti con classificazione B11</div>
+        </div>
+        <div class="ev-meta-card" style="${enrichment.needsEnrichmentOpen > 0 ? 'border-color:#fde68a;background:#fffbeb;' : ''}">
+          <div class="ev-meta-label" style="${enrichment.needsEnrichmentOpen > 0 ? 'color:#92400e;' : ''}">Enrichment aperto</div>
+          <div class="ev-meta-val" style="${enrichment.needsEnrichmentOpen > 0 ? 'color:#92400e;' : 'color:#059669;'}">${enrichment.needsEnrichmentOpen}</div>
+          <div class="ev-meta-sub">${enrichment.needsEnrichmentOpen > 0 ? 'iniziative richiedono ancora dati budget/evidenza' : 'nessun enrichment pendente'}</div>
+        </div>
+        ${enrichment.averageFinancialConfidence !== null ? `
+        <div class="ev-meta-card">
+          <div class="ev-meta-label">Confidence finanziaria media</div>
+          <div class="ev-meta-val">${Math.round(enrichment.averageFinancialConfidence * 100)}%</div>
+          <div class="ev-meta-sub">media sui record approvati</div>
+        </div>` : ''}
+      </div>
+
+      ${enrichment.remainingWarnings.length > 0 ? `
+      <div class="ev-enrich-warning">
+        <strong>Avvisi enrichment:</strong>
+        <ul style="margin-top:5pt;margin-left:14pt;">
+          ${enrichment.remainingWarnings.map(w => `<li style="margin-bottom:3pt;">${esc(w)}</li>`).join('')}
+        </ul>
+      </div>` : ''}
+`;
+    })() : `
+      <div class="ev-enrich-stub">Enrichment trace non disponibile per questo Decision Pack.</div>
+`}
     </div>
 
     <div style="margin-top:auto;padding-top:10pt;">
