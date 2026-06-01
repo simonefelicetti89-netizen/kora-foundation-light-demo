@@ -73,7 +73,8 @@ interface ReadResult {
   error?: string;
 }
 
-type Status = 'idle' | 'running' | 'reading' | 'success-run' | 'success-read' | 'error';
+type Status      = 'idle' | 'running' | 'reading' | 'success-run' | 'success-read' | 'error';
+type PromoStatus = 'idle' | 'promoting' | 'promoted' | 'promo-error';
 
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
@@ -92,9 +93,11 @@ const AUDIT_ICON: Record<string, string> = {
   uef_records_generated:       '⚙️',
   scoring_run_completed:       '📊',
   results_persisted:           '💾',
-  decision_pack_created:       '📋',
-  privacy_threshold_checked:   '🔒',
-  privacy_threshold_suppressed:'🛡️',
+  decision_pack_created:          '📋',
+  decision_pack_status_ready:     '✅',
+  decision_pack_status_exported:  '📤',
+  privacy_threshold_checked:      '🔒',
+  privacy_threshold_suppressed:   '🛡️',
 };
 
 function pct(v: number) { return `${(v * 100).toFixed(0)}%`; }
@@ -128,6 +131,8 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
   const [runResult, setRunResult]   = useState<RunResult | null>(null);
   const [readResult, setReadResult] = useState<ReadResult | null>(null);
   const [errorMsg, setErrorMsg]     = useState<string | null>(null);
+  const [promoStatus, setPromoStatus] = useState<PromoStatus>('idle');
+  const [promoError, setPromoError]   = useState<string | null>(null);
 
   const TENANT      = 'OP-001';
   const PERIOD      = '2026-Q1';
@@ -163,8 +168,34 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
     } catch (e) { setErrorMsg(e instanceof Error ? e.message : String(e)); setStatus('error'); }
   }
 
+  async function handlePromote(nextStatus: 'ready' | 'exported') {
+    setPromoStatus('promoting'); setPromoError(null);
+    try {
+      const res = await fetch('/api/admin/decision-pack/status', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantCode: TENANT, reportingPeriod: PERIOD, nextStatus }),
+      });
+      const data = await res.json() as { ok?: boolean; error?: string; auditWarning?: string };
+      if (!res.ok || !data.ok) {
+        setPromoError(data.error ?? `HTTP ${res.status}`);
+        setPromoStatus('promo-error');
+        return;
+      }
+      setPromoStatus('promoted');
+      await handleRead();
+    } catch (e) {
+      setPromoError(e instanceof Error ? e.message : String(e));
+      setPromoStatus('promo-error');
+    }
+  }
+
   // Timestamp from last successful read
   const lastTs = readResult?.kora_index?.created_at;
+
+  // Latest known Decision Pack status — from read result (authoritative) or run result
+  const latestDpStatus = readResult?.decision_pack?.status ?? runResult?.decision_pack?.status;
+  const isPromoting    = promoStatus === 'promoting';
 
   return (
     <div className="max-w-2xl mx-auto space-y-5 py-6 px-2">
@@ -249,6 +280,53 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
         </div>
       </div>
 
+      {/* ── C3. Decision Pack lifecycle ── */}
+      {latestDpStatus && (
+        <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Lifecycle Decision Pack</p>
+            <DpStatusBadge status={latestDpStatus} />
+          </div>
+          <p className="text-xs text-slate-400">{dpStatusDescription(latestDpStatus)}</p>
+          <div className="flex gap-2 flex-wrap">
+            {latestDpStatus === 'draft' && (
+              <button
+                onClick={() => handlePromote('ready')}
+                disabled={isPromoting}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-violet-300 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 hover:bg-violet-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isPromoting ? '⏳ Aggiornamento…' : '✓ Marca come Ready'}
+              </button>
+            )}
+            {latestDpStatus === 'ready' && (
+              <button
+                onClick={() => handlePromote('exported')}
+                disabled={isPromoting}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isPromoting ? '⏳ Aggiornamento…' : '↗ Marca come Exported'}
+              </button>
+            )}
+            {latestDpStatus === 'exported' && (
+              <span className="text-xs font-medium text-green-700">✓ Decision Pack esportato — nessuna ulteriore azione disponibile.</span>
+            )}
+          </div>
+          {promoStatus === 'promoted' && (
+            <p className="text-xs font-medium text-green-700">✓ Status aggiornato con successo.</p>
+          )}
+          {promoStatus === 'promo-error' && promoError && (
+            <p className="text-xs text-red-600">⚠ {promoError}</p>
+          )}
+          <p className="text-xs text-slate-400 border-t border-slate-100 pt-2">
+            Se Export PDF automatico non è disponibile (Vercel Hobby): apri{' '}
+            <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="text-violet-600 underline underline-offset-2 hover:text-violet-800">
+              HTML Preview
+            </a>{' '}
+            → Stampa → Salva come PDF.
+          </p>
+        </div>
+      )}
+
       {/* Error */}
       {status === 'error' && errorMsg && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex gap-2">
@@ -324,12 +402,12 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
 
           {/* ── E. Decision Pack ── */}
           {readResult.decision_pack && (
-            <Section title="Decision Pack draft" accent="slate">
-              <div className="flex items-center gap-2 flex-wrap mb-2">
+            <Section title="Decision Pack" accent="slate">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
                 <p className="text-xs font-mono text-slate-600 break-all">{readResult.decision_pack.version_id}</p>
-                <StatusPill status={readResult.decision_pack.status} />
-                <span className="text-xs text-amber-700 border border-amber-200 bg-amber-50 rounded px-1.5 py-0.5">Draft only — not exported</span>
+                <DpStatusBadge status={readResult.decision_pack.status ?? 'unknown'} />
               </div>
+              <p className="text-xs text-slate-400 mb-2">{dpStatusDescription(readResult.decision_pack.status ?? '')}</p>
               <div className="space-y-1 text-xs text-slate-500">
                 {readResult.decision_pack.kora_index_result_id && (
                   <p>Linked KORA Index result: <span className="font-mono text-slate-700">{readResult.decision_pack.kora_index_result_id.slice(0, 8)}…</span></p>
@@ -404,6 +482,36 @@ function Metric({ label, value }: { label: string; value: React.ReactNode }) {
       <div>{value}</div>
     </div>
   );
+}
+
+const DP_STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
+  draft:                   { bg: 'bg-amber-50',  text: 'text-amber-700',  border: 'border-amber-200'  },
+  ready:                   { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
+  exported:                { bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200'  },
+  data_review_required:    { bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200'    },
+  advisor_review_required: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+  archived:                { bg: 'bg-slate-100', text: 'text-slate-600',  border: 'border-slate-200'  },
+  blocked:                 { bg: 'bg-red-100',   text: 'text-red-800',    border: 'border-red-300'    },
+};
+
+function DpStatusBadge({ status }: { status: string }) {
+  const s = DP_STATUS_STYLE[status] ?? { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' };
+  return (
+    <span className={`rounded border ${s.border} ${s.bg} px-2 py-0.5 text-xs font-semibold ${s.text}`}>
+      {status}
+    </span>
+  );
+}
+
+function dpStatusDescription(status: string): string {
+  if (status === 'draft')                   return 'Generato automaticamente dopo scoring run — non ancora validato.';
+  if (status === 'ready')                   return 'Validato internamente — pronto per condivisione o demo.';
+  if (status === 'exported')                return 'Esportato o consegnato come Board Report.';
+  if (status === 'data_review_required')    return 'Revisione dati necessaria prima di procedere.';
+  if (status === 'advisor_review_required') return 'In attesa di revisione advisor.';
+  if (status === 'archived')                return 'Archiviato — non più attivo.';
+  if (status === 'blocked')                 return 'Bloccato — richiede intervento operativo.';
+  return status;
 }
 
 function StatusPill({ status }: { status?: string }) {
