@@ -202,9 +202,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required field: file (CSV).' }, { status: 400 });
   }
   const file             = fileEntry;
-  const tenantCode       = String(formData.get('tenantCode')      ?? 'OP-001');
+  // B13 FASE 1: require explicit tenantCode — no silent OP-001 default
+  const tenantCode = String(formData.get('tenantCode') ?? '').trim();
+  if (!tenantCode) {
+    return NextResponse.json({
+      error: 'tenantCode is required. Select a company explicitly before uploading live data.',
+      hint:  'OP-001 is reserved for synthetic demo data only.',
+    }, { status: 400 });
+  }
   const reportingPeriod  = String(formData.get('reportingPeriod') ?? '2026-Q1');
   const batchLabelInput  = formData.get('batchLabel');
+
+  // B13 FASE 3: pseudonymization confirmation gate
+  const pseudonymizationConfirmation = String(formData.get('pseudonymizationConfirmation') ?? '').trim();
+  if (pseudonymizationConfirmation !== 'true') {
+    return NextResponse.json({
+      error: 'pseudonymizationConfirmation is required and must be "true". Operator must confirm the file is pseudonymized before accepting live data.',
+    }, { status: 400 });
+  }
 
   // B11.3: optional financial metadata (financialNotes intentionally excluded)
   let batchFinancialMeta: BatchFinancialContext | null = null;
@@ -405,12 +420,13 @@ export async function POST(request: NextRequest) {
     action: 'source_batch_created',
     resourceType: 'analytics.source_batch', resourceId: batchId,
     metadata: {
-      batch_id:         batchId,
-      source_type:      'csv_upload',
-      batch_status:     'pending',
-      row_count:        rows.length,
-      tenant_code:      tenantCode,
-      reporting_period: reportingPeriod,
+      batch_id:                   batchId,
+      source_type:                'csv_upload',
+      batch_status:               'pending',
+      row_count:                  rows.length,
+      tenant_code:                tenantCode,
+      reporting_period:           reportingPeriod,
+      pseudonymization_confirmed: true,  // B13 FASE 3: operator confirmation gate
     },
   }));
 

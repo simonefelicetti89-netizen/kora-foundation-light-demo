@@ -152,9 +152,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   // B9.2: read query params for pre-selection (e.g. from /admin/tenants CTA)
   const searchParams = useSearchParams();
 
-  // B9: tenant selector — defaults to OP-001 for backwards compat
+  // B9: tenant selector — no default; operator must select explicitly (B13 footgun fix)
   const [tenantList, setTenantList]       = useState<TenantOption[]>([]);
-  const [TENANT, setTENANT]               = useState(() => searchParams?.get('tenantCode') ?? 'OP-001');
+  const [TENANT, setTENANT]               = useState(() => searchParams?.get('tenantCode') ?? '');
   const [PERIOD, setPERIOD]               = useState(() => searchParams?.get('reportingPeriod') ?? '2026-Q1');
 
   // Load available tenants on mount
@@ -183,6 +183,17 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   // B4.2 — Accept batch state
   const [acceptStatus, setAcceptStatus] = useState<'idle'|'loading'|'created'|'rejected'|'error'>('idle');
   const [acceptResult, setAcceptResult] = useState<AcceptResult | null>(null);
+
+  // B13 FASE 1: derived tenant guards
+  const isTenantSelected = TENANT.trim() !== '';
+  const isOp001          = TENANT === 'OP-001';
+
+  // B13 FASE 3: pseudonymization confirmation gate — all 4 required before accept
+  const [pCheck1, setPCheck1] = useState(false); // no names/emails/CF/phones/addresses
+  const [pCheck2, setPCheck2] = useState(false); // identifiers are non-reversible pseudonyms
+  const [pCheck3, setPCheck3] = useState(false); // aggregate org analysis only, not individual
+  const [pCheck4, setPCheck4] = useState(false); // aware of PII strict-reject and no individual reports
+  const allPseudonymChecked   = pCheck1 && pCheck2 && pCheck3 && pCheck4;
 
   // B11.3: batch-level financial metadata — collected here, sent with accept
   // financialNotes is local only — intentionally NOT sent to server (privacy boundary)
@@ -270,6 +281,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           containsComplianceSpend: finComplianceSpd,
         }));
       }
+      // B13 FASE 3: pseudonymization confirmation gate
+      fd.append('pseudonymizationConfirmation', 'true');
       const res  = await fetch('/api/admin/data-intake/accept', {
         method: 'POST', credentials: 'include', body: fd,
       });
@@ -382,7 +395,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           />
           <button
             onClick={handleValidateCsv}
-            disabled={!csvFile || csvStatus === 'loading'}
+            disabled={!csvFile || csvStatus === 'loading' || !isTenantSelected}
             className="rounded-lg bg-slate-800 text-white px-4 py-1.5 text-xs font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {csvStatus === 'loading' ? '⏳ Validating…' : '✓ Validate CSV'}
@@ -541,14 +554,42 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           </div>
         )}
 
+        {/* B13 FASE 3 — Pseudonymization confirmation gate (shown after dry-run passed) */}
+        {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
+          <div className="rounded-lg border border-slate-300 bg-white px-4 py-4 space-y-3">
+            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Conferma pseudonimizzazione</p>
+            <div className="space-y-2">
+              {([
+                [pCheck1, setPCheck1, 'Il file non contiene nomi, cognomi, email, codici fiscali, telefoni o indirizzi.'],
+                [pCheck2, setPCheck2, 'Eventuali identificativi lavoratore sono pseudonimi non reversibili.'],
+                [pCheck3, setPCheck3, 'I dati sono caricati per analisi organizzativa aggregata, non per valutazione individuale.'],
+                [pCheck4, setPCheck4, 'Sono consapevole che KORA rifiuterà PII dirette e non produrrà report individuali.'],
+              ] as [boolean, (v: boolean) => void, string][]).map(([val, setter, label], i) => (
+                <label key={i} className="flex items-start gap-2 cursor-pointer">
+                  <input type="checkbox" checked={val} onChange={e => setter(e.target.checked)}
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#6156F5] focus:ring-[#6156F5]" />
+                  <span className="text-xs text-slate-700">{label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* B4.2 — Accept batch section (shown after dry-run passed) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
           <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-2">
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Create Intake Batch</p>
             <p className="text-[10px] text-slate-400">Only PII-free / pseudonymized files can be persisted. Scoring is not executed in B4.2.</p>
+            {!isTenantSelected && (
+              <p className="text-[10px] text-red-600 font-medium">⚠ Seleziona un&apos;azienda prima di procedere.</p>
+            )}
+            {!allPseudonymChecked && isTenantSelected && (
+              <p className="text-[10px] text-amber-700 font-medium">⚠ Conferma tutte le dichiarazioni di pseudonimizzazione per procedere.</p>
+            )}
             <button
               onClick={handleAcceptBatch}
-              className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
+              disabled={!isTenantSelected || !allPseudonymChecked}
+              className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               ↓ Create intake batch
             </button>
@@ -685,6 +726,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               }}
               className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 min-w-[160px]"
             >
+              <option value="">— Seleziona azienda —</option>
               {tenantList.map(t => (
                 <option key={t.tenantCode} value={t.tenantCode}>
                   {t.tenantCode} — {t.companyName}
@@ -695,9 +737,21 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <input
               value={TENANT}
               onChange={e => setTENANT(e.target.value.toUpperCase())}
-              placeholder="OP-001"
+              placeholder="Codice azienda"
               className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 w-36"
             />
+          )}
+          {/* B13: OP-001 synthetic warning */}
+          {isOp001 && (
+            <span className="rounded border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+              Synthetic demo tenant — non usare per dati reali.
+            </span>
+          )}
+          {/* B13: no tenant selected alert */}
+          {!isTenantSelected && (
+            <p className="text-[10px] text-red-600 font-medium">
+              Seleziona un&apos;azienda prima di caricare dati. OP-001 è riservato alla demo synthetic.
+            </p>
           )}
         </div>
         <div>
