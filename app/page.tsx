@@ -1,127 +1,89 @@
-// KORA Landing — True Landing Page
-// Static server component. No backend, no hooks, no sidebar.
+// KORA Landing — 100%
+// Server component. No hooks, no backend, no sidebar.
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { KoraLogo } from '@/components/brand/KoraLogo';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
-// ── Decision Pack Visual — inline mock, design element only ──────────────────
+// ── KORA Instrument — brand visual, hero right column ────────────────────────
+// Ring gauge mostra il KORA Index — stesso linguaggio visivo dell'app ma
+// sintetico, non il componente IndexRingCard (che richiede client+servizi).
 
-const PILLAR_BARS = [
-  { label: 'LIFE',       pct: 44 },
-  { label: 'GROWTH',     pct: 27 },
-  { label: 'CONNECTION', pct: 12 },
-  { label: 'IMPACT',     pct: 11 },
-  { label: 'LEGACY',     pct:  6 },
-] as const;
+function KoraInstrument() {
+  const R    = 72;
+  const CIRC = 2 * Math.PI * R;
+  const dash = (34 / 100) * CIRC;
 
-function DecisionPackVisual() {
   return (
     <div
-      role="img"
-      aria-label="Anteprima KORA Decision Pack — dati sintetici demo"
       style={{
-        background:   TOKENS.ink,
-        borderRadius: 16,
-        padding:      '1.875rem',
-        position:     'relative',
-        overflow:     'hidden',
+        background:    'rgba(247,245,239,0.035)',
+        border:        '1px solid rgba(247,245,239,0.09)',
+        borderRadius:  20,
+        padding:       '2.25rem 2rem',
+        display:       'flex',
+        flexDirection: 'column',
+        alignItems:    'center',
+        gap:           '1.5rem',
       }}
     >
-      {/* Brandmark ring — decorative background */}
-      <svg
-        viewBox="108 100 212 220"
-        width="180" height="180"
-        aria-hidden="true"
-        style={{ position: 'absolute', top: -24, right: -24, opacity: 0.055, pointerEvents: 'none' }}
-      >
-        <path
-          fillRule="evenodd" clipRule="evenodd"
-          d="M148.606 117.911C188.736 101.225 233.839 101.225 273.955 117.911C286.755 123.25 296.922 133.456 302.228 146.29C318.85 186.571 318.85 231.844 302.228 272.112C296.908 284.96 286.741 295.165 273.955 300.491C233.825 317.176 188.722 317.176 148.606 300.491C135.807 295.151 125.639 284.946 120.334 272.112C103.711 231.83 103.711 186.557 120.334 146.29C125.653 133.442 135.821 123.236 148.606 117.911ZM211.095 124.946C190.123 124.946 171.492 138.323 159.759 158.999C139.147 170.776 125.835 189.477 125.835 210.529C125.835 231.58 139.161 250.282 159.759 262.059C171.492 282.749 190.123 296.111 211.095 296.111C232.067 296.111 250.698 282.735 262.431 262.059C283.043 250.282 296.355 231.58 296.355 210.529C296.355 189.477 283.029 170.776 262.431 158.999C250.698 138.309 232.067 124.946 211.095 124.946Z"
-          fill="#FFFFFF"
-        />
-      </svg>
-
-      {/* Header */}
-      <p style={{ fontFamily: 'monospace', fontSize: '9.5px', color: 'rgba(247,245,239,0.42)', letterSpacing: '0.03em', marginBottom: 2 }}>
-        KORA Decision Pack · Foundation Light v0.1
+      {/* Label */}
+      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.35)', alignSelf: 'flex-start' }}>
+        KORA Index v3 · Foundation Light
       </p>
-      <p style={{ fontFamily: 'monospace', fontSize: '9px', color: 'rgba(247,245,239,0.26)', letterSpacing: '0.02em', marginBottom: '1.125rem' }}>
-        Meridiana Group S.r.l. · Q1–Q3 2025
-      </p>
-      <div style={{ height: 1, background: 'rgba(247,245,239,0.09)', marginBottom: '1.125rem' }} />
 
-      {/* KORA Index + CS — primary metrics */}
-      <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'flex-end', marginBottom: '1.125rem' }}>
-        <div>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '9px', letterSpacing: '0.09em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.38)', marginBottom: 5 }}>
-            KORA Index v3
-          </p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-            <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '3.25rem', color: '#F7F5EF', lineHeight: 1, letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums' }}>
-              34
-            </span>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'rgba(247,245,239,0.38)' }}>/100</span>
-          </div>
+      {/* Ring gauge */}
+      <div style={{ position: 'relative', width: 180, height: 180, flexShrink: 0 }}>
+        <svg viewBox="0 0 180 180" width="180" height="180" style={{ display: 'block' }}>
+          <circle cx="90" cy="90" r={R} fill="none" stroke="rgba(247,245,239,0.07)" strokeWidth="11" />
+          <circle
+            cx="90" cy="90" r={R}
+            fill="none"
+            stroke={TOKENS.accent}
+            strokeWidth="11"
+            strokeLinecap="round"
+            strokeDasharray={`${dash} ${CIRC}`}
+            transform="rotate(-90 90 90)"
+          />
+        </svg>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+          <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '3rem', color: '#F7F5EF', lineHeight: 1, letterSpacing: '-0.04em', fontVariantNumeric: 'tabular-nums' }}>
+            34
+          </span>
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'rgba(247,245,239,0.38)', letterSpacing: '0.02em' }}>/100</span>
         </div>
-        <div style={{ paddingBottom: 4 }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '9px', letterSpacing: '0.09em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.38)', marginBottom: 5 }}>
+      </div>
+
+      {/* CS + Safeguard */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', width: '100%' }}>
+        <div>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '9.5px', letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.32)', marginBottom: 6 }}>
             Confidence Score
           </p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-            <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.625rem', color: TOKENS.accent, lineHeight: 1, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums' }}>
-              60%
-            </span>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', color: 'rgba(247,245,239,0.28)' }}>est.</span>
-          </div>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.accent, lineHeight: 1, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
+            60%
+          </p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', color: 'rgba(247,245,239,0.25)', marginTop: 3 }}>esterno · peso = 0</p>
+        </div>
+        <div>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '9.5px', letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.32)', marginBottom: 6 }}>
+            Activation Safeguard
+          </p>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(186,117,23,0.22)', color: '#D4A017', borderRadius: 5, padding: '5px 11px', fontSize: '11px', fontFamily: 'var(--font-inter)', fontWeight: 600 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#D4A017', flexShrink: 0 }} />
+            Warning
+          </span>
         </div>
       </div>
 
-      {/* Activation Safeguard */}
-      <div style={{ marginBottom: '1.125rem' }}>
-        <span
-          style={{
-            display:      'inline-flex',
-            alignItems:   'center',
-            gap:          6,
-            background:   'rgba(186,117,23,0.20)',
-            color:        '#D4A017',
-            borderRadius: 6,
-            padding:      '5px 11px',
-            fontSize:     '10.5px',
-            fontFamily:   'var(--font-inter)',
-            fontWeight:   600,
-          }}
-        >
-          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#D4A017', flexShrink: 0 }} />
-          Activation Safeguard · Warning
-        </span>
+      {/* Footer mono */}
+      <div style={{ width: '100%', borderTop: '1px solid rgba(247,245,239,0.07)', paddingTop: '0.875rem' }}>
+        <p style={{ fontFamily: 'monospace', fontSize: '9px', color: 'rgba(247,245,239,0.22)', lineHeight: 1.65 }}>
+          Meridiana Group S.r.l. · Q1–Q3 2025
+          {'\n'}pre_empirical_calibration · synthetic_demo_data: true
+        </p>
       </div>
-
-      <div style={{ height: 1, background: 'rgba(247,245,239,0.08)', marginBottom: '1rem' }} />
-
-      {/* Pillar bars */}
-      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '9px', letterSpacing: '0.09em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.32)', marginBottom: '0.5rem' }}>
-        Distribuzione pillar
-      </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-        {PILLAR_BARS.map(({ label, pct }, i) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontFamily: 'monospace', fontSize: '8.5px', color: 'rgba(247,245,239,0.38)', width: 68, flexShrink: 0 }}>{label}</span>
-            <div style={{ flex: 1, height: 4, borderRadius: 9999, background: 'rgba(247,245,239,0.07)', overflow: 'hidden' }}>
-              <div style={{ height: 4, borderRadius: 9999, width: `${pct}%`, background: i === 0 ? TOKENS.accent : `rgba(247,245,239,${0.68 - i * 0.11})` }} />
-            </div>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 600, color: 'rgba(247,245,239,0.45)', width: 28, textAlign: 'right' as const, fontVariantNumeric: 'tabular-nums' }}>{pct}%</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Footer */}
-      <div style={{ height: 1, background: 'rgba(247,245,239,0.07)', margin: '1rem 0 0.75rem' }} />
-      <p style={{ fontFamily: 'monospace', fontSize: '8.5px', color: 'rgba(247,245,239,0.20)', lineHeight: 1.65 }}>
-        KORA-METHOD-v0.1.0 · pre_empirical_calibration
-        {'\n'}synthetic_demo_data: true · organization-level only
-      </p>
     </div>
   );
 }
@@ -180,11 +142,11 @@ const PACKAGES = [
 ] as const;
 
 const OUTPUTS = [
-  { label: 'Executive Cockpit',    href: '/company',            desc: 'KORA Index, Safeguard, priorità operative — prima lettura C-suite.' },
-  { label: 'KORA Index Detail',    href: '/company/kora-index', desc: '10 componenti, 4 macroblocchi, pipeline 14-stage, explainability.' },
-  { label: 'Activation & Debt',    href: '/company/activation', desc: 'Maggioranza silenziosa, concentrazione IU, Activation Debt per sito e pillar.' },
-  { label: 'Financial Governance', href: '/company/financial',  desc: 'Budget-to-Human-Impact, costo per IU, correlazione KPI aggregata.' },
-  { label: 'Decision Pack',        href: '/company/reports',    desc: 'Report board-ready: KORA Index, pillar analysis, raccomandazioni, confini espliciti.' },
+  { label: 'Executive Cockpit',    href: '/company',            accent: false, desc: 'KORA Index, Safeguard, priorità operative — prima lettura C-suite.' },
+  { label: 'KORA Index Detail',    href: '/company/kora-index', accent: false, desc: '10 componenti, 4 macroblocchi, pipeline 14-stage, explainability.' },
+  { label: 'Activation & Debt',    href: '/company/activation', accent: false, desc: 'Maggioranza silenziosa, concentrazione IU, Activation Debt per sito e pillar.' },
+  { label: 'Financial Governance', href: '/company/financial',  accent: false, desc: 'Budget-to-Human-Impact, costo per IU, correlazione KPI aggregata.' },
+  { label: 'Decision Pack',        href: '/company/reports',    accent: true,  desc: 'Report board-ready: KORA Index, pillar analysis, raccomandazioni e confini espliciti.' },
 ] as const;
 
 const FAQS = [
@@ -194,26 +156,19 @@ const FAQS = [
   { q: 'Si può partire da file Excel o CSV?',               a: 'Sì. Foundation Light è progettato per export standard: welfare provider, LMS, gestionale HR, file budget. Nessuna integrazione API richiesta.' },
 ] as const;
 
-const BOUNDARY_ITEMS = [
-  { label: 'Organization-level only',   note: 'Il KORA Index è un output aziendale aggregato. Nessun ranking o rating individuale.' },
-  { label: 'Privacy soglia N ≥ 10',     note: 'Nessun segmento sotto soglia di 10 lavoratori è visibile al datore di lavoro.' },
-  { label: 'Confidence Score esterno',  note: 'CS indica affidabilità delle fonti dati. Peso = 0 nel calcolo del KORA Index v3.' },
-  { label: 'Pre-empirical calibration', note: 'Output direzionale — non certificazione pubblica, non attestazione regolatoria.' },
-] as const;
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function LandingPage() {
   return (
     <div style={{ fontFamily: 'var(--font-inter)', color: TOKENS.ink }}>
 
-      {/* ── NAV ──────────────────────────────────────────────────────────── */}
+      {/* ── NAV (canvas, sticky) ─────────────────────────────────────────── */}
       <nav
         style={{
           position:       'sticky',
           top:            0,
           zIndex:         50,
-          background:     'var(--kora-canvas)',
+          background:     TOKENS.canvas,
           borderBottom:   TOKENS.cardBorder,
           padding:        '0 2.5rem',
           display:        'flex',
@@ -229,76 +184,73 @@ export default function LandingPage() {
           <Link href="/demo-guide" style={{ fontSize: '12px', fontWeight: 500, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
             Guida demo
           </Link>
-          <Link
-            href="/company"
-            style={{ fontSize: '12px', fontWeight: 600, color: '#FFFFFF', background: TOKENS.ink, borderRadius: 6, padding: '6px 16px', textDecoration: 'none' }}
-          >
+          <Link href="/company" style={{ fontSize: '12px', fontWeight: 600, color: '#FFF', background: TOKENS.ink, borderRadius: 6, padding: '7px 16px', textDecoration: 'none' }}>
             Executive Cockpit →
           </Link>
         </div>
       </nav>
 
-      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      {/* ── HERO (ink) ───────────────────────────────────────────────────── */}
       <section
         style={{
-          minHeight: 'calc(100vh - 56px)',
-          display:   'flex',
-          alignItems:'center',
-          padding:   '4rem 2.5rem',
+          background:    TOKENS.ink,
+          minHeight:     'calc(100vh - 56px)',
+          display:       'flex',
+          alignItems:    'center',
+          padding:       '4rem 2.5rem',
         }}
       >
-        <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
-          <div className="grid gap-16 lg:grid-cols-2 items-center">
+        <div style={{ maxWidth: 1120, margin: '0 auto', width: '100%' }}>
+          <div className="grid gap-14 lg:grid-cols-2 items-center">
 
-            {/* Left — text */}
-            <div>
-              <p
-                style={{
-                  fontFamily:    'var(--font-inter)',
-                  fontWeight:    500,
-                  fontSize:      '11px',
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  color:         TOKENS.inkHint,
-                  marginBottom:  '1.375rem',
-                }}
-              >
+            {/* Left — brand statement + CTA */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+              {/* Logo — brand anchor */}
+              <div>
+                <Image
+                  src="/kora/logo-white.png"
+                  alt="KORA"
+                  width={188}
+                  height={85}
+                  priority
+                  style={{ display: 'block', opacity: 0.90 }}
+                />
+              </div>
+
+              {/* Eyebrow */}
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.40)' }}>
                 Human Impact Intelligence Platform
               </p>
 
+              {/* Headline */}
               <h1
-                className="font-kora-serif text-kora-ink"
+                className="font-kora-serif"
                 style={{
-                  fontSize:      'clamp(3rem, 6vw, 4.75rem)',
-                  letterSpacing: '-0.035em',
-                  lineHeight:    1.06,
-                  marginBottom:  '1.625rem',
+                  fontSize:      'clamp(3.25rem, 6.5vw, 5.25rem)',
+                  letterSpacing: '-0.040em',
+                  lineHeight:    1.04,
+                  color:         '#F7F5EF',
+                  margin:        0,
                 }}
               >
                 Misura ciò che accade dopo la spesa.
               </h1>
 
-              <p
-                style={{
-                  fontSize:     '15px',
-                  color:        TOKENS.inkSecondary,
-                  lineHeight:   1.72,
-                  maxWidth:     '52ch',
-                  marginBottom: '2.25rem',
-                }}
-              >
+              {/* Subline */}
+              <p style={{ fontSize: '15px', color: 'rgba(247,245,239,0.60)', lineHeight: 1.70, maxWidth: '50ch' }}>
                 KORA trasforma dati aggregati su welfare, formazione e iniziative aziendali
-                in intelligence di attivazione organizzativa, evidenze verificate
-                e Decision Pack board-ready.
+                in intelligence di attivazione organizzativa, evidenze e Decision Pack board-ready.
               </p>
 
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.875rem', marginBottom: '2rem' }}>
+              {/* CTAs — subito visibili */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.875rem' }}>
                 <Link
-                  href="#pilot"
+                  href="#foundation-light"
                   style={{
-                    borderRadius: 8, background: TOKENS.ink,
+                    borderRadius: 8, background: TOKENS.accent,
                     padding: '11px 26px', fontSize: '14px', fontWeight: 600,
-                    color: '#FFFFFF', textDecoration: 'none',
+                    color: '#FFF', textDecoration: 'none',
                   }}
                 >
                   Scopri Foundation Light →
@@ -306,85 +258,91 @@ export default function LandingPage() {
                 <Link
                   href="/demo-guide"
                   style={{
-                    borderRadius: 8, border: `1.5px solid ${TOKENS.ink}22`,
+                    borderRadius: 8, border: '1.5px solid rgba(247,245,239,0.25)',
                     padding: '11px 26px', fontSize: '14px', fontWeight: 600,
-                    color: TOKENS.inkSecondary, textDecoration: 'none',
-                    background: 'transparent',
+                    color: 'rgba(247,245,239,0.75)', textDecoration: 'none',
                   }}
                 >
                   Guida demo
                 </Link>
-                <Link href="/company/reports" style={{ fontSize: '13px', color: TOKENS.inkHint, textDecoration: 'none' }}>
+                <Link href="/company/reports" style={{ fontSize: '13px', color: 'rgba(247,245,239,0.38)', textDecoration: 'none' }}>
                   Decision Pack
                 </Link>
               </div>
 
-              <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint, lineHeight: 1.65 }}>
+              {/* Boundary */}
+              <p style={{ fontFamily: 'monospace', fontSize: '10px', color: 'rgba(247,245,239,0.28)', lineHeight: 1.65 }}>
                 KORA misura organizzazioni, non individui. · pre_empirical_calibration
               </p>
             </div>
 
-            {/* Right — Decision Pack visual */}
-            <div>
-              <DecisionPackVisual />
+            {/* Right — KORA Instrument (brand visual) */}
+            <div className="hidden lg:block">
+              <KoraInstrument />
             </div>
 
           </div>
         </div>
       </section>
 
-      {/* ── CATEGORY — ink, strong visual statement ───────────────────────── */}
-      <section style={{ background: TOKENS.ink, padding: '5rem 2.5rem' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+      {/* ── IL VUOTO — canvas, narrativo ─────────────────────────────────── */}
+      <section style={{ background: TOKENS.canvas, padding: '6rem 2.5rem' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
 
-          {/* Big serif statement */}
+          {/* Statement */}
           <p
-            className="font-kora-serif"
+            className="font-kora-serif text-kora-ink"
             style={{
-              fontSize:     'clamp(1.75rem, 4vw, 2.875rem)',
-              letterSpacing:'-0.025em',
-              lineHeight:   1.18,
-              color:        '#F7F5EF',
-              marginBottom: '3rem',
-              maxWidth:     '22ch',
+              fontSize:      'clamp(2.25rem, 4.5vw, 3.5rem)',
+              letterSpacing: '-0.030em',
+              lineHeight:    1.12,
+              marginBottom:  '1.5rem',
+              maxWidth:      '18ch',
             }}
           >
-            Non welfare. Non HR. Non sorveglianza.
+            Le organizzazioni spendono. Ma non sanno cosa accade dopo.
           </p>
 
-          <div className="grid gap-12 sm:grid-cols-2">
+          <p style={{ fontSize: '15px', color: TOKENS.inkSecondary, lineHeight: 1.72, maxWidth: '60ch', marginBottom: '3.5rem' }}>
+            Welfare, formazione, iniziative people: miliardi investiti ogni anno.
+            Ma la distanza tra la spesa e ciò che viene davvero attivato è invisibile,
+            non misurata, non leggibile. KORA nasce per colmare quel vuoto.
+          </p>
+
+          {/* Comparison */}
+          <div className="grid gap-8 sm:grid-cols-2">
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.35)', marginBottom: '1.125rem' }}>
-                KORA non è — mai
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '1rem' }}>
+                Cosa le aziende vedono oggi
               </p>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {[
-                  'Welfare platform o benefits marketplace',
-                  'HR dashboard o strumento di valutazione lavoratori',
-                  'Sistema di sorveglianza, ranking o gamification',
-                  'Certificazione ESG automatica o compliance garantita',
-                  'ROI garantito o previsione causale di outcome',
+                  'Spesa welfare: totale annuo allocato',
+                  'Training completions: count registrato',
+                  'Partecipazione: percentuale aggregata',
+                  'Engagement survey: punteggio medio',
+                  'ESG reporting: dati rendicontati',
                 ].map((item) => (
-                  <li key={item} style={{ display: 'flex', gap: '0.75rem', fontSize: '14px', color: 'rgba(247,245,239,0.55)', lineHeight: 1.5 }}>
-                    <span style={{ flexShrink: 0, fontWeight: 700, color: 'rgba(247,245,239,0.22)', marginTop: 2 }}>✕</span>
+                  <li key={item} style={{ display: 'flex', gap: '0.75rem', fontSize: '14px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+                    <span style={{ flexShrink: 0, fontWeight: 700, color: TOKENS.inkHint, marginTop: 2 }}>—</span>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.35)', marginBottom: '1.125rem' }}>
-                KORA è
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: '1rem' }}>
+                Cosa KORA rivela
               </p>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {[
-                  'Human Impact Intelligence Platform',
-                  'Misura organizzazioni — mai individui',
-                  'Collega budget, attivazione verificata, evidenza e decisione',
-                  'KORA Index · Confidence Score · Activation Safeguard',
-                  'Metodologia versionata, spiegabile, privacy-first',
+                  'Activation Rate: % workforce con attivazione verificata',
+                  'Impact Units: intensità per pillar e lavoratore',
+                  'Activation Debt: budget non convertito in attivazione',
+                  'Confidence Score: qualità delle evidenze raccolte',
+                  'Decision Pack: raccomandazioni board-ready spiegabili',
                 ].map((item) => (
-                  <li key={item} style={{ display: 'flex', gap: '0.75rem', fontSize: '14px', color: '#F7F5EF', lineHeight: 1.5 }}>
+                  <li key={item} style={{ display: 'flex', gap: '0.75rem', fontSize: '14px', color: TOKENS.ink, lineHeight: 1.55 }}>
                     <span style={{ flexShrink: 0, fontWeight: 700, color: TOKENS.accent, marginTop: 2 }}>✓</span>
                     {item}
                   </li>
@@ -395,10 +353,65 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── FOUNDATION LIGHT PILOT ───────────────────────────────────────── */}
-      <section id="pilot" style={{ padding: '5rem 2.5rem', borderBottom: TOKENS.cardBorder }}>
+      {/* ── CATEGORY (white, crisp) ───────────────────────────────────────── */}
+      <section style={{ background: TOKENS.surface, padding: '5rem 2.5rem' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+            Una nuova categoria
+          </p>
+          <h2
+            className="font-kora-serif text-kora-ink"
+            style={{ fontSize: 'clamp(2rem, 4vw, 2.875rem)', letterSpacing: '-0.025em', lineHeight: 1.12, marginBottom: '3rem' }}
+          >
+            Non welfare. Non HR. Non sorveglianza.
+          </h2>
+          <div className="grid gap-10 sm:grid-cols-2">
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '1rem' }}>
+                KORA non è — mai
+              </p>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {[
+                  'Welfare platform o benefits marketplace',
+                  'HR dashboard o strumento di valutazione lavoratori',
+                  'Sistema di sorveglianza, ranking o gamification',
+                  'Certificazione ESG automatica o compliance garantita',
+                  'ROI garantito o previsione causale di outcome',
+                ].map((item) => (
+                  <li key={item} style={{ display: 'flex', gap: '0.75rem', fontSize: '14px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+                    <span style={{ flexShrink: 0, fontWeight: 700, color: 'rgba(20,18,46,0.25)', marginTop: 2 }}>✕</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: '1rem' }}>
+                KORA è
+              </p>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {[
+                  'Human Impact Intelligence Platform',
+                  'Misura organizzazioni — mai individui',
+                  'Collega budget, attivazione verificata, evidenza, decisione',
+                  'KORA Index · Confidence Score · Activation Safeguard',
+                  'Metodologia versionata, spiegabile, privacy-first',
+                ].map((item) => (
+                  <li key={item} style={{ display: 'flex', gap: '0.75rem', fontSize: '14px', color: TOKENS.ink, lineHeight: 1.55 }}>
+                    <span style={{ flexShrink: 0, fontWeight: 700, color: TOKENS.accent, marginTop: 2 }}>✓</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FOUNDATION LIGHT (canvas) ─────────────────────────────────────── */}
+      <section id="foundation-light" style={{ background: TOKENS.canvas, padding: '6rem 2.5rem', borderTop: TOKENS.cardBorder }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
             Offerta pilot
           </p>
           <h2
@@ -407,46 +420,47 @@ export default function LandingPage() {
           >
             Foundation Light
           </h2>
-          <p style={{ fontSize: '14px', color: TOKENS.inkSecondary, lineHeight: 1.7, maxWidth: '60ch', marginBottom: '0.75rem' }}>
+          <p style={{ fontSize: '15px', color: TOKENS.inkSecondary, lineHeight: 1.70, maxWidth: '60ch', marginBottom: '0.75rem' }}>
             Un percorso guidato da 4 a 10 settimane, supportato dal team KORA.
             Non un SaaS self-service — un prodotto diagnostico con deliverable verificati
             e confini metodologici espliciti.
           </p>
-          <p style={{ fontSize: '12px', color: TOKENS.inkHint, marginBottom: '2.75rem', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '12px', color: TOKENS.inkHint, marginBottom: '3rem', lineHeight: 1.6 }}>
             Il costo dipende da perimetro, qualità dei dati e siti coinvolti.
-            Ogni pilot inizia con una valutazione preliminare senza impegno automatico.
+            Ogni pilot inizia con una valutazione preliminare — senza impegno automatico.
           </p>
 
           {/* Packages */}
-          <div className="grid gap-5 sm:grid-cols-3" style={{ marginBottom: '2.75rem' }}>
+          <div className="grid gap-5 sm:grid-cols-3" style={{ marginBottom: '3rem' }}>
             {PACKAGES.map((pkg) => (
               <div
                 key={pkg.id}
                 style={{
-                  background:    pkg.highlight ? `${TOKENS.accent}06` : TOKENS.surface,
+                  background:    pkg.highlight ? TOKENS.surface : TOKENS.surface,
                   border:        pkg.highlight ? `2px solid ${TOKENS.accent}` : TOKENS.cardBorder,
                   borderRadius:  14,
-                  padding:       '1.5rem',
+                  padding:       '1.625rem',
                   display:       'flex',
                   flexDirection: 'column',
-                  gap:           14,
+                  gap:           16,
                   position:      'relative',
+                  boxShadow:     pkg.highlight ? `0 0 0 4px ${TOKENS.accent}10` : 'none',
                 }}
               >
                 {pkg.highlight && (
-                  <span style={{ position: 'absolute', top: -12, left: 16, fontSize: '9px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: TOKENS.accent, color: '#FFF', borderRadius: 4, padding: '2px 9px' }}>
+                  <span style={{ position: 'absolute', top: -13, left: 18, fontSize: '9px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: TOKENS.accent, color: '#FFF', borderRadius: 4, padding: '2px 9px' }}>
                     Raccomandato
                   </span>
                 )}
                 <div>
-                  <span style={{ fontSize: '9px', fontWeight: 600, background: pkg.highlight ? `${TOKENS.accent}14` : TOKENS.inkBorder, color: pkg.highlight ? TOKENS.accent : TOKENS.inkHint, borderRadius: 4, padding: '2px 7px' }}>
+                  <span style={{ fontSize: '9px', fontWeight: 600, background: pkg.highlight ? `${TOKENS.accent}14` : TOKENS.inkBorder, color: pkg.highlight ? TOKENS.accent : TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
                     {pkg.duration}
                   </span>
-                  <p style={{ fontSize: '13.5px', fontWeight: 700, color: TOKENS.ink, marginTop: 9, lineHeight: 1.3 }}>{pkg.title}</p>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: TOKENS.ink, marginTop: 10, lineHeight: 1.3 }}>{pkg.title}</p>
                 </div>
-                <ul style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+                <ul style={{ display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
                   {pkg.items.map((item) => (
-                    <li key={item} style={{ display: 'flex', gap: 7, fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
+                    <li key={item} style={{ display: 'flex', gap: 8, fontSize: '12.5px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
                       <span style={{ flexShrink: 0, color: TOKENS.inkHint, marginTop: 1 }}>·</span>
                       {item}
                     </li>
@@ -456,132 +470,151 @@ export default function LandingPage() {
                   <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.875rem', color: TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                     {pkg.price}
                   </p>
-                  <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.5 }}>{pkg.priceNote}</p>
-                  <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.inkSecondary, marginTop: 7 }}>Deliverable: {pkg.deliverable}</p>
+                  <p style={{ fontSize: '10.5px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.5 }}>{pkg.priceNote}</p>
+                  <p style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.inkSecondary, marginTop: 8 }}>Deliverable: {pkg.deliverable}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* FAQ */}
-          <details style={{ borderRadius: 12, border: TOKENS.cardBorder, overflow: 'hidden' }}>
-            <summary style={{ cursor: 'pointer', padding: '1rem 1.125rem', fontSize: '13px', fontWeight: 600, color: TOKENS.inkSecondary, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: TOKENS.surface }}>
-              Domande frequenti
+          {/* FAQ collapsible */}
+          <details style={{ borderRadius: 12, border: TOKENS.cardBorderStrong, overflow: 'hidden', background: TOKENS.surface }}>
+            <summary style={{ cursor: 'pointer', padding: '1rem 1.25rem', fontSize: '13px', fontWeight: 600, color: TOKENS.inkSecondary, userSelect: 'none', listStyle: 'none', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              Domande frequenti sul pilot
               <span style={{ fontSize: '11px', color: TOKENS.inkHint, fontWeight: 400 }}>espandi ↓</span>
             </summary>
             {FAQS.map((faq, i) => (
-              <div key={i} style={{ padding: '1rem 1.125rem', borderTop: TOKENS.cardBorder, background: TOKENS.surface }}>
+              <div key={i} style={{ padding: '1rem 1.25rem', borderTop: TOKENS.cardBorder }}>
                 <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink, marginBottom: 5 }}>{faq.q}</p>
-                <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.7 }}>{faq.a}</p>
+                <p style={{ fontSize: '12.5px', color: TOKENS.inkSecondary, lineHeight: 1.70 }}>{faq.a}</p>
               </div>
             ))}
           </details>
         </div>
       </section>
 
-      {/* ── OUTPUT KORA ──────────────────────────────────────────────────── */}
-      <section style={{ padding: '5rem 2.5rem', borderBottom: TOKENS.cardBorder }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+      {/* ── OUTPUTS (white) ───────────────────────────────────────────────── */}
+      <section style={{ background: TOKENS.surface, padding: '5rem 2.5rem' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
             Output Foundation Light
           </p>
           <h2
             className="font-kora-serif text-kora-ink"
-            style={{ fontSize: 'clamp(2rem, 4vw, 2.875rem)', letterSpacing: '-0.025em', lineHeight: 1.12, marginBottom: '2.25rem' }}
+            style={{ fontSize: 'clamp(2rem, 4vw, 2.875rem)', letterSpacing: '-0.025em', lineHeight: 1.12, marginBottom: '2.5rem' }}
           >
             Cosa produce KORA
           </h2>
-          <div style={{ borderRadius: 14, border: TOKENS.cardBorder, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', borderRadius: 14, border: TOKENS.cardBorderStrong, overflow: 'hidden' }}>
             {OUTPUTS.map((out, i) => (
               <Link
                 key={out.href}
                 href={out.href}
                 style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 18,
-                  padding: '1.125rem 1.375rem',
-                  borderBottom: i < OUTPUTS.length - 1 ? TOKENS.cardBorder : 'none',
-                  background: TOKENS.surface,
+                  display:        'flex',
+                  alignItems:     'center',
+                  gap:            20,
+                  padding:        '1.125rem 1.5rem',
+                  borderBottom:   i < OUTPUTS.length - 1 ? TOKENS.cardBorder : 'none',
+                  background:     out.accent ? `${TOKENS.accent}05` : TOKENS.surface,
+                  borderLeft:     out.accent ? `3px solid ${TOKENS.accent}` : '3px solid transparent',
                   textDecoration: 'none',
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '14px', fontWeight: 600, color: TOKENS.ink, marginBottom: 3 }}>{out.label}</p>
-                  <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>{out.desc}</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: out.accent ? TOKENS.accent : TOKENS.ink, marginBottom: 3 }}>{out.label}</p>
+                  <p style={{ fontSize: '12.5px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>{out.desc}</p>
                 </div>
-                <span style={{ flexShrink: 0, fontSize: '12px', color: TOKENS.accent, fontWeight: 600, marginTop: 3 }}>→</span>
+                <span style={{ flexShrink: 0, fontSize: '13px', color: out.accent ? TOKENS.accent : TOKENS.inkHint, fontWeight: 600 }}>→</span>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── PRIVACY & BOUNDARY ───────────────────────────────────────────── */}
-      <section style={{ padding: '5rem 2.5rem', borderBottom: TOKENS.cardBorder }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+      {/* ── TRUST (ink) ───────────────────────────────────────────────────── */}
+      <section style={{ background: TOKENS.ink, padding: '5rem 2.5rem' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.35)', marginBottom: '0.875rem' }}>
             Privacy & confini metodologici
           </p>
           <h2
-            className="font-kora-serif text-kora-ink"
-            style={{ fontSize: 'clamp(2rem, 4vw, 2.875rem)', letterSpacing: '-0.025em', lineHeight: 1.12, marginBottom: '2rem' }}
+            className="font-kora-serif"
+            style={{ fontSize: 'clamp(2rem, 4vw, 2.875rem)', letterSpacing: '-0.025em', lineHeight: 1.12, color: '#F7F5EF', marginBottom: '2.5rem' }}
           >
             KORA misura organizzazioni, non individui.
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2" style={{ marginBottom: '1.5rem' }}>
-            {BOUNDARY_ITEMS.map(({ label, note }) => (
-              <div key={label} style={{ background: TOKENS.inkBorder, borderRadius: 12, padding: '1rem 1.125rem' }}>
-                <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>{label}</p>
-                <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65 }}>{note}</p>
+
+          <div className="grid gap-3 sm:grid-cols-2" style={{ marginBottom: '2rem' }}>
+            {[
+              { label: 'Organization-level only',   note: 'Il KORA Index è un output aziendale aggregato. Nessun ranking o rating individuale.' },
+              { label: 'Privacy soglia N ≥ 10',     note: 'Nessun segmento sotto soglia di 10 lavoratori è visibile al datore di lavoro.' },
+              { label: 'Confidence Score esterno',  note: 'CS indica affidabilità delle fonti dati. Peso = 0 nel calcolo del KORA Index v3.' },
+              { label: 'Pre-empirical calibration', note: 'Output direzionale — non certificazione pubblica, non attestazione regolatoria.' },
+            ].map(({ label, note }) => (
+              <div key={label} style={{ background: 'rgba(247,245,239,0.04)', border: '1px solid rgba(247,245,239,0.09)', borderRadius: 12, padding: '1rem 1.125rem' }}>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: '#F7F5EF', marginBottom: 4 }}>{label}</p>
+                <p style={{ fontSize: '12px', color: 'rgba(247,245,239,0.55)', lineHeight: 1.65 }}>{note}</p>
               </div>
             ))}
           </div>
-          <p style={{ fontSize: '12px', color: TOKENS.inkHint, lineHeight: 1.7, maxWidth: '72ch' }}>
+
+          <p style={{ fontFamily: 'monospace', fontSize: '10.5px', color: 'rgba(247,245,239,0.30)', lineHeight: 1.70, maxWidth: '70ch' }}>
             KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
             Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
           </p>
         </div>
       </section>
 
-      {/* ── DEMO ENTRY ───────────────────────────────────────────────────── */}
-      <section style={{ padding: '6rem 2.5rem' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '1rem' }}>
-            Demo Foundation Light
+      {/* ── VISION (canvas) ───────────────────────────────────────────────── */}
+      <section style={{ background: TOKENS.canvas, padding: '5rem 2.5rem', borderTop: TOKENS.cardBorder }}>
+        <div style={{ maxWidth: 800, margin: '0 auto' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+            Dove stiamo andando
           </p>
           <h2
             className="font-kora-serif text-kora-ink"
-            style={{ fontSize: 'clamp(1.875rem, 4vw, 2.625rem)', letterSpacing: '-0.025em', lineHeight: 1.15, marginBottom: '1.125rem' }}
+            style={{ fontSize: 'clamp(1.875rem, 3.5vw, 2.5rem)', letterSpacing: '-0.025em', lineHeight: 1.15, marginBottom: '1.25rem' }}
           >
-            Esplora Foundation Light su dati sintetici.
+            La human layer dell&apos;organizzazione, finalmente leggibile.
           </h2>
-          <p style={{ fontSize: '14px', color: TOKENS.inkSecondary, lineHeight: 1.7, maxWidth: '48ch', margin: '0 auto 2.75rem' }}>
+          <p style={{ fontSize: '15px', color: TOKENS.inkSecondary, lineHeight: 1.75, maxWidth: '62ch' }}>
+            Foundation Light è il punto di ingresso. L&apos;obiettivo è costruire un&apos;infrastruttura di intelligence
+            che renda ogni euro investito in persone tracciabile, spiegabile e ottimizzabile —
+            rispettando la privacy di ogni lavoratore e producendo output di cui le organizzazioni
+            possono rispondere al board.
+          </p>
+        </div>
+      </section>
+
+      {/* ── CLOSE (canvas) ────────────────────────────────────────────────── */}
+      <section style={{ background: TOKENS.canvas, padding: '6rem 2.5rem', borderTop: TOKENS.cardBorder }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <h2
+            className="font-kora-serif text-kora-ink"
+            style={{ fontSize: 'clamp(1.875rem, 3.5vw, 2.5rem)', letterSpacing: '-0.025em', lineHeight: 1.15, marginBottom: '1rem' }}
+          >
+            Inizia con Foundation Light.
+          </h2>
+          <p style={{ fontSize: '14px', color: TOKENS.inkSecondary, lineHeight: 1.70, maxWidth: '44ch', margin: '0 auto 2.5rem' }}>
             Tutti gli output mostrati usano dati demo sintetici (Meridiana Group S.r.l.)
             e metodologia pre_empirical_calibration.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
-            <Link
-              href="/company"
-              style={{ borderRadius: 8, background: TOKENS.ink, padding: '11px 26px', fontSize: '14px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none' }}
-            >
+            <Link href="/company" style={{ borderRadius: 8, background: TOKENS.ink, padding: '11px 26px', fontSize: '14px', fontWeight: 600, color: '#FFF', textDecoration: 'none' }}>
               Apri Executive Cockpit →
             </Link>
-            <Link
-              href="/company/reports"
-              style={{ borderRadius: 8, border: `1.5px solid ${TOKENS.ink}22`, background: TOKENS.surface, padding: '11px 26px', fontSize: '14px', fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}
-            >
-              Vedi Decision Pack
+            <Link href="#foundation-light" style={{ borderRadius: 8, border: TOKENS.cardBorderStrong, background: TOKENS.surface, padding: '11px 26px', fontSize: '14px', fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
+              Scopri Foundation Light
             </Link>
-            <Link
-              href="/demo-guide"
-              style={{ fontSize: '14px', fontWeight: 500, color: TOKENS.inkHint, textDecoration: 'none' }}
-            >
-              Leggi la guida demo →
+            <Link href="/demo-guide" style={{ fontSize: '14px', fontWeight: 500, color: TOKENS.inkHint, textDecoration: 'none' }}>
+              Guida demo →
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── FOOTER ───────────────────────────────────────────────────────── */}
+      {/* ── FOOTER (white) ────────────────────────────────────────────────── */}
       <footer style={{ borderTop: TOKENS.cardBorder, padding: '1.375rem 2.5rem', background: TOKENS.surface }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
           <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
