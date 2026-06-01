@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
   // ── Lookup UEF record ─────────────────────────────────────────────────────
   const { data: rec, error: recErr } = await db
     .schema('analytics').from('uef_record')
-    .select('id, tenant_id, batch_id, payload, primary_pillar, data_completeness_score')
+    .select('id, tenant_id, batch_id, review_status, payload, primary_pillar, data_completeness_score')
     .eq('id', uefRecordId).maybeSingle();
 
   if (recErr) return NextResponse.json({ error: recErr.message }, { status: 500 });
