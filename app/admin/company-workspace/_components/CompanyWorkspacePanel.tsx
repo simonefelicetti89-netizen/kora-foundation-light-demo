@@ -1,0 +1,407 @@
+'use client';
+
+// app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx
+// B14 — Spazio azienda: single-page pilot flow orchestrator.
+// Reads from /api/admin/company-workspace (read-only, no PII, no scoring).
+
+import { useEffect, useState, useCallback } from 'react';
+
+// ── Types ───────────────────────────────────────────────────────────────────
+
+interface TenantOption { id: string; tenantCode: string; companyName: string; }
+
+interface WorkspaceData {
+  ok: boolean;
+  tenant:              { id: string; tenantCode: string; companyName: string };
+  reportingPeriod:     string;
+  workforce:           { exists: boolean; totalWorkers: number | null };
+  latestBatch:         { id: string; sourceName: string | null; status: string; rowCount: number; createdAt: string; hasFinancialMetadata: boolean } | null;
+  uef:                 { total: number; pendingReview: number; approved: number; rejected: number; needsInfo: number; needsEnrichment: number } | null;
+  scoring:             { hasResult: boolean; koraIndex: number; confidenceScore: number; safeguard: string; activationRate: number | null } | null;
+  decisionPack:        { versionId: string; status: string; createdAt: string; previewUrl: string; pdfUrl: string } | null;
+  pilotStatus:         string;
+  recommendedNextAction: { label: string; href: string } | null;
+  error?:              string;
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+const SAFEGUARD_CLS: Record<string, string> = {
+  CLEAR:   'bg-green-100 text-green-700 border-green-200',
+  WARNING: 'bg-amber-100 text-amber-700 border-amber-200',
+  FLAGGED: 'bg-red-100 text-red-700 border-red-200',
+};
+
+const DP_CLS: Record<string, string> = {
+  draft:    'bg-amber-50 text-amber-700 border-amber-200',
+  ready:    'bg-blue-50 text-blue-700 border-blue-200',
+  exported: 'bg-green-50 text-green-700 border-green-200',
+  archived: 'bg-slate-100 text-slate-500 border-slate-200',
+};
+
+const PILOT_STATUS_LABEL: Record<string, string> = {
+  not_started:            'Non avviato',
+  batch_pending:          'Batch caricato',
+  review_ready:           'Review in attesa',
+  needs_enrichment:       'Enrichment incompleto',
+  ready_for_scoring:      'Pronto per scoring',
+  scored:                 'Scored',
+  decision_pack_draft:    'Decision Pack in bozza',
+  decision_pack_exported: 'Decision Pack esportato',
+  archived:               'Archiviato',
+};
+
+const PILOT_STATUS_CLS: Record<string, string> = {
+  not_started:            'bg-slate-100 text-slate-500 border-slate-200',
+  batch_pending:          'bg-blue-50 text-blue-600 border-blue-200',
+  review_ready:           'bg-amber-50 text-amber-700 border-amber-200',
+  needs_enrichment:       'bg-orange-50 text-orange-700 border-orange-200',
+  ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
+  scored:                 'bg-[#6156F5]/10 text-[#6156F5] border-[#6156F5]/30',
+  decision_pack_draft:    'bg-blue-50 text-blue-700 border-blue-200',
+  decision_pack_exported: 'bg-green-50 text-green-700 border-green-200',
+  archived:               'bg-slate-100 text-slate-500 border-slate-200',
+};
+
+function Badge({ label, cls }: { label: string; cls: string }) {
+  return <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${cls}`}>{label}</span>;
+}
+
+function ts(s: string) {
+  try { return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  catch { return s; }
+}
+
+// ── Step card ─────────────────────────────────────────────────────────────────
+
+interface StepCardProps {
+  number:    number;
+  title:     string;
+  status:    'complete' | 'active' | 'pending' | 'warning';
+  children:  React.ReactNode;
+  cta?:      { label: string; href: string; primary?: boolean };
+}
+
+function StepCard({ number, title, status, children, cta }: StepCardProps) {
+  const statusDot = {
+    complete: 'bg-green-500',
+    active:   'bg-[#6156F5] animate-pulse',
+    warning:  'bg-amber-400',
+    pending:  'bg-slate-300',
+  }[status];
+
+  return (
+    <div className={`rounded-lg border px-4 py-3.5 space-y-2 ${status === 'active' ? 'border-[#6156F5]/40 bg-[#f5f4ff]' : 'border-slate-200 bg-white'}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${statusDot}`} />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Step {number}</span>
+          <span className="text-xs font-semibold text-slate-800">{title}</span>
+        </div>
+        {cta && (
+          <a href={cta.href}
+            className={`rounded px-3 py-1 text-[10px] font-semibold transition-colors flex-shrink-0 ${
+              cta.primary
+                ? 'bg-[#06032B] text-white hover:bg-[#1a1756]'
+                : 'border border-slate-300 text-slate-600 hover:bg-slate-50'
+            }`}>
+            {cta.label} →
+          </a>
+        )}
+      </div>
+      <div className="pl-5 text-[10px] text-slate-500 space-y-0.5">{children}</div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
+
+interface Props { userEmail: string; userRole: string; }
+
+export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
+  const [tenants, setTenants]           = useState<TenantOption[]>([]);
+  const [tenantCode, setTenantCode]     = useState('');
+  const [period, setPeriod]             = useState('2026-Q1');
+  const [workspace, setWorkspace]       = useState<WorkspaceData | null>(null);
+  const [loading, setLoading]           = useState(false);
+  const isOp001                         = tenantCode === 'OP-001';
+
+  // Load tenant list
+  useEffect(() => {
+    fetch('/api/admin/tenants', { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: { ok?: boolean; tenants?: TenantOption[] }) => {
+        if (d.ok) setTenants(d.tenants ?? []);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Load workspace when tenant+period changes
+  const loadWorkspace = useCallback(() => {
+    if (!tenantCode) { setWorkspace(null); return; }
+    setLoading(true);
+    fetch(`/api/admin/company-workspace?tenantCode=${encodeURIComponent(tenantCode)}&reportingPeriod=${encodeURIComponent(period)}`, { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: WorkspaceData) => setWorkspace(d))
+      .catch(() => setWorkspace({ ok: false, error: 'Errore di caricamento' } as WorkspaceData))
+      .finally(() => setLoading(false));
+  }, [tenantCode, period]);
+
+  useEffect(() => { loadWorkspace(); }, [loadWorkspace]);
+
+  const w = workspace?.ok ? workspace : null;
+  const tcEnc = encodeURIComponent(tenantCode);
+  const rpEnc = encodeURIComponent(period);
+
+  return (
+    <div className="max-w-3xl mx-auto py-6 px-3 space-y-5">
+
+      {/* Header */}
+      <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
+        <div>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">KORA · Admin</p>
+          <h1 className="text-xl font-bold text-white tracking-tight">Spazio azienda</h1>
+          <p className="text-sm text-white/45 mt-0.5">
+            Gestisci il flusso pilot: Data Intake, Assisted Ingestion, Review, Scoring e Decision Pack.
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-1.5 mt-1">
+          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="text-xs text-white/25 font-mono">{userEmail}</span>
+        </div>
+      </div>
+
+      {/* Selector */}
+      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-end gap-4">
+        <div>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Azienda</p>
+          <select value={tenantCode} onChange={e => setTenantCode(e.target.value)}
+            className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#6156F5] min-w-[200px]">
+            <option value="">— Seleziona azienda —</option>
+            {tenants.map(t => (
+              <option key={t.tenantCode} value={t.tenantCode}>{t.tenantCode} — {t.companyName}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Reporting Period</p>
+          <input value={period} onChange={e => setPeriod(e.target.value)}
+            placeholder="2026-Q1"
+            className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#6156F5] w-28" />
+        </div>
+        <button onClick={loadWorkspace} disabled={!tenantCode || loading}
+          className="rounded border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors">
+          ↻ Aggiorna
+        </button>
+        <a href="/admin/tenants"
+          className="text-[10px] text-[#6156F5] underline underline-offset-2 hover:text-[#4a41d4] pb-1">
+          + Crea azienda
+        </a>
+      </div>
+
+      {/* OP-001 synthetic warning */}
+      {isOp001 && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-700 font-medium">
+          OP-001 è un ambiente demo synthetic. Non usare per dati reali.
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!tenantCode && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-5 py-10 text-center text-sm text-slate-400">
+          Seleziona un&apos;azienda per iniziare.
+        </div>
+      )}
+
+      {/* Loading */}
+      {loading && tenantCode && (
+        <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-4 text-xs text-slate-500 flex gap-2">
+          <span className="animate-spin">⏳</span> Caricamento stato pilot…
+        </div>
+      )}
+
+      {/* Error */}
+      {workspace && !workspace.ok && !loading && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-700">
+          ⚠ {workspace.error ?? 'Errore caricamento workspace'}
+        </div>
+      )}
+
+      {/* Workspace content */}
+      {w && !loading && (
+        <>
+          {/* Summary bar */}
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-slate-800">{w.tenant.companyName}</p>
+              <p className="text-[10px] font-mono text-slate-400">{w.tenant.tenantCode} · {w.reportingPeriod}</p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge label={PILOT_STATUS_LABEL[w.pilotStatus] ?? w.pilotStatus} cls={PILOT_STATUS_CLS[w.pilotStatus] ?? ''} />
+              {w.workforce.totalWorkers !== null && (
+                <Badge label={`${w.workforce.totalWorkers} workers`} cls="bg-slate-100 text-slate-600 border-slate-200" />
+              )}
+            </div>
+          </div>
+
+          {/* Recommended next action */}
+          {w.recommendedNextAction && (
+            <div className="rounded-lg border border-[#6156F5]/30 bg-[#6156F5]/5 px-4 py-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-semibold text-[#6156F5] uppercase tracking-wide mb-0.5">Prossimo passo</p>
+                <p className="text-sm font-semibold text-slate-800">{w.recommendedNextAction.label}</p>
+              </div>
+              <a href={w.recommendedNextAction.href}
+                className="rounded-lg bg-[#6156F5] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4a41d4] transition-colors flex-shrink-0">
+                {w.recommendedNextAction.label} →
+              </a>
+            </div>
+          )}
+
+          {/* 7-Step pilot progress */}
+          <div className="space-y-2">
+
+            {/* Step 1 — Azienda & Workforce */}
+            <StepCard
+              number={1} title="Azienda & Workforce"
+              status={w.workforce.exists ? 'complete' : 'warning'}
+              cta={{ label: 'Gestisci azienda', href: '/admin/tenants' }}>
+              {w.workforce.exists
+                ? <><span className="text-green-600 font-medium">✓ Baseline presente</span>{w.workforce.totalWorkers !== null && ` · ${w.workforce.totalWorkers} lavoratori`}</>
+                : <span className="text-amber-600">⚠ Workforce baseline mancante — crea azienda per iniziare.</span>
+              }
+            </StepCard>
+
+            {/* Step 2 — Data Intake */}
+            <StepCard
+              number={2} title="Data Intake"
+              status={w.latestBatch ? 'complete' : w.pilotStatus === 'not_started' ? 'active' : 'pending'}
+              cta={{ label: 'Carica dati', href: `/admin/data-intake?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`, primary: w.pilotStatus === 'not_started' }}>
+              {w.latestBatch
+                ? <>
+                    <span className="text-green-600 font-medium">✓ Batch creato</span>
+                    {' · '}{w.latestBatch.rowCount} righe
+                    {' · '}{ts(w.latestBatch.createdAt)}
+                    {' · '}<Badge label={w.latestBatch.status} cls="bg-slate-100 text-slate-600 border-slate-200" />
+                    {w.latestBatch.hasFinancialMetadata && <>{' · '}<span className="text-[#6156F5]">B11.3 metadata ✓</span></>}
+                  </>
+                : <span className="text-slate-400">Nessun batch per questo periodo.</span>
+              }
+            </StepCard>
+
+            {/* Step 3 — UEF Candidates */}
+            <StepCard
+              number={3} title="Assisted Ingestion / Candidati UEF"
+              status={
+                !w.latestBatch ? 'pending'
+                : w.uef && w.uef.total > 0 ? 'complete'
+                : 'active'
+              }
+              cta={w.latestBatch ? { label: 'Apri UEF Review', href: `/admin/uef-review?batchId=${w.latestBatch.id}` } : undefined}>
+              {!w.latestBatch
+                ? <span className="text-slate-300">Attesa batch.</span>
+                : w.uef && w.uef.total > 0
+                ? <><span className="text-green-600 font-medium">✓ {w.uef.total} candidati generati</span></>
+                : <span className="text-amber-600">⚠ Candidati non ancora generati — apri UEF Review e clicca &quot;Generate candidates&quot;.</span>
+              }
+            </StepCard>
+
+            {/* Step 4 — Review & Enrichment */}
+            <StepCard
+              number={4} title="Review & Enrichment"
+              status={
+                !w.uef || w.uef.total === 0 ? 'pending'
+                : w.uef.pendingReview > 0 || w.uef.needsEnrichment > 0 ? 'active'
+                : 'complete'
+              }
+              cta={w.latestBatch ? { label: 'Completa review', href: `/admin/uef-review?batchId=${w.latestBatch.id}`, primary: w.uef ? (w.uef.pendingReview > 0 || w.uef.needsEnrichment > 0) : false } : undefined}>
+              {!w.uef || w.uef.total === 0
+                ? <span className="text-slate-300">Attesa candidati.</span>
+                : <>
+                    {w.uef.approved > 0 && <span className="text-green-600 font-medium mr-3">✓ {w.uef.approved} approvati</span>}
+                    {w.uef.pendingReview > 0 && <span className="text-amber-600 mr-3">⏳ {w.uef.pendingReview} in attesa</span>}
+                    {w.uef.rejected > 0 && <span className="text-red-600 mr-3">✕ {w.uef.rejected} rifiutati</span>}
+                    {w.uef.needsInfo > 0 && <span className="text-purple-600 mr-3">? {w.uef.needsInfo} needs info</span>}
+                    {w.uef.needsEnrichment > 0 && <span className="text-orange-600 mr-3">⚠ {w.uef.needsEnrichment} enrichment incompleto</span>}
+                  </>
+              }
+            </StepCard>
+
+            {/* Step 5 — Live Scoring */}
+            <StepCard
+              number={5} title="Live Scoring"
+              status={
+                !w.uef || w.uef.approved === 0 ? 'pending'
+                : w.scoring ? 'complete'
+                : 'active'
+              }
+              cta={
+                w.scoring
+                  ? undefined
+                  : w.latestBatch
+                  ? { label: 'Esegui scoring', href: `/admin/uef-review?batchId=${w.latestBatch.id}`, primary: !w.scoring && w.uef ? w.uef.approved > 0 && w.uef.pendingReview === 0 : false }
+                  : undefined
+              }>
+              {w.scoring
+                ? <>
+                    <span className="text-green-600 font-medium">✓ KORA Index: <strong className="text-[#6156F5]">{w.scoring.koraIndex}</strong></span>
+                    {' · '}Confidence: {w.scoring.confidenceScore}%
+                    {' · '}<Badge label={w.scoring.safeguard} cls={SAFEGUARD_CLS[w.scoring.safeguard] ?? ''} />
+                    {w.scoring.activationRate !== null && <>{' · '}AR: {Math.round((w.scoring.activationRate) * 100)}%</>}
+                  </>
+                : w.uef && w.uef.approved > 0
+                ? <span className="text-amber-600">⚠ {w.uef.approved} record approvati — scoring non ancora eseguito.</span>
+                : <span className="text-slate-300">Attesa approvazione UEF.</span>
+              }
+            </StepCard>
+
+            {/* Step 6 — Decision Pack */}
+            <StepCard
+              number={6} title="Decision Pack"
+              status={
+                !w.scoring ? 'pending'
+                : w.decisionPack ? (w.decisionPack.status === 'exported' ? 'complete' : 'active')
+                : 'active'
+              }
+              cta={
+                w.scoring
+                  ? { label: w.decisionPack ? 'Apri preview' : 'Genera preview', href: `/api/admin/decision-pack/preview?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`, primary: true }
+                  : undefined
+              }>
+              {!w.scoring
+                ? <span className="text-slate-300">Attesa scoring.</span>
+                : w.decisionPack
+                ? <>
+                    <Badge label={w.decisionPack.status} cls={DP_CLS[w.decisionPack.status] ?? ''} />
+                    {' · '}{w.decisionPack.versionId.slice(0, 24)}…
+                    {' · '}{ts(w.decisionPack.createdAt)}
+                    <span className="ml-2">
+                      <a href={w.decisionPack.previewUrl} className="text-[#6156F5] underline mr-2" target="_blank" rel="noopener noreferrer">Preview</a>
+                      <a href={w.decisionPack.pdfUrl} className="text-[#6156F5] underline" target="_blank" rel="noopener noreferrer">PDF</a>
+                    </span>
+                  </>
+                : <span className="text-amber-600">Scoring completato — apri preview per generare il Decision Pack.</span>
+              }
+            </StepCard>
+
+            {/* Step 7 — Data Lifecycle */}
+            <StepCard
+              number={7} title="Data Lifecycle"
+              status="pending"
+              cta={{ label: 'Apri Data Lifecycle', href: '/admin/data-lifecycle' }}>
+              <a href="/admin/data-lifecycle" className="text-[#6156F5] underline">
+                Gestisci batch, archivio ed erasure readiness
+              </a>
+            </StepCard>
+
+          </div>
+
+          {/* Footer */}
+          <div className="text-[10px] text-slate-400 text-center pt-2">
+            KORA Foundation Light · Pilot Operator View · pre_empirical_calibration · synthetic_demo_data: {isOp001 ? 'true' : 'false'}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
