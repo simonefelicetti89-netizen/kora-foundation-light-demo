@@ -66,8 +66,9 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Admin Tools',
         items: [
-          { href: '/admin',           label: 'Admin Console' },
-          { href: '/admin/companies', label: 'Company Registry' },
+          { href: '/admin',                  label: 'Admin Console' },
+          { href: '/admin/companies',        label: 'Company Registry' },
+          { href: '/admin/data-lifecycle',   label: 'Data Lifecycle' },
         ],
       },
       {
