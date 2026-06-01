@@ -75,7 +75,7 @@ export async function fetchPdfData(
   if (!ki) return null;
 
   const { data: dp } = await db.schema('analytics').from('decision_pack_version')
-    .select('id,version_id,status')
+    .select('id,version_id,status,bti_result_id')
     .eq('tenant_id', (tenant as { id: string }).id)
     .eq('reporting_period', reportingPeriod)
     .order('created_at', { ascending: false })
@@ -100,15 +100,6 @@ export async function fetchPdfData(
     confidence_score?: number;
   } | null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const btiRow = (ki as any).bti_result as {
-    total_people_welfare_budget?: number;
-    economic_relief_spend?: number;
-    activation_debt_eur?: number;
-    bti_score?: number;
-    cost_per_impact_unit?: number | null;
-  } | null;
-
   // Pillar distribution — from activation_result.pillar_distribution (Record<PillarCode, number>)
   const rawPillar = actRow?.pillar_distribution;
   const pillarDistribution: PdfData['pillarDistribution'] = rawPillar
@@ -121,14 +112,41 @@ export async function fetchPdfData(
       }
     : null;
 
-  // BTI — from analytics.bti_result (joined via bti_result_id FK)
-  const bti: PdfData['bti'] = btiRow
+  // BTI — separate query via decision_pack_version.bti_result_id.
+  // kora_index_result does NOT have bti_result_id — never join BTI from there.
+  const btiResultId = (dp as { bti_result_id?: string | null } | null)?.bti_result_id ?? null;
+
+  let rawBtiRow: {
+    total_people_welfare_budget?: number;
+    economic_relief_spend?: number;
+    activation_debt_eur?: number;
+    bti_score?: number;
+    cost_per_impact_unit?: number | null;
+  } | null = null;
+
+  if (btiResultId) {
+    const { data: btiData, error: btiErr } = await db
+      .schema('analytics')
+      .from('bti_result')
+      .select('total_people_welfare_budget, economic_relief_spend, activation_debt_eur, bti_score, cost_per_impact_unit')
+      .eq('id', btiResultId)
+      .maybeSingle();
+    if (btiErr) {
+      console.error('[fetchPdfData] bti_result fetch failed:', btiErr.message);
+      // bti stays null — PDF renders without Financial Governance data
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      rawBtiRow = btiData as any;
+    }
+  }
+
+  const bti: PdfData['bti'] = rawBtiRow
     ? {
-        totalPeopleWelfareBudget: btiRow.total_people_welfare_budget ?? 0,
-        economicReliefSpend:      btiRow.economic_relief_spend ?? 0,
-        activationDebtEur:        btiRow.activation_debt_eur ?? 0,
-        btiScore:                 btiRow.bti_score ?? 0,
-        costPerImpactUnit:        btiRow.cost_per_impact_unit ?? null,
+        totalPeopleWelfareBudget: rawBtiRow.total_people_welfare_budget ?? 0,
+        economicReliefSpend:      rawBtiRow.economic_relief_spend ?? 0,
+        activationDebtEur:        rawBtiRow.activation_debt_eur ?? 0,
+        btiScore:                 rawBtiRow.bti_score ?? 0,
+        costPerImpactUnit:        rawBtiRow.cost_per_impact_unit ?? null,
       }
     : null;
 
