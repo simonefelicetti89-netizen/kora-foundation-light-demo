@@ -6,6 +6,7 @@
 // Covers: KORA Index summary, Reporting Readiness, Evidence Archive, Decision Pack, Methodology & Privacy.
 
 import { useState, useEffect } from 'react';
+import { DataSubmissionSection } from './DataSubmissionSection';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -411,6 +412,11 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
             Nessun Decision Pack disponibile per questo periodo. L&apos;operatore KORA Admin ti notificherà quando il documento sarà pronto.
           </div>
         )}
+      </Section>
+
+      {/* ── Data Submission ──────────────────────────────────────────────────── */}
+      <Section title="Data Submission" id="data-submission">
+        <DataSubmissionSection userRole={userRole} />
       </Section>
 
       {/* ── Methodology & Privacy ────────────────────────────────────────────── */}

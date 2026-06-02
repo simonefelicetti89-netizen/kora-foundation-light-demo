@@ -47,12 +47,13 @@ function buildNavGroups(role: string): NavGroup[] {
         groupBadge: 'LIVE PILOT',
         groupBadgeStyle: 'bg-green-900/40 text-green-400 border border-green-800/50',
         items: [
-          { href: '/admin/companies',             label: 'Company Console' },
-          { href: '/admin/tenants',               label: 'Onboarding Tenant' },
-          { href: '/admin/company-workspace',     label: 'Workspace Azienda' },
-          { href: '/admin/company-users',         label: 'Utenti Aziendali' },
+          { href: '/admin/companies',              label: 'Company Console' },
+          { href: '/admin/company-submissions',    label: 'Submission Queue' },
+          { href: '/admin/tenants',                label: 'Onboarding Tenant' },
+          { href: '/admin/company-workspace',      label: 'Workspace Azienda' },
+          { href: '/admin/company-users',          label: 'Utenti Aziendali' },
           { href: '/admin/company-evidence-archive', label: 'Evidence Archive' },
-          { href: '/admin/company-live-preview',  label: 'Live Preview' },
+          { href: '/admin/company-live-preview',   label: 'Live Preview' },
         ],
       },
       {
@@ -89,8 +90,7 @@ function buildNavGroups(role: string): NavGroup[] {
   }
 
   if (role === 'COMPANY_ADMIN') {
-    // B36.1: workspace-only sidebar — no demo routes, no future-vision, no admin tools.
-    // All sections are anchors within /company/workspace.
+    // B36.1/B39: workspace-only sidebar — no demo routes, no future-vision, no admin tools.
     return [
       {
         heading: 'Workspace',
@@ -103,6 +103,7 @@ function buildNavGroups(role: string): NavGroup[] {
         items: [
           { href: '/company/workspace#kora-index',          label: 'KORA Index' },
           { href: '/company/workspace#evidence-archive',    label: 'Archivio Evidenze' },
+          { href: '/company/workspace#data-submission',     label: 'Data Submission' },
           { href: '/company/workspace#decision-pack',       label: 'Decision Pack' },
           { href: '/company/workspace#reporting-readiness', label: 'Reporting Readiness' },
           { href: '/company/workspace#methodology',         label: 'Metodologia & Privacy' },
@@ -112,7 +113,7 @@ function buildNavGroups(role: string): NavGroup[] {
   }
 
   if (role === 'COMPANY_VIEWER') {
-    // B36.1: viewer — read-only subset of workspace sections.
+    // B36.1/B39: viewer — read-only subset of workspace sections.
     return [
       {
         heading: 'Workspace',
@@ -124,6 +125,7 @@ function buildNavGroups(role: string): NavGroup[] {
         heading: 'Sezioni',
         items: [
           { href: '/company/workspace#kora-index',          label: 'KORA Index' },
+          { href: '/company/workspace#data-submission',     label: 'Submission Status' },
           { href: '/company/workspace#reporting-readiness', label: 'Reporting Readiness' },
           { href: '/company/workspace#methodology',         label: 'Metodologia & Privacy' },
         ],

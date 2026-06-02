@@ -55,6 +55,12 @@ interface ConsoleTenant {
     reportingPeriod: string;
     createdAt:       string;
   } | null;
+  submissions: {
+    total: number;
+    pending: number;
+    needsClarification: number;
+    accepted: number;
+  };
   lifecycleStatus:  TenantLifecycleStatus;
   warningFlags:     string[];
   quickActions: {
@@ -64,6 +70,7 @@ interface ConsoleTenant {
     livePreview:     string;
     dataIntake:      string | null;
     uefReview:       string | null;
+    submissions:     string | null;
   };
 }
 
@@ -350,7 +357,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
                 <table className="w-full text-[11px]">
                   <thead>
                     <tr className="border-b border-slate-100 bg-slate-50">
-                      {['Azienda', 'Lifecycle', 'Utenti', 'Workforce', 'KORA Index', 'Evidenze', 'Decision Pack', 'Azioni'].map(h => (
+                      {['Azienda', 'Lifecycle', 'Utenti', 'Workforce', 'KORA Index', 'Submission', 'Decision Pack', 'Azioni'].map(h => (
                         <th key={h} className="px-4 py-3 text-left text-[9px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">
                           {h}
                         </th>
@@ -466,28 +473,31 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
         )}
       </td>
 
-      {/* Evidenze */}
-      <td className="px-4 py-3 min-w-[120px]">
-        {t.uefCounts ? (
+      {/* Submission (B39) */}
+      <td className="px-4 py-3 min-w-[110px]">
+        {t.submissions.total === 0 ? (
+          <span className="text-slate-400 italic text-[10px]">Nessuna</span>
+        ) : (
           <div className="space-y-0.5 text-[10px]">
-            <p className="text-slate-600">{t.uefCounts.total} totali</p>
-            {t.uefCounts.approved > 0 && (
-              <p className="text-green-600">✓ {t.uefCounts.approved} approvati</p>
+            <p className="text-slate-600">{t.submissions.total} totali</p>
+            {t.submissions.pending > 0 && (
+              <p className="text-amber-600">⏳ {t.submissions.pending} in attesa</p>
             )}
-            {t.uefCounts.pendingReview > 0 && (
-              <p className="text-amber-600">⏳ {t.uefCounts.pendingReview} in review</p>
+            {t.submissions.needsClarification > 0 && (
+              <p className="text-orange-600">⚠ {t.submissions.needsClarification} chiarimento</p>
             )}
-            {t.uefCounts.rejected > 0 && (
-              <p className="text-red-500">✗ {t.uefCounts.rejected} rifiutati</p>
+            {t.submissions.accepted > 0 && (
+              <p className="text-green-600">✓ {t.submissions.accepted} accettate</p>
             )}
-            {t.uefCounts.needsEnrichment > 0 && (
-              <p className="text-orange-600">⚠ {t.uefCounts.needsEnrichment} enrichment</p>
+            {t.quickActions.submissions && (
+              <Link href={t.quickActions.submissions} className="text-[#6156F5] hover:underline text-[9px]">
+                Vedi →
+              </Link>
             )}
           </div>
-        ) : (
-          <span className="text-slate-400 italic text-[10px]">Nessuna evidenza</span>
         )}
       </td>
+
 
       {/* Decision Pack */}
       <td className="px-4 py-3 min-w-[120px]">

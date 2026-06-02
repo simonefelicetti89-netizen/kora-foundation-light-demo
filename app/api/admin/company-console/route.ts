@@ -144,6 +144,7 @@ export async function GET(request: NextRequest) {
     { data: batchData },
     { data: kiData },
     { data: dpData },
+    { data: submissionData },
   ] = await Promise.all([
     // Workforce baselines — latest per tenant
     db.schema('personal').from('workforce_baseline')
@@ -151,11 +152,12 @@ export async function GET(request: NextRequest) {
       .in('tenant_id', tenantIds)
       .order('created_at', { ascending: false }),
 
-    // Source batches — all per tenant (filter to latest per tenant in memory)
+    // Source batches — all per tenant, exclude company submissions + rejected
     db.schema('analytics').from('source_batch')
       .select('id, tenant_id, reporting_period, batch_status, row_count, created_at')
       .in('tenant_id', tenantIds)
       .neq('batch_status', 'rejected')
+      .neq('source_type', 'company_submission')   // B39: exclude company submissions from pipeline view
       .order('created_at', { ascending: false }),
 
     // KORA Index results — latest per tenant
@@ -169,6 +171,13 @@ export async function GET(request: NextRequest) {
       .select('id, tenant_id, reporting_period, version_id, status, created_at')
       .in('tenant_id', tenantIds)
       .order('created_at', { ascending: false }),
+
+    // B39: Company submissions — counts per tenant
+    db.schema('analytics').from('source_batch')
+      .select('id, tenant_id, batch_status')
+      .in('tenant_id', tenantIds)
+      .eq('source_type', 'company_submission')
+      .order('created_at', { ascending: false }),
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -179,6 +188,19 @@ export async function GET(request: NextRequest) {
   const allDp       = (dpData ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const allWb       = (wbData ?? []) as any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allSubmissions = (submissionData ?? []) as any[];
+
+  // B39: submission counts by tenant
+  const submissionsByTenant: Record<string, { total: number; pending: number; needsClarification: number; accepted: number }> = {};
+  for (const s of allSubmissions) {
+    const tid = s.tenant_id as string;
+    if (!submissionsByTenant[tid]) submissionsByTenant[tid] = { total: 0, pending: 0, needsClarification: 0, accepted: 0 };
+    submissionsByTenant[tid].total++;
+    if (s.batch_status === 'submission_pending') submissionsByTenant[tid].pending++;
+    if (s.batch_status === 'submission_needs_clarification') submissionsByTenant[tid].needsClarification++;
+    if (s.batch_status === 'submission_accepted') submissionsByTenant[tid].accepted++;
+  }
 
   // Latest per tenant (already ordered desc, so first occurrence wins)
   const latestBatchByTenant  = new Map<string, typeof allBatches[0]>();
@@ -259,13 +281,16 @@ export async function GET(request: NextRequest) {
     const tcEnc = encodeURIComponent(tenantCode);
     const rpEnc = encodeURIComponent(batch?.reporting_period ?? ki?.reporting_period ?? '2026-Q1');
 
+    const subs = submissionsByTenant[tenantId] ?? { total: 0, pending: 0, needsClarification: 0, accepted: 0 };
+
     const quickActions = {
-      viewWorkspace:  `/admin/company-workspace?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
-      manageUsers:    `/admin/company-users?tenantId=${encodeURIComponent(tenantId)}`,
-      evidenceArchive:`/admin/company-evidence-archive?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
-      livePreview:    `/admin/company-live-preview?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
-      dataIntake:     !ki ? `/admin/data-intake?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}` : null,
-      uefReview:      (uef && uef.pendingReview > 0) ? `/admin/uef-review` : null,
+      viewWorkspace:   `/admin/company-workspace?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
+      manageUsers:     `/admin/company-users?tenantId=${encodeURIComponent(tenantId)}`,
+      evidenceArchive: `/admin/company-evidence-archive?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
+      livePreview:     `/admin/company-live-preview?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
+      dataIntake:      !ki ? `/admin/data-intake?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}` : null,
+      uefReview:       (uef && uef.pendingReview > 0) ? `/admin/uef-review` : null,
+      submissions:     subs.total > 0 ? `/admin/company-submissions?tenantId=${encodeURIComponent(tenantId)}` : null,
     };
 
     // Summary counters
@@ -312,6 +337,14 @@ export async function GET(request: NextRequest) {
         calibrationStatus:  (ki.calibration_status as string) ?? 'pre_empirical_calibration',
         scoredAt:           ki.created_at as string,
       } : null,
+
+      // B39: Company submissions summary
+      submissions: {
+        total:             subs.total,
+        pending:           subs.pending,
+        needsClarification: subs.needsClarification,
+        accepted:          subs.accepted,
+      },
 
       // Decision Pack
       decisionPack: dp ? {
