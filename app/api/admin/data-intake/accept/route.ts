@@ -25,7 +25,10 @@ import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { parseCsvContent, flattenCsvWarnings } from '@/lib/data-intake/csv-parser';
 import { parseExcelSheet } from '@/lib/data-intake/excel-parser';
 import { detectFileRole, type IntakeFileRole } from '@/lib/data-intake/file-role-detection';
-import { runInitiativeMatching, type ParsedIntakeFile } from '@/lib/data-intake/initiative-matching';
+import {
+  runInitiativeMatching, applyMatchReviewOverrides,
+  type ParsedIntakeFile, type MatchReviewOverride, type MatchWithDecision,
+} from '@/lib/data-intake/initiative-matching';
 import {
   buildRowProvenance, summarizeProvenance, sanitizeProvenanceForStorage,
 } from '@/lib/data-intake/evidence-provenance';
@@ -519,6 +522,30 @@ export async function POST(request: NextRequest) {
   let multiFileCount = 1;
   // B30.1: store matchResult for per-row provenance access
   let matchResult: ReturnType<typeof runInitiativeMatching> | null = null;
+  // B33: matches with effective decisions (for provenance + audit)
+  let matchesWithDecision: MatchWithDecision[] | null = null;
+  let matchReviewSummaryForAudit: Record<string, unknown> | null = null;
+
+  // B33: parse match review overrides from client (validated server-side)
+  let matchReviewOverrides: MatchReviewOverride[] = [];
+  const mroRaw = formData.get('matchReviewOverrides');
+  if (mroRaw && String(mroRaw).trim()) {
+    try {
+      const parsed = JSON.parse(String(mroRaw));
+      if (Array.isArray(parsed)) {
+        // Validate each override: matchId must be non-empty string, decision must be valid
+        const validDecisions = new Set(['accept', 'reject', 'needs_review']);
+        matchReviewOverrides = parsed.filter(
+          (o: unknown) => o && typeof o === 'object' &&
+            typeof (o as Record<string, unknown>)['matchId'] === 'string' &&
+            validDecisions.has(String((o as Record<string, unknown>)['decision'] ?? ''))
+        ).map((o: Record<string, unknown>) => ({
+          matchId:  String(o['matchId']).slice(0, 50),
+          decision: String(o['decision']) as MatchReviewOverride['decision'],
+        }));
+      }
+    } catch { /* ignore malformed JSON — proceed without overrides */ }
+  }
 
   if (isMultiFile) {
     let ssNames: (string | null)[] = [];
@@ -551,15 +578,53 @@ export async function POST(request: NextRequest) {
     }
 
     matchResult = runInitiativeMatching(parsedFiles);
-    rows = matchResult.finalRows;
     matchSummaryForAudit = matchResult.matchSummary as unknown as Record<string, number>;
     multiFileCount = allFileEntries.length;
+
+    // B33: apply match review overrides server-side (never trusts preview decisions blindly)
+    const primaryFile = parsedFiles.find(f => f.role === 'initiatives') ?? parsedFiles[0];
+    const overrideResult = applyMatchReviewOverrides({
+      matches:     matchResult.matches,
+      overrides:   matchReviewOverrides,
+      primaryRows: primaryFile.rows,
+    });
+    rows = overrideResult.finalRows;
+    matchesWithDecision = overrideResult.matchesWithDecision;
+    matchReviewSummaryForAudit = {
+      override_accepted:     overrideResult.reviewSummary.overrideAccepted,
+      override_rejected:     overrideResult.reviewSummary.overrideRejected,
+      override_needs_review: overrideResult.reviewSummary.overrideNeedsReview,
+      default_merged:        overrideResult.reviewSummary.defaultMerged,
+      default_skipped:       overrideResult.reviewSummary.defaultSkipped,
+      unmatched:             overrideResult.reviewSummary.unmatched,
+      invalid_overrides:     overrideResult.reviewSummary.invalidOverrides.length,
+    };
 
     auditRows.push(makeAudit({
       tenantId, actorId: authResult.id,
       action: 'multi_file_accept_requested', resourceType: 'analytics.source_batch',
-      metadata: { file_count: multiFileCount, file_names: allFileEntries.map(f => f.name), match_summary: matchSummaryForAudit },
+      metadata: {
+        file_count:    multiFileCount,
+        file_names:    allFileEntries.map(f => f.name),
+        match_summary: matchSummaryForAudit,
+        // B33: match review decisions applied
+        match_review_overrides_count: matchReviewOverrides.length,
+        match_review_summary: matchReviewSummaryForAudit,
+      },
     }));
+
+    // B33: audit match review decisions
+    if (matchReviewOverrides.length > 0) {
+      auditRows.push(makeAudit({
+        tenantId, actorId: authResult.id,
+        action: 'match_review_decisions_applied', resourceType: 'analytics.source_batch',
+        metadata: {
+          overrides_count:   matchReviewOverrides.length,
+          ...matchReviewSummaryForAudit,
+          // no raw values, no matchId content — counts only
+        },
+      }));
+    }
   }
 
   // ── 10. B27: apply column mapping server-side (re-applied — never trusts preview) ─
@@ -602,21 +667,26 @@ export async function POST(request: NextRequest) {
   // B27: missing field summary for audit
   const missingFieldSummary = analyzeMissingFields(finalRows);
 
-  // B30/B30.1: generate per-row field provenance with precise multi-file source metadata
+  // B30/B30.1/B33: generate per-row field provenance with precise multi-file source metadata.
+  // B33: only pass merge provenance when the merge was actually applied (not rejected/skipped).
   const fileRoleForProv = detectFileRole(file.name, headers).role;
   const allRowProvenances = finalRows.map((row, rowIdx) => {
-    // B30.1: pass field-level merge provenance if available from matching
-    const match = isMultiFile ? matchResult?.matches[rowIdx] : undefined;
+    // B33: use matchesWithDecision if available (multi-file path with overrides)
+    const matchWithDec = matchesWithDecision ? matchesWithDecision[rowIdx] : undefined;
+    // Only propagate merge/conflict provenance if this row's merge was actually applied
+    const mergeWasApplied = matchWithDec ? matchWithDec.mergeApplied : false;
+    // Fallback for multi-file without B33 overrides
+    const legacyMatch = (!matchesWithDecision && isMultiFile) ? matchResult?.matches[rowIdx] : undefined;
     return buildRowProvenance({
       finalRow: row,
       effectiveMapping: isMultiFile ? undefined : effectiveMapping as Record<string, string>,
       manualAppliedFields: manualApplied,
-      isMultiFileMerged: isMultiFile,
+      isMultiFileMerged: isMultiFile && (mergeWasApplied || !!legacyMatch),
       fileRole: fileRoleForProv,
       fileType: isXlsx ? 'xlsx' : 'csv',
       sheetName: selectedSheetName ?? undefined,
-      mergedFieldProvenance:  match?.mergedFieldProvenance,
-      conflictFieldProvenance: match?.conflictFieldProvenance,
+      mergedFieldProvenance:  mergeWasApplied ? matchWithDec?.mergedFieldProvenance : legacyMatch?.mergedFieldProvenance,
+      conflictFieldProvenance: mergeWasApplied ? matchWithDec?.conflictFieldProvenance : legacyMatch?.conflictFieldProvenance,
     });
   });
   const provenanceSummary = summarizeProvenance(allRowProvenances);
@@ -655,8 +725,14 @@ export async function POST(request: NextRequest) {
       payload_sample: {
         ...(batchFinancialMeta ? { _b11_3: true, ...batchFinancialMeta } : {}),
         ...(isXlsx ? { _b26: true, fileType: 'xlsx', selectedSheetName } : { fileType: 'csv' }),
-        // B28: multi-file metadata
-        ...(isMultiFile ? { _b28: true, fileMode: 'multi', fileCount: multiFileCount, matchSummary: matchSummaryForAudit } : {}),
+        // B28/B33: multi-file metadata + match review summary
+        ...(isMultiFile ? {
+          _b28: true, fileMode: 'multi', fileCount: multiFileCount, matchSummary: matchSummaryForAudit,
+          // B33: match review applied flags (counts only, no raw values)
+          _b33: matchReviewOverrides.length > 0,
+          match_review_applied: matchReviewOverrides.length > 0,
+          match_review_summary: matchReviewSummaryForAudit,
+        } : {}),
         // B27: column mapping + manual completion metadata (no values)
         _b27: true,
         mapping_applied:         Object.keys(effectiveMapping).length > 0,
@@ -845,6 +921,8 @@ export async function POST(request: NextRequest) {
       warningCount:  missingFieldSummary.warningCount,
       overallSeverity: missingFieldSummary.overallSeverity,
     },
+    // B33: match review summary in response
+    ...(isMultiFile && matchReviewSummaryForAudit ? { matchReviewSummary: matchReviewSummaryForAudit } : {}),
     message:          'Batch created for review. Scoring remains locked until B5.',
     lockedFeatures:   ['scoring_run', 'kora_index_generation', 'decision_pack_generation'],
     auditEventsWritten: auditRows.length,

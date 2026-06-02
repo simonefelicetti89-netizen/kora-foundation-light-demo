@@ -9,8 +9,9 @@
 //
 // No file upload. No CSV/XLSX input. No scoring recalculation. No PII exposed.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { MatchReviewPanel, type MatchReviewDecision, type MatchReviewSection } from './MatchReviewPanel';
 
 // ── API response types ─────────────────────────────────────────────────────
 
@@ -89,6 +90,11 @@ interface AcceptResult {
   findings?: Array<{ rowIndex: number; fieldPath: string; riskType: string; severity: string }>;
   error?: string;
   note?: string;
+  // B33: match review summary from accept route
+  matchReviewSummary?: {
+    override_accepted?: number; override_rejected?: number; override_needs_review?: number;
+    default_merged?: number; default_skipped?: number; unmatched?: number; invalid_overrides?: number;
+  };
 }
 
 // B4.1 — CSV dry-run types
@@ -132,6 +138,8 @@ interface DryRunResult {
   matches?: Array<{ matchId: string; status: string; confidence: number; initiativeName: string; linkedFileCount: number; conflictCount: number }>;
   mergedPreviewRows?: Array<Record<string, string | number>>;
   pendingSheetSelection?: Array<{ fileIndex: number; fileName: string; sheets: unknown[] }>;
+  // B33: match review section
+  matchReview?: MatchReviewSection;
   // B27 column mapping
   originalHeaders?: string[];
   mappingSuggestions?: Array<{
@@ -227,6 +235,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const [additionalFileRoles, setAdditionalFileRoles] = useState<Record<number, string>>({});
   const [multiFileResult, setMultiFileResult] = useState<DryRunResult | null>(null);
   const [multiFileStatus, setMultiFileStatus] = useState<'idle'|'loading'|'done'|'error'>('idle');
+
+  // B33: match review decisions (matchId → decision)
+  const [matchDecisions, setMatchDecisions] = useState<Record<string, MatchReviewDecision>>({});
+  const handleMatchDecisionsChange = useCallback((d: Record<string, MatchReviewDecision>) => {
+    setMatchDecisions(d);
+  }, []);
 
   // B27: column mapping state
   const [userMapping, setUserMapping]   = useState<Record<string, string>>({});
@@ -366,6 +380,11 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       fd.append('pseudonymizationConfirmation', 'true');
       // B27: send column mapping + manual defaults to accept (server re-applies)
       appendB27Fields(fd);
+      // B33: send match review decisions for multi-file batches
+      if (additionalFiles.length > 0 && Object.keys(matchDecisions).length > 0) {
+        const overrides = Object.entries(matchDecisions).map(([matchId, decision]) => ({ matchId, decision }));
+        fd.append('matchReviewOverrides', JSON.stringify(overrides));
+      }
       const res  = await fetch('/api/admin/data-intake/accept', {
         method: 'POST', credentials: 'include', body: fd,
       });
@@ -593,6 +612,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               // B28: reset multi-file state
               setAdditionalFiles([]); setAdditionalFileRoles({});
               setMultiFileResult(null); setMultiFileStatus('idle');
+              // B33: reset match review decisions on file change
+              setMatchDecisions({});
               const isXlsx = f?.name.toLowerCase().endsWith('.xlsx') ?? false;
               setFileType(isXlsx ? 'xlsx' : 'csv');
             }}
@@ -640,6 +661,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 setAdditionalFiles(files);
                 setAdditionalFileRoles({});
                 setMultiFileResult(null); setMultiFileStatus('idle');
+                setMatchDecisions({});
               }}
               className="text-xs text-slate-600 file:mr-3 file:py-1 file:px-2 file:rounded file:border file:border-slate-200 file:bg-white file:text-xs file:font-medium file:text-slate-600 file:cursor-pointer"
             />
@@ -674,37 +696,45 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               </div>
             )}
 
-            {/* Multi-file match result */}
+            {/* Multi-file match result + B33 Match Review Panel */}
             {multiFileStatus === 'done' && multiFileResult?.ok && multiFileResult.matchSummary && (
-              <div className="rounded-lg border border-[#6156F5]/20 bg-white px-4 py-3 space-y-2">
-                <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">Initiative Matching — Risultati</p>
-                <div className="flex flex-wrap gap-2 text-[10px]">
-                  <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-green-700 font-medium">
-                    ✓ Matched: {multiFileResult.matchSummary.matched}
-                  </span>
-                  <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700 font-medium">
-                    ≈ Possible: {multiFileResult.matchSummary.possibleMatch}
-                  </span>
-                  <span className="rounded border border-red-200 bg-red-50 px-2 py-0.5 text-red-700 font-medium">
-                    ? Needs Review: {multiFileResult.matchSummary.needsReview}
-                  </span>
-                  <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-600 font-medium">
-                    ✗ Unmatched: {multiFileResult.matchSummary.unmatched}
-                  </span>
-                </div>
-                {multiFileResult.matches && multiFileResult.matches.slice(0, 5).map((m, i) => (
-                  <div key={i} className={`rounded px-2.5 py-1.5 text-[10px] font-mono ${
-                    m.status === 'matched' ? 'bg-green-50 text-green-700' :
-                    m.status === 'possible_match' ? 'bg-amber-50 text-amber-700' :
-                    m.status === 'needs_review' ? 'bg-purple-50 text-purple-700' : 'bg-slate-50 text-slate-500'
-                  }`}>
-                    [{m.status}] {m.initiativeName || '(no name)'} — conf {Math.round(m.confidence * 100)}% · {m.linkedFileCount} linked
-                    {m.conflictCount > 0 ? ` · ⚠ ${m.conflictCount} conflict` : ''}
+              <div className="space-y-3">
+                {/* Quick summary header */}
+                <div className="rounded-lg border border-[#6156F5]/20 bg-white px-4 py-3 space-y-2">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">Initiative Matching — Risultati</p>
+                    <p className="text-[10px] text-slate-400">
+                      {multiFileResult.fileCount} file · {multiFileResult.rowCount} righe totali
+                    </p>
                   </div>
-                ))}
-                <p className="text-[10px] text-slate-400">
-                  File merged: {multiFileResult.fileCount} · Righe totali: {multiFileResult.rowCount}
-                </p>
+                  <div className="flex flex-wrap gap-2 text-[10px]">
+                    <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-green-700 font-medium">
+                      ✓ Matched: {multiFileResult.matchSummary.matched}
+                    </span>
+                    <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700 font-medium">
+                      ≈ Possible: {multiFileResult.matchSummary.possibleMatch}
+                    </span>
+                    <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 text-purple-700 font-medium">
+                      ? Review: {multiFileResult.matchSummary.needsReview}
+                    </span>
+                    <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-600 font-medium">
+                      ✗ Unmatched: {multiFileResult.matchSummary.unmatched}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-[#6156F5] font-medium">
+                    ↓ Rivedi i match qui sotto prima di creare il batch.
+                    I <strong>possible match</strong> e i match <strong>needs_review</strong> richiedono conferma esplicita — non vengono mergiati automaticamente.
+                  </p>
+                </div>
+
+                {/* B33: Match Review Panel */}
+                {multiFileResult.matchReview && (
+                  <MatchReviewPanel
+                    matchReview={multiFileResult.matchReview}
+                    decisions={matchDecisions}
+                    onDecisionsChange={handleMatchDecisionsChange}
+                  />
+                )}
               </div>
             )}
             {multiFileStatus === 'error' && multiFileResult && !multiFileResult.ok && (
@@ -1148,6 +1178,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               {acceptResult.manualCompletionApplied && acceptResult.manualCompletionApplied.length > 0 && (
                 <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">manual: {acceptResult.manualCompletionApplied.join(', ')}</span>
               )}
+              {acceptResult.matchReviewSummary && (acceptResult.matchReviewSummary.override_accepted ?? 0) > 0 && (
+                <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] text-green-700">match review applicato</span>
+              )}
             </div>
             {acceptResult.eligibilitySummary && (
               <div className="flex flex-wrap gap-2 text-[10px]">
@@ -1155,6 +1188,26 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <span className="rounded border border-amber-200 bg-white px-2 py-0.5 text-amber-700 font-medium">Limited: {acceptResult.eligibilitySummary.limited}</span>
                 <span className="rounded border border-red-200 bg-white px-2 py-0.5 text-red-700 font-medium">Blocked: {acceptResult.eligibilitySummary.blocked}</span>
                 <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-600 font-medium">Total: {acceptResult.rowCount}</span>
+              </div>
+            )}
+            {/* B33: match review summary */}
+            {acceptResult.matchReviewSummary && (
+              <div className="flex flex-wrap gap-1.5 text-[10px]">
+                {(acceptResult.matchReviewSummary.override_accepted ?? 0) > 0 && (
+                  <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-green-700">✓ Accepted: {acceptResult.matchReviewSummary.override_accepted}</span>
+                )}
+                {(acceptResult.matchReviewSummary.override_rejected ?? 0) > 0 && (
+                  <span className="rounded border border-red-200 bg-red-50 px-2 py-0.5 text-red-700">✗ Rejected: {acceptResult.matchReviewSummary.override_rejected}</span>
+                )}
+                {(acceptResult.matchReviewSummary.override_needs_review ?? 0) > 0 && (
+                  <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700">? Needs review: {acceptResult.matchReviewSummary.override_needs_review}</span>
+                )}
+                {(acceptResult.matchReviewSummary.default_merged ?? 0) > 0 && (
+                  <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-600">Default merged: {acceptResult.matchReviewSummary.default_merged}</span>
+                )}
+                {(acceptResult.matchReviewSummary.default_skipped ?? 0) > 0 && (
+                  <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-500">Skipped (possible): {acceptResult.matchReviewSummary.default_skipped}</span>
+                )}
               </div>
             )}
             <div className="space-y-0.5">

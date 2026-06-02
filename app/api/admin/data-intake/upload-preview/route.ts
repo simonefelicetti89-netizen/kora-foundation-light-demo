@@ -17,6 +17,7 @@
 // B27: Column Mapping Assistant + batch-level manual completion defaults.
 // B28: Multi-file batch intake + initiative matching light.
 //   CRITICAL: PII scan runs on ORIGINAL rows of EACH file before mapping or merge.
+// B33: Match Review section added to multi-file response.
 
 export const runtime = 'nodejs';
 
@@ -32,7 +33,9 @@ import {
 } from '@/lib/data-intake/column-mapping';
 import { analyzeMissingFields } from '@/lib/data-intake/missing-field-analysis';
 import { detectFileRole, type IntakeFileRole } from '@/lib/data-intake/file-role-detection';
-import { runInitiativeMatching, type ParsedIntakeFile } from '@/lib/data-intake/initiative-matching';
+import {
+  runInitiativeMatching, type ParsedIntakeFile, type MultiFileMergeResult,
+} from '@/lib/data-intake/initiative-matching';
 import { buildRowProvenance, summarizeProvenance } from '@/lib/data-intake/evidence-provenance';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 
@@ -379,6 +382,80 @@ function buildPreviewPayload(params: {
   };
 }
 
+// ── B33: Match Review section builder ────────────────────────────────────────
+// Returns safe match review data — no raw values, no PII.
+
+const PII_SAFE_NAME_PATTERNS = [
+  /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/,
+  /[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]/i,
+  /\b\d{3}[\s.-]?\d{3}[\s.-]?\d{4}\b/,
+];
+
+function buildMatchSafeName(initiativeName: string, rowIndex: number): string {
+  if (!initiativeName?.trim()) return `Iniziativa #${rowIndex + 1}`;
+  const trimmed = initiativeName.trim().slice(0, 80);
+  if (PII_SAFE_NAME_PATTERNS.some(p => p.test(trimmed))) return `Iniziativa #${rowIndex + 1}`;
+  return trimmed;
+}
+
+function buildMatchReviewSection(
+  matchResult: MultiFileMergeResult,
+  parsedFiles: ParsedIntakeFile[],
+  maxMatches = 100,
+) {
+  const fileRoleMap = new Map<number, IntakeFileRole>();
+  for (const f of parsedFiles) fileRoleMap.set(f.fileIndex, f.role);
+
+  let totalConflicts = 0;
+  const matches = matchResult.matches.slice(0, maxMatches).map(m => {
+    const hasConflicts = Object.keys(m.conflictFieldProvenance).length > 0 || m.conflictWarnings.length > 0;
+    if (hasConflicts) totalConflicts++;
+
+    // Fields that would be merged from secondary files (field names only — no values)
+    const mergedFields = Object.keys(m.mergedFieldProvenance);
+
+    // Fields with conflicts (field names only — no values)
+    const conflictFields = Object.keys(m.conflictFieldProvenance);
+
+    // Recommended decision: accept if high confidence and no conflicts; otherwise needs_review
+    const recommendedDecision: 'accept' | 'needs_review' =
+      m.status === 'matched' && !hasConflicts ? 'accept' : 'needs_review';
+
+    return {
+      matchId:   m.matchId,
+      status:    m.status,
+      confidence: m.confidence,
+      primary: {
+        fileIndex: m.primaryRow.fileIndex,
+        fileRole:  fileRoleMap.get(m.primaryRow.fileIndex) ?? 'unknown',
+        rowIndex:  m.primaryRow.rowIndex,
+        safeName:  buildMatchSafeName(m.primaryRow.initiativeName, m.primaryRow.rowIndex),
+      },
+      linkedRows: m.linkedRows.map(lr => ({
+        fileIndex: lr.fileIndex,
+        fileRole:  lr.role,
+        rowIndex:  lr.rowIndex,
+      })),
+      mergedFields,
+      conflictFields,
+      reasonCodes: m.reasonCodes.slice(0, 6),
+      recommendedDecision,
+    };
+  });
+
+  return {
+    totalMatches: matchResult.matches.length,
+    matched:      matchResult.matchSummary.matched,
+    possibleMatch: matchResult.matchSummary.possibleMatch,
+    needsReview:  matchResult.matchSummary.needsReview,
+    unmatched:    matchResult.matchSummary.unmatched,
+    conflicts:    totalConflicts,
+    matches,
+    truncated:    matchResult.matches.length > maxMatches,
+    caveat: 'Match decisions affect data merge only. They do not bypass UEF Review or scoring approval.',
+  };
+}
+
 // ── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
@@ -510,12 +587,14 @@ export async function POST(request: NextRequest) {
         matchId:    m.matchId,
         status:     m.status,
         confidence: m.confidence,
-        initiativeName: m.primaryRow.initiativeName,
+        initiativeName: buildMatchSafeName(m.primaryRow.initiativeName, m.primaryRow.rowIndex),
         linkedFileCount: m.linkedRows.length,
         mergedFromFiles: m.mergedFromFiles,
         conflictCount:   m.conflictWarnings.length,
         reasonCodes:     m.reasonCodes,
       })),
+      // B33: full match review section for MatchReviewPanel
+      matchReview: buildMatchReviewSection(matchResult, parsedFiles),
       mergedPreviewRows: sampleRows,
       rowCount:          finalRows.length,
       piiStatus:         'passed',

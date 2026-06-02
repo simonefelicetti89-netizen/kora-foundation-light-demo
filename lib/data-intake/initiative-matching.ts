@@ -513,3 +513,130 @@ export function runInitiativeMatching(files: ParsedIntakeFile[]): MultiFileMerge
 
   return { matches, finalRows, matchSummary: summary, warnings };
 }
+
+// ── B33: Match Review Decision Model ─────────────────────────────────────────
+
+export type MatchReviewDecision = 'accept' | 'reject' | 'needs_review';
+
+export interface MatchReviewOverride {
+  matchId: string;
+  decision: MatchReviewDecision;
+  // reason is ephemeral — never persisted, only used for display/audit hint
+}
+
+// Effective decision after override resolution — for provenance and audit
+export type MatchEffectiveDecision =
+  | 'override_accept'    // explicit accept override applied
+  | 'override_reject'    // explicit reject override — primary row used
+  | 'override_needs_review'  // explicit needs_review override — primary row used
+  | 'default_merged'     // matched status, no override — merge applied
+  | 'default_skipped'    // possible_match/needs_review status, no override — primary row used
+  | 'unmatched'          // no linked rows — primary row used regardless
+  | 'invalid_accept';    // accept override on unmatched row — ignored, primary row used
+
+export type MatchWithDecision = InitiativeMatch & {
+  effectiveDecision: MatchEffectiveDecision;
+  mergeApplied: boolean;
+};
+
+export type MatchReviewSummary = {
+  overrideAccepted:     number;
+  overrideRejected:     number;
+  overrideNeedsReview:  number;
+  defaultMerged:        number;
+  defaultSkipped:       number;
+  unmatched:            number;
+  invalidOverrides:     string[];  // matchIds where accept was ignored
+};
+
+/**
+ * Apply client-provided match review decisions to a set of initiative matches.
+ *
+ * Rules:
+ *  - override 'accept'      → apply merge (unless match is unmatched — then ignored)
+ *  - override 'reject'      → use primary row only (no merge)
+ *  - override 'needs_review'→ use primary row only (no merge)
+ *  - no override, status 'matched' → apply merge by default (conservative happy path)
+ *  - no override, status 'possible_match' / 'needs_review' → primary row only (B33 requirement)
+ *  - no override, status 'unmatched' → primary row only
+ *  - conflicts NEVER overwrite primary regardless of decision
+ */
+export function applyMatchReviewOverrides(params: {
+  matches: InitiativeMatch[];
+  overrides: MatchReviewOverride[];
+  primaryRows: Array<Record<string, string>>;
+}): {
+  finalRows: Array<Record<string, string>>;
+  matchesWithDecision: MatchWithDecision[];
+  reviewSummary: MatchReviewSummary;
+} {
+  const overrideMap = new Map<string, MatchReviewDecision>();
+  for (const o of params.overrides) {
+    if (o.matchId && o.decision) overrideMap.set(o.matchId, o.decision);
+  }
+
+  const finalRows: Array<Record<string, string>> = [];
+  const matchesWithDecision: MatchWithDecision[] = [];
+  const summary: MatchReviewSummary = {
+    overrideAccepted: 0, overrideRejected: 0, overrideNeedsReview: 0,
+    defaultMerged: 0, defaultSkipped: 0, unmatched: 0, invalidOverrides: [],
+  };
+
+  for (const match of params.matches) {
+    const primaryRow = params.primaryRows[match.primaryRow.rowIndex] ?? {};
+    const override = overrideMap.get(match.matchId);
+
+    let effectiveDecision: MatchEffectiveDecision;
+    let mergeApplied: boolean;
+
+    if (override === 'reject') {
+      finalRows.push({ ...primaryRow });
+      effectiveDecision = 'override_reject';
+      mergeApplied = false;
+      summary.overrideRejected++;
+    } else if (override === 'needs_review') {
+      finalRows.push({ ...primaryRow });
+      effectiveDecision = 'override_needs_review';
+      mergeApplied = false;
+      summary.overrideNeedsReview++;
+    } else if (override === 'accept') {
+      if (match.status === 'unmatched') {
+        // Cannot accept an unmatched row — ignore override, use primary
+        finalRows.push({ ...primaryRow });
+        effectiveDecision = 'invalid_accept';
+        mergeApplied = false;
+        summary.invalidOverrides.push(match.matchId);
+      } else {
+        // Apply merge — mergedFields already has conflict-safe primary values
+        finalRows.push({ ...match.mergedFields });
+        effectiveDecision = 'override_accept';
+        mergeApplied = true;
+        summary.overrideAccepted++;
+      }
+    } else {
+      // No override — apply defaults based on match status
+      if (match.status === 'matched') {
+        // High-confidence: apply merge by default
+        finalRows.push({ ...match.mergedFields });
+        effectiveDecision = 'default_merged';
+        mergeApplied = true;
+        summary.defaultMerged++;
+      } else if (match.status === 'unmatched') {
+        finalRows.push({ ...primaryRow });
+        effectiveDecision = 'unmatched';
+        mergeApplied = false;
+        summary.unmatched++;
+      } else {
+        // possible_match / needs_review — requires explicit accept in B33
+        finalRows.push({ ...primaryRow });
+        effectiveDecision = 'default_skipped';
+        mergeApplied = false;
+        summary.defaultSkipped++;
+      }
+    }
+
+    matchesWithDecision.push({ ...match, effectiveDecision, mergeApplied });
+  }
+
+  return { finalRows, matchesWithDecision, reviewSummary: summary };
+}
