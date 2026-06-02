@@ -23,6 +23,10 @@ export { computeReachQuality } from './reach-quality';
 // ── B22: EQUITY Engine ───────────────────────────────────────────────────────
 export { computeEquityScore, EQUITY_ENGINE_VERSION } from './equity-engine';
 
+// ── B24: Reach Semantics ──────────────────────────────────────────────────────
+export { computeReachSemantics, REACH_SEMANTICS_CAVEAT } from './reach-semantics';
+export type { ReachSemanticsResult } from './reach-semantics';
+
 // ── Examples (demo / testing only) ───────────────────────────────────────────
 export {
   runKoraPipelineExamples,

@@ -33,6 +33,7 @@ import { computeActivation } from './activation-engine';
 import { computeKoraIndex } from './kora-index-engine';
 import { computeConfidence } from './confidence-engine';
 import { buildExplainabilityTrace } from './explainability';
+import { computeReachSemantics } from './reach-semantics';
 import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 
 const PIPELINE_SOURCE = 'KoraPipeline_v0.1';
@@ -214,6 +215,15 @@ export function runKoraPipeline(params: {
       careSignalCount,
     });
 
+    // Step 13: Reach Semantics — B24 board-safe AR/MAR separation (explanatory, no KORA Index impact)
+    const reachSemantics = computeReachSemantics({
+      records,
+      eligibilityResults,
+      workforcePopulation: workforcePopulation ?? null,
+      activationRate: activation.activationReach,
+      meaningfulActivationRate: activation.meaningfulActivationReach,
+    });
+
     // Top-level pipeline warnings: only non-verbose signals not already in sub-engines
     const pipelineWarnings: string[] = [];
     if (activation.safeguardStatus === 'FLAGGED') {
@@ -239,6 +249,7 @@ export function runKoraPipeline(params: {
       koraIndex,
       confidence,
       explainabilityTrace,
+      reachSemantics,
       warnings: pipelineWarnings,
       createdAt: new Date().toISOString(),
     };

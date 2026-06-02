@@ -91,6 +91,9 @@ export function buildDecisionPackHtml(data: PdfData): string {
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
   const arPct    = Math.round(koraIndex.activationRate * 100);
   const marPct   = Math.round(koraIndex.meaningfulActivationRate * 100);
+  // B24: relief gap — difference attributable to limited/economic relief records
+  const reliefGapPct = arPct - marPct;
+  const reliefGapWarning = reliefGapPct > 20;
   const csPct    = Math.round(koraIndex.confidenceScore * 100);
   const genDate  = fmtDate(meta.generatedAt);
   const genFull  = fmtDateTime(meta.generatedAt);
@@ -111,10 +114,17 @@ export function buildDecisionPackHtml(data: PdfData): string {
   const dominantPct    = dominantPillar ? pillarPct(dominantPillar as typeof PILLAR_ORDER[number]) : 0;
 
   // Board memo statement — derived from live data
+  // B24: board statement leads with MAR (primary signal), then AR (broad reach).
+  // When reliefGapPct > 20pp, the statement explicitly notes economic relief inflation.
+  const reliefNote = reliefGapWarning
+    ? ` Il gap di ${reliefGapPct}pp tra AR e MAR è attribuibile principalmente a benefit economici ad ampia copertura (voucher, fringe benefit) che non generano attivazione profonda.`
+    : '';
   const boardStatement =
-    sf === 'CLEAR'   ? `Con un Activation Rate del ${arPct}% e Meaningful AR del ${marPct}%, l'organizzazione soddisfa i criteri dell'Activation Safeguard. Il KORA Index di ${kiVal}/100 indica un'attivazione organizzativa in progressione, con margini di miglioramento nella qualità e distribuzione.`
-  : sf === 'WARNING' ? `Con un Activation Rate del ${arPct}% e Meaningful AR del ${marPct}%, l'organizzazione è in zona WARNING. Il KORA Index di ${kiVal}/100 è disponibile ma richiede attenzione: uno o più parametri non raggiungono ancora le soglie operative. È necessaria una revisione del perimetro di attivazione.`
-  :                    `Activation Safeguard FLAGGED: AR ${arPct}%, MAR ${marPct}%. I parametri di attivazione sono sotto soglia minima. Il KORA Index di ${kiVal}/100 è generato in via preliminare — richiede revisione metodologica prima di qualsiasi uso decisionale.`;
+    sf === 'CLEAR'
+      ? `Meaningful Activation Rate del ${marPct}% (segnale primario) e Activation Rate del ${arPct}% (reach complessivo incluso economic relief). L'organizzazione soddisfa i criteri dell'Activation Safeguard. Il KORA Index di ${kiVal}/100 indica un'attivazione organizzativa in progressione, con margini di miglioramento nella qualità e distribuzione.${reliefNote}`
+    : sf === 'WARNING'
+      ? `Meaningful Activation Rate del ${marPct}% (segnale primario) e Activation Rate del ${arPct}% (reach complessivo) in zona WARNING. Il KORA Index di ${kiVal}/100 è disponibile ma richiede attenzione: uno o più parametri non raggiungono ancora le soglie operative. È necessaria una revisione del perimetro di attivazione.${reliefNote}`
+    :   `Activation Safeguard FLAGGED: MAR ${marPct}% (segnale primario), AR ${arPct}% (reach complessivo). I parametri di attivazione sono sotto soglia minima. Il KORA Index di ${kiVal}/100 è generato in via preliminare — richiede revisione metodologica prima di qualsiasi uso decisionale.${reliefNote}`;
 
   // Dynamic decisions — 3 max, data-driven ─────────────────────────────────
   const decisions: Array<{n:string; decision:string; implication:string; responsible:string}> = [];
@@ -336,6 +346,31 @@ export function buildDecisionPackHtml(data: PdfData): string {
       padding:12pt 16pt; background:#f8f8fc; border:1px solid #eaebf4;
       border-radius:4pt; font-size:10pt; color:#555670; line-height:1.55;
     }
+    /* ── B24: Reach Semantics ──────────────────────────────────────────────── */
+    .rs-block{
+      padding:12pt 16pt; border:1px solid #eaebf4; border-radius:4pt;
+      margin-bottom:14pt; background:#fafafa; break-inside:avoid;
+    }
+    .rs-block-warn{ border-color:#fde68a; background:#fffbeb; }
+    .rs-title{
+      font-size:7pt; font-weight:700; letter-spacing:.2em;
+      text-transform:uppercase; color:#9899b3; margin-bottom:10pt;
+    }
+    .rs-row{
+      display:flex; justify-content:space-between; align-items:baseline;
+      padding:4pt 0; border-bottom:1px solid #eaebf4;
+    }
+    .rs-row:last-child{ border-bottom:none; }
+    .rs-label{ font-size:9pt; color:#555670; }
+    .rs-label-primary{ font-size:9pt; font-weight:700; color:#06032B; }
+    .rs-val{ font-size:11pt; font-weight:700; color:#06032B; }
+    .rs-val-primary{ font-size:13pt; font-weight:700; color:#6156F5; }
+    .rs-val-gap{ font-size:11pt; font-weight:700; }
+    .rs-badge{
+      font-size:7pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      padding:2pt 6pt; border-radius:2pt; margin-left:6pt;
+    }
+    .rs-note{ font-size:8.5pt; color:#92400e; margin-top:8pt; line-height:1.5; }
 
     /* ── PILLAR BALANCE ────────────────────────────────────────────────── */
     .pb-list{ display:flex; flex-direction:column; gap:14pt; margin-bottom:18pt; }
@@ -772,19 +807,41 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
     <div class="aa-grid">
       <div class="aa-card">
-        <div class="aa-label">Activation Rate</div>
+        <div class="aa-label">Activation Rate <span class="rs-badge" style="background:#f3f4f6;color:#6b7280;border:1px solid #d1d5db;">REACH COMPLESSIVO</span></div>
         <div>
           <span class="aa-val">${arPct}</span><span class="aa-unit">%</span>
         </div>
-        <div class="aa-desc">Quota della workforce con almeno un evento attivato e verificato nel periodo.</div>
+        <div class="aa-desc">Reach complessivo: include eligible + economic relief (voucher, fringe benefit, benefit monetari). Non equivale a deep activation. Vedere MAR per il segnale primario.</div>
       </div>
       <div class="aa-card aa-card-hi">
-        <div class="aa-label">Meaningful Activation Rate</div>
+        <div class="aa-label">Meaningful Activation Rate <span class="rs-badge" style="background:#f5f4ff;color:#6156F5;border:1px solid #c7c4f8;">SEGNALE PRIMARIO</span></div>
         <div>
           <span class="aa-val" style="color:#6156F5;">${marPct}</span><span class="aa-unit" style="color:#6156F5;">%</span>
         </div>
-        <div class="aa-desc">Quota della workforce con attivazione sopra soglia di materialità — non solo presenza minima.</div>
+        <div class="aa-desc">Segnale primario di attivazione profonda: solo record eligible. Esclude economic relief e benefit monetari. Usa questo valore per decisioni strategiche.</div>
       </div>
+    </div>
+
+    <!-- B24: Reach Semantics breakdown -->
+    <div class="rs-block${reliefGapWarning ? ' rs-block-warn' : ''}">
+      <div class="rs-title">Reach Semantics — Composizione dell'Activation Rate</div>
+      <div class="rs-row">
+        <span class="rs-label-primary">Meaningful Activation Rate (MAR) <span class="rs-badge" style="background:#f5f4ff;color:#6156F5;border:1px solid #c7c4f8;">PRIMARIO</span></span>
+        <span class="rs-val-primary">${marPct}%</span>
+      </div>
+      <div class="rs-row">
+        <span class="rs-label">Activation Rate (AR) — reach complessivo incl. economic relief</span>
+        <span class="rs-val">${arPct}%</span>
+      </div>
+      <div class="rs-row">
+        <span class="rs-label">Gap AR → MAR <span style="font-size:8pt;color:#9899b3;">(differenza attribuibile a economic relief)</span></span>
+        <span class="rs-val-gap" style="color:${reliefGapWarning ? '#d97706' : '#9899b3'};">${reliefGapPct > 0 ? '+' : ''}${reliefGapPct}pp${reliefGapWarning ? ' ⚠' : ''}</span>
+      </div>
+      <div class="rs-row">
+        <span class="rs-label">Compliance Baseline (blocked) — non genera IU</span>
+        <span class="rs-val" style="color:#9899b3;">esclusa da AR/MAR</span>
+      </div>
+      ${reliefGapWarning ? `<div class="rs-note">⚠ Gap AR→MAR elevato (${reliefGapPct}pp): l'Activation Rate è significativamente influenzato da benefit economici ad ampia copertura (voucher, fringe benefit, welfare wallet). MAR è il segnale rilevante per valutare la profondità dell'attivazione people.</div>` : ''}
     </div>
 
     <div class="aa-sf" style="background:${sfBg(sf)};border:1.5px solid ${sfColor(sf)}44;">
@@ -797,14 +854,15 @@ export function buildDecisionPackHtml(data: PdfData): string {
     </div>
 
     <div class="aa-context">
-      <strong style="display:block;margin-bottom:6pt;font-size:9.5pt;">Nota metodologica</strong>
-      L'Activation Rate misura la distribuzione dell'attivazione sull'intera workforce — non la qualità dei singoli programmi.
-      Un AR elevato con MAR basso indica partecipazione diffusa ma poco profonda.
-      Un MAR elevato indica attivazione significativa per chi partecipa, ma potenzialmente concentrata.
-      Entrambi i parametri devono essere letti in combinazione con il Pillar Balance e il BTI Score.
+      <strong style="display:block;margin-bottom:6pt;font-size:9.5pt;">Nota metodologica — Reach ≠ Profondità</strong>
+      <strong>MAR è il segnale primario.</strong> Misura la quota di workforce raggiunta da iniziative eligible con potenziale di attivazione profonda.
+      AR include anche il reach da benefit economici (voucher, fringe benefit, welfare wallet) che non generano Impact Units.
+      Un AR elevato con MAR basso non è un segnale positivo: indica copertura diffusa ma prevalentemente monetaria.
+      Compliance baseline (formazione obbligatoria, sicurezza) è esclusa da entrambi — non genera attivazione KORA.
       <br><br>
-      <strong>KORA non misura individui.</strong> Tutti i valori sono aggregati company-level.
-      Nessun worker è identificabile in questo report.
+      Leggere AR/MAR in combinazione con Pillar Balance e BTI Score per un quadro completo.
+      <br>
+      <strong>KORA non misura individui.</strong> Tutti i valori sono aggregati company-level. Nessun worker è identificabile.
     </div>
 
     <div style="margin-top:auto;">

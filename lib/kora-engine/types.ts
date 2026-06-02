@@ -350,6 +350,19 @@ export interface EligibilitySummary {
   totalCount: number;
 }
 
+// B24: ReachSemanticsResult — board-safe AR/MAR separation (explanatory, not KORA Index input).
+export interface ReachSemanticsResult {
+  activationRate: number | null;
+  meaningfulActivationRate: number | null;
+  economicReliefReach: number | null;
+  complianceBaselineReach: number | null;
+  deepActivationReach: null;
+  reliefGapPct: number | null;
+  reliefGapWarning: boolean;
+  explanatoryFlags: string[];
+  caveat: string;
+}
+
 export interface KoraComputationResult {
   tenantId: string;
   batchId: string;
@@ -361,6 +374,7 @@ export interface KoraComputationResult {
   koraIndex: KoraIndexResult;
   confidence: ConfidenceResult;
   explainabilityTrace: ExplainabilityTraceItem[];
+  reachSemantics?: ReachSemanticsResult;  // B24: optional — present when records available
   warnings: string[];
   createdAt: string;
 }

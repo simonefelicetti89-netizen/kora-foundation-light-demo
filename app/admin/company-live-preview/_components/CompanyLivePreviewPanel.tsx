@@ -319,17 +319,36 @@ export function CompanyLivePreviewPanel() {
               )}
             </Card>
 
-            {/* Activation */}
+            {/* Activation — B24: reach semantics breakdown */}
             <Card title="Activation">
-              {data.scoring?.activationRate !== undefined ? (
-                <div className="space-y-3">
-                  <Stat label="Activation Rate" value={pct(data.scoring.activationRate)} color="#06032B" />
-                  <Stat label="Meaningful AR" value={pct(data.scoring.meaningfulActivationRate)} color="#6156F5" />
-                  <p className="text-[10px] text-slate-400 leading-relaxed">
-                    AR ≥ 40% e MAR ≥ 30% → Safeguard CLEAR
-                  </p>
-                </div>
-              ) : (
+              {data.scoring?.activationRate !== undefined ? (() => {
+                const ar  = data.scoring.activationRate  ?? 0;
+                const mar = data.scoring.meaningfulActivationRate ?? 0;
+                const gapPp = Math.round((ar - mar) * 100);
+                const gapWarn = gapPp > 20;
+                return (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-0.5">Meaningful AR <span className="text-[#6156F5]">· SEGNALE PRIMARIO</span></p>
+                      <p className="text-3xl font-bold text-[#6156F5] leading-none">{pct(mar)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-0.5">Activation Rate · reach complessivo</p>
+                      <p className="text-2xl font-bold text-[#06032B] leading-none">{pct(ar)}</p>
+                    </div>
+                    {gapPp > 0 && (
+                      <div className={`rounded px-2.5 py-2 text-[10px] leading-relaxed ${gapWarn ? 'bg-amber-50 border border-amber-200 text-amber-800' : 'bg-slate-50 border border-slate-100 text-slate-500'}`}>
+                        {gapWarn
+                          ? `⚠ Gap AR→MAR: +${gapPp}pp — differenza attribuibile principalmente a benefit economici ad ampia copertura (voucher, fringe benefit). MAR è il segnale rilevante.`
+                          : `Gap AR→MAR: +${gapPp}pp (economic relief reach)`}
+                      </div>
+                    )}
+                    <p className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-2">
+                      Safeguard CLEAR: AR ≥ 40% e MAR ≥ 30%. Reach ≠ depth.
+                    </p>
+                  </div>
+                );
+              })() : (
                 <EmptyState msg="Nessun dato di attivazione" />
               )}
             </Card>
