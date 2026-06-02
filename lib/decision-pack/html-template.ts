@@ -179,7 +179,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
       font-size:10pt; line-height:1.55;
     }
     .page{
-      width:210mm; position:relative; overflow:hidden;
+      width:210mm; position:relative;
       page-break-after:always; break-after:page;
     }
 
@@ -255,7 +255,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .cv-lime{ width:6pt; height:6pt; border-radius:50%; background:#C8FF47; flex-shrink:0; }
 
     /* ── CONTENT PAGE SHELL ────────────────────────────────────────────── */
-    .cp{ background:#fff; padding:26pt 40pt 20pt; height:297mm; display:flex; flex-direction:column; }
+    .cp{ background:#fff; padding:26pt 40pt 20pt; min-height:297mm; display:flex; flex-direction:column; }
     .ph{
       display:flex; align-items:center; justify-content:space-between;
       padding-bottom:12pt; border-bottom:1px solid #eaebf4; margin-bottom:20pt;
@@ -267,7 +267,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .ph-company{ font-size:7.5pt; font-weight:600; color:#3d3a6a; }
     .ph-tenant{ font-size:6.5pt; color:#c7c8dc; letter-spacing:.06em; }
     .ph-logo{ height:14pt; width:auto; opacity:.55; }
-    .pc{ flex:1; overflow:hidden; display:flex; flex-direction:column; }
+    .pc{ flex:1; display:flex; flex-direction:column; }
     .pf{
       margin-top:auto; padding-top:10pt; border-top:1px solid #eaebf4;
       display:flex; align-items:center; justify-content:space-between;
@@ -295,7 +295,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
       display:grid; grid-template-columns:1fr 1fr 1fr;
       gap:12pt; margin-bottom:16pt;
     }
-    .bm-metric{ text-align:center; padding:16pt 10pt; }
+    .bm-metric{ text-align:center; padding:16pt 10pt; break-inside:avoid; }
     .bm-metric-label{
       font-size:7pt; font-weight:700; letter-spacing:.18em;
       text-transform:uppercase; color:#9899b3; margin-bottom:8pt;
@@ -314,6 +314,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .aa-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14pt; margin-bottom:18pt; }
     .aa-card{
       padding:18pt 20pt; border:1px solid #eaebf4; border-radius:5pt; background:#fafafa;
+      break-inside:avoid;
     }
     .aa-card-hi{ border-color:#c7c4f8; background:#f5f4ff; }
     .aa-label{
@@ -338,7 +339,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
     /* ── PILLAR BALANCE ────────────────────────────────────────────────── */
     .pb-list{ display:flex; flex-direction:column; gap:14pt; margin-bottom:18pt; }
-    .pb-row{ display:flex; flex-direction:column; gap:5pt; }
+    .pb-row{ display:flex; flex-direction:column; gap:5pt; break-inside:avoid; }
     .pb-head{ display:flex; justify-content:space-between; align-items:baseline; }
     .pb-name{ font-size:10pt; font-weight:700; color:#06032B; }
     .pb-pct{ font-size:12pt; font-weight:700; letter-spacing:-.01em; }
@@ -361,6 +362,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     }
     .fg-kpi{
       padding:14pt 12pt; border:1px solid #eaebf4; border-radius:4pt; background:#fafafa;
+      break-inside:avoid;
     }
     .fg-kpi-hi{ border-color:#c7c4f8; background:#f5f4ff; }
     .fg-kpi-warn{ border-color:#fde68a; background:#fffbeb; }
@@ -401,6 +403,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     }
     .fg-class-card{
       padding:10pt 12pt; border:1px solid #eaebf4; border-radius:4pt; background:#fafafa;
+      break-inside:avoid;
     }
     .fg-class-label{ font-size:6.5pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#9899b3; margin-bottom:5pt; }
     .fg-class-count{ font-size:16pt; font-weight:700; color:#06032B; letter-spacing:-.02em; line-height:1; }
@@ -408,10 +411,12 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .fg-board-note{
       padding:11pt 14pt; background:#f5f4ff; border:1px solid #c7c4f8;
       border-radius:4pt; font-size:9pt; color:#3d3a6a; line-height:1.52; margin-bottom:12pt;
+      break-inside:avoid;
     }
     .fg-warning{
       padding:10pt 14pt; background:#fef2f2; border:1px solid #fca5a5;
       border-radius:4pt; font-size:9pt; color:#991b1b; line-height:1.52; margin-bottom:10pt;
+      break-inside:avoid;
     }
 
     /* ── EVIDENCE ENRICHMENT ───────────────────────────────────────────────── */
@@ -420,13 +425,14 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .ev-lvl-row{ display:flex; gap:8pt; margin-bottom:10pt; }
     .ev-lvl-card{
       flex:1; padding:10pt 8pt; border:1px solid #eaebf4; border-radius:4pt;
-      text-align:center; background:#fafafa;
+      text-align:center; background:#fafafa; break-inside:avoid;
     }
     .ev-lvl-label{ font-size:6.5pt; font-weight:700; letter-spacing:.12em; text-transform:uppercase; margin-bottom:5pt; }
     .ev-lvl-count{ font-size:18pt; font-weight:700; letter-spacing:-.02em; line-height:1; }
     .ev-meta-row{ display:flex; gap:10pt; margin-bottom:12pt; flex-wrap:wrap; }
     .ev-meta-card{
       padding:10pt 14pt; border:1px solid #eaebf4; border-radius:4pt; background:#fafafa; flex:1; min-width:100pt;
+      break-inside:avoid;
     }
     .ev-meta-label{ font-size:6.5pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#9899b3; margin-bottom:5pt; }
     .ev-meta-val{ font-size:16pt; font-weight:700; color:#06032B; letter-spacing:-.02em; line-height:1; }
@@ -444,6 +450,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .ev-cs-block{
       display:flex; align-items:center; gap:20pt;
       padding:20pt 24pt; background:#06032B; border-radius:5pt; margin-bottom:18pt;
+      break-inside:avoid;
     }
     .ev-cs-num{ font-size:52pt; font-weight:700; color:#fff; letter-spacing:-.04em; line-height:1; }
     .ev-cs-unit{ font-size:18pt; color:rgba(255,255,255,.4); font-weight:400; }
@@ -453,7 +460,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .ev-tier-grid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10pt; margin-bottom:18pt; }
     .ev-tier{
       padding:12pt 14pt; border:1px solid #eaebf4; border-radius:4pt;
-      text-align:center; background:#fafafa;
+      text-align:center; background:#fafafa; break-inside:avoid;
     }
     .ev-tier-label{ font-size:7pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#9899b3; margin-bottom:6pt; }
     .ev-tier-val{ font-size:13pt; font-weight:700; color:#06032B; }
@@ -467,6 +474,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .da-item{
       display:flex; gap:14pt; align-items:flex-start;
       padding:14pt 18pt; border:1px solid #eaebf4; border-radius:5pt;
+      break-inside:avoid;
     }
     .da-n{
       font-size:20pt; font-weight:700; color:#6156F5;
@@ -486,7 +494,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .mp-grid{ display:grid; grid-template-columns:1fr 1fr; gap:9pt; margin-bottom:16pt; }
     .mp-item{
       padding:11pt 13pt; border:1px solid #eaebf4; border-radius:4pt;
-      display:flex; gap:9pt; align-items:flex-start;
+      display:flex; gap:9pt; align-items:flex-start; break-inside:avoid;
     }
     .mp-ic{ font-size:14pt; flex-shrink:0; line-height:1; margin-top:1pt; }
     .mp-title{ font-size:8.5pt; font-weight:700; color:#06032B; margin-bottom:2pt; }
