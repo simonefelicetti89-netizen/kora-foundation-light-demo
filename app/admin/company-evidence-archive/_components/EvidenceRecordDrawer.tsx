@@ -8,7 +8,8 @@
 // Attachment opening goes through signed-url route only.
 // Read-only: no scoring, no approve, no edit actions.
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { AttachmentLifecycleActions } from './AttachmentLifecycleActions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -122,17 +123,31 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
   const [openLinkLoading, setOpenLinkLoading] = useState<string | null>(null);
   const [openLinkErrors, setOpenLinkErrors]   = useState<Record<string, string>>({});
   const [activeSection, setActiveSection] = useState<'fields'|'provenance'|'attachments'|'gaps'>('fields');
+  // B35.1: refreshKey incremented after lifecycle action to re-fetch record detail
+  const [refreshKey, setRefreshKey] = useState(0);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const handleLifecycleActionCompleted = useCallback(() => {
+    setRefreshKey(k => k + 1);
+  }, []);
 
   useEffect(() => {
-    setLoading(true); setError(null); setDetail(null);
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
+
+    setLoading(true); setError(null);
     fetch(
       `/api/admin/company-evidence-record?tenantCode=${encodeURIComponent(tenantCode)}&recordId=${encodeURIComponent(recordIdFull)}`,
-      { credentials: 'include' },
+      { credentials: 'include', signal: ctrl.signal },
     )
       .then(r => r.json() as Promise<RecordDetail>)
-      .then(d => { setDetail(d); setLoading(false); })
-      .catch((e: Error) => { setError(e.message); setLoading(false); });
-  }, [tenantCode, recordIdFull]);
+      .then(d => { if (!ctrl.signal.aborted) { setDetail(d); setLoading(false); } })
+      .catch((e: Error) => { if (!ctrl.signal.aborted) { setError(e.message); setLoading(false); } });
+
+    return () => ctrl.abort();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantCode, recordIdFull, refreshKey]);
 
   const handleOpenSecureLink = useCallback(async (att: AttachmentItem) => {
     setOpenLinkLoading(att.attachmentId);
@@ -317,7 +332,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                         cls={LIFECYCLE_COLORS[att.lifecycleStatus] ?? 'bg-slate-50 text-slate-400 border-slate-100'}
                       />
                     </div>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {att.canOpenSecurely ? (
                         <button
                           onClick={() => handleOpenSecureLink(att)}
@@ -338,6 +353,16 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                         <span className="text-[9px] text-red-600">⚠ {openLinkErrors[att.attachmentId]}</span>
                       )}
                     </div>
+                    {/* B35.1: Lifecycle action buttons */}
+                    <AttachmentLifecycleActions
+                      tenantCode={tenantCode}
+                      batchId={att.batchId || batchIdFull}
+                      attachmentId={att.attachmentId}
+                      fileNameSafe={att.fileNameSafe}
+                      lifecycleStatus={att.lifecycleStatus}
+                      storageStatus={att.storageStatus}
+                      onActionCompleted={handleLifecycleActionCompleted}
+                    />
                   </div>
                 ))}
                 {detail.attachments.some(a => a.canOpenSecurely) && (

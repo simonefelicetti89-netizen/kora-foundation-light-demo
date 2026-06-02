@@ -4,14 +4,15 @@
 // B29/B31: Company Evidence Archive — read-only lineage + evidence attachment metadata.
 // No edit (except attachment register), no scoring, no delete. Privacy-safe view.
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { EvidenceAttachmentPanel } from './EvidenceAttachmentPanel';
 import { EvidenceRecordDrawer } from './EvidenceRecordDrawer';
+import { AttachmentLifecycleActions } from './AttachmentLifecycleActions';
 import { useSearchParams } from 'next/navigation';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-// B34: individual attachment metadata (safe fields — no storagePath, no signed URL)
+// B34/B35: individual attachment metadata (safe fields — no storagePath, no signed URL)
 interface AttachmentItem {
   attachmentId: string;
   fileNameSafe: string;
@@ -22,6 +23,13 @@ interface AttachmentItem {
   evidenceLevelSuggestion: string | null;
   storageStatus: 'stored_private' | 'metadata_only';
   createdAt: string;
+  // B35: lifecycle fields
+  lifecycleStatus:  string;
+  lifecycleLabel?:  string;
+  canOpenSecurely:  boolean;
+  archivedAt?:      string | null;
+  removedAt?:       string | null;
+  storageRemovedAt?: string | null;
 }
 
 interface BatchSummary {
@@ -212,7 +220,7 @@ export function CompanyEvidenceArchivePanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function loadArchive() {
+  const loadArchive = useCallback(() => {
     if (!TENANT) return;
     setLoading(true); setError(null); setData(null);
     fetch(`/api/admin/company-evidence-archive?tenantCode=${encodeURIComponent(TENANT)}&reportingPeriod=${encodeURIComponent(PERIOD)}`, {
@@ -221,7 +229,8 @@ export function CompanyEvidenceArchivePanel() {
       .then(r => r.json() as Promise<ArchiveData>)
       .then(d => { setData(d); setLoading(false); })
       .catch((e: Error) => { setError(e.message); setLoading(false); });
-  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [TENANT, PERIOD]);
 
   // Client-side filter + search
   const filteredInitiatives = useMemo(() => {
@@ -390,31 +399,63 @@ export function CompanyEvidenceArchivePanel() {
                   {b.sourceName && (
                     <p className="text-[9px] text-slate-400 mt-1 font-mono truncate">{b.sourceName}</p>
                   )}
-                  {/* B34: individual attachment list with open buttons */}
+                  {/* B34/B35.1: individual attachment list with open + lifecycle actions */}
                   {b.attachments && b.attachments.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-slate-100 space-y-1.5">
+                    <div className="mt-2 pt-2 border-t border-slate-100 space-y-2">
                       {b.attachments.map(att => (
-                        <div key={att.attachmentId} className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[9px] font-mono text-slate-500 truncate max-w-[160px]">{att.fileNameSafe}</span>
-                          <span className="rounded border border-slate-100 bg-white px-1.5 py-0.5 text-[9px] text-slate-400 uppercase">{att.fileType}</span>
-                          {att.evidenceLevelSuggestion && (
-                            <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#6156F5]">{att.evidenceLevelSuggestion}</span>
-                          )}
-                          {att.storageStatus === 'stored_private' ? (
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={() => b.batchIdFull && handleOpenSecureLink(b.batchIdFull, att.attachmentId)}
-                                disabled={openLinkLoading === att.attachmentId}
-                                className="rounded border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[9px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
-                              >
-                                {openLinkLoading === att.attachmentId ? '⏳' : '🔒 Apri'}
-                              </button>
-                              {openLinkErrors[att.attachmentId] && (
-                                <span className="text-[9px] text-red-600">⚠ {openLinkErrors[att.attachmentId]}</span>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-[9px] text-slate-400">metadata only</span>
+                        <div key={att.attachmentId} className="rounded border border-slate-100 bg-slate-50 px-3 py-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[9px] font-mono text-slate-600 truncate max-w-[160px]">{att.fileNameSafe}</span>
+                            <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] text-slate-400 uppercase">{att.fileType}</span>
+                            {att.evidenceLevelSuggestion && (
+                              <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#6156F5]">{att.evidenceLevelSuggestion}</span>
+                            )}
+                            {/* B35.1: lifecycle badge */}
+                            <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${
+                              att.lifecycleStatus === 'active'          ? 'border-green-200 bg-green-50 text-green-700' :
+                              att.lifecycleStatus === 'archived'        ? 'border-amber-200 bg-amber-50 text-amber-700' :
+                              att.lifecycleStatus === 'removed'         ? 'border-red-200 bg-red-50 text-red-700' :
+                              att.lifecycleStatus === 'storage_removed' ? 'border-red-100 bg-red-50 text-red-500' :
+                              'border-slate-100 bg-slate-100 text-slate-400'
+                            }`}>
+                              {att.lifecycleLabel ?? att.lifecycleStatus}
+                            </span>
+                          </div>
+                          {/* Open button (conditioned by lifecycle) */}
+                          <div className="flex items-center gap-2 mt-1.5">
+                            {att.canOpenSecurely ? (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => b.batchIdFull && handleOpenSecureLink(b.batchIdFull, att.attachmentId)}
+                                  disabled={openLinkLoading === att.attachmentId}
+                                  className="rounded border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[9px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
+                                >
+                                  {openLinkLoading === att.attachmentId ? '⏳' : '🔒 Apri'}
+                                </button>
+                                {openLinkErrors[att.attachmentId] && (
+                                  <span className="text-[9px] text-red-600">⚠ {openLinkErrors[att.attachmentId]}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-[9px] text-slate-400">
+                                {att.lifecycleStatus === 'archived' ? '⚠ Archiviato' :
+                                 att.lifecycleStatus === 'removed' ? '⊘ Rimosso' :
+                                 att.lifecycleStatus === 'storage_removed' ? '⊘ File rimosso' :
+                                 '📋 Solo metadati'}
+                              </span>
+                            )}
+                          </div>
+                          {/* B35.1: Lifecycle action buttons */}
+                          {b.batchIdFull && (
+                            <AttachmentLifecycleActions
+                              tenantCode={TENANT}
+                              batchId={b.batchIdFull}
+                              attachmentId={att.attachmentId}
+                              fileNameSafe={att.fileNameSafe}
+                              lifecycleStatus={att.lifecycleStatus}
+                              storageStatus={att.storageStatus}
+                              onActionCompleted={loadArchive}
+                            />
                           )}
                         </div>
                       ))}
