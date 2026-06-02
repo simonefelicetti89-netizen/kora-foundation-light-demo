@@ -1,5 +1,5 @@
 // lib/ingestion/raw-to-uef-interpreter.ts
-// Raw-to-UEF Rule-Based Interpreter v0.1 — KORA Foundation Light B5/B18.
+// Raw-to-UEF Rule-Based Interpreter v0.1 — KORA Foundation Light B5/B18/B23.
 //
 // Transforms a personal.uploaded_record (PII-free payload from B4.2) into a
 // proposed UEF candidate. Pure function — no DB, no LLM, no side effects.
@@ -8,6 +8,11 @@
 // Priority order: BLOCKED > LIMITED > ELIGIBLE.
 // Mental health: program-level only — never individual health/diagnosis data.
 // B18: taxonomy extension + ESRS reporting alignment (no compliance claim).
+// B23: Structural People Policies taxonomy closure — adds reason codes
+//      taxonomy:structural_people_policy and structural_policy:* for
+//      organizational_flexibility, protection_future_security, care_family_support,
+//      growth_infrastructure, inclusion_infrastructure families.
+//      Adds welfare_wallet → limited, leadership/succession → eligible.
 
 import { deriveReportingAlignment, type ReportingAlignment } from '@/lib/reporting/reporting-alignment';
 import { deriveEvidenceGaps, type EvidenceGap } from '@/lib/reporting/evidence-gap-engine';
@@ -110,6 +115,9 @@ const KW_LIMITED = [
   'gift card', 'buoni acquisto', 'voucher generalista', 'voucher generico',
   'fringe benefit', 'benefit monetar', 'welfare cash', 'rimborso generico',
   'bonus monetar', 'cashback', 'sollievo economico', 'economic relief',
+  // B23: welfare wallet / flexible benefit platform — generic economic relief distribution
+  'welfare wallet', 'conto welfare', 'credito welfare', 'piattaforma welfare',
+  'portafoglio welfare', 'welfare platform', 'flexible benefit wallet',
 ];
 
 const KW_MENTAL_HEALTH = [
@@ -145,6 +153,8 @@ const KW_VOLUNTEERING = [
 const KW_LEGACY = [
   'trasferimento competenze', 'senior-junior', 'legacy conoscenza',
   'knowledge transfer', 'memoria organizzativa', 'prassi aziendali',
+  // B23: succession and org memory extended
+  'passaggio generazionale', 'legacy aziendale', 'cultura organizzativa strutturata',
 ];
 
 // ── B18: Extended keyword groups ──────────────────────────────────────────────
@@ -153,12 +163,16 @@ const KW_LEGACY = [
 const KW_ORG_FLEXIBILITY = [
   'ferie illimitate', 'unlimited leave', 'unlimited pto', 'ferie senza limite',
   'smart working', 'remote work', 'lavoro agile', 'lavoro da remoto', 'telelavoro strutturato',
-  'diritto alla disconnessione', 'right to disconnect', 'disconnessione digitale',
-  'no meeting day', 'meeting free', 'focus time',
+  'diritto alla disconnessione', 'diritto disconnessione', 'right to disconnect', 'disconnessione digitale',
+  'no meeting day', 'no-meeting day', 'meeting free', 'focus time',
+  'settimana corta', 'four day week', '4 day week', 'settimana lavorativa corta',
   'flessibilità oraria', 'flexible working', 'flexible work', 'orario flessibile',
   'permessi extra', 'permessi aggiuntivi', 'congedo migliorativo',
   'genitorialità', 'parental leave', 'congedo parentale', 'congedo papà',
   'maternità facoltativa', 'paternità estesa',
+  // B23: additional structural policy variants
+  'permessi genitorialità', 'permesso genitorialità', 'congedo genitorialita',
+  'rientro maternità', 'rientro paternità', 'supporto rientro',
 ];
 
 // Protection & future security: insurance, pension (structured benefit programs)
@@ -169,6 +183,10 @@ const KW_PROTECTION_INSURANCE = [
   'previdenza integrativa', 'pensione integrativa', 'fondo pensione',
   'previdenza complementare', 'piano pensionistico', 'contributo previdenziale',
   'future security', 'social protection fund',
+  // B23: long-term protection / life insurance / LTC
+  'polizza vita', 'life insurance', 'long-term care', 'ltc aziendale',
+  'non autosufficienza', 'copertura ltc', 'copertura non autosufficienza',
+  'rendita integrativa', 'capitale differito', 'protezione famiglia',
 ];
 
 // Wellbeing light: gym, fitness, light wellness (not clinical, not mental health)
@@ -186,6 +204,18 @@ const KW_CAREGIVER_CHILDCARE = [
   'nido', 'asilo nido', 'childcare', 'baby-sitting', 'babysitting',
   'nido aziendale', 'contributo nido', 'rimborso asilo',
   'supporto genitorialità', 'supporto famiglia', 'congedo cura familiare',
+];
+
+// B23: Leadership development + succession planning (GROWTH / LEGACY)
+// Positioned before KW_TRAINING to capture explicit leadership programs before
+// generic training keywords match.
+const KW_LEADERSHIP = [
+  'leadership program', 'leadership development', 'programma leadership',
+  'sviluppo leadership', 'leadership aziendale', 'leadership academy',
+  'manager development', 'sviluppo manageriale', 'percorso manageriale',
+  'succession planning', 'succession plan', 'piano successione',
+  'piano di successione', 'piani di successione', 'programma successione',
+  'talent management', 'talent program', 'high potential', 'hi-po program',
 ];
 
 // D&I / inclusion: diversity, equity, inclusion programs
@@ -312,12 +342,16 @@ function deriveInitiativeDomain(eventType: string, eligibility: EligibilityPropo
     case 'work_life_balance_policy':
     case 'flexible_work_policy':        return 'organizational_flexibility';
     case 'health_insurance_support':
-    case 'pension_future_support':      return 'protection_future_security';
+    case 'pension_future_support':
+    case 'long_term_protection_support': return 'protection_future_security';
     case 'fitness_wellbeing_program':
     case 'light_wellbeing_event':       return 'wellbeing_light';
     case 'caregiver_support':
     case 'childcare_support':           return 'welfare_care';
     case 'inclusion_program':           return 'inclusion_equity';
+    // B23 extensions
+    case 'leadership_development_program':
+    case 'succession_planning':         return 'hr_learning';
     default:                            return 'unknown';
   }
 }
@@ -450,28 +484,45 @@ export function interpretUploadedRecord(
     strongKw = true; pillarClear = true;
     reasonCodes.push('keyword:mental_health_support', 'pillar_rule:mental_health_to_LIFE');
 
-  // B18: protection/insurance before generic health_wellness to avoid false matches
+  // B18/B23: protection/insurance before generic health_wellness to avoid false matches
   } else if (hasAny(combined, KW_PROTECTION_INSURANCE)) {
-    // Distinguish health insurance vs pension/previdenza
+    // Distinguish health insurance vs pension/previdenza vs long-term care
     const isPrevidenza = hasAny(combined, [
       'previdenza', 'pensione', 'fondo pensione', 'piano pensionistico', 'previdenza complementare',
     ]);
-    eventType = isPrevidenza ? 'pension_future_support' : 'health_insurance_support';
-    pillar    = isPrevidenza ? 'LEGACY' : 'LIFE';
+    const isLongTermCare = hasAny(combined, [
+      'long-term care', 'ltc', 'non autosufficienza', 'copertura ltc', 'polizza vita',
+    ]);
+    if (isLongTermCare) {
+      eventType = 'long_term_protection_support'; pillar = 'LEGACY'; eligibility = 'eligible';
+    } else {
+      eventType = isPrevidenza ? 'pension_future_support' : 'health_insurance_support';
+      pillar    = isPrevidenza ? 'LEGACY' : 'LIFE';
+    }
     eligibility = 'eligible';
     strongKw = true; pillarClear = true;
-    reasonCodes.push('keyword:protection_insurance', `taxonomy:protection_future_security`);
+    reasonCodes.push(
+      'keyword:protection_insurance',
+      'taxonomy:protection_future_security',
+      'taxonomy:structural_people_policy',
+      'structural_policy:protection_future_security',
+    );
 
   } else if (hasAny(combined, KW_HEALTH_WELLNESS)) {
     eventType = 'health_wellness_program'; pillar = 'LIFE'; eligibility = 'eligible';
     strongKw = true; pillarClear = true;
     reasonCodes.push('keyword:health_wellness', 'pillar_rule:wellness_to_LIFE');
 
-  // B18: organizational flexibility — structural policies (non-monetary, need usage evidence)
+  // B18/B23: organizational flexibility — structural policies (non-monetary, need usage evidence)
   } else if (hasAny(combined, KW_ORG_FLEXIBILITY)) {
     eventType = 'work_life_balance_policy'; pillar = 'LIFE'; eligibility = 'eligible';
     strongKw = true; pillarClear = true;
-    reasonCodes.push('keyword:org_flexibility', 'taxonomy:organizational_flexibility');
+    reasonCodes.push(
+      'keyword:org_flexibility',
+      'taxonomy:organizational_flexibility',
+      'taxonomy:structural_people_policy',
+      'structural_policy:organizational_flexibility',
+    );
 
   // B18: wellbeing light — gym, fitness (eligible but low auto-confidence without budget/participants)
   } else if (hasAny(combined, KW_WELLBEING_LIGHT)) {
@@ -489,22 +540,44 @@ export function interpretUploadedRecord(
     strongKw = true; pillarClear = true;
     reasonCodes.push('keyword:volunteering', 'pillar_rule:volunteering_to_IMPACT');
 
-  // B18: caregiver / childcare — welfare care (deep activation with provider evidence)
+  // B18/B23: caregiver / childcare — welfare care (deep activation with provider evidence)
   } else if (hasAny(combined, KW_CAREGIVER_CHILDCARE)) {
     const isChildcare = hasAny(combined, ['nido', 'asilo', 'childcare', 'baby', 'babysitting']);
     eventType = isChildcare ? 'childcare_support' : 'caregiver_support';
     pillar = 'LIFE'; eligibility = 'eligible';
     strongKw = true; pillarClear = true;
-    reasonCodes.push('keyword:caregiver_childcare', 'taxonomy:welfare_care');
+    reasonCodes.push(
+      'keyword:caregiver_childcare',
+      'taxonomy:welfare_care',
+      'taxonomy:structural_people_policy',
+      'structural_policy:care_family_support',
+    );
 
-  // B18: D&I / inclusion — eligible, lower confidence if generic single event
+  // B23: Leadership development + succession planning — before mentoring/training
+  } else if (hasAny(combined, KW_LEADERSHIP)) {
+    const isSuccession = hasAny(combined, ['succession', 'successione', 'passaggio generazionale', 'talent management']);
+    if (isSuccession) {
+      eventType = 'succession_planning'; pillar = 'LEGACY'; eligibility = 'eligible';
+      reasonCodes.push('keyword:succession_planning', 'taxonomy:growth_infrastructure');
+    } else {
+      eventType = 'leadership_development_program'; pillar = 'GROWTH'; eligibility = 'eligible';
+      reasonCodes.push('keyword:leadership_development', 'taxonomy:growth_infrastructure');
+    }
+    strongKw = true; pillarClear = true;
+    reasonCodes.push('taxonomy:structural_people_policy', 'structural_policy:growth_infrastructure');
+
+  // B18/B23: D&I / inclusion — eligible, lower confidence if generic single event
   } else if (hasAny(combined, KW_INCLUSION_DEI)) {
     eventType = 'inclusion_program'; pillar = 'CONNECTION'; eligibility = 'eligible';
     strongKw = true; pillarClear = true;
     // Generic one-off workshop → flag as ambiguous to reduce confidence
     const isGenericWorkshop = hasAny(combined, ['workshop']) && !hasAny(combined, ['programma', 'percorso', 'piano', 'strutturato', 'annuale']);
-    if (isGenericWorkshop) { ambiguous = true; reasonCodes.push('taxonomy:inclusion_equity:generic_event'); }
-    else reasonCodes.push('taxonomy:inclusion_equity');
+    if (isGenericWorkshop) {
+      ambiguous = true;
+      reasonCodes.push('taxonomy:inclusion_equity:generic_event', 'taxonomy:structural_people_policy', 'structural_policy:inclusion_infrastructure');
+    } else {
+      reasonCodes.push('taxonomy:inclusion_equity', 'taxonomy:structural_people_policy', 'structural_policy:inclusion_infrastructure');
+    }
 
   } else if (hasAny(combined, KW_MENTORING)) {
     eventType = 'mentoring_program'; pillar = 'CONNECTION'; eligibility = 'eligible';

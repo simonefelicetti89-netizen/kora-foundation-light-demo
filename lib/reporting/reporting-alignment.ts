@@ -179,6 +179,16 @@ export function deriveReportingAlignment(
       areas = [A_REMUNERATION_CONTEXTUAL];
       break;
 
+    // B23: new event types
+    case 'leadership_development_program':
+    case 'succession_planning':
+      areas = [A_TRAINING];
+      break;
+
+    case 'long_term_protection_support':
+      areas = [A_SOCIAL_PROTECTION_PENSION];
+      break;
+
     default:
       return null;
   }

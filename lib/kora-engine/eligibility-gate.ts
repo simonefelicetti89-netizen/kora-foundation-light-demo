@@ -205,6 +205,9 @@ const LIMITED_KEYWORDS: readonly string[] = [
   'rimborso generico', 'bonus monetario',
   'cashback', 'premio in denaro', 'erogazione monetaria',
   'bonus spesa', 'buoni cultura',
+  // B23: welfare wallet / flexible benefit platform — generic distribution, not deep activation
+  'welfare wallet', 'conto welfare', 'credito welfare', 'piattaforma welfare',
+  'portafoglio welfare', 'welfare platform', 'flexible benefit wallet',
 ];
 
 // Voluntary / additional / verifiable program patterns.
@@ -252,6 +255,26 @@ const ELIGIBLE_KEYWORDS: readonly string[] = [
   'knowledge transfer', 'trasferimento competenze', 'trasferimento know-how',
   'senior junior mentoring', 'mentoring generazionale', 'passaggio generazionale',
   'legacy program', 'resilienza a lungo termine',
+  // B23: Gap closure — structural people policies not previously recognized
+  // LIFE — protection / insurance (structural benefit programs)
+  'assicurazione sanitaria', 'polizza sanitaria', 'sanita integrativa',
+  'mutua sanitaria', 'copertura sanitaria', 'welfare sanitario integrativo',
+  // LIFE — wellbeing light (voluntary, non-mandatory fitness programs)
+  'palestra aziendale', 'convenzione palestra', 'gym aziendale',
+  'fitness aziendale', 'sport benefit', 'sport aziendale',
+  // LIFE — organizational flexibility additional forms
+  'diritto disconnessione',          // without "alla" for robustness
+  'no meeting day', 'meeting free day', 'giornata senza riunioni',
+  'permessi genitorialita', 'congedo genitorialita', 'congedo parentale aggiuntivo',
+  'rientro maternita', 'rientro paternita',
+  'settimana corta', 'four day week',
+  // GROWTH — leadership development + succession
+  'leadership program', 'leadership development', 'sviluppo leadership',
+  'programma leadership', 'leadership aziendale',
+  'succession planning', 'succession plan', 'piano successione',
+  'talent management', 'talent program', 'high potential',
+  // GROWTH — career path (reinforcement)
+  'career path', 'percorso di carriera', 'piano di sviluppo',
 ];
 
 // Signals explicitly indicating voluntary / optional / additional nature.

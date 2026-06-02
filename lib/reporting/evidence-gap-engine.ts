@@ -148,6 +148,18 @@ function computeReadiness(input: EvidenceGapInput): ReportingReadiness {
     case 'economic_relief':
       return hasBudget ? 'usable_with_caveat' : 'needs_evidence';
 
+    // B23: leadership/succession — similar evidence profile to professional training
+    case 'leadership_development_program':
+    case 'succession_planning':
+      if (hasL2plus && hasPax && hasBudget) return 'usable_with_caveat';
+      if (hasL3 && hasPax && hasBudget)     return 'report_ready';
+      return 'needs_evidence';
+
+    // B23: long-term care/protection — contextual, needs coverage+provider
+    case 'long_term_protection_support':
+      if (hasL2plus && hasBudget) return 'usable_with_caveat';
+      return 'needs_evidence';
+
     default:
       if (hasL2plus && hasPax && hasBudget) return 'usable_with_caveat';
       return 'needs_evidence';
@@ -266,6 +278,24 @@ function deriveMissingEvidence(input: EvidenceGapInput): string[] {
       missing.push('Fonte spesa (payroll / welfare provider)');
       break;
 
+    // B23: leadership / succession
+    case 'leadership_development_program':
+    case 'succession_planning':
+      if (!hasPax)    missing.push('Numero partecipanti al programma');
+      if (!hasBudget) missing.push('Budget iniziativa (importo)');
+      if (!hasL2plus) missing.push('Report strutturato / documentazione programma (L2/L3)');
+      missing.push('Obiettivi del programma e skill target');
+      missing.push('Completion rate / outcome metrics');
+      break;
+
+    // B23: long-term care / polizza vita
+    case 'long_term_protection_support':
+      if (!hasBudget) missing.push('Contributo datore (importo)');
+      if (!hasL2plus) missing.push('Documento polizza / contratto assicurativo (L2/L3)');
+      missing.push('Dipendenti coperti (aggregato)');
+      missing.push('Tipologia copertura (LTC, vita, non autosufficienza)');
+      break;
+
     default:
       if (!hasPax)    missing.push('Numero partecipanti');
       if (!hasBudget) missing.push('Budget iniziativa');
@@ -359,6 +389,23 @@ function deriveRecommendedActions(input: EvidenceGapInput, readiness: ReportingR
         'Raccogliere popolazione beneficiaria aggregata',
       ];
 
+    // B23: leadership / succession
+    case 'leadership_development_program':
+    case 'succession_planning':
+      return [
+        'Documentare struttura programma e obiettivi (L2/L3)',
+        'Raccogliere dati partecipazione e completion rate',
+        'Archiviare documentazione provider / budget',
+      ];
+
+    // B23: long-term care / protection
+    case 'long_term_protection_support':
+      return [
+        'Raccogliere dati coverage (dipendenti coperti aggregati)',
+        'Documentare contributo datore e tipologia copertura',
+        'Archiviare polizza / contratto assicurativo (L2/L3)',
+      ];
+
     default:
       return ['Raccogliere dati partecipazione, budget e fonte documentale (L2/L3)'];
   }
@@ -381,6 +428,11 @@ function deriveOwnerHint(eventType: string, eligibility: EligibilityProposal): O
       return 'Finance';
     case 'inclusion_program':
       return 'ESG';
+    case 'leadership_development_program':
+    case 'succession_planning':
+      return 'HR';
+    case 'long_term_protection_support':
+      return 'Finance';
     case 'work_life_balance_policy':
     case 'flexible_work_policy':
     case 'caregiver_support':
@@ -405,6 +457,12 @@ function deriveCaveat(eventType: string, readiness: ReportingReadiness): string 
   }
   if (['work_life_balance_policy', 'flexible_work_policy'].includes(eventType)) {
     return 'Esistenza della policy non è sufficiente. Uptake e utilization data richiesti per meaningful alignment.';
+  }
+  if (['leadership_development_program', 'succession_planning'].includes(eventType)) {
+    return 'Leadership e succession planning sono programmi strutturali. Richiedono documentazione, partecipazione e outcome per strong alignment.';
+  }
+  if (eventType === 'long_term_protection_support') {
+    return 'Coperture long-term (LTC, polizza vita) sono contestuali. Richiedono dati coverage, contributo datore e provider documentation.';
   }
   return 'KORA identifica i gap di evidenza per supportare la rendicontazione. Non costituisce assurance, certificazione o compliance CSRD/ESRS.';
 }
