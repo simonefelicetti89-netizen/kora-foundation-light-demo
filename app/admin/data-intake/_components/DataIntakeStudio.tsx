@@ -78,6 +78,8 @@ interface AcceptResult {
   reportingPeriod?: string;
   fileType?: 'csv' | 'xlsx';
   selectedSheetName?: string;
+  mappingApplied?: boolean;
+  manualCompletionApplied?: string[];
   rowCount?: number;
   eligibilitySummary?: { eligible: number; limited: number; blocked: number; reviewRequired: number; total: number };
   batchStatus?: string;
@@ -122,6 +124,26 @@ interface DryRunResult {
   sheets?: XlsxSheetInfo[];
   selectedSheetName?: string;
   affectedSheet?: string;
+  // B27 column mapping
+  originalHeaders?: string[];
+  mappingSuggestions?: Array<{
+    sourceHeader: string;
+    normalizedHeader: string;
+    suggestedField: string | null;
+    confidence: number;
+    reason: string;
+    alternatives: string[];
+  }>;
+  appliedMapping?: Record<string, string>;
+  manualCompletionApplied?: string[];
+  missingFieldSummary?: {
+    totalRows: number;
+    blockingCount: number;
+    warningCount: number;
+    overallSeverity: 'ok' | 'warning' | 'blocking';
+    fillableWithDefaults: string[];
+    missingByField: Record<string, number>;
+  };
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -192,7 +214,15 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const [opErr, setOpErr]         = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-    // B4.1 — CSV / XLSX dry-run state
+      // B27: column mapping state
+  const [userMapping, setUserMapping]   = useState<Record<string, string>>({});
+  const [manualSource, setManualSource]      = useState('');
+  const [manualEvidLevel, setManualEvidLevel] = useState('');
+  const [manualBudgetClass, setManualBudgetClass] = useState('');
+  const [manualProvider, setManualProvider] = useState('');
+  const [manualPeriod, setManualPeriod]     = useState('');
+
+  // B4.1 — CSV / XLSX dry-run state
   const [csvFile, setCsvFile]           = useState<File | null>(null);
   const [csvStatus, setCsvStatus]       = useState<'idle'|'loading'|'passed'|'rejected'|'error'>('idle');
   const [csvResult, setCsvResult]       = useState<DryRunResult | null>(null);
@@ -311,6 +341,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       }
       // B13 FASE 3: pseudonymization confirmation gate
       fd.append('pseudonymizationConfirmation', 'true');
+      // B27: send column mapping + manual defaults to accept (server re-applies)
+      appendB27Fields(fd);
       const res  = await fetch('/api/admin/data-intake/accept', {
         method: 'POST', credentials: 'include', body: fd,
       });
@@ -346,6 +378,23 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     }
   }
 
+  // B27: build mapping + manual completion form data fields
+  function appendB27Fields(fd: FormData) {
+    const effectiveMapping = { ...userMapping };
+    if (Object.keys(effectiveMapping).length > 0) {
+      fd.append('columnMapping', JSON.stringify(effectiveMapping));
+    }
+    const manualDefaults: Record<string, string> = {};
+    if (manualSource.trim())     manualDefaults['source']           = manualSource.trim();
+    if (manualEvidLevel.trim())  manualDefaults['evidence_level']   = manualEvidLevel.trim();
+    if (manualBudgetClass.trim()) manualDefaults['budget_class']    = manualBudgetClass.trim();
+    if (manualProvider.trim())   manualDefaults['provider']         = manualProvider.trim();
+    if (manualPeriod.trim())     manualDefaults['reporting_period'] = manualPeriod.trim();
+    if (Object.keys(manualDefaults).length > 0) {
+      fd.append('manualCompletion', JSON.stringify(manualDefaults));
+    }
+  }
+
   // B26 — XLSX: preview selected sheet
   async function handlePreviewXlsxSheet() {
     if (!csvFile || !selectedSheet) return;
@@ -356,12 +405,21 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       fd.append('tenantCode', TENANT);
       fd.append('reportingPeriod', PERIOD);
       fd.append('selectedSheetName', selectedSheet);
+      appendB27Fields(fd);
       const res  = await fetch('/api/admin/data-intake/upload-preview', {
         method: 'POST', credentials: 'include', body: fd,
       });
       const data = await res.json() as DryRunResult;
       setCsvResult(data);
       setCsvStatus(data.ok ? 'passed' : 'rejected');
+      // Initialise userMapping from suggestions if not already set
+      if (data.ok && data.mappingSuggestions && Object.keys(userMapping).length === 0) {
+        const initial: Record<string, string> = {};
+        for (const s of data.mappingSuggestions) {
+          if (s.suggestedField) initial[s.sourceHeader] = s.suggestedField;
+        }
+        setUserMapping(initial);
+      }
     } catch (e) {
       setCsvResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
       setCsvStatus('error');
@@ -377,12 +435,20 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       fd.append('file', csvFile);
       fd.append('tenantCode', TENANT);
       fd.append('reportingPeriod', PERIOD);
+      appendB27Fields(fd);
       const res  = await fetch('/api/admin/data-intake/upload-preview', {
         method: 'POST', credentials: 'include', body: fd,
       });
       const data = await res.json() as DryRunResult;
       setCsvResult(data);
       setCsvStatus(data.ok ? 'passed' : 'rejected');
+      if (data.ok && data.mappingSuggestions && Object.keys(userMapping).length === 0) {
+        const initial: Record<string, string> = {};
+        for (const s of data.mappingSuggestions) {
+          if (s.suggestedField) initial[s.sourceHeader] = s.suggestedField;
+        }
+        setUserMapping(initial);
+      }
     } catch (e) {
       setCsvResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
       setCsvStatus('error');
@@ -465,6 +531,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               setCsvStatus('idle'); setCsvResult(null);
               setAcceptStatus('idle'); setAcceptResult(null);
               setXlsxSheetList(null); setXlsxSheetStatus('idle'); setSelectedSheet('');
+              // B27: reset mapping state on file change
+              setUserMapping({});
+              setManualSource(''); setManualEvidLevel(''); setManualBudgetClass('');
+              setManualProvider(''); setManualPeriod('');
               const isXlsx = f?.name.toLowerCase().endsWith('.xlsx') ?? false;
               setFileType(isXlsx ? 'xlsx' : 'csv');
             }}
@@ -588,6 +658,165 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] text-slate-400 border-t border-green-100 pt-2">
               {csvResult.dryRunNote} · Live scoring remains locked until B4.2/B5.
             </p>
+          </div>
+        )}
+
+        {/* B27 — Column Mapping Assistant */}
+        {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' &&
+          csvResult.mappingSuggestions && csvResult.mappingSuggestions.length > 0 && (
+          <div className="rounded-lg border border-[#6156F5]/20 bg-white px-4 py-4 space-y-3">
+            <div>
+              <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">Column Mapping Assistant</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                KORA ha suggerito un mapping per le colonne del file. Verifica e modifica se necessario.
+                Colonne non mappate vengono mantenute con il nome originale.
+              </p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    {['Colonna file', 'Campo canonico KORA', 'Confidence'].map(h => (
+                      <th key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {csvResult.mappingSuggestions.map((s, i) => {
+                    const currentVal = userMapping[s.sourceHeader] ?? s.suggestedField ?? 'keep_original';
+                    const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-amber-700' : 'text-slate-400';
+                    return (
+                      <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
+                        <td className="py-1.5 px-2 font-mono text-slate-700">{s.sourceHeader}</td>
+                        <td className="py-1.5 px-2">
+                          <select
+                            value={currentVal}
+                            onChange={e => setUserMapping(m => ({ ...m, [s.sourceHeader]: e.target.value }))}
+                            className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5] min-w-[160px]"
+                          >
+                            <option value="keep_original">— Mantieni originale —</option>
+                            <option value="ignore">✕ Ignora colonna</option>
+                            {['initiative_name','description','category','type','amount','participants',
+                              'source','evidence_level','pillar','reporting_period','provider',
+                              'budget_class','cost_center','hours','coverage','uptake','policy_evidence'
+                            ].map(f => (
+                              <option key={f} value={f}>{f}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className={`py-1.5 px-2 text-[10px] font-mono ${confColor}`}>
+                          {s.confidence > 0 ? `${Math.round(s.confidence * 100)}%` : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <button
+              onClick={fileType === 'xlsx' ? handlePreviewXlsxSheet : handleValidateCsv}
+              className="rounded-lg bg-[#6156F5] text-white px-3 py-1.5 text-[10px] font-semibold hover:bg-[#4d48d0] transition-colors"
+            >
+              ↻ Applica mapping e ri-preview
+            </button>
+            <p className="text-[10px] text-slate-400">
+              La colonna selezionata come &quot;Ignora&quot; viene comunque scansionata per PII prima di essere scartata.
+            </p>
+          </div>
+        )}
+
+        {/* B27 — Missing Fields Summary */}
+        {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' &&
+          csvResult.missingFieldSummary && csvResult.missingFieldSummary.totalRows > 0 && (
+          <div className={`rounded-lg border px-4 py-3 space-y-2 ${
+            csvResult.missingFieldSummary.overallSeverity === 'blocking' ? 'border-red-200 bg-red-50' :
+            csvResult.missingFieldSummary.overallSeverity === 'warning'  ? 'border-amber-200 bg-amber-50' :
+            'border-green-200 bg-green-50'
+          }`}>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">Missing Fields</p>
+            <div className="flex flex-wrap gap-2 text-[10px]">
+              {csvResult.missingFieldSummary.blockingCount > 0 && (
+                <span className="rounded border border-red-200 bg-white px-2 py-0.5 text-red-700 font-medium">
+                  ⊗ Blocking: {csvResult.missingFieldSummary.blockingCount} righe
+                </span>
+              )}
+              {csvResult.missingFieldSummary.warningCount > 0 && (
+                <span className="rounded border border-amber-200 bg-white px-2 py-0.5 text-amber-700 font-medium">
+                  ⚠ Warning: {csvResult.missingFieldSummary.warningCount} righe
+                </span>
+              )}
+              {csvResult.missingFieldSummary.overallSeverity === 'ok' && (
+                <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-green-700 font-medium">✓ Campi chiave presenti</span>
+              )}
+            </div>
+            {Object.keys(csvResult.missingFieldSummary.missingByField).length > 0 && (
+              <div className="flex flex-wrap gap-1 pt-1">
+                {Object.entries(csvResult.missingFieldSummary.missingByField).slice(0, 8).map(([f, n]) => (
+                  <span key={f} className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-mono text-slate-500">
+                    {f}: {n}/{csvResult.missingFieldSummary!.totalRows}
+                  </span>
+                ))}
+              </div>
+            )}
+            {csvResult.missingFieldSummary.fillableWithDefaults.length > 0 && (
+              <p className="text-[10px] text-slate-500">
+                💡 Campi completabili con default batch: {csvResult.missingFieldSummary.fillableWithDefaults.join(', ')}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* B27 — Manual Completion Light (batch-level defaults) */}
+        {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
+          <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 space-y-3">
+            <div>
+              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Manual Completion — Default Batch</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                Valori di default applicati solo alle righe con campo vuoto. Non sovrascrivono dati presenti.
+                Tracciati come <code className="bg-slate-100 px-1 rounded text-[9px]">_manual_completion</code> nel payload — non bypassano UEF Review.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Fonte default</label>
+                <input value={manualSource} onChange={e => setManualSource(e.target.value)}
+                  placeholder="es. provider_export, hr_declaration"
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Evidence level default</label>
+                <select value={manualEvidLevel} onChange={e => setManualEvidLevel(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  <option value="">— Non specificato —</option>
+                  <option value="L0">L0 — Nessuna evidenza</option>
+                  <option value="L1">L1 — Auto-dichiarato</option>
+                  <option value="L2">L2 — Documento interno</option>
+                  <option value="L3">L3 — Terze parti / Verificato</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Budget class default</label>
+                <select value={manualBudgetClass} onChange={e => setManualBudgetClass(e.target.value)}
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  <option value="">— Non specificato —</option>
+                  <option value="deep_activation">Deep Activation</option>
+                  <option value="economic_relief">Economic Relief</option>
+                  <option value="compliance_blocked">Compliance Blocked</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Provider default</label>
+                <input value={manualProvider} onChange={e => setManualProvider(e.target.value)}
+                  placeholder="es. Welfare Provider S.p.A."
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Periodo di default</label>
+                <input value={manualPeriod} onChange={e => setManualPeriod(e.target.value)}
+                  placeholder="es. 2026-Q1"
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+              </div>
+            </div>
           </div>
         )}
 
@@ -760,6 +989,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">status: {acceptResult.batchStatus}</span>
               {acceptResult.fileType === 'xlsx' && acceptResult.selectedSheetName && (
                 <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[10px] font-semibold text-[#6156F5]">xlsx · {acceptResult.selectedSheetName}</span>
+              )}
+              {acceptResult.mappingApplied && (
+                <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-500">mapping applicato</span>
+              )}
+              {acceptResult.manualCompletionApplied && acceptResult.manualCompletionApplied.length > 0 && (
+                <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">manual: {acceptResult.manualCompletionApplied.join(', ')}</span>
               )}
             </div>
             {acceptResult.eligibilitySummary && (

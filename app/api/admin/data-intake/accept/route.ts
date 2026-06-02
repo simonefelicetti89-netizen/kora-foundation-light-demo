@@ -23,6 +23,11 @@ import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guar
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { parseCsvContent, flattenCsvWarnings } from '@/lib/data-intake/csv-parser';
 import { parseExcelSheet } from '@/lib/data-intake/excel-parser';
+import {
+  suggestColumnMapping, applyColumnMapping, applyManualCompletionDefaults,
+  validateMapping, type CanonicalIntakeField,
+} from '@/lib/data-intake/column-mapping';
+import { analyzeMissingFields } from '@/lib/data-intake/missing-field-analysis';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 import type {
   BatchFinancialContext, FinancialSourceType, BudgetScope, EvidenceLevel,
@@ -101,6 +106,7 @@ const FORBIDDEN_HEADERS = new Set([
 ]);
 
 // ── Safe payload keys — only these fields stored in uploaded_record.payload ───
+// B27: extended with canonical intake fields from column-mapping.ts
 
 const SAFE_PAYLOAD_KEYS = new Set([
   'initiative_id', 'initiative_name', 'nome_iniziativa',
@@ -109,19 +115,30 @@ const SAFE_PAYLOAD_KEYS = new Set([
   'pillar',
   'amount', 'budget_amount', 'importo',
   'source', 'budget_source', 'evidence_type', 'fonte',
-  'period', 'department_group', 'site', 'cluster', 'provider',
+  'period', 'reporting_period', 'department_group', 'site', 'cluster', 'provider',
   'mandatory', 'initiative_type',
+  // B27: canonical intake fields
+  'description', 'evidence_level', 'budget_class', 'cost_center',
+  'hours', 'coverage', 'uptake', 'policy_evidence',
 ]);
 
 // ── Payload builder — only SAFE_PAYLOAD_KEYS allowed in stored payload ────────
 
-function buildSafePayload(row: Record<string, string>): Record<string, unknown> {
+function buildSafePayload(
+  row: Record<string, string>,
+  manualFields?: CanonicalIntakeField[],
+): Record<string, unknown> {
   const safe: Record<string, unknown> = {
     b4_intake:  true,
     pii_policy: 'strict_reject',
   };
   for (const [k, v] of Object.entries(row)) {
     if (SAFE_PAYLOAD_KEYS.has(k) && v !== '') safe[k] = v;
+  }
+  // B27: track manual completion fields — no values, only field names
+  if (manualFields && manualFields.length > 0) {
+    safe['_manual_completion'] = true;
+    safe['_manual_fields']     = manualFields;
   }
   return safe;
 }
@@ -212,6 +229,34 @@ export async function POST(request: NextRequest) {
   const filename  = file.name.toLowerCase();
   const isXlsx    = filename.endsWith('.xlsx');
   const isCsv     = filename.endsWith('.csv');
+
+  // B27: column mapping + manual completion defaults
+  let columnMapping: Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'> | null = null;
+  const columnMappingRaw = formData.get('columnMapping');
+  if (columnMappingRaw && String(columnMappingRaw).trim()) {
+    try {
+      const parsed = JSON.parse(String(columnMappingRaw));
+      const validation = validateMapping(parsed as Record<string, string>);
+      if (!validation.valid) {
+        return NextResponse.json({
+          error: `Invalid columnMapping: ${validation.invalidEntries.join(', ')}`,
+        }, { status: 400 });
+      }
+      columnMapping = parsed as Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'>;
+    } catch {
+      return NextResponse.json({ error: 'columnMapping must be valid JSON.' }, { status: 400 });
+    }
+  }
+
+  let manualDefaults: Partial<Record<CanonicalIntakeField, string>> | null = null;
+  const manualCompletionRaw = formData.get('manualCompletion');
+  if (manualCompletionRaw && String(manualCompletionRaw).trim()) {
+    try {
+      manualDefaults = JSON.parse(String(manualCompletionRaw)) as Partial<Record<CanonicalIntakeField, string>>;
+    } catch {
+      return NextResponse.json({ error: 'manualCompletion must be valid JSON.' }, { status: 400 });
+    }
+  }
 
   const batchLabel = batchLabelInput
     ? String(batchLabelInput)
@@ -382,12 +427,52 @@ export async function POST(request: NextRequest) {
   }
 
   // ── All checks passed — begin persistence ─────────────────────────────────────
-  // At this point: no PII, no forbidden headers, file within limits.
+  // At this point: no PII on original rows, no forbidden headers, file within limits.
 
   const auditRows: ReturnType<typeof makeAudit>[] = [];
 
-  // ── 10. Eligibility classification ───────────────────────────────────────────
-  const records: RawUploadedRecord[] = csvToUploadedRecords(rows);
+  // ── 10. B27: apply column mapping server-side (re-applied — never trusts preview) ─
+  // If no mapping provided, auto-apply suggestions from headers.
+  const effectiveMapping = columnMapping ?? Object.fromEntries(
+    suggestColumnMapping(headers)
+      .filter(s => s.suggestedField !== null)
+      .map(s => [s.sourceHeader, s.suggestedField!])
+  );
+  let finalRows = applyColumnMapping(rows, effectiveMapping);
+
+  // B27: apply manual completion defaults (batch-level, fills only empty fields)
+  let manualApplied: CanonicalIntakeField[] = [];
+  if (manualDefaults) {
+    const result = applyManualCompletionDefaults(finalRows, manualDefaults);
+    finalRows = result.rows;
+    manualApplied = result.appliedFields;
+  }
+
+  // B27: PII check on manual completion values — must not introduce PII
+  if (manualDefaults) {
+    for (let i = 0; i < finalRows.length; i++) {
+      const manualOnlyRow: Record<string, unknown> = {};
+      for (const f of manualApplied) {
+        const v = finalRows[i][f];
+        if (v) manualOnlyRow[f] = v;
+      }
+      const r = await import('@/lib/privacy/pii-guard').then(m => m.detectPiiInPayload(manualOnlyRow));
+      if (r.hasPii) {
+        return NextResponse.json({
+          ok: false, error: 'Batch rejected: PII detected in manual completion values.',
+          piiStatus: 'rejected', rejectedAt: new Date().toISOString(),
+          findings: r.findings.map(f => ({ fieldPath: f.fieldPath, riskType: f.riskType, severity: f.severity })),
+          note: 'Remove personal identifiers from manual completion fields.',
+        }, { status: 422 });
+      }
+    }
+  }
+
+  // B27: missing field summary for audit
+  const missingFieldSummary = analyzeMissingFields(finalRows);
+
+  // ── 11. Eligibility classification on mapped rows ────────────────────────────
+  const records: RawUploadedRecord[] = csvToUploadedRecords(finalRows);
   const eligResults = classifyEligibilityBatch(records);
 
   const eligCounts = {
@@ -420,7 +505,15 @@ export async function POST(request: NextRequest) {
       payload_sample: {
         ...(batchFinancialMeta ? { _b11_3: true, ...batchFinancialMeta } : {}),
         ...(isXlsx ? { _b26: true, fileType: 'xlsx', selectedSheetName } : { fileType: 'csv' }),
-      } as Record<string, unknown> | null,
+        // B27: column mapping + manual completion metadata (no values)
+        _b27: true,
+        mapping_applied:         Object.keys(effectiveMapping).length > 0,
+        mapping_field_count:     Object.keys(effectiveMapping).length,
+        manual_completion_used:  manualApplied.length > 0,
+        manual_fields:           manualApplied,
+        missing_blocking_count:  missingFieldSummary.blockingCount,
+        missing_warning_count:   missingFieldSummary.warningCount,
+      } as Record<string, unknown>,
       created_by:             authResult.email,
       processed_at:           null,
     })
@@ -474,7 +567,8 @@ export async function POST(request: NextRequest) {
   // raw_hash: batch-scoped row identifier (non-cryptographic for B4.2).
   // payload: safe fields only — PII strict-reject guarantees cleanliness.
 
-  const uploadedRows = rows.map((row, i) => ({
+  // B27: use finalRows (mapped + manual-completed) for persistence
+  const uploadedRows = finalRows.map((row, i) => ({
     tenant_id:          tenantId,
     batch_id:           batchId,
     pseudonym_id:       `PSY-B42-${batchId.slice(0, 8)}-${String(i).padStart(4, '0')}`,
@@ -484,8 +578,8 @@ export async function POST(request: NextRequest) {
     action_family:      (row['category'] || row['categoria'] || null) as string | null,
     event_nature:       (row['type'] || row['tipo'] || null) as string | null,
     review_status:      'pending' as const,
-    payload:            buildSafePayload(row),
-    privacy_redacted:   false,  // strict-reject ensures no PII in payload
+    payload:            buildSafePayload(row, manualApplied.length > 0 ? manualApplied : undefined),
+    privacy_redacted:   false,
     reviewed_at:        null,
   }));
 
@@ -518,6 +612,35 @@ export async function POST(request: NextRequest) {
     },
   }));
 
+  // B27: audit event for column mapping applied
+  if (Object.keys(effectiveMapping).length > 0) {
+    auditRows.push(makeAudit({
+      tenantId, actorId: authResult.id,
+      action: 'column_mapping_applied',
+      resourceType: 'analytics.source_batch', resourceId: batchId,
+      metadata: {
+        field_count:      Object.keys(effectiveMapping).length,
+        mapped_fields:    Object.values(effectiveMapping).filter(v => v !== 'ignore' && v !== 'keep_original'),
+        ignored_fields:   Object.entries(effectiveMapping).filter(([,v]) => v === 'ignore').map(([k]) => k),
+        user_provided:    columnMapping !== null,
+        // no raw values
+      },
+    }));
+  }
+
+  if (manualApplied.length > 0) {
+    auditRows.push(makeAudit({
+      tenantId, actorId: authResult.id,
+      action: 'manual_completion_applied',
+      resourceType: 'analytics.source_batch', resourceId: batchId,
+      metadata: {
+        fields_applied: manualApplied,
+        row_count:      uploadedRows.length,
+        // no values logged — privacy boundary
+      },
+    }));
+  }
+
   // ── 13. Flush audit log ───────────────────────────────────────────────────────
   const { error: auditErr } = await db.schema('audit').from('audit_log').insert(auditRows);
   if (auditErr) console.error('[data-intake/accept] audit_log flush:', auditErr.message);
@@ -530,9 +653,16 @@ export async function POST(request: NextRequest) {
     reportingPeriod,
     fileType:         isXlsx ? 'xlsx' : 'csv',
     ...(isXlsx ? { selectedSheetName } : {}),
-    rowCount:         rows.length,
+    rowCount:         finalRows.length,
     eligibilitySummary: eligCounts,
     batchStatus:      'pending',
+    mappingApplied:   Object.keys(effectiveMapping).length > 0,
+    manualCompletionApplied: manualApplied,
+    missingFieldSummary: {
+      blockingCount: missingFieldSummary.blockingCount,
+      warningCount:  missingFieldSummary.warningCount,
+      overallSeverity: missingFieldSummary.overallSeverity,
+    },
     message:          'Batch created for review. Scoring remains locked until B5.',
     lockedFeatures:   ['scoring_run', 'kora_index_generation', 'decision_pack_generation'],
     auditEventsWritten: auditRows.length,

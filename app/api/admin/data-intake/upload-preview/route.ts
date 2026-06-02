@@ -7,11 +7,13 @@
 // Auth:   KORA_ADMIN session required.
 // Input:  multipart/form-data · file (CSV or XLSX) · tenantCode · reportingPeriod
 //         · selectedSheetName (XLSX only, optional — omit for workbook sheet list)
+//         · columnMapping JSON (optional — B27 mapping override)
+//         · manualCompletion JSON (optional — B27 batch-level defaults)
 // Limits: max 5 MB · max 500 data rows · CSV or XLSX only
 //
 // B26: XLSX multi-sheet support.
-//   - XLSX without selectedSheetName → returns sheet list + sample (no persistence)
-//   - XLSX with selectedSheetName → parses sheet, runs PII, returns eligibility preview
+// B27: Column Mapping Assistant + batch-level manual completion defaults.
+//   CRITICAL: PII scan runs on ORIGINAL rows before mapping — ignored columns are NOT exempt.
 
 export const runtime = 'nodejs';
 
@@ -21,6 +23,11 @@ import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guar
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { parseCsvContent, flattenCsvWarnings } from '@/lib/data-intake/csv-parser';
 import { parseExcelWorkbookMeta, parseExcelSheet } from '@/lib/data-intake/excel-parser';
+import {
+  suggestColumnMapping, applyColumnMapping, applyManualCompletionDefaults,
+  validateMapping, type CanonicalIntakeField,
+} from '@/lib/data-intake/column-mapping';
+import { analyzeMissingFields } from '@/lib/data-intake/missing-field-analysis';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 
 // ── Limits ───────────────────────────────────────────────────────────────────
@@ -134,6 +141,92 @@ function runPiiCheck(
   return { rejected: false as const };
 }
 
+// ── B27: shared preview logic (post-parse, pre-persist) ──────────────────────
+// CRITICAL: PII scan runs on ORIGINAL rows BEFORE mapping.
+// Ignored/unmapped columns are never exempt from PII scan.
+
+function buildPreviewPayload(params: {
+  fileType: 'csv' | 'xlsx';
+  headers: string[];
+  originalRows: Array<Record<string, string>>;
+  columnMapping: Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'> | null;
+  manualDefaults: Partial<Record<CanonicalIntakeField, string>> | null;
+  selectedSheetName?: string;
+  parseWarnings: string[];
+}) {
+  const { fileType, headers, originalRows, columnMapping, manualDefaults, selectedSheetName, parseWarnings } = params;
+
+  // Step 1: PII scan on ORIGINAL rows — before any mapping, drop, or ignore
+  const piiResult = runPiiCheck(headers, originalRows, selectedSheetName);
+  if (piiResult.rejected) return { piiResult };
+
+  // Step 2: suggest mapping from original headers
+  const mappingSuggestions = suggestColumnMapping(headers);
+
+  // Step 3: build effective mapping (user mapping or fall back to suggestions)
+  const effectiveMapping = columnMapping ?? Object.fromEntries(
+    mappingSuggestions
+      .filter(s => s.suggestedField !== null)
+      .map(s => [s.sourceHeader, s.suggestedField!])
+  );
+
+  // Step 4: apply column mapping
+  const mappedRows = applyColumnMapping(originalRows, effectiveMapping);
+
+  // Step 5: apply manual completion defaults (batch-level)
+  let finalRows = mappedRows;
+  let manualApplied: CanonicalIntakeField[] = [];
+  if (manualDefaults) {
+    const result = applyManualCompletionDefaults(mappedRows, manualDefaults);
+    finalRows = result.rows;
+    manualApplied = result.appliedFields;
+  }
+
+  // Step 6: missing field analysis on mapped rows
+  const missingFieldSummary = analyzeMissingFields(finalRows);
+
+  // Step 7: eligibility classification on final rows
+  const records = toUploadedRecords(finalRows);
+  const eligResults = classifyEligibilityBatch(records);
+  const eligCounts = {
+    eligible:       eligResults.filter(e => e.status === 'eligible').length,
+    limited:        eligResults.filter(e => e.status === 'limited').length,
+    blocked:        eligResults.filter(e => e.status === 'blocked').length,
+    reviewRequired: eligResults.filter(e => e.status === 'review_required').length,
+    total:          eligResults.length,
+  };
+
+  // Step 8: sample rows (safe fields from mapped rows)
+  const sampleRows = finalRows
+    .slice(0, 5)
+    .map((row, i) => buildSampleRow(row, i + 1, eligResults[i]?.status ?? 'unknown'));
+
+  return {
+    piiResult: null,
+    fileType,
+    mode: 'dry_run',
+    selectedSheetName,
+    rowCount: finalRows.length,
+    headerCount: headers.length,
+    piiStatus: 'passed',
+    originalHeaders: headers,
+    mappingSuggestions,
+    appliedMapping: effectiveMapping,
+    manualCompletionApplied: manualApplied,
+    missingFieldSummary: {
+      totalRows:            missingFieldSummary.totalRows,
+      missingByField:       missingFieldSummary.missingByField,
+      blockingCount:        missingFieldSummary.blockingCount,
+      warningCount:         missingFieldSummary.warningCount,
+      overallSeverity:      missingFieldSummary.overallSeverity,
+      fillableWithDefaults: missingFieldSummary.fillableWithDefaults,
+    },
+    eligibilityPreview: eligCounts,
+    sampleRows,
+    warnings: parseWarnings,
+  };
+}
+
 // ── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
@@ -157,6 +250,34 @@ export async function POST(request: NextRequest) {
   const mimeType         = file.type.toLowerCase();
   const selectedSheet    = formData.get('selectedSheetName');
   const selectedSheetName = selectedSheet ? String(selectedSheet).trim() : null;
+
+  // B27: optional column mapping + manual completion defaults
+  let columnMapping: Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'> | null = null;
+  const columnMappingRaw = formData.get('columnMapping');
+  if (columnMappingRaw && String(columnMappingRaw).trim()) {
+    try {
+      const parsed = JSON.parse(String(columnMappingRaw));
+      const validation = validateMapping(parsed as Record<string, string>);
+      if (!validation.valid) {
+        return NextResponse.json({
+          error: `Invalid columnMapping: ${validation.invalidEntries.join(', ')}`,
+        }, { status: 400 });
+      }
+      columnMapping = parsed as Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'>;
+    } catch {
+      return NextResponse.json({ error: 'columnMapping must be valid JSON.' }, { status: 400 });
+    }
+  }
+
+  let manualDefaults: Partial<Record<CanonicalIntakeField, string>> | null = null;
+  const manualCompletionRaw = formData.get('manualCompletion');
+  if (manualCompletionRaw && String(manualCompletionRaw).trim()) {
+    try {
+      manualDefaults = JSON.parse(String(manualCompletionRaw)) as Partial<Record<CanonicalIntakeField, string>>;
+    } catch {
+      return NextResponse.json({ error: 'manualCompletion must be valid JSON.' }, { status: 400 });
+    }
+  }
 
   // ── Detect file type ─────────────────────────────────────────────────────
   const isCsv  = filename.endsWith('.csv') ||
@@ -204,8 +325,13 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const pii = runPiiCheck(headers, rows);
-    if (pii.rejected) {
+    const preview = buildPreviewPayload({
+      fileType: 'csv', headers, originalRows: rows,
+      columnMapping, manualDefaults, parseWarnings,
+    });
+
+    if (preview.piiResult?.rejected) {
+      const pii = preview.piiResult;
       if (pii.reason === 'forbidden_headers') {
         return NextResponse.json({
           ok: false, error: 'Batch rejected: forbidden column headers detected.',
@@ -224,25 +350,10 @@ export async function POST(request: NextRequest) {
       }, { status: 422 });
     }
 
-    const records    = toUploadedRecords(rows);
-    const eligResults = classifyEligibilityBatch(records);
-    const eligCounts = {
-      eligible:       eligResults.filter(e => e.status === 'eligible').length,
-      limited:        eligResults.filter(e => e.status === 'limited').length,
-      blocked:        eligResults.filter(e => e.status === 'blocked').length,
-      reviewRequired: eligResults.filter(e => e.status === 'review_required').length,
-      total:          eligResults.length,
-    };
-    const sampleRows = rows
-      .slice(0, 5)
-      .map((row, i) => buildSampleRow(row, i + 1, eligResults[i]?.status ?? 'unknown'));
-
     return NextResponse.json({
-      ok: true, fileType: 'csv', mode: 'dry_run',
+      ok: true, ...preview,
       dryRunNote: 'File compatible with KORA intake preview. No data has been stored.',
-      rowCount: rows.length, headerCount: headers.length,
-      piiStatus: 'passed', eligibilityPreview: eligCounts,
-      sampleRows, warnings: parseWarnings, synthetic_test: false,
+      synthetic_test: false,
       lockedFeatures: [
         'source_batch creation — locked until B4.2',
         'uploaded_record persistence — locked until B4.2',
@@ -297,7 +408,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  // Phase B: Sheet selected → parse, PII check, eligibility preview
+  // Phase B: Sheet selected → parse, mapping, PII check, eligibility preview
   const parsed = parseExcelSheet(buf, selectedSheetName, MAX_ROWS);
 
   if (parsed.errors.length > 0) {
@@ -315,8 +426,14 @@ export async function POST(request: NextRequest) {
     }, { status: 400 });
   }
 
-  const pii = runPiiCheck(headers, rows, selectedSheetName);
-  if (pii.rejected) {
+  const xlsxPreview = buildPreviewPayload({
+    fileType: 'xlsx', headers, originalRows: rows,
+    columnMapping, manualDefaults, selectedSheetName,
+    parseWarnings: parsed.warnings.map(w => w.message),
+  });
+
+  if (xlsxPreview.piiResult?.rejected) {
+    const pii = xlsxPreview.piiResult;
     if (pii.reason === 'forbidden_headers') {
       return NextResponse.json({
         ok: false, error: 'Sheet rejected: forbidden column headers detected.',
@@ -337,26 +454,9 @@ export async function POST(request: NextRequest) {
     }, { status: 422 });
   }
 
-  const records    = toUploadedRecords(rows);
-  const eligResults = classifyEligibilityBatch(records);
-  const eligCounts = {
-    eligible:       eligResults.filter(e => e.status === 'eligible').length,
-    limited:        eligResults.filter(e => e.status === 'limited').length,
-    blocked:        eligResults.filter(e => e.status === 'blocked').length,
-    reviewRequired: eligResults.filter(e => e.status === 'review_required').length,
-    total:          eligResults.length,
-  };
-  const sampleRows = rows
-    .slice(0, 5)
-    .map((row, i) => buildSampleRow(row, i + 1, eligResults[i]?.status ?? 'unknown'));
-
   return NextResponse.json({
-    ok: true, fileType: 'xlsx', mode: 'dry_run',
-    selectedSheetName,
+    ok: true, ...xlsxPreview,
     dryRunNote: `Sheet "${selectedSheetName}" compatible with KORA intake preview. No data has been stored.`,
-    rowCount: rows.length, headerCount: headers.length,
-    piiStatus: 'passed', eligibilityPreview: eligCounts,
-    sampleRows, warnings: parsed.warnings.map(w => w.message),
     synthetic_test: false,
     lockedFeatures: [
       'source_batch creation — locked until B4.2',
