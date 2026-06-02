@@ -1,19 +1,22 @@
 // app/api/admin/data-intake/upload-preview/route.ts
 // CSV + XLSX dry-run preview — KORA_ADMIN only.
 //
-// DRY-RUN: parses the file, runs PII strict-reject, returns eligibility preview.
+// DRY-RUN: parses the file(s), runs PII strict-reject, returns eligibility preview.
 // NOTHING is written to Supabase — no source_batch, no uploaded_record, no scoring.
 //
 // Auth:   KORA_ADMIN session required.
-// Input:  multipart/form-data · file (CSV or XLSX) · tenantCode · reportingPeriod
-//         · selectedSheetName (XLSX only, optional — omit for workbook sheet list)
-//         · columnMapping JSON (optional — B27 mapping override)
-//         · manualCompletion JSON (optional — B27 batch-level defaults)
-// Limits: max 5 MB · max 500 data rows · CSV or XLSX only
+// Input:  multipart/form-data
+//         · file (CSV or XLSX) — single or multiple (use same field name "file" multiple times)
+//         · selectedSheetNames JSON array (optional XLSX — one entry per file by index)
+//         · columnMappings JSON array (optional — one mapping object per file by index)
+//         · fileRoles JSON array (optional — one IntakeFileRole per file by index)
+//         · manualCompletion JSON (optional — B27 batch-level defaults, applied post-merge)
+// Limits: max 5 MB per file · max 500 data rows per file · CSV or XLSX only
 //
 // B26: XLSX multi-sheet support.
 // B27: Column Mapping Assistant + batch-level manual completion defaults.
-//   CRITICAL: PII scan runs on ORIGINAL rows before mapping — ignored columns are NOT exempt.
+// B28: Multi-file batch intake + initiative matching light.
+//   CRITICAL: PII scan runs on ORIGINAL rows of EACH file before mapping or merge.
 
 export const runtime = 'nodejs';
 
@@ -28,6 +31,8 @@ import {
   validateMapping, type CanonicalIntakeField,
 } from '@/lib/data-intake/column-mapping';
 import { analyzeMissingFields } from '@/lib/data-intake/missing-field-analysis';
+import { detectFileRole, type IntakeFileRole } from '@/lib/data-intake/file-role-detection';
+import { runInitiativeMatching, type ParsedIntakeFile } from '@/lib/data-intake/initiative-matching';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 
 // ── Limits ───────────────────────────────────────────────────────────────────
@@ -141,6 +146,138 @@ function runPiiCheck(
   return { rejected: false as const };
 }
 
+// ── B28: parse + PII-check + map a single file ───────────────────────────────
+// Returns either an error response payload or a ParsedIntakeFile.
+// PII scan always runs on ORIGINAL rows before mapping.
+
+async function processOneFile(params: {
+  file: File;
+  fileIndex: number;
+  selectedSheetName: string | null;
+  columnMapping: Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'> | null;
+  fileRole: IntakeFileRole | null;
+  maxRows: number;
+  maxBytes: number;
+}): Promise<
+  | { ok: false; httpStatus: number; body: Record<string, unknown> }
+  | { ok: true; parsed: ParsedIntakeFile; mappingSuggestions: ReturnType<typeof suggestColumnMapping>; parseWarnings: string[] }
+> {
+  const { file, fileIndex, selectedSheetName, columnMapping, fileRole, maxRows, maxBytes } = params;
+  const filename = file.name.toLowerCase();
+  const mimeType = file.type.toLowerCase();
+
+  const isCsv  = filename.endsWith('.csv') || mimeType === 'text/csv' || mimeType === 'application/csv';
+  const isXlsx = filename.endsWith('.xlsx') ||
+    mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+    mimeType === 'application/octet-stream';
+
+  if (!isCsv && !isXlsx) {
+    return { ok: false, httpStatus: 400, body: { error: `File ${file.name}: must be CSV or XLSX.`, fileIndex } };
+  }
+  if (filename.endsWith('.xls') && !filename.endsWith('.xlsx')) {
+    return { ok: false, httpStatus: 400, body: { error: `File ${file.name}: .xls legacy not supported.`, fileIndex } };
+  }
+  if (file.size > maxBytes) {
+    return { ok: false, httpStatus: 413, body: { error: `File ${file.name}: too large (${(file.size / 1024 / 1024).toFixed(1)} MB, max 5 MB).`, fileIndex } };
+  }
+
+  const buf = Buffer.from(await file.arrayBuffer());
+  let headers: string[];
+  let originalRows: Record<string, string>[];
+  let parseWarnings: string[];
+
+  if (isCsv) {
+    const parsed = parseCsvContent(buf.toString('utf-8'));
+    if (parsed.errors.length > 0) {
+      return { ok: false, httpStatus: 400, body: { error: `File ${file.name}: ${parsed.errors[0].message}`, fileIndex } };
+    }
+    headers = parsed.headers;
+    originalRows = parsed.rows;
+    parseWarnings = flattenCsvWarnings(parsed);
+  } else {
+    // XLSX: if no sheet selected, need sheet list — caller handles this
+    if (!selectedSheetName) {
+      const meta = parseExcelWorkbookMeta(buf);
+      return {
+        ok: false, httpStatus: 200,
+        body: {
+          requiresSheetSelection: true, fileIndex, fileName: file.name,
+          sheetCount: meta.sheetNames.length,
+          sheets: meta.sheets.map(s => ({
+            sheetName: s.sheetName, rowCount: s.rowCount, headers: s.headers, errors: s.errors,
+          })),
+        },
+      };
+    }
+    const parsed = parseExcelSheet(buf, selectedSheetName, maxRows);
+    if (parsed.errors.length > 0) {
+      return { ok: false, httpStatus: 400, body: { error: `File ${file.name} sheet "${selectedSheetName}": ${parsed.errors[0].message}`, fileIndex } };
+    }
+    headers = parsed.headers;
+    originalRows = parsed.rows;
+    parseWarnings = parsed.warnings.map(w => w.message);
+  }
+
+  if (originalRows.length > maxRows) {
+    return { ok: false, httpStatus: 400, body: { error: `File ${file.name}: too many rows (${originalRows.length}, max ${maxRows}).`, fileIndex } };
+  }
+
+  // PII scan on original rows (before mapping — ignored columns NOT exempt)
+  const forbiddenFound = headers.filter(h => FORBIDDEN_HEADERS.has(h));
+  if (forbiddenFound.length > 0) {
+    return {
+      ok: false, httpStatus: 422,
+      body: {
+        ok: false, error: `File ${file.name}: forbidden column headers detected.`,
+        piiStatus: 'rejected', fileIndex, fileName: file.name,
+        forbiddenHeaders: forbiddenFound, dryRunNote: 'No data stored.',
+      },
+    };
+  }
+  for (let i = 0; i < originalRows.length; i++) {
+    const result = detectPiiInPayload(originalRows[i] as Record<string, unknown>);
+    if (result.hasPii) {
+      return {
+        ok: false, httpStatus: 422,
+        body: {
+          ok: false, error: `File ${file.name}: PII detected in values.`,
+          piiStatus: 'rejected', fileIndex, fileName: file.name,
+          findings: result.findings.map(f => ({
+            rowIndex: i + 1, fieldPath: f.fieldPath, riskType: f.riskType, severity: f.severity, fileIndex, fileName: file.name,
+          })),
+          dryRunNote: 'No data stored.',
+        },
+      };
+    }
+  }
+
+  // Column mapping
+  const mappingSuggestions = suggestColumnMapping(headers);
+  const effectiveMapping = columnMapping ?? Object.fromEntries(
+    mappingSuggestions.filter(s => s.suggestedField !== null).map(s => [s.sourceHeader, s.suggestedField!])
+  );
+  const mappedRows = applyColumnMapping(originalRows, effectiveMapping);
+
+  // Role detection
+  const detectedRole = fileRole ?? detectFileRole(file.name, headers).role;
+
+  return {
+    ok: true,
+    parseWarnings,
+    mappingSuggestions,
+    parsed: {
+      fileIndex,
+      fileName: file.name,
+      fileType: isXlsx ? 'xlsx' : 'csv',
+      selectedSheetName: selectedSheetName ?? undefined,
+      role: detectedRole,
+      headers,
+      rows: mappedRows,
+      warnings: parseWarnings,
+    },
+  };
+}
+
 // ── B27: shared preview logic (post-parse, pre-persist) ──────────────────────
 // CRITICAL: PII scan runs on ORIGINAL rows BEFORE mapping.
 // Ignored/unmapped columns are never exempt from PII scan.
@@ -240,12 +377,150 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid multipart/form-data request.' }, { status: 400 });
   }
 
-  const fileEntry = formData.get('file');
-  if (!fileEntry || !(fileEntry instanceof File)) {
+  // B28: support multiple files via getAll('file')
+  const allFileEntries = formData.getAll('file').filter(e => e instanceof File) as File[];
+  if (allFileEntries.length === 0) {
     return NextResponse.json({ error: 'Missing required field: file.' }, { status: 400 });
   }
 
-  const file             = fileEntry;
+  const isMultiFile = allFileEntries.length > 1;
+
+  // ── B28 MULTI-FILE PATH ───────────────────────────────────────────────────
+  if (isMultiFile) {
+    // Per-file metadata: JSON arrays indexed by file position
+    let selectedSheetNames: (string | null)[] = [];
+    let columnMappings: (Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'> | null)[] = [];
+    let fileRoles: (IntakeFileRole | null)[] = [];
+
+    const ssRaw = formData.get('selectedSheetNames');
+    if (ssRaw) try { selectedSheetNames = JSON.parse(String(ssRaw)); } catch { /**/ }
+    const cmRaw = formData.get('columnMappings');
+    if (cmRaw) try { columnMappings = JSON.parse(String(cmRaw)); } catch { /**/ }
+    const frRaw = formData.get('fileRoles');
+    if (frRaw) try { fileRoles = JSON.parse(String(frRaw)); } catch { /**/ }
+
+    let manualDefaults: Partial<Record<CanonicalIntakeField, string>> | null = null;
+    const manualRaw = formData.get('manualCompletion');
+    if (manualRaw) try { manualDefaults = JSON.parse(String(manualRaw)); } catch { /**/ }
+
+    // Process each file
+    const parsedFiles: ParsedIntakeFile[] = [];
+    const allMappingSuggestions: ReturnType<typeof suggestColumnMapping> = [];
+    const requiresSheetSelection: Array<{ fileIndex: number; fileName: string; sheets: unknown[] }> = [];
+
+    for (let idx = 0; idx < allFileEntries.length; idx++) {
+      const result = await processOneFile({
+        file:             allFileEntries[idx],
+        fileIndex:        idx,
+        selectedSheetName: selectedSheetNames[idx] ?? null,
+        columnMapping:    columnMappings[idx] ?? null,
+        fileRole:         fileRoles[idx] ?? null,
+        maxRows:          MAX_ROWS,
+        maxBytes:         MAX_BYTES,
+      });
+
+      if (!result.ok) {
+        // Sheet selection needed — collect all, don't fail yet
+        if (result.body['requiresSheetSelection']) {
+          requiresSheetSelection.push({
+            fileIndex: idx, fileName: allFileEntries[idx].name,
+            sheets: (result.body['sheets'] as unknown[]) ?? [],
+          });
+          continue;
+        }
+        // Real error or PII → return immediately
+        return NextResponse.json(result.body, { status: result.httpStatus });
+      }
+
+      parsedFiles.push(result.parsed);
+      allMappingSuggestions.push(...result.mappingSuggestions);  // flat array of suggestions
+    }
+
+    // If any XLSX files need sheet selection, return that info
+    if (requiresSheetSelection.length > 0) {
+      return NextResponse.json({
+        ok: true,
+        fileMode: 'multi',
+        requiresSheetSelection: true,
+        pendingSheetSelection: requiresSheetSelection,
+        processedCount: parsedFiles.length,
+        dryRunNote: 'Some XLSX files require sheet selection before proceeding.',
+      });
+    }
+
+    if (parsedFiles.length === 0) {
+      return NextResponse.json({ error: 'No files could be processed.' }, { status: 400 });
+    }
+
+    // Run initiative matching
+    const matchResult = runInitiativeMatching(parsedFiles);
+    let finalRows = matchResult.finalRows;
+
+    // Apply manual completion defaults post-merge
+    let manualApplied: CanonicalIntakeField[] = [];
+    if (manualDefaults) {
+      const r = applyManualCompletionDefaults(finalRows, manualDefaults);
+      finalRows = r.rows;
+      manualApplied = r.appliedFields;
+    }
+
+    const missingFieldSummary = analyzeMissingFields(finalRows);
+    const records = toUploadedRecords(finalRows);
+    const eligResults = classifyEligibilityBatch(records);
+    const eligCounts = {
+      eligible:       eligResults.filter(e => e.status === 'eligible').length,
+      limited:        eligResults.filter(e => e.status === 'limited').length,
+      blocked:        eligResults.filter(e => e.status === 'blocked').length,
+      reviewRequired: eligResults.filter(e => e.status === 'review_required').length,
+      total:          eligResults.length,
+    };
+    const sampleRows = finalRows.slice(0, 5).map((row, i) => buildSampleRow(row, i + 1, eligResults[i]?.status ?? 'unknown'));
+
+    return NextResponse.json({
+      ok: true, fileMode: 'multi', mode: 'dry_run',
+      dryRunNote: `${parsedFiles.length} file processati. Initiative matching completato. Nessun dato salvato.`,
+      fileCount: parsedFiles.length,
+      files: parsedFiles.map(f => ({
+        fileIndex:  f.fileIndex,
+        fileName:   f.fileName,
+        fileType:   f.fileType,
+        role:       f.role,
+        rowCount:   f.rows.length,
+        headers:    f.headers,
+        selectedSheetName: f.selectedSheetName,
+        warnings:   f.warnings,
+      })),
+      matchSummary: matchResult.matchSummary,
+      matches: matchResult.matches.slice(0, 20).map(m => ({
+        matchId:    m.matchId,
+        status:     m.status,
+        confidence: m.confidence,
+        initiativeName: m.primaryRow.initiativeName,
+        linkedFileCount: m.linkedRows.length,
+        mergedFromFiles: m.mergedFromFiles,
+        conflictCount:   m.conflictWarnings.length,
+        reasonCodes:     m.reasonCodes,
+      })),
+      mergedPreviewRows: sampleRows,
+      rowCount:          finalRows.length,
+      piiStatus:         'passed',
+      eligibilityPreview: eligCounts,
+      manualCompletionApplied: manualApplied,
+      missingFieldSummary: {
+        totalRows:            missingFieldSummary.totalRows,
+        blockingCount:        missingFieldSummary.blockingCount,
+        warningCount:         missingFieldSummary.warningCount,
+        overallSeverity:      missingFieldSummary.overallSeverity,
+        fillableWithDefaults: missingFieldSummary.fillableWithDefaults,
+        missingByField:       missingFieldSummary.missingByField,
+      },
+      warnings: [...matchResult.warnings],
+      synthetic_test: false,
+    });
+  }
+
+  // ── SINGLE-FILE PATH (B26/B27 unchanged) ─────────────────────────────────
+  const file             = allFileEntries[0];
   const filename         = file.name.toLowerCase();
   const mimeType         = file.type.toLowerCase();
   const selectedSheet    = formData.get('selectedSheetName');

@@ -1,17 +1,18 @@
 // app/api/admin/data-intake/accept/route.ts
 // CSV + XLSX live intake accept — KORA_ADMIN only.
 //
-// Receives the file again — NEVER trusts dry-run result from client.
+// Receives the file(s) again — NEVER trusts dry-run result from client.
 // Reruns all validation server-side: file type/size, parse, header blocklist,
 // PII strict-reject, then persists source_batch + uploaded_record.
 //
 // B26: XLSX support — requires selectedSheetName for .xlsx files.
-//   XLSX files stored with source_type='csv_upload' (no schema migration) +
-//   fileType/selectedSheetName in payload_sample metadata.
+// B27: Column mapping + manual completion.
+// B28: Multi-file batch intake + initiative matching.
+//   Multi-file: getAll('file'), per-file metadata as JSON arrays.
+//   CRITICAL: PII scan on each file's ORIGINAL rows before mapping or merge.
 //
 // NO scoring. NO KORA Index. NO Decision Pack. NO operator-flow call.
 // Batch status: 'pending' — awaiting UEF review in B5.
-// privacy_redacted: false — strict-reject ensures no PII reaches persistence.
 
 export const runtime = 'nodejs';
 
@@ -23,6 +24,8 @@ import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guar
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { parseCsvContent, flattenCsvWarnings } from '@/lib/data-intake/csv-parser';
 import { parseExcelSheet } from '@/lib/data-intake/excel-parser';
+import { detectFileRole, type IntakeFileRole } from '@/lib/data-intake/file-role-detection';
+import { runInitiativeMatching, type ParsedIntakeFile } from '@/lib/data-intake/initiative-matching';
 import {
   suggestColumnMapping, applyColumnMapping, applyManualCompletionDefaults,
   validateMapping, type CanonicalIntakeField,
@@ -173,6 +176,75 @@ function makeAudit(params: {
   };
 }
 
+// ── B28: parse, PII-check, map a single file for accept ──────────────────────
+// Returns error payload or ParsedIntakeFile.
+
+async function parseAndValidateOneFile(params: {
+  file: File;
+  fileIndex: number;
+  selectedSheetName: string | null;
+  columnMapping: Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'> | null;
+  fileRole: IntakeFileRole | null;
+  maxRows: number;
+  maxBytes: number;
+}): Promise<
+  | { ok: false; error: string; status: number; piiRejected?: boolean; findings?: unknown[] }
+  | { ok: true; parsed: ParsedIntakeFile; parseWarnings: string[] }
+> {
+  const { file, fileIndex, selectedSheetName, columnMapping, fileRole, maxRows, maxBytes } = params;
+  const filename = file.name.toLowerCase();
+  const isXlsx = filename.endsWith('.xlsx');
+  const isCsv  = filename.endsWith('.csv');
+
+  if (!isCsv && !isXlsx) return { ok: false, error: `File ${file.name}: must be .csv or .xlsx.`, status: 400 };
+  if (file.size > maxBytes) return { ok: false, error: `File ${file.name}: too large.`, status: 413 };
+  if (isXlsx && !selectedSheetName) return { ok: false, error: `File ${file.name}: selectedSheetName required for XLSX.`, status: 400 };
+
+  const buf = Buffer.from(await file.arrayBuffer());
+  let headers: string[];
+  let originalRows: Record<string, string>[];
+  let parseWarnings: string[];
+
+  if (isCsv) {
+    const parsed = parseCsvContent(buf.toString('utf-8'));
+    if (parsed.errors.length > 0) return { ok: false, error: `File ${file.name}: ${parsed.errors[0].message}`, status: 400 };
+    headers = parsed.headers; originalRows = parsed.rows; parseWarnings = flattenCsvWarnings(parsed);
+  } else {
+    const parsed = parseExcelSheet(buf, selectedSheetName!, maxRows);
+    if (parsed.errors.length > 0) return { ok: false, error: `File ${file.name}: ${parsed.errors[0].message}`, status: 400 };
+    headers = parsed.headers; originalRows = parsed.rows; parseWarnings = parsed.warnings.map(w => w.message);
+  }
+
+  if (originalRows.length > maxRows) return { ok: false, error: `File ${file.name}: too many rows.`, status: 400 };
+
+  // PII on original rows (ignored columns NOT exempt)
+  const forbiddenFound = headers.filter(h => FORBIDDEN_HEADERS.has(h));
+  if (forbiddenFound.length > 0) return { ok: false, piiRejected: true, error: `File ${file.name}: forbidden headers detected.`, status: 422 };
+  for (let i = 0; i < originalRows.length; i++) {
+    const r = detectPiiInPayload(originalRows[i] as Record<string, unknown>);
+    if (r.hasPii) return { ok: false, piiRejected: true, error: `File ${file.name}: PII in values.`, status: 422,
+      findings: r.findings.map(f => ({ rowIndex: i + 1, fieldPath: f.fieldPath, riskType: f.riskType, severity: f.severity, fileIndex })) };
+  }
+
+  // Apply mapping
+  const suggestions = suggestColumnMapping(headers);
+  const effective = columnMapping ?? Object.fromEntries(
+    suggestions.filter(s => s.suggestedField !== null).map(s => [s.sourceHeader, s.suggestedField!])
+  );
+  const mappedRows = applyColumnMapping(originalRows, effective);
+  const detectedRole = fileRole ?? detectFileRole(file.name, headers).role;
+
+  return {
+    ok: true, parseWarnings,
+    parsed: {
+      fileIndex, fileName: file.name,
+      fileType: isXlsx ? 'xlsx' : 'csv',
+      selectedSheetName: selectedSheetName ?? undefined,
+      role: detectedRole, headers, rows: mappedRows, warnings: parseWarnings,
+    },
+  };
+}
+
 // ── POST handler ───────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
@@ -188,11 +260,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid multipart/form-data request.' }, { status: 400 });
   }
 
-  const fileEntry = formData.get('file');
-  if (!fileEntry || !(fileEntry instanceof File)) {
-    return NextResponse.json({ error: 'Missing required field: file (CSV).' }, { status: 400 });
+  // B28: support multiple files
+  const allFileEntries = formData.getAll('file').filter(e => e instanceof File) as File[];
+  if (allFileEntries.length === 0) {
+    return NextResponse.json({ error: 'Missing required field: file.' }, { status: 400 });
   }
-  const file             = fileEntry;
+  const isMultiFile = allFileEntries.length > 1;
+  const file = allFileEntries[0]; // kept for single-file backward compatibility
+
   // B13 FASE 1: require explicit tenantCode — no silent OP-001 default
   const tenantCode = String(formData.get('tenantCode') ?? '').trim();
   if (!tenantCode) {
@@ -431,14 +506,60 @@ export async function POST(request: NextRequest) {
 
   const auditRows: ReturnType<typeof makeAudit>[] = [];
 
+  // ── B28 MULTI-FILE: re-process all files server-side, run matching ────────────
+  let matchSummaryForAudit: Record<string, number> = {};
+  let multiFileCount = 1;
+
+  if (isMultiFile) {
+    let ssNames: (string | null)[] = [];
+    let cmaps: (Record<string, CanonicalIntakeField | 'ignore' | 'keep_original'> | null)[] = [];
+    let froles: (IntakeFileRole | null)[] = [];
+    try { ssNames = JSON.parse(String(formData.get('selectedSheetNames') ?? '[]')); } catch { /**/ }
+    try { cmaps  = JSON.parse(String(formData.get('columnMappings') ?? '[]')); } catch { /**/ }
+    try { froles = JSON.parse(String(formData.get('fileRoles') ?? '[]')); } catch { /**/ }
+
+    const parsedFiles: ParsedIntakeFile[] = [];
+    for (let idx = 0; idx < allFileEntries.length; idx++) {
+      const result = await parseAndValidateOneFile({
+        file: allFileEntries[idx], fileIndex: idx,
+        selectedSheetName: ssNames[idx] ?? null,
+        columnMapping: cmaps[idx] ?? null,
+        fileRole: froles[idx] ?? null,
+        maxRows: MAX_ROWS, maxBytes: isXlsx ? 5 * 1024 * 1024 : MAX_BYTES,
+      });
+      if (!result.ok) {
+        if (result.piiRejected) {
+          await db.schema('audit').from('audit_log').insert(makeAudit({
+            tenantId, actorId: authResult.id,
+            action: 'pii_guard_batch_rejected', resourceType: 'personal.uploaded_record',
+            metadata: { reason: 'pii_in_values', file: allFileEntries[idx].name, file_index: idx, policy: 'strict_reject' },
+          }));
+        }
+        return NextResponse.json({ ok: false, error: result.error }, { status: result.status });
+      }
+      parsedFiles.push(result.parsed);
+    }
+
+    const matchResult = runInitiativeMatching(parsedFiles);
+    rows = matchResult.finalRows;
+    matchSummaryForAudit = matchResult.matchSummary as unknown as Record<string, number>;
+    multiFileCount = allFileEntries.length;
+
+    auditRows.push(makeAudit({
+      tenantId, actorId: authResult.id,
+      action: 'multi_file_accept_requested', resourceType: 'analytics.source_batch',
+      metadata: { file_count: multiFileCount, file_names: allFileEntries.map(f => f.name), match_summary: matchSummaryForAudit },
+    }));
+  }
+
   // ── 10. B27: apply column mapping server-side (re-applied — never trusts preview) ─
   // If no mapping provided, auto-apply suggestions from headers.
-  const effectiveMapping = columnMapping ?? Object.fromEntries(
+  const effectiveMapping = (isMultiFile ? null : columnMapping) ?? Object.fromEntries(
     suggestColumnMapping(headers)
       .filter(s => s.suggestedField !== null)
       .map(s => [s.sourceHeader, s.suggestedField!])
   );
-  let finalRows = applyColumnMapping(rows, effectiveMapping);
+  let finalRows = isMultiFile ? rows : applyColumnMapping(rows, effectiveMapping);
 
   // B27: apply manual completion defaults (batch-level, fills only empty fields)
   let manualApplied: CanonicalIntakeField[] = [];
@@ -505,6 +626,8 @@ export async function POST(request: NextRequest) {
       payload_sample: {
         ...(batchFinancialMeta ? { _b11_3: true, ...batchFinancialMeta } : {}),
         ...(isXlsx ? { _b26: true, fileType: 'xlsx', selectedSheetName } : { fileType: 'csv' }),
+        // B28: multi-file metadata
+        ...(isMultiFile ? { _b28: true, fileMode: 'multi', fileCount: multiFileCount, matchSummary: matchSummaryForAudit } : {}),
         // B27: column mapping + manual completion metadata (no values)
         _b27: true,
         mapping_applied:         Object.keys(effectiveMapping).length > 0,

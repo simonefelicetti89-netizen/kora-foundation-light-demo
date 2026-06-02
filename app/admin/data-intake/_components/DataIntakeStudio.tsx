@@ -124,6 +124,14 @@ interface DryRunResult {
   sheets?: XlsxSheetInfo[];
   selectedSheetName?: string;
   affectedSheet?: string;
+  // B28 multi-file
+  fileMode?: 'single' | 'multi';
+  fileCount?: number;
+  files?: Array<{ fileIndex: number; fileName: string; fileType: string; role: string; rowCount: number; headers: string[]; warnings: string[] }>;
+  matchSummary?: { matched: number; possibleMatch: number; unmatched: number; needsReview: number; totalFromPrimary: number; totalFromSecondary: number };
+  matches?: Array<{ matchId: string; status: string; confidence: number; initiativeName: string; linkedFileCount: number; conflictCount: number }>;
+  mergedPreviewRows?: Array<Record<string, string | number>>;
+  pendingSheetSelection?: Array<{ fileIndex: number; fileName: string; sheets: unknown[] }>;
   // B27 column mapping
   originalHeaders?: string[];
   mappingSuggestions?: Array<{
@@ -214,7 +222,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const [opErr, setOpErr]         = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-      // B27: column mapping state
+      // B28: multi-file state
+  const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
+  const [additionalFileRoles, setAdditionalFileRoles] = useState<Record<number, string>>({});
+  const [multiFileResult, setMultiFileResult] = useState<DryRunResult | null>(null);
+  const [multiFileStatus, setMultiFileStatus] = useState<'idle'|'loading'|'done'|'error'>('idle');
+
+  // B27: column mapping state
   const [userMapping, setUserMapping]   = useState<Record<string, string>>({});
   const [manualSource, setManualSource]      = useState('');
   const [manualEvidLevel, setManualEvidLevel] = useState('');
@@ -318,8 +332,17 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     try {
       const fd = new FormData();
       fd.append('file', csvFile);
-      // B26: pass selectedSheetName for XLSX
-      if (fileType === 'xlsx' && selectedSheet) {
+      // B28: send additional files for multi-file batch
+      for (const f of additionalFiles) fd.append('file', f);
+      if (additionalFiles.length > 0) {
+        const roles = ['unknown', ...additionalFiles.map((_, i) => additionalFileRoles[i] ?? 'unknown')];
+        fd.append('fileRoles', JSON.stringify(roles));
+        const sheets = [fileType === 'xlsx' ? selectedSheet || null : null,
+          ...additionalFiles.map(() => null)];
+        fd.append('selectedSheetNames', JSON.stringify(sheets));
+      }
+      // B26: pass selectedSheetName for XLSX (single-file path)
+      if (additionalFiles.length === 0 && fileType === 'xlsx' && selectedSheet) {
         fd.append('selectedSheetName', selectedSheet);
       }
       fd.append('tenantCode', TENANT);
@@ -375,6 +398,38 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     } catch (e) {
       setXlsxSheetList({ ok: false, error: e instanceof Error ? e.message : String(e) });
       setXlsxSheetStatus('error');
+    }
+  }
+
+  // B28: multi-file preview handler
+  async function handleMultiFilePreview() {
+    if (!csvFile) return;
+    setMultiFileStatus('loading'); setMultiFileResult(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', csvFile);
+      for (const f of additionalFiles) fd.append('file', f);
+      fd.append('tenantCode', TENANT);
+      fd.append('reportingPeriod', PERIOD);
+      const roles: string[] = [fileType === 'xlsx' ? 'unknown' : 'unknown'];
+      for (let i = 0; i < additionalFiles.length; i++) {
+        roles.push(additionalFileRoles[i] ?? 'unknown');
+      }
+      fd.append('fileRoles', JSON.stringify(roles));
+      // sheet names: first file
+      const sheets: (string | null)[] = [fileType === 'xlsx' ? selectedSheet || null : null];
+      for (let i = 0; i < additionalFiles.length; i++) sheets.push(null);
+      fd.append('selectedSheetNames', JSON.stringify(sheets));
+      appendB27Fields(fd);
+      const res = await fetch('/api/admin/data-intake/upload-preview', {
+        method: 'POST', credentials: 'include', body: fd,
+      });
+      const data = await res.json() as DryRunResult;
+      setMultiFileResult(data);
+      setMultiFileStatus(data.ok ? 'done' : 'error');
+    } catch (e) {
+      setMultiFileResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
+      setMultiFileStatus('error');
     }
   }
 
@@ -535,6 +590,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               setUserMapping({});
               setManualSource(''); setManualEvidLevel(''); setManualBudgetClass('');
               setManualProvider(''); setManualPeriod('');
+              // B28: reset multi-file state
+              setAdditionalFiles([]); setAdditionalFileRoles({});
+              setMultiFileResult(null); setMultiFileStatus('idle');
               const isXlsx = f?.name.toLowerCase().endsWith('.xlsx') ?? false;
               setFileType(isXlsx ? 'xlsx' : 'csv');
             }}
@@ -562,6 +620,100 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           )}
           {csvFile && <span className="text-[10px] text-slate-400 font-mono">{csvFile.name} · {(csvFile.size / 1024).toFixed(0)} KB · {fileType.toUpperCase()}</span>}
         </div>
+
+        {/* B28: Additional files (multi-file batch) */}
+        {csvFile && (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-3">
+            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+              File aggiuntivi — Multi-File Batch (opzionale)
+            </p>
+            <p className="text-[10px] text-slate-400">
+              Aggiungi file budget, LMS, provider o policy per arricchire il batch.
+              Ogni file viene scansionato per PII separatamente prima del merge.
+            </p>
+            <input
+              type="file"
+              accept=".csv,.xlsx"
+              multiple
+              onChange={e => {
+                const files = Array.from(e.target.files ?? []);
+                setAdditionalFiles(files);
+                setAdditionalFileRoles({});
+                setMultiFileResult(null); setMultiFileStatus('idle');
+              }}
+              className="text-xs text-slate-600 file:mr-3 file:py-1 file:px-2 file:rounded file:border file:border-slate-200 file:bg-white file:text-xs file:font-medium file:text-slate-600 file:cursor-pointer"
+            />
+            {additionalFiles.length > 0 && (
+              <div className="space-y-2">
+                {additionalFiles.map((f, i) => (
+                  <div key={i} className="flex items-center gap-3 flex-wrap">
+                    <span className="text-[10px] font-mono text-slate-500">{f.name}</span>
+                    <select
+                      value={additionalFileRoles[i] ?? 'unknown'}
+                      onChange={e => setAdditionalFileRoles(r => ({ ...r, [i]: e.target.value }))}
+                      className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]"
+                    >
+                      <option value="unknown">— Tipo file —</option>
+                      <option value="initiatives">Iniziative / Programmi</option>
+                      <option value="budget">Budget / Finanziario</option>
+                      <option value="participation">Partecipazione / Usage</option>
+                      <option value="lms">LMS / Formazione</option>
+                      <option value="provider">Provider / Fornitore</option>
+                      <option value="policy">Policy / Regolamenti</option>
+                      <option value="evidence">Evidenze / Documenti</option>
+                    </select>
+                  </div>
+                ))}
+                <button
+                  onClick={handleMultiFilePreview}
+                  disabled={multiFileStatus === 'loading' || !isTenantSelected}
+                  className="rounded-lg bg-[#6156F5] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4d48d0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {multiFileStatus === 'loading' ? '⏳ Analisi multi-file…' : '⚡ Preview multi-file batch'}
+                </button>
+              </div>
+            )}
+
+            {/* Multi-file match result */}
+            {multiFileStatus === 'done' && multiFileResult?.ok && multiFileResult.matchSummary && (
+              <div className="rounded-lg border border-[#6156F5]/20 bg-white px-4 py-3 space-y-2">
+                <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">Initiative Matching — Risultati</p>
+                <div className="flex flex-wrap gap-2 text-[10px]">
+                  <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-green-700 font-medium">
+                    ✓ Matched: {multiFileResult.matchSummary.matched}
+                  </span>
+                  <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700 font-medium">
+                    ≈ Possible: {multiFileResult.matchSummary.possibleMatch}
+                  </span>
+                  <span className="rounded border border-red-200 bg-red-50 px-2 py-0.5 text-red-700 font-medium">
+                    ? Needs Review: {multiFileResult.matchSummary.needsReview}
+                  </span>
+                  <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-600 font-medium">
+                    ✗ Unmatched: {multiFileResult.matchSummary.unmatched}
+                  </span>
+                </div>
+                {multiFileResult.matches && multiFileResult.matches.slice(0, 5).map((m, i) => (
+                  <div key={i} className={`rounded px-2.5 py-1.5 text-[10px] font-mono ${
+                    m.status === 'matched' ? 'bg-green-50 text-green-700' :
+                    m.status === 'possible_match' ? 'bg-amber-50 text-amber-700' :
+                    m.status === 'needs_review' ? 'bg-purple-50 text-purple-700' : 'bg-slate-50 text-slate-500'
+                  }`}>
+                    [{m.status}] {m.initiativeName || '(no name)'} — conf {Math.round(m.confidence * 100)}% · {m.linkedFileCount} linked
+                    {m.conflictCount > 0 ? ` · ⚠ ${m.conflictCount} conflict` : ''}
+                  </div>
+                ))}
+                <p className="text-[10px] text-slate-400">
+                  File merged: {multiFileResult.fileCount} · Righe totali: {multiFileResult.rowCount}
+                </p>
+              </div>
+            )}
+            {multiFileStatus === 'error' && multiFileResult && !multiFileResult.ok && (
+              <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">
+                ⚠ {multiFileResult.error ?? 'Errore nel multi-file preview.'}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* B26: XLSX sheet selector — shown after workbook is read */}
         {fileType === 'xlsx' && xlsxSheetStatus === 'loaded' && xlsxSheetList?.ok && xlsxSheetList.sheets && (
@@ -965,10 +1117,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             )}
             <button
               onClick={handleAcceptBatch}
-              disabled={!isTenantSelected || !allPseudonymChecked || (fileType === 'xlsx' && !selectedSheet)}
+              disabled={!isTenantSelected || !allPseudonymChecked || (fileType === 'xlsx' && !selectedSheet && additionalFiles.length === 0)}
               className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
-              ↓ Create intake batch
+              ↓ {additionalFiles.length > 0 ? `Create multi-file batch (${1 + additionalFiles.length} file)` : 'Create intake batch'}
             </button>
           </div>
         )}
