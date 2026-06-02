@@ -1,9 +1,13 @@
 // app/api/admin/data-intake/accept/route.ts
-// CSV live intake accept — KORA_ADMIN only.
+// CSV + XLSX live intake accept — KORA_ADMIN only.
 //
-// Receives the CSV file again — NEVER trusts dry-run result from client.
-// Reruns all validation server-side: file type/size, CSV parse, header blocklist,
+// Receives the file again — NEVER trusts dry-run result from client.
+// Reruns all validation server-side: file type/size, parse, header blocklist,
 // PII strict-reject, then persists source_batch + uploaded_record.
+//
+// B26: XLSX support — requires selectedSheetName for .xlsx files.
+//   XLSX files stored with source_type='csv_upload' (no schema migration) +
+//   fileType/selectedSheetName in payload_sample metadata.
 //
 // NO scoring. NO KORA Index. NO Decision Pack. NO operator-flow call.
 // Batch status: 'pending' — awaiting UEF review in B5.
@@ -18,6 +22,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guard';
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { parseCsvContent, flattenCsvWarnings } from '@/lib/data-intake/csv-parser';
+import { parseExcelSheet } from '@/lib/data-intake/excel-parser';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 import type {
   BatchFinancialContext, FinancialSourceType, BudgetScope, EvidenceLevel,
@@ -200,32 +205,75 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: String(err) }, { status: 400 });
     }
   }
-  const batchLabel       = batchLabelInput ? String(batchLabelInput) : `[CSV] ${file.name}`;
+  // B26: selectedSheetName for XLSX files
+  const selectedSheetNameRaw = formData.get('selectedSheetName');
+  const selectedSheetName    = selectedSheetNameRaw ? String(selectedSheetNameRaw).trim() : null;
+
+  const filename  = file.name.toLowerCase();
+  const isXlsx    = filename.endsWith('.xlsx');
+  const isCsv     = filename.endsWith('.csv');
+
+  const batchLabel = batchLabelInput
+    ? String(batchLabelInput)
+    : isXlsx ? `[XLSX] ${file.name}${selectedSheetName ? ` · ${selectedSheetName}` : ''}` : `[CSV] ${file.name}`;
 
   // ── 3. Validate file type ────────────────────────────────────────────────────
-  if (!file.name.toLowerCase().endsWith('.csv')) {
+  if (!isCsv && !isXlsx) {
     return NextResponse.json({
-      error: 'File must be a CSV (.csv). Only CSV is supported in B4.2.',
+      error: 'File must be a CSV (.csv) or Excel (.xlsx). Legacy .xls format is not supported.',
+    }, { status: 400 });
+  }
+  if (filename.endsWith('.xls') && !filename.endsWith('.xlsx')) {
+    return NextResponse.json({
+      error: 'Legacy .xls format is not supported. Please save as .xlsx (Excel 2007+).',
+    }, { status: 400 });
+  }
+
+  // B26: XLSX requires selectedSheetName
+  if (isXlsx && !selectedSheetName) {
+    return NextResponse.json({
+      error: 'selectedSheetName is required for .xlsx files. Preview the workbook first and specify which sheet to accept.',
     }, { status: 400 });
   }
 
   // ── 4. Validate file size ────────────────────────────────────────────────────
-  if (file.size > MAX_BYTES) {
+  const fileSizeLimit = isXlsx ? 5 * 1024 * 1024 : MAX_BYTES;
+  if (file.size > fileSizeLimit) {
     return NextResponse.json({
-      error: `File too large: ${(file.size / 1024 / 1024).toFixed(1)} MB. Maximum: 2 MB.`,
+      error: `File too large: ${(file.size / 1024 / 1024).toFixed(1)} MB. Maximum: ${isXlsx ? '5' : '2'} MB.`,
     }, { status: 413 });
   }
 
-  // ── 5. Read + parse CSV (centralised, RFC 4180 with quoted-field support) ──
-  const content = Buffer.from(await file.arrayBuffer()).toString('utf-8');
-  const parsed = parseCsvContent(content);
-  if (parsed.errors.length > 0) {
-    return NextResponse.json({
-      error: `CSV parse error: ${parsed.errors[0].message}`,
-    }, { status: 400 });
+  // ── 5. Read + parse file server-side (never trust client preview) ─────────
+  const buf = Buffer.from(await file.arrayBuffer());
+
+  let headers: string[];
+  let rows: Record<string, string>[];
+  let parseWarnings: string[];
+
+  if (isXlsx) {
+    const parsed = parseExcelSheet(buf, selectedSheetName!, MAX_ROWS);
+    if (parsed.errors.length > 0) {
+      return NextResponse.json({
+        error: `XLSX sheet error: ${parsed.errors[0].message}`,
+        sheetName: selectedSheetName,
+      }, { status: 400 });
+    }
+    headers      = parsed.headers;
+    rows         = parsed.rows;
+    parseWarnings = parsed.warnings.map(w => w.message);
+  } else {
+    const content = buf.toString('utf-8');
+    const parsed  = parseCsvContent(content);
+    if (parsed.errors.length > 0) {
+      return NextResponse.json({
+        error: `CSV parse error: ${parsed.errors[0].message}`,
+      }, { status: 400 });
+    }
+    headers      = parsed.headers;
+    rows         = parsed.rows;
+    parseWarnings = flattenCsvWarnings(parsed);
   }
-  const { headers, rows } = parsed;
-  const parseWarnings = flattenCsvWarnings(parsed);
 
   // ── 6. Row count limit ───────────────────────────────────────────────────────
   if (rows.length > MAX_ROWS) {
@@ -365,11 +413,14 @@ export async function POST(request: NextRequest) {
       mapping_confidence_avg: null,
       evidence_attached_pct:  null,
       pending_review_count:   rows.length,
-      source_notes:           'B4.2 CSV live intake · strict-reject PII policy · pending UEF review (B5)',
-      // B11.3: store validated financial metadata — no financialNotes, no PII
-      payload_sample:         batchFinancialMeta
-        ? { _b11_3: true, ...batchFinancialMeta }
-        : null,
+      source_notes: isXlsx
+        ? `B26 XLSX live intake · sheet: ${selectedSheetName} · strict-reject PII policy · pending UEF review (B5)`
+        : 'B4.2 CSV live intake · strict-reject PII policy · pending UEF review (B5)',
+      // B11.3 + B26: store financial metadata + xlsx intake metadata
+      payload_sample: {
+        ...(batchFinancialMeta ? { _b11_3: true, ...batchFinancialMeta } : {}),
+        ...(isXlsx ? { _b26: true, fileType: 'xlsx', selectedSheetName } : { fileType: 'csv' }),
+      } as Record<string, unknown> | null,
       created_by:             authResult.email,
       processed_at:           null,
     })
@@ -391,11 +442,13 @@ export async function POST(request: NextRequest) {
     metadata: {
       batch_id:                   batchId,
       source_type:                'csv_upload',
+      file_type:                  isXlsx ? 'xlsx' : 'csv',
+      selected_sheet_name:        selectedSheetName ?? null,
       batch_status:               'pending',
       row_count:                  rows.length,
       tenant_code:                tenantCode,
       reporting_period:           reportingPeriod,
-      pseudonymization_confirmed: true,  // B13 FASE 3: operator confirmation gate
+      pseudonymization_confirmed: true,
     },
   }));
 
@@ -475,6 +528,8 @@ export async function POST(request: NextRequest) {
     batchId,
     tenantCode,
     reportingPeriod,
+    fileType:         isXlsx ? 'xlsx' : 'csv',
+    ...(isXlsx ? { selectedSheetName } : {}),
     rowCount:         rows.length,
     eligibilitySummary: eligCounts,
     batchStatus:      'pending',

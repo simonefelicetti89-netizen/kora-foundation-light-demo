@@ -76,6 +76,8 @@ interface AcceptResult {
   batchId?: string;
   tenantCode?: string;
   reportingPeriod?: string;
+  fileType?: 'csv' | 'xlsx';
+  selectedSheetName?: string;
   rowCount?: number;
   eligibilitySummary?: { eligible: number; limited: number; blocked: number; reviewRequired: number; total: number };
   batchStatus?: string;
@@ -92,8 +94,17 @@ interface DryRunFinding {
   rowIndex: number; fieldPath: string; riskType: string; severity: string;
   // NEVER includes value
 }
+interface XlsxSheetInfo {
+  sheetName: string;
+  rowCount: number;
+  headers: string[];
+  warnings: Array<{ code: string; message: string }>;
+  errors: Array<{ code: string; message: string }>;
+  sampleRows: Array<Record<string, string>>;
+}
 interface DryRunResult {
   ok: boolean;
+  fileType?: 'csv' | 'xlsx';
   mode?: string;
   dryRunNote?: string;
   rowCount?: number;
@@ -105,6 +116,12 @@ interface DryRunResult {
   findings?: DryRunFinding[];
   error?: string;
   note?: string;
+  // B26 XLSX
+  requiresSheetSelection?: boolean;
+  sheetCount?: number;
+  sheets?: XlsxSheetInfo[];
+  selectedSheetName?: string;
+  affectedSheet?: string;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -175,10 +192,16 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const [opErr, setOpErr]         = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // B4.1 — CSV dry-run state
+    // B4.1 — CSV / XLSX dry-run state
   const [csvFile, setCsvFile]           = useState<File | null>(null);
   const [csvStatus, setCsvStatus]       = useState<'idle'|'loading'|'passed'|'rejected'|'error'>('idle');
   const [csvResult, setCsvResult]       = useState<DryRunResult | null>(null);
+
+  // B26 — XLSX multi-sheet state
+  const [fileType, setFileType]               = useState<'csv'|'xlsx'>('csv');
+  const [xlsxSheetList, setXlsxSheetList]     = useState<DryRunResult | null>(null);
+  const [xlsxSheetStatus, setXlsxSheetStatus] = useState<'idle'|'loading'|'loaded'|'error'>('idle');
+  const [selectedSheet, setSelectedSheet]     = useState<string>('');
 
   // B4.2 — Accept batch state
   const [acceptStatus, setAcceptStatus] = useState<'idle'|'loading'|'created'|'rejected'|'error'>('idle');
@@ -257,13 +280,18 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     } catch (e) { setOpErr(e instanceof Error ? e.message : String(e)); setOpStatus('error'); }
   }
 
-  // B4.2 — Accept batch: sends CSV again (server reruns all checks — never trusts dry-run)
+  // B4.2 — Accept batch: sends file again (server reruns all checks — never trusts dry-run)
   async function handleAcceptBatch() {
     if (!csvFile) return;
+    if (fileType === 'xlsx' && !selectedSheet) return;
     setAcceptStatus('loading'); setAcceptResult(null);
     try {
       const fd = new FormData();
       fd.append('file', csvFile);
+      // B26: pass selectedSheetName for XLSX
+      if (fileType === 'xlsx' && selectedSheet) {
+        fd.append('selectedSheetName', selectedSheet);
+      }
       fd.append('tenantCode', TENANT);
       fd.append('reportingPeriod', PERIOD);
       // B11.3: append financial metadata — financialNotes intentionally excluded
@@ -295,7 +323,52 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     }
   }
 
-  // B4.1 — CSV dry-run handler
+  // B26 — XLSX: load sheet list (no selectedSheetName → returns sheet list)
+  async function handleLoadXlsxSheets() {
+    if (!csvFile) return;
+    setXlsxSheetStatus('loading'); setXlsxSheetList(null);
+    setSelectedSheet(''); setCsvResult(null); setCsvStatus('idle');
+    try {
+      const fd = new FormData();
+      fd.append('file', csvFile);
+      fd.append('tenantCode', TENANT);
+      fd.append('reportingPeriod', PERIOD);
+      const res  = await fetch('/api/admin/data-intake/upload-preview', {
+        method: 'POST', credentials: 'include', body: fd,
+      });
+      const data = await res.json() as DryRunResult;
+      setXlsxSheetList(data);
+      setXlsxSheetStatus(data.ok ? 'loaded' : 'error');
+      if (!data.ok) setCsvResult(data); // show error in main result area
+    } catch (e) {
+      setXlsxSheetList({ ok: false, error: e instanceof Error ? e.message : String(e) });
+      setXlsxSheetStatus('error');
+    }
+  }
+
+  // B26 — XLSX: preview selected sheet
+  async function handlePreviewXlsxSheet() {
+    if (!csvFile || !selectedSheet) return;
+    setCsvStatus('loading'); setCsvResult(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', csvFile);
+      fd.append('tenantCode', TENANT);
+      fd.append('reportingPeriod', PERIOD);
+      fd.append('selectedSheetName', selectedSheet);
+      const res  = await fetch('/api/admin/data-intake/upload-preview', {
+        method: 'POST', credentials: 'include', body: fd,
+      });
+      const data = await res.json() as DryRunResult;
+      setCsvResult(data);
+      setCsvStatus(data.ok ? 'passed' : 'rejected');
+    } catch (e) {
+      setCsvResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
+      setCsvStatus('error');
+    }
+  }
+
+  // B4.1 — CSV dry-run handler (CSV only — XLSX uses handlePreviewXlsxSheet)
   async function handleValidateCsv() {
     if (!csvFile) return;
     setCsvStatus('loading'); setCsvResult(null);
@@ -368,12 +441,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         </div>
       </div>
 
-      {/* ── B4.1. CSV DRY-RUN PREVIEW ── */}
+      {/* ── B4.1 / B26. CSV + XLSX DRY-RUN PREVIEW ── */}
       <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
         <div className="flex items-start justify-between flex-wrap gap-2">
           <div>
             <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Live Intake Preview — dry run</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Validate a CSV file against KORA intake rules. No data is stored.</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">Validate a CSV or Excel (.xlsx) file against KORA intake rules. No data is stored.</p>
           </div>
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Dry-run only: no data is stored.</span>
@@ -381,27 +454,99 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           </div>
         </div>
 
-        {/* File input + action */}
+        {/* File input + action — B26: accepts .csv and .xlsx */}
         <div className="flex items-center gap-3 flex-wrap">
           <input
             type="file"
-            accept=".csv"
+            accept=".csv,.xlsx"
             onChange={e => {
-              setCsvFile(e.target.files?.[0] ?? null);
+              const f = e.target.files?.[0] ?? null;
+              setCsvFile(f);
               setCsvStatus('idle'); setCsvResult(null);
               setAcceptStatus('idle'); setAcceptResult(null);
+              setXlsxSheetList(null); setXlsxSheetStatus('idle'); setSelectedSheet('');
+              const isXlsx = f?.name.toLowerCase().endsWith('.xlsx') ?? false;
+              setFileType(isXlsx ? 'xlsx' : 'csv');
             }}
             className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:text-xs file:font-medium file:text-slate-700 file:cursor-pointer hover:file:bg-slate-100"
           />
-          <button
-            onClick={handleValidateCsv}
-            disabled={!csvFile || csvStatus === 'loading' || !isTenantSelected}
-            className="rounded-lg bg-slate-800 text-white px-4 py-1.5 text-xs font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {csvStatus === 'loading' ? '⏳ Validating…' : '✓ Validate CSV'}
-          </button>
-          {csvFile && <span className="text-[10px] text-slate-400 font-mono">{csvFile.name} · {(csvFile.size / 1024).toFixed(0)} KB</span>}
+          {/* CSV: validate directly */}
+          {fileType === 'csv' && (
+            <button
+              onClick={handleValidateCsv}
+              disabled={!csvFile || csvStatus === 'loading' || !isTenantSelected}
+              className="rounded-lg bg-slate-800 text-white px-4 py-1.5 text-xs font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {csvStatus === 'loading' ? '⏳ Validating…' : '✓ Validate CSV'}
+            </button>
+          )}
+          {/* XLSX: first load sheets */}
+          {fileType === 'xlsx' && xlsxSheetStatus !== 'loaded' && (
+            <button
+              onClick={handleLoadXlsxSheets}
+              disabled={!csvFile || xlsxSheetStatus === 'loading' || !isTenantSelected}
+              className="rounded-lg bg-[#6156F5] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4d48d0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {xlsxSheetStatus === 'loading' ? '⏳ Reading workbook…' : '📋 Load sheet list'}
+            </button>
+          )}
+          {csvFile && <span className="text-[10px] text-slate-400 font-mono">{csvFile.name} · {(csvFile.size / 1024).toFixed(0)} KB · {fileType.toUpperCase()}</span>}
         </div>
+
+        {/* B26: XLSX sheet selector — shown after workbook is read */}
+        {fileType === 'xlsx' && xlsxSheetStatus === 'loaded' && xlsxSheetList?.ok && xlsxSheetList.sheets && (
+          <div className="rounded-lg border border-[#6156F5]/25 bg-[#f5f4ff] px-4 py-3 space-y-3">
+            <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">
+              Seleziona foglio — {xlsxSheetList.sheetCount} sheet trovati
+            </p>
+            <div className="space-y-2">
+              {xlsxSheetList.sheets.map(s => (
+                <label key={s.sheetName} className={`flex items-start gap-3 p-2.5 rounded border cursor-pointer transition-colors ${selectedSheet === s.sheetName ? 'border-[#6156F5] bg-white' : 'border-slate-200 bg-white/60 hover:bg-white'}`}>
+                  <input
+                    type="radio"
+                    name="sheetSelector"
+                    value={s.sheetName}
+                    checked={selectedSheet === s.sheetName}
+                    onChange={() => { setSelectedSheet(s.sheetName); setCsvResult(null); setCsvStatus('idle'); setAcceptStatus('idle'); setAcceptResult(null); }}
+                    className="mt-0.5 h-3.5 w-3.5 text-[#6156F5] focus:ring-[#6156F5]"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-semibold text-slate-700">{s.sheetName}</span>
+                      <span className="text-[10px] text-slate-400">{s.rowCount} righe · {s.headers.length} colonne</span>
+                      {s.errors.length > 0 && <span className="rounded border border-red-200 bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-700">Errore</span>}
+                    </div>
+                    {s.headers.length > 0 && (
+                      <p className="text-[10px] text-slate-400 mt-0.5 font-mono truncate">{s.headers.slice(0, 6).join(' · ')}{s.headers.length > 6 ? ` +${s.headers.length - 6}` : ''}</p>
+                    )}
+                    {s.errors.length > 0 && (
+                      <p className="text-[10px] text-red-600 mt-0.5">{s.errors[0].message}</p>
+                    )}
+                  </div>
+                </label>
+              ))}
+            </div>
+            {selectedSheet && (
+              <button
+                onClick={handlePreviewXlsxSheet}
+                disabled={csvStatus === 'loading' || !isTenantSelected}
+                className="rounded-lg bg-slate-800 text-white px-4 py-1.5 text-xs font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {csvStatus === 'loading' ? '⏳ Previewing…' : `✓ Preview sheet "${selectedSheet}"`}
+              </button>
+            )}
+            {!selectedSheet && (
+              <p className="text-[10px] text-amber-700 font-medium">⚠ Seleziona un foglio per procedere.</p>
+            )}
+          </div>
+        )}
+
+        {/* B26: XLSX workbook load error */}
+        {fileType === 'xlsx' && xlsxSheetStatus === 'error' && xlsxSheetList && !xlsxSheetList.ok && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700">
+            ⚠ {xlsxSheetList.error ?? 'Errore nel leggere il workbook Excel.'}
+          </div>
+        )}
 
         {/* Result: passed */}
         {csvStatus === 'passed' && csvResult?.ok && (
@@ -580,6 +725,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-2">
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Create Intake Batch</p>
             <p className="text-[10px] text-slate-400">Only PII-free / pseudonymized files can be persisted. Scoring is not executed in B4.2.</p>
+            {fileType === 'xlsx' && selectedSheet && (
+              <p className="text-[10px] text-[#6156F5] font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>
+            )}
             {!isTenantSelected && (
               <p className="text-[10px] text-red-600 font-medium">⚠ Seleziona un&apos;azienda prima di procedere.</p>
             )}
@@ -588,7 +736,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             )}
             <button
               onClick={handleAcceptBatch}
-              disabled={!isTenantSelected || !allPseudonymChecked}
+              disabled={!isTenantSelected || !allPseudonymChecked || (fileType === 'xlsx' && !selectedSheet)}
               className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               ↓ Create intake batch
@@ -610,6 +758,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <span className="text-xs font-bold text-green-700">✓ Batch created</span>
               <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-[10px] font-mono text-green-700">{acceptResult.batchId?.slice(0, 8)}…</span>
               <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">status: {acceptResult.batchStatus}</span>
+              {acceptResult.fileType === 'xlsx' && acceptResult.selectedSheetName && (
+                <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[10px] font-semibold text-[#6156F5]">xlsx · {acceptResult.selectedSheetName}</span>
+              )}
             </div>
             {acceptResult.eligibilitySummary && (
               <div className="flex flex-wrap gap-2 text-[10px]">
@@ -974,9 +1125,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Safety Boundaries</p>
           <div className="flex flex-wrap gap-1.5">
             {[
-              'No real data', 'No file upload', 'No CSV/XLSX', 'N≥10 enforced',
-              'PII Guard active', 'KORA_ADMIN only', 'No scoring recalculation',
-              'Gate 3B required before real data',
+              'No real data', 'N≥10 enforced',
+              'PII Guard active · strict-reject', 'KORA_ADMIN only',
+              'CSV + XLSX (.xlsx)', 'Sheet selection required for XLSX',
+              'No scoring recalculation', 'Gate 3B required before real data',
             ].map(n => (
               <span key={n} className="text-[10px] border border-slate-200 bg-white rounded px-2 py-0.5 text-slate-500 font-medium">{n}</span>
             ))}
