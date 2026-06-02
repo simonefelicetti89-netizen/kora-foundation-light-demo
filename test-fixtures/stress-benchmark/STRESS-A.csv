@@ -1,0 +1,49 @@
+initiative_name,category,type,amount,participants,source,period,department_group
+Buoni pasto mensili dicembre,economic_relief,monetary_benefit,18000,78,dichiarazione HR,2026-Q4,ALL
+Buoni pasto mensili novembre,economic_relief,monetary_benefit,17500,76,dichiarazione HR,2026-Q4,ALL
+Voucher spesa natalizi,economic_relief,monetary_benefit,8000,75,dichiarazione HR,2026-Q4,ALL
+Gift card dipendenti,economic_relief,monetary_benefit,4000,72,dichiarazione HR,2026-Q4,ALL
+Buoni benzina carburante,economic_relief,monetary_benefit,3500,68,dichiarazione HR,2026-Q4,ALL
+Welfare wallet generalista Q4,economic_relief,monetary_benefit,12000,70,dichiarazione HR,2026-Q4,ALL
+Voucher tempo libero,economic_relief,monetary_benefit,5000,65,dichiarazione HR,2026-Q4,ALL
+Rimborso generico spese,economic_relief,monetary_benefit,2500,60,dichiarazione HR,2026-Q4,ALL
+Cashback welfare platform,economic_relief,monetary_benefit,3000,55,dichiarazione HR,2026-Q4,ALL
+Fringe benefit generalista,economic_relief,monetary_benefit,6000,73,dichiarazione HR,2026-Q4,ALL
+Convenzioni commerciali partner,economic_relief,monetary_benefit,1000,50,dichiarazione HR,2026-Q4,ALL
+Convenzione palestra fitness,wellness aziendale palestra gym,consumed_service,,28,dichiarazione HR,2026-Q4,ALL
+10 ore palestra mensili dipendenti,palestra gym fitness ore benessere fisico,consumed_service,,22,dichiarazione HR,2026-Q4,ALL
+Challenge passi dipendenti,wellness step challenge attività fisica,consumed_service,,40,dichiarazione HR,2026-Q4,ALL
+App mindfulness meditazione,benessere psicologico app mindfulness meditazione,consumed_service,,15,dichiarazione HR,2026-Q4,ALL
+Webinar benessere online,webinar benessere wellness salute,consumed_service,,35,dichiarazione HR,2026-Q4,ALL
+Wellness day evento,wellness day evento benessere aziendale,consumed_service,,38,dichiarazione HR,2026-Q4,ALL
+Fruit day frutta fresca,wellbeing frutta salute aziendale,consumed_service,,45,dichiarazione HR,2026-Q4,ALL
+Newsletter wellbeing comunicazione,benessere comunicazione interna newsletter,consumed_service,,60,dichiarazione HR,2026-Q4,ALL
+Yoga lunch break sessioni,yoga aziendale benessere fisico lunch,consumed_service,,12,dichiarazione HR,2026-Q4,ALL
+Smart working dichiarato,smart working lavoro agile flessibilità,structural_policy,,,dichiarazione HR,2026-Q4,ALL
+No meeting day lunedì,no meeting day focus time flessibilità,structural_policy,,,dichiarazione HR,2026-Q4,ALL
+Ferie illimitate policy aziendale,ferie illimitate unlimited leave policy,structural_policy,,,dichiarazione HR,2026-Q4,ALL
+Flessibilità oraria non misurata,flessibilità oraria flexible working orario,structural_policy,,,dichiarazione HR,2026-Q4,ALL
+Corso professionalizzante retail Q4,formazione professionale corso sviluppo professionale,training,3500,8,report interno HR,2026-Q4,Vendite
+Mentoring pilota junior-senior,mentoring aziendale sviluppo professionale,training,1500,6,dichiarazione HR,2026-Q4,ALL
+Supporto psicologico dipendenti,supporto psicologico counseling benessere psicologico,consumed_service,4000,11,dichiarazione HR,2026-Q4,ALL
+Workshop D&I inclusione,workshop diversity inclusion D&I inclusione,training,2000,14,dichiarazione HR,2026-Q4,ALL
+Assicurazione sanitaria integrativa,assicurazione sanitaria polizza sanitaria welfare,long_term_benefit,15000,72,dichiarazione HR,2026-Q4,ALL
+Previdenza integrativa fondo pensione,previdenza integrativa fondo pensione pensione,long_term_benefit,8000,55,dichiarazione HR,2026-Q4,ALL
+Survey engagement dipendenti,engagement survey comunicazione interna,consumed_service,,,dichiarazione HR,2026-Q4,ALL
+Team building evento aziendale,team building evento aziendale,consumed_service,,65,dichiarazione HR,2026-Q4,ALL
+Convention aziendale annuale,convention aziendale evento,consumed_service,,80,dichiarazione HR,2026-Q4,ALL
+People day evento interno,people day evento interno aziendale,consumed_service,,50,dichiarazione HR,2026-Q4,ALL
+Rimborso spese sanitarie generiche,rimborso spese sanitarie welfare salute,monetary_benefit,2500,20,dichiarazione HR,2026-Q4,ALL
+Voucher generico extra,voucher generalista benefit fringe,monetary_benefit,3000,40,dichiarazione HR,2026-Q4,ALL
+Buoni acquisto extra,buoni acquisto gift card welfare,monetary_benefit,2000,35,dichiarazione HR,2026-Q4,ALL
+Comunicazione interna welfare,comunicazione interna welfare benefit,consumed_service,,,dichiarazione HR,2026-Q4,ALL
+Diritto alla disconnessione policy,diritto alla disconnessione policy aziendale,structural_policy,,,dichiarazione HR,2026-Q4,ALL
+Permessi extra genitorialità,permessi extra genitorialità congedo parental leave,structural_policy,,,dichiarazione HR,2026-Q4,ALL
+Caregiver support dichiarato,caregiver assistenza familiare supporto,consumed_service,1500,5,dichiarazione HR,2026-Q4,ALL
+Contributo nido aziendale,nido aziendale childcare contributo asilo,consumed_service,3000,4,dichiarazione HR,2026-Q4,ALL
+Wellness coach individuale,benessere wellness programma attività fisica,consumed_service,2000,8,dichiarazione HR,2026-Q4,ALL
+Corso sicurezza obbligatorio antincendio,sicurezza obbligatoria antincendio corso compliance,training,1000,80,report interno HSE,2026-Q4,ALL
+Corso privacy GDPR obbligatorio,gdpr privacy obbligatoria compliance formazione,training,500,80,dichiarazione HR,2026-Q4,ALL
+Knowledge transfer senior,trasferimento competenze senior junior legacy,training,2000,7,dichiarazione HR,2026-Q4,ALL
+Volontariato aziendale territorio,volontariato aziendale territorio impatto sociale,consumed_service,1000,9,dichiarazione HR,2026-Q4,ALL
+Reskilling digitale base,reskilling digitale corso professionalizzante formazione,training,2000,12,report interno HR,2026-Q4,ALL

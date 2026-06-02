@@ -1,0 +1,51 @@
+initiative_name,category,type,amount,participants,source,period,department_group
+Formazione professionalizzante LMS Q4,formazione professionale corso sviluppo professionale reskilling,training,28000,65,export lms piattaforma,2026-Q4,ALL
+Reskilling digitale avanzato,reskilling digitale corso professionalizzante digital skills,training,18000,45,export lms piattaforma,2026-Q4,Tech
+Academy manageriale leadership,academy aziendale leadership development manageriale,training,22000,30,export fornitore formazione,2026-Q4,Management
+Corso certificazione professionale PMP,certificazione professionale corso upskilling career,training,12000,18,export fornitore formazione,2026-Q4,PM
+Career path program strutturato,career path sviluppo professionale piano formativo,training,8000,35,report interno HR,2026-Q4,ALL
+Leadership program senior,leadership program development formazione manageriale,training,15000,22,export fornitore formazione,2026-Q4,Management
+Mentoring senior-junior strutturato,mentoring aziendale senior junior sviluppo professionale,training,10000,50,report interno HR,2026-Q4,ALL
+Coaching manageriale individuale,coaching manageriale sviluppo professionale leadership,consumed_service,8000,25,export fornitore welfare,2026-Q4,Management
+Onboarding buddy program,onboarding buddy program mentoring aziendale,consumed_service,3000,30,report interno HR,2026-Q4,Nuovi Assunti
+D&I programma strutturato annuale,diversity inclusion programma strutturato annuale percorso,training,12000,55,report interno HR,2026-Q4,ALL
+Community interna competenze tecnica,community aziendale competenze mentoring peer,consumed_service,2000,65,report interno HR,2026-Q4,Tech
+Supporto psicologico con provider export,supporto psicologico counselling benessere psicologico mental health,consumed_service,18000,45,export fornitore welfare,2026-Q4,ALL
+Caregiver support provider export,caregiver assistenza familiare eldercare supporto welfare,consumed_service,12000,20,export fornitore welfare,2026-Q4,ALL
+Nido aziendale childcare provider,nido aziendale childcare contributo asilo bambini,consumed_service,15000,16,export fornitore welfare,2026-Q4,ALL
+Assicurazione sanitaria integrativa L2,assicurazione sanitaria polizza welfare benefit copertura,long_term_benefit,35000,155,report interno HR,2026-Q4,ALL
+Smart working con usage data,smart working lavoro agile flessibilità policy uptake,structural_policy,2000,130,report interno HR,2026-Q4,ALL
+Diritto alla disconnessione con policy uptake,diritto alla disconnessione policy uptake flessibilità,structural_policy,1500,125,report interno HR,2026-Q4,ALL
+Permessi extra genitorialità con dati,permessi extra genitorialità parental leave policy uptake congedo,structural_policy,1000,38,report interno HR,2026-Q4,ALL
+Previdenza integrativa fondo pensione,previdenza integrativa fondo pensione contributo previdenza,long_term_benefit,22000,120,report interno HR,2026-Q4,ALL
+Volontariato aziendale strutturato ONG,volontariato aziendale territorio comunità impatto sociale partner ONG,consumed_service,14000,38,export fornitore welfare,2026-Q4,ALL
+Partnership scuola-lavoro certificata,scuola lavoro partnership territory impatto comunità,consumed_service,6000,25,report interno HR,2026-Q4,ALL
+Iniziativa territoriale con partner NGO,territorio impatto sociale comunità partner NGO volontariato,consumed_service,8000,28,export fornitore welfare,2026-Q4,ALL
+Community impact project territorio,comunità impatto territoriale volontariato progetto sociale,consumed_service,5000,22,report interno HR,2026-Q4,ALL
+Knowledge transfer senior expert,trasferimento competenze senior junior legacy conoscenza organizzativa,training,8000,35,report interno HR,2026-Q4,ALL
+Previdenza integrativa estesa,previdenza integrativa complementare fondo pensione pensione futuro,long_term_benefit,12000,85,report interno HR,2026-Q4,ALL
+Piano successione competenze,piano successione legacy competenze organizzative memoria,training,5000,20,report interno HR,2026-Q4,ALL
+Academy interna senior expert,academy interna senior expert legacy formazione trasmissione,training,6000,18,report interno HR,2026-Q4,ALL
+Buoni pasto mensili,buoni pasto economic_relief benefit,monetary_benefit,18000,155,dichiarazione HR,2026-Q4,ALL
+Voucher welfare moderato,voucher welfare benefit fringe generalista,monetary_benefit,6000,100,dichiarazione HR,2026-Q4,ALL
+Fringe benefit non dominante,fringe benefit welfare limitato benefit,monetary_benefit,8000,140,dichiarazione HR,2026-Q4,ALL
+Corso sicurezza obbligatorio,sicurezza obbligatoria compliance hse 81 dlgs,training,5000,180,report interno HSE,2026-Q4,ALL
+Formazione privacy obbligatoria,privacy gdpr obbligatoria compliance formazione adempimento,training,3000,180,report interno HR,2026-Q4,ALL
+Sorveglianza sanitaria medica,sorveglianza sanitaria obbligatoria medico competente,training,6000,180,report interno HSE,2026-Q4,ALL
+Benessere fisico programma provider,benessere fisico wellness salute programma provider,consumed_service,5000,55,export fornitore welfare,2026-Q4,ALL
+Challenge sportiva dipendenti,sport aziendale benessere fisico wellness attività fisica,consumed_service,2000,70,report interno HR,2026-Q4,ALL
+Work-life balance check-in aggregato,work life balance check-in survey follow-up,consumed_service,1500,120,report interno HR,2026-Q4,ALL
+Flessibilità oraria con uptake,flessibilità oraria flexible working policy uptake misurata,structural_policy,500,110,report interno HR,2026-Q4,ALL
+Programma maternità/paternità esteso,maternità paternità congedo parental leave genitorialità permessi extra,structural_policy,1000,25,report interno HR,2026-Q4,ALL
+Micro-learning continuous learning,micro learning continuous learning e-learning digitale formazione,training,4000,80,export lms piattaforma,2026-Q4,ALL
+Peer learning circle,peer learning circle apprendimento professionale upskilling,consumed_service,2000,45,report interno HR,2026-Q4,ALL
+Buddy system nuovi assunti,buddy system onboarding mentoring peer sviluppo,consumed_service,1500,28,report interno HR,2026-Q4,Nuovi Assunti
+Supporto caregiver secondario,caregiver supporto familiare assistenza,consumed_service,4000,14,report interno HR,2026-Q4,ALL
+Health check programma benessere,salute checkup prevenzione wellness health check,consumed_service,4000,50,export fornitore welfare,2026-Q4,ALL
+Parità di genere programma D&I,parità genere inclusion programma D&I gender equity,consumed_service,3000,60,report interno HR,2026-Q4,ALL
+Speaking club inglese professionale,formazione lingua inglese professionale sviluppo career,training,3000,30,report interno HR,2026-Q4,ALL
+Community ESG dipendenti,comunità ESG dipendenti volontariato impatto territorio,consumed_service,2500,35,report interno HR,2026-Q4,ALL
+Reskilling data analytics,reskilling data analytics formazione digitale upskilling,training,10000,22,export lms piattaforma,2026-Q4,Tech
+ESG ambassador program,territorio impatto ESG ambassador programma volontariato,consumed_service,4000,18,report interno HR,2026-Q4,ALL
+Wellbeing coach strutturato,benessere wellness coach programma strutturato salute,consumed_service,6000,30,export fornitore welfare,2026-Q4,ALL
+Innovation bootcamp formazione,bootcamp formativo hackathon workshop professionale innovazione,training,8000,25,export fornitore formazione,2026-Q4,Tech

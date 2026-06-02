@@ -1,0 +1,5 @@
+initiative_name,category,type,participants,pillar,amount,source
+Supporto psicologico,welfare,mental_health,30,LIFE,,
+Buoni pasto e voucher,welfare,economic_relief,50,LIFE,,
+Corso sicurezza obbligatorio,compliance,hse_training,50,,5000,HR
+Formazione avanzata LMS,training,upskilling,42,GROWTH,24000,export piattaforma lms

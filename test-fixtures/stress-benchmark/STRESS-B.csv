@@ -1,0 +1,55 @@
+initiative_name,category,type,amount,participants,source,period,department_group
+Corso sicurezza obbligatorio 81/08,sicurezza obbligatoria dlgs 81 compliance hse formazione,training,18000,380,export fornitore welfare HSE,2026-Q4,Produzione
+Formazione DPI utilizzo dispositivi,dpi sicurezza obbligatoria dispositivi protezione individuale,training,6000,350,export fornitore welfare HSE,2026-Q4,Produzione
+DVR aggiornamento valutazione rischi,dvr valutazione rischi sicurezza obbligatoria,training,4000,420,report interno HSE,2026-Q4,ALL
+Sorveglianza sanitaria medica,sorveglianza sanitaria obbligatoria medico competente,training,12000,420,report interno HSE,2026-Q4,ALL
+Visite mediche obbligatorie,visite mediche obbligatorie sorveglianza sanitaria,training,8000,400,report interno HSE,2026-Q4,ALL
+Patentino carrelli elevatori obbligatorio,patentino obbligatorio carrelli elevatori formazione,training,5000,85,export fornitore welfare HSE,2026-Q4,Magazzino
+Antincendio obbligatorio certificato,antincendio obbligatorio certificato sicurezza primo soccorso,training,4500,250,export fornitore welfare HSE,2026-Q4,ALL
+Primo soccorso obbligatorio certificato,primo soccorso obbligatorio certificato,training,3500,180,export fornitore welfare HSE,2026-Q4,ALL
+Formazione modello 231 compliance,modello 231 compliance legale formazione obbligatoria,training,6000,420,report interno HR,2026-Q4,ALL
+Formazione privacy GDPR obbligatoria,gdpr privacy obbligatoria compliance adempimento,training,4000,420,report interno HR,2026-Q4,ALL
+Aggiornamento procedure sicurezza,procedure sicurezza obbligatoria aggiornamento,training,3000,300,report interno HSE,2026-Q4,Produzione
+DUVRI interferenze lavori,duvri sicurezza interferenze obbligatoria,training,2500,120,report interno HSE,2026-Q4,Produzione
+Audit HSE annuale certificato,audit hse sicurezza obbligatoria,training,5000,420,report interno HSE,2026-Q4,ALL
+Formazione macchine pericolose obbligatoria,formazione macchine obbligatoria sicurezza,training,4000,180,export fornitore welfare HSE,2026-Q4,Produzione
+Addestramento reparto produzione obbligatorio,addestramento obbligatorio reparto produzione sicurezza,training,3000,200,report interno HSE,2026-Q4,Produzione
+Buoni pasto mensili dipendenti,economic_relief buoni pasto,monetary_benefit,38000,380,dichiarazione HR,2026-Q4,ALL
+Fringe benefit generalista,fringe benefit generalista economic relief,monetary_benefit,15000,300,dichiarazione HR,2026-Q4,ALL
+Rimborso trasporto casa-lavoro,rimborso trasporto welfare benefit,monetary_benefit,22000,320,dichiarazione HR,2026-Q4,ALL
+Convenzione mensa aziendale,mensa aziendale convenzione welfare benefit,consumed_service,18000,350,dichiarazione HR,2026-Q4,ALL
+Convention sicurezza HSE annuale,convention sicurezza evento interno team building,consumed_service,,120,dichiarazione HR,2026-Q4,ALL
+Survey engagement dipendenti 2026,survey engagement dipendenti senza follow-up comunicazione,consumed_service,,,dichiarazione HR,2026-Q4,ALL
+Comunicazione interna people,comunicazione interna people team welfare,consumed_service,,,dichiarazione HR,2026-Q4,ALL
+Team building HSE reparto,team building hse evento safety,consumed_service,,80,dichiarazione HR,2026-Q4,ALL
+People day evento,people day evento aziendale generico,consumed_service,,200,dichiarazione HR,2026-Q4,ALL
+Reskilling tecnico operatori CNC,reskilling tecnico professionale formazione upskilling,training,25000,40,report interno HR,2026-Q4,Produzione
+Mentoring capi turno leadership,mentoring aziendale capi turno leadership sviluppo,training,8000,25,report interno HR,2026-Q4,Produzione
+Volontariato territoriale aziendale,volontariato aziendale territorio comunità impatto sociale,consumed_service,12000,30,report interno HR,2026-Q4,ALL
+Caregiver support programma,caregiver supporto assistenza familiare programma welfare,consumed_service,6000,15,report interno HR,2026-Q4,ALL
+Corso leadership manager,leadership program corso sviluppo professionale manageriale,training,15000,18,report interno HR,2026-Q4,Management
+Smart working policy dichiarata,smart working lavoro agile flessibilità policy,structural_policy,,,dichiarazione HR,2026-Q4,ALL
+Assicurazione sanitaria integrativa,assicurazione sanitaria polizza welfare benefit,long_term_benefit,45000,350,dichiarazione HR,2026-Q4,ALL
+Previdenza integrativa TFR,previdenza integrativa fondo pensione pensione,long_term_benefit,30000,280,dichiarazione HR,2026-Q4,ALL
+Corso lingue straniere,formazione lingua straniera professionale upskilling,training,5000,30,dichiarazione HR,2026-Q4,ALL
+Benessere fisico programma generico,benessere fisico wellness salute programma,consumed_service,2000,50,dichiarazione HR,2026-Q4,ALL
+D&I awareness sessione,diversity inclusion awareness sessione,consumed_service,,40,dichiarazione HR,2026-Q4,ALL
+Knowledge transfer senior tecnici,trasferimento competenze senior tecnici legacy,training,4000,25,report interno HR,2026-Q4,Produzione
+Formazione aggiornamento tecnico,aggiornamento professionale tecnico formazione upskilling,training,8000,55,report interno HR,2026-Q4,Produzione
+Work-life balance policy generica,work-life balance policy flessibilità oraria,structural_policy,,,dichiarazione HR,2026-Q4,ALL
+Supporto psicologico dipendenti stress,supporto psicologico benessere stress counseling,consumed_service,5000,22,dichiarazione HR,2026-Q4,ALL
+Nido aziendale contributo,nido aziendale childcare contributo asilo,consumed_service,8000,12,dichiarazione HR,2026-Q4,ALL
+Voucher benessere extra,voucher welfare benefit fringe generalista,monetary_benefit,5000,100,dichiarazione HR,2026-Q4,ALL
+Convenzioni commerciali extra,welfare convenzioni economiche commercial benefit,monetary_benefit,3000,250,dichiarazione HR,2026-Q4,ALL
+Certificazione ambientale ISO 14001,compliance certificazione ISO aziendale,training,8000,420,report interno HSE,2026-Q4,ALL
+CCNL adempimento obbligatorio,compliance adempimento ccnl obbligatoria legale,training,,420,dichiarazione HR,2026-Q4,ALL
+Onboarding safety induction,sicurezza obbligatoria induction onboarding compliance,training,2000,45,report interno HSE,2026-Q4,Nuovi Assunti
+Partnership scuola-lavoro,scuola lavoro partnership territorio impatto,consumed_service,5000,20,report interno HR,2026-Q4,ALL
+Wellbeing challenge sport,sport aziendale wellbeing wellness benessere fisico,consumed_service,,35,dichiarazione HR,2026-Q4,ALL
+Peer coaching informale,coaching peer mentoring sviluppo professionale,consumed_service,,18,dichiarazione HR,2026-Q4,ALL
+Reskilling digitale basi,reskilling digitale formazione professionale upskilling digital,training,6000,28,report interno HR,2026-Q4,ALL
+Accordo integrativo welfare extra,accordo integrativo welfare collettivo migliorativo benefit,consumed_service,,380,report interno HR,2026-Q4,ALL
+Piano formativo annuale generico,formazione piano formativo sviluppo professionale annuale,training,35000,180,report interno HR,2026-Q4,ALL
+Coaching manageriale,coaching manageriale sviluppo professionale leadership,consumed_service,4000,15,report interno HR,2026-Q4,Management
+Festival sicurezza evento,sicurezza evento aziendale obbligatoria hse,consumed_service,,420,report interno HSE,2026-Q4,ALL
+Webinar ergonomia postazione,sicurezza ergonomia webinar obbligatoria hse,training,1500,200,report interno HSE,2026-Q4,ALL
