@@ -20,6 +20,9 @@ export { mapCareEconomySignal, mapCareEconomyBatch } from './care-economy-mappin
 export { assessBudgetEvidence, assessBudgetEvidenceBatch } from './budget-evidence';
 export { computeReachQuality } from './reach-quality';
 
+// ── B22: EQUITY Engine ───────────────────────────────────────────────────────
+export { computeEquityScore, EQUITY_ENGINE_VERSION } from './equity-engine';
+
 // ── Examples (demo / testing only) ───────────────────────────────────────────
 export {
   runKoraPipelineExamples,

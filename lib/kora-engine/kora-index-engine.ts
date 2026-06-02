@@ -20,6 +20,7 @@ import type {
   Pillar,
 } from './types';
 import { getMacroblockWeights, getMethodologyVersion } from '@/lib/methodology-config/v0.1';
+import { computeEquityScore } from './equity-engine';
 
 const ENGINE_SOURCE = 'KoraIndexEngine_v0.1';
 
@@ -30,7 +31,7 @@ export function computeKoraIndex(params: {
   pillarDistribution?: Record<Pillar, number>;
   confidenceScore?: number;
 }): KoraIndexResult {
-  const { bti, activation, eligibilitySummary, confidenceScore = 0 } = params;
+  const { bti, activation, eligibilitySummary, pillarDistribution, confidenceScore = 0 } = params;
   const warnings: string[] = [];
   const weights = getMacroblockWeights();
 
@@ -68,28 +69,32 @@ export function computeKoraIndex(params: {
     );
   }
 
-  // ── Macroblock 3: Distribution & Equity (EQUITY, 25%) ─────────────────────
-  // concentrationTopShare: lower is better — contributes (1 − x) × 50.
-  // bottomFiftyShare: higher is better — contributes x × 50.
-  // If no distribution data available: conservative 50 with warning.
-  const hasDistributionData =
-    activation.concentrationTopShare > 0 || activation.bottomFiftyShare > 0;
+  // ── Macroblock 3: Distribution & Equity (EQUITY, 25%) — B22 ──────────────
+  // Pillar-based EQUITY replaces the Foundation Light stub EQUITY=50.
+  // PC (Pillar Coverage): how many of 5 KORA pillars have meaningful activation.
+  // PB (Pillar Balance):  how evenly events are distributed across covered pillars.
+  // EQUITY = PC × 0.60 + PB × 0.40
+  //
+  // Input: pillarDistribution from run-kora-pipeline Step 9.
+  // Blocked records have null primary_pillar → already excluded upstream.
+  // Limited (economic relief) records mapping to LIFE correctly inflate LIFE share
+  //   for companies that over-rely on vouchers — this is intended behavior.
+  const equityResult = computeEquityScore(pillarDistribution ?? null);
+  let distributionEquity = equityResult.equityScore;
+  distributionEquity = Math.max(0, Math.min(100, distributionEquity));
 
-  let distributionEquity: number;
-  if (hasDistributionData) {
-    distributionEquity = round2(
-      (1 - activation.concentrationTopShare) * 50 +
-      activation.bottomFiftyShare * 50,
+  if (equityResult.isInsufficientData) {
+    warnings.push(
+      'Distribution & Equity: pillar distribution non disponibile — fallback 50 (insufficient_data). ' +
+      'Eseguire scoring con record classificati per ottenere EQUITY reale.',
     );
   } else {
-    distributionEquity = 50;
     warnings.push(
-      'Distribution & Equity: dati di concentrazione non disponibili. ' +
-      'Valore conservativo 50 assegnato — non reale. ' +
-      'Fornire top_concentration e bottom_50_share per calcolo preciso.',
+      `Distribution & Equity (B22): ${equityResult.coveredPillars}/5 pillar coperti — ` +
+      `PC=${equityResult.pillarCoverageScore}, PB=${equityResult.pillarBalanceScore}, ` +
+      `dominante: ${equityResult.dominantPillar} (${Math.round(equityResult.dominantShare * 100)}%).`,
     );
   }
-  distributionEquity = Math.max(0, Math.min(100, distributionEquity));
 
   // ── Macroblock 4: Budget-to-Human-Impact (BTI, 20%) ───────────────────────
   // BTI score from BudgetToHumanImpactEngine — already 0–100.
