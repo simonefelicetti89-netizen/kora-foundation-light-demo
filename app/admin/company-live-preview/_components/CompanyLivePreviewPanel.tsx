@@ -296,7 +296,7 @@ export function CompanyLivePreviewPanel() {
               </div>
             </Card>
 
-            {/* KORA Index */}
+            {/* KORA Index — B25: definition added */}
             <Card title="KORA Index v3" accent>
               {data.scoring ? (
                 <div className="space-y-3">
@@ -313,6 +313,9 @@ export function CompanyLivePreviewPanel() {
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-400 uppercase tracking-[0.12em]">{data.scoring.calibrationStatus}</p>
+                  <p className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-2">
+                    Efficacia nel convertire iniziative people in attivazione verificata, distribuita e significativa. Output aziendale aggregato — nessun individuo misurabile.
+                  </p>
                 </div>
               ) : (
                 <EmptyState msg="Scoring non ancora eseguito" />
@@ -354,12 +357,15 @@ export function CompanyLivePreviewPanel() {
             </Card>
           </div>
 
-          {/* ── Row 2: Pillar Balance ──────────────────────────────────────── */}
-          <Card title="Pillar Balance — Distribuzione Attivazione">
+          {/* ── Row 2: Pillar Balance / EQUITY ────────────────────────────── */}
+          <Card title="Pillar Balance — EQUITY (Distribution & Equity · 25%)">
             {data.pillarDistribution ? (() => {
               const total = PILLAR_ORDER.reduce((s, k) => s + (data.pillarDistribution![k] ?? 0), 0);
               return (
                 <div className="space-y-3">
+                  <div className="rounded bg-[#f5f4ff] border border-[#c7c4f8] px-3 py-2 text-[10px] text-[#3d3a6a] leading-relaxed">
+                    <strong>EQUITY</strong> = Pillar Coverage (PC) · quanti pillar hanno presenza significativa + Pillar Balance (PB) · quanto è equa la distribuzione. Non misura equità tra lavoratori individuali.
+                  </div>
                   {PILLAR_ORDER.map(k => {
                     const v = data.pillarDistribution![k] ?? 0;
                     const p = total > 0 ? Math.round((v / total) * 100) : 0;
@@ -378,7 +384,7 @@ export function CompanyLivePreviewPanel() {
                     );
                   })}
                   <p className="text-[11px] text-slate-400 pt-2 border-t border-slate-100">
-                    Distribuzione aggregata · nessun dato individuale · N≥10 threshold applicata
+                    Distribuzione aggregata · nessun dato individuale · N≥10 threshold · Alta EQUITY = programma diversificato su più pillar
                   </p>
                 </div>
               );

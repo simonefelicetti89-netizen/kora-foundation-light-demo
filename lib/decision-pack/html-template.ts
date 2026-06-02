@@ -133,19 +133,19 @@ export function buildDecisionPackHtml(data: PdfData): string {
   if (sf === 'CLEAR') {
     decisions.push({ n:'01',
       decision: 'Consolidare e scalare il programma di attivazione',
-      implication: `Activation Safeguard CLEAR (AR ${arPct}%, MAR ${marPct}%). Il profilo è operativo. Il Board deve decidere se consolidare l'attuale perimetro o estendere il programma a nuovi segmenti workforce.`,
+      implication: `Activation Safeguard CLEAR (MAR ${marPct}% — segnale primario · AR ${arPct}% — reach complessivo). Il profilo è operativo. Il Board deve decidere se consolidare l'attuale perimetro o estendere il programma a nuovi segmenti workforce.`,
       responsible: 'HR Director',
     });
   } else if (sf === 'WARNING') {
     decisions.push({ n:'01',
       decision: 'Espandere il perimetro di attivazione',
-      implication: `Con AR ${arPct}% e MAR ${marPct}% in zona WARNING, la maggioranza della workforce non è ancora attivata significativamente. Il Board deve decidere se allocare budget aggiuntivo o ridefinire il perimetro programma.`,
+      implication: `Con MAR ${marPct}% (segnale primario) e AR ${arPct}% (reach complessivo) in zona WARNING, la maggioranza della workforce non è ancora attivata significativamente. Il Board deve decidere se allocare budget aggiuntivo o ridefinire il perimetro programma.`,
       responsible: 'HR Director · CFO',
     });
   } else {
     decisions.push({ n:'01',
       decision: 'Revisione immediata del programma',
-      implication: `Activation Safeguard FLAGGED: parametri sotto soglia minima (AR ${arPct}%, MAR ${marPct}%). Prima di procedere con il pilot, il Board deve decidere se sospendere, ridisegnare o continuare con scope ridotto.`,
+      implication: `Activation Safeguard FLAGGED: parametri sotto soglia minima (MAR ${marPct}% — segnale primario · AR ${arPct}%). Prima di procedere con il pilot, il Board deve decidere se sospendere, ridisegnare o continuare con scope ridotto.`,
       responsible: 'CEO · HR Director',
     });
   }
@@ -765,23 +765,46 @@ export function buildDecisionPackHtml(data: PdfData): string {
         <div class="bm-metric-label">KORA Index v3</div>
         <div class="bm-metric-val" style="font-size:56pt;">${kiVal}</div>
         <div class="bm-metric-sub">/100 · ${esc(koraIndex.methodologyVersionId)}</div>
+        <div style="font-size:7pt;color:#9899b3;margin-top:6pt;line-height:1.4;text-align:left;padding:0 3pt;">Efficacia nel convertire iniziative people in attivazione verificata, distribuita e significativa. Output aziendale aggregato — nessun individuo misurabile.</div>
       </div>
       <div class="bm-metric" style="border:1px solid #c7c4f8;border-radius:5pt;background:#f5f4ff;">
         <div class="bm-metric-label">Confidence Score</div>
         <div class="bm-metric-val" style="font-size:40pt;color:#6156F5;">${csPct}%</div>
         <div class="bm-metric-sub">indicatore esterno · peso = 0</div>
+        <div style="font-size:7pt;color:#9899b3;margin-top:6pt;line-height:1.4;text-align:left;padding:0 3pt;">Qualità e completezza delle evidenze. Non entra nel KORA Index — mostrato sempre affianco come affidabilità dato.</div>
       </div>
       <div class="bm-metric" style="border:1px solid ${sfColor(sf)}33;border-radius:5pt;background:${sfBg(sf)};">
         <div class="bm-metric-label">Activation Safeguard</div>
         <div class="bm-metric-val" style="font-size:22pt;color:${sfColor(sf)};">${sfLabel(sf)}</div>
-        <div class="bm-metric-sub">AR ${arPct}% · MAR ${marPct}%</div>
+        <div class="bm-metric-sub">MAR ${marPct}% · AR ${arPct}%</div>
+        <div style="font-size:7pt;color:#9899b3;margin-top:6pt;line-height:1.4;text-align:left;padding:0 3pt;">Gate interpretativo — previene overclaim quando partecipazione, evidenza o review sono insufficienti.</div>
       </div>
     </div>
 
     <div class="bm-interp">
-      ${sf === 'CLEAR'   ? `L'organizzazione soddisfa i criteri dell'Activation Safeguard (AR ≥ 40%, MAR ≥ 30%). Il KORA Index è qualificato per output interpretativi nella fase pilot.`
+      ${sf === 'CLEAR'   ? `L'organizzazione soddisfa i criteri dell'Activation Safeguard (MAR ≥ 30%, AR ≥ 40%). Il KORA Index è qualificato per output interpretativi nella fase pilot.`
       : sf === 'WARNING' ? `Activation Safeguard in zona WARNING. Il KORA Index è disponibile ma richiede analisi approfondita prima di qualsiasi uso decisionale formale.`
       :                    `Attenzione: parametri di attivazione sotto soglia minima. Il KORA Index è preliminare — non utilizzare per decisioni operative senza revisione metodologica.`}
+    </div>
+
+    <!-- B25: Macroblock definitions — 4-column compact strip -->
+    <div style="margin-top:12pt;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6pt;">
+      <div style="padding:8pt 9pt;border:1px solid #eaebf4;border-radius:4pt;background:#fafafa;break-inside:avoid;">
+        <div style="font-size:6.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#06032B;margin-bottom:4pt;">REACH · 25%</div>
+        <div style="font-size:7.5pt;color:#555670;line-height:1.4;">Reach complessivo (AR) e attivazione significativa (MAR). MAR è il segnale primario. AR include economic relief.</div>
+      </div>
+      <div style="padding:8pt 9pt;border:1px solid #eaebf4;border-radius:4pt;background:#fafafa;break-inside:avoid;">
+        <div style="font-size:6.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#06032B;margin-bottom:4pt;">QUALITY · 30%</div>
+        <div style="font-size:7.5pt;color:#555670;line-height:1.4;">Profondità, evidenza e qualità dell'attivazione. La quantità di iniziative da sola non produce qualità.</div>
+      </div>
+      <div style="padding:8pt 9pt;border:1px solid #c7c4f8;border-radius:4pt;background:#f5f4ff;break-inside:avoid;">
+        <div style="font-size:6.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6156F5;margin-bottom:4pt;">EQUITY · 25%</div>
+        <div style="font-size:7.5pt;color:#555670;line-height:1.4;">Distribuzione sui 5 pillar KORA. Combina Pillar Coverage (PC) e Pillar Balance (PB). Non misura equità individuale.</div>
+      </div>
+      <div style="padding:8pt 9pt;border:1px solid #eaebf4;border-radius:4pt;background:#fafafa;break-inside:avoid;">
+        <div style="font-size:6.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#06032B;margin-bottom:4pt;">BTI · 20%</div>
+        <div style="font-size:7.5pt;color:#555670;line-height:1.4;">Budget convertito in attivazione reale. Deep Activation vs Economic Relief vs Compliance Blocked.</div>
+      </div>
     </div>
 
     <div style="margin-top:auto;padding-top:10pt;">
@@ -884,7 +907,18 @@ export function buildDecisionPackHtml(data: PdfData): string {
   ${pageHeader('Pillar Balance')}
   <div class="pc">
 
-    <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:18pt;max-width:440pt;">
+    <!-- B25: EQUITY = PC + PB definition -->
+    <div style="padding:11pt 14pt;border:1px solid #c7c4f8;background:#f5f4ff;border-radius:4pt;margin-bottom:14pt;break-inside:avoid;">
+      <div style="font-size:6.5pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#6156F5;margin-bottom:6pt;">EQUITY — Distribution &amp; Equity Macroblock · 25%</div>
+      <div style="font-size:9pt;color:#3d3a6a;line-height:1.5;">
+        EQUITY misura se l'attivazione è distribuita su più dimensioni KORA, non concentrata in un singolo pillar.
+        Combina <strong>Pillar Coverage (PC)</strong> — quanti dei 5 pillar hanno presenza significativa —
+        e <strong>Pillar Balance (PB)</strong> — quanto è equa la distribuzione tra i pillar coperti.
+        Alta EQUITY riflette un programma people diversificato. Non misura equità tra lavoratori individuali.
+      </div>
+    </div>
+
+    <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:14pt;max-width:440pt;">
       Distribuzione dell'attivazione sui 5 pillar KORA per il periodo ${esc(meta.reportingPeriod)}.
       Output aggregato aziendale — nessun dato individuale. Evento classificato per pillar
       tramite tassonomia BCM.
@@ -1017,7 +1051,9 @@ export function buildDecisionPackHtml(data: PdfData): string {
     <div class="fg-note">
       <strong>Nota:</strong> L'Activation Debt è una stima direzionale — non garantito.
       Il BTI Score è un indicatore informativo: non dimostra causalità, non certifica ROI, non sostituisce analisi finanziaria indipendente.
-      Economic relief (buoni pasto, voucher generici) non genera Impact Units ma è spesa welfare legittima.
+      Economic relief (buoni pasto, voucher generici, welfare wallet) non genera Impact Units ma è spesa welfare legittima.
+      Le Structural People Policies (smart working, assicurazione sanitaria, previdenza, leadership program) sono infrastruttura organizzativa:
+      KORA le valuta per evidenza, uptake e copertura — non per sola esistenza della policy.
       ${bti.budgetEvidenceQuality > 0 ? `Qualità evidenze budget: ${Math.round(bti.budgetEvidenceQuality * 100)}%.` : ''}
     </div>
 `;
