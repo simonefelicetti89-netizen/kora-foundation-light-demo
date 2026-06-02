@@ -1,5 +1,5 @@
 // lib/ingestion/raw-to-uef-interpreter.ts
-// Raw-to-UEF Rule-Based Interpreter v0.1 — KORA Foundation Light B5.
+// Raw-to-UEF Rule-Based Interpreter v0.1 — KORA Foundation Light B5/B18.
 //
 // Transforms a personal.uploaded_record (PII-free payload from B4.2) into a
 // proposed UEF candidate. Pure function — no DB, no LLM, no side effects.
@@ -7,6 +7,9 @@
 //
 // Priority order: BLOCKED > LIMITED > ELIGIBLE.
 // Mental health: program-level only — never individual health/diagnosis data.
+// B18: taxonomy extension + ESRS reporting alignment (no compliance claim).
+
+import { deriveReportingAlignment, type ReportingAlignment } from '@/lib/reporting/reporting-alignment';
 
 export type Pillar = 'LIFE' | 'GROWTH' | 'CONNECTION' | 'IMPACT' | 'LEGACY';
 export type EligibilityProposal = 'eligible' | 'limited' | 'blocked';
@@ -36,11 +39,17 @@ export interface BatchFinancialContext {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── B11: Initiative domain + budget class taxonomies ──────────────────────────
+// ── B11/B18: Initiative domain + budget class taxonomies ──────────────────────
 export type InitiativeDomain =
   | 'welfare' | 'fringe_benefit' | 'economic_relief' | 'hr_learning'
   | 'esg_volunteering' | 'compliance_hse' | 'previdenza_future'
-  | 'wellbeing_mental_health' | 'unknown';
+  | 'wellbeing_mental_health' | 'unknown'
+  // B18 extensions
+  | 'organizational_flexibility'   // work-life balance structural policies
+  | 'protection_future_security'   // health insurance, pension
+  | 'wellbeing_light'              // gym, fitness, light wellness
+  | 'welfare_care'                 // caregiver, childcare, family support
+  | 'inclusion_equity';            // D&I, diversity & inclusion
 
 export type BudgetClass =
   | 'deep_activation' | 'economic_relief' | 'compliance_blocked' | 'unknown';
@@ -63,6 +72,8 @@ export interface UefCandidateProposal {
   needsEnrichment:        boolean;
   financialConfidence:    number;        // 0.10–0.90 (budget-aware)
   enrichmentMissingFields: string[];
+  // ── B18: reporting alignment — no compliance claim ───────────────────────
+  reportingAlignment:     ReportingAlignment | null;
   // ─────────────────────────────────────────────────────────────────────────
   reasonCodes:            string[];      // machine-readable
   warnings:               string[];
@@ -112,6 +123,10 @@ const KW_TRAINING = [
   'formazione', 'training', 'upskilling', 'lms', 'academy', 'e-learning',
   'apprendimento', 'aggiornamento professionale', 'reskilling', 'digital skills',
   'sviluppo professionale', 'certificazione professionale', 'crescita professionale',
+  // B18: reinforce professional course patterns
+  'corso professionalizzante', 'corsi professionalizzanti', 'corso professionale',
+  'percorso professionale', 'career path', 'piano formativo', 'learning path',
+  'bootcamp', 'hackathon formativo', 'workshop professionale',
 ];
 
 const KW_MENTORING = [
@@ -128,6 +143,58 @@ const KW_LEGACY = [
   'trasferimento competenze', 'senior-junior', 'legacy conoscenza',
   'knowledge transfer', 'memoria organizzativa', 'prassi aziendali',
 ];
+
+// ── B18: Extended keyword groups ──────────────────────────────────────────────
+
+// Organizational flexibility: structural work-life balance policies (no direct budget)
+const KW_ORG_FLEXIBILITY = [
+  'ferie illimitate', 'unlimited leave', 'unlimited pto', 'ferie senza limite',
+  'smart working', 'remote work', 'lavoro agile', 'lavoro da remoto', 'telelavoro strutturato',
+  'diritto alla disconnessione', 'right to disconnect', 'disconnessione digitale',
+  'no meeting day', 'meeting free', 'focus time',
+  'flessibilità oraria', 'flexible working', 'flexible work', 'orario flessibile',
+  'permessi extra', 'permessi aggiuntivi', 'congedo migliorativo',
+  'genitorialità', 'parental leave', 'congedo parentale', 'congedo papà',
+  'maternità facoltativa', 'paternità estesa',
+];
+
+// Protection & future security: insurance, pension (structured benefit programs)
+const KW_PROTECTION_INSURANCE = [
+  'assicurazione sanitaria', 'sanità integrativa', 'polizza sanitaria',
+  'health insurance', 'copertura sanitaria', 'welfare sanitario integrativo',
+  'mutua sanitaria', 'fondo sanitario', 'rimborso spese sanitarie',
+  'previdenza integrativa', 'pensione integrativa', 'fondo pensione',
+  'previdenza complementare', 'piano pensionistico', 'contributo previdenziale',
+  'future security', 'social protection fund',
+];
+
+// Wellbeing light: gym, fitness, light wellness (not clinical, not mental health)
+const KW_WELLBEING_LIGHT = [
+  'palestra', 'gym', 'convenzione palestra', 'abbonamento palestra',
+  'ore palestra', 'fitness', 'challenge passi', 'step challenge',
+  'app mindfulness', 'app meditazione', 'webinar benessere',
+  'wellness day', 'sport aziendale', 'attività sportiva', 'yoga aziendale',
+  'bike to work', 'sport benefit',
+];
+
+// Caregiver & childcare: family support welfare programs
+const KW_CAREGIVER_CHILDCARE = [
+  'caregiver', 'assistenza familiare', 'eldercare', 'assistenza anziani',
+  'nido', 'asilo nido', 'childcare', 'baby-sitting', 'babysitting',
+  'nido aziendale', 'contributo nido', 'rimborso asilo',
+  'supporto genitorialità', 'supporto famiglia', 'congedo cura familiare',
+];
+
+// D&I / inclusion: diversity, equity, inclusion programs
+const KW_INCLUSION_DEI = [
+  'diversity', 'inclusion', 'inclusione', 'diversità e inclusione',
+  'pari opportunità', 'gender equity', 'gender equality',
+  'disability inclusion', 'disabilità', 'neurodiversity', 'neurodiversità',
+  'workshop d&i', 'unconscious bias', 'parità di genere', 'pay equity',
+  'inclusività', 'accessibilità',
+];
+
+// ── Source tier keywords ───────────────────────────────────────────────────────
 
 const KW_SOURCE_L3 = [
   'export fornitore welfare', 'welfare provider export', 'export piattaforma lms',
@@ -230,15 +297,25 @@ function deriveInitiativeDomain(eventType: string, eligibility: EligibilityPropo
   if (eligibility === 'blocked') return 'compliance_hse';
   if (eligibility === 'limited') return 'fringe_benefit';
   switch (eventType) {
-    case 'mental_health_support':    return 'wellbeing_mental_health';
-    case 'health_wellness_program':  return 'welfare';
-    case 'professional_training':    return 'hr_learning';
-    case 'mentoring_program':        return 'hr_learning';
-    case 'knowledge_transfer':       return 'hr_learning';
-    case 'volunteering':             return 'esg_volunteering';
-    case 'economic_relief':          return 'fringe_benefit';
-    case 'compliance_baseline':      return 'compliance_hse';
-    default:                         return 'unknown';
+    case 'mental_health_support':       return 'wellbeing_mental_health';
+    case 'health_wellness_program':     return 'welfare';
+    case 'professional_training':       return 'hr_learning';
+    case 'mentoring_program':           return 'hr_learning';
+    case 'knowledge_transfer':          return 'hr_learning';
+    case 'volunteering':                return 'esg_volunteering';
+    case 'economic_relief':             return 'fringe_benefit';
+    case 'compliance_baseline':         return 'compliance_hse';
+    // B18 extensions
+    case 'work_life_balance_policy':
+    case 'flexible_work_policy':        return 'organizational_flexibility';
+    case 'health_insurance_support':
+    case 'pension_future_support':      return 'protection_future_security';
+    case 'fitness_wellbeing_program':
+    case 'light_wellbeing_event':       return 'wellbeing_light';
+    case 'caregiver_support':
+    case 'childcare_support':           return 'welfare_care';
+    case 'inclusion_program':           return 'inclusion_equity';
+    default:                            return 'unknown';
   }
 }
 
@@ -325,8 +402,10 @@ export function interpretUploadedRecord(
 
   // B11.3: evidence level and source tier — record-level data takes priority.
   // Batch context is used only as fallback when record has no source (L0).
-  let { level: evidenceLevel, sourceTier, code: evidRC } = detectEvidence(p);
-  reasonCodes.push(evidRC);
+  const detectedEvidence = detectEvidence(p);
+  let evidenceLevel = detectedEvidence.level;
+  let sourceTier    = detectedEvidence.sourceTier;
+  reasonCodes.push(detectedEvidence.code);
 
   if (batchContext) {
     if (evidenceLevel === 'L0' && batchContext.defaultEvidenceLevel !== 'L0') {
@@ -368,10 +447,34 @@ export function interpretUploadedRecord(
     strongKw = true; pillarClear = true;
     reasonCodes.push('keyword:mental_health_support', 'pillar_rule:mental_health_to_LIFE');
 
+  // B18: protection/insurance before generic health_wellness to avoid false matches
+  } else if (hasAny(combined, KW_PROTECTION_INSURANCE)) {
+    // Distinguish health insurance vs pension/previdenza
+    const isPrevidenza = hasAny(combined, [
+      'previdenza', 'pensione', 'fondo pensione', 'piano pensionistico', 'previdenza complementare',
+    ]);
+    eventType = isPrevidenza ? 'pension_future_support' : 'health_insurance_support';
+    pillar    = isPrevidenza ? 'LEGACY' : 'LIFE';
+    eligibility = 'eligible';
+    strongKw = true; pillarClear = true;
+    reasonCodes.push('keyword:protection_insurance', `taxonomy:protection_future_security`);
+
   } else if (hasAny(combined, KW_HEALTH_WELLNESS)) {
     eventType = 'health_wellness_program'; pillar = 'LIFE'; eligibility = 'eligible';
     strongKw = true; pillarClear = true;
     reasonCodes.push('keyword:health_wellness', 'pillar_rule:wellness_to_LIFE');
+
+  // B18: organizational flexibility — structural policies (non-monetary, need usage evidence)
+  } else if (hasAny(combined, KW_ORG_FLEXIBILITY)) {
+    eventType = 'work_life_balance_policy'; pillar = 'LIFE'; eligibility = 'eligible';
+    strongKw = true; pillarClear = true;
+    reasonCodes.push('keyword:org_flexibility', 'taxonomy:organizational_flexibility');
+
+  // B18: wellbeing light — gym, fitness (eligible but low auto-confidence without budget/participants)
+  } else if (hasAny(combined, KW_WELLBEING_LIGHT)) {
+    eventType = 'fitness_wellbeing_program'; pillar = 'LIFE'; eligibility = 'eligible';
+    strongKw = true; pillarClear = true;
+    reasonCodes.push('keyword:wellbeing_light', 'taxonomy:wellbeing_light');
 
   } else if (hasAny(combined, KW_LEGACY)) {
     eventType = 'knowledge_transfer'; pillar = 'LEGACY'; eligibility = 'eligible';
@@ -382,6 +485,23 @@ export function interpretUploadedRecord(
     eventType = 'volunteering'; pillar = 'IMPACT'; eligibility = 'eligible';
     strongKw = true; pillarClear = true;
     reasonCodes.push('keyword:volunteering', 'pillar_rule:volunteering_to_IMPACT');
+
+  // B18: caregiver / childcare — welfare care (deep activation with provider evidence)
+  } else if (hasAny(combined, KW_CAREGIVER_CHILDCARE)) {
+    const isChildcare = hasAny(combined, ['nido', 'asilo', 'childcare', 'baby', 'babysitting']);
+    eventType = isChildcare ? 'childcare_support' : 'caregiver_support';
+    pillar = 'LIFE'; eligibility = 'eligible';
+    strongKw = true; pillarClear = true;
+    reasonCodes.push('keyword:caregiver_childcare', 'taxonomy:welfare_care');
+
+  // B18: D&I / inclusion — eligible, lower confidence if generic single event
+  } else if (hasAny(combined, KW_INCLUSION_DEI)) {
+    eventType = 'inclusion_program'; pillar = 'CONNECTION'; eligibility = 'eligible';
+    strongKw = true; pillarClear = true;
+    // Generic one-off workshop → flag as ambiguous to reduce confidence
+    const isGenericWorkshop = hasAny(combined, ['workshop']) && !hasAny(combined, ['programma', 'percorso', 'piano', 'strutturato', 'annuale']);
+    if (isGenericWorkshop) { ambiguous = true; reasonCodes.push('taxonomy:inclusion_equity:generic_event'); }
+    else reasonCodes.push('taxonomy:inclusion_equity');
 
   } else if (hasAny(combined, KW_MENTORING)) {
     eventType = 'mentoring_program'; pillar = 'CONNECTION'; eligibility = 'eligible';
@@ -452,6 +572,11 @@ export function interpretUploadedRecord(
   if (budgetClass !== 'unknown') {
     reasonCodes.push(`budget_class:${budgetClass}`);
   }
+  // ── B18: derive reporting alignment — no compliance claim ─────────────────
+  const reportingAlignment = deriveReportingAlignment(eventType, eligibility);
+  if (reportingAlignment) {
+    reasonCodes.push(`reporting_alignment:${reportingAlignment.areas.map(a => a.code).join(',')}`);
+  }
   // ────────────────────────────────────────────────────────────────────────
 
   return {
@@ -472,6 +597,8 @@ export function interpretUploadedRecord(
     needsEnrichment,
     financialConfidence,
     enrichmentMissingFields: missingFields,
+    // ── B18: reporting alignment ─────────────────────────────────────────────
+    reportingAlignment,
     // ────────────────────────────────────────────────────────────────────────
     reasonCodes:            [...new Set(reasonCodes)],
     warnings,

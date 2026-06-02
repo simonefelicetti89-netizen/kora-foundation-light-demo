@@ -85,7 +85,7 @@ const PILLAR_ORDER = ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'] as const;
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, pillarDistribution, bti, enrichment } = data;
+  const { meta, koraIndex, pillarDistribution, bti, enrichment, reportingAlignment } = data;
 
   const sf       = koraIndex.safeguardStatus;
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
@@ -511,6 +511,42 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .mp-prov-item{ }
     .mp-prov-lbl{ font-size:6.5pt; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:#9899b3; margin-bottom:2pt; }
     .mp-prov-val{ font-size:8.5pt; font-weight:500; color:#3d3a6a; font-family:'Courier New',monospace; }
+
+    /* ── REPORTING ALIGNMENT (B18) ─────────────────────────────────────────── */
+    .ra-section{ margin-bottom:16pt; }
+    .ra-header{
+      font-size:7pt; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+      color:#9899b3; margin-bottom:10pt;
+    }
+    .ra-noclaim{
+      padding:10pt 14pt; background:#fffbeb; border:1px solid #fde68a;
+      border-radius:4pt; font-size:8.5pt; color:#92400e; line-height:1.52; margin-bottom:12pt;
+      break-inside:avoid;
+    }
+    .ra-area-row{
+      display:flex; align-items:flex-start; gap:10pt;
+      padding:8pt 12pt; border:1px solid #eaebf4; border-radius:4pt;
+      background:#fafafa; margin-bottom:6pt; break-inside:avoid;
+    }
+    .ra-area-badge{
+      font-size:6pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      padding:2pt 5pt; border-radius:2pt; flex-shrink:0; margin-top:1pt;
+    }
+    .ra-area-strong{ background:#dcfce7; color:#166534; }
+    .ra-area-medium{ background:#fef9c3; color:#854d0e; }
+    .ra-area-weak  { background:#fee2e2; color:#991b1b; }
+    .ra-area-body{ flex:1; }
+    .ra-area-label{ font-size:8.5pt; font-weight:700; color:#06032B; margin-bottom:2pt; }
+    .ra-area-meta{ font-size:7.5pt; color:#7778a0; margin-bottom:3pt; }
+    .ra-area-evidence{ font-size:7pt; color:#9899b3; }
+    .ra-stub{
+      padding:12pt; text-align:center; color:#9899b3; font-size:9pt;
+      border:1px dashed #eaebf4; border-radius:4pt; margin-bottom:8pt;
+    }
+    .ra-caveat{
+      padding:8pt 12pt; background:#f8f8fc; border:1px solid #eaebf4;
+      border-radius:4pt; font-size:7pt; color:#9899b3; line-height:1.5;
+    }
   `;
 
   // Page header helper (repeated on every content page)
@@ -1132,6 +1168,54 @@ export function buildDecisionPackHtml(data: PdfData): string {
       KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
       Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
     </div>
+
+    <!-- B18 — Reporting Alignment / ESRS Readiness ─────────────────────── -->
+    <div class="ra-section">
+      <div class="ra-header">Reporting Alignment / ESRS Readiness</div>
+
+      <div class="ra-noclaim">
+        <strong>KORA does not certify CSRD/ESRS compliance.</strong>
+        This section maps approved initiatives to possible reporting support areas and evidence gaps.
+        Use as input for board, HR, ESG and sustainability reporting discussions — not as assurance or certification.
+      </div>
+
+      ${reportingAlignment && reportingAlignment.areas.length > 0 ? `
+      <p style="font-size:8.5pt;color:#555670;margin-bottom:10pt;">
+        <strong>${reportingAlignment.totalMappedInitiatives}</strong> approved initiative${reportingAlignment.totalMappedInitiatives !== 1 ? 's' : ''} mapped
+        to ${reportingAlignment.areas.length} reporting area${reportingAlignment.areas.length !== 1 ? 's' : ''}.
+      </p>
+
+      ${reportingAlignment.areas.slice(0, 6).map(a => {
+        const maxStrength =
+          a.strong > 0 ? 'strong' :
+          a.medium > 0 ? 'medium' : 'weak';
+        const badgeClass =
+          maxStrength === 'strong' ? 'ra-area-strong' :
+          maxStrength === 'medium' ? 'ra-area-medium' : 'ra-area-weak';
+        const strengthLabel =
+          maxStrength === 'strong' ? 'Strong' :
+          maxStrength === 'medium' ? 'Medium' : 'Weak';
+        return `
+      <div class="ra-area-row">
+        <span class="ra-area-badge ${badgeClass}">${esc(strengthLabel)}</span>
+        <div class="ra-area-body">
+          <div class="ra-area-label">${esc(a.label)}</div>
+          <div class="ra-area-meta">${a.count} initiative${a.count !== 1 ? 's' : ''} · ${a.strong > 0 ? `${a.strong} strong` : ''}${a.medium > 0 ? `${a.strong > 0 ? ' · ' : ''}${a.medium} medium` : ''}${a.weak > 0 ? `${(a.strong + a.medium) > 0 ? ' · ' : ''}${a.weak} weak` : ''} evidence</div>
+          <div class="ra-area-evidence" style="font-size:6.5pt;color:#b0b1cc;">${esc(a.code)}</div>
+        </div>
+      </div>`;
+      }).join('')}
+
+      <div class="ra-caveat">${esc(reportingAlignment.caveat)}</div>
+      ` : `
+      <div class="ra-stub">
+        Reporting alignment data not available for this period.
+        Initiatives processed with B18 interpreter will populate this section.
+      </div>
+      <div class="ra-caveat">${esc('KORA does not certify CSRD/ESRS compliance. This section maps initiatives to possible reporting support areas only.')}</div>
+      `}
+    </div>
+    <!-- ─────────────────────────────────────────────────────────────────── -->
 
     <div class="mp-prov">
       <div class="mp-prov-item">

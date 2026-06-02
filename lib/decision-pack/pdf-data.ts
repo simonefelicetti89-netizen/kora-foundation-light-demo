@@ -67,6 +67,20 @@ export interface PdfData {
     manualEnrichmentCount: number;
     remainingWarnings: string[];
   } | null;
+  // B18 — reporting alignment summary from approved UEF records (no compliance claim).
+  // Aggregated server-side — no individual records, no PII.
+  reportingAlignment: {
+    totalMappedInitiatives: number;
+    areas: Array<{
+      code:   string;
+      label:  string;
+      count:  number;
+      strong: number;
+      medium: number;
+      weak:   number;
+    }>;
+    caveat: string;
+  } | null;
   auditSummary: Array<{
     action: string;
     resourceType: string | null;
@@ -272,6 +286,58 @@ export async function fetchPdfData(
     }
   }
 
+  // ── B18: Reporting alignment summary — aggregated from approved UEF records ──
+  // Reads payload.reporting_alignment from each approved record, builds area summary.
+  // No individual records, no PII, no raw UEF content surfaces here.
+  let reportingAlignment: PdfData['reportingAlignment'] = null;
+  {
+    const { data: raRows, error: raErr } = await db
+      .schema('analytics')
+      .from('uef_record')
+      .select('payload, approved_for_scoring')
+      .eq('tenant_id', (tenant as { id: string }).id)
+      .eq('reporting_period', reportingPeriod)
+      .eq('approved_for_scoring', true);
+
+    if (raErr) {
+      console.error('[fetchPdfData] reporting_alignment fetch failed:', raErr.message);
+    } else if (raRows && raRows.length > 0) {
+      type AreaSummary = { code: string; label: string; count: number; strong: number; medium: number; weak: number };
+      const areaMap = new Map<string, AreaSummary>();
+      let mappedCount = 0;
+
+      for (const row of raRows as Array<{ payload: unknown }>) {
+        const pl = (row.payload ?? {}) as Record<string, unknown>;
+        const ra = pl['reporting_alignment'] as {
+          areas?: Array<{ code: string; label: string; strength?: string }>;
+        } | null | undefined;
+        if (!ra || !Array.isArray(ra.areas) || ra.areas.length === 0) continue;
+
+        mappedCount++;
+        for (const area of ra.areas) {
+          if (!area.code) continue;
+          const existing: AreaSummary = areaMap.get(area.code) ?? {
+            code: area.code, label: area.label ?? area.code,
+            count: 0, strong: 0, medium: 0, weak: 0,
+          };
+          existing.count++;
+          if      (area.strength === 'strong') existing.strong++;
+          else if (area.strength === 'medium') existing.medium++;
+          else                                 existing.weak++;
+          areaMap.set(area.code, existing);
+        }
+      }
+
+      if (areaMap.size > 0) {
+        reportingAlignment = {
+          totalMappedInitiatives: mappedCount,
+          areas: Array.from(areaMap.values()).sort((a, b) => b.count - a.count),
+          caveat: 'KORA does not certify CSRD/ESRS compliance. This section maps initiatives to possible reporting support areas only.',
+        };
+      }
+    }
+  }
+
   // Normalize confidence: DB may store 0–1 or 0–100 depending on pipeline version.
   const rawConf = confRow?.confidence_score ?? 0;
   const confidence01 = rawConf > 1 ? rawConf / 100 : rawConf;
@@ -292,6 +358,7 @@ export async function fetchPdfData(
     pillarDistribution,
     bti,
     enrichment,
+    reportingAlignment,
     koraIndex: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       value: (ki as any).kora_index_value ?? 0,
