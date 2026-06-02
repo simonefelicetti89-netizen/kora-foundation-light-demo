@@ -6,6 +6,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { EvidenceAttachmentPanel } from './EvidenceAttachmentPanel';
+import { EvidenceRecordDrawer } from './EvidenceRecordDrawer';
 import { useSearchParams } from 'next/navigation';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -64,6 +65,9 @@ interface ContributionSummary {
 
 interface Initiative {
   id: string;
+  // B35: full IDs for Evidence Record Viewer (system UUIDs, not PII)
+  recordIdFull?: string;
+  batchIdFull?: string;
   safeName: string;
   pillar: string | null;
   eligibility: string;
@@ -192,6 +196,8 @@ export function CompanyEvidenceArchivePanel() {
   const [search, setSearch] = useState('');
   const [selectedBatchIdFull, setSelectedBatchIdFull] = useState<string | null>(null);
   const [showAttachPanel, setShowAttachPanel] = useState(false);
+  // B35: Evidence Record Drawer
+  const [drawerRecord, setDrawerRecord] = useState<{ recordIdFull: string; batchIdFull: string } | null>(null);
   // B34: open link status per attachmentId
   const [openLinkLoading, setOpenLinkLoading] = useState<string | null>(null); // attachmentId being opened
   const [openLinkErrors, setOpenLinkErrors]   = useState<Record<string, string>>({});
@@ -263,6 +269,7 @@ export function CompanyEvidenceArchivePanel() {
   }
 
   return (
+    <>
     <div className="max-w-5xl mx-auto py-6 px-4 space-y-5">
 
       {/* ── Header ── */}
@@ -499,7 +506,7 @@ export function CompanyEvidenceArchivePanel() {
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-slate-200">
-                  {['Iniziativa', 'Pillar', 'Eligibility', 'Budget Class', 'Evidenza', 'Readiness', 'Contributo'].map(h => (
+                  {['Iniziativa', 'Pillar', 'Eligibility', 'Budget Class', 'Evidenza', 'Readiness', 'Contributo', ''].map(h => (
                     <th key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -552,11 +559,22 @@ export function CompanyEvidenceArchivePanel() {
                           {ini.contributionRoleLabel}
                         </span>
                       </td>
+                      {/* B35: View evidence button */}
+                      <td className="py-2 px-2">
+                        {ini.recordIdFull && ini.batchIdFull ? (
+                          <button
+                            onClick={() => setDrawerRecord({ recordIdFull: ini.recordIdFull!, batchIdFull: ini.batchIdFull! })}
+                            className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[9px] font-semibold text-[#6156F5] hover:bg-[#ede9ff] transition-colors whitespace-nowrap"
+                          >
+                            View →
+                          </button>
+                        ) : <span className="text-[9px] text-slate-300">—</span>}
+                      </td>
                     </tr>
                   );
                 })}
                 {filteredInitiatives.length === 0 && (
-                  <tr><td colSpan={7} className="py-8 text-center text-xs text-slate-400">Nessuna iniziativa trovata per questo filtro.</td></tr>
+                  <tr><td colSpan={8} className="py-8 text-center text-xs text-slate-400">Nessuna iniziativa trovata per questo filtro.</td></tr>
                 )}
               </tbody>
             </table>
@@ -604,5 +622,16 @@ export function CompanyEvidenceArchivePanel() {
       )}
 
     </div>
+
+    {/* B35: Evidence Record Drawer — full-screen overlay */}
+    {drawerRecord && (
+      <EvidenceRecordDrawer
+        tenantCode={TENANT}
+        recordIdFull={drawerRecord.recordIdFull}
+        batchIdFull={drawerRecord.batchIdFull}
+        onClose={() => setDrawerRecord(null)}
+      />
+    )}
+    </>
   );
 }

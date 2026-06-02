@@ -1,5 +1,5 @@
 // app/api/admin/evidence-attachments/signed-url/route.ts
-// B34: Generate a short-lived signed URL for a stored private attachment.
+// B34/B35: Generate a short-lived signed URL for a stored private attachment.
 // KORA_ADMIN only. POST only (no GET — prevents caching).
 //
 // Security:
@@ -7,7 +7,8 @@
 //   - Expiry: max 300 seconds (5 minutes).
 //   - Validates tenant/batch scope before generating URL.
 //   - Only for attachments with storageStatus = stored_private.
-//   - KORA_ADMIN only in B34 (company self-service: not implemented).
+//   - B35: lifecycle guard — archived/removed/storage_removed → 422, no URL.
+//   - KORA_ADMIN only (company self-service: not implemented).
 
 export const runtime = 'nodejs';
 
@@ -15,6 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { createEvidenceAttachmentSignedUrl } from '@/lib/data-intake/evidence-attachment-storage';
+import { canGenerateSignedUrl } from '@/lib/data-intake/attachment-lifecycle';
 
 export async function POST(request: NextRequest) {
   const authResult = await requireKoraAdmin(request);
@@ -64,13 +66,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Attachment not found: ${attachmentId}` }, { status: 404 });
   }
 
-  // ── 4. Require stored_private status ──────────────────────────────────────
-  if (att['storageStatus'] !== 'stored_private') {
+  // ── 4. B35: lifecycle + storageStatus guard ───────────────────────────────
+  const eligibility = canGenerateSignedUrl(att);
+  if (!eligibility.allowed) {
     return NextResponse.json({
-      ok:    false,
-      error: 'Attachment is not stored in private storage. Only metadata was registered.',
-      storageStatus: att['storageStatus'] ?? 'metadata_only',
-      note:  'Use the register endpoint with a supported file type to enable binary storage.',
+      ok:        false,
+      error:     eligibility.errorMessage,
+      errorCode: eligibility.errorCode,
+      storageStatus:   att['storageStatus']   ?? 'metadata_only',
+      lifecycleStatus: att['lifecycleStatus'] ?? null,
     }, { status: 422 });
   }
 

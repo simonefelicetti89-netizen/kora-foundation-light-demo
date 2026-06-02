@@ -22,6 +22,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { deriveContributionRole, CONTRIBUTION_ROLE_LABELS } from '@/lib/live/contribution-lineage';
 import type { ContributionRole } from '@/lib/live/contribution-lineage';
+import { resolveLifecycleStatus, LIFECYCLE_LABELS, LIFECYCLE_CAN_OPEN } from '@/lib/data-intake/attachment-lifecycle';
 
 // ── PII-safe name extraction ───────────────────────────────────────────────────
 // Extracts a display name from action_family/event_nature (safe category-level fields).
@@ -201,20 +202,31 @@ export async function GET(request: NextRequest) {
       hasAttachments:    Boolean(ps['_b31']),
       attachmentSummary: ps['_b31_summary'] as Record<string, unknown> | null ?? null,
       attachmentCount:   Array.isArray(ps['_b31_attachments']) ? (ps['_b31_attachments'] as unknown[]).length : 0,
-      // B34: individual attachment metadata (safe fields only — no storagePath, no signed URL)
+      // B34/B35: individual attachment metadata — safe fields only, lifecycle included
       attachments: Array.isArray(ps['_b31_attachments'])
-        ? (ps['_b31_attachments'] as Record<string, unknown>[]).map(a => ({
-            attachmentId:            a['attachmentId'],
-            fileNameSafe:            a['fileNameSafe'],
-            fileType:                a['fileType'],
-            fileSizeBytes:           a['fileSizeBytes'],
-            attachmentType:          a['attachmentType'],
-            parserStatus:            a['parserStatus'],
-            evidenceLevelSuggestion: a['evidenceLevelSuggestion'],
-            storageStatus:           a['storageStatus'] ?? 'metadata_only',
-            createdAt:               a['createdAt'],
-            // NEVER expose: storagePath, storageBucket, signedUrl, raw content
-          }))
+        ? (ps['_b31_attachments'] as Record<string, unknown>[]).map(a => {
+            const lifecycle = resolveLifecycleStatus(a);
+            const canOpen   = LIFECYCLE_CAN_OPEN[lifecycle] && a['storageStatus'] === 'stored_private';
+            return {
+              attachmentId:            a['attachmentId'],
+              fileNameSafe:            a['fileNameSafe'],
+              fileType:                a['fileType'],
+              fileSizeBytes:           a['fileSizeBytes'],
+              attachmentType:          a['attachmentType'],
+              parserStatus:            a['parserStatus'],
+              evidenceLevelSuggestion: a['evidenceLevelSuggestion'],
+              storageStatus:           a['storageStatus'] ?? 'metadata_only',
+              // B35: lifecycle
+              lifecycleStatus:  lifecycle,
+              lifecycleLabel:   LIFECYCLE_LABELS[lifecycle],
+              canOpenSecurely:  canOpen,
+              archivedAt:       a['archivedAt']       ?? null,
+              removedAt:        a['removedAt']        ?? null,
+              storageRemovedAt: a['storageRemovedAt'] ?? null,
+              createdAt:        a['createdAt'],
+              // NEVER expose: storagePath, storageBucket, signedUrl, raw content
+            };
+          })
         : [],
     };
   });
@@ -327,6 +339,9 @@ export async function GET(request: NextRequest) {
 
     initiatives.push({
       id:               (rec.id as string).slice(0, 8) + '…',
+      // B35: full safe record ID for Evidence Record Viewer (system UUID, not PII)
+      recordIdFull:     rec.id as string,
+      batchIdFull:      rec.batch_id as string,
       safeName,
       pillar:           (rec.primary_pillar as string | null) ?? null,
       eligibility:      rec.eligibility_status as string,
