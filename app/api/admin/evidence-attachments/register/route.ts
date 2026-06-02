@@ -1,12 +1,15 @@
 // app/api/admin/evidence-attachments/register/route.ts
-// B31: Evidence Attachment Register — metadata-only. KORA_ADMIN only.
+// B31/B34: Evidence Attachment Register. KORA_ADMIN only.
 //
-// Registers safe attachment metadata into source_batch.payload_sample.
-// NO file binary storage. NO raw content. NO public URL.
+// B31: registers safe metadata into source_batch.payload_sample._b31_attachments[].
+// B34: uploads binary to private Supabase Storage bucket; updates metadata with
+//      storagePath, storageBucket, storageStatus.
+//
+// NO public URL. NO raw content in DB. NO signed URL stored.
 // File is re-parsed server-side (never trusts preview).
-//
-// Storage: source_batch.payload_sample._b31_attachments[] (JSONB PATCH).
-// No schema migration required.
+// Binary stored only for allowed types that pass PII check.
+// DOCX / unsupported / PII-rejected: metadata-only, no binary.
+// If storage bucket not configured → returns storage_not_configured error (Conditional Pass).
 
 export const runtime = 'nodejs';
 
@@ -17,6 +20,9 @@ import {
   parseAttachmentMetadata, buildAttachmentSummary,
   type EvidenceAttachmentType, type EvidenceAttachmentScope,
 } from '@/lib/data-intake/evidence-attachment';
+import {
+  storeEvidenceAttachment, isBinaryStorable,
+} from '@/lib/data-intake/evidence-attachment-storage';
 
 const VALID_ATTACHMENT_TYPES = new Set<EvidenceAttachmentType>([
   'invoice', 'provider_export', 'lms_report', 'policy_document', 'contract',
@@ -84,6 +90,49 @@ export async function POST(request: NextRequest) {
     .eq('id', batchId).eq('tenant_id', tenantId).maybeSingle();
   if (!batchRow) return NextResponse.json({ error: `Batch not found: ${batchId}` }, { status: 404 });
 
+  // B34: attempt binary storage for allowed file types that passed PII check
+  let storageResult: { storageBucket: string; storagePath: string; storageStatus: 'stored_private' | 'metadata_only' } = {
+    storageBucket: '',
+    storagePath:   '',
+    storageStatus: 'metadata_only',
+  };
+
+  const shouldStore = isBinaryStorable({ fileType: metadata.fileType, parserStatus: metadata.parserStatus });
+  if (shouldStore) {
+    try {
+      // Re-read the file buffer for storage (parseAttachmentMetadata has already consumed it)
+      const fileBuffer = Buffer.from(await fileEntry.arrayBuffer());
+      const stored = await storeEvidenceAttachment({
+        tenantId:     tenantId,
+        batchId:      batchId,
+        attachmentId: metadata.attachmentId,
+        fileNameSafe: metadata.fileNameSafe,
+        fileBuffer,
+        fileType:     metadata.fileType,
+      });
+      storageResult = {
+        storageBucket: stored.storageBucket,
+        storagePath:   stored.storagePath,
+        storageStatus: 'stored_private',
+      };
+    } catch (storageErr) {
+      const msg = storageErr instanceof Error ? storageErr.message : String(storageErr);
+      if (msg.startsWith('storage_not_configured')) {
+        return NextResponse.json({
+          ok:    false,
+          error: 'storage_not_configured',
+          hint:  msg,
+          note:  'Preview metadata still works. Create the Supabase storage bucket to enable binary storage.',
+        }, { status: 503 });
+      }
+      // Other storage errors — fail the register with a clear message
+      return NextResponse.json({
+        ok:    false,
+        error: `Attachment storage failed: ${msg}`,
+      }, { status: 500 });
+    }
+  }
+
   // Append metadata to payload_sample._b31_attachments
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const existingPayload = ((batchRow as any).payload_sample ?? {}) as Record<string, unknown>;
@@ -91,7 +140,8 @@ export async function POST(request: NextRequest) {
     ? (existingPayload['_b31_attachments'] as unknown[])
     : [];
 
-  // Strip any inadvertent raw content before storage
+  // Strip any inadvertent raw content before storage.
+  // B34: includes storageStatus/storagePath/storageBucket — no signed URL.
   const safeMetadata = {
     attachmentId:           metadata.attachmentId,
     fileNameSafe:           metadata.fileNameSafe,
@@ -106,7 +156,13 @@ export async function POST(request: NextRequest) {
     parserStatus:           metadata.parserStatus,
     extractedMetadata:      metadata.extractedMetadata,   // no raw values in extractedMetadata
     createdAt:              metadata.createdAt,
-    // NEVER store: raw content, full text, binary data, PII values
+    // B34: storage metadata — NO signed URL stored here
+    storageStatus:   storageResult.storageStatus,
+    ...(storageResult.storageStatus === 'stored_private' ? {
+      storageBucket: storageResult.storageBucket,
+      storagePath:   storageResult.storagePath,
+    } : {}),
+    // NEVER store: raw content, full text, binary data, PII values, signed URLs
   };
 
   const updatedAttachments = [...existingAttachments, safeMetadata];
@@ -127,33 +183,42 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Failed to register attachment: ${updateErr.message}` }, { status: 500 });
   }
 
-  // Audit event
+  // Audit event — B34: includes storageStatus, NO signed URL, NO storagePath
   await db.schema('audit').from('audit_log').insert({
     tenant_id:     tenantId,
     actor_role:    'KORA_ADMIN',
     actor_id:      authResult.id,
-    action:        'evidence_attachment_registered',
+    action:        storageResult.storageStatus === 'stored_private'
+      ? 'evidence_attachment_stored_private'
+      : 'evidence_attachment_registered',
     resource_type: 'analytics.source_batch',
     resource_id:   batchId,
     payload: {
       attachmentId:   safeMetadata.attachmentId,
       fileNameSafe:   safeMetadata.fileNameSafe,
       fileType:       safeMetadata.fileType,
+      fileSizeBytes:  safeMetadata.fileSizeBytes,
       attachmentType: safeMetadata.attachmentType,
       scope:          safeMetadata.scope,
       parserStatus:   safeMetadata.parserStatus,
-      // no raw values, no binary, no document content
+      storageStatus:  storageResult.storageStatus,
+      // no raw values, no binary, no document content, no signed URL, no storagePath
     },
     ip_address: null,
   });
 
+  const noteText = storageResult.storageStatus === 'stored_private'
+    ? 'Attachment stored in private storage. Evidence level requires UEF Review before affecting scoring. Use the signed-url endpoint to access the document.'
+    : 'Attachment metadata registered. File binary was not stored (unsupported type). Evidence level requires UEF Review before affecting scoring.';
+
   return NextResponse.json({
     ok: true,
-    attachmentId: safeMetadata.attachmentId,
-    fileNameSafe: safeMetadata.fileNameSafe,
-    attachmentType: safeMetadata.attachmentType,
-    parserStatus: safeMetadata.parserStatus,
+    attachmentId:            safeMetadata.attachmentId,
+    fileNameSafe:            safeMetadata.fileNameSafe,
+    attachmentType:          safeMetadata.attachmentType,
+    parserStatus:            safeMetadata.parserStatus,
     evidenceLevelSuggestion: safeMetadata.evidenceLevelSuggestion,
-    note: 'Attachment metadata registered. No file binary was stored. Evidence level requires UEF Review before affecting scoring.',
+    storageStatus:           storageResult.storageStatus,
+    note:                    noteText,
   });
 }

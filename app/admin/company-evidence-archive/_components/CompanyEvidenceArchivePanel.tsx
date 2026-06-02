@@ -10,6 +10,19 @@ import { useSearchParams } from 'next/navigation';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+// B34: individual attachment metadata (safe fields — no storagePath, no signed URL)
+interface AttachmentItem {
+  attachmentId: string;
+  fileNameSafe: string;
+  fileType: string;
+  fileSizeBytes: number;
+  attachmentType: string;
+  parserStatus: string;
+  evidenceLevelSuggestion: string | null;
+  storageStatus: 'stored_private' | 'metadata_only';
+  createdAt: string;
+}
+
 interface BatchSummary {
   batchId: string;
   batchIdFull?: string;
@@ -32,6 +45,8 @@ interface BatchSummary {
   hasAttachments?: boolean;
   attachmentSummary?: Record<string, unknown> | null;
   attachmentCount?: number;
+  // B34: individual attachment metadata
+  attachments?: AttachmentItem[];
 }
 
 interface ContributionSummary {
@@ -177,6 +192,9 @@ export function CompanyEvidenceArchivePanel() {
   const [search, setSearch] = useState('');
   const [selectedBatchIdFull, setSelectedBatchIdFull] = useState<string | null>(null);
   const [showAttachPanel, setShowAttachPanel] = useState(false);
+  // B34: open link status per attachmentId
+  const [openLinkLoading, setOpenLinkLoading] = useState<string | null>(null); // attachmentId being opened
+  const [openLinkErrors, setOpenLinkErrors]   = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch('/api/admin/tenants', { credentials: 'include' })
@@ -219,6 +237,30 @@ export function CompanyEvidenceArchivePanel() {
     }
     return list;
   }, [data, filter, search]);
+
+  // B34: open stored attachment via signed URL — never stored in state
+  async function handleOpenSecureLink(batchIdFull: string, attachmentId: string) {
+    setOpenLinkLoading(attachmentId);
+    setOpenLinkErrors(prev => { const n = { ...prev }; delete n[attachmentId]; return n; });
+    try {
+      const res = await fetch('/api/admin/evidence-attachments/signed-url', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantCode: TENANT, batchId: batchIdFull, attachmentId }),
+      });
+      const d = await res.json() as { ok: boolean; signedUrl?: string; error?: string };
+      if (!res.ok || !d.ok || !d.signedUrl) {
+        setOpenLinkErrors(prev => ({ ...prev, [attachmentId]: d.error ?? `HTTP ${res.status}` }));
+      } else {
+        // Open immediately — do not store signed URL in state
+        window.open(d.signedUrl, '_blank', 'noopener,noreferrer');
+      }
+    } catch (e) {
+      setOpenLinkErrors(prev => ({ ...prev, [attachmentId]: e instanceof Error ? e.message : String(e) }));
+    } finally {
+      setOpenLinkLoading(null);
+    }
+  }
 
   return (
     <div className="max-w-5xl mx-auto py-6 px-4 space-y-5">
@@ -328,6 +370,7 @@ export function CompanyEvidenceArchivePanel() {
                         onClick={() => { setSelectedBatchIdFull(b.batchIdFull ?? b.batchId.replace('…', '')); setShowAttachPanel(v => !v); }}>
                         📎 {b.attachmentCount ?? 0} attachment{(b.attachmentCount ?? 0) !== 1 ? 's' : ''}
                         {b.attachmentSummary?.['suggestedL3Count'] ? ` · L3×${b.attachmentSummary['suggestedL3Count']}` : ''}
+                        {(b.attachments ?? []).some(a => a.storageStatus === 'stored_private') ? ' · 🔒 private' : ''}
                       </span>
                     )}
                     {b.provenanceEnabled && (
@@ -339,6 +382,39 @@ export function CompanyEvidenceArchivePanel() {
                   </div>
                   {b.sourceName && (
                     <p className="text-[9px] text-slate-400 mt-1 font-mono truncate">{b.sourceName}</p>
+                  )}
+                  {/* B34: individual attachment list with open buttons */}
+                  {b.attachments && b.attachments.length > 0 && (
+                    <div className="mt-2 pt-2 border-t border-slate-100 space-y-1.5">
+                      {b.attachments.map(att => (
+                        <div key={att.attachmentId} className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[9px] font-mono text-slate-500 truncate max-w-[160px]">{att.fileNameSafe}</span>
+                          <span className="rounded border border-slate-100 bg-white px-1.5 py-0.5 text-[9px] text-slate-400 uppercase">{att.fileType}</span>
+                          {att.evidenceLevelSuggestion && (
+                            <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#6156F5]">{att.evidenceLevelSuggestion}</span>
+                          )}
+                          {att.storageStatus === 'stored_private' ? (
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => b.batchIdFull && handleOpenSecureLink(b.batchIdFull, att.attachmentId)}
+                                disabled={openLinkLoading === att.attachmentId}
+                                className="rounded border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[9px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
+                              >
+                                {openLinkLoading === att.attachmentId ? '⏳' : '🔒 Apri'}
+                              </button>
+                              {openLinkErrors[att.attachmentId] && (
+                                <span className="text-[9px] text-red-600">⚠ {openLinkErrors[att.attachmentId]}</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-[9px] text-slate-400">metadata only</span>
+                          )}
+                        </div>
+                      ))}
+                      <p className="text-[9px] text-amber-600">
+                        🔒 Link temporanei (5 min) · Non condividere · Non influenzano scoring
+                      </p>
+                    </div>
                   )}
                 </div>
               ))}
@@ -353,7 +429,7 @@ export function CompanyEvidenceArchivePanel() {
               <div className="flex items-center gap-2.5">
                 <div className="w-0.5 h-4 bg-indigo-500 rounded-full" />
                 <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Evidence Attachments</p>
-                <span className="rounded border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[9px] font-semibold text-indigo-700">Metadata only · No raw content</span>
+                <span className="rounded border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[9px] font-semibold text-indigo-700">B34 · Private storage · No raw content</span>
               </div>
               <button onClick={() => setShowAttachPanel(false)} className="text-[10px] text-slate-400 hover:text-slate-600">✕ Chiudi</button>
             </div>

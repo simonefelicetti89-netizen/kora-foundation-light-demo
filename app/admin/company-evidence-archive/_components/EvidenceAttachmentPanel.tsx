@@ -44,6 +44,7 @@ interface RegisterResult {
   fileNameSafe?: string;
   parserStatus?: string;
   evidenceLevelSuggestion?: string | null;
+  storageStatus?: 'stored_private' | 'metadata_only';
   note?: string;
   error?: string;
 }
@@ -86,6 +87,8 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
   const [registerResult, setRegisterResult] = useState<RegisterResult | null>(null);
   const [registerStatus, setRegisterStatus] = useState<'idle'|'loading'|'done'|'error'>('idle');
   const [confirmed, setConfirmed]     = useState(false);
+  const [openLinkStatus, setOpenLinkStatus] = useState<'idle'|'loading'|'error'>('idle');
+  const [openLinkError, setOpenLinkError]   = useState<string | null>(null);
 
   async function handlePreview() {
     if (!file) return;
@@ -129,10 +132,35 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
     }
   }
 
+  // B34: open stored attachment via short-lived signed URL
+  async function handleOpenSecureLink(attId: string) {
+    if (!tenantCode || !batchId || !attId) return;
+    setOpenLinkStatus('loading'); setOpenLinkError(null);
+    try {
+      const res = await fetch('/api/admin/evidence-attachments/signed-url', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tenantCode, batchId, attachmentId: attId }),
+      });
+      const data = await res.json() as { ok: boolean; signedUrl?: string; error?: string; caveat?: string };
+      if (!res.ok || !data.ok || !data.signedUrl) {
+        setOpenLinkError(data.error ?? `HTTP ${res.status}`);
+        setOpenLinkStatus('error');
+        return;
+      }
+      // Open immediately — do not store signed URL in state
+      window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+      setOpenLinkStatus('idle');
+    } catch (e) {
+      setOpenLinkError(e instanceof Error ? e.message : String(e));
+      setOpenLinkStatus('error');
+    }
+  }
+
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-[#c7c4f8] bg-[#f5f4ff] px-4 py-3">
-        <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide mb-1">Evidence Attachment — Metadata Only</p>
+        <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide mb-1">Evidence Attachment — B34 Private Storage</p>
         <p className="text-[10px] text-[#3d3a6a] leading-relaxed">
           Allega documenti di evidenza (fatture, export provider, LMS, policy).
           Solo metadati vengono salvati — nessun contenuto raw, nessun URL pubblico, nessuna azione di scoring.
@@ -239,19 +267,49 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
 
       {/* Register result */}
       {registerStatus === 'done' && registerResult?.ok && (
-        <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-[10px] text-green-700 space-y-0.5">
-          <p className="font-semibold">✓ Attachment metadata registrato</p>
-          <p className="font-mono">{registerResult.fileNameSafe} · {registerResult.parserStatus}</p>
-          {registerResult.evidenceLevelSuggestion && <p>Livello suggerito: {registerResult.evidenceLevelSuggestion} (richiede UEF Review)</p>}
-          <p className="text-slate-500">{registerResult.note}</p>
+        <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-[10px] text-green-700 space-y-1.5">
+          <p className="font-semibold">✓ Attachment registrato</p>
+          <div className="flex flex-wrap gap-1.5">
+            <span className="font-mono">{registerResult.fileNameSafe}</span>
+            <span className="rounded border border-green-200 bg-white px-1.5 py-0.5 text-[9px] font-bold">
+              {registerResult.storageStatus === 'stored_private' ? '🔒 Stored private' : '📋 Metadata only'}
+            </span>
+            <span className="text-slate-500">{registerResult.parserStatus}</span>
+          </div>
+          {registerResult.evidenceLevelSuggestion && (
+            <p>Livello suggerito: {registerResult.evidenceLevelSuggestion} (richiede UEF Review)</p>
+          )}
+          {/* B34: open secure link if stored_private */}
+          {registerResult.storageStatus === 'stored_private' && registerResult.attachmentId && (
+            <div className="pt-1 border-t border-green-100">
+              <button
+                onClick={() => handleOpenSecureLink(registerResult.attachmentId!)}
+                disabled={openLinkStatus === 'loading'}
+                className="rounded border border-green-300 bg-white px-3 py-1 text-[10px] font-semibold text-green-800 hover:bg-green-50 disabled:opacity-50 transition-colors"
+              >
+                {openLinkStatus === 'loading' ? '⏳ Generazione link…' : '🔒 Apri documento sicuro'}
+              </button>
+              <p className="text-[9px] text-amber-700 mt-0.5">Link temporaneo (5 min). Non condividere.</p>
+              {openLinkStatus === 'error' && <p className="text-[9px] text-red-600">⚠ {openLinkError}</p>}
+            </div>
+          )}
+          <p className="text-slate-500 text-[9px]">{registerResult.note}</p>
         </div>
       )}
       {registerStatus === 'error' && registerResult && (
-        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">⚠ {registerResult.error}</div>
+        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">
+          <p>⚠ {registerResult.error}</p>
+          {String(registerResult.error ?? '').includes('storage_not_configured') && (
+            <p className="mt-1 text-[9px]">
+              Crea il bucket Supabase: Dashboard → Storage → New bucket → <code>kora-evidence-attachments</code> (private).
+              Il preview metadata continua a funzionare.
+            </p>
+          )}
+        </div>
       )}
 
       <p className="text-[10px] text-slate-400 border-t border-slate-100 pt-2">
-        Solo metadati vengono salvati. Nessun contenuto documento. Nessun URL pubblico. Nessuna azione di scoring automatica.
+        B34: i file supportati vengono salvati in storage privato. Nessun URL pubblico. Nessuna azione di scoring automatica.
       </p>
     </div>
   );
