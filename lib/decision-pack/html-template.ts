@@ -85,7 +85,7 @@ const PILLAR_ORDER = ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'] as const;
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, pillarDistribution, bti, enrichment, reportingAlignment } = data;
+  const { meta, koraIndex, pillarDistribution, bti, enrichment, reportingAlignment, reportingReadiness } = data;
 
   const sf       = koraIndex.safeguardStatus;
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
@@ -511,6 +511,40 @@ export function buildDecisionPackHtml(data: PdfData): string {
     .mp-prov-item{ }
     .mp-prov-lbl{ font-size:6.5pt; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:#9899b3; margin-bottom:2pt; }
     .mp-prov-val{ font-size:8.5pt; font-weight:500; color:#3d3a6a; font-family:'Courier New',monospace; }
+
+    /* ── REPORTING READINESS (B19) ─────────────────────────────────────────── */
+    .rd-counters{ display:flex; gap:8pt; margin-bottom:14pt; flex-wrap:wrap; }
+    .rd-counter{
+      flex:1; min-width:70pt; padding:10pt 12pt; border:1px solid #eaebf4;
+      border-radius:4pt; text-align:center; break-inside:avoid;
+    }
+    .rd-counter-val{ font-size:20pt; font-weight:700; letter-spacing:-.02em; line-height:1; }
+    .rd-counter-label{
+      font-size:6pt; font-weight:700; letter-spacing:.14em;
+      text-transform:uppercase; color:#9899b3; margin-top:4pt;
+    }
+    .rd-gap-list{ display:flex; flex-direction:column; gap:6pt; margin-bottom:10pt; }
+    .rd-gap-row{
+      padding:8pt 12pt; border:1px solid #eaebf4; border-radius:4pt;
+      background:#fafafa; break-inside:avoid;
+    }
+    .rd-gap-head{ display:flex; align-items:center; gap:8pt; margin-bottom:4pt; }
+    .rd-gap-label{ font-size:8pt; font-weight:700; color:#06032B; flex:1; }
+    .rd-gap-badge{
+      font-size:5.5pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+      padding:2pt 5pt; border-radius:2pt; flex-shrink:0;
+    }
+    .rd-badge-ready  { background:#dcfce7; color:#166534; }
+    .rd-badge-caveat { background:#fef9c3; color:#854d0e; }
+    .rd-badge-needs  { background:#fee2e2; color:#991b1b; }
+    .rd-badge-notready{ background:#f3f4f6; color:#6b7280; }
+    .rd-gap-owner{ font-size:6pt; color:#9899b3; letter-spacing:.06em; text-transform:uppercase; }
+    .rd-gap-missing{ font-size:7.5pt; color:#555670; margin-bottom:3pt; }
+    .rd-gap-actions{ font-size:7pt; color:#7778a0; }
+    .rd-b19-caveat{
+      padding:8pt 12pt; background:#f8f8fc; border:1px solid #eaebf4;
+      border-radius:4pt; font-size:7pt; color:#9899b3; line-height:1.5; margin-top:8pt;
+    }
 
     /* ── REPORTING ALIGNMENT (B18) ─────────────────────────────────────────── */
     .ra-section{ margin-bottom:16pt; }
@@ -1214,6 +1248,68 @@ export function buildDecisionPackHtml(data: PdfData): string {
       </div>
       <div class="ra-caveat">${esc('KORA does not certify CSRD/ESRS compliance. This section maps initiatives to possible reporting support areas only.')}</div>
       `}
+
+      ${reportingReadiness ? (() => {
+        const rdBadge = (r: string) =>
+          r === 'report_ready'      ? 'rd-badge-ready'   :
+          r === 'usable_with_caveat' ? 'rd-badge-caveat'  :
+          r === 'needs_evidence'     ? 'rd-badge-needs'   : 'rd-badge-notready';
+        const rdLabel = (r: string) =>
+          r === 'report_ready'      ? 'Report Ready'     :
+          r === 'usable_with_caveat' ? 'Usable + Caveat'  :
+          r === 'needs_evidence'     ? 'Needs Evidence'   : 'Not Ready';
+
+        return `
+      <div style="margin-top:14pt;">
+        <div class="ra-header">Evidence Gap Summary — Readiness per Reporting Area (B19)</div>
+
+        <div class="rd-counters">
+          <div class="rd-counter" style="border-color:#bbf7d0;background:#f0fdf4;">
+            <div class="rd-counter-val" style="color:#166534;">${reportingReadiness.reportReady}</div>
+            <div class="rd-counter-label">Report Ready</div>
+          </div>
+          <div class="rd-counter" style="border-color:#fde68a;background:#fffbeb;">
+            <div class="rd-counter-val" style="color:#854d0e;">${reportingReadiness.usableWithCaveat}</div>
+            <div class="rd-counter-label">Usable + Caveat</div>
+          </div>
+          <div class="rd-counter" style="border-color:#fca5a5;background:#fef2f2;">
+            <div class="rd-counter-val" style="color:#991b1b;">${reportingReadiness.needsEvidence}</div>
+            <div class="rd-counter-label">Needs Evidence</div>
+          </div>
+          <div class="rd-counter">
+            <div class="rd-counter-val" style="color:#6b7280;">${reportingReadiness.notReady}</div>
+            <div class="rd-counter-label">Not Ready</div>
+          </div>
+        </div>
+
+        ${reportingReadiness.topEvidenceGaps.length > 0 ? `
+        <div style="font-size:7pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9899b3;margin-bottom:8pt;">Top Evidence Gaps — Azioni prioritarie</div>
+        <div class="rd-gap-list">
+          ${reportingReadiness.topEvidenceGaps.map(g => `
+          <div class="rd-gap-row">
+            <div class="rd-gap-head">
+              <span class="rd-gap-label">${esc(g.areaLabel)}</span>
+              <span class="rd-gap-badge ${rdBadge(g.readiness)}">${esc(rdLabel(g.readiness))}</span>
+              <span class="rd-gap-owner">${esc(g.ownerHint)}</span>
+            </div>
+            ${g.missingEvidence.length > 0 ? `
+            <div class="rd-gap-missing">
+              <strong>Mancante:</strong> ${g.missingEvidence.map(m => esc(m)).join(' · ')}
+            </div>` : ''}
+            ${g.recommendedActions.length > 0 ? `
+            <div class="rd-gap-actions">
+              <strong>Azione:</strong> ${g.recommendedActions.slice(0,2).map(a => esc(a)).join(' · ')}
+            </div>` : ''}
+          </div>`).join('')}
+        </div>` : ''}
+
+        <div class="rd-b19-caveat">
+          <strong>Nota B19:</strong> ${esc(reportingReadiness.caveat)}
+          Report Ready ≠ CSRD compliant. Usable with Caveat = evidenza parziale, utile ma non sufficiente per reporting formale.
+          Needs Evidence = raccogliere dati prima di includere nell'ESG/CSR report.
+        </div>
+      </div>`;
+      })() : ''}
     </div>
     <!-- ─────────────────────────────────────────────────────────────────── -->
 

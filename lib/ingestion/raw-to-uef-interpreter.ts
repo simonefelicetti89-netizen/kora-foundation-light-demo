@@ -10,6 +10,7 @@
 // B18: taxonomy extension + ESRS reporting alignment (no compliance claim).
 
 import { deriveReportingAlignment, type ReportingAlignment } from '@/lib/reporting/reporting-alignment';
+import { deriveEvidenceGaps, type EvidenceGap } from '@/lib/reporting/evidence-gap-engine';
 
 export type Pillar = 'LIFE' | 'GROWTH' | 'CONNECTION' | 'IMPACT' | 'LEGACY';
 export type EligibilityProposal = 'eligible' | 'limited' | 'blocked';
@@ -74,6 +75,8 @@ export interface UefCandidateProposal {
   enrichmentMissingFields: string[];
   // ── B18: reporting alignment — no compliance claim ───────────────────────
   reportingAlignment:     ReportingAlignment | null;
+  // ── B19: evidence gaps — readiness per area, evidence-driven (not area-strength-driven) ──
+  evidenceGaps:           EvidenceGap[] | null;
   // ─────────────────────────────────────────────────────────────────────────
   reasonCodes:            string[];      // machine-readable
   warnings:               string[];
@@ -577,6 +580,33 @@ export function interpretUploadedRecord(
   if (reportingAlignment) {
     reasonCodes.push(`reporting_alignment:${reportingAlignment.areas.map(a => a.code).join(',')}`);
   }
+  // ── B19: derive evidence gaps — readiness depends on evidence, not area strength ──
+  const evidenceGaps = deriveEvidenceGaps({
+    reportingAlignment,
+    initiativeDomain,
+    eventType,
+    eligibility,
+    pillar,
+    budgetClass,
+    budgetAmount,
+    sourceTier,
+    evidenceLevel,
+    financialConfidence,
+    needsEnrichment,
+    enrichmentMissingFields: missingFields,
+    participants,
+    reasonCodes: [...new Set(reasonCodes)],
+  });
+  if (evidenceGaps.length > 0) {
+    const worstReadiness = evidenceGaps.reduce(
+      (worst, g) => {
+        const rank = { not_ready: 0, needs_evidence: 1, usable_with_caveat: 2, report_ready: 3 };
+        return rank[g.readiness] < rank[worst] ? g.readiness : worst;
+      },
+      evidenceGaps[0].readiness,
+    );
+    reasonCodes.push(`evidence_gap:readiness:${worstReadiness}`);
+  }
   // ────────────────────────────────────────────────────────────────────────
 
   return {
@@ -599,6 +629,8 @@ export function interpretUploadedRecord(
     enrichmentMissingFields: missingFields,
     // ── B18: reporting alignment ─────────────────────────────────────────────
     reportingAlignment,
+    // ── B19: evidence gaps ───────────────────────────────────────────────────
+    evidenceGaps: evidenceGaps.length > 0 ? evidenceGaps : null,
     // ────────────────────────────────────────────────────────────────────────
     reasonCodes:            [...new Set(reasonCodes)],
     warnings,

@@ -81,6 +81,25 @@ export interface PdfData {
     }>;
     caveat: string;
   } | null;
+  // B19 — evidence gap readiness summary — aggregated, no individual records, no PII.
+  // readiness depends on evidence quality, not area strength.
+  // report_ready ≠ CSRD compliant.
+  reportingReadiness: {
+    totalAreas:       number;
+    reportReady:      number;
+    usableWithCaveat: number;
+    needsEvidence:    number;
+    notReady:         number;
+    topEvidenceGaps:  Array<{
+      areaCode:           string;
+      areaLabel:          string;
+      readiness:          string;
+      missingEvidence:    string[];
+      recommendedActions: string[];
+      ownerHint:          string;
+    }>;
+    caveat: string;
+  } | null;
   auditSummary: Array<{
     action: string;
     resourceType: string | null;
@@ -286,10 +305,11 @@ export async function fetchPdfData(
     }
   }
 
-  // ── B18: Reporting alignment summary — aggregated from approved UEF records ──
-  // Reads payload.reporting_alignment from each approved record, builds area summary.
-  // No individual records, no PII, no raw UEF content surfaces here.
-  let reportingAlignment: PdfData['reportingAlignment'] = null;
+  // ── B18+B19: Reporting alignment + evidence gap readiness ────────────────────
+  // Single query — both B18 (area summary) and B19 (readiness summary) computed from
+  // the same approved UEF records. No individual records, no PII, aggregated only.
+  let reportingAlignment:  PdfData['reportingAlignment']  = null;
+  let reportingReadiness:  PdfData['reportingReadiness']  = null;
   {
     const { data: raRows, error: raErr } = await db
       .schema('analytics')
@@ -300,39 +320,122 @@ export async function fetchPdfData(
       .eq('approved_for_scoring', true);
 
     if (raErr) {
-      console.error('[fetchPdfData] reporting_alignment fetch failed:', raErr.message);
+      console.error('[fetchPdfData] reporting_alignment+readiness fetch failed:', raErr.message);
     } else if (raRows && raRows.length > 0) {
+      // ── B18: area summary ──────────────────────────────────────────────────
       type AreaSummary = { code: string; label: string; count: number; strong: number; medium: number; weak: number };
       const areaMap = new Map<string, AreaSummary>();
       let mappedCount = 0;
 
+      // ── B19: readiness aggregation per area ────────────────────────────────
+      // readiness_rank: lower = more conservative (worst-case per area across records)
+      const READINESS_RANK: Record<string, number> = {
+        not_ready: 0, needs_evidence: 1, usable_with_caveat: 2, report_ready: 3,
+      };
+      type GapSummary = {
+        areaCode: string; areaLabel: string;
+        readiness: string; readinessRank: number;
+        missingEvidence: Set<string>; recommendedActions: Set<string>;
+        ownerHint: string; count: number;
+      };
+      const gapMap = new Map<string, GapSummary>();
+
       for (const row of raRows as Array<{ payload: unknown }>) {
         const pl = (row.payload ?? {}) as Record<string, unknown>;
+
+        // B18 — reporting_alignment
         const ra = pl['reporting_alignment'] as {
           areas?: Array<{ code: string; label: string; strength?: string }>;
         } | null | undefined;
-        if (!ra || !Array.isArray(ra.areas) || ra.areas.length === 0) continue;
+        if (ra && Array.isArray(ra.areas) && ra.areas.length > 0) {
+          mappedCount++;
+          for (const area of ra.areas) {
+            if (!area.code) continue;
+            const existing: AreaSummary = areaMap.get(area.code) ?? {
+              code: area.code, label: area.label ?? area.code,
+              count: 0, strong: 0, medium: 0, weak: 0,
+            };
+            existing.count++;
+            if      (area.strength === 'strong') existing.strong++;
+            else if (area.strength === 'medium') existing.medium++;
+            else                                 existing.weak++;
+            areaMap.set(area.code, existing);
+          }
+        }
 
-        mappedCount++;
-        for (const area of ra.areas) {
-          if (!area.code) continue;
-          const existing: AreaSummary = areaMap.get(area.code) ?? {
-            code: area.code, label: area.label ?? area.code,
-            count: 0, strong: 0, medium: 0, weak: 0,
-          };
-          existing.count++;
-          if      (area.strength === 'strong') existing.strong++;
-          else if (area.strength === 'medium') existing.medium++;
-          else                                 existing.weak++;
-          areaMap.set(area.code, existing);
+        // B19 — evidence_gaps
+        const gaps = pl['evidence_gaps'] as Array<{
+          areaCode: string; areaLabel: string;
+          readiness: string; missingEvidence?: string[];
+          recommendedActions?: string[]; ownerHint?: string;
+        }> | null | undefined;
+        if (!Array.isArray(gaps) || gaps.length === 0) continue;
+
+        for (const gap of gaps) {
+          if (!gap.areaCode) continue;
+          const incomingRank = READINESS_RANK[gap.readiness] ?? 1;
+          const existing = gapMap.get(gap.areaCode);
+          if (!existing) {
+            gapMap.set(gap.areaCode, {
+              areaCode: gap.areaCode, areaLabel: gap.areaLabel ?? gap.areaCode,
+              readiness: gap.readiness, readinessRank: incomingRank,
+              missingEvidence:    new Set(gap.missingEvidence ?? []),
+              recommendedActions: new Set(gap.recommendedActions ?? []),
+              ownerHint: gap.ownerHint ?? 'Unknown',
+              count: 1,
+            });
+          } else {
+            // Most conservative readiness wins
+            if (incomingRank < existing.readinessRank) {
+              existing.readiness = gap.readiness;
+              existing.readinessRank = incomingRank;
+            }
+            (gap.missingEvidence ?? []).forEach(m => existing.missingEvidence.add(m));
+            (gap.recommendedActions ?? []).forEach(a => existing.recommendedActions.add(a));
+            existing.count++;
+          }
         }
       }
 
+      // ── B18 output ────────────────────────────────────────────────────────
       if (areaMap.size > 0) {
         reportingAlignment = {
           totalMappedInitiatives: mappedCount,
           areas: Array.from(areaMap.values()).sort((a, b) => b.count - a.count),
           caveat: 'KORA does not certify CSRD/ESRS compliance. This section maps initiatives to possible reporting support areas only.',
+        };
+      }
+
+      // ── B19 output ────────────────────────────────────────────────────────
+      if (gapMap.size > 0) {
+        let reportReady = 0, usableWithCaveat = 0, needsEvidence = 0, notReady = 0;
+        for (const g of gapMap.values()) {
+          if      (g.readiness === 'report_ready')      reportReady++;
+          else if (g.readiness === 'usable_with_caveat') usableWithCaveat++;
+          else if (g.readiness === 'needs_evidence')     needsEvidence++;
+          else                                           notReady++;
+        }
+
+        // Top 5 areas by count, prioritising needs_evidence (most actionable)
+        const sortedGaps = Array.from(gapMap.values())
+          .sort((a, b) => a.readinessRank - b.readinessRank || b.count - a.count)
+          .slice(0, 5);
+
+        reportingReadiness = {
+          totalAreas:       gapMap.size,
+          reportReady,
+          usableWithCaveat,
+          needsEvidence,
+          notReady,
+          topEvidenceGaps: sortedGaps.map(g => ({
+            areaCode:           g.areaCode,
+            areaLabel:          g.areaLabel,
+            readiness:          g.readiness,
+            missingEvidence:    Array.from(g.missingEvidence).slice(0, 4),
+            recommendedActions: Array.from(g.recommendedActions).slice(0, 3),
+            ownerHint:          g.ownerHint,
+          })),
+          caveat: 'KORA identifica i gap di evidenza per supportare la rendicontazione. Readiness ≠ compliance CSRD/ESRS. Non costituisce assurance o certificazione.',
         };
       }
     }
@@ -359,6 +462,7 @@ export async function fetchPdfData(
     bti,
     enrichment,
     reportingAlignment,
+    reportingReadiness,
     koraIndex: {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       value: (ki as any).kora_index_value ?? 0,
