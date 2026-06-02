@@ -17,6 +17,7 @@ import type { Database } from '@/lib/supabase/types';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guard';
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
+import { parseCsvContent, flattenCsvWarnings } from '@/lib/data-intake/csv-parser';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 import type {
   BatchFinancialContext, FinancialSourceType, BudgetScope, EvidenceLevel,
@@ -91,6 +92,7 @@ const FORBIDDEN_HEADERS = new Set([
   'domicilio', 'residenza',
   'birth_date', 'data_nascita', 'date_of_birth', 'age', 'eta',
   'health', 'salute', 'diagnosi', 'diagnosis', 'referto', 'medical_data',
+  'matricola',  // B17: employee registry number — direct identifier
 ]);
 
 // ── Safe payload keys — only these fields stored in uploaded_record.payload ───
@@ -105,39 +107,6 @@ const SAFE_PAYLOAD_KEYS = new Set([
   'period', 'department_group', 'site', 'cluster', 'provider',
   'mandatory', 'initiative_type',
 ]);
-
-// ── CSV parser (inline — same as upload-preview, never trusts dry-run result) ─
-
-function parseCsv(content: string): {
-  headers: string[]; rows: Record<string, string>[]; warnings: string[];
-} {
-  const warnings: string[] = [];
-  const text  = content.replace(/^﻿/, ''); // strip BOM
-  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-  if (lines.length === 0)  throw new Error('Empty file: no content found.');
-  if (lines.length < 2)   throw new Error('File must contain at least one header row and one data row.');
-
-  const headerLine  = lines[0];
-  const commaCount  = (headerLine.match(/,/g) ?? []).length;
-  const semiCount   = (headerLine.match(/;/g) ?? []).length;
-  const sep         = semiCount > commaCount ? ';' : ',';
-
-  const headers = headerLine.split(sep)
-    .map(h => h.trim().toLowerCase().replace(/[\s-]/g, '_').replace(/[^a-z0-9_]/g, ''));
-  if (headers.every(h => h === '')) throw new Error('Header row is empty or contains only special characters.');
-
-  const rows: Record<string, string>[] = [];
-  for (let i = 1; i < lines.length; i++) {
-    const vals = lines[i].split(sep);
-    if (vals.length !== headers.length) {
-      warnings.push(`Row ${i}: column count mismatch (expected ${headers.length}, found ${vals.length}).`);
-    }
-    const row: Record<string, string> = {};
-    headers.forEach((h, j) => { row[h] = (vals[j] ?? '').trim(); });
-    rows.push(row);
-  }
-  return { headers, rows, warnings };
-}
 
 // ── Payload builder — only SAFE_PAYLOAD_KEYS allowed in stored payload ────────
 
@@ -247,16 +216,16 @@ export async function POST(request: NextRequest) {
     }, { status: 413 });
   }
 
-  // ── 5. Read + parse CSV ──────────────────────────────────────────────────────
+  // ── 5. Read + parse CSV (centralised, RFC 4180 with quoted-field support) ──
   const content = Buffer.from(await file.arrayBuffer()).toString('utf-8');
-  let headers: string[], rows: Record<string, string>[], parseWarnings: string[];
-  try {
-    ({ headers, rows, warnings: parseWarnings } = parseCsv(content));
-  } catch (e) {
+  const parsed = parseCsvContent(content);
+  if (parsed.errors.length > 0) {
     return NextResponse.json({
-      error: `CSV parse error: ${(e as Error).message}`,
+      error: `CSV parse error: ${parsed.errors[0].message}`,
     }, { status: 400 });
   }
+  const { headers, rows } = parsed;
+  const parseWarnings = flattenCsvWarnings(parsed);
 
   // ── 6. Row count limit ───────────────────────────────────────────────────────
   if (rows.length > MAX_ROWS) {

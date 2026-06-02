@@ -62,12 +62,26 @@ const EMAIL_RE = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
 // Use case-insensitive, require word boundary or string boundary.
 const ITALIAN_CF_RE = /(?:^|[\s,;|])[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z](?:$|[\s,;|])/i;
 
-// IBAN: 2 letters, 2 digits, then 4-34 alphanumeric chars (total 8-36)
+// IBAN: 2 letters, 2 digits, then 4-34 alphanumeric chars.
+// Compact: IT60X0542811101000000123456
+// Spaced IBANs (IT60 X054 2811 ...) are handled by normalizing the value before testing.
 const IBAN_RE = /\b[A-Z]{2}\d{2}[A-Z0-9]{4}\d{7}[A-Z0-9]{0,16}\b/;
 
-// Phone: international prefix (+ or 00) + 6+ digits, or 9+ consecutive digits alone.
-// Does NOT flag: short counts (25, 100), amounts (1500), row indexes (0, 1).
-const PHONE_RE = /(\+\d{1,3}[\s\-.]{0,2}\d{6,}|00\d{2,3}[\s\-.]{0,2}\d{5,}|\b\d{9,}\b)/;
+// Phone: covers compact + spaced Italian patterns.
+// 1. International prefix: +XX then per-digit optional separators (catches +39 333 1234567)
+// 2. 00-prefix international
+// 3. 9+ consecutive digits (compact mobile/landline)
+// 4. Spaced Italian: NNN NNN NNNN or NN NNNN NNNN (mobile + landline)
+// Economic fields (amount, budget, importo…) are excluded at detection time — see ECONOMIC_FIELD_KEYS.
+const PHONE_RE = /(\+\d{1,3}[\s\-.]?(\d[\s\-.]?){6,15}|00\d{2,3}[\s\-.]?\d{5,}|\b\d{9,}\b|\b\d{2,3}[\s\-.]\d{3,4}[\s\-.]\d{3,4}\b)/;
+
+// Field names where PHONE detection is suppressed to avoid false positives on amounts/codes.
+const ECONOMIC_FIELD_KEYS = new Set([
+  'amount', 'budget_amount', 'importo', 'costo', 'budget', 'budget_code',
+  'participants', 'partecipanti', 'workers', 'lavoratori',
+  'initiative_id', 'id', 'code', 'codice', 'period', 'source_code',
+  'count', 'total', 'totale', 'numero', 'quantity', 'quantita',
+]);
 
 // ── Key-based detection (exact match, case-insensitive) ────────────────────────
 
@@ -76,6 +90,7 @@ const DIRECT_ID_KEYS = new Set([
   'email', 'phone', 'telefono', 'mobile', 'cel', 'cellulare',
   'codice_fiscale', 'cf', 'tax_code', 'fiscal_code', 'codice_fiscale_lavoratore',
   'iban', 'bic', 'iban_number',
+  'matricola',  // employee registry number — direct identifier in Italian HR systems
 ]);
 
 // Keys that suggest person names — flag with MEDIUM severity
@@ -93,7 +108,7 @@ const ADDRESS_KEYS = new Set([
 
 // ── Value-based detection ─────────────────────────────────────────────────────
 
-function detectInString(value: string, path: string): PiiFinding[] {
+function detectInString(value: string, path: string, fieldKey: string): PiiFinding[] {
   const findings: PiiFinding[] = [];
 
   if (EMAIL_RE.test(value)) {
@@ -102,10 +117,16 @@ function detectInString(value: string, path: string): PiiFinding[] {
   if (ITALIAN_CF_RE.test(` ${value} `)) {
     findings.push({ fieldPath: path, riskType: 'ITALIAN_CF', severity: 'HIGH' });
   }
-  if (IBAN_RE.test(value)) {
+
+  // IBAN: normalize (strip spaces/dashes, uppercase) before testing.
+  // Catches both compact (IT60X054...) and spaced (IT60 X054 2811 ...) IBANs.
+  const normalizedForIban = value.toUpperCase().replace(/[\s\-]/g, '');
+  if (IBAN_RE.test(normalizedForIban)) {
     findings.push({ fieldPath: path, riskType: 'IBAN', severity: 'HIGH' });
   }
-  if (PHONE_RE.test(value)) {
+
+  // PHONE: suppress for economic fields to avoid flagging large amounts or participant counts.
+  if (!ECONOMIC_FIELD_KEYS.has(fieldKey) && PHONE_RE.test(value)) {
     findings.push({ fieldPath: path, riskType: 'PHONE', severity: 'MEDIUM' });
   }
 
@@ -122,7 +143,9 @@ function scanRecursive(
   if (obj === null || obj === undefined) return;
 
   if (typeof obj === 'string') {
-    findings.push(...detectInString(obj, path));
+    // Extract leaf field name for context-aware detection (e.g. skip PHONE on amount fields).
+    const fieldKey = path.split('.').pop()?.replace(/\[\d+\]$/, '') ?? path;
+    findings.push(...detectInString(obj, path, fieldKey));
     return;
   }
 
