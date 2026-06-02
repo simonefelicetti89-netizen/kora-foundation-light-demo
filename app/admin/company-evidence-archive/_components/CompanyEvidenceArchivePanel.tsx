@@ -25,6 +25,8 @@ interface BatchSummary {
   manualCompletionUsed: boolean;
   manualFields: string[];
   matchSummary: Record<string, number> | null;
+  provenanceEnabled?: boolean;
+  provenanceSummary?: Record<string, number> | null;
 }
 
 interface ContributionSummary {
@@ -57,6 +59,8 @@ interface Initiative {
   manualFields: string[];
   hasColumnMapping: boolean;
   hasMultiFileMatch: boolean;
+  hasB30Provenance?: boolean;
+  provenanceSummary?: { fieldCount?: number; kindCounts?: Record<string, number> } | null;
   sourceBatchId: string;
 }
 
@@ -306,6 +310,12 @@ export function CompanyEvidenceArchivePanel() {
                         match: {b.matchSummary['matched'] ?? 0}✓ {b.matchSummary['possibleMatch'] ?? 0}≈ {b.matchSummary['unmatched'] ?? 0}✗
                       </span>
                     )}
+                    {b.provenanceEnabled && (
+                      <span className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[9px] text-indigo-700">
+                        provenance ✓
+                        {b.provenanceSummary ? ` · ${b.provenanceSummary['originalFileFields'] ?? 0} orig + ${b.provenanceSummary['columnMappedFields'] ?? 0} mapped` : ''}
+                      </span>
+                    )}
                   </div>
                   {b.sourceName && (
                     <p className="text-[9px] text-slate-400 mt-1 font-mono truncate">{b.sourceName}</p>
@@ -376,10 +386,16 @@ export function CompanyEvidenceArchivePanel() {
                     <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
                       <td className="py-2 px-2 max-w-[180px]">
                         <div className="font-medium text-slate-700 truncate" title={ini.safeName}>{ini.safeName}</div>
-                        <div className="flex gap-1 mt-0.5">
+                        <div className="flex gap-1 mt-0.5 flex-wrap">
                           {ini.hasManualCompletion && <span className="text-[8px] text-amber-600 font-medium">manual</span>}
                           {ini.hasColumnMapping    && <span className="text-[8px] text-[#6156F5] font-medium">mapped</span>}
                           {ini.hasMultiFileMatch   && <span className="text-[8px] text-green-600 font-medium">multi-file</span>}
+                          {ini.hasB30Provenance    && (
+                            <span className="text-[8px] text-indigo-600 font-medium"
+                              title={ini.provenanceSummary ? `${ini.provenanceSummary.fieldCount ?? 0} fields tracked` : 'provenance tracked'}>
+                              prov
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="py-2 px-2 text-slate-500">{ini.pillar ?? '—'}</td>

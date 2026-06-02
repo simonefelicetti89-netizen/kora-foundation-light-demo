@@ -1295,6 +1295,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     <div class="mp-csrdisclaimer">
       KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
       Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
+      I campi chiave sono tracciati con provenance di origine: file sorgente, mappatura colonne, completamento manuale, merge multi-file o derivazione da regola.
     </div>
 
     <!-- B18 — Reporting Alignment / ESRS Readiness ─────────────────────── -->

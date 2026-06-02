@@ -33,6 +33,7 @@ import {
 import { analyzeMissingFields } from '@/lib/data-intake/missing-field-analysis';
 import { detectFileRole, type IntakeFileRole } from '@/lib/data-intake/file-role-detection';
 import { runInitiativeMatching, type ParsedIntakeFile } from '@/lib/data-intake/initiative-matching';
+import { buildRowProvenance, summarizeProvenance } from '@/lib/data-intake/evidence-provenance';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 
 // ── Limits ───────────────────────────────────────────────────────────────────
@@ -338,6 +339,18 @@ function buildPreviewPayload(params: {
     .slice(0, 5)
     .map((row, i) => buildSampleRow(row, i + 1, eligResults[i]?.status ?? 'unknown'));
 
+  // B30: provenance summary for preview (no per-row provenance in dry-run)
+  const previewProvenances = finalRows.slice(0, 10).map(row =>
+    buildRowProvenance({
+      finalRow: row,
+      effectiveMapping: effectiveMapping as Record<string, string>,
+      manualAppliedFields: manualApplied,
+      fileType,
+      sheetName: selectedSheetName ?? undefined,
+    })
+  );
+  const previewProvenanceSummary = summarizeProvenance(previewProvenances);
+
   return {
     piiResult: null,
     fileType,
@@ -350,6 +363,8 @@ function buildPreviewPayload(params: {
     mappingSuggestions,
     appliedMapping: effectiveMapping,
     manualCompletionApplied: manualApplied,
+    provenanceSummary: previewProvenanceSummary,
+    provenanceCaveat: 'Field provenance is metadata only. It does not expose raw file contents.',
     missingFieldSummary: {
       totalRows:            missingFieldSummary.totalRows,
       missingByField:       missingFieldSummary.missingByField,

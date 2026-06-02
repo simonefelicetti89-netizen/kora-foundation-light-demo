@@ -27,6 +27,9 @@ import { parseExcelSheet } from '@/lib/data-intake/excel-parser';
 import { detectFileRole, type IntakeFileRole } from '@/lib/data-intake/file-role-detection';
 import { runInitiativeMatching, type ParsedIntakeFile } from '@/lib/data-intake/initiative-matching';
 import {
+  buildRowProvenance, summarizeProvenance, sanitizeProvenanceForStorage,
+} from '@/lib/data-intake/evidence-provenance';
+import {
   suggestColumnMapping, applyColumnMapping, applyManualCompletionDefaults,
   validateMapping, type CanonicalIntakeField,
 } from '@/lib/data-intake/column-mapping';
@@ -130,6 +133,7 @@ const SAFE_PAYLOAD_KEYS = new Set([
 function buildSafePayload(
   row: Record<string, string>,
   manualFields?: CanonicalIntakeField[],
+  fieldProvenance?: Record<string, unknown>,  // B30: sanitized provenance metadata
 ): Record<string, unknown> {
   const safe: Record<string, unknown> = {
     b4_intake:  true,
@@ -142,6 +146,10 @@ function buildSafePayload(
   if (manualFields && manualFields.length > 0) {
     safe['_manual_completion'] = true;
     safe['_manual_fields']     = manualFields;
+  }
+  // B30: field provenance metadata — no raw values, only kind/confidence/flags
+  if (fieldProvenance && Object.keys(fieldProvenance).length > 0) {
+    safe['_field_provenance'] = fieldProvenance;
   }
   return safe;
 }
@@ -592,6 +600,22 @@ export async function POST(request: NextRequest) {
   // B27: missing field summary for audit
   const missingFieldSummary = analyzeMissingFields(finalRows);
 
+  // B30: generate per-row field provenance for tracked fields
+  // preMergeRow omitted — manualApplied already guarantees the field was empty before completion
+  const fileRoleForProv = detectFileRole(file.name, headers).role;
+  const allRowProvenances = finalRows.map(row =>
+    buildRowProvenance({
+      finalRow: row,
+      effectiveMapping: isMultiFile ? undefined : effectiveMapping as Record<string, string>,
+      manualAppliedFields: manualApplied,
+      isMultiFileMerged: isMultiFile,
+      fileRole: fileRoleForProv,
+      fileType: isXlsx ? 'xlsx' : 'csv',
+      sheetName: selectedSheetName ?? undefined,
+    })
+  );
+  const provenanceSummary = summarizeProvenance(allRowProvenances);
+
   // ── 11. Eligibility classification on mapped rows ────────────────────────────
   const records: RawUploadedRecord[] = csvToUploadedRecords(finalRows);
   const eligResults = classifyEligibilityBatch(records);
@@ -636,6 +660,10 @@ export async function POST(request: NextRequest) {
         manual_fields:           manualApplied,
         missing_blocking_count:  missingFieldSummary.blockingCount,
         missing_warning_count:   missingFieldSummary.warningCount,
+        // B30: provenance summary (no raw values)
+        _b30: true,
+        provenance_enabled: true,
+        provenance_summary: provenanceSummary,
       } as Record<string, unknown>,
       created_by:             authResult.email,
       processed_at:           null,
@@ -701,7 +729,11 @@ export async function POST(request: NextRequest) {
     action_family:      (row['category'] || row['categoria'] || null) as string | null,
     event_nature:       (row['type'] || row['tipo'] || null) as string | null,
     review_status:      'pending' as const,
-    payload:            buildSafePayload(row, manualApplied.length > 0 ? manualApplied : undefined),
+    payload:            buildSafePayload(
+      row,
+      manualApplied.length > 0 ? manualApplied : undefined,
+      sanitizeProvenanceForStorage(allRowProvenances[i] ?? {}),
+    ),
     privacy_redacted:   false,
     reviewed_at:        null,
   }));
@@ -764,6 +796,18 @@ export async function POST(request: NextRequest) {
     }));
   }
 
+  // B30: audit event for provenance generation
+  auditRows.push(makeAudit({
+    tenantId, actorId: authResult.id,
+    action: 'evidence_provenance_generated',
+    resourceType: 'analytics.source_batch', resourceId: batchId,
+    metadata: {
+      provenance_summary:    provenanceSummary,
+      rows_with_provenance:  allRowProvenances.filter(p => Object.keys(p).length > 0).length,
+      // no raw values logged
+    },
+  }));
+
   // ── 13. Flush audit log ───────────────────────────────────────────────────────
   const { error: auditErr } = await db.schema('audit').from('audit_log').insert(auditRows);
   if (auditErr) console.error('[data-intake/accept] audit_log flush:', auditErr.message);
@@ -781,6 +825,7 @@ export async function POST(request: NextRequest) {
     batchStatus:      'pending',
     mappingApplied:   Object.keys(effectiveMapping).length > 0,
     manualCompletionApplied: manualApplied,
+    provenanceSummary,
     missingFieldSummary: {
       blockingCount: missingFieldSummary.blockingCount,
       warningCount:  missingFieldSummary.warningCount,

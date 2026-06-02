@@ -73,7 +73,13 @@ function extractSafePayloadFields(payload: Record<string, unknown>): {
   manualFields: string[];
   hasB27Mapping: boolean;
   hasB28MultiFile: boolean;
+  hasB30Provenance: boolean;
+  provenanceSummary?: Record<string, unknown>;
 } {
+  // Extract provenance summary (safe — no raw values)
+  const provObj = payload['_field_provenance'] as Record<string, unknown> | null | undefined;
+  const provenanceSummary = provObj ? extractSafeProvenanceSummary(provObj) : undefined;
+
   return {
     initiativeName:    typeof payload['initiative_name'] === 'string' ? payload['initiative_name'] : undefined,
     budgetClass:       typeof payload['budget_class']    === 'string' ? payload['budget_class']    : undefined,
@@ -82,7 +88,26 @@ function extractSafePayloadFields(payload: Record<string, unknown>): {
     manualFields:      Array.isArray(payload['_manual_fields']) ? (payload['_manual_fields'] as string[]).slice(0, 10) : [],
     hasB27Mapping:     Boolean(payload['_b27']) || Boolean(payload['b27_mapping']),
     hasB28MultiFile:   Boolean(payload['_b28']),
+    hasB30Provenance:  Boolean(provObj),
+    provenanceSummary,
   };
+}
+
+function extractSafeProvenanceSummary(provObj: Record<string, unknown>): Record<string, unknown> {
+  // Summarize provenance kinds across tracked fields — no raw values
+  const kinds: Record<string, number> = {};
+  const PROV_KIND_MAP: Record<string, string> = {
+    o: 'original_file', c: 'column_mapping', m: 'manual_completion',
+    f: 'multi_file_merge', d: 'derived', s: 'system_default',
+  };
+  for (const [, fp] of Object.entries(provObj)) {
+    if (typeof fp === 'object' && fp !== null) {
+      const k = (fp as Record<string, unknown>)['k'] as string;
+      const kind = PROV_KIND_MAP[k] ?? k ?? 'unknown';
+      kinds[kind] = (kinds[kind] ?? 0) + 1;
+    }
+  }
+  return { fieldCount: Object.keys(provObj).length, kindCounts: kinds };
 }
 
 // ── GET handler ───────────────────────────────────────────────────────────────
@@ -147,6 +172,9 @@ export async function GET(request: NextRequest) {
       fileMode:             typeof ps['fileMode'] === 'string' ? ps['fileMode'] : 'single',
       fileCount:            typeof ps['fileCount'] === 'number' ? ps['fileCount'] : 1,
       matchSummary:         ps['matchSummary'] as Record<string, number> | null ?? null,
+      // B30: provenance summary from payload_sample
+      provenanceEnabled:    Boolean(ps['provenance_enabled'] ?? ps['_b30']),
+      provenanceSummary:    ps['provenance_summary'] as Record<string, number> | null ?? null,
     };
   });
 
@@ -273,6 +301,8 @@ export async function GET(request: NextRequest) {
       manualFields:        safeFields.manualFields,
       hasColumnMapping:    safeFields.hasB27Mapping,
       hasMultiFileMatch:   safeFields.hasB28MultiFile,
+      hasB30Provenance:    safeFields.hasB30Provenance,
+      provenanceSummary:   safeFields.provenanceSummary ?? null,
       sourceBatchId:    (rec.batch_id as string).slice(0, 8) + '…',
     });
   }
