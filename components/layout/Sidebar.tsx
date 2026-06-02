@@ -27,111 +27,119 @@ interface NavItem {
   label: string;
   comingSoon?: boolean;
   inactive?: boolean;
+  badge?: string;
+  badgeStyle?: string;
 }
 
 interface NavGroup {
   heading: string;
+  groupBadge?: string;
+  groupBadgeStyle?: string;
   items: NavItem[];
 }
 
-const DEMO_GROUP: NavGroup = {
-  heading: 'Demo',
-  items: [
-    { href: '/demo-guide', label: 'Demo Guide' },
-    { href: '/pilot',      label: 'Foundation Light Pilot' },
-  ],
-};
-
 function buildNavGroups(role: string): NavGroup[] {
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
-    // B9.2: Live Pilot Flow in cima, Demo/Synthetic separato, Admin Tools separato.
+    // B36.1: 4 clear groups — Live Pilot Operations / Data Pipeline / Demo Lab / Strategy & Admin
     return [
       {
-        heading: 'Live Pilot Flow',
+        heading: 'Live Pilot Operations',
+        groupBadge: 'LIVE PILOT',
+        groupBadgeStyle: 'bg-green-900/40 text-green-400 border border-green-800/50',
         items: [
-          { href: '/admin/company-workspace',     label: 'Spazio azienda' },
-          { href: '/admin/company-live-preview',  label: 'Company Live Preview' },
-          { href: '/admin/tenants',               label: 'Aziende & Onboarding' },
-          { href: '/admin/data-intake',           label: 'Data Intake' },
-          { href: '/admin/uef-review',            label: 'UEF Review & Scoring' },
+          { href: '/admin/companies',             label: 'Company Console' },
+          { href: '/admin/tenants',               label: 'Onboarding Tenant' },
+          { href: '/admin/company-workspace',     label: 'Workspace Azienda' },
+          { href: '/admin/company-users',         label: 'Utenti Aziendali' },
+          { href: '/admin/company-evidence-archive', label: 'Evidence Archive' },
+          { href: '/admin/company-live-preview',  label: 'Live Preview' },
         ],
       },
       {
-        heading: 'Demo & Synthetic',
+        heading: 'Data Pipeline',
+        groupBadge: 'ADMIN ONLY',
+        groupBadgeStyle: 'bg-blue-900/30 text-blue-400 border border-blue-800/40',
         items: [
-          { href: '/admin/operator',  label: 'Synthetic Operator' },
-          { href: '/company',         label: 'Company Cockpit' },
-          { href: '/company/reports', label: 'Decision Pack' },
-          { href: '/demo-guide',      label: 'Demo Guide' },
+          { href: '/admin/data-intake',    label: 'Data Intake' },
+          { href: '/admin/uef-review',     label: 'UEF Review & Scoring' },
+          { href: '/admin/data-lifecycle', label: 'Data Lifecycle' },
         ],
       },
       {
-        heading: 'Admin Tools',
+        heading: 'Demo Lab',
+        groupBadge: 'SYNTHETIC DEMO',
+        groupBadgeStyle: 'bg-amber-900/30 text-amber-400 border border-amber-800/40',
         items: [
-          { href: '/admin',                  label: 'Admin Console' },
-          { href: '/admin/companies',        label: 'Company Registry' },
-          { href: '/admin/data-lifecycle',   label: 'Data Lifecycle' },
+          { href: '/company',        label: 'Meridiana Demo' },
+          { href: '/admin/operator', label: 'Synthetic Benchmark' },
+          { href: '/demo-guide',     label: 'Demo Guide' },
         ],
       },
       {
-        heading: 'Altro',
-        items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
+        heading: 'Strategy & Admin',
+        groupBadge: 'ADMIN',
+        groupBadgeStyle: 'bg-slate-700/40 text-slate-400 border border-slate-600/40',
+        items: [
+          { href: '/admin',         label: 'Admin Console' },
+          { href: '/admin/gtm',     label: 'GTM & Roadmap' },
+          { href: '/future-vision', label: 'Future Vision', inactive: true },
+        ],
       },
     ];
   }
 
   if (role === 'COMPANY_ADMIN') {
+    // B36.1: workspace-only sidebar — no demo routes, no future-vision, no admin tools.
+    // All sections are anchors within /company/workspace.
     return [
-      DEMO_GROUP,
       {
-        heading: 'Il Tuo Spazio KORA',
+        heading: 'Workspace',
         items: [
-          { href: '/company/profile',      label: 'Profilo & Stato KORA' },
-          { href: '/company',              label: 'Executive Cockpit' },
-          { href: '/company/shared',       label: 'KORA Shared View' },
-          { href: '/company/kora-index',   label: 'KORA Index' },
-          { href: '/company/activation',   label: 'Attivazione & Partecipazione' },
-          { href: '/company/contribution', label: 'KORA Contribution' },
-          { href: '/company/pillars',      label: 'Pilastri & Iniziative' },
-          { href: '/company/onboarding',   label: 'Stato Progetto' },
+          { href: '/company/workspace', label: 'Il Tuo Workspace KORA' },
         ],
       },
       {
-        heading: 'Governance & Output',
+        heading: 'Sezioni',
         items: [
-          { href: '/company/financial', label: 'Governance Finanziaria' },
-          { href: '/company/reports',   label: 'Decision Pack' },
+          { href: '/company/workspace#kora-index',          label: 'KORA Index' },
+          { href: '/company/workspace#evidence-archive',    label: 'Archivio Evidenze' },
+          { href: '/company/workspace#decision-pack',       label: 'Decision Pack' },
+          { href: '/company/workspace#reporting-readiness', label: 'Reporting Readiness' },
+          { href: '/company/workspace#methodology',         label: 'Metodologia & Privacy' },
         ],
-      },
-      {
-        heading: 'Altro',
-        items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
       },
     ];
   }
 
   if (role === 'COMPANY_VIEWER') {
+    // B36.1: viewer — read-only subset of workspace sections.
     return [
-      DEMO_GROUP,
       {
-        heading: 'Il Tuo Spazio KORA',
+        heading: 'Workspace',
         items: [
-          { href: '/company/shared',     label: 'KORA Shared View' },
-          { href: '/company/profile',    label: 'Profilo & Stato KORA' },
-          { href: '/company',            label: 'Executive Cockpit' },
-          { href: '/company/kora-index', label: 'KORA Index' },
+          { href: '/company/workspace', label: 'Il Tuo Workspace KORA' },
         ],
       },
       {
-        heading: 'Altro',
-        items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
+        heading: 'Sezioni',
+        items: [
+          { href: '/company/workspace#kora-index',          label: 'KORA Index' },
+          { href: '/company/workspace#reporting-readiness', label: 'Reporting Readiness' },
+          { href: '/company/workspace#methodology',         label: 'Metodologia & Privacy' },
+        ],
       },
     ];
   }
 
   if (isWorkerRole(role as Parameters<typeof isWorkerRole>[0])) {
     return [
-      DEMO_GROUP,
+      {
+        heading: 'Demo',
+        items: [
+          { href: '/demo-guide', label: 'Demo Guide' },
+          { href: '/pilot',      label: 'Foundation Light Pilot' },
+        ],
+      },
       {
         heading: 'My KORA',
         items: [
@@ -152,7 +160,13 @@ function buildNavGroups(role: string): NavGroup[] {
 
   if (role === 'PARTNER') {
     return [
-      DEMO_GROUP,
+      {
+        heading: 'Demo',
+        items: [
+          { href: '/demo-guide', label: 'Demo Guide' },
+          { href: '/pilot',      label: 'Foundation Light Pilot' },
+        ],
+      },
       {
         heading: 'Partner',
         items: [{ href: '/partner', label: 'Workspace Partner' }],
@@ -166,7 +180,13 @@ function buildNavGroups(role: string): NavGroup[] {
 
   if (role === 'ADVISOR') {
     return [
-      DEMO_GROUP,
+      {
+        heading: 'Demo',
+        items: [
+          { href: '/demo-guide', label: 'Demo Guide' },
+          { href: '/pilot',      label: 'Foundation Light Pilot' },
+        ],
+      },
       {
         heading: 'Advisor',
         items: [{ href: '/advisor', label: 'Workspace Advisor' }],
@@ -179,7 +199,13 @@ function buildNavGroups(role: string): NavGroup[] {
   }
 
   return [
-    DEMO_GROUP,
+    {
+      heading: 'Demo',
+      items: [
+        { href: '/demo-guide', label: 'Demo Guide' },
+        { href: '/pilot',      label: 'Foundation Light Pilot' },
+      ],
+    },
     {
       heading: 'Altro',
       items: [{ href: '/future-vision', label: 'Future Vision', inactive: true }],
@@ -211,14 +237,26 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto py-3">
         {groups.map((group) => (
           <div key={group.heading} className="mb-3">
-            <p
-              className="px-[18px] pb-1 text-[11px] font-medium uppercase tracking-[0.20em]"
-              style={{ color: 'rgba(255,255,255,0.22)' }}
-            >
-              {group.heading}
-            </p>
+            <div className="flex items-center gap-1.5 px-[18px] pb-1">
+              <p
+                className="text-[10px] font-medium uppercase tracking-[0.20em]"
+                style={{ color: 'rgba(255,255,255,0.22)' }}
+              >
+                {group.heading}
+              </p>
+              {group.groupBadge && (
+                <span
+                  className={cn('rounded px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide', group.groupBadgeStyle)}
+                >
+                  {group.groupBadge}
+                </span>
+              )}
+            </div>
             {group.items.map((item) => {
-              const isActive = pathname === item.href;
+              // Active: exact match, or workspace base path for anchor sub-items
+              const isActive =
+                pathname === item.href ||
+                (item.href.includes('#') && pathname === item.href.split('#')[0]);
               return (
                 <Link
                   key={item.href}
@@ -249,6 +287,13 @@ export function Sidebar() {
                   }
                 >
                   <span className="truncate">{item.label}</span>
+                  {item.badge && (
+                    <span
+                      className={cn('ml-1 shrink-0 rounded px-1 py-0.5 text-[8px] font-bold uppercase', item.badgeStyle)}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
                   {item.comingSoon && (
                     <span
                       className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px]"
@@ -278,7 +323,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer — ancorato in fondo via mt-auto su nav flex-1 */}
+      {/* Footer */}
       <div
         className="px-[16px] pt-3 pb-4 mt-auto"
         style={{ borderTop: `1px solid rgba(255,255,255,0.08)` }}

@@ -65,17 +65,14 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
       '/company/data', '/company/financial',
     );
   }
+  // B36.1: Company roles are restricted to /company/workspace (live, server-auth).
+  // Demo-driven /company/* routes (Executive Cockpit, shared, activation, etc.) are
+  // DEMO_SYNTHETIC — accessible via demo-state/KORA_ADMIN, not by real company sessions.
   if (role === 'COMPANY_ADMIN') {
-    routes.push(
-      '/company', '/company/shared', '/company/kora-index', '/company/reports', '/company/activation',
-      '/company/contribution', '/company/pillars', '/company/onboarding',
-      '/company/financial', '/company/profile',
-    );
+    routes.push('/company/workspace');
   }
   if (role === 'COMPANY_VIEWER') {
-    routes.push(
-      '/company', '/company/shared', '/company/kora-index', '/company/profile',
-    );
+    routes.push('/company/workspace');
   }
   if (isWorkerRole(role)) {
     routes.push('/my-kora', '/my-kora/privacy', '/my-kora/dynamic-cv',
@@ -83,6 +80,10 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
   }
   if (role === 'PARTNER') routes.push('/partner');
   if (role === 'ADVISOR') routes.push('/advisor');
-  routes.push('/future-vision');
+  // Future Vision is visible to admin and non-company demo roles only.
+  // Real company sessions are blocked by middleware.
+  if (!['COMPANY_ADMIN', 'COMPANY_VIEWER'].includes(role)) {
+    routes.push('/future-vision');
+  }
   return [...new Set(routes)];
 }

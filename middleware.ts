@@ -1,26 +1,30 @@
-// middleware.ts — Supabase SSR session token refresh
+// middleware.ts — Supabase SSR session refresh + B36.1 company user route protection
 //
-// Purpose: refresh the Supabase session cookie on every request so that
-// auth.getUser() in server components and route handlers returns a valid session.
+// Purpose:
+//   1. Refresh the Supabase session cookie so auth.getUser() stays valid server-side.
+//   2. Redirect authenticated COMPANY_ADMIN/VIEWER to /company/workspace if they
+//      attempt to access any path outside their allowed set (demo routes, admin tools,
+//      future-vision, landing page). This enforces product mode separation so real
+//      company tenants never reach synthetic demo pages.
 //
-// This middleware does NOT block any routes.
-// Route-level access control is in lib/auth/kora-session.ts (requireKoraAdmin).
-// /admin/* UI pages use the existing demo role switcher — not blocked here.
+// Route-level fine-grained auth is in lib/auth/kora-session.ts.
+// KORA_ADMIN routes have their own requireKoraAdmin() checks — not blocked here.
 //
-// Required by @supabase/ssr: without this, access tokens expire and
-// server-side auth.getUser() returns null even for logged-in users.
-//
-// ROBUSTNESS: never throws — safe for Vercel deploys where env vars may not
-// yet be configured, preview environments, and edge cases where the Supabase
-// auth service is temporarily unreachable.
+// ROBUSTNESS: never throws — safe for Vercel deploys without env vars configured.
 
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
+// Paths that authenticated company users are allowed to access.
+// Everything else redirects to /company/workspace.
+const COMPANY_ALLOWED_PREFIXES = [
+  '/company/workspace',   // live workspace (server-auth protected)
+  '/api/',                // all API routes (have own auth)
+  '/_next',              // Next.js internals
+  '/admin/login',        // login page (needed if session expires)
+];
+
 export async function middleware(request: NextRequest) {
-  // Guard: if Supabase env vars are not configured (fresh Vercel deploy,
-  // preview environment, staging without env), skip session refresh and
-  // pass through. Never crash — route-level auth still handles authorization.
   const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -29,6 +33,7 @@ export async function middleware(request: NextRequest) {
   }
 
   let supabaseResponse = NextResponse.next({ request });
+  let sessionKoraRole: string | undefined;
 
   try {
     const supabase = createServerClient(supabaseUrl, supabaseAnon, {
@@ -46,14 +51,31 @@ export async function middleware(request: NextRequest) {
       },
     });
 
-    // IMPORTANT: do not remove — this refreshes the access token when expired.
-    // The return value is not used; the side effect (cookie update) is what matters.
-    await supabase.auth.getUser();
+    // IMPORTANT: do not remove — refreshes access token as side effect.
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      const appMeta = user.app_metadata as Record<string, unknown> | undefined;
+      sessionKoraRole = appMeta?.kora_role as string | undefined;
+    }
   } catch {
-    // Session refresh failed — pass through without crashing.
-    // Route-level requireKoraAdmin() handles auth; a failed refresh just means
-    // the user may need to re-login on the next protected request.
+    // Session refresh failed — pass through. Route-level auth handles authorization.
     return NextResponse.next({ request });
+  }
+
+  // B36.1: Redirect authenticated company users away from demo/admin/future-vision paths.
+  // Only applies to users with a real Supabase session — demo-state users (no session)
+  // are unaffected and can still access synthetic demo routes.
+  const isRealCompanyUser =
+    sessionKoraRole === 'COMPANY_ADMIN' || sessionKoraRole === 'COMPANY_VIEWER';
+
+  if (isRealCompanyUser) {
+    const pathname = request.nextUrl.pathname;
+    const isAllowed = COMPANY_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+    if (!isAllowed) {
+      return NextResponse.redirect(new URL('/company/workspace', request.url));
+    }
   }
 
   return supabaseResponse;

@@ -1,5 +1,5 @@
 // lib/auth/kora-session.ts
-// Server-side session and role helper for KORA_ADMIN access control.
+// Server-side session and role helper for KORA_ADMIN and company user access control.
 //
 // Authorization rules:
 //   - kora_role is read ONLY from user.app_metadata (server-controlled, Admin API only)
@@ -10,17 +10,33 @@
 // Supported auth paths:
 //   1. Cookie-based session: populated by middleware token refresh (browser flow)
 //   2. Authorization header: Bearer <access_token> (programmatic API clients, testing)
+//
+// Supported roles:
+//   KORA_ADMIN   — platform operator, full admin access
+//   COMPANY_ADMIN  — company-scoped, read/manage own tenant workspace
+//   COMPANY_VIEWER — company-scoped, strictly read-only
 
-import { getSupabaseServerClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient, getSupabaseServiceClient } from '@/lib/supabase/server';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { User } from '@supabase/supabase-js';
 
-// ── KoraUser — the authenticated + authorized operator ────────────────────────
+// ── KoraUser — authenticated KORA_ADMIN operator ──────────────────────────────
 
 export interface KoraUser {
   id: string;
   email: string;
   koraRole: 'KORA_ADMIN';
+}
+
+// ── KoraCompanyUser — authenticated company workspace user ────────────────────
+// Tenant derived from app_metadata.kora_tenant_id — never trusted from client.
+
+export interface KoraCompanyUser {
+  id: string;
+  email: string;
+  koraRole: 'COMPANY_ADMIN' | 'COMPANY_VIEWER';
+  tenantId: string;
+  userStatus: 'active' | 'suspended' | 'disabled';
 }
 
 // ── Internal: resolve Supabase user from request ──────────────────────────────
@@ -86,8 +102,129 @@ export async function requireKoraAdmin(request?: NextRequest): Promise<KoraUser 
   return { id: user.id, email: user.email ?? '', koraRole: 'KORA_ADMIN' };
 }
 
-// ── Type guard — distinguish error response from authorized user ──────────────
+// ── requireCompanyUser — returns KoraCompanyUser or a 401/403 NextResponse ────
+//
+// For company workspace APIs. Validates:
+//   - authenticated session exists
+//   - kora_role is COMPANY_ADMIN or COMPANY_VIEWER (from app_metadata)
+//   - kora_tenant_id is present (from app_metadata)
+//   - kora_status is 'active' (user not suspended/disabled)
+//   - tenant is_active in analytics.tenant (tenant not suspended/archived)
+//
+// Usage:
+//   const auth = await requireCompanyUser(request);
+//   if (isKoraAuthError(auth)) return auth;
+//   const tenantId = auth.tenantId; // always from session, never from client
 
-export function isKoraAuthError(value: KoraUser | NextResponse): value is NextResponse {
+export async function requireCompanyUser(request?: NextRequest): Promise<KoraCompanyUser | NextResponse> {
+  const user = await resolveUser(request);
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const appMeta = user.app_metadata as Record<string, unknown> | undefined;
+  const koraRole = appMeta?.kora_role as string | undefined;
+
+  if (koraRole !== 'COMPANY_ADMIN' && koraRole !== 'COMPANY_VIEWER') {
+    return NextResponse.json(
+      { error: 'Forbidden — company user role required', role_found: koraRole ?? 'none' },
+      { status: 403 },
+    );
+  }
+
+  const tenantId = appMeta?.kora_tenant_id as string | undefined;
+  if (!tenantId) {
+    return NextResponse.json(
+      { error: 'Forbidden — no tenant assigned to this user' },
+      { status: 403 },
+    );
+  }
+
+  const userStatus = (appMeta?.kora_status as string | undefined) ?? 'active';
+  if (userStatus === 'suspended' || userStatus === 'disabled') {
+    return NextResponse.json(
+      { error: 'Account disabilitato. Contatta il tuo KORA Admin.' },
+      { status: 403 },
+    );
+  }
+
+  // Verify tenant is active — query analytics.tenant with service client
+  try {
+    const db = getSupabaseServiceClient();
+    const { data: tenantRow } = await db
+      .schema('analytics').from('tenant')
+      .select('id, is_active')
+      .eq('id', tenantId)
+      .maybeSingle();
+
+    if (!tenantRow) {
+      return NextResponse.json({ error: 'Workspace non trovato.' }, { status: 403 });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(tenantRow as any).is_active) {
+      return NextResponse.json(
+        { error: 'Workspace aziendale sospeso. Contatta il tuo KORA Admin.' },
+        { status: 403 },
+      );
+    }
+  } catch {
+    return NextResponse.json({ error: 'Errore verifica accesso.' }, { status: 500 });
+  }
+
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    koraRole: koraRole as 'COMPANY_ADMIN' | 'COMPANY_VIEWER',
+    tenantId,
+    userStatus: userStatus as 'active' | 'suspended' | 'disabled',
+  };
+}
+
+// ── getTenantFromSession — extract tenant_id from authenticated session ────────
+// Returns null if not authenticated or not a company user.
+// Never reads tenantId from query params or request body.
+
+export async function getTenantFromSession(request?: NextRequest): Promise<string | null> {
+  const user = await resolveUser(request);
+  if (!user) return null;
+
+  const appMeta = user.app_metadata as Record<string, unknown> | undefined;
+  const koraRole = appMeta?.kora_role as string | undefined;
+
+  if (koraRole !== 'COMPANY_ADMIN' && koraRole !== 'COMPANY_VIEWER') return null;
+
+  return (appMeta?.kora_tenant_id as string | undefined) ?? null;
+}
+
+// ── assertTenantAccess — verify company user can access a specific tenant ──────
+// Cross-tenant access attempt returns 403.
+// KORA_ADMIN bypass is handled in admin routes, not here.
+
+export function assertTenantAccess(
+  user: KoraCompanyUser,
+  requestedTenantId: string,
+): NextResponse | null {
+  if (user.tenantId !== requestedTenantId) {
+    return NextResponse.json(
+      { error: 'Accesso negato — tenant non autorizzato.' },
+      { status: 403 },
+    );
+  }
+  return null; // access granted
+}
+
+// ── Type guards — distinguish error response from authorized user ──────────────
+
+export function isKoraAuthError(value: KoraUser | KoraCompanyUser | NextResponse): value is NextResponse {
   return value instanceof NextResponse;
+}
+
+export function isKoraAdmin(value: KoraUser | KoraCompanyUser): value is KoraUser {
+  return value.koraRole === 'KORA_ADMIN';
+}
+
+export function isCompanyUser(value: KoraUser | KoraCompanyUser): value is KoraCompanyUser {
+  return value.koraRole === 'COMPANY_ADMIN' || value.koraRole === 'COMPANY_VIEWER';
 }
