@@ -60,7 +60,13 @@ interface Initiative {
   hasColumnMapping: boolean;
   hasMultiFileMatch: boolean;
   hasB30Provenance?: boolean;
-  provenanceSummary?: { fieldCount?: number; kindCounts?: Record<string, number> } | null;
+  provenanceSummary?: {
+    fieldCount?: number;
+    kindCounts?: Record<string, number>;
+    sourceRoles?: string[];
+    conflictRetainedCount?: number;
+    preciseSourceCount?: number;
+  } | null;
   sourceBatchId: string;
 }
 
@@ -392,8 +398,19 @@ export function CompanyEvidenceArchivePanel() {
                           {ini.hasMultiFileMatch   && <span className="text-[8px] text-green-600 font-medium">multi-file</span>}
                           {ini.hasB30Provenance    && (
                             <span className="text-[8px] text-indigo-600 font-medium"
-                              title={ini.provenanceSummary ? `${ini.provenanceSummary.fieldCount ?? 0} fields tracked` : 'provenance tracked'}>
-                              prov
+                              title={ini.provenanceSummary
+                                ? [
+                                    `${ini.provenanceSummary.fieldCount ?? 0} fields tracked`,
+                                    ini.provenanceSummary.sourceRoles?.length
+                                      ? `merged from: ${ini.provenanceSummary.sourceRoles.join(', ')}`
+                                      : '',
+                                    ini.provenanceSummary.conflictRetainedCount
+                                      ? `${ini.provenanceSummary.conflictRetainedCount} conflict(s) retained`
+                                      : '',
+                                  ].filter(Boolean).join(' · ')
+                                : 'provenance tracked'}>
+                              prov{ini.provenanceSummary?.sourceRoles?.length
+                                ? `←${ini.provenanceSummary.sourceRoles.join('/')}` : ''}
                             </span>
                           )}
                         </div>

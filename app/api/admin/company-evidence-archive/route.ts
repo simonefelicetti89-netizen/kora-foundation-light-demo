@@ -94,20 +94,42 @@ function extractSafePayloadFields(payload: Record<string, unknown>): {
 }
 
 function extractSafeProvenanceSummary(provObj: Record<string, unknown>): Record<string, unknown> {
-  // Summarize provenance kinds across tracked fields — no raw values
+  // Summarize provenance kinds + B30.1 source roles — no raw values
   const kinds: Record<string, number> = {};
+  const sourceRoles = new Set<string>();
   const PROV_KIND_MAP: Record<string, string> = {
     o: 'original_file', c: 'column_mapping', m: 'manual_completion',
     f: 'multi_file_merge', d: 'derived', s: 'system_default',
   };
+  let conflictRetainedCount = 0;
+  let preciseSourceCount = 0;
+
   for (const [, fp] of Object.entries(provObj)) {
     if (typeof fp === 'object' && fp !== null) {
-      const k = (fp as Record<string, unknown>)['k'] as string;
+      const f = fp as Record<string, unknown>;
+      const k = f['k'] as string;
       const kind = PROV_KIND_MAP[k] ?? k ?? 'unknown';
       kinds[kind] = (kinds[kind] ?? 0) + 1;
+
+      // B30.1: collect source roles from merged fields (safe — no raw values)
+      if (f['role'] && typeof f['role'] === 'string') {
+        sourceRoles.add(f['role']);
+      }
+      // B30.1: count conflict-retained fields
+      const fl = (f['fl'] as number) ?? 0;
+      if (fl & 8) conflictRetainedCount++;  // bit 3 = conflictRetained
+      // B30.1: count fields with precise source (fi = sourceFileIndex)
+      if (f['fi'] !== undefined) preciseSourceCount++;
     }
   }
-  return { fieldCount: Object.keys(provObj).length, kindCounts: kinds };
+
+  return {
+    fieldCount: Object.keys(provObj).length,
+    kindCounts: kinds,
+    sourceRoles: [...sourceRoles],       // safe: only role names (budget/lms/provider/etc.)
+    conflictRetainedCount,
+    preciseSourceCount,
+  };
 }
 
 // ── GET handler ───────────────────────────────────────────────────────────────

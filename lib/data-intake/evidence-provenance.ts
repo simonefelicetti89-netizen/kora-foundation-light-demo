@@ -6,6 +6,8 @@
 // NEVER stores raw values, cell contents, PII, or free-text notes.
 // Only metadata: kind, confidence, source file role/type, flags.
 
+import type { MergedFieldProvenance, ConflictFieldProvenance } from './initiative-matching';
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type ProvenanceKind =
@@ -30,6 +32,11 @@ export type FieldProvenanceSafe = {
   fileRole?: string;
   fileType?: 'csv' | 'xlsx';
   safeSheetName?: string;      // sanitized, max 50 chars, no PII
+  // B30.1: precise multi-file merge metadata
+  sourceFileIndex?: number;
+  sourceRowIndex?: number;
+  matchId?: string;
+  conflictRetained?: boolean;  // true if primary was kept despite conflict
   caveat?: string;
 };
 
@@ -82,6 +89,7 @@ function buildFieldEntry(params: {
   fileRole?: string;
   fileType?: 'csv' | 'xlsx';
   safeSheetName?: string;
+  conflictRetained?: boolean;
   caveat?: string;
 }): FieldProvenanceSafe {
   const { field, kind, confidence } = params;
@@ -93,10 +101,11 @@ function buildFieldEntry(params: {
     isManual:         params.isManual  ?? false,
     isMerged:         params.isMerged  ?? false,
     isDerived:        params.isDerived ?? false,
-    ...(params.fileRole       ? { fileRole: params.fileRole }             : {}),
-    ...(params.fileType       ? { fileType: params.fileType }             : {}),
-    ...(params.safeSheetName  ? { safeSheetName: params.safeSheetName }   : {}),
-    ...(params.caveat         ? { caveat: params.caveat }                  : {}),
+    ...(params.fileRole         ? { fileRole: params.fileRole }           : {}),
+    ...(params.fileType         ? { fileType: params.fileType }           : {}),
+    ...(params.safeSheetName    ? { safeSheetName: params.safeSheetName } : {}),
+    ...(params.conflictRetained ? { conflictRetained: true }              : {}),
+    ...(params.caveat           ? { caveat: params.caveat }               : {}),
   };
 }
 
@@ -105,28 +114,33 @@ function buildFieldEntry(params: {
 /**
  * Build field provenance for tracked fields in a finalRow.
  *
- * Logic:
- *   1. If field in manualAppliedFields and was empty before → manual_completion
- *   2. If field absent in preMergeRow but present in finalRow and isMerged → multi_file_merge
- *   3. If field's canonical name === original source header → original_file
- *   4. If field came via mapping (non-canonical header) → column_mapping
- *   5. Otherwise → system_default
+ * Logic (priority order):
+ *   1. If field in mergedFieldProvenance → multi_file_merge with specific per-field source metadata (B30.1)
+ *   2. If field in conflictFieldProvenance → primary provenance + conflict_retained caveat (B30.1)
+ *   3. If field in manualAppliedFields → manual_completion
+ *   4. If field's canonical name === original source header → original_file
+ *   5. If field came via mapping (non-canonical header) → column_mapping
+ *   6. Otherwise → system_default
  */
 export function buildRowProvenance(params: {
   finalRow: Record<string, string>;
-  preMergeRow?: Record<string, string>;     // primary row before multi-file merge
-  preMappingRow?: Record<string, string>;   // row before any mapping (original headers)
-  effectiveMapping?: Record<string, string>; // source_header → canonical_field
+  preMergeRow?: Record<string, string>;
+  preMappingRow?: Record<string, string>;
+  effectiveMapping?: Record<string, string>;
   manualAppliedFields?: string[];
   isMultiFileMerged?: boolean;
   matchConfidence?: number;
   fileRole?: string;
   fileType?: 'csv' | 'xlsx';
   sheetName?: string;
+  // B30.1: field-level merge provenance from initiative-matching
+  mergedFieldProvenance?: Record<string, MergedFieldProvenance>;
+  conflictFieldProvenance?: Record<string, ConflictFieldProvenance>;
 }): RowProvenance {
   const {
     finalRow, preMergeRow, effectiveMapping, manualAppliedFields,
     isMultiFileMerged, matchConfidence, fileRole, fileType, sheetName,
+    mergedFieldProvenance, conflictFieldProvenance,
   } = params;
 
   const safeSheetName = sanitizeSheetName(sheetName);
@@ -144,9 +158,45 @@ export function buildRowProvenance(params: {
 
   for (const field of TRACKED_FIELDS) {
     const finalVal = finalRow[field]?.trim() ?? '';
-    if (!finalVal) continue;  // skip empty fields
+    if (!finalVal) continue;
 
-    // 1. Manual completion: field was in manualApplied AND primary row was empty
+    // B30.1 — 1. Precise multi-file merge: field-level source metadata known
+    const mfp = mergedFieldProvenance?.[field];
+    if (mfp) {
+      provenance[field] = {
+        field,
+        provenanceKind:   'multi_file_merge',
+        sourceStrength:   'medium',
+        confidence:       Math.round(mfp.matchConfidence * 100) / 100,
+        isManual:         false,
+        isMerged:         true,
+        isDerived:        false,
+        fileRole:         mfp.sourceFileRole,
+        ...(mfp.sourceFileType    ? { fileType: mfp.sourceFileType }                          : {}),
+        ...(mfp.sourceSheetName   ? { safeSheetName: sanitizeSheetName(mfp.sourceSheetName) } : {}),
+        sourceFileIndex:  mfp.sourceFileIndex,
+        sourceRowIndex:   mfp.sourceRowIndex,
+        matchId:          mfp.matchId.slice(0, 12),  // abbreviated
+        caveat: `Merged from matched secondary file (role: ${mfp.sourceFileRole}, file_${mfp.sourceFileIndex}, row ${mfp.sourceRowIndex}). Primary field was empty.`,
+      };
+      continue;
+    }
+
+    // B30.1 — 2. Conflict: field exists in primary, secondary had different value → primary retained
+    const cfp = conflictFieldProvenance?.[field];
+    if (cfp) {
+      // Field comes from primary — mark with conflict_retained caveat
+      provenance[field] = buildFieldEntry({
+        field, kind: 'original_file',
+        confidence: 0.90, strength: 'strong',
+        fileRole, fileType, safeSheetName,
+        conflictRetained: true,
+        caveat: `Conflicting value from secondary file (role: ${cfp.conflictingSourceFileRole}, file_${cfp.conflictingSourceFileIndex}) was detected and discarded. Primary value retained.`,
+      });
+      continue;
+    }
+
+    // 3. Manual completion
     if (manualAppliedFields?.includes(field)) {
       const preMergeVal = preMergeRow?.[field]?.trim() ?? '';
       if (!preMergeVal || preMergeVal === '') {
@@ -161,7 +211,7 @@ export function buildRowProvenance(params: {
       }
     }
 
-    // 2. Multi-file merge: field was absent/empty in primary but present in final
+    // 4. Generic multi-file merge fallback (flag only, no specific source)
     if (isMultiFileMerged && preMergeRow !== undefined) {
       const preMergeVal = preMergeRow[field]?.trim() ?? '';
       if (!preMergeVal && finalVal) {
@@ -170,27 +220,25 @@ export function buildRowProvenance(params: {
           confidence: matchConfidence ?? 0.60, strength: 'medium',
           isMerged: true,
           fileRole, fileType, safeSheetName,
-          caveat: 'Merged from matched secondary file. Reviewed downstream in UEF Review.',
+          caveat: 'Merged from matched secondary file. Source file details unavailable.',
         });
         continue;
       }
     }
 
-    // 3. Column mapping: non-canonical source header
+    // 5. Column mapping: non-canonical source header
     const sourceHeader = reverseMapping.get(field);
     if (sourceHeader && sourceHeader !== field) {
-      // Mapping was applied — confidence depends on whether it was user-confirmed or auto
-      const mappingConf = 0.75;  // B27 suggestions average confidence
       provenance[field] = buildFieldEntry({
         field, kind: 'column_mapping',
-        confidence: mappingConf, strength: 'medium',
+        confidence: 0.75, strength: 'medium',
         fileRole, fileType, safeSheetName,
         caveat: `Column mapped from source header "${sourceHeader}".`,
       });
       continue;
     }
 
-    // 4. Original file (canonical header directly matched)
+    // 6. Original file (canonical header directly matched)
     if (sourceHeader === field || (!effectiveMapping && finalVal)) {
       provenance[field] = buildFieldEntry({
         field, kind: 'original_file',
@@ -255,15 +303,19 @@ export function sanitizeProvenanceForStorage(prov: RowProvenance): Record<string
   const safe: Record<string, unknown> = {};
   for (const [field, fp] of Object.entries(prov)) {
     safe[field] = {
-      k: fp.provenanceKind[0],           // abbreviated: o/c/m/f/d/s
+      k:    fp.provenanceKind[0],           // abbreviated: o/c/m/f/d/s
       conf: fp.confidence,
-      str:  fp.sourceStrength[0],        // strong→s, medium→m, weak→w, unknown→u
-      fl:   (fp.isManual ? 1 : 0) | (fp.isMerged ? 2 : 0) | (fp.isDerived ? 4 : 0),
-      ...(fp.fileRole      ? { role: fp.fileRole }           : {}),
-      ...(fp.fileType      ? { ft:   fp.fileType }           : {}),
-      ...(fp.safeSheetName ? { sh:   fp.safeSheetName }      : {}),
-      // caveat stored only if present and short (no raw text)
-      ...(fp.caveat && fp.caveat.length <= 120 ? { cav: fp.caveat } : {}),
+      str:  fp.sourceStrength[0],           // s/m/w/u
+      fl:   (fp.isManual ? 1 : 0) | (fp.isMerged ? 2 : 0) | (fp.isDerived ? 4 : 0) | (fp.conflictRetained ? 8 : 0),
+      ...(fp.fileRole         ? { role: fp.fileRole }                      : {}),
+      ...(fp.fileType         ? { ft:   fp.fileType }                      : {}),
+      ...(fp.safeSheetName    ? { sh:   fp.safeSheetName }                 : {}),
+      // B30.1: precise multi-file merge metadata
+      ...(fp.sourceFileIndex  !== undefined ? { fi: fp.sourceFileIndex }   : {}),
+      ...(fp.sourceRowIndex   !== undefined ? { ri: fp.sourceRowIndex }    : {}),
+      ...(fp.matchId          ? { mid: fp.matchId }                        : {}),
+      // caveat: stored only if present and short (no raw cell content)
+      ...(fp.caveat && fp.caveat.length <= 140 ? { cav: fp.caveat } : {}),
     };
   }
   return safe;

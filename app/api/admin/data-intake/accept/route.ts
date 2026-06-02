@@ -517,6 +517,8 @@ export async function POST(request: NextRequest) {
   // ── B28 MULTI-FILE: re-process all files server-side, run matching ────────────
   let matchSummaryForAudit: Record<string, number> = {};
   let multiFileCount = 1;
+  // B30.1: store matchResult for per-row provenance access
+  let matchResult: ReturnType<typeof runInitiativeMatching> | null = null;
 
   if (isMultiFile) {
     let ssNames: (string | null)[] = [];
@@ -548,7 +550,7 @@ export async function POST(request: NextRequest) {
       parsedFiles.push(result.parsed);
     }
 
-    const matchResult = runInitiativeMatching(parsedFiles);
+    matchResult = runInitiativeMatching(parsedFiles);
     rows = matchResult.finalRows;
     matchSummaryForAudit = matchResult.matchSummary as unknown as Record<string, number>;
     multiFileCount = allFileEntries.length;
@@ -600,11 +602,12 @@ export async function POST(request: NextRequest) {
   // B27: missing field summary for audit
   const missingFieldSummary = analyzeMissingFields(finalRows);
 
-  // B30: generate per-row field provenance for tracked fields
-  // preMergeRow omitted — manualApplied already guarantees the field was empty before completion
+  // B30/B30.1: generate per-row field provenance with precise multi-file source metadata
   const fileRoleForProv = detectFileRole(file.name, headers).role;
-  const allRowProvenances = finalRows.map(row =>
-    buildRowProvenance({
+  const allRowProvenances = finalRows.map((row, rowIdx) => {
+    // B30.1: pass field-level merge provenance if available from matching
+    const match = isMultiFile ? matchResult?.matches[rowIdx] : undefined;
+    return buildRowProvenance({
       finalRow: row,
       effectiveMapping: isMultiFile ? undefined : effectiveMapping as Record<string, string>,
       manualAppliedFields: manualApplied,
@@ -612,8 +615,10 @@ export async function POST(request: NextRequest) {
       fileRole: fileRoleForProv,
       fileType: isXlsx ? 'xlsx' : 'csv',
       sheetName: selectedSheetName ?? undefined,
-    })
-  );
+      mergedFieldProvenance:  match?.mergedFieldProvenance,
+      conflictFieldProvenance: match?.conflictFieldProvenance,
+    });
+  });
   const provenanceSummary = summarizeProvenance(allRowProvenances);
 
   // ── 11. Eligibility classification on mapped rows ────────────────────────────
@@ -663,7 +668,16 @@ export async function POST(request: NextRequest) {
         // B30: provenance summary (no raw values)
         _b30: true,
         provenance_enabled: true,
-        provenance_summary: provenanceSummary,
+        provenance_summary: {
+          ...provenanceSummary,
+          // B30.1: multi-file precision fields
+          mergedFieldsWithPreciseSource: isMultiFile
+            ? allRowProvenances.reduce((n, p) => n + Object.values(p).filter(f => f.sourceFileIndex !== undefined && f.isMerged).length, 0)
+            : 0,
+          conflictFieldsRetained: isMultiFile
+            ? allRowProvenances.reduce((n, p) => n + Object.values(p).filter(f => f.conflictRetained).length, 0)
+            : 0,
+        },
       } as Record<string, unknown>,
       created_by:             authResult.email,
       processed_at:           null,

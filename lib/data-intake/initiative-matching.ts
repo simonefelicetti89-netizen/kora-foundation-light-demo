@@ -1,5 +1,6 @@
 // lib/data-intake/initiative-matching.ts
-// B28: Rule-based initiative matching for multi-file batch intake.
+// B28/B30.1: Rule-based initiative matching for multi-file batch intake.
+// B30.1: adds field-level merged provenance and conflict provenance to each match.
 // Matches rows across files referring to the same initiative.
 // No LLM, no external calls, deterministic, pure function.
 //
@@ -34,6 +35,31 @@ export interface ParsedIntakeFile {
   warnings: string[];
 }
 
+// B30.1: per-field provenance for fields merged from secondary files
+export type MergedFieldProvenance = {
+  field: string;
+  sourceFileIndex: number;
+  sourceFileRole: IntakeFileRole;
+  sourceFileType?: 'csv' | 'xlsx';
+  sourceSheetName?: string;         // sanitized — no PII
+  sourceRowIndex: number;
+  sourceCanonicalField: string;     // canonical field name (no raw value)
+  matchId: string;
+  matchConfidence: number;
+  matchStatus: InitiativeMatchStatus;
+  mergeReason: 'filled_empty_primary_field';
+};
+
+// B30.1: per-field provenance for fields that had a conflict (primary retained)
+export type ConflictFieldProvenance = {
+  field: string;
+  primaryKept: true;
+  conflictingSourceFileIndex: number;
+  conflictingSourceFileRole: IntakeFileRole;
+  conflictingSourceRowIndex: number;
+  conflictReason: string;
+};
+
 export interface InitiativeMatch {
   matchId: string;
   status: InitiativeMatchStatus;
@@ -49,6 +75,9 @@ export interface InitiativeMatch {
   mergedFromFiles: number[];
   conflictWarnings: string[];
   reasonCodes: string[];
+  // B30.1: field-level provenance (no raw values)
+  mergedFieldProvenance: Record<string, MergedFieldProvenance>;
+  conflictFieldProvenance: Record<string, ConflictFieldProvenance>;
 }
 
 export interface MultiFileMergeResult {
@@ -213,17 +242,49 @@ function matchSecondaryRow(
   return { confidence, matchedFields, reasons };
 }
 
-// ── Merge rows conservatively ─────────────────────────────────────────────────
+// ── Sheet name sanitizer (no PII) ────────────────────────────────────────────
+
+const MERGE_PII_PATTERNS = [
+  /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/,
+  /\b\d{3}[\s.-]?\d{3}[\s.-]?\d{4}\b/,
+];
+
+function safeMergeSheetName(s: string | undefined): string | undefined {
+  if (!s || !s.trim()) return undefined;
+  const t = s.trim().slice(0, 50);
+  if (MERGE_PII_PATTERNS.some(p => p.test(t))) return '[sheet]';
+  return t;
+}
+
+// ── Merge rows conservatively — B30.1: field-level provenance ────────────────
 
 function mergeRows(
   primaryRow: Record<string, string>,
-  linkedRows: Array<{ row: Record<string, string>; role: IntakeFileRole; fileIndex: number }>,
-): { merged: Record<string, string>; mergedFromFiles: number[]; conflicts: string[] } {
+  linkedRows: Array<{
+    row: Record<string, string>;
+    role: IntakeFileRole;
+    fileIndex: number;
+    rowIndex: number;
+    fileType?: 'csv' | 'xlsx';
+    sheetName?: string;
+  }>,
+  matchId: string,
+  matchConfidence: number,
+  matchStatus: InitiativeMatchStatus,
+): {
+  merged: Record<string, string>;
+  mergedFromFiles: number[];
+  conflicts: string[];
+  mergedFieldProvenance: Record<string, MergedFieldProvenance>;
+  conflictFieldProvenance: Record<string, ConflictFieldProvenance>;
+} {
   const merged = { ...primaryRow };
   const mergedFromFiles: number[] = [];
   const conflicts: string[] = [];
+  const mergedFieldProvenance: Record<string, MergedFieldProvenance> = {};
+  const conflictFieldProvenance: Record<string, ConflictFieldProvenance> = {};
 
-  for (const { row, role, fileIndex } of linkedRows) {
+  for (const { row, role, fileIndex, rowIndex, fileType, sheetName } of linkedRows) {
     const fillableFields = FILLABLE_BY_ROLE[role] ?? [];
     let anyFilled = false;
 
@@ -233,21 +294,45 @@ function mergeRows(
 
       const primaryVal = merged[field]?.trim() ?? '';
       if (!primaryVal) {
-        // Fill empty field from secondary
+        // Fill empty field from secondary — record provenance
         merged[field] = secondaryVal;
         anyFilled = true;
+        mergedFieldProvenance[field] = {
+          field,
+          sourceFileIndex:    fileIndex,
+          sourceFileRole:     role,
+          ...(fileType    ? { sourceFileType: fileType }                        : {}),
+          ...(sheetName   ? { sourceSheetName: safeMergeSheetName(sheetName) } : {}),
+          sourceRowIndex:     rowIndex,
+          sourceCanonicalField: field,  // canonical name (no raw value)
+          matchId,
+          matchConfidence,
+          matchStatus,
+          mergeReason: 'filled_empty_primary_field',
+        };
       } else if (primaryVal !== secondaryVal) {
-        // Conflict: both have different values → warn, keep primary
+        // Conflict: keep primary, record conflict provenance
         conflicts.push(
-          `Campo "${field}" in conflitto: file_${fileIndex}="${secondaryVal}" vs primary="${primaryVal}" — mantenuto valore primary.`,
+          `Campo "${field}" in conflitto: file_${fileIndex} row ${rowIndex} — mantenuto valore primary.`,
         );
+        // Only record first conflict per field
+        if (!conflictFieldProvenance[field]) {
+          conflictFieldProvenance[field] = {
+            field,
+            primaryKept: true,
+            conflictingSourceFileIndex: fileIndex,
+            conflictingSourceFileRole:  role,
+            conflictingSourceRowIndex:  rowIndex,
+            conflictReason: `Secondary value differs from primary; primary retained per conservative merge rule.`,
+          };
+        }
       }
     }
 
     if (anyFilled) mergedFromFiles.push(fileIndex);
   }
 
-  return { merged, mergedFromFiles, conflicts };
+  return { merged, mergedFromFiles, conflicts, mergedFieldProvenance, conflictFieldProvenance };
 }
 
 // ── Main function ─────────────────────────────────────────────────────────────
@@ -281,6 +366,8 @@ export function runInitiativeMatching(files: ParsedIntakeFile[]): MultiFileMerge
         mergedFromFiles: [primaryFile.fileIndex],
         conflictWarnings: [],
         reasonCodes: ['single_file'],
+        mergedFieldProvenance:  {},   // B30.1: no merged fields in single-file mode
+        conflictFieldProvenance: {},  // B30.1: no conflicts in single-file mode
       })),
       finalRows,
       matchSummary: {
@@ -343,10 +430,27 @@ export function runInitiativeMatching(files: ParsedIntakeFile[]): MultiFileMerge
       }
     }
 
-    // Merge
-    const { merged, mergedFromFiles, conflicts } = mergeRows(
+    // Compute match status (needed before mergeRows for conflict confidence)
+    const preAdjStatus = linkedRows.length === 0 ? 'unmatched' : statusFromConfidence(maxConfidence);
+
+    // Merge — B30.1: pass linkedRows with rowIndex + file metadata for field provenance
+    const matchId = `m_${primaryFile.fileIndex}_${primaryRowIdx}`;
+    const { merged, mergedFromFiles, conflicts, mergedFieldProvenance, conflictFieldProvenance } = mergeRows(
       primaryRow,
-      linkedRows.map(lr => ({ row: lr.row, role: lr.role, fileIndex: lr.fileIndex })),
+      linkedRows.map(lr => {
+        const secFile = secondaryFiles.find(sf => sf.fileIndex === lr.fileIndex);
+        return {
+          row:       lr.row,
+          role:      lr.role,
+          fileIndex: lr.fileIndex,
+          rowIndex:  lr.rowIndex,
+          fileType:  secFile?.fileType,
+          sheetName: secFile?.selectedSheetName,
+        };
+      }),
+      matchId,
+      maxConfidence,
+      preAdjStatus,
     );
 
     // Reduce confidence for conflicts
@@ -359,7 +463,7 @@ export function runInitiativeMatching(files: ParsedIntakeFile[]): MultiFileMerge
       : statusFromConfidence(adjConfidence);
 
     matches.push({
-      matchId: `m_${primaryFile.fileIndex}_${primaryRowIdx}`,
+      matchId,
       status,
       confidence: Math.round(adjConfidence * 100) / 100,
       primaryRow: {
@@ -377,6 +481,8 @@ export function runInitiativeMatching(files: ParsedIntakeFile[]): MultiFileMerge
       mergedFromFiles: [primaryFile.fileIndex, ...mergedFromFiles],
       conflictWarnings: conflicts,
       reasonCodes: [...new Set(allReasons)].slice(0, 8),
+      mergedFieldProvenance,     // B30.1: field-level source metadata
+      conflictFieldProvenance,   // B30.1: field-level conflict metadata
     });
   }
 
