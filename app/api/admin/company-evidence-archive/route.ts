@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
     const ps = (b.payload_sample ?? {}) as Record<string, unknown>;
     return {
       batchId:              (b.id as string).slice(0, 8) + '…',
-      batchIdFull:          b.id as string,
+      batchIdFull:          b.id as string,  // B31: needed for attachment register
       createdAt:            b.created_at as string,
       sourceType:           b.source_type as string,
       sourceName:           (b.source_name as string | null) ?? null,
@@ -197,6 +197,10 @@ export async function GET(request: NextRequest) {
       // B30: provenance summary from payload_sample
       provenanceEnabled:    Boolean(ps['provenance_enabled'] ?? ps['_b30']),
       provenanceSummary:    ps['provenance_summary'] as Record<string, number> | null ?? null,
+      // B31: evidence attachments summary from payload_sample
+      hasAttachments:       Boolean(ps['_b31']),
+      attachmentSummary:    ps['_b31_summary'] as Record<string, unknown> | null ?? null,
+      attachmentCount:      Array.isArray(ps['_b31_attachments']) ? (ps['_b31_attachments'] as unknown[]).length : 0,
     };
   });
 

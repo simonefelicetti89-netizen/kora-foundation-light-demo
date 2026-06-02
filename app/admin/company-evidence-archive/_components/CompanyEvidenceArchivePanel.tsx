@@ -1,16 +1,18 @@
 'use client';
 
 // app/admin/company-evidence-archive/_components/CompanyEvidenceArchivePanel.tsx
-// B29: Company Evidence Archive — read-only evidence lineage panel.
-// No edit, no upload, no scoring, no delete. Privacy-safe aggregated view.
+// B29/B31: Company Evidence Archive — read-only lineage + evidence attachment metadata.
+// No edit (except attachment register), no scoring, no delete. Privacy-safe view.
 
 import { useEffect, useState, useMemo } from 'react';
+import { EvidenceAttachmentPanel } from './EvidenceAttachmentPanel';
 import { useSearchParams } from 'next/navigation';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface BatchSummary {
   batchId: string;
+  batchIdFull?: string;
   createdAt: string;
   sourceType: string;
   sourceName: string | null;
@@ -27,6 +29,9 @@ interface BatchSummary {
   matchSummary: Record<string, number> | null;
   provenanceEnabled?: boolean;
   provenanceSummary?: Record<string, number> | null;
+  hasAttachments?: boolean;
+  attachmentSummary?: Record<string, unknown> | null;
+  attachmentCount?: number;
 }
 
 interface ContributionSummary {
@@ -170,6 +175,8 @@ export function CompanyEvidenceArchivePanel() {
   const [error, setError]   = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [search, setSearch] = useState('');
+  const [selectedBatchIdFull, setSelectedBatchIdFull] = useState<string | null>(null);
+  const [showAttachPanel, setShowAttachPanel] = useState(false);
 
   useEffect(() => {
     fetch('/api/admin/tenants', { credentials: 'include' })
@@ -316,6 +323,13 @@ export function CompanyEvidenceArchivePanel() {
                         match: {b.matchSummary['matched'] ?? 0}✓ {b.matchSummary['possibleMatch'] ?? 0}≈ {b.matchSummary['unmatched'] ?? 0}✗
                       </span>
                     )}
+                    {b.hasAttachments && (
+                      <span className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[9px] text-indigo-700 cursor-pointer"
+                        onClick={() => { setSelectedBatchIdFull(b.batchIdFull ?? b.batchId.replace('…', '')); setShowAttachPanel(v => !v); }}>
+                        📎 {b.attachmentCount ?? 0} attachment{(b.attachmentCount ?? 0) !== 1 ? 's' : ''}
+                        {b.attachmentSummary?.['suggestedL3Count'] ? ` · L3×${b.attachmentSummary['suggestedL3Count']}` : ''}
+                      </span>
+                    )}
                     {b.provenanceEnabled && (
                       <span className="rounded border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 text-[9px] text-indigo-700">
                         provenance ✓
@@ -331,6 +345,35 @@ export function CompanyEvidenceArchivePanel() {
             </div>
           )}
         </div>
+
+        {/* ── B31: Evidence Attachments ── */}
+        {showAttachPanel && selectedBatchIdFull && (
+          <div className="rounded-lg border border-indigo-200 bg-white px-5 py-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-0.5 h-4 bg-indigo-500 rounded-full" />
+                <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Evidence Attachments</p>
+                <span className="rounded border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[9px] font-semibold text-indigo-700">Metadata only · No raw content</span>
+              </div>
+              <button onClick={() => setShowAttachPanel(false)} className="text-[10px] text-slate-400 hover:text-slate-600">✕ Chiudi</button>
+            </div>
+            <EvidenceAttachmentPanel tenantCode={TENANT} batchId={selectedBatchIdFull} />
+          </div>
+        )}
+
+        {!showAttachPanel && data.batches.some(b => b.batchIdFull) && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const firstBatch = data.batches.find(b => b.batchIdFull);
+                if (firstBatch?.batchIdFull) { setSelectedBatchIdFull(firstBatch.batchIdFull); setShowAttachPanel(true); }
+              }}
+              className="rounded border border-indigo-200 bg-indigo-50 px-3 py-1 text-[10px] font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors">
+              📎 Aggiungi evidence attachment
+            </button>
+            <span className="text-[10px] text-slate-400">Allega fatture, export provider, LMS, policy (metadata only)</span>
+          </div>
+        )}
 
         {/* ── Contribution Summary ── */}
         <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
