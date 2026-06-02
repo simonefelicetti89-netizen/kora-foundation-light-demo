@@ -587,6 +587,25 @@ export function CompanyLivePreviewPanel() {
             </div>
           </div>
 
+          {/* ── B29: Evidence Archive link ──────────────────────────────────── */}
+          {data && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-5 py-3 flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Company Evidence Archive</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Lineage read-only: quali iniziative contribuiscono al KORA Index, BTI, Reporting Readiness.
+                  Nessun dato individuale. Nessuna azione operativa.
+                </p>
+              </div>
+              <a
+                href={`/admin/company-evidence-archive?tenantCode=${encodeURIComponent(tenantCode)}&reportingPeriod=${encodeURIComponent(period)}`}
+                className="rounded-lg border border-[#6156F5] text-[#6156F5] px-4 py-2 text-xs font-semibold hover:bg-[#f5f4ff] transition-colors flex-shrink-0"
+              >
+                Apri Evidence Archive →
+              </a>
+            </div>
+          )}
+
         </div>
       )}
     </div>
