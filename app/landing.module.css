@@ -21,6 +21,8 @@
 .link:hover { color: rgba(247,245,239,1); }
 .navCta { font-size: 13px; font-weight: 700; color: #06032B; background: #EFEBE2; border-radius: 9px; padding: 9px 18px; transition: transform .25s, box-shadow .25s; text-decoration: none; display: inline-block; }
 .navCta:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,0,.3); }
+.navLogin { font-size: 13px; font-weight: 600; color: rgba(247,245,239,.72); transition: color .25s; text-decoration: none; display: inline-block; }
+.navLogin:hover { color: rgba(247,245,239,1); }
 @media (max-width: 720px) { .navLinks .link { display: none; } }
 
 /* ── WRAP ── */

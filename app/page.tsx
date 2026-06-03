@@ -11,6 +11,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LandingMotion } from '@/components/landing/LandingMotion';
 import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import { PACKAGES } from '@/lib/landing/packages';
 import styles from './landing.module.css';
 
 // ── Numeri canonici — single source of truth (scenario S1, Meridiana Group) ──
@@ -81,7 +82,8 @@ export default function LandingPage() {
             <a className={styles.link} href="#metodo">Come funziona</a>
             <a className={styles.link} href="#indice">KORA Index</a>
             <a className={styles.link} href="#pilot">Foundation Light</a>
-            <a className={styles.navCta} href="#pilot">Avvia un pilot →</a>
+            <Link className={styles.navLogin} href="/admin/login">Accedi</Link>
+            <Link className={styles.navCta} href="/pilot">Avvia un pilot →</Link>
           </div>
         </div>
       </nav>
@@ -109,8 +111,7 @@ export default function LandingPage() {
                 — con evidenze verificate, confini espliciti e Decision Pack di cui rispondere al board.
               </p>
               <div className={`${styles.heroCtas} ${styles.reveal} ${styles.revealIn} ${styles.d3}`}>
-                {/* Modifica 5: route esistenti */}
-                <a className={styles.btnPrimary} href="#pilot">Scopri Foundation Light →</a>
+                <Link className={styles.btnPrimary} href="/demo-guide">Esplora la demo →</Link>
                 <a className={styles.btnGhost} href="#metodo">Come funziona</a>
               </div>
               <p className={`${styles.heroBoundary} ${styles.reveal} ${styles.revealIn} ${styles.d4}`}>
@@ -467,56 +468,35 @@ export default function LandingPage() {
           <p className={`${styles.offerModel} ${styles.reveal} ${styles.d2}`}>
             Modello operativo: <span className={styles.offerModelB}>service-assisted</span> · nessun dato individuale richiesto · si parte da export standard Excel/CSV · nessuna integrazione API necessaria.
           </p>
+          {/* Packages from single-source lib/landing/packages.ts */}
           <div className={styles.pkgs}>
-            {/* Diagnostic */}
-            <div className={`${styles.pkg} ${styles.reveal} ${styles.d2}`}>
-              <span className={styles.pkgDur}>4–6 settimane</span>
-              <span className={styles.pkgTitle}>Foundation Light Diagnostic</span>
-              <ul className={styles.pkgUl}>
-                {['Inventario e classificazione dati esistenti','Eligibility Gate (Eligible / Limited / Blocked)','KORA Index preliminare — 10 componenti','Confidence Score e Activation Safeguard','Activation Debt per pillar'].map((t) => (
-                  <li key={t} className={styles.pkgLi}><span className={styles.pkgLiDot}>·</span>{t}</li>
-                ))}
-              </ul>
-              <div className={styles.pkgFoot}>
-                <div className={`${styles.pkgPrice} ${styles.num}`}>€7.500–12.000</div>
-                <div className={styles.pkgPnote}>indicativo · dipende da perimetro e qualità dati</div>
-                <div className={styles.pkgDeliv}>Deliverable: Board Pack Preview</div>
+            {PACKAGES.map((pkg, i) => (
+              <div
+                key={pkg.id}
+                className={`${styles.pkg} ${pkg.recommended ? styles.pkgHi : ''} ${styles.reveal} ${i === 0 ? styles.d2 : i === 1 ? styles.d3 : styles.d4}`}
+              >
+                {pkg.recommended && <span className={styles.pkgTag}>Raccomandato</span>}
+                <span className={`${styles.pkgDur} ${pkg.recommended ? styles.pkgDurHi : ''}`}>{pkg.duration}</span>
+                <span className={styles.pkgTitle}>{pkg.nameLanding}</span>
+                <ul className={styles.pkgUl}>
+                  {pkg.items.map((t) => (
+                    <li key={t} className={styles.pkgLi}><span className={styles.pkgLiDot}>·</span>{t}</li>
+                  ))}
+                </ul>
+                <div className={`${styles.pkgFoot} ${pkg.recommended ? styles.pkgHiFoot : ''}`}>
+                  <div className={`${styles.pkgPrice} ${styles.num}`}>{pkg.price}</div>
+                  <div className={styles.pkgPnote}>{pkg.priceNote}</div>
+                  <div className={styles.pkgDeliv}>Deliverable: {pkg.deliverable}</div>
+                </div>
               </div>
-            </div>
-
-            {/* Pilot — recommended */}
-            <div className={`${styles.pkg} ${styles.pkgHi} ${styles.reveal} ${styles.d3}`}>
-              <span className={styles.pkgTag}>Raccomandato</span>
-              <span className={`${styles.pkgDur} ${styles.pkgDurHi}`}>6–8 settimane</span>
-              <span className={styles.pkgTitle}>Foundation Light Pilot</span>
-              <ul className={styles.pkgUl}>
-                {['Tutto il pacchetto Diagnostic','Budget-to-Human-Impact — lettura direzionale','HR KPI preview (correlazione aggregata)','Decision Pack completo — board-ready','Workshop esecutivo (2 ore)'].map((t) => (
-                  <li key={t} className={styles.pkgLi}><span className={styles.pkgLiDot}>·</span>{t}</li>
-                ))}
-              </ul>
-              <div className={`${styles.pkgFoot} ${styles.pkgHiFoot}`}>
-                <div className={`${styles.pkgPrice} ${styles.num}`}>€12.000–18.000</div>
-                <div className={styles.pkgPnote}>include sessione advisor KORA e workshop esecutivo</div>
-                <div className={styles.pkgDeliv}>Deliverable: Decision Pack + Workshop</div>
-              </div>
-            </div>
-
-            {/* Strategic */}
-            <div className={`${styles.pkg} ${styles.reveal} ${styles.d4}`}>
-              <span className={styles.pkgDur}>8–10 settimane</span>
-              <span className={styles.pkgTitle}>Strategic Pilot</span>
-              <ul className={styles.pkgUl}>
-                {['Tutto il pacchetto Pilot','Multi-sito o multi-reparto','Roadmap di riallocazione budget dettagliata','Board workshop C-suite','Preparazione per fase Pilot Calibration'].map((t) => (
-                  <li key={t} className={styles.pkgLi}><span className={styles.pkgLiDot}>·</span>{t}</li>
-                ))}
-              </ul>
-              <div className={styles.pkgFoot}>
-                <div className={`${styles.pkgPrice} ${styles.num}`}>€18.000–25.000</div>
-                <div className={styles.pkgPnote}>multi-sito o multi-reparto · advisor incluso</div>
-                <div className={styles.pkgDeliv}>Deliverable: Decision Pack + Board Workshop + Roadmap</div>
-              </div>
-            </div>
+            ))}
           </div>
+          {/* Link to dedicated pilot page for full costs & contact */}
+          <p className={`${styles.reveal} ${styles.d3}`} style={{ marginTop: '2rem', fontSize: 14, fontWeight: 600 }}>
+            <Link href="/pilot" style={{ color: '#C76F3D', textDecoration: 'none' }}>
+              Costi dettagliati, modalità, FAQ e richiesta informazioni →
+            </Link>
+          </p>
         </div>
       </section>
 
@@ -543,9 +523,8 @@ export default function LandingPage() {
             Ogni pilot inizia con una valutazione preliminare, senza impegno automatico. Il costo dipende da perimetro, qualità dei dati e siti coinvolti.
           </p>
           <div className={`${styles.closeCtas} ${styles.reveal} ${styles.d3}`}>
-            <a className={styles.btnInk} href="#pilot">Avvia un pilot →</a>
-            {/* Modifica 5: route esistente per demo */}
-            <Link className={styles.btnOut} href="/demo-guide">Guarda come funziona</Link>
+            <Link className={styles.btnInk} href="/pilot">Avvia un pilot →</Link>
+            <Link className={styles.btnOut} href="/demo-guide">Esplora la demo</Link>
           </div>
         </div>
       </section>
