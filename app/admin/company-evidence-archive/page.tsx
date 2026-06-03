@@ -1,3 +1,6 @@
+// A-11: Evidence Archive — archivio evidenze per company.
+// Scopo: visualizzare e gestire i record evidenza (batch, iniziative,
+//        livelli L0–L4, lifecycle allegati) per una company specifica.
 // app/admin/company-evidence-archive/page.tsx
 // B29: Company Evidence Archive — read-only evidence lineage page.
 

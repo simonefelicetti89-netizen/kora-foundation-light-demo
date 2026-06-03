@@ -1,61 +1,83 @@
-import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+// A-02: Company Portfolio — vista aggregata di tutte le company demo.
+// Scopo: fornire a KORA Admin una tabella leggibile di tutte le aziende pilot
+//        con KORA Index™, Confidence Score™ e Activation Safeguard™.
 
-const SAFEGUARD_PILL: Record<string, string> = {
-  CLEAR:   'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  WARNING: 'bg-[rgba(217,154,43,0.12)] text-[#7A5200] border-[rgba(217,154,43,0.22)]',
-  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
+import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
+
+const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
+
+const SAFEGUARD_STYLE: Record<string, React.CSSProperties> = {
+  CLEAR:   { background: TOKENS.safeguard.pass.bg,  color: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  },
+  WARNING: { background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}40` },
+  FLAGGED: { background: TOKENS.safeguard.cap.bg,   color: TOKENS.safeguard.cap.text,   border: `1px solid ${TOKENS.safeguard.cap.dot}40`   },
 };
 
 export default function CompanyPortfolio() {
   const portfolio = adminPreviewService.getCompanyPortfolioPreview();
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-[#06032B]">Company Portfolio</h1>
-          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
-            Internal Preview
-          </span>
-        </div>
-        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
-          All companies in the KORA demo portfolio — synthetic data only.
+    <div style={{ maxWidth: 900 }}>
+      {/* Header */}
+      <div style={{ marginBottom: 28 }}>
+        <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>
+          KORA Admin · Portafoglio
+        </p>
+        <h1 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: TOKENS.ink, marginBottom: 6 }}>
+          Company Portfolio
+        </h1>
+        <p style={{ fontFamily: FONT, fontSize: '13.5px', color: TOKENS.inkSecondary, lineHeight: 1.55, maxWidth: '60ch' }}>
+          Tutte le aziende nel portafoglio demo KORA — dati sintetici. Confidence Score™ è esterno al KORA Index™ (peso = 0).
         </p>
       </div>
 
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
-        <div className="grid grid-cols-[1fr_120px_80px_80px_80px_90px] gap-0 px-4 py-2 bg-[rgba(6,3,43,0.03)] border-b border-[rgba(6,3,43,0.08)]">
-          {['Company', 'Sector', 'Workers', 'KORA Index', 'CS', 'Safeguard'].map((h) => (
-            <p key={h} className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{h}</p>
+      {/* Table */}
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, overflow: 'hidden' }}>
+        {/* Header row */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 130px 70px 90px 70px 100px', gap: 0, padding: '10px 20px', borderBottom: TOKENS.cardBorder, background: TOKENS.taupe }}>
+          {['Azienda', 'Settore', 'Lavoratori', 'KORA Index™', 'CS™', 'Safeguard™'].map((h) => (
+            <p key={h} style={{ fontFamily: FONT, fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.inkHint }}>{h}</p>
           ))}
         </div>
-        <div className="divide-y divide-[rgba(6,3,43,0.05)]">
-          {portfolio.map((c) => (
-            <div key={c.id} className="grid grid-cols-[1fr_120px_80px_80px_80px_90px] gap-0 px-4 py-3 items-center hover:bg-[rgba(6,3,43,0.03)]">
+
+        {/* Data rows */}
+        <div>
+          {portfolio.map((c, i) => (
+            <div
+              key={c.id}
+              style={{
+                display:      'grid',
+                gridTemplateColumns: '1fr 130px 70px 90px 70px 100px',
+                gap:          0,
+                padding:      '13px 20px',
+                borderBottom: i < portfolio.length - 1 ? TOKENS.cardBorder : 'none',
+                alignItems:   'center',
+              }}
+            >
               <div>
-                <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{c.company_name}</p>
-                <p className="text-xs text-[rgba(6,3,43,0.40)]">{c.territory}</p>
+                <p style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 600, color: TOKENS.ink }}>{c.company_name}</p>
+                <p style={{ fontFamily: FONT, fontSize: '10.5px', color: TOKENS.inkHint, marginTop: 2 }}>{c.territory}</p>
                 {c.is_primary_demo && (
-                  <span className="mt-0.5 inline-block rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-1 py-0.5 text-[10px] font-medium text-[#C76F3D]">
+                  <span style={{ marginTop: 4, display: 'inline-block', borderRadius: 4, border: `1px solid ${TOKENS.accentSoft}`, background: TOKENS.accentHover, padding: '1px 6px', fontSize: '9.5px', fontWeight: 600, color: TOKENS.accent, fontFamily: FONT }}>
                     Primary demo
                   </span>
                 )}
               </div>
-              <p className="text-xs text-[rgba(6,3,43,0.52)] truncate">{c.sector}</p>
-              <p className="text-xs font-mono text-[rgba(6,3,43,0.62)]">{c.headcount}</p>
-              <p className="text-sm font-bold text-[rgba(6,3,43,0.90)]">
+              <p style={{ fontFamily: FONT, fontSize: '11.5px', color: TOKENS.inkSecondary }}>{c.sector}</p>
+              <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>{c.headcount}</p>
+              <p style={{ fontFamily: FONT, fontSize: '17px', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>
                 {c.kora_index_value !== null ? c.kora_index_value : '—'}
               </p>
-              <p className="text-xs font-mono text-[rgba(6,3,43,0.52)]">
+              <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '11.5px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
                 {c.confidence_score !== null ? `${(c.confidence_score * 100).toFixed(0)}%` : '—'}
               </p>
               <div>
                 {c.safeguard_status ? (
-                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${SAFEGUARD_PILL[c.safeguard_status] ?? 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]'}`}>
+                  <span style={{ borderRadius: 999, padding: '3px 10px', fontSize: '9.5px', fontWeight: 700, fontFamily: FONT, ...SAFEGUARD_STYLE[c.safeguard_status] }}>
                     {c.safeguard_status}
                   </span>
                 ) : (
-                  <span className="text-xs text-[rgba(6,3,43,0.28)]">—</span>
+                  <span style={{ fontFamily: FONT, fontSize: '12px', color: TOKENS.inkHint }}>—</span>
                 )}
               </div>
             </div>
@@ -63,12 +85,13 @@ export default function CompanyPortfolio() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      {/* Demo notes */}
+      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {portfolio.map((c) => (
-          <div key={c.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3">
-            <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{c.company_name}</p>
-            <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5 leading-relaxed">{c.demo_note}</p>
-            <p className="text-xs font-mono text-[rgba(6,3,43,0.28)] mt-1">
+          <div key={c.id} style={{ borderRadius: TOKENS.cardRadiusSm, border: TOKENS.cardBorder, background: TOKENS.taupe, padding: '10px 16px' }}>
+            <p style={{ fontFamily: FONT, fontSize: '11.5px', fontWeight: 600, color: TOKENS.ink }}>{c.company_name}</p>
+            <p style={{ fontFamily: FONT, fontSize: '11.5px', color: TOKENS.inkSecondary, marginTop: 3, lineHeight: 1.55 }}>{c.demo_note}</p>
+            <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9.5px', color: TOKENS.inkMeta, marginTop: 4 }}>
               data_completeness: {(c.data_completeness * 100).toFixed(0)}% · synthetic_demo_data: true
             </p>
           </div>

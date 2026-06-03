@@ -46,14 +46,14 @@ const SUBMISSION_STATUS_LABEL: Record<string, string> = {
 
 const SUBMISSION_STATUS_CLS: Record<string, string> = {
   submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   submission_pending:             'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
 const READINESS_CLS: Record<string, string> = {
   report_ready:       'text-green-700',
-  usable_with_caveat: 'text-amber-600',
+  usable_with_caveat: 'text-[#D99A2B]',
   needs_evidence:     'text-[#D99A2B]',
   not_ready:          'text-red-500',
 };
@@ -106,7 +106,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         </div>
 
         {/* Calibration bar */}
-        <div className="mt-4 rounded border border-amber-500/30 bg-[rgba(217,154,43,0.08)]0/10 px-4 py-2 text-[10px] text-amber-300">
+        <div className="mt-4 rounded border border-[rgba(217,154,43,0.30)] bg-[rgba(217,154,43,0.08)]0/10 px-4 py-2 text-[10px] text-[#D99A2B]">
           {ACME_METHODOLOGY.calibrationStatus.replace(/_/g, ' ')} · {ACME_METHODOLOGY.versionId} · {ACME_PROFILE.period} · Dati aggregati · {ACME_METHODOLOGY.disclaimerCalibration}
         </div>
       </div>
@@ -226,7 +226,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
           {[
             { label: 'Totali',          value: ACME_EVIDENCE_SUMMARY.total,         cls: '' },
             { label: 'Idonei',          value: ACME_EVIDENCE_SUMMARY.eligible,       cls: 'text-green-700' },
-            { label: 'Sollievo econ.',  value: ACME_EVIDENCE_SUMMARY.limited,        cls: 'text-amber-600' },
+            { label: 'Sollievo econ.',  value: ACME_EVIDENCE_SUMMARY.limited,        cls: 'text-[#D99A2B]' },
             { label: 'Bloccati',        value: ACME_EVIDENCE_SUMMARY.blocked,        cls: 'text-red-500' },
           ].map(({ label, value, cls }) => (
             <div key={label} className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-center">
@@ -255,7 +255,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
                     <Badge
                       label={ev.eligibility}
                       cls={ev.eligibility === 'eligible' ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' :
-                           ev.eligibility === 'limited' ? 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' :
+                           ev.eligibility === 'limited' ? 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]' :
                            ev.eligibility === 'blocked' ? 'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]' :
                            'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]'}
                     />
@@ -279,7 +279,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
               <div key={i} className={`rounded border px-3 py-2 text-[10.5px] flex gap-2 ${gap.severity === 'high' ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)]' : gap.severity === 'medium' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
                 <Badge label={gap.pillar} cls="border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <span className={`font-semibold ${gap.severity === 'high' ? 'text-[#9E3B2F]' : gap.severity === 'medium' ? 'text-amber-700' : 'text-[rgba(6,3,43,0.62)]'}`}>{gap.gap}</span>
+                  <span className={`font-semibold ${gap.severity === 'high' ? 'text-[#9E3B2F]' : gap.severity === 'medium' ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.62)]'}`}>{gap.gap}</span>
                   <span className="text-[rgba(6,3,43,0.52)] ml-1">— {gap.action}</span>
                 </div>
               </div>
@@ -292,7 +292,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       <div id="submissions" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4 scroll-mt-4">
         <SectionTitle n="03" title="Data Submission" subtitle="Company-side upload flow (B39) — revisione KORA Admin obbligatoria" />
 
-        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10px] text-amber-700">
+        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10px] text-[#8A5A00]">
           Caricamento dati ≠ scoring KORA · Submit non avvia scoring · accepted_for_intake richiede intake manuale da KORA Admin
         </div>
 
@@ -345,7 +345,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         <SectionTitle n="04" title="Decision Pack" subtitle={`${ACME_DECISION_PACK.versionId} · ${ACME_DECISION_PACK.status} · ${ACME_DECISION_PACK.reportingPeriod}`} />
 
         <div className="flex items-center gap-2">
-          <Badge label="DRAFT" cls="bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]" />
+          <Badge label="DRAFT" cls="bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]" />
           <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">Generato: {new Date(ACME_DECISION_PACK.generatedAt).toLocaleDateString('it-IT')}</span>
         </div>
 
@@ -370,7 +370,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         <div className="flex items-center gap-3">
           <Badge
             label={ACME_REPORTING_READINESS.overallLevel.replace(/_/g, ' ')}
-            cls="bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]"
+            cls="bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]"
           />
           <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">
             Score sintetico: {ACME_REPORTING_READINESS.readinessScore}%
@@ -433,9 +433,9 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       {/* ── 08: Future Vision Boundary ────────────────────────────────────────── */}
       <div id="future" className="rounded-xl border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-6 py-5 space-y-4 scroll-mt-4">
         <div>
-          <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-0.5">08</p>
+          <p className="text-[10px] font-bold text-[#D99A2B] uppercase tracking-widest mb-0.5">08</p>
           <h2 className="text-sm font-bold text-[#8A5A00]">Future Modules — Not Active in Foundation Light</h2>
-          <p className="text-[10.5px] text-amber-700 mt-0.5">Vision prodotto strategica — non attivo, non contrattualizzabile, nessun production claim.</p>
+          <p className="text-[10.5px] text-[#8A5A00] mt-0.5">Vision prodotto strategica — non attivo, non contrattualizzabile, nessun production claim.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -451,13 +451,13 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
           ].map((m) => (
             <div key={m.name} className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1]/60 p-3 opacity-80 space-y-1">
               <p className="text-[10.5px] font-semibold text-[#8A5A00]">{m.name}</p>
-              <p className="text-[9.5px] text-amber-700 leading-snug">{m.note}</p>
+              <p className="text-[9.5px] text-[#8A5A00] leading-snug">{m.note}</p>
               <p className="text-[9px] font-semibold text-[#D99A2B] uppercase tracking-wide">Vision</p>
             </div>
           ))}
         </div>
 
-        <p className="text-[9.5px] text-amber-600">
+        <p className="text-[9.5px] text-[#D99A2B]">
           Nessun modulo futuro è attivo in Foundation Light. Nessuno è disponibile, contrattualizzabile o promesso.
           L&apos;architettura è sequenziale: ogni fase abilita quella successiva.
           <Link href="/future-vision" className="ml-1 underline hover:text-[#8A5A00]">Roadmap architetturale →</Link>

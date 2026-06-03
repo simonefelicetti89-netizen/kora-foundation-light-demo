@@ -60,7 +60,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_CLS: Record<string, string> = {
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  submission_pending:             'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  submission_pending:             'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
   submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   submission_rejected:            'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
@@ -213,7 +213,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* Caveat */}
-      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10.5px] text-amber-700">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10.5px] text-[#8A5A00]">
         Accepted_for_intake non avvia scoring, non crea UEF e non bypassa Match Review o UEF Review.
         Dopo aver accettato una submission, aprire Data Intake per creare il batch ufficiale manualmente.
       </div>
@@ -226,7 +226,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
           {/* Summary */}
           <div className="grid grid-cols-4 gap-3">
             {[
-              { label: 'In attesa',     value: data.summary.pending,             cls: 'text-amber-700' },
+              { label: 'In attesa',     value: data.summary.pending,             cls: 'text-[#8A5A00]' },
               { label: 'Chiarimento',   value: data.summary.needs_clarification, cls: data.summary.needs_clarification > 0 ? 'text-[#D99A2B]' : '' },
               { label: 'Accettati',     value: data.summary.accepted,            cls: 'text-green-700' },
               { label: 'Rifiutati',     value: data.summary.rejected,            cls: '' },

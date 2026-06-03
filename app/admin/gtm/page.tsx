@@ -1,3 +1,6 @@
+// A-16: GTM & Validazione — cockpit GTM fondatore.
+// Scopo: visualizzare scenari dimostrativi S1/S2 per la validazione
+//        commerciale e preparare presentazioni a investor/pilot prospect.
 import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 
@@ -171,7 +174,7 @@ const PILOT_CRITERIA = [
 ];
 
 const STAGE_STYLES: Record<string, string> = {
-  pilot_active:   'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  pilot_active:   'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   pilot_proposed: 'bg-[rgba(43,92,230,0.10)] text-[#1B2A4A] border-[rgba(43,92,230,0.22)]',
   demo_shown:     'bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.85)] border-[rgba(199,111,61,0.22)]',
   contacted:      'bg-[rgba(217,154,43,0.12)] text-[#7A5200] border-[rgba(217,154,43,0.22)]',
@@ -195,7 +198,7 @@ export default function GtmPilotConsole() {
           <span className="rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-xs font-semibold text-[#9E3B2F]">
             Vista interna KORA
           </span>
-          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-[#8A5A00]">
             Internal GTM
           </span>
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">
@@ -252,7 +255,7 @@ export default function GtmPilotConsole() {
           ))}
         </div>
 
-        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs font-mono text-amber-700">
+        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs font-mono text-[#8A5A00]">
           Scenario sintetico dimostrativo. Non rappresenta previsione, causalità o ROI garantito.
         </div>
       </div>
@@ -293,7 +296,7 @@ export default function GtmPilotConsole() {
                   <span className="font-semibold text-[rgba(6,3,43,0.78)]">Deliverable: </span>
                   {track.deliverable}
                 </p>
-                <p className="text-xs text-amber-700 border-t border-[rgba(6,3,43,0.05)] pt-1.5">
+                <p className="text-xs text-[#8A5A00] border-t border-[rgba(6,3,43,0.05)] pt-1.5">
                   <span className="font-semibold">Nota presenter: </span>
                   {track.presenterNote}
                 </p>
@@ -368,7 +371,7 @@ export default function GtmPilotConsole() {
           </div>
         </div>
 
-        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-amber-700">
+        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-[#8A5A00]">
           <span className="font-semibold">Nota presenter: </span>
           Usare My KORA per dimostrare che il lavoratore ha un layer personale e che l&apos;azienda vede solo aggregati.
         </div>

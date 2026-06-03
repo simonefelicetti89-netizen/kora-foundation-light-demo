@@ -1,3 +1,6 @@
+// A-12: Data Intake Studio — pipeline intake dati KORA.
+// Scopo: gestire l'intero processo di intake: caricamento fonti,
+//        classificazione BCM, match review, approvazione per scoring.
 // app/admin/data-intake/page.tsx
 // Server Component — KORA_ADMIN only.
 // Calls requireKoraAdmin() server-side before rendering.

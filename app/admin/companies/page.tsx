@@ -1,3 +1,6 @@
+// A-01: Company Console — lista di tutte le aziende nel portafoglio KORA.
+// Scopo: fornire a KORA Admin la vista operativa di ogni azienda con stato
+//        pipeline, readiness dati, safeguard e next action operativa.
 // app/admin/companies/page.tsx
 // B37 — KORA Admin Company Console — live tenant registry.
 // Replaces B9/A-15 demo page with real server-auth protected page.

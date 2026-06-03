@@ -1,3 +1,6 @@
+// A-15: AI Onboarding Engine — pipeline AI-assisted per intake.
+// Scopo: mostrare il percorso AI-assisted dall'intake al Decision Pack;
+//        tassonomia BCM rule-based, nessun LLM esterno su dati HR.
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 
 const STATUS_PILL: Record<string, string> = {
@@ -9,9 +12,9 @@ const STATUS_PILL: Record<string, string> = {
 };
 
 const READINESS_PILL: Record<string, string> = {
-  ready:   'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  ready:   'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   partial: 'bg-[rgba(217,154,43,0.12)] text-[#7A5200] border-[rgba(217,154,43,0.22)]',
-  blocked: 'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
+  blocked: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
 };
 
 function SectionLabel({ code, title }: { code: string; title: string }) {
@@ -47,7 +50,7 @@ export default function AIOnboardingPage() {
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-[#06032B]">AI Onboarding Engine</h1>
-          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-[#8A5A00]">
             KORA Admin / Interno
           </span>
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">

@@ -1,3 +1,5 @@
+// A-01f-data-intake: Company Data Intake — data-intake specifico per company.
+// Scopo: gestire il processo di data-intake per questa specifica company.
 'use client';
 
 import { useState } from 'react';
@@ -23,7 +25,7 @@ const FILTER_LABELS: Record<RowFilter, string> = {
 
 const ELIGIBILITY_BADGE: Record<string, string> = {
   eligible:        'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
-  limited:         'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  limited:         'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
   blocked:         'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
   review_required: 'border-blue-200 bg-blue-50 text-blue-700',
   structural_policy: 'border-violet-200 bg-violet-50 text-violet-700',
@@ -43,7 +45,7 @@ const PERIMETER_LABELS: Record<string, string> = {
 const PERIMETER_DEPTH_COLOR: Record<string, string> = {
   high:   'text-[rgba(47,125,85,0.90)]',
   medium: 'text-blue-600',
-  low:    'text-amber-600',
+  low:    'text-[#D99A2B]',
   none:   'text-[rgba(6,3,43,0.40)]',
 };
 
@@ -59,7 +61,7 @@ const INTAKE_STATUS_LABELS: Record<string, string> = {
 const INTAKE_STATUS_COLORS: Record<string, string> = {
   not_started:                 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
   draft:                       'border-blue-200 bg-blue-50 text-blue-700',
-  partial:                     'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  partial:                     'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
   validation_required:         'border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
   ready_for_ingestion:         'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
   blocked_missing_required_fields: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
@@ -217,7 +219,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
                 {fp.risk_flags.length > 0 && (
                   <div className="space-y-0.5">
                     {fp.risk_flags.map((rf, i) => (
-                      <p key={i} className="text-[9px] text-amber-700 bg-[rgba(217,154,43,0.08)] rounded px-2 py-1 leading-relaxed">{rf}</p>
+                      <p key={i} className="text-[9px] text-[#8A5A00] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1 leading-relaxed">{rf}</p>
                     ))}
                   </div>
                 )}
@@ -229,7 +231,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
       ) : (
         <section className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-5 space-y-2">
           <p className="text-xs font-semibold text-[#8A5A00]">Perimetro fiscale non ancora definito</p>
-          <p className="text-xs text-amber-700">
+          <p className="text-xs text-[#8A5A00]">
             Prima di caricare dati programmi, definire il budget people/welfare e il perimetro fiscale.
             KORA non parte dal catalogo: parte dal budget e dall&apos;obiettivo di attivazione.
           </p>
@@ -245,12 +247,12 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Qualità Allocazione</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
             {[
-              ['Economic Relief', `€${plan.economic_relief_budget_eur.toLocaleString('it-IT')}`, 'text-amber-600'],
+              ['Economic Relief', `€${plan.economic_relief_budget_eur.toLocaleString('it-IT')}`, 'text-[#D99A2B]'],
               ['Deep Activation', `€${plan.deep_activation_budget_eur.toLocaleString('it-IT')}`, 'text-[rgba(47,125,85,0.90)]'],
               ['Compliance Excluded', `€${plan.compliance_excluded_budget_eur.toLocaleString('it-IT')}`, 'text-[rgba(6,3,43,0.52)]'],
               ['Non-budget-mediated policies', String(plan.structural_policy_non_budget_mediated_count), 'text-violet-600'],
               ['Riallocazione possibile', `€${plan.reallocation_opportunity_eur.toLocaleString('it-IT')}`, 'text-blue-600'],
-              ['Allocation quality score', `${(plan.allocation_quality_score * 100).toFixed(0)}%`, plan.allocation_quality_score >= 0.7 ? 'text-[rgba(47,125,85,0.90)]' : 'text-amber-600'],
+              ['Allocation quality score', `${(plan.allocation_quality_score * 100).toFixed(0)}%`, plan.allocation_quality_score >= 0.7 ? 'text-[rgba(47,125,85,0.90)]' : 'text-[#D99A2B]'],
             ].map(([label, value, color]) => (
               <div key={label as string}>
                 <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
@@ -297,14 +299,14 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
                     <td className="px-3 py-2 text-right font-mono text-[rgba(158,59,47,0.75)]">{b.invalid_rows}</td>
                     <td className="px-3 py-2 text-right font-mono text-[#2F7D55] font-semibold">{b.ready_for_ingestion_count}</td>
                     <td className="px-3 py-2 text-right font-mono text-[rgba(158,59,47,0.90)]">{b.blocked_candidate_count}</td>
-                    <td className="px-3 py-2 text-right font-mono text-amber-600">{b.limited_candidate_count}</td>
+                    <td className="px-3 py-2 text-right font-mono text-[#D99A2B]">{b.limited_candidate_count}</td>
                     <td className="px-3 py-2 text-right font-mono text-violet-600">{b.structural_policy_count}</td>
                     <td className="px-3 py-2 text-right font-mono text-blue-600">{b.review_required_candidate_count}</td>
                     <td className="px-3 py-2">
                       <span className={cn('rounded border px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap',
                         b.upload_status === 'approved' ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' :
                         b.upload_status === 'validated' ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' :
-                        b.upload_status === 'review_required' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' :
+                        b.upload_status === 'review_required' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]' :
                         'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'
                       )}>
                         {b.upload_status.replace(/_/g, ' ')}
@@ -380,12 +382,12 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
                     </td>
                     <td className="px-3 py-2 font-mono text-[rgba(6,3,43,0.52)] whitespace-nowrap">{row.row_category.replace(/_/g, ' ')}</td>
                     <td className="px-3 py-2 whitespace-nowrap">
-                      <span className={cn('text-[9px] font-semibold', row.fiscal_perimeter === 'compliance_excluded' ? 'text-[rgba(158,59,47,0.90)]' : row.fiscal_perimeter === 'fringe_benefit' ? 'text-amber-600' : row.fiscal_perimeter === 'unknown' ? 'text-[rgba(6,3,43,0.40)]' : 'text-[#2F7D55]')}>
+                      <span className={cn('text-[9px] font-semibold', row.fiscal_perimeter === 'compliance_excluded' ? 'text-[rgba(158,59,47,0.90)]' : row.fiscal_perimeter === 'fringe_benefit' ? 'text-[#D99A2B]' : row.fiscal_perimeter === 'unknown' ? 'text-[rgba(6,3,43,0.40)]' : 'text-[#2F7D55]')}>
                         {PERIMETER_LABELS[row.fiscal_perimeter] ?? row.fiscal_perimeter}
                       </span>
                     </td>
                     <td className="px-3 py-2">
-                      <span className={cn('text-[9px] font-mono', row.mandatory_status === 'mandatory_legal' || row.mandatory_status === 'mandatory_role' ? 'text-[rgba(158,59,47,0.90)]' : row.mandatory_status === 'unknown' ? 'text-amber-600' : 'text-[rgba(6,3,43,0.62)]')}>
+                      <span className={cn('text-[9px] font-mono', row.mandatory_status === 'mandatory_legal' || row.mandatory_status === 'mandatory_role' ? 'text-[rgba(158,59,47,0.90)]' : row.mandatory_status === 'unknown' ? 'text-[#D99A2B]' : 'text-[rgba(6,3,43,0.62)]')}>
                         {row.mandatory_status.replace(/_/g, ' ')}
                       </span>
                     </td>
@@ -394,7 +396,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
                       {row.amount_eur != null ? `€${row.amount_eur.toLocaleString('it-IT')}` : '—'}
                     </td>
                     <td className="px-3 py-2">
-                      <span className={cn('text-[9px]', row.evidence_status === 'missing' || row.evidence_status === 'unknown' ? 'text-[rgba(158,59,47,0.90)] font-semibold' : row.evidence_status === 'self_declared' ? 'text-amber-600' : 'text-[rgba(6,3,43,0.62)]')}>
+                      <span className={cn('text-[9px]', row.evidence_status === 'missing' || row.evidence_status === 'unknown' ? 'text-[rgba(158,59,47,0.90)] font-semibold' : row.evidence_status === 'self_declared' ? 'text-[#D99A2B]' : 'text-[rgba(6,3,43,0.62)]')}>
                         {row.evidence_status.replace(/_/g, ' ')}
                       </span>
                     </td>
@@ -436,7 +438,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[
             { label: 'Eligible candidates', count: eligible.length, color: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)]', textColor: 'text-[#2F7D55]', note: 'Potenzialmente eligible per IU' },
-            { label: 'Limited candidates', count: limited.length, color: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]', textColor: 'text-amber-700', note: 'BTI only — 0 IU per design' },
+            { label: 'Limited candidates', count: limited.length, color: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]', textColor: 'text-[#8A5A00]', note: 'BTI only — 0 IU per design' },
             { label: 'Blocked candidates', count: blocked.length, color: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]', textColor: 'text-[#9E3B2F]', note: '0 IU · 0 KORA Index · governance only' },
             { label: 'Policy strutturali', count: structural.length, color: 'border-violet-200 bg-violet-50', textColor: 'text-violet-700', note: 'Non-budget-mediated · aggregate-only' },
             { label: 'Review required', count: reviewRequired.length, color: 'border-blue-200 bg-blue-50', textColor: 'text-blue-700', note: '0 IU finché non revisionati' },
@@ -467,7 +469,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
                   ))}
                 </div>
                 {row.validation_warnings.length > 0 && (
-                  <p className="text-[10px] text-amber-700 leading-relaxed">{row.validation_warnings[0]}</p>
+                  <p className="text-[10px] text-[#8A5A00] leading-relaxed">{row.validation_warnings[0]}</p>
                 )}
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{row.notes}</p>
               </div>

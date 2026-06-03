@@ -1,4 +1,7 @@
 'use client';
+// A-01d: Company Data Intake — intake dati per una company specifica.
+// Scopo: gestire il caricamento, la classificazione e la revisione
+//        dei file di dati welfare/HR inviati dall'azienda.
 
 import Link from 'next/link';
 import { tenantService } from '@/services/tenant/TenantService';
@@ -36,8 +39,8 @@ export default function AdminDataIntakeLanding() {
                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                   <span className="text-[10px] font-mono text-[rgba(6,3,43,0.40)]">{tenant.company_id}</span>
                   <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-                    summary.intake_status === 'ready_for_ingestion'             ? 'bg-green-100 text-green-700' :
-                    summary.intake_status === 'validation_required'             ? 'bg-[rgba(217,154,43,0.12)] text-amber-700' :
+                    summary.intake_status === 'ready_for_ingestion'             ? 'bg-[rgba(47,125,85,0.10)] text-green-700' :
+                    summary.intake_status === 'validation_required'             ? 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00]' :
                     summary.intake_status === 'blocked_missing_required_fields' ? 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]' :
                     summary.intake_status === 'partial'                         ? 'bg-blue-100 text-blue-700' :
                     summary.intake_status === 'draft'                           ? 'bg-[rgba(6,3,43,0.06)] text-[#C76F3D]' :

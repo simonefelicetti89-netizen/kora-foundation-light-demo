@@ -1,4 +1,7 @@
 'use client';
+// A-01f: Company Detail — vista completa di una singola company.
+// Scopo: dare a KORA Admin visibilità completa su pipeline, scoring, evidenze,
+//        decisioni e stato operativo di un'azienda specifica.
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -15,14 +18,14 @@ import { reportFactoryService } from '@/services/report-factory/ReportFactorySer
 
 const SAFEGUARD_BADGE: Record<string, string> = {
   CLEAR:   'border-kora-fun-green/40 bg-[#2F7D55]/20 text-kora-cosmic-blue',
-  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
   FLAGGED: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
 };
 
 const RISK_BADGE: Record<CompanyRiskLevel, { label: string; classes: string }> = {
   ready:           { label: 'Ready',           classes: 'border-kora-fun-green/40 bg-[#2F7D55]/20 text-kora-cosmic-blue' },
   monitor:         { label: 'Monitor',         classes: 'border-blue-200 bg-blue-50 text-blue-700' },
-  action_required: { label: 'Action Required', classes: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' },
+  action_required: { label: 'Action Required', classes: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]' },
   blocked:         { label: 'Bloccato',        classes: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]' },
 };
 
@@ -154,7 +157,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           {/* Tile 1: Tenant Status */}
           <div className={`rounded-lg border p-3 text-center ${tenant.tenant_status === 'active' ? 'border-kora-fun-green/40 bg-[#2F7D55]/15' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]'}`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">Tenant Status</p>
-            <p className={`text-sm font-bold mt-1 ${tenant.tenant_status === 'active' ? 'text-kora-cosmic-blue' : 'text-amber-700'}`}>
+            <p className={`text-sm font-bold mt-1 ${tenant.tenant_status === 'active' ? 'text-kora-cosmic-blue' : 'text-[#8A5A00]'}`}>
               {tenant.tenant_status}
             </p>
           </div>
@@ -176,7 +179,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
               intakeSummary.intake_status === 'ready_for_ingestion' ? 'text-kora-cosmic-blue' :
               intakeSummary.intake_status === 'not_started' ? 'text-[rgba(158,59,47,0.90)]' :
               intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'text-[#9E3B2F]' :
-              'text-amber-700'
+              'text-[#8A5A00]'
             }`}>
               {intakeSummary.intake_status.replace(/_/g, ' ')}
             </p>
@@ -245,7 +248,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                   <p className="text-[rgba(6,3,43,0.40)]">Stato intake</p>
                   <span className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                     intakeSummary.intake_status === 'ready_for_ingestion'             ? 'bg-[#2F7D55]/20 text-kora-cosmic-blue' :
-                    intakeSummary.intake_status === 'validation_required'             ? 'bg-[rgba(217,154,43,0.12)] text-amber-700' :
+                    intakeSummary.intake_status === 'validation_required'             ? 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00]' :
                     intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]' :
                     intakeSummary.intake_status === 'partial'                         ? 'bg-blue-100 text-blue-700' :
                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
@@ -258,7 +261,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                 <div><p className="text-[rgba(6,3,43,0.40)]">Righe totali</p><p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{intakeSummary.total_rows}</p></div>
                 <div><p className="text-[rgba(6,3,43,0.40)]">Pronte ingestion</p><p className="text-[#C76F3D] font-bold text-sm mt-0.5">{intakeSummary.ready_for_ingestion_rows}</p></div>
                 <div><p className="text-[rgba(6,3,43,0.40)]">Candidate eligible</p><p className="text-[rgba(6,3,43,0.72)] font-bold text-sm mt-0.5">{intakeSummary.eligible_candidate_rows}</p></div>
-                <div><p className="text-[rgba(6,3,43,0.40)]">Review required</p><p className={`font-bold text-sm mt-0.5 ${intakeSummary.review_required_rows > 0 ? 'text-amber-700' : 'text-[rgba(6,3,43,0.52)]'}`}>{intakeSummary.review_required_rows}</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Review required</p><p className={`font-bold text-sm mt-0.5 ${intakeSummary.review_required_rows > 0 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.52)]'}`}>{intakeSummary.review_required_rows}</p></div>
                 <div><p className="text-[rgba(6,3,43,0.40)]">Quality score</p><p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{(intakeSummary.data_quality_score * 100).toFixed(0)}%</p></div>
               </div>
               <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[10px] text-[rgba(6,3,43,0.62)]">
@@ -292,7 +295,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
               </div>
               <div className="text-[10px] text-right space-y-1">
                 <p className="font-mono text-[rgba(6,3,43,0.40)]">{koraIndex.methodology_version_id}</p>
-                <p className="font-mono text-amber-600 font-semibold">{koraIndex.calibration_status}</p>
+                <p className="font-mono text-[#D99A2B] font-semibold">{koraIndex.calibration_status}</p>
                 <p className="font-mono text-[rgba(6,3,43,0.40)]">synthetic_demo_data: true</p>
               </div>
             </div>
@@ -317,7 +320,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
 
             {/* Limitations */}
             {koraIndex.limitations_text && (
-              <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-amber-700">
+              <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-[#8A5A00]">
                 {koraIndex.limitations_text}
               </div>
             )}
@@ -364,7 +367,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
               </div>
               <div>
                 <p className="text-[rgba(6,3,43,0.40)]">Activation Debt</p>
-                <p className={`font-bold text-sm mt-0.5 ${btiRecord.activation_debt_eur > 0 ? 'text-amber-700' : 'text-[rgba(6,3,43,0.40)]'}`}>
+                <p className={`font-bold text-sm mt-0.5 ${btiRecord.activation_debt_eur > 0 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.40)]'}`}>
                   {eur(btiRecord.activation_debt_eur)}
                 </p>
               </div>
@@ -398,7 +401,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
               <p className="text-[rgba(6,3,43,0.40)]">Stato factory</p>
               <span className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                 dpFactoryStatus.latest_status === 'ready'                  ? 'bg-[#2F7D55]/20 text-kora-cosmic-blue' :
-                dpFactoryStatus.latest_status === 'advisor_review_required' ? 'bg-[rgba(217,154,43,0.12)] text-amber-700' :
+                dpFactoryStatus.latest_status === 'advisor_review_required' ? 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00]' :
                 dpFactoryStatus.latest_status === 'data_review_required'    ? 'bg-[rgba(217,154,43,0.10)] text-[#8A5A00]' :
                 dpFactoryStatus.latest_status === 'blocked'                 ? 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]' :
                 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
@@ -441,7 +444,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                 {dpLatestVersion.activation_safeguard_status && (
                   <span>Safeguard: <strong className={
                     dpLatestVersion.activation_safeguard_status === 'CLEAR'   ? 'text-kora-cosmic-blue' :
-                    dpLatestVersion.activation_safeguard_status === 'WARNING' ? 'text-amber-700' :
+                    dpLatestVersion.activation_safeguard_status === 'WARNING' ? 'text-[#8A5A00]' :
                     'text-[rgba(158,59,47,0.90)]'
                   }>{dpLatestVersion.activation_safeguard_status}</strong></span>
                 )}
@@ -479,7 +482,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                     {dpComparison.previous_period_label && (
                       <span>vs <strong className="text-[rgba(6,3,43,0.52)]">{dpComparison.previous_period_label}</strong></span>
                     )}
-                    <span>Metodologia: <strong className={dpComparison.methodology_comparable ? 'text-[#C76F3D]' : 'text-amber-700'}>
+                    <span>Metodologia: <strong className={dpComparison.methodology_comparable ? 'text-[#C76F3D]' : 'text-[#8A5A00]'}>
                       {dpComparison.methodology_comparable ? 'Comparabile' : 'Cambiata'}
                     </strong></span>
                   </div>
@@ -526,10 +529,10 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           {/* Warnings */}
           {dpFactoryStatus.warnings.length > 0 && (
             <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2 space-y-1">
-              <p className="text-[10px] font-semibold text-amber-700">Avvisi:</p>
+              <p className="text-[10px] font-semibold text-[#8A5A00]">Avvisi:</p>
               <ul className="list-disc list-inside space-y-0.5">
                 {dpFactoryStatus.warnings.map((w, i) => (
-                  <li key={i} className="text-[10px] text-amber-600">{w}</li>
+                  <li key={i} className="text-[10px] text-[#D99A2B]">{w}</li>
                 ))}
               </ul>
             </div>
@@ -579,7 +582,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                             <button
                               type="button"
                               onClick={() => handleUserAction(accountProvisioningService.revokeInvite.bind(accountProvisioningService), user.user_id)}
-                              className="text-amber-600 hover:underline"
+                              className="text-[#D99A2B] hover:underline"
                             >
                               Revoca invito
                             </button>
@@ -646,7 +649,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)] px-3 py-2 text-[10px] text-[rgba(6,3,43,0.72)] leading-relaxed">
             {workerSummary.privacy_notes}
           </div>
-          <p className="text-[10px] text-amber-700 font-medium">{workerSummary.next_action}</p>
+          <p className="text-[10px] text-[#8A5A00] font-medium">{workerSummary.next_action}</p>
         </div>
 
         {/* Roster table — admin-only view, no individual PIB */}

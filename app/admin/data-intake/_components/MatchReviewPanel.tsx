@@ -61,7 +61,7 @@ interface Props {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<string, string> = {
-  matched:        'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  matched:        'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   possible_match: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   needs_review:   'bg-purple-100 text-purple-800 border-purple-200',
   unmatched:      'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
@@ -161,7 +161,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
             <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-green-700 font-medium">
               ✓ Matched: {matchReview.matched}
             </span>
-            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-amber-700 font-medium">
+            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[#8A5A00] font-medium">
               ≈ Possible: {matchReview.possibleMatch}
             </span>
             <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 text-purple-700 font-medium">
@@ -180,13 +180,13 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
 
         {/* Current decision summary */}
         <div className="flex flex-wrap gap-1.5 mt-2 text-[10px]">
-          <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-100 px-2 py-0.5 text-[#2F7D55] font-semibold">
+          <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.10)] px-2 py-0.5 text-[#2F7D55] font-semibold">
             Da accettare: {acceptCount}
           </span>
           <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.12)] px-2 py-0.5 text-[#8A5A00] font-semibold">
             Needs review: {nrCount}
           </span>
-          <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.10)] px-2 py-0.5 text-red-800 font-semibold">
+          <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.10)] px-2 py-0.5 text-[#9E3B2F] font-semibold">
             Rifiutati: {rejectCount}
           </span>
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[rgba(6,3,43,0.52)] font-semibold">
@@ -198,7 +198,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
         <div className="flex flex-wrap gap-2 mt-2.5">
           <button
             onClick={acceptAllRecommended}
-            className="rounded border border-green-300 bg-green-50 px-2.5 py-1 text-[10px] font-semibold text-[#2F7D55] hover:bg-green-100 transition-colors"
+            className="rounded border border-green-300 bg-green-50 px-2.5 py-1 text-[10px] font-semibold text-[#2F7D55] hover:bg-[rgba(47,125,85,0.10)] transition-colors"
           >
             ✓ Accept all high-confidence
           </button>
@@ -252,7 +252,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
                     </p>
                   )}
                   {m.conflictFields.length > 0 && (
-                    <p className="text-[10px] text-amber-700 mt-0.5">
+                    <p className="text-[10px] text-[#8A5A00] mt-0.5">
                       ⚠ Conflitti su: {m.conflictFields.join(', ')} — primary mantenuto
                     </p>
                   )}
@@ -316,9 +316,9 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
                     <div className="flex flex-wrap gap-1">
                       <span className="text-[9px] font-semibold text-[#D99A2B] uppercase tracking-wide mr-1">Conflitti:</span>
                       {m.conflictFields.map((f, i) => (
-                        <span key={i} className="rounded bg-[rgba(217,154,43,0.08)] border border-amber-100 px-1.5 py-0.5 text-[9px] font-mono text-amber-700">{f}</span>
+                        <span key={i} className="rounded bg-[rgba(217,154,43,0.08)] border border-amber-100 px-1.5 py-0.5 text-[9px] font-mono text-[#8A5A00]">{f}</span>
                       ))}
-                      <span className="text-[9px] text-amber-600 ml-1">→ valore primary conservato</span>
+                      <span className="text-[9px] text-[#D99A2B] ml-1">→ valore primary conservato</span>
                     </div>
                   )}
                 </div>
@@ -331,7 +331,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
       {/* Truncation warning */}
       {matchReview.truncated && (
         <div className="px-4 py-2 bg-[rgba(217,154,43,0.08)] border-t border-amber-100">
-          <p className="text-[10px] text-amber-700">
+          <p className="text-[10px] text-[#8A5A00]">
             ⚠ Visualizzati i primi 100 match. I match rimanenti vengono gestiti con le regole di default (matched → merge, possible/review → primary).
           </p>
         </div>

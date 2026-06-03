@@ -1,3 +1,6 @@
+// A-09: Submission Queue — coda submission file aziendali.
+// Scopo: gestire i file inviati dalle aziende (intake iniziale),
+//        classificarli e avviarli nella pipeline Data Intake.
 // app/admin/company-submissions/page.tsx
 // B39 — Company submission review queue. KORA_ADMIN only.
 

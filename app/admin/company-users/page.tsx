@@ -1,3 +1,6 @@
+// A-10: Company Users — provisioning utenti aziendali.
+// Scopo: gestire l'accesso degli utenti company (admin/viewer)
+//        al workspace KORA della loro azienda.
 // app/admin/company-users/page.tsx
 // B36 PART 3 — Company user provisioning — KORA_ADMIN only.
 

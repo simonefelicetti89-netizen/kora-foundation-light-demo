@@ -1,69 +1,88 @@
-import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+// A-03: KORA Index™ Registry — registro cross-company dei punteggi KORA.
+// Scopo: fornire a KORA Admin una vista tabulare degli output KORA Index™
+//        per tutte le aziende e scenari, con Confidence Score™ e Safeguard™.
+// Nota: valori sintetici (marcati ~) non derivati da scoring run reali.
 
-const SAFEGUARD_PILL: Record<string, string> = {
-  CLEAR:   'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  WARNING: 'bg-[rgba(217,154,43,0.12)] text-[#7A5200] border-[rgba(217,154,43,0.22)]',
-  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
+import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
+
+const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
+
+const SAFEGUARD_STYLE: Record<string, React.CSSProperties> = {
+  CLEAR:   { background: TOKENS.safeguard.pass.bg,  color: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  },
+  WARNING: { background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}40` },
+  FLAGGED: { background: TOKENS.safeguard.cap.bg,   color: TOKENS.safeguard.cap.text,   border: `1px solid ${TOKENS.safeguard.cap.dot}40`   },
 };
 
 export default function IndexRegistry() {
   const entries = adminPreviewService.getIndexRegistryPreview();
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-[#06032B]">KORA Index Registry</h1>
-          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
-            Internal Preview
-          </span>
-        </div>
-        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
-          Cross-company KORA Index outputs. Entries marked (~) are synthetic values
-          consistent with company demo narratives — not computed from real scoring runs.
+    <div style={{ maxWidth: 960 }}>
+      {/* Header */}
+      <div style={{ marginBottom: 28 }}>
+        <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>
+          KORA Admin · Registro
+        </p>
+        <h1 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: TOKENS.ink, marginBottom: 6 }}>
+          KORA Index™ Registry
+        </h1>
+        <p style={{ fontFamily: FONT, fontSize: '13.5px', color: TOKENS.inkSecondary, lineHeight: 1.55, maxWidth: '64ch' }}>
+          Output KORA Index™ cross-company. Voci ~ = valori sintetici coerenti con le narrative demo — non calcolati da scoring run reali.
+          Confidence Score™ è esterno al KORA Index™ (peso = 0).
         </p>
       </div>
 
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
-        <div className="grid grid-cols-[1fr_60px_140px_80px_70px_90px_100px] gap-0 px-4 py-2 bg-[rgba(6,3,43,0.03)] border-b border-[rgba(6,3,43,0.08)]">
-          {['Company', 'S', 'Period', 'Index', 'CS', 'Safeguard', 'Calibration'].map((h) => (
-            <p key={h} className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{h}</p>
+      {/* Registry table */}
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, overflow: 'hidden' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 60px 150px 90px 65px 100px 120px', gap: 0, padding: '10px 20px', borderBottom: TOKENS.cardBorder, background: TOKENS.taupe }}>
+          {['Azienda', 'S', 'Periodo', 'KORA Index™', 'CS™', 'Safeguard™', 'Calibrazione'].map((h) => (
+            <p key={h} style={{ fontFamily: FONT, fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.inkHint }}>{h}</p>
           ))}
         </div>
-        <div className="divide-y divide-[rgba(6,3,43,0.05)]">
-          {entries.map((e) => (
+        <div>
+          {entries.map((e, i) => (
             <div
               key={`${e.company_id}-${e.scenario_id}`}
-              className="grid grid-cols-[1fr_60px_140px_80px_70px_90px_100px] gap-0 px-4 py-3 items-center hover:bg-[rgba(6,3,43,0.03)]"
+              style={{
+                display:     'grid',
+                gridTemplateColumns: '1.2fr 60px 150px 90px 65px 100px 120px',
+                gap:         0,
+                padding:     '12px 20px',
+                borderBottom: i < entries.length - 1 ? TOKENS.cardBorder : 'none',
+                alignItems:  'center',
+              }}
             >
-              <div className="flex items-center gap-1 min-w-0">
-                <p className="text-sm text-[rgba(6,3,43,0.78)] truncate">{e.company_name}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+                <p style={{ fontFamily: FONT, fontSize: '12.5px', color: TOKENS.inkSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {e.company_name}
+                </p>
                 {e.is_synthetic && (
-                  <span className="shrink-0 text-[10px] text-[rgba(6,3,43,0.28)] font-mono" title="Synthetic value">~</span>
+                  <span title="Valore sintetico" style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9.5px', color: TOKENS.inkHint, flexShrink: 0 }}>~</span>
                 )}
               </div>
-              <p className="text-xs font-mono text-[rgba(6,3,43,0.62)]">{e.scenario_id}</p>
-              <p className="text-xs text-[rgba(6,3,43,0.52)]">{e.reporting_period}</p>
-              <p className="text-lg font-bold text-[rgba(6,3,43,0.90)]">{e.kora_index_value}</p>
-              <p className="text-xs font-mono text-[rgba(6,3,43,0.52)]">{(e.confidence_score * 100).toFixed(0)}%</p>
+              <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '11px', color: TOKENS.inkHint }}>{e.scenario_id}</p>
+              <p style={{ fontFamily: FONT, fontSize: '11.5px', color: TOKENS.inkSecondary }}>{e.reporting_period}</p>
+              <p style={{ fontFamily: FONT, fontSize: '18px', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums' }}>{e.kora_index_value}</p>
+              <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '11.5px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>{(e.confidence_score * 100).toFixed(0)}%</p>
               <div>
-                <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${SAFEGUARD_PILL[e.safeguard_status] ?? 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]'}`}>
+                <span style={{ borderRadius: 999, padding: '3px 10px', fontSize: '9.5px', fontWeight: 700, fontFamily: FONT, ...(SAFEGUARD_STYLE[e.safeguard_status] ?? { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }) }}>
                   {e.safeguard_status}
                 </span>
               </div>
-              <p className="text-[10px] font-mono text-[rgba(6,3,43,0.28)] truncate">{e.calibration_status}</p>
+              <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9px', color: TOKENS.inkMeta, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.calibration_status}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3">
-        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">Registry note</p>
-        <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
-          Only Meridiana Group outputs are backed by full scoring run data (S1 and S2).
-          Other company entries are synthetic values derived from company demo narratives
-          and are consistent with their sector, size, and activation context.
-          All entries are pre-empirical-calibration — methodology v0.1 provisional weights.
+      {/* Registry note */}
+      <div style={{ marginTop: 16, borderRadius: TOKENS.cardRadiusSm, border: TOKENS.cardBorder, background: TOKENS.taupe, padding: '12px 16px' }}>
+        <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>Nota metodologica</p>
+        <p style={{ fontFamily: FONT, fontSize: '11.5px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          Solo Meridiana Group è sostenuta da un full scoring run (S1 e S2). Le altre aziende usano valori sintetici
+          coerenti con settore, dimensione e contesto di attivazione. Tutti gli output sono pre_empirical_calibration
+          — pesi metodologici provvisori v0.1.
         </p>
       </div>
     </div>

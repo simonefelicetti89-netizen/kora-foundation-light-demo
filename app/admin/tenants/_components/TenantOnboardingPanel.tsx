@@ -213,7 +213,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                   <p>Status: <strong>{createResult.status}</strong></p>
                 </div>
                 {createResult.baselineWarning && (
-                  <p className="text-[10px] text-amber-700">⚠ {createResult.baselineWarning}</p>
+                  <p className="text-[10px] text-[#8A5A00]">⚠ {createResult.baselineWarning}</p>
                 )}
                 {/* B9.2: dynamic CTA with query params for seamless next-step navigation */}
                 <div className="pt-2 border-t border-green-100">

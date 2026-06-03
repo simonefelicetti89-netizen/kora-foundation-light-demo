@@ -1,4 +1,7 @@
 'use client';
+// A-01c: Company Onboarding Studio — revisione readiness onboarding.
+// Scopo: controllare e avanzare l'onboarding di una company assegnata,
+//        verificando ogni step (dati, UEF, scoring, Decision Pack).
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -22,7 +25,7 @@ const STATUS_COLORS: Record<string, string> = {
   workforce_baseline_complete:  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   program_data_loaded:          'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
   hr_kpi_loaded:                'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]',
-  ready_for_scoring:            'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  ready_for_scoring:            'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   fully_onboarded:              'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
 };
 
@@ -32,7 +35,7 @@ function ReadinessCheck({ check }: { check: OnboardingReadinessCheck }) {
   return (
     <div className={cn('rounded-md border p-3', isOk ? 'border-[rgba(47,125,85,0.22)] bg-green-50' : isBlocking ? 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]')}>
       <div className="flex items-start gap-2">
-        <span className={cn('text-xs font-bold shrink-0', isOk ? 'text-green-600' : isBlocking ? 'text-[rgba(158,59,47,0.90)]' : 'text-amber-600')}>
+        <span className={cn('text-xs font-bold shrink-0', isOk ? 'text-green-600' : isBlocking ? 'text-[rgba(158,59,47,0.90)]' : 'text-[#D99A2B]')}>
           {isOk ? '✓' : isBlocking ? '✕' : '!'}
         </span>
         <div>
@@ -124,7 +127,7 @@ export default function AdminOnboardingStudio() {
           </p>
         )}
         {suppressedClusters.length > 0 && (
-          <p className="text-xs text-amber-700 mt-2">
+          <p className="text-xs text-[#8A5A00] mt-2">
             {suppressedClusters.length} cluster sotto soglia privacy (&lt; 10 lavoratori) — soppressi.
           </p>
         )}
@@ -195,7 +198,7 @@ export default function AdminOnboardingStudio() {
           <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">Pipeline Readiness</p>
           <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
             pipelineReadiness.status === 'ok' ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' :
-            pipelineReadiness.status === 'warning' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' :
+            pipelineReadiness.status === 'warning' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]' :
             'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
           )}>
             {pipelineReadiness.status.toUpperCase()}

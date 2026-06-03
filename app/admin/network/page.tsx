@@ -1,4 +1,7 @@
 'use client';
+// A-06: KORA Activation Network — ecosystem intelligence view.
+// Scopo: visualizzare la copertura territoriale di partner e advisor,
+//        il protocollo evidenze e il fitness di attivazione per pillar e zona.
 
 import { cn } from '@/lib/utils';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
@@ -84,7 +87,7 @@ const HERO_METRICS = [
 
 const COVERAGE_STYLE: Record<CoverageStatus, string> = {
   forte:    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  media:    'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  media:    'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   debole:   'bg-[rgba(158,59,47,0.06)] text-[rgba(158,59,47,0.90)] border-[rgba(158,59,47,0.20)]',
   scoperta: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
@@ -94,20 +97,20 @@ const PILLAR_CHIP: Record<string, string> = {
   GROWTH:     'bg-blue-100 text-blue-700',
   CONNECTION: 'bg-purple-100 text-purple-700',
   IMPACT:     'bg-[rgba(217,154,43,0.10)] text-[#8A5A00]',
-  LEGACY:     'bg-[rgba(217,154,43,0.12)] text-amber-700',
+  LEGACY:     'bg-[rgba(217,154,43,0.12)] text-[#8A5A00]',
 };
 
 const FIT_STYLE: Record<string, string> = {
   alto:  'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  medio: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  medio: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   basso: 'bg-[rgba(158,59,47,0.06)] text-[rgba(158,59,47,0.90)] border-[rgba(158,59,47,0.20)]',
 };
 
 const PROTOCOL_BADGE: Record<string, string> = {
   'Protocollo attivo':    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   'Audit completato':     'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  'Audit richiesto':      'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
-  'In corso':             'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  'Audit richiesto':      'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
+  'In corso':             'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   'Protocollo in review': 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   'Protocollo parziale':  'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
 };
@@ -357,7 +360,7 @@ const INITIATIVES: Initiative[] = [
     territory: 'Lombardia / Bergamo',
     partner: 'VitaLab Network',
     status: 'In review protocollo',
-    status_style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+    status_style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
     participation_note: null,
     evidence_protocol: 'Audit richiesto',
     is_future_vision: false,

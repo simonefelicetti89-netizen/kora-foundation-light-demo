@@ -1,3 +1,6 @@
+// A-13: Data Lifecycle — gestione ciclo vita dati.
+// Scopo: monitorare e controllare la retention, l'archivio
+//        e la rimozione dei dati secondo policy KORA.
 // app/admin/data-lifecycle/page.tsx
 // B10 — Data Lifecycle Management — KORA_ADMIN only.
 // Inspect, archive, and controlled delete of intake batches.

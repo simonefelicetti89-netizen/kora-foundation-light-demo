@@ -1,56 +1,95 @@
+// A-04: Benchmark — posizionamento KORA Index™ Meridiana vs cluster sintetici.
+// Scopo: fornire una lettura comparativa direzionale per valutare il posizionamento
+//        di un'azienda rispetto al cluster di riferimento.
+// Nota: tutti i benchmark sono sintetici — nessun benchmark empirico disponibile
+//        prima della calibrazione Delphi post-pilot.
+
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+import { TOKENS, CHART_COLORS } from '@/lib/design/kora-design-tokens';
+
+const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
 export default function BenchmarksPage() {
   const benchmarks = adminPreviewService.getBenchmarkPreview();
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-[#06032B]">Benchmarks</h1>
-          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
-            Synthetic Preview
-          </span>
-        </div>
-        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
-          Meridiana Group S.r.l. KORA Index positioned against synthetic cluster benchmarks.
+    <div style={{ maxWidth: 800 }}>
+      {/* Header */}
+      <div style={{ marginBottom: 28 }}>
+        <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>
+          KORA Admin · Benchmark
+        </p>
+        <h1 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: TOKENS.ink, marginBottom: 6 }}>
+          Benchmark di posizionamento
+        </h1>
+        <p style={{ fontFamily: FONT, fontSize: '13.5px', color: TOKENS.inkSecondary, lineHeight: 1.55, maxWidth: '60ch' }}>
+          Meridiana Group S.r.l. vs cluster sintetici di riferimento. Lettura direzionale — non certificativa.
         </p>
       </div>
 
-      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3">
-        <p className="text-xs font-semibold text-amber-700 mb-1">Disclaimer</p>
-        <p className="text-xs text-amber-700 leading-relaxed">
-          All benchmark values are synthetic and created for demo purposes only.
-          No real sector, territory or company-size benchmarks have been computed.
-          Post-pilot Delphi calibration will establish empirical reference ranges.
+      {/* Disclaimer */}
+      <div style={{
+        borderRadius: TOKENS.cardRadiusSm,
+        border:       `1px solid ${TOKENS.safeguard.watch.dot}40`,
+        background:   TOKENS.safeguard.watch.bg,
+        padding:      '12px 16px',
+        marginBottom: 24,
+      }}>
+        <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 700, color: TOKENS.safeguard.watch.text, marginBottom: 4 }}>Nota metodologica</p>
+        <p style={{ fontFamily: FONT, fontSize: '11.5px', color: TOKENS.safeguard.watch.text, lineHeight: 1.6 }}>
+          I valori benchmark sono sintetici e creati a scopo dimostrativo. Nessun benchmark empirico è stato calcolato su dati reali.
+          La calibrazione Delphi post-pilot stabilirà i reference range definitivi.
         </p>
       </div>
 
-      <div className="space-y-4">
+      {/* Benchmark cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {benchmarks.map((b) => (
-          <div key={b.dimension} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5">
-            <div className="flex items-center justify-between mb-3">
+          <div
+            key={b.dimension}
+            style={{
+              background:   TOKENS.surface,
+              border:       TOKENS.cardBorder,
+              borderRadius: TOKENS.cardRadius,
+              boxShadow:    TOKENS.cardShadow,
+              padding:      '20px 24px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{b.dimension}</p>
-                <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)] mt-0.5">{b.cluster_label}</p>
+                <p style={{ fontFamily: FONT, fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: TOKENS.inkHint, marginBottom: 4 }}>
+                  {b.dimension}
+                </p>
+                <p style={{ fontFamily: FONT, fontSize: '14px', fontWeight: 700, color: TOKENS.ink }}>{b.cluster_label}</p>
               </div>
-              <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-xs font-semibold text-[rgba(6,3,43,0.72)]">
+              <span style={{
+                borderRadius: 999,
+                padding:      '4px 12px',
+                fontSize:     '10.5px',
+                fontWeight:   700,
+                fontFamily:   FONT,
+                background:   TOKENS.accentSoft,
+                color:        TOKENS.accent,
+                border:       `1px solid ${TOKENS.accentSoft}`,
+              }}>
                 {b.percentile} percentile
               </span>
             </div>
 
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {[
-                { label: 'Meridiana Group', value: b.meridiana_index, color: 'bg-[rgba(199,111,61,0.08)]0' },
-                { label: 'Cluster average', value: b.cluster_avg, color: 'bg-[rgba(6,3,43,0.18)]' },
-                { label: 'Top quartile', value: b.cluster_top_quartile, color: 'bg-green-300' },
+                { label: 'Meridiana Group',  value: b.meridiana_index,      color: CHART_COLORS.primary },
+                { label: 'Media cluster',    value: b.cluster_avg,           color: CHART_COLORS.benchmark },
+                { label: 'Top quartile',     value: b.cluster_top_quartile, color: CHART_COLORS.positive },
               ].map((row) => (
-                <div key={row.label} className="flex items-center gap-3">
-                  <span className="text-xs text-[rgba(6,3,43,0.52)] w-32 shrink-0">{row.label}</span>
-                  <div className="flex-1 h-2 rounded-full bg-[rgba(6,3,43,0.05)]">
-                    <div className={`h-2 rounded-full ${row.color}`} style={{ width: `${row.value}%` }} />
+                <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontFamily: FONT, fontSize: '11.5px', color: TOKENS.inkSecondary, width: 140, flexShrink: 0 }}>{row.label}</span>
+                  <div style={{ flex: 1, height: 7, borderRadius: 999, background: TOKENS.inkBorder, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', borderRadius: 999, background: row.color, width: `${row.value}%` }} />
                   </div>
-                  <span className="text-xs font-mono text-[rgba(6,3,43,0.62)] w-8 text-right">{row.value}</span>
+                  <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '12px', color: TOKENS.ink, fontWeight: 700, width: 32, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    {row.value}
+                  </span>
                 </div>
               ))}
             </div>

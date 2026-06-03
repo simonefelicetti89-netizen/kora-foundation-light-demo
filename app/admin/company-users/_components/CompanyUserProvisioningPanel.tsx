@@ -30,7 +30,7 @@ const ROLE_OPTIONS = [
 
 const STATUS_BADGE: Record<string, string> = {
   active:    'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
-  suspended: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  suspended: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
   disabled:  'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)]',
 };
 
@@ -206,7 +206,7 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
           </div>
 
           {result && (
-            <div className={`rounded px-3 py-2 text-[10.5px] ${result.ok ? 'bg-green-50 border border-[rgba(47,125,85,0.22)] text-green-700' : 'bg-[rgba(158,59,47,0.06)] border border-[rgba(158,59,47,0.22)] text-red-600'}`}>
+            <div className={`rounded px-3 py-2 text-[10.5px] ${result.ok ? 'bg-green-50 border border-[rgba(47,125,85,0.22)] text-green-700' : 'bg-[rgba(158,59,47,0.06)] border border-[rgba(158,59,47,0.22)] text-[#9E3B2F]'}`}>
               {result.ok ? '✓ ' : '⚠ '}{result.message}
             </div>
           )}
@@ -264,7 +264,7 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
                           <button
                             onClick={() => handleStatusChange(u.userId, 'suspended')}
                             disabled={loading}
-                            className="text-[9px] text-amber-600 hover:underline disabled:opacity-40">
+                            className="text-[9px] text-[#D99A2B] hover:underline disabled:opacity-40">
                             Sospendi
                           </button>
                         )}

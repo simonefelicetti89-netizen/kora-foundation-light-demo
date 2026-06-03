@@ -1,3 +1,5 @@
+// A-01f-onboarding: Company Onboarding — onboarding specifico per company.
+// Scopo: gestire il processo di onboarding per questa specifica company.
 'use client';
 
 import Link from 'next/link';
@@ -16,16 +18,16 @@ const ONBOARDING_STATUS_PILL: Record<string, string> = {
   profile_complete:              'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   workforce_baseline_complete:   'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   program_data_loaded:           'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
-  ready_for_scoring:             'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  ready_for_scoring:             'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   fully_onboarded:               'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
 };
 
 const INTAKE_STATUS_PILL: Record<string, string> = {
   not_started:                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   partial:                         'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  validation_required:             'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  validation_required:             'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   blocked_missing_required_fields: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',
-  ready_for_ingestion:             'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
+  ready_for_ingestion:             'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
   draft:                           'bg-[rgba(6,3,43,0.06)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
 };
 
@@ -35,7 +37,7 @@ function ReadinessRow({ check }: { check: OnboardingReadinessCheck }) {
   return (
     <div className={cn('flex items-start gap-3 px-4 py-3 border-b border-[rgba(6,3,43,0.05)] last:border-0',
       isOk ? '' : isBlocking ? 'bg-[rgba(158,59,47,0.06)]' : 'bg-[rgba(217,154,43,0.08)]')}>
-      <span className={cn('mt-0.5 text-xs font-bold shrink-0', isOk ? 'text-[#2F7D55]' : isBlocking ? 'text-[rgba(158,59,47,0.90)]' : 'text-amber-600')}>
+      <span className={cn('mt-0.5 text-xs font-bold shrink-0', isOk ? 'text-[#2F7D55]' : isBlocking ? 'text-[rgba(158,59,47,0.90)]' : 'text-[#D99A2B]')}>
         {isOk ? '✓' : isBlocking ? '✕' : '!'}
       </span>
       <div className="flex-1 min-w-0">
@@ -122,7 +124,7 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
         <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-3">
           <p className="text-sm font-semibold text-[#8A5A00]">{nextAction.action}</p>
           {nextAction.detail && (
-            <p className="text-xs text-amber-700 mt-0.5">{nextAction.detail}</p>
+            <p className="text-xs text-[#8A5A00] mt-0.5">{nextAction.detail}</p>
           )}
         </div>
       </section>
@@ -140,9 +142,9 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
               {pipeline.status === 'ok' ? 'Pronto per scoring' : pipeline.status === 'blocked' ? 'Bloccato — azioni richieste' : 'Warning — verificare'}
             </p>
             <span className={cn('rounded border px-2 py-0.5 text-xs font-bold uppercase',
-              pipeline.status === 'ok' ? 'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]' :
+              pipeline.status === 'ok' ? 'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]' :
               pipeline.status === 'blocked' ? 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]' :
-              'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]')}>
+              'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]')}>
               {pipeline.status}
             </span>
           </div>

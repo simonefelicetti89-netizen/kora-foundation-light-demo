@@ -1,4 +1,7 @@
 'use client';
+// A-01b: Company Setup Wizard — configurazione operativa company.
+// Scopo: guidare KORA Admin nel setup completo di una nuova azienda:
+//        profilo, workforce baseline, data intake, scoring config.
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -170,7 +173,7 @@ function computeReadiness(s: WizardState): ReadinessItem[] {
 const READINESS_BADGE: Record<ReadinessItemStatus, string> = {
   blocked:                  'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
   draft:                    'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
-  data_required:            'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  data_required:            'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
   access_required:          'border-blue-200 bg-blue-50 text-blue-600',
   privacy_review_required:  'border-purple-200 bg-purple-50 text-purple-700',
   ready_for_pipeline:       'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',

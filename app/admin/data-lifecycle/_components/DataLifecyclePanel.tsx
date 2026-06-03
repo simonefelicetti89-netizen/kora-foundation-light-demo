@@ -29,11 +29,11 @@ interface ActionResult { ok: boolean; message?: string; archivedDPCount?: number
 
 const RISK_CLS: Record<string, string> = {
   safe:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  active_results:  'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  active_results:  'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   exported_report: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
 };
 const STATUS_CLS: Record<string, string> = {
-  pending:    'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  pending:    'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   processing: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   approved:   'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   rejected:   'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
@@ -214,7 +214,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
 
               {/* Recommended action */}
               {inspect.blockingReason && (
-                <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-amber-700">
+                <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-[#8A5A00]">
                   ⚠ {inspect.blockingReason}
                 </div>
               )}
@@ -232,13 +232,13 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
                     <p className="text-[10px] text-green-700 mt-1">✓ {archiveResult.message}</p>
                   )}
                   {archiveStatus==='error' && archiveResult && (
-                    <p className="text-[10px] text-red-600 mt-1">⚠ {archiveResult.error}</p>
+                    <p className="text-[10px] text-[#9E3B2F] mt-1">⚠ {archiveResult.error}</p>
                   )}
                 </div>
 
                 {/* Delete */}
                 <div className="space-y-2">
-                  <p className="text-[10px] font-semibold text-red-600 uppercase tracking-wide">⚠ Delete Batch Data</p>
+                  <p className="text-[10px] font-semibold text-[#9E3B2F] uppercase tracking-wide">⚠ Delete Batch Data</p>
                   <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Permanently deletes uploaded_record + uef_record. Type DELETE_BATCH to confirm.</p>
                   <div className="flex gap-2 flex-wrap">
                     <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
@@ -255,7 +255,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
                     <p className="text-[10px] text-green-700">✓ {deleteResult.message}</p>
                   )}
                   {deleteStatus==='error' && deleteResult && (
-                    <div className="text-[10px] text-red-600">
+                    <div className="text-[10px] text-[#9E3B2F]">
                       <p>⚠ {deleteResult.error}</p>
                       {deleteResult.hint && <p className="text-[rgba(6,3,43,0.52)] mt-0.5">{deleteResult.hint}</p>}
                     </div>

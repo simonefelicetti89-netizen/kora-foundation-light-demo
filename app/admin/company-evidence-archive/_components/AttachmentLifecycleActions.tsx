@@ -43,7 +43,7 @@ const ACTION_CONFIGS: Record<LifecycleAction, ActionConfig> = {
     label:            'Archivia',
     confirmToken:     'ARCHIVE_ATTACHMENT',
     destructive:      false,
-    confirmButtonCls: 'bg-amber-600 text-white hover:bg-amber-700',
+    confirmButtonCls: 'bg-[#D99A2B] text-white hover:bg-[rgba(217,154,43,0.90)]',
   },
   restore: {
     action:           'restore',
@@ -192,8 +192,8 @@ export function AttachmentLifecycleActions({
                   c.destructive
                     ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] hover:bg-[rgba(158,59,47,0.10)]'
                     : action === 'restore'
-                    ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55] hover:bg-green-100'
-                    : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700 hover:bg-[rgba(217,154,43,0.12)]'
+                    ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55] hover:bg-[rgba(47,125,85,0.10)]'
+                    : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00] hover:bg-[rgba(217,154,43,0.12)]'
                 }`}
               >
                 {c.label}
@@ -209,7 +209,7 @@ export function AttachmentLifecycleActions({
           cfg.destructive ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)]' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]'
         }`}>
           <div className="flex items-start justify-between gap-2">
-            <p className={`text-[10px] font-bold ${cfg.destructive ? 'text-[#9E3B2F]' : 'text-amber-700'}`}>
+            <p className={`text-[10px] font-bold ${cfg.destructive ? 'text-[#9E3B2F]' : 'text-[#8A5A00]'}`}>
               {cfg.destructive ? '⚠ ' : ''}{cfg.label}
             </p>
             <button onClick={cancelAction} className="text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] text-[9px]">Annulla</button>

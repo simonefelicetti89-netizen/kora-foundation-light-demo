@@ -110,20 +110,20 @@ interface ScoringResult {
 
 function confColor(c: number) {
   if (c >= 0.70) return 'text-green-700';
-  if (c >= 0.50) return 'text-amber-700';
+  if (c >= 0.50) return 'text-[#8A5A00]';
   return 'text-[#9E3B2F]';
 }
 
 const ELIG_BADGE: Record<string, string> = {
-  eligible: 'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  eligible: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   limited:  'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  blocked:  'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
+  blocked:  'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
 };
 const STATUS_BADGE: Record<string, string> = {
   pending_review: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
-  approved:       'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
+  approved:       'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
   rejected:       'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
-  needs_info:     'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  needs_info:     'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
 };
 
 function Badge({ label, cls }: { label: string; cls: string }) {
@@ -392,7 +392,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           </div>
 
           {batchesLoading && <p className="text-xs text-[rgba(6,3,43,0.40)]">Loading batches…</p>}
-          {batchesErr    && <p className="text-xs text-red-600">⚠ {batchesErr}</p>}
+          {batchesErr    && <p className="text-xs text-[#9E3B2F]">⚠ {batchesErr}</p>}
 
           {!batchesLoading && batches.length === 0 && (
             <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)]">
@@ -412,7 +412,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   )}
                   <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)] break-all">{b.sourceName ?? b.batchId.slice(0, 12) + '…'}</p>
                 </div>
-                <Badge label={b.batchStatus} cls={b.batchStatus === 'processing' ? 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' : 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]'} />
+                <Badge label={b.batchStatus} cls={b.batchStatus === 'processing' ? 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' : 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]'} />
               </div>
               <div className="flex flex-wrap gap-2 text-[10px] text-[rgba(6,3,43,0.52)]">
                 <span>Period: {b.reportingPeriod}</span>
@@ -454,7 +454,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               <span className="text-[rgba(6,3,43,0.52)]">Total: <strong>{summary.total}</strong></span>
               <span className="text-green-700">Approved: <strong>{summary.approved}</strong></span>
               <span className="text-[#9E3B2F]">Rejected: <strong>{summary.rejected}</strong></span>
-              <span className="text-amber-700">Needs info: <strong>{summary.needsInfo}</strong></span>
+              <span className="text-[#8A5A00]">Needs info: <strong>{summary.needsInfo}</strong></span>
               <span className="text-[rgba(6,3,43,0.52)]">Pending: <strong>{summary.pending}</strong></span>
               <span className="text-[rgba(6,3,43,0.52)]">Avg confidence: <strong>{Math.round(summary.avgConfidence * 100)}%</strong></span>
             </div>
@@ -596,7 +596,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     </button>
                   </div>
                   {enrichMsg[c.id] && (
-                    <p className={`text-[10px] ${enrichStatus[c.id] === 'done' ? 'text-green-700' : 'text-red-600'}`}>
+                    <p className={`text-[10px] ${enrichStatus[c.id] === 'done' ? 'text-green-700' : 'text-[#9E3B2F]'}`}>
                       {enrichMsg[c.id]}
                     </p>
                   )}
@@ -617,7 +617,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               {c.warnings.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {c.warnings.map(w => (
-                    <span key={w} className="text-[9px] font-mono bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] text-amber-700 rounded px-1.5 py-0.5">⚠ {w}</span>
+                    <span key={w} className="text-[9px] font-mono bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] text-[#8A5A00] rounded px-1.5 py-0.5">⚠ {w}</span>
                   ))}
                 </div>
               )}
@@ -628,7 +628,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   <button
                     onClick={() => handleAction(c.id, 'approve')}
                     disabled={actionState[c.id] === 'loading'}
-                    className="rounded border border-green-300 bg-green-50 px-3 py-1 text-[11px] font-semibold text-green-700 hover:bg-green-100 disabled:opacity-50 transition-colors">
+                    className="rounded border border-green-300 bg-green-50 px-3 py-1 text-[11px] font-semibold text-green-700 hover:bg-[rgba(47,125,85,0.10)] disabled:opacity-50 transition-colors">
                     {actionState[c.id] === 'loading' ? '⏳' : '✓'} Approve
                   </button>
                   <button
@@ -640,10 +640,10 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   <button
                     onClick={() => handleAction(c.id, 'needs_info')}
                     disabled={actionState[c.id] === 'loading'}
-                    className="rounded border border-amber-300 bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-semibold text-amber-700 hover:bg-[rgba(217,154,43,0.12)] disabled:opacity-50 transition-colors">
+                    className="rounded border border-amber-300 bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-semibold text-[#8A5A00] hover:bg-[rgba(217,154,43,0.12)] disabled:opacity-50 transition-colors">
                     ? Needs info
                   </button>
-                  {actionState[c.id] === 'error' && <span className="text-[10px] text-red-600">⚠ Action failed. Retry.</span>}
+                  {actionState[c.id] === 'error' && <span className="text-[10px] text-[#9E3B2F]">⚠ Action failed. Retry.</span>}
                 </div>
               )}
               {c.reviewStatus !== 'pending_review' && (
@@ -671,7 +671,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
             </span>
           </div>
 
-          <p className="text-[10px] text-amber-700 border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1">
+          <p className="text-[10px] text-[#8A5A00] border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1">
             Provide workforcePopulation if no workforce baseline exists for this company/period.
           </p>
 
@@ -729,7 +729,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           {scoringStatus === 'error' && scoringResult && (
             <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 space-y-1">
               <p className="text-xs font-bold text-[#9E3B2F]">⚠ {scoringResult.error}</p>
-              {scoringResult.hint && <p className="text-[10px] text-red-600">{scoringResult.hint}</p>}
+              {scoringResult.hint && <p className="text-[10px] text-[#9E3B2F]">{scoringResult.hint}</p>}
             </div>
           )}
         </div>

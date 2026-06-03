@@ -64,14 +64,14 @@ const ATTACHMENT_TYPE_LABELS: Record<AttachmentType, string> = {
 const LEVEL_COLORS: Record<string, string> = {
   L3: 'text-green-700 bg-green-50 border-[rgba(47,125,85,0.22)]',
   L2: 'text-[#C76F3D] bg-[#f5f4ff] border-[#c7c4f8]',
-  L1: 'text-amber-700 bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
+  L1: 'text-[#8A5A00] bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
   L0: 'text-[rgba(6,3,43,0.52)] bg-[rgba(6,3,43,0.03)] border-[rgba(6,3,43,0.08)]',
 };
 
 const STATUS_COLORS: Record<string, string> = {
   parsed_metadata: 'text-green-700',
-  metadata_only:   'text-amber-700',
-  needs_review:    'text-amber-700',
+  metadata_only:   'text-[#8A5A00]',
+  needs_review:    'text-[#8A5A00]',
   rejected_pii:    'text-[#9E3B2F]',
   rejected_size:   'text-[#9E3B2F]',
   unsupported:     'text-[rgba(6,3,43,0.40)]',
@@ -261,7 +261,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
             className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
             {registerStatus === 'loading' ? '⏳ Registrazione…' : '↓ Registra metadata attachment'}
           </button>
-          {!batchId && <p className="text-[10px] text-red-600">⚠ batchId non disponibile — seleziona un batch valido.</p>}
+          {!batchId && <p className="text-[10px] text-[#9E3B2F]">⚠ batchId non disponibile — seleziona un batch valido.</p>}
         </div>
       )}
 
@@ -289,8 +289,8 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
               >
                 {openLinkStatus === 'loading' ? '⏳ Generazione link…' : '🔒 Apri documento sicuro'}
               </button>
-              <p className="text-[9px] text-amber-700 mt-0.5">Link temporaneo (5 min). Non condividere.</p>
-              {openLinkStatus === 'error' && <p className="text-[9px] text-red-600">⚠ {openLinkError}</p>}
+              <p className="text-[9px] text-[#8A5A00] mt-0.5">Link temporaneo (5 min). Non condividere.</p>
+              {openLinkStatus === 'error' && <p className="text-[9px] text-[#9E3B2F]">⚠ {openLinkError}</p>}
             </div>
           )}
           <p className="text-[rgba(6,3,43,0.52)] text-[9px]">{registerResult.note}</p>

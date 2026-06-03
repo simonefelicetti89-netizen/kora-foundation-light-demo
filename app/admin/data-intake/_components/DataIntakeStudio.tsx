@@ -168,15 +168,15 @@ function pct(n: number | null | undefined) { return n != null ? `${Math.round(n 
 function fmt(n: number | null | undefined, d = 1) { return n != null ? n.toFixed(d) : '—'; }
 
 const ELIGIBILITY_COLOR: Record<string, string> = {
-  eligible:        'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  eligible:        'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   limited:         'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  blocked:         'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
+  blocked:         'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
   review_required: 'bg-purple-100 text-purple-800 border-purple-200',
 };
 const SAFEGUARD_COLOR: Record<string, string> = {
-  CLEAR:   'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  CLEAR:   'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   WARNING: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
+  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
 };
 function badge(val: string, colorMap: Record<string,string>, fallback = 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]') {
   const cls = colorMap[val] ?? fallback;
@@ -549,9 +549,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   };
   const PHASE_BADGE: Record<string, string> = {
     ready:     'bg-blue-100 text-blue-700 border-blue-200',
-    passed:    'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
+    passed:    'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
     completed: 'bg-[#06032B] text-white border-[#06032B]',
-    review:    'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+    review:    'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
     'not-run': 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   };
   const PHASE_LABEL: Record<string, string> = {
@@ -589,7 +589,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Validate a CSV or Excel (.xlsx) file against KORA intake rules. No data is stored.</p>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-amber-700">Dry-run only: no data is stored.</span>
+            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A00]">Dry-run only: no data is stored.</span>
             <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-[10px] font-semibold text-[#9E3B2F]">PII direct identifiers are strictly rejected.</span>
           </div>
         </div>
@@ -711,7 +711,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                     <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-green-700 font-medium">
                       ✓ Matched: {multiFileResult.matchSummary.matched}
                     </span>
-                    <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-amber-700 font-medium">
+                    <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[#8A5A00] font-medium">
                       ≈ Possible: {multiFileResult.matchSummary.possibleMatch}
                     </span>
                     <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 text-purple-700 font-medium">
@@ -772,7 +772,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                       <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5 font-mono truncate">{s.headers.slice(0, 6).join(' · ')}{s.headers.length > 6 ? ` +${s.headers.length - 6}` : ''}</p>
                     )}
                     {s.errors.length > 0 && (
-                      <p className="text-[10px] text-red-600 mt-0.5">{s.errors[0].message}</p>
+                      <p className="text-[10px] text-[#9E3B2F] mt-0.5">{s.errors[0].message}</p>
                     )}
                   </div>
                 </label>
@@ -788,7 +788,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               </button>
             )}
             {!selectedSheet && (
-              <p className="text-[10px] text-amber-700 font-medium">⚠ Seleziona un foglio per procedere.</p>
+              <p className="text-[10px] text-[#8A5A00] font-medium">⚠ Seleziona un foglio per procedere.</p>
             )}
           </div>
         )}
@@ -805,13 +805,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 px-4 py-3 space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-green-700">✓ File validation passed</span>
-              <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">PII: passed</span>
+              <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.10)] px-2 py-0.5 text-[10px] font-semibold text-green-700">PII: passed</span>
               <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.62)]">{csvResult.rowCount} rows</span>
             </div>
             {csvResult.eligibilityPreview && (
               <div className="flex flex-wrap gap-2 text-[10px]">
                 <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-green-700 font-medium">Eligible: {csvResult.eligibilityPreview.eligible}</span>
-                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-amber-700 font-medium">Limited: {csvResult.eligibilityPreview.limited}</span>
+                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-[#8A5A00] font-medium">Limited: {csvResult.eligibilityPreview.limited}</span>
                 <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-[#9E3B2F] font-medium">Blocked: {csvResult.eligibilityPreview.blocked}</span>
                 {csvResult.eligibilityPreview.reviewRequired > 0 && (
                   <span className="rounded border border-purple-200 bg-[#F8F6F1] px-2 py-0.5 text-purple-700 font-medium">Review required: {csvResult.eligibilityPreview.reviewRequired}</span>
@@ -833,7 +833,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             {csvResult.warnings && csvResult.warnings.length > 0 && (
               <div className="space-y-0.5">
                 {csvResult.warnings.map((w, i) => (
-                  <p key={i} className="text-[10px] text-amber-700">⚠ {w}</p>
+                  <p key={i} className="text-[10px] text-[#8A5A00]">⚠ {w}</p>
                 ))}
               </div>
             )}
@@ -866,7 +866,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <tbody>
                   {csvResult.mappingSuggestions.map((s, i) => {
                     const currentVal = userMapping[s.sourceHeader] ?? s.suggestedField ?? 'keep_original';
-                    const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-amber-700' : 'text-[rgba(6,3,43,0.40)]';
+                    const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.40)]';
                     return (
                       <tr key={i} className="border-b border-[rgba(6,3,43,0.05)] hover:bg-[rgba(6,3,43,0.03)]">
                         <td className="py-1.5 px-2 font-mono text-[rgba(6,3,43,0.78)]">{s.sourceHeader}</td>
@@ -923,7 +923,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 </span>
               )}
               {csvResult.missingFieldSummary.warningCount > 0 && (
-                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-amber-700 font-medium">
+                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-[#8A5A00] font-medium">
                   ⚠ Warning: {csvResult.missingFieldSummary.warningCount} righe
                 </span>
               )}
@@ -1098,7 +1098,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <div>
               <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
                 Note finanziarie interne
-                <span className="ml-1.5 rounded bg-[rgba(217,154,43,0.12)] text-amber-700 px-1 py-0.5 text-[9px] font-bold">Solo locale — non salvato</span>
+                <span className="ml-1.5 rounded bg-[rgba(217,154,43,0.12)] text-[#8A5A00] px-1 py-0.5 text-[9px] font-bold">Solo locale — non salvato</span>
               </label>
               <textarea
                 value={finNotes} onChange={e => setFinNotes(e.target.value)}
@@ -1140,10 +1140,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <p className="text-[10px] text-[#C76F3D] font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>
             )}
             {!isTenantSelected && (
-              <p className="text-[10px] text-red-600 font-medium">⚠ Seleziona un&apos;azienda prima di procedere.</p>
+              <p className="text-[10px] text-[#9E3B2F] font-medium">⚠ Seleziona un&apos;azienda prima di procedere.</p>
             )}
             {!allPseudonymChecked && isTenantSelected && (
-              <p className="text-[10px] text-amber-700 font-medium">⚠ Conferma tutte le dichiarazioni di pseudonimizzazione per procedere.</p>
+              <p className="text-[10px] text-[#8A5A00] font-medium">⚠ Conferma tutte le dichiarazioni di pseudonimizzazione per procedere.</p>
             )}
             <button
               onClick={handleAcceptBatch}
@@ -1176,7 +1176,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] text-[rgba(6,3,43,0.52)]">mapping applicato</span>
               )}
               {acceptResult.manualCompletionApplied && acceptResult.manualCompletionApplied.length > 0 && (
-                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] text-amber-700">manual: {acceptResult.manualCompletionApplied.join(', ')}</span>
+                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] text-[#8A5A00]">manual: {acceptResult.manualCompletionApplied.join(', ')}</span>
               )}
               {acceptResult.matchReviewSummary && (acceptResult.matchReviewSummary.override_accepted ?? 0) > 0 && (
                 <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] text-green-700">match review applicato</span>
@@ -1185,7 +1185,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             {acceptResult.eligibilitySummary && (
               <div className="flex flex-wrap gap-2 text-[10px]">
                 <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-green-700 font-medium">Eligible: {acceptResult.eligibilitySummary.eligible}</span>
-                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-amber-700 font-medium">Limited: {acceptResult.eligibilitySummary.limited}</span>
+                <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] px-2 py-0.5 text-[#8A5A00] font-medium">Limited: {acceptResult.eligibilitySummary.limited}</span>
                 <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-2 py-0.5 text-[#9E3B2F] font-medium">Blocked: {acceptResult.eligibilitySummary.blocked}</span>
                 <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[rgba(6,3,43,0.62)] font-medium">Total: {acceptResult.rowCount}</span>
               </div>
@@ -1200,7 +1200,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                   <span className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-[#9E3B2F]">✗ Rejected: {acceptResult.matchReviewSummary.override_rejected}</span>
                 )}
                 {(acceptResult.matchReviewSummary.override_needs_review ?? 0) > 0 && (
-                  <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-amber-700">? Needs review: {acceptResult.matchReviewSummary.override_needs_review}</span>
+                  <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[#8A5A00]">? Needs review: {acceptResult.matchReviewSummary.override_needs_review}</span>
                 )}
                 {(acceptResult.matchReviewSummary.default_merged ?? 0) > 0 && (
                   <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[rgba(6,3,43,0.62)]">Default merged: {acceptResult.matchReviewSummary.default_merged}</span>
@@ -1234,7 +1234,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-xs font-bold text-[#9E3B2F]">⚠ {acceptResult.error ?? 'Batch rejected during server-side re-validation.'}</p>
             {acceptResult.forbiddenHeaders && acceptResult.forbiddenHeaders.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                <span className="text-[10px] text-red-600 font-medium">Forbidden headers:</span>
+                <span className="text-[10px] text-[#9E3B2F] font-medium">Forbidden headers:</span>
                 {acceptResult.forbiddenHeaders.map(h => (
                   <span key={h} className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] font-mono text-[#9E3B2F]">{h}</span>
                 ))}
@@ -1242,13 +1242,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             )}
             {acceptResult.findings && acceptResult.findings.length > 0 && (
               <div>
-                <p className="text-[10px] font-semibold text-red-600 mb-1">PII findings (field paths only — no values):</p>
+                <p className="text-[10px] font-semibold text-[#9E3B2F] mb-1">PII findings (field paths only — no values):</p>
                 {acceptResult.findings.slice(0, 8).map((f, i) => (
-                  <p key={i} className="text-[10px] font-mono text-red-600">Row {f.rowIndex} · {f.fieldPath} · {f.riskType} · {f.severity}</p>
+                  <p key={i} className="text-[10px] font-mono text-[#9E3B2F]">Row {f.rowIndex} · {f.fieldPath} · {f.riskType} · {f.severity}</p>
                 ))}
               </div>
             )}
-            <p className="text-[10px] text-red-600 border-t border-red-100 pt-1">
+            <p className="text-[10px] text-[#9E3B2F] border-t border-red-100 pt-1">
               {acceptResult.note ?? 'No data has been stored.'}
             </p>
           </div>
@@ -1267,7 +1267,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-xs font-bold text-[#9E3B2F]">⚠ {csvResult.error ?? 'Batch rejected.'}</p>
             {csvResult.forbiddenHeaders && csvResult.forbiddenHeaders.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                <span className="text-[10px] text-red-600 font-medium">Forbidden headers:</span>
+                <span className="text-[10px] text-[#9E3B2F] font-medium">Forbidden headers:</span>
                 {csvResult.forbiddenHeaders.map(h => (
                   <span key={h} className="rounded border border-[rgba(158,59,47,0.22)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] font-mono text-[#9E3B2F]">{h}</span>
                 ))}
@@ -1275,10 +1275,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             )}
             {csvResult.findings && csvResult.findings.length > 0 && (
               <div>
-                <p className="text-[10px] font-semibold text-red-600 mb-1">PII findings (field paths only — no values shown):</p>
+                <p className="text-[10px] font-semibold text-[#9E3B2F] mb-1">PII findings (field paths only — no values shown):</p>
                 <div className="space-y-0.5">
                   {csvResult.findings.slice(0, 10).map((f, i) => (
-                    <p key={i} className="text-[10px] font-mono text-red-600">
+                    <p key={i} className="text-[10px] font-mono text-[#9E3B2F]">
                       Row {f.rowIndex} · {f.fieldPath} · {f.riskType} · {f.severity}
                     </p>
                   ))}
@@ -1288,7 +1288,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 </div>
               </div>
             )}
-            <p className="text-[10px] text-red-600 border-t border-red-100 pt-2">
+            <p className="text-[10px] text-[#9E3B2F] border-t border-red-100 pt-2">
               {csvResult.note ?? 'No data has been stored. Remove direct personal identifiers and re-submit.'}
             </p>
           </div>
@@ -1334,13 +1334,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           )}
           {/* B13: OP-001 synthetic warning */}
           {isOp001 && (
-            <span className="rounded border border-amber-300 bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+            <span className="rounded border border-amber-300 bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A00]">
               Synthetic demo tenant — non usare per dati reali.
             </span>
           )}
           {/* B13: no tenant selected alert */}
           {!isTenantSelected && (
-            <p className="text-[10px] text-red-600 font-medium">
+            <p className="text-[10px] text-[#9E3B2F] font-medium">
               Seleziona un&apos;azienda prima di caricare dati. OP-001 è riservato alla demo synthetic.
             </p>
           )}
@@ -1601,7 +1601,7 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
 function KPICard({ label, value, ok, warn, accent, raw, children }: {
   label: string; value?: string; ok?: boolean; warn?: boolean; accent?: boolean; raw?: boolean; children?: React.ReactNode;
 }) {
-  const valColor = ok ? 'text-green-700' : warn ? 'text-amber-700' : accent ? 'text-[#C76F3D]' : 'text-[#06032B]';
+  const valColor = ok ? 'text-green-700' : warn ? 'text-[#8A5A00]' : accent ? 'text-[#C76F3D]' : 'text-[#06032B]';
   return (
     <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#fafafa] px-3 py-2.5">
       <p className="text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-1">{label}</p>

@@ -27,13 +27,13 @@ interface WorkspaceData {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const SAFEGUARD_CLS: Record<string, string> = {
-  CLEAR:   'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
-  WARNING: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  CLEAR:   'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
+  WARNING: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
 };
 
 const DP_CLS: Record<string, string> = {
-  draft:    'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  draft:    'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   ready:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   exported: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   archived: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
@@ -54,7 +54,7 @@ const PILOT_STATUS_LABEL: Record<string, string> = {
 const PILOT_STATUS_CLS: Record<string, string> = {
   not_started:            'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   batch_pending:          'bg-blue-50 text-blue-600 border-blue-200',
-  review_ready:           'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  review_ready:           'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   needs_enrichment:       'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
   ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
   scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
@@ -201,7 +201,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
 
       {/* OP-001 synthetic warning */}
       {isOp001 && (
-        <div className="rounded-lg border border-amber-300 bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-xs text-amber-700 font-medium">
+        <div className="rounded-lg border border-amber-300 bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-xs text-[#8A5A00] font-medium">
           OP-001 è un ambiente demo synthetic. Non usare per dati reali.
         </div>
       )}
@@ -268,7 +268,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
               cta={{ label: 'Gestisci azienda', href: '/admin/tenants' }}>
               {w.workforce.exists
                 ? <><span className="text-green-600 font-medium">✓ Baseline presente</span>{w.workforce.totalWorkers !== null && ` · ${w.workforce.totalWorkers} lavoratori`}</>
-                : <span className="text-amber-600">⚠ Workforce baseline mancante — crea azienda per iniziare.</span>
+                : <span className="text-[#D99A2B]">⚠ Workforce baseline mancante — crea azienda per iniziare.</span>
               }
             </StepCard>
 
@@ -302,7 +302,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                 ? <span className="text-[rgba(6,3,43,0.28)]">Attesa batch.</span>
                 : w.uef && w.uef.total > 0
                 ? <><span className="text-green-600 font-medium">✓ {w.uef.total} candidati generati</span></>
-                : <span className="text-amber-600">⚠ Candidati non ancora generati — apri UEF Review e clicca &quot;Generate candidates&quot;.</span>
+                : <span className="text-[#D99A2B]">⚠ Candidati non ancora generati — apri UEF Review e clicca &quot;Generate candidates&quot;.</span>
               }
             </StepCard>
 
@@ -319,8 +319,8 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                 ? <span className="text-[rgba(6,3,43,0.28)]">Attesa candidati.</span>
                 : <>
                     {w.uef.approved > 0 && <span className="text-green-600 font-medium mr-3">✓ {w.uef.approved} approvati</span>}
-                    {w.uef.pendingReview > 0 && <span className="text-amber-600 mr-3">⏳ {w.uef.pendingReview} in attesa</span>}
-                    {w.uef.rejected > 0 && <span className="text-red-600 mr-3">✕ {w.uef.rejected} rifiutati</span>}
+                    {w.uef.pendingReview > 0 && <span className="text-[#D99A2B] mr-3">⏳ {w.uef.pendingReview} in attesa</span>}
+                    {w.uef.rejected > 0 && <span className="text-[#9E3B2F] mr-3">✕ {w.uef.rejected} rifiutati</span>}
                     {w.uef.needsInfo > 0 && <span className="text-purple-600 mr-3">? {w.uef.needsInfo} needs info</span>}
                     {w.uef.needsEnrichment > 0 && <span className="text-[#D99A2B] mr-3">⚠ {w.uef.needsEnrichment} enrichment incompleto</span>}
                   </>
@@ -350,7 +350,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                     {w.scoring.activationRate !== null && <>{' · '}AR: {Math.round((w.scoring.activationRate) * 100)}%</>}
                   </>
                 : w.uef && w.uef.approved > 0
-                ? <span className="text-amber-600">⚠ {w.uef.approved} record approvati — scoring non ancora eseguito.</span>
+                ? <span className="text-[#D99A2B]">⚠ {w.uef.approved} record approvati — scoring non ancora eseguito.</span>
                 : <span className="text-[rgba(6,3,43,0.28)]">Attesa approvazione UEF.</span>
               }
             </StepCard>
@@ -380,7 +380,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                       <a href={w.decisionPack.pdfUrl} className="text-[#C76F3D] underline" target="_blank" rel="noopener noreferrer">PDF</a>
                     </span>
                   </>
-                : <span className="text-amber-600">Scoring completato — apri preview per generare il Decision Pack.</span>
+                : <span className="text-[#D99A2B]">Scoring completato — apri preview per generare il Decision Pack.</span>
               }
             </StepCard>
 

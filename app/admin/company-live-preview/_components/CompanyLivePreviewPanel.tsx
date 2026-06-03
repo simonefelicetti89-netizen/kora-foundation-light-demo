@@ -79,16 +79,16 @@ const PILOT_LABEL: Record<string, string> = {
 const PILOT_CLS: Record<string, string> = {
   not_started:            'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   batch_pending:          'bg-blue-50 text-blue-600 border-blue-200',
-  review_ready:           'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  review_ready:           'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   needs_enrichment:       'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
   ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
   scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
   decision_pack_ready:    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  decision_pack_exported: 'bg-green-100 text-[#2F7D55] border-green-300',
+  decision_pack_exported: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-green-300',
 };
 const READINESS_BADGE: Record<string, string> = {
-  report_ready:      'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
-  usable_with_caveat:'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  report_ready:      'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]',
+  usable_with_caveat:'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   needs_evidence:    'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
   not_ready:         'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
@@ -203,7 +203,7 @@ export function CompanyLivePreviewPanel() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.15em] text-amber-700">
+            <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#8A5A00]">
               Read-only · Live Preview
             </span>
             <Link
@@ -266,7 +266,7 @@ export function CompanyLivePreviewPanel() {
 
           {/* Synthetic data warning */}
           {data.tenant.tenantCode === 'OP-001' && (
-            <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-3 text-[12px] text-amber-700">
+            <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-3 text-[12px] text-[#8A5A00]">
               <strong>Dati sintetici / Demo.</strong> Questo tenant usa dati di test. Non è un cliente reale.
             </div>
           )}
@@ -513,8 +513,8 @@ export function CompanyLivePreviewPanel() {
                       <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{a.code} · {a.count} iniziative</p>
                     </div>
                     <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold capitalize ${
-                      a.maxStrength === 'strong' ? 'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]' :
-                      a.maxStrength === 'medium' ? 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' :
+                      a.maxStrength === 'strong' ? 'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]' :
+                      a.maxStrength === 'medium' ? 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]' :
                                                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]'
                     }`}>
                       {a.maxStrength}
@@ -534,9 +534,9 @@ export function CompanyLivePreviewPanel() {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2">
                   <span className={`inline-block rounded border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${
-                    data.decisionPack.status === 'exported' ? 'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]' :
+                    data.decisionPack.status === 'exported' ? 'bg-[rgba(47,125,85,0.10)] text-green-700 border-[rgba(47,125,85,0.22)]' :
                     data.decisionPack.status === 'ready'    ? 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' :
-                                                              'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]'
+                                                              'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]'
                   }`}>
                     {data.decisionPack.status.toUpperCase()}
                   </span>

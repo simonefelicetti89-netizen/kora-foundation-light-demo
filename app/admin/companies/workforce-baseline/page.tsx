@@ -1,4 +1,7 @@
 'use client';
+// A-01e: Workforce Baseline Admin — inserimento baseline workforce.
+// Scopo: caricare o verificare la baseline headcount/segmenti
+//        necessaria come fondamento per il calcolo KORA Index™.
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -35,9 +38,9 @@ const UPLOAD_STATUS_COLORS: Record<string, string> = {
   not_started:                  'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
   uploaded:                     'border-blue-200 bg-blue-50 text-blue-700',
   validated:                    'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
-  needs_review:                 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  needs_review:                 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
   below_company_threshold:      'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
-  privacy_suppression_required: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  privacy_suppression_required: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
   ready_for_aggregation:        'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
 };
 
@@ -198,7 +201,7 @@ export default function AdminWorkforceBaselinePage() {
           {validation.warnings.length > 0 && (
             <div className="space-y-1">
               {validation.warnings.map((warning, i) => (
-                <div key={i} className="rounded px-3 py-2 text-[10px] bg-[rgba(217,154,43,0.08)] text-amber-700">
+                <div key={i} className="rounded px-3 py-2 text-[10px] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]">
                   {warning}
                 </div>
               ))}
@@ -263,7 +266,7 @@ export default function AdminWorkforceBaselinePage() {
                 <div className="flex items-center justify-between text-[9px] text-[rgba(6,3,43,0.40)]">
                   <span>{(g.share_of_workforce * 100).toFixed(1)}% del totale</span>
                   {!g.included_in_breakdown && (
-                    <span className="text-amber-600 font-semibold">soppresso</span>
+                    <span className="text-[#D99A2B] font-semibold">soppresso</span>
                   )}
                 </div>
               </div>
@@ -274,7 +277,7 @@ export default function AdminWorkforceBaselinePage() {
         )}
 
         {suppressed.length > 0 && (
-          <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-amber-700">
+          <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-[#8A5A00]">
             {suppressed.length} cluster sotto soglia privacy (N &lt; 10) — soppressi. Soglia: N≥10.
           </div>
         )}

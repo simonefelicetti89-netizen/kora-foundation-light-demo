@@ -1,3 +1,6 @@
+// A-01a: New Company — form di creazione azienda live.
+// Scopo: consentire a KORA Admin di creare un nuovo tenant company
+//        con dati minimi (nome, sector, headcount, email admin).
 // app/admin/companies/new/page.tsx
 // B38 — Create live company — KORA_ADMIN only.
 

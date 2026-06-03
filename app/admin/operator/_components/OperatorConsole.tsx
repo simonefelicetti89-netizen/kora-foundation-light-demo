@@ -80,9 +80,9 @@ type StepState = 'pending' | 'running' | 'completed';
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
 const SAFEGUARD: Record<string, { label: string; cls: string }> = {
-  CLEAR:   { label: 'CLEAR',   cls: 'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]' },
+  CLEAR:   { label: 'CLEAR',   cls: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' },
   WARNING: { label: 'WARNING', cls: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]' },
-  FLAGGED: { label: 'FLAGGED', cls: 'bg-[rgba(158,59,47,0.10)]  text-red-800   border-[rgba(158,59,47,0.22)]'  },
+  FLAGGED: { label: 'FLAGGED', cls: 'bg-[rgba(158,59,47,0.10)]  text-[#9E3B2F]   border-[rgba(158,59,47,0.22)]'  },
 };
 
 const AUDIT_ICON: Record<string, string> = {
@@ -300,7 +300,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                 <Kv label="Workers" value={<span className="font-semibold text-[rgba(6,3,43,0.90)] tabular-nums">50</span>} />
                 <span className="text-green-700 font-medium">✓ N≥10 enforced</span>
                 {runResult?.privacy?.segment_breakdown_safe != null && (
-                  <span className={runResult.privacy.segment_breakdown_safe ? 'text-green-700 font-medium' : 'text-amber-700 font-medium'}>
+                  <span className={runResult.privacy.segment_breakdown_safe ? 'text-green-700 font-medium' : 'text-[#8A5A00] font-medium'}>
                     {runResult.privacy.segment_breakdown_safe ? '✓ Segments safe' : '⚠ Verifica segments'}
                   </span>
                 )}
@@ -335,7 +335,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                 <span className="text-[rgba(6,3,43,0.52)]">Review mode: read-only</span>
               </div>
             )}
-            <p className="text-xs border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1 text-amber-700">
+            <p className="text-xs border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1 text-[#8A5A00]">
               Editable UEF Review (accept / reject / edit) scheduled for B5.
             </p>
           </div>
@@ -353,7 +353,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                 <Metric label="Confidence Score"
                   value={<span className="text-xl font-semibold tabular-nums text-[rgba(6,3,43,0.90)]">{csValue ?? '—'}</span>} />
                 <Metric label="Calibration"
-                  value={<span className="text-xs text-amber-700 bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] rounded px-1.5 py-0.5">
+                  value={<span className="text-xs text-[#8A5A00] bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] rounded px-1.5 py-0.5">
                     {readResult?.kora_index?.calibration ?? 'pre_empirical_calibration'}
                   </span>} />
                 {arValue != null && (
@@ -419,7 +419,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                   )}
                   {latestDpStatus === 'ready' && (
                     <button onClick={() => handlePromote('exported')} disabled={isPromoting}
-                      className="inline-flex items-center gap-1 rounded border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                      className="inline-flex items-center gap-1 rounded border border-green-300 bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-[rgba(47,125,85,0.10)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                       {isPromoting ? '⏳ Aggiornamento…' : '↗ Marca come Exported'}
                     </button>
                   )}
@@ -431,7 +431,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                   <p className="text-xs font-medium text-green-700">✓ Status aggiornato con successo.</p>
                 )}
                 {promoStatus === 'promo-error' && promoError && (
-                  <p className="text-xs text-red-600">⚠ {promoError}</p>
+                  <p className="text-xs text-[#9E3B2F]">⚠ {promoError}</p>
                 )}
               </div>
             )}
@@ -485,7 +485,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
 // WizardStep — step card with status indicator. B3 addition.
 const STEP_STYLE: Record<StepState, { dot: string; badge: string; label: string; headerBorder: string }> = {
   completed: { dot: 'bg-green-500', badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]', label: 'Completato', headerBorder: 'border-green-100' },
-  running:   { dot: 'bg-[#D99A2B]', badge: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]', label: 'In esecuzione…', headerBorder: 'border-amber-100' },
+  running:   { dot: 'bg-[#D99A2B]', badge: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]', label: 'In esecuzione…', headerBorder: 'border-amber-100' },
   pending:   { dot: 'bg-[rgba(6,3,43,0.18)]', badge: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]', label: 'In attesa', headerBorder: 'border-[rgba(6,3,43,0.05)]' },
 };
 
@@ -559,13 +559,13 @@ function Metric({ label, value }: { label: string; value: React.ReactNode }) {
 
 // DP status badge + description — unchanged from B2
 const DP_STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
-  draft:                   { bg: 'bg-[rgba(217,154,43,0.08)]',  text: 'text-amber-700',  border: 'border-[rgba(217,154,43,0.25)]'  },
+  draft:                   { bg: 'bg-[rgba(217,154,43,0.08)]',  text: 'text-[#8A5A00]',  border: 'border-[rgba(217,154,43,0.25)]'  },
   ready:                   { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
   exported:                { bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-[rgba(47,125,85,0.22)]'  },
   data_review_required:    { bg: 'bg-[rgba(158,59,47,0.06)]',    text: 'text-[#9E3B2F]',    border: 'border-[rgba(158,59,47,0.22)]'    },
   advisor_review_required: { bg: 'bg-[rgba(217,154,43,0.08)]', text: 'text-[#8A5A00]', border: 'border-[rgba(217,154,43,0.22)]' },
   archived:                { bg: 'bg-[rgba(6,3,43,0.05)]', text: 'text-[rgba(6,3,43,0.62)]',  border: 'border-[rgba(6,3,43,0.08)]'  },
-  blocked:                 { bg: 'bg-[rgba(158,59,47,0.10)]',   text: 'text-red-800',    border: 'border-[rgba(158,59,47,0.25)]'    },
+  blocked:                 { bg: 'bg-[rgba(158,59,47,0.10)]',   text: 'text-[#9E3B2F]',    border: 'border-[rgba(158,59,47,0.25)]'    },
 };
 
 function DpStatusBadge({ status }: { status: string }) {

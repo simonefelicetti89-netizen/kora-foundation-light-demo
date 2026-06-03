@@ -1,3 +1,6 @@
+// A-14: UEF Review Queue — revisione record Unified Event Frame.
+// Scopo: consentire a KORA Admin di revisionare, approvare o rifiutare
+//        record UEF prima che contribuiscano al KORA Index™.
 // app/admin/uef-review/page.tsx
 // Server Component — KORA_ADMIN only.
 // B5: UEF Review Queue — review interpreter-generated UEF candidates.

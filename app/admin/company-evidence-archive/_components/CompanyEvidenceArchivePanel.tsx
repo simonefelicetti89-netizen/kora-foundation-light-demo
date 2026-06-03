@@ -164,15 +164,15 @@ const ELIG_LABELS: Record<string, string> = {
   review_required: 'Review req.', approved: 'Approved',
 };
 const ELIG_CLS: Record<string, string> = {
-  eligible: 'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  eligible: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   limited:  'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
-  blocked:  'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
+  blocked:  'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
   review_required: 'bg-purple-100 text-purple-800 border-purple-200',
-  approved: 'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  approved: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
 };
 const READINESS_CLS: Record<string, string> = {
   report_ready:       'text-green-700',
-  usable_with_caveat: 'text-amber-700',
+  usable_with_caveat: 'text-[#8A5A00]',
   needs_evidence:     'text-[#9E3B2F]',
   not_ready:          'text-[rgba(6,3,43,0.40)]',
 };
@@ -293,7 +293,7 @@ export function CompanyEvidenceArchivePanel() {
           <p className="text-sm text-white/45 mt-0.5">Archivio Evidenze Azienda · Read-only lineage · {TENANT || '—'} · {PERIOD}</p>
         </div>
         <div className="flex flex-col items-end gap-2 mt-1">
-          <span className="rounded border border-[#D99A2B]/40 bg-[#D99A2B]/10 px-2 py-0.5 text-xs font-semibold text-amber-300">Read-only</span>
+          <span className="rounded border border-[#D99A2B]/40 bg-[#D99A2B]/10 px-2 py-0.5 text-xs font-semibold text-[#D99A2B]">Read-only</span>
           <span className="rounded border border-[#C8FF47]/40 bg-[#C8FF47]/10 px-2 py-0.5 text-xs font-semibold text-[#d4ff6b]">No operational actions</span>
         </div>
       </div>
@@ -372,7 +372,7 @@ export function CompanyEvidenceArchivePanel() {
                       </span>
                     )}
                     {b.manualCompletionUsed && (
-                      <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-1.5 py-0.5 text-[9px] text-amber-700">
+                      <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-1.5 py-0.5 text-[9px] text-[#8A5A00]">
                         manual: {b.manualFields.join(', ')}
                       </span>
                     )}
@@ -413,7 +413,7 @@ export function CompanyEvidenceArchivePanel() {
                             {/* B35.1: lifecycle badge */}
                             <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${
                               att.lifecycleStatus === 'active'          ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' :
-                              att.lifecycleStatus === 'archived'        ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' :
+                              att.lifecycleStatus === 'archived'        ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]' :
                               att.lifecycleStatus === 'removed'         ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]' :
                               att.lifecycleStatus === 'storage_removed' ? 'border-red-100 bg-[rgba(158,59,47,0.06)] text-red-500' :
                               'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)]'
@@ -433,7 +433,7 @@ export function CompanyEvidenceArchivePanel() {
                                   {openLinkLoading === att.attachmentId ? '⏳' : '🔒 Apri'}
                                 </button>
                                 {openLinkErrors[att.attachmentId] && (
-                                  <span className="text-[9px] text-red-600">⚠ {openLinkErrors[att.attachmentId]}</span>
+                                  <span className="text-[9px] text-[#9E3B2F]">⚠ {openLinkErrors[att.attachmentId]}</span>
                                 )}
                               </div>
                             ) : (
@@ -459,7 +459,7 @@ export function CompanyEvidenceArchivePanel() {
                           )}
                         </div>
                       ))}
-                      <p className="text-[9px] text-amber-600">
+                      <p className="text-[9px] text-[#D99A2B]">
                         🔒 Link temporanei (5 min) · Non condividere · Non influenzano scoring
                       </p>
                     </div>
@@ -560,7 +560,7 @@ export function CompanyEvidenceArchivePanel() {
                       <td className="py-2 px-2 max-w-[180px]">
                         <div className="font-medium text-[rgba(6,3,43,0.78)] truncate" title={ini.safeName}>{ini.safeName}</div>
                         <div className="flex gap-1 mt-0.5 flex-wrap">
-                          {ini.hasManualCompletion && <span className="text-[8px] text-amber-600 font-medium">manual</span>}
+                          {ini.hasManualCompletion && <span className="text-[8px] text-[#D99A2B] font-medium">manual</span>}
                           {ini.hasColumnMapping    && <span className="text-[8px] text-[#C76F3D] font-medium">mapped</span>}
                           {ini.hasMultiFileMatch   && <span className="text-[8px] text-green-600 font-medium">multi-file</span>}
                           {ini.hasB30Provenance    && (
@@ -633,7 +633,7 @@ export function CompanyEvidenceArchivePanel() {
               <li key={i} className="text-[10px] text-[#8A5A00] leading-relaxed">· {c}</li>
             ))}
           </ul>
-          <p className="text-[10px] text-amber-700 font-semibold pt-1 border-t border-[rgba(217,154,43,0.25)]">
+          <p className="text-[10px] text-[#8A5A00] font-semibold pt-1 border-t border-[rgba(217,154,43,0.25)]">
             No edit · No upload · No scoring · No delete. Sola lettura.
           </p>
         </div>

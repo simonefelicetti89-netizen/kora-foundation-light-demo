@@ -1,3 +1,6 @@
+// A-05: Onboarding Tenant — vista stato onboarding per tutte le company.
+// Scopo: fornire a KORA Admin una panoramica dello stato onboarding di ogni tenant
+//        (dati, scoring readiness, Decision Pack) con next action operativa.
 // app/admin/tenants/page.tsx
 // B9 — Tenant Onboarding — KORA_ADMIN only.
 // Creates new company/tenant + workforce baseline.
