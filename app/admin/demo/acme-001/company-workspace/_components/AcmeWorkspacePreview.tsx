@@ -36,16 +36,16 @@ const SUBMISSION_STATUS_LABEL: Record<string, string> = {
 };
 
 const SUBMISSION_STATUS_CLS: Record<string, string> = {
-  submission_accepted:            'border-green-200 bg-green-50 text-green-700',
-  submission_needs_clarification: 'border-amber-200 bg-amber-50 text-amber-700',
+  submission_accepted:            'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
+  submission_needs_clarification: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
   submission_pending:             'border-blue-200 bg-blue-50 text-blue-700',
   submission_draft:               'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
 };
 
 const SAFEGUARD_CLS: Record<string, string> = {
-  CLEAR:   'border-green-200 bg-green-50 text-green-700',
-  WARNING: 'border-amber-200 bg-amber-50 text-amber-700',
-  FLAGGED: 'border-red-200 bg-red-50 text-red-700',
+  CLEAR:   'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
+  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  FLAGGED: 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
 };
 
 export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
@@ -66,7 +66,7 @@ export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
           SYNTHETIC GUIDED DEMO
         </span>
         <span>{SYNTHETIC_DEMO_LABEL}</span>
-        <Link href="/admin/demo/acme-001" className="ml-auto text-[10px] underline hover:text-amber-800 shrink-0">
+        <Link href="/admin/demo/acme-001" className="ml-auto text-[10px] underline hover:text-[#8A5A00] shrink-0">
           ← Demo Hub
         </Link>
       </div>
@@ -89,7 +89,7 @@ export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* ── Calibration bar ────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-[10.5px] text-amber-700 font-medium">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-[10.5px] text-amber-700 font-medium">
         {ki.calibrationStatus.replace(/_/g, ' ')} · {ki.methodologyVersion} · Dati sintetici · Aggregati aziendali
       </div>
 
@@ -154,13 +154,13 @@ export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
       <Section title="Reporting Readiness" id="reporting-readiness">
         <div className="space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge label={rr.overallLevel.replace(/_/g, ' ')} cls="border-amber-200 bg-amber-50 text-amber-700" />
+            <Badge label={rr.overallLevel.replace(/_/g, ' ')} cls="border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700" />
             <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">{rr.pillars.filter(p => p.status === 'report_ready').length}/{rr.pillars.length} pillar pronti</span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-[10px]">
             {rr.pillars.map((p) => (
               <div key={p.pillar} className="flex items-center gap-2">
-                <span className={p.status === 'report_ready' ? 'text-green-500' : p.status === 'not_ready' ? 'text-red-400' : 'text-amber-500'}>
+                <span className={p.status === 'report_ready' ? 'text-[#2F7D55]' : p.status === 'not_ready' ? 'text-[rgba(158,59,47,0.75)]' : 'text-[#D99A2B]'}>
                   {p.status === 'report_ready' ? '✓' : '○'}
                 </span>
                 <span className={p.status === 'report_ready' ? 'text-[rgba(6,3,43,0.78)]' : 'text-[rgba(6,3,43,0.40)]'}>{p.pillar}</span>
@@ -205,7 +205,7 @@ export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
                   <span className="text-[9px] text-[rgba(6,3,43,0.40)]">{sub.period} · {sub.fileCount} file</span>
                 </div>
                 {sub.adminComment && sub.status !== 'submission_draft' && (
-                  <p className="text-[9.5px] text-amber-700 mt-1.5 rounded border border-amber-100 bg-amber-50 px-2 py-1">
+                  <p className="text-[9.5px] text-amber-700 mt-1.5 rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-2 py-1">
                     KORA: {sub.adminComment}
                   </p>
                 )}
@@ -222,7 +222,7 @@ export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
       <Section title="Decision Pack" id="decision-pack">
         <div className="space-y-3">
           <div className="flex items-center gap-3 flex-wrap">
-            <Badge label={dp.status} cls="border-amber-200 bg-amber-50 text-amber-700" />
+            <Badge label={dp.status} cls="border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700" />
             <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">
               Generato: {new Date(dp.generatedAt).toLocaleDateString('it-IT')}
             </span>

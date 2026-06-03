@@ -47,16 +47,16 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
 
       {/* Three gate classes — semantic colors preserved */}
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-[10px] border border-emerald-200 bg-emerald-50 p-4 space-y-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Eligible</p>
-          <p className="text-3xl font-bold text-emerald-900" style={{ fontFamily: 'var(--font-jakarta)' }}>
+        <div className="rounded-[10px] border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] p-4 space-y-2">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#2F7D55]">Eligible</p>
+          <p className="text-3xl font-bold text-[#1A4A2E]" style={{ fontFamily: 'var(--font-jakarta)' }}>
             {summary.eligible_row_count.toLocaleString('it-IT')}
           </p>
-          <p className="text-xs text-emerald-700 leading-relaxed">
+          <p className="text-xs text-[#2F7D55] leading-relaxed">
             Azioni che possono generare attivazione umana verificata. Processate dall&apos;IU Engine — contribuiscono al KORA Index.
           </p>
         </div>
-        <div className="rounded-[10px] border border-amber-200 bg-amber-50 p-4 space-y-2">
+        <div className="rounded-[10px] border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-4 space-y-2">
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Limited</p>
           <p className="text-3xl font-bold text-amber-900" style={{ fontFamily: 'var(--font-jakarta)' }}>
             {summary.limited_count.toLocaleString('it-IT')}
@@ -65,12 +65,12 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
             Benefit monetari utili, ma a bassa profondità di attivazione. 0 IU — tracciati come spesa in benefit monetari nel motore BTI.
           </p>
         </div>
-        <div className="rounded-[10px] border border-rose-200 bg-rose-50 p-4 space-y-2">
-          <p className="text-xs font-bold uppercase tracking-widest text-rose-700">Blocked</p>
-          <p className="text-3xl font-bold text-rose-900" style={{ fontFamily: 'var(--font-jakarta)' }}>
+        <div className="rounded-[10px] border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4 space-y-2">
+          <p className="text-xs font-bold uppercase tracking-widest text-[#9E3B2F]">Blocked</p>
+          <p className="text-3xl font-bold text-[#9E3B2F]" style={{ fontFamily: 'var(--font-jakarta)' }}>
             {summary.blocked_count.toLocaleString('it-IT')}
           </p>
-          <p className="text-xs text-rose-700 leading-relaxed">
+          <p className="text-xs text-[#9E3B2F] leading-relaxed">
             Compliance legale/HSE/documentale esclusa per design. 0 IU · 0 KORA Index · 0 PIB · 0 KORA Contribution.
           </p>
         </div>

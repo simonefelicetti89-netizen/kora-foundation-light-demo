@@ -29,7 +29,7 @@ interface MetricRow {
 const MB_ACCENT: Record<string, string> = {
   REACH:  'text-blue-700',
   QUALITY:'text-violet-700',
-  EQUITY: 'text-teal-700',
+  EQUITY: 'text-[rgba(6,3,43,0.62)]',
   BTI:    'text-amber-700',
 };
 
@@ -155,7 +155,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
                   </td>
                   <td className="py-2.5 text-right">
                     {row.delta != null ? (
-                      <span className={`font-mono text-[11px] font-bold ${row.deltaPositive ? 'text-emerald-600' : row.deltaPositive === false ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]'}`}>
+                      <span className={`font-mono text-[11px] font-bold ${row.deltaPositive ? 'text-[rgba(47,125,85,0.90)]' : row.deltaPositive === false ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]'}`}>
                         {row.delta}
                       </span>
                     ) : <span className="text-[rgba(6,3,43,0.16)]">—</span>}
@@ -235,7 +235,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
                     </td>
                     <td className="py-3 text-right">
                       {delta !== null ? (
-                        <span className={`font-mono text-xs font-bold ${delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-rose-600' : 'text-[rgba(6,3,43,0.40)]'}`}>
+                        <span className={`font-mono text-xs font-bold ${delta > 0 ? 'text-[rgba(47,125,85,0.90)]' : delta < 0 ? 'text-[rgba(158,59,47,0.90)]' : 'text-[rgba(6,3,43,0.40)]'}`}>
                           {delta > 0 ? '+' : ''}{delta}
                         </span>
                       ) : <span className="text-[rgba(6,3,43,0.28)]">—</span>}

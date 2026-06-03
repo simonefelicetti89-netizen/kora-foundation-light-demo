@@ -147,8 +147,8 @@ const ACTIVATION_REQUESTS: ActivationRequest[] = [
 ];
 
 const REQUEST_STATUS_BADGE: Record<string, { style: string; label: string }> = {
-  confermata:         { style: 'bg-green-50 text-green-700 border-green-200',    label: 'Confermata' },
-  in_attesa:          { style: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'In attesa' },
+  confermata:         { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',    label: 'Confermata' },
+  in_attesa:          { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',    label: 'In attesa' },
   evidenza_richiesta: { style: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',       label: 'Evidenza richiesta' },
 };
 
@@ -194,9 +194,9 @@ const EVIDENCE_ITEMS: EvidenceItem[] = [
 ];
 
 const EVIDENCE_STATUS_BADGE: Record<string, { style: string; label: string }> = {
-  in_revisione: { style: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'In revisione' },
-  parziale:     { style: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Parziale' },
-  approvata:    { style: 'bg-green-50 text-green-700 border-green-200',    label: 'Approvata' },
+  in_revisione: { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',    label: 'In revisione' },
+  parziale:     { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]', label: 'Parziale' },
+  approvata:    { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',    label: 'Approvata' },
 };
 
 // Availability windows — static preview, no real calendar, no booking
@@ -257,8 +257,8 @@ const ACTION_LOG = [
 ];
 
 const LOG_STATUS_BADGE: Record<string, { style: string; label: string }> = {
-  completata: { style: 'bg-green-50 text-green-700 border-green-200',  label: 'Completata' },
-  in_corso:   { style: 'bg-amber-50 text-amber-700 border-amber-200',  label: 'In corso' },
+  completata: { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',  label: 'Completata' },
+  in_corso:   { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',  label: 'In corso' },
 };
 
 // ─── Style helpers ────────────────────────────────────────────────────────────
@@ -266,14 +266,14 @@ const LOG_STATUS_BADGE: Record<string, { style: string; label: string }> = {
 const PILLAR_BADGE: Record<string, string> = {
   IMPACT:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]',
-  LIFE:       'bg-emerald-50 text-emerald-700 border-emerald-200',
-  GROWTH:     'bg-amber-50 text-amber-700 border-amber-200',
+  LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  GROWTH:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
   LEGACY:     'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
 };
 
 const PROTOCOL_BADGE: Record<string, { style: string; label: string }> = {
-  audit_completed: { style: 'bg-green-50 text-green-700 border-green-200',   label: 'Audit processo completato' },
-  audit_pending:   { style: 'bg-amber-50 text-amber-700 border-amber-200',   label: 'Audit processo in corso' },
+  audit_completed: { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',   label: 'Audit processo completato' },
+  audit_pending:   { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',   label: 'Audit processo in corso' },
   not_requested:   { style: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',   label: 'Protocollo non definito' },
 };
 
@@ -333,8 +333,8 @@ const PARTNER_COMPANY_SCOPE: CompanyScope[] = [
 ];
 
 const RELATIONSHIP_STATUS_BADGE: Record<string, { style: string }> = {
-  'Pilot attivo':        { style: 'bg-green-50 text-green-700 border-green-200' },
-  'Richiesta in review': { style: 'bg-amber-50 text-amber-700 border-amber-200' },
+  'Pilot attivo':        { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' },
+  'Richiesta in review': { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' },
   'Interesse ricevuto':  { style: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]' },
 };
 
@@ -443,9 +443,9 @@ const TODAY_AGENDA: AgendaItem[] = [
 ];
 
 const AGENDA_TYPE_BADGE: Record<AgendaItemType, { style: string; label: string }> = {
-  request_review:       { style: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'Review richiesta' },
+  request_review:       { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',    label: 'Review richiesta' },
   scheduled_activation: { style: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',       label: 'Attivazione' },
-  evidence_followup:    { style: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Follow-up evidenza' },
+  evidence_followup:    { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]', label: 'Follow-up evidenza' },
   advisor_check:        { style: 'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]', label: 'Check Advisor' },
 };
 
@@ -505,9 +505,9 @@ const PARTNER_FINANCIAL_PREVIEW: FinancialRow[] = [
 
 const FINANCIAL_STATUS_BADGE: Record<string, string> = {
   'Da consuntivare':                       'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  'In verifica evidenze':                  'bg-amber-50 text-amber-700 border-amber-200',
-  'Liquidabile — demo':                    'bg-green-50 text-green-700 border-green-200',
-  'Non fatturabile — evidenza incompleta': 'bg-red-50 text-red-600 border-red-200',
+  'In verifica evidenze':                  'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  'Liquidabile — demo':                    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  'Non fatturabile — evidenza incompleta': 'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
 };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -650,7 +650,7 @@ export default function PartnerDashboard() {
               <p className="text-base font-bold text-[#06032B]">{PARTNER_PROFILE.name}</p>
               <p className="text-sm text-[rgba(6,3,43,0.52)] mt-0.5">{PARTNER_PROFILE.category}</p>
             </div>
-            <span className={`rounded border px-2 py-0.5 text-xs font-medium ${PARTNER_PROFILE.network_status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]'}`}>
+            <span className={`rounded border px-2 py-0.5 text-xs font-medium ${PARTNER_PROFILE.network_status === 'active' ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]'}`}>
               {PARTNER_PROFILE.network_status === 'active' ? 'Rete attiva' : 'Non attivo'}
             </span>
           </div>
@@ -676,7 +676,7 @@ export default function PartnerDashboard() {
             </div>
             <div>
               <p className="text-xs text-[rgba(6,3,43,0.40)]">Affidabilità evidenza</p>
-              <span className="inline-block mt-0.5 rounded border bg-amber-50 border-amber-200 px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+              <span className="inline-block mt-0.5 rounded border bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)] px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
                 Parziale — revisione protocollo evidenze in corso
               </span>
             </div>
@@ -860,7 +860,7 @@ export default function PartnerDashboard() {
                     <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">{ev.company}</p>
                   </div>
                   <div className="flex gap-1.5 shrink-0">
-                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${ev.submitted ? 'bg-green-50 text-green-700 border-green-200' : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]'}`}>
+                    <span className={`rounded border px-1.5 py-0.5 text-[10px] font-medium ${ev.submitted ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]'}`}>
                       {ev.submitted ? 'Presentata' : 'Non presentata'}
                     </span>
                     {eb && (
@@ -1130,11 +1130,11 @@ export default function PartnerDashboard() {
       </div>
 
       {/* ── Partner Access Boundary ── */}
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-4 space-y-1.5">
-        <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide">
+      <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] px-4 py-4 space-y-1.5">
+        <p className="text-xs font-semibold text-[#2F7D55] uppercase tracking-wide">
           Perimetro di accesso Partner
         </p>
-        <p className="text-sm text-emerald-800 leading-relaxed">
+        <p className="text-sm text-[#2F7D55] leading-relaxed">
           Il partner non vede PIB individuali, timeline personali, Dynamic Impact CV o dati privati
           dei lavoratori. Opera solo su iniziative, richieste e evidenze nel perimetro autorizzato.
         </p>
@@ -1149,8 +1149,8 @@ export default function PartnerDashboard() {
             'Solo conteggi aggregati sopra soglia privacy (≥10 lavoratori)',
             'Solo perimetro operativo autorizzato — nessuna visibilità cross-perimetro',
           ].map((item) => (
-            <li key={item} className="flex gap-2 text-xs text-emerald-700">
-              <span className="text-emerald-400 shrink-0 mt-0.5">·</span>
+            <li key={item} className="flex gap-2 text-xs text-[#2F7D55]">
+              <span className="text-[rgba(47,125,85,0.75)] shrink-0 mt-0.5">·</span>
               {item}
             </li>
           ))}

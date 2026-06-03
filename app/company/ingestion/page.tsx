@@ -16,7 +16,7 @@ import type { PillarCode } from '@/lib/types';
 
 const ELIGIBILITY_STYLE: Record<string, { badge: string; dot: string; label: string }> = {
   eligible: {
-    badge: 'bg-green-50 text-green-700 border-green-200',
+    badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
     dot:   'bg-green-500',
     label: 'Eligible',
   },
@@ -26,24 +26,24 @@ const ELIGIBILITY_STYLE: Record<string, { badge: string; dot: string; label: str
     label: 'Limited',
   },
   blocked: {
-    badge: 'bg-rose-50 text-rose-700 border-rose-200',
-    dot:   'bg-rose-500',
+    badge: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',
+    dot:   'bg-[rgba(158,59,47,0.06)]0',
     label: 'Blocked',
   },
 };
 
 const REVIEW_STATUS_STYLE: Record<string, { badge: string; label: string }> = {
-  ready:          { badge: 'bg-green-50 text-green-700 border-green-200',   label: 'Pronto KORA' },
-  pending_review: { badge: 'bg-amber-50 text-amber-700 border-amber-200',   label: 'In revisione' },
+  ready:          { badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',   label: 'Pronto KORA' },
+  pending_review: { badge: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',   label: 'In revisione' },
   limited_gate:   { badge: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]', label: 'Instradato (BTI)' },
-  blocked_gate:   { badge: 'bg-rose-50 text-rose-700 border-rose-200',      label: 'Bloccato' },
+  blocked_gate:   { badge: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',      label: 'Bloccato' },
 };
 
 const DESTINATION_STYLE: Record<IngestionDestination, { badge: string }> = {
-  'KORA Activation Core':                    { badge: 'bg-green-50 text-green-700 border-green-200' },
+  'KORA Activation Core':                    { badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' },
   'Economic Relief & Activation Opportunity': { badge: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]' },
-  'Blocked by Design':                       { badge: 'bg-rose-50 text-rose-700 border-rose-200' },
-  'Human Review Required':                   { badge: 'bg-amber-50 text-amber-700 border-amber-200' },
+  'Blocked by Design':                       { badge: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]' },
+  'Human Review Required':                   { badge: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' },
 };
 
 const CONFIDENCE_STYLE: Record<string, string> = {
@@ -53,11 +53,11 @@ const CONFIDENCE_STYLE: Record<string, string> = {
 };
 
 const PILLAR_BADGE: Record<PillarCode, string> = {
-  LIFE:       'bg-green-50 text-green-700 border-green-200',
+  LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-  IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
-  LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
+  IMPACT:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  LEGACY:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
 };
 
 // ── Pipeline flow ──────────────────────────────────────────────────────────────
@@ -89,7 +89,7 @@ function getDoctrineCopy(row: PipelineAnalyzedRow): { header: string; body: stri
     return {
       header: 'Blocked by Design — 0 Impact Units',
       body:   'KORA non trasforma la compliance in impatto. La conformità legale è una baseline, non impatto. 0 IU · 0 KORA Index · 0 PIB · 0 Contribution · 0 Value Chain. I record sono tracciati per governance ma non generano attivazione.',
-      style:  'border-rose-100 bg-rose-50 text-rose-700',
+      style:  'border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
     };
   }
   if (row.classification.kora_eligibility === 'limited') {
@@ -103,13 +103,13 @@ function getDoctrineCopy(row: PipelineAnalyzedRow): { header: string; body: stri
     return {
       header: 'Revisione Umana Richiesta',
       body:   "Classificazione in attesa di revisione. Non è possibile assegnare Impact Units senza chiarire natura obbligatoria o volontaria e profondità di attivazione. Attendere validazione prima dell'invio al KORA Index.",
-      style:  'border-amber-100 bg-amber-50 text-amber-700',
+      style:  'border-amber-100 bg-[rgba(217,154,43,0.08)] text-amber-700',
     };
   }
   return {
     header: 'Idoneo — Può Generare Attivazione',
     body:   "Questa azione può generare attivazione umana verificata se validata, distribuita e tracciata correttamente. L'approvazione del revisore consente l'ingresso nel KORA Activation Core.",
-    style:  'border-green-100 bg-green-50 text-green-700',
+    style:  'border-green-100 bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
   };
 }
 
@@ -177,8 +177,8 @@ export default function AIIngestionAssistant() {
                 i === 0 ? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]' :
                 i === 1 ? 'border-violet-200 bg-violet-50' :
                 i <= 2  ? 'border-blue-200 bg-blue-50' :
-                i === 3 ? 'border-amber-200 bg-amber-50' :
-                          'border-green-200 bg-green-50',
+                i === 3 ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]' :
+                          'border-[rgba(47,125,85,0.22)] bg-green-50',
               )}>
                 <p className={cn(
                   'text-xs font-semibold',
@@ -214,7 +214,7 @@ export default function AIIngestionAssistant() {
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)] truncate">{src.label}</p>
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)] truncate">{src.file}</p>
-                <span className="mt-1 inline-block rounded border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-600">
+                <span className="mt-1 inline-block rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-600">
                   {src.status}
                 </span>
               </div>
@@ -232,25 +232,25 @@ export default function AIIngestionAssistant() {
           Riepilogo Classificazione — {summary.total} record analizzati
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+          <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 p-3">
             <p className="text-xs text-green-600">Eligible</p>
             <p className="text-2xl font-bold text-green-700 mt-0.5">{summary.eligible_count}</p>
-            <p className="text-[10px] text-green-500 mt-0.5">pronti per KORA Index</p>
+            <p className="text-[10px] text-[#2F7D55] mt-0.5">pronti per KORA Index</p>
           </div>
           <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-3">
             <p className="text-xs text-[#C76F3D]">Limited</p>
             <p className="text-2xl font-bold text-[rgba(6,3,43,0.72)] mt-0.5">{summary.limited_count}</p>
             <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">Economic Relief — 0 IU</p>
           </div>
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-3">
-            <p className="text-xs text-rose-600">Blocked</p>
-            <p className="text-2xl font-bold text-rose-700 mt-0.5">{summary.blocked_count}</p>
-            <p className="text-[10px] text-rose-500 mt-0.5">Blocked by Design — 0 IU</p>
+          <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-3">
+            <p className="text-xs text-[rgba(158,59,47,0.90)]">Blocked</p>
+            <p className="text-2xl font-bold text-[#9E3B2F] mt-0.5">{summary.blocked_count}</p>
+            <p className="text-[10px] text-[rgba(158,59,47,0.75)] mt-0.5">Blocked by Design — 0 IU</p>
           </div>
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+          <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3">
             <p className="text-xs text-amber-600">Review Richiesta</p>
             <p className="text-2xl font-bold text-amber-700 mt-0.5">{summary.review_required_count}</p>
-            <p className="text-[10px] text-amber-500 mt-0.5">in attesa di validazione</p>
+            <p className="text-[10px] text-[#D99A2B] mt-0.5">in attesa di validazione</p>
           </div>
         </div>
         <div className="mt-2 grid grid-cols-3 gap-2">
@@ -262,8 +262,8 @@ export default function AIIngestionAssistant() {
             <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Campi Mancanti</p>
             <p className="text-sm font-bold text-[rgba(6,3,43,0.78)]">{summary.missing_data_total}</p>
           </div>
-          <div className="rounded border border-green-200 bg-green-50 p-2 text-center">
-            <p className="text-[10px] text-green-500">Pronti per KORA Index</p>
+          <div className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 p-2 text-center">
+            <p className="text-[10px] text-[#2F7D55]">Pronti per KORA Index</p>
             <p className="text-sm font-bold text-green-700">{summary.ready_for_index_count}</p>
           </div>
         </div>
@@ -403,7 +403,7 @@ export default function AIIngestionAssistant() {
             {selectedRow ? (
               selectedRow.missing_data_questions.length > 0 ? (
                 selectedRow.missing_data_questions.map((q, i) => (
-                  <div key={i} className="flex items-start gap-2 rounded border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                  <div key={i} className="flex items-start gap-2 rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-amber-700">
                     <span className="shrink-0 mt-0.5 font-bold">?</span>
                     <span>{q}</span>
                   </div>
@@ -436,7 +436,7 @@ export default function AIIngestionAssistant() {
           <RoutingCard
             count={summary.routing.kora_activation_core}
             title="KORA Activation Core"
-            badge="bg-green-50 text-green-700 border-green-200"
+            badge="bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]"
             description="Eligible → KORA Index v3 → Decision Pack"
             detail="Record verificati e approvati dal revisore. Generano Impact Units e contribuiscono al KORA Index v3."
           />
@@ -450,14 +450,14 @@ export default function AIIngestionAssistant() {
           <RoutingCard
             count={summary.routing.blocked_by_design}
             title="Blocked by Design"
-            badge="bg-rose-50 text-rose-700 border-rose-200"
+            badge="bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]"
             description="Blocked → 0 IU — solo governance"
             detail="KORA non trasforma la compliance in impatto. Tracciati per governance. 0 IU · 0 KORA Index · 0 PIB."
           />
           <RoutingCard
             count={summary.routing.human_review_required}
             title="Human Review Required"
-            badge="bg-amber-50 text-amber-700 border-amber-200"
+            badge="bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]"
             description="Review → coda advisor"
             detail="Classificazione ambigua o incompleta. Richiedono validazione advisor prima di poter entrare nel KORA Activation Core."
           />
@@ -486,13 +486,13 @@ export default function AIIngestionAssistant() {
                 'Instradare verso categorie KORA con flag di governance',
               ].map((t) => (
                 <li key={t} className="flex gap-1.5 text-[10px] text-[rgba(6,3,43,0.52)]">
-                  <span className="shrink-0 text-green-500">✓</span>{t}
+                  <span className="shrink-0 text-[#2F7D55]">✓</span>{t}
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-rose-600 mb-1">L&apos;AI Ingestion NON può:</p>
+            <p className="text-[10px] font-semibold text-[rgba(158,59,47,0.90)] mb-1">L&apos;AI Ingestion NON può:</p>
             <ul className="space-y-0.5">
               {[
                 'Inferire stato di salute individuale',
@@ -504,7 +504,7 @@ export default function AIIngestionAssistant() {
                 'Bypassare la revisione umana per dati ambigui',
               ].map((t) => (
                 <li key={t} className="flex gap-1.5 text-[10px] text-[rgba(6,3,43,0.52)]">
-                  <span className="shrink-0 text-rose-500">✗</span>{t}
+                  <span className="shrink-0 text-[rgba(158,59,47,0.75)]">✗</span>{t}
                 </li>
               ))}
             </ul>
@@ -573,7 +573,7 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
             )}
             <p className="text-[rgba(6,3,43,0.62)]">
               <span className="text-[rgba(6,3,43,0.40)]">Completezza dati: </span>
-              <span className={n.data_completeness_score >= 0.8 ? 'text-green-600 font-semibold' : n.data_completeness_score >= 0.5 ? 'text-amber-600' : 'text-rose-600'}>
+              <span className={n.data_completeness_score >= 0.8 ? 'text-green-600 font-semibold' : n.data_completeness_score >= 0.5 ? 'text-amber-600' : 'text-[rgba(158,59,47,0.90)]'}>
                 {Math.round(n.data_completeness_score * 100)}%
               </span>
             </p>
@@ -631,13 +631,13 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
             className={cn(
               'rounded border px-3 py-1.5 text-xs font-medium',
               kr.approved_for_scoring
-                ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100 cursor-pointer'
+                ? 'border-green-300 bg-[rgba(47,125,85,0.08)] text-[#2F7D55] hover:bg-green-100 cursor-pointer'
                 : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.28)] cursor-not-allowed',
             )}
           >
             Invia a KORA Index ✓
           </button>
-          <button disabled className="rounded border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-600 cursor-not-allowed opacity-70">
+          <button disabled className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-1.5 text-xs font-medium text-amber-600 cursor-not-allowed opacity-70">
             Invia a revisione
           </button>
           <button disabled className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-1.5 text-xs text-[rgba(6,3,43,0.40)] cursor-not-allowed">
@@ -654,7 +654,7 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
 
       {/* Missing fields */}
       {n.missing_fields.length > 0 && (
-        <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2">
+        <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2">
           <p className="text-xs font-semibold text-amber-700 mb-1">Dati mancanti per questo record</p>
           <ul className="space-y-0.5">
             {n.missing_fields.map((f) => (
@@ -671,7 +671,7 @@ function Field({ label, value, highlight }: { label: string; value: string; high
   const style =
     highlight === 'eligible' ? 'text-green-600 font-semibold' :
     highlight === 'limited'  ? 'text-[#C76F3D] font-semibold' :
-    highlight === 'blocked'  ? 'text-rose-600 font-semibold' :
+    highlight === 'blocked'  ? 'text-[rgba(158,59,47,0.90)] font-semibold' :
     'text-[rgba(6,3,43,0.78)]';
   return (
     <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[#F8F6F1] px-2 py-1.5">
@@ -687,8 +687,8 @@ function FlagBadge({ label, value, invert }: { label: string; value: boolean; in
     <span className={cn(
       'rounded border px-2 py-0.5 text-[10px] font-medium',
       positive
-        ? 'border-green-200 bg-green-50 text-green-600'
-        : 'border-rose-100 bg-rose-50 text-rose-500',
+        ? 'border-[rgba(47,125,85,0.22)] bg-green-50 text-green-600'
+        : 'border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] text-[rgba(158,59,47,0.75)]',
     )}>
       {positive ? '✓' : '✗'} {label}
     </span>
@@ -712,7 +712,7 @@ function RoutingCard({
           'text-lg font-bold shrink-0',
           badge.includes('green')  ? 'text-green-700'  :
           badge.includes('indigo') ? 'text-[rgba(6,3,43,0.72)]' :
-          badge.includes('rose')   ? 'text-rose-700'   :
+          badge.includes('rose')   ? 'text-[#9E3B2F]'   :
           'text-amber-700',
         )}>
           {count}

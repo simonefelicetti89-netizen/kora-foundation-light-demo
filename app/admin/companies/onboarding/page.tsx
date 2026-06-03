@@ -22,24 +22,24 @@ const STATUS_COLORS: Record<string, string> = {
   workforce_baseline_complete:  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   program_data_loaded:          'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
   hr_kpi_loaded:                'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]',
-  ready_for_scoring:            'bg-amber-50 text-amber-700 border-amber-200',
-  fully_onboarded:              'bg-green-50 text-green-700 border-green-200',
+  ready_for_scoring:            'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  fully_onboarded:              'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
 };
 
 function ReadinessCheck({ check }: { check: OnboardingReadinessCheck }) {
   const isOk = check.status === 'ok';
   const isBlocking = check.blocking && !isOk;
   return (
-    <div className={cn('rounded-md border p-3', isOk ? 'border-green-200 bg-green-50' : isBlocking ? 'border-rose-200 bg-rose-50' : 'border-amber-200 bg-amber-50')}>
+    <div className={cn('rounded-md border p-3', isOk ? 'border-[rgba(47,125,85,0.22)] bg-green-50' : isBlocking ? 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]')}>
       <div className="flex items-start gap-2">
-        <span className={cn('text-xs font-bold shrink-0', isOk ? 'text-green-600' : isBlocking ? 'text-rose-600' : 'text-amber-600')}>
+        <span className={cn('text-xs font-bold shrink-0', isOk ? 'text-green-600' : isBlocking ? 'text-[rgba(158,59,47,0.90)]' : 'text-amber-600')}>
           {isOk ? '✓' : isBlocking ? '✕' : '!'}
         </span>
         <div>
           <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{check.label}</p>
           <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">{check.detail}</p>
           {isBlocking && (
-            <span className="text-[9px] font-semibold text-rose-600 uppercase tracking-wide">Bloccante</span>
+            <span className="text-[9px] font-semibold text-[rgba(158,59,47,0.90)] uppercase tracking-wide">Bloccante</span>
           )}
         </div>
       </div>
@@ -109,17 +109,17 @@ export default function AdminOnboardingStudio() {
       </div>
 
       {/* ── Foundation Light eligibility ── */}
-      <div className={cn('rounded-xl border p-5', isEligible ? 'border-green-200 bg-green-50' : 'border-rose-200 bg-rose-50')}>
+      <div className={cn('rounded-xl border p-5', isEligible ? 'border-[rgba(47,125,85,0.22)] bg-green-50' : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]')}>
         <div className="flex items-center gap-2">
-          <span className={cn('text-lg font-bold', isEligible ? 'text-green-700' : 'text-rose-700')}>
+          <span className={cn('text-lg font-bold', isEligible ? 'text-green-700' : 'text-[#9E3B2F]')}>
             {isEligible ? '✓' : '✕'}
           </span>
-          <p className={cn('text-sm font-semibold', isEligible ? 'text-green-800' : 'text-rose-800')}>
+          <p className={cn('text-sm font-semibold', isEligible ? 'text-[#2F7D55]' : 'text-[#9E3B2F]')}>
             {isEligible ? 'Idonea Foundation Light' : 'Non idonea Foundation Light'}
           </p>
         </div>
         {!isEligible && (
-          <p className="text-xs text-rose-700 mt-1">
+          <p className="text-xs text-[#9E3B2F] mt-1">
             Foundation Light richiede almeno 30 lavoratori. Verificare il workforce baseline.
           </p>
         )}
@@ -194,15 +194,15 @@ export default function AdminOnboardingStudio() {
         <div className="flex items-center gap-2">
           <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">Pipeline Readiness</p>
           <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
-            pipelineReadiness.status === 'ok' ? 'border-green-200 bg-green-50 text-green-700' :
-            pipelineReadiness.status === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-700' :
-            'border-rose-200 bg-rose-50 text-rose-700',
+            pipelineReadiness.status === 'ok' ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' :
+            pipelineReadiness.status === 'warning' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' :
+            'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
           )}>
             {pipelineReadiness.status.toUpperCase()}
           </span>
         </div>
         {pipelineReadiness.blocking_checks.length > 0 && (
-          <p className="text-xs text-rose-600">
+          <p className="text-xs text-[rgba(158,59,47,0.90)]">
             {pipelineReadiness.blocking_checks.length} check bloccante{pipelineReadiness.blocking_checks.length > 1 ? 'i' : ''} non superato{pipelineReadiness.blocking_checks.length > 1 ? 'i' : ''}.
           </p>
         )}

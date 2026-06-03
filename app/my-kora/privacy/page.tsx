@@ -13,7 +13,7 @@ export default function PrivacySharing() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-[#06032B]">Privacy & Sharing</h1>
+          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Privacy & Sharing</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Preferenze di consenso e condivisione dati del lavoratore</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -33,7 +33,7 @@ export default function PrivacySharing() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[#06032B]">Privacy & Sharing</h1>
+        <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Privacy & Sharing</h1>
         <p className="text-sm text-[rgba(6,3,43,0.52)]">{privacy.persona_label}</p>
       </div>
 
@@ -45,14 +45,14 @@ export default function PrivacySharing() {
 
       {/* Two-column: what company sees vs. does not see */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-          <p className="text-xs font-semibold text-green-800 mb-2 flex items-center gap-1.5">
-            <span className="inline-block w-4 h-4 rounded-full bg-green-500 text-white text-center leading-4 text-[10px]">✓</span>
+        <div className="rounded-lg border border-[rgba(47,125,85,0.20)] bg-[rgba(47,125,85,0.08)] p-4">
+          <p className="text-xs font-semibold text-[#2F7D55] mb-2 flex items-center gap-1.5">
+            <span className="inline-block w-4 h-4 rounded-full bg-[#2F7D55] text-white text-center leading-4 text-[10px]">✓</span>
             Il tuo datore di lavoro PUÒ vedere
           </p>
           <ul className="space-y-1.5">
             {privacy.company_can_see.map((item, i) => (
-              <li key={i} className="text-xs text-green-700 leading-relaxed flex gap-1.5">
+              <li key={i} className="text-xs text-[#2F7D55] leading-relaxed flex gap-1.5">
                 <span className="text-green-400 shrink-0 mt-0.5">·</span>
                 {item}
               </li>
@@ -61,7 +61,7 @@ export default function PrivacySharing() {
         </div>
 
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4">
-          <p className="text-xs font-semibold text-rose-800 mb-2 flex items-center gap-1.5">
+          <p className="text-xs font-semibold text-[#9E3B2F] mb-2 flex items-center gap-1.5">
             <span className="inline-block w-4 h-4 rounded-full bg-[rgba(158,59,47,0.06)]0 text-white text-center leading-4 text-[10px]">✕</span>
             Il tuo datore di lavoro NON PUÒ vedere
           </p>
@@ -82,7 +82,7 @@ export default function PrivacySharing() {
           Preferenze di Consenso
         </h2>
 
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-3">
+        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3 mb-3">
           <p className="text-xs font-semibold text-amber-700">Solo anteprima</p>
           <p className="text-xs text-amber-700 mt-0.5">
             Questi controlli sono mostrati solo a scopo illustrativo. Nessuna azione di consenso reale avviene in Foundation Light.
@@ -130,7 +130,7 @@ export default function PrivacySharing() {
           Consent &amp; Sharing Vault
         </h2>
 
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-3">
+        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3 mb-3">
           <p className="text-xs font-semibold text-amber-700">Solo anteprima — Foundation Light</p>
           <p className="text-xs text-amber-700 mt-0.5">
             Il Vault è mostrato solo a scopo illustrativo. Nessuna modifica di consenso reale avviene in questa demo.
@@ -168,7 +168,7 @@ export default function PrivacySharing() {
                 id: 'vault-aggregates',
                 data_type: 'Aggregati aziendali',
                 status: 'Anonimi sopra soglia',
-                status_color: 'bg-green-50 text-green-700 border-green-200',
+                status_color: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
                 employer_visibility: 'Sì — aggregato',
                 note: 'Dati consolidati a livello aziendale. Nessun dato individuale. Soglia minima: 10 lavoratori per segmento.',
               },

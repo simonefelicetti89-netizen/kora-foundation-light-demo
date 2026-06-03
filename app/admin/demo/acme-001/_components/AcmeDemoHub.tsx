@@ -45,8 +45,8 @@ const SUBMISSION_STATUS_LABEL: Record<string, string> = {
 };
 
 const SUBMISSION_STATUS_CLS: Record<string, string> = {
-  submission_accepted:            'bg-green-50 text-green-700 border-green-200',
-  submission_needs_clarification: 'bg-amber-50 text-amber-700 border-amber-200',
+  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
   submission_pending:             'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
@@ -54,7 +54,7 @@ const SUBMISSION_STATUS_CLS: Record<string, string> = {
 const READINESS_CLS: Record<string, string> = {
   report_ready:       'text-green-700',
   usable_with_caveat: 'text-amber-600',
-  needs_evidence:     'text-orange-600',
+  needs_evidence:     'text-[#D99A2B]',
   not_ready:          'text-red-500',
 };
 
@@ -106,7 +106,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         </div>
 
         {/* Calibration bar */}
-        <div className="mt-4 rounded border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-[10px] text-amber-300">
+        <div className="mt-4 rounded border border-amber-500/30 bg-[rgba(217,154,43,0.08)]0/10 px-4 py-2 text-[10px] text-amber-300">
           {ACME_METHODOLOGY.calibrationStatus.replace(/_/g, ' ')} · {ACME_METHODOLOGY.versionId} · {ACME_PROFILE.period} · Dati aggregati · {ACME_METHODOLOGY.disclaimerCalibration}
         </div>
       </div>
@@ -168,7 +168,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
           </div>
           <div>
             <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Activation Safeguard</p>
-            <Badge label={`Safeguard: ${ACME_KORA_INDEX.safeguardStatus}`} cls="bg-green-50 text-green-700 border-green-200" />
+            <Badge label={`Safeguard: ${ACME_KORA_INDEX.safeguardStatus}`} cls="bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]" />
             <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-1">AR {Math.round(ACME_KORA_INDEX.activationRate * 100)}% · MAR {Math.round(ACME_KORA_INDEX.meaningfulActivationRate * 100)}%</p>
           </div>
         </div>
@@ -254,9 +254,9 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
                   <td className="px-3 py-2">
                     <Badge
                       label={ev.eligibility}
-                      cls={ev.eligibility === 'eligible' ? 'bg-green-50 text-green-700 border-green-200' :
-                           ev.eligibility === 'limited' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                           ev.eligibility === 'blocked' ? 'bg-red-50 text-red-600 border-red-200' :
+                      cls={ev.eligibility === 'eligible' ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' :
+                           ev.eligibility === 'limited' ? 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' :
+                           ev.eligibility === 'blocked' ? 'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]' :
                            'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]'}
                     />
                   </td>
@@ -276,10 +276,10 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
           <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest mb-2">Evidence Gaps</p>
           <div className="space-y-1.5">
             {ACME_EVIDENCE_GAPS.map((gap, i) => (
-              <div key={i} className={`rounded border px-3 py-2 text-[10.5px] flex gap-2 ${gap.severity === 'high' ? 'border-red-200 bg-red-50' : gap.severity === 'medium' ? 'border-amber-200 bg-amber-50' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
+              <div key={i} className={`rounded border px-3 py-2 text-[10.5px] flex gap-2 ${gap.severity === 'high' ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)]' : gap.severity === 'medium' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
                 <Badge label={gap.pillar} cls="border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <span className={`font-semibold ${gap.severity === 'high' ? 'text-red-700' : gap.severity === 'medium' ? 'text-amber-700' : 'text-[rgba(6,3,43,0.62)]'}`}>{gap.gap}</span>
+                  <span className={`font-semibold ${gap.severity === 'high' ? 'text-[#9E3B2F]' : gap.severity === 'medium' ? 'text-amber-700' : 'text-[rgba(6,3,43,0.62)]'}`}>{gap.gap}</span>
                   <span className="text-[rgba(6,3,43,0.52)] ml-1">— {gap.action}</span>
                 </div>
               </div>
@@ -292,7 +292,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       <div id="submissions" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4 scroll-mt-4">
         <SectionTitle n="03" title="Data Submission" subtitle="Company-side upload flow (B39) — revisione KORA Admin obbligatoria" />
 
-        <div className="rounded border border-amber-200 bg-amber-50 px-4 py-2 text-[10px] text-amber-700">
+        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10px] text-amber-700">
           Caricamento dati ≠ scoring KORA · Submit non avvia scoring · accepted_for_intake richiede intake manuale da KORA Admin
         </div>
 
@@ -345,7 +345,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         <SectionTitle n="04" title="Decision Pack" subtitle={`${ACME_DECISION_PACK.versionId} · ${ACME_DECISION_PACK.status} · ${ACME_DECISION_PACK.reportingPeriod}`} />
 
         <div className="flex items-center gap-2">
-          <Badge label="DRAFT" cls="bg-amber-50 text-amber-700 border-amber-200" />
+          <Badge label="DRAFT" cls="bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]" />
           <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">Generato: {new Date(ACME_DECISION_PACK.generatedAt).toLocaleDateString('it-IT')}</span>
         </div>
 
@@ -370,7 +370,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         <div className="flex items-center gap-3">
           <Badge
             label={ACME_REPORTING_READINESS.overallLevel.replace(/_/g, ' ')}
-            cls="bg-amber-50 text-amber-700 border-amber-200"
+            cls="bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]"
           />
           <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">
             Score sintetico: {ACME_REPORTING_READINESS.readinessScore}%
@@ -431,10 +431,10 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* ── 08: Future Vision Boundary ────────────────────────────────────────── */}
-      <div id="future" className="rounded-xl border border-amber-200 bg-amber-50 px-6 py-5 space-y-4 scroll-mt-4">
+      <div id="future" className="rounded-xl border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-6 py-5 space-y-4 scroll-mt-4">
         <div>
           <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-0.5">08</p>
-          <h2 className="text-sm font-bold text-amber-800">Future Modules — Not Active in Foundation Light</h2>
+          <h2 className="text-sm font-bold text-[#8A5A00]">Future Modules — Not Active in Foundation Light</h2>
           <p className="text-[10.5px] text-amber-700 mt-0.5">Vision prodotto strategica — non attivo, non contrattualizzabile, nessun production claim.</p>
         </div>
 
@@ -449,10 +449,10 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
             { name: 'Generational Transition', note: 'Intelligence su trasferimento intergenerazionale — fase pilota avanzata.' },
             { name: 'Future Readiness',        note: 'Modulo di readiness futura — dipende da benchmark cross-settore.' },
           ].map((m) => (
-            <div key={m.name} className="rounded-lg border border-amber-200 bg-[#F8F6F1]/60 p-3 opacity-80 space-y-1">
-              <p className="text-[10.5px] font-semibold text-amber-800">{m.name}</p>
+            <div key={m.name} className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1]/60 p-3 opacity-80 space-y-1">
+              <p className="text-[10.5px] font-semibold text-[#8A5A00]">{m.name}</p>
               <p className="text-[9.5px] text-amber-700 leading-snug">{m.note}</p>
-              <p className="text-[9px] font-semibold text-amber-500 uppercase tracking-wide">Vision</p>
+              <p className="text-[9px] font-semibold text-[#D99A2B] uppercase tracking-wide">Vision</p>
             </div>
           ))}
         </div>
@@ -460,7 +460,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         <p className="text-[9.5px] text-amber-600">
           Nessun modulo futuro è attivo in Foundation Light. Nessuno è disponibile, contrattualizzabile o promesso.
           L&apos;architettura è sequenziale: ogni fase abilita quella successiva.
-          <Link href="/future-vision" className="ml-1 underline hover:text-amber-800">Roadmap architetturale →</Link>
+          <Link href="/future-vision" className="ml-1 underline hover:text-[#8A5A00]">Roadmap architetturale →</Link>
         </p>
       </div>
 

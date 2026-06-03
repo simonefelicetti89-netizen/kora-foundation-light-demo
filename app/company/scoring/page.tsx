@@ -121,8 +121,8 @@ export default function ScoringBoundaryNotice() {
             <p className="font-semibold text-[rgba(6,3,43,0.72)] mb-0.5">Limited</p>
             <p>tracked_only · economic_relief_spend in BTI · 0 IU · activation opportunity.</p>
           </div>
-          <div className="rounded border border-rose-100 bg-rose-50 px-2.5 py-2">
-            <p className="font-semibold text-rose-700 mb-0.5">Blocked</p>
+          <div className="rounded border border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] px-2.5 py-2">
+            <p className="font-semibold text-[#9E3B2F] mb-0.5">Blocked</p>
             <p>0 IU · 0 KORA Index · Blocked by Design · non penalizzato.</p>
           </div>
         </div>

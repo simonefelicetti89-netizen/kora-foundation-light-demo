@@ -30,28 +30,28 @@ type PillarFilter = 'all' | PillarCode;
 // ── Styling maps ───────────────────────────────────────────────────────────────
 
 const REVIEW_STATUS_STYLE: Record<UEFReviewStatus, { badge: string; label: string }> = {
-  pending:                      { badge: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'In attesa' },
-  approved_for_scoring:         { badge: 'bg-green-50 text-green-700 border-green-200',    label: 'Approvato — Scoring' },
+  pending:                      { badge: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',    label: 'In attesa' },
+  approved_for_scoring:         { badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',    label: 'Approvato — Scoring' },
   approved_for_bti_governance:  { badge: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]', label: 'Approvato — BTI' },
-  blocked_by_design:            { badge: 'bg-rose-50 text-rose-700 border-rose-200',       label: 'Bloccato by Design' },
-  needs_more_data:              { badge: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Dati mancanti' },
+  blocked_by_design:            { badge: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',       label: 'Bloccato by Design' },
+  needs_more_data:              { badge: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]', label: 'Dati mancanti' },
   rejected:                     { badge: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',   label: 'Rifiutato' },
   override_to_eligible:         { badge: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.72)] border-[rgba(6,3,43,0.08)]',       label: 'Override → Eligible' },
   override_to_limited:          { badge: 'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]', label: 'Override → Limited' },
 };
 
 const ELIGIBILITY_STYLE: Record<string, { badge: string; label: string }> = {
-  eligible: { badge: 'bg-green-50 text-green-700 border-green-200',    label: 'Eligible' },
+  eligible: { badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',    label: 'Eligible' },
   limited:  { badge: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]', label: 'Limited' },
-  blocked:  { badge: 'bg-rose-50 text-rose-700 border-rose-200',       label: 'Blocked' },
+  blocked:  { badge: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',       label: 'Blocked' },
 };
 
 const PILLAR_BADGE: Record<PillarCode, string> = {
-  LIFE:       'bg-green-50 text-green-700 border-green-200',
+  LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-  IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
-  LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
+  IMPACT:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  LEGACY:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
 };
 
 const AUDIT_EVENT_LABELS: Record<string, string> = {
@@ -84,9 +84,9 @@ const DECISION_LABELS: Record<string, string> = {
 // ── Derivation helpers ─────────────────────────────────────────────────────────
 
 function getBudgetEvidenceLabel(score: number): { label: string; cls: string } {
-  if (score >= 0.75) return { label: 'L2–L4',      cls: 'bg-green-50 text-green-700 border-green-200' };
-  if (score >= 0.50) return { label: 'L1 Dich.',   cls: 'bg-amber-50 text-amber-700 border-amber-200' };
-  return                     { label: 'L0 Nessuna', cls: 'bg-rose-50 text-rose-700 border-rose-200' };
+  if (score >= 0.75) return { label: 'L2–L4',      cls: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' };
+  if (score >= 0.50) return { label: 'L1 Dich.',   cls: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' };
+  return                     { label: 'L0 Nessuna', cls: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]' };
 }
 
 function getReviewReason(rec: UEFReviewRecord): string {
@@ -124,7 +124,7 @@ function getReviewReason(rec: UEFReviewRecord): string {
 
 function getSuggestedDecision(rec: UEFReviewRecord): { label: string; cls: string } {
   if (rec.review_status === 'blocked_by_design' || rec.eligibility === 'blocked') {
-    return { label: 'Keep Blocked',               cls: 'bg-rose-50 text-rose-700 border-rose-200' };
+    return { label: 'Keep Blocked',               cls: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]' };
   }
   if (rec.eligibility === 'limited') {
     return { label: 'Keep Limited',               cls: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]' };
@@ -133,13 +133,13 @@ function getSuggestedDecision(rec: UEFReviewRecord): { label: string; cls: strin
     return { label: 'Exclude from BTI',           cls: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]' };
   }
   if (rec.approved_for_impact_units) {
-    return { label: 'Approve as Eligible',        cls: 'bg-green-50 text-green-700 border-green-200' };
+    return { label: 'Approve as Eligible',        cls: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' };
   }
   if (rec.review_status === 'needs_more_data') {
-    return { label: 'Request evidence',           cls: 'bg-orange-50 text-orange-700 border-orange-200' };
+    return { label: 'Request evidence',           cls: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]' };
   }
   if (!rec.primary_pillar || rec.data_completeness_score < 0.40) {
-    return { label: 'Escalate to Advisor',        cls: 'bg-amber-50 text-amber-700 border-amber-200' };
+    return { label: 'Escalate to Advisor',        cls: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' };
   }
   if (rec.missing_fields.some((f) => f.toLowerCase().includes('budget'))) {
     return { label: 'Exclude from BTI',           cls: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]' };
@@ -149,18 +149,18 @@ function getSuggestedDecision(rec: UEFReviewRecord): { label: string; cls: strin
 
 function getBTILabel(rec: UEFReviewRecord): { label: string; cls: string } {
   if (rec.eligibility === 'blocked') {
-    return { label: 'excluded_from_bti',   cls: 'bg-rose-50 text-rose-700 border-rose-200' };
+    return { label: 'excluded_from_bti',   cls: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]' };
   }
   if (rec.eligibility === 'limited') {
     return { label: 'tracked_only',        cls: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]' };
   }
   if (rec.approved_for_scoring && rec.data_completeness_score >= 0.75) {
-    return { label: 'full_weight',         cls: 'bg-green-50 text-green-700 border-green-200' };
+    return { label: 'full_weight',         cls: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' };
   }
   if (rec.approved_for_bti_governance) {
     return { label: 'confidence_weighted', cls: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' };
   }
-  return { label: 'review_required',     cls: 'bg-amber-50 text-amber-700 border-amber-200' };
+  return { label: 'review_required',     cls: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' };
 }
 
 function isWeakEvidence(rec: UEFReviewRecord): boolean {
@@ -186,7 +186,7 @@ function FlagBadge({ label, value }: { label: string; value: boolean }) {
   return (
     <span className={cn(
       'rounded border px-2 py-0.5 text-[10px] font-medium',
-      value ? 'border-green-200 bg-green-50 text-green-600' : 'border-rose-100 bg-rose-50 text-rose-500',
+      value ? 'border-[rgba(47,125,85,0.22)] bg-green-50 text-green-600' : 'border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] text-[rgba(158,59,47,0.75)]',
     )}>
       {value ? '✓' : '✗'} {label}
     </span>
@@ -289,7 +289,7 @@ function DetailPanel({ record, onClose }: { record: UEFReviewRecord; onClose: ()
       )}
 
       {record.review_status === 'pending' && (
-        <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+        <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-amber-700">
           <p className="font-semibold mb-0.5">In attesa di revisione Operator / Advisor</p>
           <p>Questo record richiede validazione metodologica prima di poter entrare nel KORA Activation Core.</p>
         </div>
@@ -297,7 +297,7 @@ function DetailPanel({ record, onClose }: { record: UEFReviewRecord; onClose: ()
 
       {/* Missing fields */}
       {record.missing_fields.length > 0 && (
-        <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2">
+        <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2">
           <p className="text-xs font-semibold text-amber-700 mb-1">Campi mancanti</p>
           <ul className="space-y-0.5">
             {record.missing_fields.map((f) => (
@@ -328,8 +328,8 @@ function DetailPanel({ record, onClose }: { record: UEFReviewRecord; onClose: ()
         </p>
         <div className="flex flex-wrap gap-2">
           {[
-            { label: 'Approva classificazione',   cls: 'border-green-200 bg-green-50 text-green-600' },
-            { label: 'Richiedi evidenza',          cls: 'border-amber-200 bg-amber-50 text-amber-600' },
+            { label: 'Approva classificazione',   cls: 'border-[rgba(47,125,85,0.22)] bg-green-50 text-green-600' },
+            { label: 'Richiedi evidenza',          cls: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-600' },
             { label: 'Escala ad Advisor',          cls: 'border-blue-200 bg-blue-50 text-blue-600' },
             { label: 'Escludi da BTI',             cls: 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)]' },
             { label: 'Conferma per Decision Pack', cls: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-[#C76F3D]' },
@@ -467,7 +467,7 @@ export default function UEFReview() {
             {
               role: 'Company',
               desc: 'Riceve solo output aggregato (KORA Index, Decision Pack). Non esegue revisione.',
-              cls:  'border-green-200 bg-green-50 text-green-700',
+              cls:  'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
             },
           ].map((item) => (
             <div key={item.role} className={cn('rounded border px-3 py-2 text-xs max-w-xs', item.cls)}>
@@ -515,14 +515,14 @@ export default function UEFReview() {
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
           {([
-            { label: 'Review Required',         count: queueStats.reviewRequired,       cls: 'border-amber-200 bg-amber-50 text-amber-700',   filter: 'review_required' },
-            { label: 'Evidenza Debole L0/L1',   count: queueStats.weakEvidence,         cls: 'border-orange-200 bg-orange-50 text-orange-700', filter: 'weak_evidence' },
-            { label: 'Blocked by Design',       count: queueStats.blocked,              cls: 'border-rose-200 bg-rose-50 text-rose-700',       filter: 'blocked' },
+            { label: 'Review Required',         count: queueStats.reviewRequired,       cls: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',   filter: 'review_required' },
+            { label: 'Evidenza Debole L0/L1',   count: queueStats.weakEvidence,         cls: 'border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]', filter: 'weak_evidence' },
+            { label: 'Blocked by Design',       count: queueStats.blocked,              cls: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',       filter: 'blocked' },
             { label: 'Limited / Econ. Relief',  count: queueStats.limited,              cls: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]', filter: 'limited' },
             { label: 'Budget Source Mancante',  count: queueStats.missingBudget,        cls: 'border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)]',   filter: 'missing_budget' },
             { label: 'Sensitive Esclusi',       count: queueStats.sensitiveExcluded,    cls: 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.52)]',       filter: 'sensitive_excluded' },
             { label: 'Pronti Advisor Review',   count: queueStats.readyForAdvisor,      cls: 'border-blue-200 bg-blue-50 text-blue-700',       filter: 'review_required' },
-            { label: 'Pronti Decision Pack',    count: queueStats.readyForDecisionPack, cls: 'border-green-200 bg-green-50 text-green-700',    filter: 'all' },
+            { label: 'Pronti Decision Pack',    count: queueStats.readyForDecisionPack, cls: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',    filter: 'all' },
           ] as Array<{ label: string; count: number; cls: string; filter: PrimaryFilter }>).map((stat) => (
             <button
               key={stat.label}
@@ -750,8 +750,8 @@ export default function UEFReview() {
           </p>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: 'Approva classificazione',   cls: 'border-green-200 bg-green-50 text-green-600' },
-              { label: 'Richiedi evidenza',          cls: 'border-amber-200 bg-amber-50 text-amber-600' },
+              { label: 'Approva classificazione',   cls: 'border-[rgba(47,125,85,0.22)] bg-green-50 text-green-600' },
+              { label: 'Richiedi evidenza',          cls: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-600' },
               { label: 'Escala ad Advisor',          cls: 'border-blue-200 bg-blue-50 text-blue-600' },
               { label: 'Escludi da BTI',             cls: 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)]' },
               { label: 'Conferma per Decision Pack', cls: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-[#C76F3D]' },
@@ -813,7 +813,7 @@ export default function UEFReview() {
             {
               header: 'Blocked by Design → 0 IU',
               body: 'La compliance obbligatoria non genera attivazione. 0 IU · 0 KORA Index · tracciato solo per governance.',
-              style: 'border-rose-200 bg-rose-50 text-rose-700',
+              style: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
             },
             {
               header: 'Limited (Economic Relief) → BTI only',
@@ -823,12 +823,12 @@ export default function UEFReview() {
             {
               header: 'Review Required → 0 IU fino a risoluzione',
               body: 'Nessuna Impact Unit può essere generata da un record non ancora validato da Operator o Advisor.',
-              style: 'border-amber-200 bg-amber-50 text-amber-700',
+              style: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
             },
             {
               header: 'Eligible + approvato → può generare IU',
               body: 'Solo con approved_for_impact_units: true il record entra in IU Computation. La revisione Operator/Advisor conferma la classificazione pipeline.',
-              style: 'border-green-200 bg-green-50 text-green-700',
+              style: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
             },
           ].map((rule) => (
             <div key={rule.header} className={cn('rounded border px-3 py-2 text-xs', rule.style)}>

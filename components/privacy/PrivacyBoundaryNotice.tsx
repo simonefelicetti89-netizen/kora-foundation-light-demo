@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import type { PrivacySuppressReason } from '@/lib/types';
 import { SAFE_AGGREGATION_THRESHOLD } from '@/lib/constants/kora';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 interface PrivacyBoundaryNoticeProps {
   reason: PrivacySuppressReason;
@@ -12,36 +13,79 @@ interface PrivacyBoundaryNoticeProps {
 }
 
 const REASON_MESSAGES: Record<PrivacySuppressReason, string> = {
-  employer_role: 'Questo dato appartiene al layer personale del lavoratore. I ruoli aziendali non hanno accesso ai record individuali.',
-  group_too_small: `This segment contains fewer than ${SAFE_AGGREGATION_THRESHOLD} workers and is suppressed to prevent re-identification.`,
-  insufficient_permission: 'Your current role does not have permission to view this data.',
-  worker_consent_required: 'Worker consent is required before this data can be shared.',
+  employer_role:            'Questo dato appartiene al layer personale del lavoratore. I ruoli aziendali non hanno accesso ai record individuali.',
+  group_too_small:          `Questo segmento ha meno di ${SAFE_AGGREGATION_THRESHOLD} lavoratori — dato soppresso per prevenire la re-identificazione.`,
+  insufficient_permission:  'Il ruolo attivo non ha accesso a questo dato.',
+  worker_consent_required:  'Il consenso del lavoratore è richiesto prima che questo dato possa essere condiviso.',
 };
 
-// Suppression must never be silent — always renders this notice, never empty
+// Suppression must never be silent — always renders this notice, never empty.
 export function PrivacyBoundaryNotice({ reason, dataType, groupSize, className }: PrivacyBoundaryNoticeProps) {
   const message = reason === 'group_too_small' && groupSize !== undefined
-    ? `This segment contains ${groupSize} worker${groupSize === 1 ? '' : 's'}, below the minimum threshold of ${SAFE_AGGREGATION_THRESHOLD}. Data suppressed to prevent re-identification.`
+    ? `Questo segmento contiene ${groupSize} lavorator${groupSize === 1 ? 'e' : 'i'}, sotto la soglia minima di ${SAFE_AGGREGATION_THRESHOLD}. Dato soppresso per prevenire la re-identificazione.`
     : REASON_MESSAGES[reason];
 
   return (
     <div
-      className={cn(
-        'rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4 text-sm text-[rgba(6,3,43,0.62)]',
-        className,
-      )}
+      className={cn(className)}
       role="status"
       aria-label="Privacy boundary notice"
+      style={{
+        borderRadius: 12,
+        border:       `1px solid ${TOKENS.inkBorderStrong}`,
+        background:   TOKENS.taupe,
+        padding:      '14px 18px',
+        display:      'flex',
+        alignItems:   'flex-start',
+        gap:          12,
+      }}
     >
-      <div className="flex items-start gap-2">
-        <span className="mt-0.5 text-[rgba(6,3,43,0.40)]">🔒</span>
-        <div>
-          <p className="font-medium text-[rgba(6,3,43,0.78)]">Privacy Boundary</p>
-          <p className="mt-1">{message}</p>
-          {dataType && (
-            <p className="mt-1 text-xs text-[rgba(6,3,43,0.52)]">Data type: {dataType}</p>
-          )}
-        </div>
+      {/* Lock icon */}
+      <div style={{
+        width:           28,
+        height:          28,
+        borderRadius:    '50%',
+        background:      TOKENS.inkBorder,
+        display:         'flex',
+        alignItems:      'center',
+        justifyContent:  'center',
+        flexShrink:      0,
+        marginTop:       1,
+      }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={TOKENS.inkSecondary} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg>
+      </div>
+      <div style={{ flex: 1 }}>
+        <p style={{
+          fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+          fontWeight: 600,
+          fontSize:   '11.5px',
+          color:      TOKENS.ink,
+          marginBottom: 4,
+        }}>
+          Privacy Boundary
+        </p>
+        <p style={{
+          fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+          fontSize:   '11.5px',
+          color:      TOKENS.inkSecondary,
+          lineHeight: 1.5,
+        }}>
+          {message}
+        </p>
+        {dataType && (
+          <p style={{
+            fontFamily:  'ui-monospace, monospace',
+            fontSize:    '10px',
+            color:       TOKENS.inkHint,
+            marginTop:   6,
+            letterSpacing: '0.02em',
+          }}>
+            tipo: {dataType}
+          </p>
+        )}
       </div>
     </div>
   );

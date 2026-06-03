@@ -172,8 +172,8 @@ export function AttachmentLifecycleActions({
       {result && (
         <div className={`rounded border px-2.5 py-1.5 text-[9px] ${
           result.ok
-            ? 'border-green-200 bg-green-50 text-green-700'
-            : 'border-red-200 bg-red-50 text-red-700'
+            ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]'
+            : 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
         }`}>
           {result.ok ? '✓' : '⚠'} {result.message}
         </div>
@@ -190,10 +190,10 @@ export function AttachmentLifecycleActions({
                 onClick={() => startAction(action)}
                 className={`rounded border px-2 py-0.5 text-[9px] font-semibold transition-colors ${
                   c.destructive
-                    ? 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                    ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] hover:bg-[rgba(158,59,47,0.10)]'
                     : action === 'restore'
-                    ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
-                    : 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                    ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55] hover:bg-green-100'
+                    : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700 hover:bg-[rgba(217,154,43,0.12)]'
                 }`}
               >
                 {c.label}
@@ -206,10 +206,10 @@ export function AttachmentLifecycleActions({
       {/* Confirmation panel */}
       {confirmingAction && cfg && (
         <div className={`rounded border px-3 py-2.5 space-y-2 ${
-          cfg.destructive ? 'border-red-200 bg-red-50' : 'border-amber-200 bg-amber-50'
+          cfg.destructive ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)]' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]'
         }`}>
           <div className="flex items-start justify-between gap-2">
-            <p className={`text-[10px] font-bold ${cfg.destructive ? 'text-red-700' : 'text-amber-700'}`}>
+            <p className={`text-[10px] font-bold ${cfg.destructive ? 'text-[#9E3B2F]' : 'text-amber-700'}`}>
               {cfg.destructive ? '⚠ ' : ''}{cfg.label}
             </p>
             <button onClick={cancelAction} className="text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] text-[9px]">Annulla</button>
@@ -220,7 +220,7 @@ export function AttachmentLifecycleActions({
 
           {/* Warning for destructive */}
           {cfg.warning && (
-            <p className="text-[9px] text-red-700 leading-snug">{cfg.warning}</p>
+            <p className="text-[9px] text-[#9E3B2F] leading-snug">{cfg.warning}</p>
           )}
 
           {/* Optional reason */}
@@ -251,7 +251,7 @@ export function AttachmentLifecycleActions({
                 onChange={e => setTypedConfirm(e.target.value)}
                 placeholder={cfg.confirmToken}
                 autoFocus
-                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1 text-[10px] font-mono text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-red-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1 text-[10px] font-mono text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#9E3B2F]"
               />
             </div>
           )}

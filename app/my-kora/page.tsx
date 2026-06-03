@@ -59,8 +59,8 @@ const PILLAR_ENHANCED: Record<string, { continuity: string; latest: string }> = 
 
 const CONTINUITY_BADGE: Record<string, string> = {
   alta:  'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.25)]',
-  media: 'bg-amber-50 text-amber-700 border-amber-200',
-  bassa: 'bg-red-50 text-red-600 border-red-200',
+  media: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  bassa: 'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
 };
 
 // ─── Timeline extra attributes — keyed by service timeline item ID ────────────
@@ -109,7 +109,7 @@ export default function MyKoraHome() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-[#06032B]">My KORA</h1>
+          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>My KORA</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Spazio personale del lavoratore</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -450,7 +450,7 @@ export default function MyKoraHome() {
           </div>
 
           <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4">
-            <p className="text-xs font-semibold text-rose-800 mb-2">L&apos;azienda NON VEDE:</p>
+            <p className="text-xs font-semibold text-[#9E3B2F] mb-2">L&apos;azienda NON VEDE:</p>
             <ul className="space-y-1.5">
               {[
                 'Il tuo PIB individuale',

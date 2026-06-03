@@ -164,16 +164,16 @@ const ELIG_LABELS: Record<string, string> = {
   review_required: 'Review req.', approved: 'Approved',
 };
 const ELIG_CLS: Record<string, string> = {
-  eligible: 'bg-green-100 text-green-800 border-green-200',
-  limited:  'bg-amber-100 text-amber-800 border-amber-200',
-  blocked:  'bg-red-100 text-red-800 border-red-200',
+  eligible: 'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  limited:  'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
+  blocked:  'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
   review_required: 'bg-purple-100 text-purple-800 border-purple-200',
-  approved: 'bg-green-100 text-green-800 border-green-200',
+  approved: 'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
 };
 const READINESS_CLS: Record<string, string> = {
   report_ready:       'text-green-700',
   usable_with_caveat: 'text-amber-700',
-  needs_evidence:     'text-red-700',
+  needs_evidence:     'text-[#9E3B2F]',
   not_ready:          'text-[rgba(6,3,43,0.40)]',
 };
 
@@ -293,7 +293,7 @@ export function CompanyEvidenceArchivePanel() {
           <p className="text-sm text-white/45 mt-0.5">Archivio Evidenze Azienda · Read-only lineage · {TENANT || '—'} · {PERIOD}</p>
         </div>
         <div className="flex flex-col items-end gap-2 mt-1">
-          <span className="rounded border border-amber-400/40 bg-amber-400/10 px-2 py-0.5 text-xs font-semibold text-amber-300">Read-only</span>
+          <span className="rounded border border-[#D99A2B]/40 bg-[#D99A2B]/10 px-2 py-0.5 text-xs font-semibold text-amber-300">Read-only</span>
           <span className="rounded border border-[#C8FF47]/40 bg-[#C8FF47]/10 px-2 py-0.5 text-xs font-semibold text-[#d4ff6b]">No operational actions</span>
         </div>
       </div>
@@ -328,11 +328,11 @@ export function CompanyEvidenceArchivePanel() {
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">⚠ {error}</div>
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-sm text-[#9E3B2F]">⚠ {error}</div>
       )}
 
       {data?.ok === false && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">⚠ {data.error ?? 'Errore nel caricamento archivio.'}</div>
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-sm text-[#9E3B2F]">⚠ {data.error ?? 'Errore nel caricamento archivio.'}</div>
       )}
 
       {data?.ok && <>
@@ -372,12 +372,12 @@ export function CompanyEvidenceArchivePanel() {
                       </span>
                     )}
                     {b.manualCompletionUsed && (
-                      <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] text-amber-700">
+                      <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-1.5 py-0.5 text-[9px] text-amber-700">
                         manual: {b.manualFields.join(', ')}
                       </span>
                     )}
                     {b.matchSummary && (
-                      <span className="rounded border border-green-200 bg-green-50 px-1.5 py-0.5 text-[9px] text-green-700">
+                      <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-1.5 py-0.5 text-[9px] text-green-700">
                         match: {b.matchSummary['matched'] ?? 0}✓ {b.matchSummary['possibleMatch'] ?? 0}≈ {b.matchSummary['unmatched'] ?? 0}✗
                       </span>
                     )}
@@ -412,10 +412,10 @@ export function CompanyEvidenceArchivePanel() {
                             )}
                             {/* B35.1: lifecycle badge */}
                             <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${
-                              att.lifecycleStatus === 'active'          ? 'border-green-200 bg-green-50 text-green-700' :
-                              att.lifecycleStatus === 'archived'        ? 'border-amber-200 bg-amber-50 text-amber-700' :
-                              att.lifecycleStatus === 'removed'         ? 'border-red-200 bg-red-50 text-red-700' :
-                              att.lifecycleStatus === 'storage_removed' ? 'border-red-100 bg-red-50 text-red-500' :
+                              att.lifecycleStatus === 'active'          ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' :
+                              att.lifecycleStatus === 'archived'        ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' :
+                              att.lifecycleStatus === 'removed'         ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]' :
+                              att.lifecycleStatus === 'storage_removed' ? 'border-red-100 bg-[rgba(158,59,47,0.06)] text-red-500' :
                               'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)]'
                             }`}>
                               {att.lifecycleLabel ?? att.lifecycleStatus}
@@ -626,14 +626,14 @@ export function CompanyEvidenceArchivePanel() {
         </div>
 
         {/* ── Caveats ── */}
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4 space-y-2">
-          <p className="text-[10px] font-bold uppercase tracking-wide text-amber-800">Privacy & Methodology Boundaries</p>
+        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-5 py-4 space-y-2">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[#8A5A00]">Privacy & Methodology Boundaries</p>
           <ul className="space-y-1">
             {data.caveats.map((c, i) => (
-              <li key={i} className="text-[10px] text-amber-800 leading-relaxed">· {c}</li>
+              <li key={i} className="text-[10px] text-[#8A5A00] leading-relaxed">· {c}</li>
             ))}
           </ul>
-          <p className="text-[10px] text-amber-700 font-semibold pt-1 border-t border-amber-200">
+          <p className="text-[10px] text-amber-700 font-semibold pt-1 border-t border-[rgba(217,154,43,0.25)]">
             No edit · No upload · No scoring · No delete. Sola lettura.
           </p>
         </div>

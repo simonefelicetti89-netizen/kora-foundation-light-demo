@@ -34,11 +34,11 @@ const UPLOAD_STATUS_LABELS: Record<string, string> = {
 const UPLOAD_STATUS_COLORS: Record<string, string> = {
   not_started:                  'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
   uploaded:                     'border-blue-200 bg-blue-50 text-blue-700',
-  validated:                    'border-green-200 bg-green-50 text-green-700',
-  needs_review:                 'border-amber-200 bg-amber-50 text-amber-700',
-  below_company_threshold:      'border-red-200 bg-red-50 text-red-700',
-  privacy_suppression_required: 'border-amber-200 bg-amber-50 text-amber-700',
-  ready_for_aggregation:        'border-emerald-200 bg-emerald-50 text-emerald-700',
+  validated:                    'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
+  needs_review:                 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  below_company_threshold:      'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
+  privacy_suppression_required: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  ready_for_aggregation:        'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
 };
 
 // A-18: KORA Admin — Workforce Baseline
@@ -78,7 +78,7 @@ export default function AdminWorkforceBaselinePage() {
             })}
           </div>
         </div>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5 text-xs text-amber-800 space-y-2">
+        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-5 text-xs text-[#8A5A00] space-y-2">
           <p className="font-semibold">Baseline non ancora caricata</p>
           <p>{selectedTenant?.company_name ?? selectedCompanyId} non ha ancora una workforce baseline.</p>
           <p>Onboarding status: {selectedTenant?.onboarding_status?.replace(/_/g, ' ') ?? 'non avviato'}</p>
@@ -176,8 +176,8 @@ export default function AdminWorkforceBaselinePage() {
             <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Validazione</p>
             <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
               validation.minimum_company_threshold_met
-                ? 'border-green-200 bg-green-50 text-green-700'
-                : 'border-rose-200 bg-rose-50 text-rose-700'
+                ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]'
+                : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
             )}>
               {validation.minimum_company_threshold_met ? 'SOGLIA SODDISFATTA' : 'SOTTO SOGLIA'}
             </span>
@@ -198,7 +198,7 @@ export default function AdminWorkforceBaselinePage() {
           {validation.warnings.length > 0 && (
             <div className="space-y-1">
               {validation.warnings.map((warning, i) => (
-                <div key={i} className="rounded px-3 py-2 text-[10px] bg-amber-50 text-amber-700">
+                <div key={i} className="rounded px-3 py-2 text-[10px] bg-[rgba(217,154,43,0.08)] text-amber-700">
                   {warning}
                 </div>
               ))}
@@ -274,7 +274,7 @@ export default function AdminWorkforceBaselinePage() {
         )}
 
         {suppressed.length > 0 && (
-          <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-700">
+          <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-amber-700">
             {suppressed.length} cluster sotto soglia privacy (N &lt; 10) — soppressi. Soglia: N≥10.
           </div>
         )}
@@ -296,8 +296,8 @@ export default function AdminWorkforceBaselinePage() {
               <div key={label as string}>
                 <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
                 <p className={cn('text-[rgba(6,3,43,0.78)] font-semibold mt-0.5',
-                  (value as string).startsWith('✕') ? 'text-rose-600' :
-                  (value as string).startsWith('✓') ? 'text-emerald-600' : ''
+                  (value as string).startsWith('✕') ? 'text-[rgba(158,59,47,0.90)]' :
+                  (value as string).startsWith('✓') ? 'text-[rgba(47,125,85,0.90)]' : ''
                 )}>
                   {value}
                 </p>

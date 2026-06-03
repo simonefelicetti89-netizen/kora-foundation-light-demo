@@ -29,9 +29,9 @@ const ROLE_OPTIONS = [
 ];
 
 const STATUS_BADGE: Record<string, string> = {
-  active:    'border-green-200 bg-green-50 text-green-700',
-  suspended: 'border-amber-200 bg-amber-50 text-amber-700',
-  disabled:  'border-red-200 bg-red-50 text-red-600',
+  active:    'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
+  suspended: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  disabled:  'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)]',
 };
 
 function ts(s: string | null) {
@@ -206,7 +206,7 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
           </div>
 
           {result && (
-            <div className={`rounded px-3 py-2 text-[10.5px] ${result.ok ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-600'}`}>
+            <div className={`rounded px-3 py-2 text-[10.5px] ${result.ok ? 'bg-green-50 border border-[rgba(47,125,85,0.22)] text-green-700' : 'bg-[rgba(158,59,47,0.06)] border border-[rgba(158,59,47,0.22)] text-red-600'}`}>
               {result.ok ? '✓ ' : '⚠ '}{result.message}
             </div>
           )}

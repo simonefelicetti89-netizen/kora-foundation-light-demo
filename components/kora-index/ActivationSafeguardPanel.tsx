@@ -12,8 +12,8 @@ interface ActivationSafeguardPanelProps {
 
 const STATUS_STYLES: Record<SafeguardStatus, { bar: string; text: string; bg: string }> = {
   CLEAR:   { bar: 'bg-kora-fun-green',  text: 'text-kora-cosmic-blue', bg: 'bg-kora-fun-green/15 border-kora-fun-green/40' },
-  WARNING: { bar: 'bg-yellow-400',      text: 'text-yellow-800',       bg: 'bg-yellow-50 border-yellow-200' },
-  FLAGGED: { bar: 'bg-red-500',         text: 'text-red-800',          bg: 'bg-red-50 border-red-200' },
+  WARNING: { bar: 'bg-[#D99A2B]',      text: 'text-[#7A5200]',       bg: 'bg-[rgba(217,154,43,0.10)] border-[rgba(217,154,43,0.22)]' },
+  FLAGGED: { bar: 'bg-[rgba(158,59,47,0.06)]0',         text: 'text-red-800',          bg: 'bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.22)]' },
 };
 
 function ThresholdGauge({
@@ -42,11 +42,11 @@ function ThresholdGauge({
       <div className="relative h-3 w-full rounded-full overflow-hidden bg-[rgba(6,3,43,0.05)]">
         {/* Zone backgrounds */}
         <div
-          className="absolute h-full bg-red-100"
+          className="absolute h-full bg-[rgba(158,59,47,0.10)]"
           style={{ left: 0, width: `${flaggedPct}%` }}
         />
         <div
-          className="absolute h-full bg-yellow-100"
+          className="absolute h-full bg-[rgba(217,154,43,0.12)]"
           style={{ left: `${flaggedPct}%`, width: `${warnPct - flaggedPct}%` }}
         />
         <div
@@ -57,8 +57,8 @@ function ThresholdGauge({
         <div
           className={cn(
             'absolute h-full rounded-full transition-all',
-            value < flaggedMax ? 'bg-red-500' :
-            value < clearMin  ? 'bg-yellow-400' : 'bg-kora-fun-green',
+            value < flaggedMax ? 'bg-[rgba(158,59,47,0.06)]0' :
+            value < clearMin  ? 'bg-[#D99A2B]' : 'bg-kora-fun-green',
           )}
           style={{ width: `${pct}%` }}
         />

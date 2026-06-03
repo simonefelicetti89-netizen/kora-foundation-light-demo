@@ -43,9 +43,9 @@ const STATUS_LABEL: Record<string, string> = {
 const STATUS_CLS: Record<string, string> = {
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
   submission_pending:             'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  submission_needs_clarification: 'bg-amber-50 text-amber-700 border-amber-200',
-  submission_accepted:            'bg-green-50 text-green-700 border-green-200',
-  submission_rejected:            'bg-red-50 text-red-500 border-red-200',
+  submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  submission_rejected:            'bg-[rgba(158,59,47,0.06)] text-red-500 border-[rgba(158,59,47,0.22)]',
   submission_archived:            'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
 
@@ -327,7 +327,7 @@ export function DataSubmissionSection({ userRole }: Props) {
                     {sub.submittedAt ? ` · Inviato: ${ts(sub.submittedAt)}` : ` · Bozza · ${ts(sub.createdAt)}`}
                   </div>
                   {sub.adminComment && (
-                    <p className="text-[10px] text-amber-700 rounded border border-amber-100 bg-amber-50 px-2 py-0.5 mt-1">
+                    <p className="text-[10px] text-amber-700 rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-2 py-0.5 mt-1">
                       KORA: {sub.adminComment}
                     </p>
                   )}

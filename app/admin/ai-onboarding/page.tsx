@@ -1,17 +1,17 @@
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 
 const STATUS_PILL: Record<string, string> = {
-  approved:          'bg-green-50 text-green-700 border-green-200',
-  partially_reviewed:'bg-yellow-50 text-yellow-700 border-yellow-200',
+  approved:          'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  partially_reviewed:'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
   under_review:      'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  rejected:          'bg-red-50 text-red-700 border-red-200',
+  rejected:          'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
   pending:           'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
 const READINESS_PILL: Record<string, string> = {
-  ready:   'bg-green-100 text-green-800 border-green-200',
-  partial: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  blocked: 'bg-red-100 text-red-800 border-red-200',
+  ready:   'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  partial: 'bg-[rgba(217,154,43,0.12)] text-[#7A5200] border-[rgba(217,154,43,0.22)]',
+  blocked: 'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
 };
 
 function SectionLabel({ code, title }: { code: string; title: string }) {
@@ -47,7 +47,7 @@ export default function AIOnboardingPage() {
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-[#06032B]">AI Onboarding Engine</h1>
-          <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
             KORA Admin / Interno
           </span>
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">
@@ -116,7 +116,7 @@ export default function AIOnboardingPage() {
                   <span className="text-[rgba(6,3,43,0.78)] font-medium leading-snug">{s.source_label}</span>
                   <span className="text-right font-mono text-[rgba(6,3,43,0.52)]">{s.rows_received}</span>
                   <span className="text-right font-mono text-[rgba(6,3,43,0.52)]">{s.mapped_records}</span>
-                  <span className={`text-right font-mono font-semibold ${s.rejected_records > 0 ? 'text-orange-600' : 'text-[rgba(6,3,43,0.40)]'}`}>
+                  <span className={`text-right font-mono font-semibold ${s.rejected_records > 0 ? 'text-[#D99A2B]' : 'text-[rgba(6,3,43,0.40)]'}`}>
                     {s.rejected_records}
                   </span>
                   <div className="flex justify-end">
@@ -135,7 +135,7 @@ export default function AIOnboardingPage() {
                     Confidenza{' '}
                     <span className={`font-mono font-semibold ${
                       s.mapping_confidence >= 0.8 ? 'text-green-600' :
-                      s.mapping_confidence >= 0.6 ? 'text-yellow-600' : 'text-red-500'
+                      s.mapping_confidence >= 0.6 ? 'text-[#D99A2B]' : 'text-red-500'
                     }`}>
                       {Math.round(s.mapping_confidence * 100)}%
                     </span>
@@ -146,7 +146,7 @@ export default function AIOnboardingPage() {
                   </span>
                   <span className="text-[rgba(6,3,43,0.40)]">
                     In attesa di revisione{' '}
-                    <span className={`font-mono font-semibold ${s.pending_review > 0 ? 'text-yellow-700' : 'text-[rgba(6,3,43,0.62)]'}`}>
+                    <span className={`font-mono font-semibold ${s.pending_review > 0 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.62)]'}`}>
                       {s.pending_review}
                     </span>
                   </span>
@@ -245,7 +245,7 @@ export default function AIOnboardingPage() {
             {[
               { label: 'Totale bozze',          value: String(uefQueue.draft_total_estimated), color: 'text-[rgba(6,3,43,0.90)]' },
               { label: 'Approvati',             value: String(uefQueue.approved),              color: 'text-green-700' },
-              { label: 'Segnalati per revisione', value: String(uefQueue.flagged_for_review), color: 'text-yellow-700' },
+              { label: 'Segnalati per revisione', value: String(uefQueue.flagged_for_review), color: 'text-[#8A5A00]' },
               { label: 'Idonei al calcolo',     value: String(uefQueue.eligible_for_scoring), color: 'text-[rgba(6,3,43,0.72)]' },
             ].map(({ label, value, color }) => (
               <div key={label} className="rounded bg-[rgba(6,3,43,0.03)] px-3 py-2 text-center">
@@ -254,7 +254,7 @@ export default function AIOnboardingPage() {
               </div>
             ))}
           </div>
-          <div className="rounded border border-yellow-100 bg-yellow-50 px-3 py-2 text-xs text-yellow-800">
+          <div className="rounded border border-yellow-100 bg-[rgba(217,154,43,0.10)] px-3 py-2 text-xs text-[#7A5200]">
             I record UEF a livello di evento non vengono generati nella fase demo di Foundation Light.
             Solo conteggi aggregati della coda. Record UEF individuali disponibili post-Gate 2.
           </div>
@@ -308,13 +308,13 @@ export default function AIOnboardingPage() {
                 <div key={label} className="text-xs">
                   <div className="flex justify-between mb-1">
                     <span className="text-[rgba(6,3,43,0.52)]">{label}</span>
-                    <span className={`font-mono font-semibold ${pct >= 75 ? 'text-green-600' : pct >= 50 ? 'text-yellow-600' : 'text-red-500'}`}>
+                    <span className={`font-mono font-semibold ${pct >= 75 ? 'text-green-600' : pct >= 50 ? 'text-[#D99A2B]' : 'text-red-500'}`}>
                       {pct}%
                     </span>
                   </div>
                   <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.05)]">
                     <div
-                      className={`h-1.5 rounded-full ${pct >= 75 ? 'bg-green-400' : pct >= 50 ? 'bg-yellow-400' : 'bg-red-400'}`}
+                      className={`h-1.5 rounded-full ${pct >= 75 ? 'bg-[#2F7D55]' : pct >= 50 ? 'bg-[#D99A2B]' : 'bg-[#9E3B2F]'}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>

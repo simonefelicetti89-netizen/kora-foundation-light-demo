@@ -13,13 +13,13 @@ interface OpportunityItem { label: string; detail: string; }
 interface ActionItem { label: string; detail: string; }
 
 const PRIORITY_STYLES: Record<string, string> = {
-  alta:  'border-l-rose-400 bg-rose-50',
-  media: 'border-l-amber-400 bg-amber-50',
+  alta:  'border-l-[#9E3B2F] bg-[rgba(158,59,47,0.06)]',
+  media: 'border-l-[#D99A2B] bg-[rgba(217,154,43,0.08)]',
   bassa: 'border-l-slate-300 bg-[rgba(6,3,43,0.03)]',
 };
 const PRIORITY_TAG: Record<string, string> = {
-  alta:  'text-rose-700 bg-rose-100 border-rose-200',
-  media: 'text-amber-700 bg-amber-100 border-amber-200',
+  alta:  'text-[#9E3B2F] bg-[rgba(158,59,47,0.10)] border-[rgba(158,59,47,0.20)]',
+  media: 'text-amber-700 bg-[rgba(217,154,43,0.12)] border-[rgba(217,154,43,0.25)]',
   bassa: 'text-[rgba(6,3,43,0.62)] bg-[rgba(6,3,43,0.05)] border-[rgba(6,3,43,0.08)]',
 };
 
@@ -131,9 +131,9 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
         ) : (
           <div className="space-y-3">
             {risks.map((r, i) => (
-              <div key={i} className={`rounded-lg border bg-[#F8F6F1] border-l-4 pl-4 pr-4 py-3 ${r.severity === 'high' ? 'border-l-rose-400' : 'border-l-amber-400'}`}>
+              <div key={i} className={`rounded-lg border bg-[#F8F6F1] border-l-4 pl-4 pr-4 py-3 ${r.severity === 'high' ? 'border-l-[#9E3B2F]' : 'border-l-[#D99A2B]'}`}>
                 <div className="flex items-start gap-2">
-                  <span className={`shrink-0 mt-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${r.severity === 'high' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                  <span className={`shrink-0 mt-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${r.severity === 'high' ? 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]' : 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]'}`}>
                     {r.severity === 'high' ? 'Alta' : 'Media'}
                   </span>
                   <div>
@@ -155,9 +155,9 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
         ) : (
           <div className="space-y-3">
             {opportunities.map((o, i) => (
-              <div key={i} className="rounded-lg border border-emerald-100 bg-emerald-50 border-l-4 border-l-emerald-400 pl-4 pr-4 py-3">
-                <p className="text-xs font-semibold text-emerald-800">{o.label}</p>
-                <p className="text-xs text-emerald-700 leading-relaxed mt-0.5">{o.detail}</p>
+              <div key={i} className="rounded-lg border border-[rgba(47,125,85,0.14)] bg-[rgba(47,125,85,0.08)] border-l-4 border-l-[#2F7D55] pl-4 pr-4 py-3">
+                <p className="text-xs font-semibold text-[#2F7D55]">{o.label}</p>
+                <p className="text-xs text-[#2F7D55] leading-relaxed mt-0.5">{o.detail}</p>
               </div>
             ))}
           </div>
@@ -166,9 +166,9 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
 
       {/* ── Recommendations from BTI service ── */}
       {recommendations.length > 0 && (
-        <div className="rounded-xl border border-indigo-100 bg-[#F8F6F1] p-6 space-y-4">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.06)] bg-[#F8F6F1] p-6 space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">Raccomandazioni BTI — Direzionali</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Raccomandazioni BTI — Direzionali</p>
             <p className="text-[11px] text-[rgba(6,3,43,0.40)] mt-1">Correlazione ≠ causalità — potenziale non garantito</p>
           </div>
           <div className="space-y-3">
@@ -229,13 +229,13 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
         {/* Phase 30–60 */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5">30–60 giorni</span>
+            <span className="rounded-full bg-[#C76F3D] text-white text-[10px] font-bold px-2.5 py-0.5">30–60 giorni</span>
             <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">Riallocazione e Attivazione</p>
           </div>
           <div className="ml-4 space-y-2">
             {phase30_60.map((a, i) => (
               <div key={i} className="flex gap-2 text-xs">
-                <span className="shrink-0 font-bold text-indigo-300">{i + 1}.</span>
+                <span className="shrink-0 font-bold text-[rgba(6,3,43,0.30)]">{i + 1}.</span>
                 <div>
                   <p className="font-semibold text-[rgba(6,3,43,0.78)]">{a.label}</p>
                   <p className="text-[rgba(6,3,43,0.52)] leading-relaxed">{a.detail}</p>
@@ -250,13 +250,13 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
         {/* Phase 60–90 */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-0.5">60–90 giorni</span>
+            <span className="rounded-full bg-[rgba(47,125,85,0.10)] text-white text-[10px] font-bold px-2.5 py-0.5">60–90 giorni</span>
             <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">Misurazione e Board Report</p>
           </div>
           <div className="ml-4 space-y-2">
             {phase60_90.map((a, i) => (
               <div key={i} className="flex gap-2 text-xs">
-                <span className="shrink-0 font-bold text-emerald-400">{i + 1}.</span>
+                <span className="shrink-0 font-bold text-[rgba(47,125,85,0.75)]">{i + 1}.</span>
                 <div>
                   <p className="font-semibold text-[rgba(6,3,43,0.78)]">{a.label}</p>
                   <p className="text-[rgba(6,3,43,0.52)] leading-relaxed">{a.detail}</p>

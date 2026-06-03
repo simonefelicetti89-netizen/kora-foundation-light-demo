@@ -62,9 +62,9 @@ const ATTACHMENT_TYPE_LABELS: Record<AttachmentType, string> = {
 };
 
 const LEVEL_COLORS: Record<string, string> = {
-  L3: 'text-green-700 bg-green-50 border-green-200',
+  L3: 'text-green-700 bg-green-50 border-[rgba(47,125,85,0.22)]',
   L2: 'text-[#C76F3D] bg-[#f5f4ff] border-[#c7c4f8]',
-  L1: 'text-amber-700 bg-amber-50 border-amber-200',
+  L1: 'text-amber-700 bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
   L0: 'text-[rgba(6,3,43,0.52)] bg-[rgba(6,3,43,0.03)] border-[rgba(6,3,43,0.08)]',
 };
 
@@ -72,8 +72,8 @@ const STATUS_COLORS: Record<string, string> = {
   parsed_metadata: 'text-green-700',
   metadata_only:   'text-amber-700',
   needs_review:    'text-amber-700',
-  rejected_pii:    'text-red-700',
-  rejected_size:   'text-red-700',
+  rejected_pii:    'text-[#9E3B2F]',
+  rejected_size:   'text-[#9E3B2F]',
   unsupported:     'text-[rgba(6,3,43,0.40)]',
 };
 
@@ -238,7 +238,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
       )}
 
       {preview && !preview.ok && (
-        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">
+        <div className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-[10px] text-[#9E3B2F]">
           ⚠ {preview.error ?? preview.metadata?.parserStatus ?? 'Errore preview.'}
           {preview.metadata?.piiFindings && preview.metadata.piiFindings.length > 0 && (
             <div className="mt-1">PII rilevata: {preview.metadata.piiFindings.map(f => f.location).join(' · ')}</div>
@@ -267,11 +267,11 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
 
       {/* Register result */}
       {registerStatus === 'done' && registerResult?.ok && (
-        <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-[10px] text-green-700 space-y-1.5">
+        <div className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-3 py-2 text-[10px] text-green-700 space-y-1.5">
           <p className="font-semibold">✓ Attachment registrato</p>
           <div className="flex flex-wrap gap-1.5">
             <span className="font-mono">{registerResult.fileNameSafe}</span>
-            <span className="rounded border border-green-200 bg-[#F8F6F1] px-1.5 py-0.5 text-[9px] font-bold">
+            <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-1.5 py-0.5 text-[9px] font-bold">
               {registerResult.storageStatus === 'stored_private' ? '🔒 Stored private' : '📋 Metadata only'}
             </span>
             <span className="text-[rgba(6,3,43,0.52)]">{registerResult.parserStatus}</span>
@@ -285,7 +285,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
               <button
                 onClick={() => handleOpenSecureLink(registerResult.attachmentId!)}
                 disabled={openLinkStatus === 'loading'}
-                className="rounded border border-green-300 bg-[#F8F6F1] px-3 py-1 text-[10px] font-semibold text-green-800 hover:bg-green-50 disabled:opacity-50 transition-colors"
+                className="rounded border border-green-300 bg-[#F8F6F1] px-3 py-1 text-[10px] font-semibold text-[#2F7D55] hover:bg-green-50 disabled:opacity-50 transition-colors"
               >
                 {openLinkStatus === 'loading' ? '⏳ Generazione link…' : '🔒 Apri documento sicuro'}
               </button>
@@ -297,7 +297,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
         </div>
       )}
       {registerStatus === 'error' && registerResult && (
-        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">
+        <div className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-[10px] text-[#9E3B2F]">
           <p>⚠ {registerResult.error}</p>
           {String(registerResult.error ?? '').includes('storage_not_configured') && (
             <p className="mt-1 text-[9px]">

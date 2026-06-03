@@ -40,9 +40,9 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
       "KORA non valuta singoli lavoratori — è intelligence organizzativa, non sorveglianza.",
     ],
     accent: {
-      border: 'border-indigo-200 hover:border-indigo-400',
-      badge: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-      btn: 'bg-indigo-700 hover:bg-indigo-800 text-white',
+      border: 'border-[rgba(199,111,61,0.22)] hover:border-[#C76F3D]',
+      badge: 'bg-[rgba(199,111,61,0.06)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
+      btn: 'bg-[#06032B] hover:bg-[rgba(6,3,43,0.88)] text-white',
     },
   },
   {
@@ -91,9 +91,9 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
       "La vista Financial Governance è separata dal calcolo del KORA Index.",
     ],
     accent: {
-      border: 'border-emerald-200 hover:border-emerald-400',
-      badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      btn: 'bg-emerald-700 hover:bg-emerald-800 text-white',
+      border: 'border-[rgba(47,125,85,0.22)] hover:border-[#2F7D55]',
+      badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+      btn: 'bg-[#2F7D55] hover:bg-[rgba(47,125,85,0.90)] text-white',
     },
   },
   {
@@ -117,9 +117,9 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
       "Il disclaimer CSR/ESG è obbligatorio su ogni output che tocca ESG.",
     ],
     accent: {
-      border: 'border-teal-200 hover:border-teal-400',
-      badge: 'bg-teal-50 text-teal-700 border-teal-200',
-      btn: 'bg-teal-700 hover:bg-teal-800 text-white',
+      border: 'border-[rgba(6,3,43,0.10)] hover:border-[rgba(6,3,43,0.25)]',
+      badge: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.10)]',
+      btn: 'bg-[#06032B] hover:bg-[rgba(6,3,43,0.88)] text-white',
     },
   },
   {
@@ -164,8 +164,8 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
       "Le richieste di attivazione sono aggregate-only — nessun KORA Index aziendale visibile al partner.",
     ],
     accent: {
-      border: 'border-amber-200 hover:border-amber-400',
-      badge: 'bg-amber-50 text-amber-700 border-amber-200',
+      border: 'border-[rgba(217,154,43,0.25)] hover:border-[#D99A2B]',
+      badge: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
       btn: 'bg-amber-700 hover:bg-amber-800 text-white',
     },
   },
@@ -188,9 +188,9 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
       "L'Advisor accede solo al perimetro assegnato — nessun PIB, nessuna timeline personale del lavoratore.",
     ],
     accent: {
-      border: 'border-orange-200 hover:border-orange-400',
-      badge: 'bg-orange-50 text-orange-700 border-orange-200',
-      btn: 'bg-orange-700 hover:bg-orange-800 text-white',
+      border: 'border-[rgba(217,154,43,0.22)] hover:border-[#D99A2B]',
+      badge: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+      btn: 'bg-[#D99A2B] hover:bg-[rgba(217,154,43,0.90)] text-white',
     },
   },
   {

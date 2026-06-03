@@ -16,7 +16,7 @@ export function EligibilitySummaryReport({ summary }: Props) {
       pct: total_row_count > 0 ? Math.round((eligible_row_count / total_row_count) * 100) : 0,
       description: 'Azioni idonee: possono generare Impact Units e contribuire al KORA Index.',
       effect: 'Genera IU verificate · Alimenta KORA Index · Alimenta PIB',
-      color: { badge: 'bg-emerald-100 text-emerald-800 border-emerald-200', bar: 'bg-emerald-500', row: 'border-l-emerald-400' },
+      color: { badge: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]', bar: 'bg-[rgba(47,125,85,0.08)]0', row: 'border-l-[#2F7D55]' },
     },
     {
       label: 'Limited — Economic Relief',
@@ -24,7 +24,7 @@ export function EligibilitySummaryReport({ summary }: Props) {
       pct: total_row_count > 0 ? Math.round((limited_count / total_row_count) * 100) : 0,
       description: limited_note || 'Non è spesa sbagliata. È spesa che può diventare più intelligente.',
       effect: 'IU = 0 · Classificata economic_relief_spend · Non inflaziona Activation Quality',
-      color: { badge: 'bg-amber-100 text-amber-800 border-amber-200', bar: 'bg-amber-400', row: 'border-l-amber-400' },
+      color: { badge: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]', bar: 'bg-[#D99A2B]', row: 'border-l-[#D99A2B]' },
     },
     {
       label: 'Blocked — Compliance / HSE / Legal',
@@ -32,7 +32,7 @@ export function EligibilitySummaryReport({ summary }: Props) {
       pct: total_row_count > 0 ? Math.round((blocked_count / total_row_count) * 100) : 0,
       description: blocked_note || 'KORA non trasforma la compliance in impatto. La conformità legale è una baseline, non impatto.',
       effect: null,
-      color: { badge: 'bg-rose-100 text-rose-800 border-rose-200', bar: 'bg-rose-400', row: 'border-l-rose-400' },
+      color: { badge: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]', bar: 'bg-[#9E3B2F]', row: 'border-l-[#9E3B2F]' },
     },
   ];
 
@@ -72,16 +72,16 @@ export function EligibilitySummaryReport({ summary }: Props) {
 
       {/* Blocked zero-indicators */}
       {blocked_count > 0 && (
-        <div className="rounded-lg border border-rose-100 bg-rose-50 px-4 py-3 space-y-2">
-          <p className="text-xs font-semibold text-rose-700">Blocked by Design — zero-indicator obbligatorio</p>
+        <div className="rounded-lg border border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] px-4 py-3 space-y-2">
+          <p className="text-xs font-semibold text-[#9E3B2F]">Blocked by Design — zero-indicator obbligatorio</p>
           <div className="flex flex-wrap gap-2">
             {ZERO_INDICATORS.map((zi) => (
-              <span key={zi} className="rounded border border-rose-200 bg-[#F8F6F1] px-2 py-0.5 text-[11px] font-mono font-semibold text-rose-600">
+              <span key={zi} className="rounded border border-[rgba(158,59,47,0.20)] bg-[#F8F6F1] px-2 py-0.5 text-[11px] font-mono font-semibold text-[rgba(158,59,47,0.90)]">
                 {zi}
               </span>
             ))}
           </div>
-          <p className="text-[11px] text-rose-600 leading-relaxed">
+          <p className="text-[11px] text-[rgba(158,59,47,0.90)] leading-relaxed">
             DVR/DUVRI, DPI obbligatori, D.Lgs 81/08, sorveglianza sanitaria obbligatoria, GDPR compliance e patentini obbligatori
             sono sempre Blocked. Non sono penalizzati — sono esclusi per design.
           </p>

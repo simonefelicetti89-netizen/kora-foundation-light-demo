@@ -37,8 +37,8 @@ export default function AdminDataIntakeLanding() {
                   <span className="text-[10px] font-mono text-[rgba(6,3,43,0.40)]">{tenant.company_id}</span>
                   <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                     summary.intake_status === 'ready_for_ingestion'             ? 'bg-green-100 text-green-700' :
-                    summary.intake_status === 'validation_required'             ? 'bg-amber-100 text-amber-700' :
-                    summary.intake_status === 'blocked_missing_required_fields' ? 'bg-rose-100 text-rose-700' :
+                    summary.intake_status === 'validation_required'             ? 'bg-[rgba(217,154,43,0.12)] text-amber-700' :
+                    summary.intake_status === 'blocked_missing_required_fields' ? 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]' :
                     summary.intake_status === 'partial'                         ? 'bg-blue-100 text-blue-700' :
                     summary.intake_status === 'draft'                           ? 'bg-[rgba(6,3,43,0.06)] text-[#C76F3D]' :
                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'

@@ -15,15 +15,15 @@ import { reportFactoryService } from '@/services/report-factory/ReportFactorySer
 
 const SAFEGUARD_BADGE: Record<string, string> = {
   CLEAR:   'border-kora-fun-green/40 bg-[#2F7D55]/20 text-kora-cosmic-blue',
-  WARNING: 'border-amber-200 bg-amber-50 text-amber-700',
-  FLAGGED: 'border-rose-200 bg-rose-50 text-rose-700',
+  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
+  FLAGGED: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
 };
 
 const RISK_BADGE: Record<CompanyRiskLevel, { label: string; classes: string }> = {
   ready:           { label: 'Ready',           classes: 'border-kora-fun-green/40 bg-[#2F7D55]/20 text-kora-cosmic-blue' },
   monitor:         { label: 'Monitor',         classes: 'border-blue-200 bg-blue-50 text-blue-700' },
-  action_required: { label: 'Action Required', classes: 'border-amber-200 bg-amber-50 text-amber-700' },
-  blocked:         { label: 'Bloccato',        classes: 'border-rose-200 bg-rose-50 text-rose-700' },
+  action_required: { label: 'Action Required', classes: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' },
+  blocked:         { label: 'Bloccato',        classes: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]' },
 };
 
 function pct(v: number) { return `${(v * 100).toFixed(0)}%`; }
@@ -113,7 +113,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
       {/* Feedback */}
       {feedback && (
         <div className={`rounded border px-3 py-2 text-xs ${
-          feedback.type === 'success' ? 'border-kora-fun-green/40 bg-[#2F7D55]/15 text-kora-cosmic-blue' : 'border-rose-200 bg-rose-50 text-rose-700'
+          feedback.type === 'success' ? 'border-kora-fun-green/40 bg-[#2F7D55]/15 text-kora-cosmic-blue' : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
         }`}>
           {feedback.message}
         </div>
@@ -152,7 +152,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">C — Operational Readiness</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {/* Tile 1: Tenant Status */}
-          <div className={`rounded-lg border p-3 text-center ${tenant.tenant_status === 'active' ? 'border-kora-fun-green/40 bg-[#2F7D55]/15' : 'border-amber-200 bg-amber-50'}`}>
+          <div className={`rounded-lg border p-3 text-center ${tenant.tenant_status === 'active' ? 'border-kora-fun-green/40 bg-[#2F7D55]/15' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]'}`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">Tenant Status</p>
             <p className={`text-sm font-bold mt-1 ${tenant.tenant_status === 'active' ? 'text-kora-cosmic-blue' : 'text-amber-700'}`}>
               {tenant.tenant_status}
@@ -166,25 +166,25 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           {/* Tile 3: Data Intake */}
           <div className={`rounded-lg border p-3 text-center ${
             intakeSummary.intake_status === 'ready_for_ingestion' ? 'border-kora-fun-green/40 bg-[#2F7D55]/15' :
-            intakeSummary.intake_status === 'not_started' ? 'border-rose-200 bg-rose-50' :
-            intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'border-rose-200 bg-rose-50' :
-            intakeSummary.intake_status === 'validation_required' ? 'border-amber-200 bg-amber-50' :
+            intakeSummary.intake_status === 'not_started' ? 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]' :
+            intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]' :
+            intakeSummary.intake_status === 'validation_required' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]' :
             'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]'
           }`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">Data Intake</p>
             <p className={`text-[10px] font-semibold mt-1 ${
               intakeSummary.intake_status === 'ready_for_ingestion' ? 'text-kora-cosmic-blue' :
-              intakeSummary.intake_status === 'not_started' ? 'text-rose-600' :
-              intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'text-rose-700' :
+              intakeSummary.intake_status === 'not_started' ? 'text-[rgba(158,59,47,0.90)]' :
+              intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'text-[#9E3B2F]' :
               'text-amber-700'
             }`}>
               {intakeSummary.intake_status.replace(/_/g, ' ')}
             </p>
           </div>
           {/* Tile 4: Worker Roster */}
-          <div className={`rounded-lg border p-3 text-center ${workerSummary.total_workers >= 30 ? 'border-kora-fun-green/40 bg-[#2F7D55]/15' : workerSummary.total_workers > 0 ? 'border-blue-200 bg-blue-50' : 'border-rose-200 bg-rose-50'}`}>
+          <div className={`rounded-lg border p-3 text-center ${workerSummary.total_workers >= 30 ? 'border-kora-fun-green/40 bg-[#2F7D55]/15' : workerSummary.total_workers > 0 ? 'border-blue-200 bg-blue-50' : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]'}`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">Roster Lavoratori</p>
-            <p className={`text-xl font-bold mt-1 ${workerSummary.total_workers >= 30 ? 'text-kora-cosmic-blue' : workerSummary.total_workers > 0 ? 'text-blue-700' : 'text-rose-600'}`}>
+            <p className={`text-xl font-bold mt-1 ${workerSummary.total_workers >= 30 ? 'text-kora-cosmic-blue' : workerSummary.total_workers > 0 ? 'text-blue-700' : 'text-[rgba(158,59,47,0.90)]'}`}>
               {workerSummary.total_workers}
             </p>
           </div>
@@ -234,7 +234,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         </div>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-3">
           {intakeSummary.total_rows === 0 && intakeSummary.intake_status === 'not_started' ? (
-            <div className="rounded border border-amber-100 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+            <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-4 py-3 text-xs text-[#8A5A00]">
               <p className="font-semibold mb-1">Data intake non avviato</p>
               <p>Nessun piano fiscale né batch dati caricato. Accedi a Data Intake per definire il perimetro fiscale e caricare i programmi.</p>
             </div>
@@ -245,8 +245,8 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                   <p className="text-[rgba(6,3,43,0.40)]">Stato intake</p>
                   <span className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                     intakeSummary.intake_status === 'ready_for_ingestion'             ? 'bg-[#2F7D55]/20 text-kora-cosmic-blue' :
-                    intakeSummary.intake_status === 'validation_required'             ? 'bg-amber-100 text-amber-700' :
-                    intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'bg-rose-100 text-rose-700' :
+                    intakeSummary.intake_status === 'validation_required'             ? 'bg-[rgba(217,154,43,0.12)] text-amber-700' :
+                    intakeSummary.intake_status === 'blocked_missing_required_fields' ? 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]' :
                     intakeSummary.intake_status === 'partial'                         ? 'bg-blue-100 text-blue-700' :
                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
                   }`}>
@@ -317,7 +317,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
 
             {/* Limitations */}
             {koraIndex.limitations_text && (
-              <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2 text-[10px] text-amber-700">
+              <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-amber-700">
                 {koraIndex.limitations_text}
               </div>
             )}
@@ -398,9 +398,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
               <p className="text-[rgba(6,3,43,0.40)]">Stato factory</p>
               <span className={`inline-block mt-0.5 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
                 dpFactoryStatus.latest_status === 'ready'                  ? 'bg-[#2F7D55]/20 text-kora-cosmic-blue' :
-                dpFactoryStatus.latest_status === 'advisor_review_required' ? 'bg-amber-100 text-amber-700' :
-                dpFactoryStatus.latest_status === 'data_review_required'    ? 'bg-orange-100 text-orange-700' :
-                dpFactoryStatus.latest_status === 'blocked'                 ? 'bg-rose-100 text-rose-700' :
+                dpFactoryStatus.latest_status === 'advisor_review_required' ? 'bg-[rgba(217,154,43,0.12)] text-amber-700' :
+                dpFactoryStatus.latest_status === 'data_review_required'    ? 'bg-[rgba(217,154,43,0.10)] text-[#8A5A00]' :
+                dpFactoryStatus.latest_status === 'blocked'                 ? 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]' :
                 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
               }`}>
                 {dpFactoryStatus.latest_status.replace(/_/g, ' ')}
@@ -408,7 +408,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             </div>
             <div>
               <p className="text-[rgba(6,3,43,0.40)]">Può generare</p>
-              <p className={`font-semibold mt-0.5 ${dpFactoryStatus.can_generate ? 'text-[#C76F3D]' : 'text-rose-600'}`}>
+              <p className={`font-semibold mt-0.5 ${dpFactoryStatus.can_generate ? 'text-[#C76F3D]' : 'text-[rgba(158,59,47,0.90)]'}`}>
                 {dpFactoryStatus.can_generate ? 'Sì' : 'No'}
               </p>
             </div>
@@ -442,7 +442,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                   <span>Safeguard: <strong className={
                     dpLatestVersion.activation_safeguard_status === 'CLEAR'   ? 'text-kora-cosmic-blue' :
                     dpLatestVersion.activation_safeguard_status === 'WARNING' ? 'text-amber-700' :
-                    'text-rose-600'
+                    'text-[rgba(158,59,47,0.90)]'
                   }>{dpLatestVersion.activation_safeguard_status}</strong></span>
                 )}
                 <span className="text-[rgba(6,3,43,0.40)]">
@@ -490,12 +490,12 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                     return (
                       <div className="flex flex-wrap gap-3 mt-1">
                         {ki?.delta_abs !== undefined && (
-                          <span>KORA Index delta: <strong className={ki.delta_abs >= 0 ? 'text-[#C76F3D]' : 'text-rose-600'}>
+                          <span>KORA Index delta: <strong className={ki.delta_abs >= 0 ? 'text-[#C76F3D]' : 'text-[rgba(158,59,47,0.90)]'}>
                             {ki.delta_abs >= 0 ? '+' : ''}{ki.delta_abs.toFixed(1)} pt
                           </strong></span>
                         )}
                         {cs?.delta_abs !== undefined && (
-                          <span>CS delta: <strong className={cs.delta_abs >= 0 ? 'text-[#C76F3D]' : 'text-rose-600'}>
+                          <span>CS delta: <strong className={cs.delta_abs >= 0 ? 'text-[#C76F3D]' : 'text-[rgba(158,59,47,0.90)]'}>
                             {cs.delta_abs >= 0 ? '+' : ''}{cs.delta_abs}pt
                           </strong></span>
                         )}
@@ -513,11 +513,11 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
 
           {/* Blocking reasons */}
           {dpFactoryStatus.blocking_reasons.length > 0 && (
-            <div className="rounded border border-rose-100 bg-rose-50 px-3 py-2 space-y-1">
-              <p className="text-[10px] font-semibold text-rose-700">Blocking reasons:</p>
+            <div className="rounded border border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] px-3 py-2 space-y-1">
+              <p className="text-[10px] font-semibold text-[#9E3B2F]">Blocking reasons:</p>
               <ul className="list-disc list-inside space-y-0.5">
                 {dpFactoryStatus.blocking_reasons.map((r, i) => (
-                  <li key={i} className="text-[10px] text-rose-600">{r}</li>
+                  <li key={i} className="text-[10px] text-[rgba(158,59,47,0.90)]">{r}</li>
                 ))}
               </ul>
             </div>
@@ -525,7 +525,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
 
           {/* Warnings */}
           {dpFactoryStatus.warnings.length > 0 && (
-            <div className="rounded border border-amber-100 bg-amber-50 px-3 py-2 space-y-1">
+            <div className="rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-3 py-2 space-y-1">
               <p className="text-[10px] font-semibold text-amber-700">Avvisi:</p>
               <ul className="list-disc list-inside space-y-0.5">
                 {dpFactoryStatus.warnings.map((w, i) => (
@@ -605,7 +605,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                           <button
                             type="button"
                             onClick={() => handleUserAction(accountProvisioningService.deleteDemoUser.bind(accountProvisioningService), user.user_id)}
-                            className="text-rose-500 hover:underline"
+                            className="text-[rgba(158,59,47,0.75)] hover:underline"
                           >
                             Elimina (demo)
                           </button>
@@ -689,7 +689,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                         <button
                           type="button"
                           onClick={() => handleWorkerAction(workerProvisioningService.deleteDemoWorker.bind(workerProvisioningService), w.worker_id)}
-                          className="text-rose-500 hover:underline"
+                          className="text-[rgba(158,59,47,0.75)] hover:underline"
                         >
                           Elimina (demo)
                         </button>
@@ -723,7 +723,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                       <span className="text-[10px] font-semibold text-[rgba(6,3,43,0.78)]">{lifecycleService.getActionLabel(evt.action)}</span>
                       <span className="text-[10px] font-mono text-[rgba(6,3,43,0.40)]">{evt.actor_role}</span>
                       {!evt.reversible && (
-                        <span className="rounded border border-rose-200 bg-rose-50 px-1 py-0.5 text-[9px] text-rose-600">irreversibile</span>
+                        <span className="rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-1 py-0.5 text-[9px] text-[rgba(158,59,47,0.90)]">irreversibile</span>
                       )}
                     </div>
                     {evt.reason && <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">{evt.reason}</p>}

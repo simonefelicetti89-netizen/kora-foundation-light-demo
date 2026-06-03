@@ -73,9 +73,9 @@ interface ArchiveData {
 // ── Helpers ──────────────────────────────────────────────────────────────────────
 
 const SAFEGUARD_CLS: Record<string, string> = {
-  CLEAR:   'border-green-200 bg-green-50 text-green-700',
-  WARNING: 'border-amber-200 bg-amber-50 text-amber-700',
-  FLAGGED: 'border-red-200 bg-red-50 text-red-700',
+  CLEAR:   'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
+  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.10)] text-[#8A5A00]',
+  FLAGGED: 'border-[rgba(158,59,47,0.25)] bg-[rgba(158,59,47,0.08)] text-[#9E3B2F]',
 };
 
 const SAFEGUARD_LABEL: Record<string, string> = {
@@ -85,11 +85,11 @@ const SAFEGUARD_LABEL: Record<string, string> = {
 };
 
 const REVIEW_CLS: Record<string, string> = {
-  approved:             'text-green-600',
-  approved_for_scoring: 'text-green-600',
-  pending:              'text-amber-600',
-  pending_review:       'text-amber-600',
-  rejected:             'text-red-500',
+  approved:             'text-[#2F7D55]',
+  approved_for_scoring: 'text-[#2F7D55]',
+  pending:              'text-[#D99A2B]',
+  pending_review:       'text-[#D99A2B]',
+  rejected:             'text-[#9E3B2F]',
 };
 
 const ELIGIBILITY_LABEL: Record<string, string> = {
@@ -194,29 +194,29 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
         </div>
       )}
       {wsError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-600">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-[#9E3B2F]">
           ⚠ {wsError}
         </div>
       )}
 
       {/* ── Calibration / status bar ─────────────────────────────────────────── */}
       {w && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-[10.5px] text-amber-700 font-medium">
+        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-[10.5px] text-amber-700 font-medium">
           {w.tenant.calibrationStatus.replace(/_/g, ' ')} · {w.tenant.methodologyVersion} · Dati aggregati
         </div>
       )}
 
       {/* ── Welcome banner — new company with no data yet ─────────────────────── */}
       {w && !ki && rr?.readinessLevel === 'not_started' && (
-        <div className="rounded-xl border border-blue-200 bg-blue-50 px-5 py-4 space-y-1.5">
-          <p className="text-sm font-semibold text-blue-800">
+        <div className="rounded-xl border border-[rgba(43,92,230,0.18)] bg-[rgba(43,92,230,0.06)] px-5 py-4 space-y-1.5">
+          <p className="text-sm font-semibold text-[#1B2A4A]">
             La workspace aziendale è attiva
           </p>
-          <p className="text-xs text-blue-700 leading-relaxed">
+          <p className="text-xs text-[rgba(30,74,138,0.85)] leading-relaxed">
             I dati KORA appariranno dopo il completamento dell&apos;onboarding dati e della review metodologica da parte di KORA Admin.
             Contatta il tuo referente KORA per avviare il processo di data intake.
           </p>
-          <p className="text-[9.5px] text-blue-500 pt-0.5">
+          <p className="text-[9.5px] text-[rgba(30,74,138,0.55)] pt-0.5">
             Workspace attivo · Nessun dato ancora disponibile · Nessun demo fallback
           </p>
         </div>
@@ -289,7 +289,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
             <div className="flex items-center gap-2 flex-wrap">
               <Badge
                 label={READINESS_LEVEL_LABEL[rr.readinessLevel] ?? rr.readinessLevel}
-                cls={rr.hasScoring ? 'border-green-200 bg-green-50 text-green-700' : rr.hasEvidenceBatches ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'}
+                cls={rr.hasScoring ? 'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' : rr.hasEvidenceBatches ? 'border-[rgba(43,92,230,0.18)] bg-[rgba(43,92,230,0.06)] text-[#1B2A4A]' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'}
               />
               <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">{rr.batchCount} batch evidenza</span>
             </div>
@@ -302,7 +302,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 ['Decision Pack', rr.hasDecisionPack],
               ].map(([label, done]) => (
                 <div key={String(label)} className="flex items-center gap-2">
-                  <span className={done ? 'text-green-500' : 'text-[rgba(6,3,43,0.28)]'}>
+                  <span className={done ? 'text-\[#2F7D55\]' : 'text-[rgba(6,3,43,0.28)]'}>
                     {done ? '✓' : '○'}
                   </span>
                   <span className={done ? 'text-[rgba(6,3,43,0.78)]' : 'text-[rgba(6,3,43,0.40)]'}>{String(label)}</span>
@@ -323,14 +323,14 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
           <p className="text-xs text-[rgba(6,3,43,0.40)] text-center py-4">Caricamento archivio…</p>
         )}
         {archError && (
-          <p className="text-xs text-red-500">{archError}</p>
+          <p className="text-xs text-[#9E3B2F]">{archError}</p>
         )}
         {archive && !archLoading && (
           <div className="space-y-3">
             {/* Summary bar */}
             <div className="flex gap-4 text-[10.5px] text-[rgba(6,3,43,0.52)]">
               <span><strong className="text-[rgba(6,3,43,0.90)]">{archive.summary.total}</strong> iniziative</span>
-              <span><strong className="text-green-700">{archive.summary.approved}</strong> approvate</span>
+              <span><strong className="text-[#2F7D55]">{archive.summary.approved}</strong> approvate</span>
               <span><strong className="text-amber-600">{archive.summary.pendingReview}</strong> in revisione</span>
             </div>
 
@@ -395,8 +395,8 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
               <Badge
                 label={dp.status.replace(/_/g, ' ')}
                 cls={dp.status === 'ready' || dp.status === 'exported'
-                  ? 'border-green-200 bg-green-50 text-green-700'
-                  : 'border-amber-200 bg-amber-50 text-amber-700'}
+                  ? 'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]'
+                  : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700'}
               />
               <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">Generato: {ts(dp.createdAt)}</span>
             </div>

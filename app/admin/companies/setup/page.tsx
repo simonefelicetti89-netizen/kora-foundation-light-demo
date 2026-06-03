@@ -168,13 +168,13 @@ function computeReadiness(s: WizardState): ReadinessItem[] {
 }
 
 const READINESS_BADGE: Record<ReadinessItemStatus, string> = {
-  blocked:                  'border-rose-300 bg-rose-50 text-rose-700',
+  blocked:                  'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
   draft:                    'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
-  data_required:            'border-amber-200 bg-amber-50 text-amber-700',
+  data_required:            'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',
   access_required:          'border-blue-200 bg-blue-50 text-blue-600',
   privacy_review_required:  'border-purple-200 bg-purple-50 text-purple-700',
-  ready_for_pipeline:       'border-green-200 bg-green-50 text-green-700',
-  ready_for_company_portal: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  ready_for_pipeline:       'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
+  ready_for_company_portal: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
 };
 
 const READINESS_LABEL: Record<ReadinessItemStatus, string> = {
@@ -196,7 +196,7 @@ function Input({ label, value, onChange, placeholder, required }: {
   return (
     <div className="space-y-1">
       <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">
-        {label}{required && <span className="text-rose-500 ml-0.5">*</span>}
+        {label}{required && <span className="text-[rgba(158,59,47,0.75)] ml-0.5">*</span>}
       </label>
       <input
         type="text" value={value} onChange={(e) => onChange(e.target.value)}
@@ -214,7 +214,7 @@ function Select({ label, value, onChange, options, required }: {
   return (
     <div className="space-y-1">
       <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">
-        {label}{required && <span className="text-rose-500 ml-0.5">*</span>}
+        {label}{required && <span className="text-[rgba(158,59,47,0.75)] ml-0.5">*</span>}
       </label>
       <select
         value={value} onChange={(e) => onChange(e.target.value)}
@@ -378,7 +378,7 @@ export default function EnterpriseOnboardingWizard() {
       </div>
 
       {/* ── Demo disclaimer ── */}
-      <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+      <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-[#8A5A00]">
         <span className="font-semibold">Bozza demo di sessione.</span>{' '}
         Nessun dato viene salvato permanentemente. La persistenza database sarà collegata in produzione.
         Nessuna password reale salvata. Nessuna email reale inviata.
@@ -403,14 +403,14 @@ export default function EnterpriseOnboardingWizard() {
             <Input label="Territorio" value={state.territory} onChange={(v) => update('territory', v)} placeholder="es. Lombardia — Nord Italia" required />
             <Input label="Sede principale" value={state.headquarters_location} onChange={(v) => update('headquarters_location', v)} placeholder="es. Milano, MI" required />
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">N. dipendenti <span className="text-rose-500">*</span></label>
+              <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">N. dipendenti <span className="text-[rgba(158,59,47,0.75)]">*</span></label>
               <input type="number" min={1} value={state.employee_count}
                 onChange={(e) => update('employee_count', e.target.value)}
                 placeholder="es. 250"
                 className="w-full rounded-md border border-[rgba(6,3,43,0.08)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] placeholder:text-[rgba(6,3,43,0.28)] focus:outline-none focus:ring-2 focus:ring-slate-300"
               />
               {state.employee_count && parseInt(state.employee_count) < 30 && (
-                <p className="text-[10px] text-rose-600">Foundation Light richiede almeno 30 lavoratori.</p>
+                <p className="text-[10px] text-[rgba(158,59,47,0.90)]">Foundation Light richiede almeno 30 lavoratori.</p>
               )}
             </div>
             <Select label="Fascia dimensionale" value={state.size_band} onChange={(v) => update('size_band', v)}
@@ -565,7 +565,7 @@ export default function EnterpriseOnboardingWizard() {
             />
           </div>
           {state.password_setup_mode === 'temporary_password_manual_demo' && (
-            <div className="rounded border border-rose-200 bg-rose-50 px-3 py-2.5 text-xs text-rose-800">
+            <div className="rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-3 py-2.5 text-xs text-[#9E3B2F]">
               <span className="font-semibold">Solo demo.</span>{' '}
               La password temporanea manuale è esclusivamente per sessioni demo locali.
               Non viene salvata in nessun database. In produzione usare sempre invite link o auth provider esterno.
@@ -630,7 +630,7 @@ export default function EnterpriseOnboardingWizard() {
               >
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-semibold ${state[field] ? 'text-white' : 'text-[rgba(6,3,43,0.90)]'}`}>{label}</span>
-                  {state[field] && <span className="rounded bg-emerald-500 px-1 py-0.5 text-[8px] font-bold text-white">ON</span>}
+                  {state[field] && <span className="rounded bg-[rgba(47,125,85,0.08)]0 px-1 py-0.5 text-[8px] font-bold text-white">ON</span>}
                 </div>
                 <p className={`text-[10px] mt-1 leading-snug ${state[field] ? 'text-[rgba(6,3,43,0.28)]' : 'text-[rgba(6,3,43,0.52)]'}`}>{desc}</p>
               </button>
@@ -716,7 +716,7 @@ export default function EnterpriseOnboardingWizard() {
           {/* Result */}
           {result && (
             <div className={`rounded border px-3 py-2 text-xs ${
-              result.type === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-rose-200 bg-rose-50 text-rose-700'
+              result.type === 'success' ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
             }`}>
               {result.message}
             </div>

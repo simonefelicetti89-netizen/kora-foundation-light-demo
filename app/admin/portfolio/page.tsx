@@ -1,9 +1,9 @@
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 
 const SAFEGUARD_PILL: Record<string, string> = {
-  CLEAR:   'bg-green-100 text-green-800 border-green-200',
-  WARNING: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  FLAGGED: 'bg-red-100 text-red-800 border-red-200',
+  CLEAR:   'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  WARNING: 'bg-[rgba(217,154,43,0.12)] text-[#7A5200] border-[rgba(217,154,43,0.22)]',
+  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-red-800 border-[rgba(158,59,47,0.22)]',
 };
 
 export default function CompanyPortfolio() {
@@ -14,7 +14,7 @@ export default function CompanyPortfolio() {
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-[#06032B]">Company Portfolio</h1>
-          <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
             Internal Preview
           </span>
         </div>

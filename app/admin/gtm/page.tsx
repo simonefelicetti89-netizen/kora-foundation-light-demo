@@ -15,8 +15,8 @@ interface ScenarioCard {
 const SCENARIO_S1: ScenarioCard = {
   label: 'S1 — Stato attuale',
   safeguard: 'WARNING',
-  safeguardStyle: 'border-amber-300 bg-amber-100 text-amber-700',
-  cardStyle: 'border-amber-200 bg-amber-50',
+  safeguardStyle: 'border-amber-300 bg-[rgba(217,154,43,0.12)] text-amber-700',
+  cardStyle: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
   metrics: [
     ['KORA Index',      '34'],
     ['Confidence Score','60%'],
@@ -31,7 +31,7 @@ const SCENARIO_S2: ScenarioCard = {
   label: 'S2 — Post-intervento',
   safeguard: 'CLEAR',
   safeguardStyle: 'border-green-300 bg-green-100 text-green-700',
-  cardStyle: 'border-green-200 bg-green-50',
+  cardStyle: 'border-[rgba(47,125,85,0.22)] bg-green-50',
   metrics: [
     ['KORA Index',      '54'],
     ['Confidence Score','72%'],
@@ -171,10 +171,10 @@ const PILOT_CRITERIA = [
 ];
 
 const STAGE_STYLES: Record<string, string> = {
-  pilot_active:   'bg-green-100 text-green-800 border-green-200',
+  pilot_active:   'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   pilot_proposed: 'bg-[rgba(43,92,230,0.10)] text-[#1B2A4A] border-[rgba(43,92,230,0.22)]',
   demo_shown:     'bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.85)] border-[rgba(199,111,61,0.22)]',
-  contacted:      'bg-yellow-100 text-yellow-800 border-yellow-200',
+  contacted:      'bg-[rgba(217,154,43,0.12)] text-[#7A5200] border-[rgba(217,154,43,0.22)]',
   prospect:       'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
 };
 
@@ -192,10 +192,10 @@ export default function GtmPilotConsole() {
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <h1 className="text-2xl font-bold text-[#06032B]">KORA GTM & Pilot Console</h1>
-          <span className="rounded border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700">
+          <span className="rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-xs font-semibold text-[#9E3B2F]">
             Vista interna KORA
           </span>
-          <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
             Internal GTM
           </span>
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">
@@ -205,8 +205,8 @@ export default function GtmPilotConsole() {
         <p className="text-sm text-[rgba(6,3,43,0.52)] max-w-2xl leading-relaxed">
           Console interna KORA per preparare demo, discovery call, proposta pilota e percorso Foundation Light.
         </p>
-        <div className="mt-2 inline-block rounded border border-rose-200 bg-rose-50 px-3 py-1.5">
-          <p className="text-xs font-semibold text-rose-700">Vista interna KORA — non dashboard cliente.</p>
+        <div className="mt-2 inline-block rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-3 py-1.5">
+          <p className="text-xs font-semibold text-[#9E3B2F]">Vista interna KORA — non dashboard cliente.</p>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-[rgba(6,3,43,0.40)]">
           <span>synthetic_demo_data: true</span>
@@ -252,7 +252,7 @@ export default function GtmPilotConsole() {
           ))}
         </div>
 
-        <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-mono text-amber-700">
+        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs font-mono text-amber-700">
           Scenario sintetico dimostrativo. Non rappresenta previsione, causalità o ROI garantito.
         </div>
       </div>
@@ -275,7 +275,7 @@ export default function GtmPilotConsole() {
                 <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]/70 px-1.5 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
                   {track.audience}
                 </span>
-                <span className="rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-600">
+                <span className="rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-1.5 py-0.5 text-[10px] font-semibold text-[rgba(158,59,47,0.90)]">
                   Uso interno KORA
                 </span>
               </div>
@@ -331,8 +331,8 @@ export default function GtmPilotConsole() {
         <p className="text-base font-bold text-[#06032B] mb-4">Privacy story da raccontare in demo</p>
 
         <div className="grid gap-4 sm:grid-cols-2 mb-3">
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-            <p className="text-xs font-semibold text-green-800 mb-3">L&apos;azienda vede</p>
+          <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 p-4">
+            <p className="text-xs font-semibold text-[#2F7D55] mb-3">L&apos;azienda vede</p>
             <ul className="space-y-1.5">
               {[
                 'Aggregati sopra soglia privacy',
@@ -348,8 +348,8 @@ export default function GtmPilotConsole() {
               ))}
             </ul>
           </div>
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
-            <p className="text-xs font-semibold text-rose-800 mb-3">L&apos;azienda NON vede</p>
+          <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4">
+            <p className="text-xs font-semibold text-[#9E3B2F] mb-3">L&apos;azienda NON vede</p>
             <ul className="space-y-1.5">
               {[
                 'PIB individuale',
@@ -360,15 +360,15 @@ export default function GtmPilotConsole() {
                 'Profilo lavoratore',
                 'Worker ranking',
               ].map((item) => (
-                <li key={item} className="flex gap-1.5 text-xs text-rose-700">
-                  <span className="text-rose-400 shrink-0 mt-0.5">·</span>{item}
+                <li key={item} className="flex gap-1.5 text-xs text-[#9E3B2F]">
+                  <span className="text-[rgba(158,59,47,0.55)] shrink-0 mt-0.5">·</span>{item}
                 </li>
               ))}
             </ul>
           </div>
         </div>
 
-        <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-amber-700">
           <span className="font-semibold">Nota presenter: </span>
           Usare My KORA per dimostrare che il lavoratore ha un layer personale e che l&apos;azienda vede solo aggregati.
         </div>
@@ -403,11 +403,11 @@ export default function GtmPilotConsole() {
         {/* B */}
         <div className="mb-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">B — Cosa NON include</p>
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+          <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4">
             <ul className="grid gap-1 sm:grid-cols-2">
               {PILOT_EXCLUDES.map((item) => (
-                <li key={item} className="flex gap-1.5 text-xs text-rose-700">
-                  <span className="text-rose-400 shrink-0 mt-0.5">✕</span>{item}
+                <li key={item} className="flex gap-1.5 text-xs text-[#9E3B2F]">
+                  <span className="text-[rgba(158,59,47,0.55)] shrink-0 mt-0.5">✕</span>{item}
                 </li>
               ))}
             </ul>
@@ -543,8 +543,8 @@ export default function GtmPilotConsole() {
             <div key={g.id} className="flex items-start gap-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
               <span className={`shrink-0 mt-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${
                 g.status === 'CLOSED'
-                  ? 'bg-green-50 text-green-700 border-green-200'
-                  : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                  ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]'
+                  : 'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]'
               }`}>
                 {g.status}
               </span>

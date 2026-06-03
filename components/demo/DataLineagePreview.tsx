@@ -48,28 +48,28 @@ const STEPS = [
 // ── Status styling ─────────────────────────────────────────────────────────────
 
 const STATUS_STYLE: Record<StepStatus, { chip: string; dot: string; short: string; label: string }> = {
-  completed:      { chip: 'border-green-200 bg-green-50 text-green-700',    dot: 'bg-green-500',  short: '✓', label: 'completato'  },
+  completed:      { chip: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',    dot: 'bg-green-500',  short: '✓', label: 'completato'  },
   active:         { chip: 'border-blue-200 bg-blue-50 text-blue-700',      dot: 'bg-blue-400',   short: '●', label: 'in corso'    },
-  pending:        { chip: 'border-amber-200 bg-amber-50 text-amber-700',    dot: 'bg-amber-300',  short: '⋯', label: 'in attesa'   },
-  review_required:{ chip: 'border-orange-200 bg-orange-50 text-orange-700', dot: 'bg-orange-400', short: '?', label: 'review'      },
-  blocked:        { chip: 'border-rose-200 bg-rose-50 text-rose-700',      dot: 'bg-rose-500',   short: '✗', label: 'bloccato'    },
+  pending:        { chip: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',    dot: 'bg-amber-300',  short: '⋯', label: 'in attesa'   },
+  review_required:{ chip: 'border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]', dot: 'bg-[#D99A2B]', short: '?', label: 'review'      },
+  blocked:        { chip: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',      dot: 'bg-[rgba(158,59,47,0.06)]0',   short: '✗', label: 'bloccato'    },
   excluded:       { chip: 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)]',   dot: 'bg-[rgba(6,3,43,0.12)]',  short: '○', label: 'escluso'     },
-  tracked_only:   { chip: 'border-indigo-200 bg-indigo-50 text-indigo-600', dot: 'bg-indigo-300', short: '⊘', label: 'tracciato'   },
+  tracked_only:   { chip: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] text-[#C76F3D]', dot: 'bg-[rgba(6,3,43,0.30)]', short: '⊘', label: 'tracciato'   },
 };
 
 const TYPE_STYLE = {
-  eligible:        { badge: 'border-green-200 bg-green-50 text-green-700',    card: 'border-green-100',  label: 'Eligible' },
-  limited:         { badge: 'border-indigo-200 bg-indigo-50 text-indigo-700', card: 'border-indigo-100', label: 'Limited' },
-  blocked:         { badge: 'border-rose-200 bg-rose-50 text-rose-700',       card: 'border-rose-100',   label: 'Blocked' },
-  review_required: { badge: 'border-amber-200 bg-amber-50 text-amber-700',    card: 'border-amber-100',  label: 'Review Required' },
+  eligible:        { badge: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',    card: 'border-green-100',  label: 'Eligible' },
+  limited:         { badge: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] text-[#C76F3D]', card: 'border-[rgba(6,3,43,0.06)]', label: 'Limited' },
+  blocked:         { badge: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',       card: 'border-[rgba(158,59,47,0.12)]',   label: 'Blocked' },
+  review_required: { badge: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700',    card: 'border-amber-100',  label: 'Review Required' },
 };
 
 const PILLAR_STYLE: Record<string, string> = {
-  LIFE:       'bg-green-50 text-green-700 border-green-200',
+  LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   GROWTH:     'bg-blue-50 text-blue-700 border-blue-200',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-  IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
-  LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
+  IMPACT:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  LEGACY:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
 };
 
 // ── Canonical examples (initiative/category names only, no worker identities) ──

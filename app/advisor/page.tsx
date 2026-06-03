@@ -68,9 +68,9 @@ const ADVISOR_ASSIGNMENTS = [
 ] as const;
 
 const ASSIGNMENT_STATUS_BADGE: Record<string, string> = {
-  'Attivo':     'bg-green-50 text-green-700 border-green-200',
+  'Attivo':     'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   'Completato': 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  'In corso':   'bg-amber-50 text-amber-700 border-amber-200',
+  'In corso':   'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
   'Periodico':  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
 };
 
@@ -161,14 +161,14 @@ const REVIEW_QUEUE: ReviewQueueItem[] = [
 ];
 
 const STATUS_BADGE: Record<ReviewStatus, { style: string; label: string }> = {
-  pending:           { style: 'bg-amber-50 text-amber-700 border-amber-200',  label: 'In attesa' },
-  reviewed:          { style: 'bg-green-50 text-green-700 border-green-200',  label: 'Revisionato' },
+  pending:           { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',  label: 'In attesa' },
+  reviewed:          { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',  label: 'Revisionato' },
   needs_information: { style: 'bg-sky-50 text-sky-700 border-sky-200',        label: 'Richiede info' },
 };
 
 const PRIORITY_BADGE: Record<Priority, string> = {
-  alta:  'bg-red-50 text-red-600 border-red-200',
-  media: 'bg-amber-50 text-amber-600 border-amber-200',
+  alta:  'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
+  media: 'bg-[rgba(217,154,43,0.08)] text-amber-600 border-[rgba(217,154,43,0.25)]',
   bassa: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
@@ -201,7 +201,7 @@ const EVIDENCE_DETAIL = {
 
 const CHECKLIST_ICON: Record<ChecklistItemStatus, { icon: string; style: string }> = {
   ok:      { icon: '✓', style: 'text-green-600' },
-  pending: { icon: '○', style: 'text-amber-500' },
+  pending: { icon: '○', style: 'text-[#D99A2B]' },
   missing: { icon: '✗', style: 'text-red-500' },
 };
 
@@ -223,7 +223,7 @@ const REVIEW_THREADS = [
     participants: ['Advisor', 'VitaLab Network', 'KORA Admin'],
     last_update: '2026-04-03',
     status: 'Aperta',
-    status_style: 'bg-amber-50 text-amber-700 border-amber-200',
+    status_style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
     latest_note: 'Documentazione incompleta per protocollo LIFE. Richiesta integrazione entro 2026-04-05.',
   },
   {
@@ -241,7 +241,7 @@ const REVIEW_THREADS = [
     participants: ['Advisor', 'Città Aperta APS', 'KORA Admin'],
     last_update: '2026-04-28',
     status: 'Chiusa',
-    status_style: 'bg-green-50 text-green-700 border-green-200',
+    status_style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
     latest_note: 'Re-review completata. Protocollo aggiornato con nuove linee guida.',
   },
 ];
@@ -293,8 +293,8 @@ const ACADEMY_COURSES: {
 ];
 
 const COURSE_STATUS_BADGE: Record<CourseStatus, { style: string; label: string }> = {
-  completato:   { style: 'bg-green-50 text-green-700 border-green-200',  label: 'Completato' },
-  in_corso:     { style: 'bg-amber-50 text-amber-700 border-amber-200',  label: 'In corso' },
+  completato:   { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',  label: 'Completato' },
+  in_corso:     { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',  label: 'In corso' },
   da_iniziare:  { style: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',  label: 'Da iniziare' },
 };
 
@@ -370,7 +370,7 @@ export default function AdvisorDashboard() {
             </div>
             <div>
               <p className="text-xs text-[rgba(6,3,43,0.40)]">Stato licenza</p>
-              <span className="inline-block mt-0.5 rounded border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
+              <span className="inline-block mt-0.5 rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">
                 {ADVISOR_PROFILE.license_status}
               </span>
             </div>
@@ -402,7 +402,7 @@ export default function AdvisorDashboard() {
           </div>
         </div>
 
-        <div className="mt-2 rounded border border-amber-200 bg-amber-50 px-3 py-2">
+        <div className="mt-2 rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2">
           <p className="text-xs text-amber-700 leading-relaxed">
             Licenza Advisor demo. Non rappresenta abilitazione professionale reale,
             certificazione regolatoria o KORA Certified attivo.
@@ -468,7 +468,7 @@ export default function AdvisorDashboard() {
           <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
             Review Queue — Process Audit
           </h2>
-          <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-amber-700">
             {REVIEW_QUEUE.filter((r) => r.status === 'pending').length} in attesa
           </span>
         </div>
@@ -571,8 +571,8 @@ export default function AdvisorDashboard() {
             </ul>
           </div>
 
-          <div className="rounded bg-amber-50 border border-amber-100 px-3 py-3 space-y-1">
-            <p className="text-xs font-semibold text-amber-800">Nota advisor</p>
+          <div className="rounded bg-[rgba(217,154,43,0.08)] border border-amber-100 px-3 py-3 space-y-1">
+            <p className="text-xs font-semibold text-[#8A5A00]">Nota advisor</p>
             <p className="text-xs text-amber-700 leading-relaxed">{EVIDENCE_DETAIL.advisor_note}</p>
           </div>
 
@@ -719,21 +719,21 @@ export default function AdvisorDashboard() {
       </div>
 
       {/* ── 10. Advisor Academy — Future Vision ── */}
-      <div className="rounded-lg border border-dashed border-orange-300 bg-orange-50/50 p-5 space-y-4">
+      <div className="rounded-lg border border-dashed border-[rgba(217,154,43,0.28)] bg-[rgba(217,154,43,0.08)]/50 p-5 space-y-4">
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-sm font-bold text-orange-800">KORA Advisor Academy</h2>
-          <span className="rounded border border-orange-300 bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-semibold text-orange-600 uppercase tracking-wide">
+          <h2 className="text-sm font-bold text-[#8A5A00]">KORA Advisor Academy</h2>
+          <span className="rounded border border-[rgba(217,154,43,0.28)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-semibold text-[#D99A2B] uppercase tracking-wide">
             Future Vision / Non attivo in Foundation Light
           </span>
         </div>
-        <p className="text-xs text-orange-700 leading-relaxed">
+        <p className="text-xs text-[#8A5A00] leading-relaxed">
           Percorso futuro per formazione, aggiornamento, crediti, rinnovo licenza e specializzazioni Advisor.
         </p>
 
         {/* Credits summary */}
-        <div className="rounded-lg border border-orange-200 bg-[#F8F6F1] px-4 py-3 grid grid-cols-3 gap-3 text-center">
+        <div className="rounded-lg border border-[rgba(217,154,43,0.22)] bg-[#F8F6F1] px-4 py-3 grid grid-cols-3 gap-3 text-center">
           <div>
-            <p className="text-lg font-bold text-orange-700">{ADVISOR_PROFILE.academy_credits}</p>
+            <p className="text-lg font-bold text-[#8A5A00]">{ADVISOR_PROFILE.academy_credits}</p>
             <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Crediti accumulati</p>
           </div>
           <div>
@@ -751,7 +751,7 @@ export default function AdvisorDashboard() {
           {ACADEMY_COURSES.map((course) => {
             const cs = COURSE_STATUS_BADGE[course.status];
             return (
-              <div key={course.id} className="rounded-lg border border-orange-100 bg-[#F8F6F1] p-4 flex items-center justify-between gap-3">
+              <div key={course.id} className="rounded-lg border border-[rgba(217,154,43,0.12)] bg-[#F8F6F1] p-4 flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{course.title}</p>
@@ -793,7 +793,7 @@ export default function AdvisorDashboard() {
           </button>
         </div>
 
-        <p className="text-[11px] text-orange-600 leading-relaxed">
+        <p className="text-[11px] text-[#D99A2B] leading-relaxed">
           Academy preview. Nessun LMS reale, nessun pagamento, nessuna certificazione attiva in Foundation Light.
         </p>
       </div>
@@ -804,8 +804,8 @@ export default function AdvisorDashboard() {
           Perimetro di accesso Advisor
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-            <p className="text-xs font-semibold text-green-800 mb-2">L&apos;Advisor può vedere</p>
+          <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 p-4">
+            <p className="text-xs font-semibold text-[#2F7D55] mb-2">L&apos;Advisor può vedere</p>
             <ul className="space-y-1.5">
               {[
                 'Protocolli assegnati nel proprio perimetro',
@@ -816,14 +816,14 @@ export default function AdvisorDashboard() {
                 'Trust Ledger nel proprio perimetro',
               ].map((item) => (
                 <li key={item} className="flex gap-1.5 text-xs text-green-700">
-                  <span className="text-green-500 shrink-0 mt-0.5">✓</span>
+                  <span className="text-[#2F7D55] shrink-0 mt-0.5">✓</span>
                   {item}
                 </li>
               ))}
             </ul>
           </div>
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
-            <p className="text-xs font-semibold text-rose-800 mb-2">L&apos;Advisor non può vedere</p>
+          <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4">
+            <p className="text-xs font-semibold text-[#9E3B2F] mb-2">L&apos;Advisor non può vedere</p>
             <ul className="space-y-1.5">
               {[
                 'PIB individuale dei lavoratori',
@@ -834,8 +834,8 @@ export default function AdvisorDashboard() {
                 'Dati aziendali non assegnati',
                 'Pagamenti o wallet aziendali',
               ].map((item) => (
-                <li key={item} className="flex gap-1.5 text-xs text-rose-700">
-                  <span className="text-rose-400 shrink-0 mt-0.5">✕</span>
+                <li key={item} className="flex gap-1.5 text-xs text-[#9E3B2F]">
+                  <span className="text-[rgba(158,59,47,0.55)] shrink-0 mt-0.5">✕</span>
                   {item}
                 </li>
               ))}

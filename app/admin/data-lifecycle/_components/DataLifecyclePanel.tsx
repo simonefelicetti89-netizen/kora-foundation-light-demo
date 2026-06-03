@@ -28,15 +28,15 @@ interface InspectResult {
 interface ActionResult { ok: boolean; message?: string; archivedDPCount?: number; deletedUploadedCount?: number; deletedUefCount?: number; error?: string; hint?: string; }
 
 const RISK_CLS: Record<string, string> = {
-  safe:            'bg-green-50 text-green-700 border-green-200',
-  active_results:  'bg-amber-50 text-amber-700 border-amber-200',
-  exported_report: 'bg-red-50 text-red-700 border-red-200',
+  safe:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  active_results:  'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  exported_report: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
 };
 const STATUS_CLS: Record<string, string> = {
-  pending:    'bg-amber-50 text-amber-700 border-amber-200',
+  pending:    'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
   processing: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  approved:   'bg-green-50 text-green-700 border-green-200',
-  rejected:   'bg-red-50 text-red-700 border-red-200',
+  approved:   'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  rejected:   'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
   partial:    'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
   archived:   'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
@@ -214,7 +214,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
 
               {/* Recommended action */}
               {inspect.blockingReason && (
-                <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-amber-700">
                   ⚠ {inspect.blockingReason}
                 </div>
               )}
@@ -243,11 +243,11 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
                   <div className="flex gap-2 flex-wrap">
                     <input value={deleteConfirm} onChange={e => setDeleteConfirm(e.target.value)}
                       placeholder="DELETE_BATCH"
-                      className="rounded border border-red-300 px-2.5 py-1.5 text-xs font-mono text-red-700 w-36 focus:outline-none focus:ring-1 focus:ring-red-400"
+                      className="rounded border border-[rgba(158,59,47,0.25)] px-2.5 py-1.5 text-xs font-mono text-[#9E3B2F] w-36 focus:outline-none focus:ring-1 focus:ring-[#9E3B2F]"
                     />
                     <button onClick={handleDelete}
                       disabled={deleteConfirm !== 'DELETE_BATCH' || deleteStatus==='loading'}
-                      className="rounded border border-red-400 bg-red-50 px-4 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                      className="rounded border border-[#9E3B2F] bg-[rgba(158,59,47,0.06)] px-4 py-1.5 text-xs font-semibold text-[#9E3B2F] hover:bg-[rgba(158,59,47,0.10)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
                       {deleteStatus==='loading' ? '⏳ Deleting…' : '✕ Delete batch data'}
                     </button>
                   </div>
@@ -267,7 +267,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
           )}
 
           {inspect && !inspect.ok && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700">
+            <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">
               ⚠ {inspect.error}
             </div>
           )}

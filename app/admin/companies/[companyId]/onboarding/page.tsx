@@ -16,16 +16,16 @@ const ONBOARDING_STATUS_PILL: Record<string, string> = {
   profile_complete:              'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   workforce_baseline_complete:   'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   program_data_loaded:           'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
-  ready_for_scoring:             'bg-amber-50 text-amber-700 border-amber-200',
-  fully_onboarded:               'bg-green-50 text-green-700 border-green-200',
+  ready_for_scoring:             'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  fully_onboarded:               'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
 };
 
 const INTAKE_STATUS_PILL: Record<string, string> = {
   not_started:                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   partial:                         'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  validation_required:             'bg-amber-100 text-amber-700 border-amber-200',
-  blocked_missing_required_fields: 'bg-rose-100 text-rose-700 border-rose-200',
-  ready_for_ingestion:             'bg-green-100 text-green-700 border-green-200',
+  validation_required:             'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  blocked_missing_required_fields: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',
+  ready_for_ingestion:             'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
   draft:                           'bg-[rgba(6,3,43,0.06)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
 };
 
@@ -34,8 +34,8 @@ function ReadinessRow({ check }: { check: OnboardingReadinessCheck }) {
   const isBlocking = check.blocking && !isOk;
   return (
     <div className={cn('flex items-start gap-3 px-4 py-3 border-b border-[rgba(6,3,43,0.05)] last:border-0',
-      isOk ? '' : isBlocking ? 'bg-rose-50' : 'bg-amber-50')}>
-      <span className={cn('mt-0.5 text-xs font-bold shrink-0', isOk ? 'text-green-500' : isBlocking ? 'text-rose-600' : 'text-amber-600')}>
+      isOk ? '' : isBlocking ? 'bg-[rgba(158,59,47,0.06)]' : 'bg-[rgba(217,154,43,0.08)]')}>
+      <span className={cn('mt-0.5 text-xs font-bold shrink-0', isOk ? 'text-[#2F7D55]' : isBlocking ? 'text-[rgba(158,59,47,0.90)]' : 'text-amber-600')}>
         {isOk ? '✓' : isBlocking ? '✕' : '!'}
       </span>
       <div className="flex-1 min-w-0">
@@ -43,7 +43,7 @@ function ReadinessRow({ check }: { check: OnboardingReadinessCheck }) {
         <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5 leading-snug">{check.detail}</p>
       </div>
       {isBlocking && (
-        <span className="shrink-0 text-[9px] font-bold text-rose-600 uppercase tracking-wide">Bloccante</span>
+        <span className="shrink-0 text-[9px] font-bold text-[rgba(158,59,47,0.90)] uppercase tracking-wide">Bloccante</span>
       )}
     </div>
   );
@@ -119,8 +119,8 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
         <h2 className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">
           Prossima Azione KORA
         </h2>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-          <p className="text-sm font-semibold text-amber-800">{nextAction.action}</p>
+        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-3">
+          <p className="text-sm font-semibold text-[#8A5A00]">{nextAction.action}</p>
           {nextAction.detail && (
             <p className="text-xs text-amber-700 mt-0.5">{nextAction.detail}</p>
           )}
@@ -134,15 +134,15 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
         </h2>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
           <div className={cn('px-4 py-3 border-b border-[rgba(6,3,43,0.08)] flex items-center justify-between',
-            pipeline.status === 'ok' ? 'bg-green-50' : pipeline.status === 'blocked' ? 'bg-rose-50' : 'bg-amber-50')}>
+            pipeline.status === 'ok' ? 'bg-green-50' : pipeline.status === 'blocked' ? 'bg-[rgba(158,59,47,0.06)]' : 'bg-[rgba(217,154,43,0.08)]')}>
             <p className={cn('text-sm font-semibold',
-              pipeline.status === 'ok' ? 'text-green-800' : pipeline.status === 'blocked' ? 'text-rose-800' : 'text-amber-800')}>
+              pipeline.status === 'ok' ? 'text-[#2F7D55]' : pipeline.status === 'blocked' ? 'text-[#9E3B2F]' : 'text-[#8A5A00]')}>
               {pipeline.status === 'ok' ? 'Pronto per scoring' : pipeline.status === 'blocked' ? 'Bloccato — azioni richieste' : 'Warning — verificare'}
             </p>
             <span className={cn('rounded border px-2 py-0.5 text-xs font-bold uppercase',
-              pipeline.status === 'ok' ? 'bg-green-100 text-green-700 border-green-200' :
-              pipeline.status === 'blocked' ? 'bg-rose-100 text-rose-700 border-rose-200' :
-              'bg-amber-100 text-amber-700 border-amber-200')}>
+              pipeline.status === 'ok' ? 'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]' :
+              pipeline.status === 'blocked' ? 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]' :
+              'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]')}>
               {pipeline.status}
             </span>
           </div>
@@ -206,7 +206,7 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
                   <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5 font-mono">{acc.role}</p>
                 </div>
                 <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
-                  acc.account_status === 'active_demo' ? 'bg-green-50 text-green-700 border-green-200' :
+                  acc.account_status === 'active_demo' ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' :
                   acc.account_status === 'invited' ? 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' :
                   'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]')}>
                   {acc.account_status}
@@ -227,7 +227,7 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
             {Object.entries(readiness).map(([key, val]) => (
               typeof val === 'boolean' && (
                 <div key={key} className="flex items-center gap-2">
-                  <span className={cn('text-sm font-bold shrink-0', val ? 'text-green-500' : 'text-[rgba(6,3,43,0.28)]')}>
+                  <span className={cn('text-sm font-bold shrink-0', val ? 'text-[#2F7D55]' : 'text-[rgba(6,3,43,0.28)]')}>
                     {val ? '✓' : '○'}
                   </span>
                   <p className="text-xs text-[rgba(6,3,43,0.62)]">{key.replace(/_/g, ' ')}</p>

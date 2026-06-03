@@ -7,10 +7,10 @@ import { cn } from '@/lib/utils';
 import type { KoraRole } from '@/lib/types';
 
 const ROLE_COLORS: Record<string, string> = {
-  KORA_ADMIN:     'text-indigo-700',
+  KORA_ADMIN:     'text-[#C76F3D]',
   COMPANY_ADMIN:  'text-[rgba(6,3,43,0.78)]',
   COMPANY_VIEWER: 'text-[rgba(6,3,43,0.62)]',
-  WORKER:         'text-emerald-700',
+  WORKER:         'text-[#2F7D55]',
   PARTNER:        'text-violet-700',
   ADVISOR:        'text-blue-700',
 };

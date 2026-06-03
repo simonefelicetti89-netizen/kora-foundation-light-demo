@@ -80,9 +80,9 @@ type StepState = 'pending' | 'running' | 'completed';
 // ── Formatting helpers ────────────────────────────────────────────────────────
 
 const SAFEGUARD: Record<string, { label: string; cls: string }> = {
-  CLEAR:   { label: 'CLEAR',   cls: 'bg-green-100 text-green-800 border-green-200' },
-  WARNING: { label: 'WARNING', cls: 'bg-amber-100 text-amber-800 border-amber-200' },
-  FLAGGED: { label: 'FLAGGED', cls: 'bg-red-100  text-red-800   border-red-200'  },
+  CLEAR:   { label: 'CLEAR',   cls: 'bg-green-100 text-[#2F7D55] border-[rgba(47,125,85,0.22)]' },
+  WARNING: { label: 'WARNING', cls: 'bg-[rgba(217,154,43,0.12)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]' },
+  FLAGGED: { label: 'FLAGGED', cls: 'bg-[rgba(158,59,47,0.10)]  text-red-800   border-[rgba(158,59,47,0.22)]'  },
 };
 
 const AUDIT_ICON: Record<string, string> = {
@@ -267,7 +267,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
           </button>
         </div>
         {status === 'error' && errorMsg && (
-          <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          <div className="flex gap-2 rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-xs text-[#9E3B2F]">
             <span className="flex-shrink-0">⚠</span><span>{errorMsg}</span>
           </div>
         )}
@@ -335,7 +335,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                 <span className="text-[rgba(6,3,43,0.52)]">Review mode: read-only</span>
               </div>
             )}
-            <p className="text-xs border border-amber-200 bg-amber-50 rounded px-2 py-1 text-amber-700">
+            <p className="text-xs border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1 text-amber-700">
               Editable UEF Review (accept / reject / edit) scheduled for B5.
             </p>
           </div>
@@ -353,7 +353,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                 <Metric label="Confidence Score"
                   value={<span className="text-xl font-semibold tabular-nums text-[rgba(6,3,43,0.90)]">{csValue ?? '—'}</span>} />
                 <Metric label="Calibration"
-                  value={<span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
+                  value={<span className="text-xs text-amber-700 bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)] rounded px-1.5 py-0.5">
                     {readResult?.kora_index?.calibration ?? 'pre_empirical_calibration'}
                   </span>} />
                 {arValue != null && (
@@ -484,8 +484,8 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
 
 // WizardStep — step card with status indicator. B3 addition.
 const STEP_STYLE: Record<StepState, { dot: string; badge: string; label: string; headerBorder: string }> = {
-  completed: { dot: 'bg-green-500', badge: 'bg-green-50 text-green-700 border-green-200', label: 'Completato', headerBorder: 'border-green-100' },
-  running:   { dot: 'bg-amber-400', badge: 'bg-amber-50 text-amber-700 border-amber-200', label: 'In esecuzione…', headerBorder: 'border-amber-100' },
+  completed: { dot: 'bg-green-500', badge: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]', label: 'Completato', headerBorder: 'border-green-100' },
+  running:   { dot: 'bg-[#D99A2B]', badge: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]', label: 'In esecuzione…', headerBorder: 'border-amber-100' },
   pending:   { dot: 'bg-[rgba(6,3,43,0.18)]', badge: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]', label: 'In attesa', headerBorder: 'border-[rgba(6,3,43,0.05)]' },
 };
 
@@ -524,7 +524,7 @@ function Kv({ label, value }: { label: string; value: React.ReactNode }) {
 
 // Section, SubSection, MetricGrid, Metric — unchanged from B2
 function Section({ title, accent, children }: { title: string; accent: 'green' | 'blue' | 'slate'; children: React.ReactNode }) {
-  const border = accent === 'green' ? 'border-green-200' : accent === 'blue' ? 'border-blue-200' : 'border-[rgba(6,3,43,0.08)]';
+  const border = accent === 'green' ? 'border-[rgba(47,125,85,0.22)]' : accent === 'blue' ? 'border-blue-200' : 'border-[rgba(6,3,43,0.08)]';
   const bg     = accent === 'green' ? 'bg-green-50'    : accent === 'blue' ? 'bg-blue-50'    : 'bg-[#F8F6F1]';
   const color  = accent === 'green' ? 'text-green-700'  : accent === 'blue' ? 'text-blue-700'  : 'text-[rgba(6,3,43,0.62)]';
   return (
@@ -559,13 +559,13 @@ function Metric({ label, value }: { label: string; value: React.ReactNode }) {
 
 // DP status badge + description — unchanged from B2
 const DP_STATUS_STYLE: Record<string, { bg: string; text: string; border: string }> = {
-  draft:                   { bg: 'bg-amber-50',  text: 'text-amber-700',  border: 'border-amber-200'  },
+  draft:                   { bg: 'bg-[rgba(217,154,43,0.08)]',  text: 'text-amber-700',  border: 'border-[rgba(217,154,43,0.25)]'  },
   ready:                   { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
-  exported:                { bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200'  },
-  data_review_required:    { bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200'    },
-  advisor_review_required: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+  exported:                { bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-[rgba(47,125,85,0.22)]'  },
+  data_review_required:    { bg: 'bg-[rgba(158,59,47,0.06)]',    text: 'text-[#9E3B2F]',    border: 'border-[rgba(158,59,47,0.22)]'    },
+  advisor_review_required: { bg: 'bg-[rgba(217,154,43,0.08)]', text: 'text-[#8A5A00]', border: 'border-[rgba(217,154,43,0.22)]' },
   archived:                { bg: 'bg-[rgba(6,3,43,0.05)]', text: 'text-[rgba(6,3,43,0.62)]',  border: 'border-[rgba(6,3,43,0.08)]'  },
-  blocked:                 { bg: 'bg-red-100',   text: 'text-red-800',    border: 'border-red-300'    },
+  blocked:                 { bg: 'bg-[rgba(158,59,47,0.10)]',   text: 'text-red-800',    border: 'border-[rgba(158,59,47,0.25)]'    },
 };
 
 function DpStatusBadge({ status }: { status: string }) {

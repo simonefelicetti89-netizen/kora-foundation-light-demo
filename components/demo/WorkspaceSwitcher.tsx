@@ -18,14 +18,14 @@ const WORKSPACES: WorkspaceCard[] = [
     role: 'COMPANY_ADMIN',
     route: '/company',
     description: 'Executive Cockpit, KORA Index, Activation, Reports e Decision Pack.',
-    accentClass: 'border-indigo-200 hover:border-indigo-400',
+    accentClass: 'border-[rgba(199,111,61,0.22)] hover:border-[#C76F3D]',
   },
   {
     label: 'Lavoratore',
     role: 'WORKER',
     route: '/my-kora',
     description: 'PIB privato, timeline personale, Dynamic Impact CV e privacy boundary.',
-    accentClass: 'border-emerald-200 hover:border-emerald-400',
+    accentClass: 'border-[rgba(47,125,85,0.20)] hover:border-[#2F7D55]',
   },
   {
     label: 'Partner',
@@ -39,7 +39,7 @@ const WORKSPACES: WorkspaceCard[] = [
     role: 'ADVISOR',
     route: '/advisor',
     description: 'Review queue, evidence review, Confidence Stamp e boundary Advisor-reviewed ≠ Certified.',
-    accentClass: 'border-amber-200 hover:border-amber-400',
+    accentClass: 'border-[rgba(217,154,43,0.25)] hover:border-[#D99A2B]',
   },
 ];
 

@@ -129,8 +129,8 @@ const READINESS: { label: string; status: 'active' | 'future' | 'blocked'; note?
 ];
 
 const STATUS_STYLE = {
-  active:  { label: 'Attivo in Foundation Light', cls: 'bg-green-50 text-green-700 border-green-200' },
-  future:  { label: 'Future Vision',              cls: 'bg-orange-50 text-orange-700 border-orange-200' },
+  active:  { label: 'Attivo in Foundation Light', cls: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' },
+  future:  { label: 'Future Vision',              cls: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]' },
   blocked: { label: 'Non attivo',                 cls: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]' },
 } as const;
 
@@ -141,7 +141,7 @@ export function DemoGuideContent() {
       {/* ── 1. Hero ── */}
       <div>
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
             Foundation Light v0.1
           </span>
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
@@ -160,8 +160,8 @@ export function DemoGuideContent() {
           dal lavoratore al board, dal partner all&apos;Advisor.
         </p>
 
-        <div className="mt-4 rounded border border-indigo-100 bg-indigo-50 px-4 py-3">
-          <p className="text-sm font-semibold text-indigo-800">
+        <div className="mt-4 rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.06)] px-4 py-3">
+          <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">
             KORA trasforma azioni reali in intelligence organizzativa verificata —
             senza esporre dati individuali dei lavoratori.
           </p>
@@ -180,7 +180,7 @@ export function DemoGuideContent() {
           ))}
         </div>
 
-        <div className="mt-4 rounded border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="mt-4 rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-3">
           <p className="text-xs font-semibold text-amber-700">Limitazioni obbligatorie</p>
           <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
             Foundation Light usa dati sintetici demo e{' '}
@@ -219,8 +219,8 @@ export function DemoGuideContent() {
               letter: 'A',
               title: 'KORA Readiness & Data Inventory',
               body: 'Mappatura delle fonti dati people/welfare/training/CSR e readiness per generare una prima intelligence KORA.',
-              color: 'border-indigo-200 bg-indigo-50',
-              lc: 'text-indigo-300',
+              color: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)]',
+              lc: 'text-[rgba(6,3,43,0.30)]',
             },
             {
               letter: 'B',
@@ -233,8 +233,8 @@ export function DemoGuideContent() {
               letter: 'C',
               title: 'People Activation Decision Pack',
               body: 'Output direzionale per CEO, HR, ESG e Finance: report, narrative, limiti, next actions.',
-              color: 'border-emerald-200 bg-emerald-50',
-              lc: 'text-emerald-300',
+              color: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)]',
+              lc: 'text-[rgba(47,125,85,0.80)]',
             },
             {
               letter: 'D',
@@ -285,7 +285,7 @@ export function DemoGuideContent() {
           {STORY_90.map((s, i) => (
             <div key={s.n} className="flex gap-3 items-start rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
               <div className="shrink-0 flex flex-col items-center gap-1">
-                <span className="w-6 h-6 rounded-full bg-indigo-100 text-xs font-bold text-indigo-600 flex items-center justify-center">
+                <span className="w-6 h-6 rounded-full bg-[rgba(199,111,61,0.10)] text-xs font-bold text-[#C76F3D] flex items-center justify-center">
                   {s.n}
                 </span>
                 {i < STORY_90.length - 1 && <div className="w-px h-4 bg-[rgba(6,3,43,0.12)]" />}
@@ -354,8 +354,8 @@ export function DemoGuideContent() {
           Perché KORA non è una dashboard HR
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-rose-100 bg-rose-50 p-5">
-            <p className="text-xs font-semibold text-rose-700 mb-3">KORA non è</p>
+          <div className="rounded-lg border border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] p-5">
+            <p className="text-xs font-semibold text-[#9E3B2F] mb-3">KORA non è</p>
             <ul className="space-y-2">
               {[
                 'Welfare platform',
@@ -365,8 +365,8 @@ export function DemoGuideContent() {
                 'Social network aziendale',
                 'Sistema di ranking lavoratori',
               ].map((item) => (
-                <li key={item} className="flex gap-1.5 text-sm text-rose-800">
-                  <span className="text-rose-300 shrink-0 mt-0.5">✕</span>
+                <li key={item} className="flex gap-1.5 text-sm text-[#9E3B2F]">
+                  <span className="text-[rgba(158,59,47,0.60)] shrink-0 mt-0.5">✕</span>
                   {item}
                 </li>
               ))}
@@ -382,8 +382,8 @@ export function DemoGuideContent() {
                 'Privacy-first worker-owned layer',
                 'Board-ready decision system',
               ].map((item) => (
-                <li key={item} className="flex gap-1.5 text-sm text-green-800">
-                  <span className="text-green-500 shrink-0 mt-0.5">✓</span>
+                <li key={item} className="flex gap-1.5 text-sm text-[#2F7D55]">
+                  <span className="text-[#2F7D55] shrink-0 mt-0.5">✓</span>
                   {item}
                 </li>
               ))}
@@ -416,8 +416,8 @@ export function DemoGuideContent() {
               ))}
             </ul>
           </div>
-          <div className="rounded-lg border border-rose-100 bg-rose-50 p-5">
-            <p className="text-xs font-semibold text-rose-700 mb-3">KORA non misura</p>
+          <div className="rounded-lg border border-[rgba(158,59,47,0.12)] bg-[rgba(158,59,47,0.06)] p-5">
+            <p className="text-xs font-semibold text-[#9E3B2F] mb-3">KORA non misura</p>
             <ul className="space-y-2">
               {[
                 'Prestazioni o produttività individuale del lavoratore',
@@ -427,8 +427,8 @@ export function DemoGuideContent() {
                 'Utilizzo del marketplace o attività di prenotazione benefit',
                 'Qualsiasi metrica che valuta o sorveglia i lavoratori individualmente',
               ].map((item) => (
-                <li key={item} className="flex gap-2 text-sm text-rose-800">
-                  <span className="mt-0.5 shrink-0 text-rose-300">✕</span>
+                <li key={item} className="flex gap-2 text-sm text-[#9E3B2F]">
+                  <span className="mt-0.5 shrink-0 text-[rgba(158,59,47,0.60)]">✕</span>
                   {item}
                 </li>
               ))}
@@ -480,10 +480,10 @@ export function DemoGuideContent() {
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-5">
+          <div className="rounded-lg border border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.10)] p-5">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-base font-bold text-[#06032B]">S1 — Baseline</span>
-              <span className="rounded border border-yellow-300 bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-700">
+              <span className="rounded border border-yellow-300 bg-[rgba(217,154,43,0.12)] px-2 py-0.5 text-xs font-bold text-[#8A5A00]">
                 WARNING
               </span>
             </div>
@@ -495,13 +495,13 @@ export function DemoGuideContent() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed italic border-t border-yellow-200 pt-3">
+            <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed italic border-t border-[rgba(217,154,43,0.22)] pt-3">
               &ldquo;Iniziative frammentate, continuità debole, partecipazione disomogenea.
               Il 12% dei lavoratori genera il 64% dell&apos;impatto misurato.&rdquo;
             </p>
           </div>
 
-          <div className="rounded-lg border border-green-200 bg-green-50 p-5">
+          <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 p-5">
             <div className="flex items-center gap-2 mb-3">
               <span className="text-base font-bold text-[#06032B]">S2 — Migliorato</span>
               <span className="rounded border border-green-300 bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
@@ -516,7 +516,7 @@ export function DemoGuideContent() {
                 </div>
               ))}
             </div>
-            <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed italic border-t border-green-200 pt-3">
+            <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed italic border-t border-[rgba(47,125,85,0.22)] pt-3">
               &ldquo;Miglior bilanciamento, evidenze più solide, continuità maggiore e attivazione più ampia.
               L&apos;Activation Safeguard è passato a CLEAR.&rdquo;
             </p>
@@ -539,8 +539,8 @@ export function DemoGuideContent() {
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-            <p className="text-xs font-semibold text-green-800 mb-2">L&apos;azienda VEDE</p>
+          <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 p-4">
+            <p className="text-xs font-semibold text-[#2F7D55] mb-2">L&apos;azienda VEDE</p>
             <ul className="space-y-1.5">
               {[
                 'Aggregati sopra soglia privacy (≥10 lavoratori)',
@@ -558,8 +558,8 @@ export function DemoGuideContent() {
             </ul>
           </div>
 
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
-            <p className="text-xs font-semibold text-rose-800 mb-2">L&apos;azienda NON VEDE</p>
+          <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4">
+            <p className="text-xs font-semibold text-[#9E3B2F] mb-2">L&apos;azienda NON VEDE</p>
             <ul className="space-y-1.5">
               {[
                 'PIB individuale del lavoratore',
@@ -570,8 +570,8 @@ export function DemoGuideContent() {
                 'Profilo lavoratore',
                 'Worker ranking o classifica individuale',
               ].map((item) => (
-                <li key={item} className="flex gap-1.5 text-xs text-rose-700">
-                  <span className="text-rose-400 shrink-0 mt-0.5">·</span>
+                <li key={item} className="flex gap-1.5 text-xs text-[#9E3B2F]">
+                  <span className="text-[rgba(158,59,47,0.55)] shrink-0 mt-0.5">·</span>
                   {item}
                 </li>
               ))}
@@ -582,7 +582,7 @@ export function DemoGuideContent() {
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <Link
             href="/my-kora"
-            className="rounded-md border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+            className="rounded-md border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] px-4 py-2 text-xs font-semibold text-[#C76F3D] hover:bg-[rgba(199,111,61,0.10)] transition-colors"
           >
             Apri My KORA — demo
           </Link>

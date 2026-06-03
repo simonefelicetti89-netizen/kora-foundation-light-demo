@@ -40,14 +40,14 @@ const MAX_FILE_MB = 10;
 // ── Existing helpers ───────────────────────────────────────────────────────────
 
 function confidenceBadge(confidence: number): { label: string; cls: string } {
-  if (confidence >= 0.90) return { label: `${Math.round(confidence * 100)}%`, cls: 'bg-emerald-100 text-emerald-700 border border-emerald-200' };
-  if (confidence >= 0.70) return { label: `${Math.round(confidence * 100)}%`, cls: 'bg-amber-100 text-amber-700 border border-amber-200' };
-  return { label: `${Math.round(confidence * 100)}% — revisione`, cls: 'bg-red-100 text-red-700 border border-red-200' };
+  if (confidence >= 0.90) return { label: `${Math.round(confidence * 100)}%`, cls: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border border-[rgba(47,125,85,0.22)]' };
+  if (confidence >= 0.70) return { label: `${Math.round(confidence * 100)}%`, cls: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border border-[rgba(217,154,43,0.25)]' };
+  return { label: `${Math.round(confidence * 100)}% — revisione`, cls: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border border-[rgba(158,59,47,0.22)]' };
 }
 
 function severityBadgeCls(severity: string): string {
-  if (severity === 'high') return 'bg-red-100 text-red-700 border border-red-200';
-  if (severity === 'medium') return 'bg-amber-100 text-amber-700 border border-amber-200';
+  if (severity === 'high') return 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border border-[rgba(158,59,47,0.22)]';
+  if (severity === 'medium') return 'bg-[rgba(217,154,43,0.12)] text-amber-700 border border-[rgba(217,154,43,0.25)]';
   return 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.08)]';
 }
 
@@ -66,14 +66,14 @@ function btiStatusConfig(criticalMapped: number): { label: string; sublabel: str
   if (criticalMapped === 3) return {
     label: 'Forte',
     sublabel: 'Le colonne necessarie per la valutazione BTI sono presenti. Il livello di evidenza (L0–L4) verrà determinato in revisione e influenzerà il peso nel macroblocco Budget-to-Human-Impact (20%).',
-    cls: 'border-emerald-200 bg-emerald-50',
-    barCls: 'bg-emerald-500',
+    cls: 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)]',
+    barCls: 'bg-[rgba(47,125,85,0.08)]0',
   };
   if (criticalMapped >= 1) return {
     label: 'Parziale',
     sublabel: `${criticalMapped}/3 colonne critiche per BTI presenti. Il peso BTI sarà ridotto in base all'evidenza disponibile.`,
-    cls: 'border-amber-200 bg-amber-50',
-    barCls: 'bg-amber-400',
+    cls: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
+    barCls: 'bg-[#D99A2B]',
   };
   return {
     label: 'Assente',
@@ -106,22 +106,22 @@ function inferWorkforcePopulation(rows: RawUploadedRecord[], mappings: ColumnMap
 }
 
 function safeguardCls(status: string): { bg: string; text: string; border: string } {
-  if (status === 'CLEAR')   return { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200' };
-  if (status === 'FLAGGED') return { bg: 'bg-red-100',     text: 'text-red-700',     border: 'border-red-200'     };
-  return                           { bg: 'bg-amber-100',   text: 'text-amber-700',   border: 'border-amber-200'   };
+  if (status === 'CLEAR')   return { bg: 'bg-[rgba(47,125,85,0.10)]', text: 'text-[#2F7D55]', border: 'border-[rgba(47,125,85,0.22)]' };
+  if (status === 'FLAGGED') return { bg: 'bg-[rgba(158,59,47,0.10)]',     text: 'text-[#9E3B2F]',     border: 'border-[rgba(158,59,47,0.22)]'     };
+  return                           { bg: 'bg-[rgba(217,154,43,0.12)]',   text: 'text-amber-700',   border: 'border-[rgba(217,154,43,0.25)]'   };
 }
 
 function koraIndexTextCls(value: number): string {
-  if (value >= 60) return 'text-emerald-600';
+  if (value >= 60) return 'text-[rgba(47,125,85,0.90)]';
   if (value >= 35) return 'text-amber-600';
   return 'text-[rgba(6,3,43,0.62)]';
 }
 
 function barCls(value: number, max: number = 100): string {
   const pct = max > 0 ? value / max : 0;
-  if (pct >= 0.6) return 'bg-emerald-500';
-  if (pct >= 0.35) return 'bg-amber-400';
-  return 'bg-red-400';
+  if (pct >= 0.6) return 'bg-[rgba(47,125,85,0.08)]0';
+  if (pct >= 0.35) return 'bg-[#D99A2B]';
+  return 'bg-[#9E3B2F]';
 }
 
 function barW(value: number, max: number = 100): string {
@@ -131,9 +131,9 @@ function barW(value: number, max: number = 100): string {
 
 const PILLAR_CONFIG: Record<string, { label: string; color: string; barColor: string }> = {
   LIFE:       { label: 'LIFE',       color: 'text-blue-700',   barColor: 'bg-blue-500' },
-  GROWTH:     { label: 'GROWTH',     color: 'text-emerald-700', barColor: 'bg-emerald-500' },
+  GROWTH:     { label: 'GROWTH',     color: 'text-[#2F7D55]', barColor: 'bg-[rgba(47,125,85,0.08)]0' },
   CONNECTION: { label: 'CONNECTION', color: 'text-purple-700', barColor: 'bg-purple-500' },
-  IMPACT:     { label: 'IMPACT',     color: 'text-orange-700', barColor: 'bg-orange-500' },
+  IMPACT:     { label: 'IMPACT',     color: 'text-[#8A5A00]', barColor: 'bg-[rgba(217,154,43,0.08)]0' },
   LEGACY:     { label: 'LEGACY',     color: 'text-[rgba(6,3,43,0.62)]',  barColor: 'bg-[rgba(6,3,43,0.35)]' },
 };
 
@@ -165,9 +165,9 @@ function isCareEconomyRow(row: RawUploadedRecord): boolean {
 
 function eligibilityStatusConfig(status: EligibilityStatus | 'mixed'): { label: string; cls: string; dot: string } {
   switch (status) {
-    case 'eligible':        return { label: 'Eligible',        cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' };
-    case 'limited':         return { label: 'Limited',         cls: 'bg-amber-100 text-amber-700 border-amber-200',       dot: 'bg-amber-400'   };
-    case 'blocked':         return { label: 'Blocked',         cls: 'bg-red-100 text-red-700 border-red-200',             dot: 'bg-red-500'     };
+    case 'eligible':        return { label: 'Eligible',        cls: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]', dot: 'bg-[rgba(47,125,85,0.08)]0' };
+    case 'limited':         return { label: 'Limited',         cls: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',       dot: 'bg-[#D99A2B]'   };
+    case 'blocked':         return { label: 'Blocked',         cls: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',             dot: 'bg-[rgba(158,59,47,0.06)]0'     };
     case 'review_required': return { label: 'Review Required', cls: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',       dot: 'bg-[rgba(6,3,43,0.35)]'   };
     case 'mixed':           return { label: 'Mixed — Review',  cls: 'bg-purple-100 text-purple-700 border-purple-200',    dot: 'bg-purple-400'  };
   }
@@ -187,8 +187,8 @@ function btiTreatmentLabel(t: BTITreatment | 'mixed'): string {
 
 function btiTreatmentCls(t: BTITreatment | 'mixed'): string {
   if (t === 'mixed') return 'bg-purple-50 text-purple-700 border-purple-200';
-  if (t === 'full_weight' || t === 'confidence_weighted') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-  if (t === 'tracked_only') return 'bg-amber-50 text-amber-700 border-amber-200';
+  if (t === 'full_weight' || t === 'confidence_weighted') return 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]';
+  if (t === 'tracked_only') return 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]';
   if (t === 'not_applicable') return 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]';
   return 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]';
 }
@@ -205,10 +205,10 @@ function evidenceLevelLabel(level: BudgetEvidenceLevel): string {
 }
 
 function evidenceLevelCls(level: BudgetEvidenceLevel): string {
-  if (level === 'L4_VERIFIED_EVIDENCE' || level === 'L3_THIRD_PARTY_DOCUMENT') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (level === 'L4_VERIFIED_EVIDENCE' || level === 'L3_THIRD_PARTY_DOCUMENT') return 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]';
   if (level === 'L2_INTERNAL_DOCUMENT') return 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]';
-  if (level === 'L1_SELF_DECLARED') return 'bg-amber-50 text-amber-700 border-amber-200';
-  return 'bg-red-50 text-red-600 border-red-200';
+  if (level === 'L1_SELF_DECLARED') return 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]';
+  return 'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]';
 }
 
 // ── Sprint 15B: Initiative-level grouping ────────────────────────────────────
@@ -748,7 +748,7 @@ export default function UploadPage() {
               </div>
 
               {status === 'error' && parseError && (
-                <div className="flex items-start gap-3 p-3.5 rounded-lg border border-red-200 bg-red-50 text-sm text-red-800">
+                <div className="flex items-start gap-3 p-3.5 rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-sm text-red-800">
                   <svg className="w-4 h-4 text-red-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
@@ -758,15 +758,15 @@ export default function UploadPage() {
             </div>
           ) : status === 'parsing' ? (
             <div className="p-12 flex flex-col items-center gap-4">
-              <div className="w-8 h-8 border-2 border-[rgba(6,3,43,0.14)] border-t-indigo-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[rgba(6,3,43,0.14)] border-t-[#C76F3D] rounded-full animate-spin" />
               <p className="text-sm text-[rgba(6,3,43,0.52)]">Analisi del file in corso…</p>
             </div>
           ) : parseResult && (
             <div className="p-6 space-y-4">
               {/* File info bar */}
-              <div className="flex items-center gap-3 p-4 rounded-lg border border-emerald-200 bg-emerald-50">
-                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
-                  <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <div className="flex items-center gap-3 p-4 rounded-lg border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)]">
+                <div className="w-10 h-10 rounded-lg bg-[rgba(47,125,85,0.10)] flex items-center justify-center shrink-0">
+                  <svg className="w-5 h-5 text-[rgba(47,125,85,0.90)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -789,7 +789,7 @@ export default function UploadPage() {
 
               {/* Multi-sheet notice */}
               {parseResult.availableSheets && parseResult.availableSheets.length > 1 && (
-                <div className="flex items-start gap-2.5 p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800">
+                <div className="flex items-start gap-2.5 p-3 rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-xs text-[#8A5A00]">
                   <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                   </svg>
@@ -804,7 +804,7 @@ export default function UploadPage() {
               {parseResult.parsingWarnings.length > 0 && (
                 <div className="space-y-2">
                   {parseResult.parsingWarnings.map((w, i) => (
-                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800">
+                    <div key={i} className="flex items-start gap-2.5 p-3 rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-xs text-[#8A5A00]">
                       <svg className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
                       </svg>
@@ -822,8 +822,8 @@ export default function UploadPage() {
                       key={i}
                       className={`flex items-start gap-2.5 p-3 rounded-lg border text-xs ${
                         issue.severity === 'error'
-                          ? 'border-red-200 bg-red-50 text-red-800'
-                          : 'border-amber-200 bg-amber-50 text-amber-800'
+                          ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-red-800'
+                          : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]'
                       }`}
                     >
                       <svg className="w-3.5 h-3.5 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -838,7 +838,7 @@ export default function UploadPage() {
               {/* Quick stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: 'Colonne mappate', value: mappedCount, total: parseResult.columnCount, cls: 'text-emerald-600' },
+                  { label: 'Colonne mappate', value: mappedCount, total: parseResult.columnCount, cls: 'text-[rgba(47,125,85,0.90)]' },
                   { label: 'Richiedono revisione', value: reviewCount, total: null, cls: reviewCount > 0 ? 'text-amber-600' : 'text-[rgba(6,3,43,0.40)]' },
                   { label: 'Non mappate', value: unmappedCount, total: null, cls: unmappedCount > 0 ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]' },
                   { label: 'Colonne sensibili', value: sensitiveFlags.length, total: null, cls: sensitiveFlags.length > 0 ? 'text-red-600' : 'text-[rgba(6,3,43,0.40)]' },
@@ -918,7 +918,7 @@ export default function UploadPage() {
               ].map((item) => (
                 <div key={item.label} className={cn(
                   'rounded-lg border p-3',
-                  item.ok ? 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]' : 'border-amber-200 bg-amber-50',
+                  item.ok ? 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
                 )}>
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{item.label}</p>
                   <p className={cn('text-sm font-bold mt-0.5 font-mono', item.ok ? 'text-[rgba(6,3,43,0.90)]' : 'text-amber-700')}>
@@ -1015,7 +1015,7 @@ export default function UploadPage() {
                           key={h}
                           className={`px-3 py-2.5 text-left font-medium whitespace-nowrap ${
                             sensitiveColNames.has(h)
-                              ? 'bg-red-50 text-red-700'
+                              ? 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
                               : 'text-[rgba(6,3,43,0.62)]'
                           }`}
                         >
@@ -1039,7 +1039,7 @@ export default function UploadPage() {
                             key={h}
                             className={`px-3 py-2 whitespace-nowrap max-w-[180px] truncate ${
                               sensitiveColNames.has(h)
-                                ? 'bg-red-50/60 text-red-700'
+                                ? 'bg-[rgba(158,59,47,0.06)]/60 text-[#9E3B2F]'
                                 : 'text-[rgba(6,3,43,0.62)]'
                             }`}
                           >
@@ -1130,9 +1130,9 @@ export default function UploadPage() {
 
             {/* ── Section 6: Sensitive columns ─────────────────────────────── */}
             {sensitiveFlags.length > 0 && (
-              <div className="rounded-xl border-2 border-red-200 bg-red-50 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 border-b border-red-200 flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+              <div className="rounded-xl border-2 border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-[rgba(158,59,47,0.22)] flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[rgba(158,59,47,0.10)] flex items-center justify-center shrink-0">
                     <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                     </svg>
@@ -1159,7 +1159,7 @@ export default function UploadPage() {
                     </p>
                     <div className="space-y-2">
                       {sensitiveFlags.filter((f) => f.recommendedAction === 'pseudonymize').map((flag) => (
-                        <div key={flag.columnName} className="rounded-lg border border-amber-200 bg-[#F8F6F1] p-3">
+                        <div key={flag.columnName} className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[#F8F6F1] p-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="space-y-0.5 flex-1">
                               <div className="flex items-center gap-2">
@@ -1187,7 +1187,7 @@ export default function UploadPage() {
                     </p>
                     <div className="space-y-2">
                       {sensitiveFlags.filter((f) => f.excludedByDefault).map((flag) => (
-                        <div key={flag.columnName} className="rounded-lg border border-red-300 bg-[#F8F6F1] p-3">
+                        <div key={flag.columnName} className="rounded-lg border border-[rgba(158,59,47,0.25)] bg-[#F8F6F1] p-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="space-y-0.5 flex-1">
                               <div className="flex items-center gap-2">
@@ -1195,18 +1195,18 @@ export default function UploadPage() {
                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityBadgeCls(flag.severity)}`}>
                                   Alto rischio
                                 </span>
-                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 border border-red-200">
+                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border border-[rgba(158,59,47,0.22)]">
                                   Escludi
                                 </span>
                               </div>
                               <p className="text-xs text-[rgba(6,3,43,0.52)]">{flag.reason}</p>
                             </div>
-                            <span className="text-xs text-red-700 shrink-0 font-medium">Rimuovi dal file</span>
+                            <span className="text-xs text-[#9E3B2F] shrink-0 font-medium">Rimuovi dal file</span>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-3 p-3.5 rounded-lg border border-red-200 bg-red-100/60 text-xs text-red-800">
+                    <div className="mt-3 p-3.5 rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.10)]/60 text-xs text-red-800">
                       <strong>Azione richiesta:</strong> Rimuovi le colonne ad alto rischio dal file originale
                       e ricarica. KORA misura le organizzazioni, non gli individui — nessun dato
                       identificativo ad alto rischio deve entrare nella pipeline.
@@ -1229,9 +1229,9 @@ export default function UploadPage() {
                 </div>
                 <span className={`px-3 py-1 rounded-full text-sm font-semibold border ${
                   criticalMapped === 3
-                    ? 'border-emerald-300 bg-emerald-100 text-emerald-700'
+                    ? 'border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.10)] text-[#2F7D55]'
                     : criticalMapped >= 1
-                    ? 'border-amber-300 bg-amber-100 text-amber-700'
+                    ? 'border-amber-300 bg-[rgba(217,154,43,0.12)] text-amber-700'
                     : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
                 }`}>
                   {btiStatus.label}
@@ -1258,10 +1258,10 @@ export default function UploadPage() {
                   {CRITICAL_BTI_FIELDS.map((field) => {
                     const found = mappedTargetFields.has(field);
                     return (
-                      <div key={field} className={`flex items-center gap-3 p-3 rounded-lg border ${found ? 'border-emerald-200 bg-emerald-50' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${found ? 'bg-emerald-100' : 'bg-[rgba(6,3,43,0.05)]'}`}>
+                      <div key={field} className={`flex items-center gap-3 p-3 rounded-lg border ${found ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)]' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${found ? 'bg-[rgba(47,125,85,0.10)]' : 'bg-[rgba(6,3,43,0.05)]'}`}>
                           {found ? (
-                            <svg className="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <svg className="w-3 h-3 text-[rgba(47,125,85,0.90)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                           ) : (
@@ -1271,7 +1271,7 @@ export default function UploadPage() {
                           )}
                         </div>
                         <div className="flex-1">
-                          <span className={`text-xs font-medium ${found ? 'text-emerald-700' : 'text-[rgba(6,3,43,0.52)]'}`}>
+                          <span className={`text-xs font-medium ${found ? 'text-[#2F7D55]' : 'text-[rgba(6,3,43,0.52)]'}`}>
                             {CRITICAL_BTI_LABELS[field]}
                           </span>
                           {!found && (
@@ -1304,7 +1304,7 @@ export default function UploadPage() {
                     Elaborazione locale nel browser · nessun dato salvato · output azienda aggregato
                   </p>
                   {koraStatus === 'done' && koraResult && (
-                    <p className="text-xs text-emerald-600 font-medium">
+                    <p className="text-xs text-[rgba(47,125,85,0.90)] font-medium">
                       Preview completata · {koraResult.bti.totalBudget > 0 ? `${parseResult.rowCount} record elaborati` : `${parseResult.rowCount} record — nessun importo budget rilevato`}
                     </p>
                   )}
@@ -1533,7 +1533,7 @@ function WorkflowStepper({
     done:    'bg-[#06032B] text-white',
     active:  'bg-[#C76F3D] text-white animate-pulse',
     pending: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)]',
-    blocked: 'bg-red-100 text-red-600 border border-red-200',
+    blocked: 'bg-[rgba(158,59,47,0.10)] text-red-600 border border-[rgba(158,59,47,0.22)]',
   };
   const TEXT: Record<StepState, string> = {
     done:    'text-[#06032B] font-semibold',
@@ -1575,7 +1575,7 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
           <ul className="space-y-1">
             {template.requiredColumns.map((col) => (
               <li key={col} className="flex items-center gap-2 text-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[rgba(47,125,85,0.08)]0 shrink-0" />
                 <span className="font-mono text-[rgba(6,3,43,0.78)]">{col}</span>
               </li>
             ))}
@@ -1651,8 +1651,8 @@ function KoraPreviewSection({ result }: { result: KoraComputationResult }) {
       </div>
 
       {isInsufficient ? (
-        <div className="rounded-xl border-2 border-amber-200 bg-amber-50 p-6 text-center space-y-2">
-          <p className="text-lg font-semibold text-amber-800">Dataset insufficiente</p>
+        <div className="rounded-xl border-2 border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-6 text-center space-y-2">
+          <p className="text-lg font-semibold text-[#8A5A00]">Dataset insufficiente</p>
           <p className="text-sm text-amber-700">
             I dati caricati non sono sufficienti per calcolare il KORA Index.
             Assicurarsi che il file contenga iniziative aziendali con nome, categoria e possibilmente importo.
@@ -1713,7 +1713,7 @@ function KoraSummaryCards({ result }: { result: KoraComputationResult }) {
       value: formatPct(result.activation.activationReach),
       unit: '',
       sublabel: `${result.activation.activeWorkers} lavoratori attivi`,
-      cls: result.activation.activationReach >= 0.40 ? 'text-emerald-600' : result.activation.activationReach >= 0.20 ? 'text-amber-600' : 'text-red-600',
+      cls: result.activation.activationReach >= 0.40 ? 'text-[rgba(47,125,85,0.90)]' : result.activation.activationReach >= 0.20 ? 'text-amber-600' : 'text-red-600',
       note: 'AR · soglia CLEAR ≥ 40%',
     },
     {
@@ -1721,7 +1721,7 @@ function KoraSummaryCards({ result }: { result: KoraComputationResult }) {
       value: formatPct(result.activation.meaningfulActivationReach),
       unit: '',
       sublabel: `${result.activation.meaningfullyActiveWorkers} lavoratori`,
-      cls: result.activation.meaningfulActivationReach >= 0.30 ? 'text-emerald-600' : result.activation.meaningfulActivationReach >= 0.15 ? 'text-amber-600' : 'text-red-600',
+      cls: result.activation.meaningfulActivationReach >= 0.30 ? 'text-[rgba(47,125,85,0.90)]' : result.activation.meaningfulActivationReach >= 0.15 ? 'text-amber-600' : 'text-red-600',
       note: 'MAR · soglia CLEAR ≥ 30%',
     },
     {
@@ -1769,22 +1769,22 @@ function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
       label: 'Eligible',
       count: es.eligibleCount,
       desc: 'Può contribuire al KORA Index se l\'evidenza lo supporta',
-      cls: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      barCls: 'bg-emerald-500',
+      cls: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+      barCls: 'bg-[rgba(47,125,85,0.08)]0',
     },
     {
       label: 'Limited',
       count: es.limitedCount,
       desc: 'Sollievo economico — tracciato in BTI, 0 Impact Unit',
-      cls: 'bg-amber-100 text-amber-700 border-amber-200',
-      barCls: 'bg-amber-400',
+      cls: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+      barCls: 'bg-[#D99A2B]',
     },
     {
       label: 'Blocked',
       count: es.blockedCount,
       desc: 'Baseline normativa obbligatoria — escluso per design',
-      cls: 'bg-red-100 text-red-700 border-red-200',
-      barCls: 'bg-red-400',
+      cls: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+      barCls: 'bg-[#9E3B2F]',
     },
     {
       label: 'Review Required',
@@ -1816,7 +1816,7 @@ function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
         ))}
       </div>
       {es.reviewRequiredCount > es.totalCount * 0.25 && (
-        <div className="px-6 py-3 border-t border-[rgba(6,3,43,0.05)] bg-amber-50 text-xs text-amber-700">
+        <div className="px-6 py-3 border-t border-[rgba(6,3,43,0.05)] bg-[rgba(217,154,43,0.08)] text-xs text-amber-700">
           <strong>{Math.round((es.reviewRequiredCount / es.totalCount) * 100)}% di record in review_required</strong> — la classificazione è incompleta.
           Il KORA Index sottostima il potenziale reale fino alla revisione umana.
         </div>
@@ -1887,9 +1887,9 @@ function KoraBTIPanel({ result }: { result: KoraComputationResult }) {
       <div className="p-4 space-y-4">
         <div className="space-y-2">
           {rows.map((row) => (
-            <div key={row.label} className={`flex items-center justify-between py-2 px-3 rounded-lg text-sm ${row.highlight ? 'bg-amber-50 border border-amber-200' : 'bg-[rgba(6,3,43,0.03)]'}`}>
+            <div key={row.label} className={`flex items-center justify-between py-2 px-3 rounded-lg text-sm ${row.highlight ? 'bg-[rgba(217,154,43,0.08)] border border-[rgba(217,154,43,0.25)]' : 'bg-[rgba(6,3,43,0.03)]'}`}>
               <div>
-                <span className={`font-medium ${row.highlight ? 'text-amber-800' : 'text-[rgba(6,3,43,0.78)]'}`}>{row.label}</span>
+                <span className={`font-medium ${row.highlight ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.78)]'}`}>{row.label}</span>
                 {row.note && <span className="text-xs text-[rgba(6,3,43,0.40)] ml-2">{row.note}</span>}
               </div>
               <span className={`font-mono text-sm ${row.highlight && row.label === 'Activation Debt' && bti.activationDebt > 0 ? 'text-amber-700 font-semibold' : 'text-[rgba(6,3,43,0.62)]'}`}>
@@ -2098,7 +2098,7 @@ function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
             <ul className="space-y-1.5">
               {allWarnings.map((w, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs text-[rgba(6,3,43,0.62)]">
-                  <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 mt-1.5" />
+                  <span className="w-1 h-1 rounded-full bg-[#D99A2B] shrink-0 mt-1.5" />
                   {w}
                 </li>
               ))}
@@ -2221,8 +2221,8 @@ function EligibilityReviewSection({
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {[
-              { label: 'Iniziative in review',  value: counts.review_required + counts.mixed, dotCls: 'bg-amber-400', valCls: 'text-amber-700', sub: 'Classificazione mista o incompleta' },
-              { label: 'Budget mancante',        value: counts.missingBudget,                  dotCls: 'bg-red-400',   valCls: 'text-red-600',   sub: 'Fonte budget assente o L0' },
+              { label: 'Iniziative in review',  value: counts.review_required + counts.mixed, dotCls: 'bg-[#D99A2B]', valCls: 'text-amber-700', sub: 'Classificazione mista o incompleta' },
+              { label: 'Budget mancante',        value: counts.missingBudget,                  dotCls: 'bg-[#9E3B2F]',   valCls: 'text-red-600',   sub: 'Fonte budget assente o L0' },
               { label: 'Escluse per design',     value: counts.blocked,                        dotCls: 'bg-[rgba(6,3,43,0.18)]', valCls: 'text-[rgba(6,3,43,0.52)]', sub: 'Compliance obbligatoria baseline' },
               { label: 'Evidenza debole (L0/L1)',value: counts.l0l1,                           dotCls: 'bg-amber-300', valCls: 'text-amber-600', sub: 'Qualità evidenza budget bassa' },
               { label: 'Campi identità',         value: identityColCount,                      dotCls: 'bg-blue-300',  valCls: 'text-blue-600',  sub: "Record con campi identità — esclusi dall'output" },
@@ -2419,7 +2419,7 @@ function EligibilityReviewSection({
                       {/* Review */}
                       <td className="px-3 py-2.5">
                         {grp.reviewRequired ? (
-                          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                          <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]">
                             Sì
                           </span>
                         ) : (
@@ -2445,7 +2445,7 @@ function EligibilityReviewSection({
           </div>
           {/* Status legend */}
           <div className="px-4 py-3 bg-[rgba(6,3,43,0.03)] border-t border-[rgba(6,3,43,0.08)] flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[rgba(6,3,43,0.52)]">
-            <span><strong className="text-emerald-700">Eligible</strong> — può contribuire se evidenza e attivazione sono sufficienti</span>
+            <span><strong className="text-[#2F7D55]">Eligible</strong> — può contribuire se evidenza e attivazione sono sufficienti</span>
             <span><strong className="text-amber-700">Limited</strong> — sollievo economico / bassa profondità di attivazione</span>
             <span><strong className="text-red-600">Blocked</strong> — baseline legale/compliance, 0 impatto per design</span>
             <span><strong className="text-[rgba(6,3,43,0.62)]">Review Required</strong> — revisione umana/advisor necessaria</span>
@@ -2651,7 +2651,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
             </h1>
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[10px] font-mono text-[rgba(6,3,43,0.52)] border border-[rgba(6,3,43,0.08)] rounded px-2 py-0.5 bg-[rgba(6,3,43,0.03)] max-w-xs truncate">{fileName}</span>
-              <span className="text-[10px] font-semibold text-amber-700 border border-amber-200 bg-amber-50 rounded px-2 py-0.5">{CALIB}</span>
+              <span className="text-[10px] font-semibold text-amber-700 border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-0.5">{CALIB}</span>
               <span className="text-[10px] text-[rgba(6,3,43,0.52)] border border-[rgba(6,3,43,0.08)] rounded px-2 py-0.5">production_ready: false</span>
               <span className="text-[10px] text-[rgba(6,3,43,0.52)] border border-[rgba(6,3,43,0.08)] rounded px-2 py-0.5">Uploaded dataset preview</span>
             </div>
@@ -2722,7 +2722,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <BpSectionTitle n="01" title="Executive Summary" sub={`Dataset: ${fileName} · ${totalRecords} record · ${groups.length} iniziative`} />
 
           {isInsufficient ? (
-            <div className="border border-amber-200 bg-amber-50 rounded p-4 text-[12px] text-amber-800">
+            <div className="border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded p-4 text-[12px] text-[#8A5A00]">
               <p className="font-bold mb-1">Dataset insufficiente — KORA Index non calcolabile</p>
               <p>I dati caricati non contengono iniziative sufficienti per il calcolo del KORA Index. Assicurarsi che il file includa nome iniziativa, categoria e almeno un importo budget.</p>
             </div>
@@ -2739,8 +2739,8 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                   <p className="text-[28px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{confidence.score}<span className="text-[12px] font-normal text-[rgba(6,3,43,0.40)]">/100</span></p>
                   <p className="text-[10px] text-[rgba(6,3,43,0.62)]">Esterno · peso 0</p>
                 </div>
-                <div className={`border-t-2 pt-3 space-y-1 ${activation.safeguardStatus === 'CLEAR' ? 'border-emerald-400' : activation.safeguardStatus === 'FLAGGED' ? 'border-red-400' : 'border-amber-400'}`}>
-                  <p className={`text-[9px] uppercase tracking-wider font-semibold ${activation.safeguardStatus === 'CLEAR' ? 'text-emerald-600' : activation.safeguardStatus === 'FLAGGED' ? 'text-red-600' : 'text-amber-600'}`}>Safeguard</p>
+                <div className={`border-t-2 pt-3 space-y-1 ${activation.safeguardStatus === 'CLEAR' ? 'border-[#2F7D55]' : activation.safeguardStatus === 'FLAGGED' ? 'border-[#9E3B2F]' : 'border-[#D99A2B]'}`}>
+                  <p className={`text-[9px] uppercase tracking-wider font-semibold ${activation.safeguardStatus === 'CLEAR' ? 'text-[rgba(47,125,85,0.90)]' : activation.safeguardStatus === 'FLAGGED' ? 'text-red-600' : 'text-amber-600'}`}>Safeguard</p>
                   <p className={`text-[24px] font-bold leading-none ${sg.text}`}>{activation.safeguardStatus}</p>
                   <p className="text-[10px] text-[rgba(6,3,43,0.62)]">AR {formatPct(activation.activationReach)} · MAR {formatPct(activation.meaningfulActivationReach)}</p>
                 </div>
@@ -2764,7 +2764,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                 <div>
                   <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2 border-b border-[rgba(6,3,43,0.08)] pb-1">Eligibility Gate</p>
                   <ul className="space-y-1.5 text-[11px] text-[rgba(6,3,43,0.78)]">
-                    <li className="flex justify-between"><span>Eligible</span><span className="font-mono font-bold text-emerald-700">{eligibilitySummary.eligibleCount}</span></li>
+                    <li className="flex justify-between"><span>Eligible</span><span className="font-mono font-bold text-[#2F7D55]">{eligibilitySummary.eligibleCount}</span></li>
                     <li className="flex justify-between"><span>Limited (0 IU)</span><span className="font-mono font-bold text-amber-600">{eligibilitySummary.limitedCount}</span></li>
                     <li className="flex justify-between"><span>Blocked</span><span className="font-mono font-bold text-[rgba(6,3,43,0.40)]">{eligibilitySummary.blockedCount}</span></li>
                     <li className="flex justify-between"><span>Review Required</span><span className="font-mono font-bold text-[rgba(6,3,43,0.62)]">{eligibilitySummary.reviewRequiredCount}</span></li>
@@ -2844,7 +2844,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
               <div key={s.label} className="flex items-center gap-4">
                 <span className="w-36 text-[10px] text-[rgba(6,3,43,0.62)] shrink-0">{s.label}</span>
                 <div className="flex-1 h-1.5 bg-[rgba(6,3,43,0.05)] rounded-full">
-                  <div className={`h-1.5 rounded-full ${s.pct >= 60 ? 'bg-[rgba(6,3,43,0.65)]' : s.pct >= 35 ? 'bg-amber-400' : 'bg-red-400'}`} style={{ width: `${s.pct}%` }} />
+                  <div className={`h-1.5 rounded-full ${s.pct >= 60 ? 'bg-[rgba(6,3,43,0.65)]' : s.pct >= 35 ? 'bg-[#D99A2B]' : 'bg-[#9E3B2F]'}`} style={{ width: `${s.pct}%` }} />
                 </div>
                 <span className="w-10 text-right text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{s.pct}%</span>
               </div>
@@ -2915,7 +2915,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                         grp.primaryEligibility === 'eligible' ? 'bg-[#06032B] text-white' :
                         grp.primaryEligibility === 'limited' ? 'bg-[rgba(6,3,43,0.12)] text-[rgba(6,3,43,0.78)]' :
                         grp.primaryEligibility === 'blocked' ? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)]' :
-                        'bg-amber-100 text-amber-700'
+                        'bg-[rgba(217,154,43,0.12)] text-amber-700'
                       }`}>{grp.primaryEligibility}</span>
                     </td>
                     <td className="py-1.5 pr-2 align-top text-[10px] font-semibold text-[rgba(6,3,43,0.62)]">{grp.primaryPillar ?? '—'}</td>
@@ -2993,7 +2993,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="flex items-center gap-4 mb-2 bp-avoid-break">
             <div className="flex-1 h-3 bg-[rgba(6,3,43,0.05)] rounded-full">
               <div
-                className={`h-3 rounded-full ${bti.budgetEvidenceQuality >= 0.6 ? 'bg-[#06032B]' : bti.budgetEvidenceQuality >= 0.35 ? 'bg-amber-400' : 'bg-red-400'}`}
+                className={`h-3 rounded-full ${bti.budgetEvidenceQuality >= 0.6 ? 'bg-[#06032B]' : bti.budgetEvidenceQuality >= 0.35 ? 'bg-[#D99A2B]' : 'bg-[#9E3B2F]'}`}
                 style={{ width: `${Math.round(bti.budgetEvidenceQuality * 100)}%` }}
               />
             </div>
@@ -3037,7 +3037,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
               <p className="text-[28px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{activation.neverActivatedWorkers}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)]">potenziale non convertito</p>
             </div>
-            <div className={`border-t-2 pt-3 space-y-0.5 ${activation.safeguardStatus === 'CLEAR' ? 'border-emerald-400' : activation.safeguardStatus === 'FLAGGED' ? 'border-red-400' : 'border-amber-400'}`}>
+            <div className={`border-t-2 pt-3 space-y-0.5 ${activation.safeguardStatus === 'CLEAR' ? 'border-[#2F7D55]' : activation.safeguardStatus === 'FLAGGED' ? 'border-[#9E3B2F]' : 'border-[#D99A2B]'}`}>
               <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Safeguard</p>
               <p className={`text-[22px] font-bold leading-none mt-1 ${sg.text}`}>{activation.safeguardStatus}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.52)]">D-21 threshold</p>
@@ -3057,7 +3057,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                 </div>
                 <div className="relative h-2 rounded-full bg-[rgba(6,3,43,0.05)]">
                   <div
-                    className={`h-2 rounded-full ${m.val >= m.threshold ? 'bg-emerald-500' : m.val >= m.threshold * 0.5 ? 'bg-amber-400' : 'bg-red-400'}`}
+                    className={`h-2 rounded-full ${m.val >= m.threshold ? 'bg-[rgba(47,125,85,0.08)]0' : m.val >= m.threshold * 0.5 ? 'bg-[#D99A2B]' : 'bg-[#9E3B2F]'}`}
                     style={{ width: `${Math.min(100, Math.round(m.val * 100))}%` }}
                   />
                   <div className="absolute top-0 bottom-0 w-px bg-[rgba(6,3,43,0.35)]" style={{ left: `${m.threshold * 100}%` }} />
@@ -3190,7 +3190,7 @@ function KoraExplainPanel({ trace }: { trace: ExplainabilityTraceItem[] }) {
               onClick={() => setOpen(open === item.id ? null : item.id)}
               className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[rgba(6,3,43,0.03)]/80 transition-colors"
             >
-              <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.warning ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+              <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.warning ? 'bg-[#D99A2B]' : 'bg-[#2F7D55]'}`} />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-[rgba(6,3,43,0.78)] truncate">{item.stage}</p>
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono truncate">{item.output}</p>
@@ -3198,9 +3198,9 @@ function KoraExplainPanel({ trace }: { trace: ExplainabilityTraceItem[] }) {
               <div className="flex items-center gap-2 shrink-0">
                 <span className={`text-[10px] px-1.5 py-0.5 rounded border font-mono ${
                   item.confidence >= 0.7
-                    ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
+                    ? 'bg-[rgba(47,125,85,0.08)] text-[rgba(47,125,85,0.90)] border-[rgba(47,125,85,0.22)]'
                     : item.confidence >= 0.4
-                    ? 'bg-amber-50 text-amber-600 border-amber-200'
+                    ? 'bg-[rgba(217,154,43,0.08)] text-amber-600 border-[rgba(217,154,43,0.25)]'
                     : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]'
                 }`}>
                   {Math.round(item.confidence * 100)}%
@@ -3226,7 +3226,7 @@ function KoraExplainPanel({ trace }: { trace: ExplainabilityTraceItem[] }) {
                     <span>{item.ruleApplied}</span>
                   </div>
                   {item.warning && (
-                    <div className="flex items-start gap-2 p-2 rounded border border-amber-200 bg-amber-50 text-amber-700">
+                    <div className="flex items-start gap-2 p-2 rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700">
                       <span className="shrink-0">⚠</span>
                       <span>{item.warning}</span>
                     </div>

@@ -14,15 +14,15 @@ interface Props {
 }
 
 const SAFEGUARD_COLORS: Record<string, string> = {
-  CLEAR:   'text-emerald-700 bg-emerald-50 border-emerald-200',
-  WARNING: 'text-amber-700 bg-amber-50 border-amber-200',
-  FLAGGED: 'text-rose-700 bg-rose-50 border-rose-200',
+  CLEAR:   'text-[#2F7D55] bg-[rgba(47,125,85,0.08)] border-[rgba(47,125,85,0.22)]',
+  WARNING: 'text-amber-700 bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)]',
+  FLAGGED: 'text-[#9E3B2F] bg-[rgba(158,59,47,0.06)] border-[rgba(158,59,47,0.20)]',
 };
 
 const MB_ACCENT: Record<string, string> = {
   REACH:  'text-blue-700',
   QUALITY:'text-violet-700',
-  EQUITY: 'text-teal-700',
+  EQUITY: 'text-[rgba(6,3,43,0.62)]',
   BTI:    'text-amber-700',
 };
 
@@ -68,7 +68,7 @@ export function DecisionPackHero({
               <span className="text-4xl font-bold text-[#06032B]">{output.kora_index_value}</span>
               <span className="text-sm text-[rgba(6,3,43,0.40)] mb-1">/100</span>
               {activeScenario === 'S2' && indexDelta && (
-                <span className={`text-sm font-bold mb-1 ${indexDelta.positive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                <span className={`text-sm font-bold mb-1 ${indexDelta.positive ? 'text-[rgba(47,125,85,0.90)]' : 'text-[rgba(158,59,47,0.90)]'}`}>
                   {indexDelta.positive ? '+' : ''}{indexDelta.value}
                 </span>
               )}
@@ -105,7 +105,7 @@ export function DecisionPackHero({
           {/* Calibration */}
           <div className="space-y-1">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Calibrazione</p>
-            <span className="inline-block text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 rounded px-2 py-1">
+            <span className="inline-block text-[11px] font-semibold bg-[rgba(217,154,43,0.08)] text-amber-700 border border-[rgba(217,154,43,0.25)] rounded px-2 py-1">
               Pre-Empirical Calibration
             </span>
             <p className="text-[10px] font-mono text-[rgba(6,3,43,0.40)]">{output.methodology_version_id}</p>
@@ -168,7 +168,7 @@ export function DecisionPackHero({
                     </td>
                     <td className="py-3 text-right">
                       {delta !== null ? (
-                        <span className={`font-mono text-xs font-bold ${delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-rose-600' : 'text-[rgba(6,3,43,0.40)]'}`}>
+                        <span className={`font-mono text-xs font-bold ${delta > 0 ? 'text-[rgba(47,125,85,0.90)]' : delta < 0 ? 'text-[rgba(158,59,47,0.90)]' : 'text-[rgba(6,3,43,0.40)]'}`}>
                           {delta > 0 ? '+' : ''}{delta}
                         </span>
                       ) : <span className="text-[rgba(6,3,43,0.28)]">—</span>}

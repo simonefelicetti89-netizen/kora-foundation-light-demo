@@ -186,7 +186,7 @@ export default function BoardPackPreview() {
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.14)] rounded px-2 py-0.5">{PERIOD}</span>
               <span className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.14)] rounded px-2 py-0.5">{SCENARIO}</span>
-              <span className="text-[11px] text-amber-700 border border-amber-200 bg-amber-50 rounded px-2 py-0.5">
+              <span className="text-[11px] text-amber-700 border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-0.5">
                 Bozza — revisione advisor richiesta
               </span>
             </div>
@@ -286,7 +286,7 @@ export default function BoardPackPreview() {
               <p className="text-[28px] font-bold text-[#06032B] leading-none">38<span className="text-[13px] font-normal text-[rgba(6,3,43,0.40)]">%</span></p>
               <p className="text-[10px] text-[rgba(6,3,43,0.62)]">{NEVER_ACTIVATED} lavoratori mai attivati su {TOTAL_WORKERS}</p>
             </div>
-            <div className="border-t-2 border-amber-400 pt-3 space-y-1">
+            <div className="border-t-2 border-[#D99A2B] pt-3 space-y-1">
               <p className="text-[9px] uppercase tracking-wider text-amber-600 font-semibold">Safeguard</p>
               <p className="text-[28px] font-bold text-amber-700 leading-none">WARN</p>
               <p className="text-[10px] text-amber-700">AR 38% (soglia CLEAR: 40%)</p>
@@ -486,15 +486,15 @@ export default function BoardPackPreview() {
                   { site: 'Sede Torino',          n: 35,  ar: 38, status: 'WARNING', flag: false },
                   { site: 'Remoto / distribuito', n: 25,  ar: 55, status: 'CLEAR', flag: false },
                 ].map((s) => (
-                  <tr key={s.site} className={`border-b border-[rgba(6,3,43,0.05)] ${s.flag ? 'bg-red-50/60' : ''}`}>
+                  <tr key={s.site} className={`border-b border-[rgba(6,3,43,0.05)] ${s.flag ? 'bg-[rgba(158,59,47,0.06)]/60' : ''}`}>
                     <td className={`py-2 pr-4 font-semibold ${s.flag ? 'text-red-800' : 'text-[rgba(6,3,43,0.90)]'}`}>{s.site}</td>
                     <td className="py-2 pr-4 text-right font-mono text-[rgba(6,3,43,0.62)]">{s.n}</td>
-                    <td className={`py-2 pr-4 text-right font-mono font-bold ${s.flag ? 'text-red-700' : s.ar >= 40 ? 'text-[rgba(6,3,43,0.90)]' : 'text-amber-700'}`}>{s.ar}%</td>
+                    <td className={`py-2 pr-4 text-right font-mono font-bold ${s.flag ? 'text-[#9E3B2F]' : s.ar >= 40 ? 'text-[rgba(6,3,43,0.90)]' : 'text-amber-700'}`}>{s.ar}%</td>
                     <td className="py-2">
                       <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
-                        s.flag ? 'border-red-200 bg-red-50 text-red-700' :
+                        s.flag ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]' :
                         s.status === 'CLEAR' ? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)]' :
-                        'border-amber-200 bg-amber-50 text-amber-700'
+                        'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700'
                       }`}>{s.status}</span>
                     </td>
                   </tr>

@@ -37,7 +37,7 @@ function ts(s: string) {
 }
 
 const STATUS_CLS: Record<string, string> = {
-  active:        'bg-green-50 text-green-700 border-green-200',
+  active:        'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   intake_ready:  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   not_ready:     'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
@@ -203,7 +203,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
 
             {/* Success */}
             {createStatus === 'created' && createResult?.ok && (
-              <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 space-y-1.5">
+              <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 px-4 py-3 space-y-1.5">
                 <p className="text-xs font-bold text-green-700">✓ Azienda creata</p>
                 <div className="text-[10px] text-green-600 space-y-0.5">
                   <p>Code: <strong className="font-mono">{createResult.tenantCode}</strong></p>
@@ -229,7 +229,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
 
             {/* Error */}
             {createStatus === 'error' && createResult && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-xs text-red-700">
+              <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">
                 ⚠ {createResult.error}
               </div>
             )}

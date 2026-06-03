@@ -15,15 +15,15 @@ function pct(val: number) {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  approved:           'bg-green-50 text-green-700 border-green-200',
+  approved:           'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   mostly_reviewed:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  partially_reviewed: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  under_review:       'bg-orange-50 text-orange-700 border-orange-200',
-  rejected:           'bg-red-50 text-red-700 border-red-200',
+  partially_reviewed: 'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  under_review:       'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  rejected:           'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
 };
 
 function completenessColor(val: number) {
-  return val >= 0.80 ? 'bg-green-500' : val >= 0.60 ? 'bg-yellow-400' : 'bg-red-400';
+  return val >= 0.80 ? 'bg-green-500' : val >= 0.60 ? 'bg-[#D99A2B]' : 'bg-[#9E3B2F]';
 }
 
 // ─── Static readiness data ─────────────────────────────────────────────────
@@ -48,12 +48,12 @@ const DATA_SOURCES: DataSourceRow[] = [
     name: 'Welfare provider',
     example: 'Mindwork, Jointly, Eudaimon',
     status: 'Attivo',
-    statusColor: 'bg-green-50 text-green-700 border-green-200',
+    statusColor: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
     owner: 'HR',
     format: 'CSV / API',
     pillars: 'LIFE · CONNECTION',
     sensitivity: 'Media',
-    sensitivityColor: 'text-yellow-600',
+    sensitivityColor: 'text-[#D99A2B]',
     mappingConfidence: '84%',
     mappingColor: 'text-green-600',
     nextAction: 'Verifica mapping Q2',
@@ -62,7 +62,7 @@ const DATA_SOURCES: DataSourceRow[] = [
     name: 'LMS / Piattaforma formazione',
     example: 'Docebo, Cornerstone, Moodle',
     status: 'Attivo',
-    statusColor: 'bg-green-50 text-green-700 border-green-200',
+    statusColor: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
     owner: 'L&D',
     format: 'CSV / SCORM',
     pillars: 'GROWTH · LEGACY',
@@ -76,7 +76,7 @@ const DATA_SOURCES: DataSourceRow[] = [
     name: 'Registro HR (anagrafica workforce)',
     example: 'SAP HCM, Zucchetti, ADP',
     status: 'Attivo',
-    statusColor: 'bg-green-50 text-green-700 border-green-200',
+    statusColor: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
     owner: 'HR',
     format: 'CSV',
     pillars: 'Base anagrafica (privacy layer)',
@@ -90,35 +90,35 @@ const DATA_SOURCES: DataSourceRow[] = [
     name: 'Presenze / Timbrature',
     example: 'Badge, Zucchetti Presenze',
     status: 'In valutazione',
-    statusColor: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+    statusColor: 'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
     owner: 'Operations',
     format: 'CSV',
     pillars: 'LIFE (in valutazione)',
     sensitivity: 'Media',
-    sensitivityColor: 'text-yellow-600',
+    sensitivityColor: 'text-[#D99A2B]',
     mappingConfidence: '62%',
-    mappingColor: 'text-yellow-600',
+    mappingColor: 'text-[#D99A2B]',
     nextAction: 'Definire perimetro eventi',
   },
   {
     name: 'Evidenze ESG / CSR',
     example: 'Report sostenibilità, iniziative territoriali',
     status: 'Parziale',
-    statusColor: 'bg-orange-50 text-orange-700 border-orange-200',
+    statusColor: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
     owner: 'Sustainability',
     format: 'PDF / Excel',
     pillars: 'IMPACT',
     sensitivity: 'Bassa',
     sensitivityColor: 'text-green-600',
     mappingConfidence: '71%',
-    mappingColor: 'text-yellow-600',
+    mappingColor: 'text-[#D99A2B]',
     nextAction: 'Integrazione manuale Q3',
   },
   {
     name: 'Evidenze partner (KORA network)',
     example: 'Event log partner KORA',
     status: 'Attivo',
-    statusColor: 'bg-green-50 text-green-700 border-green-200',
+    statusColor: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
     owner: 'KORA Admin',
     format: 'JSON / API',
     pillars: 'CONNECTION · IMPACT',
@@ -151,7 +151,7 @@ const DATA_SOURCES: DataSourceRow[] = [
     format: 'Dichiarazione worker',
     pillars: 'Worker-private — non employer-visible',
     sensitivity: 'Molto alta',
-    sensitivityColor: 'text-red-700',
+    sensitivityColor: 'text-[#9E3B2F]',
     mappingConfidence: 'N/A (privacy boundary)',
     mappingColor: 'text-[rgba(6,3,43,0.40)]',
     nextAction: 'Privacy boundary attiva',
@@ -189,11 +189,11 @@ const PIPELINE_SOURCES: PipelineSource[] = [
 ];
 
 const PILLAR_COLORS: Record<string, string> = {
-  LIFE:       'bg-emerald-100 text-emerald-700',
+  LIFE:       'bg-[rgba(47,125,85,0.10)] text-[#2F7D55]',
   GROWTH:     'bg-blue-100 text-blue-700',
   CONNECTION: 'bg-violet-100 text-violet-700',
-  IMPACT:     'bg-amber-100 text-amber-700',
-  LEGACY:     'bg-orange-100 text-orange-700',
+  IMPACT:     'bg-[rgba(217,154,43,0.12)] text-amber-700',
+  LEGACY:     'bg-[rgba(217,154,43,0.10)] text-[#8A5A00]',
   '—':        'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]',
 };
 
@@ -224,8 +224,8 @@ const NEXT_ACTIONS: NextAction[] = [
 ];
 
 const PRIORITY_STYLES: Record<string, string> = {
-  Alta:  'bg-red-50 text-red-700 border-red-200',
-  Media: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+  Alta:  'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+  Media: 'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
   Bassa: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
@@ -296,10 +296,10 @@ export default function DataEvidence() {
           Readiness Overview
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3">
-            <p className="text-xs text-yellow-700">Readiness Score</p>
-            <p className="text-3xl font-bold text-yellow-700 mt-1">76<span className="text-base font-normal">/100</span></p>
-            <p className="text-xs text-yellow-600 mt-0.5">Ready with caveats</p>
+          <div className="rounded-lg border border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.10)] p-3">
+            <p className="text-xs text-[#8A5A00]">Readiness Score</p>
+            <p className="text-3xl font-bold text-[#8A5A00] mt-1">76<span className="text-base font-normal">/100</span></p>
+            <p className="text-xs text-[#D99A2B] mt-0.5">Ready with caveats</p>
           </div>
           <SummaryCard
             label="Fonti dati attive"
@@ -382,14 +382,14 @@ export default function DataEvidence() {
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Dati Esclusi dal Pipeline KORA
         </h2>
-        <div className="rounded-lg border border-red-100 bg-red-50 p-4">
+        <div className="rounded-lg border border-red-100 bg-[rgba(158,59,47,0.06)] p-4">
           <p className="text-xs font-semibold text-red-800 mb-3">
             Le seguenti categorie di dati non entrano mai nel processo KORA — per architettura, non per configurazione.
           </p>
           <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
             {EXCLUDED_DATA.map((item) => (
-              <li key={item} className="flex items-start gap-2 text-xs text-red-700">
-                <span className="mt-0.5 shrink-0 text-red-400">✕</span>
+              <li key={item} className="flex items-start gap-2 text-xs text-[#9E3B2F]">
+                <span className="mt-0.5 shrink-0 text-[rgba(158,59,47,0.75)]">✕</span>
                 {item}
               </li>
             ))}
@@ -446,10 +446,10 @@ export default function DataEvidence() {
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] divide-y divide-[rgba(6,3,43,0.05)]">
           {GOVERNANCE_CHECKLIST.map((row) => (
             <div key={row.item} className="flex items-start gap-3 px-4 py-3">
-              <span className={cn('mt-0.5 shrink-0 text-sm font-bold', row.ok ? 'text-green-500' : 'text-orange-500')}>
+              <span className={cn('mt-0.5 shrink-0 text-sm font-bold', row.ok ? 'text-[#2F7D55]' : 'text-[#D99A2B]')}>
                 {row.ok ? '✓' : '○'}
               </span>
-              <p className={cn('text-xs', row.ok ? 'text-[rgba(6,3,43,0.78)]' : 'text-orange-700 font-medium')}>
+              <p className={cn('text-xs', row.ok ? 'text-[rgba(6,3,43,0.78)]' : 'text-[#8A5A00] font-medium')}>
                 {row.item}
               </p>
             </div>
@@ -482,17 +482,17 @@ export default function DataEvidence() {
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Verdetto Readiness
         </h2>
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+        <div className="rounded-lg border border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.10)] p-4">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-2xl font-bold text-yellow-700">76/100</span>
-            <span className="rounded border border-yellow-300 bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-700">
+            <span className="text-2xl font-bold text-[#8A5A00]">76/100</span>
+            <span className="rounded border border-yellow-300 bg-[rgba(217,154,43,0.12)] px-2 py-0.5 text-xs font-bold text-[#8A5A00]">
               Pilot Readiness: Ready with caveats
             </span>
           </div>
-          <p className="text-xs text-yellow-800 leading-relaxed mb-2">
+          <p className="text-xs text-[#7A5200] leading-relaxed mb-2">
             Fonti principali attive e mapping confidence sopra soglia. Due gap documentati: evidenze ESG/CSR parziali (integrazione manuale Q3), perimetro presenze da definire con Operations. Dati wallet/voucher esclusi (Gate 5 — non attivi in Foundation Light). Consenso worker My KORA da completare. Pilot avviabile con caveats documentati.
           </p>
-          <p className="text-xs text-yellow-600 italic font-medium">
+          <p className="text-xs text-[#D99A2B] italic font-medium">
             Valutazione demo. Non rappresenta assessment contrattuale. synthetic_demo_data: true — KORA Methodology v0.1 — pre_empirical_calibration.
           </p>
         </div>
@@ -550,25 +550,25 @@ export default function DataEvidence() {
             label="Completezza Complessiva"
             value={pct(completeness.overall_completeness_pct)}
             sub={`${completeness.total_mapped} / ${completeness.total_rows} record`}
-            color={completeness.overall_completeness_pct >= 0.75 ? 'text-green-600' : 'text-yellow-600'}
+            color={completeness.overall_completeness_pct >= 0.75 ? 'text-green-600' : 'text-[#D99A2B]'}
           />
           <SummaryCard
             label="Confidenza Mapping Batch"
             value={pct(mapping.average_confidence)}
             sub={`${mapping.high_confidence_sources} alta / ${mapping.low_confidence_sources} bassa`}
-            color={mapping.average_confidence >= 0.70 ? 'text-green-600' : 'text-yellow-600'}
+            color={mapping.average_confidence >= 0.70 ? 'text-green-600' : 'text-[#D99A2B]'}
           />
           <SummaryCard
             label="In Attesa di Revisione"
             value={String(pending.total_pending)}
             sub={`su ${pending.sources_with_pending} fonti`}
-            color={pending.total_pending > 50 ? 'text-orange-500' : 'text-[rgba(6,3,43,0.90)]'}
+            color={pending.total_pending > 50 ? 'text-[#D99A2B]' : 'text-[rgba(6,3,43,0.90)]'}
           />
           <SummaryCard
             label="Allegati Evidenza Medi"
             value={pct(evidence.average_evidence_pct)}
             sub={`${evidence.sources_above_50pct} fonti ≥ 50%`}
-            color={evidence.average_evidence_pct >= 0.50 ? 'text-green-600' : 'text-orange-500'}
+            color={evidence.average_evidence_pct >= 0.50 ? 'text-green-600' : 'text-[#D99A2B]'}
           />
         </div>
 
@@ -630,7 +630,7 @@ export default function DataEvidence() {
                           <span className={cn(
                             'text-xs font-mono',
                             batch.mapping_confidence_avg >= 0.70 ? 'text-green-600' :
-                            batch.mapping_confidence_avg >= 0.60 ? 'text-yellow-600' : 'text-red-500',
+                            batch.mapping_confidence_avg >= 0.60 ? 'text-[#D99A2B]' : 'text-red-500',
                           )}>
                             {pct(batch.mapping_confidence_avg)}
                           </span>
@@ -638,14 +638,14 @@ export default function DataEvidence() {
                         <td className="px-4 py-3">
                           <span className={cn(
                             'text-xs font-mono',
-                            batch.evidence_attached_pct >= 0.50 ? 'text-green-600' : 'text-orange-500',
+                            batch.evidence_attached_pct >= 0.50 ? 'text-green-600' : 'text-[#D99A2B]',
                           )}>
                             {pct(batch.evidence_attached_pct)}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
                           {batch.pending_review_count > 0 ? (
-                            <span className="text-xs font-semibold text-orange-500">
+                            <span className="text-xs font-semibold text-[#D99A2B]">
                               {batch.pending_review_count}
                             </span>
                           ) : (

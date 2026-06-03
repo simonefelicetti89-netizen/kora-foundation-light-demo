@@ -27,15 +27,15 @@ interface WorkspaceData {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const SAFEGUARD_CLS: Record<string, string> = {
-  CLEAR:   'bg-green-100 text-green-700 border-green-200',
-  WARNING: 'bg-amber-100 text-amber-700 border-amber-200',
-  FLAGGED: 'bg-red-100 text-red-700 border-red-200',
+  CLEAR:   'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
+  WARNING: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  FLAGGED: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
 };
 
 const DP_CLS: Record<string, string> = {
-  draft:    'bg-amber-50 text-amber-700 border-amber-200',
+  draft:    'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
   ready:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  exported: 'bg-green-50 text-green-700 border-green-200',
+  exported: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   archived: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
@@ -54,12 +54,12 @@ const PILOT_STATUS_LABEL: Record<string, string> = {
 const PILOT_STATUS_CLS: Record<string, string> = {
   not_started:            'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   batch_pending:          'bg-blue-50 text-blue-600 border-blue-200',
-  review_ready:           'bg-amber-50 text-amber-700 border-amber-200',
-  needs_enrichment:       'bg-orange-50 text-orange-700 border-orange-200',
+  review_ready:           'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  needs_enrichment:       'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
   ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
   scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
   decision_pack_draft:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  decision_pack_exported: 'bg-green-50 text-green-700 border-green-200',
+  decision_pack_exported: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   archived:               'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
@@ -86,7 +86,7 @@ function StepCard({ number, title, status, children, cta }: StepCardProps) {
   const statusDot = {
     complete: 'bg-green-500',
     active:   'bg-[#C76F3D] animate-pulse',
-    warning:  'bg-amber-400',
+    warning:  'bg-[#D99A2B]',
     pending:  'bg-[rgba(6,3,43,0.18)]',
   }[status];
 
@@ -201,7 +201,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
 
       {/* OP-001 synthetic warning */}
       {isOp001 && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-700 font-medium">
+        <div className="rounded-lg border border-amber-300 bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-xs text-amber-700 font-medium">
           OP-001 è un ambiente demo synthetic. Non usare per dati reali.
         </div>
       )}
@@ -222,7 +222,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
 
       {/* Error */}
       {workspace && !workspace.ok && !loading && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-700">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2.5 text-xs text-[#9E3B2F]">
           ⚠ {workspace.error ?? 'Errore caricamento workspace'}
         </div>
       )}
@@ -322,7 +322,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                     {w.uef.pendingReview > 0 && <span className="text-amber-600 mr-3">⏳ {w.uef.pendingReview} in attesa</span>}
                     {w.uef.rejected > 0 && <span className="text-red-600 mr-3">✕ {w.uef.rejected} rifiutati</span>}
                     {w.uef.needsInfo > 0 && <span className="text-purple-600 mr-3">? {w.uef.needsInfo} needs info</span>}
-                    {w.uef.needsEnrichment > 0 && <span className="text-orange-600 mr-3">⚠ {w.uef.needsEnrichment} enrichment incompleto</span>}
+                    {w.uef.needsEnrichment > 0 && <span className="text-[#D99A2B] mr-3">⚠ {w.uef.needsEnrichment} enrichment incompleto</span>}
                   </>
               }
             </StepCard>

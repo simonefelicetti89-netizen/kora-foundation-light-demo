@@ -83,9 +83,9 @@ const HERO_METRICS = [
 // ─── Style maps ───────────────────────────────────────────────────────────────
 
 const COVERAGE_STYLE: Record<CoverageStatus, string> = {
-  forte:    'bg-green-50 text-green-700 border-green-200',
-  media:    'bg-amber-50 text-amber-700 border-amber-200',
-  debole:   'bg-rose-50 text-rose-600 border-rose-200',
+  forte:    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  media:    'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  debole:   'bg-[rgba(158,59,47,0.06)] text-[rgba(158,59,47,0.90)] border-[rgba(158,59,47,0.20)]',
   scoperta: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
 
@@ -93,29 +93,29 @@ const PILLAR_CHIP: Record<string, string> = {
   LIFE:       'bg-green-100 text-green-700',
   GROWTH:     'bg-blue-100 text-blue-700',
   CONNECTION: 'bg-purple-100 text-purple-700',
-  IMPACT:     'bg-orange-100 text-orange-700',
-  LEGACY:     'bg-amber-100 text-amber-700',
+  IMPACT:     'bg-[rgba(217,154,43,0.10)] text-[#8A5A00]',
+  LEGACY:     'bg-[rgba(217,154,43,0.12)] text-amber-700',
 };
 
 const FIT_STYLE: Record<string, string> = {
-  alto:  'bg-green-50 text-green-700 border-green-200',
-  medio: 'bg-amber-50 text-amber-700 border-amber-200',
-  basso: 'bg-rose-50 text-rose-600 border-rose-200',
+  alto:  'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  medio: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  basso: 'bg-[rgba(158,59,47,0.06)] text-[rgba(158,59,47,0.90)] border-[rgba(158,59,47,0.20)]',
 };
 
 const PROTOCOL_BADGE: Record<string, string> = {
-  'Protocollo attivo':    'bg-green-50 text-green-700 border-green-200',
-  'Audit completato':     'bg-green-50 text-green-700 border-green-200',
-  'Audit richiesto':      'bg-amber-50 text-amber-700 border-amber-200',
-  'In corso':             'bg-amber-50 text-amber-700 border-amber-200',
+  'Protocollo attivo':    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  'Audit completato':     'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  'Audit richiesto':      'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  'In corso':             'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
   'Protocollo in review': 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  'Protocollo parziale':  'bg-yellow-50 text-yellow-700 border-yellow-200',
+  'Protocollo parziale':  'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
 };
 
 const SAFEGUARD_NODE_STYLE: Record<string, string> = {
-  CLEAR:   'border-green-200 bg-green-50',
-  WARNING: 'border-amber-200 bg-amber-50',
-  FLAGGED: 'border-rose-200 bg-rose-50',
+  CLEAR:   'border-[rgba(47,125,85,0.22)] bg-green-50',
+  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
+  FLAGGED: 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]',
 };
 
 // ─── Territory coverage matrix ────────────────────────────────────────────────
@@ -345,7 +345,7 @@ const INITIATIVES: Initiative[] = [
     territory: 'Lombardia / Bergamo',
     partner: "Città Aperta APS",
     status: 'Attiva — demo',
-    status_style: 'bg-green-50 text-green-700 border-green-200',
+    status_style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
     participation_note: 'Aggregato sopra soglia — partecipazione verificata',
     evidence_protocol: 'Protocollo attivo',
     is_future_vision: false,
@@ -357,7 +357,7 @@ const INITIATIVES: Initiative[] = [
     territory: 'Lombardia / Bergamo',
     partner: 'VitaLab Network',
     status: 'In review protocollo',
-    status_style: 'bg-amber-50 text-amber-700 border-amber-200',
+    status_style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
     participation_note: null,
     evidence_protocol: 'Audit richiesto',
     is_future_vision: false,
@@ -381,7 +381,7 @@ const INITIATIVES: Initiative[] = [
     territory: 'Online / Nazionale',
     partner: 'SkillBridge + GrowthLab Academy',
     status: 'Future Vision',
-    status_style: 'bg-orange-50 text-orange-700 border-orange-200',
+    status_style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
     participation_note: null,
     evidence_protocol: 'Non attivo in Foundation Light',
     is_future_vision: true,
@@ -614,8 +614,8 @@ export default function NetworkPage() {
               className={cn(
                 'rounded-lg border p-4',
                 gap.severity === 'alta'
-                  ? 'border-rose-200 bg-rose-50'
-                  : 'border-amber-200 bg-amber-50',
+                  ? 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)]'
+                  : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
               )}
             >
               <div className="flex items-center gap-2 mb-2">
@@ -624,7 +624,7 @@ export default function NetworkPage() {
                 </span>
                 <span className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{gap.territory}</span>
                 {gap.severity === 'alta' && (
-                  <span className="ml-auto rounded border border-rose-200 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold text-rose-700">
+                  <span className="ml-auto rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.10)] px-1.5 py-0.5 text-[9px] font-semibold text-[#9E3B2F]">
                     alta priorità
                   </span>
                 )}
@@ -721,7 +721,7 @@ export default function NetworkPage() {
                       <p className="text-[10px] text-[rgba(6,3,43,0.28)] font-mono">aggregato: non ancora disponibile</p>
                     )}
                     {init.is_future_vision && (
-                      <p className="text-[10px] text-orange-500 font-semibold">Future Vision — Non attivo</p>
+                      <p className="text-[10px] text-[#D99A2B] font-semibold">Future Vision — Non attivo</p>
                     )}
                   </div>
                 </div>
@@ -778,11 +778,11 @@ export default function NetworkPage() {
           </div>
           <div className="mt-4 flex flex-wrap gap-4 border-t border-[rgba(6,3,43,0.08)] pt-3 text-[10px] text-[rgba(6,3,43,0.40)] font-mono">
             <span className="flex items-center gap-1.5">
-              <span className="inline-block w-3 h-3 rounded border border-green-200 bg-green-50" />
+              <span className="inline-block w-3 h-3 rounded border border-[rgba(47,125,85,0.22)] bg-green-50" />
               CLEAR — attivazione OK
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="inline-block w-3 h-3 rounded border border-amber-200 bg-amber-50" />
+              <span className="inline-block w-3 h-3 rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]" />
               WARNING — da monitorare
             </span>
           </div>
@@ -790,14 +790,14 @@ export default function NetworkPage() {
       </div>
 
       {/* ── 9. Future Vision bridge ── */}
-      <div className="rounded-lg border border-orange-200 bg-orange-50/60 p-5">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)]/60 p-5">
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          <h2 className="text-sm font-bold text-orange-800">Territorial Impact View — Future Vision</h2>
-          <span className="rounded border border-orange-200 bg-orange-50 px-1.5 py-0.5 text-[10px] font-semibold text-orange-600">
+          <h2 className="text-sm font-bold text-[#8A5A00]">Territorial Impact View — Future Vision</h2>
+          <span className="rounded border border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)] px-1.5 py-0.5 text-[10px] font-semibold text-[#D99A2B]">
             Not Active in Foundation Light
           </span>
         </div>
-        <p className="text-xs text-orange-700 leading-relaxed mb-3">
+        <p className="text-xs text-[#8A5A00] leading-relaxed mb-3">
           In futuro KORA potrà mostrare impatto territoriale aggregato, iniziative cross-company,
           Public KORA Snapshot e KORA Value Chain, sempre con consenso, governance e soglie privacy.
         </p>
@@ -805,7 +805,7 @@ export default function NetworkPage() {
           {['Public Snapshot — Future Vision', 'KORA Value Chain — Future Vision', 'Territorial Contribution — Future Vision'].map((label) => (
             <span
               key={label}
-              className="rounded border border-orange-200 bg-[#F8F6F1] px-2.5 py-1 text-xs font-medium text-orange-400 opacity-60 cursor-not-allowed"
+              className="rounded border border-[rgba(217,154,43,0.22)] bg-[#F8F6F1] px-2.5 py-1 text-xs font-medium text-[rgba(217,154,43,0.80)] opacity-60 cursor-not-allowed"
             >
               {label}
             </span>
@@ -836,7 +836,7 @@ export default function NetworkPage() {
                   <span className={cn(
                     'rounded border px-1.5 py-0.5 text-[10px] font-medium',
                     a.status === 'active'
-                      ? 'bg-green-50 text-green-700 border-green-200'
+                      ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]'
                       : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
                   )}>
                     {a.status}

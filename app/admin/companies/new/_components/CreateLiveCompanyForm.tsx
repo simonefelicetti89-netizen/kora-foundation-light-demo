@@ -130,11 +130,11 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
   if (status === 'success' && result) {
     return (
       <div className="max-w-2xl mx-auto py-6 px-3 space-y-5">
-        <div className="rounded-xl border border-green-200 bg-green-50 px-6 py-5 space-y-4">
+        <div className="rounded-xl border border-[rgba(47,125,85,0.22)] bg-green-50 px-6 py-5 space-y-4">
           <div className="flex items-start gap-3">
             <span className="text-green-600 text-lg font-bold mt-0.5">✓</span>
             <div>
-              <p className="text-base font-bold text-green-800">Azienda live creata</p>
+              <p className="text-base font-bold text-[#2F7D55]">Azienda live creata</p>
               <p className="text-sm text-green-600 mt-0.5">
                 {result.companyName} ({result.tenantCode})
               </p>
@@ -148,7 +148,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               ['Ruolo',             result.adminRole ?? 'COMPANY_ADMIN'],
               ['Baseline workforce', result.baselineCreated ? '✓ Creato' : '— Non creato'],
             ].map(([label, val]) => (
-              <div key={label} className="rounded border border-green-200 bg-[#F8F6F1] px-3 py-2">
+              <div key={label} className="rounded border border-[rgba(47,125,85,0.22)] bg-[#F8F6F1] px-3 py-2">
                 <p className="text-[9px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-0.5">{label}</p>
                 <p className="text-[rgba(6,3,43,0.78)] font-semibold">{val}</p>
               </div>
@@ -161,7 +161,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               ? 'border-blue-200 bg-blue-50 text-blue-700'
               : result.inviteStatus === 'user_existed'
               ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]'
-              : 'border-amber-200 bg-amber-50 text-amber-700'
+              : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700'
           }`}>
             <span className="font-semibold">
               {result.inviteStatus === 'sent' ? '✉ Invito inviato' :
@@ -177,7 +177,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           {result.warnings && result.warnings.length > 0 && (
             <div className="space-y-1">
               {result.warnings.map((w, i) => (
-                <div key={i} className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-700">
+                <div key={i} className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-amber-700">
                   ⚠ {w}
                 </div>
               ))}
@@ -230,11 +230,11 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
   if (status === 'partial' && result) {
     return (
       <div className="max-w-2xl mx-auto py-6 px-3 space-y-5">
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-6 py-5 space-y-4">
+        <div className="rounded-xl border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-6 py-5 space-y-4">
           <div className="flex items-start gap-3">
             <span className="text-amber-600 text-lg font-bold mt-0.5">⚠</span>
             <div>
-              <p className="text-base font-bold text-amber-800">Creazione parziale</p>
+              <p className="text-base font-bold text-[#8A5A00]">Creazione parziale</p>
               <p className="text-sm text-amber-600 mt-0.5">
                 {result.tenantId
                   ? `Tenant ${result.tenantCode} creato. Provisioning utente non completato.`
@@ -244,7 +244,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           </div>
 
           {result.recovery && (
-            <div className="rounded-lg border border-amber-300 bg-[#F8F6F1] px-4 py-3 text-[10.5px] text-amber-800">
+            <div className="rounded-lg border border-amber-300 bg-[#F8F6F1] px-4 py-3 text-[10.5px] text-[#8A5A00]">
               <span className="font-semibold">Azione richiesta: </span>{result.recovery}
             </div>
           )}
@@ -302,7 +302,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
 
       {/* Error banner */}
       {status === 'error' && result?.error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-xs text-[#9E3B2F]">
           ⚠ {result.error}
         </div>
       )}
@@ -400,7 +400,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           </div>
 
           {!sendInvite && (
-            <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] text-amber-700">
+            <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-amber-700">
               ⚠ L&apos;utente sarà creato senza invito email. Dovrai inviare manualmente il link di accesso.
             </div>
           )}

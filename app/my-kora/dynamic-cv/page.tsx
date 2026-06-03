@@ -5,16 +5,16 @@ import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewSe
 import { cn } from '@/lib/utils';
 
 const PILLAR_LIGHT: Record<string, string> = {
-  LIFE:       'bg-green-50 text-green-700 border-green-200',
+  LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-  IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
-  LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
+  IMPACT:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  LEGACY:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
 };
 
 const VERIF_BADGE: Record<string, string> = {
-  verified:      'bg-green-50 text-green-700 border-green-200',
-  partial:       'bg-yellow-50 text-yellow-700 border-yellow-200',
+  verified:      'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  partial:       'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
   self_declared: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
@@ -33,7 +33,7 @@ export default function DynamicCV() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-[#06032B]">Dynamic Impact CV</h1>
+          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Dynamic Impact CV</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Portfolio di impatto personale del lavoratore</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -54,7 +54,7 @@ export default function DynamicCV() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-[#06032B]">Dynamic Impact CV</h1>
+          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Dynamic Impact CV</h1>
           <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
             Anteprima
           </span>
@@ -138,17 +138,17 @@ export default function DynamicCV() {
       </div>
 
       {/* Disclaimer */}
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3">
         <p className="text-xs font-semibold text-amber-700 mb-1">Disclaimer</p>
         <p className="text-xs text-amber-700 leading-relaxed">{cvPreview.disclaimer}</p>
       </div>
 
       {/* Export & sharing actions — Future Vision */}
-      <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 mb-1">
-        <p className="text-xs font-semibold text-orange-700">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.22)] bg-[rgba(217,154,43,0.08)] px-4 py-3 mb-1">
+        <p className="text-xs font-semibold text-[#8A5A00]">
           Future Vision / Non attivo in Foundation Light
         </p>
-        <p className="text-xs text-orange-600 mt-0.5">
+        <p className="text-xs text-[#D99A2B] mt-0.5">
           Le funzioni di esportazione e condivisione sono previste post-pilota. Nessuna esportazione reale avviene in questa demo.
         </p>
       </div>

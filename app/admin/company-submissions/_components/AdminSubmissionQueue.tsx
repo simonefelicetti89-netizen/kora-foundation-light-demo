@@ -60,10 +60,10 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_CLS: Record<string, string> = {
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  submission_pending:             'bg-amber-50 text-amber-700 border-amber-200',
-  submission_needs_clarification: 'bg-orange-50 text-orange-700 border-orange-200',
-  submission_accepted:            'bg-green-50 text-green-700 border-green-200',
-  submission_rejected:            'bg-red-50 text-red-600 border-red-200',
+  submission_pending:             'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  submission_rejected:            'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
   submission_archived:            'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
 
@@ -131,7 +131,7 @@ function ReviewPanel({ sub, onDone }: { sub: Submission; onDone: () => void }) {
       </select>
 
       {action === 'accept_for_intake' && (
-        <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-[9.5px] text-green-700 leading-relaxed">
+        <div className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-3 py-2 text-[9.5px] text-green-700 leading-relaxed">
           <span className="font-semibold">Accepted for intake non avvia scoring.</span>{' '}
           Dopo aver accettato, aprire Data Intake per creare il batch ufficiale manualmente.
           Nessuna UEF generata automaticamente. Nessun bypass di Match Review o UEF Review.
@@ -213,7 +213,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* Caveat */}
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-[10.5px] text-amber-700">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10.5px] text-amber-700">
         Accepted_for_intake non avvia scoring, non crea UEF e non bypassa Match Review o UEF Review.
         Dopo aver accettato una submission, aprire Data Intake per creare il batch ufficiale manualmente.
       </div>
@@ -227,7 +227,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
           <div className="grid grid-cols-4 gap-3">
             {[
               { label: 'In attesa',     value: data.summary.pending,             cls: 'text-amber-700' },
-              { label: 'Chiarimento',   value: data.summary.needs_clarification, cls: data.summary.needs_clarification > 0 ? 'text-orange-600' : '' },
+              { label: 'Chiarimento',   value: data.summary.needs_clarification, cls: data.summary.needs_clarification > 0 ? 'text-[#D99A2B]' : '' },
               { label: 'Accettati',     value: data.summary.accepted,            cls: 'text-green-700' },
               { label: 'Rifiutati',     value: data.summary.rejected,            cls: '' },
             ].map(({ label, value, cls }) => (

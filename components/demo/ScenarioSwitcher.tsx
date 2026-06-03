@@ -11,15 +11,15 @@ const SCENARIO_LABELS: Record<string, string> = {
 };
 
 const SAFEGUARD_ACTIVE: Record<string, string> = {
-  CLEAR:   'bg-green-50 text-green-900 border-green-200 ring-1 ring-green-300',
-  WARNING: 'bg-amber-50 text-amber-900 border-amber-200 ring-1 ring-amber-300',
-  FLAGGED: 'bg-red-50 text-red-900 border-red-200 ring-1 ring-red-300',
+  CLEAR:   'bg-green-50 text-green-900 border-[rgba(47,125,85,0.22)] ring-1 ring-green-300',
+  WARNING: 'bg-[rgba(217,154,43,0.08)] text-amber-900 border-[rgba(217,154,43,0.25)] ring-1 ring-amber-300',
+  FLAGGED: 'bg-[rgba(158,59,47,0.06)] text-red-900 border-[rgba(158,59,47,0.22)] ring-1 ring-red-300',
 };
 
 const SAFEGUARD_BADGE: Record<string, string> = {
-  CLEAR:   'border-green-200 bg-green-100 text-green-700',
-  WARNING: 'border-amber-200 bg-amber-100 text-amber-700',
-  FLAGGED: 'border-red-200 bg-red-100 text-red-700',
+  CLEAR:   'border-[rgba(47,125,85,0.22)] bg-green-100 text-green-700',
+  WARNING: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.12)] text-amber-700',
+  FLAGGED: 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.10)] text-[#9E3B2F]',
 };
 
 export function ScenarioSwitcher() {

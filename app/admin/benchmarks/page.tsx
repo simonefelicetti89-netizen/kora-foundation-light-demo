@@ -8,7 +8,7 @@ export default function BenchmarksPage() {
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold text-[#06032B]">Benchmarks</h1>
-          <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
             Synthetic Preview
           </span>
         </div>
@@ -17,7 +17,7 @@ export default function BenchmarksPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3">
         <p className="text-xs font-semibold text-amber-700 mb-1">Disclaimer</p>
         <p className="text-xs text-amber-700 leading-relaxed">
           All benchmark values are synthetic and created for demo purposes only.

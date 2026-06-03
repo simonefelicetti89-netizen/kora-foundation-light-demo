@@ -15,12 +15,12 @@ export function PrivacyBoundaryNote() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         {/* Privacy */}
-        <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4 space-y-2">
-          <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-wide">Privacy garantita</p>
+        <div className="rounded-lg border border-[rgba(47,125,85,0.14)] bg-[rgba(47,125,85,0.08)] p-4 space-y-2">
+          <p className="text-[11px] font-bold text-[#2F7D55] uppercase tracking-wide">Privacy garantita</p>
           <ul className="space-y-1.5">
             {items.map((item, i) => (
-              <li key={i} className="flex gap-1.5 text-[11px] text-emerald-800 leading-relaxed">
-                <span className="shrink-0 mt-0.5 text-emerald-400">·</span>
+              <li key={i} className="flex gap-1.5 text-[11px] text-[#2F7D55] leading-relaxed">
+                <span className="shrink-0 mt-0.5 text-[rgba(47,125,85,0.75)]">·</span>
                 {item}
               </li>
             ))}
@@ -29,9 +29,9 @@ export function PrivacyBoundaryNote() {
 
         {/* Methodology */}
         <div className="space-y-3">
-          <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 space-y-2">
+          <div className="rounded-lg border border-amber-100 bg-[rgba(217,154,43,0.08)] p-4 space-y-2">
             <p className="text-[11px] font-bold text-amber-700 uppercase tracking-wide">Perimetro metodologico</p>
-            <div className="space-y-1.5 text-[11px] text-amber-800 leading-relaxed">
+            <div className="space-y-1.5 text-[11px] text-[#8A5A00] leading-relaxed">
               <p>Output di intelligence diagnostica organizzativa — non una certificazione, non un rating regolatorio.</p>
               <p>Metodologia in fase pre-empirical calibration — pesi e soglie raffinati post-Delphi Study e programma pilota.</p>
               <p>Correlazione ≠ causalità su tutte le implicazioni business.</p>

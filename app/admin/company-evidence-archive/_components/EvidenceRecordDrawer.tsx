@@ -83,19 +83,19 @@ interface Props {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const PROV_KIND_COLORS: Record<string, string> = {
-  original_file:     'bg-green-100 text-green-700 border-green-200',
+  original_file:     'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
   column_mapping:    'bg-blue-100 text-blue-700 border-blue-200',
-  manual_completion: 'bg-amber-100 text-amber-700 border-amber-200',
+  manual_completion: 'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
   multi_file_merge:  'bg-purple-100 text-purple-700 border-purple-200',
   derived:           'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
   system_default:    'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.05)]',
 };
 
 const LIFECYCLE_COLORS: Record<string, string> = {
-  active:          'bg-green-100 text-green-700 border-green-200',
-  archived:        'bg-amber-100 text-amber-700 border-amber-200',
-  removed:         'bg-red-100 text-red-700 border-red-200',
-  storage_removed: 'bg-red-50 text-red-500 border-red-100',
+  active:          'bg-green-100 text-green-700 border-[rgba(47,125,85,0.22)]',
+  archived:        'bg-[rgba(217,154,43,0.12)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  removed:         'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+  storage_removed: 'bg-[rgba(158,59,47,0.06)] text-red-500 border-red-100',
   metadata_only:   'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
@@ -203,7 +203,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
         )}
         {error && (
           <div className="flex-1 flex items-center justify-center">
-            <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 m-4">⚠ {error}</div>
+            <div className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-sm text-[#9E3B2F] m-4">⚠ {error}</div>
           </div>
         )}
 
@@ -217,12 +217,12 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                   {detail.record.contributionRoleLabel}
                 </span>
                 {detail.record.contributes && (
-                  <span className="rounded border border-green-200 bg-green-100 px-1.5 py-0.5 text-[9px] font-bold text-green-700">→ KORA Index</span>
+                  <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-100 px-1.5 py-0.5 text-[9px] font-bold text-green-700">→ KORA Index</span>
                 )}
                 <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${
-                  detail.record.eligibility === 'eligible' ? 'bg-green-50 text-green-700 border-green-200' :
-                  detail.record.eligibility === 'limited'  ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                  'bg-red-50 text-red-700 border-red-200'
+                  detail.record.eligibility === 'eligible' ? 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' :
+                  detail.record.eligibility === 'limited'  ? 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' :
+                  'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]'
                 }`}>{detail.record.eligibility}</span>
                 {detail.record.approvedForScoring && (
                   <span className="rounded border border-[#C76F3D]/40 bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#C76F3D]">approved</span>
@@ -306,8 +306,8 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                     <Badge label={p.kind.replace(/_/g,' ')} cls={PROV_KIND_COLORS[p.kind] ?? 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.05)]'} />
                     {p.fileRole && <span className="text-[9px] text-[rgba(6,3,43,0.40)]">{p.fileRole}</span>}
                     <span className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] ml-auto">{Math.round(p.confidence * 100)}%</span>
-                    {p.conflictRetained && <Badge label="conflict" cls="bg-amber-50 text-amber-600 border-amber-100" />}
-                    {p.isManual && <Badge label="manual" cls="bg-amber-50 text-amber-600 border-amber-100" />}
+                    {p.conflictRetained && <Badge label="conflict" cls="bg-[rgba(217,154,43,0.08)] text-amber-600 border-amber-100" />}
+                    {p.isManual && <Badge label="manual" cls="bg-[rgba(217,154,43,0.08)] text-amber-600 border-amber-100" />}
                   </div>
                 ))}
               </div>
@@ -378,9 +378,9 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
               <div className="px-5 py-4 space-y-2">
                 {detail.record.reportingReadiness && (
                   <div className={`rounded border px-3 py-2 text-[10px] font-semibold mb-2 ${
-                    detail.record.reportingReadiness === 'report_ready' ? 'border-green-200 bg-green-50 text-green-700' :
-                    detail.record.reportingReadiness === 'usable_with_caveat' ? 'border-amber-200 bg-amber-50 text-amber-700' :
-                    'border-red-200 bg-red-50 text-red-700'
+                    detail.record.reportingReadiness === 'report_ready' ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' :
+                    detail.record.reportingReadiness === 'usable_with_caveat' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' :
+                    'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
                   }`}>
                     Reporting Readiness: {detail.record.reportingReadiness.replace(/_/g,' ')}
                   </div>
@@ -390,8 +390,8 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                 )}
                 {detail.evidenceGaps.map((g, i) => (
                   <div key={i} className={`rounded border px-3 py-2 text-[10px] ${
-                    g.severity === 'high' ? 'border-red-200 bg-red-50 text-red-700' :
-                    g.severity === 'medium' ? 'border-amber-200 bg-amber-50 text-amber-700' :
+                    g.severity === 'high' ? 'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]' :
+                    g.severity === 'medium' ? 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700' :
                     'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)]'
                   }`}>
                     {g.code && <span className="font-mono mr-2">{g.code}</span>}
@@ -413,7 +413,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
 
         {detail && !detail.ok && (
           <div className="flex-1 flex items-center justify-center">
-            <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 m-4">
+            <div className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-sm text-[#9E3B2F] m-4">
               ⚠ {detail.error ?? 'Errore nel caricamento record.'}
             </div>
           </div>

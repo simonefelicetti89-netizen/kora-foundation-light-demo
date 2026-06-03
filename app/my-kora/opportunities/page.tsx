@@ -5,19 +5,19 @@ import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewSe
 import { cn } from '@/lib/utils';
 
 const PILLAR_COLORS: Record<string, string> = {
-  LIFE:       'bg-green-500',
+  LIFE:       'bg-[#2F7D55]',
   GROWTH:     'bg-blue-500',
   CONNECTION: 'bg-purple-500',
-  IMPACT:     'bg-orange-500',
-  LEGACY:     'bg-amber-500',
+  IMPACT:     'bg-[rgba(217,154,43,0.08)]0',
+  LEGACY:     'bg-[rgba(217,154,43,0.08)]0',
 };
 
 const PILLAR_LIGHT: Record<string, string> = {
-  LIFE:       'bg-green-50 text-green-700 border-green-200',
+  LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
-  IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
-  LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
+  IMPACT:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  LEGACY:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
 };
 
 interface Opportunity {
@@ -111,7 +111,7 @@ const OPPORTUNITIES: Opportunity[] = [
 const TYPE_BADGE: Record<string, string> = {
   partner:   'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
   internal:  'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
-  community: 'bg-orange-50 text-orange-700 border-orange-200',
+  community: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
 };
 
 const TYPE_LABEL: Record<string, string> = {
@@ -128,7 +128,7 @@ export default function Opportunities() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-[#06032B]">Opportunità per te</h1>
+          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Opportunità per te</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Percorsi e iniziative abbinati al tuo profilo di impatto</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -146,7 +146,7 @@ export default function Opportunities() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[#06032B]">Opportunità per te</h1>
+        <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Opportunità per te</h1>
         <p className="text-sm text-[rgba(6,3,43,0.52)]">
           Percorsi e iniziative abbinati al tuo profilo di impatto — {OPPORTUNITIES.length} suggerimenti
         </p>
@@ -162,7 +162,7 @@ export default function Opportunities() {
       </div>
 
       {/* Demo notice */}
-      <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+      <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3">
         <p className="text-xs font-semibold text-amber-700">Solo anteprima — Foundation Light</p>
         <p className="text-xs text-amber-700 mt-0.5">
           I pulsanti di adesione non sono attivi in questa demo. Nessuna prenotazione reale, nessuna
