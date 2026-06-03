@@ -86,6 +86,17 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/future-vision', label: 'Future Vision', inactive: true },
         ],
       },
+      {
+        heading: 'Founder Preview',
+        groupBadge: 'PREVIEW',
+        groupBadgeStyle: 'bg-[rgba(199,111,61,0.18)] text-[#C76F3D] border border-[rgba(199,111,61,0.35)]',
+        items: [
+          { href: '/company',    label: 'Company Admin' },
+          { href: '/my-kora',    label: 'Worker · My KORA' },
+          { href: '/partner',    label: 'Partner' },
+          { href: '/advisor',    label: 'Advisor' },
+        ],
+      },
     ];
   }
 

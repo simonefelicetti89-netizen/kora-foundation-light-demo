@@ -1,5 +1,5 @@
 import type { KoraRole, ScenarioId } from '@/lib/types';
-import { isWorkerRole } from '@/lib/permissions';
+import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 
 export interface PillarPreview {
   pillar: string;
@@ -304,9 +304,14 @@ const CV_ITEMS: DynamicCVItem[] = [
 ];
 
 class MyKoraPreviewService {
-  // Role guard — only WORKER receives worker-private preview content
+  // Role guard for My KORA preview content.
+  // WORKER: full access (their private space).
+  // KORA_ADMIN: Founder Preview — allowed for demo review.
+  //   The layout (my-kora/layout.tsx) handles presentation of the admin bypass.
+  //   This does NOT elevate any backend permissions; the service returns demo data only.
+  // All other roles (COMPANY_ADMIN, COMPANY_VIEWER, PARTNER, ADVISOR): blocked.
   canAccess(role: KoraRole): boolean {
-    return isWorkerRole(role);
+    return isWorkerRole(role) || isAdminRole(role);
   }
 
   getMyKoraHomePreview(

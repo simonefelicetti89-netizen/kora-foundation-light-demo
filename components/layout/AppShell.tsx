@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { DemoStateProvider, useEnvironment } from '@/lib/demo-state';
 import { SyntheticDataBanner } from '@/components/demo/SyntheticDataBanner';
+import { FounderPreviewBanner } from '@/components/demo/FounderPreviewBanner';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 
@@ -26,6 +27,9 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     <div className={`flex min-h-screen flex-col env-${activeEnvironment}`}>
       <SyntheticDataBanner />
       <Header />
+      {/* FounderPreviewBanner: visible only when KORA_ADMIN is previewing a non-admin area.
+          Purely presentational — does NOT change backend permissions. */}
+      <FounderPreviewBanner />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
         <main className="flex-1 overflow-y-auto bg-kora-canvas" style={{ padding: '32px 40px' }}>
