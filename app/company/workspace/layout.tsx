@@ -1,9 +1,15 @@
 // app/company/workspace/layout.tsx
 // B36 PART 4 — Server-side layout protection for the company workspace.
 // Requires COMPANY_ADMIN or COMPANY_VIEWER session.
-// If unauthenticated: shows access denied (not a redirect to login, to avoid infinite loops in demo).
+//
+// Special case: if the session belongs to a KORA_ADMIN (who logged in via /admin/login),
+// they are redirected to /admin/company-workspace — the admin version of the same view.
+// This avoids a confusing error wall for admin users switching to a company role in the demo.
+// Tenant isolation is preserved: KORA_ADMIN does not gain company-user rights here;
+// they are redirected to a page they already have access to via admin auth.
 
-import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { requireCompanyUser, getCurrentKoraUser, isKoraAuthError } from '@/lib/auth/kora-session';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function CompanyWorkspaceLayout({ children }: { children: React.ReactNode }) {
@@ -12,6 +18,17 @@ export default async function CompanyWorkspaceLayout({ children }: { children: R
   if (isKoraAuthError(authResult)) {
     const status = authResult.status;
     const is401 = status === 401;
+
+    // If the user is authenticated but has the wrong role (403),
+    // check whether they are a KORA_ADMIN and redirect them appropriately.
+    // This handles the demo scenario where an admin has an active session and
+    // switches the role-switcher to COMPANY_ADMIN, then clicks the workspace link.
+    if (!is401) {
+      const adminUser = await getCurrentKoraUser();
+      if (adminUser?.koraRole === 'KORA_ADMIN') {
+        redirect('/admin/company-workspace');
+      }
+    }
 
     return (
       <div className="max-w-lg mx-auto mt-20 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-[#F8F6F1] shadow-sm text-center space-y-5">
