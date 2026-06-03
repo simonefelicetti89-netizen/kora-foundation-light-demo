@@ -252,7 +252,7 @@ export default function KoraIndexDetail() {
             }}>
               Confronto scenari · solo demo
             </p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {[{ id: 'S1', out: scoringS1?.koraIndex }, { id: 'S2', out: scoringS2?.koraIndex }].map(({ id, out }) => {
                 if (!out) return null;
                 const isActive = id === activeScenario;

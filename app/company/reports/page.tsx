@@ -344,7 +344,7 @@ function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLa
         </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {version.kora_index_value !== null && version.kora_index_value !== undefined ? (
           <div>
             <p style={{ fontSize: '10px', color: TOKENS.inkHint }}>KORA Index</p>
@@ -509,7 +509,7 @@ export default function Reports() {
 
         {/* KI / CS / Safeguard */}
         {hasFullReport && koraIndex ? (
-          <div className="grid grid-cols-3 gap-4 mb-5">
+          <div className="grid grid-cols-1 gap-4 mb-5 sm:grid-cols-3">
             <div style={{ background: TOKENS.inkBorder, borderRadius: 10, padding: '1rem', textAlign: 'center' }}>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 6 }}>KORA Index v3</p>
               <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>

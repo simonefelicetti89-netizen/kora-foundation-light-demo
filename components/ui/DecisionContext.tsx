@@ -19,7 +19,7 @@ export function DecisionContext({ question, boundary, className }: DecisionConte
         borderLeft:    `3px solid ${TOKENS.accent}`,
         paddingLeft:   14,
         marginBottom:  24,
-        marginTop:     -8,
+        marginTop:     0,
         display:       'flex',
         flexDirection: 'column',
         gap:           4,

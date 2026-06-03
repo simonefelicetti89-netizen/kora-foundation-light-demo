@@ -157,7 +157,7 @@ export function KoraIntelligenceHero({
         </div>
 
         {/* Score identity */}
-        <div style={{ minWidth: 0 }}>
+        <div style={{ minWidth: 140, flexShrink: 1 }}>
           <p style={{
             fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontWeight:    600,

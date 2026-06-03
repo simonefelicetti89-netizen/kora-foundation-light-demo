@@ -301,7 +301,7 @@ export default function Activation() {
 
           {/* ── Popolazione ── */}
           <SectionLabel>Popolazione lavoratori</SectionLabel>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {[
               { label: 'Lavoratori totali',    value: aggregate.total_workers },
               { label: 'Lavoratori attivi',    value: aggregate.active_worker_count },

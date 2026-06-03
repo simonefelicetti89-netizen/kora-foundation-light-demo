@@ -270,7 +270,7 @@ export default function KoraControlTower() {
 
       <SectionHead label="Intelligence operativa" />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
 
         {/* KORA Index Registry */}
         <Panel n="01" title="KORA Index™ Registry" href="/admin/index-registry" hrefLabel="Registro">
@@ -375,7 +375,7 @@ export default function KoraControlTower() {
 
       <SectionHead label="Methodology governance" />
 
-      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: '20px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
         <div>
           <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.inkHint, marginBottom: 10 }}>
             Gate & Methodology
