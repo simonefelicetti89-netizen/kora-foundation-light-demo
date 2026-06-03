@@ -246,27 +246,28 @@ export function KoraIntelligenceHero({
             }}>
               Confidence Score™
             </p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-              <span style={{
-                fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                fontWeight:  700,
-                fontSize:    '26px',
-                color:       '#FFFFFF',
-                letterSpacing: '-0.02em',
-                lineHeight:  1,
-              }}>
-                {formatConfidenceScore(confidenceScore)}
-              </span>
-              <span style={{
-                fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)',
-                fontSize:   '10px',
-                color:      'rgba(255,255,255,0.28)',
-                lineHeight: 1.4,
-                maxWidth:   120,
-              }}>
-                Esterno al KORA Index™
-              </span>
-            </div>
+            <p style={{
+              fontFamily:         'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontWeight:         700,
+              fontSize:           '26px',
+              color:              '#FFFFFF',
+              letterSpacing:      '-0.02em',
+              lineHeight:         1,
+              fontVariantNumeric: 'tabular-nums',
+              display:            'block',
+              marginBottom:       5,
+            }}>
+              {formatConfidenceScore(confidenceScore)}
+            </p>
+            <p style={{
+              fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontSize:   '10px',
+              color:      'rgba(255,255,255,0.28)',
+              lineHeight: 1.4,
+              display:    'block',
+            }}>
+              Esterno al KORA Index™ · peso = 0
+            </p>
           </div>
         </div>
       </div>

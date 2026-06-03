@@ -112,7 +112,7 @@ export function MethodologyBadge({
       }}>
         {versionId}
         {period ? ` · ${period}` : ''}
-        {' · '}N≥{privacyThreshold}
+        {' · '}{privacyThreshold}
         {showSynthetic ? ' · synthetic_demo_data: true' : ''}
       </span>
     </div>
