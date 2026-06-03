@@ -6,6 +6,9 @@ import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { PageMasthead } from '@/components/ui/PageMasthead';
+import { TM } from '@/components/ui/TM';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { cn } from '@/lib/utils';
 
 // ─── Pillar styling ───────────────────────────────────────────────────────────
@@ -109,15 +112,15 @@ export default function MyKoraHome() {
           <h1 className="text-xl font-bold text-[#06032B]">My KORA</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Spazio personale del lavoratore</p>
         </div>
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
-          <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
-          <p className="mt-1 text-xs text-rose-600 max-w-sm mx-auto">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
+          <p className="text-sm font-semibold text-[#9E3B2F]">Accesso Limitato</p>
+          <p className="mt-1 text-xs text-[rgba(158,59,47,0.90)] max-w-sm mx-auto">
             My KORA è uno spazio privato del lavoratore. I ruoli datore di lavoro e admin non possono accedere
             ai dati individuali. I dati individuali del lavoratore non sono mai visibili al di fuori della
             sessione del lavoratore stesso.
           </p>
-          <p className="mt-3 text-xs font-mono text-rose-400">Ruolo attivo: {activeRole}</p>
-          <p className="mt-1 text-xs text-rose-400">Passa al ruolo WORKER per visualizzare questo spazio.</p>
+          <p className="mt-3 text-xs font-mono text-[rgba(158,59,47,0.55)]">Ruolo attivo: {activeRole}</p>
+          <p className="mt-1 text-xs text-[rgba(158,59,47,0.55)]">Passa al ruolo WORKER per visualizzare questo spazio.</p>
         </div>
       </div>
     );
@@ -141,32 +144,24 @@ export default function MyKoraHome() {
     <div className="space-y-6">
 
       {/* ── Header ── */}
-      <div>
-        <h1 className="text-xl font-bold text-[#06032B]">My KORA</h1>
-        <p className="text-sm text-[rgba(6,3,43,0.52)]">
-          {activePersona ? activePersona.display_name : preview.persona_label}
-          {' '}— {activeScenario}
-        </p>
-        <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1 leading-relaxed max-w-2xl">
-          Il layer personale del lavoratore: PIB privato, timeline personale, opportunità e Dynamic Impact CV
-          sotto controllo del lavoratore.
-        </p>
-        <p className="text-[11px] text-[#C76F3D] font-semibold mt-1">
-          Questo spazio è personale: l&apos;azienda non vede il tuo PIB individuale.
-        </p>
-      </div>
+      <PageMasthead
+        eyebrow={`My KORA · Spazio personale · ${activeScenario}`}
+        title={<>Il tuo <TM>Worker PIB</TM></>}
+        subline={`${activePersona ? activePersona.display_name : preview.persona_label} — Personal Impact Balance privato. L'azienda non vede mai i tuoi dati individuali.`}
+        meta="Dati sintetici · Foundation Light v0.1 · layer worker-owned"
+      />
 
       {/* ── Core privacy statement — non-suppressible ── */}
       <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-4">
-        <p className="text-sm font-bold text-indigo-900">
+        <p className="text-sm font-bold text-[#06032B]">
           Il dato è mio. Posso capirlo, proteggerlo, usarlo e trasformarlo in valore personale.
         </p>
-        <p className="text-xs text-indigo-700 mt-1.5 leading-relaxed">
+        <p className="text-xs text-[rgba(6,3,43,0.72)] mt-1.5 leading-relaxed">
           Il datore di lavoro non vede il tuo PIB individuale, la tua timeline personale, le tue scelte
           o il tuo Dynamic Impact CV. Solo dati aggregati e anonimizzati — sopra soglia privacy —
           contribuiscono al KORA Index aziendale.
         </p>
-        <p className="text-[11px] text-indigo-500 mt-1.5 italic">
+        <p className="text-[11px] text-[rgba(6,3,43,0.52)] mt-1.5 italic">
           My KORA non è performance management. Non è una classifica. Non è accessibile al datore di lavoro.
         </p>
       </div>
@@ -180,7 +175,7 @@ export default function MyKoraHome() {
             <span className="text-sm text-[rgba(6,3,43,0.40)] pb-0.5">/ 100</span>
           </div>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Personal Impact Balance</p>
-          <p className="text-[10px] text-indigo-500 mt-1 italic">Visibile solo nel tuo layer personale.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 italic">Visibile solo nel tuo layer personale.</p>
         </div>
 
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
@@ -189,21 +184,21 @@ export default function MyKoraHome() {
             {strongestPillar?.pillar ?? '—'}
           </p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">score {strongestPillar?.score ?? 0}</p>
-          <p className="text-[10px] text-indigo-500 mt-1 italic">Pillar con maggiore continuità personale.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 italic">Pillar con maggiore continuità personale.</p>
         </div>
 
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
           <p className="text-xs text-[rgba(6,3,43,0.40)]">Opportunità</p>
           <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{preview.opportunities.length + 3}</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">iniziative e servizi</p>
-          <p className="text-[10px] text-indigo-500 mt-1 italic">Suggeriti per te — visibili solo a te.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 italic">Suggeriti per te — visibili solo a te.</p>
         </div>
 
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
           <p className="text-xs text-[rgba(6,3,43,0.40)]">Elementi condivisibili</p>
           <p className="text-2xl font-bold text-[#C76F3D] mt-1">{HERO_SHAREABLE_ITEMS}</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Dynamic Impact CV</p>
-          <p className="text-[10px] text-indigo-500 mt-1 italic">Badge / esperienze esportabili solo se decidi tu.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 italic">Badge / esperienze esportabili solo se decidi tu.</p>
         </div>
       </div>
 
@@ -308,7 +303,7 @@ export default function MyKoraHome() {
                             {extra.visibility}
                           </span>
                           {extra.can_become && (
-                            <span className="text-[10px] text-indigo-500 italic">
+                            <span className="text-[10px] text-[rgba(6,3,43,0.52)] italic">
                               → può alimentare: {extra.can_become}
                             </span>
                           )}
@@ -411,7 +406,7 @@ export default function MyKoraHome() {
           {koraLinkStep < KORA_LINK_STEPS.length ? (
             <button
               onClick={() => setKoraLinkStep((s) => s + 1)}
-              className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+              className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3 py-1.5 text-xs font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.06)] transition-colors"
             >
               {koraLinkStep === 0
                 ? 'Simula azione — demo'
@@ -454,7 +449,7 @@ export default function MyKoraHome() {
             </ul>
           </div>
 
-          <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+          <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4">
             <p className="text-xs font-semibold text-rose-800 mb-2">L&apos;azienda NON VEDE:</p>
             <ul className="space-y-1.5">
               {[
@@ -465,13 +460,13 @@ export default function MyKoraHome() {
                 'I singoli eventi personali',
                 'Il tuo profilo lavoratore',
               ].map((item) => (
-                <li key={item} className="flex gap-1.5 text-xs text-rose-700">
-                  <span className="text-rose-400 shrink-0 mt-0.5">·</span>
+                <li key={item} className="flex gap-1.5 text-xs text-[#9E3B2F]">
+                  <span className="text-[rgba(158,59,47,0.55)] shrink-0 mt-0.5">·</span>
                   {item}
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-[11px] font-semibold text-rose-700 italic">
+            <p className="mt-3 text-[11px] font-semibold text-[#9E3B2F] italic">
               Il datore di lavoro vede l&apos;organizzazione, non te.
             </p>
           </div>
@@ -511,9 +506,9 @@ export default function MyKoraHome() {
           <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Privacy & Sharing</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Consent & Sharing Vault</p>
         </Link>
-        <Link href="/my-kora/opportunities" className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-4 hover:bg-indigo-100 transition-colors">
-          <p className="text-sm font-semibold text-indigo-700">Opportunità</p>
-          <p className="text-xs text-indigo-500 mt-0.5">Iniziative e servizi suggeriti per te</p>
+        <Link href="/my-kora/opportunities" className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-4 hover:bg-[rgba(6,3,43,0.06)] transition-colors">
+          <p className="text-sm font-semibold text-[rgba(6,3,43,0.72)]">Opportunità</p>
+          <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">Iniziative e servizi suggeriti per te</p>
         </Link>
       </div>
 

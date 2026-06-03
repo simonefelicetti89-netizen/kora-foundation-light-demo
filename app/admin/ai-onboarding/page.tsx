@@ -3,7 +3,7 @@ import { adminPreviewService } from '@/services/admin-preview/AdminPreviewServic
 const STATUS_PILL: Record<string, string> = {
   approved:          'bg-green-50 text-green-700 border-green-200',
   partially_reviewed:'bg-yellow-50 text-yellow-700 border-yellow-200',
-  under_review:      'bg-blue-50 text-blue-700 border-blue-200',
+  under_review:      'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   rejected:          'bg-red-50 text-red-700 border-red-200',
   pending:           'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
@@ -25,7 +25,7 @@ function SectionLabel({ code, title }: { code: string; title: string }) {
 
 function AIBoundaryNotice({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-3 py-2 text-xs text-indigo-700">
+    <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)] px-3 py-2 text-xs text-[rgba(6,3,43,0.72)]">
       {children}
     </div>
   );
@@ -246,7 +246,7 @@ export default function AIOnboardingPage() {
               { label: 'Totale bozze',          value: String(uefQueue.draft_total_estimated), color: 'text-[rgba(6,3,43,0.90)]' },
               { label: 'Approvati',             value: String(uefQueue.approved),              color: 'text-green-700' },
               { label: 'Segnalati per revisione', value: String(uefQueue.flagged_for_review), color: 'text-yellow-700' },
-              { label: 'Idonei al calcolo',     value: String(uefQueue.eligible_for_scoring), color: 'text-indigo-700' },
+              { label: 'Idonei al calcolo',     value: String(uefQueue.eligible_for_scoring), color: 'text-[rgba(6,3,43,0.72)]' },
             ].map(({ label, value, color }) => (
               <div key={label} className="rounded bg-[rgba(6,3,43,0.03)] px-3 py-2 text-center">
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{label}</p>

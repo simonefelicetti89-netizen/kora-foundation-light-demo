@@ -346,7 +346,7 @@ export default function EnterpriseOnboardingWizard() {
       </div>
 
       {/* ── Admin note ── */}
-      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 leading-relaxed">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-[rgba(6,3,43,0.88)] leading-relaxed">
         <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
         Questa sezione è riservata agli operatori KORA. Il cliente non vede questo wizard.
         Gli utenti aziendali sono company-scoped: vedono solo la propria azienda.
@@ -585,7 +585,7 @@ export default function EnterpriseOnboardingWizard() {
             <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">7 — Worker Roster & My KORA</h2>
             <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Configura le basi per la popolazione lavoratori e My KORA.</p>
           </div>
-          <div className="rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-3 py-2.5 text-xs text-indigo-800 leading-relaxed space-y-0.5">
+          <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)] px-3 py-2.5 text-xs text-[rgba(6,3,43,0.88)] leading-relaxed space-y-0.5">
             <p><span className="font-semibold">Privacy boundary costituzionale.</span> Il PIB individuale resta privato al lavoratore.</p>
             <p>L&apos;azienda vede solo aggregati privacy-safe (N≥10). employer_can_view_individual_pib = false su ogni record.</p>
           </div>

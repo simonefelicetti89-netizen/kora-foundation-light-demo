@@ -106,7 +106,7 @@ const LIFECYCLE_LABEL: Record<TenantLifecycleStatus, string> = {
 const LIFECYCLE_CLS: Record<TenantLifecycleStatus, string> = {
   suspended:              'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.14)]',
   no_users:               'bg-rose-50 text-rose-700 border-rose-200',
-  workspace_ready:        'bg-blue-50 text-blue-700 border-blue-200',
+  workspace_ready:        'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   data_pending:           'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
   review_in_progress:     'bg-amber-50 text-amber-700 border-amber-200',
   enrichment_needed:      'bg-orange-50 text-orange-700 border-orange-200',

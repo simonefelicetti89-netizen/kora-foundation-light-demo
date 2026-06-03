@@ -34,7 +34,7 @@ export default function BenchmarksPage() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{b.dimension}</p>
                 <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)] mt-0.5">{b.cluster_label}</p>
               </div>
-              <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-xs font-semibold text-indigo-700">
+              <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-xs font-semibold text-[rgba(6,3,43,0.72)]">
                 {b.percentile} percentile
               </span>
             </div>

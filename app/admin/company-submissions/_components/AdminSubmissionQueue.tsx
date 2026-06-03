@@ -324,10 +324,10 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
 
                     {/* Admin comment */}
                     {sub.adminComment && (
-                      <div className="rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-3 py-2 text-[10.5px] text-indigo-700">
+                      <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)] px-3 py-2 text-[10.5px] text-[rgba(6,3,43,0.72)]">
                         <span className="font-semibold">Commento admin: </span>{sub.adminComment}
                         {sub.adminReviewedBy && (
-                          <p className="text-[9px] text-indigo-500 mt-0.5">{sub.adminReviewedBy} · {ts(sub.adminReviewedAt)}</p>
+                          <p className="text-[9px] text-[rgba(6,3,43,0.52)] mt-0.5">{sub.adminReviewedBy} · {ts(sub.adminReviewedAt)}</p>
                         )}
                       </div>
                     )}

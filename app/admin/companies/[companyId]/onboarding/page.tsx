@@ -13,8 +13,8 @@ import type { OnboardingReadinessCheck } from '@/lib/types';
 
 const ONBOARDING_STATUS_PILL: Record<string, string> = {
   not_started:                   'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
-  profile_complete:              'bg-blue-50 text-blue-700 border-blue-200',
-  workforce_baseline_complete:   'bg-blue-50 text-blue-700 border-blue-200',
+  profile_complete:              'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
+  workforce_baseline_complete:   'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   program_data_loaded:           'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
   ready_for_scoring:             'bg-amber-50 text-amber-700 border-amber-200',
   fully_onboarded:               'bg-green-50 text-green-700 border-green-200',
@@ -22,11 +22,11 @@ const ONBOARDING_STATUS_PILL: Record<string, string> = {
 
 const INTAKE_STATUS_PILL: Record<string, string> = {
   not_started:                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
-  partial:                         'bg-blue-50 text-blue-700 border-blue-200',
+  partial:                         'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   validation_required:             'bg-amber-100 text-amber-700 border-amber-200',
   blocked_missing_required_fields: 'bg-rose-100 text-rose-700 border-rose-200',
   ready_for_ingestion:             'bg-green-100 text-green-700 border-green-200',
-  draft:                           'bg-indigo-100 text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
+  draft:                           'bg-[rgba(6,3,43,0.06)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
 };
 
 function ReadinessRow({ check }: { check: OnboardingReadinessCheck }) {
@@ -108,7 +108,7 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
       </div>
 
       {/* ── KORA managed doctrine ── */}
-      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 space-y-1">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-[rgba(6,3,43,0.88)] space-y-1">
         <p className="font-semibold">L&apos;onboarding operativo è gestito da KORA.</p>
         <p>KORA configura tenant, accessi, dati, lavoratori e readiness metodologica.</p>
         <p>L&apos;azienda collabora fornendo dati, evidenze e approvazioni, ma non gestisce il backstage metodologico.</p>
@@ -207,7 +207,7 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
                 </div>
                 <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
                   acc.account_status === 'active_demo' ? 'bg-green-50 text-green-700 border-green-200' :
-                  acc.account_status === 'invited' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                  acc.account_status === 'invited' ? 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' :
                   'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]')}>
                   {acc.account_status}
                 </span>

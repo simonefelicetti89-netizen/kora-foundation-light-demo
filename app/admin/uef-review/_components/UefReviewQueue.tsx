@@ -412,7 +412,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   )}
                   <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)] break-all">{b.sourceName ?? b.batchId.slice(0, 12) + '…'}</p>
                 </div>
-                <Badge label={b.batchStatus} cls={b.batchStatus === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-amber-50 text-amber-700 border-amber-200'} />
+                <Badge label={b.batchStatus} cls={b.batchStatus === 'processing' ? 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' : 'bg-amber-50 text-amber-700 border-amber-200'} />
               </div>
               <div className="flex flex-wrap gap-2 text-[10px] text-[rgba(6,3,43,0.52)]">
                 <span>Period: {b.reportingPeriod}</span>

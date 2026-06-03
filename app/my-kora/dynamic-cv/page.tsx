@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 
 const PILLAR_LIGHT: Record<string, string> = {
   LIFE:       'bg-green-50 text-green-700 border-green-200',
-  GROWTH:     'bg-blue-50 text-blue-700 border-blue-200',
+  GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
   IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
   LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
@@ -36,13 +36,13 @@ export default function DynamicCV() {
           <h1 className="text-xl font-bold text-[#06032B]">Dynamic Impact CV</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Portfolio di impatto personale del lavoratore</p>
         </div>
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
-          <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
-          <p className="mt-1 text-xs text-rose-600 max-w-sm mx-auto">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
+          <p className="text-sm font-semibold text-[#9E3B2F]">Accesso Limitato</p>
+          <p className="mt-1 text-xs text-[rgba(158,59,47,0.90)] max-w-sm mx-auto">
             Il Dynamic Impact CV è privato del lavoratore. I ruoli datore di lavoro e admin non possono accedere
             ai dati CV individuali. Il lavoratore decide cosa esportare o condividere.
           </p>
-          <p className="mt-3 text-xs font-mono text-rose-400">Ruolo attivo: {activeRole}</p>
+          <p className="mt-3 text-xs font-mono text-[rgba(158,59,47,0.55)]">Ruolo attivo: {activeRole}</p>
         </div>
       </div>
     );
@@ -64,8 +64,8 @@ export default function DynamicCV() {
 
       {/* Worker-ownership notice — non-suppressible */}
       <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-3">
-        <p className="text-xs font-semibold text-indigo-800">Di proprietà del lavoratore, controllato dal lavoratore.</p>
-        <p className="text-xs text-indigo-700 mt-0.5">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.88)]">Di proprietà del lavoratore, controllato dal lavoratore.</p>
+        <p className="text-xs text-[rgba(6,3,43,0.72)] mt-0.5">
           Solo tu decidi cosa esportare o condividere. Il tuo datore di lavoro non può vedere questo CV.
           Gli elementi verificati possono essere condivisi con parti esterne a tua discrezione.
         </p>

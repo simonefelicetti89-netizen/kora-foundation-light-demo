@@ -105,7 +105,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         </p>
       </div>
 
-      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 leading-relaxed">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-[rgba(6,3,43,0.88)] leading-relaxed">
         <span className="font-semibold">Vista operativa KORA Admin.</span>{' '}
         Il cliente azienda non vede questa console tecnica. Il PIB individuale resta privato al lavoratore.
       </div>
@@ -191,7 +191,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           {/* Tile 5: My KORA Enabled */}
           <div className={`rounded-lg border p-3 text-center ${workerSummary.my_kora_enabled_count > 0 ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]'}`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">My KORA Abilitati</p>
-            <p className={`text-xl font-bold mt-1 ${workerSummary.my_kora_enabled_count > 0 ? 'text-indigo-700' : 'text-[rgba(6,3,43,0.40)]'}`}>
+            <p className={`text-xl font-bold mt-1 ${workerSummary.my_kora_enabled_count > 0 ? 'text-[rgba(6,3,43,0.72)]' : 'text-[rgba(6,3,43,0.40)]'}`}>
               {workerSummary.my_kora_enabled_count}
             </p>
           </div>
@@ -199,7 +199,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           <div className={`rounded-lg border p-3 text-center ${koraIndex ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]'}`}>
             <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">KORA Index</p>
             {koraIndex ? (
-              <p className="text-xl font-bold mt-1 text-indigo-700">{koraIndex.kora_index_value.toFixed(1)}</p>
+              <p className="text-xl font-bold mt-1 text-[rgba(6,3,43,0.72)]">{koraIndex.kora_index_value.toFixed(1)}</p>
             ) : (
               <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] mt-1">Non disponibile</p>
             )}
@@ -257,7 +257,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
                 <div><p className="text-[rgba(6,3,43,0.40)]">Batch caricati</p><p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{intakeSummary.batch_count}</p></div>
                 <div><p className="text-[rgba(6,3,43,0.40)]">Righe totali</p><p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{intakeSummary.total_rows}</p></div>
                 <div><p className="text-[rgba(6,3,43,0.40)]">Pronte ingestion</p><p className="text-[#C76F3D] font-bold text-sm mt-0.5">{intakeSummary.ready_for_ingestion_rows}</p></div>
-                <div><p className="text-[rgba(6,3,43,0.40)]">Candidate eligible</p><p className="text-indigo-700 font-bold text-sm mt-0.5">{intakeSummary.eligible_candidate_rows}</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Candidate eligible</p><p className="text-[rgba(6,3,43,0.72)] font-bold text-sm mt-0.5">{intakeSummary.eligible_candidate_rows}</p></div>
                 <div><p className="text-[rgba(6,3,43,0.40)]">Review required</p><p className={`font-bold text-sm mt-0.5 ${intakeSummary.review_required_rows > 0 ? 'text-amber-700' : 'text-[rgba(6,3,43,0.52)]'}`}>{intakeSummary.review_required_rows}</p></div>
                 <div><p className="text-[rgba(6,3,43,0.40)]">Quality score</p><p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{(intakeSummary.data_quality_score * 100).toFixed(0)}%</p></div>
               </div>
@@ -277,9 +277,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             {/* Hero row */}
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
-                <p className="text-[10px] text-indigo-500 font-semibold uppercase tracking-wide">KORA Index v3</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)] font-semibold uppercase tracking-wide">KORA Index v3</p>
                 <div className="flex items-end gap-3 mt-1">
-                  <p className="text-3xl font-bold text-indigo-900">{koraIndex.kora_index_value.toFixed(1)}</p>
+                  <p className="text-3xl font-bold text-[#06032B]">{koraIndex.kora_index_value.toFixed(1)}</p>
                   <div className="mb-0.5 space-y-1">
                     <p className="text-[10px] font-semibold text-[#C76F3D]">
                       Confidence Score: {(koraIndex.confidence_score * 100).toFixed(0)}%
@@ -344,15 +344,15 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
               </div>
               <div>
                 <p className="text-[rgba(6,3,43,0.40)]">Economic Relief</p>
-                <p className="text-indigo-700 font-bold text-sm mt-0.5">{pct(btiRecord.economic_relief_share)}</p>
+                <p className="text-[rgba(6,3,43,0.72)] font-bold text-sm mt-0.5">{pct(btiRecord.economic_relief_share)}</p>
               </div>
               <div>
                 <p className="text-[rgba(6,3,43,0.40)]">Deep Activation</p>
-                <p className="text-indigo-700 font-bold text-sm mt-0.5">{pct(btiRecord.deep_activation_share)}</p>
+                <p className="text-[rgba(6,3,43,0.72)] font-bold text-sm mt-0.5">{pct(btiRecord.deep_activation_share)}</p>
               </div>
               <div>
                 <p className="text-[rgba(6,3,43,0.40)]">BTI Score</p>
-                <p className="text-indigo-800 font-bold text-sm mt-0.5">{btiRecord.bti_score.toFixed(1)}</p>
+                <p className="text-[rgba(6,3,43,0.88)] font-bold text-sm mt-0.5">{btiRecord.bti_score.toFixed(1)}</p>
               </div>
               <div>
                 <p className="text-[rgba(6,3,43,0.40)]">Costo per Impact Unit</p>
@@ -433,7 +433,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
               {dpLatestVersion.title && <p className="text-[rgba(6,3,43,0.52)]">{dpLatestVersion.title}</p>}
               <div className="flex flex-wrap gap-3 mt-1">
                 {dpLatestVersion.kora_index_value !== null && dpLatestVersion.kora_index_value !== undefined && (
-                  <span>KORA Index: <strong className="text-indigo-700">{dpLatestVersion.kora_index_value.toFixed(1)}</strong></span>
+                  <span>KORA Index: <strong className="text-[rgba(6,3,43,0.72)]">{dpLatestVersion.kora_index_value.toFixed(1)}</strong></span>
                 )}
                 {dpLatestVersion.confidence_score !== null && dpLatestVersion.confidence_score !== undefined && (
                   <span>CS: <strong className="text-[#C76F3D]">{(dpLatestVersion.confidence_score * 100).toFixed(0)}%</strong></span>
@@ -643,7 +643,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             <div><p className="text-[rgba(6,3,43,0.40)]">PIB privato</p><p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{workerSummary.pib_private_enabled_count}</p></div>
             <div><p className="text-[rgba(6,3,43,0.40)]">Cluster soppressi</p><p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{workerSummary.suppressed_clusters_count}</p></div>
           </div>
-          <div className="rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-3 py-2 text-[10px] text-indigo-700 leading-relaxed">
+          <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)] px-3 py-2 text-[10px] text-[rgba(6,3,43,0.72)] leading-relaxed">
             {workerSummary.privacy_notes}
           </div>
           <p className="text-[10px] text-amber-700 font-medium">{workerSummary.next_action}</p>
@@ -743,7 +743,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         <Link href={`/admin/companies/${companyId}/data-intake`} className="text-xs text-violet-600 hover:text-violet-800 underline underline-offset-2">
           Data Intake →
         </Link>
-        <Link href={`/admin/companies/${companyId}/onboarding`} className="text-xs text-indigo-500 hover:text-indigo-700 underline underline-offset-2">
+        <Link href={`/admin/companies/${companyId}/onboarding`} className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
           Onboarding Operativo →
         </Link>
       </div>

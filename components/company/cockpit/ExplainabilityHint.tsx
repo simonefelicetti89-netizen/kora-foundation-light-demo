@@ -6,29 +6,30 @@ import { TOKENS } from '@/lib/design/kora-design-tokens';
 export function ExplainabilityHint() {
   return (
     <div
-      className="flex items-center gap-3 px-5 py-3.5"
+      className="flex items-center gap-4 px-5 py-4"
       style={{
-        background:   TOKENS.surface,
+        background:   TOKENS.taupe,
         border:       TOKENS.cardBorder,
         borderRadius: TOKENS.cardRadius,
+        borderLeft:   `3px solid ${TOKENS.accent}`,
       }}
     >
-      {/* Violet pointer dot */}
-      <span
-        className="flex-shrink-0 w-2 h-2 rounded-full"
-        style={{ background: TOKENS.accent }}
-      />
-
-      <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.60)', lineHeight: 1.5 }}>
-        Clicca un numero per la derivazione completa —&nbsp;
-        <Link
-          href="/company/kora-index"
-          className="transition-opacity hover:opacity-75"
-          style={{ color: TOKENS.accent, fontWeight: 500 }}
-        >
-          scomposizione analitica KORA Index →
-        </Link>
-      </p>
+      <div style={{ flex: 1 }}>
+        <p style={{
+          fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+          fontSize:   '12px',
+          color:      TOKENS.inkSecondary,
+          lineHeight: 1.5,
+        }}>
+          Ogni numero è tracciabile: 14-stage pipeline · formula IU verificabile · metodo versionato.
+          <Link
+            href="/company/kora-index"
+            style={{ color: TOKENS.accent, fontWeight: 600, marginLeft: 8, textDecoration: 'none' }}
+          >
+            Scomposizione analitica KORA Index →
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

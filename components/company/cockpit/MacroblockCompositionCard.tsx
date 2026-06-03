@@ -2,20 +2,37 @@
 
 import type { MacroblockScore } from '@/lib/types';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TM } from '@/components/ui/TM';
 
 interface MacroblockCompositionCardProps {
   macroblocks: MacroblockScore[];
 }
 
-const MB_DESC: Record<string, string> = {
-  REACH:   'Share e intensità dell\'attivazione nella forza lavoro',
-  QUALITY: 'Qualità, continuità e verificabilità delle attivazioni',
-  EQUITY:  'Distribuzione equa tra segmenti della workforce',
-  BTI:     'Efficienza del budget people in attivazione profonda',
+const MB_LABELS: Record<string, { short: string; desc: string }> = {
+  REACH:   { short: 'Reach',   desc: 'Ampiezza e distribuzione dell\'attivazione' },
+  QUALITY: { short: 'Quality', desc: 'Profondità, verifica e continuità' },
+  EQUITY:  { short: 'Equity',  desc: 'Distribuzione equa tra segmenti workforce' },
+  BTI:     { short: 'BTI',     desc: 'Efficienza budget → attivazione profonda' },
 };
+
+function scoreColor(score: number): string {
+  if (score >= 70) return TOKENS.success;
+  if (score >= 50) return TOKENS.warning;
+  return TOKENS.critical;
+}
+
+function barColor(score: number, isPrimary: boolean): string {
+  if (isPrimary) return TOKENS.accent;
+  if (score >= 70) return 'rgba(6,3,43,0.65)';
+  if (score >= 50) return 'rgba(6,3,43,0.45)';
+  return TOKENS.critical;
+}
 
 export function MacroblockCompositionCard({ macroblocks }: MacroblockCompositionCardProps) {
   if (macroblocks.length === 0) return null;
+
+  const sorted = [...macroblocks].sort((a, b) => b.score - a.score);
+  const primary = sorted[0];
 
   return (
     <div
@@ -24,87 +41,54 @@ export function MacroblockCompositionCard({ macroblocks }: MacroblockComposition
         background:   TOKENS.surface,
         border:       TOKENS.cardBorder,
         borderRadius: TOKENS.cardRadius,
+        boxShadow:    TOKENS.cardShadow,
       }}
     >
-      {/* Title */}
-      <p
-        className="font-kora-serif text-kora-ink mb-5"
-        style={{ fontSize: '1.375rem', letterSpacing: '-0.01em', lineHeight: 1.2 }}
-      >
-        Composizione dell&apos;Index
-      </p>
+      <div style={{ marginBottom: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <p style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', fontSize: '1.25rem', letterSpacing: '-0.01em', lineHeight: 1.2, color: TOKENS.ink }}>
+            Composizione <TM>KORA Index</TM>
+          </p>
+          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 4 }}>
+            4 macroblocchi · pesi calibrazione pre-empirica
+          </p>
+        </div>
+        {primary && (
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <p style={{ fontSize: '9.5px', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '0.08em', color: TOKENS.inkHint }}>
+              Punto di forza
+            </p>
+            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: TOKENS.accent, letterSpacing: '-0.02em', lineHeight: 1, marginTop: 2 }}>
+              {primary.score}
+            </p>
+            <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 2 }}>{MB_LABELS[primary.code]?.short ?? primary.code}</p>
+          </div>
+        )}
+      </div>
 
-      {/* Macroblock grid — 2×2 at wider viewports, 1 col on small */}
-      <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-        {macroblocks.map((mb) => {
-          const desc = MB_DESC[mb.code] ?? mb.label;
+      <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+        {macroblocks.map((mb, idx) => {
+          const isPrimary = idx === 0;
+          const meta = MB_LABELS[mb.code];
           return (
             <div key={mb.code}>
-              {/* Row top: label + weight% + score */}
-              <div className="flex items-baseline justify-between mb-1 gap-3">
-                <div className="flex items-baseline gap-2 min-w-0">
-                  <span
-                    style={{
-                      fontFamily:    'var(--font-jakarta)',
-                      fontWeight:    600,
-                      fontSize:      '12.5px',
-                      color:         TOKENS.ink,
-                      letterSpacing: '-0.005em',
-                      whiteSpace:    'nowrap',
-                    }}
-                  >
-                    {mb.label}
-                  </span>
-                  <span
-                    className="truncate"
-                    style={{
-                      fontFamily: 'var(--font-jakarta)',
-                      fontSize:   '11px',
-                      color:      'rgba(6,3,43,0.42)',
-                    }}
-                  >
-                    {desc}
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-2 flex-shrink-0">
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-jakarta)',
-                      fontSize:   '11px',
-                      color:      'rgba(6,3,43,0.50)',
-                    }}
-                  >
-                    {Math.round(mb.weight * 100)}%
-                  </span>
-                  <span
-                    style={{
-                      fontFamily:        'var(--font-jakarta)',
-                      fontWeight:        700,
-                      fontSize:          '22px',
-                      color:             TOKENS.ink,
-                      minWidth:          '36px',
-                      textAlign:         'right',
-                      lineHeight:        1,
-                      letterSpacing:     '-0.02em',
-                      fontVariantNumeric:'tabular-nums',
-                    }}
-                  >
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 6, gap: 8 }}>
+                <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 600, fontSize: '10.5px', color: isPrimary ? TOKENS.accent : TOKENS.inkSecondary, letterSpacing: '0.04em', textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const }}>
+                  {meta?.short ?? mb.code}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 700, fontSize: '22px', color: scoreColor(mb.score), letterSpacing: '-0.02em', lineHeight: 1 }}>
                     {mb.score}
                   </span>
+                  <span style={{ fontSize: '10px', color: TOKENS.inkHint }}>/100</span>
                 </div>
               </div>
-              {/* Bar */}
-              <div
-                className="rounded-full h-1.5 overflow-hidden"
-                style={{ background: TOKENS.inkTrack }}
-              >
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width:      `${mb.score}%`,
-                    background: TOKENS.ink,
-                  }}
-                />
+              <div style={{ height: 6, borderRadius: 999, background: TOKENS.inkBorder, overflow: 'hidden', marginBottom: 6 }}>
+                <div style={{ width: `${mb.score}%`, height: '100%', borderRadius: 999, background: barColor(mb.score, isPrimary) }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 4 }}>
+                <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9.5px', color: TOKENS.inkHint, lineHeight: 1.4, flex: 1 }}>{meta?.desc}</p>
+                <span style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9.5px', color: TOKENS.inkHint, fontWeight: 600, whiteSpace: 'nowrap' as const, flexShrink: 0 }}>{Math.round(mb.weight * 100)}%</span>
               </div>
             </div>
           );

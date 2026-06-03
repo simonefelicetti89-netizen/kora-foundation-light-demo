@@ -130,8 +130,8 @@ export default function PillarsInitiatives() {
   return (
     <div className="space-y-5">
       <PageMasthead
-        eyebrow={`Pilastri & Iniziative · ${activeScenario}`}
-        title="Pilastri & Iniziative"
+        eyebrow={`Pillar Intelligence · ${activeScenario}`}
+        title="Pillar Intelligence"
         subline={`${companyName} · ${aggregate?.reporting_period ?? activeScenario} · distribuzione aggregata`}
       />
 

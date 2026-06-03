@@ -54,7 +54,7 @@ const CLUSTERS: Cluster[] = [
     title: 'Pilot Calibration',
     status: 'upcoming',
     statusLabel: 'Prossima fase — richiede primi pilot aziendali',
-    statusStyle: 'bg-blue-50 text-blue-700 border-blue-200',
+    statusStyle: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
     phaseStyle: 'border-blue-100 bg-blue-50/40',
     titleStyle: 'text-blue-900',
     purposeColor: 'text-blue-700',

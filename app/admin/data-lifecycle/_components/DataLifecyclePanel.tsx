@@ -34,7 +34,7 @@ const RISK_CLS: Record<string, string> = {
 };
 const STATUS_CLS: Record<string, string> = {
   pending:    'bg-amber-50 text-amber-700 border-amber-200',
-  processing: 'bg-blue-50 text-blue-700 border-blue-200',
+  processing: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   approved:   'bg-green-50 text-green-700 border-green-200',
   rejected:   'bg-red-50 text-red-700 border-red-200',
   partial:    'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',

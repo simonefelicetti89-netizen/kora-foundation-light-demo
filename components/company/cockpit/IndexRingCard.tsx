@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { SafeguardStatus } from '@/lib/types';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { formatConfidenceScore } from '@/lib/formatters';
@@ -17,30 +18,36 @@ const SAFEGUARD_CONFIG: Record<SafeguardStatus, { bg: string; text: string; dot:
   FLAGGED: { ...TOKENS.safeguard.cap,   label: 'Flagged' },
 };
 
-const R    = 68;
+const R    = 72;
 const CIRC = 2 * Math.PI * R;
 
 export function IndexRingCard({ value, safeguardStatus, confidenceScore }: IndexRingCardProps) {
+  const [hovered, setHovered] = useState(false);
   const dash  = (value / 100) * CIRC;
   const safeg = SAFEGUARD_CONFIG[safeguardStatus] ?? SAFEGUARD_CONFIG['WARNING'];
 
   return (
     <div
-      className="relative flex flex-col p-6"
+      className="relative flex flex-col p-7"
       style={{
         background:   TOKENS.surface,
-        border:       TOKENS.cardBorderStrong,
+        border:       hovered ? TOKENS.cardBorderHover : TOKENS.cardBorderStrong,
         borderRadius: TOKENS.cardRadius,
+        boxShadow:    hovered ? TOKENS.cardShadowHover : TOKENS.cardShadow,
+        transition:   'all 180ms ease',
+        transform:    hovered ? 'translateY(-2px)' : 'none',
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {/* Brandmark firma — top-right, discreta */}
+      {/* Brandmark watermark — top-right */}
       <svg
         viewBox="108 100 212 220"
-        height="22" width="22"
+        height="20" width="20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
-        style={{ position: 'absolute', top: 16, right: 16, opacity: 0.5 }}
+        style={{ position: 'absolute', top: 20, right: 20, opacity: 0.35 }}
       >
         <path
           fillRule="evenodd" clipRule="evenodd"
@@ -49,82 +56,135 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
         />
       </svg>
 
-      {/* Titolo serif — comanda la card */}
+      {/* Title serif */}
       <p
-        className="font-kora-serif pr-8"
-        style={{ fontSize: '1.875rem', letterSpacing: '-0.02em', lineHeight: 1.1, color: TOKENS.ink }}
+        className="font-kora-serif pr-10"
+        style={{ fontSize: '2rem', letterSpacing: '-0.02em', lineHeight: 1.08, color: TOKENS.ink }}
       >
-        <TM>KORA Index</TM>{' '}
-        <span style={{ color: 'rgba(6,3,43,0.40)', fontSize: '1.5rem' }}>v3</span>
+        <TM>KORA Index</TM>
+        <span style={{ color: 'rgba(6,3,43,0.35)', fontSize: '1.4rem', marginLeft: 6 }}>v3</span>
       </p>
 
-      {/* Contenuto: ring + stato gerarchizzato */}
-      <div className="flex items-start gap-8 mt-5">
+      {/* Ring + state column */}
+      <div className="flex items-start gap-8 mt-6">
 
-        {/* Ring gauge */}
-        <div className="relative flex-shrink-0" style={{ width: 180, height: 180 }}>
-          <svg viewBox="0 0 180 180" width="180" height="180" style={{ display: 'block' }}>
-            <circle cx="90" cy="90" r={R} fill="none" stroke="rgba(6,3,43,0.10)" strokeWidth="10" />
+        {/* Ring gauge — terracotta fill */}
+        <div className="relative flex-shrink-0">
+          <svg viewBox="0 0 180 180" width={186} height={186} style={{ display: 'block' }}>
+            {/* Track */}
+            <circle cx="90" cy="90" r={R} fill="none" stroke="rgba(6,3,43,0.07)" strokeWidth="11" />
+            {/* Fill */}
             <circle
               cx="90" cy="90" r={R}
               fill="none"
               stroke={TOKENS.accent}
-              strokeWidth="10"
+              strokeWidth="11"
               strokeLinecap="round"
               strokeDasharray={`${dash} ${CIRC}`}
               transform="rotate(-90 90 90)"
             />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ pointerEvents: 'none' }}>
-            <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 50, color: TOKENS.ink, lineHeight: 1 }}>
+            {/* Score text */}
+            <text
+              x="90" y="83"
+              textAnchor="middle"
+              dominantBaseline="auto"
+              style={{
+                fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                fontWeight:  700,
+                fontSize:    '46px',
+                fill:        TOKENS.ink,
+                letterSpacing: '-2px',
+              }}
+            >
               {Math.round(value)}
-            </span>
-            <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: 13, color: 'rgba(6,3,43,0.38)', lineHeight: 1, marginTop: 4 }}>
+            </text>
+            <text
+              x="90" y="103"
+              textAnchor="middle"
+              dominantBaseline="auto"
+              style={{
+                fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                fontSize:   '13px',
+                fill:       'rgba(6,3,43,0.35)',
+              }}
+            >
               /100
-            </span>
-          </div>
+            </text>
+          </svg>
         </div>
 
-        {/* Stato gerarchizzato */}
-        <div className="flex flex-col gap-0 flex-1 min-w-0 self-center">
+        {/* State column */}
+        <div className="flex flex-col gap-5 flex-1 min-w-0 self-center">
 
-          {/* PRIMARIO — Safeguard */}
-          <div className="space-y-2">
-            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.50)' }}>
+          {/* Activation Safeguard™ */}
+          <div>
+            <p style={{
+              fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontWeight:    600,
+              fontSize:      '10px',
+              letterSpacing: '0.09em',
+              textTransform: 'uppercase',
+              color:         TOKENS.inkHint,
+              marginBottom:  6,
+            }}>
               Activation Safeguard™
             </p>
             <span
-              className="inline-flex items-center gap-2 rounded-md font-medium"
               style={{
-                fontFamily:    'var(--font-jakarta)',
-                background:    safeg.bg,
-                color:         safeg.text,
-                fontSize:      '15px',
-                letterSpacing: '0',
-                padding:       '6px 14px',
+                display:     'inline-flex',
+                alignItems:  'center',
+                gap:         7,
+                borderRadius: 999,
+                padding:     '6px 14px',
+                background:  safeg.bg,
+                color:       safeg.text,
+                border:      `1px solid ${safeg.dot}40`,
+                fontSize:    '13px',
+                fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                fontWeight:  600,
               }}
             >
-              <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: safeg.dot }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: safeg.dot, flexShrink: 0 }} />
               {safeg.label}
             </span>
           </div>
 
-          {/* Hairline */}
-          <div style={{ height: '1px', background: TOKENS.inkBorder, margin: '16px 0' }} />
+          {/* Divider */}
+          <div style={{ height: 1, background: TOKENS.inkBorder }} />
 
-          {/* SECONDARIO — Confidence */}
-          <div className="space-y-1">
-            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.50)' }}>
+          {/* Confidence Score™ */}
+          <div>
+            <p style={{
+              fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontWeight:    600,
+              fontSize:      '10px',
+              letterSpacing: '0.09em',
+              textTransform: 'uppercase',
+              color:         TOKENS.inkHint,
+              marginBottom:  6,
+            }}>
               Confidence Score™
             </p>
-            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: TOKENS.ink, letterSpacing: '-0.02em', lineHeight: 1 }}>
+            <p style={{
+              fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontWeight:  700,
+              fontSize:    '26px',
+              color:       TOKENS.ink,
+              letterSpacing: '-0.02em',
+              lineHeight:  1,
+            }}>
               {formatConfidenceScore(confidenceScore)}
             </p>
-            <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', color: 'rgba(6,3,43,0.45)', lineHeight: 1.5 }}>
-              indicatore esterno · non pesato nel calcolo
+            <p style={{
+              fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontSize:    '10px',
+              color:       'rgba(6,3,43,0.40)',
+              lineHeight:  1.45,
+              marginTop:   4,
+            }}>
+              Esterno al KORA Index™ · non pesato nel calcolo
             </p>
           </div>
-
         </div>
       </div>
     </div>

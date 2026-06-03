@@ -47,7 +47,7 @@ const SUBMISSION_STATUS_LABEL: Record<string, string> = {
 const SUBMISSION_STATUS_CLS: Record<string, string> = {
   submission_accepted:            'bg-green-50 text-green-700 border-green-200',
   submission_needs_clarification: 'bg-amber-50 text-amber-700 border-amber-200',
-  submission_pending:             'bg-blue-50 text-blue-700 border-blue-200',
+  submission_pending:             'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
@@ -257,7 +257,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
                       cls={ev.eligibility === 'eligible' ? 'bg-green-50 text-green-700 border-green-200' :
                            ev.eligibility === 'limited' ? 'bg-amber-50 text-amber-700 border-amber-200' :
                            ev.eligibility === 'blocked' ? 'bg-red-50 text-red-600 border-red-200' :
-                           'bg-blue-50 text-blue-700 border-blue-200'}
+                           'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]'}
                     />
                   </td>
                   <td className="px-3 py-2 text-[rgba(6,3,43,0.52)]">{ev.evidenceLevel}</td>
@@ -313,7 +313,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
                     </p>
                   )}
                   {sub.adminComment && (
-                    <p className="text-[10px] text-indigo-700 rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-2 py-1 mt-1">
+                    <p className="text-[10px] text-[rgba(6,3,43,0.72)] rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)] px-2 py-1 mt-1">
                       <span className="font-semibold">KORA Admin: </span>{sub.adminComment}
                     </p>
                   )}

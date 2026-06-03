@@ -127,7 +127,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
       </div>
 
       {/* ── Admin identity banner ── */}
-      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-[rgba(6,3,43,0.88)] leading-relaxed space-y-1">
         <p><span className="font-semibold">Questa sezione è riservata agli operatori KORA.</span></p>
         <p>Il cliente azienda vede solo stato, readiness e output — non il backstage operativo.</p>
         <p>KORA Admin governa la piattaforma, non sorveglia i lavoratori.</p>
@@ -487,12 +487,12 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
               className={cn(
                 'rounded-lg border p-3 space-y-1 transition-colors',
                 link.available
-                  ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] hover:bg-indigo-100'
+                  ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] hover:bg-[rgba(6,3,43,0.06)]'
                   : 'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] opacity-60 pointer-events-none',
               )}
             >
               <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{link.label}</p>
-              <p className={cn('text-[10px] leading-relaxed', link.available ? 'text-indigo-700' : 'text-[rgba(6,3,43,0.40)]')}>{link.note}</p>
+              <p className={cn('text-[10px] leading-relaxed', link.available ? 'text-[rgba(6,3,43,0.72)]' : 'text-[rgba(6,3,43,0.40)]')}>{link.note}</p>
             </Link>
           ))}
         </div>
@@ -534,7 +534,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
         <Link href="/admin/companies/workforce-baseline" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           Workforce Baseline
         </Link>
-        <Link href="/company/ingestion" className="text-xs text-indigo-500 hover:text-indigo-700 underline underline-offset-2">
+        <Link href="/company/ingestion" className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
           AI Ingestion →
         </Link>
       </div>

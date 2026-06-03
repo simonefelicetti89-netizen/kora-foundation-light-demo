@@ -10,6 +10,7 @@ import { MacroblockCompositionCard } from '@/components/company/cockpit/Macroblo
 import { MetricTrio }                from '@/components/company/cockpit/MetricTrio';
 import { ExplainabilityHint }        from '@/components/company/cockpit/ExplainabilityHint';
 import { ProvenanceFooter }          from '@/components/company/cockpit/ProvenanceFooter';
+import { MethodologyBadge }          from '@/components/ui/MethodologyBadge';
 
 // ── Data seam — unchanged ─────────────────────────────────────────────────────
 import { useScoringResult, useDemoScenarioComparison } from '@/lib/scoring-result';
@@ -41,7 +42,7 @@ export default function ExecutiveCockpit() {
   const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(companyId);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
 
       {/* Masthead — always shown */}
       <CockpitMasthead
@@ -49,6 +50,16 @@ export default function ExecutiveCockpit() {
         period={output?.reporting_period ?? activeScenario}
         workerCount={workerSummary.total_workers}
       />
+
+      {/* Methodology strip — non-suppressible per doc 21b */}
+      {hasKoraData && output && (
+        <MethodologyBadge
+          versionId={output.methodology_version_id}
+          calibrationStatus={output.calibration_status}
+          period={output.reporting_period}
+          variant="strip"
+        />
+      )}
 
       {/* No-data state */}
       {!hasKoraData && tenant && (

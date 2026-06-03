@@ -36,7 +36,7 @@ const REVIEW_STATUS_STYLE: Record<UEFReviewStatus, { badge: string; label: strin
   blocked_by_design:            { badge: 'bg-rose-50 text-rose-700 border-rose-200',       label: 'Bloccato by Design' },
   needs_more_data:              { badge: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Dati mancanti' },
   rejected:                     { badge: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',   label: 'Rifiutato' },
-  override_to_eligible:         { badge: 'bg-teal-50 text-teal-700 border-teal-200',       label: 'Override → Eligible' },
+  override_to_eligible:         { badge: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.72)] border-[rgba(6,3,43,0.08)]',       label: 'Override → Eligible' },
   override_to_limited:          { badge: 'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]', label: 'Override → Limited' },
 };
 
@@ -48,7 +48,7 @@ const ELIGIBILITY_STYLE: Record<string, { badge: string; label: string }> = {
 
 const PILLAR_BADGE: Record<PillarCode, string> = {
   LIFE:       'bg-green-50 text-green-700 border-green-200',
-  GROWTH:     'bg-blue-50 text-blue-700 border-blue-200',
+  GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
   IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
   LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
@@ -158,7 +158,7 @@ function getBTILabel(rec: UEFReviewRecord): { label: string; cls: string } {
     return { label: 'full_weight',         cls: 'bg-green-50 text-green-700 border-green-200' };
   }
   if (rec.approved_for_bti_governance) {
-    return { label: 'confidence_weighted', cls: 'bg-blue-50 text-blue-700 border-blue-200' };
+    return { label: 'confidence_weighted', cls: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]' };
   }
   return { label: 'review_required',     cls: 'bg-amber-50 text-amber-700 border-amber-200' };
 }
@@ -518,7 +518,7 @@ export default function UEFReview() {
             { label: 'Review Required',         count: queueStats.reviewRequired,       cls: 'border-amber-200 bg-amber-50 text-amber-700',   filter: 'review_required' },
             { label: 'Evidenza Debole L0/L1',   count: queueStats.weakEvidence,         cls: 'border-orange-200 bg-orange-50 text-orange-700', filter: 'weak_evidence' },
             { label: 'Blocked by Design',       count: queueStats.blocked,              cls: 'border-rose-200 bg-rose-50 text-rose-700',       filter: 'blocked' },
-            { label: 'Limited / Econ. Relief',  count: queueStats.limited,              cls: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-indigo-700', filter: 'limited' },
+            { label: 'Limited / Econ. Relief',  count: queueStats.limited,              cls: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]', filter: 'limited' },
             { label: 'Budget Source Mancante',  count: queueStats.missingBudget,        cls: 'border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)]',   filter: 'missing_budget' },
             { label: 'Sensitive Esclusi',       count: queueStats.sensitiveExcluded,    cls: 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.52)]',       filter: 'sensitive_excluded' },
             { label: 'Pronti Advisor Review',   count: queueStats.readyForAdvisor,      cls: 'border-blue-200 bg-blue-50 text-blue-700',       filter: 'review_required' },
@@ -818,7 +818,7 @@ export default function UEFReview() {
             {
               header: 'Limited (Economic Relief) → BTI only',
               body: 'I benefit cash-like non generano IU. Tracciati in BTI engine come economic_relief_spend. Non è spesa sbagliata — è spesa che può diventare più intelligente.',
-              style: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-indigo-700',
+              style: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]',
             },
             {
               header: 'Review Required → 0 IU fino a risoluzione',

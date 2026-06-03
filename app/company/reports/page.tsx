@@ -447,13 +447,13 @@ export default function Reports() {
   const latestSt = latestVersion ? statusToken(latestVersion.status) : null;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
 
       {/* ── 1. PageMasthead ─────────────────────────────────────────────────── */}
       <PageMasthead
         eyebrow={`Decision Pack · ${activeScenario} · ${companyName}`}
-        title="Report direzionali & Decision Pack"
-        subline="Output board-ready per trasformare evidenze, attivazione e raccomandazioni in decisioni leggibili da HR, finance, ESG e board."
+        title="Report direzionali"
+        subline="Output board-ready per HR, Finance, ESG e board. Evidenze strutturate, attivazione e raccomandazioni in formato decisionale."
         meta="Foundation Light v0.1 · pre_empirical_calibration · dati sintetici demo"
       />
 

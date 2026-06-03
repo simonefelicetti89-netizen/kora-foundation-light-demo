@@ -154,17 +154,56 @@ export default function Activation() {
       ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       <PageMasthead
-        eyebrow={`Attivazione & Partecipazione · ${activeScenario}`}
-        title="Attivazione & Partecipazione"
-        subline={`Vista aggregata — gruppi < ${SAFE_AGGREGATION_THRESHOLD} lavoratori soppressi · nessun PIB individuale`}
+        eyebrow={`Intelligence operativa · ${activeScenario}`}
+        title={<><span className="font-kora-serif">Activation Debt</span><sup className="tm-mark">™</sup> & Partecipazione</>}
+        subline={`Aggregato aziendale — gruppi < ${SAFE_AGGREGATION_THRESHOLD} soppressi · nessun PIB individuale · nessun dato lavoratore`}
       />
+
+      {/* Safeguard status — always visible when data exists */}
+      {safeguard && (
+        <div
+          style={{
+            background:   safeguard.status === 'CLEAR'   ? TOKENS.safeguard.pass.bg
+                        : safeguard.status === 'FLAGGED' ? TOKENS.safeguard.cap.bg
+                        : TOKENS.safeguard.watch.bg,
+            border:       safeguard.status === 'CLEAR'   ? `1px solid ${TOKENS.safeguard.pass.dot}40`
+                        : safeguard.status === 'FLAGGED' ? `1px solid ${TOKENS.safeguard.cap.dot}40`
+                        : `1px solid ${TOKENS.safeguard.watch.dot}40`,
+            borderRadius: TOKENS.cardRadius,
+            padding:      '16px 20px',
+            display:      'flex',
+            alignItems:   'center',
+            gap:          14,
+          }}
+        >
+          <span style={{
+            width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+            background: safeguard.status === 'CLEAR'   ? TOKENS.safeguard.pass.dot
+                      : safeguard.status === 'FLAGGED' ? TOKENS.safeguard.cap.dot
+                      : TOKENS.safeguard.watch.dot,
+          }} />
+          <div style={{ flex: 1 }}>
+            <p style={{
+              fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontWeight:  700,
+              fontSize:    '13px',
+              color:       safeguard.status === 'CLEAR'   ? TOKENS.safeguard.pass.text
+                         : safeguard.status === 'FLAGGED' ? TOKENS.safeguard.cap.text
+                         : TOKENS.safeguard.watch.text,
+            }}>
+              Activation Safeguard™: {safeguard.status}
+              {' '}· AR {pct(safeguard.ar_value)} · MAR {pct(safeguard.mar_value)}
+            </p>
+          </div>
+        </div>
+      )}
 
       {aggregate ? (
         <>
-          {/* ── Activation Debt Hero ── */}
-          <SectionLabel>Activation Debt — Maggioranza Silenziosa</SectionLabel>
+          {/* ── Activation Debt™ Hero ── */}
+          <SectionLabel>Activation Debt™ — Maggioranza Silenziosa</SectionLabel>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {/* Lavoratori mai attivati */}
             <div style={{ background: TOKENS.safeguard.cap.bg, border: `1px solid ${TOKENS.safeguard.cap.dot}22`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>

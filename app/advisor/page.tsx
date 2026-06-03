@@ -71,7 +71,7 @@ const ASSIGNMENT_STATUS_BADGE: Record<string, string> = {
   'Attivo':     'bg-green-50 text-green-700 border-green-200',
   'Completato': 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
   'In corso':   'bg-amber-50 text-amber-700 border-amber-200',
-  'Periodico':  'bg-blue-50 text-blue-700 border-blue-200',
+  'Periodico':  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
 };
 
 const ENTITY_TYPE_BADGE: Record<string, string> = {
@@ -341,7 +341,7 @@ export default function AdvisorDashboard() {
 
           {/* Avatar + name + license */}
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold shrink-0">
+            <div className="w-12 h-12 rounded-full bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.72)] flex items-center justify-center text-sm font-bold shrink-0">
               {ADVISOR_PROFILE.avatar_initials}
             </div>
             <div className="flex-1 min-w-0">
@@ -392,7 +392,7 @@ export default function AdvisorDashboard() {
             </div>
             <div className="h-2 rounded-full bg-[rgba(6,3,43,0.05)] overflow-hidden">
               <div
-                className="h-2 rounded-full bg-indigo-400 transition-all"
+                className="h-2 rounded-full bg-[#C76F3D] transition-all"
                 style={{ width: `${creditsPercent}%` }}
               />
             </div>
@@ -623,7 +623,7 @@ export default function AdvisorDashboard() {
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden divide-y divide-[rgba(6,3,43,0.05)]">
           {CALENDAR_ITEMS.map((item) => (
             <div key={item.time} className="flex items-start gap-4 px-4 py-3">
-              <p className="text-sm font-mono font-semibold text-indigo-400 shrink-0 w-12 pt-0.5">
+              <p className="text-sm font-mono font-semibold text-[rgba(6,3,43,0.40)] shrink-0 w-12 pt-0.5">
                 {item.time}
               </p>
               <div className="flex-1 min-w-0">

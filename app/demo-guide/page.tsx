@@ -1,5 +1,6 @@
+'use client';
+
 // KORA Foundation Light — Guida Demo
-// Static — no backend, no demo state, no client logic.
 
 import Link from 'next/link';
 import { PageMasthead } from '@/components/ui/PageMasthead';
@@ -67,10 +68,10 @@ export default function DemoGuidePage() {
 
       {/* 1. PageMasthead */}
       <PageMasthead
-        eyebrow="Guida alla lettura · Foundation Light v0.1"
-        title="Guida demo"
-        subline="Una mappa navigabile della logica KORA: indice, dati, activation debt, eligibility, BTI, privacy boundary e Decision Pack."
-        meta="Product Vision Prototype · demo data sintetici · Foundation Light v0.1"
+        eyebrow="Guida alla lettura · KORA Foundation Light v0.1"
+        title="Executive Walkthrough"
+        subline="Mappa navigabile della logica KORA: KORA Index™, Activation Debt™, BTI™, Eligibility Gate, Confidence Score™, privacy boundary e Decision Pack."
+        meta="Product Vision Prototype · dati sintetici · Foundation Light v0.1"
       />
 
       {/* Badge chips */}
@@ -111,25 +112,41 @@ export default function DemoGuidePage() {
       </div>
 
       {/* 3. Cosa valutare */}
-      <SectionLabel>Aree chiave da esplorare</SectionLabel>
-      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, overflow: 'hidden' }}>
+      <SectionLabel>Percorso consigliato</SectionLabel>
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, overflow: 'hidden', boxShadow: TOKENS.cardShadow }}>
         {EVALUATE_ITEMS.map((item, i) => (
-          <div key={item.label} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderBottom: i < EVALUATE_ITEMS.length - 1 ? TOKENS.cardBorder : 'none' }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="flex items-center gap-2 flex-wrap">
-                <p style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.ink }}>{item.label}</p>
-                <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>·</span>
-                <p style={{ fontSize: '11.5px', color: TOKENS.inkSecondary }}>{item.shows}</p>
-              </div>
-              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 3, lineHeight: 1.55, fontStyle: 'italic' }}>{item.why}</p>
+          <Link
+            key={item.label}
+            href={item.href}
+            style={{
+              display:     'flex',
+              alignItems:  'flex-start',
+              gap:         16,
+              padding:     '14px 20px',
+              borderBottom: i < EVALUATE_ITEMS.length - 1 ? TOKENS.cardBorder : 'none',
+              borderLeft:  '3px solid transparent',
+              textDecoration: 'none',
+              transition:  'all 140ms ease',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = TOKENS.accentHover;
+              (e.currentTarget as HTMLElement).style.borderLeftColor = TOKENS.accent;
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = '';
+              (e.currentTarget as HTMLElement).style.borderLeftColor = 'transparent';
+            }}
+          >
+            <div style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: TOKENS.inkBorder, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
+              <span style={{ fontSize: '9px', fontWeight: 700, color: TOKENS.inkHint }}>{i + 1}</span>
             </div>
-            <Link
-              href={item.href}
-              style={{ flexShrink: 0, borderRadius: 4, border: TOKENS.cardBorder, background: TOKENS.inkBorder, padding: '4px 10px', fontSize: '10px', fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none', whiteSpace: 'nowrap' }}
-            >
-              Vai →
-            </Link>
-          </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink, lineHeight: 1.3 }}>{item.label}</p>
+              <p style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, marginTop: 2, lineHeight: 1.5 }}>{item.shows}</p>
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.5, fontStyle: 'italic' }}>{item.why}</p>
+            </div>
+            <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: 600, color: TOKENS.accent, marginTop: 2 }}>→</span>
+          </Link>
         ))}
       </div>
 

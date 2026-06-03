@@ -14,7 +14,7 @@ const PILLAR_COLORS: Record<string, string> = {
 
 const PILLAR_LIGHT: Record<string, string> = {
   LIFE:       'bg-green-50 text-green-700 border-green-200',
-  GROWTH:     'bg-blue-50 text-blue-700 border-blue-200',
+  GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
   IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
   LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
@@ -131,13 +131,13 @@ export default function Opportunities() {
           <h1 className="text-xl font-bold text-[#06032B]">Opportunità per te</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Percorsi e iniziative abbinati al tuo profilo di impatto</p>
         </div>
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
-          <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
-          <p className="mt-1 text-xs text-rose-600 max-w-sm mx-auto">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
+          <p className="text-sm font-semibold text-[#9E3B2F]">Accesso Limitato</p>
+          <p className="mt-1 text-xs text-[rgba(158,59,47,0.90)] max-w-sm mx-auto">
             Le opportunità personalizzate sono visibili solo al lavoratore. I ruoli datore di lavoro
             non possono accedere ai percorsi individuali.
           </p>
-          <p className="mt-3 text-xs font-mono text-rose-400">Ruolo attivo: {activeRole}</p>
+          <p className="mt-3 text-xs font-mono text-[rgba(158,59,47,0.55)]">Ruolo attivo: {activeRole}</p>
         </div>
       </div>
     );
@@ -154,8 +154,8 @@ export default function Opportunities() {
 
       {/* Privacy notice — non-suppressible */}
       <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-3">
-        <p className="text-xs font-semibold text-indigo-800">Visibile solo a te.</p>
-        <p className="text-xs text-indigo-700 mt-0.5 leading-relaxed">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.88)]">Visibile solo a te.</p>
+        <p className="text-xs text-[rgba(6,3,43,0.72)] mt-0.5 leading-relaxed">
           Il tuo datore di lavoro non vede quali opportunità esplori o selezioni. La partecipazione
           genera IU solo se e quando avviene e viene verificata.
         </p>

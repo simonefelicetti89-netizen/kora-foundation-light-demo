@@ -337,7 +337,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                         <button
                           onClick={() => handleOpenSecureLink(att)}
                           disabled={openLinkLoading === att.attachmentId}
-                          className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2.5 py-1 text-[9px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
+                          className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2.5 py-1 text-[9px] font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.06)] disabled:opacity-50 transition-colors"
                         >
                           {openLinkLoading === att.attachmentId ? '⏳' : '🔒 Apri documento sicuro'}
                         </button>

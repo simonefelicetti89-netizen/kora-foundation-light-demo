@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import type { MacroblockScore, MacroblockCode } from '@/lib/types';
@@ -23,7 +24,14 @@ const MACROBLOCK_EXPLANATIONS: Record<string, string> = {
 // This card uses grid-row: span 6 + grid-template-rows: subgrid so all 4 cards
 // share the same 6 parent row tracks → sections align at identical baseline.
 // Fallback (no subgrid support): sections stack naturally, still readable.
+function scoreColor(s: number) {
+  if (s >= 70) return TOKENS.success;
+  if (s >= 50) return TOKENS.warning;
+  return TOKENS.critical;
+}
+
 export function MacroblockCard({ macroblock, previousScore, className }: MacroblockCardProps) {
+  const [hovered, setHovered]  = useState(false);
   const explanation    = MACROBLOCK_EXPLANATIONS[macroblock.code] ?? '';
   const delta          = previousScore !== undefined ? macroblock.score - previousScore : null;
   const componentCodes = MACROBLOCK_COMPONENTS[macroblock.code as MacroblockCode] ?? [];
@@ -34,12 +42,17 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
       className={cn('p-4', className)}
       style={{
         background:          TOKENS.surface,
-        border:              TOKENS.cardBorder,
+        border:              hovered ? TOKENS.cardBorderHover : TOKENS.cardBorder,
         borderRadius:        TOKENS.cardRadius,
+        boxShadow:           hovered ? TOKENS.cardShadowHover : TOKENS.cardShadow,
+        transition:          'all 180ms ease',
+        transform:           hovered ? 'translateY(-1px)' : 'none',
         display:             'grid',
         gridRow:             'span 6',
         gridTemplateRows:    'subgrid',
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
 
       {/* Row 1 — Header: code eyebrow + label + score */}
@@ -58,7 +71,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
         </div>
         <div className="text-right shrink-0">
           <span
-            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: TOKENS.ink, letterSpacing: '-0.02em' }}
+            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: scoreColor(macroblock.score), letterSpacing: '-0.02em' }}
           >
             {macroblock.score}
           </span>
@@ -78,7 +91,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
       <div className="h-1.5 w-full rounded-full" style={{ background: TOKENS.inkTrack }}>
         <div
           className="h-1.5 rounded-full"
-          style={{ width: `${Math.min(macroblock.score, 100)}%`, background: TOKENS.ink }}
+          style={{ width: `${Math.min(macroblock.score, 100)}%`, background: scoreColor(macroblock.score) }}
         />
       </div>
 

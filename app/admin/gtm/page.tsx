@@ -68,7 +68,7 @@ const GTM_TRACKS: GTMTrack[] = [
     deliverable: 'Board Pack / Decision Pack',
     presenterNote: 'Non entrare nei dettagli tecnici: problema, indice, debito, output.',
     cardStyle: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)]',
-    letterStyle: 'text-indigo-300',
+    letterStyle: 'text-[rgba(6,3,43,0.30)]',
     steps: [
       { n: 1, label: 'Demo Guide',              href: '/demo-guide' },
       { n: 2, label: 'Company Workspace',        href: '/company' },
@@ -85,8 +85,8 @@ const GTM_TRACKS: GTMTrack[] = [
     message: 'Dal dato al debt, dal budget al Board Pack — con privacy lavoratore garantita.',
     deliverable: 'KORA Index, Activation Debt, Budget-to-Human-Impact, Board Pack, privacy architecture',
     presenterNote: 'Usare My KORA per chiudere il tema sorveglianza/privacy.',
-    cardStyle: 'border-blue-200 bg-blue-50',
-    letterStyle: 'text-blue-300',
+    cardStyle: 'border-[rgba(43,92,230,0.15)] bg-[rgba(43,92,230,0.05)]',
+    letterStyle: 'text-[rgba(43,92,230,0.60)]',
     steps: [
       { n: 1, label: 'Demo Guide',              href: '/demo-guide' },
       { n: 2, label: 'Company Workspace',        href: '/company' },
@@ -106,8 +106,8 @@ const GTM_TRACKS: GTMTrack[] = [
     message: 'KORA è una piattaforma multi-sided: azienda, lavoratore, partner, advisor e territorio.',
     deliverable: 'Full platform walkthrough + pilot package',
     presenterNote: 'Spiegare chiaramente i cambi ruolo: company, worker, partner, advisor, admin.',
-    cardStyle: 'border-violet-200 bg-violet-50',
-    letterStyle: 'text-violet-300',
+    cardStyle: 'border-[rgba(107,122,146,0.15)] bg-[rgba(107,122,146,0.05)]',
+    letterStyle: 'text-[rgba(107,122,146,0.60)]',
     steps: [
       { n: 1,  label: 'Demo Guide',              href: '/demo-guide' },
       { n: 2,  label: 'Company Workspace',        href: '/company' },
@@ -172,8 +172,8 @@ const PILOT_CRITERIA = [
 
 const STAGE_STYLES: Record<string, string> = {
   pilot_active:   'bg-green-100 text-green-800 border-green-200',
-  pilot_proposed: 'bg-blue-100 text-blue-800 border-blue-200',
-  demo_shown:     'bg-indigo-100 text-indigo-800 border-[rgba(199,111,61,0.22)]',
+  pilot_proposed: 'bg-[rgba(43,92,230,0.10)] text-[#1B2A4A] border-[rgba(43,92,230,0.22)]',
+  demo_shown:     'bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.85)] border-[rgba(199,111,61,0.22)]',
   contacted:      'bg-yellow-100 text-yellow-800 border-yellow-200',
   prospect:       'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
 };
@@ -454,26 +454,26 @@ export default function GtmPilotConsole() {
           <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-indigo-900">Foundation Light Pilot</p>
-                <p className="text-xs text-indigo-700 mt-1 leading-relaxed max-w-lg">
+                <p className="text-sm font-bold text-[#06032B]">Foundation Light Pilot</p>
+                <p className="text-xs text-[rgba(6,3,43,0.72)] mt-1 leading-relaxed max-w-lg">
                   Percorso 60–90 giorni per trasformare dati people/welfare/training/CSR esistenti
                   in una prima intelligence KORA — con KORA Index, Activation Debt,
                   Budget-to-Human-Impact e Board Pack.
                 </p>
-                <p className="text-[11px] text-indigo-500 mt-2">
+                <p className="text-[11px] text-[rgba(6,3,43,0.52)] mt-2">
                   Pricing da definire in base a perimetro, fonti dati e durata pilot.
                 </p>
               </div>
               <div className="shrink-0">
                 <button
                   disabled
-                  className="rounded-md border border-indigo-300 bg-[#F8F6F1] px-4 py-2 text-xs font-semibold text-indigo-400 cursor-not-allowed"
+                  className="rounded-md border border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] px-4 py-2 text-xs font-semibold text-[rgba(6,3,43,0.40)] cursor-not-allowed"
                 >
                   Prepara proposta pilota — demo
                 </button>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-[rgba(199,111,61,0.22)] flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-indigo-400">
+            <div className="mt-3 pt-3 border-t border-[rgba(199,111,61,0.22)] flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-[rgba(6,3,43,0.40)]">
               <span>synthetic_demo_data: true</span>
               <span>·</span>
               <span>calibration_status: pre_empirical_calibration</span>

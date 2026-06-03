@@ -16,7 +16,7 @@ function pct(val: number) {
 
 const STATUS_STYLES: Record<string, string> = {
   approved:           'bg-green-50 text-green-700 border-green-200',
-  mostly_reviewed:    'bg-blue-50 text-blue-700 border-blue-200',
+  mostly_reviewed:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   partially_reviewed: 'bg-yellow-50 text-yellow-700 border-yellow-200',
   under_review:       'bg-orange-50 text-orange-700 border-orange-200',
   rejected:           'bg-red-50 text-red-700 border-red-200',
@@ -427,8 +427,8 @@ export default function DataEvidence() {
             <div className="flex items-center gap-2">
               <span className="text-[rgba(6,3,43,0.28)] text-sm">→</span>
               <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3 py-2 text-center">
-                <p className="text-xs font-bold text-indigo-700">UEF</p>
-                <p className="text-xs text-indigo-500 mt-0.5">→ IU → PIB → KORA Index</p>
+                <p className="text-xs font-bold text-[rgba(6,3,43,0.72)]">UEF</p>
+                <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">→ IU → PIB → KORA Index</p>
               </div>
             </div>
           </div>
@@ -503,14 +503,14 @@ export default function DataEvidence() {
         <section>
           <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-4 flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold text-indigo-800">GTM Console — Pilot Package</p>
+              <p className="text-xs font-semibold text-[rgba(6,3,43,0.88)]">GTM Console — Pilot Package</p>
               <p className="text-xs text-[#C76F3D] mt-0.5">
                 Script demo, success criteria, pilot package e privacy story per il presenter.
               </p>
             </div>
             <Link
               href="/admin/gtm"
-              className="shrink-0 rounded border border-indigo-300 bg-[#F8F6F1] px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+              className="shrink-0 rounded border border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] px-3 py-1.5 text-xs font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.06)] transition-colors"
             >
               Apri GTM Console →
             </Link>

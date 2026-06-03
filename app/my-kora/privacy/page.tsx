@@ -16,13 +16,13 @@ export default function PrivacySharing() {
           <h1 className="text-xl font-bold text-[#06032B]">Privacy & Sharing</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Preferenze di consenso e condivisione dati del lavoratore</p>
         </div>
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
-          <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
-          <p className="mt-1 text-xs text-rose-600 max-w-sm mx-auto">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
+          <p className="text-sm font-semibold text-[#9E3B2F]">Accesso Limitato</p>
+          <p className="mt-1 text-xs text-[rgba(158,59,47,0.90)] max-w-sm mx-auto">
             Le preferenze di privacy sono private del lavoratore. I ruoli datore di lavoro e admin non possono
             visualizzare né modificare le impostazioni di consenso individuali.
           </p>
-          <p className="mt-3 text-xs font-mono text-rose-400">Ruolo attivo: {activeRole}</p>
+          <p className="mt-3 text-xs font-mono text-[rgba(158,59,47,0.55)]">Ruolo attivo: {activeRole}</p>
         </div>
       </div>
     );
@@ -39,8 +39,8 @@ export default function PrivacySharing() {
 
       {/* Core privacy guarantee — non-suppressible */}
       <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-4">
-        <p className="text-sm font-semibold text-indigo-800">La tua privacy è costituzionale.</p>
-        <p className="mt-1 text-xs text-indigo-700 leading-relaxed">{privacy.privacy_guarantee}</p>
+        <p className="text-sm font-semibold text-[rgba(6,3,43,0.88)]">La tua privacy è costituzionale.</p>
+        <p className="mt-1 text-xs text-[rgba(6,3,43,0.72)] leading-relaxed">{privacy.privacy_guarantee}</p>
       </div>
 
       {/* Two-column: what company sees vs. does not see */}
@@ -60,15 +60,15 @@ export default function PrivacySharing() {
           </ul>
         </div>
 
-        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
+        <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-4">
           <p className="text-xs font-semibold text-rose-800 mb-2 flex items-center gap-1.5">
-            <span className="inline-block w-4 h-4 rounded-full bg-rose-500 text-white text-center leading-4 text-[10px]">✕</span>
+            <span className="inline-block w-4 h-4 rounded-full bg-[rgba(158,59,47,0.06)]0 text-white text-center leading-4 text-[10px]">✕</span>
             Il tuo datore di lavoro NON PUÒ vedere
           </p>
           <ul className="space-y-1.5">
             {privacy.company_cannot_see.map((item, i) => (
-              <li key={i} className="text-xs text-rose-700 leading-relaxed flex gap-1.5">
-                <span className="text-rose-400 shrink-0 mt-0.5">·</span>
+              <li key={i} className="text-xs text-[#9E3B2F] leading-relaxed flex gap-1.5">
+                <span className="text-[rgba(158,59,47,0.55)] shrink-0 mt-0.5">·</span>
                 {item}
               </li>
             ))}
@@ -105,7 +105,7 @@ export default function PrivacySharing() {
                     disabled
                     className={cn(
                       'relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-not-allowed',
-                      toggle.current_state === 'on' ? 'bg-indigo-400' : 'bg-[rgba(6,3,43,0.12)]',
+                      toggle.current_state === 'on' ? 'bg-[#C76F3D]' : 'bg-[rgba(6,3,43,0.12)]',
                     )}
                     aria-label={`${toggle.label} — preview only`}
                   >
@@ -144,7 +144,7 @@ export default function PrivacySharing() {
                 id: 'vault-pib',
                 data_type: 'PIB individuale',
                 status: 'Privato',
-                status_color: 'bg-rose-50 text-rose-700 border-rose-200',
+                status_color: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',
                 employer_visibility: 'Mai',
                 note: 'Il tuo Personal Impact Balance è esclusivamente tuo. Il datore di lavoro vede solo aggregati aziendali.',
               },
@@ -152,7 +152,7 @@ export default function PrivacySharing() {
                 id: 'vault-timeline',
                 data_type: 'Timeline personale',
                 status: 'Privata',
-                status_color: 'bg-rose-50 text-rose-700 border-rose-200',
+                status_color: 'bg-[rgba(158,59,47,0.06)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',
                 employer_visibility: 'Mai',
                 note: 'Ogni evento nel tuo percorso è visibile solo a te. Nessun accesso employer.',
               },

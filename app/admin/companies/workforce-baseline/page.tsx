@@ -71,7 +71,7 @@ export default function AdminWorkforceBaselinePage() {
               const hasBaseline = baselines.some((b) => b.company_id === t.company_id);
               return (
                 <button key={t.company_id} type="button" onClick={() => setSelectedCompanyId(t.company_id)}
-                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedCompanyId === t.company_id ? 'border-indigo-300 bg-[rgba(199,111,61,0.08)] text-indigo-700' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'}`}>
+                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedCompanyId === t.company_id ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'}`}>
                   {t.company_name}{!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
                 </button>
               );
@@ -102,7 +102,7 @@ export default function AdminWorkforceBaselinePage() {
       </div>
 
       {/* ── Admin identity ── */}
-      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-[rgba(6,3,43,0.88)] leading-relaxed space-y-1">
         <p>
           <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
           Questa sezione è riservata agli operatori KORA.
@@ -126,7 +126,7 @@ export default function AdminWorkforceBaselinePage() {
                 onClick={() => setSelectedCompanyId(t.company_id)}
                 className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
                   selectedCompanyId === t.company_id
-                    ? 'border-indigo-300 bg-[rgba(199,111,61,0.08)] text-indigo-700'
+                    ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]'
                     : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'
                 }`}
               >
@@ -256,7 +256,7 @@ export default function AdminWorkforceBaselinePage() {
                 </div>
                 <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.05)]">
                   <div
-                    className="h-1.5 rounded-full bg-indigo-400"
+                    className="h-1.5 rounded-full bg-[#C76F3D]"
                     style={{ width: `${Math.min(g.share_of_workforce * 100, 100)}%` }}
                   />
                 </div>

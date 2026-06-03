@@ -29,7 +29,7 @@ export default function ScoringBoundaryNotice() {
       </div>
 
       {/* ── Boundary notice ────────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-4 text-sm text-indigo-800 leading-relaxed space-y-2">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-4 text-sm text-[rgba(6,3,43,0.88)] leading-relaxed space-y-2">
         <p className="font-semibold">
           L&apos;azienda vede solo output validati, readiness e report.
         </p>
@@ -117,8 +117,8 @@ export default function ScoringBoundaryNotice() {
             <p className="font-semibold text-[rgba(6,3,43,0.62)] mb-0.5">Eligible</p>
             <p>IU generati · BTI full_weight · contribuisce al KORA Index.</p>
           </div>
-          <div className="rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-2.5 py-2">
-            <p className="font-semibold text-indigo-700 mb-0.5">Limited</p>
+          <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)] px-2.5 py-2">
+            <p className="font-semibold text-[rgba(6,3,43,0.72)] mb-0.5">Limited</p>
             <p>tracked_only · economic_relief_spend in BTI · 0 IU · activation opportunity.</p>
           </div>
           <div className="rounded border border-rose-100 bg-rose-50 px-2.5 py-2">

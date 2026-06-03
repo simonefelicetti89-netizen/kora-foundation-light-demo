@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
@@ -13,68 +14,79 @@ interface ProssimaAzioneCardProps {
 }
 
 export function ProssimaAzioneCard({ action }: ProssimaAzioneCardProps) {
+  const [hovered, setHovered] = useState(false);
   const title  = action?.action ?? 'Analizza il gap strutturale';
   const detail = action?.detail ??
     'Verifica la distribuzione per pillar e l\'allocazione della spesa per individuare le aree di attivazione profonda sottorappresentate nel periodo.';
 
   return (
     <div
-      className="flex flex-col p-6"
+      className="flex flex-col"
       style={{
-        background:   TOKENS.surface,
-        border:       TOKENS.cardBorder,
+        background:   TOKENS.ink,
+        border:       hovered ? `1px solid ${TOKENS.accent}` : `1px solid rgba(255,255,255,0.08)`,
         borderRadius: TOKENS.cardRadius,
+        boxShadow:    hovered ? `0 18px 45px rgba(6,3,43,0.25)` : `0 10px 30px rgba(6,3,43,0.12)`,
+        padding:      '28px',
+        transition:   'all 180ms ease',
+        transform:    hovered ? 'translateY(-2px)' : 'none',
+        minHeight:    '100%',
       }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      {/* Titolo serif attenuato */}
+      {/* Eyebrow */}
+      <p style={{
+        fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+        fontWeight:    600,
+        fontSize:      '10px',
+        letterSpacing: '0.10em',
+        textTransform: 'uppercase',
+        color:         TOKENS.accent,
+        marginBottom:  16,
+      }}>
+        Priorità intelligenza
+      </p>
+
+      {/* Action title */}
       <p
         className="font-kora-serif"
         style={{
-          fontSize:      '1.3125rem',
-          color:         'rgba(6,3,43,0.50)',
+          fontSize:      '1.25rem',
+          color:         '#FFFFFF',
           letterSpacing: '-0.01em',
-          lineHeight:    1.2,
-        }}
-      >
-        Prossima azione
-      </p>
-
-      {/* Gap */}
-      <div style={{ height: 18 }} />
-
-      {/* Frase azione — Inter 600, ink */}
-      <p
-        style={{
-          fontFamily:    'var(--font-jakarta)',
-          fontWeight:    600,
-          fontSize:      '16px',
-          color:         TOKENS.ink,
-          letterSpacing: '-0.01em',
-          lineHeight:    1.35,
-          marginBottom:  10,
+          lineHeight:    1.25,
+          marginBottom:  12,
+          flex: 1,
         }}
       >
         {title}
       </p>
 
-      {/* Testo descrittivo */}
-      <p
-        style={{
-          fontFamily: 'var(--font-jakarta)',
-          fontSize:   '12.5px',
-          color:      'rgba(6,3,43,0.60)',
-          lineHeight: 1.68,
-          flexGrow:   1,
-        }}
-      >
+      {/* Detail */}
+      <p style={{
+        fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+        fontSize:   '12.5px',
+        color:      'rgba(255,255,255,0.60)',
+        lineHeight: 1.65,
+        flexGrow:   1,
+      }}>
         {detail}
       </p>
 
-      {/* Link viola */}
+      {/* CTA */}
       <Link
         href="/company/kora-index"
-        className="mt-5 self-start text-sm font-medium transition-opacity hover:opacity-75"
-        style={{ color: TOKENS.accent }}
+        className="mt-6 self-start text-sm font-semibold transition-opacity hover:opacity-80"
+        style={{
+          color:            TOKENS.accent,
+          textDecoration:   'none',
+          display:          'inline-flex',
+          alignItems:       'center',
+          gap:              4,
+          borderBottom:     `1px solid ${TOKENS.accent}40`,
+          paddingBottom:    2,
+        }}
       >
         Vedi piano d&apos;azione →
       </Link>

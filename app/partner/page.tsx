@@ -149,7 +149,7 @@ const ACTIVATION_REQUESTS: ActivationRequest[] = [
 const REQUEST_STATUS_BADGE: Record<string, { style: string; label: string }> = {
   confermata:         { style: 'bg-green-50 text-green-700 border-green-200',    label: 'Confermata' },
   in_attesa:          { style: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'In attesa' },
-  evidenza_richiesta: { style: 'bg-blue-50 text-blue-700 border-blue-200',       label: 'Evidenza richiesta' },
+  evidenza_richiesta: { style: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',       label: 'Evidenza richiesta' },
 };
 
 // Evidence submissions and review status
@@ -264,7 +264,7 @@ const LOG_STATUS_BADGE: Record<string, { style: string; label: string }> = {
 // ─── Style helpers ────────────────────────────────────────────────────────────
 
 const PILLAR_BADGE: Record<string, string> = {
-  IMPACT:     'bg-blue-50 text-blue-700 border-blue-200',
+  IMPACT:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]',
   LIFE:       'bg-emerald-50 text-emerald-700 border-emerald-200',
   GROWTH:     'bg-amber-50 text-amber-700 border-amber-200',
@@ -444,7 +444,7 @@ const TODAY_AGENDA: AgendaItem[] = [
 
 const AGENDA_TYPE_BADGE: Record<AgendaItemType, { style: string; label: string }> = {
   request_review:       { style: 'bg-amber-50 text-amber-700 border-amber-200',    label: 'Review richiesta' },
-  scheduled_activation: { style: 'bg-blue-50 text-blue-700 border-blue-200',       label: 'Attivazione' },
+  scheduled_activation: { style: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',       label: 'Attivazione' },
   evidence_followup:    { style: 'bg-orange-50 text-orange-700 border-orange-200', label: 'Follow-up evidenza' },
   advisor_check:        { style: 'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]', label: 'Check Advisor' },
 };

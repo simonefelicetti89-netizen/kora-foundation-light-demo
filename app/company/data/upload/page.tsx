@@ -189,7 +189,7 @@ function btiTreatmentCls(t: BTITreatment | 'mixed'): string {
   if (t === 'mixed') return 'bg-purple-50 text-purple-700 border-purple-200';
   if (t === 'full_weight' || t === 'confidence_weighted') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
   if (t === 'tracked_only') return 'bg-amber-50 text-amber-700 border-amber-200';
-  if (t === 'not_applicable') return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (t === 'not_applicable') return 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]';
   return 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]';
 }
 
@@ -206,7 +206,7 @@ function evidenceLevelLabel(level: BudgetEvidenceLevel): string {
 
 function evidenceLevelCls(level: BudgetEvidenceLevel): string {
   if (level === 'L4_VERIFIED_EVIDENCE' || level === 'L3_THIRD_PARTY_DOCUMENT') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-  if (level === 'L2_INTERNAL_DOCUMENT') return 'bg-blue-50 text-blue-700 border-blue-200';
+  if (level === 'L2_INTERNAL_DOCUMENT') return 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]';
   if (level === 'L1_SELF_DECLARED') return 'bg-amber-50 text-amber-700 border-amber-200';
   return 'bg-red-50 text-red-600 border-red-200';
 }
@@ -722,12 +722,12 @@ export default function UploadPage() {
                   relative flex flex-col items-center justify-center gap-3 py-14 px-8
                   rounded-xl border-2 border-dashed cursor-pointer transition-all duration-150
                   ${isDragging
-                    ? 'border-indigo-400 bg-[rgba(199,111,61,0.08)]'
-                    : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] hover:border-indigo-300 hover:bg-[rgba(199,111,61,0.08)]/50'
+                    ? 'border-[rgba(199,111,61,0.40)] bg-[rgba(199,111,61,0.08)]'
+                    : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] hover:border-[rgba(6,3,43,0.14)] hover:bg-[rgba(199,111,61,0.08)]/50'
                   }
                 `}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDragging ? 'bg-indigo-100' : 'bg-[#F8F6F1] border border-[rgba(6,3,43,0.08)]'}`}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDragging ? 'bg-[rgba(6,3,43,0.06)]' : 'bg-[#F8F6F1] border border-[rgba(6,3,43,0.08)]'}`}>
                   <svg className={`w-6 h-6 ${isDragging ? 'text-[#C76F3D]' : 'text-[rgba(6,3,43,0.40)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                   </svg>
@@ -758,7 +758,7 @@ export default function UploadPage() {
             </div>
           ) : status === 'parsing' ? (
             <div className="p-12 flex flex-col items-center gap-4">
-              <div className="w-8 h-8 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin" />
+              <div className="w-8 h-8 border-2 border-[rgba(6,3,43,0.14)] border-t-indigo-600 rounded-full animate-spin" />
               <p className="text-sm text-[rgba(6,3,43,0.52)]">Analisi del file in corso…</p>
             </div>
           ) : parseResult && (
@@ -961,7 +961,7 @@ export default function UploadPage() {
                   onClick={() => setActiveTemplate(t.id)}
                   className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors ${
                     activeTemplate === t.id
-                      ? 'border-indigo-500 text-indigo-700'
+                      ? 'border-[rgba(199,111,61,0.50)] text-[rgba(6,3,43,0.72)]'
                       : 'border-transparent text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)]'
                   }`}
                 >
@@ -1111,7 +1111,7 @@ export default function UploadPage() {
                             {isSensitive && <span className="mr-1">⚠</span>}{h}
                           </td>
                           <td className="px-4 py-2.5">
-                            <span className="font-mono text-indigo-700">{mapping.targetField}</span>
+                            <span className="font-mono text-[rgba(6,3,43,0.72)]">{mapping.targetField}</span>
                           </td>
                           <td className="px-4 py-2.5">
                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${badge.cls}`}>
@@ -1321,8 +1321,8 @@ export default function UploadPage() {
                       ${!canRunKora || koraStatus === 'running'
                         ? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)] cursor-not-allowed'
                         : koraStatus === 'done'
-                        ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
-                        : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+                        ? 'bg-[#C76F3D] text-white hover:bg-[rgba(6,3,43,0.75)] shadow-sm'
+                        : 'bg-[#C76F3D] text-white hover:bg-[rgba(6,3,43,0.75)] shadow-sm'
                       }
                     `}
                   >
@@ -1460,7 +1460,7 @@ export default function UploadPage() {
                 'Salvataggio, report history e Board Pack: disponibili dalla fase SaaS/pilot operativo',
               ].map((step, i) => (
                 <li key={i} className="flex items-start gap-3 text-sm text-[rgba(6,3,43,0.62)]">
-                  <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="w-5 h-5 rounded-full bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.72)] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                     {i + 1}
                   </span>
                   {step}
@@ -1531,13 +1531,13 @@ function WorkflowStepper({
 
   const DOT: Record<StepState, string> = {
     done:    'bg-[#06032B] text-white',
-    active:  'bg-indigo-600 text-white animate-pulse',
+    active:  'bg-[#C76F3D] text-white animate-pulse',
     pending: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)]',
     blocked: 'bg-red-100 text-red-600 border border-red-200',
   };
   const TEXT: Record<StepState, string> = {
     done:    'text-[#06032B] font-semibold',
-    active:  'text-indigo-700 font-semibold',
+    active:  'text-[rgba(6,3,43,0.72)] font-semibold',
     pending: 'text-[rgba(6,3,43,0.40)]',
     blocked: 'text-red-600',
   };
@@ -1637,12 +1637,12 @@ function KoraPreviewSection({ result }: { result: KoraComputationResult }) {
     <div className="space-y-6">
       {/* Boundary note */}
       <div className="flex items-start gap-3 p-4 rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-sm">
-        <svg className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <svg className="w-4 h-4 text-[rgba(6,3,43,0.52)] mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
         </svg>
-        <div className="text-indigo-800 space-y-1">
+        <div className="text-[rgba(6,3,43,0.88)] space-y-1">
           <p className="font-semibold">KORA Computation Preview — output aggregato aziendale</p>
-          <p className="text-xs text-indigo-700">
+          <p className="text-xs text-[rgba(6,3,43,0.72)]">
             Preview calcolata localmente su dati caricati in sessione. Non è un report certificato e non salva dati.
             Metodologia: <span className="font-mono">{result.koraIndex.methodologyVersion}</span> ·{' '}
             <span className="font-medium">{result.koraIndex.calibrationStatus}</span> · produzione_ready=false
@@ -2282,7 +2282,7 @@ function EligibilityReviewSection({
                 onClick={() => toggleSecondary(f.key)}
                 className={`px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors ${
                   secondaryFilters.has(f.key)
-                    ? 'bg-indigo-100 text-indigo-700 border-[rgba(199,111,61,0.22)]'
+                    ? 'bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.72)] border-[rgba(199,111,61,0.22)]'
                     : 'bg-[#F8F6F1] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)] hover:bg-[rgba(6,3,43,0.03)]'
                 }`}
               >

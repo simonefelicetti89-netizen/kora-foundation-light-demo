@@ -108,7 +108,7 @@ const PROTOCOL_BADGE: Record<string, string> = {
   'Audit completato':     'bg-green-50 text-green-700 border-green-200',
   'Audit richiesto':      'bg-amber-50 text-amber-700 border-amber-200',
   'In corso':             'bg-amber-50 text-amber-700 border-amber-200',
-  'Protocollo in review': 'bg-blue-50 text-blue-700 border-blue-200',
+  'Protocollo in review': 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   'Protocollo parziale':  'bg-yellow-50 text-yellow-700 border-yellow-200',
 };
 
@@ -369,7 +369,7 @@ const INITIATIVES: Initiative[] = [
     territory: 'Online / Nazionale',
     partner: 'GrowthLab Academy',
     status: 'Proposta',
-    status_style: 'bg-blue-50 text-blue-700 border-blue-200',
+    status_style: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
     participation_note: null,
     evidence_protocol: 'Protocollo da definire',
     is_future_vision: false,
@@ -439,7 +439,7 @@ export default function NetworkPage() {
       {/* ── 1. Header ── */}
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="rounded border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700">
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-2 py-0.5 text-xs font-semibold text-[rgba(6,3,43,0.72)]">
             Foundation Light Preview
           </span>
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
@@ -453,8 +453,8 @@ export default function NetworkPage() {
         <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1.5 max-w-2xl leading-relaxed">
           La vista ecosistemica che collega territori, partner, pillar, protocolli evidenze e opportunità di attivazione.
         </p>
-        <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 px-4 py-2.5">
-          <p className="text-xs text-teal-700">
+        <div className="mt-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-4 py-2.5">
+          <p className="text-xs text-[rgba(6,3,43,0.72)]">
             Questa non è una marketplace map. È una mappa di copertura e attivazione della rete KORA,
             basata su dati sintetici demo.
           </p>
@@ -652,9 +652,9 @@ export default function NetworkPage() {
         </p>
         <div className="space-y-3">
           {MATCHING_RECS.map((rec, i) => (
-            <div key={rec.id} className="rounded-lg border border-indigo-100 bg-[rgba(199,111,61,0.08)]/60 p-4">
+            <div key={rec.id} className="rounded-lg border border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)]/60 p-4">
               <div className="flex items-start gap-3">
-                <div className="shrink-0 w-6 h-6 rounded-full bg-indigo-200 text-indigo-700 text-xs font-bold flex items-center justify-center">
+                <div className="shrink-0 w-6 h-6 rounded-full bg-[rgba(199,111,61,0.20)] text-[rgba(6,3,43,0.72)] text-xs font-bold flex items-center justify-center">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0 space-y-1.5">
@@ -664,12 +664,12 @@ export default function NetworkPage() {
                   </div>
                   <div className="flex flex-wrap items-baseline gap-1.5">
                     <span className="text-[10px] font-semibold text-[#C76F3D]">Partner raccomandato:</span>
-                    <span className="text-xs font-bold text-indigo-800">{rec.recommended_partner}</span>
+                    <span className="text-xs font-bold text-[rgba(6,3,43,0.88)]">{rec.recommended_partner}</span>
                   </div>
                   <p className="text-[10px] text-[rgba(6,3,43,0.52)] leading-relaxed">{rec.reason}</p>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)]">Passo successivo:</span>
-                    <span className="rounded border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-700">
+                    <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-2 py-0.5 text-[10px] font-medium text-[rgba(6,3,43,0.72)]">
                       {rec.next_step}
                     </span>
                   </div>

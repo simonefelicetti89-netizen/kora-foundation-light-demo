@@ -38,7 +38,7 @@ function ts(s: string) {
 
 const STATUS_CLS: Record<string, string> = {
   active:        'bg-green-50 text-green-700 border-green-200',
-  intake_ready:  'bg-blue-50 text-blue-700 border-blue-200',
+  intake_ready:  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   not_ready:     'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 

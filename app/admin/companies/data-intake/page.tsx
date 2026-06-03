@@ -40,7 +40,7 @@ export default function AdminDataIntakeLanding() {
                     summary.intake_status === 'validation_required'             ? 'bg-amber-100 text-amber-700' :
                     summary.intake_status === 'blocked_missing_required_fields' ? 'bg-rose-100 text-rose-700' :
                     summary.intake_status === 'partial'                         ? 'bg-blue-100 text-blue-700' :
-                    summary.intake_status === 'draft'                           ? 'bg-indigo-100 text-[#C76F3D]' :
+                    summary.intake_status === 'draft'                           ? 'bg-[rgba(6,3,43,0.06)] text-[#C76F3D]' :
                     'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
                   }`}>
                     {summary.intake_status.replace(/_/g, ' ')}

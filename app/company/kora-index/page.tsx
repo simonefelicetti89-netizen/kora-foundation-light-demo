@@ -131,7 +131,7 @@ export default function KoraIndexDetail() {
     return (
       <div className="space-y-5">
         <PageMasthead
-          eyebrow="KORA Index v3"
+          eyebrow="KORA Index™ v3 · Scomposizione analitica"
           title={tenant?.company_name ?? COMPANY_ID}
           subline="Scomposizione analitica dell'indice"
         />
@@ -191,7 +191,7 @@ export default function KoraIndexDetail() {
 
       {/* 1. Masthead */}
       <PageMasthead
-        eyebrow={`KORA Index v3 · ${output.reporting_period}`}
+        eyebrow={`KORA Index™ v3 · ${output.reporting_period}`}
         title={tenant?.company_name ?? COMPANY_ID}
         subline="Scomposizione analitica dell'indice"
       />

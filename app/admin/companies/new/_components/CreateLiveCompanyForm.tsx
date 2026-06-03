@@ -160,7 +160,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
             result.inviteStatus === 'sent'
               ? 'border-blue-200 bg-blue-50 text-blue-700'
               : result.inviteStatus === 'user_existed'
-              ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-indigo-700'
+              ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]'
               : 'border-amber-200 bg-amber-50 text-amber-700'
           }`}>
             <span className="font-semibold">

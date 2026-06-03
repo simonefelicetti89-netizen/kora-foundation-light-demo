@@ -118,7 +118,7 @@ export default function KoraSharedView() {
 
       {/* ── A. PageMasthead ─────────────────────────────────────────────────── */}
       <PageMasthead
-        eyebrow={`KORA Shared View · ${activeScenario} · ${tenant?.company_name ?? companyId}`}
+        eyebrow={`Istitutional View · ${activeScenario} · Aggregato privacy-safe`}
         title="Spazio condiviso KORA"
         subline="Vista sintetica e privacy-safe dell'impatto organizzativo — board, intranet e condivisione interna. Nessun dato individuale."
         meta={`${tenant?.analysis_period ?? activeScenario} · Read-only · Company-scoped · dati sintetici demo`}

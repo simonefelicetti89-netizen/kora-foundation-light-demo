@@ -13,6 +13,9 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
+import { MethodologyBadge } from '@/components/ui/MethodologyBadge';
+import { KPICard } from '@/components/ui/KPICard';
+import { TM } from '@/components/ui/TM';
 import type { PillarCode } from '@/lib/types';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
@@ -270,15 +273,51 @@ export default function FinancialGovernance() {
   const utilizationAbove70 = rec.budget_utilization_rate >= 0.70;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
 
       {/* ── 1. PageMasthead ────────────────────────────────────────────────── */}
       <PageMasthead
-        eyebrow={`Governance finanziaria · ${activeScenario} · ${rec.reporting_period}`}
-        title="Governance finanziaria"
-        subline="Lettura informativa del rapporto tra budget people, attivazione profonda e opportunità di riallocazione."
+        eyebrow={`Governance Finanziaria · ${activeScenario} · ${rec.reporting_period}`}
+        title={<><TM>Budget-to-Human-Impact</TM> Engine</>}
+        subline="Rapporto tra budget people, attivazione profonda e opportunità di riallocazione. Non certificativo, non causale."
         meta={`${companyName} · Foundation Light Preview · dati sintetici demo`}
       />
+
+      {/* ── 1b. KPI decision strip ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <KPICard
+          code="BTI™"
+          label="Budget-to-Human-Impact"
+          value={rec.bti_indicators?.bti_score ?? '—'}
+          period="Punteggio macroblocco"
+          status={!rec.bti_indicators ? 'neutral' : rec.bti_indicators.bti_score >= 70 ? 'positive' : rec.bti_indicators.bti_score >= 50 ? 'warning' : 'critical'}
+          important
+          size="md"
+        />
+        <KPICard
+          code="€ TOTALE"
+          label="Welfare spend"
+          value={eur(rec.budget_allocated_total)}
+          period={rec.reporting_period}
+          size="md"
+        />
+        <KPICard
+          code="DA%"
+          label="Deep Activation Share™"
+          value={rec.bti_indicators ? pct(rec.bti_indicators.deep_activation_share) : '—'}
+          period="Del budget totale"
+          status={!rec.bti_indicators ? 'neutral' : rec.bti_indicators.deep_activation_share >= 0.5 ? 'positive' : rec.bti_indicators.deep_activation_share >= 0.3 ? 'warning' : 'critical'}
+          important
+          size="md"
+        />
+        <KPICard
+          code="€/IU"
+          label="Costo per Impact Unit™"
+          value={`€${rec.cost_per_iu_indicator.toFixed(0)}`}
+          period="Per IU generata"
+          size="md"
+        />
+      </div>
 
       {/* ── 2. Executive Reading Block ─────────────────────────────────────── */}
       <div

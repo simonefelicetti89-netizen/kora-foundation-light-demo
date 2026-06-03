@@ -196,7 +196,7 @@ export default function KoraContribution() {
 
       {/* 1. PageMasthead */}
       <PageMasthead
-        eyebrow={`KORA Contribution · ${activeScenario} · Indicatore Companion`}
+        eyebrow={`Contribution Intelligence™ · ${activeScenario}`}
         title="KORA Contribution"
         subline="Il segnale che misura quanto l'organizzazione genera valore collettivo verificabile oltre il proprio perimetro interno."
         meta={`${companyName} · Foundation Light Preview · pre_empirical_calibration · dati sintetici`}

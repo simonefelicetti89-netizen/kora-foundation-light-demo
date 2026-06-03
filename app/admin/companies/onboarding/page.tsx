@@ -18,8 +18,8 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   not_started:                  'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
-  profile_complete:             'bg-blue-50 text-blue-700 border-blue-200',
-  workforce_baseline_complete:  'bg-blue-50 text-blue-700 border-blue-200',
+  profile_complete:             'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
+  workforce_baseline_complete:  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   program_data_loaded:          'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
   hr_kpi_loaded:                'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]',
   ready_for_scoring:            'bg-amber-50 text-amber-700 border-amber-200',
@@ -77,7 +77,7 @@ export default function AdminOnboardingStudio() {
       </div>
 
       {/* ── Admin identity ── */}
-      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-[rgba(6,3,43,0.88)] leading-relaxed space-y-1">
         <p>
           <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
           Questa sezione è riservata agli operatori KORA.
@@ -95,7 +95,7 @@ export default function AdminOnboardingStudio() {
               onClick={() => setSelectedId(c.company_id)}
               className={cn(
                 'rounded-lg border p-4 text-left transition-colors',
-                selectedId === c.company_id ? 'border-indigo-300 bg-[rgba(199,111,61,0.08)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] hover:border-[rgba(6,3,43,0.14)]',
+                selectedId === c.company_id ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] hover:border-[rgba(6,3,43,0.14)]',
               )}
             >
               <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{c.company_name}</p>
@@ -230,14 +230,14 @@ export default function AdminOnboardingStudio() {
             )}>
               <div>
                 <p className={cn('text-xs font-semibold',
-                  link.status === 'active' ? 'text-indigo-700' : 'text-[rgba(6,3,43,0.52)]'
+                  link.status === 'active' ? 'text-[rgba(6,3,43,0.72)]' : 'text-[rgba(6,3,43,0.52)]'
                 )}>
                   {link.label}
                 </p>
                 <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{link.description}</p>
               </div>
               <span className={cn('rounded border px-1.5 py-0.5 text-[9px] font-semibold shrink-0',
-                link.status === 'active' ? 'border-[rgba(199,111,61,0.22)] bg-[#F8F6F1] text-indigo-700' :
+                link.status === 'active' ? 'border-[rgba(199,111,61,0.22)] bg-[#F8F6F1] text-[rgba(6,3,43,0.72)]' :
                 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.40)]',
               )}>
                 {link.status}

@@ -34,7 +34,7 @@ const SAFEGUARD_CLS: Record<string, string> = {
 
 const DP_CLS: Record<string, string> = {
   draft:    'bg-amber-50 text-amber-700 border-amber-200',
-  ready:    'bg-blue-50 text-blue-700 border-blue-200',
+  ready:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   exported: 'bg-green-50 text-green-700 border-green-200',
   archived: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
@@ -58,7 +58,7 @@ const PILOT_STATUS_CLS: Record<string, string> = {
   needs_enrichment:       'bg-orange-50 text-orange-700 border-orange-200',
   ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
   scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
-  decision_pack_draft:    'bg-blue-50 text-blue-700 border-blue-200',
+  decision_pack_draft:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   decision_pack_exported: 'bg-green-50 text-green-700 border-green-200',
   archived:               'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };

@@ -382,7 +382,7 @@ export function CompanyEvidenceArchivePanel() {
                       </span>
                     )}
                     {b.hasAttachments && (
-                      <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-1.5 py-0.5 text-[9px] text-indigo-700 cursor-pointer"
+                      <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-1.5 py-0.5 text-[9px] text-[rgba(6,3,43,0.72)] cursor-pointer"
                         onClick={() => { setSelectedBatchIdFull(b.batchIdFull ?? b.batchId.replace('…', '')); setShowAttachPanel(v => !v); }}>
                         📎 {b.attachmentCount ?? 0} attachment{(b.attachmentCount ?? 0) !== 1 ? 's' : ''}
                         {b.attachmentSummary?.['suggestedL3Count'] ? ` · L3×${b.attachmentSummary['suggestedL3Count']}` : ''}
@@ -390,7 +390,7 @@ export function CompanyEvidenceArchivePanel() {
                       </span>
                     )}
                     {b.provenanceEnabled && (
-                      <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-1.5 py-0.5 text-[9px] text-indigo-700">
+                      <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-1.5 py-0.5 text-[9px] text-[rgba(6,3,43,0.72)]">
                         provenance ✓
                         {b.provenanceSummary ? ` · ${b.provenanceSummary['originalFileFields'] ?? 0} orig + ${b.provenanceSummary['columnMappedFields'] ?? 0} mapped` : ''}
                       </span>
@@ -428,7 +428,7 @@ export function CompanyEvidenceArchivePanel() {
                                 <button
                                   onClick={() => b.batchIdFull && handleOpenSecureLink(b.batchIdFull, att.attachmentId)}
                                   disabled={openLinkLoading === att.attachmentId}
-                                  className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
+                                  className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.06)] disabled:opacity-50 transition-colors"
                                 >
                                   {openLinkLoading === att.attachmentId ? '⏳' : '🔒 Apri'}
                                 </button>
@@ -477,7 +477,7 @@ export function CompanyEvidenceArchivePanel() {
               <div className="flex items-center gap-2.5">
                 <div className="w-0.5 h-4 bg-[rgba(199,111,61,0.08)]0 rounded-full" />
                 <p className="text-xs font-bold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Evidence Attachments</p>
-                <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-semibold text-indigo-700">B34 · Private storage · No raw content</span>
+                <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-semibold text-[rgba(6,3,43,0.72)]">B34 · Private storage · No raw content</span>
               </div>
               <button onClick={() => setShowAttachPanel(false)} className="text-[10px] text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)]">✕ Chiudi</button>
             </div>
@@ -492,7 +492,7 @@ export function CompanyEvidenceArchivePanel() {
                 const firstBatch = data.batches.find(b => b.batchIdFull);
                 if (firstBatch?.batchIdFull) { setSelectedBatchIdFull(firstBatch.batchIdFull); setShowAttachPanel(true); }
               }}
-              className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3 py-1 text-[10px] font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors">
+              className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3 py-1 text-[10px] font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.06)] transition-colors">
               📎 Aggiungi evidence attachment
             </button>
             <span className="text-[10px] text-[rgba(6,3,43,0.40)]">Allega fatture, export provider, LMS, policy (metadata only)</span>

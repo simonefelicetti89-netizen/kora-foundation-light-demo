@@ -22,7 +22,7 @@ const ELIGIBILITY_STYLE: Record<string, { badge: string; dot: string; label: str
   },
   limited: {
     badge: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
-    dot:   'bg-indigo-400',
+    dot:   'bg-[#C76F3D]',
     label: 'Limited',
   },
   blocked: {
@@ -54,7 +54,7 @@ const CONFIDENCE_STYLE: Record<string, string> = {
 
 const PILLAR_BADGE: Record<PillarCode, string> = {
   LIFE:       'bg-green-50 text-green-700 border-green-200',
-  GROWTH:     'bg-blue-50 text-blue-700 border-blue-200',
+  GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
   IMPACT:     'bg-orange-50 text-orange-700 border-orange-200',
   LEGACY:     'bg-amber-50 text-amber-700 border-amber-200',
@@ -96,7 +96,7 @@ function getDoctrineCopy(row: PipelineAnalyzedRow): { header: string; body: stri
     return {
       header: 'Economic Relief — Nessun Impact Unit',
       body:   'Questi benefit offrono sostegno economico ma generano profondità di attivazione limitata. Non è spesa sbagliata. È spesa che può diventare più intelligente. Instradato al Budget-to-Human-Impact engine come economic_relief_spend.',
-      style:  'border-indigo-100 bg-[rgba(199,111,61,0.08)] text-indigo-700',
+      style:  'border-[rgba(6,3,43,0.06)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]',
     };
   }
   if (row.classification.review_required) {
@@ -154,7 +154,7 @@ export default function AIIngestionAssistant() {
         <div className="mt-3">
           <Link
             href="/admin/companies/data-intake"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3.5 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.06)] transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -239,8 +239,8 @@ export default function AIIngestionAssistant() {
           </div>
           <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-3">
             <p className="text-xs text-[#C76F3D]">Limited</p>
-            <p className="text-2xl font-bold text-indigo-700 mt-0.5">{summary.limited_count}</p>
-            <p className="text-[10px] text-indigo-500 mt-0.5">Economic Relief — 0 IU</p>
+            <p className="text-2xl font-bold text-[rgba(6,3,43,0.72)] mt-0.5">{summary.limited_count}</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">Economic Relief — 0 IU</p>
           </div>
           <div className="rounded-lg border border-rose-200 bg-rose-50 p-3">
             <p className="text-xs text-rose-600">Blocked</p>
@@ -711,7 +711,7 @@ function RoutingCard({
         <span className={cn(
           'text-lg font-bold shrink-0',
           badge.includes('green')  ? 'text-green-700'  :
-          badge.includes('indigo') ? 'text-indigo-700' :
+          badge.includes('indigo') ? 'text-[rgba(6,3,43,0.72)]' :
           badge.includes('rose')   ? 'text-rose-700'   :
           'text-amber-700',
         )}>
