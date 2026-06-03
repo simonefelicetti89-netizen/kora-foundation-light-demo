@@ -6,6 +6,7 @@ import { ScenarioSwitcher } from '@/components/demo/ScenarioSwitcher';
 import { PersonaSwitcher } from '@/components/demo/PersonaSwitcher';
 import { EnvironmentSwitcher } from '@/components/demo/EnvironmentSwitcher';
 import { isEmployerRole, isAdminRole } from '@/lib/permissions';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import type { Environment } from '@/lib/types';
 
 const ENV_BADGE_TEXT: Record<Environment, string> = {
@@ -25,10 +26,10 @@ export function Header() {
     <header
       className="flex h-13 items-center justify-between px-6"
       style={{
-        height:           '52px',
-        background:       '#F8F6F1',
-        borderBottom:     '1px solid rgba(6,3,43,0.08)',
-        flexShrink:       0,
+        height:       '52px',
+        background:   TOKENS.surface,      // was '#F8F6F1'
+        borderBottom: TOKENS.cardBorder,   // was '1px solid rgba(6,3,43,0.08)'
+        flexShrink:   0,
       }}
     >
       <div className="flex items-center gap-3">

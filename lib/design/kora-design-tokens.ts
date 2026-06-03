@@ -32,13 +32,14 @@ export const TOKENS = {
   taupe:   '#E3DDD3',   // secondary warm surface, separators
 
   // Ink scale — #06032B (cosmic blue) at opacity levels
-  ink:          '#06032B',
-  inkSecondary: 'rgba(6,3,43,0.62)',
-  inkTertiary:  'rgba(6,3,43,0.42)',
-  inkHint:      'rgba(6,3,43,0.40)',
-  inkBorder:    'rgba(6,3,43,0.08)',
+  ink:             '#06032B',
+  inkSecondary:    'rgba(6,3,43,0.62)',
+  inkTertiary:     'rgba(6,3,43,0.42)',
+  inkHint:         'rgba(6,3,43,0.40)',
+  inkMeta:         'rgba(6,3,43,0.38)',  // provenance, methodology stamps
+  inkBorder:       'rgba(6,3,43,0.08)',
   inkBorderStrong: 'rgba(6,3,43,0.14)',
-  inkTrack:     'rgba(6,3,43,0.08)',
+  inkTrack:        'rgba(6,3,43,0.08)',
 
   // Primary accent — terracotta (replaces violet as primary)
   accent:     '#C76F3D',
@@ -83,6 +84,39 @@ export const TOKENS = {
       dot:  '#9E3B2F',
     },
   },
+} as const;
+
+// ── Z-index scale ────────────────────────────────────────────────────────────
+
+export const Z = {
+  base:    0,
+  raised:  10,
+  sticky:  40,
+  nav:     80,
+  modal:   200,
+  tooltip: 300,
+} as const;
+
+// ── Spacing scale (used in padding/gap, referenced in EXPERIENCE_LAYER) ──────
+
+export const SPACE = {
+  xs:  4,
+  sm:  8,
+  md:  16,
+  lg:  24,
+  xl:  32,
+  '2xl': 48,
+} as const;
+
+// ── Motion durations (ms) ────────────────────────────────────────────────────
+
+export const DURATION = {
+  fast:    140,
+  normal:  180,
+  slow:    300,
+  reveal:  800,
+  countUp: 1700,
+  bar:     1300,
 } as const;
 
 // ── Chart color system — canonical, coherent, non-rainbow ───────────────────

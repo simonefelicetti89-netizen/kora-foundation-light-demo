@@ -20,6 +20,7 @@
   --kora-ink-secondary: rgba(6,3,43,0.62);
   --kora-ink-tertiary:  rgba(6,3,43,0.42);
   --kora-ink-hint:      rgba(6,3,43,0.40);
+  --kora-ink-meta:      rgba(6,3,43,0.38);  /* provenance, methodology stamps */
   --kora-ink-border:    rgba(6,3,43,0.08);
   --kora-ink-border-strong: rgba(6,3,43,0.14);
   --kora-ink-track:     rgba(6,3,43,0.08);
@@ -106,10 +107,14 @@
   --color-env-text:   var(--env-text);
 
   /* ── Typography ─────────────────────────────────────────────────── */
-  /* Plus Jakarta Sans — primary UI font (General Sans equivalent)     */
+  /* Plus Jakarta Sans — unico font UI. Jakarta everywhere. */
   --font-kora-sans:     'Plus Jakarta Sans', var(--font-jakarta), system-ui, sans-serif;
-  /* Instrument Serif + Playfair Display — editorial voice: page mastheads, section titles */
-  --font-kora-serif:    var(--font-instrument-serif), var(--font-playfair), Georgia, 'Times New Roman', serif;
+  /* DEPRECATED — Fase 0 flip: --font-kora-serif → alias di --font-kora-sans.
+     Il serif NON è più visibile globalmente. La rimozione esplicita delle classi
+     .font-editorial / .font-kora-serif avviene pagina per pagina nelle Fasi 1–5.
+     Instrument Serif e Playfair Display restano caricati per retrocompatibilità
+     dei componenti non ancora migrati, ma non devono apparire nell'UI. */
+  --font-kora-serif:    var(--font-kora-sans);
   /* Canonical aliases */
   --font-kora-editorial: var(--font-kora-sans);
   --font-sans:  'Plus Jakarta Sans', var(--font-jakarta), system-ui, sans-serif;

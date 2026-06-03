@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { formatCalibrationStatus } from '@/lib/formatters';
 
 interface CalibrationBadgeProps {
@@ -21,9 +22,9 @@ export function CalibrationBadge({ status, className }: CalibrationBadgeProps) {
         fontSize:      '11px',
         fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
         fontWeight:    600,
-        background:    'rgba(217,154,43,0.12)',
-        color:         '#8A5A00',
-        border:        '1px solid rgba(217,154,43,0.30)',
+        background:    TOKENS.safeguard.watch.bg,   // was rgba(217,154,43,0.12)
+        color:         TOKENS.safeguard.watch.text,  // was '#8A5A00'
+        border:        `1px solid ${TOKENS.safeguard.watch.dot}48`,  // was 0.30 fixed
         letterSpacing: '0.01em',
       }}
     >

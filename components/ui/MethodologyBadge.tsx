@@ -28,7 +28,7 @@ export function MethodologyBadge({
           padding:       '3px 10px',
           background:    TOKENS.safeguard.watch.bg,
           color:         TOKENS.safeguard.watch.text,
-          border:        `1px solid rgba(217,154,43,0.25)`,
+          border:        `1px solid ${TOKENS.safeguard.watch.dot}40`,
           fontSize:      '10px',
           fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontWeight:    600,
@@ -45,7 +45,7 @@ export function MethodologyBadge({
       <div
         style={{
           background:   TOKENS.safeguard.watch.bg,
-          border:       `1px solid rgba(217,154,43,0.20)`,
+          border:       `1px solid ${TOKENS.safeguard.watch.dot}33`,
           borderRadius: 12,
           padding:      '8px 16px',
           display:      'flex',
@@ -58,8 +58,8 @@ export function MethodologyBadge({
           style={{
             borderRadius:  999,
             padding:       '2px 8px',
-            background:    'rgba(217,154,43,0.20)',
-            color:         '#8A5A00',
+            background:    TOKENS.safeguard.watch.bg,
+            color:         TOKENS.safeguard.watch.text,
             fontSize:      '9px',
             fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontWeight:    700,
@@ -69,7 +69,7 @@ export function MethodologyBadge({
         >
           {calibrationStatus.replace(/_/g, ' ')}
         </span>
-        <span style={{ fontSize: '11px', color: '#8A5A00', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+        <span style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
           {versionId}{period ? ` · ${period}` : ''} · Soglia privacy {privacyThreshold}
           {showSynthetic ? ' · Dati sintetici demo' : ''}
         </span>
@@ -96,7 +96,7 @@ export function MethodologyBadge({
           padding:       '2px 8px',
           background:    TOKENS.safeguard.watch.bg,
           color:         TOKENS.safeguard.watch.text,
-          border:        `1px solid rgba(217,154,43,0.25)`,
+          border:        `1px solid ${TOKENS.safeguard.watch.dot}40`,
           fontSize:      '9.5px',
           fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontWeight:    600,
