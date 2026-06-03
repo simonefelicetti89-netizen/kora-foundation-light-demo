@@ -1,15 +1,9 @@
 // app/company/workspace/layout.tsx
 // B36 PART 4 — Server-side layout protection for the company workspace.
-// Requires COMPANY_ADMIN or COMPANY_VIEWER session.
-//
-// Special case: if the session belongs to a KORA_ADMIN (who logged in via /admin/login),
-// they are redirected to /admin/company-workspace — the admin version of the same view.
-// This avoids a confusing error wall for admin users switching to a company role in the demo.
-// Tenant isolation is preserved: KORA_ADMIN does not gain company-user rights here;
-// they are redirected to a page they already have access to via admin auth.
+// Requires a real Supabase session with COMPANY_ADMIN or COMPANY_VIEWER role.
+// KORA_ADMIN cannot access this route — it requires a live company tenant session.
 
 import { requireCompanyUser, getCurrentKoraUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function CompanyWorkspaceLayout({ children }: { children: React.ReactNode }) {
@@ -19,15 +13,62 @@ export default async function CompanyWorkspaceLayout({ children }: { children: R
     const status = authResult.status;
     const is401 = status === 401;
 
-    // If the user is authenticated but has the wrong role (403),
-    // check whether they are a KORA_ADMIN and redirect them appropriately.
-    // This handles the demo scenario where an admin has an active session and
-    // switches the role-switcher to COMPANY_ADMIN, then clicks the workspace link.
+    // Detect whether the blocked session belongs to a KORA_ADMIN —
+    // show a specific explanation rather than a generic error wall.
+    let isAdmin = false;
     if (!is401) {
       const adminUser = await getCurrentKoraUser();
-      if (adminUser?.koraRole === 'KORA_ADMIN') {
-        redirect('/admin/company-workspace');
-      }
+      isAdmin = adminUser?.koraRole === 'KORA_ADMIN';
+    }
+
+    if (isAdmin) {
+      return (
+        <div className="max-w-lg mx-auto mt-20 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-[#F8F6F1] shadow-sm space-y-5">
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
+              Company Workspace · Accesso sessione reale
+            </p>
+            <h1 className="text-lg font-semibold text-[rgba(6,3,43,0.90)]">
+              Questo workspace richiede una sessione azienda
+            </h1>
+            <p className="text-sm text-[rgba(6,3,43,0.55)] leading-relaxed">
+              <code className="rounded bg-[rgba(6,3,43,0.06)] px-1.5 py-0.5 text-xs font-mono">/company/workspace</code>{' '}
+              è la vista autenticata per aziende pilot reali. Richiede una sessione Supabase con{' '}
+              <code className="rounded bg-[rgba(6,3,43,0.06)] px-1 py-0.5 text-xs font-mono">kora_role = COMPANY_ADMIN</code>{' '}
+              e un <code className="rounded bg-[rgba(6,3,43,0.06)] px-1 py-0.5 text-xs font-mono">kora_tenant_id</code>{' '}
+              assegnato — non accessibile con una sessione KORA_ADMIN.
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.06)] px-4 py-3 text-sm text-[rgba(6,3,43,0.72)] leading-relaxed">
+            Per revisionare l&apos;esperienza Company in demo, usa le pagine Company basate su dati sintetici:
+          </div>
+
+          <div className="space-y-2">
+            {[
+              { href: '/company',              label: 'Executive Cockpit' },
+              { href: '/company/kora-index',   label: 'KORA Index™' },
+              { href: '/company/financial',    label: 'Budget-to-Human-Impact™' },
+              { href: '/company/activation',   label: 'Activation Debt™' },
+              { href: '/company/reports',      label: 'Report direzionali' },
+              { href: '/company/contribution', label: 'Contribution Intelligence™' },
+            ].map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center justify-between rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-2.5 text-sm font-medium text-[rgba(6,3,43,0.78)] hover:border-[rgba(199,111,61,0.40)] hover:text-[#06032B] transition-colors"
+              >
+                {label}
+                <span className="text-[rgba(6,3,43,0.30)]">→</span>
+              </Link>
+            ))}
+          </div>
+
+          <p className="text-[10px] text-[rgba(6,3,43,0.35)] pt-1">
+            KORA Foundation Light · Company Workspace · Richiede sessione COMPANY_ADMIN
+          </p>
+        </div>
+      );
     }
 
     return (

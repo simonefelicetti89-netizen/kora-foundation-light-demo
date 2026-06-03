@@ -305,10 +305,8 @@ const CV_ITEMS: DynamicCVItem[] = [
 
 class MyKoraPreviewService {
   // Role guard for My KORA preview content.
-  // WORKER: full access (their private space).
-  // KORA_ADMIN: Founder Preview — allowed for demo review.
-  //   The layout (my-kora/layout.tsx) handles presentation of the admin bypass.
-  //   This does NOT elevate any backend permissions; the service returns demo data only.
+  // WORKER: full access (their personal space).
+  // KORA_ADMIN: allowed to review demo content (synthetic data only, no real worker data).
   // All other roles (COMPANY_ADMIN, COMPANY_VIEWER, PARTNER, ADVISOR): blocked.
   canAccess(role: KoraRole): boolean {
     return isWorkerRole(role) || isAdminRole(role);
