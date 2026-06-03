@@ -111,12 +111,12 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
       {/* Header */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">KORA · Admin</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Onboarding Azienda</h1>
           <p className="text-sm text-white/45 mt-0.5">B9 — Registra nuova azienda per il pilot live</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
             {['No worker identity', 'No PII', 'N≥10 enforced'].map(m => (
@@ -271,8 +271,8 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                 <span>Created: {ts(t.createdAt)}</span>
               </div>
               <div className="flex gap-2 pt-1 border-t border-slate-100">
-                <a href={`/admin/data-intake?tenantCode=${encodeURIComponent(t.tenantCode)}`} className="text-[10px] text-[#6156F5] underline">Data Intake</a>
-                <a href="/admin/uef-review" className="text-[10px] text-[#6156F5] underline">UEF Review</a>
+                <a href={`/admin/data-intake?tenantCode=${encodeURIComponent(t.tenantCode)}`} className="text-[10px] text-[#C76F3D] underline">Data Intake</a>
+                <a href="/admin/uef-review" className="text-[10px] text-[#C76F3D] underline">UEF Review</a>
               </div>
             </div>
           ))}

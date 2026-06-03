@@ -49,7 +49,7 @@ export function BlockedByDesignPanel({ blockedCount, blockedNote }: BlockedByDes
         >
           <p
             className="text-2xl font-bold"
-            style={{ fontFamily: 'var(--font-inter)', color: TOKENS.safeguard.cap.text }}
+            style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.safeguard.cap.text }}
           >
             {blockedCount.toLocaleString('it-IT')}
           </p>

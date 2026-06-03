@@ -152,7 +152,7 @@ export default function CompanyOnboardingRoom() {
         />
         <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem' }}>
           <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>Worker Roster</p>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
             {workerSumm?.total_workers ?? 0}
           </p>
           <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{workerSumm?.active_worker_accounts ?? 0} attivi</p>
@@ -214,12 +214,12 @@ export default function CompanyOnboardingRoom() {
                       <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 3, lineHeight: 1.55 }}>{c.detail}</p>
                     </div>
                     {isBlocking && (
-                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 700, color: TOKENS.safeguard.cap.text, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
+                      <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 700, color: TOKENS.safeguard.cap.text, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
                         Richiesto
                       </span>
                     )}
                     {isAdvisory && !isOk && (
-                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 700, color: TOKENS.safeguard.watch.text, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
+                      <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 700, color: TOKENS.safeguard.watch.text, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
                         Revisione
                       </span>
                     )}

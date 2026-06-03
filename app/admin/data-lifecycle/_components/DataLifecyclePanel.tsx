@@ -117,12 +117,12 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
       {/* Header */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">KORA · Admin</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Data Lifecycle</h1>
           <p className="text-sm text-white/45 mt-0.5">B10 — Inspect · Archive · Controlled Delete</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
             {['No company delete', 'No PII', 'Audit required'].map(m => (
@@ -146,9 +146,9 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
           {batches.map(b => (
             <div key={b.batchId}
               onClick={() => handleInspect(b.batchId)}
-              className={`rounded-lg border px-4 py-3 cursor-pointer space-y-1.5 transition-colors ${selectedId===b.batchId?'border-[#6156F5] bg-[#f5f4ff]':'border-slate-200 bg-white hover:border-slate-300'}`}>
+              className={`rounded-lg border px-4 py-3 cursor-pointer space-y-1.5 transition-colors ${selectedId===b.batchId?'border-[#C76F3D] bg-[#f5f4ff]':'border-slate-200 bg-white hover:border-slate-300'}`}>
               {b.companyName && (
-                <p className="text-[10px] font-semibold text-[#6156F5]">{b.companyName} <span className="font-mono opacity-70">· {b.tenantCode}</span></p>
+                <p className="text-[10px] font-semibold text-[#C76F3D]">{b.companyName} <span className="font-mono opacity-70">· {b.tenantCode}</span></p>
               )}
               <div className="flex items-center justify-between gap-2">
                 <p className="text-xs font-semibold text-slate-800 truncate">{b.sourceName ?? b.batchId.slice(0,12)+'…'}</p>

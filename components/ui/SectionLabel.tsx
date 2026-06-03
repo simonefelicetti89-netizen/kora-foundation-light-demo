@@ -12,16 +12,16 @@ export function SectionLabel({ children, className }: SectionLabelProps) {
     <p
       className={className}
       style={{
-        fontFamily:    'var(--font-inter)',
-        fontWeight:    500,
-        fontSize:      '11px',
-        letterSpacing: '0.08em',
+        fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+        fontWeight:    600,
+        fontSize:      '10.5px',
+        letterSpacing: '0.09em',
         textTransform: 'uppercase',
-        color:         TOKENS.inkSecondary,
+        color:         TOKENS.inkHint,
         paddingTop:    '0.5rem',
         paddingBottom: '6px',
         marginBottom:  '4px',
-        borderBottom:  '1px solid rgba(20,18,46,0.10)',
+        borderBottom:  `1px solid ${TOKENS.inkBorder}`,
       }}
     >
       {children}

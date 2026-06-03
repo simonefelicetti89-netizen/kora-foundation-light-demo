@@ -40,7 +40,6 @@ interface NavGroup {
 
 function buildNavGroups(role: string): NavGroup[] {
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
-    // B36.1: 4 clear groups — Live Pilot Operations / Data Pipeline / Demo Lab / Strategy & Admin
     return [
       {
         heading: 'Live Pilot Operations',
@@ -69,7 +68,7 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Demo Lab',
         groupBadge: 'SYNTHETIC DEMO',
-        groupBadgeStyle: 'bg-amber-900/30 text-amber-400 border border-amber-800/40',
+        groupBadgeStyle: 'bg-[rgba(199,111,61,0.18)] text-[#C76F3D] border border-[rgba(199,111,61,0.35)]',
         items: [
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
           { href: '/company',             label: 'Meridiana Demo' },
@@ -91,7 +90,6 @@ function buildNavGroups(role: string): NavGroup[] {
   }
 
   if (role === 'COMPANY_ADMIN') {
-    // B36.1/B39: workspace-only sidebar — no demo routes, no future-vision, no admin tools.
     return [
       {
         heading: 'Workspace',
@@ -114,7 +112,6 @@ function buildNavGroups(role: string): NavGroup[] {
   }
 
   if (role === 'COMPANY_VIEWER') {
-    // B36.1/B39: viewer — read-only subset of workspace sections.
     return [
       {
         heading: 'Workspace',
@@ -225,25 +222,37 @@ export function Sidebar() {
 
   return (
     <aside
-      className="flex w-56 flex-col bg-kora-sidebar"
-      style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}
+      className="flex flex-col bg-kora-sidebar"
+      style={{
+        width: '260px',
+        minWidth: '260px',
+        borderRight: '1px solid rgba(255,255,255,0.06)',
+      }}
     >
-      {/* Logo header */}
+      {/* Logo block */}
       <div
-        className="flex items-center px-[18px] py-[18px]"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+        className="flex items-center"
+        style={{
+          paddingTop:    28,
+          paddingBottom: 24,
+          paddingLeft:   24,
+          paddingRight:  20,
+          borderBottom:  '1px solid rgba(255,255,255,0.07)',
+          minHeight:     72,
+        }}
       >
-        <KoraLogo variant="on-dark" className="h-[28px] w-auto" />
+        <KoraLogo variant="on-dark" className="h-[26px] w-auto" />
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-3">
+      <nav className="flex-1 overflow-y-auto py-4 px-2">
         {groups.map((group) => (
-          <div key={group.heading} className="mb-3">
-            <div className="flex items-center gap-1.5 px-[18px] pb-1">
+          <div key={group.heading} className="mb-4">
+            {/* Section heading */}
+            <div className="flex items-center gap-1.5 px-3 pb-1.5">
               <p
-                className="text-[10px] font-medium uppercase tracking-[0.20em]"
-                style={{ color: 'rgba(255,255,255,0.22)' }}
+                className="text-[9.5px] font-semibold uppercase tracking-[0.18em]"
+                style={{ color: 'rgba(255,255,255,0.30)' }}
               >
                 {group.heading}
               </p>
@@ -255,70 +264,82 @@ export function Sidebar() {
                 </span>
               )}
             </div>
+
+            {/* Nav items */}
             {group.items.map((item) => {
-              // Active: exact match, or workspace base path for anchor sub-items
               const isActive =
                 pathname === item.href ||
                 (item.href.includes('#') && pathname === item.href.split('#')[0]);
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center justify-between py-[8px] text-[14.5px] transition-colors',
+                    'group flex items-center justify-between rounded-[12px] py-[8px] px-3 text-[13.5px] font-medium transition-all duration-150',
                     isActive
-                      ? 'font-medium'
-                      : 'hover:text-white/65',
+                      ? 'text-white'
+                      : 'text-white/70 hover:text-white',
                     (item.comingSoon || item.inactive) && 'opacity-50',
                   )}
                   style={
                     isActive
                       ? {
-                          color:           '#FFFFFF',
-                          background:      'rgba(255,255,255,0.07)',
-                          borderLeft:      '2px solid #6156F5',
-                          paddingLeft:     16,
-                          paddingRight:    14,
-                          marginRight:     6,
-                          borderRadius:    '0 5px 5px 0',
+                          background:  '#C76F3D',
+                          border:      '1px solid rgba(255,255,255,0.10)',
+                          boxShadow:   '0 8px 24px rgba(199,111,61,0.22)',
+                          margin:      '1px 4px',
                         }
                       : {
-                          color:           'rgba(244,241,233,0.62)',
-                          paddingLeft:     18,
-                          paddingRight:    14,
+                          margin:      '1px 4px',
                         }
                   }
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
+                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      (e.currentTarget as HTMLElement).style.background = '';
+                      (e.currentTarget as HTMLElement).style.borderColor = '';
+                    }
+                  }}
                 >
-                  <span className="truncate">{item.label}</span>
-                  {item.badge && (
-                    <span
-                      className={cn('ml-1 shrink-0 rounded px-1 py-0.5 text-[8px] font-bold uppercase', item.badgeStyle)}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                  {item.comingSoon && (
-                    <span
-                      className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px]"
-                      style={{
-                        background: 'rgba(255,255,255,0.07)',
-                        color:      'rgba(255,255,255,0.30)',
-                      }}
-                    >
-                      presto
-                    </span>
-                  )}
-                  {item.inactive && (
-                    <span
-                      className="ml-1 shrink-0 rounded px-1 py-0.5 text-[9px]"
-                      style={{
-                        background: 'rgba(186,117,23,0.18)',
-                        color:      '#ba7517',
-                      }}
-                    >
-                      inattivo
-                    </span>
-                  )}
+                  <span className="truncate leading-snug">{item.label}</span>
+
+                  <div className="flex items-center gap-1 shrink-0 ml-1">
+                    {item.badge && (
+                      <span
+                        className={cn('rounded px-1 py-0.5 text-[8px] font-bold uppercase', item.badgeStyle)}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                    {item.comingSoon && (
+                      <span
+                        className="rounded px-1 py-0.5 text-[9px] font-medium"
+                        style={{
+                          background: 'rgba(255,255,255,0.08)',
+                          color:      'rgba(255,255,255,0.35)',
+                        }}
+                      >
+                        presto
+                      </span>
+                    )}
+                    {item.inactive && (
+                      <span
+                        className="rounded px-1 py-0.5 text-[9px] font-medium"
+                        style={{
+                          background: 'rgba(199,111,61,0.16)',
+                          color:      'rgba(199,111,61,0.90)',
+                        }}
+                      >
+                        inattivo
+                      </span>
+                    )}
+                  </div>
                 </Link>
               );
             })}
@@ -326,31 +347,41 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer */}
+      {/* Footer — role + environment */}
       <div
-        className="px-[16px] pt-3 pb-4 mt-auto"
-        style={{ borderTop: `1px solid rgba(255,255,255,0.08)` }}
+        className="px-4 pt-3 pb-4 mt-auto"
+        style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
       >
-        <p
-          className="text-[10.5px] font-medium leading-snug"
-          style={{ color: 'rgba(244,241,233,0.72)' }}
+        <div
+          className="flex items-center gap-2 rounded-xl px-3 py-2.5"
+          style={{ background: 'rgba(255,255,255,0.05)' }}
         >
-          {roleLabel}
-        </p>
-        <p
-          className="text-[9px] font-semibold uppercase tracking-[0.10em] mt-0.5"
-          style={{ color: 'var(--env-accent)' }}
-        >
-          {ENV_LABEL[activeEnvironment] ?? 'DEMO'}
-        </p>
-        <button
-          className="mt-2 text-[10.5px] transition-opacity hover:opacity-80"
-          style={{ color: 'rgba(244,241,233,0.35)' }}
-          onClick={() => {}}
-          type="button"
-        >
-          Esci
-        </button>
+          {/* Avatar placeholder */}
+          <div
+            className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+            style={{
+              background:  'rgba(199,111,61,0.20)',
+              border:      '1.5px solid #C76F3D',
+              color:       '#C76F3D',
+            }}
+          >
+            {roleLabel.charAt(0)}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p
+              className="text-[11px] font-semibold leading-tight truncate"
+              style={{ color: 'rgba(255,255,255,0.90)' }}
+            >
+              {roleLabel}
+            </p>
+            <p
+              className="text-[9px] font-semibold uppercase tracking-[0.10em] mt-0.5"
+              style={{ color: 'rgba(199,111,61,0.80)' }}
+            >
+              {ENV_LABEL[activeEnvironment] ?? 'DEMO'}
+            </p>
+          </div>
+        </div>
       </div>
     </aside>
   );

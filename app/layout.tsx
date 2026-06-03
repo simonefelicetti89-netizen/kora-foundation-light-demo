@@ -1,15 +1,26 @@
 import type { Metadata } from 'next';
-import { Inter, Instrument_Serif } from 'next/font/google';
+import { Plus_Jakarta_Sans, Instrument_Serif, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
 
-const inter = Inter({
-  variable: '--font-inter',
+// Plus Jakarta Sans — primary UI font (closest to General Sans available via Google Fonts)
+const jakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-jakarta',
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
+  weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
 });
 
+// Playfair Display — editorial serif fallback for wide display sizes
+const playfairDisplay = Playfair_Display({
+  variable: '--font-playfair',
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+});
+
+// Instrument Serif — editorial voice for page mastheads and section titles
 const instrumentSerif = Instrument_Serif({
   variable: '--font-instrument-serif',
   subsets: ['latin'],
@@ -27,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="it"
-      className={`${inter.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${jakartaSans.variable} ${instrumentSerif.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
       <body className="h-full">
         <AppShell>{children}</AppShell>

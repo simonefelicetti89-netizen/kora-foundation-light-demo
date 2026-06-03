@@ -35,10 +35,10 @@ const PILLARS: Array<{
 
 const PILLAR_RAMP = [
   TOKENS.accent,
-  'rgba(20,18,46,0.65)',
-  'rgba(20,18,46,0.50)',
-  'rgba(20,18,46,0.35)',
-  'rgba(20,18,46,0.22)',
+  'rgba(6,3,43,0.65)',
+  'rgba(6,3,43,0.50)',
+  'rgba(6,3,43,0.35)',
+  'rgba(6,3,43,0.22)',
 ];
 
 // ─── Macroblock config ─────────────────────────────────────────────────────────
@@ -70,8 +70,8 @@ function macroblockStatusToken(score: number): { bg: string; text: string } {
 
 function macroblockAccentColor(code: string): string {
   if (code === 'REACH')   return TOKENS.accent;
-  if (code === 'QUALITY') return 'rgba(20,18,46,0.65)';
-  if (code === 'EQUITY')  return 'rgba(20,18,46,0.45)';
+  if (code === 'QUALITY') return 'rgba(6,3,43,0.65)';
+  if (code === 'EQUITY')  return 'rgba(6,3,43,0.45)';
   return TOKENS.safeguard.watch.dot;
 }
 
@@ -196,7 +196,7 @@ export default function KoraSharedView() {
             <div>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 8 }}>KORA Index v3</p>
               <div className="flex items-baseline gap-2">
-                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '3.5rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '3.5rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                   {output?.kora_index_value}
                 </span>
                 <span style={{ fontSize: '1.125rem', color: TOKENS.inkHint, fontWeight: 500 }}>/100</span>
@@ -210,7 +210,7 @@ export default function KoraSharedView() {
             <div>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 8 }}>Confidence Score</p>
               <div className="flex items-baseline gap-2 mb-2">
-                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.25rem', color: TOKENS.accent, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.25rem', color: TOKENS.accent, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                   {((output?.confidence_score ?? 0) * 100).toFixed(0)}%
                 </span>
                 <span style={{ fontSize: '11px', fontWeight: 500, background: TOKENS.inkBorder, color: TOKENS.inkSecondary, borderRadius: 4, padding: '2px 7px' }}>
@@ -267,12 +267,12 @@ export default function KoraSharedView() {
                   }}
                 >
                   <div>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.ink }}>
+                    <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.ink }}>
                       {label}
                     </p>
                     {mb && (
                       <div className="flex items-baseline gap-2 mt-2">
-                        <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                        <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                           {score}
                         </span>
                         <span style={{ fontSize: '13px', color: TOKENS.inkHint }}>/100</span>
@@ -315,11 +315,11 @@ export default function KoraSharedView() {
                     display:      'flex', flexDirection: 'column', gap: 8,
                   }}
                 >
-                  <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.ink }}>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.ink }}>
                     {label}
                   </p>
                   {share !== undefined && (
-                    <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                       {pct(share)}
                     </p>
                   )}
@@ -342,14 +342,14 @@ export default function KoraSharedView() {
                 <div className="grid gap-5 sm:grid-cols-3 mb-5">
                   <div>
                     <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 6 }}>Quota attivazione profonda</p>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.25rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.25rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                       {pct(btiRecord.deep_activation_share)}
                     </p>
                     <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 4 }}>del budget in attivazione profonda</p>
                   </div>
                   <div>
                     <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 6 }}>Quota benefit monetari</p>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.25rem', color: TOKENS.safeguard.watch.text, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.25rem', color: TOKENS.safeguard.watch.text, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                       {pct(btiRecord.economic_relief_share)}
                     </p>
                     <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 4 }}>voucher, fringe, benefit monetari</p>
@@ -357,7 +357,7 @@ export default function KoraSharedView() {
                   {btiRecord.reallocation_opportunity_eur > 0 && (
                     <div>
                       <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 6 }}>Opportunità di riallocazione</p>
-                      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                         {eur(btiRecord.reallocation_opportunity_eur)}
                       </p>
                       <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 4, lineHeight: 1.55 }}>
@@ -388,7 +388,7 @@ export default function KoraSharedView() {
             {structuralPolicies.length > 0 ? (
               <>
                 <div className="flex items-center gap-4 mb-4">
-                  <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '3rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '3rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                     {structuralPolicies.length}
                   </span>
                   <div>

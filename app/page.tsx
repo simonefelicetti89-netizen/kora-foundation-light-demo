@@ -40,7 +40,7 @@ function KoraImpactField() {
     >
       {/* Label top */}
       <text x={CX} y={20} textAnchor="middle"
-        style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fill: 'rgba(247,245,239,0.25)', letterSpacing: '0.10em' }}>
+        style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fill: 'rgba(247,245,239,0.25)', letterSpacing: '0.10em' }}>
         KORA INDEX v3 · FOUNDATION LIGHT · SYNTHETIC DEMO
       </text>
 
@@ -77,7 +77,7 @@ function KoraImpactField() {
 
       {/* Center: ring gauge fill (34%) */}
       <circle cx={CX} cy={CY} r={R} fill="none"
-        stroke="#6156F5" strokeWidth="9"
+        stroke="#C76F3D" strokeWidth="9"
         strokeLinecap="round"
         strokeDasharray={`${dash} ${CIRC}`}
         transform={`rotate(-90 ${CX} ${CY})`}
@@ -85,11 +85,11 @@ function KoraImpactField() {
 
       {/* Center text */}
       <text x={CX} y={CY - 5} textAnchor="middle"
-        style={{ fontFamily: 'var(--font-inter)', fontSize: '22px', fontWeight: '700', fill: '#F7F5EF' }}>
+        style={{ fontFamily: 'var(--font-jakarta)', fontSize: '22px', fontWeight: '700', fill: '#EFEBE2' }}>
         34
       </text>
       <text x={CX} y={CY + 14} textAnchor="middle"
-        style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fill: 'rgba(247,245,239,0.36)' }}>
+        style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fill: 'rgba(247,245,239,0.36)' }}>
         /100
       </text>
 
@@ -101,7 +101,7 @@ function KoraImpactField() {
               stroke="rgba(97,86,245,0.20)" strokeWidth="1" />
           )}
           <circle cx={n.x} cy={n.y} r={n.r}
-            fill={n.accent ? '#6156F5' : 'rgba(247,245,239,0.52)'}
+            fill={n.accent ? '#C76F3D' : 'rgba(247,245,239,0.52)'}
           />
         </g>
       ))}
@@ -130,26 +130,26 @@ function KoraImpactField() {
 
       {/* Confidence Score — bottom right */}
       <text x={415} y={350} textAnchor="end"
-        style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fill: 'rgba(247,245,239,0.28)', letterSpacing: '0.10em' }}>
+        style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fill: 'rgba(247,245,239,0.28)', letterSpacing: '0.10em' }}>
         CONFIDENCE SCORE
       </text>
       <text x={415} y={372} textAnchor="end"
-        style={{ fontFamily: 'var(--font-inter)', fontSize: '21px', fontWeight: '700', fill: '#6156F5' }}>
+        style={{ fontFamily: 'var(--font-jakarta)', fontSize: '21px', fontWeight: '700', fill: '#C76F3D' }}>
         60%
       </text>
       <text x={415} y={388} textAnchor="end"
-        style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fill: 'rgba(247,245,239,0.22)' }}>
+        style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fill: 'rgba(247,245,239,0.22)' }}>
         esterno · peso = 0
       </text>
 
       {/* Activation Safeguard — bottom center-right */}
       <circle cx={245} cy={404} r={4.5} fill="#D4A017" />
       <text x={256} y={409} textAnchor="start"
-        style={{ fontFamily: 'var(--font-inter)', fontSize: '10.5px', fontWeight: '600', fill: '#D4A017' }}>
+        style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10.5px', fontWeight: '600', fill: '#D4A017' }}>
         Warning
       </text>
       <text x={256} y={423} textAnchor="start"
-        style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fill: 'rgba(247,245,239,0.24)' }}>
+        style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fill: 'rgba(247,245,239,0.24)' }}>
         Activation Safeguard
       </text>
     </svg>
@@ -219,7 +219,7 @@ const FAQS = [
 
 export default function LandingPage() {
   return (
-    <div style={{ fontFamily: 'var(--font-inter)', color: TOKENS.ink }}>
+    <div style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.ink }}>
 
       {/* ── NAV — integrata con hero, dark seamless ───────────────────────── */}
       <nav
@@ -255,7 +255,7 @@ export default function LandingPage() {
           <Link href="/company"
             style={{
               fontSize: '13px', fontWeight: 600,
-              color: '#F7F5EF',
+              color: '#EFEBE2',
               border: '1px solid rgba(247,245,239,0.24)',
               borderRadius: 7,
               padding: '8px 20px',
@@ -283,7 +283,7 @@ export default function LandingPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
 
               <p style={{
-                fontFamily:    'var(--font-inter)',
+                fontFamily:    'var(--font-jakarta)',
                 fontWeight:    500,
                 fontSize:      '10.5px',
                 letterSpacing: '0.16em',
@@ -299,7 +299,7 @@ export default function LandingPage() {
                   fontSize:      'clamp(4rem, 8vw, 7rem)',
                   letterSpacing: '-0.042em',
                   lineHeight:    0.97,
-                  color:         '#F7F5EF',
+                  color:         '#EFEBE2',
                   margin:        0,
                 }}
               >
@@ -322,7 +322,7 @@ export default function LandingPage() {
                   href="#foundation-light"
                   style={{
                     borderRadius:  8,
-                    background:    '#F7F5EF',
+                    background:    '#EFEBE2',
                     padding:       '13px 30px',
                     fontSize:      '14px',
                     fontWeight:    700,
@@ -384,7 +384,7 @@ export default function LandingPage() {
           </p>
           <div className="grid gap-8 sm:grid-cols-2">
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '1rem' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '1rem' }}>
                 Cosa le aziende vedono oggi
               </p>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -403,7 +403,7 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: '1rem' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: '1rem' }}>
                 Cosa KORA rivela
               </p>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -428,7 +428,7 @@ export default function LandingPage() {
       {/* ── CATEGORY (white) ──────────────────────────────────────────────── */}
       <section style={{ background: TOKENS.surface, padding: '5rem 3rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
             Una nuova categoria
           </p>
           <h2 className="font-kora-serif text-kora-ink"
@@ -437,20 +437,20 @@ export default function LandingPage() {
           </h2>
           <div className="grid gap-10 sm:grid-cols-2">
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '1rem' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '1rem' }}>
                 KORA non è — mai
               </p>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {['Welfare platform o benefits marketplace','HR dashboard o strumento di valutazione lavoratori','Sistema di sorveglianza, ranking o gamification','Certificazione ESG automatica o compliance garantita','ROI garantito o previsione causale di outcome'].map((item) => (
                   <li key={item} style={{ display: 'flex', gap: '0.75rem', fontSize: '14px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
-                    <span style={{ flexShrink: 0, fontWeight: 700, color: 'rgba(20,18,46,0.22)', marginTop: 2 }}>✕</span>
+                    <span style={{ flexShrink: 0, fontWeight: 700, color: 'rgba(6,3,43,0.22)', marginTop: 2 }}>✕</span>
                     {item}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: '1rem' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: '1rem' }}>
                 KORA è
               </p>
               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -469,7 +469,7 @@ export default function LandingPage() {
       {/* ── FOUNDATION LIGHT (canvas) ─────────────────────────────────────── */}
       <section id="foundation-light" style={{ background: TOKENS.canvas, padding: '6rem 3rem', borderTop: TOKENS.cardBorder }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
             Offerta pilot
           </p>
           <h2 className="font-kora-serif text-kora-ink"
@@ -515,7 +515,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <div style={{ borderTop: pkg.highlight ? `1px solid ${TOKENS.accent}33` : TOKENS.cardBorder, paddingTop: 14 }}>
-                  <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.875rem', color: TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.875rem', color: TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                     {pkg.price}
                   </p>
                   <p style={{ fontSize: '10.5px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.5 }}>{pkg.priceNote}</p>
@@ -543,7 +543,7 @@ export default function LandingPage() {
       {/* ── OUTPUTS (white) ───────────────────────────────────────────────── */}
       <section style={{ background: TOKENS.surface, padding: '5rem 3rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
             Output Foundation Light
           </p>
           <h2 className="font-kora-serif text-kora-ink"
@@ -574,11 +574,11 @@ export default function LandingPage() {
       {/* ── TRUST (near-black) ────────────────────────────────────────────── */}
       <section style={{ background: HERO_BG, padding: '5rem 3rem' }}>
         <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.32)', marginBottom: '0.875rem' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(247,245,239,0.32)', marginBottom: '0.875rem' }}>
             Privacy & confini metodologici
           </p>
           <h2 className="font-kora-serif"
-            style={{ fontSize: 'clamp(2rem, 4vw, 2.875rem)', letterSpacing: '-0.025em', lineHeight: 1.12, color: '#F7F5EF', marginBottom: '2.5rem' }}>
+            style={{ fontSize: 'clamp(2rem, 4vw, 2.875rem)', letterSpacing: '-0.025em', lineHeight: 1.12, color: '#EFEBE2', marginBottom: '2.5rem' }}>
             KORA misura organizzazioni, non individui.
           </h2>
           <div className="grid gap-3 sm:grid-cols-2" style={{ marginBottom: '2rem' }}>
@@ -589,7 +589,7 @@ export default function LandingPage() {
               { label: 'Pre-empirical calibration', note: 'Output direzionale — non certificazione pubblica, non attestazione regolatoria.' },
             ].map(({ label, note }) => (
               <div key={label} style={{ background: 'rgba(247,245,239,0.04)', border: '1px solid rgba(247,245,239,0.08)', borderRadius: 12, padding: '1rem 1.125rem' }}>
-                <p style={{ fontSize: '13px', fontWeight: 600, color: '#F7F5EF', marginBottom: 4 }}>{label}</p>
+                <p style={{ fontSize: '13px', fontWeight: 600, color: '#EFEBE2', marginBottom: 4 }}>{label}</p>
                 <p style={{ fontSize: '12px', color: 'rgba(247,245,239,0.52)', lineHeight: 1.65 }}>{note}</p>
               </div>
             ))}
@@ -604,7 +604,7 @@ export default function LandingPage() {
       {/* ── VISION (canvas) ───────────────────────────────────────────────── */}
       <section style={{ background: TOKENS.canvas, padding: '5rem 3rem', borderTop: TOKENS.cardBorder }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10.5px', letterSpacing: '0.14em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: '0.875rem' }}>
             Dove stiamo andando
           </p>
           <h2 className="font-kora-serif text-kora-ink"

@@ -50,7 +50,7 @@ interface LivePreviewData {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const PILLAR_COLORS: Record<string, string> = {
-  LIFE: '#4A90D9', GROWTH: '#6156F5', CONNECTION: '#8B72E0',
+  LIFE: '#4A90D9', GROWTH: '#C76F3D', CONNECTION: '#8B72E0',
   IMPACT: '#059669', LEGACY: '#1E3A5F',
 };
 const PILLAR_LABELS: Record<string, string> = {
@@ -82,7 +82,7 @@ const PILOT_CLS: Record<string, string> = {
   review_ready:           'bg-amber-50 text-amber-700 border-amber-200',
   needs_enrichment:       'bg-orange-50 text-orange-700 border-orange-200',
   ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
-  scored:                 'bg-[#6156F5]/10 text-[#6156F5] border-[#6156F5]/30',
+  scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
   decision_pack_ready:    'bg-green-50 text-green-700 border-green-200',
   decision_pack_exported: 'bg-green-100 text-green-800 border-green-300',
 };
@@ -194,9 +194,9 @@ export function CompanyLivePreviewPanel() {
       <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-8 py-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-1 rounded bg-[#6156F5]" />
+            <div className="h-8 w-1 rounded bg-[#C76F3D]" />
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#6156F5]">Company Live Preview</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#C76F3D]">Company Live Preview</p>
               <p className="text-lg font-bold text-[#06032B] leading-tight">
                 {data ? data.tenant.companyName : 'Seleziona azienda'}
               </p>
@@ -224,7 +224,7 @@ export function CompanyLivePreviewPanel() {
             <select
               value={tenantCode}
               onChange={e => setTenantCode(e.target.value)}
-              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#6156F5]/30"
+              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#C76F3D]/30"
             >
               <option value="">— seleziona —</option>
               {tenants.map(t => (
@@ -237,7 +237,7 @@ export function CompanyLivePreviewPanel() {
             <select
               value={period}
               onChange={e => setPeriod(e.target.value)}
-              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#6156F5]/30"
+              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#C76F3D]/30"
             >
               {['2026-Q1','2026-Q2','2026-H1','2025-Q4'].map(p => (
                 <option key={p} value={p}>{p}</option>
@@ -301,14 +301,14 @@ export function CompanyLivePreviewPanel() {
               {data.scoring ? (
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-bold text-[#6156F5] leading-none">{Math.round(data.scoring.koraIndex * 10) / 10}</span>
+                    <span className="text-5xl font-bold text-[#C76F3D] leading-none">{Math.round(data.scoring.koraIndex * 10) / 10}</span>
                     <span className="text-xl text-slate-400">/100</span>
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     <span className="rounded border px-2 py-0.5 text-[11px] font-bold" style={{ background: SF_BG[data.scoring.safeguard] ?? '#f3f4f6', color: SF_COLOR[data.scoring.safeguard] ?? '#6b7280', borderColor: SF_COLOR[data.scoring.safeguard] ?? '#d1d5db' }}>
                       {data.scoring.safeguard}
                     </span>
-                    <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[11px] font-bold text-[#6156F5]">
+                    <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[11px] font-bold text-[#C76F3D]">
                       CS {Math.round(data.scoring.confidenceScore * 100)}%
                     </span>
                   </div>
@@ -332,8 +332,8 @@ export function CompanyLivePreviewPanel() {
                 return (
                   <div className="space-y-3">
                     <div>
-                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-0.5">Meaningful AR <span className="text-[#6156F5]">· SEGNALE PRIMARIO</span></p>
-                      <p className="text-3xl font-bold text-[#6156F5] leading-none">{pct(mar)}</p>
+                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-0.5">Meaningful AR <span className="text-[#C76F3D]">· SEGNALE PRIMARIO</span></p>
+                      <p className="text-3xl font-bold text-[#C76F3D] leading-none">{pct(mar)}</p>
                     </div>
                     <div>
                       <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-0.5">Activation Rate · reach complessivo</p>
@@ -404,7 +404,7 @@ export function CompanyLivePreviewPanel() {
                 <div>
                   <div className="grid grid-cols-4 gap-4 mb-5">
                     <Stat label="Budget People / Welfare" value={fmtEur(totalBudget)} />
-                    <Stat label="BTI Score" value={btiScore > 0 ? `${Math.round(btiScore)}/100` : '—'} color="#6156F5" />
+                    <Stat label="BTI Score" value={btiScore > 0 ? `${Math.round(btiScore)}/100` : '—'} color="#C76F3D" />
                     <Stat label="Activation Debt (stima)" value={activationDebt > 0 ? fmtEur(activationDebt) : '—'} color="#d97706" />
                     <Stat label="Costo/Impact Unit" value={data.bti.costPerIU !== null ? fmtEur(data.bti.costPerIU) : '—'} />
                   </div>
@@ -550,7 +550,7 @@ export function CompanyLivePreviewPanel() {
                     href={data.decisionPack.previewUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded border border-[#6156F5]/30 bg-[#6156F5]/10 px-4 py-2 text-[12px] font-semibold text-[#6156F5] hover:bg-[#6156F5]/20 transition-colors"
+                    className="rounded border border-[#C76F3D]/30 bg-[#C76F3D]/10 px-4 py-2 text-[12px] font-semibold text-[#C76F3D] hover:bg-[#C76F3D]/20 transition-colors"
                   >
                     Apri Preview
                   </a>
@@ -571,7 +571,7 @@ export function CompanyLivePreviewPanel() {
 
           {/* ── Row 7: Privacy & Methodology Boundary ─────────────────────── */}
           <div className="rounded-xl border border-[#c7c4f8] bg-[#f5f4ff] p-5">
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#6156F5] mb-3">Privacy & Methodology Boundary</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#C76F3D] mb-3">Privacy & Methodology Boundary</p>
             <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px] text-slate-600">
               <p>🔒 <strong>Organization-Level Only</strong> — nessun worker identificabile</p>
               <p>🛡️ <strong>N≥10 Threshold</strong> — segmenti sotto soglia soppressi</p>
@@ -599,7 +599,7 @@ export function CompanyLivePreviewPanel() {
               </div>
               <a
                 href={`/admin/company-evidence-archive?tenantCode=${encodeURIComponent(tenantCode)}&reportingPeriod=${encodeURIComponent(period)}`}
-                className="rounded-lg border border-[#6156F5] text-[#6156F5] px-4 py-2 text-xs font-semibold hover:bg-[#f5f4ff] transition-colors flex-shrink-0"
+                className="rounded-lg border border-[#C76F3D] text-[#C76F3D] px-4 py-2 text-xs font-semibold hover:bg-[#f5f4ff] transition-colors flex-shrink-0"
               >
                 Apri Evidence Archive →
               </a>

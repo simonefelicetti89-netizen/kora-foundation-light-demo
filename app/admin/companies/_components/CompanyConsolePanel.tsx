@@ -204,7 +204,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
             KORA Admin · Company Console
           </p>
           <h1 className="text-xl font-bold text-white tracking-tight">Live Tenant Registry</h1>
@@ -215,12 +215,12 @@ export function CompanyConsolePanel({ userEmail }: Props) {
         <div className="flex flex-col items-end gap-2 mt-1 shrink-0">
           <Link
             href="/admin/companies/new"
-            className="rounded-lg bg-[#6156F5] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors whitespace-nowrap"
+            className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors whitespace-nowrap"
           >
             + Crea Azienda Live
           </Link>
           <div className="flex flex-col items-end gap-1">
-            <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">KORA_ADMIN</span>
+            <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">KORA_ADMIN</span>
             <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           </div>
           <div className="flex gap-1 flex-wrap justify-end">
@@ -329,7 +329,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
               </p>
               <div className="flex gap-3 justify-center pt-2 flex-wrap">
                 <Link href="/admin/companies/new"
-                  className="rounded-lg bg-[#6156F5] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors">
+                  className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors">
                   + Crea Azienda Live
                 </Link>
                 <Link href="/admin/tenants"
@@ -490,7 +490,7 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
               <p className="text-green-600">✓ {t.submissions.accepted} accettate</p>
             )}
             {t.quickActions.submissions && (
-              <Link href={t.quickActions.submissions} className="text-[#6156F5] hover:underline text-[9px]">
+              <Link href={t.quickActions.submissions} className="text-[#C76F3D] hover:underline text-[9px]">
                 Vedi →
               </Link>
             )}
@@ -520,7 +520,7 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
         <div className="flex flex-col gap-1">
           <Link
             href={t.quickActions.viewWorkspace}
-            className="text-[10px] text-[#6156F5] hover:underline font-medium"
+            className="text-[10px] text-[#C76F3D] hover:underline font-medium"
           >
             Workspace →
           </Link>

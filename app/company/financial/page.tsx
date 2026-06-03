@@ -29,14 +29,14 @@ function pct(val: number, decimals = 0) {
 
 const PILLAR_RANK_FILL = [
   TOKENS.accent,                // 1° (leader) — viola accento
-  'rgba(20,18,46,0.65)',
-  'rgba(20,18,46,0.50)',
-  'rgba(20,18,46,0.35)',
-  'rgba(20,18,46,0.22)',
+  'rgba(6,3,43,0.65)',
+  'rgba(6,3,43,0.50)',
+  'rgba(6,3,43,0.35)',
+  'rgba(6,3,43,0.22)',
 ];
 
 function pillarFill(rank: number): string {
-  return PILLAR_RANK_FILL[rank] ?? 'rgba(20,18,46,0.18)';
+  return PILLAR_RANK_FILL[rank] ?? 'rgba(6,3,43,0.18)';
 }
 
 // ─── Debt/Priority/Risk → KORA semantic tokens ────────────────────────────────
@@ -117,8 +117,8 @@ const CORR_MATRIX: CorrStrength[][] = [
 
 const CORR_CELL: Record<CorrStrength, { symbol: string; color: string; tip: string }> = {
   forte:      { symbol: '●●', color: TOKENS.accent,                   tip: 'Associazione forte'    },
-  moderata:   { symbol: '●',  color: 'rgba(20,18,46,0.60)',           tip: 'Associazione moderata' },
-  debole:     { symbol: '○',  color: 'rgba(20,18,46,0.22)',           tip: 'Segnale debole'        },
+  moderata:   { symbol: '●',  color: 'rgba(6,3,43,0.60)',           tip: 'Associazione moderata' },
+  debole:     { symbol: '○',  color: 'rgba(6,3,43,0.22)',           tip: 'Segnale debole'        },
   monitorare: { symbol: '△',  color: TOKENS.safeguard.watch.text,     tip: 'Da monitorare'         },
 };
 
@@ -155,10 +155,10 @@ function FinCard({ label, value, sub, note, accent }: {
         padding:      '1.125rem',
       }}
     >
-      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: TOKENS.inkHint }}>
+      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase' as const, color: TOKENS.inkHint }}>
         {label}
       </p>
-      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.625rem', color: accent ? TOKENS.accent : TOKENS.ink, lineHeight: 1, marginTop: 8, marginBottom: 4, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums' }}>
+      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.625rem', color: accent ? TOKENS.accent : TOKENS.ink, lineHeight: 1, marginTop: 8, marginBottom: 4, letterSpacing: '-0.025em', fontVariantNumeric: 'tabular-nums' }}>
         {value}
       </p>
       {sub  && <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>{sub}</p>}
@@ -169,7 +169,7 @@ function FinCard({ label, value, sub, note, accent }: {
 
 function Pill({ label, bg, text }: { label: string; bg: string; text: string }) {
   return (
-    <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 500, background: bg, color: text, borderRadius: 4, padding: '2px 7px' }}>
+    <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 500, background: bg, color: text, borderRadius: 4, padding: '2px 7px' }}>
       {label}
     </span>
   );
@@ -233,7 +233,7 @@ export default function FinancialGovernance() {
           <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 6, maxWidth: 400, margin: '8px auto 0' }}>
             {result.reason ?? 'I dati di governance finanziaria sono riservati ai ruoli Finance, HR e Admin.'}
           </p>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: TOKENS.inkHint, marginTop: 12 }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: '11px', color: TOKENS.inkHint, marginTop: 12 }}>
             Ruolo attivo: {activeRole}
           </p>
         </div>
@@ -289,7 +289,7 @@ export default function FinancialGovernance() {
           padding:      '1.25rem 1.5rem',
         }}
       >
-        <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '13px', color: TOKENS.ink, marginBottom: 8 }}>
+        <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '13px', color: TOKENS.ink, marginBottom: 8 }}>
           Lettura di governance — non certificativa
         </p>
         <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.7, maxWidth: '72ch' }}>
@@ -352,7 +352,7 @@ export default function FinancialGovernance() {
           <div>
             <div className="flex justify-between items-baseline mb-2">
               <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink }}>Utilizzo budget</p>
-              <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '18px', color: utilizationAbove70 ? TOKENS.accent : TOKENS.safeguard.watch.text, fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '18px', color: utilizationAbove70 ? TOKENS.accent : TOKENS.safeguard.watch.text, fontVariantNumeric: 'tabular-nums' }}>
                 {(rec.budget_utilization_rate * 100).toFixed(0)}%
               </span>
             </div>
@@ -365,7 +365,7 @@ export default function FinancialGovernance() {
             </div>
             <div className="mt-3" style={{ borderTop: TOKENS.cardBorder, paddingTop: 12 }}>
               <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
-                Costo per IU (informativo): <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, color: TOKENS.ink }}>€{rec.cost_per_iu_indicator}</span>
+                Costo per IU (informativo): <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, color: TOKENS.ink }}>€{rec.cost_per_iu_indicator}</span>
               </p>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.55 }}>{rec.cost_per_iu_note}</p>
             </div>
@@ -403,7 +403,7 @@ export default function FinancialGovernance() {
               { cat: 'Informativo',     include: 'Budget allocato, correlazioni KPI People, scenari',          nature: 'Lettura aggregata su dati sintetici',             perimetro: 'Non alimenta il KORA Index · non causale' },
               { cat: 'Non certificato', include: 'ROI, retention, engagement, compliance ESG/fiscale',         nature: 'Fuori perimetro KORA Foundation Light',           perimetro: 'Richiede analisi indipendente e consulenza specialistica' },
             ].map((row, i) => (
-              <tr key={row.cat} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+              <tr key={row.cat} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(6,3,43,0.02)', borderBottom: TOKENS.cardBorder }}>
                 <td style={{ padding: '11px 14px', fontSize: '12px', fontWeight: 600, color: TOKENS.ink, whiteSpace: 'nowrap' }}>{row.cat}</td>
                 <td style={{ padding: '11px 14px', fontSize: '11px', color: TOKENS.inkSecondary }}>{row.include}</td>
                 <td style={{ padding: '11px 14px', fontSize: '11px', color: TOKENS.inkSecondary }}>{row.nature}</td>
@@ -543,7 +543,7 @@ export default function FinancialGovernance() {
                     {label}
                     <span style={{ fontSize: '11px', fontWeight: 400, color: TOKENS.inkHint, marginLeft: 6 }}>{pillar}</span>
                   </span>
-                  <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: rank === 0 ? TOKENS.accent : TOKENS.ink, fontVariantNumeric: 'tabular-nums' }}>
+                  <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: rank === 0 ? TOKENS.accent : TOKENS.ink, fontVariantNumeric: 'tabular-nums' }}>
                     {budget > 0 ? eur(budget) : '—'}
                     <span style={{ fontWeight: 400, color: TOKENS.inkHint, marginLeft: 6 }}>
                       {budget > 0 ? `(${(share * 100).toFixed(0)}%)` : ''}
@@ -588,7 +588,7 @@ export default function FinancialGovernance() {
               const staticData = PILLAR_STATIC[pillar];
               const dt = DEBT_TOKEN[staticData?.debt ?? 'medio'];
               return (
-                <tr key={pillar} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                <tr key={pillar} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(6,3,43,0.02)', borderBottom: TOKENS.cardBorder }}>
                   <td style={{ padding: '12px 14px', verticalAlign: 'top' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ width: 4, height: 28, borderRadius: 2, background: pillarFill(rank), flexShrink: 0 }} />
@@ -598,13 +598,13 @@ export default function FinancialGovernance() {
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '12px', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '12px', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                     {budget > 0 ? eur(budget) : '—'}
                   </td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-inter)', fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
+                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-jakarta)', fontSize: '12px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
                     {budget > 0 ? `${(share * 100).toFixed(0)}%` : '—'}
                   </td>
-                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '12px', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                  <td style={{ padding: '12px 14px', textAlign: 'right', verticalAlign: 'top', fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '12px', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                     {deep > 0 ? eur(deep) : '—'}
                   </td>
                   <td style={{ padding: '12px 14px', textAlign: 'center', verticalAlign: 'top' }}>
@@ -654,10 +654,10 @@ export default function FinancialGovernance() {
               const dirColor = row.direction === 'up' ? TOKENS.safeguard.pass.text : TOKENS.safeguard.cap.text;
               const dirArrow = row.direction === 'up' ? '↑' : '↓';
               return (
-                <tr key={row.kpi} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                <tr key={row.kpi} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(6,3,43,0.02)', borderBottom: TOKENS.cardBorder }}>
                   <td style={{ padding: '11px 14px', fontSize: '12px', fontWeight: 500, color: TOKENS.ink }}>{row.kpi}</td>
                   <td style={{ padding: '11px 14px', textAlign: 'right', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
-                    <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: dirColor, fontVariantNumeric: 'tabular-nums' }}>
+                    <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: dirColor, fontVariantNumeric: 'tabular-nums' }}>
                       {dirArrow} {row.change}
                     </span>
                     <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 2 }}>{row.period}</p>
@@ -712,7 +712,7 @@ export default function FinancialGovernance() {
             </thead>
             <tbody>
               {CORR_ROWS.map((row, ri) => (
-                <tr key={row} style={{ background: ri % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                <tr key={row} style={{ background: ri % 2 === 0 ? TOKENS.surface : 'rgba(6,3,43,0.02)', borderBottom: TOKENS.cardBorder }}>
                   <td style={{ padding: '10px 14px', fontSize: '12px', fontWeight: 500, color: TOKENS.ink, whiteSpace: 'nowrap' }}>{row}</td>
                   {CORR_MATRIX[ri].map((strength, ci) => {
                     const cell = CORR_CELL[strength];
@@ -731,8 +731,8 @@ export default function FinancialGovernance() {
           <div style={{ padding: '8px 14px', borderTop: TOKENS.cardBorder, display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
             {[
               { symbol: '●●', color: TOKENS.accent,             label: 'Associazione forte'    },
-              { symbol: '●',  color: 'rgba(20,18,46,0.60)',     label: 'Associazione moderata' },
-              { symbol: '○',  color: 'rgba(20,18,46,0.22)',     label: 'Segnale debole'        },
+              { symbol: '●',  color: 'rgba(6,3,43,0.60)',     label: 'Associazione moderata' },
+              { symbol: '○',  color: 'rgba(6,3,43,0.22)',     label: 'Segnale debole'        },
             ].map(({ symbol, color, label }) => (
               <span key={label} style={{ fontSize: '11px', color: TOKENS.inkHint }}>
                 <span style={{ fontWeight: 700, color, marginRight: 4 }}>{symbol}</span>{label}
@@ -802,7 +802,7 @@ export default function FinancialGovernance() {
               const pt = PRIORITY_TOKEN[r.priority];
               const rt = RISK_TOKEN[r.risk];
               return (
-                <tr key={i} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(20,18,46,0.02)', borderBottom: TOKENS.cardBorder }}>
+                <tr key={i} style={{ background: i % 2 === 0 ? TOKENS.surface : 'rgba(6,3,43,0.02)', borderBottom: TOKENS.cardBorder }}>
                   <td style={{ padding: '12px 14px', textAlign: 'center', verticalAlign: 'top' }}>
                     <Pill label={r.priority} bg={pt.bg} text={pt.text} />
                   </td>

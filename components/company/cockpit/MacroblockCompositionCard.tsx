@@ -45,7 +45,7 @@ export function MacroblockCompositionCard({ macroblocks }: MacroblockComposition
                 <div className="flex items-baseline gap-2 min-w-0">
                   <span
                     style={{
-                      fontFamily:    'var(--font-inter)',
+                      fontFamily:    'var(--font-jakarta)',
                       fontWeight:    600,
                       fontSize:      '12.5px',
                       color:         TOKENS.ink,
@@ -58,9 +58,9 @@ export function MacroblockCompositionCard({ macroblocks }: MacroblockComposition
                   <span
                     className="truncate"
                     style={{
-                      fontFamily: 'var(--font-inter)',
+                      fontFamily: 'var(--font-jakarta)',
                       fontSize:   '11px',
-                      color:      'rgba(20,18,46,0.42)',
+                      color:      'rgba(6,3,43,0.42)',
                     }}
                   >
                     {desc}
@@ -69,16 +69,16 @@ export function MacroblockCompositionCard({ macroblocks }: MacroblockComposition
                 <div className="flex items-baseline gap-2 flex-shrink-0">
                   <span
                     style={{
-                      fontFamily: 'var(--font-inter)',
+                      fontFamily: 'var(--font-jakarta)',
                       fontSize:   '11px',
-                      color:      'rgba(20,18,46,0.50)',
+                      color:      'rgba(6,3,43,0.50)',
                     }}
                   >
                     {Math.round(mb.weight * 100)}%
                   </span>
                   <span
                     style={{
-                      fontFamily:        'var(--font-inter)',
+                      fontFamily:        'var(--font-jakarta)',
                       fontWeight:        700,
                       fontSize:          '22px',
                       color:             TOKENS.ink,

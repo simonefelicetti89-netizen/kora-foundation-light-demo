@@ -84,10 +84,10 @@ function MetricGrid({ metrics }: { metrics: DecisionPackMetric[] }) {
           key={m.code}
           style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '0.875rem' }}
         >
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 6 }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 6 }}>
             {m.label}
           </p>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.625rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.625rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>
             {m.value}{m.unit && <span style={{ fontSize: '11px', fontWeight: 400, color: TOKENS.inkHint, marginLeft: 3 }}>{m.unit}</span>}
           </p>
           {m.delta !== undefined && (
@@ -221,13 +221,13 @@ function DeltaCard({ delta }: { delta: DecisionPackMetricDelta }) {
   const tt = TREND_TOKEN[delta.trend] ?? TREND_TOKEN.not_available;
   return (
     <div style={{ background: tt.bg, border: `1px solid ${tt.borderColor}`, borderRadius: TOKENS.cardRadius, padding: '10px 12px' }}>
-      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 6 }}>
+      <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 6 }}>
         {delta.label}
       </p>
       <div className="flex items-center gap-1.5">
-        <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.125rem', color: tt.iconColor }}>{tt.icon}</span>
+        <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.125rem', color: tt.iconColor }}>{tt.icon}</span>
         {delta.current_value !== null && delta.current_value !== undefined && (
-          <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.125rem', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>
+          <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.125rem', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>
             {delta.metric_id === 'confidence_score' ? `${delta.current_value}%` : delta.current_value}
           </span>
         )}
@@ -252,7 +252,7 @@ function PeriodComparisonSection({ comparison }: { comparison: DecisionPackPerio
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
+        <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
           Variazione rispetto al semestre precedente
         </p>
         <div className="flex items-center gap-2">
@@ -347,7 +347,7 @@ function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLa
         {version.kora_index_value !== null && version.kora_index_value !== undefined ? (
           <div>
             <p style={{ fontSize: '10px', color: TOKENS.inkHint }}>KORA Index</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.5rem', color: TOKENS.accent, lineHeight: 1, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.5rem', color: TOKENS.accent, lineHeight: 1, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>
               {version.kora_index_value}
             </p>
           </div>
@@ -360,7 +360,7 @@ function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLa
         {version.confidence_score > 0 && (
           <div>
             <p style={{ fontSize: '10px', color: TOKENS.inkHint }}>Confidence Score</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '1.125rem', color: TOKENS.ink, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '1.125rem', color: TOKENS.ink, marginTop: 3, fontVariantNumeric: 'tabular-nums' }}>
               {(version.confidence_score * 100).toFixed(0)}%
               <span style={{ fontSize: '9px', fontWeight: 400, color: TOKENS.inkHint, marginLeft: 4 }}>esterno</span>
             </p>
@@ -396,10 +396,10 @@ function VersionCard({ version, isLatest }: { version: DecisionPackVersion; isLa
 
 const PILLAR_RAMP = [
   TOKENS.accent,
-  'rgba(20,18,46,0.65)',
-  'rgba(20,18,46,0.50)',
-  'rgba(20,18,46,0.35)',
-  'rgba(20,18,46,0.22)',
+  'rgba(6,3,43,0.65)',
+  'rgba(6,3,43,0.50)',
+  'rgba(6,3,43,0.35)',
+  'rgba(6,3,43,0.22)',
 ];
 
 const CANONICAL_PILLAR_AGGREGATE = [
@@ -482,7 +482,7 @@ export default function Reports() {
       >
         <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
           <div>
-            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 4 }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 4 }}>
               KORA Decision Pack · Foundation Light v0.1
             </p>
             <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.5rem', letterSpacing: '-0.015em', lineHeight: 1.15 }}>
@@ -507,14 +507,14 @@ export default function Reports() {
           <div className="grid grid-cols-3 gap-4 mb-5">
             <div style={{ background: TOKENS.inkBorder, borderRadius: 10, padding: '1rem', textAlign: 'center' }}>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 6 }}>KORA Index v3</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                 {koraIndex.kora_index_value}
               </p>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 4 }}>/100</p>
             </div>
             <div style={{ background: `${TOKENS.accent}08`, border: `1px solid ${TOKENS.accent}22`, borderRadius: 10, padding: '1rem', textAlign: 'center' }}>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 6 }}>Confidence Score</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.accent, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.accent, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                 {(koraIndex.confidence_score * 100).toFixed(0)}%
               </p>
               <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 4 }}>indicatore esterno · peso 0</p>
@@ -522,7 +522,7 @@ export default function Reports() {
             {safegTk && (
               <div style={{ background: safegTk.bg, border: `1px solid ${safegTk.dot}44`, borderRadius: 10, padding: '1rem', textAlign: 'center' }}>
                 <p style={{ fontSize: '11px', color: safegTk.text, opacity: 0.75, marginBottom: 6 }}>Activation Safeguard</p>
-                <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: safegTk.text, lineHeight: 1 }}>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.75rem', color: safegTk.text, lineHeight: 1 }}>
                   {safeguardLabel(koraIndex.safeguard_status)}
                 </p>
               </div>
@@ -570,7 +570,7 @@ export default function Reports() {
         }}
       >
         <div>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.watch.text, marginBottom: 4 }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.watch.text, marginBottom: 4 }}>
             Stato Decision Pack
           </p>
           <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.safeguard.watch.text }}>
@@ -604,7 +604,7 @@ export default function Reports() {
           </div>
           {changeSummary && changeSummary.main_changes.length > 0 && (
             <div style={{ background: TOKENS.safeguard.pass.bg, border: `1px solid ${TOKENS.safeguard.pass.dot}44`, borderRadius: TOKENS.cardRadius, padding: '1rem 1.25rem' }}>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.pass.text, marginBottom: 8 }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.pass.text, marginBottom: 8 }}>
                 Variazioni v1 → v2
               </p>
               {changeSummary.main_changes.map((c, i) => (
@@ -752,7 +752,7 @@ export default function Reports() {
                 <details
                   style={{ borderRadius: TOKENS.cardRadius, border: TOKENS.cardBorder, background: TOKENS.inkBorder, padding: '0.875rem 1rem', marginTop: 8 }}
                 >
-                  <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, userSelect: 'none' }}>
+                  <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, userSelect: 'none' }}>
                     Technical Preview / Methodology Debug — Non sostituisce il KORA Index v3
                   </summary>
                   <div style={{ marginTop: 12, background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: 6, padding: '10px 12px', fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -795,7 +795,7 @@ export default function Reports() {
                 <RecList recommendations={sectionMap.budget_to_human_impact.recommendations} />
                 {sectionMap.economic_relief && (
                   <div style={{ marginTop: 12, background: TOKENS.inkBorder, borderRadius: 8, padding: '0.875rem 1rem' }}>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 8 }}>
+                    <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 8 }}>
                       {sectionMap.economic_relief.title}
                     </p>
                     <p style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>{sectionMap.economic_relief.summary}</p>
@@ -832,11 +832,11 @@ export default function Reports() {
                 <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {CANONICAL_PILLAR_AGGREGATE.map(({ pillar, share }, rank) => (
                     <div key={pillar} className="flex items-center gap-3">
-                      <span style={{ width: 96, fontSize: '12px', fontFamily: 'var(--font-inter)', fontWeight: 600, color: TOKENS.ink }}>{pillar}</span>
+                      <span style={{ width: 96, fontSize: '12px', fontFamily: 'var(--font-jakarta)', fontWeight: 600, color: TOKENS.ink }}>{pillar}</span>
                       <div style={{ flex: 1, height: 6, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
                         <div style={{ height: 6, borderRadius: 9999, width: `${share}%`, background: PILLAR_RAMP[rank] ?? PILLAR_RAMP[4] }} />
                       </div>
-                      <span style={{ fontSize: '12px', fontFamily: 'var(--font-inter)', fontWeight: 600, color: TOKENS.inkSecondary, width: 40, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{ fontSize: '12px', fontFamily: 'var(--font-jakarta)', fontWeight: 600, color: TOKENS.inkSecondary, width: 40, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                         {share}%
                       </span>
                     </div>
@@ -858,7 +858,7 @@ export default function Reports() {
                 <RecList recommendations={sectionMap.recommendations.recommendations} />
                 {sectionMap.ninety_day_action_plan && (
                   <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
+                    <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
                       Piano d&apos;azione 90 giorni
                     </p>
                     <ActionPlanReport
@@ -906,7 +906,7 @@ export default function Reports() {
         </ul>
         {limitations.length > 0 && (
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: TOKENS.cardBorder }}>
-            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 8 }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 8 }}>
               Limitazioni specifiche
             </p>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

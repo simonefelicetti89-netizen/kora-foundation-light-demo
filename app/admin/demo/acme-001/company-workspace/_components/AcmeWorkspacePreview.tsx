@@ -74,7 +74,7 @@ export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
             {ACME_PROFILE.companyName}
           </p>
           <h1 className="text-xl font-bold text-white tracking-tight">Il tuo Workspace KORA</h1>
@@ -83,7 +83,7 @@ export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">COMPANY_ADMIN</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">COMPANY_ADMIN</span>
           <span className="text-xs text-white/25 font-mono">{userEmail} (admin preview)</span>
         </div>
       </div>
@@ -138,7 +138,7 @@ export function AcmeWorkspacePreview({ userEmail }: { userEmail: string }) {
                   <span className="font-bold text-slate-800">{mb.score}</span>
                 </div>
                 <div className="mt-1 h-1.5 rounded-full bg-slate-200">
-                  <div className="h-1.5 rounded-full bg-[#6156F5]" style={{ width: `${mb.score}%` }} />
+                  <div className="h-1.5 rounded-full bg-[#C76F3D]" style={{ width: `${mb.score}%` }} />
                 </div>
               </div>
             ))}

@@ -185,7 +185,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
         <div className="bg-[#06032B] px-5 py-4 flex items-start justify-between shrink-0">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[9px] font-bold tracking-widest uppercase text-[#6156F5]">KORA</span>
+              <span className="text-[9px] font-bold tracking-widest uppercase text-[#C76F3D]">KORA</span>
               <span className="text-[9px] text-white/30">·</span>
               <span className="text-[9px] font-semibold tracking-widest uppercase text-white/40">Evidence Record Viewer</span>
             </div>
@@ -225,7 +225,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                   'bg-red-50 text-red-700 border-red-200'
                 }`}>{detail.record.eligibility}</span>
                 {detail.record.approvedForScoring && (
-                  <span className="rounded border border-[#6156F5]/40 bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#6156F5]">approved</span>
+                  <span className="rounded border border-[#C76F3D]/40 bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#C76F3D]">approved</span>
                 )}
                 {detail.record.pillar && (
                   <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-mono text-slate-500">{detail.record.pillar}</span>
@@ -243,7 +243,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                 ['gaps', 'Gaps', detail.evidenceGaps.length],
               ] as [typeof activeSection, string, number][]).map(([id, label, count]) => (
                 <button key={id} onClick={() => setActiveSection(id)}
-                  className={`px-3 py-2 text-[10px] font-semibold border-b-2 transition-colors ${activeSection === id ? 'border-[#6156F5] text-[#6156F5] bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+                  className={`px-3 py-2 text-[10px] font-semibold border-b-2 transition-colors ${activeSection === id ? 'border-[#C76F3D] text-[#C76F3D] bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
                   {label}{count > 0 ? ` (${count})` : ''}
                 </button>
               ))}
@@ -325,7 +325,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                       <span className="text-[10px] font-mono text-slate-600 truncate max-w-[200px]">{att.fileNameSafe}</span>
                       <span className="rounded border border-slate-100 bg-slate-50 px-1.5 py-0.5 text-[9px] uppercase text-slate-400">{att.fileType}</span>
                       {att.evidenceLevelSuggestion && (
-                        <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#6156F5]">{att.evidenceLevelSuggestion}</span>
+                        <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#C76F3D]">{att.evidenceLevelSuggestion}</span>
                       )}
                       <Badge
                         label={att.lifecycleLabel ?? att.lifecycleStatus}

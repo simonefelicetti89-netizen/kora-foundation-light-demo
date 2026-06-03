@@ -402,7 +402,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                 ↓ Download PDF
               </a>
               <a href={previewUrl} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 border border-[#6156F5] text-[#6156F5] rounded px-3 py-1.5 text-xs font-medium hover:bg-[#f5f4ff] transition-colors">
+                className="inline-flex items-center gap-1.5 border border-[#C76F3D] text-[#C76F3D] rounded px-3 py-1.5 text-xs font-medium hover:bg-[#f5f4ff] transition-colors">
                 ↗ HTML Preview
               </a>
             </div>

@@ -285,7 +285,7 @@ export function CompanyEvidenceArchivePanel() {
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold tracking-widest uppercase text-[#6156F5]">KORA</span>
+            <span className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D]">KORA</span>
             <span className="text-xs text-white/30">·</span>
             <span className="text-xs font-semibold tracking-widest uppercase text-white/40">Admin</span>
           </div>
@@ -340,7 +340,7 @@ export function CompanyEvidenceArchivePanel() {
         {/* ── Batch Archive ── */}
         <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-0.5 h-4 bg-[#6156F5] rounded-full" />
+            <div className="w-0.5 h-4 bg-[#C76F3D] rounded-full" />
             <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Batch Archive — {data.batches.length} batch</p>
           </div>
           {data.batches.length === 0 ? (
@@ -355,7 +355,7 @@ export function CompanyEvidenceArchivePanel() {
                     <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-semibold text-slate-500 uppercase">{b.batchStatus}</span>
                     <span className="text-[10px] text-slate-500">{b.rowCount} righe</span>
                     {b.fileMode === 'multi' && (
-                      <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-semibold text-[#6156F5]">
+                      <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-semibold text-[#C76F3D]">
                         multi-file · {b.fileCount} file
                       </span>
                     )}
@@ -408,7 +408,7 @@ export function CompanyEvidenceArchivePanel() {
                             <span className="text-[9px] font-mono text-slate-600 truncate max-w-[160px]">{att.fileNameSafe}</span>
                             <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] text-slate-400 uppercase">{att.fileType}</span>
                             {att.evidenceLevelSuggestion && (
-                              <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#6156F5]">{att.evidenceLevelSuggestion}</span>
+                              <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#C76F3D]">{att.evidenceLevelSuggestion}</span>
                             )}
                             {/* B35.1: lifecycle badge */}
                             <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${
@@ -502,14 +502,14 @@ export function CompanyEvidenceArchivePanel() {
         {/* ── Contribution Summary ── */}
         <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-0.5 h-4 bg-[#6156F5] rounded-full" />
+            <div className="w-0.5 h-4 bg-[#C76F3D] rounded-full" />
             <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Contribution Summary</p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <StatCard label="Totale iniziative"        value={data.contributionSummary.totalInitiatives} />
             <StatCard label="→ KORA Index"             value={data.contributionSummary.contributesToKoraIndex} color="#059669" highlight />
             <StatCard label="KORA Index + BTI"         value={data.contributionSummary.koraIndexAndBti} color="#166534" />
-            <StatCard label="KORA Index only"          value={data.contributionSummary.koraIndexOnly} color="#6156F5" />
+            <StatCard label="KORA Index only"          value={data.contributionSummary.koraIndexOnly} color="#C76F3D" />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <StatCard label="BTI / Economic Relief"  value={data.contributionSummary.btiOnlyEconomicRelief} color="#854d0e" />
@@ -523,13 +523,13 @@ export function CompanyEvidenceArchivePanel() {
         <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2.5">
-              <div className="w-0.5 h-4 bg-[#6156F5] rounded-full" />
+              <div className="w-0.5 h-4 bg-[#C76F3D] rounded-full" />
               <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Initiative Lineage</p>
               <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-mono text-slate-500">{filteredInitiatives.length}/{data.initiatives.length}</span>
             </div>
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="Cerca iniziativa…"
-              className="rounded border border-slate-200 px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5] w-40" />
+              className="rounded border border-slate-200 px-2 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-40" />
           </div>
 
           {/* Filters */}
@@ -561,7 +561,7 @@ export function CompanyEvidenceArchivePanel() {
                         <div className="font-medium text-slate-700 truncate" title={ini.safeName}>{ini.safeName}</div>
                         <div className="flex gap-1 mt-0.5 flex-wrap">
                           {ini.hasManualCompletion && <span className="text-[8px] text-amber-600 font-medium">manual</span>}
-                          {ini.hasColumnMapping    && <span className="text-[8px] text-[#6156F5] font-medium">mapped</span>}
+                          {ini.hasColumnMapping    && <span className="text-[8px] text-[#C76F3D] font-medium">mapped</span>}
                           {ini.hasMultiFileMatch   && <span className="text-[8px] text-green-600 font-medium">multi-file</span>}
                           {ini.hasB30Provenance    && (
                             <span className="text-[8px] text-indigo-600 font-medium"
@@ -605,7 +605,7 @@ export function CompanyEvidenceArchivePanel() {
                         {ini.recordIdFull && ini.batchIdFull ? (
                           <button
                             onClick={() => setDrawerRecord({ recordIdFull: ini.recordIdFull!, batchIdFull: ini.batchIdFull! })}
-                            className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[9px] font-semibold text-[#6156F5] hover:bg-[#ede9ff] transition-colors whitespace-nowrap"
+                            className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[9px] font-semibold text-[#C76F3D] hover:bg-[#ede9ff] transition-colors whitespace-nowrap"
                           >
                             View →
                           </button>
@@ -641,7 +641,7 @@ export function CompanyEvidenceArchivePanel() {
         {/* ── Navigation links ── */}
         <div className="flex flex-wrap gap-2 pt-1">
           <a href={`/admin/company-live-preview?tenantCode=${encodeURIComponent(TENANT)}&reportingPeriod=${encodeURIComponent(PERIOD)}`}
-            className="rounded-lg border border-[#6156F5] text-[#6156F5] px-4 py-2 text-xs font-semibold hover:bg-[#f5f4ff] transition-colors">
+            className="rounded-lg border border-[#C76F3D] text-[#C76F3D] px-4 py-2 text-xs font-semibold hover:bg-[#f5f4ff] transition-colors">
             ← Company Live Preview
           </a>
           <a href={`/admin/company-workspace?tenantCode=${encodeURIComponent(TENANT)}&reportingPeriod=${encodeURIComponent(PERIOD)}`}

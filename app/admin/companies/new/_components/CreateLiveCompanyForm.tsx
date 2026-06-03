@@ -287,14 +287,14 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
       {/* Header */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">KORA Admin · Pilot</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA Admin · Pilot</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Crea Azienda Live</h1>
           <p className="text-sm text-white/45 mt-0.5">
             Crea un nuovo tenant live e provisiona il primo Company Admin
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1 shrink-0">
-          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">KORA_ADMIN</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">KORA_ADMIN</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <span className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[9px] text-white/40 font-semibold uppercase">LIVE PILOT</span>
         </div>
@@ -393,7 +393,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           <div className="flex items-center gap-2.5">
             <input type="checkbox" id="sendInvite" checked={sendInvite}
               onChange={e => setSendInvite(e.target.checked)}
-              className="rounded border-slate-300 text-[#6156F5]" />
+              className="rounded border-slate-300 text-[#C76F3D]" />
             <label htmlFor="sendInvite" className="text-xs text-slate-700 cursor-pointer">
               Invia email di invito per impostare la password
             </label>

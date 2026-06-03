@@ -3,7 +3,7 @@
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine,
 } from 'recharts';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, CHART_COLORS } from '@/lib/design/kora-design-tokens';
 import { KORA_INDEX_COMPONENTS, COMPONENT_LABELS } from '@/lib/constants/kora';
 import type { KoraIndexComponent } from '@/lib/types';
 
@@ -25,27 +25,34 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
 
   return (
     <div
-      className="p-4"
-      style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
+      style={{
+        padding:      '1.25rem',
+        background:   TOKENS.surface,
+        border:       TOKENS.cardBorder,
+        borderRadius: TOKENS.cardRadius,
+        boxShadow:    TOKENS.cardShadow,
+      }}
     >
       <p
         className="mb-1 text-[10px] font-semibold uppercase tracking-wide"
-        style={{ color: TOKENS.inkHint }}
+        style={{
+          fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+          color:      TOKENS.inkHint,
+        }}
       >
         10-Component Breakdown
       </p>
-      <p className="mb-3 text-[10px]" style={{ color: TOKENS.inkHint }}>
-        <span
-          className="inline-block w-2.5 h-2.5 rounded-sm mr-1"
-          style={{ background: TOKENS.ink }}
-        />
-        Componente&nbsp;
-        <span
-          className="inline-block w-2.5 h-2.5 rounded-sm mr-1 ml-2"
-          style={{ background: TOKENS.accent }}
-        />
-        Area di miglioramento
-      </p>
+      <div className="flex items-center gap-4 mb-3">
+        <span className="flex items-center gap-1.5 text-[10px]" style={{ color: TOKENS.inkHint, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+          <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: TOKENS.ink }} />
+          Componente
+        </span>
+        <span className="flex items-center gap-1.5 text-[10px]" style={{ color: TOKENS.inkHint, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+          <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: CHART_COLORS.primary }} />
+          Area di miglioramento
+        </span>
+      </div>
+
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={chartData}
@@ -55,7 +62,7 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
           <XAxis
             type="number"
             domain={[0, 100]}
-            tick={{ fontSize: 10, fill: 'rgba(20,18,46,0.40)' }}
+            tick={{ fontSize: 10, fill: CHART_COLORS.axis, fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}
             tickFormatter={(v) => `${v}%`}
             axisLine={false}
             tickLine={false}
@@ -64,28 +71,31 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
             type="category"
             dataKey="name"
             width={28}
-            tick={{ fontSize: 11, fontFamily: 'monospace', fill: 'rgba(20,18,46,0.55)' }}
+            tick={{ fontSize: 11, fontFamily: 'monospace', fill: CHART_COLORS.axis }}
             axisLine={false}
             tickLine={false}
           />
-          <ReferenceLine x={50} stroke="rgba(20,18,46,0.08)" strokeDasharray="3 3" />
+          <ReferenceLine x={50} stroke={CHART_COLORS.grid} strokeDasharray="3 3" />
           <Tooltip
             formatter={(value, _name, props) => [`${value}%`, props.payload?.fullLabel ?? '']}
             contentStyle={{
-              fontSize: 11,
-              borderRadius: '8px',
-              border: '1px solid rgba(20,18,46,0.08)',
-              background: '#FFFFFF',
-              color: '#14122E',
+              fontSize:     11,
+              fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
+              borderRadius: '10px',
+              border:       `1px solid ${CHART_COLORS.tooltipBorder}`,
+              background:   CHART_COLORS.tooltipBg,
+              color:        CHART_COLORS.tooltipText,
+              boxShadow:    '0 12px 32px rgba(6,3,43,0.18)',
             }}
-            cursor={{ fill: 'rgba(20,18,46,0.04)' }}
+            labelStyle={{ color: 'rgba(255,255,255,0.65)', fontSize: 10 }}
+            cursor={{ fill: TOKENS.accentHover }}
           />
-          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={20}>
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={18}>
             {chartData.map((entry) => (
               <Cell
                 key={entry.name}
-                fill={entry.weak ? TOKENS.accent : TOKENS.ink}
-                fillOpacity={entry.weak ? 0.80 : 0.65}
+                fill={entry.weak ? CHART_COLORS.primary : TOKENS.ink}
+                fillOpacity={entry.weak ? 0.85 : 0.60}
               />
             ))}
           </Bar>

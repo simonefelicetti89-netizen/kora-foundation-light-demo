@@ -42,7 +42,7 @@ function safeguardToken(status: string): { bg: string; text: string; label: stri
 function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>{label}</p>
+      <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>{label}</p>
       <p style={{ fontSize: mono ? '10px' : '12px', color: TOKENS.ink, marginTop: 3, fontFamily: mono ? 'monospace' : undefined }}>{value}</p>
     </div>
   );
@@ -161,7 +161,7 @@ export default function CompanyProfilePage() {
           ].map(({ label, value }) => (
             <div key={label}>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{label}</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.875rem', color: TOKENS.ink, lineHeight: 1, marginTop: 6, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.875rem', color: TOKENS.ink, lineHeight: 1, marginTop: 6, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
             </div>
           ))}
         </div>
@@ -177,7 +177,7 @@ export default function CompanyProfilePage() {
           {/* KORA Index */}
           <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
             <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>KORA Index</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
               {koraOutput.kora_index_value}
             </p>
             <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>/100</p>
@@ -185,7 +185,7 @@ export default function CompanyProfilePage() {
           {/* Confidence Score */}
           <div style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.accent}33`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
             <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>Confidence Score</p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.accent, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.accent, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>
               {Math.round(koraOutput.confidence_score * 100)}%
             </p>
             <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>Indicatore esterno di affidabilità dati</p>
@@ -196,7 +196,7 @@ export default function CompanyProfilePage() {
             return (
               <div style={{ background: sg.bg, border: `1px solid ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
                 <p style={{ fontSize: '11px', color: sg.text, opacity: 0.75 }}>Activation Safeguard</p>
-                <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: sg.text, lineHeight: 1, margin: '8px 0 4px' }}>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.75rem', color: sg.text, lineHeight: 1, margin: '8px 0 4px' }}>
                   {sg.label}
                 </p>
                 <p style={{ fontSize: '11px', color: sg.text, opacity: 0.75 }}>Stato soglia attivazione</p>

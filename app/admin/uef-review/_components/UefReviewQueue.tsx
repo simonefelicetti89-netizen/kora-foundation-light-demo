@@ -350,12 +350,12 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
       {/* Header */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">KORA · Admin</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">UEF Review Queue</h1>
           <p className="text-sm text-white/45 mt-0.5">B5 — Raw-to-UEF Interpreter · human review required</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
             <span className="rounded border border-red-400/40 bg-red-400/10 px-2 py-0.5 text-[10px] font-semibold text-red-300">Scoring remains locked until B6.</span>
@@ -403,12 +403,12 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           {batches.map(b => (
             <div key={b.batchId}
               onClick={() => b.canReview && selectBatch(b.batchId)}
-              className={`rounded-lg border px-4 py-3 space-y-2 cursor-pointer transition-colors ${selectedBatchId === b.batchId ? 'border-[#6156F5] bg-[#f5f4ff]' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+              className={`rounded-lg border px-4 py-3 space-y-2 cursor-pointer transition-colors ${selectedBatchId === b.batchId ? 'border-[#C76F3D] bg-[#f5f4ff]' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
               <div className="flex items-start justify-between gap-2">
                 <div>
                   {/* B9.1: tenant label for multi-tenant clarity */}
                   {b.companyName && (
-                    <p className="text-[10px] font-semibold text-[#6156F5] mb-0.5">{b.companyName} <span className="font-mono opacity-75">· {b.tenantCode}</span></p>
+                    <p className="text-[10px] font-semibold text-[#C76F3D] mb-0.5">{b.companyName} <span className="font-mono opacity-75">· {b.tenantCode}</span></p>
                   )}
                   <p className="text-xs font-semibold text-slate-800 break-all">{b.sourceName ?? b.batchId.slice(0, 12) + '…'}</p>
                 </div>
@@ -468,7 +468,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   <p className="text-sm font-semibold text-slate-800">{c.rawName}</p>
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {c.eventType && <span className="text-[10px] font-mono bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">{c.eventType}</span>}
-                    {c.pillar    && <span className="text-[10px] font-semibold bg-[#6156F5]/10 text-[#6156F5] rounded px-1.5 py-0.5">{c.pillar}</span>}
+                    {c.pillar    && <span className="text-[10px] font-semibold bg-[#C76F3D]/10 text-[#C76F3D] rounded px-1.5 py-0.5">{c.pillar}</span>}
                     {c.eligibility && <Badge label={c.eligibility} cls={ELIG_BADGE[c.eligibility] ?? ''} />}
                   </div>
                 </div>
@@ -500,7 +500,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   {c.b11Enriched && <span className="text-[9px] text-slate-400">Partially enriched by {c.enrichedBy ?? '—'}</span>}
                   <button
                     onClick={() => enrichOpen === c.id ? setEnrichOpen(null) : openEnrich(c)}
-                    className="text-[10px] font-medium text-[#6156F5] underline hover:no-underline transition-all">
+                    className="text-[10px] font-medium text-[#C76F3D] underline hover:no-underline transition-all">
                     {enrichOpen === c.id ? '▲ Chiudi' : '▼ Arricchisci manualmente'}
                   </button>
                 </div>
@@ -517,7 +517,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-slate-500 font-medium">Initiative Domain</span>
                       <select value={enrichForm.initiativeDomain} onChange={e => setEnrichForm(f => ({ ...f, initiativeDomain: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {DOMAIN_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
                       </select>
@@ -525,7 +525,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-slate-500 font-medium">Event Type</span>
                       <select value={enrichForm.eventType} onChange={e => setEnrichForm(f => ({ ...f, eventType: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {EVENT_TYPE_OPTS.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -533,7 +533,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-slate-500 font-medium">Eligibility</span>
                       <select value={enrichForm.eligibilityClass} onChange={e => setEnrichForm(f => ({ ...f, eligibilityClass: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {ELIG_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
@@ -541,7 +541,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-slate-500 font-medium">Pillar</span>
                       <select value={enrichForm.pillar} onChange={e => setEnrichForm(f => ({ ...f, pillar: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {PILLAR_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
@@ -549,7 +549,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-slate-500 font-medium">Budget Class</span>
                       <select value={enrichForm.budgetClass} onChange={e => setEnrichForm(f => ({ ...f, budgetClass: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {BUDGET_CLS_OPTS.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
@@ -557,7 +557,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <label className="space-y-0.5">
                       <span className="text-slate-500 font-medium">Evidence Level</span>
                       <select value={enrichForm.evidenceLevel} onChange={e => setEnrichForm(f => ({ ...f, evidenceLevel: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {EVID_OPTS.map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
@@ -567,27 +567,27 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                       <input type="number" min={0} value={enrichForm.budgetAmount}
                         onChange={e => setEnrichForm(f => ({ ...f, budgetAmount: e.target.value }))}
                         placeholder="es. 12500"
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
                     </label>
                     <label className="space-y-0.5">
                       <span className="text-slate-500 font-medium">Budget Source</span>
                       <input type="text" value={enrichForm.budgetSource}
                         onChange={e => setEnrichForm(f => ({ ...f, budgetSource: e.target.value }))}
                         placeholder="es. export fornitore welfare"
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
                     </label>
                   </div>
                   <label className="block space-y-0.5 text-[10px]">
                     <span className="text-slate-500 font-medium">Note enrichment (max 500 car.)</span>
                     <textarea rows={2} value={enrichForm.notes} maxLength={500}
                       onChange={e => setEnrichForm(f => ({ ...f, notes: e.target.value }))}
-                      className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 resize-none focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                      className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 resize-none focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
                   </label>
                   <div className="flex items-center gap-3 pt-1">
                     <button
                       onClick={() => handleEnrich(c.id)}
                       disabled={enrichStatus[c.id] === 'loading'}
-                      className="rounded border border-[#6156F5] bg-[#6156F5] text-white px-4 py-1.5 text-[11px] font-semibold hover:bg-[#4d43d4] disabled:opacity-50 transition-colors">
+                      className="rounded border border-[#C76F3D] bg-[#C76F3D] text-white px-4 py-1.5 text-[11px] font-semibold hover:bg-[#4d43d4] disabled:opacity-50 transition-colors">
                       {enrichStatus[c.id] === 'loading' ? '⏳ Saving…' : '✓ Salva enrichment'}
                     </button>
                     <button onClick={() => setEnrichOpen(null)}
@@ -711,7 +711,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               <div className="flex gap-2 flex-wrap pt-1 border-t border-green-100">
                 {scoringResult.previewUrl && (
                   <a href={scoringResult.previewUrl} target="_blank" rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 border border-[#6156F5] text-[#6156F5] rounded px-3 py-1 text-[11px] font-medium hover:bg-[#f5f4ff] transition-colors">
+                    className="inline-flex items-center gap-1 border border-[#C76F3D] text-[#C76F3D] rounded px-3 py-1 text-[11px] font-medium hover:bg-[#f5f4ff] transition-colors">
                     ↗ HTML Preview
                   </a>
                 )}

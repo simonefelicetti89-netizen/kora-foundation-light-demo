@@ -144,13 +144,13 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
   const nrCount       = matchReview.matches.filter(m => m.status !== 'unmatched' && effectiveDecision(m) === 'needs_review').length;
 
   return (
-    <div className="rounded-lg border border-[#6156F5]/25 bg-white space-y-0 overflow-hidden">
+    <div className="rounded-lg border border-[#C76F3D]/25 bg-white space-y-0 overflow-hidden">
 
       {/* Header */}
       <div className="bg-[#f5f4ff] px-4 py-3 border-b border-[#c7c4f8]/50">
         <div className="flex items-start justify-between flex-wrap gap-2">
           <div>
-            <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">
+            <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">
               Match Review — Decisioni iniziativa
             </p>
             <p className="text-[10px] text-slate-500 mt-0.5">
@@ -241,7 +241,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
                       file_{m.primary.fileIndex} · {m.primary.fileRole}
                     </span>
                     {m.linkedRows.map((lr, i) => (
-                      <span key={i} className="rounded bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-mono text-[#6156F5]">
+                      <span key={i} className="rounded bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-mono text-[#C76F3D]">
                         ← file_{lr.fileIndex} · {lr.fileRole}
                       </span>
                     ))}
@@ -285,7 +285,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
                   {hasDetails && (
                     <button
                       onClick={() => toggleExpanded(m.matchId)}
-                      className="text-[9px] text-[#6156F5] hover:underline text-left"
+                      className="text-[9px] text-[#C76F3D] hover:underline text-left"
                     >
                       {isOpen ? '▲ Meno dettagli' : '▼ Più dettagli'}
                     </button>

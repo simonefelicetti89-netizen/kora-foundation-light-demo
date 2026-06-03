@@ -231,7 +231,7 @@ function DraftEditor({ submissionId, onSubmitted }: { submissionId: string; onSu
           <span className="text-[10px] text-blue-600">{sub.fileCount} file caricati</span>
           {sub.fileCount > 0 && !submitMsg && (
             <button onClick={doSubmit} disabled={submitting}
-              className="rounded-lg bg-[#6156F5] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4f44e0] disabled:opacity-50 transition-colors">
+              className="rounded-lg bg-[#C76F3D] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4f44e0] disabled:opacity-50 transition-colors">
               {submitting ? '⏳ Invio…' : 'Invia per revisione KORA →'}
             </button>
           )}
@@ -335,7 +335,7 @@ export function DataSubmissionSection({ userRole }: Props) {
                 {/* Resume draft */}
                 {isAdmin && sub.status === 'submission_draft' && !activeDraft && (
                   <button onClick={() => setActiveDraft(sub.submissionId)}
-                    className="text-[10px] text-[#6156F5] hover:underline shrink-0">
+                    className="text-[10px] text-[#C76F3D] hover:underline shrink-0">
                     Continua bozza →
                   </button>
                 )}

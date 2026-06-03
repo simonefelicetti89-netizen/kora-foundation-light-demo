@@ -17,7 +17,8 @@ export function ChartFrame({ title, subtitle, children, className }: ChartFrameP
         background:   TOKENS.surface,
         border:       TOKENS.cardBorder,
         borderRadius: TOKENS.cardRadius,
-        padding:      '1.25rem',
+        boxShadow:    TOKENS.cardShadow,
+        padding:      '1.5rem',
       }}
     >
       {title && (
@@ -31,7 +32,12 @@ export function ChartFrame({ title, subtitle, children, className }: ChartFrameP
       {subtitle && (
         <p
           className="mb-4"
-          style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}
+          style={{
+            fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+            fontSize:   '11px',
+            color:      TOKENS.inkSecondary,
+            lineHeight: 1.5,
+          }}
         >
           {subtitle}
         </p>

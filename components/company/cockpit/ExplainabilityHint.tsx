@@ -19,7 +19,7 @@ export function ExplainabilityHint() {
         style={{ background: TOKENS.accent }}
       />
 
-      <p style={{ fontSize: '12px', color: 'rgba(20,18,46,0.60)', lineHeight: 1.5 }}>
+      <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.60)', lineHeight: 1.5 }}>
         Clicca un numero per la derivazione completa —&nbsp;
         <Link
           href="/company/kora-index"

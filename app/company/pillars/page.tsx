@@ -61,7 +61,7 @@ const VERIFICATION_STYLE: Record<string, string> = {
 function pillarFill(rank: number): string {
   if (rank === 0) return TOKENS.accent;
   const opacities = [0, 0.65, 0.50, 0.35, 0.22];
-  return `rgba(20,18,46,${opacities[rank] ?? 0.22})`;
+  return `rgba(6,3,43,${opacities[rank] ?? 0.22})`;
 }
 
 interface InitiativePreview {
@@ -151,11 +151,11 @@ export default function PillarsInitiatives() {
                   <div className="flex justify-between mb-1.5">
                     <span style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.ink }}>
                       {label}
-                      <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 400, fontSize: '11px', color: TOKENS.inkHint, marginLeft: 6 }}>
+                      <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 400, fontSize: '11px', color: TOKENS.inkHint, marginLeft: 6 }}>
                         {code}
                       </span>
                     </span>
-                    <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: rank === 0 ? TOKENS.accent : TOKENS.ink }}>
+                    <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: rank === 0 ? TOKENS.accent : TOKENS.ink }}>
                       {pct(val)}
                     </span>
                   </div>
@@ -212,7 +212,7 @@ export default function PillarsInitiatives() {
                     ) : (
                       <div className="flex gap-1 flex-wrap">
                         {allPillars.map((p) => (
-                          <span key={p} style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
+                          <span key={p} style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
                             {p}
                           </span>
                         ))}
@@ -222,13 +222,13 @@ export default function PillarsInitiatives() {
                   <td style={{ padding: '12px 16px', verticalAlign: 'top', color: TOKENS.inkSecondary }}>
                     {SOURCE_TYPE_LABELS[prog.source_type] ?? prog.source_type.replace(/_/g, ' ')}
                   </td>
-                  <td style={{ padding: '12px 16px', verticalAlign: 'top', textAlign: 'right', fontFamily: 'var(--font-inter)', color: isBlocked ? TOKENS.inkHint : TOKENS.ink }}>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top', textAlign: 'right', fontFamily: 'var(--font-jakarta)', color: isBlocked ? TOKENS.inkHint : TOKENS.ink }}>
                     {eur(prog.budget_eur_approx)}
                     {isBlocked && <span style={{ display: 'block', fontSize: '10px', color: TOKENS.inkHint }}>escl. da IU</span>}
                   </td>
                   <td style={{ padding: '12px 16px', verticalAlign: 'top', textAlign: 'right' }}>
                     <span style={{
-                      fontFamily: 'var(--font-inter)', fontWeight: 700,
+                      fontFamily: 'var(--font-jakarta)', fontWeight: 700,
                       color: isBlocked ? TOKENS.inkHint : rate >= 0.40 ? TOKENS.safeguard.pass.text : rate >= 0.20 ? TOKENS.safeguard.watch.text : TOKENS.safeguard.cap.text,
                     }}>
                       {pct(rate)}
@@ -282,12 +282,12 @@ export default function PillarsInitiatives() {
                     )}
                   </td>
                   <td style={{ padding: '12px 16px', verticalAlign: 'top' }}>
-                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
+                    <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
                       {init.pillar}
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px', verticalAlign: 'top', color: TOKENS.inkSecondary }}>{init.territory}</td>
-                  <td style={{ padding: '12px 16px', verticalAlign: 'top', textAlign: 'right', fontFamily: 'var(--font-inter)' }}>
+                  <td style={{ padding: '12px 16px', verticalAlign: 'top', textAlign: 'right', fontFamily: 'var(--font-jakarta)' }}>
                     <span style={{ fontWeight: 700, color: TOKENS.ink }}>{init.aggregate_participation_count}</span>
                     <span style={{ color: TOKENS.inkHint }}> / {init.aggregate_target_participants}</span>
                   </td>
@@ -348,7 +348,7 @@ export default function PillarsInitiatives() {
               {/* Pillars + additionality */}
               <div className="flex flex-wrap items-center gap-1.5 mb-3">
                 {init.pillars.map((p) => (
-                  <span key={p} style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
+                  <span key={p} style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 600, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', border: TOKENS.cardBorder }}>
                     {p}
                   </span>
                 ))}

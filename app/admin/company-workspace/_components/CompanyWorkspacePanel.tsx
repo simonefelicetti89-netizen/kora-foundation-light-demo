@@ -57,7 +57,7 @@ const PILOT_STATUS_CLS: Record<string, string> = {
   review_ready:           'bg-amber-50 text-amber-700 border-amber-200',
   needs_enrichment:       'bg-orange-50 text-orange-700 border-orange-200',
   ready_for_scoring:      'bg-purple-50 text-purple-700 border-purple-200',
-  scored:                 'bg-[#6156F5]/10 text-[#6156F5] border-[#6156F5]/30',
+  scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
   decision_pack_draft:    'bg-blue-50 text-blue-700 border-blue-200',
   decision_pack_exported: 'bg-green-50 text-green-700 border-green-200',
   archived:               'bg-slate-100 text-slate-500 border-slate-200',
@@ -85,13 +85,13 @@ interface StepCardProps {
 function StepCard({ number, title, status, children, cta }: StepCardProps) {
   const statusDot = {
     complete: 'bg-green-500',
-    active:   'bg-[#6156F5] animate-pulse',
+    active:   'bg-[#C76F3D] animate-pulse',
     warning:  'bg-amber-400',
     pending:  'bg-slate-300',
   }[status];
 
   return (
-    <div className={`rounded-lg border px-4 py-3.5 space-y-2 ${status === 'active' ? 'border-[#6156F5]/40 bg-[#f5f4ff]' : 'border-slate-200 bg-white'}`}>
+    <div className={`rounded-lg border px-4 py-3.5 space-y-2 ${status === 'active' ? 'border-[#C76F3D]/40 bg-[#f5f4ff]' : 'border-slate-200 bg-white'}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${statusDot}`} />
@@ -159,14 +159,14 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
       {/* Header */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
-          <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">KORA · Admin</p>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Spazio azienda</h1>
           <p className="text-sm text-white/45 mt-0.5">
             Gestisci il flusso pilot: Data Intake, Assisted Ingestion, Review, Scoring e Decision Pack.
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
         </div>
       </div>
@@ -176,7 +176,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
         <div>
           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Azienda</p>
           <select value={tenantCode} onChange={e => setTenantCode(e.target.value)}
-            className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#6156F5] min-w-[200px]">
+            className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] min-w-[200px]">
             <option value="">— Seleziona azienda —</option>
             {tenants.map(t => (
               <option key={t.tenantCode} value={t.tenantCode}>{t.tenantCode} — {t.companyName}</option>
@@ -187,14 +187,14 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Reporting Period</p>
           <input value={period} onChange={e => setPeriod(e.target.value)}
             placeholder="2026-Q1"
-            className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#6156F5] w-28" />
+            className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-28" />
         </div>
         <button onClick={loadWorkspace} disabled={!tenantCode || loading}
           className="rounded border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors">
           ↻ Aggiorna
         </button>
         <a href="/admin/tenants"
-          className="text-[10px] text-[#6156F5] underline underline-offset-2 hover:text-[#4a41d4] pb-1">
+          className="text-[10px] text-[#C76F3D] underline underline-offset-2 hover:text-[#4a41d4] pb-1">
           + Crea azienda
         </a>
       </div>
@@ -246,13 +246,13 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
 
           {/* Recommended next action */}
           {w.recommendedNextAction && (
-            <div className="rounded-lg border border-[#6156F5]/30 bg-[#6156F5]/5 px-4 py-3 flex items-center justify-between gap-3">
+            <div className="rounded-lg border border-[#C76F3D]/30 bg-[#C76F3D]/5 px-4 py-3 flex items-center justify-between gap-3">
               <div>
-                <p className="text-[10px] font-semibold text-[#6156F5] uppercase tracking-wide mb-0.5">Prossimo passo</p>
+                <p className="text-[10px] font-semibold text-[#C76F3D] uppercase tracking-wide mb-0.5">Prossimo passo</p>
                 <p className="text-sm font-semibold text-slate-800">{w.recommendedNextAction.label}</p>
               </div>
               <a href={w.recommendedNextAction.href}
-                className="rounded-lg bg-[#6156F5] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4a41d4] transition-colors flex-shrink-0">
+                className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4a41d4] transition-colors flex-shrink-0">
                 {w.recommendedNextAction.label} →
               </a>
             </div>
@@ -283,7 +283,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                     {' · '}{w.latestBatch.rowCount} righe
                     {' · '}{ts(w.latestBatch.createdAt)}
                     {' · '}<Badge label={w.latestBatch.status} cls="bg-slate-100 text-slate-600 border-slate-200" />
-                    {w.latestBatch.hasFinancialMetadata && <>{' · '}<span className="text-[#6156F5]">B11.3 metadata ✓</span></>}
+                    {w.latestBatch.hasFinancialMetadata && <>{' · '}<span className="text-[#C76F3D]">B11.3 metadata ✓</span></>}
                   </>
                 : <span className="text-slate-400">Nessun batch per questo periodo.</span>
               }
@@ -344,7 +344,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
               }>
               {w.scoring
                 ? <>
-                    <span className="text-green-600 font-medium">✓ KORA Index: <strong className="text-[#6156F5]">{w.scoring.koraIndex}</strong></span>
+                    <span className="text-green-600 font-medium">✓ KORA Index: <strong className="text-[#C76F3D]">{w.scoring.koraIndex}</strong></span>
                     {' · '}Confidence: {w.scoring.confidenceScore}%
                     {' · '}<Badge label={w.scoring.safeguard} cls={SAFEGUARD_CLS[w.scoring.safeguard] ?? ''} />
                     {w.scoring.activationRate !== null && <>{' · '}AR: {Math.round((w.scoring.activationRate) * 100)}%</>}
@@ -376,8 +376,8 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                     {' · '}{w.decisionPack.versionId.slice(0, 24)}…
                     {' · '}{ts(w.decisionPack.createdAt)}
                     <span className="ml-2">
-                      <a href={w.decisionPack.previewUrl} className="text-[#6156F5] underline mr-2" target="_blank" rel="noopener noreferrer">Preview</a>
-                      <a href={w.decisionPack.pdfUrl} className="text-[#6156F5] underline" target="_blank" rel="noopener noreferrer">PDF</a>
+                      <a href={w.decisionPack.previewUrl} className="text-[#C76F3D] underline mr-2" target="_blank" rel="noopener noreferrer">Preview</a>
+                      <a href={w.decisionPack.pdfUrl} className="text-[#C76F3D] underline" target="_blank" rel="noopener noreferrer">PDF</a>
                     </span>
                   </>
                 : <span className="text-amber-600">Scoring completato — apri preview per generare il Decision Pack.</span>
@@ -389,7 +389,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
               number={7} title="Data Lifecycle"
               status="pending"
               cta={{ label: 'Apri Data Lifecycle', href: '/admin/data-lifecycle' }}>
-              <a href="/admin/data-lifecycle" className="text-[#6156F5] underline">
+              <a href="/admin/data-lifecycle" className="text-[#C76F3D] underline">
                 Gestisci batch, archivio ed erasure readiness
               </a>
             </StepCard>

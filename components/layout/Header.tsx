@@ -23,24 +23,30 @@ export function Header() {
 
   return (
     <header
-      className="flex h-14 items-center justify-between px-5 bg-kora-surface"
-      style={{ borderBottom: '1px solid rgba(20,18,46,0.08)' }}
+      className="flex h-13 items-center justify-between px-6"
+      style={{
+        height:           '52px',
+        background:       '#F8F6F1',
+        borderBottom:     '1px solid rgba(6,3,43,0.08)',
+        flexShrink:       0,
+      }}
     >
       <div className="flex items-center gap-3">
         <span
-          className="rounded px-2 py-0.5 text-[10px] font-semibold whitespace-nowrap"
+          className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold whitespace-nowrap tracking-wide"
           style={{
             borderWidth:     1,
             borderStyle:     'solid',
             borderColor:     'var(--env-border)',
             backgroundColor: 'var(--env-soft)',
             color:           'var(--env-text)',
+            fontFamily:      'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           }}
         >
           {ENV_BADGE_TEXT[activeEnvironment]}
         </span>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <EnvironmentSwitcher />
         <PersonaSwitcher />
         {showScenarioSwitcher && <ScenarioSwitcher />}

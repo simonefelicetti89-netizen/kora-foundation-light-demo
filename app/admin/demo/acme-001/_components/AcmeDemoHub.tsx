@@ -89,7 +89,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       <div className="rounded-xl bg-[#06032B] px-6 py-5">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
-            <p className="text-xs font-semibold tracking-widest uppercase text-[#6156F5] mb-1">
+            <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
               KORA Admin · Demo Lab
             </p>
             <h1 className="text-xl font-bold text-white tracking-tight">
@@ -100,7 +100,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
             </p>
           </div>
           <div className="flex flex-col items-end gap-1.5 shrink-0">
-            <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">KORA_ADMIN</span>
+            <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-white">KORA_ADMIN</span>
             <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           </div>
         </div>
@@ -138,10 +138,10 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
               <Link
                 key={step.n}
                 href={step.href}
-                className="rounded border border-[#6156F5]/30 bg-[#6156F5]/5 px-2 py-2 text-center hover:bg-[#6156F5]/10 transition-colors"
+                className="rounded border border-[#C76F3D]/30 bg-[#C76F3D]/5 px-2 py-2 text-center hover:bg-[#C76F3D]/10 transition-colors"
               >
-                <p className="text-[9px] font-bold text-[#6156F5]/60">{step.n}</p>
-                <p className="text-[10.5px] font-semibold text-[#6156F5] leading-tight">{step.label}</p>
+                <p className="text-[9px] font-bold text-[#C76F3D]/60">{step.n}</p>
+                <p className="text-[10.5px] font-semibold text-[#C76F3D] leading-tight">{step.label}</p>
               </Link>
             )
           ))}
@@ -186,7 +186,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
               </div>
               <div className="h-1.5 rounded-full bg-slate-200">
                 <div
-                  className="h-1.5 rounded-full bg-[#6156F5]"
+                  className="h-1.5 rounded-full bg-[#C76F3D]"
                   style={{ width: `${mb.score}%` }}
                 />
               </div>
@@ -203,7 +203,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
               <div key={p.code} className="flex items-center gap-3">
                 <span className="text-[10px] font-mono font-semibold text-slate-500 w-14 shrink-0">{p.code}</span>
                 <div className="flex-1 h-2 rounded-full bg-slate-100">
-                  <div className="h-2 rounded-full bg-[#6156F5]" style={{ width: `${Math.round(p.share * 100)}%` }} />
+                  <div className="h-2 rounded-full bg-[#C76F3D]" style={{ width: `${Math.round(p.share * 100)}%` }} />
                 </div>
                 <span className="text-[10px] font-semibold text-slate-600 w-8 shrink-0 text-right">{Math.round(p.share * 100)}%</span>
                 <p className="text-[9.5px] text-slate-400 flex-1 max-w-[250px] truncate" title={p.note}>{p.note}</p>
@@ -334,7 +334,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
 
         <Link
           href="/admin/company-submissions"
-          className="inline-block text-[10px] text-[#6156F5] hover:underline"
+          className="inline-block text-[10px] text-[#C76F3D] hover:underline"
         >
           Apri Admin Submission Queue reale →
         </Link>
@@ -414,7 +414,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* ── 07: Company Workspace Preview ─────────────────────────────────────── */}
-      <div className="rounded-xl border border-[#6156F5]/30 bg-[#6156F5]/5 px-6 py-5 space-y-3">
+      <div className="rounded-xl border border-[#C76F3D]/30 bg-[#C76F3D]/5 px-6 py-5 space-y-3">
         <SectionTitle n="07" title="Company Workspace Preview" subtitle="Apre una visualizzazione del workspace come lo vedrebbe COMPANY_ADMIN" />
         <p className="text-[10.5px] text-slate-600 leading-relaxed">
           La demo workspace preview mostra come apparirà il workspace aziendale reale con dati simili ad ACME-001. Layout identico a quello che vedrebbe un Company Admin autenticato su un tenant live.

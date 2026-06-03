@@ -16,7 +16,7 @@ import type { CollectiveInitiative } from '@/services/kora-contribution/KoraCont
 // ── Level config — KORA semantic tokens ──────────────────────────────────────
 
 const LEVEL_CONFIG: Record<string, { bg: string; text: string; barFill: string; label: string }> = {
-  minimal:  { bg: TOKENS.inkBorder,              text: TOKENS.inkSecondary,        barFill: 'rgba(20,18,46,0.25)', label: 'Embrionale' },
+  minimal:  { bg: TOKENS.inkBorder,              text: TOKENS.inkSecondary,        barFill: 'rgba(6,3,43,0.25)', label: 'Embrionale' },
   emerging: { bg: TOKENS.safeguard.watch.bg,     text: TOKENS.safeguard.watch.text, barFill: TOKENS.safeguard.watch.dot, label: 'Emergente'  },
   active:   { bg: TOKENS.safeguard.pass.bg,      text: TOKENS.safeguard.pass.text,  barFill: TOKENS.safeguard.pass.dot,  label: 'Attivo'     },
   advanced: { bg: `${TOKENS.accent}18`,           text: TOKENS.accent,               barFill: TOKENS.accent,              label: 'Avanzato'   },
@@ -112,7 +112,7 @@ function InitiativeCard({ initiative }: { initiative: CollectiveInitiative }) {
         </div>
         <div className="flex gap-1.5 shrink-0 flex-wrap justify-end">
           {/* Pillar — ink pill */}
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 700, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 7px', border: TOKENS.cardBorder }}>
+          <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 700, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 7px', border: TOKENS.cardBorder }}>
             {initiative.pillar}
           </span>
           <span style={{ fontSize: '10px', fontWeight: 500, background: st.bg, color: st.text, borderRadius: 4, padding: '2px 7px' }}>
@@ -121,7 +121,7 @@ function InitiativeCard({ initiative }: { initiative: CollectiveInitiative }) {
         </div>
       </div>
 
-      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
+      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
         {typeLabel}
       </p>
       <p style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, lineHeight: 1.6 }} className="line-clamp-2">{initiative.description}</p>
@@ -129,7 +129,7 @@ function InitiativeCard({ initiative }: { initiative: CollectiveInitiative }) {
       <div className="grid grid-cols-3 gap-2">
         <div>
           <p style={{ fontSize: '10px', color: TOKENS.inkHint }}>Partecipanti</p>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '15px', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '15px', color: TOKENS.ink, fontVariantNumeric: 'tabular-nums' }}>
             {initiative.aggregate_participation_count}
             <span style={{ fontWeight: 400, fontSize: '11px', color: TOKENS.inkHint }}> / {initiative.aggregate_target_participants}</span>
           </p>
@@ -219,13 +219,13 @@ export default function KoraContribution() {
       {/* 2. KORA Index vs KORA Contribution contrast */}
       <div className="grid sm:grid-cols-2 gap-4">
         <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 8 }}>KORA Index</p>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 8 }}>KORA Index</p>
           <p style={{ fontSize: '12.5px', color: TOKENS.inkSecondary, lineHeight: 1.65 }}>
             Misura ciò che accade <strong style={{ color: TOKENS.ink }}>dentro</strong> l&apos;organizzazione: attivazione della workforce, qualità, equità e budget-to-human-impact.
           </p>
         </div>
         <div style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.accent}33`, borderRadius: TOKENS.cardRadius, padding: '1rem' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>KORA Contribution</p>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>KORA Contribution</p>
           <p style={{ fontSize: '12.5px', color: TOKENS.inkSecondary, lineHeight: 1.65 }}>
             Misura ciò che l&apos;organizzazione <strong style={{ color: TOKENS.ink }}>attiva nel territorio e nell&apos;ecosistema</strong>: iniziative collettive verificate, contributo comunitario, attivazione cross-company.
           </p>
@@ -238,7 +238,7 @@ export default function KoraContribution() {
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
           <div>
             <div className="flex items-end gap-3">
-              <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '3.25rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '3.25rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                 {summary?.contribution_score ?? 0}
               </span>
               <span style={{ fontSize: '13px', color: TOKENS.inkHint, paddingBottom: 8 }}>/100</span>
@@ -273,7 +273,7 @@ export default function KoraContribution() {
           ].map(({ label, value, sub }) => (
             <div key={label} style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem', textAlign: 'center' }}>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{label}</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
               {sub && <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{sub}</p>}
             </div>
           ))}
@@ -303,17 +303,17 @@ export default function KoraContribution() {
               </ul>
               <div style={{ background: TOKENS.inkBorder, borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div>
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 3 }}>Stato demo</p>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 3 }}>Stato demo</p>
                   <p style={{ fontSize: '11px', color: TOKENS.ink }}>
                     {layerInits.length > 0 ? `${layerInits.length} iniziativa/e — ${hasActive ? 'attiva/e o completata/e' : 'da verificare'}` : 'Segnale non ancora maturo nel dataset demo corrente'}
                   </p>
                 </div>
                 <div>
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 3 }}>Dati necessari</p>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 3 }}>Dati necessari</p>
                   <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>{layer.data_needed}</p>
                 </div>
                 <div>
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 3 }}>Perché conta</p>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 3 }}>Perché conta</p>
                   <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, fontStyle: 'italic' }}>{layer.why}</p>
                 </div>
               </div>
@@ -329,7 +329,7 @@ export default function KoraContribution() {
           {PIPELINE_STEPS.map((step, i) => (
             <div key={step} className="flex items-center gap-2">
               <div style={{ background: TOKENS.inkBorder, border: TOKENS.cardBorder, borderRadius: 8, padding: '8px 12px' }}>
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
                   {String(i + 1).padStart(2, '0')}
                 </p>
                 <p style={{ fontSize: '12px', fontWeight: 500, color: TOKENS.ink, marginTop: 2, whiteSpace: 'nowrap' }}>{step}</p>
@@ -358,7 +358,7 @@ export default function KoraContribution() {
                   display: 'flex', alignItems: 'flex-start', gap: 12,
                   padding: '12px 16px',
                   borderBottom: i < signals.length - 1 ? TOKENS.cardBorder : 'none',
-                  background: sig.ok ? TOKENS.surface : 'rgba(20,18,46,0.025)',
+                  background: sig.ok ? TOKENS.surface : 'rgba(6,3,43,0.025)',
                 }}
               >
                 <span style={{ marginTop: 2, fontSize: '13px', fontWeight: 700, flexShrink: 0, color: sig.ok ? TOKENS.safeguard.pass.dot : TOKENS.inkHint }}>
@@ -369,7 +369,7 @@ export default function KoraContribution() {
                   <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 2 }}>{sig.value}</p>
                 </div>
                 {!sig.ok && (
-                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 700, color: TOKENS.inkHint, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 700, color: TOKENS.inkHint, letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0 }}>
                     Gap di attivazione
                   </span>
                 )}
@@ -405,14 +405,14 @@ export default function KoraContribution() {
                   borderBottom: i < nonContribInits.length - 1 ? TOKENS.cardBorder : 'none',
                 }}
               >
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 700, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', flexShrink: 0 }}>
+                <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 700, background: TOKENS.inkBorder, color: TOKENS.ink, borderRadius: 4, padding: '2px 6px', flexShrink: 0 }}>
                   {init.pillar}
                 </span>
                 <div className="flex-1 min-w-0">
                   <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink }}>{init.name}</p>
                   <p style={{ fontSize: '10px', color: TOKENS.inkHint }}>{init.territory} · {init.status}</p>
                 </div>
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 500, color: TOKENS.inkHint, letterSpacing: '0.04em', textTransform: 'uppercase', flexShrink: 0 }}>
+                <span style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 500, color: TOKENS.inkHint, letterSpacing: '0.04em', textTransform: 'uppercase', flexShrink: 0 }}>
                   Non contribution-relevant
                 </span>
               </div>

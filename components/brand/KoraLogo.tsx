@@ -5,11 +5,13 @@ interface KoraLogoProps {
   className?: string;
 }
 
-// Inline SVG extracted from official KORA_Horizontal_RGB_*.svg brand assets.
-// Background rects removed; brandmark uses compound path + fillRule="evenodd"
-// so the inner ring is transparent on any background.
+// KORA logo system:
+//   brandmark: always #C76F3D (terracotta) — primary brand color
+//   wordmark:  on-dark → #FFFFFF (sidebar), on-light → #06032B (light bg)
 export function KoraLogo({ variant = 'on-dark', className }: KoraLogoProps) {
-  const t = variant === 'on-dark' ? '#FFFFFF' : '#14122E';
+  const wordmark  = variant === 'on-dark' ? '#FFFFFF' : '#06032B';
+  const brandmark = '#C76F3D';
+  const t         = wordmark;
 
   return (
     <svg
@@ -43,12 +45,12 @@ export function KoraLogo({ variant = 'on-dark', className }: KoraLogoProps) {
       {/* TM superscript */}
       <path d="M777.172 158.748H791.703V161.459H786.024V176.727H782.865V161.459H777.158V158.748H777.172Z" fill={t} />
       <path d="M797.355 158.748L804.128 169.607L810.902 158.748H813.922V176.727H810.874V164.073L805.195 173.07H803.076L797.368 164.101V176.727H794.349V158.748H797.341H797.355Z" fill={t} />
-      {/* Brandmark — compound path creates transparent ring (fillRule evenodd) */}
+      {/* Brandmark — terracotta, compound path creates transparent inner ring */}
       <path
         fillRule="evenodd"
         clipRule="evenodd"
         d="M148.606 117.911C188.736 101.225 233.839 101.225 273.955 117.911C286.755 123.25 296.922 133.456 302.228 146.29C318.85 186.571 318.85 231.844 302.228 272.112C296.908 284.96 286.741 295.165 273.955 300.491C233.825 317.176 188.722 317.176 148.606 300.491C135.807 295.151 125.639 284.946 120.334 272.112C103.711 231.83 103.711 186.557 120.334 146.29C125.653 133.442 135.821 123.236 148.606 117.911ZM211.095 124.946C190.123 124.946 171.492 138.323 159.759 158.999C139.147 170.776 125.835 189.477 125.835 210.529C125.835 231.58 139.161 250.282 159.759 262.059C171.492 282.749 190.123 296.111 211.095 296.111C232.067 296.111 250.698 282.735 262.431 262.059C283.043 250.282 296.355 231.58 296.355 210.529C296.355 189.477 283.029 170.776 262.431 158.999C250.698 138.309 232.067 124.946 211.095 124.946Z"
-        fill="#6156F5"
+        fill={brandmark}
       />
     </svg>
   );

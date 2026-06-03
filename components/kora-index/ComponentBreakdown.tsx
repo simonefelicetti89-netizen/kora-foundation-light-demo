@@ -27,8 +27,8 @@ const COMPONENT_SHORT_DEFS: Record<string, string> = {
 // Macroblock → KORA token tints (ink-based, not rainbow)
 const MACROBLOCK_STYLE: Record<string, { bg: string; text: string; border: string }> = {
   REACH:   { bg: `${TOKENS.accent}0D`, text: TOKENS.accent,        border: `${TOKENS.accent}33`       },
-  QUALITY: { bg: TOKENS.inkBorder,     text: TOKENS.inkSecondary,  border: 'rgba(20,18,46,0.14)'      },
-  EQUITY:  { bg: TOKENS.inkBorder,     text: TOKENS.inkSecondary,  border: 'rgba(20,18,46,0.14)'      },
+  QUALITY: { bg: TOKENS.inkBorder,     text: TOKENS.inkSecondary,  border: 'rgba(6,3,43,0.14)'      },
+  EQUITY:  { bg: TOKENS.inkBorder,     text: TOKENS.inkSecondary,  border: 'rgba(6,3,43,0.14)'      },
   BTI:     { bg: `${TOKENS.accent}0D`, text: TOKENS.accent,        border: `${TOKENS.accent}33`       },
 };
 
@@ -45,7 +45,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
       <div>
         <p
           style={{
-            fontFamily:    'var(--font-inter)',
+            fontFamily:    'var(--font-jakarta)',
             fontSize:      '10px',
             fontWeight:    500,
             letterSpacing: '0.08em',
@@ -97,7 +97,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                     >
                       Componente analitico
                     </span>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginTop: '4px' }}>
+                    <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginTop: '4px' }}>
                       {code}
                     </p>
                     <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: '1px' }}>
@@ -107,7 +107,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <p
                       style={{
-                        fontFamily:         'var(--font-inter)',
+                        fontFamily:         'var(--font-jakarta)',
                         fontWeight:         700,
                         fontSize:           '20px',
                         color:              TOKENS.ink,
@@ -179,7 +179,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
       >
         <p
           style={{
-            fontFamily:    'var(--font-inter)',
+            fontFamily:    'var(--font-jakarta)',
             fontSize:      '10px',
             fontWeight:    500,
             letterSpacing: '0.08em',
@@ -209,14 +209,14 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
             >
               Indicatore esterno
             </span>
-            <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginTop: '4px' }}>CS</p>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginTop: '4px' }}>CS</p>
             <p style={{ fontSize: '10px', color: TOKENS.inkSecondary, marginTop: '1px' }}>{COMPONENT_LABELS['CS']}</p>
           </div>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <p
                 style={{
-                  fontFamily:         'var(--font-inter)',
+                  fontFamily:         'var(--font-jakarta)',
                   fontWeight:         700,
                   fontSize:           '20px',
                   color:              TOKENS.ink,

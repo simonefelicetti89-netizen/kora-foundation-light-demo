@@ -42,7 +42,7 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
           Confidence Score — Dettaglio
         </p>
         {record && (
-          <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '18px', color: TOKENS.accent }}>
+          <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '18px', color: TOKENS.accent }}>
             {Math.round(record.confidence_score * 100)}%
             <span className="ml-1 text-xs font-normal capitalize" style={{ color: TOKENS.inkHint }}>
               ({record.confidence_level})

@@ -49,7 +49,7 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-[10px] border border-emerald-200 bg-emerald-50 p-4 space-y-2">
           <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Eligible</p>
-          <p className="text-3xl font-bold text-emerald-900" style={{ fontFamily: 'var(--font-inter)' }}>
+          <p className="text-3xl font-bold text-emerald-900" style={{ fontFamily: 'var(--font-jakarta)' }}>
             {summary.eligible_row_count.toLocaleString('it-IT')}
           </p>
           <p className="text-xs text-emerald-700 leading-relaxed">
@@ -58,7 +58,7 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
         </div>
         <div className="rounded-[10px] border border-amber-200 bg-amber-50 p-4 space-y-2">
           <p className="text-xs font-bold uppercase tracking-widest text-amber-700">Limited</p>
-          <p className="text-3xl font-bold text-amber-900" style={{ fontFamily: 'var(--font-inter)' }}>
+          <p className="text-3xl font-bold text-amber-900" style={{ fontFamily: 'var(--font-jakarta)' }}>
             {summary.limited_count.toLocaleString('it-IT')}
           </p>
           <p className="text-xs text-amber-700 leading-relaxed">
@@ -67,7 +67,7 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
         </div>
         <div className="rounded-[10px] border border-rose-200 bg-rose-50 p-4 space-y-2">
           <p className="text-xs font-bold uppercase tracking-widest text-rose-700">Blocked</p>
-          <p className="text-3xl font-bold text-rose-900" style={{ fontFamily: 'var(--font-inter)' }}>
+          <p className="text-3xl font-bold text-rose-900" style={{ fontFamily: 'var(--font-jakarta)' }}>
             {summary.blocked_count.toLocaleString('it-IT')}
           </p>
           <p className="text-xs text-rose-700 leading-relaxed">

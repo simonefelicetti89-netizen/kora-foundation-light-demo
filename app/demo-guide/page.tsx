@@ -138,7 +138,7 @@ export default function DemoGuidePage() {
       <div className="grid sm:grid-cols-2 gap-4">
         {/* KORA non è */}
         <div style={{ background: TOKENS.safeguard.cap.bg, border: `1px solid ${TOKENS.safeguard.cap.dot}33`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.cap.text, marginBottom: 12 }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.cap.text, marginBottom: 12 }}>
             KORA non è — mai
           </p>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -152,7 +152,7 @@ export default function DemoGuidePage() {
         </div>
         {/* KORA è */}
         <div style={{ background: TOKENS.safeguard.pass.bg, border: `1px solid ${TOKENS.safeguard.pass.dot}33`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.pass.text, marginBottom: 12 }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.pass.text, marginBottom: 12 }}>
             KORA è
           </p>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -192,7 +192,7 @@ export default function DemoGuidePage() {
       <div className="grid sm:grid-cols-2 gap-4">
         {/* Demo Mode */}
         <div style={{ background: TOKENS.safeguard.watch.bg, border: `1px solid ${TOKENS.safeguard.watch.dot}33`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.watch.text, marginBottom: 12 }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.watch.text, marginBottom: 12 }}>
             Demo Mode — Foundation Light
           </p>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -212,7 +212,7 @@ export default function DemoGuidePage() {
         </div>
         {/* Direzione prodotto reale */}
         <div style={{ background: `${TOKENS.accent}07`, border: `1px solid ${TOKENS.accent}22`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 12 }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 12 }}>
             Direzione Prodotto Reale
           </p>
           <ul style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

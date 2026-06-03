@@ -48,7 +48,7 @@ function pct(val: number): string { return `${(val * 100).toFixed(0)}%`; }
 function pillarFill(rank: number): string {
   const opacities = [1, 0.65, 0.50, 0.35, 0.22];
   const op = opacities[rank] ?? 0.22;
-  return `rgba(20,18,46,${op})`;
+  return `rgba(6,3,43,${op})`;
 }
 
 // Metric card — KORA style
@@ -57,10 +57,10 @@ function MetricCard({ label, value, code, description }: {
 }) {
   return (
     <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
-      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint }}>
+      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint }}>
         {code}
       </p>
-      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, letterSpacing: '-0.025em', margin: '8px 0 4px' }}>
+      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, letterSpacing: '-0.025em', margin: '8px 0 4px' }}>
         {value}
       </p>
       <p style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>{label}</p>
@@ -85,7 +85,7 @@ function BarRow({ label, value, fill, suffix, rightSlot }: {
       <div style={{ flex: 1, height: 6, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
         <div style={{ height: 6, borderRadius: 9999, width: `${Math.min(value * 100, 100)}%`, background: fill }} />
       </div>
-      <span style={{ width: 40, textAlign: 'right', fontSize: '11px', fontFamily: 'var(--font-inter)', color: TOKENS.inkSecondary, flexShrink: 0 }}>
+      <span style={{ width: 40, textAlign: 'right', fontSize: '11px', fontFamily: 'var(--font-jakarta)', color: TOKENS.inkSecondary, flexShrink: 0 }}>
         {suffix ?? pct(value)}
       </span>
       {rightSlot}
@@ -171,7 +171,7 @@ export default function Activation() {
               <p style={{ fontSize: '11px', color: TOKENS.safeguard.cap.text, fontWeight: 500 }}>
                 Lavoratori mai attivati
               </p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.cap.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.cap.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
                 {Math.round((1 - aggregate.activation_rate) * aggregate.total_workers)}
               </p>
               <p style={{ fontSize: '11px', color: TOKENS.safeguard.cap.text, opacity: 0.75 }}>
@@ -181,7 +181,7 @@ export default function Activation() {
             {/* Bottom 50% */}
             <div style={{ background: TOKENS.safeguard.watch.bg, border: `1px solid ${TOKENS.safeguard.watch.dot}22`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
               <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, fontWeight: 500 }}>Bottom 50% lavoratori</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.watch.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.watch.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
                 {pct(debtConcentration.bottom_50_iu_pct)}
               </p>
               <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, opacity: 0.75 }}>degli IU totali</p>
@@ -189,7 +189,7 @@ export default function Activation() {
             {/* Top 12% */}
             <div style={{ background: TOKENS.safeguard.watch.bg, border: `1px solid ${TOKENS.safeguard.watch.dot}22`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
               <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, fontWeight: 500 }}>Top 12% lavoratori</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.watch.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.safeguard.watch.text, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
                 {pct(debtConcentration.top_12_iu_pct)}
               </p>
               <p style={{ fontSize: '11px', color: TOKENS.safeguard.watch.text, opacity: 0.75 }}>degli IU totali</p>
@@ -197,7 +197,7 @@ export default function Activation() {
             {/* Activation Debt EUR */}
             <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
               <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, fontWeight: 500 }}>Activation Debt stimato</p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', letterSpacing: '-0.025em' }}>
                 €{debtEur.toLocaleString('it-IT')}
               </p>
               <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>budget non convertito in IU</p>
@@ -213,21 +213,21 @@ export default function Activation() {
                 return (
                   <div style={{ background: sc.bg, border: `1px solid ${sc.dot}44`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
                     <div className="flex items-center justify-between mb-3">
-                      <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: sc.text }}>
+                      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: sc.text }}>
                         Activation Safeguard
                       </p>
-                      <span className="inline-flex items-center gap-1.5 rounded-md font-medium" style={{ fontFamily: 'var(--font-inter)', background: `${sc.dot}22`, color: sc.text, fontSize: '13px', padding: '4px 10px' }}>
+                      <span className="inline-flex items-center gap-1.5 rounded-md font-medium" style={{ fontFamily: 'var(--font-jakarta)', background: `${sc.dot}22`, color: sc.text, fontSize: '13px', padding: '4px 10px' }}>
                         <span className="w-1.5 h-1.5 rounded-full" style={{ background: sc.dot }} />
                         {safeguard.status === 'CLEAR' ? 'Clear' : safeguard.status === 'WARNING' ? 'Warning' : 'Flagged'}
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-6">
                       <span style={{ fontSize: '12px', color: sc.text }}>
-                        AR: <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700 }}>{pct(safeguard.ar_value)}</span>
+                        AR: <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700 }}>{pct(safeguard.ar_value)}</span>
                         <span style={{ opacity: 0.70 }}> (soglia CLEAR ≥ 40%)</span>
                       </span>
                       <span style={{ fontSize: '12px', color: sc.text }}>
-                        MAR: <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700 }}>{pct(safeguard.mar_value)}</span>
+                        MAR: <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700 }}>{pct(safeguard.mar_value)}</span>
                         <span style={{ opacity: 0.70 }}> (soglia CLEAR ≥ 30%)</span>
                       </span>
                     </div>
@@ -265,7 +265,7 @@ export default function Activation() {
             ].map(({ label, value }) => (
               <div key={label} style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
                 <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>{label}</p>
-                <p style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, marginTop: 8, letterSpacing: '-0.02em' }}>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.75rem', color: TOKENS.ink, lineHeight: 1, marginTop: 8, letterSpacing: '-0.02em' }}>
                   {value}
                 </p>
               </div>
@@ -280,8 +280,8 @@ export default function Activation() {
             <div className="space-y-3">
               {[
                 { label: 'Top 12% lavoratori', value: debtConcentration.top_12_iu_pct,   fill: TOKENS.ink },
-                { label: 'Fascia 38–88%',       value: debtConcentration.next_40_iu_pct,  fill: `rgba(20,18,46,0.50)` },
-                { label: 'Bottom 50%',           value: debtConcentration.bottom_50_iu_pct, fill: `rgba(20,18,46,0.25)` },
+                { label: 'Fascia 38–88%',       value: debtConcentration.next_40_iu_pct,  fill: `rgba(6,3,43,0.50)` },
+                { label: 'Bottom 50%',           value: debtConcentration.bottom_50_iu_pct, fill: `rgba(6,3,43,0.25)` },
               ].map((row) => (
                 <BarRow key={row.label} label={row.label} value={row.value} fill={row.fill} />
               ))}
@@ -327,7 +327,7 @@ export default function Activation() {
                     value={row.coverage}
                     fill={rank === 0 ? TOKENS.accent : pillarFill(rank)}
                     rightSlot={
-                      <span className="inline-flex items-center gap-1 rounded shrink-0" style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 500, background: badge.bg, color: badge.text, padding: '2px 7px', marginLeft: 8 }}>
+                      <span className="inline-flex items-center gap-1 rounded shrink-0" style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 500, background: badge.bg, color: badge.text, padding: '2px 7px', marginLeft: 8 }}>
                         {badge.label}
                       </span>
                     }
@@ -372,7 +372,7 @@ export default function Activation() {
                     value={site.ar}
                     fill={TOKENS.ink}
                     rightSlot={
-                      <span className="rounded shrink-0 font-medium" style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', background: sb.bg, color: sb.text, padding: '2px 7px', marginLeft: 8 }}>
+                      <span className="rounded shrink-0 font-medium" style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', background: sb.bg, color: sb.text, padding: '2px 7px', marginLeft: 8 }}>
                         {sb.label}
                       </span>
                     }
@@ -411,7 +411,7 @@ export default function Activation() {
             <div className="space-y-2.5">
               {partnerSuggestions.map((ps) => (
                 <div key={ps.pillar} className="flex items-baseline gap-3">
-                  <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '11px', color: TOKENS.accent, width: 80, flexShrink: 0 }}>
+                  <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '11px', color: TOKENS.accent, width: 80, flexShrink: 0 }}>
                     {ps.pillar}
                   </span>
                   <span style={{ fontSize: '12px', color: TOKENS.ink }}>{ps.type}</span>

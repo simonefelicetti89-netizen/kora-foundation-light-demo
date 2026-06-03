@@ -567,7 +567,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-semibold tracking-widest uppercase text-[#6156F5]">KORA</span>
+            <span className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D]">KORA</span>
             <span className="text-xs text-white/30">·</span>
             <span className="text-xs font-semibold tracking-widest uppercase text-white/40">Admin</span>
           </div>
@@ -575,7 +575,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <p className="text-sm text-white/45 mt-0.5">Synthetic Live v1 · {TENANT} · {PERIOD}</p>
         </div>
         <div className="flex flex-col items-end gap-2 mt-1">
-          <span className="rounded border border-[#6156F5]/60 bg-[#6156F5]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <span className="rounded border border-[#C8FF47]/40 bg-[#C8FF47]/10 px-2 py-0.5 text-xs font-semibold text-[#d4ff6b]">Synthetic data only</span>
         </div>
@@ -634,7 +634,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <button
               onClick={handleLoadXlsxSheets}
               disabled={!csvFile || xlsxSheetStatus === 'loading' || !isTenantSelected}
-              className="rounded-lg bg-[#6156F5] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4d48d0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="rounded-lg bg-[#C76F3D] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4d48d0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {xlsxSheetStatus === 'loading' ? '⏳ Reading workbook…' : '📋 Load sheet list'}
             </button>
@@ -673,7 +673,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                     <select
                       value={additionalFileRoles[i] ?? 'unknown'}
                       onChange={e => setAdditionalFileRoles(r => ({ ...r, [i]: e.target.value }))}
-                      className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]"
+                      className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]"
                     >
                       <option value="unknown">— Tipo file —</option>
                       <option value="initiatives">Iniziative / Programmi</option>
@@ -689,7 +689,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <button
                   onClick={handleMultiFilePreview}
                   disabled={multiFileStatus === 'loading' || !isTenantSelected}
-                  className="rounded-lg bg-[#6156F5] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4d48d0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="rounded-lg bg-[#C76F3D] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#4d48d0] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   {multiFileStatus === 'loading' ? '⏳ Analisi multi-file…' : '⚡ Preview multi-file batch'}
                 </button>
@@ -700,9 +700,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             {multiFileStatus === 'done' && multiFileResult?.ok && multiFileResult.matchSummary && (
               <div className="space-y-3">
                 {/* Quick summary header */}
-                <div className="rounded-lg border border-[#6156F5]/20 bg-white px-4 py-3 space-y-2">
+                <div className="rounded-lg border border-[#C76F3D]/20 bg-white px-4 py-3 space-y-2">
                   <div className="flex items-center justify-between flex-wrap gap-2">
-                    <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">Initiative Matching — Risultati</p>
+                    <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Initiative Matching — Risultati</p>
                     <p className="text-[10px] text-slate-400">
                       {multiFileResult.fileCount} file · {multiFileResult.rowCount} righe totali
                     </p>
@@ -721,7 +721,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                       ✗ Unmatched: {multiFileResult.matchSummary.unmatched}
                     </span>
                   </div>
-                  <p className="text-[10px] text-[#6156F5] font-medium">
+                  <p className="text-[10px] text-[#C76F3D] font-medium">
                     ↓ Rivedi i match qui sotto prima di creare il batch.
                     I <strong>possible match</strong> e i match <strong>needs_review</strong> richiedono conferma esplicita — non vengono mergiati automaticamente.
                   </p>
@@ -747,20 +747,20 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B26: XLSX sheet selector — shown after workbook is read */}
         {fileType === 'xlsx' && xlsxSheetStatus === 'loaded' && xlsxSheetList?.ok && xlsxSheetList.sheets && (
-          <div className="rounded-lg border border-[#6156F5]/25 bg-[#f5f4ff] px-4 py-3 space-y-3">
-            <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">
+          <div className="rounded-lg border border-[#C76F3D]/25 bg-[#f5f4ff] px-4 py-3 space-y-3">
+            <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">
               Seleziona foglio — {xlsxSheetList.sheetCount} sheet trovati
             </p>
             <div className="space-y-2">
               {xlsxSheetList.sheets.map(s => (
-                <label key={s.sheetName} className={`flex items-start gap-3 p-2.5 rounded border cursor-pointer transition-colors ${selectedSheet === s.sheetName ? 'border-[#6156F5] bg-white' : 'border-slate-200 bg-white/60 hover:bg-white'}`}>
+                <label key={s.sheetName} className={`flex items-start gap-3 p-2.5 rounded border cursor-pointer transition-colors ${selectedSheet === s.sheetName ? 'border-[#C76F3D] bg-white' : 'border-slate-200 bg-white/60 hover:bg-white'}`}>
                   <input
                     type="radio"
                     name="sheetSelector"
                     value={s.sheetName}
                     checked={selectedSheet === s.sheetName}
                     onChange={() => { setSelectedSheet(s.sheetName); setCsvResult(null); setCsvStatus('idle'); setAcceptStatus('idle'); setAcceptResult(null); }}
-                    className="mt-0.5 h-3.5 w-3.5 text-[#6156F5] focus:ring-[#6156F5]"
+                    className="mt-0.5 h-3.5 w-3.5 text-[#C76F3D] focus:ring-[#C76F3D]"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -846,9 +846,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         {/* B27 — Column Mapping Assistant */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' &&
           csvResult.mappingSuggestions && csvResult.mappingSuggestions.length > 0 && (
-          <div className="rounded-lg border border-[#6156F5]/20 bg-white px-4 py-4 space-y-3">
+          <div className="rounded-lg border border-[#C76F3D]/20 bg-white px-4 py-4 space-y-3">
             <div>
-              <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">Column Mapping Assistant</p>
+              <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Column Mapping Assistant</p>
               <p className="text-[10px] text-slate-400 mt-0.5">
                 KORA ha suggerito un mapping per le colonne del file. Verifica e modifica se necessario.
                 Colonne non mappate vengono mantenute con il nome originale.
@@ -874,7 +874,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                           <select
                             value={currentVal}
                             onChange={e => setUserMapping(m => ({ ...m, [s.sourceHeader]: e.target.value }))}
-                            className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5] min-w-[160px]"
+                            className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] min-w-[160px]"
                           >
                             <option value="keep_original">— Mantieni originale —</option>
                             <option value="ignore">✕ Ignora colonna</option>
@@ -897,7 +897,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </div>
             <button
               onClick={fileType === 'xlsx' ? handlePreviewXlsxSheet : handleValidateCsv}
-              className="rounded-lg bg-[#6156F5] text-white px-3 py-1.5 text-[10px] font-semibold hover:bg-[#4d48d0] transition-colors"
+              className="rounded-lg bg-[#C76F3D] text-white px-3 py-1.5 text-[10px] font-semibold hover:bg-[#4d48d0] transition-colors"
             >
               ↻ Applica mapping e ri-preview
             </button>
@@ -963,12 +963,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Fonte default</label>
                 <input value={manualSource} onChange={e => setManualSource(e.target.value)}
                   placeholder="es. provider_export, hr_declaration"
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
               </div>
               <div>
                 <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Evidence level default</label>
                 <select value={manualEvidLevel} onChange={e => setManualEvidLevel(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="">— Non specificato —</option>
                   <option value="L0">L0 — Nessuna evidenza</option>
                   <option value="L1">L1 — Auto-dichiarato</option>
@@ -979,7 +979,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Budget class default</label>
                 <select value={manualBudgetClass} onChange={e => setManualBudgetClass(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="">— Non specificato —</option>
                   <option value="deep_activation">Deep Activation</option>
                   <option value="economic_relief">Economic Relief</option>
@@ -990,13 +990,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Provider default</label>
                 <input value={manualProvider} onChange={e => setManualProvider(e.target.value)}
                   placeholder="es. Welfare Provider S.p.A."
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
               </div>
               <div>
                 <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Periodo di default</label>
                 <input value={manualPeriod} onChange={e => setManualPeriod(e.target.value)}
                   placeholder="es. 2026-Q1"
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
               </div>
             </div>
           </div>
@@ -1004,9 +1004,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B11.3 — Financial metadata panel (shown after dry-run passed, before accept) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
-          <div className="rounded-lg border border-[#6156F5]/25 bg-[#f5f4ff] px-4 py-4 space-y-3">
+          <div className="rounded-lg border border-[#C76F3D]/25 bg-[#f5f4ff] px-4 py-4 space-y-3">
             <div>
-              <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide">Metadati finanziari del batch</p>
+              <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Metadati finanziari del batch</p>
               <p className="text-[10px] text-slate-500 mt-0.5">
                 Questi metadati aiutano KORA a interpretare la qualità finanziaria del batch. Non sovrascrivono i dati riga-per-riga e non inventano importi mancanti.
               </p>
@@ -1023,7 +1023,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Fonte finanziaria prevalente</label>
                 <select value={finSourceType} onChange={e => setFinSourceType(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non specificata</option>
                   <option value="provider_export">Export fornitore welfare</option>
                   <option value="lms_export">Export piattaforma LMS</option>
@@ -1037,7 +1037,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Evidence level di default</label>
                 <select value={finEvidLevel} onChange={e => setFinEvidLevel(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="L0">L0 — Nessuna evidenza (default)</option>
                   <option value="L1">L1 — Auto-dichiarato / Spreadsheet</option>
                   <option value="L2">L2 — Documento interno</option>
@@ -1049,7 +1049,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Ambito budget</label>
                 <select value={finBudgetScope} onChange={e => setFinBudgetScope(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non specificato</option>
                   <option value="welfare">Welfare</option>
                   <option value="fringe_benefit">Fringe benefit</option>
@@ -1064,7 +1064,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Il file contiene importi?</label>
                 <select value={finContainsAmt} onChange={e => setFinContainsAmt(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1075,7 +1075,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Contiene benefit monetari / fringe / voucher?</label>
                 <select value={finEconRelief} onChange={e => setFinEconRelief(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1086,7 +1086,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div>
                 <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Contiene spese compliance / HSE?</label>
                 <select value={finComplianceSpd} onChange={e => setFinComplianceSpd(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1104,7 +1104,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 value={finNotes} onChange={e => setFinNotes(e.target.value)}
                 rows={2}
                 placeholder="Note operative interne (non vengono salvate nel sistema)"
-                className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-[#6156F5] resize-none"
+                className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] resize-none"
               />
             </div>
           </div>
@@ -1123,7 +1123,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               ] as [boolean, (v: boolean) => void, string][]).map(([val, setter, label], i) => (
                 <label key={i} className="flex items-start gap-2 cursor-pointer">
                   <input type="checkbox" checked={val} onChange={e => setter(e.target.checked)}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#6156F5] focus:ring-[#6156F5]" />
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#C76F3D] focus:ring-[#C76F3D]" />
                   <span className="text-xs text-slate-700">{label}</span>
                 </label>
               ))}
@@ -1137,7 +1137,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Create Intake Batch</p>
             <p className="text-[10px] text-slate-400">Only PII-free / pseudonymized files can be persisted. Scoring is not executed in B4.2.</p>
             {fileType === 'xlsx' && selectedSheet && (
-              <p className="text-[10px] text-[#6156F5] font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>
+              <p className="text-[10px] text-[#C76F3D] font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>
             )}
             {!isTenantSelected && (
               <p className="text-[10px] text-red-600 font-medium">⚠ Seleziona un&apos;azienda prima di procedere.</p>
@@ -1170,7 +1170,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-[10px] font-mono text-green-700">{acceptResult.batchId?.slice(0, 8)}…</span>
               <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">status: {acceptResult.batchStatus}</span>
               {acceptResult.fileType === 'xlsx' && acceptResult.selectedSheetName && (
-                <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[10px] font-semibold text-[#6156F5]">xlsx · {acceptResult.selectedSheetName}</span>
+                <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[10px] font-semibold text-[#C76F3D]">xlsx · {acceptResult.selectedSheetName}</span>
               )}
               {acceptResult.mappingApplied && (
                 <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-500">mapping applicato</span>
@@ -1355,7 +1355,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           />
         </div>
         <a href="/admin/tenants"
-          className="text-[10px] text-[#6156F5] underline underline-offset-2 hover:text-[#4a41d4] pb-1.5">
+          className="text-[10px] text-[#C76F3D] underline underline-offset-2 hover:text-[#4a41d4] pb-1.5">
           + Crea azienda
         </a>
       </div>
@@ -1471,7 +1471,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Distribuzione categorie</p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(preview.uefPreview.categoryDistribution).map(([cat, n]) => (
-                <span key={cat} className="rounded border border-[#6156F5]/30 bg-[#f5f4ff] px-2 py-0.5 text-xs text-[#4d48d0] font-medium">
+                <span key={cat} className="rounded border border-[#C76F3D]/30 bg-[#f5f4ff] px-2 py-0.5 text-xs text-[#4d48d0] font-medium">
                   {cat}: {n}
                 </span>
               ))}
@@ -1521,12 +1521,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </button>
             <a href={`/api/admin/decision-pack/preview?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`}
               target="_blank" rel="noopener noreferrer"
-              className="border border-[#6156F5] text-[#6156F5] rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#f5f4ff] transition-colors">
+              className="border border-[#C76F3D] text-[#C76F3D] rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#f5f4ff] transition-colors">
               ↗ Decision Pack Preview
             </a>
             <a href={`/api/admin/decision-pack/pdf?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`}
               download={`kora-decision-pack-${TENANT}-${PERIOD}.pdf`}
-              className="bg-[#6156F5] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#4d48d0] transition-colors">
+              className="bg-[#C76F3D] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#4d48d0] transition-colors">
               ↓ Download Decision Pack PDF
             </a>
           </div>
@@ -1587,7 +1587,7 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
       <div className="flex items-center gap-2.5">
-        <div className="w-0.5 h-4 bg-[#6156F5] rounded-full flex-shrink-0" />
+        <div className="w-0.5 h-4 bg-[#C76F3D] rounded-full flex-shrink-0" />
         <div>
           <p className="text-xs font-bold text-slate-700 uppercase tracking-wide leading-none">{title}</p>
           {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
@@ -1601,7 +1601,7 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
 function KPICard({ label, value, ok, warn, accent, raw, children }: {
   label: string; value?: string; ok?: boolean; warn?: boolean; accent?: boolean; raw?: boolean; children?: React.ReactNode;
 }) {
-  const valColor = ok ? 'text-green-700' : warn ? 'text-amber-700' : accent ? 'text-[#6156F5]' : 'text-slate-900';
+  const valColor = ok ? 'text-green-700' : warn ? 'text-amber-700' : accent ? 'text-[#C76F3D]' : 'text-slate-900';
   return (
     <div className="rounded border border-slate-200 bg-[#fafafa] px-3 py-2.5">
       <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1">{label}</p>

@@ -40,13 +40,13 @@ export function MetricTrio({ activationRate, meaningfulActivationRate, verificat
         >
           <p
             className="uppercase mb-2"
-            style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: 'rgba(20,18,46,0.40)' }}
+            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.40)' }}
           >
             {code}
           </p>
           <p
             style={{
-              fontFamily:         'var(--font-inter)',
+              fontFamily:         'var(--font-jakarta)',
               fontWeight:         700,
               fontSize:           '32px',
               color:              TOKENS.ink,
@@ -59,7 +59,7 @@ export function MetricTrio({ activationRate, meaningfulActivationRate, verificat
           </p>
           <p
             className="mt-1.5"
-            style={{ fontSize: '11px', color: 'rgba(20,18,46,0.50)' }}
+            style={{ fontSize: '11px', color: 'rgba(6,3,43,0.50)' }}
           >
             {label}
           </p>

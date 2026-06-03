@@ -47,7 +47,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
           {/* §3 — eyebrow: Inter non mono; §5 — resta viola (macroblock code) */}
           <p
             className="uppercase font-semibold"
-            style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.accent }}
+            style={{ fontFamily: 'var(--font-jakarta)', fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.accent }}
           >
             {macroblock.code}
           </p>
@@ -55,7 +55,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
         </div>
         <div className="text-right shrink-0">
           <span
-            style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '22px', color: TOKENS.ink, letterSpacing: '-0.02em' }}
+            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: TOKENS.ink, letterSpacing: '-0.02em' }}
           >
             {macroblock.score}
           </span>
@@ -92,7 +92,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
         {componentCodes.length > 0 ? (
           <div>
             {/* §3 — Inter non mono */}
-            <p className="text-[9px] font-semibold uppercase tracking-wide mb-1" style={{ fontFamily: 'var(--font-inter)', color: TOKENS.inkHint }}>
+            <p className="text-[9px] font-semibold uppercase tracking-wide mb-1" style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.inkHint }}>
               Componenti analitici
             </p>
             <div className="flex flex-wrap gap-1">
@@ -118,7 +118,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
       {macroblock.main_driver ? (
         <div className="rounded-[8px] p-2.5 space-y-1" style={{ background: TOKENS.inkBorder }}>
           {/* §3 — Inter non mono */}
-          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-inter)', color: TOKENS.inkHint }}>Driver principale</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.inkHint }}>Driver principale</p>
           <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{macroblock.main_driver}</p>
         </div>
       ) : <div />}
@@ -130,7 +130,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
           style={{ background: 'rgba(97,86,245,0.06)', border: '1px solid rgba(97,86,245,0.12)' }}
         >
           {/* §3 Inter non mono; §5 — header Opportunità: ink non viola */}
-          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-inter)', color: TOKENS.ink }}>Opportunità</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.ink }}>Opportunità</p>
           <p className="text-xs leading-relaxed" style={{ color: TOKENS.inkSecondary }}>{macroblock.risk_opportunity}</p>
         </div>
       ) : <div />}

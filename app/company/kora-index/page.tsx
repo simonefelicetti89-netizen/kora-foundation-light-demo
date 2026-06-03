@@ -50,7 +50,7 @@ function ScenarioStrip({ activeScenario, s1Output, s2Output }: {
   return (
     <div className="flex flex-col p-6 space-y-4" style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}>
       {/* §3 — eyebrow Inter non mono */}
-      <p className="uppercase" style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.inkHint }}>
+      <p className="uppercase" style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', color: TOKENS.inkHint }}>
         Confronto scenari · solo demo
       </p>
       <div className="grid grid-cols-2 gap-3 flex-1">
@@ -74,26 +74,26 @@ function ScenarioStrip({ activeScenario, s1Output, s2Output }: {
             >
               <div className="flex items-center justify-between mb-2">
                 {/* §3 — Inter non mono per scenario ID */}
-                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 600, fontSize: '11px', color: isActive ? TOKENS.ink : TOKENS.inkHint }}>{id}</span>
+                <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', color: isActive ? TOKENS.ink : TOKENS.inkHint }}>{id}</span>
                 {/* §6/§7 — chip "Attivo": sentence case, colore violet non verde */}
                 {isActive && (
                   <span
                     className="rounded"
-                    style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 500, padding: '2px 6px', background: 'rgba(97,86,245,0.10)', color: TOKENS.accent }}
+                    style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 500, padding: '2px 6px', background: 'rgba(97,86,245,0.10)', color: TOKENS.accent }}
                   >
                     Attivo
                   </span>
                 )}
               </div>
               <div className="flex items-baseline gap-1.5">
-                <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 700, fontSize: '28px', color: TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1 }}>{out.kora_index_value}</span>
+                <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '28px', color: TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1 }}>{out.kora_index_value}</span>
                 <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>/100</span>
               </div>
               <div className="flex items-center gap-2 mt-2">
                 {/* Safeguard pill — Inter, sentence case */}
                 <span
                   className="rounded"
-                  style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '9px', padding: '2px 6px', background: ss.bg, color: ss.text }}
+                  style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '9px', padding: '2px 6px', background: ss.bg, color: ss.text }}
                 >
                   {out.safeguard_status.charAt(0) + out.safeguard_status.slice(1).toLowerCase()}
                 </span>
@@ -231,7 +231,7 @@ export default function KoraIndexDetail() {
         style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '0.875rem 1.125rem' }}
       >
         <p style={{ fontSize: '12px', color: TOKENS.ink }}>
-          <span style={{ fontFamily: 'var(--font-inter)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint, marginRight: 10 }}>
+          <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint, marginRight: 10 }}>
             Vincolo primario
           </span>
           {explanation?.weak_components[0]
@@ -247,7 +247,7 @@ export default function KoraIndexDetail() {
       </div>
 
       {/* ── GRUPPO SECONDARIO — Componenti, pipeline, eligibility, safeguard, BTI ── */}
-      <div style={{ borderTop: '1px solid rgba(20,18,46,0.10)', marginTop: '2.5rem', paddingTop: '2.5rem' }}>
+      <div style={{ borderTop: '1px solid rgba(6,3,43,0.10)', marginTop: '2.5rem', paddingTop: '2.5rem' }}>
 
         {/* 5. 10 componenti analitici — spostati dal gruppo primario */}
         <div id="componenti" className="scroll-mt-24">
@@ -303,16 +303,16 @@ export default function KoraIndexDetail() {
       </div>
 
       {/* ── GRUPPO REFERENZA — Raccomandazioni, spiegabilità, glossario ─────────── */}
-      <div style={{ borderTop: '1px solid rgba(20,18,46,0.10)', marginTop: '2.5rem', paddingTop: '2.5rem' }}>
+      <div style={{ borderTop: '1px solid rgba(6,3,43,0.10)', marginTop: '2.5rem', paddingTop: '2.5rem' }}>
 
         <p
           style={{
-            fontFamily:    'var(--font-inter)',
+            fontFamily:    'var(--font-jakarta)',
             fontWeight:    500,
             fontSize:      '10px',
             letterSpacing: '0.10em',
             textTransform: 'uppercase',
-            color:         'rgba(20,18,46,0.30)',
+            color:         'rgba(6,3,43,0.30)',
             marginBottom:  '1.25rem',
           }}
         >

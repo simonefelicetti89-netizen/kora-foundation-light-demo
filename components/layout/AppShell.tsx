@@ -28,7 +28,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto bg-kora-canvas p-6">
+        <main className="flex-1 overflow-y-auto bg-kora-canvas" style={{ padding: '32px 40px' }}>
           {children}
         </main>
       </div>

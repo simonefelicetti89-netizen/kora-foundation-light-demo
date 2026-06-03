@@ -20,7 +20,7 @@ export function ProvenanceFooter({
     >
       <p
         className="font-mono"
-        style={{ fontSize: '11px', color: 'rgba(20,18,46,0.40)', letterSpacing: '0.04em' }}
+        style={{ fontSize: '11px', color: 'rgba(6,3,43,0.40)', letterSpacing: '0.04em' }}
       >
         {methodologyVersionId}
         &nbsp;&middot;&nbsp;

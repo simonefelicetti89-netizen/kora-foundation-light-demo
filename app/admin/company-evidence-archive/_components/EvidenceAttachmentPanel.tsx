@@ -63,7 +63,7 @@ const ATTACHMENT_TYPE_LABELS: Record<AttachmentType, string> = {
 
 const LEVEL_COLORS: Record<string, string> = {
   L3: 'text-green-700 bg-green-50 border-green-200',
-  L2: 'text-[#6156F5] bg-[#f5f4ff] border-[#c7c4f8]',
+  L2: 'text-[#C76F3D] bg-[#f5f4ff] border-[#c7c4f8]',
   L1: 'text-amber-700 bg-amber-50 border-amber-200',
   L0: 'text-slate-500 bg-slate-50 border-slate-200',
 };
@@ -160,7 +160,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-[#c7c4f8] bg-[#f5f4ff] px-4 py-3">
-        <p className="text-[10px] font-bold text-[#6156F5] uppercase tracking-wide mb-1">Evidence Attachment — B34 Private Storage</p>
+        <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide mb-1">Evidence Attachment — B34 Private Storage</p>
         <p className="text-[10px] text-[#3d3a6a] leading-relaxed">
           Allega documenti di evidenza (fatture, export provider, LMS, policy).
           Solo metadati vengono salvati — nessun contenuto raw, nessun URL pubblico, nessuna azione di scoring.
@@ -179,7 +179,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
         <div>
           <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Tipo documento</label>
           <select value={attachType} onChange={e => setAttachType(e.target.value as AttachmentType)}
-            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]">
+            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
             {Object.entries(ATTACHMENT_TYPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -191,12 +191,12 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
         <div>
           <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Iniziativa (opzionale)</label>
           <input value={linkedInit} onChange={e => setLinkedInit(e.target.value)} placeholder="es. Formazione Digitale"
-            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
         </div>
         <div>
           <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Campo canonico (opzionale)</label>
           <input value={linkedField} onChange={e => setLinkedField(e.target.value)} placeholder="es. amount, participants, hours"
-            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#6156F5]" />
+            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
         </div>
       </div>
 
@@ -251,7 +251,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
         <div className="space-y-2">
           <label className="flex items-start gap-2 cursor-pointer">
             <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#6156F5] focus:ring-[#6156F5]" />
+              className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#C76F3D] focus:ring-[#C76F3D]" />
             <span className="text-xs text-slate-700">
               Confermo che il documento non contiene PII individuali e che i metadati sono corretti.
               Il livello evidenza proposto richiede UEF Review prima di influenzare lo scoring.

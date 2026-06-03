@@ -31,7 +31,7 @@ export function ProssimaAzioneCard({ action }: ProssimaAzioneCardProps) {
         className="font-kora-serif"
         style={{
           fontSize:      '1.3125rem',
-          color:         'rgba(20,18,46,0.50)',
+          color:         'rgba(6,3,43,0.50)',
           letterSpacing: '-0.01em',
           lineHeight:    1.2,
         }}
@@ -45,7 +45,7 @@ export function ProssimaAzioneCard({ action }: ProssimaAzioneCardProps) {
       {/* Frase azione — Inter 600, ink */}
       <p
         style={{
-          fontFamily:    'var(--font-inter)',
+          fontFamily:    'var(--font-jakarta)',
           fontWeight:    600,
           fontSize:      '16px',
           color:         TOKENS.ink,
@@ -60,9 +60,9 @@ export function ProssimaAzioneCard({ action }: ProssimaAzioneCardProps) {
       {/* Testo descrittivo */}
       <p
         style={{
-          fontFamily: 'var(--font-inter)',
+          fontFamily: 'var(--font-jakarta)',
           fontSize:   '12.5px',
-          color:      'rgba(20,18,46,0.60)',
+          color:      'rgba(6,3,43,0.60)',
           lineHeight: 1.68,
           flexGrow:   1,
         }}
