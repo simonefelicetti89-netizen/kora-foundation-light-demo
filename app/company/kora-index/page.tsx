@@ -14,6 +14,7 @@ import type { MacroblockScore }        from '@/lib/types';
 
 // ── Shared components — reused from cockpit ────────────────────────────────────
 import { PageMasthead }    from '@/components/ui/PageMasthead';
+import { DecisionContext }  from '@/components/ui/DecisionContext';
 import { SectionLabel }    from '@/components/ui/SectionLabel';
 import { IndexRingCard }   from '@/components/company/cockpit/IndexRingCard';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
@@ -194,6 +195,10 @@ export default function KoraIndexDetail() {
         eyebrow={`KORA Index™ v3 · ${output.reporting_period}`}
         title={tenant?.company_name ?? COMPANY_ID}
         subline="Scomposizione analitica dell'indice"
+      />
+      <DecisionContext
+        question="Come si costruisce il punteggio, cosa lo vincola e cosa lo può migliorare?"
+        boundary="Foundation Light v0.1 · pre_empirical_calibration · Confidence Score™ esterno al KORA Index™"
       />
 
       {/* ── GRUPPO PRIMARIO — Indice, macroblocchi, componenti ────────────────── */}

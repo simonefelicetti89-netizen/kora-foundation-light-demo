@@ -68,9 +68,9 @@ export default function DemoGuidePage() {
 
       {/* 1. PageMasthead */}
       <PageMasthead
-        eyebrow="Guida alla lettura · KORA Foundation Light v0.1"
-        title="Executive Walkthrough"
-        subline="Mappa navigabile della logica KORA: KORA Index™, Activation Debt™, BTI™, Eligibility Gate, Confidence Score™, privacy boundary e Decision Pack."
+        eyebrow="KORA Foundation Light™ · Guida operativa"
+        title="Come leggere KORA"
+        subline="Percorso guidato attraverso la logica di KORA: indice, attivazione, budget, evidenze, privacy e output board-ready."
         meta="Product Vision Prototype · dati sintetici · Foundation Light v0.1"
       />
 

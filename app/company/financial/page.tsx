@@ -16,6 +16,7 @@ import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityH
 import { MethodologyBadge } from '@/components/ui/MethodologyBadge';
 import { KPICard } from '@/components/ui/KPICard';
 import { TM } from '@/components/ui/TM';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 import type { PillarCode } from '@/lib/types';
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
@@ -281,6 +282,10 @@ export default function FinancialGovernance() {
         title={<><TM>Budget-to-Human-Impact</TM> Engine</>}
         subline="Rapporto tra budget people, attivazione profonda e opportunità di riallocazione. Non certificativo, non causale."
         meta={`${companyName} · Foundation Light Preview · dati sintetici demo`}
+      />
+      <DecisionContext
+        question="Come si converte il budget welfare in attivazione profonda e dove si accumula Activation Debt™?"
+        boundary="Solo dati sintetici Meridiana Group · nessun dato individuale · Foundation Light v0.1"
       />
 
       {/* ── 1b. KPI decision strip ─────────────────────────────────────────── */}

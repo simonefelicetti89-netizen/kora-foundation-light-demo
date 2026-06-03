@@ -8,6 +8,7 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { tenantService } from '@/services/tenant/TenantService';
 import { PILLAR_CODES, PILLAR_LABELS } from '@/lib/constants/kora';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
@@ -133,6 +134,10 @@ export default function PillarsInitiatives() {
         eyebrow={`Pillar Intelligence · ${activeScenario}`}
         title="Pillar Intelligence"
         subline={`${companyName} · ${aggregate?.reporting_period ?? activeScenario} · distribuzione aggregata`}
+      />
+      <DecisionContext
+        question="Come sono distribuiti budget e attivazione tra i 5 pilastri KORA e dove è il gap?"
+        boundary="Aggregato aziendale · N≥10 per segmento · nessun dato individuale"
       />
 
       {/* ── Distribuzione pillar ── */}

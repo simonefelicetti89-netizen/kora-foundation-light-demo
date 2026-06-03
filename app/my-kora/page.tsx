@@ -9,6 +9,7 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { TM } from '@/components/ui/TM';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 import { cn } from '@/lib/utils';
 
 // ─── Pillar styling ───────────────────────────────────────────────────────────
@@ -149,6 +150,10 @@ export default function MyKoraHome() {
         title={<>Il tuo <TM>Worker PIB</TM></>}
         subline={`${activePersona ? activePersona.display_name : preview.persona_label} — Personal Impact Balance privato. L'azienda non vede mai i tuoi dati individuali.`}
         meta="Dati sintetici · Foundation Light v0.1 · layer worker-owned"
+      />
+      <DecisionContext
+        question="Come sta crescendo la tua attivazione e cosa puoi fare per approfondirla?"
+        boundary="Il tuo Worker PIB™ è privato — non visibile al datore di lavoro · solo iniziative company-enabled"
       />
 
       {/* ── Core privacy statement — non-suppressible ── */}

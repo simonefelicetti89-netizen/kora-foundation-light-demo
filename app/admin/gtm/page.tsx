@@ -15,7 +15,7 @@ interface ScenarioCard {
 const SCENARIO_S1: ScenarioCard = {
   label: 'S1 — Stato attuale',
   safeguard: 'WARNING',
-  safeguardStyle: 'border-amber-300 bg-[rgba(217,154,43,0.12)] text-amber-700',
+  safeguardStyle: 'border-[rgba(217,154,43,0.30)] bg-[rgba(217,154,43,0.10)] text-[#8A5A00]',
   cardStyle: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
   metrics: [
     ['KORA Index',      '34'],
@@ -30,8 +30,8 @@ const SCENARIO_S1: ScenarioCard = {
 const SCENARIO_S2: ScenarioCard = {
   label: 'S2 — Post-intervento',
   safeguard: 'CLEAR',
-  safeguardStyle: 'border-green-300 bg-green-100 text-green-700',
-  cardStyle: 'border-[rgba(47,125,85,0.22)] bg-green-50',
+  safeguardStyle: 'border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.10)] text-[#2F7D55]',
+  cardStyle: 'border-[rgba(47,125,85,0.20)] bg-[rgba(47,125,85,0.06)]',
   metrics: [
     ['KORA Index',      '54'],
     ['Confidence Score','72%'],

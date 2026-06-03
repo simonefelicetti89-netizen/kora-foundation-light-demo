@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { TM } from '@/components/ui/TM';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 
 // P-01: Partner Workspace Light — Foundation Light Preview
 // Synthetic demo data only. No marketplace, no booking, no payment.

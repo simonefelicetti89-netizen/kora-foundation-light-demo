@@ -90,7 +90,7 @@ const COVERAGE_STYLE: Record<CoverageStatus, string> = {
 };
 
 const PILLAR_CHIP: Record<string, string> = {
-  LIFE:       'bg-green-100 text-green-700',
+  LIFE:       'bg-[rgba(47,125,85,0.10)] text-[#2F7D55]',
   GROWTH:     'bg-blue-100 text-blue-700',
   CONNECTION: 'bg-purple-100 text-purple-700',
   IMPACT:     'bg-[rgba(217,154,43,0.10)] text-[#8A5A00]',

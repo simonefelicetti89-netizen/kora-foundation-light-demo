@@ -19,6 +19,7 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { tenantService }              from '@/services/tenant/TenantService';
 import { workerProvisioningService }  from '@/services/worker-provisioning/WorkerProvisioningService';
 import { TOKENS }                     from '@/lib/design/kora-design-tokens';
+import { DecisionContext }           from '@/components/ui/DecisionContext';
 
 // C-01: Executive Cockpit — narrative-first, flagship screen
 export default function ExecutiveCockpit() {
@@ -109,7 +110,12 @@ export default function ExecutiveCockpit() {
 
       {hasKoraData && output && (
         <>
-          {/* ── Section 2: Intelligence Brief — 3 narrative insights ── */}
+          {/* ── Decision Context ── */}
+      <DecisionContext
+        question="Qual è lo stato dell'attivazione umana organizzativa e quale azione ha priorità?"
+      />
+
+      {/* ── Section 2: Intelligence Brief — 3 narrative insights ── */}
           {insights.length > 0 && (
             <div style={{ marginTop: 28 }}>
               <IntelligenceBrief insights={insights} />

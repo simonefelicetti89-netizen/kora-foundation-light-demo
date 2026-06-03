@@ -7,6 +7,7 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { tenantService } from '@/services/tenant/TenantService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
@@ -200,6 +201,10 @@ export default function KoraContribution() {
         title="KORA Contribution"
         subline="Il segnale che misura quanto l'organizzazione genera valore collettivo verificabile oltre il proprio perimetro interno."
         meta={`${companyName} · Foundation Light Preview · pre_empirical_calibration · dati sintetici`}
+      />
+      <DecisionContext
+        question="Come contribuisce l'organizzazione oltre il perimetro interno — e con quale evidenza?"
+        boundary="Indicatore companion · non componente KORA Index™ · segnale direzionale"
       />
 
       {/* Badge row — Companion / Non-Index / Preview / Pre-calibrazione */}

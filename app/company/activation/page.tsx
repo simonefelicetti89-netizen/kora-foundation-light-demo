@@ -8,6 +8,7 @@ import { activationSafeguardService } from '@/services/activation-safeguard/Acti
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
@@ -159,6 +160,10 @@ export default function Activation() {
         eyebrow={`Intelligence operativa · ${activeScenario}`}
         title={<><span className="font-kora-serif">Activation Debt</span><sup className="tm-mark">™</sup> & Partecipazione</>}
         subline={`Aggregato aziendale — gruppi < ${SAFE_AGGREGATION_THRESHOLD} soppressi · nessun PIB individuale · nessun dato lavoratore`}
+      />
+      <DecisionContext
+        question="Chi non viene raggiunto e dove si accumula l'Activation Debt™ nella forza lavoro?"
+        boundary="Soglia privacy N≥10 per segmento · nessun dato individuale · aggregato aziendale"
       />
 
       {/* Safeguard status — always visible when data exists */}

@@ -16,6 +16,7 @@ import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
 import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
@@ -455,6 +456,10 @@ export default function Reports() {
         title="Report direzionali"
         subline="Output board-ready per HR, Finance, ESG e board. Evidenze strutturate, attivazione e raccomandazioni in formato decisionale."
         meta="Foundation Light v0.1 · pre_empirical_calibration · dati sintetici demo"
+      />
+      <DecisionContext
+        question="Quali output portare al board, agli advisor ESG e alle funzioni HR e Finance?"
+        boundary="Foundation Light v0.1 · pre_empirical_calibration · non certificativo · dati sintetici"
       />
 
       {/* ── 2. Executive Output Reading ─────────────────────────────────────── */}

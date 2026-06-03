@@ -12,6 +12,7 @@ import { companyDataIntakeService } from '@/services/company-data-intake/Company
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
@@ -122,6 +123,10 @@ export default function KoraSharedView() {
         title="Spazio condiviso KORA"
         subline="Vista sintetica e privacy-safe dell'impatto organizzativo — board, intranet e condivisione interna. Nessun dato individuale."
         meta={`${tenant?.analysis_period ?? activeScenario} · Read-only · Company-scoped · dati sintetici demo`}
+      />
+      <DecisionContext
+        question="Quali informazioni aggregate posso condividere internamente con stakeholder non-tecnici?"
+        boundary="Solo aggregati aziendali N≥10 · nessun dato individuale · no dati di pillar sottosoglia"
       />
 
       {/* Badge row */}

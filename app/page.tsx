@@ -633,7 +633,7 @@ export default function LandingPage() {
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '1rem' }}>
             <Link href="/company"
-              style={{ borderRadius: 8, background: TOKENS.ink, padding: '12px 28px', fontSize: '14px', fontWeight: 600, color: '#FFF', textDecoration: 'none' }}>
+              style={{ borderRadius: 8, background: '#C76F3D', padding: '12px 28px', fontSize: '14px', fontWeight: 600, color: '#FFF', textDecoration: 'none' }}>
               Apri Executive Cockpit →
             </Link>
             <Link href="#foundation-light"

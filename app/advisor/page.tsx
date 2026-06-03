@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { TM } from '@/components/ui/TM';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { DecisionContext } from '@/components/ui/DecisionContext';
 
 // AD-01: Advisor Professional Workspace — Foundation Light Preview
 // Synthetic demo data only. No real review workflow. No certification.
@@ -313,6 +314,10 @@ export default function AdvisorDashboard() {
           title="Advisor Workspace"
           subline="Il layer professionale per audit processo, review protocollo evidenze e governance fiduciaria KORA."
           meta="Solo dati sintetici · Advisor-reviewed ≠ KORA Certified"
+        />
+        <DecisionContext
+          question="Cosa richiede revisione, quale evidenza è ancora incerta e quale raccomandazione emettere?"
+          boundary="Solo perimetro assegnato · nessun dato individuale lavoratore · protocollo processo, non validazione puntuale"
         />
         <div className="flex flex-wrap gap-1.5 -mt-4 mb-2">
           {[
