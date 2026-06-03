@@ -1,7 +1,13 @@
+// A-01: KORA Control Tower™ — narrative-first admin operating console
+// Structure: Command Hero → Priority Queue → Company Readiness Matrix → Intelligence Grid → Governance
+
 import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+import { PriorityQueue } from '@/components/admin/PriorityQueue';
+import type { PriorityItem } from '@/components/admin/PriorityQueue';
 import { TM } from '@/components/ui/TM';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import type React from 'react';
 
 const SAFEGUARD_PILL: Record<string, { bg: string; text: string; border: string }> = {
   CLEAR:   { bg: TOKENS.safeguard.pass.bg,   text: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  },
@@ -9,57 +15,33 @@ const SAFEGUARD_PILL: Record<string, { bg: string; text: string; border: string 
   FLAGGED: { bg: TOKENS.safeguard.cap.bg,    text: TOKENS.safeguard.cap.text,   border: `1px solid ${TOKENS.safeguard.cap.dot}40`   },
 };
 
-function IntelPanel({
-  n, title, children, href, hrefLabel,
-}: {
-  n: string;
-  title: string;
-  children: React.ReactNode;
-  href?: string;
-  hrefLabel?: string;
+function Panel({ title, n, children, href, hrefLabel }: {
+  title: string; n: string; children: React.ReactNode; href?: string; hrefLabel?: string;
 }) {
   return (
-    <div
-      style={{
-        background:   TOKENS.surface,
-        border:       TOKENS.cardBorder,
-        borderRadius: TOKENS.cardRadius,
-        boxShadow:    TOKENS.cardShadow,
-        padding:      '20px',
-        display:      'flex',
-        flexDirection: 'column',
-        gap:          14,
-      }}
-    >
+    <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: '20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-        <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9px', fontWeight: 700, color: TOKENS.accent, letterSpacing: '0.06em' }}>
-          {n}
-        </span>
-        <p style={{
-          fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontWeight:  700,
-          fontSize:    '12.5px',
-          color:       TOKENS.ink,
-          letterSpacing: '-0.005em',
-        }}>
-          {title}
-        </p>
+        <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9px', fontWeight: 700, color: TOKENS.accent, letterSpacing: '0.06em' }}>{n}</span>
+        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 700, fontSize: '12.5px', color: TOKENS.ink }}>{title}</p>
       </div>
-      <div style={{ flex: 1 }}>
-        {children}
-      </div>
+      <div style={{ flex: 1 }}>{children}</div>
       {href && hrefLabel && (
-        <Link href={href} style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
-          {hrefLabel} →
-        </Link>
+        <Link href={href} style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>{hrefLabel} →</Link>
       )}
     </div>
   );
 }
 
-import type React from 'react';
+function SectionHead({ label }: { label: string }) {
+  return (
+    <div style={{ paddingTop: 28, marginTop: 28, borderTop: `1px solid ${TOKENS.inkBorder}`, marginBottom: 16 }}>
+      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 600, fontSize: '9.5px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
+        {label}
+      </p>
+    </div>
+  );
+}
 
-// A-01: KORA Control Tower
 export default function KoraControlTower() {
   const analytics  = adminPreviewService.getPlatformAnalyticsPreview();
   const portfolio  = adminPreviewService.getCompanyPortfolioPreview();
@@ -70,90 +52,124 @@ export default function KoraControlTower() {
   const partners   = adminPreviewService.getPartnerNetworkPreview();
   const benchmarks = adminPreviewService.getBenchmarkPreview();
   const onb        = adminPreviewService.getAIOnboardingPreview();
+  const registry   = adminPreviewService.getIndexRegistryPreview();
 
-  const clearCount    = analytics.safeguard_distribution.CLEAR;
-  const warningCount  = analytics.safeguard_distribution.WARNING;
-  const flaggedCount  = analytics.safeguard_distribution.FLAGGED;
-  const totalCompanies = clearCount + warningCount + flaggedCount;
+  const clearCount   = analytics.safeguard_distribution.CLEAR;
+  const warningCount = analytics.safeguard_distribution.WARNING;
+  const flaggedCount = analytics.safeguard_distribution.FLAGGED;
+  const totalC       = clearCount + warningCount + flaggedCount;
+
+  // ── Derive priority queue from live data ──────────────────────────────────
+  const priorityItems: PriorityItem[] = [];
+
+  if (flaggedCount > 0) {
+    priorityItems.push({
+      id: 'flagged',
+      urgency: 'alta',
+      type: 'Activation Safeguard™',
+      title: `${flaggedCount} aziend${flaggedCount === 1 ? 'a' : 'e'} in stato FLAGGED`,
+      detail: 'Activation Rate e MAR sotto le soglie critiche. Revisione pipeline dati e ingestion necessaria.',
+      href: '/admin/companies',
+      action: 'Visualizza',
+    });
+  }
+
+  if (warningCount > 0) {
+    priorityItems.push({
+      id: 'warning',
+      urgency: 'media',
+      type: 'Activation Safeguard™',
+      title: `${warningCount} aziend${warningCount === 1 ? 'a' : 'e'} in stato WARNING`,
+      detail: 'Sotto le soglie di qualità — revisione Activation Debt e copertura pillar raccomandata.',
+      href: '/admin/companies',
+      action: 'Visualizza',
+    });
+  }
+
+  if (onb.pending_review_batches > 0) {
+    priorityItems.push({
+      id: 'pending-batches',
+      urgency: 'media',
+      type: 'Data Pipeline',
+      title: `${onb.pending_review_batches} batch fonti in attesa di revisione`,
+      detail: 'Batch caricati da company non ancora processati. Avviare data intake review.',
+      href: '/admin/data-intake',
+      action: 'Rivedi',
+    });
+  }
+
+  if (onb.scoring_readiness === 'blocked') {
+    priorityItems.push({
+      id: 'scoring',
+      urgency: 'media',
+      type: 'Scoring Readiness',
+      title: 'Pipeline non pronta per scoring',
+      detail: 'Le fonti dati non sono ancora sufficienti per avviare il calcolo del KORA Index™.',
+      href: '/admin/uef-review',
+      action: 'Verifica UEF',
+    });
+  }
+
+  const pendingAdvisorReviews = advisors.reduce((s, a) => s + (a.pending_reviews ?? 0), 0);
+  if (pendingAdvisorReviews > 0) {
+    priorityItems.push({
+      id: 'advisor-queue',
+      urgency: 'bassa',
+      type: 'Advisor Network',
+      title: `${pendingAdvisorReviews} revisioni advisor in attesa`,
+      detail: 'Review protocollo evidenze e audit processo non ancora completati.',
+      href: '/admin/network',
+      action: 'Verifica',
+    });
+  }
 
   return (
     <div style={{ maxWidth: 960 }}>
 
-      {/* ── 1. Control Tower Command Header ── */}
-      <div
-        style={{
-          background:   TOKENS.ink,
-          borderRadius: TOKENS.cardRadius,
-          padding:      '32px 40px',
-          marginBottom: 28,
-        }}
-      >
-        <p style={{
-          fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontWeight:    600,
-          fontSize:      '10px',
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          color:         TOKENS.accent,
-          marginBottom:  10,
-        }}>
-          KORA Admin · Operatore interno
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* SECTION 1: COMMAND HERO — operational state at a glance  */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <div style={{ background: TOKENS.ink, borderRadius: TOKENS.cardRadius, padding: '32px 40px', marginBottom: 24 }}>
+        {/* Eyebrow */}
+        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 10 }}>
+          KORA Admin · Control Tower™
         </p>
-        <h1 style={{
-          fontFamily:  'var(--font-instrument-serif), Georgia, serif',
-          fontSize:    'clamp(1.75rem, 3vw, 2.25rem)',
-          fontWeight:  400,
-          color:       '#FFFFFF',
-          letterSpacing: '-0.02em',
-          lineHeight:  1.08,
-          marginBottom: 8,
-        }}>
-          Control Tower
+        <h1 style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 400, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.08, marginBottom: 8 }}>
+          Vista operativa cross-azienda
         </h1>
-        <p style={{
-          fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontSize:   '13px',
-          color:      'rgba(255,255,255,0.50)',
-          maxWidth:   520,
-          lineHeight: 1.5,
-        }}>
-          Vista operativa cross-azienda — governance metodologica, pipeline dati, rete e analisi piattaforma.
+        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '13px', color: 'rgba(255,255,255,0.50)', maxWidth: 520, lineHeight: 1.5, marginBottom: 28 }}>
+          Governance metodologica, pipeline dati, network e analisi piattaforma. Tutto ciò che richiede attenzione dell&apos;operatore KORA.
         </p>
 
-        {/* Operational KPI strip */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16, marginTop: 28 }}>
+        {/* KPI strip */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 16, marginBottom: 24 }}>
           {[
-            { label: 'Aziende attive',    value: String(analytics.companies_in_portfolio), sub: 'Pilot portfolio'           },
-            { label: 'KORA Index medio',  value: String(analytics.avg_kora_index),         sub: 'Media ponderata'           },
-            { label: 'CS medio',          value: `${(analytics.avg_confidence_score * 100).toFixed(0)}%`, sub: 'Confidence Score' },
-            { label: 'Batch approvati',   value: `${analytics.source_batches_approved}/${analytics.source_batches_total}`, sub: 'Fonti dati' },
+            { label: 'Aziende attive', value: String(analytics.companies_in_portfolio), sub: 'Pilot portfolio' },
+            { label: 'KORA Index medio', value: String(analytics.avg_kora_index), sub: 'Media portfolio' },
+            { label: 'CS™ medio', value: `${(analytics.avg_confidence_score * 100).toFixed(0)}%`, sub: 'Confidence Score™' },
+            { label: 'Batch approvati', value: `${analytics.source_batches_approved}/${analytics.source_batches_total}`, sub: 'Fonti dati' },
           ].map(({ label, value, sub }) => (
             <div key={label} style={{ borderLeft: `2px solid rgba(255,255,255,0.10)`, paddingLeft: 12 }}>
-              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9.5px', color: 'rgba(255,255,255,0.38)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
-                {label}
-              </p>
-              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: '#FFFFFF', letterSpacing: '-0.025em', lineHeight: 1 }}>
-                {value}
-              </p>
-              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', color: 'rgba(255,255,255,0.30)', marginTop: 3 }}>
-                {sub}
-              </p>
+              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9.5px', color: 'rgba(255,255,255,0.38)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>{label}</p>
+              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: '#FFFFFF', letterSpacing: '-0.025em', lineHeight: 1 }}>{value}</p>
+              <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', color: 'rgba(255,255,255,0.30)', marginTop: 3 }}>{sub}</p>
             </div>
           ))}
         </div>
 
-        {/* Safeguard distribution bar */}
-        {totalCompanies > 0 && (
-          <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        {/* Safeguard distribution */}
+        {totalC > 0 && (
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 18 }}>
             <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9.5px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>
               Activation Safeguard™ — distribuzione portfolio
             </p>
-            <div style={{ display: 'flex', gap: 3, height: 8, borderRadius: 999, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', gap: 3, height: 8, borderRadius: 999, overflow: 'hidden', marginBottom: 8 }}>
               {clearCount > 0    && <div style={{ flex: clearCount,   background: TOKENS.safeguard.pass.dot  }} />}
               {warningCount > 0  && <div style={{ flex: warningCount, background: TOKENS.safeguard.watch.dot }} />}
               {flaggedCount > 0  && <div style={{ flex: flaggedCount, background: TOKENS.safeguard.cap.dot   }} />}
             </div>
-            <div style={{ display: 'flex', gap: 16, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 16 }}>
               {[
                 { label: 'CLEAR',   count: clearCount,   dot: TOKENS.safeguard.pass.dot  },
                 { label: 'WARNING', count: warningCount, dot: TOKENS.safeguard.watch.dot },
@@ -169,170 +185,136 @@ export default function KoraControlTower() {
         )}
       </div>
 
-      {/* ── 2. Pipeline Command Strip ── */}
-      <div
-        style={{
-          background:   TOKENS.taupe,
-          border:       `1px solid ${TOKENS.accent}20`,
-          borderLeft:   `3px solid ${TOKENS.accent}`,
-          borderRadius: TOKENS.cardRadius,
-          padding:      '16px 20px',
-          marginBottom: 20,
-          display:      'flex',
-          alignItems:   'center',
-          gap:          24,
-          flexWrap:     'wrap',
-        }}
-      >
-        <div>
-          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', fontWeight: 600, color: TOKENS.accent, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
-            AI Onboarding Engine
-          </p>
-          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '12px', color: TOKENS.inkSecondary }}>
-            {onb.source_batch_count} batch fonti · {onb.approved_batches} approvati · {onb.pending_review_batches} in attesa
-          </p>
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* SECTION 2: PRIORITY QUEUE — what needs attention NOW    */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <div style={{ marginBottom: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 14 }}>
+          <div>
+            <p style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', fontSize: '1.25rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+              Coda priorità
+            </p>
+            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', color: TOKENS.inkHint, marginTop: 3 }}>
+              {priorityItems.length > 0
+                ? `${priorityItems.length} azioni richiedono attenzione`
+                : 'Nessuna azione urgente'}
+            </p>
+          </div>
+          {priorityItems.filter(x => x.urgency === 'alta').length > 0 && (
+            <span style={{ borderRadius: 999, padding: '4px 12px', background: TOKENS.safeguard.cap.bg, color: TOKENS.safeguard.cap.text, border: `1px solid ${TOKENS.safeguard.cap.dot}40`, fontSize: '10px', fontWeight: 700 }}>
+              {priorityItems.filter(x => x.urgency === 'alta').length} urgenti
+            </span>
+          )}
         </div>
-        <div style={{ marginLeft: 'auto', flexShrink: 0 }}>
-          <span
+        <PriorityQueue items={priorityItems} />
+      </div>
+
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* SECTION 3: COMPANY READINESS MATRIX                     */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <SectionHead label="Company readiness matrix" />
+
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, overflow: 'hidden' }}>
+        {/* Table header */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 80px 80px', gap: 8, padding: '10px 20px', borderBottom: TOKENS.cardBorder, background: TOKENS.taupe }}>
+          {['Azienda', 'Safeguard™', 'Score', 'CS™', 'Fonte'].map((h, i) => (
+            <p key={h} style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint, textAlign: i > 0 ? 'center' : 'left' }}>
+              {h}
+            </p>
+          ))}
+        </div>
+
+        {portfolio.map((c, i) => (
+          <div
+            key={c.id}
             style={{
-              borderRadius: 999,
-              padding:      '4px 12px',
-              fontSize:     '10px',
-              fontFamily:   'Plus Jakarta Sans, var(--font-jakarta)',
-              fontWeight:   700,
-              ...(onb.scoring_readiness === 'ready'
-                ? { background: TOKENS.safeguard.pass.bg,  color: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  }
-                : onb.scoring_readiness === 'partial'
-                ? { background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}40` }
-                : { background: TOKENS.safeguard.cap.bg,   color: TOKENS.safeguard.cap.text,   border: `1px solid ${TOKENS.safeguard.cap.dot}40`   }),
+              display:     'grid',
+              gridTemplateColumns: '1fr 80px 80px 80px 80px',
+              gap:          8,
+              padding:      '12px 20px',
+              borderBottom: i < portfolio.length - 1 ? TOKENS.cardBorder : 'none',
+              alignItems:   'center',
             }}
           >
-            {onb.scoring_readiness.toUpperCase()} per scoring
-          </span>
-        </div>
-        <Link href="/admin/ai-onboarding" style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none', flexShrink: 0 }}>
-          Apri pipeline →
+            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '12px', fontWeight: 500, color: TOKENS.inkSecondary }}>{c.company_name}</p>
+            <div style={{ textAlign: 'center' }}>
+              {c.safeguard_status ? (
+                <span style={{
+                  borderRadius: 999, padding: '3px 8px', fontSize: '9px', fontWeight: 700,
+                  ...(SAFEGUARD_PILL[c.safeguard_status] ?? { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }),
+                }}>
+                  {c.safeguard_status}
+                </span>
+              ) : <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>—</span>}
+            </div>
+            <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '13px', fontWeight: 700, textAlign: 'center', color: TOKENS.ink }}>
+              {c.kora_index_value ?? '—'}
+            </p>
+            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', textAlign: 'center', color: TOKENS.inkSecondary }}>—</p>
+            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', textAlign: 'center', color: TOKENS.inkHint }}>Demo</p>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 8, textAlign: 'right' }}>
+        <Link href="/admin/companies" style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
+          Company Console →
         </Link>
       </div>
 
-      {/* ── 3. Intelligence Grid ── */}
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* SECTION 4: INTELLIGENCE GRID                            */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <SectionHead label="Intelligence operativa" />
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
 
-        {/* Company Portfolio + Index Registry */}
-        <IntelPanel n="01" title="Company Portfolio" href="/admin/portfolio" hrefLabel="Vedi portfolio">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {portfolio.map((c) => (
-              <div key={c.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ fontSize: '12px', color: TOKENS.inkSecondary, fontWeight: 500, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {c.company_name}
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                  {c.kora_index_value !== null && (
-                    <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '12px', fontWeight: 700, color: TOKENS.ink }}>
-                      {c.kora_index_value}
-                    </span>
-                  )}
-                  {c.safeguard_status && (
-                    <span style={{
-                      borderRadius: 999,
-                      padding:      '2px 8px',
-                      fontSize:     '9px',
-                      fontWeight:   700,
-                      ...(SAFEGUARD_PILL[c.safeguard_status] ?? { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }),
-                    }}>
-                      {c.safeguard_status}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </IntelPanel>
-
         {/* KORA Index Registry */}
-        <IntelPanel n="02" title="KORA Index™ Registry" href="/admin/index-registry" hrefLabel="Vedi registro">
+        <Panel n="01" title="KORA Index™ Registry" href="/admin/index-registry" hrefLabel="Registro">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 40px 48px', gap: 8, paddingBottom: 6, borderBottom: TOKENS.cardBorder, marginBottom: 6 }}>
               {['Azienda', 'S', 'Index'].map((h, i) => (
-                <span key={h} style={{ fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint, textAlign: i === 2 ? 'right' : 'left' }}>
-                  {h}
-                </span>
+                <span key={h} style={{ fontSize: '9px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: TOKENS.inkHint, textAlign: i === 2 ? 'right' : 'left' }}>{h}</span>
               ))}
             </div>
-            {adminPreviewService.getIndexRegistryPreview().slice(0, 5).map((e) => (
-              <div key={`${e.company_id}-${e.scenario_id}`} style={{ display: 'grid', gridTemplateColumns: '1fr 40px 48px', gap: 8, paddingBottom: 6, marginBottom: 2 }}>
-                <span style={{ fontSize: '11px', color: TOKENS.inkSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {e.company_name.split(' ')[0]}
-                </span>
+            {registry.slice(0, 5).map((e) => (
+              <div key={`${e.company_id}-${e.scenario_id}`} style={{ display: 'grid', gridTemplateColumns: '1fr 40px 48px', gap: 8, paddingBottom: 5, marginBottom: 2 }}>
+                <span style={{ fontSize: '11px', color: TOKENS.inkSecondary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.company_name.split(' ')[0]}</span>
                 <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: TOKENS.inkHint }}>{e.scenario_id}</span>
-                <span style={{
-                  textAlign:  'right',
-                  fontSize:   '12px',
-                  fontWeight: 700,
-                  color:      e.safeguard_status === 'FLAGGED' ? TOKENS.critical
-                            : e.safeguard_status === 'WARNING' ? TOKENS.warning
-                            : TOKENS.success,
-                }}>
+                <span style={{ textAlign: 'right', fontSize: '12px', fontWeight: 700, color: e.safeguard_status === 'FLAGGED' ? TOKENS.critical : e.safeguard_status === 'WARNING' ? TOKENS.warning : TOKENS.success }}>
                   {e.kora_index_value}
                 </span>
               </div>
             ))}
           </div>
-        </IntelPanel>
+        </Panel>
 
         {/* Advisor Network */}
-        <IntelPanel n="03" title="Advisor Network" href="/admin/network" hrefLabel="Vedi rete">
+        <Panel n="02" title="Advisor Network" href="/admin/network" hrefLabel="Rete advisor">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {advisors.map((a) => (
               <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                 <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, flex: 1, minWidth: 0 }}>{a.name.split(' ').slice(-1)[0]}</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                   {a.pending_reviews > 0 && (
-                    <span style={{
-                      borderRadius: 999,
-                      padding:      '2px 8px',
-                      fontSize:     '9px',
-                      fontWeight:   700,
-                      background:   TOKENS.safeguard.watch.bg,
-                      color:        TOKENS.safeguard.watch.text,
-                      border:       `1px solid ${TOKENS.safeguard.watch.dot}40`,
-                    }}>
+                    <span style={{ borderRadius: 999, padding: '2px 8px', fontSize: '9px', fontWeight: 700, background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}40` }}>
                       {a.pending_reviews} review
                     </span>
                   )}
-                  <span style={{
-                    borderRadius: 999,
-                    padding:      '2px 8px',
-                    fontSize:     '9px',
-                    fontWeight:   600,
-                    ...(a.status === 'active'
-                      ? { background: TOKENS.safeguard.pass.bg, color: TOKENS.safeguard.pass.text, border: `1px solid ${TOKENS.safeguard.pass.dot}40` }
-                      : { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }),
-                  }}>
+                  <span style={{ borderRadius: 999, padding: '2px 8px', fontSize: '9px', fontWeight: 600, ...(a.status === 'active' ? { background: TOKENS.safeguard.pass.bg, color: TOKENS.safeguard.pass.text, border: `1px solid ${TOKENS.safeguard.pass.dot}40` } : { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }) }}>
                     {a.status}
                   </span>
                 </div>
               </div>
             ))}
           </div>
-        </IntelPanel>
-
-        {/* Partner Network */}
-        <IntelPanel n="04" title="Partner Network" href="/admin/network" hrefLabel="Vedi rete">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {partners.slice(0, 5).map((p) => (
-              <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {p.name}
-                </span>
-                <span style={{ fontSize: '10px', color: TOKENS.inkHint, flexShrink: 0 }}>{p.pillars[0]}</span>
-              </div>
-            ))}
-          </div>
-        </IntelPanel>
+        </Panel>
 
         {/* Platform Analytics */}
-        <IntelPanel n="05" title="Platform Analytics">
+        <Panel n="03" title="Platform Analytics">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
               ['Confidence Score™ medio',  `${(analytics.avg_confidence_score * 100).toFixed(0)}%`],
@@ -345,79 +327,76 @@ export default function KoraControlTower() {
               </div>
             ))}
           </div>
-        </IntelPanel>
+        </Panel>
 
-        {/* GTM Pipeline */}
-        <IntelPanel n="06" title="Go-to-Market Pipeline" href="/admin/gtm" hrefLabel="Pipeline GTM">
+        {/* Partner Network */}
+        <Panel n="04" title="Partner Network" href="/admin/network" hrefLabel="Rete partner">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {gtm.slice(0, 4).map((e) => (
-              <div key={e.company_name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {e.company_name.split(' ')[0]}
-                </span>
-                <span style={{
-                  borderRadius: 999,
-                  padding:      '2px 8px',
-                  fontSize:     '9px',
-                  fontWeight:   600,
-                  flexShrink:   0,
-                  ...(e.stage === 'pilot_active'
-                    ? { background: TOKENS.safeguard.pass.bg,  color: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  }
-                    : e.stage === 'pilot_proposed'
-                    ? { background: 'rgba(43,92,230,0.10)', color: '#1E4A8A', border: '1px solid rgba(43,92,230,0.22)' }
-                    : e.stage === 'demo_shown'
-                    ? { background: TOKENS.accentSoft, color: TOKENS.accent, border: `1px solid rgba(199,111,61,0.25)` }
-                    : { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }),
-                }}>
-                  {e.stage.replace(/_/g, ' ')}
-                </span>
+            {partners.slice(0, 4).map((p) => (
+              <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                <span style={{ fontSize: '10px', color: TOKENS.inkHint, flexShrink: 0 }}>{p.pillars[0]}</span>
               </div>
             ))}
           </div>
-        </IntelPanel>
+        </Panel>
 
       </div>
 
-      {/* ── 4. Methodology & Gate Footer ── */}
-      <div
-        style={{
-          marginTop:    20,
-          background:   TOKENS.surface,
-          border:       TOKENS.cardBorder,
-          borderRadius: TOKENS.cardRadius,
-          padding:      '20px 24px',
-          display:      'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap:          24,
-        }}
-      >
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* SECTION 5: GTM COCKPIT                                   */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <SectionHead label="GTM Founder Cockpit" />
+
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, overflow: 'hidden' }}>
+        {gtm.slice(0, 5).map((e, i) => (
+          <div key={e.company_name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 20px', borderBottom: i < gtm.length - 1 ? TOKENS.cardBorder : 'none' }}>
+            <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.company_name}</span>
+            <span style={{
+              borderRadius: 999, padding: '2px 8px', fontSize: '9px', fontWeight: 600, flexShrink: 0,
+              ...(e.stage === 'pilot_active'   ? { background: TOKENS.safeguard.pass.bg,  color: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  }
+                : e.stage === 'pilot_proposed' ? { background: 'rgba(43,92,230,0.10)', color: '#1E4A8A', border: '1px solid rgba(43,92,230,0.22)' }
+                : e.stage === 'demo_shown'     ? { background: TOKENS.accentSoft, color: TOKENS.accent, border: `1px solid rgba(199,111,61,0.25)` }
+                                               : { background: TOKENS.inkBorder, color: TOKENS.inkHint, border: TOKENS.cardBorder }),
+            }}>
+              {e.stage.replace(/_/g, ' ')}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 8, textAlign: 'right' }}>
+        <Link href="/admin/gtm" style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>Pipeline GTM →</Link>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* SECTION 6: METHODOLOGY GOVERNANCE                        */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <SectionHead label="Methodology governance" />
+
+      <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: '20px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <div>
           <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.inkHint, marginBottom: 10 }}>
-            Methodology & Gate Status
+            Gate & Methodology
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {gates.gates.map((g) => (
               <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{
-                  borderRadius: 999,
-                  padding:      '2px 8px',
-                  fontSize:     '9px',
-                  fontWeight:   700,
-                  flexShrink:   0,
-                  ...(g.status === 'CLOSED'
-                    ? { background: TOKENS.safeguard.pass.bg,  color: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  }
-                    : { background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}40` }),
-                }}>
+                <span style={{ borderRadius: 999, padding: '2px 8px', fontSize: '9px', fontWeight: 700, flexShrink: 0, ...(g.status === 'CLOSED' ? { background: TOKENS.safeguard.pass.bg, color: TOKENS.safeguard.pass.text, border: `1px solid ${TOKENS.safeguard.pass.dot}40` } : { background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}40` }) }}>
                   {g.status}
                 </span>
                 <span style={{ fontSize: '11.5px', color: TOKENS.inkSecondary }}>{g.label.split(' — ')[0]}</span>
               </div>
             ))}
           </div>
+          <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: TOKENS.inkHint, marginTop: 10 }}>
+            {gates.methodology_version_id} · {gates.calibration_status}
+          </p>
         </div>
         <div>
           <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: TOKENS.inkHint, marginBottom: 10 }}>
-            Billing & Revenue
+            Billing & Revenue (mock)
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {billing.slice(0, 3).map((b) => (
@@ -429,17 +408,8 @@ export default function KoraControlTower() {
               </div>
             ))}
           </div>
-          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '9px', color: TOKENS.inkHint, marginTop: 8, fontStyle: 'italic' }}>
-            No Stripe · No wallet · Mock only
-          </p>
+          <p style={{ fontSize: '9px', color: TOKENS.inkHint, fontStyle: 'italic', marginTop: 8 }}>No Stripe · No wallet · Mock only</p>
         </div>
-      </div>
-
-      {/* ── Governance stamp ── */}
-      <div style={{ marginTop: 16, paddingTop: 12, borderTop: TOKENS.cardBorder }}>
-        <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: TOKENS.inkHint, letterSpacing: '0.03em' }}>
-          {gates.methodology_version_id} · {gates.calibration_status} · Solo dati sintetici · synthetic_demo_data: true
-        </p>
       </div>
 
     </div>
