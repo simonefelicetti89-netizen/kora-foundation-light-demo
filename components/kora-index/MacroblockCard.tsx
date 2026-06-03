@@ -71,9 +71,9 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
         </div>
         <div className="text-right shrink-0">
           <span
-            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: scoreColor(macroblock.score), letterSpacing: '-0.02em' }}
+            style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: scoreColor(macroblock.score), letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}
           >
-            {macroblock.score}
+            {Math.round(macroblock.score)}
           </span>
           <span className="text-xs ml-0.5" style={{ color: TOKENS.inkHint }}>/100</span>
           {delta !== null && (
@@ -81,7 +81,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
               className="text-xs font-semibold mt-0.5"
               style={{ color: delta >= 0 ? TOKENS.safeguard.pass.text : TOKENS.safeguard.cap.text }}
             >
-              {delta >= 0 ? '+' : ''}{delta}
+              {delta >= 0 ? '+' : ''}{Math.round(delta)}
             </p>
           )}
         </div>

@@ -1,13 +1,15 @@
 export function formatKoraIndex(value: number): string {
-  return value.toFixed(1);
+  // Always integer — no decimal noise on the flagship score
+  return String(Math.round(value));
 }
 
 export function formatPercentage(value: number): string {
-  return `${(value * 100).toFixed(1)}%`;
+  // Always integer percentage — no .0 decimal artifacts
+  return `${Math.round(value * 100)}%`;
 }
 
 export function formatConfidenceScore(value: number): string {
-  return `${(value * 100).toFixed(0)}%`;
+  return `${Math.round(value * 100)}%`;
 }
 
 export function formatPillarCode(code: string): string {

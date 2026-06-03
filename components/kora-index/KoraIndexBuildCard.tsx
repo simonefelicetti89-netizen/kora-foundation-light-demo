@@ -31,7 +31,7 @@ export function KoraIndexBuildCard({ output, safeguard, aggregate }: KoraIndexBu
     { num: 2, label: 'UEF approvati',                        detail: `${activeWorkers} lavoratori con eventi normalizzati`,                        note: 'Ogni UEF ha pillar, fonte, livello evidenza e review umana' },
     { num: 3, label: 'Impact Units → PIB',                   detail: 'IU per evento per pillar · aggregati nel PIB individuale',                   note: 'Il PIB è obbligatorio, non bypassabile e mai visibile al datore di lavoro' },
     { num: 4, label: 'Activation Safeguard',                 detail: `${arPct} · ${marPct} · ${safeguardStatus}`,                                  note: "Verifica che l'attivazione sia abbastanza ampia e significativa" },
-    { num: 5, label: 'KORA Index + Confidence Score',        detail: `KORA Index ${output.kora_index_value} / 100 · Confidence ${confPct}`,        note: 'Output inseparabile — taggato con methodology_version_id e calibration_status' },
+    { num: 5, label: 'KORA Index + Confidence Score',        detail: `KORA Index ${Math.round(output.kora_index_value)} / 100 · Confidence ${confPct}`,        note: 'Output inseparabile — taggato con methodology_version_id e calibration_status' },
   ];
 
   return (

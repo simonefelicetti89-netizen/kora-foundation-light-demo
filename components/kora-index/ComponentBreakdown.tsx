@@ -56,7 +56,7 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
         >
           Componenti analitici (9) — ogni componente alimenta il proprio macroblocco, non il KORA Index direttamente
         </p>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {OPERATIONAL_CODES.map((code) => {
             const comp          = components?.find((c) => c.code === code);
             const value         = comp?.value ?? null;
@@ -78,56 +78,33 @@ export function ComponentBreakdown({ components, className }: ComponentBreakdown
                   gap:          '8px',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <span
-                      style={{
-                        display:       'inline-flex',
-                        alignItems:    'center',
-                        borderRadius:  '4px',
-                        border:        TOKENS.cardBorder,
-                        background:    TOKENS.inkBorder,
-                        padding:       '1px 6px',
-                        fontSize:      '8px',
-                        fontWeight:    600,
-                        letterSpacing: '0.06em',
-                        textTransform: 'uppercase',
-                        color:         TOKENS.inkHint,
-                      }}
-                    >
-                      Componente analitico
-                    </span>
-                    <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginTop: '4px' }}>
+                {/* Top row: code identity + value — value in its own block, never touches definition */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                    <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {code}
                     </p>
-                    <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: '1px' }}>
+                    <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '10px', color: TOKENS.inkHint, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {COMPONENT_LABELS[code]}
                     </p>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p
-                      style={{
-                        fontFamily:         'var(--font-jakarta)',
-                        fontWeight:         700,
-                        fontSize:           '20px',
-                        color:              TOKENS.ink,
-                        lineHeight:         1,
-                        fontVariantNumeric: 'tabular-nums',
-                        letterSpacing:      '-0.02em',
-                      }}
-                    >
+                  {/* Value block: self-contained, never wraps, never adjacent to definition text */}
+                  <div style={{ flexShrink: 0, textAlign: 'right', minWidth: 44 }}>
+                    <p style={{
+                      fontFamily:         'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                      fontWeight:         700,
+                      fontSize:           '18px',
+                      color:              TOKENS.ink,
+                      lineHeight:         1,
+                      fontVariantNumeric: 'tabular-nums',
+                      letterSpacing:      '-0.02em',
+                      whiteSpace:         'nowrap',
+                    }}>
                       {value !== null ? formatPercentage(value) : '—'}
                     </p>
-                    {weight !== null && (
-                      <p
-                        style={{
-                          fontFamily:    'monospace',
-                          fontSize:      '9px',
-                          color:         TOKENS.inkHint,
-                          marginTop:     '2px',
-                        }}
-                      >
-                        w: {formatPercentage(weight)}
+                    {weight !== null && weight > 0 && (
+                      <p style={{ fontFamily: 'ui-monospace, monospace', fontSize: '8.5px', color: TOKENS.inkHint, marginTop: '3px', whiteSpace: 'nowrap' }}>
+                        {formatPercentage(weight)}
                       </p>
                     )}
                   </div>

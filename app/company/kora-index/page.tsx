@@ -280,7 +280,7 @@ export default function KoraIndexDetail() {
                       )}
                     </div>
                     <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 700, fontSize: '30px', color: isActive ? '#FFF' : TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1 }}>
-                      {out.kora_index_value}
+                      {Math.round(out.kora_index_value)}
                       <span style={{ fontSize: '14px', color: isActive ? 'rgba(255,255,255,0.35)' : TOKENS.inkHint, marginLeft: 4 }}>/100</span>
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>

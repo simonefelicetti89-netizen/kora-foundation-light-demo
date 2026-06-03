@@ -155,7 +155,7 @@ export function deriveInsights(params: {
     const isLow = weakest.score < 50;
     insights.push({
       signal:      `${weakest.code === 'BTI' ? 'Budget-to-Impact' : weakest.code} è il macroblocco critico`,
-      finding:     `${weakest.code} score ${weakest.score}/100 (peso ${Math.round(weakest.weight * 100)}%) vs ${strongest.code} ${strongest.score}/100.`,
+      finding:     `${weakest.code} score ${Math.round(weakest.score)}/100 (peso ${Math.round(weakest.weight * 100)}%) — ${strongest.code} è il punto di forza con ${Math.round(strongest.score)}/100.`,
       implication: isLow
         ? `Migliorare ${weakest.code} avrebbe impatto diretto sul KORA Index™ per il peso assegnato.`
         : `Il gap è gestibile — azioni mirate possono chiudere il delta.`,
