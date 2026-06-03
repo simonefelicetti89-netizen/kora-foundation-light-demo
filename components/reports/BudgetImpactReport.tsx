@@ -38,7 +38,7 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
 
   if (!s1Record && !s2Record) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-400">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 text-sm text-[rgba(6,3,43,0.40)]">
         Dati BTI non disponibili per questo scenario.
       </div>
     );
@@ -122,10 +122,10 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
     <div className="space-y-5">
 
       {/* ── D. Budget-to-Human-Impact Summary ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">D — Budget-to-Human-Impact Summary</p>
-          <p className="text-xs text-slate-400 mt-1 italic">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">D — Budget-to-Human-Impact Summary</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1 italic">
             Budget allocated ≠ Budget activated · Budget spent ≠ Human impact · Economic relief ≠ human activation
           </p>
         </div>
@@ -133,32 +133,32 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="py-2 text-left text-xs font-semibold text-slate-400 w-64">Metrica</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">Δ</th>
+              <tr className="border-b border-[rgba(6,3,43,0.05)]">
+                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-64">Metrica</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-[rgba(6,3,43,0.05)]50">
               {budgetRows.map((row) => (
-                <tr key={row.label} className="hover:bg-slate-50 transition-colors group">
+                <tr key={row.label} className="hover:bg-[rgba(6,3,43,0.03)] transition-colors group">
                   <td className="py-2.5 pr-4">
-                    <p className="text-xs font-medium text-slate-700">{row.label}</p>
+                    <p className="text-xs font-medium text-[rgba(6,3,43,0.78)]">{row.label}</p>
                     {row.note && (
-                      <p className="text-[10px] text-slate-400 leading-relaxed mt-0.5">{row.note}</p>
+                      <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed mt-0.5">{row.note}</p>
                     )}
                   </td>
-                  <td className="py-2.5 text-right font-mono text-xs text-slate-600">{row.s1}</td>
-                  <td className={`py-2.5 text-right font-mono text-xs font-semibold ${activeScenario === 'S2' ? 'text-slate-800' : 'text-slate-600'}`}>
+                  <td className="py-2.5 text-right font-mono text-xs text-[rgba(6,3,43,0.62)]">{row.s1}</td>
+                  <td className={`py-2.5 text-right font-mono text-xs font-semibold ${activeScenario === 'S2' ? 'text-[rgba(6,3,43,0.90)]' : 'text-[rgba(6,3,43,0.62)]'}`}>
                     {row.s2}
                   </td>
                   <td className="py-2.5 text-right">
                     {row.delta != null ? (
-                      <span className={`font-mono text-[11px] font-bold ${row.deltaPositive ? 'text-emerald-600' : row.deltaPositive === false ? 'text-slate-500' : 'text-slate-400'}`}>
+                      <span className={`font-mono text-[11px] font-bold ${row.deltaPositive ? 'text-emerald-600' : row.deltaPositive === false ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]'}`}>
                         {row.delta}
                       </span>
-                    ) : <span className="text-slate-200">—</span>}
+                    ) : <span className="text-[rgba(6,3,43,0.16)]">—</span>}
                   </td>
                 </tr>
               ))}
@@ -179,68 +179,68 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
         {/* Activation debt descriptions */}
         {activeRecord && (
           <div className="space-y-3">
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 space-y-1.5">
-              <p className="text-[11px] font-semibold text-slate-600">Activation Debt — descrizione</p>
-              <p className="text-[11px] text-slate-500 leading-relaxed">{activeRecord.activation_debt_description_it}</p>
+            <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] p-3 space-y-1.5">
+              <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)]">Activation Debt — descrizione</p>
+              <p className="text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed">{activeRecord.activation_debt_description_it}</p>
             </div>
-            <div className="rounded-lg border border-slate-100 bg-slate-50 p-3 space-y-1.5">
-              <p className="text-[11px] font-semibold text-slate-600">Reallocation Opportunity — descrizione</p>
-              <p className="text-[11px] text-slate-500 leading-relaxed">{activeRecord.reallocation_opportunity_description_it}</p>
+            <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] p-3 space-y-1.5">
+              <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)]">Reallocation Opportunity — descrizione</p>
+              <p className="text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed">{activeRecord.reallocation_opportunity_description_it}</p>
             </div>
           </div>
         )}
 
-        <p className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-3">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-3">
           Vista informativa — {activeRecord?.disclaimer ?? 'KORA non gestisce fondi, non esegue pagamenti, non fornisce consulenza fiscale. Correlazione ≠ causalità.'}
         </p>
       </div>
 
       {/* ── E. Macroblock Breakdown ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">E — Macroblock Breakdown — S1 vs S2</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">E — Macroblock Breakdown — S1 vs S2</p>
 
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="py-2 text-left text-xs font-semibold text-slate-400">Macroblock</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">Peso</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">Δ</th>
-                <th className="py-2 text-left pl-4 text-xs font-semibold text-slate-400">Driver / Segnale</th>
+              <tr className="border-b border-[rgba(6,3,43,0.05)]">
+                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)]">Macroblock</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S1</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">S2</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
+                <th className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Driver / Segnale</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-[rgba(6,3,43,0.05)]50">
               {s1Macroblocks.map((mb) => {
                 const s2mb = s2Macroblocks.find((m) => m.code === mb.code);
                 const delta = s2mb ? s2mb.score - mb.score : null;
-                const accent = MB_ACCENT[mb.code] ?? 'text-slate-700';
+                const accent = MB_ACCENT[mb.code] ?? 'text-[rgba(6,3,43,0.78)]';
                 const activeMb = activeScenario === 'S2' ? s2mb : mb;
                 return (
-                  <tr key={mb.code} className="hover:bg-slate-50 transition-colors">
+                  <tr key={mb.code} className="hover:bg-[rgba(6,3,43,0.03)] transition-colors">
                     <td className="py-3 pr-3">
                       <span className={`font-semibold text-sm ${accent}`}>{mb.label}</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className="font-mono text-xs text-slate-500">{Math.round(mb.weight * 100)}%</span>
+                      <span className="font-mono text-xs text-[rgba(6,3,43,0.52)]">{Math.round(mb.weight * 100)}%</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className="font-mono font-bold text-slate-700">{mb.score}</span>
+                      <span className="font-mono font-bold text-[rgba(6,3,43,0.78)]">{mb.score}</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className={`font-mono font-bold ${activeScenario === 'S2' ? 'text-slate-900' : 'text-slate-700'}`}>
+                      <span className={`font-mono font-bold ${activeScenario === 'S2' ? 'text-[#06032B]' : 'text-[rgba(6,3,43,0.78)]'}`}>
                         {s2mb?.score ?? '—'}
                       </span>
                     </td>
                     <td className="py-3 text-right">
                       {delta !== null ? (
-                        <span className={`font-mono text-xs font-bold ${delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                        <span className={`font-mono text-xs font-bold ${delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-rose-600' : 'text-[rgba(6,3,43,0.40)]'}`}>
                           {delta > 0 ? '+' : ''}{delta}
                         </span>
-                      ) : <span className="text-slate-300">—</span>}
+                      ) : <span className="text-[rgba(6,3,43,0.28)]">—</span>}
                     </td>
-                    <td className="py-3 pl-4 text-[11px] text-slate-500 max-w-xs">
+                    <td className="py-3 pl-4 text-[11px] text-[rgba(6,3,43,0.52)] max-w-xs">
                       {activeMb?.main_driver && (
                         <span>{activeMb.main_driver}</span>
                       )}
@@ -258,8 +258,8 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
             {(activeScenario === 'S2' ? s2Macroblocks : s1Macroblocks)
               .filter(mb => mb.risk_opportunity)
               .map(mb => (
-                <div key={mb.code} className="flex gap-2 text-[11px] text-slate-500">
-                  <span className={`font-bold shrink-0 ${MB_ACCENT[mb.code] ?? 'text-slate-600'}`}>{mb.label}:</span>
+                <div key={mb.code} className="flex gap-2 text-[11px] text-[rgba(6,3,43,0.52)]">
+                  <span className={`font-bold shrink-0 ${MB_ACCENT[mb.code] ?? 'text-[rgba(6,3,43,0.62)]'}`}>{mb.label}:</span>
                   <span className="leading-relaxed">{mb.risk_opportunity}</span>
                 </div>
               ))}

@@ -33,14 +33,14 @@ const ADDITIONALITY_BADGE: Record<string, { bg: string; text: string; label: str
   mandatory_legal_minimum:        { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   label: 'Minimo legale'       },
   additional_beyond_requirement:  { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  label: 'Oltre il minimo'     },
   strategic_company_initiative:   { bg: 'rgba(43,92,230,0.10)',    text: '#1B2A4A',                   label: 'Iniziativa strategica' },
-  collective_verified_initiative: { bg: 'rgba(97,86,245,0.10)',    text: TOKENS.accent,               label: 'Collettiva verificata' },
+  collective_verified_initiative: { bg: 'rgba(199,111,61,0.10)',    text: TOKENS.accent,               label: 'Collettiva verificata' },
 };
 
 const REVIEW_STATUS_BADGE: Record<string, { bg: string; text: string; label: string }> = {
   approved:                    { bg: TOKENS.safeguard.pass.bg,   text: TOKENS.safeguard.pass.text,  label: 'Approvato KORA'              },
   under_kora_review:           { bg: TOKENS.safeguard.watch.bg,  text: TOKENS.safeguard.watch.text, label: 'In Revisione KORA'           },
   advisor_review_required:     { bg: 'rgba(186,117,23,0.12)',    text: '#854F0B',                   label: 'Revisione Advisor Richiesta' },
-  partner_validation_required: { bg: 'rgba(97,86,245,0.10)',     text: TOKENS.accent,               label: 'Validazione Partner Richiesta' },
+  partner_validation_required: { bg: 'rgba(199,111,61,0.10)',     text: TOKENS.accent,               label: 'Validazione Partner Richiesta' },
   blocked_by_design:           { bg: TOKENS.safeguard.cap.bg,    text: TOKENS.safeguard.cap.text,   label: 'Escluso per Design'          },
 };
 

@@ -120,7 +120,7 @@ const ELIG_BADGE: Record<string, string> = {
   blocked:  'bg-red-100 text-red-800 border-red-200',
 };
 const STATUS_BADGE: Record<string, string> = {
-  pending_review: 'bg-slate-100 text-slate-600 border-slate-200',
+  pending_review: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
   approved:       'bg-green-100 text-green-700 border-green-200',
   rejected:       'bg-red-100 text-red-700 border-red-200',
   needs_info:     'bg-amber-100 text-amber-700 border-amber-200',
@@ -355,7 +355,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           <p className="text-sm text-white/45 mt-0.5">B5 — Raw-to-UEF Interpreter · human review required</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
             <span className="rounded border border-red-400/40 bg-red-400/10 px-2 py-0.5 text-[10px] font-semibold text-red-300">Scoring remains locked until B6.</span>
@@ -371,7 +371,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           'Rule-based interpreter — no LLM.',
           'Human review required for each candidate.',
         ].map(m => (
-          <span key={m} className="text-[10px] border border-slate-200 bg-slate-50 rounded px-2 py-0.5 text-slate-500 font-medium">{m}</span>
+          <span key={m} className="text-[10px] border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] rounded px-2 py-0.5 text-[rgba(6,3,43,0.52)] font-medium">{m}</span>
         ))}
       </div>
 
@@ -384,18 +384,18 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
         {/* ── Left: batch selector ── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Batches</p>
+            <p className="text-xs font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Batches</p>
             <button onClick={loadBatches}
-              className="text-[10px] text-slate-400 underline hover:text-slate-700 transition-colors">
+              className="text-[10px] text-[rgba(6,3,43,0.40)] underline hover:text-[rgba(6,3,43,0.78)] transition-colors">
               ↻ Refresh
             </button>
           </div>
 
-          {batchesLoading && <p className="text-xs text-slate-400">Loading batches…</p>}
+          {batchesLoading && <p className="text-xs text-[rgba(6,3,43,0.40)]">Loading batches…</p>}
           {batchesErr    && <p className="text-xs text-red-600">⚠ {batchesErr}</p>}
 
           {!batchesLoading && batches.length === 0 && (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-400">
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)]">
               No CSV batches pending review. Accept a CSV batch via Data Intake first.
             </div>
           )}
@@ -403,18 +403,18 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           {batches.map(b => (
             <div key={b.batchId}
               onClick={() => b.canReview && selectBatch(b.batchId)}
-              className={`rounded-lg border px-4 py-3 space-y-2 cursor-pointer transition-colors ${selectedBatchId === b.batchId ? 'border-[#C76F3D] bg-[#f5f4ff]' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+              className={`rounded-lg border px-4 py-3 space-y-2 cursor-pointer transition-colors ${selectedBatchId === b.batchId ? 'border-[#C76F3D] bg-[#f5f4ff]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] hover:border-[rgba(6,3,43,0.14)]'}`}>
               <div className="flex items-start justify-between gap-2">
                 <div>
                   {/* B9.1: tenant label for multi-tenant clarity */}
                   {b.companyName && (
                     <p className="text-[10px] font-semibold text-[#C76F3D] mb-0.5">{b.companyName} <span className="font-mono opacity-75">· {b.tenantCode}</span></p>
                   )}
-                  <p className="text-xs font-semibold text-slate-800 break-all">{b.sourceName ?? b.batchId.slice(0, 12) + '…'}</p>
+                  <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)] break-all">{b.sourceName ?? b.batchId.slice(0, 12) + '…'}</p>
                 </div>
                 <Badge label={b.batchStatus} cls={b.batchStatus === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-amber-50 text-amber-700 border-amber-200'} />
               </div>
-              <div className="flex flex-wrap gap-2 text-[10px] text-slate-500">
+              <div className="flex flex-wrap gap-2 text-[10px] text-[rgba(6,3,43,0.52)]">
                 <span>Period: {b.reportingPeriod}</span>
                 <span>Rows: {b.rowCount}</span>
                 <span>Candidates: {b.candidateCount}</span>
@@ -435,13 +435,13 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
         <div className="space-y-3">
 
           {!selectedBatchId && (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-5 py-8 text-center text-sm text-slate-400">
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-5 py-8 text-center text-sm text-[rgba(6,3,43,0.40)]">
               Select a batch to review UEF candidates.
             </div>
           )}
 
           {selectedBatchId && candidatesLoading && (
-            <p className="text-xs text-slate-400">Loading candidates…</p>
+            <p className="text-xs text-[rgba(6,3,43,0.40)]">Loading candidates…</p>
           )}
 
           {selectedBatchId && candidatesErr && (
@@ -451,23 +451,23 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           {/* Summary bar */}
           {summary && summary.total > 0 && (
             <div className="flex flex-wrap gap-3 text-[10px]">
-              <span className="text-slate-500">Total: <strong>{summary.total}</strong></span>
+              <span className="text-[rgba(6,3,43,0.52)]">Total: <strong>{summary.total}</strong></span>
               <span className="text-green-700">Approved: <strong>{summary.approved}</strong></span>
               <span className="text-red-700">Rejected: <strong>{summary.rejected}</strong></span>
               <span className="text-amber-700">Needs info: <strong>{summary.needsInfo}</strong></span>
-              <span className="text-slate-500">Pending: <strong>{summary.pending}</strong></span>
-              <span className="text-slate-500">Avg confidence: <strong>{Math.round(summary.avgConfidence * 100)}%</strong></span>
+              <span className="text-[rgba(6,3,43,0.52)]">Pending: <strong>{summary.pending}</strong></span>
+              <span className="text-[rgba(6,3,43,0.52)]">Avg confidence: <strong>{Math.round(summary.avgConfidence * 100)}%</strong></span>
             </div>
           )}
 
           {/* Candidate cards */}
           {candidates.map(c => (
-            <div key={c.id} className="rounded-lg border border-slate-200 bg-white px-4 py-4 space-y-3">
+            <div key={c.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-4 space-y-3">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex-1">
-                  <p className="text-sm font-semibold text-slate-800">{c.rawName}</p>
+                  <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{c.rawName}</p>
                   <div className="flex flex-wrap gap-1.5 mt-1">
-                    {c.eventType && <span className="text-[10px] font-mono bg-slate-100 text-slate-600 rounded px-1.5 py-0.5">{c.eventType}</span>}
+                    {c.eventType && <span className="text-[10px] font-mono bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] rounded px-1.5 py-0.5">{c.eventType}</span>}
                     {c.pillar    && <span className="text-[10px] font-semibold bg-[#C76F3D]/10 text-[#C76F3D] rounded px-1.5 py-0.5">{c.pillar}</span>}
                     {c.eligibility && <Badge label={c.eligibility} cls={ELIG_BADGE[c.eligibility] ?? ''} />}
                   </div>
@@ -481,7 +481,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               </div>
 
               {/* Details grid */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[10px] text-slate-500">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[10px] text-[rgba(6,3,43,0.52)]">
                 {c.budgetAmount      != null && <span>Budget: <strong>€{c.budgetAmount.toLocaleString('it-IT')}</strong></span>}
                 {c.participants      != null && <span>Participants: <strong>{c.participants}</strong></span>}
                 {c.evidenceLevel     != null && <span>Evidence: <strong>{c.evidenceLevel}</strong></span>}
@@ -497,7 +497,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   <span className="rounded border border-orange-300 bg-orange-50 px-2 py-0.5 text-[10px] font-semibold text-orange-700">
                     ⚡ Enrichment needed: {c.enrichmentMissingFields.join(', ')}
                   </span>
-                  {c.b11Enriched && <span className="text-[9px] text-slate-400">Partially enriched by {c.enrichedBy ?? '—'}</span>}
+                  {c.b11Enriched && <span className="text-[9px] text-[rgba(6,3,43,0.40)]">Partially enriched by {c.enrichedBy ?? '—'}</span>}
                   <button
                     onClick={() => enrichOpen === c.id ? setEnrichOpen(null) : openEnrich(c)}
                     className="text-[10px] font-medium text-[#C76F3D] underline hover:no-underline transition-all">
@@ -515,73 +515,73 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                   <p className="text-[10px] font-bold text-orange-700 uppercase tracking-wide">Enrichment manuale</p>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[10px]">
                     <label className="space-y-0.5">
-                      <span className="text-slate-500 font-medium">Initiative Domain</span>
+                      <span className="text-[rgba(6,3,43,0.52)] font-medium">Initiative Domain</span>
                       <select value={enrichForm.initiativeDomain} onChange={e => setEnrichForm(f => ({ ...f, initiativeDomain: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {DOMAIN_OPTIONS.map(d => <option key={d} value={d}>{d}</option>)}
                       </select>
                     </label>
                     <label className="space-y-0.5">
-                      <span className="text-slate-500 font-medium">Event Type</span>
+                      <span className="text-[rgba(6,3,43,0.52)] font-medium">Event Type</span>
                       <select value={enrichForm.eventType} onChange={e => setEnrichForm(f => ({ ...f, eventType: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {EVENT_TYPE_OPTS.map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
                     </label>
                     <label className="space-y-0.5">
-                      <span className="text-slate-500 font-medium">Eligibility</span>
+                      <span className="text-[rgba(6,3,43,0.52)] font-medium">Eligibility</span>
                       <select value={enrichForm.eligibilityClass} onChange={e => setEnrichForm(f => ({ ...f, eligibilityClass: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {ELIG_OPTS.map(o => <option key={o} value={o}>{o}</option>)}
                       </select>
                     </label>
                     <label className="space-y-0.5">
-                      <span className="text-slate-500 font-medium">Pillar</span>
+                      <span className="text-[rgba(6,3,43,0.52)] font-medium">Pillar</span>
                       <select value={enrichForm.pillar} onChange={e => setEnrichForm(f => ({ ...f, pillar: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {PILLAR_OPTIONS.map(p => <option key={p} value={p}>{p}</option>)}
                       </select>
                     </label>
                     <label className="space-y-0.5">
-                      <span className="text-slate-500 font-medium">Budget Class</span>
+                      <span className="text-[rgba(6,3,43,0.52)] font-medium">Budget Class</span>
                       <select value={enrichForm.budgetClass} onChange={e => setEnrichForm(f => ({ ...f, budgetClass: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {BUDGET_CLS_OPTS.map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
                     </label>
                     <label className="space-y-0.5">
-                      <span className="text-slate-500 font-medium">Evidence Level</span>
+                      <span className="text-[rgba(6,3,43,0.52)] font-medium">Evidence Level</span>
                       <select value={enrichForm.evidenceLevel} onChange={e => setEnrichForm(f => ({ ...f, evidenceLevel: e.target.value }))}
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 bg-white focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] bg-[#F8F6F1] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                         <option value="">— non cambiare —</option>
                         {EVID_OPTS.map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
                     </label>
                     <label className="space-y-0.5">
-                      <span className="text-slate-500 font-medium">Budget Amount (€)</span>
+                      <span className="text-[rgba(6,3,43,0.52)] font-medium">Budget Amount (€)</span>
                       <input type="number" min={0} value={enrichForm.budgetAmount}
                         onChange={e => setEnrichForm(f => ({ ...f, budgetAmount: e.target.value }))}
                         placeholder="es. 12500"
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
                     </label>
                     <label className="space-y-0.5">
-                      <span className="text-slate-500 font-medium">Budget Source</span>
+                      <span className="text-[rgba(6,3,43,0.52)] font-medium">Budget Source</span>
                       <input type="text" value={enrichForm.budgetSource}
                         onChange={e => setEnrichForm(f => ({ ...f, budgetSource: e.target.value }))}
                         placeholder="es. export fornitore welfare"
-                        className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                        className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
                     </label>
                   </div>
                   <label className="block space-y-0.5 text-[10px]">
-                    <span className="text-slate-500 font-medium">Note enrichment (max 500 car.)</span>
+                    <span className="text-[rgba(6,3,43,0.52)] font-medium">Note enrichment (max 500 car.)</span>
                     <textarea rows={2} value={enrichForm.notes} maxLength={500}
                       onChange={e => setEnrichForm(f => ({ ...f, notes: e.target.value }))}
-                      className="block w-full rounded border border-slate-300 px-2 py-1 text-[11px] text-slate-700 resize-none focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                      className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] resize-none focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
                   </label>
                   <div className="flex items-center gap-3 pt-1">
                     <button
@@ -591,7 +591,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                       {enrichStatus[c.id] === 'loading' ? '⏳ Saving…' : '✓ Salva enrichment'}
                     </button>
                     <button onClick={() => setEnrichOpen(null)}
-                      className="text-[10px] text-slate-400 underline hover:text-slate-600 transition-colors">
+                      className="text-[10px] text-[rgba(6,3,43,0.40)] underline hover:text-[rgba(6,3,43,0.62)] transition-colors">
                       Annulla
                     </button>
                   </div>
@@ -607,9 +607,9 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               {c.reasonCodes.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {c.reasonCodes.slice(0, 6).map(rc => (
-                    <span key={rc} className="text-[9px] font-mono bg-slate-50 border border-slate-200 text-slate-500 rounded px-1.5 py-0.5">{rc}</span>
+                    <span key={rc} className="text-[9px] font-mono bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.08)] text-[rgba(6,3,43,0.52)] rounded px-1.5 py-0.5">{rc}</span>
                   ))}
-                  {c.reasonCodes.length > 6 && <span className="text-[9px] text-slate-400">+{c.reasonCodes.length - 6} more</span>}
+                  {c.reasonCodes.length > 6 && <span className="text-[9px] text-[rgba(6,3,43,0.40)]">+{c.reasonCodes.length - 6} more</span>}
                 </div>
               )}
 
@@ -624,7 +624,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
               {/* Action buttons */}
               {c.reviewStatus === 'pending_review' && (
-                <div className="flex gap-2 flex-wrap pt-1 border-t border-slate-100">
+                <div className="flex gap-2 flex-wrap pt-1 border-t border-[rgba(6,3,43,0.05)]">
                   <button
                     onClick={() => handleAction(c.id, 'approve')}
                     disabled={actionState[c.id] === 'loading'}
@@ -647,7 +647,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                 </div>
               )}
               {c.reviewStatus !== 'pending_review' && (
-                <p className="text-[10px] text-slate-400 pt-1 border-t border-slate-100">
+                <p className="text-[10px] text-[rgba(6,3,43,0.40)] pt-1 border-t border-[rgba(6,3,43,0.05)]">
                   {c.reviewStatus === 'approved' ? `✓ Approved by ${c.reviewedAt ? new Date(c.reviewedAt).toLocaleDateString('it-IT') : '—'}` : `Status: ${c.reviewStatus}`}
                   {c.approvedForScoring && ' · Approved for scoring (B6)'}
                 </p>
@@ -660,11 +660,11 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
       {/* ── B6: Live Scoring panel ── */}
       {selectedBatchId && summary && summary.approved > 0 && (
-        <div className="rounded-lg border border-[#06032B] bg-white px-5 py-4 space-y-3">
+        <div className="rounded-lg border border-[#06032B] bg-[#F8F6F1] px-5 py-4 space-y-3">
           <div className="flex items-start justify-between flex-wrap gap-2">
             <div>
               <p className="text-xs font-bold text-[#06032B] uppercase tracking-wide">Run Live Scoring</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">Only approved UEF records enter scoring.</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">Only approved UEF records enter scoring.</p>
             </div>
             <span className="rounded border border-green-200 bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
               {summary.approved} approved
@@ -681,7 +681,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               placeholder="workforcePopulation (≥10)"
               value={scoringWfPop}
               onChange={e => setScoringWfPop(e.target.value)}
-              className="rounded border border-slate-300 px-3 py-1.5 text-xs text-slate-700 w-56 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="rounded border border-[rgba(6,3,43,0.14)] px-3 py-1.5 text-xs text-[rgba(6,3,43,0.78)] w-56 focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
             <button
               onClick={() => handleRunScoring(selectedBatchId)}
@@ -696,16 +696,16 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
             <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 space-y-2">
               <p className="text-xs font-bold text-green-700">✓ Decision Pack generated from approved UEF records.</p>
               <div className="grid grid-cols-3 gap-x-4 gap-y-1 text-[10px]">
-                <span className="text-slate-500">KORA Index <strong className="text-slate-900 tabular-nums text-base">{scoringResult.koraIndex ?? '—'}</strong></span>
-                <span className="text-slate-500">Confidence <strong className="text-slate-900 tabular-nums">{scoringResult.confidenceScore != null ? `${scoringResult.confidenceScore}%` : '—'}</strong></span>
-                <span className="text-slate-500">Safeguard <strong className="text-slate-900">{scoringResult.safeguard ?? '—'}</strong></span>
-                <span className="text-slate-500">AR <strong className="tabular-nums text-slate-900">{scoringResult.activationRate != null ? `${Math.round(scoringResult.activationRate * 100)}%` : '—'}</strong></span>
-                <span className="text-slate-500">MAR <strong className="tabular-nums text-slate-900">{scoringResult.meaningfulActivationRate != null ? `${Math.round(scoringResult.meaningfulActivationRate * 100)}%` : '—'}</strong></span>
-                <span className="text-slate-500">UEF count <strong className="text-slate-900">{scoringResult.approvedUefCount}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">KORA Index <strong className="text-[#06032B] tabular-nums text-base">{scoringResult.koraIndex ?? '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">Confidence <strong className="text-[#06032B] tabular-nums">{scoringResult.confidenceScore != null ? `${scoringResult.confidenceScore}%` : '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">Safeguard <strong className="text-[#06032B]">{scoringResult.safeguard ?? '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">AR <strong className="tabular-nums text-[#06032B]">{scoringResult.activationRate != null ? `${Math.round(scoringResult.activationRate * 100)}%` : '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">MAR <strong className="tabular-nums text-[#06032B]">{scoringResult.meaningfulActivationRate != null ? `${Math.round(scoringResult.meaningfulActivationRate * 100)}%` : '—'}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">UEF count <strong className="text-[#06032B]">{scoringResult.approvedUefCount}</strong></span>
               </div>
               {scoringResult.decisionPack && (
-                <p className="text-[10px] text-slate-500">
-                  Decision Pack: <span className="font-mono text-slate-700">{scoringResult.decisionPack.versionId}</span> · <span className="font-semibold">{scoringResult.decisionPack.status}</span>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
+                  Decision Pack: <span className="font-mono text-[rgba(6,3,43,0.78)]">{scoringResult.decisionPack.versionId}</span> · <span className="font-semibold">{scoringResult.decisionPack.status}</span>
                 </p>
               )}
               <div className="flex gap-2 flex-wrap pt-1 border-t border-green-100">
@@ -736,7 +736,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
       )}
 
       {selectedBatchId && summary && summary.approved === 0 && summary.total > 0 && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-400">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs text-[rgba(6,3,43,0.40)]">
           No approved records yet. Approve UEF candidates above to enable scoring.
         </div>
       )}

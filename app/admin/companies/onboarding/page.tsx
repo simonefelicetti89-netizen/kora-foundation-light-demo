@@ -17,11 +17,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  not_started:                  'bg-slate-100 text-slate-500 border-slate-200',
+  not_started:                  'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   profile_complete:             'bg-blue-50 text-blue-700 border-blue-200',
   workforce_baseline_complete:  'bg-blue-50 text-blue-700 border-blue-200',
-  program_data_loaded:          'bg-indigo-50 text-indigo-700 border-indigo-200',
-  hr_kpi_loaded:                'bg-violet-50 text-violet-700 border-violet-200',
+  program_data_loaded:          'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
+  hr_kpi_loaded:                'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]',
   ready_for_scoring:            'bg-amber-50 text-amber-700 border-amber-200',
   fully_onboarded:              'bg-green-50 text-green-700 border-green-200',
 };
@@ -36,8 +36,8 @@ function ReadinessCheck({ check }: { check: OnboardingReadinessCheck }) {
           {isOk ? '✓' : isBlocking ? '✕' : '!'}
         </span>
         <div>
-          <p className="text-xs font-semibold text-slate-800">{check.label}</p>
-          <p className="text-[10px] text-slate-500 mt-0.5">{check.detail}</p>
+          <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{check.label}</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">{check.detail}</p>
           {isBlocking && (
             <span className="text-[9px] font-semibold text-rose-600 uppercase tracking-wide">Bloccante</span>
           )}
@@ -58,7 +58,7 @@ export default function AdminOnboardingStudio() {
   const suppressedClusters = companyOnboardingService.getPrivacyThresholdWarnings(selectedId);
   const isEligible = companyOnboardingService.isFoundationLightEligible(selectedId);
 
-  if (!record) return <div className="p-8 text-sm text-slate-500">Azienda non trovata.</div>;
+  if (!record) return <div className="p-8 text-sm text-[rgba(6,3,43,0.52)]">Azienda non trovata.</div>;
 
   const { profile, workforce_baseline, program_data_summary, readiness_checks, pipeline_links } = record;
 
@@ -67,17 +67,17 @@ export default function AdminOnboardingStudio() {
 
       {/* ── Header ── */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           KORA Admin — Onboarding Azienda Cliente
         </p>
-        <h1 className="text-xl font-bold text-slate-900 mt-0.5">Company Onboarding Studio</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-xl font-bold text-[#06032B] mt-0.5">Company Onboarding Studio</h1>
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
           Gestione onboarding, validazione dati e pipeline readiness per l&apos;azienda cliente.
         </p>
       </div>
 
       {/* ── Admin identity ── */}
-      <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
         <p>
           <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
           Questa sezione è riservata agli operatori KORA.
@@ -86,8 +86,8 @@ export default function AdminOnboardingStudio() {
       </div>
 
       {/* ── Company selector ── */}
-      <div className="rounded-lg border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold text-slate-600 uppercase tracking-widest">Seleziona Azienda Cliente</p>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] uppercase tracking-widest">Seleziona Azienda Cliente</p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {companies.map((c) => (
             <button
@@ -95,12 +95,12 @@ export default function AdminOnboardingStudio() {
               onClick={() => setSelectedId(c.company_id)}
               className={cn(
                 'rounded-lg border p-4 text-left transition-colors',
-                selectedId === c.company_id ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white hover:border-slate-300',
+                selectedId === c.company_id ? 'border-indigo-300 bg-[rgba(199,111,61,0.08)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] hover:border-[rgba(6,3,43,0.14)]',
               )}
             >
-              <p className="text-sm font-semibold text-slate-800">{c.company_name}</p>
-              <p className="text-xs text-slate-500 mt-0.5">{c.profile.employee_count} lavoratori · {c.profile.sector}</p>
-              <span className={cn('mt-2 inline-block rounded border px-1.5 py-0.5 text-[10px]', STATUS_COLORS[c.onboarding_status] ?? 'bg-slate-100 text-slate-500')}>
+              <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{c.company_name}</p>
+              <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">{c.profile.employee_count} lavoratori · {c.profile.sector}</p>
+              <span className={cn('mt-2 inline-block rounded border px-1.5 py-0.5 text-[10px]', STATUS_COLORS[c.onboarding_status] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]')}>
                 {STATUS_LABELS[c.onboarding_status] ?? c.onboarding_status}
               </span>
             </button>
@@ -131,8 +131,8 @@ export default function AdminOnboardingStudio() {
       </div>
 
       {/* ── Company profile ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Profilo Azienda Cliente</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Profilo Azienda Cliente</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {[
             ['Forma giuridica', profile.legal_form],
@@ -143,16 +143,16 @@ export default function AdminOnboardingStudio() {
             ['Ruolo referente', profile.contact_role],
           ].map(([label, value]) => (
             <div key={label as string}>
-              <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wide">{label}</p>
-              <p className="text-xs text-slate-700 mt-0.5">{value}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-semibold uppercase tracking-wide">{label}</p>
+              <p className="text-xs text-[rgba(6,3,43,0.78)] mt-0.5">{value}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* ── Workforce baseline summary ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Workforce Baseline</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Workforce Baseline</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {[
             ['Totale lavoratori', workforce_baseline.total_employees],
@@ -160,20 +160,20 @@ export default function AdminOnboardingStudio() {
             ['Cluster soppressi', workforce_baseline.suppressed_cluster_count],
           ].map(([label, value]) => (
             <div key={label as string}>
-              <p className="text-[10px] text-slate-400">{label}</p>
-              <p className="text-xs text-slate-700 font-semibold mt-0.5">{value}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{label}</p>
+              <p className="text-xs text-[rgba(6,3,43,0.78)] font-semibold mt-0.5">{value}</p>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-slate-400 leading-relaxed">{workforce_baseline.eligibility_note}</p>
-        <Link href="/admin/companies/workforce-baseline" className="text-xs font-semibold text-indigo-600 hover:underline">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed">{workforce_baseline.eligibility_note}</p>
+        <Link href="/admin/companies/workforce-baseline" className="text-xs font-semibold text-[#C76F3D] hover:underline">
           Apri Workforce Baseline →
         </Link>
       </div>
 
       {/* ── Program data summary ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Dati Programma</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Dati Programma</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {[
             ['Programmi totali', program_data_summary.total_programs],
@@ -182,8 +182,8 @@ export default function AdminOnboardingStudio() {
             ['Stato upload', program_data_summary.upload_status],
           ].map(([label, value]) => (
             <div key={label as string}>
-              <p className="text-[10px] text-slate-400">{label}</p>
-              <p className="text-xs text-slate-700 font-semibold mt-0.5">{value}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{label}</p>
+              <p className="text-xs text-[rgba(6,3,43,0.78)] font-semibold mt-0.5">{value}</p>
             </div>
           ))}
         </div>
@@ -192,7 +192,7 @@ export default function AdminOnboardingStudio() {
       {/* ── Readiness checks ── */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-slate-800">Pipeline Readiness</p>
+          <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">Pipeline Readiness</p>
           <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
             pipelineReadiness.status === 'ok' ? 'border-green-200 bg-green-50 text-green-700' :
             pipelineReadiness.status === 'warning' ? 'border-amber-200 bg-amber-50 text-amber-700' :
@@ -214,31 +214,31 @@ export default function AdminOnboardingStudio() {
       </div>
 
       {/* ── Next action ── */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-1">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Next Best Action — KORA Admin</p>
-        <p className="text-sm font-semibold text-slate-800">{nextAction.action}</p>
-        <p className="text-xs text-slate-500">{nextAction.detail}</p>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4 space-y-1">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Next Best Action — KORA Admin</p>
+        <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{nextAction.action}</p>
+        <p className="text-xs text-[rgba(6,3,43,0.52)]">{nextAction.detail}</p>
       </div>
 
       {/* ── Pipeline links ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Pipeline KORA — Fasi Operative</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Pipeline KORA — Fasi Operative</p>
         <div className="space-y-2">
           {pipeline_links.map((link) => (
             <div key={link.stage} className={cn('flex items-center justify-between gap-2 rounded p-2',
-              link.status === 'active' ? 'bg-indigo-50' : 'bg-slate-50'
+              link.status === 'active' ? 'bg-[rgba(199,111,61,0.08)]' : 'bg-[rgba(6,3,43,0.03)]'
             )}>
               <div>
                 <p className={cn('text-xs font-semibold',
-                  link.status === 'active' ? 'text-indigo-700' : 'text-slate-500'
+                  link.status === 'active' ? 'text-indigo-700' : 'text-[rgba(6,3,43,0.52)]'
                 )}>
                   {link.label}
                 </p>
-                <p className="text-[10px] text-slate-400">{link.description}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{link.description}</p>
               </div>
               <span className={cn('rounded border px-1.5 py-0.5 text-[9px] font-semibold shrink-0',
-                link.status === 'active' ? 'border-indigo-200 bg-white text-indigo-700' :
-                'border-slate-200 bg-white text-slate-400',
+                link.status === 'active' ? 'border-[rgba(199,111,61,0.22)] bg-[#F8F6F1] text-indigo-700' :
+                'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.40)]',
               )}>
                 {link.status}
               </span>
@@ -248,14 +248,14 @@ export default function AdminOnboardingStudio() {
       </div>
 
       {/* ── Navigation ── */}
-      <div className="border-t border-slate-100 pt-4 flex items-center gap-4 flex-wrap">
-        <Link href="/admin/companies" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+      <div className="border-t border-[rgba(6,3,43,0.05)] pt-4 flex items-center gap-4 flex-wrap">
+        <Link href="/admin/companies" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           ← Company Registry
         </Link>
-        <Link href="/admin/companies/setup" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+        <Link href="/admin/companies/setup" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           Company Setup
         </Link>
-        <Link href="/admin/companies/workforce-baseline" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+        <Link href="/admin/companies/workforce-baseline" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           Workforce Baseline →
         </Link>
       </div>

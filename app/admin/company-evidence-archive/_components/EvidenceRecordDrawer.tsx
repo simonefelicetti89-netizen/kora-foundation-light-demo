@@ -87,8 +87,8 @@ const PROV_KIND_COLORS: Record<string, string> = {
   column_mapping:    'bg-blue-100 text-blue-700 border-blue-200',
   manual_completion: 'bg-amber-100 text-amber-700 border-amber-200',
   multi_file_merge:  'bg-purple-100 text-purple-700 border-purple-200',
-  derived:           'bg-slate-100 text-slate-600 border-slate-200',
-  system_default:    'bg-slate-50 text-slate-400 border-slate-100',
+  derived:           'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
+  system_default:    'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.05)]',
 };
 
 const LIFECYCLE_COLORS: Record<string, string> = {
@@ -96,7 +96,7 @@ const LIFECYCLE_COLORS: Record<string, string> = {
   archived:        'bg-amber-100 text-amber-700 border-amber-200',
   removed:         'bg-red-100 text-red-700 border-red-200',
   storage_removed: 'bg-red-50 text-red-500 border-red-100',
-  metadata_only:   'bg-slate-100 text-slate-500 border-slate-200',
+  metadata_only:   'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
 const CONTRIB_COLORS: Record<string, { bg: string; text: string }> = {
@@ -179,7 +179,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
       {/* Drawer */}
-      <div className="absolute right-0 top-0 h-full w-full max-w-2xl bg-white shadow-2xl flex flex-col overflow-hidden">
+      <div className="absolute right-0 top-0 h-full w-full max-w-2xl bg-[#F8F6F1] shadow-2xl flex flex-col overflow-hidden">
 
         {/* Header */}
         <div className="bg-[#06032B] px-5 py-4 flex items-start justify-between shrink-0">
@@ -199,7 +199,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
 
         {/* Loading / error */}
         {loading && (
-          <div className="flex-1 flex items-center justify-center text-slate-400 text-sm">⏳ Caricamento record…</div>
+          <div className="flex-1 flex items-center justify-center text-[rgba(6,3,43,0.40)] text-sm">⏳ Caricamento record…</div>
         )}
         {error && (
           <div className="flex-1 flex items-center justify-center">
@@ -211,7 +211,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
           <div className="flex-1 overflow-y-auto">
 
             {/* Contribution role */}
-            <div className="px-5 py-3 border-b border-slate-100" style={{ backgroundColor: cc?.bg ?? '#f8fafc' }}>
+            <div className="px-5 py-3 border-b border-[rgba(6,3,43,0.05)]" style={{ backgroundColor: cc?.bg ?? '#f8fafc' }}>
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: cc?.text ?? '#64748b' }}>
                   {detail.record.contributionRoleLabel}
@@ -228,14 +228,14 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                   <span className="rounded border border-[#C76F3D]/40 bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#C76F3D]">approved</span>
                 )}
                 {detail.record.pillar && (
-                  <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-mono text-slate-500">{detail.record.pillar}</span>
+                  <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[9px] font-mono text-[rgba(6,3,43,0.52)]">{detail.record.pillar}</span>
                 )}
               </div>
-              <p className="text-[10px] text-slate-500 mt-1 leading-snug">{detail.record.contributionExplanation}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 leading-snug">{detail.record.contributionExplanation}</p>
             </div>
 
             {/* Section tabs */}
-            <div className="flex border-b border-slate-200 bg-slate-50">
+            <div className="flex border-b border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]">
               {([
                 ['fields', 'Campi', detail.safeFields.length],
                 ['provenance', 'Provenance', detail.provenance.fields.length],
@@ -243,7 +243,7 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                 ['gaps', 'Gaps', detail.evidenceGaps.length],
               ] as [typeof activeSection, string, number][]).map(([id, label, count]) => (
                 <button key={id} onClick={() => setActiveSection(id)}
-                  className={`px-3 py-2 text-[10px] font-semibold border-b-2 transition-colors ${activeSection === id ? 'border-[#C76F3D] text-[#C76F3D] bg-white' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+                  className={`px-3 py-2 text-[10px] font-semibold border-b-2 transition-colors ${activeSection === id ? 'border-[#C76F3D] text-[#C76F3D] bg-[#F8F6F1]' : 'border-transparent text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)]'}`}>
                   {label}{count > 0 ? ` (${count})` : ''}
                 </button>
               ))}
@@ -253,28 +253,28 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
             {activeSection === 'fields' && (
               <div className="px-5 py-4 space-y-2">
                 {detail.safeFields.length === 0 && (
-                  <p className="text-[10px] text-slate-400">Nessun campo safe disponibile.</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Nessun campo safe disponibile.</p>
                 )}
                 {detail.safeFields.map((f, i) => (
-                  <div key={i} className="flex items-start gap-3 py-2 border-b border-slate-50">
+                  <div key={i} className="flex items-start gap-3 py-2 border-b border-[rgba(6,3,43,0.04)]">
                     <div className="w-36 shrink-0">
-                      <span className="text-[10px] font-mono text-slate-400">{f.field}</span>
+                      <span className="text-[10px] font-mono text-[rgba(6,3,43,0.40)]">{f.field}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <span className="text-[10px] text-slate-700 font-medium">
-                        {f.valuePreview !== null ? String(f.valuePreview) : <span className="text-slate-300">—</span>}
+                      <span className="text-[10px] text-[rgba(6,3,43,0.78)] font-medium">
+                        {f.valuePreview !== null ? String(f.valuePreview) : <span className="text-[rgba(6,3,43,0.28)]">—</span>}
                       </span>
                       {f.caveat && <p className="text-[9px] text-amber-600 mt-0.5 leading-tight">{f.caveat}</p>}
                     </div>
                     <div className="flex flex-wrap gap-1 shrink-0">
                       {f.provenanceKind && (
-                        <Badge label={f.provenanceKind.replace(/_/g,' ')} cls={PROV_KIND_COLORS[f.provenanceKind] ?? 'bg-slate-50 text-slate-400 border-slate-100'} />
+                        <Badge label={f.provenanceKind.replace(/_/g,' ')} cls={PROV_KIND_COLORS[f.provenanceKind] ?? 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.05)]'} />
                       )}
                       {f.flags.map((fl, j) => (
-                        <Badge key={j} label={fl} cls="bg-slate-50 text-slate-400 border-slate-100" />
+                        <Badge key={j} label={fl} cls="bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.05)]" />
                       ))}
                       {f.confidence !== undefined && (
-                        <span className="text-[9px] font-mono text-slate-400">{Math.round(f.confidence * 100)}%</span>
+                        <span className="text-[9px] font-mono text-[rgba(6,3,43,0.40)]">{Math.round(f.confidence * 100)}%</span>
                       )}
                     </div>
                   </div>
@@ -286,11 +286,11 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
             {activeSection === 'provenance' && (
               <div className="px-5 py-4 space-y-3">
                 {/* Summary */}
-                <div className="rounded border border-slate-200 bg-slate-50 px-4 py-2.5">
-                  <p className="text-[9px] font-bold uppercase tracking-wide text-slate-400 mb-1.5">Provenance Summary</p>
+                <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2.5">
+                  <p className="text-[9px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-1.5">Provenance Summary</p>
                   <div className="flex flex-wrap gap-2 text-[9px]">
                     {Object.entries(detail.provenance.summary).map(([k, v]) => (
-                      <span key={k} className="rounded bg-white border border-slate-200 px-1.5 py-0.5 font-mono text-slate-500">
+                      <span key={k} className="rounded bg-[#F8F6F1] border border-[rgba(6,3,43,0.08)] px-1.5 py-0.5 font-mono text-[rgba(6,3,43,0.52)]">
                         {k.replace(/Fields?$/, '').replace(/([A-Z])/g, ' $1').trim()}: {v}
                       </span>
                     ))}
@@ -298,14 +298,14 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                 </div>
                 {/* Field provenance */}
                 {detail.provenance.fields.length === 0 && (
-                  <p className="text-[10px] text-slate-400">Provenance field-level non disponibile.</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Provenance field-level non disponibile.</p>
                 )}
                 {detail.provenance.fields.map((p, i) => (
-                  <div key={i} className="flex items-start gap-2 border-b border-slate-50 py-1.5">
-                    <span className="w-32 text-[9px] font-mono text-slate-400 shrink-0">{p.field}</span>
-                    <Badge label={p.kind.replace(/_/g,' ')} cls={PROV_KIND_COLORS[p.kind] ?? 'bg-slate-50 text-slate-400 border-slate-100'} />
-                    {p.fileRole && <span className="text-[9px] text-slate-400">{p.fileRole}</span>}
-                    <span className="text-[9px] font-mono text-slate-400 ml-auto">{Math.round(p.confidence * 100)}%</span>
+                  <div key={i} className="flex items-start gap-2 border-b border-[rgba(6,3,43,0.04)] py-1.5">
+                    <span className="w-32 text-[9px] font-mono text-[rgba(6,3,43,0.40)] shrink-0">{p.field}</span>
+                    <Badge label={p.kind.replace(/_/g,' ')} cls={PROV_KIND_COLORS[p.kind] ?? 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.05)]'} />
+                    {p.fileRole && <span className="text-[9px] text-[rgba(6,3,43,0.40)]">{p.fileRole}</span>}
+                    <span className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] ml-auto">{Math.round(p.confidence * 100)}%</span>
                     {p.conflictRetained && <Badge label="conflict" cls="bg-amber-50 text-amber-600 border-amber-100" />}
                     {p.isManual && <Badge label="manual" cls="bg-amber-50 text-amber-600 border-amber-100" />}
                   </div>
@@ -317,19 +317,19 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
             {activeSection === 'attachments' && (
               <div className="px-5 py-4 space-y-2">
                 {detail.attachments.length === 0 && (
-                  <p className="text-[10px] text-slate-400">Nessun attachment collegato a questo record.</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Nessun attachment collegato a questo record.</p>
                 )}
                 {detail.attachments.map((att, i) => (
-                  <div key={i} className="rounded border border-slate-200 bg-white px-4 py-3">
+                  <div key={i} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
                     <div className="flex items-start gap-2 flex-wrap">
-                      <span className="text-[10px] font-mono text-slate-600 truncate max-w-[200px]">{att.fileNameSafe}</span>
-                      <span className="rounded border border-slate-100 bg-slate-50 px-1.5 py-0.5 text-[9px] uppercase text-slate-400">{att.fileType}</span>
+                      <span className="text-[10px] font-mono text-[rgba(6,3,43,0.62)] truncate max-w-[200px]">{att.fileNameSafe}</span>
+                      <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[9px] uppercase text-[rgba(6,3,43,0.40)]">{att.fileType}</span>
                       {att.evidenceLevelSuggestion && (
                         <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-bold text-[#C76F3D]">{att.evidenceLevelSuggestion}</span>
                       )}
                       <Badge
                         label={att.lifecycleLabel ?? att.lifecycleStatus}
-                        cls={LIFECYCLE_COLORS[att.lifecycleStatus] ?? 'bg-slate-50 text-slate-400 border-slate-100'}
+                        cls={LIFECYCLE_COLORS[att.lifecycleStatus] ?? 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)] border-[rgba(6,3,43,0.05)]'}
                       />
                     </div>
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -337,12 +337,12 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                         <button
                           onClick={() => handleOpenSecureLink(att)}
                           disabled={openLinkLoading === att.attachmentId}
-                          className="rounded border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[9px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
+                          className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2.5 py-1 text-[9px] font-semibold text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
                         >
                           {openLinkLoading === att.attachmentId ? '⏳' : '🔒 Apri documento sicuro'}
                         </button>
                       ) : (
-                        <span className="text-[9px] text-slate-400">
+                        <span className="text-[9px] text-[rgba(6,3,43,0.40)]">
                           {att.lifecycleStatus === 'archived' ? '⚠ Archiviato — ripristinare per aprire' :
                            att.lifecycleStatus === 'removed' ? '⊘ Rimosso' :
                            att.lifecycleStatus === 'storage_removed' ? '⊘ File rimosso' :
@@ -386,13 +386,13 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
                   </div>
                 )}
                 {detail.evidenceGaps.length === 0 && (
-                  <p className="text-[10px] text-slate-400">Nessun evidence gap rilevato.</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Nessun evidence gap rilevato.</p>
                 )}
                 {detail.evidenceGaps.map((g, i) => (
                   <div key={i} className={`rounded border px-3 py-2 text-[10px] ${
                     g.severity === 'high' ? 'border-red-200 bg-red-50 text-red-700' :
                     g.severity === 'medium' ? 'border-amber-200 bg-amber-50 text-amber-700' :
-                    'border-slate-200 bg-slate-50 text-slate-600'
+                    'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)]'
                   }`}>
                     {g.code && <span className="font-mono mr-2">{g.code}</span>}
                     {g.message}
@@ -402,8 +402,8 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
             )}
 
             {/* Privacy boundary + caveats */}
-            <div className="px-5 py-3 border-t border-slate-100 bg-slate-50 shrink-0">
-              <p className="text-[9px] text-slate-400">
+            <div className="px-5 py-3 border-t border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] shrink-0">
+              <p className="text-[9px] text-[rgba(6,3,43,0.40)]">
                 🔒 Vista sicura — solo metadati evidence canonici. Payload raw, PII e dati lavoratori mai esposti.
                 Evidence level non influenza scoring senza UEF Review.
               </p>

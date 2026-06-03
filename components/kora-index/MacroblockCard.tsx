@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import type { MacroblockScore, MacroblockCode } from '@/lib/types';
 import { MACROBLOCK_COMPONENTS, COMPONENT_LABELS } from '@/lib/constants/kora';
+import { TM } from '@/components/ui/TM';
 
 interface MacroblockCardProps {
   macroblock: MacroblockScore;
@@ -51,7 +52,9 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
           >
             {macroblock.code}
           </p>
-          <p className="text-sm font-semibold mt-0.5" style={{ color: TOKENS.ink }}>{macroblock.label}</p>
+          <p className="text-sm font-semibold mt-0.5" style={{ color: TOKENS.ink }}>
+            {macroblock.code === 'BTI' ? <TM>{macroblock.label}</TM> : macroblock.label}
+          </p>
         </div>
         <div className="text-right shrink-0">
           <span
@@ -127,7 +130,7 @@ export function MacroblockCard({ macroblock, previousScore, className }: Macrobl
       {macroblock.risk_opportunity ? (
         <div
           className="rounded-[8px] p-2.5 space-y-1"
-          style={{ background: 'rgba(97,86,245,0.06)', border: '1px solid rgba(97,86,245,0.12)' }}
+          style={{ background: 'rgba(199,111,61,0.06)', border: '1px solid rgba(199,111,61,0.12)' }}
         >
           {/* §3 Inter non mono; §5 — header Opportunità: ink non viola */}
           <p className="text-[10px] font-semibold uppercase tracking-wide" style={{ fontFamily: 'var(--font-jakarta)', color: TOKENS.ink }}>Opportunità</p>

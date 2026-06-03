@@ -17,7 +17,7 @@ export function EnvironmentSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 select-none whitespace-nowrap">
+      <span className="text-[9px] font-bold uppercase tracking-widest text-[rgba(6,3,43,0.40)] select-none whitespace-nowrap">
         Ambiente
       </span>
       <div className="flex rounded-md border border-[var(--env-border)] overflow-hidden shadow-sm">
@@ -35,7 +35,7 @@ export function EnvironmentSwitcher() {
                 i > 0 && 'border-l border-[var(--env-border)]',
                 isActive
                   ? 'text-white'
-                  : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600',
+                  : 'bg-[#F8F6F1] text-[rgba(6,3,43,0.40)] hover:bg-[rgba(6,3,43,0.03)] hover:text-[rgba(6,3,43,0.62)]',
               )}
               style={isActive ? { backgroundColor: 'var(--env-accent)' } : undefined}
             >

@@ -28,10 +28,10 @@ export function ScenarioSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 select-none whitespace-nowrap">
+      <span className="text-[9px] font-bold uppercase tracking-widest text-[rgba(6,3,43,0.40)] select-none whitespace-nowrap">
         Scenario
       </span>
-      <div className="flex rounded-md border border-slate-200 overflow-hidden shadow-sm">
+      <div className="flex rounded-md border border-[rgba(6,3,43,0.08)] overflow-hidden shadow-sm">
         {scenarios.map((s, i) => {
           const isActive = activeScenario === s.id;
           const label = SCENARIO_LABELS[s.id] ?? s.id;
@@ -41,10 +41,10 @@ export function ScenarioSwitcher() {
               onClick={() => setScenario(s.id as ScenarioId)}
               className={cn(
                 'flex items-center gap-1.5 px-3 py-1.5 text-xs transition-colors',
-                i > 0 && 'border-l border-slate-200',
+                i > 0 && 'border-l border-[rgba(6,3,43,0.08)]',
                 isActive
-                  ? SAFEGUARD_ACTIVE[s.safeguard_status] ?? 'bg-slate-100 text-slate-800 ring-1 ring-slate-300'
-                  : 'bg-white text-slate-400 hover:bg-slate-50 hover:text-slate-600',
+                  ? SAFEGUARD_ACTIVE[s.safeguard_status] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.90)] ring-1 ring-slate-300'
+                  : 'bg-[#F8F6F1] text-[rgba(6,3,43,0.40)] hover:bg-[rgba(6,3,43,0.03)] hover:text-[rgba(6,3,43,0.62)]',
               )}
               aria-pressed={isActive}
               title={s.narrative}
@@ -56,12 +56,12 @@ export function ScenarioSwitcher() {
               <span className={cn(
                 'rounded border px-1 py-0.5 text-[9px] font-semibold',
                 isActive
-                  ? SAFEGUARD_BADGE[s.safeguard_status] ?? 'border-slate-200 bg-white text-slate-600'
-                  : 'border-slate-100 bg-slate-50 text-slate-300',
+                  ? SAFEGUARD_BADGE[s.safeguard_status] ?? 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)]'
+                  : 'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.28)]',
               )}>
                 {s.safeguard_status}
               </span>
-              <span className={cn('font-semibold tabular-nums', isActive ? 'text-inherit' : 'text-slate-300')}>
+              <span className={cn('font-semibold tabular-nums', isActive ? 'text-inherit' : 'text-[rgba(6,3,43,0.28)]')}>
                 {s.kora_index_value}
               </span>
             </button>

@@ -137,23 +137,23 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
         </div>
       </div>
 
       {/* Privacy / security note */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[10.5px] text-slate-500 leading-relaxed">
-        <span className="font-semibold text-slate-700">Isolamento tenant garantito per design. </span>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-[10.5px] text-[rgba(6,3,43,0.52)] leading-relaxed">
+        <span className="font-semibold text-[rgba(6,3,43,0.78)]">Isolamento tenant garantito per design. </span>
         Gli utenti aziendali accedono esclusivamente al proprio workspace. Nessun dato individuale o di altri tenant è accessibile. Il ruolo e il tenant sono memorizzati lato server (app_metadata Supabase) — l&apos;utente non può modificarli.
       </div>
 
       {/* Tenant selector */}
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 space-y-3">
-        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Seleziona azienda</p>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 space-y-3">
+        <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">Seleziona azienda</p>
         <select
           value={tenantId} onChange={e => { setTenantId(e.target.value); setResult(null); }}
-          className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-full">
+          className="rounded border border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.03)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-full">
           <option value="">— Seleziona tenant —</option>
           {tenants.map(t => (
             <option key={t.id} value={t.id}>{t.tenantCode} — {t.companyName}</option>
@@ -163,25 +163,25 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
 
       {/* Invite form */}
       {tenantId && (
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 space-y-3">
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Assegna nuovo utente</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-4 space-y-3">
+          <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">Assegna nuovo utente</p>
 
           <div className="flex flex-wrap gap-3 items-end">
             <div className="flex-1 min-w-[200px]">
-              <p className="text-[10px] font-medium text-slate-500 mb-1">Email</p>
+              <p className="text-[10px] font-medium text-[rgba(6,3,43,0.52)] mb-1">Email</p>
               <input
                 type="email"
                 value={newEmail}
                 onChange={e => setNewEmail(e.target.value)}
                 placeholder="nome@azienda.it"
-                className="rounded border border-slate-300 px-2.5 py-1.5 text-xs text-slate-800 w-full focus:outline-none focus:ring-1 focus:ring-[#C76F3D]"
+                className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs text-[rgba(6,3,43,0.90)] w-full focus:outline-none focus:ring-1 focus:ring-[#C76F3D]"
               />
             </div>
             <div className="min-w-[240px]">
-              <p className="text-[10px] font-medium text-slate-500 mb-1">Ruolo</p>
+              <p className="text-[10px] font-medium text-[rgba(6,3,43,0.52)] mb-1">Ruolo</p>
               <select
                 value={newRole} onChange={e => setNewRole(e.target.value)}
-                className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-800 w-full focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                className="rounded border border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.03)] px-2.5 py-1.5 text-xs text-[rgba(6,3,43,0.90)] w-full focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                 {ROLE_OPTIONS.map(o => (
                   <option key={o.value} value={o.value}>{o.value}</option>
                 ))}
@@ -198,7 +198,7 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
           {/* Role descriptions */}
           <div className="grid grid-cols-2 gap-2 mt-1">
             {ROLE_OPTIONS.map(o => (
-              <div key={o.value} className={`rounded border px-3 py-2 text-[10px] leading-relaxed transition-colors ${newRole === o.value ? 'border-[#C76F3D]/40 bg-[#f5f4ff] text-slate-700' : 'border-slate-200 bg-slate-50 text-slate-400'}`}>
+              <div key={o.value} className={`rounded border px-3 py-2 text-[10px] leading-relaxed transition-colors ${newRole === o.value ? 'border-[#C76F3D]/40 bg-[#f5f4ff] text-[rgba(6,3,43,0.78)]' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)]'}`}>
                 <span className="font-semibold block mb-0.5">{o.value}</span>
                 {o.label.split('—')[1]?.trim()}
               </div>
@@ -215,41 +215,41 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
 
       {/* Users list */}
       {tenantId && (
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          <div className="px-4 py-3 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
+            <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">
               Utenti assegnati {loadingUsers ? '…' : `(${users.length})`}
             </p>
             <button onClick={loadUsers} className="text-[10px] text-[#C76F3D] hover:underline">↻ Aggiorna</button>
           </div>
 
           {users.length === 0 ? (
-            <div className="px-4 py-8 text-center text-xs text-slate-400">
+            <div className="px-4 py-8 text-center text-xs text-[rgba(6,3,43,0.40)]">
               {loadingUsers ? 'Caricamento…' : 'Nessun utente assegnato a questo tenant.'}
             </div>
           ) : (
             <table className="w-full text-[10.5px]">
               <thead>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-[rgba(6,3,43,0.05)]">
                   {['Email', 'Ruolo', 'Stato', 'Ultimo accesso', 'Creato', 'Azioni'].map(h => (
-                    <th key={h} className="px-4 py-2 text-left font-semibold text-slate-400 uppercase tracking-wide text-[9px]">{h}</th>
+                    <th key={h} className="px-4 py-2 text-left font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide text-[9px]">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {users.map(u => (
-                  <tr key={u.userId} className="border-b border-slate-50 hover:bg-slate-50/50">
-                    <td className="px-4 py-2.5 font-mono text-slate-700">{u.email}</td>
+                  <tr key={u.userId} className="border-b border-[rgba(6,3,43,0.04)] hover:bg-[rgba(6,3,43,0.03)]/50">
+                    <td className="px-4 py-2.5 font-mono text-[rgba(6,3,43,0.78)]">{u.email}</td>
                     <td className="px-4 py-2.5">
                       <span className="rounded border border-[#C76F3D]/30 bg-[#f5f4ff] px-1.5 py-0.5 text-[9px] font-semibold text-[#C76F3D]">{u.koraRole}</span>
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${STATUS_BADGE[u.userStatus] ?? 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+                      <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${STATUS_BADGE[u.userStatus] ?? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'}`}>
                         {u.userStatus}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-500">{ts(u.lastSignIn)}</td>
-                    <td className="px-4 py-2.5 text-slate-400">{ts(u.createdAt)}</td>
+                    <td className="px-4 py-2.5 text-[rgba(6,3,43,0.52)]">{ts(u.lastSignIn)}</td>
+                    <td className="px-4 py-2.5 text-[rgba(6,3,43,0.40)]">{ts(u.createdAt)}</td>
                     <td className="px-4 py-2.5">
                       <div className="flex gap-2">
                         {u.userStatus !== 'active' && (
@@ -287,7 +287,7 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
       )}
 
       {/* Footer */}
-      <div className="text-[10px] text-slate-400 text-center pt-2">
+      <div className="text-[10px] text-[rgba(6,3,43,0.40)] text-center pt-2">
         KORA Foundation Light · Provisioning pilot · Ruoli e tenant gestiti via Supabase app_metadata
       </div>
 

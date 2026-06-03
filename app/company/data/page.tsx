@@ -132,14 +132,14 @@ const DATA_SOURCES: DataSourceRow[] = [
     name: 'Budget welfare / voucher / wallet futuri',
     example: 'Piano welfare, voucher fiscali',
     status: 'Escluso — Gate 5',
-    statusColor: 'bg-slate-100 text-slate-500 border-slate-200',
+    statusColor: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
     owner: 'Finance',
     format: 'Excel',
     pillars: 'N/A (escluso Foundation Light)',
     sensitivity: 'Alta',
     sensitivityColor: 'text-red-600',
     mappingConfidence: 'N/A',
-    mappingColor: 'text-slate-400',
+    mappingColor: 'text-[rgba(6,3,43,0.40)]',
     nextAction: 'Gate 5 required (advisor)',
   },
   {
@@ -153,7 +153,7 @@ const DATA_SOURCES: DataSourceRow[] = [
     sensitivity: 'Molto alta',
     sensitivityColor: 'text-red-700',
     mappingConfidence: 'N/A (privacy boundary)',
-    mappingColor: 'text-slate-400',
+    mappingColor: 'text-[rgba(6,3,43,0.40)]',
     nextAction: 'Privacy boundary attiva',
   },
 ];
@@ -194,7 +194,7 @@ const PILLAR_COLORS: Record<string, string> = {
   CONNECTION: 'bg-violet-100 text-violet-700',
   IMPACT:     'bg-amber-100 text-amber-700',
   LEGACY:     'bg-orange-100 text-orange-700',
-  '—':        'bg-slate-100 text-slate-500',
+  '—':        'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]',
 };
 
 const GOVERNANCE_CHECKLIST = [
@@ -226,17 +226,17 @@ const NEXT_ACTIONS: NextAction[] = [
 const PRIORITY_STYLES: Record<string, string> = {
   Alta:  'bg-red-50 text-red-700 border-red-200',
   Media: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-  Bassa: 'bg-slate-50 text-slate-500 border-slate-200',
+  Bassa: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
 // ─── Sub-components ─────────────────────────────────────────────────────────
 
 function SummaryCard({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className={cn('text-2xl font-bold mt-1', color ?? 'text-slate-800')}>{value}</p>
-      {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
+      <p className="text-xs text-[rgba(6,3,43,0.40)]">{label}</p>
+      <p className={cn('text-2xl font-bold mt-1', color ?? 'text-[rgba(6,3,43,0.90)]')}>{value}</p>
+      {sub && <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">{sub}</p>}
     </div>
   );
 }
@@ -262,20 +262,20 @@ export default function DataEvidence() {
       {/* ── Page header ─────────────────────────────────────────────── */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <h1 className="text-xl font-bold text-slate-900">Stato Dati &amp; Evidenze</h1>
-          <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-400 font-mono">
+          <h1 className="text-xl font-bold text-[#06032B]">Stato Dati &amp; Evidenze</h1>
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs text-[rgba(6,3,43,0.40)] font-mono">
             synthetic_demo_data: true
           </span>
         </div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-[rgba(6,3,43,0.52)]">
           {companyName} — {activeScenario} — KORA Methodology v0.1 — pre_empirical_calibration
         </p>
       </div>
 
       {/* ── Service-Assisted Boundary Notice ─────────────────────────── */}
-      <div className="rounded-xl border border-slate-200 bg-slate-50 px-5 py-4">
-        <p className="text-xs font-semibold text-slate-600 mb-1">Elaborazione gestita da KORA Operator</p>
-        <p className="text-xs text-slate-500 leading-relaxed">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-5 py-4">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">Elaborazione gestita da KORA Operator</p>
+        <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
           KORA opera la pipeline sui dati ricevuti dal cliente. L&apos;azienda visualizza output aggregati e Decision Pack,
           senza operare intake, review o scoring.
           Il Data Intake Studio è uno strumento dell&apos;Operatore KORA — accessibile dalla Console Operativa.
@@ -283,7 +283,7 @@ export default function DataEvidence() {
         {isAdmin && (
           <Link
             href="/admin/companies/data-intake"
-            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+            className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] px-3 py-1.5 text-xs font-semibold text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.05)] transition-colors"
           >
             KORA Operator: Data Intake Studio →
           </Link>
@@ -292,7 +292,7 @@ export default function DataEvidence() {
 
       {/* ── Readiness Hero — 4 cards ─────────────────────────────────── */}
       <section>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Readiness Overview
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -305,7 +305,7 @@ export default function DataEvidence() {
             label="Fonti dati attive"
             value="6/8"
             sub="2 escluse o in valutazione"
-            color="text-slate-800"
+            color="text-[rgba(6,3,43,0.90)]"
           />
           <SummaryCard
             label="Mapping Confidence Fonti"
@@ -317,48 +317,48 @@ export default function DataEvidence() {
             label="Campi esclusi (privacy)"
             value="14"
             sub="Non entrano nel pipeline KORA"
-            color="text-slate-500"
+            color="text-[rgba(6,3,43,0.52)]"
           />
         </div>
-        <p className="mt-2 text-xs text-slate-400 italic">
+        <p className="mt-2 text-xs text-[rgba(6,3,43,0.40)] italic">
           Il Readiness Score non è il KORA Index. Misura la preparazione del dato per l&apos;elaborazione KORA — non l&apos;attivazione organizzativa.
         </p>
       </section>
 
       {/* ── Data Source Inventory ────────────────────────────────────── */}
       <section>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Inventario Fonti Dati
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Fonte</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Stato</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Owner</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Formato</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Pillar target</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Sensibilità</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Mapping</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Prossima azione</th>
+              <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Fonte</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Stato</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Owner</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Formato</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Pillar target</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Sensibilità</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Mapping</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Prossima azione</th>
               </tr>
             </thead>
             <tbody>
               {DATA_SOURCES.map((src) => (
-                <tr key={src.name} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <tr key={src.name} className="border-b border-[rgba(6,3,43,0.05)] last:border-0 hover:bg-[rgba(6,3,43,0.03)]">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-slate-800 text-xs">{src.name}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{src.example}</p>
+                    <p className="font-medium text-[rgba(6,3,43,0.90)] text-xs">{src.name}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">{src.example}</p>
                   </td>
                   <td className="px-4 py-3">
                     <span className={cn('rounded border px-1.5 py-0.5 text-xs whitespace-nowrap', src.statusColor)}>
                       {src.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">{src.owner}</td>
-                  <td className="px-4 py-3 text-xs font-mono text-slate-500">{src.format}</td>
-                  <td className="px-4 py-3 text-xs text-slate-700">{src.pillars}</td>
+                  <td className="px-4 py-3 text-xs text-[rgba(6,3,43,0.62)]">{src.owner}</td>
+                  <td className="px-4 py-3 text-xs font-mono text-[rgba(6,3,43,0.52)]">{src.format}</td>
+                  <td className="px-4 py-3 text-xs text-[rgba(6,3,43,0.78)]">{src.pillars}</td>
                   <td className="px-4 py-3">
                     <span className={cn('text-xs font-semibold', src.sensitivityColor)}>
                       {src.sensitivity}
@@ -369,7 +369,7 @@ export default function DataEvidence() {
                       {src.mappingConfidence}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{src.nextAction}</td>
+                  <td className="px-4 py-3 text-xs text-[rgba(6,3,43,0.52)]">{src.nextAction}</td>
                 </tr>
               ))}
             </tbody>
@@ -379,7 +379,7 @@ export default function DataEvidence() {
 
       {/* ── Dati esclusi ────────────────────────────────────────────── */}
       <section>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Dati Esclusi dal Pipeline KORA
         </h2>
         <div className="rounded-lg border border-red-100 bg-red-50 p-4">
@@ -399,40 +399,40 @@ export default function DataEvidence() {
 
       {/* ── Pipeline Mapping Preview ─────────────────────────────────── */}
       <section>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Pipeline Mapping Preview
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
           <div className="flex flex-wrap gap-3 items-start">
             {PIPELINE_SOURCES.map((src, i) => (
               <div key={src.name} className="flex items-center gap-2">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-center">
-                  <p className="text-xs font-semibold text-slate-700">{src.name}</p>
+                <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-center">
+                  <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{src.name}</p>
                   {src.note && (
-                    <p className="text-xs text-slate-400 mt-0.5 italic">{src.note}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5 italic">{src.note}</p>
                   )}
                   <div className="flex flex-wrap gap-1 mt-1.5 justify-center">
                     {src.pillars.map((p) => (
-                      <span key={p} className={cn('rounded px-1.5 py-0.5 text-xs font-semibold', PILLAR_COLORS[p] ?? 'bg-slate-100 text-slate-500')}>
+                      <span key={p} className={cn('rounded px-1.5 py-0.5 text-xs font-semibold', PILLAR_COLORS[p] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]')}>
                         {p}
                       </span>
                     ))}
                   </div>
                 </div>
                 {i < PIPELINE_SOURCES.length - 1 && (
-                  <span className="text-slate-300 text-sm">→</span>
+                  <span className="text-[rgba(6,3,43,0.28)] text-sm">→</span>
                 )}
               </div>
             ))}
             <div className="flex items-center gap-2">
-              <span className="text-slate-300 text-sm">→</span>
-              <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-center">
+              <span className="text-[rgba(6,3,43,0.28)] text-sm">→</span>
+              <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3 py-2 text-center">
                 <p className="text-xs font-bold text-indigo-700">UEF</p>
                 <p className="text-xs text-indigo-500 mt-0.5">→ IU → PIB → KORA Index</p>
               </div>
             </div>
           </div>
-          <p className="mt-3 text-xs text-slate-400 italic">
+          <p className="mt-3 text-xs text-[rgba(6,3,43,0.40)] italic">
             Non tutte le fonti alimentano il KORA Index direttamente. HR anagrafica passa per il Privacy Layer (Stage 3) senza generare IU diretti. Wallet, voucher e My KORA sono esclusi o worker-private.
           </p>
         </div>
@@ -440,16 +440,16 @@ export default function DataEvidence() {
 
       {/* ── Privacy & Governance Checklist ──────────────────────────── */}
       <section>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Privacy &amp; Governance Checklist
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white divide-y divide-slate-100">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] divide-y divide-[rgba(6,3,43,0.05)]">
           {GOVERNANCE_CHECKLIST.map((row) => (
             <div key={row.item} className="flex items-start gap-3 px-4 py-3">
               <span className={cn('mt-0.5 shrink-0 text-sm font-bold', row.ok ? 'text-green-500' : 'text-orange-500')}>
                 {row.ok ? '✓' : '○'}
               </span>
-              <p className={cn('text-xs', row.ok ? 'text-slate-700' : 'text-orange-700 font-medium')}>
+              <p className={cn('text-xs', row.ok ? 'text-[rgba(6,3,43,0.78)]' : 'text-orange-700 font-medium')}>
                 {row.item}
               </p>
             </div>
@@ -459,15 +459,15 @@ export default function DataEvidence() {
 
       {/* ── Pilot Readiness Next Actions ─────────────────────────────── */}
       <section>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Pilot Readiness — Prossime Azioni
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white divide-y divide-slate-100">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] divide-y divide-[rgba(6,3,43,0.05)]">
           {NEXT_ACTIONS.map((a, i) => (
             <div key={i} className="flex items-center justify-between gap-4 px-4 py-3">
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-slate-800">{a.action}</p>
-                <p className="text-xs text-slate-400 mt-0.5">Owner: {a.owner}</p>
+                <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{a.action}</p>
+                <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Owner: {a.owner}</p>
               </div>
               <span className={cn('rounded border px-2 py-0.5 text-xs font-semibold shrink-0', PRIORITY_STYLES[a.priority])}>
                 {a.priority}
@@ -479,7 +479,7 @@ export default function DataEvidence() {
 
       {/* ── Readiness Verdict ───────────────────────────────────────── */}
       <section>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Verdetto Readiness
         </h2>
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
@@ -501,16 +501,16 @@ export default function DataEvidence() {
       {/* ── Admin GTM cross-link (role-safe) ────────────────────────── */}
       {isAdmin ? (
         <section>
-          <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4 flex items-center justify-between gap-4">
+          <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-4 flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold text-indigo-800">GTM Console — Pilot Package</p>
-              <p className="text-xs text-indigo-600 mt-0.5">
+              <p className="text-xs text-[#C76F3D] mt-0.5">
                 Script demo, success criteria, pilot package e privacy story per il presenter.
               </p>
             </div>
             <Link
               href="/admin/gtm"
-              className="shrink-0 rounded border border-indigo-300 bg-white px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+              className="shrink-0 rounded border border-indigo-300 bg-[#F8F6F1] px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
             >
               Apri GTM Console →
             </Link>
@@ -518,8 +518,8 @@ export default function DataEvidence() {
         </section>
       ) : (
         <section>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs text-slate-500">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4">
+            <p className="text-xs text-[rgba(6,3,43,0.52)]">
               Script demo e Pilot Package disponibili nella GTM Console KORA (accesso: ruoli admin KORA).
             </p>
           </div>
@@ -529,9 +529,9 @@ export default function DataEvidence() {
       {/* ═══════════════════════════════════════════════════════════════
           DIVIDER — Stato Elaborazione KORA
       ══════════════════════════════════════════════════════════════════ */}
-      <div className="border-t border-slate-200 pt-6">
-        <h2 className="mb-1 text-sm font-bold text-slate-700">Stato Elaborazione KORA</h2>
-        <p className="text-xs text-slate-400 mb-4">
+      <div className="border-t border-[rgba(6,3,43,0.08)] pt-6">
+        <h2 className="mb-1 text-sm font-bold text-[rgba(6,3,43,0.78)]">Stato Elaborazione KORA</h2>
+        <p className="text-xs text-[rgba(6,3,43,0.40)] mb-4">
           Riepilogo delle fonti dati ricevute — metadati a livello batch, senza record UEF individuali.
         </p>
 
@@ -562,7 +562,7 @@ export default function DataEvidence() {
             label="In Attesa di Revisione"
             value={String(pending.total_pending)}
             sub={`su ${pending.sources_with_pending} fonti`}
-            color={pending.total_pending > 50 ? 'text-orange-500' : 'text-slate-800'}
+            color={pending.total_pending > 50 ? 'text-orange-500' : 'text-[rgba(6,3,43,0.90)]'}
           />
           <SummaryCard
             label="Allegati Evidenza Medi"
@@ -574,37 +574,37 @@ export default function DataEvidence() {
 
         {/* Source batch table */}
         <div className="mb-6">
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
             Inventario Batch (simulato)
           </h3>
           {batches.length > 0 ? (
-            <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50">
-                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Fonte</th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Record</th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Mappati</th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">Rifiutati</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Completezza</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Confidenza Mapping Batch</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Evidenza</th>
-                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-slate-500">In Attesa</th>
-                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-slate-500">Stato</th>
+                  <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Fonte</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-[rgba(6,3,43,0.52)]">Record</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-[rgba(6,3,43,0.52)]">Mappati</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-[rgba(6,3,43,0.52)]">Rifiutati</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Completezza</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Confidenza Mapping Batch</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Evidenza</th>
+                    <th className="px-4 py-2.5 text-right text-xs font-semibold text-[rgba(6,3,43,0.52)]">In Attesa</th>
+                    <th className="px-4 py-2.5 text-left text-xs font-semibold text-[rgba(6,3,43,0.52)]">Stato</th>
                   </tr>
                 </thead>
                 <tbody>
                   {batches.map((batch) => {
                     const statusStyle = STATUS_STYLES[batch.batch_status] ?? STATUS_STYLES.under_review;
                     return (
-                      <tr key={batch.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                      <tr key={batch.id} className="border-b border-[rgba(6,3,43,0.05)] last:border-0 hover:bg-[rgba(6,3,43,0.03)]">
                         <td className="px-4 py-3">
-                          <p className="font-medium text-slate-800">{batch.source_name}</p>
-                          <p className="text-xs font-mono text-slate-400 mt-0.5">
+                          <p className="font-medium text-[rgba(6,3,43,0.90)]">{batch.source_name}</p>
+                          <p className="text-xs font-mono text-[rgba(6,3,43,0.40)] mt-0.5">
                             {batch.source_type.replace(/_/g, ' ')}
                           </p>
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-xs text-slate-700">
+                        <td className="px-4 py-3 text-right font-mono text-xs text-[rgba(6,3,43,0.78)]">
                           {batch.row_count.toLocaleString()}
                         </td>
                         <td className="px-4 py-3 text-right font-mono text-xs text-green-600">
@@ -615,13 +615,13 @@ export default function DataEvidence() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-16 rounded-full bg-slate-100">
+                            <div className="h-1.5 w-16 rounded-full bg-[rgba(6,3,43,0.05)]">
                               <div
                                 className={cn('h-1.5 rounded-full', completenessColor(batch.completeness_pct))}
                                 style={{ width: `${batch.completeness_pct * 100}%` }}
                               />
                             </div>
-                            <span className="text-xs font-mono text-slate-600">
+                            <span className="text-xs font-mono text-[rgba(6,3,43,0.62)]">
                               {pct(batch.completeness_pct)}
                             </span>
                           </div>
@@ -667,7 +667,7 @@ export default function DataEvidence() {
               </table>
             </div>
           ) : (
-            <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-400">
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 text-sm text-[rgba(6,3,43,0.40)]">
               Nessun batch disponibile per questo scenario.
             </div>
           )}
@@ -676,18 +676,18 @@ export default function DataEvidence() {
         {/* Source notes */}
         {batches.length > 0 && (
           <div>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
               Note Fonti
             </h3>
             <div className="space-y-2">
               {batches.map((batch) => (
                 batch.source_notes ? (
-                  <div key={batch.id} className="rounded-lg border border-slate-200 bg-white p-3">
-                    <p className="text-xs font-semibold text-slate-600 mb-1">
+                  <div key={batch.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
+                    <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">
                       {batch.source_type.replace(/_/g, ' ')}
-                      <span className="ml-2 font-normal text-slate-400">{batch.ingestion_date}</span>
+                      <span className="ml-2 font-normal text-[rgba(6,3,43,0.40)]">{batch.ingestion_date}</span>
                     </p>
-                    <p className="text-xs text-slate-600 leading-relaxed">{batch.source_notes}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed">{batch.source_notes}</p>
                   </div>
                 ) : null
               ))}

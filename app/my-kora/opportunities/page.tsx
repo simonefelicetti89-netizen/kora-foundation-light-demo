@@ -109,8 +109,8 @@ const OPPORTUNITIES: Opportunity[] = [
 ];
 
 const TYPE_BADGE: Record<string, string> = {
-  partner:   'bg-indigo-50 text-indigo-600 border-indigo-200',
-  internal:  'bg-slate-50 text-slate-600 border-slate-200',
+  partner:   'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
+  internal:  'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
   community: 'bg-orange-50 text-orange-700 border-orange-200',
 };
 
@@ -128,8 +128,8 @@ export default function Opportunities() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Opportunità per te</h1>
-          <p className="text-sm text-slate-500">Percorsi e iniziative abbinati al tuo profilo di impatto</p>
+          <h1 className="text-xl font-bold text-[#06032B]">Opportunità per te</h1>
+          <p className="text-sm text-[rgba(6,3,43,0.52)]">Percorsi e iniziative abbinati al tuo profilo di impatto</p>
         </div>
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
           <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
@@ -146,14 +146,14 @@ export default function Opportunities() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Opportunità per te</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="text-xl font-bold text-[#06032B]">Opportunità per te</h1>
+        <p className="text-sm text-[rgba(6,3,43,0.52)]">
           Percorsi e iniziative abbinati al tuo profilo di impatto — {OPPORTUNITIES.length} suggerimenti
         </p>
       </div>
 
       {/* Privacy notice — non-suppressible */}
-      <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-3">
         <p className="text-xs font-semibold text-indigo-800">Visibile solo a te.</p>
         <p className="text-xs text-indigo-700 mt-0.5 leading-relaxed">
           Il tuo datore di lavoro non vede quali opportunità esplori o selezioni. La partecipazione
@@ -176,19 +176,19 @@ export default function Opportunities() {
         {OPPORTUNITIES.map((opp) => (
           <div
             key={opp.id}
-            className="rounded-lg border border-slate-200 bg-white overflow-hidden"
+            className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden"
           >
             {/* Pillar accent bar */}
-            <div className={cn('h-1 w-full', PILLAR_COLORS[opp.pillar] ?? 'bg-slate-300')} />
+            <div className={cn('h-1 w-full', PILLAR_COLORS[opp.pillar] ?? 'bg-[rgba(6,3,43,0.18)]')} />
 
             <div className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold text-slate-800">{opp.title}</p>
+                    <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{opp.title}</p>
                     <span className={cn(
                       'rounded border px-1.5 py-0.5 text-xs font-medium',
-                      PILLAR_LIGHT[opp.pillar] ?? 'bg-slate-50 text-slate-600 border-slate-200',
+                      PILLAR_LIGHT[opp.pillar] ?? 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
                     )}>
                       {opp.pillar_label}
                     </span>
@@ -199,33 +199,33 @@ export default function Opportunities() {
                       {TYPE_LABEL[opp.type]}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-0.5">{opp.subtitle}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">{opp.subtitle}</p>
                 </div>
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <div>
-                  <p className="text-xs text-slate-400">Provider</p>
-                  <p className="text-xs font-medium text-slate-700 mt-0.5">{opp.provider}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.40)]">Provider</p>
+                  <p className="text-xs font-medium text-[rgba(6,3,43,0.78)] mt-0.5">{opp.provider}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">Formato</p>
-                  <p className="text-xs font-medium text-slate-700 mt-0.5">{opp.format}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.40)]">Formato</p>
+                  <p className="text-xs font-medium text-[rgba(6,3,43,0.78)] mt-0.5">{opp.format}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400">IU potenziali</p>
-                  <p className="text-xs font-medium text-indigo-600 mt-0.5">{opp.iu_potential}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.40)]">IU potenziali</p>
+                  <p className="text-xs font-medium text-[#C76F3D] mt-0.5">{opp.iu_potential}</p>
                 </div>
               </div>
 
-              <div className="mt-3 rounded bg-slate-50 border border-slate-100 px-3 py-2">
-                <p className="text-xs text-slate-500 italic leading-relaxed">{opp.match_reason}</p>
+              <div className="mt-3 rounded bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.05)] px-3 py-2">
+                <p className="text-xs text-[rgba(6,3,43,0.52)] italic leading-relaxed">{opp.match_reason}</p>
               </div>
 
               <div className="mt-3 flex items-center justify-end">
                 <button
                   disabled
-                  className="rounded-md border border-slate-200 bg-slate-50 px-4 py-1.5 text-xs font-medium text-slate-400 cursor-not-allowed"
+                  className="rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.40)] cursor-not-allowed"
                 >
                   Richiedi partecipazione — Solo anteprima
                 </button>
@@ -236,14 +236,14 @@ export default function Opportunities() {
       </div>
 
       {/* IU estimate disclaimer */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-        <p className="text-xs font-semibold text-slate-600 mb-1">Nota sugli IU stimati</p>
-        <p className="text-xs text-slate-500 leading-relaxed">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-3">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">Nota sugli IU stimati</p>
+        <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
           Gli Impact Unit stimati sono indicazioni orientative basate sulla metodologia KORA v0.1 pre-calibrazione empirica.
           Il valore reale dipende da completamento, verifica dell&apos;evidenza e fattori di correzione applicati.
           Questi dati sono sintetici e solo a scopo dimostrativo.
         </p>
-        <p className="mt-1.5 text-xs font-mono text-slate-300">
+        <p className="mt-1.5 text-xs font-mono text-[rgba(6,3,43,0.28)]">
           synthetic_demo_data: true · methodology_version: v0.1 · calibration_status: pre_empirical_calibration
         </p>
       </div>

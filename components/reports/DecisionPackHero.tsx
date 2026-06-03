@@ -57,16 +57,16 @@ export function DecisionPackHero({
     <div className="space-y-6">
 
       {/* ── A. Executive Summary ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">A — Executive Summary</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">A — Executive Summary</p>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {/* KORA Index */}
           <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">KORA Index v3</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">KORA Index v3</p>
             <div className="flex items-end gap-2">
-              <span className="text-4xl font-bold text-slate-900">{output.kora_index_value}</span>
-              <span className="text-sm text-slate-400 mb-1">/100</span>
+              <span className="text-4xl font-bold text-[#06032B]">{output.kora_index_value}</span>
+              <span className="text-sm text-[rgba(6,3,43,0.40)] mb-1">/100</span>
               {activeScenario === 'S2' && indexDelta && (
                 <span className={`text-sm font-bold mb-1 ${indexDelta.positive ? 'text-emerald-600' : 'text-rose-600'}`}>
                   {indexDelta.positive ? '+' : ''}{indexDelta.value}
@@ -74,15 +74,15 @@ export function DecisionPackHero({
               )}
             </div>
             {activeScenario === 'S2' && (
-              <p className="text-[10px] text-slate-400">da {s1Output.kora_index_value} (S1) → {s2Output.kora_index_value} (S2)</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">da {s1Output.kora_index_value} (S1) → {s2Output.kora_index_value} (S2)</p>
             )}
           </div>
 
           {/* Confidence Score — external */}
           <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Confidence Score</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Confidence Score</p>
             <div className="flex items-end gap-1.5">
-              <span className="text-4xl font-bold text-slate-700">{Math.round(output.confidence_score * 100)}%</span>
+              <span className="text-4xl font-bold text-[rgba(6,3,43,0.78)]">{Math.round(output.confidence_score * 100)}%</span>
             </div>
             <span className="inline-block text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 rounded px-1.5 py-0.5">
               Esterno al KORA Index — indicatore affidabilità
@@ -91,12 +91,12 @@ export function DecisionPackHero({
 
           {/* Activation Safeguard */}
           <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Activation Safeguard</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Activation Safeguard</p>
             <span className={`inline-flex items-center rounded border px-3 py-1.5 text-base font-bold ${safeguardStyle}`}>
               {output.safeguard_status}
             </span>
             {safeguard && (
-              <p className="text-[10px] text-slate-400">
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
                 AR {Math.round(safeguard.ar_value * 100)}% · MAR {Math.round(safeguard.mar_value * 100)}%
               </p>
             )}
@@ -104,32 +104,32 @@ export function DecisionPackHero({
 
           {/* Calibration */}
           <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Calibrazione</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">Calibrazione</p>
             <span className="inline-block text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 rounded px-2 py-1">
               Pre-Empirical Calibration
             </span>
-            <p className="text-[10px] font-mono text-slate-400">{output.methodology_version_id}</p>
+            <p className="text-[10px] font-mono text-[rgba(6,3,43,0.40)]">{output.methodology_version_id}</p>
           </div>
         </div>
 
         {/* Interpretation sentence */}
-        <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700 leading-relaxed">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-sm text-[rgba(6,3,43,0.78)] leading-relaxed">
           {executiveSentence}
         </div>
 
         {confidence?.limitations && (
-          <p className="text-xs text-slate-400 leading-relaxed border-t border-slate-100 pt-3">
-            <span className="font-semibold text-slate-500">Limitazioni: </span>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-3">
+            <span className="font-semibold text-[rgba(6,3,43,0.52)]">Limitazioni: </span>
             {confidence.limitations}
           </p>
         )}
       </div>
 
       {/* ── B. Methodology Snapshot ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">B — Methodology Snapshot</p>
-          <span className="text-[10px] text-slate-400 italic">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">B — Methodology Snapshot</p>
+          <span className="text-[10px] text-[rgba(6,3,43,0.40)] italic">
             Previous equal weights (0.10 × 10) were provisional scaffolding and are no longer canonical.
           </span>
         </div>
@@ -138,45 +138,45 @@ export function DecisionPackHero({
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="py-2 text-left text-xs font-semibold text-slate-400 w-40">Macroblock</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">Peso</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">Score S1</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">Score S2</th>
-                <th className="py-2 text-right text-xs font-semibold text-slate-400">Δ</th>
-                <th className="py-2 text-left pl-4 text-xs font-semibold text-slate-400">Componenti</th>
+              <tr className="border-b border-[rgba(6,3,43,0.05)]">
+                <th className="py-2 text-left text-xs font-semibold text-[rgba(6,3,43,0.40)] w-40">Macroblock</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Peso</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S1</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Score S2</th>
+                <th className="py-2 text-right text-xs font-semibold text-[rgba(6,3,43,0.40)]">Δ</th>
+                <th className="py-2 text-left pl-4 text-xs font-semibold text-[rgba(6,3,43,0.40)]">Componenti</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {s1Macroblocks.map((mb) => {
                 const s2mb = s2Macroblocks.find((m) => m.code === mb.code);
                 const delta = s2mb ? s2mb.score - mb.score : null;
-                const accent = MB_ACCENT[mb.code] ?? 'text-slate-700';
+                const accent = MB_ACCENT[mb.code] ?? 'text-[rgba(6,3,43,0.78)]';
                 return (
-                  <tr key={mb.code} className="hover:bg-slate-50 transition-colors">
+                  <tr key={mb.code} className="hover:bg-[rgba(6,3,43,0.03)] transition-colors">
                     <td className="py-3 pr-3">
                       <span className={`font-semibold ${accent}`}>{mb.label}</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className="font-mono text-xs text-slate-600">{Math.round(mb.weight * 100)}%</span>
+                      <span className="font-mono text-xs text-[rgba(6,3,43,0.62)]">{Math.round(mb.weight * 100)}%</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className="font-mono font-semibold text-slate-700">{mb.score}</span>
+                      <span className="font-mono font-semibold text-[rgba(6,3,43,0.78)]">{mb.score}</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className="font-mono font-semibold text-slate-700">{s2mb?.score ?? '—'}</span>
+                      <span className="font-mono font-semibold text-[rgba(6,3,43,0.78)]">{s2mb?.score ?? '—'}</span>
                     </td>
                     <td className="py-3 text-right">
                       {delta !== null ? (
-                        <span className={`font-mono text-xs font-bold ${delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-rose-600' : 'text-slate-400'}`}>
+                        <span className={`font-mono text-xs font-bold ${delta > 0 ? 'text-emerald-600' : delta < 0 ? 'text-rose-600' : 'text-[rgba(6,3,43,0.40)]'}`}>
                           {delta > 0 ? '+' : ''}{delta}
                         </span>
-                      ) : <span className="text-slate-300">—</span>}
+                      ) : <span className="text-[rgba(6,3,43,0.28)]">—</span>}
                     </td>
-                    <td className="py-3 pl-4 text-xs text-slate-400">
+                    <td className="py-3 pl-4 text-xs text-[rgba(6,3,43,0.40)]">
                       {mb.component_codes.length > 0
                         ? mb.component_codes.join(', ')
-                        : <span className="italic text-slate-300">BudgetToHumanImpactEngine</span>}
+                        : <span className="italic text-[rgba(6,3,43,0.28)]">BudgetToHumanImpactEngine</span>}
                     </td>
                   </tr>
                 );
@@ -191,7 +191,7 @@ export function DecisionPackHero({
             <span className="font-semibold">Confidence Score (CS): </span>
             esterno al calcolo del KORA Index v3. Peso = 0. Indicatore di affidabilità dei dati sottostanti, non componente pesato.
           </div>
-          <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-600 leading-relaxed">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">
             <span className="font-semibold">Activation Safeguard: </span>
             gate interpretativo indipendente. CLEAR = AR ≥ 40% AND MAR ≥ 30%. Non è un componente del KORA Index.
           </div>

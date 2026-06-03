@@ -148,9 +148,9 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               ['Ruolo',             result.adminRole ?? 'COMPANY_ADMIN'],
               ['Baseline workforce', result.baselineCreated ? '✓ Creato' : '— Non creato'],
             ].map(([label, val]) => (
-              <div key={label} className="rounded border border-green-200 bg-white px-3 py-2">
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">{label}</p>
-                <p className="text-slate-700 font-semibold">{val}</p>
+              <div key={label} className="rounded border border-green-200 bg-[#F8F6F1] px-3 py-2">
+                <p className="text-[9px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-0.5">{label}</p>
+                <p className="text-[rgba(6,3,43,0.78)] font-semibold">{val}</p>
               </div>
             ))}
           </div>
@@ -160,7 +160,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
             result.inviteStatus === 'sent'
               ? 'border-blue-200 bg-blue-50 text-blue-700'
               : result.inviteStatus === 'user_existed'
-              ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+              ? 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-indigo-700'
               : 'border-amber-200 bg-amber-50 text-amber-700'
           }`}>
             <span className="font-semibold">
@@ -186,7 +186,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
 
           {/* Generated code note */}
           {result.tenantCodeWasGenerated && (
-            <p className="text-[10px] text-slate-500">
+            <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
               Codice tenant generato automaticamente da &ldquo;{result.companyName}&rdquo;.
             </p>
           )}
@@ -202,13 +202,13 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               </Link>
               <Link
                 href={result.links.manageUsers}
-                className="rounded-lg border border-slate-300 text-slate-700 px-4 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors"
               >
                 Gestisci utenti
               </Link>
               <Link
                 href={result.links.companyWorkspace}
-                className="rounded-lg border border-slate-300 text-slate-700 px-4 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors"
+                className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors"
               >
                 Workspace Admin view
               </Link>
@@ -217,7 +217,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
 
           <button
             onClick={resetForm}
-            className="text-[10.5px] text-slate-400 hover:text-slate-700 underline"
+            className="text-[10.5px] text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.78)] underline"
           >
             Crea un'altra azienda
           </button>
@@ -244,7 +244,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           </div>
 
           {result.recovery && (
-            <div className="rounded-lg border border-amber-300 bg-white px-4 py-3 text-[10.5px] text-amber-800">
+            <div className="rounded-lg border border-amber-300 bg-[#F8F6F1] px-4 py-3 text-[10.5px] text-amber-800">
               <span className="font-semibold">Azione richiesta: </span>{result.recovery}
             </div>
           )}
@@ -265,14 +265,14 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               </Link>
               {result.links.manageUsers && (
                 <Link href={result.links.manageUsers}
-                  className="rounded-lg border border-slate-300 text-slate-700 px-4 py-2 text-xs font-semibold hover:bg-slate-50 transition-colors">
+                  className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors">
                   Gestisci utenti
                 </Link>
               )}
             </div>
           )}
 
-          <button onClick={resetForm} className="text-[10.5px] text-slate-400 hover:text-slate-700 underline">
+          <button onClick={resetForm} className="text-[10.5px] text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.78)] underline">
             Riprova
           </button>
         </div>
@@ -294,9 +294,9 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1 shrink-0">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">KORA_ADMIN</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">KORA_ADMIN</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
-          <span className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 text-[9px] text-white/40 font-semibold uppercase">LIVE PILOT</span>
+          <span className="rounded border border-white/15 bg-[#F8F6F1]/5 px-1.5 py-0.5 text-[9px] text-white/40 font-semibold uppercase">LIVE PILOT</span>
         </div>
       </div>
 
@@ -310,8 +310,8 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
       <form onSubmit={handleSubmit} className="space-y-5">
 
         {/* ── Company section ──────────────────────────────────────────────── */}
-        <div className="rounded-xl border border-slate-200 bg-white px-6 py-5 space-y-4">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Dati Azienda</p>
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4">
+          <p className="text-[10px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-widest">Dati Azienda</p>
 
           {/* Company Name */}
           <Field label="Nome azienda *">
@@ -330,10 +330,10 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
               onChange={e => { setTenantCode(e.target.value.toUpperCase()); setTenantCodeEdited(true); }}
               placeholder="ACME-SPA"
               pattern="[A-Z0-9-]{2,32}"
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400"
+              className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
             {!tenantCodeEdited && companyName && (
-              <p className="text-[9px] text-slate-400 mt-0.5">
+              <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-0.5">
                 Generato automaticamente · modificabile
               </p>
             )}
@@ -344,7 +344,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
             <Field label="Paese">
               <input type="text" value={country} maxLength={2}
                 onChange={e => setCountry(e.target.value.toUpperCase().slice(0, 2))}
-                placeholder="IT" className="w-full rounded border border-slate-300 px-3 py-2 text-sm font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400" />
+                placeholder="IT" className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400" />
             </Field>
             <Field label="Settore">
               <select value={industry} onChange={e => setIndustry(e.target.value)} className="input-field">
@@ -368,14 +368,14 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
             <Field label="Periodo di assessment">
               <input type="text" value={period}
                 onChange={e => setPeriod(e.target.value)}
-                placeholder="2026-Q1" className="w-full rounded border border-slate-300 px-3 py-2 text-sm font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400" />
+                placeholder="2026-Q1" className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400" />
             </Field>
           </div>
         </div>
 
         {/* ── Company Admin section ─────────────────────────────────────────── */}
-        <div className="rounded-xl border border-slate-200 bg-white px-6 py-5 space-y-4">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Primo Company Admin</p>
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4">
+          <p className="text-[10px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-widest">Primo Company Admin</p>
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="Nome (facoltativo)">
@@ -393,8 +393,8 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           <div className="flex items-center gap-2.5">
             <input type="checkbox" id="sendInvite" checked={sendInvite}
               onChange={e => setSendInvite(e.target.checked)}
-              className="rounded border-slate-300 text-[#C76F3D]" />
-            <label htmlFor="sendInvite" className="text-xs text-slate-700 cursor-pointer">
+              className="rounded border-[rgba(6,3,43,0.14)] text-[#C76F3D]" />
+            <label htmlFor="sendInvite" className="text-xs text-[rgba(6,3,43,0.78)] cursor-pointer">
               Invia email di invito per impostare la password
             </label>
           </div>
@@ -405,16 +405,16 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
             </div>
           )}
 
-          <div className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-[9.5px] text-slate-500 space-y-0.5">
-            <p className="font-semibold text-slate-600">Ruolo: COMPANY_ADMIN</p>
+          <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[9.5px] text-[rgba(6,3,43,0.52)] space-y-0.5">
+            <p className="font-semibold text-[rgba(6,3,43,0.62)]">Ruolo: COMPANY_ADMIN</p>
             <p>Il primo utente deve essere Company Admin. Viewer può essere aggiunto successivamente.</p>
             <p>Il ruolo è impostato via Supabase app_metadata — non modificabile dall&apos;utente.</p>
           </div>
         </div>
 
         {/* ── Methodology caveat ─────────────────────────────────────────────── */}
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[9.5px] text-slate-500 space-y-1">
-          <p className="font-semibold text-slate-600">Nota metodologica</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-[9.5px] text-[rgba(6,3,43,0.52)] space-y-1">
+          <p className="font-semibold text-[rgba(6,3,43,0.62)]">Nota metodologica</p>
           <p>KORA misura le organizzazioni, non gli individui. Nessun dato individuale del lavoratore è visibile al datore di lavoro (soglia privacy N≥10).</p>
           <p>Foundation Light v0.1 — calibrazione pre-empirica. Non certifica conformità normativa e non sostituisce consulenza ESG, legale o fiscale.</p>
           <p>Questo flusso è pilot-grade, non production IAM. Gestito da KORA Admin.</p>
@@ -429,7 +429,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
           >
             {status === 'loading' ? '⏳ Creazione in corso…' : 'Crea Azienda Live'}
           </button>
-          <Link href="/admin/companies" className="text-xs text-slate-400 hover:text-slate-700 underline">
+          <Link href="/admin/companies" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.78)] underline">
             ← Company Console
           </Link>
         </div>
@@ -444,11 +444,11 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+      <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
         {label}
       </label>
       {children}
-      {hint && <p className="text-[9px] text-slate-400 mt-0.5">{hint}</p>}
+      {hint && <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-0.5">{hint}</p>}
     </div>
   );
 }

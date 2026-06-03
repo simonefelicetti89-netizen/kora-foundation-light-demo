@@ -11,7 +11,7 @@ export function PersonaSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 select-none whitespace-nowrap">
+      <span className="text-[9px] font-bold uppercase tracking-widest text-[rgba(6,3,43,0.40)] select-none whitespace-nowrap">
         Profilo
       </span>
       <div className="relative">
@@ -28,7 +28,7 @@ export function PersonaSwitcher() {
               synthetic_demo_data: true,
             });
           }}
-          className="appearance-none rounded-md border border-slate-200 bg-slate-50 pl-2.5 pr-6 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-300"
+          className="appearance-none rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] pl-2.5 pr-6 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-300"
           aria-label="Switch worker persona"
         >
           <option value="">— Seleziona profilo —</option>
@@ -36,7 +36,7 @@ export function PersonaSwitcher() {
           <option value="persona-marco-t">Marco T.</option>
           <option value="persona-sofia-r">Sofia R.</option>
         </select>
-        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-slate-400 text-[10px]">
+        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[rgba(6,3,43,0.40)] text-[10px]">
           ▾
         </span>
       </div>

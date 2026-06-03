@@ -48,16 +48,16 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm bg-white border border-slate-200 rounded-xl p-8 shadow-sm">
+    <div className="min-h-screen flex items-center justify-center bg-[rgba(6,3,43,0.03)]">
+      <div className="w-full max-w-sm bg-[#F8F6F1] border border-[rgba(6,3,43,0.08)] rounded-xl p-8 shadow-sm">
         <div className="mb-6">
-          <h1 className="text-xl font-semibold text-slate-800">KORA Admin</h1>
-          <p className="text-sm text-slate-500 mt-1">Accesso operatore — riservato a KORA Admin</p>
+          <h1 className="text-xl font-semibold text-[rgba(6,3,43,0.90)]">KORA Admin</h1>
+          <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">Accesso operatore — riservato a KORA Admin</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-[rgba(6,3,43,0.78)] mb-1">
               Email
             </label>
             <input
@@ -67,13 +67,13 @@ export default function AdminLoginPage() {
               required
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-[rgba(6,3,43,0.14)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="operatore@kora.io"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-[rgba(6,3,43,0.78)] mb-1">
               Password
             </label>
             <input
@@ -83,7 +83,7 @@ export default function AdminLoginPage() {
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-[rgba(6,3,43,0.14)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -96,13 +96,13 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-slate-800 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Accesso in corso…' : 'Accedi'}
           </button>
         </form>
 
-        <p className="mt-4 text-xs text-slate-400 text-center">
+        <p className="mt-4 text-xs text-[rgba(6,3,43,0.40)] text-center">
           Account provisionati via Admin API — nessun signup pubblico
         </p>
       </div>

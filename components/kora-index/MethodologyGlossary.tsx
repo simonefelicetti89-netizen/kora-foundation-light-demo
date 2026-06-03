@@ -15,7 +15,7 @@ type ConceptType =
 
 const CONCEPT_TYPE_TOKEN: Record<ConceptType, { bg: string; text: string; border: string }> = {
   'KORA Index':            { bg: TOKENS.ink,                         text: '#FFFFFF',           border: TOKENS.ink        },
-  'Macroblocco':           { bg: 'rgba(97,86,245,0.10)',             text: TOKENS.accent,       border: TOKENS.accent     },
+  'Macroblocco':           { bg: 'rgba(199,111,61,0.10)',             text: TOKENS.accent,       border: TOKENS.accent     },
   'Componente analitico':  { bg: TOKENS.inkBorder,                   text: TOKENS.inkSecondary, border: TOKENS.inkHint    },
   'Indicatore esterno':    { bg: 'rgba(43,92,230,0.08)',             text: '#1B2A4A',           border: '#2B5CE6'         },
   'Gate interpretativo':   { bg: TOKENS.safeguard.watch.bg,         text: TOKENS.safeguard.watch.text, border: TOKENS.safeguard.watch.dot },

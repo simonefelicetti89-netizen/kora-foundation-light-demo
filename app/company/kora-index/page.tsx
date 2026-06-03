@@ -79,7 +79,7 @@ function ScenarioStrip({ activeScenario, s1Output, s2Output }: {
                 {isActive && (
                   <span
                     className="rounded"
-                    style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 500, padding: '2px 6px', background: 'rgba(97,86,245,0.10)', color: TOKENS.accent }}
+                    style={{ fontFamily: 'var(--font-jakarta)', fontSize: '9px', fontWeight: 500, padding: '2px 6px', background: 'rgba(199,111,61,0.10)', color: TOKENS.accent }}
                   >
                     Attivo
                   </span>

@@ -67,7 +67,7 @@ const GTM_TRACKS: GTMTrack[] = [
     message: 'KORA trasforma spesa people e iniziative reali in intelligence organizzativa verificata.',
     deliverable: 'Board Pack / Decision Pack',
     presenterNote: 'Non entrare nei dettagli tecnici: problema, indice, debito, output.',
-    cardStyle: 'border-indigo-200 bg-indigo-50',
+    cardStyle: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)]',
     letterStyle: 'text-indigo-300',
     steps: [
       { n: 1, label: 'Demo Guide',              href: '/demo-guide' },
@@ -173,9 +173,9 @@ const PILOT_CRITERIA = [
 const STAGE_STYLES: Record<string, string> = {
   pilot_active:   'bg-green-100 text-green-800 border-green-200',
   pilot_proposed: 'bg-blue-100 text-blue-800 border-blue-200',
-  demo_shown:     'bg-indigo-100 text-indigo-800 border-indigo-200',
+  demo_shown:     'bg-indigo-100 text-indigo-800 border-[rgba(199,111,61,0.22)]',
   contacted:      'bg-yellow-100 text-yellow-800 border-yellow-200',
-  prospect:       'bg-slate-100 text-slate-600 border-slate-200',
+  prospect:       'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
 };
 
 // ─── A-09: KORA GTM & Pilot Console ──────────────────────────────────────────
@@ -191,24 +191,24 @@ export default function GtmPilotConsole() {
       {/* ── Header ── */}
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          <h1 className="text-2xl font-bold text-slate-900">KORA GTM & Pilot Console</h1>
+          <h1 className="text-2xl font-bold text-[#06032B]">KORA GTM & Pilot Console</h1>
           <span className="rounded border border-rose-200 bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-700">
             Vista interna KORA
           </span>
           <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
             Internal GTM
           </span>
-          <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-400">
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">
             Foundation Light
           </span>
         </div>
-        <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
+        <p className="text-sm text-[rgba(6,3,43,0.52)] max-w-2xl leading-relaxed">
           Console interna KORA per preparare demo, discovery call, proposta pilota e percorso Foundation Light.
         </p>
         <div className="mt-2 inline-block rounded border border-rose-200 bg-rose-50 px-3 py-1.5">
           <p className="text-xs font-semibold text-rose-700">Vista interna KORA — non dashboard cliente.</p>
         </div>
-        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-slate-400">
+        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-[rgba(6,3,43,0.40)]">
           <span>synthetic_demo_data: true</span>
           <span>·</span>
           <span>calibration_status: pre_empirical_calibration</span>
@@ -219,11 +219,11 @@ export default function GtmPilotConsole() {
 
       {/* ── S1 → S2 Scenario Presenter Narrative ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Scenario demo
         </h2>
-        <p className="text-base font-bold text-slate-900 mb-1">S1 → S2: scenario demo</p>
-        <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+        <p className="text-base font-bold text-[#06032B] mb-1">S1 → S2: scenario demo</p>
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mb-4 leading-relaxed">
           Usare il selettore scenario per raccontare il passaggio da fotografia iniziale
           a scenario post-intervento. Non presentare S2 come previsione garantita.
         </p>
@@ -232,7 +232,7 @@ export default function GtmPilotConsole() {
           {[SCENARIO_S1, SCENARIO_S2].map((sc) => (
             <div key={sc.label} className={`rounded-lg border p-4 ${sc.cardStyle}`}>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-sm font-bold text-slate-900">{sc.label}</span>
+                <span className="text-sm font-bold text-[#06032B]">{sc.label}</span>
                 <span className={`rounded border px-1.5 py-0.5 text-xs font-bold ${sc.safeguardStyle}`}>
                   {sc.safeguard}
                 </span>
@@ -240,12 +240,12 @@ export default function GtmPilotConsole() {
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
                 {sc.metrics.map(([l, v]) => (
                   <div key={l} className="text-xs">
-                    <span className="text-slate-500">{l}</span>
-                    <span className="font-bold text-slate-800 ml-1.5">{v}</span>
+                    <span className="text-[rgba(6,3,43,0.52)]">{l}</span>
+                    <span className="font-bold text-[rgba(6,3,43,0.90)] ml-1.5">{v}</span>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed border-t border-slate-200 pt-2">
+              <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed border-t border-[rgba(6,3,43,0.08)] pt-2">
                 {sc.copy}
               </p>
             </div>
@@ -259,20 +259,20 @@ export default function GtmPilotConsole() {
 
       {/* ── Demo Script ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Demo Script
         </h2>
-        <p className="text-base font-bold text-slate-900 mb-4">Demo Script — 15 / 30 / 60 minuti</p>
+        <p className="text-base font-bold text-[#06032B] mb-4">Demo Script — 15 / 30 / 60 minuti</p>
         <div className="space-y-4">
           {GTM_TRACKS.map((track) => (
             <div key={track.id} className={`rounded-lg border p-5 ${track.cardStyle}`}>
               <div className="flex flex-wrap items-center gap-2 mb-3">
                 <span className={`text-2xl font-black leading-none ${track.letterStyle}`}>{track.id}</span>
-                <span className="text-sm font-bold text-slate-800">{track.title}</span>
-                <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-xs font-semibold text-slate-600">
+                <span className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{track.title}</span>
+                <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-xs font-semibold text-[rgba(6,3,43,0.62)]">
                   {track.duration}
                 </span>
-                <span className="rounded border border-slate-200 bg-white/70 px-1.5 py-0.5 text-xs font-medium text-slate-500">
+                <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]/70 px-1.5 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
                   {track.audience}
                 </span>
                 <span className="rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-600">
@@ -280,20 +280,20 @@ export default function GtmPilotConsole() {
                 </span>
               </div>
 
-              <div className="rounded border border-slate-200 bg-white/60 px-3 py-2.5 mb-3 space-y-1.5">
-                <p className="text-xs text-slate-600">
-                  <span className="font-semibold text-slate-700">Obiettivo: </span>
+              <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]/60 px-3 py-2.5 mb-3 space-y-1.5">
+                <p className="text-xs text-[rgba(6,3,43,0.62)]">
+                  <span className="font-semibold text-[rgba(6,3,43,0.78)]">Obiettivo: </span>
                   {track.goal}
                 </p>
-                <p className="text-xs text-slate-600">
-                  <span className="font-semibold text-slate-700">Messaggio chiave: </span>
+                <p className="text-xs text-[rgba(6,3,43,0.62)]">
+                  <span className="font-semibold text-[rgba(6,3,43,0.78)]">Messaggio chiave: </span>
                   <span className="italic">&ldquo;{track.message}&rdquo;</span>
                 </p>
-                <p className="text-xs text-slate-600">
-                  <span className="font-semibold text-slate-700">Deliverable: </span>
+                <p className="text-xs text-[rgba(6,3,43,0.62)]">
+                  <span className="font-semibold text-[rgba(6,3,43,0.78)]">Deliverable: </span>
                   {track.deliverable}
                 </p>
-                <p className="text-xs text-amber-700 border-t border-slate-100 pt-1.5">
+                <p className="text-xs text-amber-700 border-t border-[rgba(6,3,43,0.05)] pt-1.5">
                   <span className="font-semibold">Nota presenter: </span>
                   {track.presenterNote}
                 </p>
@@ -304,14 +304,14 @@ export default function GtmPilotConsole() {
                   <Link
                     key={step.n}
                     href={step.href}
-                    className="flex items-center gap-2.5 rounded-md border border-white/80 bg-white/50 px-3 py-2 hover:bg-white hover:shadow-sm transition-all"
+                    className="flex items-center gap-2.5 rounded-md border border-white/80 bg-[#F8F6F1]/50 px-3 py-2 hover:bg-[#F8F6F1] hover:shadow-sm transition-all"
                   >
-                    <span className="w-5 h-5 rounded-full bg-slate-100 text-[10px] font-bold text-slate-500 flex items-center justify-center shrink-0">
+                    <span className="w-5 h-5 rounded-full bg-[rgba(6,3,43,0.05)] text-[10px] font-bold text-[rgba(6,3,43,0.52)] flex items-center justify-center shrink-0">
                       {step.n}
                     </span>
-                    <span className="text-xs font-medium text-slate-700 flex-1">{step.label}</span>
+                    <span className="text-xs font-medium text-[rgba(6,3,43,0.78)] flex-1">{step.label}</span>
                     {step.roleNote && (
-                      <span className="text-[10px] font-mono text-slate-400 shrink-0 rounded border border-slate-200 bg-white px-1 py-0.5">
+                      <span className="text-[10px] font-mono text-[rgba(6,3,43,0.40)] shrink-0 rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1 py-0.5">
                         {step.roleNote}
                       </span>
                     )}
@@ -325,10 +325,10 @@ export default function GtmPilotConsole() {
 
       {/* ── Privacy Story per il presenter ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Privacy story
         </h2>
-        <p className="text-base font-bold text-slate-900 mb-4">Privacy story da raccontare in demo</p>
+        <p className="text-base font-bold text-[#06032B] mb-4">Privacy story da raccontare in demo</p>
 
         <div className="grid gap-4 sm:grid-cols-2 mb-3">
           <div className="rounded-lg border border-green-200 bg-green-50 p-4">
@@ -376,23 +376,23 @@ export default function GtmPilotConsole() {
 
       {/* ── Pilot Package ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Pilot Package
         </h2>
-        <p className="text-base font-bold text-slate-900 mb-1">KORA Foundation Light Pilot Package</p>
-        <p className="text-sm text-slate-500 mb-5 leading-relaxed">Cosa propone KORA nel primo pilot aziendale.</p>
+        <p className="text-base font-bold text-[#06032B] mb-1">KORA Foundation Light Pilot Package</p>
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mb-5 leading-relaxed">Cosa propone KORA nel primo pilot aziendale.</p>
 
         {/* A */}
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">A — Cosa include</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">A — Cosa include</p>
           <div className="grid gap-3 sm:grid-cols-2">
             {PILOT_INCLUDES.map((card) => (
-              <div key={card.n} className="rounded-lg border border-slate-200 bg-white p-4">
+              <div key={card.n} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
                 <div className="flex items-start gap-3">
-                  <span className="text-xs font-mono text-slate-300 shrink-0 mt-0.5">{card.n}</span>
+                  <span className="text-xs font-mono text-[rgba(6,3,43,0.28)] shrink-0 mt-0.5">{card.n}</span>
                   <div>
-                    <p className="text-sm font-semibold text-slate-800">{card.title}</p>
-                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{card.body}</p>
+                    <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{card.title}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5 leading-relaxed">{card.body}</p>
                   </div>
                 </div>
               </div>
@@ -402,7 +402,7 @@ export default function GtmPilotConsole() {
 
         {/* B */}
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">B — Cosa NON include</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">B — Cosa NON include</p>
           <div className="rounded-lg border border-rose-200 bg-rose-50 p-4">
             <ul className="grid gap-1 sm:grid-cols-2">
               {PILOT_EXCLUDES.map((item) => (
@@ -416,16 +416,16 @@ export default function GtmPilotConsole() {
 
         {/* C */}
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">C — Fonti dati tipiche richieste</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">C — Fonti dati tipiche richieste</p>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {PILOT_SOURCES.map((src) => (
-              <div key={src.title} className="rounded border border-slate-200 bg-white px-3 py-2.5">
-                <p className="text-xs font-semibold text-slate-700">{src.title}</p>
-                <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">{src.body}</p>
+              <div key={src.title} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2.5">
+                <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{src.title}</p>
+                <p className="text-[11px] text-[rgba(6,3,43,0.40)] mt-0.5 leading-relaxed">{src.body}</p>
               </div>
             ))}
           </div>
-          <p className="mt-2 text-[11px] text-slate-400 leading-relaxed">
+          <p className="mt-2 text-[11px] text-[rgba(6,3,43,0.40)] leading-relaxed">
             Le fonti variano per azienda. In Foundation Light si lavora su dataset concordati o sintetici,
             con esclusione dei dati sensibili non necessari.
           </p>
@@ -433,16 +433,16 @@ export default function GtmPilotConsole() {
 
         {/* D */}
         <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">D — Success criteria indicativi</p>
-          <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">D — Success criteria indicativi</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
             <ul className="space-y-1.5">
               {PILOT_CRITERIA.map((item) => (
-                <li key={item} className="flex gap-2 text-xs text-slate-600">
+                <li key={item} className="flex gap-2 text-xs text-[rgba(6,3,43,0.62)]">
                   <span className="text-green-400 shrink-0 mt-0.5">·</span>{item}
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-[11px] text-slate-400 italic border-t border-slate-100 pt-2">
+            <p className="mt-3 text-[11px] text-[rgba(6,3,43,0.40)] italic border-t border-[rgba(6,3,43,0.05)] pt-2">
               Criteri indicativi — non contrattuali.
             </p>
           </div>
@@ -450,8 +450,8 @@ export default function GtmPilotConsole() {
 
         {/* E */}
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">E — Pilot positioning</p>
-          <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">E — Pilot positioning</p>
+          <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-5">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-indigo-900">Foundation Light Pilot</p>
@@ -467,13 +467,13 @@ export default function GtmPilotConsole() {
               <div className="shrink-0">
                 <button
                   disabled
-                  className="rounded-md border border-indigo-300 bg-white px-4 py-2 text-xs font-semibold text-indigo-400 cursor-not-allowed"
+                  className="rounded-md border border-indigo-300 bg-[#F8F6F1] px-4 py-2 text-xs font-semibold text-indigo-400 cursor-not-allowed"
                 >
                   Prepara proposta pilota — demo
                 </button>
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-indigo-200 flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-indigo-400">
+            <div className="mt-3 pt-3 border-t border-[rgba(199,111,61,0.22)] flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-mono text-indigo-400">
               <span>synthetic_demo_data: true</span>
               <span>·</span>
               <span>calibration_status: pre_empirical_calibration</span>
@@ -486,25 +486,25 @@ export default function GtmPilotConsole() {
 
       {/* ── GTM Pipeline ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Pipeline commerciale
         </h2>
-        <p className="text-base font-bold text-slate-900 mb-4">Go-to-Market Pipeline</p>
+        <p className="text-base font-bold text-[#06032B] mb-4">Go-to-Market Pipeline</p>
 
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-3 text-center">
-            <p className="text-xs text-slate-400">Pipeline companies</p>
-            <p className="text-2xl font-bold text-slate-800 mt-1">{pipeline.length}</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
+            <p className="text-xs text-[rgba(6,3,43,0.40)]">Pipeline companies</p>
+            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{pipeline.length}</p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-3 text-center">
-            <p className="text-xs text-slate-400">Active pilots</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
+            <p className="text-xs text-[rgba(6,3,43,0.40)]">Active pilots</p>
             <p className="text-2xl font-bold text-green-600 mt-1">
               {pipeline.filter((e) => e.stage === 'pilot_active').length}
             </p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-3 text-center">
-            <p className="text-xs text-slate-400">Potential ARR</p>
-            <p className="text-2xl font-bold text-slate-800 mt-1">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
+            <p className="text-xs text-[rgba(6,3,43,0.40)]">Potential ARR</p>
+            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">
               €{(totalArr / 1000).toFixed(0)}k
             </p>
           </div>
@@ -512,19 +512,19 @@ export default function GtmPilotConsole() {
 
         <div className="space-y-2">
           {pipeline.map((e) => (
-            <div key={e.company_name} className="rounded-lg border border-slate-200 bg-white p-4">
+            <div key={e.company_name} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-slate-800">{e.company_name}</p>
+                    <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{e.company_name}</p>
                     <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${STAGE_STYLES[e.stage] ?? STAGE_STYLES.prospect}`}>
                       {e.stage.replace(/_/g, ' ')}
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">{e.signal}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Next: {e.next_action}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.52)] mt-1">{e.signal}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Next: {e.next_action}</p>
                 </div>
-                <p className="shrink-0 text-sm font-mono text-slate-500">
+                <p className="shrink-0 text-sm font-mono text-[rgba(6,3,43,0.52)]">
                   €{e.potential_arr_eur.toLocaleString('it-IT')}/yr
                 </p>
               </div>
@@ -535,12 +535,12 @@ export default function GtmPilotConsole() {
 
       {/* ── Gate & Methodology Status ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Methodology & Gate Status
         </h2>
         <div className="space-y-2">
           {gates.gates.map((g) => (
-            <div key={g.id} className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3">
+            <div key={g.id} className="flex items-start gap-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
               <span className={`shrink-0 mt-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${
                 g.status === 'CLOSED'
                   ? 'bg-green-50 text-green-700 border-green-200'
@@ -549,13 +549,13 @@ export default function GtmPilotConsole() {
                 {g.status}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-700">{g.label}</p>
-                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">Blocks: {g.blocks}</p>
+                <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">{g.label}</p>
+                <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5 leading-relaxed">Blocks: {g.blocks}</p>
               </div>
             </div>
           ))}
         </div>
-        <p className="mt-2 text-xs text-slate-400 font-mono">
+        <p className="mt-2 text-xs text-[rgba(6,3,43,0.40)] font-mono">
           {gates.methodology_version_id} · calibration: {gates.calibration_status}
         </p>
       </div>

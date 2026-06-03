@@ -15,12 +15,12 @@ interface ActionItem { label: string; detail: string; }
 const PRIORITY_STYLES: Record<string, string> = {
   alta:  'border-l-rose-400 bg-rose-50',
   media: 'border-l-amber-400 bg-amber-50',
-  bassa: 'border-l-slate-300 bg-slate-50',
+  bassa: 'border-l-slate-300 bg-[rgba(6,3,43,0.03)]',
 };
 const PRIORITY_TAG: Record<string, string> = {
   alta:  'text-rose-700 bg-rose-100 border-rose-200',
   media: 'text-amber-700 bg-amber-100 border-amber-200',
-  bassa: 'text-slate-600 bg-slate-100 border-slate-200',
+  bassa: 'text-[rgba(6,3,43,0.62)] bg-[rgba(6,3,43,0.05)] border-[rgba(6,3,43,0.08)]',
 };
 
 function fmt(n: number) {
@@ -124,21 +124,21 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
     <div className="space-y-5">
 
       {/* ── F. Top Risks ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">F — Top Rischi / Gap Prioritari</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">F — Top Rischi / Gap Prioritari</p>
         {risks.length === 0 ? (
-          <p className="text-sm text-slate-400">Nessun rischio significativo identificato per questo scenario.</p>
+          <p className="text-sm text-[rgba(6,3,43,0.40)]">Nessun rischio significativo identificato per questo scenario.</p>
         ) : (
           <div className="space-y-3">
             {risks.map((r, i) => (
-              <div key={i} className={`rounded-lg border bg-white border-l-4 pl-4 pr-4 py-3 ${r.severity === 'high' ? 'border-l-rose-400' : 'border-l-amber-400'}`}>
+              <div key={i} className={`rounded-lg border bg-[#F8F6F1] border-l-4 pl-4 pr-4 py-3 ${r.severity === 'high' ? 'border-l-rose-400' : 'border-l-amber-400'}`}>
                 <div className="flex items-start gap-2">
                   <span className={`shrink-0 mt-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${r.severity === 'high' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
                     {r.severity === 'high' ? 'Alta' : 'Media'}
                   </span>
                   <div>
-                    <p className="text-xs font-semibold text-slate-700">{r.label}</p>
-                    <p className="text-xs text-slate-500 leading-relaxed mt-0.5">{r.detail}</p>
+                    <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{r.label}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed mt-0.5">{r.detail}</p>
                   </div>
                 </div>
               </div>
@@ -148,10 +148,10 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
       </div>
 
       {/* ── G. Top Opportunities ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">G — Top Opportunità</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-4">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">G — Top Opportunità</p>
         {opportunities.length === 0 ? (
-          <p className="text-sm text-slate-400">Dati insufficienti per identificare opportunità strutturali.</p>
+          <p className="text-sm text-[rgba(6,3,43,0.40)]">Dati insufficienti per identificare opportunità strutturali.</p>
         ) : (
           <div className="space-y-3">
             {opportunities.map((o, i) => (
@@ -166,28 +166,28 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
 
       {/* ── Recommendations from BTI service ── */}
       {recommendations.length > 0 && (
-        <div className="rounded-xl border border-indigo-100 bg-white p-6 space-y-4">
+        <div className="rounded-xl border border-indigo-100 bg-[#F8F6F1] p-6 space-y-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest text-indigo-400">Raccomandazioni BTI — Direzionali</p>
-            <p className="text-[11px] text-slate-400 mt-1">Correlazione ≠ causalità — potenziale non garantito</p>
+            <p className="text-[11px] text-[rgba(6,3,43,0.40)] mt-1">Correlazione ≠ causalità — potenziale non garantito</p>
           </div>
           <div className="space-y-3">
             {recommendations.map((r, i) => (
-              <div key={i} className={`rounded-lg border-l-4 pl-4 pr-4 py-3 ${PRIORITY_STYLES[r.priority] ?? 'bg-slate-50 border-l-slate-300'}`}>
+              <div key={i} className={`rounded-lg border-l-4 pl-4 pr-4 py-3 ${PRIORITY_STYLES[r.priority] ?? 'bg-[rgba(6,3,43,0.03)] border-l-slate-300'}`}>
                 <div className="flex items-start gap-2">
                   <span className={`shrink-0 mt-0.5 rounded border px-1.5 py-0.5 text-[10px] font-bold ${PRIORITY_TAG[r.priority] ?? ''}`}>
                     {r.priority.toUpperCase()}
                   </span>
                   {r.target_macroblock && (
-                    <span className="shrink-0 mt-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-mono text-slate-500">
+                    <span className="shrink-0 mt-0.5 rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.52)]">
                       {r.target_macroblock}
                     </span>
                   )}
                 </div>
-                <p className="text-xs font-semibold text-slate-700 mt-1.5">{r.action_it}</p>
-                <p className="text-xs text-slate-500 leading-relaxed mt-0.5">{r.expected_signal_it}</p>
+                <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)] mt-1.5">{r.action_it}</p>
+                <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed mt-0.5">{r.expected_signal_it}</p>
                 {r.budget_note && (
-                  <p className="text-[10px] text-slate-400 mt-1 font-mono">{r.budget_note}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-1 font-mono">{r.budget_note}</p>
                 )}
               </div>
             ))}
@@ -196,10 +196,10 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
       )}
 
       {/* ── H. 90-Day Action Plan ── */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">H — Piano d&apos;Azione 90 Giorni</p>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">H — Piano d&apos;Azione 90 Giorni</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">
             Piano direzionale derivato da KORA Index v3 e dati BTI — non un mandato operativo.
             Ogni azione richiede valutazione nel contesto organizzativo specifico.
           </p>
@@ -208,65 +208,65 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
         {/* Phase 0–30 */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-slate-700 text-white text-[10px] font-bold px-2.5 py-0.5">0–30 giorni</span>
-            <p className="text-xs font-semibold text-slate-600">Diagnosi e Validazione</p>
+            <span className="rounded-full bg-[rgba(6,3,43,0.65)] text-white text-[10px] font-bold px-2.5 py-0.5">0–30 giorni</span>
+            <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">Diagnosi e Validazione</p>
           </div>
           <div className="ml-4 space-y-2">
             {phase0_30.map((a, i) => (
               <div key={i} className="flex gap-2 text-xs">
-                <span className="shrink-0 font-bold text-slate-400">{i + 1}.</span>
+                <span className="shrink-0 font-bold text-[rgba(6,3,43,0.40)]">{i + 1}.</span>
                 <div>
-                  <p className="font-semibold text-slate-700">{a.label}</p>
-                  <p className="text-slate-500 leading-relaxed">{a.detail}</p>
+                  <p className="font-semibold text-[rgba(6,3,43,0.78)]">{a.label}</p>
+                  <p className="text-[rgba(6,3,43,0.52)] leading-relaxed">{a.detail}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-[rgba(6,3,43,0.05)]" />
 
         {/* Phase 30–60 */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-indigo-600 text-white text-[10px] font-bold px-2.5 py-0.5">30–60 giorni</span>
-            <p className="text-xs font-semibold text-slate-600">Riallocazione e Attivazione</p>
+            <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">Riallocazione e Attivazione</p>
           </div>
           <div className="ml-4 space-y-2">
             {phase30_60.map((a, i) => (
               <div key={i} className="flex gap-2 text-xs">
                 <span className="shrink-0 font-bold text-indigo-300">{i + 1}.</span>
                 <div>
-                  <p className="font-semibold text-slate-700">{a.label}</p>
-                  <p className="text-slate-500 leading-relaxed">{a.detail}</p>
+                  <p className="font-semibold text-[rgba(6,3,43,0.78)]">{a.label}</p>
+                  <p className="text-[rgba(6,3,43,0.52)] leading-relaxed">{a.detail}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-[rgba(6,3,43,0.05)]" />
 
         {/* Phase 60–90 */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-0.5">60–90 giorni</span>
-            <p className="text-xs font-semibold text-slate-600">Misurazione e Board Report</p>
+            <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">Misurazione e Board Report</p>
           </div>
           <div className="ml-4 space-y-2">
             {phase60_90.map((a, i) => (
               <div key={i} className="flex gap-2 text-xs">
                 <span className="shrink-0 font-bold text-emerald-400">{i + 1}.</span>
                 <div>
-                  <p className="font-semibold text-slate-700">{a.label}</p>
-                  <p className="text-slate-500 leading-relaxed">{a.detail}</p>
+                  <p className="font-semibold text-[rgba(6,3,43,0.78)]">{a.label}</p>
+                  <p className="text-[rgba(6,3,43,0.52)] leading-relaxed">{a.detail}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-[10px] text-slate-400 border-t border-slate-100 pt-3 leading-relaxed">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)] pt-3 leading-relaxed">
           Le azioni raccomandate sono direzionali — potenziale non garantito. Correlazione ≠ causalità.
           Priorità e effort da valutare nel contesto organizzativo specifico di Meridiana Group.
         </p>

@@ -53,7 +53,7 @@ const STATUS_STYLE: Record<StepStatus, { chip: string; dot: string; short: strin
   pending:        { chip: 'border-amber-200 bg-amber-50 text-amber-700',    dot: 'bg-amber-300',  short: '⋯', label: 'in attesa'   },
   review_required:{ chip: 'border-orange-200 bg-orange-50 text-orange-700', dot: 'bg-orange-400', short: '?', label: 'review'      },
   blocked:        { chip: 'border-rose-200 bg-rose-50 text-rose-700',      dot: 'bg-rose-500',   short: '✗', label: 'bloccato'    },
-  excluded:       { chip: 'border-slate-200 bg-slate-50 text-slate-400',   dot: 'bg-slate-200',  short: '○', label: 'escluso'     },
+  excluded:       { chip: 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)]',   dot: 'bg-[rgba(6,3,43,0.12)]',  short: '○', label: 'escluso'     },
   tracked_only:   { chip: 'border-indigo-200 bg-indigo-50 text-indigo-600', dot: 'bg-indigo-300', short: '⊘', label: 'tracciato'   },
 };
 
@@ -165,18 +165,18 @@ function StatusChip({ status }: { status: StepStatus }) {
 function ExampleCard({ example }: { example: LineageExample }) {
   const typeStyle = TYPE_STYLE[example.type];
   return (
-    <div className={cn('rounded-lg border bg-white p-3 space-y-3', typeStyle.card)}>
+    <div className={cn('rounded-lg border bg-[#F8F6F1] p-3 space-y-3', typeStyle.card)}>
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-slate-800 leading-snug">{example.label}</p>
+          <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)] leading-snug">{example.label}</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
           <span className={cn('rounded border px-1.5 py-0.5 text-[9px] font-bold', typeStyle.badge)}>
             {typeStyle.label}
           </span>
           {example.pillar && (
-            <span className={cn('rounded border px-1 py-0.5 text-[9px] font-mono', PILLAR_STYLE[example.pillar] ?? 'bg-slate-50 border-slate-200 text-slate-500')}>
+            <span className={cn('rounded border px-1 py-0.5 text-[9px] font-mono', PILLAR_STYLE[example.pillar] ?? 'bg-[rgba(6,3,43,0.03)] border-[rgba(6,3,43,0.08)] text-[rgba(6,3,43,0.52)]')}>
               {example.pillar}
             </span>
           )}
@@ -191,17 +191,17 @@ function ExampleCard({ example }: { example: LineageExample }) {
           return (
             <div key={step.num} className="flex items-start gap-2">
               <div className="flex items-center gap-1.5 shrink-0 w-[90px]">
-                <span className="text-[9px] font-mono text-slate-300 w-4 text-right shrink-0">
+                <span className="text-[9px] font-mono text-[rgba(6,3,43,0.28)] w-4 text-right shrink-0">
                   {String(step.num).padStart(2, '0')}
                 </span>
                 <span className={cn('rounded border px-1 py-px text-[8px] font-semibold whitespace-nowrap', s.chip)}>
                   {s.short}
                 </span>
-                <span className="text-[9px] font-medium text-slate-500 truncate hidden sm:block">
+                <span className="text-[9px] font-medium text-[rgba(6,3,43,0.52)] truncate hidden sm:block">
                   {step.label}
                 </span>
               </div>
-              <p className="text-[9px] text-slate-400 leading-snug flex-1 min-w-0 truncate">
+              <p className="text-[9px] text-[rgba(6,3,43,0.40)] leading-snug flex-1 min-w-0 truncate">
                 {result.output}
               </p>
             </div>
@@ -216,13 +216,13 @@ function ExampleCard({ example }: { example: LineageExample }) {
 function CompactMatrixRow({ example }: { example: LineageExample }) {
   const typeStyle = TYPE_STYLE[example.type];
   return (
-    <tr className="border-b border-slate-50 last:border-0">
+    <tr className="border-b border-[rgba(6,3,43,0.04)] last:border-0">
       <td className="px-2 py-2 whitespace-nowrap max-w-[160px]">
         <div className="flex items-center gap-1.5">
           <span className={cn('rounded border px-1 py-px text-[8px] font-bold shrink-0', typeStyle.badge)}>
             {typeStyle.label.slice(0, 4).toUpperCase()}
           </span>
-          <span className="text-[10px] font-medium text-slate-700 truncate">{example.label}</span>
+          <span className="text-[10px] font-medium text-[rgba(6,3,43,0.78)] truncate">{example.label}</span>
         </div>
       </td>
       {example.steps.map((step, i) => (
@@ -248,10 +248,10 @@ export function DataLineagePreview({
       <div className={cn('space-y-3', className)}>
         {showHeader && (
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">
               Lineage Snapshot
             </h3>
-            <p className="text-[10px] text-slate-400 mt-0.5">
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
               Ogni macroblocco dell&apos;Index deve poter essere ricondotto a fonti, regole e decisioni di review.
             </p>
           </div>
@@ -261,14 +261,14 @@ export function DataLineagePreview({
         <div className="overflow-x-auto">
           <table className="w-full text-[9px]">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="px-2 py-1.5 text-left font-semibold text-slate-400 w-[180px]">
+              <tr className="border-b border-[rgba(6,3,43,0.05)]">
+                <th className="px-2 py-1.5 text-left font-semibold text-[rgba(6,3,43,0.40)] w-[180px]">
                   Categoria iniziativa
                 </th>
                 {STEPS.map((s) => (
-                  <th key={s.num} className="px-2 py-1.5 text-center font-semibold text-slate-400 whitespace-nowrap">
+                  <th key={s.num} className="px-2 py-1.5 text-center font-semibold text-[rgba(6,3,43,0.40)] whitespace-nowrap">
                     <span className="font-mono">{String(s.num).padStart(2, '0')}</span>
-                    <span className="hidden sm:block text-[8px] font-normal text-slate-300 mt-0.5">{s.label.split(' ')[0]}</span>
+                    <span className="hidden sm:block text-[8px] font-normal text-[rgba(6,3,43,0.28)] mt-0.5">{s.label.split(' ')[0]}</span>
                   </th>
                 ))}
               </tr>
@@ -289,14 +289,14 @@ export function DataLineagePreview({
             .map(([key, s]) => (
               <span key={key} className="flex items-center gap-1">
                 <span className={cn('inline-block h-3 w-3 rounded-full', s.dot)} />
-                <span className="text-slate-400">{s.label}</span>
+                <span className="text-[rgba(6,3,43,0.40)]">{s.label}</span>
               </span>
             ))
           }
         </div>
 
         {showMethodologyNote && (
-          <p className="text-[10px] text-slate-400 border-t border-slate-100 pt-2 leading-relaxed">
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)] pt-2 leading-relaxed">
             Data Lineage Preview è rule-based pre-empirical. Non è audit trail certificato.
             Persistenza, versioning e firme advisor richiedono la fase SaaS/backend.
           </p>
@@ -311,8 +311,8 @@ export function DataLineagePreview({
     <div className={cn('space-y-5', className)}>
       {showHeader && (
         <div>
-          <h2 className="text-sm font-semibold text-slate-700">Data Lineage Preview</h2>
-          <p className="text-xs text-slate-500 mt-1 leading-relaxed max-w-2xl">
+          <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Data Lineage Preview</h2>
+          <p className="text-xs text-[rgba(6,3,43,0.52)] mt-1 leading-relaxed max-w-2xl">
             Dal dato ricevuto all&apos;output direzionale: KORA mostra il percorso metodologico prima del Decision Pack.
           </p>
         </div>
@@ -321,17 +321,17 @@ export function DataLineagePreview({
       {/* Pipeline strip — responsive grid, no horizontal scroll */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
         {STEPS.map((step) => (
-          <div key={step.num} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-center">
-            <p className="text-[10px] font-mono font-bold text-slate-400">
+          <div key={step.num} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2 text-center">
+            <p className="text-[10px] font-mono font-bold text-[rgba(6,3,43,0.40)]">
               {String(step.num).padStart(2, '0')}
             </p>
-            <p className="text-[10px] font-semibold text-slate-700 mt-0.5 leading-tight">
+            <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.78)] mt-0.5 leading-tight">
               {step.label}
             </p>
-            <p className="text-[8px] text-slate-400 mt-0.5 leading-tight">
+            <p className="text-[8px] text-[rgba(6,3,43,0.40)] mt-0.5 leading-tight">
               {step.sublabel}
             </p>
-            <p className="text-[8px] text-slate-300 mt-1 leading-tight border-t border-slate-50 pt-1">
+            <p className="text-[8px] text-[rgba(6,3,43,0.28)] mt-1 leading-tight border-t border-[rgba(6,3,43,0.04)] pt-1">
               {step.rule}
             </p>
           </div>
@@ -340,7 +340,7 @@ export function DataLineagePreview({
 
       {/* Example cards */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-2">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-2">
           Esempi metodologici — iniziative/categorie, nessuna identità lavoratore
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -355,14 +355,14 @@ export function DataLineagePreview({
         {(Object.entries(STATUS_STYLE) as [StepStatus, typeof STATUS_STYLE[StepStatus]][]).map(([key, s]) => (
           <span key={key} className="flex items-center gap-1.5 text-[10px]">
             <span className={cn('inline-block h-2.5 w-2.5 rounded-full shrink-0', s.dot)} />
-            <span className="text-slate-500">{s.label}</span>
+            <span className="text-[rgba(6,3,43,0.52)]">{s.label}</span>
           </span>
         ))}
       </div>
 
       {showMethodologyNote && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-1.5 text-[11px] text-slate-500">
-          <p className="font-semibold text-slate-600 text-[10px] uppercase tracking-wide">Nota metodologica</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-3 space-y-1.5 text-[11px] text-[rgba(6,3,43,0.52)]">
+          <p className="font-semibold text-[rgba(6,3,43,0.62)] text-[10px] uppercase tracking-wide">Nota metodologica</p>
           <p>
             Data Lineage Preview è una rappresentazione rule-based pre-empirical. Non è audit trail certificato:
             persistenza, versioning e firme advisor richiedono la fase SaaS/backend.

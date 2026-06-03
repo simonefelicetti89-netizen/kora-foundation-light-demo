@@ -12,8 +12,8 @@ export default async function CompanyWorkspacePage() {
 
   if (isKoraAuthError(authResult)) {
     return (
-      <div className="max-w-md mx-auto mt-16 p-8 border border-slate-200 rounded-xl bg-white shadow-sm text-center">
-        <p className="text-sm text-slate-600">Accesso negato. Ricarica la pagina o contatta il tuo KORA Admin.</p>
+      <div className="max-w-md mx-auto mt-16 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-[#F8F6F1] shadow-sm text-center">
+        <p className="text-sm text-[rgba(6,3,43,0.62)]">Accesso negato. Ricarica la pagina o contatta il tuo KORA Admin.</p>
       </div>
     );
   }

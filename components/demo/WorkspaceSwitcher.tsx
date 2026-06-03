@@ -54,10 +54,10 @@ export function WorkspaceSwitcher() {
 
   return (
     <div>
-      <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+      <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
         Esplora KORA dai diversi workspace
       </h2>
-      <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+      <p className="text-sm text-[rgba(6,3,43,0.52)] mb-4 leading-relaxed">
         KORA Foundation Light è una demo multi-sided. Cambia ruolo demo per vedere come azienda,
         lavoratore, partner e advisor partecipano allo stesso ciclo di attivazione.
       </p>
@@ -69,22 +69,22 @@ export function WorkspaceSwitcher() {
               key={ws.role}
               onClick={() => handleSelect(ws.role, ws.route)}
               className={`
-                flex flex-col items-start gap-2 rounded-lg border bg-white p-4 text-left
+                flex flex-col items-start gap-2 rounded-lg border bg-[#F8F6F1] p-4 text-left
                 transition-all hover:shadow-sm
                 ${ws.accentClass}
                 ${isActive ? 'ring-2 ring-offset-1 ring-slate-400' : ''}
               `}
             >
               <div className="flex w-full items-center justify-between">
-                <span className="text-sm font-semibold text-slate-800">{ws.label}</span>
+                <span className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{ws.label}</span>
                 {isActive && (
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                  <span className="rounded bg-[rgba(6,3,43,0.05)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">
                     attivo
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 leading-relaxed">{ws.description}</p>
-              <span className="mt-auto text-xs font-medium text-slate-400">{ws.route}</span>
+              <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">{ws.description}</p>
+              <span className="mt-auto text-xs font-medium text-[rgba(6,3,43,0.40)]">{ws.route}</span>
             </button>
           );
         })}

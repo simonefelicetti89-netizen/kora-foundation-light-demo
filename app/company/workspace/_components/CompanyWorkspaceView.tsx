@@ -117,9 +117,9 @@ function ts(s: string) {
 
 function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <div id={id} className="rounded-xl border border-slate-200 bg-white overflow-hidden scroll-mt-4">
-      <div className="px-5 py-3.5 border-b border-slate-100">
-        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">{title}</p>
+    <div id={id} className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden scroll-mt-4">
+      <div className="px-5 py-3.5 border-b border-[rgba(6,3,43,0.05)]">
+        <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{title}</p>
       </div>
       <div className="px-5 py-4">{children}</div>
     </div>
@@ -182,14 +182,14 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
         </div>
       </div>
 
       {/* ── Loading / error ─────────────────────────────────────────────────── */}
       {wsLoading && (
-        <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-6 text-xs text-slate-400 text-center">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-6 text-xs text-[rgba(6,3,43,0.40)] text-center">
           Caricamento workspace…
         </div>
       )}
@@ -230,25 +230,25 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
               {/* Hero row */}
               <div className="flex items-center gap-6 flex-wrap">
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">KORA Index</p>
+                  <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">KORA Index</p>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-4xl font-bold text-[#06032B] tracking-tight">{ki.koraIndexValue}</span>
-                    <span className="text-sm text-slate-400">/100</span>
+                    <span className="text-sm text-[rgba(6,3,43,0.40)]">/100</span>
                   </div>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Confidence Score</p>
-                  <span className="text-2xl font-bold text-slate-700">{Math.round(ki.confidenceScore * 100)}%</span>
-                  <p className="text-[9px] text-slate-400 mt-0.5">Esterno al KORA Index</p>
+                  <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Confidence Score</p>
+                  <span className="text-2xl font-bold text-[rgba(6,3,43,0.78)]">{Math.round(ki.confidenceScore * 100)}%</span>
+                  <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-0.5">Esterno al KORA Index</p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Activation Safeguard</p>
-                  <Badge label={SAFEGUARD_LABEL[ki.safeguardStatus] ?? ki.safeguardStatus} cls={SAFEGUARD_CLS[ki.safeguardStatus] ?? 'border-slate-200 bg-slate-50 text-slate-500'} />
+                  <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Activation Safeguard</p>
+                  <Badge label={SAFEGUARD_LABEL[ki.safeguardStatus] ?? ki.safeguardStatus} cls={SAFEGUARD_CLS[ki.safeguardStatus] ?? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'} />
                 </div>
                 {ki.activationRate !== null && (
                   <div>
-                    <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Activation Rate</p>
-                    <span className="text-lg font-bold text-slate-700">{Math.round(ki.activationRate * 100)}%</span>
+                    <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Activation Rate</p>
+                    <span className="text-lg font-bold text-[rgba(6,3,43,0.78)]">{Math.round(ki.activationRate * 100)}%</span>
                   </div>
                 )}
               </div>
@@ -261,21 +261,21 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                   { label: 'Distribution & Equity (25%)', note: 'WB + PC + PB + EQ' },
                   { label: 'Budget-to-Human-Impact (20%)', note: 'BTI Engine' },
                 ].map(({ label, note }) => (
-                  <div key={label} className="rounded border border-slate-200 bg-slate-50 px-3 py-2">
-                    <p className="font-semibold text-slate-700">{label}</p>
-                    <p className="text-slate-400 text-[9px] mt-0.5">{note}</p>
+                  <div key={label} className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
+                    <p className="font-semibold text-[rgba(6,3,43,0.78)]">{label}</p>
+                    <p className="text-[rgba(6,3,43,0.40)] text-[9px] mt-0.5">{note}</p>
                   </div>
                 ))}
               </div>
 
               {/* Disclaimer — non-suppressible per doc 21b */}
-              <p className="text-[9.5px] text-slate-400 leading-relaxed pt-1 border-t border-slate-100">
+              <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] leading-relaxed pt-1 border-t border-[rgba(6,3,43,0.05)]">
                 {ki.displayLabels.disclaimer}
               </p>
             </div>
           ) : (
-            <div className="text-xs text-slate-500 py-4 text-center space-y-1">
-              <p className="font-semibold text-slate-700">KORA Index non ancora disponibile</p>
+            <div className="text-xs text-[rgba(6,3,43,0.52)] py-4 text-center space-y-1">
+              <p className="font-semibold text-[rgba(6,3,43,0.78)]">KORA Index non ancora disponibile</p>
               <p>La pipeline dati non è ancora stata completata per questa azienda.</p>
             </div>
           )}
@@ -289,9 +289,9 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
             <div className="flex items-center gap-2 flex-wrap">
               <Badge
                 label={READINESS_LEVEL_LABEL[rr.readinessLevel] ?? rr.readinessLevel}
-                cls={rr.hasScoring ? 'border-green-200 bg-green-50 text-green-700' : rr.hasEvidenceBatches ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-slate-50 text-slate-500'}
+                cls={rr.hasScoring ? 'border-green-200 bg-green-50 text-green-700' : rr.hasEvidenceBatches ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'}
               />
-              <span className="text-[10.5px] text-slate-500">{rr.batchCount} batch evidenza</span>
+              <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">{rr.batchCount} batch evidenza</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-[10px]">
@@ -302,15 +302,15 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 ['Decision Pack', rr.hasDecisionPack],
               ].map(([label, done]) => (
                 <div key={String(label)} className="flex items-center gap-2">
-                  <span className={done ? 'text-green-500' : 'text-slate-300'}>
+                  <span className={done ? 'text-green-500' : 'text-[rgba(6,3,43,0.28)]'}>
                     {done ? '✓' : '○'}
                   </span>
-                  <span className={done ? 'text-slate-700' : 'text-slate-400'}>{String(label)}</span>
+                  <span className={done ? 'text-[rgba(6,3,43,0.78)]' : 'text-[rgba(6,3,43,0.40)]'}>{String(label)}</span>
                 </div>
               ))}
             </div>
 
-            <p className="text-[9.5px] text-slate-400 leading-relaxed pt-2 border-t border-slate-100">
+            <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] leading-relaxed pt-2 border-t border-[rgba(6,3,43,0.05)]">
               {rr.caveat}
             </p>
           </div>
@@ -320,7 +320,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       {/* ── Evidence Archive ─────────────────────────────────────────────────── */}
       <Section title="Archivio Evidenze — Sola lettura" id="evidence-archive">
         {archLoading && (
-          <p className="text-xs text-slate-400 text-center py-4">Caricamento archivio…</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] text-center py-4">Caricamento archivio…</p>
         )}
         {archError && (
           <p className="text-xs text-red-500">{archError}</p>
@@ -328,42 +328,42 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
         {archive && !archLoading && (
           <div className="space-y-3">
             {/* Summary bar */}
-            <div className="flex gap-4 text-[10.5px] text-slate-500">
-              <span><strong className="text-slate-800">{archive.summary.total}</strong> iniziative</span>
+            <div className="flex gap-4 text-[10.5px] text-[rgba(6,3,43,0.52)]">
+              <span><strong className="text-[rgba(6,3,43,0.90)]">{archive.summary.total}</strong> iniziative</span>
               <span><strong className="text-green-700">{archive.summary.approved}</strong> approvate</span>
               <span><strong className="text-amber-600">{archive.summary.pendingReview}</strong> in revisione</span>
             </div>
 
             {/* Privacy notice */}
-            <p className="text-[9.5px] text-slate-400 rounded border border-slate-100 bg-slate-50 px-3 py-2">
+            <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
               {archive.privacyNote}
             </p>
 
             {/* Initiatives table */}
             {archive.initiatives.length === 0 ? (
-              <p className="text-xs text-slate-400 text-center py-4">Nessuna evidenza disponibile.</p>
+              <p className="text-xs text-[rgba(6,3,43,0.40)] text-center py-4">Nessuna evidenza disponibile.</p>
             ) : (
-              <div className="overflow-hidden rounded border border-slate-200">
+              <div className="overflow-hidden rounded border border-[rgba(6,3,43,0.08)]">
                 <table className="w-full text-[10.5px]">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50">
+                    <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
                       {['Iniziativa', 'Pilastro', 'Evidenza', 'Stato'].map(h => (
-                        <th key={h} className="px-3 py-2 text-left font-semibold text-slate-400 uppercase tracking-wide text-[9px]">{h}</th>
+                        <th key={h} className="px-3 py-2 text-left font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide text-[9px]">{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {archive.initiatives.slice(0, 50).map((init, i) => (
-                      <tr key={init.recordIdFull ?? i} className="border-b border-slate-50 hover:bg-slate-50/50">
-                        <td className="px-3 py-2 text-slate-700 max-w-[200px] truncate">{init.safeName}</td>
-                        <td className="px-3 py-2 text-slate-500">{init.pillar ?? '—'}</td>
-                        <td className="px-3 py-2 text-slate-500">{init.evidenceLevel ?? '—'}</td>
+                      <tr key={init.recordIdFull ?? i} className="border-b border-[rgba(6,3,43,0.04)] hover:bg-[rgba(6,3,43,0.03)]/50">
+                        <td className="px-3 py-2 text-[rgba(6,3,43,0.78)] max-w-[200px] truncate">{init.safeName}</td>
+                        <td className="px-3 py-2 text-[rgba(6,3,43,0.52)]">{init.pillar ?? '—'}</td>
+                        <td className="px-3 py-2 text-[rgba(6,3,43,0.52)]">{init.evidenceLevel ?? '—'}</td>
                         <td className="px-3 py-2">
                           <div className="flex flex-col gap-0.5">
-                            <span className={REVIEW_CLS[init.reviewStatus] ?? 'text-slate-400'}>
+                            <span className={REVIEW_CLS[init.reviewStatus] ?? 'text-[rgba(6,3,43,0.40)]'}>
                               {init.reviewStatus.replace(/_/g, ' ')}
                             </span>
-                            <span className="text-[9px] text-slate-400">
+                            <span className="text-[9px] text-[rgba(6,3,43,0.40)]">
                               {ELIGIBILITY_LABEL[init.eligibility] ?? init.eligibility}
                             </span>
                           </div>
@@ -373,14 +373,14 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                   </tbody>
                 </table>
                 {archive.initiatives.length > 50 && (
-                  <p className="px-3 py-2 text-[9.5px] text-slate-400 border-t border-slate-100">
+                  <p className="px-3 py-2 text-[9.5px] text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)]">
                     Mostrate 50 di {archive.initiatives.length} iniziative.
                   </p>
                 )}
               </div>
             )}
 
-            <p className="text-[9.5px] text-slate-400 leading-relaxed">
+            <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] leading-relaxed">
               Sola lettura · Nessuna azione disponibile · Il ciclo di vita allegati è gestito dall&apos;operatore KORA Admin.
             </p>
           </div>
@@ -398,17 +398,17 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                   ? 'border-green-200 bg-green-50 text-green-700'
                   : 'border-amber-200 bg-amber-50 text-amber-700'}
               />
-              <span className="text-[10.5px] text-slate-500">Generato: {ts(dp.createdAt)}</span>
+              <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">Generato: {ts(dp.createdAt)}</span>
             </div>
-            <p className="text-[10.5px] text-slate-600">
+            <p className="text-[10.5px] text-[rgba(6,3,43,0.62)]">
               Il Decision Pack è stato generato dall&apos;operatore KORA Admin. Contatta il tuo referente KORA per ricevere il documento.
             </p>
-            <p className="text-[9.5px] text-slate-400">
+            <p className="text-[9.5px] text-[rgba(6,3,43,0.40)]">
               Nota: il Decision Pack riflette il KORA Index di questo periodo con calibrazione pre-empirica. Non costituisce certificazione ESG, audit o giudizio di compliance.
             </p>
           </div>
         ) : (
-          <div className="text-xs text-slate-500 py-2">
+          <div className="text-xs text-[rgba(6,3,43,0.52)] py-2">
             Nessun Decision Pack disponibile per questo periodo. L&apos;operatore KORA Admin ti notificherà quando il documento sarà pronto.
           </div>
         )}
@@ -422,8 +422,8 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       {/* ── Methodology & Privacy ────────────────────────────────────────────── */}
       <Section title="Metodologia & Privacy" id="methodology">
         {w && (
-          <div className="space-y-3 text-[10.5px] text-slate-600 leading-relaxed">
-            <div className="rounded border border-slate-200 bg-slate-50 px-4 py-3 space-y-2">
+          <div className="space-y-3 text-[10.5px] text-[rgba(6,3,43,0.62)] leading-relaxed">
+            <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 space-y-2">
               {[
                 w.methodologyDisclaimer.kora_measures,
                 w.methodologyDisclaimer.privacy_guarantee,
@@ -440,14 +440,14 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 { label: 'Soglia privacy', value: 'N≥10 per segmento' },
                 { label: 'Dati individuali', value: 'Non accessibili al datore di lavoro' },
               ].map(({ label, value }) => (
-                <div key={label} className="rounded border border-slate-200 bg-white px-3 py-2">
-                  <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">{label}</p>
-                  <p className="text-slate-700 font-medium">{value}</p>
+                <div key={label} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2">
+                  <p className="text-[9px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-0.5">{label}</p>
+                  <p className="text-[rgba(6,3,43,0.78)] font-medium">{value}</p>
                 </div>
               ))}
             </div>
 
-            <p className="text-[9.5px] text-slate-400">
+            <p className="text-[9.5px] text-[rgba(6,3,43,0.40)]">
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
             </p>
           </div>
@@ -456,13 +456,13 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
 
       {/* ── Viewer read-only notice ──────────────────────────────────────────── */}
       {isViewer && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-[10.5px] text-slate-500 text-center">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2.5 text-[10.5px] text-[rgba(6,3,43,0.52)] text-center">
           Sei in modalità Company Viewer — sola lettura, nessuna azione disponibile.
         </div>
       )}
 
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
-      <div className="text-[10px] text-slate-400 text-center pt-2">
+      <div className="text-[10px] text-[rgba(6,3,43,0.40)] text-center pt-2">
         KORA Foundation Light · Company Workspace · {w?.tenant.methodologyVersion ?? ''} · pre_empirical_calibration
       </div>
 

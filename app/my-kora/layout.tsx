@@ -11,7 +11,7 @@ export default function MyKoraLayout({ children }: { children: React.ReactNode }
   if (!isWorkerRole(activeRole)) {
     return (
       <div className="p-6">
-        <h1 className="mb-4 text-xl font-bold text-slate-900">My KORA</h1>
+        <h1 className="mb-4 text-xl font-bold text-[#06032B]">My KORA</h1>
         <PrivacyBoundaryNotice
           reason="employer_role"
           dataType="my_kora"

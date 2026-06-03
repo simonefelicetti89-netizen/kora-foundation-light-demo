@@ -98,7 +98,7 @@ function KoraImpactField() {
         <g key={n.id}>
           {n.accent && (
             <circle cx={n.x} cy={n.y} r={n.r + 9} fill="none"
-              stroke="rgba(97,86,245,0.20)" strokeWidth="1" />
+              stroke="rgba(199,111,61,0.20)" strokeWidth="1" />
           )}
           <circle cx={n.x} cy={n.y} r={n.r}
             fill={n.accent ? '#C76F3D' : 'rgba(247,245,239,0.52)'}

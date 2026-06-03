@@ -1,8 +1,10 @@
 'use client';
 
+import type { ReactNode } from 'react';
+
 interface PageMastheadProps {
   eyebrow: string;
-  title: string;
+  title: ReactNode;
   subline?: string;
   meta?: string;
 }
@@ -10,7 +12,7 @@ interface PageMastheadProps {
 export function PageMasthead({ eyebrow, title, subline, meta }: PageMastheadProps) {
   return (
     <div className="mb-8">
-      {/* Eyebrow — terracotta, uppercase, spaced */}
+      {/* Eyebrow — terracotta, uppercase, tight tracking */}
       <p
         className="uppercase mb-3"
         style={{
@@ -36,10 +38,10 @@ export function PageMasthead({ eyebrow, title, subline, meta }: PageMastheadProp
         <p
           className="mt-2.5"
           style={{
-            fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontSize:    '15px',
-            lineHeight:  1.5,
-            color:       'rgba(6,3,43,0.62)',
+            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+            fontSize:      '15px',
+            lineHeight:    1.5,
+            color:         'rgba(6,3,43,0.62)',
             letterSpacing: '-0.003em',
           }}
         >

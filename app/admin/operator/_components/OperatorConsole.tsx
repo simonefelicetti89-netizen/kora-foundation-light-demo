@@ -231,38 +231,38 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-slate-900">Operator Flow</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Synthetic OP-001 · 2026-Q1 · Foundation Light</p>
+          <h1 className="text-lg font-bold text-[#06032B]">Operator Flow</h1>
+          <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">Synthetic OP-001 · 2026-Q1 · Foundation Light</p>
         </div>
         <div className="flex flex-wrap gap-1.5 justify-end shrink-0">
           {(['Synthetic', 'No real worker data', 'pre_empirical_calibration'] as const).map(p => (
-            <span key={p} className="text-xs font-mono border border-slate-200 bg-slate-50 rounded px-2 py-0.5 text-slate-400">{p}</span>
+            <span key={p} className="text-xs font-mono border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] rounded px-2 py-0.5 text-[rgba(6,3,43,0.40)]">{p}</span>
           ))}
         </div>
       </div>
 
       {/* ── Auth bar ── */}
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 flex items-center gap-3 text-sm">
-        <span className="text-slate-400 text-xs">Operatore</span>
-        <span className="font-medium text-slate-800">{userEmail}</span>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-2.5 flex items-center gap-3 text-sm">
+        <span className="text-[rgba(6,3,43,0.40)] text-xs">Operatore</span>
+        <span className="font-medium text-[rgba(6,3,43,0.90)]">{userEmail}</span>
         <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-semibold text-blue-700">{userRole}</span>
         <form action="/api/auth/logout" method="POST" className="ml-auto">
-          <button type="submit" className="text-xs text-slate-400 hover:text-red-500 underline underline-offset-2 transition-colors">
+          <button type="submit" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-red-500 underline underline-offset-2 transition-colors">
             Logout
           </button>
         </form>
       </div>
 
       {/* ── Action bar — always visible ── */}
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 space-y-2.5">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Controlli pipeline</p>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 space-y-2.5">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Controlli pipeline</p>
         <div className="flex gap-3 flex-wrap">
           <button onClick={handleRun} disabled={isLoading}
-            className="flex-1 bg-slate-800 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            className="flex-1 bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {status === 'running' ? '⏳ Esecuzione pipeline…' : '▶ Run KORA Flow'}
           </button>
           <button onClick={handleRead} disabled={isLoading}
-            className="flex-1 border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            className="flex-1 border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.03)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             {status === 'reading' ? '⏳ Lettura…' : '↻ Read current result'}
           </button>
         </div>
@@ -280,13 +280,13 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
         <WizardStep n={1} name="Tenant" state={stepState(0)}
           desc="Tenant e periodo di reporting confermati.">
           <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-xs mb-2">
-            <Kv label="Tenant"   value={<span className="font-mono font-semibold text-slate-800">{TENANT}</span>} />
-            <Kv label="Periodo"  value={<span className="font-semibold text-slate-800">{PERIOD}</span>} />
-            <Kv label="Modalità" value={<span className="text-slate-600">Synthetic · Demo</span>} />
-            <Kv label="Dati"     value={<span className="text-slate-600">OP-001 sintetico</span>} />
+            <Kv label="Tenant"   value={<span className="font-mono font-semibold text-[rgba(6,3,43,0.90)]">{TENANT}</span>} />
+            <Kv label="Periodo"  value={<span className="font-semibold text-[rgba(6,3,43,0.90)]">{PERIOD}</span>} />
+            <Kv label="Modalità" value={<span className="text-[rgba(6,3,43,0.62)]">Synthetic · Demo</span>} />
+            <Kv label="Dati"     value={<span className="text-[rgba(6,3,43,0.62)]">OP-001 sintetico</span>} />
           </div>
           <button onClick={handleRead} disabled={isLoading}
-            className="text-xs text-slate-500 underline underline-offset-2 hover:text-slate-700 transition-colors disabled:opacity-40">
+            className="text-xs text-[rgba(6,3,43,0.52)] underline underline-offset-2 hover:text-[rgba(6,3,43,0.78)] transition-colors disabled:opacity-40">
             ↻ Leggi stato corrente
           </button>
         </WizardStep>
@@ -297,7 +297,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
           {completedSteps[1] ? (
             <div className="space-y-1.5 text-xs">
               <div className="flex flex-wrap gap-4">
-                <Kv label="Workers" value={<span className="font-semibold text-slate-800 tabular-nums">50</span>} />
+                <Kv label="Workers" value={<span className="font-semibold text-[rgba(6,3,43,0.90)] tabular-nums">50</span>} />
                 <span className="text-green-700 font-medium">✓ N≥10 enforced</span>
                 {runResult?.privacy?.segment_breakdown_safe != null && (
                   <span className={runResult.privacy.segment_breakdown_safe ? 'text-green-700 font-medium' : 'text-amber-700 font-medium'}>
@@ -305,7 +305,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
                   </span>
                 )}
               </div>
-              <p className="text-slate-400 italic">Aggregato aziendale · nessun dato individuale esposto.</p>
+              <p className="text-[rgba(6,3,43,0.40)] italic">Aggregato aziendale · nessun dato individuale esposto.</p>
             </div>
           ) : null}
         </WizardStep>
@@ -316,11 +316,11 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
           {completedSteps[2] ? (
             <div className="space-y-1.5 text-xs">
               <div className="flex flex-wrap gap-4">
-                <Kv label="Batch"    value={<span className="text-slate-600 font-mono">[SYNTHETIC] OP-001</span>} />
-                <Kv label="Records"  value={<span className="font-semibold tabular-nums text-slate-800">6</span>} />
+                <Kv label="Batch"    value={<span className="text-[rgba(6,3,43,0.62)] font-mono">[SYNTHETIC] OP-001</span>} />
+                <Kv label="Records"  value={<span className="font-semibold tabular-nums text-[rgba(6,3,43,0.90)]">6</span>} />
                 <span className="text-green-700 font-medium">✓ PII guard passed</span>
               </div>
-              <p className="text-slate-400 italic">Live file upload locked · synthetic batch only (B4).</p>
+              <p className="text-[rgba(6,3,43,0.40)] italic">Live file upload locked · synthetic batch only (B4).</p>
             </div>
           ) : null}
         </WizardStep>
@@ -331,8 +331,8 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
           <div className="space-y-1.5 text-xs">
             {completedSteps[3] && (
               <div className="flex flex-wrap gap-4 mb-1">
-                <Kv label="UEF records" value={<span className="font-semibold tabular-nums text-slate-800">6</span>} />
-                <span className="text-slate-500">Review mode: read-only</span>
+                <Kv label="UEF records" value={<span className="font-semibold tabular-nums text-[rgba(6,3,43,0.90)]">6</span>} />
+                <span className="text-[rgba(6,3,43,0.52)]">Review mode: read-only</span>
               </div>
             )}
             <p className="text-xs border border-amber-200 bg-amber-50 rounded px-2 py-1 text-amber-700">
@@ -348,26 +348,26 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
             <div className="space-y-3">
               <MetricGrid>
                 <Metric label="KORA Index"
-                  value={<span className="text-2xl font-bold tabular-nums text-slate-900">{kiValue}</span>} />
+                  value={<span className="text-2xl font-bold tabular-nums text-[#06032B]">{kiValue}</span>} />
                 <Metric label="Activation Safeguard" value={badge(safeguard)} />
                 <Metric label="Confidence Score"
-                  value={<span className="text-xl font-semibold tabular-nums text-slate-800">{csValue ?? '—'}</span>} />
+                  value={<span className="text-xl font-semibold tabular-nums text-[rgba(6,3,43,0.90)]">{csValue ?? '—'}</span>} />
                 <Metric label="Calibration"
                   value={<span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">
                     {readResult?.kora_index?.calibration ?? 'pre_empirical_calibration'}
                   </span>} />
                 {arValue != null && (
                   <Metric label="Activation Rate"
-                    value={<span className="text-sm font-semibold tabular-nums text-slate-700">{pct(arValue)}</span>} />
+                    value={<span className="text-sm font-semibold tabular-nums text-[rgba(6,3,43,0.78)]">{pct(arValue)}</span>} />
                 )}
                 {marValue != null && (
                   <Metric label="Meaningful AR"
-                    value={<span className="text-sm font-semibold tabular-nums text-slate-700">{pct(marValue)}</span>} />
+                    value={<span className="text-sm font-semibold tabular-nums text-[rgba(6,3,43,0.78)]">{pct(marValue)}</span>} />
                 )}
               </MetricGrid>
               {scoredAt && (
-                <p className="text-xs text-slate-400">
-                  Generato: <span className="text-slate-600">{ts(scoredAt)}</span>
+                <p className="text-xs text-[rgba(6,3,43,0.40)]">
+                  Generato: <span className="text-[rgba(6,3,43,0.62)]">{ts(scoredAt)}</span>
                   {readResult?.kora_index?.methodology && (
                     <> · <span className="font-mono">{readResult.kora_index.methodology}</span></>
                   )}
@@ -386,13 +386,13 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
             {(dpVersionId || latestDpStatus) && (
               <div className="flex items-center gap-2 flex-wrap">
                 {dpVersionId && (
-                  <span className="text-xs font-mono text-slate-500 break-all">{dpVersionId}</span>
+                  <span className="text-xs font-mono text-[rgba(6,3,43,0.52)] break-all">{dpVersionId}</span>
                 )}
                 {latestDpStatus && <DpStatusBadge status={latestDpStatus} />}
               </div>
             )}
             {latestDpStatus && (
-              <p className="text-xs text-slate-400">{dpStatusDescription(latestDpStatus)}</p>
+              <p className="text-xs text-[rgba(6,3,43,0.40)]">{dpStatusDescription(latestDpStatus)}</p>
             )}
 
             {/* Export CTAs — always visible */}
@@ -409,7 +409,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
 
             {/* Lifecycle — B2 logic, unchanged */}
             {latestDpStatus && (
-              <div className="space-y-2 pt-2 border-t border-slate-100">
+              <div className="space-y-2 pt-2 border-t border-[rgba(6,3,43,0.05)]">
                 <div className="flex gap-2 flex-wrap">
                   {latestDpStatus === 'draft' && (
                     <button onClick={() => handlePromote('ready')} disabled={isPromoting}
@@ -437,7 +437,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
             )}
 
             {/* PDF fallback message */}
-            <p className="text-xs text-slate-400 border-t border-slate-100 pt-2">
+            <p className="text-xs text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)] pt-2">
               Se Export PDF automatico non disponibile (Vercel Hobby): apri{' '}
               <a href={previewUrl} target="_blank" rel="noopener noreferrer"
                 className="text-violet-600 underline underline-offset-2 hover:text-violet-800">
@@ -467,11 +467,11 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
       </div>
 
       {/* ── Safety notes ── */}
-      <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Note di sicurezza</p>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-3">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-2">Note di sicurezza</p>
         <div className="flex flex-wrap gap-2">
           {(['Synthetic data only', 'No real people data', 'N≥10 enforced', 'KORA_ADMIN session required', 'pre_empirical_calibration'] as const).map(n => (
-            <span key={n} className="text-xs border border-slate-200 bg-white rounded px-2 py-0.5 text-slate-500">{n}</span>
+            <span key={n} className="text-xs border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] rounded px-2 py-0.5 text-[rgba(6,3,43,0.52)]">{n}</span>
           ))}
         </div>
       </div>
@@ -486,7 +486,7 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
 const STEP_STYLE: Record<StepState, { dot: string; badge: string; label: string; headerBorder: string }> = {
   completed: { dot: 'bg-green-500', badge: 'bg-green-50 text-green-700 border-green-200', label: 'Completato', headerBorder: 'border-green-100' },
   running:   { dot: 'bg-amber-400', badge: 'bg-amber-50 text-amber-700 border-amber-200', label: 'In esecuzione…', headerBorder: 'border-amber-100' },
-  pending:   { dot: 'bg-slate-300', badge: 'bg-slate-50 text-slate-400 border-slate-200', label: 'In attesa', headerBorder: 'border-slate-100' },
+  pending:   { dot: 'bg-[rgba(6,3,43,0.18)]', badge: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]', label: 'In attesa', headerBorder: 'border-[rgba(6,3,43,0.05)]' },
 };
 
 function WizardStep({
@@ -496,17 +496,17 @@ function WizardStep({
 }) {
   const s = STEP_STYLE[state];
   return (
-    <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
       <div className={`flex items-center gap-3 px-4 py-2.5 border-b ${s.headerBorder}`}>
         <div className="flex items-center gap-2 w-10 flex-shrink-0">
           <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.dot}`} />
-          <span className="text-xs font-mono text-slate-400">{String(n).padStart(2, '0')}</span>
+          <span className="text-xs font-mono text-[rgba(6,3,43,0.40)]">{String(n).padStart(2, '0')}</span>
         </div>
-        <span className="text-sm font-semibold text-slate-800 flex-1">{name}</span>
+        <span className="text-sm font-semibold text-[rgba(6,3,43,0.90)] flex-1">{name}</span>
         <span className={`text-xs font-medium rounded border px-2 py-0.5 flex-shrink-0 ${s.badge}`}>{s.label}</span>
       </div>
       <div className="px-4 py-3">
-        {children ?? <p className="text-xs text-slate-400">{desc}</p>}
+        {children ?? <p className="text-xs text-[rgba(6,3,43,0.40)]">{desc}</p>}
       </div>
     </div>
   );
@@ -516,7 +516,7 @@ function WizardStep({
 function Kv({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline gap-1.5">
-      <span className="text-slate-400">{label}</span>
+      <span className="text-[rgba(6,3,43,0.40)]">{label}</span>
       <span>{value}</span>
     </div>
   );
@@ -524,9 +524,9 @@ function Kv({ label, value }: { label: string; value: React.ReactNode }) {
 
 // Section, SubSection, MetricGrid, Metric — unchanged from B2
 function Section({ title, accent, children }: { title: string; accent: 'green' | 'blue' | 'slate'; children: React.ReactNode }) {
-  const border = accent === 'green' ? 'border-green-200' : accent === 'blue' ? 'border-blue-200' : 'border-slate-200';
-  const bg     = accent === 'green' ? 'bg-green-50'    : accent === 'blue' ? 'bg-blue-50'    : 'bg-white';
-  const color  = accent === 'green' ? 'text-green-700'  : accent === 'blue' ? 'text-blue-700'  : 'text-slate-600';
+  const border = accent === 'green' ? 'border-green-200' : accent === 'blue' ? 'border-blue-200' : 'border-[rgba(6,3,43,0.08)]';
+  const bg     = accent === 'green' ? 'bg-green-50'    : accent === 'blue' ? 'bg-blue-50'    : 'bg-[#F8F6F1]';
+  const color  = accent === 'green' ? 'text-green-700'  : accent === 'blue' ? 'text-blue-700'  : 'text-[rgba(6,3,43,0.62)]';
   return (
     <div className={`rounded-lg border ${border} ${bg} px-4 py-4 space-y-3`}>
       <p className={`text-xs font-semibold uppercase tracking-wide ${color}`}>{title}</p>
@@ -537,8 +537,8 @@ function Section({ title, accent, children }: { title: string; accent: 'green' |
 
 function SubSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-t border-slate-200 pt-3 space-y-1.5">
-      <p className="text-xs font-medium text-slate-500">{title}</p>
+    <div className="border-t border-[rgba(6,3,43,0.08)] pt-3 space-y-1.5">
+      <p className="text-xs font-medium text-[rgba(6,3,43,0.52)]">{title}</p>
       {children}
     </div>
   );
@@ -551,7 +551,7 @@ function MetricGrid({ children }: { children: React.ReactNode }) {
 function Metric({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="text-xs text-slate-400 mb-0.5">{label}</p>
+      <p className="text-xs text-[rgba(6,3,43,0.40)] mb-0.5">{label}</p>
       <div>{value}</div>
     </div>
   );
@@ -564,12 +564,12 @@ const DP_STATUS_STYLE: Record<string, { bg: string; text: string; border: string
   exported:                { bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200'  },
   data_review_required:    { bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200'    },
   advisor_review_required: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
-  archived:                { bg: 'bg-slate-100', text: 'text-slate-600',  border: 'border-slate-200'  },
+  archived:                { bg: 'bg-[rgba(6,3,43,0.05)]', text: 'text-[rgba(6,3,43,0.62)]',  border: 'border-[rgba(6,3,43,0.08)]'  },
   blocked:                 { bg: 'bg-red-100',   text: 'text-red-800',    border: 'border-red-300'    },
 };
 
 function DpStatusBadge({ status }: { status: string }) {
-  const s = DP_STATUS_STYLE[status] ?? { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200' };
+  const s = DP_STATUS_STYLE[status] ?? { bg: 'bg-[rgba(6,3,43,0.03)]', text: 'text-[rgba(6,3,43,0.62)]', border: 'border-[rgba(6,3,43,0.08)]' };
   return (
     <span className={`rounded border ${s.border} ${s.bg} px-2 py-0.5 text-xs font-semibold ${s.text}`}>
       {status}
@@ -590,7 +590,7 @@ function dpStatusDescription(status: string): string {
 
 function StatusPill({ status }: { status?: string }) {
   return (
-    <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-xs text-slate-500">
+    <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-xs text-[rgba(6,3,43,0.52)]">
       {status ?? 'unknown'}
     </span>
   );
@@ -600,12 +600,12 @@ function AuditList({ actions, compact }: { actions: AuditEvent[]; compact?: bool
   return (
     <ol className="space-y-1">
       {actions.map((e, i) => (
-        <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+        <li key={i} className="flex items-start gap-2 text-xs text-[rgba(6,3,43,0.62)]">
           <span className="text-base leading-tight flex-shrink-0">{AUDIT_ICON[e.action] ?? '•'}</span>
           <span className="flex-1">
-            <span className="font-medium text-slate-700">{e.action}</span>
-            {e.resource_type && !compact && <span className="text-slate-400"> · {e.resource_type}</span>}
-            {e.created_at && !compact && <span className="text-slate-400"> · {ts(e.created_at)}</span>}
+            <span className="font-medium text-[rgba(6,3,43,0.78)]">{e.action}</span>
+            {e.resource_type && !compact && <span className="text-[rgba(6,3,43,0.40)]"> · {e.resource_type}</span>}
+            {e.created_at && !compact && <span className="text-[rgba(6,3,43,0.40)]"> · {ts(e.created_at)}</span>}
           </span>
         </li>
       ))}

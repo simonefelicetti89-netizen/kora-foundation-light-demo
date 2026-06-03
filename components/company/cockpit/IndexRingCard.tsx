@@ -3,6 +3,7 @@
 import type { SafeguardStatus } from '@/lib/types';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { formatConfidenceScore } from '@/lib/formatters';
+import { TM } from '@/components/ui/TM';
 
 interface IndexRingCardProps {
   value: number;
@@ -53,7 +54,7 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
         className="font-kora-serif pr-8"
         style={{ fontSize: '1.875rem', letterSpacing: '-0.02em', lineHeight: 1.1, color: TOKENS.ink }}
       >
-        KORA Index{' '}
+        <TM>KORA Index</TM>{' '}
         <span style={{ color: 'rgba(6,3,43,0.40)', fontSize: '1.5rem' }}>v3</span>
       </p>
 
@@ -90,7 +91,7 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
           {/* PRIMARIO — Safeguard */}
           <div className="space-y-2">
             <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.50)' }}>
-              Stato Safeguard
+              Activation Safeguard™
             </p>
             <span
               className="inline-flex items-center gap-2 rounded-md font-medium"
@@ -114,7 +115,7 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
           {/* SECONDARIO — Confidence */}
           <div className="space-y-1">
             <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.50)' }}>
-              Confidence Score
+              Confidence Score™
             </p>
             <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '22px', color: TOKENS.ink, letterSpacing: '-0.02em', lineHeight: 1 }}>
               {formatConfidenceScore(confidenceScore)}

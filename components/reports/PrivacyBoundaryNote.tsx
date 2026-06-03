@@ -10,8 +10,8 @@ export function PrivacyBoundaryNote() {
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
-      <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">I — Perimetro Privacy e Metodologia</p>
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-4">
+      <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">I — Perimetro Privacy e Metodologia</p>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {/* Privacy */}
@@ -38,17 +38,17 @@ export function PrivacyBoundaryNote() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 space-y-2">
-            <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Nota CSR/ESG</p>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] p-4 space-y-2">
+            <p className="text-[11px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Nota CSR/ESG</p>
+            <p className="text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed">
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
               Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale,
               assurance o reporting obbligatorio.
             </p>
           </div>
 
-          <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 space-y-1">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">Label obbligatorie</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] p-4 space-y-1">
+            <p className="text-[11px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Label obbligatorie</p>
             <div className="flex flex-wrap gap-1.5 mt-1">
               {[
                 'synthetic_demo_data',
@@ -57,7 +57,7 @@ export function PrivacyBoundaryNote() {
                 'not_live_data',
                 'informational_only',
               ].map((tag) => (
-                <span key={tag} className="font-mono text-[10px] rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-500">
+                <span key={tag} className="font-mono text-[10px] rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[rgba(6,3,43,0.52)]">
                   {tag}
                 </span>
               ))}

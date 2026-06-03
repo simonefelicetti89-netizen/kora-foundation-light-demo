@@ -37,33 +37,33 @@ export function EligibilitySummaryReport({ summary }: Props) {
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6 space-y-5">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">C — Eligibility Gate Summary</p>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">C — Eligibility Gate Summary</p>
+        <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">
           {total_row_count.toLocaleString('it-IT')} righe totali processate · precedenza: Blocked &gt; Limited &gt; Eligible
         </p>
       </div>
 
       <div className="space-y-4">
         {rows.map((r) => (
-          <div key={r.label} className={`rounded-lg border bg-white pl-4 pr-4 py-4 border-l-4 ${r.color.row}`}>
+          <div key={r.label} className={`rounded-lg border bg-[#F8F6F1] pl-4 pr-4 py-4 border-l-4 ${r.color.row}`}>
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-xs font-bold rounded border px-1.5 py-0.5 ${r.color.badge}`}>{r.label}</span>
-                  <span className="text-sm font-bold text-slate-800">{r.count.toLocaleString('it-IT')} righe</span>
-                  <span className="text-xs text-slate-400">({r.pct}%)</span>
+                  <span className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{r.count.toLocaleString('it-IT')} righe</span>
+                  <span className="text-xs text-[rgba(6,3,43,0.40)]">({r.pct}%)</span>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed">{r.description}</p>
-                <p className="text-[11px] font-mono text-slate-400">{r.effect}</p>
+                <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">{r.description}</p>
+                <p className="text-[11px] font-mono text-[rgba(6,3,43,0.40)]">{r.effect}</p>
               </div>
               <div className="text-right shrink-0">
-                <span className="text-2xl font-bold text-slate-700">{r.pct}%</span>
+                <span className="text-2xl font-bold text-[rgba(6,3,43,0.78)]">{r.pct}%</span>
               </div>
             </div>
             {/* Bar */}
-            <div className="mt-3 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div className="mt-3 h-1.5 rounded-full bg-[rgba(6,3,43,0.05)] overflow-hidden">
               <div className={`h-full rounded-full ${r.color.bar}`} style={{ width: `${r.pct}%` }} />
             </div>
           </div>
@@ -76,7 +76,7 @@ export function EligibilitySummaryReport({ summary }: Props) {
           <p className="text-xs font-semibold text-rose-700">Blocked by Design — zero-indicator obbligatorio</p>
           <div className="flex flex-wrap gap-2">
             {ZERO_INDICATORS.map((zi) => (
-              <span key={zi} className="rounded border border-rose-200 bg-white px-2 py-0.5 text-[11px] font-mono font-semibold text-rose-600">
+              <span key={zi} className="rounded border border-rose-200 bg-[#F8F6F1] px-2 py-0.5 text-[11px] font-mono font-semibold text-rose-600">
                 {zi}
               </span>
             ))}
@@ -88,8 +88,8 @@ export function EligibilitySummaryReport({ summary }: Props) {
         </div>
       )}
 
-      <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 text-[11px] text-slate-500 leading-relaxed">
-        <span className="font-semibold text-slate-600">Principio di gate: </span>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed">
+        <span className="font-semibold text-[rgba(6,3,43,0.62)]">Principio di gate: </span>
         KORA non trasforma la compliance in impatto. La conformità legale è una baseline, non impatto.
         Economic relief (voucher, fringe, benefit economici) non è spesa sbagliata — è spesa che può diventare più intelligente.
       </div>

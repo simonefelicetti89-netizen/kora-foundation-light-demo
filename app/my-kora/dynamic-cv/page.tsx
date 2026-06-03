@@ -15,7 +15,7 @@ const PILLAR_LIGHT: Record<string, string> = {
 const VERIF_BADGE: Record<string, string> = {
   verified:      'bg-green-50 text-green-700 border-green-200',
   partial:       'bg-yellow-50 text-yellow-700 border-yellow-200',
-  self_declared: 'bg-slate-50 text-slate-500 border-slate-200',
+  self_declared: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
 const VERIF_LABEL: Record<string, string> = {
@@ -33,8 +33,8 @@ export default function DynamicCV() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Dynamic Impact CV</h1>
-          <p className="text-sm text-slate-500">Portfolio di impatto personale del lavoratore</p>
+          <h1 className="text-xl font-bold text-[#06032B]">Dynamic Impact CV</h1>
+          <p className="text-sm text-[rgba(6,3,43,0.52)]">Portfolio di impatto personale del lavoratore</p>
         </div>
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
           <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
@@ -54,16 +54,16 @@ export default function DynamicCV() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-slate-900">Dynamic Impact CV</h1>
+          <h1 className="text-xl font-bold text-[#06032B]">Dynamic Impact CV</h1>
           <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
             Anteprima
           </span>
         </div>
-        <p className="text-sm text-slate-500">{cvPreview.persona_label}</p>
+        <p className="text-sm text-[rgba(6,3,43,0.52)]">{cvPreview.persona_label}</p>
       </div>
 
       {/* Worker-ownership notice — non-suppressible */}
-      <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-3">
         <p className="text-xs font-semibold text-indigo-800">Di proprietà del lavoratore, controllato dal lavoratore.</p>
         <p className="text-xs text-indigo-700 mt-0.5">
           Solo tu decidi cosa esportare o condividere. Il tuo datore di lavoro non può vedere questo CV.
@@ -73,17 +73,17 @@ export default function DynamicCV() {
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg border border-slate-200 bg-white p-3 text-center">
-          <p className="text-xs text-slate-400">Elementi Totali</p>
-          <p className="text-2xl font-bold text-slate-800 mt-1">{cvPreview.total_items}</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
+          <p className="text-xs text-[rgba(6,3,43,0.40)]">Elementi Totali</p>
+          <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{cvPreview.total_items}</p>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-3 text-center">
-          <p className="text-xs text-slate-400">Verificati</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
+          <p className="text-xs text-[rgba(6,3,43,0.40)]">Verificati</p>
           <p className="text-2xl font-bold text-green-600 mt-1">{cvPreview.verified_count}</p>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-3 text-center">
-          <p className="text-xs text-slate-400">Condivisibili</p>
-          <p className="text-2xl font-bold text-indigo-600 mt-1">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
+          <p className="text-xs text-[rgba(6,3,43,0.40)]">Condivisibili</p>
+          <p className="text-2xl font-bold text-[#C76F3D] mt-1">
             {cvPreview.items.filter((i) => i.shareable).length}
           </p>
         </div>
@@ -91,25 +91,25 @@ export default function DynamicCV() {
 
       {/* CV items */}
       <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Elementi di Impatto
         </h2>
         <div className="space-y-2">
           {cvPreview.items.map((item) => (
             <div
               key={item.id}
-              className="rounded-lg border border-slate-200 bg-white p-4"
+              className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-800">{item.title}</p>
-                  <p className="text-xs text-slate-400 mt-0.5 font-mono">
+                  <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{item.title}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5 font-mono">
                     {item.date} · {item.source_category}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <span className={cn('rounded border px-1.5 py-0.5 text-xs font-medium',
-                    PILLAR_LIGHT[item.pillar] ?? 'bg-slate-50 text-slate-600 border-slate-200',
+                    PILLAR_LIGHT[item.pillar] ?? 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
                   )}>
                     {item.pillar_label}
                   </span>
@@ -121,13 +121,13 @@ export default function DynamicCV() {
                 </div>
               </div>
               <div className="mt-2 flex items-center justify-between">
-                <p className="text-xs text-slate-400 italic">{item.export_label}</p>
+                <p className="text-xs text-[rgba(6,3,43,0.40)] italic">{item.export_label}</p>
                 {/* Visibility control per item — demo-only */}
                 <span className={cn(
                   'rounded border px-2 py-0.5 text-xs font-medium cursor-not-allowed',
                   item.shareable
-                    ? 'bg-indigo-50 text-indigo-600 border-indigo-200'
-                    : 'bg-slate-50 text-slate-400 border-slate-200',
+                    ? 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]'
+                    : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
                 )}>
                   {item.shareable ? '🔓 Condivisibile' : '🔒 Privato'}
                 </span>
@@ -153,31 +153,31 @@ export default function DynamicCV() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-3">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-700">Esporta profilo — Future Vision</p>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Esporta profilo — Future Vision</p>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
               Genera un portfolio di impatto portabile e firmato per la condivisione esterna.
             </p>
           </div>
           <button
             disabled
-            className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-400 cursor-not-allowed"
+            className="shrink-0 rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs font-medium text-[rgba(6,3,43,0.40)] cursor-not-allowed"
           >
             Esporta — Non attivo
           </button>
         </div>
-        <div className="border-t border-slate-100 pt-3 flex items-center justify-between gap-4">
+        <div className="border-t border-[rgba(6,3,43,0.05)] pt-3 flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-700">Condividi su LinkedIn — Future Vision</p>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Condividi su LinkedIn — Future Vision</p>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
               Aggiungi il tuo KORA Impact Badge al profilo LinkedIn con evidenze verificate.
             </p>
           </div>
           <button
             disabled
-            className="shrink-0 rounded-md border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-400 cursor-not-allowed"
+            className="shrink-0 rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs font-medium text-[rgba(6,3,43,0.40)] cursor-not-allowed"
           >
             LinkedIn — Non attivo
           </button>

@@ -36,7 +36,7 @@ const DP_CLS: Record<string, string> = {
   draft:    'bg-amber-50 text-amber-700 border-amber-200',
   ready:    'bg-blue-50 text-blue-700 border-blue-200',
   exported: 'bg-green-50 text-green-700 border-green-200',
-  archived: 'bg-slate-100 text-slate-500 border-slate-200',
+  archived: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
 const PILOT_STATUS_LABEL: Record<string, string> = {
@@ -52,7 +52,7 @@ const PILOT_STATUS_LABEL: Record<string, string> = {
 };
 
 const PILOT_STATUS_CLS: Record<string, string> = {
-  not_started:            'bg-slate-100 text-slate-500 border-slate-200',
+  not_started:            'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   batch_pending:          'bg-blue-50 text-blue-600 border-blue-200',
   review_ready:           'bg-amber-50 text-amber-700 border-amber-200',
   needs_enrichment:       'bg-orange-50 text-orange-700 border-orange-200',
@@ -60,7 +60,7 @@ const PILOT_STATUS_CLS: Record<string, string> = {
   scored:                 'bg-[#C76F3D]/10 text-[#C76F3D] border-[#C76F3D]/30',
   decision_pack_draft:    'bg-blue-50 text-blue-700 border-blue-200',
   decision_pack_exported: 'bg-green-50 text-green-700 border-green-200',
-  archived:               'bg-slate-100 text-slate-500 border-slate-200',
+  archived:               'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
 function Badge({ label, cls }: { label: string; cls: string }) {
@@ -87,29 +87,29 @@ function StepCard({ number, title, status, children, cta }: StepCardProps) {
     complete: 'bg-green-500',
     active:   'bg-[#C76F3D] animate-pulse',
     warning:  'bg-amber-400',
-    pending:  'bg-slate-300',
+    pending:  'bg-[rgba(6,3,43,0.18)]',
   }[status];
 
   return (
-    <div className={`rounded-lg border px-4 py-3.5 space-y-2 ${status === 'active' ? 'border-[#C76F3D]/40 bg-[#f5f4ff]' : 'border-slate-200 bg-white'}`}>
+    <div className={`rounded-lg border px-4 py-3.5 space-y-2 ${status === 'active' ? 'border-[#C76F3D]/40 bg-[#f5f4ff]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]'}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${statusDot}`} />
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Step {number}</span>
-          <span className="text-xs font-semibold text-slate-800">{title}</span>
+          <span className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">Step {number}</span>
+          <span className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{title}</span>
         </div>
         {cta && (
           <a href={cta.href}
             className={`rounded px-3 py-1 text-[10px] font-semibold transition-colors flex-shrink-0 ${
               cta.primary
                 ? 'bg-[#06032B] text-white hover:bg-[#1a1756]'
-                : 'border border-slate-300 text-slate-600 hover:bg-slate-50'
+                : 'border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)]'
             }`}>
             {cta.label} →
           </a>
         )}
       </div>
-      <div className="pl-5 text-[10px] text-slate-500 space-y-0.5">{children}</div>
+      <div className="pl-5 text-[10px] text-[rgba(6,3,43,0.52)] space-y-0.5">{children}</div>
     </div>
   );
 }
@@ -166,17 +166,17 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
         </div>
       </div>
 
       {/* Selector */}
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-end gap-4">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-end gap-4">
         <div>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Azienda</p>
+          <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Azienda</p>
           <select value={tenantCode} onChange={e => setTenantCode(e.target.value)}
-            className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] min-w-[200px]">
+            className="rounded border border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.03)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] min-w-[200px]">
             <option value="">— Seleziona azienda —</option>
             {tenants.map(t => (
               <option key={t.tenantCode} value={t.tenantCode}>{t.tenantCode} — {t.companyName}</option>
@@ -184,13 +184,13 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
           </select>
         </div>
         <div>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Reporting Period</p>
+          <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Reporting Period</p>
           <input value={period} onChange={e => setPeriod(e.target.value)}
             placeholder="2026-Q1"
-            className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-28" />
+            className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] w-28" />
         </div>
         <button onClick={loadWorkspace} disabled={!tenantCode || loading}
-          className="rounded border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors">
+          className="rounded border border-[rgba(6,3,43,0.14)] px-3 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] disabled:opacity-40 transition-colors">
           ↻ Aggiorna
         </button>
         <a href="/admin/tenants"
@@ -208,14 +208,14 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
 
       {/* Empty state */}
       {!tenantCode && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 px-5 py-10 text-center text-sm text-slate-400">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-5 py-10 text-center text-sm text-[rgba(6,3,43,0.40)]">
           Seleziona un&apos;azienda per iniziare.
         </div>
       )}
 
       {/* Loading */}
       {loading && tenantCode && (
-        <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-4 text-xs text-slate-500 flex gap-2">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-4 text-xs text-[rgba(6,3,43,0.52)] flex gap-2">
           <span className="animate-spin">⏳</span> Caricamento stato pilot…
         </div>
       )}
@@ -231,15 +231,15 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
       {w && !loading && (
         <>
           {/* Summary bar */}
-          <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-slate-800">{w.tenant.companyName}</p>
-              <p className="text-[10px] font-mono text-slate-400">{w.tenant.tenantCode} · {w.reportingPeriod}</p>
+              <p className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{w.tenant.companyName}</p>
+              <p className="text-[10px] font-mono text-[rgba(6,3,43,0.40)]">{w.tenant.tenantCode} · {w.reportingPeriod}</p>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge label={PILOT_STATUS_LABEL[w.pilotStatus] ?? w.pilotStatus} cls={PILOT_STATUS_CLS[w.pilotStatus] ?? ''} />
               {w.workforce.totalWorkers !== null && (
-                <Badge label={`${w.workforce.totalWorkers} workers`} cls="bg-slate-100 text-slate-600 border-slate-200" />
+                <Badge label={`${w.workforce.totalWorkers} workers`} cls="bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]" />
               )}
             </div>
           </div>
@@ -249,7 +249,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
             <div className="rounded-lg border border-[#C76F3D]/30 bg-[#C76F3D]/5 px-4 py-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-semibold text-[#C76F3D] uppercase tracking-wide mb-0.5">Prossimo passo</p>
-                <p className="text-sm font-semibold text-slate-800">{w.recommendedNextAction.label}</p>
+                <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{w.recommendedNextAction.label}</p>
               </div>
               <a href={w.recommendedNextAction.href}
                 className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4a41d4] transition-colors flex-shrink-0">
@@ -282,10 +282,10 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                     <span className="text-green-600 font-medium">✓ Batch creato</span>
                     {' · '}{w.latestBatch.rowCount} righe
                     {' · '}{ts(w.latestBatch.createdAt)}
-                    {' · '}<Badge label={w.latestBatch.status} cls="bg-slate-100 text-slate-600 border-slate-200" />
+                    {' · '}<Badge label={w.latestBatch.status} cls="bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]" />
                     {w.latestBatch.hasFinancialMetadata && <>{' · '}<span className="text-[#C76F3D]">B11.3 metadata ✓</span></>}
                   </>
-                : <span className="text-slate-400">Nessun batch per questo periodo.</span>
+                : <span className="text-[rgba(6,3,43,0.40)]">Nessun batch per questo periodo.</span>
               }
             </StepCard>
 
@@ -299,7 +299,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
               }
               cta={w.latestBatch ? { label: 'Apri UEF Review', href: `/admin/uef-review?batchId=${w.latestBatch.id}` } : undefined}>
               {!w.latestBatch
-                ? <span className="text-slate-300">Attesa batch.</span>
+                ? <span className="text-[rgba(6,3,43,0.28)]">Attesa batch.</span>
                 : w.uef && w.uef.total > 0
                 ? <><span className="text-green-600 font-medium">✓ {w.uef.total} candidati generati</span></>
                 : <span className="text-amber-600">⚠ Candidati non ancora generati — apri UEF Review e clicca &quot;Generate candidates&quot;.</span>
@@ -316,7 +316,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
               }
               cta={w.latestBatch ? { label: 'Completa review', href: `/admin/uef-review?batchId=${w.latestBatch.id}`, primary: w.uef ? (w.uef.pendingReview > 0 || w.uef.needsEnrichment > 0) : false } : undefined}>
               {!w.uef || w.uef.total === 0
-                ? <span className="text-slate-300">Attesa candidati.</span>
+                ? <span className="text-[rgba(6,3,43,0.28)]">Attesa candidati.</span>
                 : <>
                     {w.uef.approved > 0 && <span className="text-green-600 font-medium mr-3">✓ {w.uef.approved} approvati</span>}
                     {w.uef.pendingReview > 0 && <span className="text-amber-600 mr-3">⏳ {w.uef.pendingReview} in attesa</span>}
@@ -351,7 +351,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                   </>
                 : w.uef && w.uef.approved > 0
                 ? <span className="text-amber-600">⚠ {w.uef.approved} record approvati — scoring non ancora eseguito.</span>
-                : <span className="text-slate-300">Attesa approvazione UEF.</span>
+                : <span className="text-[rgba(6,3,43,0.28)]">Attesa approvazione UEF.</span>
               }
             </StepCard>
 
@@ -369,7 +369,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                   : undefined
               }>
               {!w.scoring
-                ? <span className="text-slate-300">Attesa scoring.</span>
+                ? <span className="text-[rgba(6,3,43,0.28)]">Attesa scoring.</span>
                 : w.decisionPack
                 ? <>
                     <Badge label={w.decisionPack.status} cls={DP_CLS[w.decisionPack.status] ?? ''} />
@@ -397,7 +397,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
           </div>
 
           {/* Footer */}
-          <div className="text-[10px] text-slate-400 text-center pt-2">
+          <div className="text-[10px] text-[rgba(6,3,43,0.40)] text-center pt-2">
             KORA Foundation Light · Pilot Operator View · pre_empirical_calibration · synthetic_demo_data: {isOp001 ? 'true' : 'false'}
           </div>
         </>

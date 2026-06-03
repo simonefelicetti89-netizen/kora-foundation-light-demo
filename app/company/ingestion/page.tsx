@@ -21,7 +21,7 @@ const ELIGIBILITY_STYLE: Record<string, { badge: string; dot: string; label: str
     label: 'Eligible',
   },
   limited: {
-    badge: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    badge: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
     dot:   'bg-indigo-400',
     label: 'Limited',
   },
@@ -35,13 +35,13 @@ const ELIGIBILITY_STYLE: Record<string, { badge: string; dot: string; label: str
 const REVIEW_STATUS_STYLE: Record<string, { badge: string; label: string }> = {
   ready:          { badge: 'bg-green-50 text-green-700 border-green-200',   label: 'Pronto KORA' },
   pending_review: { badge: 'bg-amber-50 text-amber-700 border-amber-200',   label: 'In revisione' },
-  limited_gate:   { badge: 'bg-indigo-50 text-indigo-700 border-indigo-200', label: 'Instradato (BTI)' },
+  limited_gate:   { badge: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]', label: 'Instradato (BTI)' },
   blocked_gate:   { badge: 'bg-rose-50 text-rose-700 border-rose-200',      label: 'Bloccato' },
 };
 
 const DESTINATION_STYLE: Record<IngestionDestination, { badge: string }> = {
   'KORA Activation Core':                    { badge: 'bg-green-50 text-green-700 border-green-200' },
-  'Economic Relief & Activation Opportunity': { badge: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
+  'Economic Relief & Activation Opportunity': { badge: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]' },
   'Blocked by Design':                       { badge: 'bg-rose-50 text-rose-700 border-rose-200' },
   'Human Review Required':                   { badge: 'bg-amber-50 text-amber-700 border-amber-200' },
 };
@@ -49,7 +49,7 @@ const DESTINATION_STYLE: Record<IngestionDestination, { badge: string }> = {
 const CONFIDENCE_STYLE: Record<string, string> = {
   high:   'text-green-600 font-semibold',
   medium: 'text-amber-600 font-semibold',
-  low:    'text-slate-500',
+  low:    'text-[rgba(6,3,43,0.52)]',
 };
 
 const PILLAR_BADGE: Record<PillarCode, string> = {
@@ -96,7 +96,7 @@ function getDoctrineCopy(row: PipelineAnalyzedRow): { header: string; body: stri
     return {
       header: 'Economic Relief — Nessun Impact Unit',
       body:   'Questi benefit offrono sostegno economico ma generano profondità di attivazione limitata. Non è spesa sbagliata. È spesa che può diventare più intelligente. Instradato al Budget-to-Human-Impact engine come economic_relief_spend.',
-      style:  'border-indigo-100 bg-indigo-50 text-indigo-700',
+      style:  'border-indigo-100 bg-[rgba(199,111,61,0.08)] text-indigo-700',
     };
   }
   if (row.classification.review_required) {
@@ -133,28 +133,28 @@ export default function AIIngestionAssistant() {
       {/* ── A: Header ── */}
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <h1 className="text-xl font-bold text-slate-900">KORA AI Ingestion Assistant</h1>
+          <h1 className="text-xl font-bold text-[#06032B]">KORA AI Ingestion Assistant</h1>
           <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
             Foundation Light Preview
           </span>
-          <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-mono text-slate-400">
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-mono text-[rgba(6,3,43,0.40)]">
             synthetic_demo_data: true
           </span>
         </div>
-        <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
+        <p className="text-sm text-[rgba(6,3,43,0.62)] max-w-2xl leading-relaxed">
           Trasforma dati welfare, people e formazione in input KORA strutturati, revisionabili e metodologicamente coerenti.
         </p>
-        <p className="mt-1.5 text-xs font-semibold text-slate-500 italic">
+        <p className="mt-1.5 text-xs font-semibold text-[rgba(6,3,43,0.52)] italic">
           &ldquo;L&apos;AI propone. La metodologia governa. La revisione umana valida.&rdquo;
         </p>
-        <p className="mt-1 text-xs text-slate-400 max-w-xl">
+        <p className="mt-1 text-xs text-[rgba(6,3,43,0.40)] max-w-xl">
           Foundation Light usa una pipeline rule-based su dati demo. La struttura è pronta per upload CSV/Excel e revisione umana.
           Nessuna chiamata LLM esterna — classificazione guidata dalla tassonomia BCM KORA e dall&apos;Eligibility Gate.
         </p>
         <div className="mt-3">
           <Link
             href="/admin/companies/data-intake"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3.5 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -165,8 +165,8 @@ export default function AIIngestionAssistant() {
       </div>
 
       {/* ── B: Pipeline flow ── */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">
           Flusso pipeline — Raw → Normalizzazione → Eligibility Gate → KORA Index v3
         </p>
         <div className="flex flex-wrap items-center gap-1">
@@ -174,7 +174,7 @@ export default function AIIngestionAssistant() {
             <div key={step.label} className="flex items-center gap-1">
               <div className={cn(
                 'rounded border px-2.5 py-1.5 text-center',
-                i === 0 ? 'border-slate-200 bg-slate-50' :
+                i === 0 ? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]' :
                 i === 1 ? 'border-violet-200 bg-violet-50' :
                 i <= 2  ? 'border-blue-200 bg-blue-50' :
                 i === 3 ? 'border-amber-200 bg-amber-50' :
@@ -182,21 +182,21 @@ export default function AIIngestionAssistant() {
               )}>
                 <p className={cn(
                   'text-xs font-semibold',
-                  i === 0 ? 'text-slate-600' :
+                  i === 0 ? 'text-[rgba(6,3,43,0.62)]' :
                   i === 1 ? 'text-violet-700' :
                   i <= 2  ? 'text-blue-700' :
                   i === 3 ? 'text-amber-700' :
                              'text-green-700',
                 )}>{step.label}</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">{step.sub}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">{step.sub}</p>
               </div>
               {i < PIPELINE_STEPS.length - 1 && (
-                <span className="text-slate-300 text-xs font-bold shrink-0">→</span>
+                <span className="text-[rgba(6,3,43,0.28)] text-xs font-bold shrink-0">→</span>
               )}
             </div>
           ))}
         </div>
-        <p className="mt-2.5 text-[11px] text-slate-400">
+        <p className="mt-2.5 text-[11px] text-[rgba(6,3,43,0.40)]">
           La pipeline esegue: inferenza source_type · rilevamento campi mancanti · normalizzazione · classificazione Eligibility Gate · costruzione KoraReadyRecord con flag di governance.
           La confidence di ingestion misura la qualità della classificazione AI — è distinta dal Confidence Score esterno al KORA Index v3.
         </p>
@@ -204,16 +204,16 @@ export default function AIIngestionAssistant() {
 
       {/* ── C: Source Upload Panel ── */}
       <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Fonti Analizzate — Demo Batch
         </h2>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {SOURCE_CARDS.map((src) => (
-            <div key={src.label} className="rounded-lg border border-slate-200 bg-white p-3 flex items-start gap-2">
+            <div key={src.label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 flex items-start gap-2">
               <span className="text-lg shrink-0">{src.icon}</span>
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-slate-700 truncate">{src.label}</p>
-                <p className="text-[10px] text-slate-400 truncate">{src.file}</p>
+                <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)] truncate">{src.label}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.40)] truncate">{src.file}</p>
                 <span className="mt-1 inline-block rounded border border-green-200 bg-green-50 px-1.5 py-0.5 text-[10px] font-medium text-green-600">
                   {src.status}
                 </span>
@@ -221,14 +221,14 @@ export default function AIIngestionAssistant() {
             </div>
           ))}
         </div>
-        <p className="mt-1.5 text-[11px] text-slate-400">
+        <p className="mt-1.5 text-[11px] text-[rgba(6,3,43,0.40)]">
           Dati demo oggi. Upload CSV/Excel reale può collegarsi a questa pipeline in fase pilot. Nessun file reale è caricato.
         </p>
       </div>
 
       {/* ── D: Summary Cards ── */}
       <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Riepilogo Classificazione — {summary.total} record analizzati
         </h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -237,8 +237,8 @@ export default function AIIngestionAssistant() {
             <p className="text-2xl font-bold text-green-700 mt-0.5">{summary.eligible_count}</p>
             <p className="text-[10px] text-green-500 mt-0.5">pronti per KORA Index</p>
           </div>
-          <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
-            <p className="text-xs text-indigo-600">Limited</p>
+          <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-3">
+            <p className="text-xs text-[#C76F3D]">Limited</p>
             <p className="text-2xl font-bold text-indigo-700 mt-0.5">{summary.limited_count}</p>
             <p className="text-[10px] text-indigo-500 mt-0.5">Economic Relief — 0 IU</p>
           </div>
@@ -254,13 +254,13 @@ export default function AIIngestionAssistant() {
           </div>
         </div>
         <div className="mt-2 grid grid-cols-3 gap-2">
-          <div className="rounded border border-slate-200 bg-slate-50 p-2 text-center">
-            <p className="text-[10px] text-slate-400">Alta Confidenza</p>
-            <p className="text-sm font-bold text-slate-700">{summary.high_confidence_count}/{summary.total}</p>
+          <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-2 text-center">
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Alta Confidenza</p>
+            <p className="text-sm font-bold text-[rgba(6,3,43,0.78)]">{summary.high_confidence_count}/{summary.total}</p>
           </div>
-          <div className="rounded border border-slate-200 bg-slate-50 p-2 text-center">
-            <p className="text-[10px] text-slate-400">Campi Mancanti</p>
-            <p className="text-sm font-bold text-slate-700">{summary.missing_data_total}</p>
+          <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-2 text-center">
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Campi Mancanti</p>
+            <p className="text-sm font-bold text-[rgba(6,3,43,0.78)]">{summary.missing_data_total}</p>
           </div>
           <div className="rounded border border-green-200 bg-green-50 p-2 text-center">
             <p className="text-[10px] text-green-500">Pronti per KORA Index</p>
@@ -272,31 +272,31 @@ export default function AIIngestionAssistant() {
       {/* ── E: Classification Queue ── */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
             Coda di Classificazione
           </h2>
           {selectedId && (
             <button
               onClick={() => setSelectedId(null)}
-              className="text-xs text-slate-400 hover:text-slate-600 underline"
+              className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline"
             >
               Chiudi dettaglio
             </button>
           )}
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100">
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Record raw</th>
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Fonte</th>
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Classificazione</th>
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Pillar</th>
-                  <th className="px-3 py-2.5 text-center font-semibold text-slate-500">Confidenza</th>
-                  <th className="px-3 py-2.5 text-left font-semibold text-slate-500">Destinazione</th>
-                  <th className="px-3 py-2.5 text-center font-semibold text-slate-500">Stato</th>
-                  <th className="px-3 py-2.5 text-center font-semibold text-slate-500">Azione</th>
+                <tr className="bg-[rgba(6,3,43,0.03)] border-b border-[rgba(6,3,43,0.05)]">
+                  <th className="px-3 py-2.5 text-left font-semibold text-[rgba(6,3,43,0.52)]">Record raw</th>
+                  <th className="px-3 py-2.5 text-left font-semibold text-[rgba(6,3,43,0.52)]">Fonte</th>
+                  <th className="px-3 py-2.5 text-left font-semibold text-[rgba(6,3,43,0.52)]">Classificazione</th>
+                  <th className="px-3 py-2.5 text-left font-semibold text-[rgba(6,3,43,0.52)]">Pillar</th>
+                  <th className="px-3 py-2.5 text-center font-semibold text-[rgba(6,3,43,0.52)]">Confidenza</th>
+                  <th className="px-3 py-2.5 text-left font-semibold text-[rgba(6,3,43,0.52)]">Destinazione</th>
+                  <th className="px-3 py-2.5 text-center font-semibold text-[rgba(6,3,43,0.52)]">Stato</th>
+                  <th className="px-3 py-2.5 text-center font-semibold text-[rgba(6,3,43,0.52)]">Azione</th>
                 </tr>
               </thead>
               <tbody>
@@ -309,8 +309,8 @@ export default function AIIngestionAssistant() {
                     <tr
                       key={row.raw.id}
                       className={cn(
-                        'border-b border-slate-50 last:border-0 cursor-pointer transition-colors',
-                        isSelected ? 'bg-blue-50' : 'hover:bg-slate-50',
+                        'border-b border-[rgba(6,3,43,0.04)] last:border-0 cursor-pointer transition-colors',
+                        isSelected ? 'bg-blue-50' : 'hover:bg-[rgba(6,3,43,0.03)]',
                       )}
                       onClick={() => setSelectedId(isSelected ? null : row.raw.id)}
                     >
@@ -318,22 +318,22 @@ export default function AIIngestionAssistant() {
                         <div className="flex items-center gap-1.5">
                           <span className={cn('inline-block h-2 w-2 rounded-full shrink-0', elig.dot)} />
                           <div>
-                            <p className="font-medium text-slate-800 max-w-[200px] truncate">{row.raw.raw_name}</p>
-                            <p className="text-[10px] text-slate-400 max-w-[200px] truncate">{row.normalized.raw_description}</p>
+                            <p className="font-medium text-[rgba(6,3,43,0.90)] max-w-[200px] truncate">{row.raw.raw_name}</p>
+                            <p className="text-[10px] text-[rgba(6,3,43,0.40)] max-w-[200px] truncate">{row.normalized.raw_description}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap">
+                      <td className="px-3 py-2.5 text-[rgba(6,3,43,0.52)] whitespace-nowrap">
                         {row.normalized.source_type.replace(/_/g, ' ')}
                         {row.normalized.inferred_source_type && (
-                          <span className="ml-1 text-[9px] text-slate-300 italic">inf</span>
+                          <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.28)] italic">inf</span>
                         )}
                       </td>
                       <td className="px-3 py-2.5">
                         <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-semibold', elig.badge)}>
                           {elig.label}
                         </span>
-                        <p className="text-[10px] text-slate-400 mt-0.5 max-w-[120px] truncate">
+                        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5 max-w-[120px] truncate">
                           {ACTION_FAMILY_LABELS[row.classification.action_family] ?? row.classification.action_family}
                         </p>
                       </td>
@@ -341,12 +341,12 @@ export default function AIIngestionAssistant() {
                         {row.classification.primary_pillar ? (
                           <span className={cn(
                             'rounded border px-1 py-0.5 text-[10px] font-mono',
-                            PILLAR_BADGE[row.classification.primary_pillar as PillarCode] ?? 'bg-slate-50 text-slate-500 border-slate-200',
+                            PILLAR_BADGE[row.classification.primary_pillar as PillarCode] ?? 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
                           )}>
                             {row.classification.primary_pillar}
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-300">—</span>
+                          <span className="text-[10px] text-[rgba(6,3,43,0.28)]">—</span>
                         )}
                       </td>
                       <td className="px-3 py-2.5 text-center">
@@ -379,7 +379,7 @@ export default function AIIngestionAssistant() {
             </table>
           </div>
         </div>
-        <p className="mt-1.5 text-[11px] text-slate-400">
+        <p className="mt-1.5 text-[11px] text-[rgba(6,3,43,0.40)]">
           Clicca una riga per aprire il dettaglio di classificazione. Dati sintetici demo — nessun record reale.
         </p>
       </div>
@@ -389,11 +389,11 @@ export default function AIIngestionAssistant() {
 
       {/* ── G: Missing Data Assistant ── */}
       <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Missing Data Assistant
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
+          <p className="text-xs text-[rgba(6,3,43,0.62)] mb-3 leading-relaxed">
             KORA identifica automaticamente i campi mancanti che limitano la qualità della classificazione o impediscono la generazione di Impact Units.
             {selectedRow && selectedRow.missing_data_questions.length > 0 && (
               <> Domande specifiche per <span className="font-semibold">{selectedRow.raw.raw_name}</span>:</>
@@ -414,13 +414,13 @@ export default function AIIngestionAssistant() {
                 </div>
               )
             ) : (
-              <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+              <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-xs text-[rgba(6,3,43,0.52)]">
                 Seleziona una riga dalla coda per vedere le domande di completamento dati specifiche per quel record.
               </div>
             )}
           </div>
           {!selectedRow && (
-            <p className="mt-3 text-[11px] text-slate-400">
+            <p className="mt-3 text-[11px] text-[rgba(6,3,43,0.40)]">
               Le domande sono generate dalla pipeline in base ai campi mancanti rilevati durante la normalizzazione.
             </p>
           )}
@@ -429,7 +429,7 @@ export default function AIIngestionAssistant() {
 
       {/* ── H: Output Routing Panel ── */}
       <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Routing Output — Come fluiscono i record
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -443,7 +443,7 @@ export default function AIIngestionAssistant() {
           <RoutingCard
             count={summary.routing.economic_relief_opportunity}
             title="Economic Relief & Activation Opportunity"
-            badge="bg-indigo-50 text-indigo-700 border-indigo-200"
+            badge="bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]"
             description="Limited → BTI Engine only"
             detail="Non generano IU. Tracciati nel Budget-to-Human-Impact engine come economic_relief_spend. Opportunità di conversione in attivazione reale."
           />
@@ -465,11 +465,11 @@ export default function AIIngestionAssistant() {
       </div>
 
       {/* ── I: Privacy & Governance Boundaries ── */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4 space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">
           Privacy & Governance — Limiti dell&apos;AI Ingestion
         </p>
-        <p className="text-xs text-slate-500 leading-relaxed">
+        <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
           KORA AI Ingestion lavora su dati aziendali e record di iniziativa. Non espone Worker PIB individuali,
           dati sensibili individuali o ranking dei lavoratori.
         </p>
@@ -485,7 +485,7 @@ export default function AIIngestionAssistant() {
                 'Generare domande di revisione da pipeline',
                 'Instradare verso categorie KORA con flag di governance',
               ].map((t) => (
-                <li key={t} className="flex gap-1.5 text-[10px] text-slate-500">
+                <li key={t} className="flex gap-1.5 text-[10px] text-[rgba(6,3,43,0.52)]">
                   <span className="shrink-0 text-green-500">✓</span>{t}
                 </li>
               ))}
@@ -503,14 +503,14 @@ export default function AIIngestionAssistant() {
                 'Elaborare dati personali sensibili reali',
                 'Bypassare la revisione umana per dati ambigui',
               ].map((t) => (
-                <li key={t} className="flex gap-1.5 text-[10px] text-slate-500">
+                <li key={t} className="flex gap-1.5 text-[10px] text-[rgba(6,3,43,0.52)]">
                   <span className="shrink-0 text-rose-500">✗</span>{t}
                 </li>
               ))}
             </ul>
           </div>
         </div>
-        <p className="text-[10px] text-slate-400 pt-1">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] pt-1">
           Foundation Light usa una pipeline rule-based su dati demo: nessuna chiamata LLM esterna. Nessun dato reale lavoratore.
           synthetic_demo_data: true · KORA Methodology v0.1 · pre_empirical_calibration
         </p>
@@ -531,7 +531,7 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
   return (
     <div className="rounded-lg border border-blue-200 bg-blue-50/30 p-4 space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h2 className="text-sm font-bold text-slate-800">Dettaglio: {row.raw.raw_name}</h2>
+        <h2 className="text-sm font-bold text-[rgba(6,3,43,0.90)]">Dettaglio: {row.raw.raw_name}</h2>
         <span className={cn(
           'rounded border px-2 py-0.5 text-xs font-bold',
           ELIGIBILITY_STYLE[c.kora_eligibility]?.badge,
@@ -548,31 +548,31 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
 
       {/* Raw → Normalized transformation */}
       <div>
-        <p className="text-[10px] font-semibold text-slate-400 mb-2 uppercase tracking-wide">Raw → Normalizzato</p>
+        <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] mb-2 uppercase tracking-wide">Raw → Normalizzato</p>
         <div className="grid gap-2 sm:grid-cols-2">
-          <div className="rounded border border-slate-100 bg-white p-2.5 space-y-1 text-xs">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Raw input</p>
-            <p className="text-slate-700"><span className="text-slate-400">Nome: </span>{row.raw.raw_name}</p>
-            <p className="text-slate-500 text-[10px] leading-relaxed">{n.raw_description}</p>
-            <p className="text-slate-400 text-[10px]">Fonte: {row.raw.source_file ?? '—'}</p>
+          <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[#F8F6F1] p-2.5 space-y-1 text-xs">
+            <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">Raw input</p>
+            <p className="text-[rgba(6,3,43,0.78)]"><span className="text-[rgba(6,3,43,0.40)]">Nome: </span>{row.raw.raw_name}</p>
+            <p className="text-[rgba(6,3,43,0.52)] text-[10px] leading-relaxed">{n.raw_description}</p>
+            <p className="text-[rgba(6,3,43,0.40)] text-[10px]">Fonte: {row.raw.source_file ?? '—'}</p>
           </div>
           <div className="rounded border border-violet-100 bg-violet-50/50 p-2.5 space-y-1 text-xs">
             <p className="text-[10px] font-semibold text-violet-500 uppercase tracking-wide">Normalizzato</p>
-            <p className="text-slate-700 font-mono text-[10px]">{n.normalized_name}</p>
-            <p className="text-slate-600">
-              <span className="text-slate-400">Tipo fonte: </span>
+            <p className="text-[rgba(6,3,43,0.78)] font-mono text-[10px]">{n.normalized_name}</p>
+            <p className="text-[rgba(6,3,43,0.62)]">
+              <span className="text-[rgba(6,3,43,0.40)]">Tipo fonte: </span>
               {n.source_type.replace(/_/g, ' ')}
               {n.inferred_source_type && <span className="ml-1 text-[9px] text-violet-400 italic">(inferito)</span>}
             </p>
             {n.mandatory_status && (
-              <p className="text-slate-600">
-                <span className="text-slate-400">Stato obbligatorio: </span>
+              <p className="text-[rgba(6,3,43,0.62)]">
+                <span className="text-[rgba(6,3,43,0.40)]">Stato obbligatorio: </span>
                 {n.mandatory_status}
                 {n.inferred_mandatory_status && <span className="ml-1 text-[9px] text-violet-400 italic">(inferito)</span>}
               </p>
             )}
-            <p className="text-slate-600">
-              <span className="text-slate-400">Completezza dati: </span>
+            <p className="text-[rgba(6,3,43,0.62)]">
+              <span className="text-[rgba(6,3,43,0.40)]">Completezza dati: </span>
               <span className={n.data_completeness_score >= 0.8 ? 'text-green-600 font-semibold' : n.data_completeness_score >= 0.5 ? 'text-amber-600' : 'text-rose-600'}>
                 {Math.round(n.data_completeness_score * 100)}%
               </span>
@@ -583,7 +583,7 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
 
       {/* Classification fields grid */}
       <div>
-        <p className="text-[10px] font-semibold text-slate-400 mb-2 uppercase tracking-wide">Classificazione Eligibility Gate</p>
+        <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] mb-2 uppercase tracking-wide">Classificazione Eligibility Gate</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Action family"      value={ACTION_FAMILY_LABELS[c.action_family] ?? c.action_family} />
           <Field label="Event nature"       value={c.event_nature.replace(/_/g, ' ')} />
@@ -599,32 +599,32 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
       </div>
 
       {/* Reason + Explanation */}
-      <div className="rounded border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
-        <p className="font-semibold text-slate-400 mb-0.5">Ragione della classificazione</p>
+      <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2 text-xs text-[rgba(6,3,43,0.62)]">
+        <p className="font-semibold text-[rgba(6,3,43,0.40)] mb-0.5">Ragione della classificazione</p>
         <p className="leading-relaxed">{c.reason}</p>
       </div>
-      <div className="rounded border border-slate-200 bg-white px-3 py-2 text-xs text-slate-600">
-        <p className="font-semibold text-slate-400 mb-0.5">Spiegazione KORA</p>
+      <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2 text-xs text-[rgba(6,3,43,0.62)]">
+        <p className="font-semibold text-[rgba(6,3,43,0.40)] mb-0.5">Spiegazione KORA</p>
         <p className="leading-relaxed">{c.explanation_text}</p>
       </div>
 
       {/* KoraReadyRecord governance flags */}
       <div>
-        <p className="text-[10px] font-semibold text-slate-400 mb-2 uppercase tracking-wide">KoraReadyRecord — Flag di governance</p>
+        <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] mb-2 uppercase tracking-wide">KoraReadyRecord — Flag di governance</p>
         <div className="flex flex-wrap gap-2">
           <FlagBadge label="Scoring approvato"        value={kr.approved_for_scoring} />
           <FlagBadge label="BTI governance approvato" value={kr.approved_for_bti_governance} />
           <FlagBadge label="Impact Units approvati"   value={kr.approved_for_impact_units} />
           <FlagBadge label="Review richiesta"         value={c.review_required} invert />
         </div>
-        <p className="mt-1.5 text-[10px] text-slate-400">
+        <p className="mt-1.5 text-[10px] text-[rgba(6,3,43,0.40)]">
           Blocked → tutti false. Limited → solo BTI. Eligible + review_required → tutti false. Eligible + approvato → scoring e IU abilitati.
         </p>
       </div>
 
       {/* Mock review controls */}
       <div>
-        <p className="text-[10px] font-semibold text-slate-400 mb-2 uppercase tracking-wide">Controlli di revisione (demo)</p>
+        <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] mb-2 uppercase tracking-wide">Controlli di revisione (demo)</p>
         <div className="flex flex-wrap gap-2">
           <button
             disabled={!kr.approved_for_scoring}
@@ -632,7 +632,7 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
               'rounded border px-3 py-1.5 text-xs font-medium',
               kr.approved_for_scoring
                 ? 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100 cursor-pointer'
-                : 'border-slate-200 bg-slate-50 text-slate-300 cursor-not-allowed',
+                : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.28)] cursor-not-allowed',
             )}
           >
             Invia a KORA Index ✓
@@ -640,14 +640,14 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
           <button disabled className="rounded border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-600 cursor-not-allowed opacity-70">
             Invia a revisione
           </button>
-          <button disabled className="rounded border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 cursor-not-allowed">
+          <button disabled className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-1.5 text-xs text-[rgba(6,3,43,0.40)] cursor-not-allowed">
             Escludi da scoring
           </button>
-          <button disabled className="rounded border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-400 cursor-not-allowed">
+          <button disabled className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-1.5 text-xs text-[rgba(6,3,43,0.40)] cursor-not-allowed">
             Modifica mapping
           </button>
         </div>
-        <p className="mt-1.5 text-[10px] text-slate-400">
+        <p className="mt-1.5 text-[10px] text-[rgba(6,3,43,0.40)]">
           Controlli di revisione disponibili in fase pilot. &ldquo;Invia a KORA Index&rdquo; è abilitato solo per record Eligible con approved_for_scoring: true.
         </p>
       </div>
@@ -670,12 +670,12 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
 function Field({ label, value, highlight }: { label: string; value: string; highlight?: string }) {
   const style =
     highlight === 'eligible' ? 'text-green-600 font-semibold' :
-    highlight === 'limited'  ? 'text-indigo-600 font-semibold' :
+    highlight === 'limited'  ? 'text-[#C76F3D] font-semibold' :
     highlight === 'blocked'  ? 'text-rose-600 font-semibold' :
-    'text-slate-700';
+    'text-[rgba(6,3,43,0.78)]';
   return (
-    <div className="rounded border border-slate-100 bg-white px-2 py-1.5">
-      <p className="text-[10px] text-slate-400">{label}</p>
+    <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[#F8F6F1] px-2 py-1.5">
+      <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{label}</p>
       <p className={cn('mt-0.5 text-xs', style)}>{value}</p>
     </div>
   );
@@ -705,9 +705,9 @@ function RoutingCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-3 space-y-2">
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs font-semibold text-slate-700 leading-snug">{title}</p>
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)] leading-snug">{title}</p>
         <span className={cn(
           'text-lg font-bold shrink-0',
           badge.includes('green')  ? 'text-green-700'  :
@@ -721,7 +721,7 @@ function RoutingCard({
       <span className={cn('inline-block rounded border px-1.5 py-0.5 text-[10px] font-medium', badge)}>
         {description}
       </span>
-      <p className="text-[10px] text-slate-500 leading-relaxed">{detail}</p>
+      <p className="text-[10px] text-[rgba(6,3,43,0.52)] leading-relaxed">{detail}</p>
     </div>
   );
 }

@@ -215,9 +215,9 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
       "Foundation Light è pre-calibrazione empirica (Delphi Study post-pilot) — methodology v0.1 pesi provvisori.",
     ],
     accent: {
-      border: 'border-slate-300 hover:border-slate-500',
-      badge: 'bg-slate-100 text-slate-600 border-slate-200',
-      btn: 'bg-slate-800 hover:bg-slate-900 text-white',
+      border: 'border-[rgba(6,3,43,0.14)] hover:border-[rgba(6,3,43,0.04)]0',
+      badge: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
+      btn: 'bg-[#06032B] hover:bg-[#06032B] text-white',
     },
   },
 ];
@@ -234,10 +234,10 @@ export function StakeholderPaths() {
   return (
     <div>
       <div className="mb-4">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           Percorsi demo per stakeholder
         </h2>
-        <p className="text-sm text-slate-500 mt-1 leading-relaxed max-w-2xl">
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1 leading-relaxed max-w-2xl">
           KORA Foundation Light può essere esplorata da diversi punti di vista: strategia, HR, finance, ESG,
           lavoratori, partner, advisor e tecnologia.
         </p>
@@ -247,30 +247,30 @@ export function StakeholderPaths() {
         {STAKEHOLDER_CARDS.map((card) => (
           <div
             key={card.id}
-            className={`rounded-lg border bg-white p-5 space-y-3 transition-shadow hover:shadow-sm ${card.accent.border}`}
+            className={`rounded-lg border bg-[#F8F6F1] p-5 space-y-3 transition-shadow hover:shadow-sm ${card.accent.border}`}
           >
             <span className={`inline-block rounded border px-2 py-0.5 text-xs font-semibold ${card.accent.badge}`}>
               {card.roleLabel}
             </span>
 
-            <p className="text-sm font-medium text-slate-700 leading-snug">{card.goal}</p>
+            <p className="text-sm font-medium text-[rgba(6,3,43,0.78)] leading-snug">{card.goal}</p>
 
             <div className="flex flex-wrap gap-1">
               {card.keyScreens.map((s) => (
-                <span key={s.href} className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-600">
+                <span key={s.href} className="rounded bg-[rgba(6,3,43,0.05)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.62)]">
                   {s.label}
                 </span>
               ))}
             </div>
 
-            <div className="rounded bg-slate-50 border border-slate-100 px-3 py-2 text-xs text-slate-600 leading-relaxed italic">
+            <div className="rounded bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.05)] px-3 py-2 text-xs text-[rgba(6,3,43,0.62)] leading-relaxed italic">
               {card.keyMessage}
             </div>
 
             <ul className="space-y-1">
               {card.talkingPoints.map((pt) => (
-                <li key={pt} className="flex gap-1.5 text-xs text-slate-500">
-                  <span className="text-slate-300 shrink-0 mt-0.5">·</span>
+                <li key={pt} className="flex gap-1.5 text-xs text-[rgba(6,3,43,0.52)]">
+                  <span className="text-[rgba(6,3,43,0.28)] shrink-0 mt-0.5">·</span>
                   {pt}
                 </li>
               ))}

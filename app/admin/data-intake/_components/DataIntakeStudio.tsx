@@ -178,7 +178,7 @@ const SAFEGUARD_COLOR: Record<string, string> = {
   WARNING: 'bg-amber-100 text-amber-800 border-amber-200',
   FLAGGED: 'bg-red-100 text-red-800 border-red-200',
 };
-function badge(val: string, colorMap: Record<string,string>, fallback = 'bg-slate-100 text-slate-600 border-slate-200') {
+function badge(val: string, colorMap: Record<string,string>, fallback = 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]') {
   const cls = colorMap[val] ?? fallback;
   return <span className={`inline-block rounded border px-2 py-0.5 text-xs font-semibold ${cls}`}>{val}</span>;
 }
@@ -552,7 +552,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
     passed:    'bg-green-100 text-green-700 border-green-200',
     completed: 'bg-[#06032B] text-white border-[#06032B]',
     review:    'bg-amber-100 text-amber-700 border-amber-200',
-    'not-run': 'bg-slate-100 text-slate-500 border-slate-200',
+    'not-run': 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   };
   const PHASE_LABEL: Record<string, string> = {
     ready: 'Ready', passed: 'Passed', completed: 'Completed', review: 'Review required', 'not-run': 'Not run yet',
@@ -575,18 +575,18 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <p className="text-sm text-white/45 mt-0.5">Synthetic Live v1 · {TENANT} · {PERIOD}</p>
         </div>
         <div className="flex flex-col items-end gap-2 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <span className="rounded border border-[#C8FF47]/40 bg-[#C8FF47]/10 px-2 py-0.5 text-xs font-semibold text-[#d4ff6b]">Synthetic data only</span>
         </div>
       </div>
 
       {/* ── B4.1 / B26. CSV + XLSX DRY-RUN PREVIEW ── */}
-      <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4 space-y-3">
         <div className="flex items-start justify-between flex-wrap gap-2">
           <div>
-            <p className="text-xs font-bold text-slate-700 uppercase tracking-wide">Live Intake Preview — dry run</p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Validate a CSV or Excel (.xlsx) file against KORA intake rules. No data is stored.</p>
+            <p className="text-xs font-bold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Live Intake Preview — dry run</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Validate a CSV or Excel (.xlsx) file against KORA intake rules. No data is stored.</p>
           </div>
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">Dry-run only: no data is stored.</span>
@@ -617,14 +617,14 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               const isXlsx = f?.name.toLowerCase().endsWith('.xlsx') ?? false;
               setFileType(isXlsx ? 'xlsx' : 'csv');
             }}
-            className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-slate-300 file:bg-slate-50 file:text-xs file:font-medium file:text-slate-700 file:cursor-pointer hover:file:bg-slate-100"
+            className="text-xs text-[rgba(6,3,43,0.62)] file:mr-3 file:py-1.5 file:px-3 file:rounded file:border file:border-[rgba(6,3,43,0.14)] file:bg-[rgba(6,3,43,0.03)] file:text-xs file:font-medium file:text-[rgba(6,3,43,0.78)] file:cursor-pointer hover:file:bg-[rgba(6,3,43,0.05)]"
           />
           {/* CSV: validate directly */}
           {fileType === 'csv' && (
             <button
               onClick={handleValidateCsv}
               disabled={!csvFile || csvStatus === 'loading' || !isTenantSelected}
-              className="rounded-lg bg-slate-800 text-white px-4 py-1.5 text-xs font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {csvStatus === 'loading' ? '⏳ Validating…' : '✓ Validate CSV'}
             </button>
@@ -639,16 +639,16 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               {xlsxSheetStatus === 'loading' ? '⏳ Reading workbook…' : '📋 Load sheet list'}
             </button>
           )}
-          {csvFile && <span className="text-[10px] text-slate-400 font-mono">{csvFile.name} · {(csvFile.size / 1024).toFixed(0)} KB · {fileType.toUpperCase()}</span>}
+          {csvFile && <span className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono">{csvFile.name} · {(csvFile.size / 1024).toFixed(0)} KB · {fileType.toUpperCase()}</span>}
         </div>
 
         {/* B28: Additional files (multi-file batch) */}
         {csvFile && (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-3">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 space-y-3">
+            <p className="text-[10px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">
               File aggiuntivi — Multi-File Batch (opzionale)
             </p>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
               Aggiungi file budget, LMS, provider o policy per arricchire il batch.
               Ogni file viene scansionato per PII separatamente prima del merge.
             </p>
@@ -663,17 +663,17 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 setMultiFileResult(null); setMultiFileStatus('idle');
                 setMatchDecisions({});
               }}
-              className="text-xs text-slate-600 file:mr-3 file:py-1 file:px-2 file:rounded file:border file:border-slate-200 file:bg-white file:text-xs file:font-medium file:text-slate-600 file:cursor-pointer"
+              className="text-xs text-[rgba(6,3,43,0.62)] file:mr-3 file:py-1 file:px-2 file:rounded file:border file:border-[rgba(6,3,43,0.08)] file:bg-[#F8F6F1] file:text-xs file:font-medium file:text-[rgba(6,3,43,0.62)] file:cursor-pointer"
             />
             {additionalFiles.length > 0 && (
               <div className="space-y-2">
                 {additionalFiles.map((f, i) => (
                   <div key={i} className="flex items-center gap-3 flex-wrap">
-                    <span className="text-[10px] font-mono text-slate-500">{f.name}</span>
+                    <span className="text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{f.name}</span>
                     <select
                       value={additionalFileRoles[i] ?? 'unknown'}
                       onChange={e => setAdditionalFileRoles(r => ({ ...r, [i]: e.target.value }))}
-                      className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]"
+                      className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]"
                     >
                       <option value="unknown">— Tipo file —</option>
                       <option value="initiatives">Iniziative / Programmi</option>
@@ -700,10 +700,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             {multiFileStatus === 'done' && multiFileResult?.ok && multiFileResult.matchSummary && (
               <div className="space-y-3">
                 {/* Quick summary header */}
-                <div className="rounded-lg border border-[#C76F3D]/20 bg-white px-4 py-3 space-y-2">
+                <div className="rounded-lg border border-[#C76F3D]/20 bg-[#F8F6F1] px-4 py-3 space-y-2">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Initiative Matching — Risultati</p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
                       {multiFileResult.fileCount} file · {multiFileResult.rowCount} righe totali
                     </p>
                   </div>
@@ -717,7 +717,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                     <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 text-purple-700 font-medium">
                       ? Review: {multiFileResult.matchSummary.needsReview}
                     </span>
-                    <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-600 font-medium">
+                    <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[rgba(6,3,43,0.62)] font-medium">
                       ✗ Unmatched: {multiFileResult.matchSummary.unmatched}
                     </span>
                   </div>
@@ -753,7 +753,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </p>
             <div className="space-y-2">
               {xlsxSheetList.sheets.map(s => (
-                <label key={s.sheetName} className={`flex items-start gap-3 p-2.5 rounded border cursor-pointer transition-colors ${selectedSheet === s.sheetName ? 'border-[#C76F3D] bg-white' : 'border-slate-200 bg-white/60 hover:bg-white'}`}>
+                <label key={s.sheetName} className={`flex items-start gap-3 p-2.5 rounded border cursor-pointer transition-colors ${selectedSheet === s.sheetName ? 'border-[#C76F3D] bg-[#F8F6F1]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]/60 hover:bg-[#F8F6F1]'}`}>
                   <input
                     type="radio"
                     name="sheetSelector"
@@ -764,12 +764,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-semibold text-slate-700">{s.sheetName}</span>
-                      <span className="text-[10px] text-slate-400">{s.rowCount} righe · {s.headers.length} colonne</span>
+                      <span className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{s.sheetName}</span>
+                      <span className="text-[10px] text-[rgba(6,3,43,0.40)]">{s.rowCount} righe · {s.headers.length} colonne</span>
                       {s.errors.length > 0 && <span className="rounded border border-red-200 bg-red-50 px-1.5 py-0.5 text-[9px] font-bold text-red-700">Errore</span>}
                     </div>
                     {s.headers.length > 0 && (
-                      <p className="text-[10px] text-slate-400 mt-0.5 font-mono truncate">{s.headers.slice(0, 6).join(' · ')}{s.headers.length > 6 ? ` +${s.headers.length - 6}` : ''}</p>
+                      <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5 font-mono truncate">{s.headers.slice(0, 6).join(' · ')}{s.headers.length > 6 ? ` +${s.headers.length - 6}` : ''}</p>
                     )}
                     {s.errors.length > 0 && (
                       <p className="text-[10px] text-red-600 mt-0.5">{s.errors[0].message}</p>
@@ -782,7 +782,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <button
                 onClick={handlePreviewXlsxSheet}
                 disabled={csvStatus === 'loading' || !isTenantSelected}
-                className="rounded-lg bg-slate-800 text-white px-4 py-1.5 text-xs font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {csvStatus === 'loading' ? '⏳ Previewing…' : `✓ Preview sheet "${selectedSheet}"`}
               </button>
@@ -806,24 +806,24 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-green-700">✓ File validation passed</span>
               <span className="rounded border border-green-200 bg-green-100 px-2 py-0.5 text-[10px] font-semibold text-green-700">PII: passed</span>
-              <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-mono text-slate-600">{csvResult.rowCount} rows</span>
+              <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.62)]">{csvResult.rowCount} rows</span>
             </div>
             {csvResult.eligibilityPreview && (
               <div className="flex flex-wrap gap-2 text-[10px]">
-                <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-green-700 font-medium">Eligible: {csvResult.eligibilityPreview.eligible}</span>
-                <span className="rounded border border-amber-200 bg-white px-2 py-0.5 text-amber-700 font-medium">Limited: {csvResult.eligibilityPreview.limited}</span>
-                <span className="rounded border border-red-200 bg-white px-2 py-0.5 text-red-700 font-medium">Blocked: {csvResult.eligibilityPreview.blocked}</span>
+                <span className="rounded border border-green-200 bg-[#F8F6F1] px-2 py-0.5 text-green-700 font-medium">Eligible: {csvResult.eligibilityPreview.eligible}</span>
+                <span className="rounded border border-amber-200 bg-[#F8F6F1] px-2 py-0.5 text-amber-700 font-medium">Limited: {csvResult.eligibilityPreview.limited}</span>
+                <span className="rounded border border-red-200 bg-[#F8F6F1] px-2 py-0.5 text-red-700 font-medium">Blocked: {csvResult.eligibilityPreview.blocked}</span>
                 {csvResult.eligibilityPreview.reviewRequired > 0 && (
-                  <span className="rounded border border-purple-200 bg-white px-2 py-0.5 text-purple-700 font-medium">Review required: {csvResult.eligibilityPreview.reviewRequired}</span>
+                  <span className="rounded border border-purple-200 bg-[#F8F6F1] px-2 py-0.5 text-purple-700 font-medium">Review required: {csvResult.eligibilityPreview.reviewRequired}</span>
                 )}
               </div>
             )}
             {csvResult.sampleRows && csvResult.sampleRows.length > 0 && (
               <div>
-                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Sample rows (max 5)</p>
+                <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Sample rows (max 5)</p>
                 <div className="space-y-0.5">
                   {csvResult.sampleRows.map((row, i) => (
-                    <div key={i} className="text-[10px] font-mono text-slate-500 bg-white border border-slate-100 rounded px-2 py-1 truncate">
+                    <div key={i} className="text-[10px] font-mono text-[rgba(6,3,43,0.52)] bg-[#F8F6F1] border border-[rgba(6,3,43,0.05)] rounded px-2 py-1 truncate">
                       {Object.entries(row).slice(0, 6).map(([k, v]) => `${k}=${v}`).join(' · ')}
                     </div>
                   ))}
@@ -837,7 +837,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 ))}
               </div>
             )}
-            <p className="text-[10px] text-slate-400 border-t border-green-100 pt-2">
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)] border-t border-green-100 pt-2">
               {csvResult.dryRunNote} · Live scoring remains locked until B4.2/B5.
             </p>
           </div>
@@ -846,10 +846,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         {/* B27 — Column Mapping Assistant */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' &&
           csvResult.mappingSuggestions && csvResult.mappingSuggestions.length > 0 && (
-          <div className="rounded-lg border border-[#C76F3D]/20 bg-white px-4 py-4 space-y-3">
+          <div className="rounded-lg border border-[#C76F3D]/20 bg-[#F8F6F1] px-4 py-4 space-y-3">
             <div>
               <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Column Mapping Assistant</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
                 KORA ha suggerito un mapping per le colonne del file. Verifica e modifica se necessario.
                 Colonne non mappate vengono mantenute con il nome originale.
               </p>
@@ -857,24 +857,24 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <div className="overflow-x-auto">
               <table className="w-full text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200">
+                  <tr className="border-b border-[rgba(6,3,43,0.08)]">
                     {['Colonna file', 'Campo canonico KORA', 'Confidence'].map(h => (
-                      <th key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">{h}</th>
+                      <th key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {csvResult.mappingSuggestions.map((s, i) => {
                     const currentVal = userMapping[s.sourceHeader] ?? s.suggestedField ?? 'keep_original';
-                    const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-amber-700' : 'text-slate-400';
+                    const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-amber-700' : 'text-[rgba(6,3,43,0.40)]';
                     return (
-                      <tr key={i} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="py-1.5 px-2 font-mono text-slate-700">{s.sourceHeader}</td>
+                      <tr key={i} className="border-b border-[rgba(6,3,43,0.05)] hover:bg-[rgba(6,3,43,0.03)]">
+                        <td className="py-1.5 px-2 font-mono text-[rgba(6,3,43,0.78)]">{s.sourceHeader}</td>
                         <td className="py-1.5 px-2">
                           <select
                             value={currentVal}
                             onChange={e => setUserMapping(m => ({ ...m, [s.sourceHeader]: e.target.value }))}
-                            className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] min-w-[160px]"
+                            className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D] min-w-[160px]"
                           >
                             <option value="keep_original">— Mantieni originale —</option>
                             <option value="ignore">✕ Ignora colonna</option>
@@ -901,7 +901,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             >
               ↻ Applica mapping e ri-preview
             </button>
-            <p className="text-[10px] text-slate-400">
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
               La colonna selezionata come &quot;Ignora&quot; viene comunque scansionata per PII prima di essere scartata.
             </p>
           </div>
@@ -915,33 +915,33 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             csvResult.missingFieldSummary.overallSeverity === 'warning'  ? 'border-amber-200 bg-amber-50' :
             'border-green-200 bg-green-50'
           }`}>
-            <p className="text-[10px] font-bold uppercase tracking-wide text-slate-600">Missing Fields</p>
+            <p className="text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.62)]">Missing Fields</p>
             <div className="flex flex-wrap gap-2 text-[10px]">
               {csvResult.missingFieldSummary.blockingCount > 0 && (
-                <span className="rounded border border-red-200 bg-white px-2 py-0.5 text-red-700 font-medium">
+                <span className="rounded border border-red-200 bg-[#F8F6F1] px-2 py-0.5 text-red-700 font-medium">
                   ⊗ Blocking: {csvResult.missingFieldSummary.blockingCount} righe
                 </span>
               )}
               {csvResult.missingFieldSummary.warningCount > 0 && (
-                <span className="rounded border border-amber-200 bg-white px-2 py-0.5 text-amber-700 font-medium">
+                <span className="rounded border border-amber-200 bg-[#F8F6F1] px-2 py-0.5 text-amber-700 font-medium">
                   ⚠ Warning: {csvResult.missingFieldSummary.warningCount} righe
                 </span>
               )}
               {csvResult.missingFieldSummary.overallSeverity === 'ok' && (
-                <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-green-700 font-medium">✓ Campi chiave presenti</span>
+                <span className="rounded border border-green-200 bg-[#F8F6F1] px-2 py-0.5 text-green-700 font-medium">✓ Campi chiave presenti</span>
               )}
             </div>
             {Object.keys(csvResult.missingFieldSummary.missingByField).length > 0 && (
               <div className="flex flex-wrap gap-1 pt-1">
                 {Object.entries(csvResult.missingFieldSummary.missingByField).slice(0, 8).map(([f, n]) => (
-                  <span key={f} className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[9px] font-mono text-slate-500">
+                  <span key={f} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[9px] font-mono text-[rgba(6,3,43,0.52)]">
                     {f}: {n}/{csvResult.missingFieldSummary!.totalRows}
                   </span>
                 ))}
               </div>
             )}
             {csvResult.missingFieldSummary.fillableWithDefaults.length > 0 && (
-              <p className="text-[10px] text-slate-500">
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
                 💡 Campi completabili con default batch: {csvResult.missingFieldSummary.fillableWithDefaults.join(', ')}
               </p>
             )}
@@ -950,25 +950,25 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B27 — Manual Completion Light (batch-level defaults) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
-          <div className="rounded-lg border border-slate-200 bg-white px-4 py-4 space-y-3">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-4 space-y-3">
             <div>
-              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Manual Completion — Default Batch</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">
+              <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Manual Completion — Default Batch</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
                 Valori di default applicati solo alle righe con campo vuoto. Non sovrascrivono dati presenti.
-                Tracciati come <code className="bg-slate-100 px-1 rounded text-[9px]">_manual_completion</code> nel payload — non bypassano UEF Review.
+                Tracciati come <code className="bg-[rgba(6,3,43,0.05)] px-1 rounded text-[9px]">_manual_completion</code> nel payload — non bypassano UEF Review.
               </p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Fonte default</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Fonte default</label>
                 <input value={manualSource} onChange={e => setManualSource(e.target.value)}
                   placeholder="es. provider_export, hr_declaration"
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Evidence level default</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Evidence level default</label>
                 <select value={manualEvidLevel} onChange={e => setManualEvidLevel(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="">— Non specificato —</option>
                   <option value="L0">L0 — Nessuna evidenza</option>
                   <option value="L1">L1 — Auto-dichiarato</option>
@@ -977,9 +977,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Budget class default</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Budget class default</label>
                 <select value={manualBudgetClass} onChange={e => setManualBudgetClass(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="">— Non specificato —</option>
                   <option value="deep_activation">Deep Activation</option>
                   <option value="economic_relief">Economic Relief</option>
@@ -987,16 +987,16 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Provider default</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Provider default</label>
                 <input value={manualProvider} onChange={e => setManualProvider(e.target.value)}
                   placeholder="es. Welfare Provider S.p.A."
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Periodo di default</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Periodo di default</label>
                 <input value={manualPeriod} onChange={e => setManualPeriod(e.target.value)}
                   placeholder="es. 2026-Q1"
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
               </div>
             </div>
           </div>
@@ -1007,7 +1007,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <div className="rounded-lg border border-[#C76F3D]/25 bg-[#f5f4ff] px-4 py-4 space-y-3">
             <div>
               <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">Metadati finanziari del batch</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
                 Questi metadati aiutano KORA a interpretare la qualità finanziaria del batch. Non sovrascrivono i dati riga-per-riga e non inventano importi mancanti.
               </p>
             </div>
@@ -1015,15 +1015,15 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Valuta */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Valuta</label>
-                <div className="rounded border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 font-mono">EUR</div>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Valuta</label>
+                <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-xs text-[rgba(6,3,43,0.52)] font-mono">EUR</div>
               </div>
 
               {/* Fonte finanziaria */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Fonte finanziaria prevalente</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Fonte finanziaria prevalente</label>
                 <select value={finSourceType} onChange={e => setFinSourceType(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non specificata</option>
                   <option value="provider_export">Export fornitore welfare</option>
                   <option value="lms_export">Export piattaforma LMS</option>
@@ -1035,9 +1035,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
               {/* Evidence level di default */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Evidence level di default</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Evidence level di default</label>
                 <select value={finEvidLevel} onChange={e => setFinEvidLevel(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="L0">L0 — Nessuna evidenza (default)</option>
                   <option value="L1">L1 — Auto-dichiarato / Spreadsheet</option>
                   <option value="L2">L2 — Documento interno</option>
@@ -1047,9 +1047,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
               {/* Ambito budget */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Ambito budget</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Ambito budget</label>
                 <select value={finBudgetScope} onChange={e => setFinBudgetScope(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non specificato</option>
                   <option value="welfare">Welfare</option>
                   <option value="fringe_benefit">Fringe benefit</option>
@@ -1062,9 +1062,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
               {/* Contiene importi? */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Il file contiene importi?</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Il file contiene importi?</label>
                 <select value={finContainsAmt} onChange={e => setFinContainsAmt(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1073,9 +1073,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
               {/* Benefit monetari */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Contiene benefit monetari / fringe / voucher?</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Contiene benefit monetari / fringe / voucher?</label>
                 <select value={finEconRelief} onChange={e => setFinEconRelief(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1084,9 +1084,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
               {/* Compliance/HSE */}
               <div>
-                <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">Contiene spese compliance / HSE?</label>
+                <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">Contiene spese compliance / HSE?</label>
                 <select value={finComplianceSpd} onChange={e => setFinComplianceSpd(e.target.value)}
-                  className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+                  className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
                   <option value="unknown">Non noto</option>
                   <option value="yes">Sì</option>
                   <option value="no">No</option>
@@ -1096,7 +1096,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
             {/* Note finanziarie interne — locale only, mai inviato al server */}
             <div>
-              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
                 Note finanziarie interne
                 <span className="ml-1.5 rounded bg-amber-100 text-amber-700 px-1 py-0.5 text-[9px] font-bold">Solo locale — non salvato</span>
               </label>
@@ -1104,7 +1104,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 value={finNotes} onChange={e => setFinNotes(e.target.value)}
                 rows={2}
                 placeholder="Note operative interne (non vengono salvate nel sistema)"
-                className="w-full rounded border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] resize-none"
+                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2 text-xs text-[rgba(6,3,43,0.78)] placeholder-slate-300 focus:outline-none focus:ring-1 focus:ring-[#C76F3D] resize-none"
               />
             </div>
           </div>
@@ -1112,8 +1112,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B13 FASE 3 — Pseudonymization confirmation gate (shown after dry-run passed) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
-          <div className="rounded-lg border border-slate-300 bg-white px-4 py-4 space-y-3">
-            <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Conferma pseudonimizzazione</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] px-4 py-4 space-y-3">
+            <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Conferma pseudonimizzazione</p>
             <div className="space-y-2">
               {([
                 [pCheck1, setPCheck1, 'Il file non contiene nomi, cognomi, email, codici fiscali, telefoni o indirizzi.'],
@@ -1123,8 +1123,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               ] as [boolean, (v: boolean) => void, string][]).map(([val, setter, label], i) => (
                 <label key={i} className="flex items-start gap-2 cursor-pointer">
                   <input type="checkbox" checked={val} onChange={e => setter(e.target.checked)}
-                    className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#C76F3D] focus:ring-[#C76F3D]" />
-                  <span className="text-xs text-slate-700">{label}</span>
+                    className="mt-0.5 h-3.5 w-3.5 rounded border-[rgba(6,3,43,0.14)] text-[#C76F3D] focus:ring-[#C76F3D]" />
+                  <span className="text-xs text-[rgba(6,3,43,0.78)]">{label}</span>
                 </label>
               ))}
             </div>
@@ -1133,9 +1133,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* B4.2 — Accept batch section (shown after dry-run passed) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-2">
-            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Create Intake Batch</p>
-            <p className="text-[10px] text-slate-400">Only PII-free / pseudonymized files can be persisted. Scoring is not executed in B4.2.</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 space-y-2">
+            <p className="text-[10px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Create Intake Batch</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Only PII-free / pseudonymized files can be persisted. Scoring is not executed in B4.2.</p>
             {fileType === 'xlsx' && selectedSheet && (
               <p className="text-[10px] text-[#C76F3D] font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>
             )}
@@ -1157,7 +1157,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* Accept: loading */}
         {acceptStatus === 'loading' && (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs text-slate-500">
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs text-[rgba(6,3,43,0.52)]">
             ⏳ Creating batch — re-validating file server-side…
           </div>
         )}
@@ -1167,13 +1167,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-green-700">✓ Batch created</span>
-              <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-[10px] font-mono text-green-700">{acceptResult.batchId?.slice(0, 8)}…</span>
-              <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-semibold text-slate-600">status: {acceptResult.batchStatus}</span>
+              <span className="rounded border border-green-200 bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-mono text-green-700">{acceptResult.batchId?.slice(0, 8)}…</span>
+              <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] font-semibold text-[rgba(6,3,43,0.62)]">status: {acceptResult.batchStatus}</span>
               {acceptResult.fileType === 'xlsx' && acceptResult.selectedSheetName && (
                 <span className="rounded border border-[#c7c4f8] bg-[#f5f4ff] px-2 py-0.5 text-[10px] font-semibold text-[#C76F3D]">xlsx · {acceptResult.selectedSheetName}</span>
               )}
               {acceptResult.mappingApplied && (
-                <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[10px] text-slate-500">mapping applicato</span>
+                <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[10px] text-[rgba(6,3,43,0.52)]">mapping applicato</span>
               )}
               {acceptResult.manualCompletionApplied && acceptResult.manualCompletionApplied.length > 0 && (
                 <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] text-amber-700">manual: {acceptResult.manualCompletionApplied.join(', ')}</span>
@@ -1184,10 +1184,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             </div>
             {acceptResult.eligibilitySummary && (
               <div className="flex flex-wrap gap-2 text-[10px]">
-                <span className="rounded border border-green-200 bg-white px-2 py-0.5 text-green-700 font-medium">Eligible: {acceptResult.eligibilitySummary.eligible}</span>
-                <span className="rounded border border-amber-200 bg-white px-2 py-0.5 text-amber-700 font-medium">Limited: {acceptResult.eligibilitySummary.limited}</span>
-                <span className="rounded border border-red-200 bg-white px-2 py-0.5 text-red-700 font-medium">Blocked: {acceptResult.eligibilitySummary.blocked}</span>
-                <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-600 font-medium">Total: {acceptResult.rowCount}</span>
+                <span className="rounded border border-green-200 bg-[#F8F6F1] px-2 py-0.5 text-green-700 font-medium">Eligible: {acceptResult.eligibilitySummary.eligible}</span>
+                <span className="rounded border border-amber-200 bg-[#F8F6F1] px-2 py-0.5 text-amber-700 font-medium">Limited: {acceptResult.eligibilitySummary.limited}</span>
+                <span className="rounded border border-red-200 bg-[#F8F6F1] px-2 py-0.5 text-red-700 font-medium">Blocked: {acceptResult.eligibilitySummary.blocked}</span>
+                <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[rgba(6,3,43,0.62)] font-medium">Total: {acceptResult.rowCount}</span>
               </div>
             )}
             {/* B33: match review summary */}
@@ -1203,16 +1203,16 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                   <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700">? Needs review: {acceptResult.matchReviewSummary.override_needs_review}</span>
                 )}
                 {(acceptResult.matchReviewSummary.default_merged ?? 0) > 0 && (
-                  <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-600">Default merged: {acceptResult.matchReviewSummary.default_merged}</span>
+                  <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[rgba(6,3,43,0.62)]">Default merged: {acceptResult.matchReviewSummary.default_merged}</span>
                 )}
                 {(acceptResult.matchReviewSummary.default_skipped ?? 0) > 0 && (
-                  <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-500">Skipped (possible): {acceptResult.matchReviewSummary.default_skipped}</span>
+                  <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[rgba(6,3,43,0.52)]">Skipped (possible): {acceptResult.matchReviewSummary.default_skipped}</span>
                 )}
               </div>
             )}
             <div className="space-y-0.5">
               <p className="text-[10px] text-green-700 font-medium">Batch created for review. Scoring remains locked until B5.</p>
-              <p className="text-[10px] text-slate-400">Scoring is not executed in B4.2.</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Scoring is not executed in B4.2.</p>
             </div>
             {/* B9.2: next-step CTA with batchId query param */}
             {acceptResult.batchId && (
@@ -1236,7 +1236,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div className="flex flex-wrap gap-1">
                 <span className="text-[10px] text-red-600 font-medium">Forbidden headers:</span>
                 {acceptResult.forbiddenHeaders.map(h => (
-                  <span key={h} className="rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-mono text-red-700">{h}</span>
+                  <span key={h} className="rounded border border-red-200 bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] font-mono text-red-700">{h}</span>
                 ))}
               </div>
             )}
@@ -1269,7 +1269,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div className="flex flex-wrap gap-1">
                 <span className="text-[10px] text-red-600 font-medium">Forbidden headers:</span>
                 {csvResult.forbiddenHeaders.map(h => (
-                  <span key={h} className="rounded border border-red-200 bg-white px-1.5 py-0.5 text-[10px] font-mono text-red-700">{h}</span>
+                  <span key={h} className="rounded border border-red-200 bg-[#F8F6F1] px-1.5 py-0.5 text-[10px] font-mono text-red-700">{h}</span>
                 ))}
               </div>
             )}
@@ -1303,9 +1303,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       </div>
 
       {/* ── B9. TENANT SELECTOR ── */}
-      <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-end gap-4">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-end gap-4">
         <div>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Azienda</p>
+          <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Azienda</p>
           {tenantList.length > 0 ? (
             <select
               value={TENANT}
@@ -1315,7 +1315,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 setAcceptResult(null); setAcceptStatus('idle');
                 setCsvResult(null); setCsvStatus('idle');
               }}
-              className="rounded border border-slate-300 bg-slate-50 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 min-w-[160px]"
+              className="rounded border border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.03)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400 min-w-[160px]"
             >
               <option value="">— Seleziona azienda —</option>
               {tenantList.map(t => (
@@ -1329,7 +1329,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               value={TENANT}
               onChange={e => setTENANT(e.target.value.toUpperCase())}
               placeholder="Codice azienda"
-              className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 w-36"
+              className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400 w-36"
             />
           )}
           {/* B13: OP-001 synthetic warning */}
@@ -1346,12 +1346,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           )}
         </div>
         <div>
-          <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Reporting Period</p>
+          <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Reporting Period</p>
           <input
             value={PERIOD}
             onChange={e => setPERIOD(e.target.value)}
             placeholder="2026-Q1"
-            className="rounded border border-slate-300 px-2.5 py-1.5 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400 w-28"
+            className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400 w-28"
           />
         </div>
         <a href="/admin/tenants"
@@ -1361,8 +1361,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       </div>
 
       {/* ── B. FLOW TIMELINE ── */}
-      <div className="rounded-lg border border-slate-200 bg-white px-5 py-4">
-        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Data Intake Flow</p>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4">
+        <p className="text-xs font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-3">Data Intake Flow</p>
         <div className="flex items-start gap-0 overflow-x-auto pb-1">
           {FLOW_PHASES.map((ph, i) => {
             const st = phaseStatus(ph.id);
@@ -1370,13 +1370,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <div key={ph.id} className="flex items-center flex-shrink-0">
                 <div className="flex flex-col items-center gap-1.5 w-[90px]">
                   <div className="text-lg leading-none">{ph.icon}</div>
-                  <span className="text-[10px] font-semibold text-slate-600 text-center leading-tight">{ph.label}</span>
+                  <span className="text-[10px] font-semibold text-[rgba(6,3,43,0.62)] text-center leading-tight">{ph.label}</span>
                   <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold tracking-wide ${PHASE_BADGE[st]}`}>
                     {PHASE_LABEL[st]}
                   </span>
                 </div>
                 {i < FLOW_PHASES.length - 1 && (
-                  <div className="flex-shrink-0 w-6 h-px bg-slate-200 mx-1 mt-[-18px]" />
+                  <div className="flex-shrink-0 w-6 h-px bg-[rgba(6,3,43,0.12)] mx-1 mt-[-18px]" />
                 )}
               </div>
             );
@@ -1385,7 +1385,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       </div>
 
       {loading && (
-        <div className="rounded-lg border border-slate-100 bg-slate-50 px-5 py-4 text-sm text-slate-500 flex gap-2 items-center">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-5 py-4 text-sm text-[rgba(6,3,43,0.52)] flex gap-2 items-center">
           <span className="animate-spin">⏳</span> Caricamento preview…
         </div>
       )}
@@ -1400,27 +1400,27 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-200">
+                <tr className="border-b border-[rgba(6,3,43,0.08)]">
                   {['#','Iniziativa','Categoria','Tipo','Partecipanti','Eligibility'].map(h => (
-                    <th key={h} className="text-left py-2 px-3 text-[10px] font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap">{h}</th>
+                    <th key={h} className="text-left py-2 px-3 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {preview.batch.records.map(rec => (
-                  <tr key={rec.recordId} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-2 px-3 font-mono text-slate-400">{rec.rowIndex + 1}</td>
-                    <td className="py-2 px-3 font-medium text-slate-700 max-w-[200px] truncate">{rec.nomeInitiativa}</td>
-                    <td className="py-2 px-3 text-slate-500">{rec.categoria}</td>
-                    <td className="py-2 px-3 text-slate-500">{rec.tipo}</td>
-                    <td className="py-2 px-3 text-slate-600 text-right">{rec.partecipanti ?? '—'}</td>
+                  <tr key={rec.recordId} className="border-b border-[rgba(6,3,43,0.05)] hover:bg-[rgba(6,3,43,0.03)]">
+                    <td className="py-2 px-3 font-mono text-[rgba(6,3,43,0.40)]">{rec.rowIndex + 1}</td>
+                    <td className="py-2 px-3 font-medium text-[rgba(6,3,43,0.78)] max-w-[200px] truncate">{rec.nomeInitiativa}</td>
+                    <td className="py-2 px-3 text-[rgba(6,3,43,0.52)]">{rec.categoria}</td>
+                    <td className="py-2 px-3 text-[rgba(6,3,43,0.52)]">{rec.tipo}</td>
+                    <td className="py-2 px-3 text-[rgba(6,3,43,0.62)] text-right">{rec.partecipanti ?? '—'}</td>
                     <td className="py-2 px-3">{badge(rec.eligibilityStatus, ELIGIBILITY_COLOR)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="text-[10px] text-slate-400 mt-2">Dati sintetici generati deterministicamente. Nessun dato reale o PII.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-2">Dati sintetici generati deterministicamente. Nessun dato reale o PII.</p>
         </Section>
 
         {/* ── D. PII GUARD ── */}
@@ -1433,7 +1433,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           </div>
           <div className="rounded bg-[#f5f4ff] border border-[#c7c4f8] px-4 py-2.5 text-xs text-[#3d3a6a]">
             <strong>PII Guard</strong> è un livello di sicurezza tecnico, non un sostituto per la pseudonimizzazione all&apos;origine, il DPA o le clausole contrattuali.
-            Sostituisce i valori PII rilevati con <code className="bg-white/60 px-1 rounded">[REDACTED_PII:TYPE]</code> — nessun valore viene mai salvato in audit o response.
+            Sostituisce i valori PII rilevati con <code className="bg-[#F8F6F1]/60 px-1 rounded">[REDACTED_PII:TYPE]</code> — nessun valore viene mai salvato in audit o response.
           </div>
         </Section>
 
@@ -1447,17 +1447,17 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           </div>
           <div className="space-y-1.5">
             {preview.eligibility.records.map(r => (
-              <div key={r.recordId} className="flex items-start gap-3 py-2 px-3 rounded border border-slate-100 bg-slate-50 text-xs">
+              <div key={r.recordId} className="flex items-start gap-3 py-2 px-3 rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] text-xs">
                 <div className="flex-1 min-w-0">
-                  <span className="font-medium text-slate-700 truncate block">{r.nomeInitiativa}</span>
-                  <span className="text-slate-400">{r.impactTreatment} · conf {(r.confidence * 100).toFixed(0)}%</span>
-                  {r.reason && <span className="block text-slate-400 italic truncate">{r.reason}</span>}
+                  <span className="font-medium text-[rgba(6,3,43,0.78)] truncate block">{r.nomeInitiativa}</span>
+                  <span className="text-[rgba(6,3,43,0.40)]">{r.impactTreatment} · conf {(r.confidence * 100).toFixed(0)}%</span>
+                  {r.reason && <span className="block text-[rgba(6,3,43,0.40)] italic truncate">{r.reason}</span>}
                 </div>
                 {badge(r.status, ELIGIBILITY_COLOR)}
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-slate-400 mt-2">Eligibility Gate riusa <code>lib/kora-engine/eligibility-gate.ts</code> — nessuna logica duplicata.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-2">Eligibility Gate riusa <code>lib/kora-engine/eligibility-gate.ts</code> — nessuna logica duplicata.</p>
         </Section>
 
         {/* ── F. UEF PREVIEW ── */}
@@ -1468,7 +1468,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <KPICard label="→ BTI Gov." value={String(preview.uefPreview.approvedForBTI)} />
           </div>
           <div className="mb-3">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Distribuzione categorie</p>
+            <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-1.5">Distribuzione categorie</p>
             <div className="flex flex-wrap gap-1.5">
               {Object.entries(preview.uefPreview.categoryDistribution).map(([cat, n]) => (
                 <span key={cat} className="rounded border border-[#C76F3D]/30 bg-[#f5f4ff] px-2 py-0.5 text-xs text-[#4d48d0] font-medium">
@@ -1480,23 +1480,23 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <div className="overflow-x-auto">
             <table className="w-full text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-200">
+                <tr className="border-b border-[rgba(6,3,43,0.08)]">
                   {['Iniziativa','Categoria','Event Nature','Eligibility','Impact Treatment','Conf.','Scoring'].map(h => (
-                    <th key={h} className="text-left py-2 px-2.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 whitespace-nowrap">{h}</th>
+                    <th key={h} className="text-left py-2 px-2.5 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {preview.uefPreview.records.map(r => (
-                  <tr key={r.recordId} className="border-b border-slate-100 hover:bg-slate-50">
-                    <td className="py-2 px-2.5 font-medium text-slate-700 max-w-[160px] truncate">{r.rawName}</td>
-                    <td className="py-2 px-2.5 text-slate-500">{r.actionFamily}</td>
-                    <td className="py-2 px-2.5 text-slate-500">{r.eventNature}</td>
+                  <tr key={r.recordId} className="border-b border-[rgba(6,3,43,0.05)] hover:bg-[rgba(6,3,43,0.03)]">
+                    <td className="py-2 px-2.5 font-medium text-[rgba(6,3,43,0.78)] max-w-[160px] truncate">{r.rawName}</td>
+                    <td className="py-2 px-2.5 text-[rgba(6,3,43,0.52)]">{r.actionFamily}</td>
+                    <td className="py-2 px-2.5 text-[rgba(6,3,43,0.52)]">{r.eventNature}</td>
                     <td className="py-2 px-2.5">{badge(r.eligibility, ELIGIBILITY_COLOR)}</td>
-                    <td className="py-2 px-2.5 text-slate-500 text-[10px]">{r.impactTreatment}</td>
-                    <td className="py-2 px-2.5 text-slate-500 text-right">{(r.confidence * 100).toFixed(0)}%</td>
+                    <td className="py-2 px-2.5 text-[rgba(6,3,43,0.52)] text-[10px]">{r.impactTreatment}</td>
+                    <td className="py-2 px-2.5 text-[rgba(6,3,43,0.52)] text-right">{(r.confidence * 100).toFixed(0)}%</td>
                     <td className="py-2 px-2.5">
-                      <span className={`text-xs font-semibold ${r.approvedForScoring ? 'text-green-700' : 'text-slate-400'}`}>
+                      <span className={`text-xs font-semibold ${r.approvedForScoring ? 'text-green-700' : 'text-[rgba(6,3,43,0.40)]'}`}>
                         {r.approvedForScoring ? '✓' : '—'}
                       </span>
                     </td>
@@ -1508,15 +1508,15 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         </Section>
 
         {/* ── G. ACTIONS ── */}
-        <div className="rounded-lg border border-slate-200 bg-white px-5 py-4">
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Actions</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4">
+          <p className="text-xs font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-3">Actions</p>
           <div className="flex flex-wrap gap-2.5">
             <button onClick={handleRun} disabled={isOp}
               className="bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#1a1756] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
               {opStatus === 'running' ? '⏳ Esecuzione…' : '▶ Run operator flow'}
             </button>
             <button onClick={handleRead} disabled={isOp}
-              className="border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-50 transition-colors">
+              className="border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.03)] disabled:opacity-50 transition-colors">
               {opStatus === 'reading' ? '⏳ Lettura…' : '↻ Read current result'}
             </button>
             <a href={`/api/admin/decision-pack/preview?tenantCode=${TENANT}&reportingPeriod=${PERIOD}`}
@@ -1545,7 +1545,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <p className="text-[10px] text-white/30 mt-2 font-mono">pre_empirical_calibration</p>
               </div>
               <KPICard label="Activation Safeguard" value={snapshot.sf ?? '—'} raw>
-                {snapshot.sf && <span className={`rounded border px-2 py-0.5 text-xs font-bold mt-1 inline-block ${SAFEGUARD_COLOR[snapshot.sf] ?? 'bg-slate-100 text-slate-600 border-slate-200'}`}>{snapshot.sf}</span>}
+                {snapshot.sf && <span className={`rounded border px-2 py-0.5 text-xs font-bold mt-1 inline-block ${SAFEGUARD_COLOR[snapshot.sf] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]'}`}>{snapshot.sf}</span>}
               </KPICard>
               <KPICard label="Confidence Score" value={pct(snapshot.cs)} />
             </div>
@@ -1561,8 +1561,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         )}
 
         {/* ── I. SAFETY BOUNDARIES ── */}
-        <div className="rounded-lg border border-slate-100 bg-slate-50 px-5 py-3">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Safety Boundaries</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-5 py-3">
+          <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-2">Safety Boundaries</p>
           <div className="flex flex-wrap gap-1.5">
             {[
               'No real data', 'N≥10 enforced',
@@ -1570,7 +1570,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               'CSV + XLSX (.xlsx)', 'Sheet selection required for XLSX',
               'No scoring recalculation', 'Gate 3B required before real data',
             ].map(n => (
-              <span key={n} className="text-[10px] border border-slate-200 bg-white rounded px-2 py-0.5 text-slate-500 font-medium">{n}</span>
+              <span key={n} className="text-[10px] border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] rounded px-2 py-0.5 text-[rgba(6,3,43,0.52)] font-medium">{n}</span>
             ))}
           </div>
         </div>
@@ -1585,12 +1585,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
 function Section({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-5 py-4 space-y-3">
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4 space-y-3">
       <div className="flex items-center gap-2.5">
         <div className="w-0.5 h-4 bg-[#C76F3D] rounded-full flex-shrink-0" />
         <div>
-          <p className="text-xs font-bold text-slate-700 uppercase tracking-wide leading-none">{title}</p>
-          {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
+          <p className="text-xs font-bold text-[rgba(6,3,43,0.78)] uppercase tracking-wide leading-none">{title}</p>
+          {sub && <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">{sub}</p>}
         </div>
       </div>
       {children}
@@ -1601,10 +1601,10 @@ function Section({ title, sub, children }: { title: string; sub?: string; childr
 function KPICard({ label, value, ok, warn, accent, raw, children }: {
   label: string; value?: string; ok?: boolean; warn?: boolean; accent?: boolean; raw?: boolean; children?: React.ReactNode;
 }) {
-  const valColor = ok ? 'text-green-700' : warn ? 'text-amber-700' : accent ? 'text-[#C76F3D]' : 'text-slate-900';
+  const valColor = ok ? 'text-green-700' : warn ? 'text-amber-700' : accent ? 'text-[#C76F3D]' : 'text-[#06032B]';
   return (
-    <div className="rounded border border-slate-200 bg-[#fafafa] px-3 py-2.5">
-      <p className="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-1">{label}</p>
+    <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[#fafafa] px-3 py-2.5">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-1">{label}</p>
       {!raw && value && <p className={`text-base font-bold ${valColor} leading-tight`}>{value}</p>}
       {children}
     </div>

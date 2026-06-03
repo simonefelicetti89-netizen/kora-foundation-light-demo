@@ -131,7 +131,7 @@ const READINESS: { label: string; status: 'active' | 'future' | 'blocked'; note?
 const STATUS_STYLE = {
   active:  { label: 'Attivo in Foundation Light', cls: 'bg-green-50 text-green-700 border-green-200' },
   future:  { label: 'Future Vision',              cls: 'bg-orange-50 text-orange-700 border-orange-200' },
-  blocked: { label: 'Non attivo',                 cls: 'bg-slate-100 text-slate-500 border-slate-200' },
+  blocked: { label: 'Non attivo',                 cls: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]' },
 } as const;
 
 export function DemoGuideContent() {
@@ -144,18 +144,18 @@ export function DemoGuideContent() {
           <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">
             Foundation Light v0.1
           </span>
-          <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500">
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
             Solo dati sintetici
           </span>
-          <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500">
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
             Pre-calibrazione empirica
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold text-slate-900 leading-tight">
+        <h1 className="text-3xl font-bold text-[#06032B] leading-tight">
           KORA Foundation Light Demo Experience
         </h1>
-        <p className="mt-2 text-base text-slate-600 leading-relaxed max-w-2xl">
+        <p className="mt-2 text-base text-[rgba(6,3,43,0.62)] leading-relaxed max-w-2xl">
           La demo commerciale di KORA: dal dato grezzo all&apos;intelligence organizzativa,
           dal lavoratore al board, dal partner all&apos;Advisor.
         </p>
@@ -173,9 +173,9 @@ export function DemoGuideContent() {
             { title: 'Spiega', body: 'Action-to-Index · Explainability · Activation Debt' },
             { title: 'Attiva', body: 'Partner · Advisor · My KORA · Reports' },
           ].map((p) => (
-            <div key={p.title} className="rounded-lg border border-slate-200 bg-white p-3">
-              <p className="text-sm font-bold text-slate-800">{p.title}</p>
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">{p.body}</p>
+            <div key={p.title} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
+              <p className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{p.title}</p>
+              <p className="mt-1 text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">{p.body}</p>
             </div>
           ))}
         </div>
@@ -192,13 +192,13 @@ export function DemoGuideContent() {
         <div className="mt-5 flex flex-wrap gap-2">
           <Link
             href="/company"
-            className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition-colors"
+            className="rounded-md bg-[#06032B] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
           >
             Apri il Cockpit Aziendale
           </Link>
           <Link
             href="/my-kora"
-            className="rounded-md border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+            className="rounded-md border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-2.5 text-sm font-semibold text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
           >
             Apri My KORA
           </Link>
@@ -207,10 +207,10 @@ export function DemoGuideContent() {
 
       {/* ── 2. Cosa può comprare un'azienda oggi ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Offerta commerciale
         </h2>
-        <p className="text-lg font-bold text-slate-900 mb-4">
+        <p className="text-lg font-bold text-[#06032B] mb-4">
           Cosa può comprare un&apos;azienda oggi
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -248,15 +248,15 @@ export function DemoGuideContent() {
               <div className="flex items-start gap-3">
                 <span className={`text-2xl font-black leading-none shrink-0 ${card.lc}`}>{card.letter}</span>
                 <div>
-                  <p className="text-sm font-semibold text-slate-800">{card.title}</p>
-                  <p className="mt-1.5 text-xs text-slate-600 leading-relaxed">{card.body}</p>
+                  <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{card.title}</p>
+                  <p className="mt-1.5 text-xs text-[rgba(6,3,43,0.62)] leading-relaxed">{card.body}</p>
                 </div>
               </div>
             </div>
           ))}
         </div>
-        <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-xs text-slate-600 leading-relaxed">
+        <div className="mt-4 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
+          <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed">
             KORA Foundation Light non richiede integrazioni live per il primo pilot.
             Lavora su dati sintetici/demo o dataset concordati, con metodologia versionata e limiti espliciti.
           </p>
@@ -264,9 +264,9 @@ export function DemoGuideContent() {
       </div>
 
       {/* GTM pointer */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <p className="text-xs font-semibold text-slate-600 mb-1">Script demo & Pilot Package dettagliato</p>
-        <p className="text-xs text-slate-500 leading-relaxed">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">Script demo & Pilot Package dettagliato</p>
+        <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
           Lo script demo completo (percorsi 15/30/60 minuti), il Pilot Package dettagliato,
           i success criteria e la privacy story per il presenter sono disponibili nella
           KORA GTM Console (accesso: ruoli admin KORA).
@@ -275,27 +275,27 @@ export function DemoGuideContent() {
 
       {/* ── 3. La storia KORA in 90 secondi ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Narrativa prodotto
         </h2>
-        <p className="text-lg font-bold text-slate-900 mb-4">
+        <p className="text-lg font-bold text-[#06032B] mb-4">
           La storia KORA in 90 secondi
         </p>
         <div className="space-y-2">
           {STORY_90.map((s, i) => (
-            <div key={s.n} className="flex gap-3 items-start rounded-lg border border-slate-200 bg-white p-4">
+            <div key={s.n} className="flex gap-3 items-start rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
               <div className="shrink-0 flex flex-col items-center gap-1">
                 <span className="w-6 h-6 rounded-full bg-indigo-100 text-xs font-bold text-indigo-600 flex items-center justify-center">
                   {s.n}
                 </span>
-                {i < STORY_90.length - 1 && <div className="w-px h-4 bg-slate-200" />}
+                {i < STORY_90.length - 1 && <div className="w-px h-4 bg-[rgba(6,3,43,0.12)]" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-semibold text-slate-800">{s.title}</p>
-                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-mono text-slate-500">{s.tag}</span>
+                  <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{s.title}</p>
+                  <span className="rounded bg-[rgba(6,3,43,0.05)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{s.tag}</span>
                 </div>
-                <p className="mt-0.5 text-xs text-slate-500 leading-relaxed">{s.body}</p>
+                <p className="mt-0.5 text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">{s.body}</p>
               </div>
             </div>
           ))}
@@ -313,13 +313,13 @@ export function DemoGuideContent() {
 
       {/* ── 7. Percorso demo 12 minuti ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Percorso consigliato
         </h2>
-        <p className="text-lg font-bold text-slate-900 mb-1">
+        <p className="text-lg font-bold text-[#06032B] mb-1">
           Percorso consigliato per demo aziendale — 12 minuti
         </p>
-        <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mb-4 leading-relaxed">
           Sequenza lineare ottimale per una presentazione completa a buyer, advisor o stakeholder tecnici.
         </p>
         <div className="space-y-2">
@@ -327,18 +327,18 @@ export function DemoGuideContent() {
             <Link
               key={step.step}
               href={step.href}
-              className="flex items-start gap-4 rounded-lg border border-slate-200 bg-white p-4 hover:border-slate-300 hover:shadow-sm transition-all"
+              className="flex items-start gap-4 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 hover:border-[rgba(6,3,43,0.14)] hover:shadow-sm transition-all"
             >
               <div className="shrink-0 flex flex-col items-center gap-1">
-                <span className="w-6 h-6 rounded-full bg-slate-100 text-xs font-bold text-slate-500 flex items-center justify-center">
+                <span className="w-6 h-6 rounded-full bg-[rgba(6,3,43,0.05)] text-xs font-bold text-[rgba(6,3,43,0.52)] flex items-center justify-center">
                   {step.step}
                 </span>
-                <span className="text-[10px] font-mono text-slate-300">{step.duration}</span>
+                <span className="text-[10px] font-mono text-[rgba(6,3,43,0.28)]">{step.duration}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-800">{step.label}</p>
-                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{step.objective}</p>
-                <p className="text-xs text-slate-600 mt-1 italic leading-relaxed">&ldquo;{step.pitch}&rdquo;</p>
+                <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{step.label}</p>
+                <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5 leading-relaxed">{step.objective}</p>
+                <p className="text-xs text-[rgba(6,3,43,0.62)] mt-1 italic leading-relaxed">&ldquo;{step.pitch}&rdquo;</p>
               </div>
             </Link>
           ))}
@@ -347,10 +347,10 @@ export function DemoGuideContent() {
 
       {/* ── 8. Perché KORA non è una dashboard HR ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Differenziazione
         </h2>
-        <p className="text-lg font-bold text-slate-900 mb-4">
+        <p className="text-lg font-bold text-[#06032B] mb-4">
           Perché KORA non è una dashboard HR
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -394,12 +394,12 @@ export function DemoGuideContent() {
 
       {/* ── 9. Cosa viene misurato ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-4">
           Cosa viene misurato
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-slate-200 bg-white p-5">
-            <p className="text-xs font-semibold text-slate-700 mb-3">KORA misura</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5">
+            <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)] mb-3">KORA misura</p>
             <ul className="space-y-2">
               {[
                 'Tasso di attivazione organizzativa e distribuzione',
@@ -409,8 +409,8 @@ export function DemoGuideContent() {
                 "Continuità dell'engagement tra periodi",
                 "Confidence Score che riflette l'affidabilità delle evidenze",
               ].map((item) => (
-                <li key={item} className="flex gap-2 text-sm text-slate-700">
-                  <span className="mt-0.5 shrink-0 text-slate-300">·</span>
+                <li key={item} className="flex gap-2 text-sm text-[rgba(6,3,43,0.78)]">
+                  <span className="mt-0.5 shrink-0 text-[rgba(6,3,43,0.28)]">·</span>
                   {item}
                 </li>
               ))}
@@ -439,22 +439,22 @@ export function DemoGuideContent() {
 
       {/* ── 10. Stato demo commerciale ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Readiness commerciale
         </h2>
-        <p className="text-lg font-bold text-slate-900 mb-4">
+        <p className="text-lg font-bold text-[#06032B] mb-4">
           Stato demo commerciale
         </p>
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="divide-y divide-slate-100">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          <div className="divide-y divide-[rgba(6,3,43,0.05)]">
             {READINESS.map((item) => {
               const s = STATUS_STYLE[item.status];
               return (
                 <div key={item.label} className="flex items-center justify-between gap-4 px-4 py-3">
-                  <p className="text-sm text-slate-700">{item.label}</p>
+                  <p className="text-sm text-[rgba(6,3,43,0.78)]">{item.label}</p>
                   <div className="flex items-center gap-2 shrink-0">
                     {item.note && (
-                      <span className="text-xs font-mono text-slate-400">{item.note}</span>
+                      <span className="text-xs font-mono text-[rgba(6,3,43,0.40)]">{item.note}</span>
                     )}
                     <span className={`rounded border px-2 py-0.5 text-xs font-medium whitespace-nowrap ${s.cls}`}>
                       {s.label}
@@ -469,20 +469,20 @@ export function DemoGuideContent() {
 
       {/* ── 11. Una società, due momenti nel tempo ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-2">
           Una società, due momenti nel tempo
         </h2>
-        <p className="text-sm text-slate-500 mb-4">
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mb-4">
           Meridiana Group S.r.l. è la principale società demo sintetica.
           Due scenari mostrano KORA prima e dopo aver agito sulle sue raccomandazioni.
           Passa tra di essi con i pulsanti{' '}
-          <span className="font-semibold text-slate-700">Demo Scenario</span> nella barra superiore.
+          <span className="font-semibold text-[rgba(6,3,43,0.78)]">Demo Scenario</span> nella barra superiore.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-base font-bold text-slate-900">S1 — Baseline</span>
+              <span className="text-base font-bold text-[#06032B]">S1 — Baseline</span>
               <span className="rounded border border-yellow-300 bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-700">
                 WARNING
               </span>
@@ -490,12 +490,12 @@ export function DemoGuideContent() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
               {[['KORA Index', '34'], ['Confidence', '60%'], ['Attivazione', '38%'], ['Significativa', '22%']].map(([l, v]) => (
                 <div key={l} className="text-xs">
-                  <span className="text-slate-500">{l}</span>
-                  <span className="font-bold text-slate-800 ml-1.5">{v}</span>
+                  <span className="text-[rgba(6,3,43,0.52)]">{l}</span>
+                  <span className="font-bold text-[rgba(6,3,43,0.90)] ml-1.5">{v}</span>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed italic border-t border-yellow-200 pt-3">
+            <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed italic border-t border-yellow-200 pt-3">
               &ldquo;Iniziative frammentate, continuità debole, partecipazione disomogenea.
               Il 12% dei lavoratori genera il 64% dell&apos;impatto misurato.&rdquo;
             </p>
@@ -503,7 +503,7 @@ export function DemoGuideContent() {
 
           <div className="rounded-lg border border-green-200 bg-green-50 p-5">
             <div className="flex items-center gap-2 mb-3">
-              <span className="text-base font-bold text-slate-900">S2 — Migliorato</span>
+              <span className="text-base font-bold text-[#06032B]">S2 — Migliorato</span>
               <span className="rounded border border-green-300 bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
                 CLEAR
               </span>
@@ -511,12 +511,12 @@ export function DemoGuideContent() {
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
               {[['KORA Index', '54'], ['Confidence', '72%'], ['Attivazione', '52%'], ['Significativa', '38%']].map(([l, v]) => (
                 <div key={l} className="text-xs">
-                  <span className="text-slate-500">{l}</span>
-                  <span className="font-bold text-slate-800 ml-1.5">{v}</span>
+                  <span className="text-[rgba(6,3,43,0.52)]">{l}</span>
+                  <span className="font-bold text-[rgba(6,3,43,0.90)] ml-1.5">{v}</span>
                 </div>
               ))}
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed italic border-t border-green-200 pt-3">
+            <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed italic border-t border-green-200 pt-3">
               &ldquo;Miglior bilanciamento, evidenze più solide, continuità maggiore e attivazione più ampia.
               L&apos;Activation Safeguard è passato a CLEAR.&rdquo;
             </p>
@@ -526,13 +526,13 @@ export function DemoGuideContent() {
 
       {/* ── 12. Privacy Story Bridge ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Privacy lavoratore
         </h2>
-        <p className="text-lg font-bold text-slate-900 mb-2">
+        <p className="text-lg font-bold text-[#06032B] mb-2">
           La garanzia privacy lavoratore
         </p>
-        <p className="text-sm text-slate-500 mb-4 leading-relaxed">
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mb-4 leading-relaxed">
           Il datore di lavoro vede l&apos;organizzazione, non la persona.
           Usa il WorkspaceSwitcher per passare al ruolo WORKER e
           esplorare il layer personale del lavoratore.
@@ -586,15 +586,15 @@ export function DemoGuideContent() {
           >
             Apri My KORA — demo
           </Link>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-[rgba(6,3,43,0.40)]">
             Passa a WORKER nel WorkspaceSwitcher prima di aprire My KORA per esplorare il layer personale.
           </p>
         </div>
       </div>
 
       {/* ── 13. Stato della demo ── */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)] mb-4">
           Stato della demo
         </p>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -607,12 +607,12 @@ export function DemoGuideContent() {
             ['Accesso datore lavoro',   'Il datore di lavoro non vede mai i dati individuali dei lavoratori'],
           ].map(([label, value]) => (
             <div key={label} className="flex gap-3">
-              <span className="text-xs font-semibold text-slate-500 shrink-0 w-40">{label}</span>
-              <span className="text-xs text-slate-400 leading-relaxed">{value}</span>
+              <span className="text-xs font-semibold text-[rgba(6,3,43,0.52)] shrink-0 w-40">{label}</span>
+              <span className="text-xs text-[rgba(6,3,43,0.40)] leading-relaxed">{value}</span>
             </div>
           ))}
         </div>
-        <p className="mt-5 text-xs text-slate-400 border-t border-slate-200 pt-3">
+        <p className="mt-5 text-xs text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.08)] pt-3">
           KORA Foundation Light v0.1 · Metodologia v0.1 · Società demo: Meridiana Group S.r.l. (sintetica)
         </p>
       </div>

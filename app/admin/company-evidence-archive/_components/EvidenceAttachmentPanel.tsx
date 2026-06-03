@@ -65,7 +65,7 @@ const LEVEL_COLORS: Record<string, string> = {
   L3: 'text-green-700 bg-green-50 border-green-200',
   L2: 'text-[#C76F3D] bg-[#f5f4ff] border-[#c7c4f8]',
   L1: 'text-amber-700 bg-amber-50 border-amber-200',
-  L0: 'text-slate-500 bg-slate-50 border-slate-200',
+  L0: 'text-[rgba(6,3,43,0.52)] bg-[rgba(6,3,43,0.03)] border-[rgba(6,3,43,0.08)]',
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -74,7 +74,7 @@ const STATUS_COLORS: Record<string, string> = {
   needs_review:    'text-amber-700',
   rejected_pii:    'text-red-700',
   rejected_size:   'text-red-700',
-  unsupported:     'text-slate-400',
+  unsupported:     'text-[rgba(6,3,43,0.40)]',
 };
 
 export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: string; batchId: string }) {
@@ -170,16 +170,16 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
       {/* File + type */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Documento</label>
+          <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Documento</label>
           <input type="file" accept=".pdf,.xlsx,.csv"
             onChange={e => { setFile(e.target.files?.[0] ?? null); setPreview(null); setRegisterResult(null); setConfirmed(false); }}
-            className="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border file:border-slate-200 file:bg-white file:text-xs file:cursor-pointer" />
-          <p className="text-[9px] text-slate-400 mt-0.5">PDF / XLSX / CSV · Max 20MB</p>
+            className="text-xs text-[rgba(6,3,43,0.62)] file:mr-2 file:py-1 file:px-2 file:rounded file:border file:border-[rgba(6,3,43,0.08)] file:bg-[#F8F6F1] file:text-xs file:cursor-pointer" />
+          <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-0.5">PDF / XLSX / CSV · Max 20MB</p>
         </div>
         <div>
-          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Tipo documento</label>
+          <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Tipo documento</label>
           <select value={attachType} onChange={e => setAttachType(e.target.value as AttachmentType)}
-            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
+            className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]">
             {Object.entries(ATTACHMENT_TYPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -189,41 +189,41 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Iniziativa (opzionale)</label>
+          <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Iniziativa (opzionale)</label>
           <input value={linkedInit} onChange={e => setLinkedInit(e.target.value)} placeholder="es. Formazione Digitale"
-            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+            className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
         </div>
         <div>
-          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Campo canonico (opzionale)</label>
+          <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Campo canonico (opzionale)</label>
           <input value={linkedField} onChange={e => setLinkedField(e.target.value)} placeholder="es. amount, participants, hours"
-            className="w-full rounded border border-slate-200 bg-white px-2 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
+            className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
         </div>
       </div>
 
       {/* Preview button */}
       <button onClick={handlePreview} disabled={!file || previewStatus === 'loading'}
-        className="rounded-lg bg-slate-800 text-white px-4 py-1.5 text-xs font-semibold hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
         {previewStatus === 'loading' ? '⏳ Analisi metadati…' : '↻ Preview metadata documento'}
       </button>
 
       {/* Preview result */}
       {preview?.ok && preview.metadata && (
-        <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 space-y-2">
-          <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">Metadata Preview</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 space-y-2">
+          <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Metadata Preview</p>
           <div className="flex flex-wrap gap-2">
-            <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-mono text-slate-600">{preview.metadata.fileNameSafe}</span>
-            <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] text-slate-500">{preview.metadata.fileType.toUpperCase()}</span>
-            <span className={`rounded border px-2 py-0.5 text-[10px] font-medium ${STATUS_COLORS[preview.metadata.parserStatus] ?? 'text-slate-500'}`}>
+            <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.62)]">{preview.metadata.fileNameSafe}</span>
+            <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[10px] text-[rgba(6,3,43,0.52)]">{preview.metadata.fileType.toUpperCase()}</span>
+            <span className={`rounded border px-2 py-0.5 text-[10px] font-medium ${STATUS_COLORS[preview.metadata.parserStatus] ?? 'text-[rgba(6,3,43,0.52)]'}`}>
               {preview.metadata.parserStatus}
             </span>
             {preview.metadata.evidenceLevelSuggestion && (
-              <span className={`rounded border px-2 py-0.5 text-[10px] font-bold ${LEVEL_COLORS[preview.metadata.evidenceLevelSuggestion] ?? 'bg-slate-50 text-slate-500 border-slate-200'}`}>
+              <span className={`rounded border px-2 py-0.5 text-[10px] font-bold ${LEVEL_COLORS[preview.metadata.evidenceLevelSuggestion] ?? 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]'}`}>
                 Suggerisce {preview.metadata.evidenceLevelSuggestion}
               </span>
             )}
           </div>
           {preview.metadata.extractedMetadata && (
-            <div className="flex flex-wrap gap-2 text-[10px] text-slate-500">
+            <div className="flex flex-wrap gap-2 text-[10px] text-[rgba(6,3,43,0.52)]">
               {preview.metadata.extractedMetadata.pageCount !== undefined && <span>Pagine: {preview.metadata.extractedMetadata.pageCount}</span>}
               {preview.metadata.extractedMetadata.sheetCount !== undefined && <span>Fogli: {preview.metadata.extractedMetadata.sheetCount}</span>}
               {preview.metadata.extractedMetadata.rowCount !== undefined && <span>Righe: {preview.metadata.extractedMetadata.rowCount}</span>}
@@ -251,8 +251,8 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
         <div className="space-y-2">
           <label className="flex items-start gap-2 cursor-pointer">
             <input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)}
-              className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-[#C76F3D] focus:ring-[#C76F3D]" />
-            <span className="text-xs text-slate-700">
+              className="mt-0.5 h-3.5 w-3.5 rounded border-[rgba(6,3,43,0.14)] text-[#C76F3D] focus:ring-[#C76F3D]" />
+            <span className="text-xs text-[rgba(6,3,43,0.78)]">
               Confermo che il documento non contiene PII individuali e che i metadati sono corretti.
               Il livello evidenza proposto richiede UEF Review prima di influenzare lo scoring.
             </span>
@@ -271,10 +271,10 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
           <p className="font-semibold">✓ Attachment registrato</p>
           <div className="flex flex-wrap gap-1.5">
             <span className="font-mono">{registerResult.fileNameSafe}</span>
-            <span className="rounded border border-green-200 bg-white px-1.5 py-0.5 text-[9px] font-bold">
+            <span className="rounded border border-green-200 bg-[#F8F6F1] px-1.5 py-0.5 text-[9px] font-bold">
               {registerResult.storageStatus === 'stored_private' ? '🔒 Stored private' : '📋 Metadata only'}
             </span>
-            <span className="text-slate-500">{registerResult.parserStatus}</span>
+            <span className="text-[rgba(6,3,43,0.52)]">{registerResult.parserStatus}</span>
           </div>
           {registerResult.evidenceLevelSuggestion && (
             <p>Livello suggerito: {registerResult.evidenceLevelSuggestion} (richiede UEF Review)</p>
@@ -285,7 +285,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
               <button
                 onClick={() => handleOpenSecureLink(registerResult.attachmentId!)}
                 disabled={openLinkStatus === 'loading'}
-                className="rounded border border-green-300 bg-white px-3 py-1 text-[10px] font-semibold text-green-800 hover:bg-green-50 disabled:opacity-50 transition-colors"
+                className="rounded border border-green-300 bg-[#F8F6F1] px-3 py-1 text-[10px] font-semibold text-green-800 hover:bg-green-50 disabled:opacity-50 transition-colors"
               >
                 {openLinkStatus === 'loading' ? '⏳ Generazione link…' : '🔒 Apri documento sicuro'}
               </button>
@@ -293,7 +293,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
               {openLinkStatus === 'error' && <p className="text-[9px] text-red-600">⚠ {openLinkError}</p>}
             </div>
           )}
-          <p className="text-slate-500 text-[9px]">{registerResult.note}</p>
+          <p className="text-[rgba(6,3,43,0.52)] text-[9px]">{registerResult.note}</p>
         </div>
       )}
       {registerStatus === 'error' && registerResult && (
@@ -308,7 +308,7 @@ export function EvidenceAttachmentPanel({ tenantCode, batchId }: { tenantCode: s
         </div>
       )}
 
-      <p className="text-[10px] text-slate-400 border-t border-slate-100 pt-2">
+      <p className="text-[10px] text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)] pt-2">
         B34: i file supportati vengono salvati in storage privato. Nessun URL pubblico. Nessuna azione di scoring automatica.
       </p>
     </div>

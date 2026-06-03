@@ -48,7 +48,7 @@ function confidenceBadge(confidence: number): { label: string; cls: string } {
 function severityBadgeCls(severity: string): string {
   if (severity === 'high') return 'bg-red-100 text-red-700 border border-red-200';
   if (severity === 'medium') return 'bg-amber-100 text-amber-700 border border-amber-200';
-  return 'bg-slate-100 text-slate-600 border border-slate-200';
+  return 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.08)]';
 }
 
 function recordTypeLabel(type: string): string {
@@ -78,8 +78,8 @@ function btiStatusConfig(criticalMapped: number): { label: string; sublabel: str
   return {
     label: 'Assente',
     sublabel: 'Nessuna colonna budget rilevata. Il macroblocco BTI (20%) non può essere calcolato. Budget = dato non valido senza fonte.',
-    cls: 'border-slate-200 bg-slate-50',
-    barCls: 'bg-slate-300',
+    cls: 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]',
+    barCls: 'bg-[rgba(6,3,43,0.18)]',
   };
 }
 
@@ -114,7 +114,7 @@ function safeguardCls(status: string): { bg: string; text: string; border: strin
 function koraIndexTextCls(value: number): string {
   if (value >= 60) return 'text-emerald-600';
   if (value >= 35) return 'text-amber-600';
-  return 'text-slate-600';
+  return 'text-[rgba(6,3,43,0.62)]';
 }
 
 function barCls(value: number, max: number = 100): string {
@@ -134,7 +134,7 @@ const PILLAR_CONFIG: Record<string, { label: string; color: string; barColor: st
   GROWTH:     { label: 'GROWTH',     color: 'text-emerald-700', barColor: 'bg-emerald-500' },
   CONNECTION: { label: 'CONNECTION', color: 'text-purple-700', barColor: 'bg-purple-500' },
   IMPACT:     { label: 'IMPACT',     color: 'text-orange-700', barColor: 'bg-orange-500' },
-  LEGACY:     { label: 'LEGACY',     color: 'text-slate-600',  barColor: 'bg-slate-400' },
+  LEGACY:     { label: 'LEGACY',     color: 'text-[rgba(6,3,43,0.62)]',  barColor: 'bg-[rgba(6,3,43,0.35)]' },
 };
 
 // ── Sprint 15: Eligibility & Evidence Review helpers ──────────────────────────
@@ -168,7 +168,7 @@ function eligibilityStatusConfig(status: EligibilityStatus | 'mixed'): { label: 
     case 'eligible':        return { label: 'Eligible',        cls: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' };
     case 'limited':         return { label: 'Limited',         cls: 'bg-amber-100 text-amber-700 border-amber-200',       dot: 'bg-amber-400'   };
     case 'blocked':         return { label: 'Blocked',         cls: 'bg-red-100 text-red-700 border-red-200',             dot: 'bg-red-500'     };
-    case 'review_required': return { label: 'Review Required', cls: 'bg-slate-100 text-slate-600 border-slate-200',       dot: 'bg-slate-400'   };
+    case 'review_required': return { label: 'Review Required', cls: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',       dot: 'bg-[rgba(6,3,43,0.35)]'   };
     case 'mixed':           return { label: 'Mixed — Review',  cls: 'bg-purple-100 text-purple-700 border-purple-200',    dot: 'bg-purple-400'  };
   }
 }
@@ -190,7 +190,7 @@ function btiTreatmentCls(t: BTITreatment | 'mixed'): string {
   if (t === 'full_weight' || t === 'confidence_weighted') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
   if (t === 'tracked_only') return 'bg-amber-50 text-amber-700 border-amber-200';
   if (t === 'not_applicable') return 'bg-blue-50 text-blue-700 border-blue-200';
-  return 'bg-slate-100 text-slate-500 border-slate-200';
+  return 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]';
 }
 
 function evidenceLevelLabel(level: BudgetEvidenceLevel): string {
@@ -628,7 +628,7 @@ export default function UploadPage() {
   // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[rgba(6,3,43,0.03)]">
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 
         {/* ── Operator boundary banner ───────────────────────────────────────── */}
@@ -643,28 +643,28 @@ export default function UploadPage() {
 
         {/* ── Section 1: Header ─────────────────────────────────────────────── */}
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Link href="/admin/companies/data-intake" className="hover:text-slate-700 transition-colors">
+          <div className="flex items-center gap-2 text-sm text-[rgba(6,3,43,0.52)]">
+            <Link href="/admin/companies/data-intake" className="hover:text-[rgba(6,3,43,0.78)] transition-colors">
               Data Intake
             </Link>
             <span>/</span>
-            <span className="text-slate-700 font-medium">KORA Operator Studio</span>
+            <span className="text-[rgba(6,3,43,0.78)] font-medium">KORA Operator Studio</span>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-2xl font-bold text-[#06032B] tracking-tight">
                 KORA Operator Data Intake Studio
               </h1>
-              <p className="mt-1 text-slate-500 text-sm leading-relaxed max-w-xl">
+              <p className="mt-1 text-[rgba(6,3,43,0.52)] text-sm leading-relaxed max-w-xl">
                 Carica i file ricevuti dall&apos;azienda, verifica qualità e privacy, lancia la preview metodologica e prepara il Decision Pack.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">
-              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white border border-slate-700">
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-[#06032B] text-white border border-[rgba(6,3,43,0.35)]">
                 KORA Operator
               </span>
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.08)]">
                 Client-side v0
               </span>
               <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--env-soft)] text-[var(--env-text)] border border-[var(--env-border)]">
@@ -674,9 +674,9 @@ export default function UploadPage() {
           </div>
 
           {/* Data Pack Guidance */}
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-            <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">Foundation Light Data Pack — input minimo</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+            <div className="px-4 py-2.5 border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)]">Foundation Light Data Pack — input minimo</p>
             </div>
             <div className="grid grid-cols-2 gap-0 sm:grid-cols-4">
               {[
@@ -685,18 +685,18 @@ export default function UploadPage() {
                 { label: 'Participation', note: 'Utilizzo aggregato per iniziativa, dipartimento, sede. N ≥ 10.', required: true },
                 { label: 'Budget / Evidenze', note: 'Budget allocato per categoria. Anche dichiarato — classificato nella Budget Evidence review.', required: true },
               ].map((item, i) => (
-                <div key={item.label} className={`px-3.5 py-3 space-y-0.5 ${i < 3 ? 'border-b sm:border-b-0 sm:border-r border-slate-100' : ''}`}>
+                <div key={item.label} className={`px-3.5 py-3 space-y-0.5 ${i < 3 ? 'border-b sm:border-b-0 sm:border-r border-[rgba(6,3,43,0.05)]' : ''}`}>
                   <div className="flex items-center gap-1.5">
-                    <span className="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide whitespace-nowrap border-slate-800 bg-slate-900 text-white">
+                    <span className="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide whitespace-nowrap border-[rgba(6,3,43,0.85)] bg-[#06032B] text-white">
                       Richiesto
                     </span>
                   </div>
-                  <p className="text-xs font-semibold text-slate-700">{item.label}</p>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">{item.note}</p>
+                  <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{item.label}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.52)] leading-relaxed">{item.note}</p>
                 </div>
               ))}
             </div>
-            <div className="px-4 py-2.5 border-t border-slate-100 bg-slate-50/60 text-[10px] text-slate-500">
+            <div className="px-4 py-2.5 border-t border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]/60 text-[10px] text-[rgba(6,3,43,0.52)]">
               Opzionali: HR KPI aggregati (turnover, engagement) · export provider welfare/LMS come supplemento.
               Foundation Light non richiede self-service cliente. L&apos;azienda invia il Data Pack a KORA; KORA Operator lo normalizza e lo processa.
             </div>
@@ -704,9 +704,9 @@ export default function UploadPage() {
         </div>
 
         {/* ── Section 2: Upload zone ─────────────────────────────────────────── */}
-        <div className="rounded-xl border-2 bg-white shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100">
-            <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+        <div className="rounded-xl border-2 bg-[#F8F6F1] shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)]">
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">
               1 — Carica file
             </h2>
           </div>
@@ -722,21 +722,21 @@ export default function UploadPage() {
                   relative flex flex-col items-center justify-center gap-3 py-14 px-8
                   rounded-xl border-2 border-dashed cursor-pointer transition-all duration-150
                   ${isDragging
-                    ? 'border-indigo-400 bg-indigo-50'
-                    : 'border-slate-200 bg-slate-50 hover:border-indigo-300 hover:bg-indigo-50/50'
+                    ? 'border-indigo-400 bg-[rgba(199,111,61,0.08)]'
+                    : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] hover:border-indigo-300 hover:bg-[rgba(199,111,61,0.08)]/50'
                   }
                 `}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDragging ? 'bg-indigo-100' : 'bg-white border border-slate-200'}`}>
-                  <svg className={`w-6 h-6 ${isDragging ? 'text-indigo-600' : 'text-slate-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isDragging ? 'bg-indigo-100' : 'bg-[#F8F6F1] border border-[rgba(6,3,43,0.08)]'}`}>
+                  <svg className={`w-6 h-6 ${isDragging ? 'text-[#C76F3D]' : 'text-[rgba(6,3,43,0.40)]'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
                   </svg>
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-medium text-slate-700">
+                  <p className="text-sm font-medium text-[rgba(6,3,43,0.78)]">
                     {isDragging ? 'Rilascia il file qui' : 'Carica file ricevuto dal cliente'}
                   </p>
-                  <p className="text-xs text-slate-400 mt-1">CSV, XLSX, XLS — max {MAX_FILE_MB} MB · trascina o clicca per selezionare</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">CSV, XLSX, XLS — max {MAX_FILE_MB} MB · trascina o clicca per selezionare</p>
                 </div>
                 <input
                   ref={fileInputRef}
@@ -759,7 +759,7 @@ export default function UploadPage() {
           ) : status === 'parsing' ? (
             <div className="p-12 flex flex-col items-center gap-4">
               <div className="w-8 h-8 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin" />
-              <p className="text-sm text-slate-500">Analisi del file in corso…</p>
+              <p className="text-sm text-[rgba(6,3,43,0.52)]">Analisi del file in corso…</p>
             </div>
           ) : parseResult && (
             <div className="p-6 space-y-4">
@@ -771,17 +771,17 @@ export default function UploadPage() {
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">{parseResult.fileName}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)] truncate">{parseResult.fileName}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">
                     {parseResult.fileType.toUpperCase()} · {parseResult.rowCount} righe · {parseResult.columnCount} colonne
                     {parseResult.detectedRecordTypes.length > 0 && (
-                      <> · <span className="text-indigo-600 font-medium">{parseResult.detectedRecordTypes.map(recordTypeLabel).join(', ')}</span></>
+                      <> · <span className="text-[#C76F3D] font-medium">{parseResult.detectedRecordTypes.map(recordTypeLabel).join(', ')}</span></>
                     )}
                   </p>
                 </div>
                 <button
                   onClick={handleReset}
-                  className="text-xs text-slate-500 hover:text-slate-700 underline underline-offset-2 shrink-0"
+                  className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)] underline underline-offset-2 shrink-0"
                 >
                   Cambia file
                 </button>
@@ -839,15 +839,15 @@ export default function UploadPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
                   { label: 'Colonne mappate', value: mappedCount, total: parseResult.columnCount, cls: 'text-emerald-600' },
-                  { label: 'Richiedono revisione', value: reviewCount, total: null, cls: reviewCount > 0 ? 'text-amber-600' : 'text-slate-400' },
-                  { label: 'Non mappate', value: unmappedCount, total: null, cls: unmappedCount > 0 ? 'text-slate-500' : 'text-slate-400' },
-                  { label: 'Colonne sensibili', value: sensitiveFlags.length, total: null, cls: sensitiveFlags.length > 0 ? 'text-red-600' : 'text-slate-400' },
+                  { label: 'Richiedono revisione', value: reviewCount, total: null, cls: reviewCount > 0 ? 'text-amber-600' : 'text-[rgba(6,3,43,0.40)]' },
+                  { label: 'Non mappate', value: unmappedCount, total: null, cls: unmappedCount > 0 ? 'text-[rgba(6,3,43,0.52)]' : 'text-[rgba(6,3,43,0.40)]' },
+                  { label: 'Colonne sensibili', value: sensitiveFlags.length, total: null, cls: sensitiveFlags.length > 0 ? 'text-red-600' : 'text-[rgba(6,3,43,0.40)]' },
                 ].map((stat) => (
-                  <div key={stat.label} className="rounded-lg border border-slate-200 bg-white p-3 text-center">
+                  <div key={stat.label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
                     <p className={`text-xl font-bold font-mono ${stat.cls}`}>
-                      {stat.value}{stat.total !== null && <span className="text-slate-400 font-normal text-sm">/{stat.total}</span>}
+                      {stat.value}{stat.total !== null && <span className="text-[rgba(6,3,43,0.40)] font-normal text-sm">/{stat.total}</span>}
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5 leading-tight">{stat.label}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5 leading-tight">{stat.label}</p>
                   </div>
                 ))}
               </div>
@@ -857,19 +857,19 @@ export default function UploadPage() {
 
         {/* ── Operator Decision Board ────────────────────────────────────────── */}
         {status === 'parsed' && parseResult && (
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="px-6 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">Operator Decision Board</p>
+          <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+            <div className="px-6 py-3 border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)]">Operator Decision Board</p>
               <button
                 onClick={handleRunKoraPreview}
                 disabled={koraStatus === 'running'}
                 className={cn(
                   'px-4 py-1.5 rounded-md text-xs font-semibold transition-colors',
                   koraStatus === 'running'
-                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                    ? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] cursor-not-allowed'
                     : koraStatus === 'done'
-                    ? 'bg-slate-700 text-white hover:bg-slate-600'
-                    : 'bg-slate-900 text-white hover:bg-slate-700',
+                    ? 'bg-[rgba(6,3,43,0.65)] text-white hover:bg-[rgba(6,3,43,0.55)]'
+                    : 'bg-[#06032B] text-white hover:bg-[rgba(6,3,43,0.88)]',
                 )}
               >
                 {koraStatus === 'running' ? 'Elaborazione…' : koraStatus === 'done' ? 'Riesegui Preview' : 'Run KORA Preview →'}
@@ -918,13 +918,13 @@ export default function UploadPage() {
               ].map((item) => (
                 <div key={item.label} className={cn(
                   'rounded-lg border p-3',
-                  item.ok ? 'border-slate-200 bg-white' : 'border-amber-200 bg-amber-50',
+                  item.ok ? 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]' : 'border-amber-200 bg-amber-50',
                 )}>
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{item.label}</p>
-                  <p className={cn('text-sm font-bold mt-0.5 font-mono', item.ok ? 'text-slate-800' : 'text-amber-700')}>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{item.label}</p>
+                  <p className={cn('text-sm font-bold mt-0.5 font-mono', item.ok ? 'text-[rgba(6,3,43,0.90)]' : 'text-amber-700')}>
                     {item.value}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-snug">{item.sub}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5 leading-snug">{item.sub}</p>
                 </div>
               ))}
             </div>
@@ -932,20 +932,20 @@ export default function UploadPage() {
         )}
 
         {/* ── Section 3: Template guidance ──────────────────────────────────── */}
-        <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
           <button
             onClick={() => toggleSection('template')}
-            className="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between text-left"
+            className="w-full px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between text-left"
           >
             <div>
-              <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+              <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">
                 Template di riferimento
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
                 Struttura attesa per ogni tipo di file. Usa come guida per la preparazione dei dati.
               </p>
             </div>
-            <span className="text-slate-400 text-xs font-mono shrink-0 ml-4">
+            <span className="text-[rgba(6,3,43,0.40)] text-xs font-mono shrink-0 ml-4">
               {collapsed.has('template') ? '▶ espandi' : '▼ comprimi'}
             </span>
           </button>
@@ -953,7 +953,7 @@ export default function UploadPage() {
           {!collapsed.has('template') && (
           <>
           {/* Template tabs */}
-          <div className="border-b border-slate-100 overflow-x-auto">
+          <div className="border-b border-[rgba(6,3,43,0.05)] overflow-x-auto">
             <div className="flex gap-0 px-4">
               {ALL_TEMPLATES.map((t) => (
                 <button
@@ -962,7 +962,7 @@ export default function UploadPage() {
                   className={`px-4 py-3 text-xs font-medium whitespace-nowrap border-b-2 transition-colors ${
                     activeTemplate === t.id
                       ? 'border-indigo-500 text-indigo-700'
-                      : 'border-transparent text-slate-500 hover:text-slate-700'
+                      : 'border-transparent text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)]'
                   }`}
                 >
                   {t.name}
@@ -980,16 +980,16 @@ export default function UploadPage() {
         {status === 'parsed' && parseResult && (
           <>
             {/* ── Section 4: Data preview ──────────────────────────────────── */}
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
               <button
                 onClick={() => toggleSection('preview')}
-                className="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between text-left"
+                className="w-full px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between text-left"
               >
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">
                     2 — Anteprima dati raw
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
                     Prime {parseResult.previewRows.length} righe non vuote.
                     {sensitiveFlags.length > 0 && (
                       <span className="text-red-500 ml-1">
@@ -999,8 +999,8 @@ export default function UploadPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <span className="text-xs text-slate-400 font-mono">{parseResult.rowCount} righe</span>
-                  <span className="text-slate-400 text-xs font-mono">
+                  <span className="text-xs text-[rgba(6,3,43,0.40)] font-mono">{parseResult.rowCount} righe</span>
+                  <span className="text-[rgba(6,3,43,0.40)] text-xs font-mono">
                     {collapsed.has('preview') ? '▶ espandi' : '▼ comprimi'}
                   </span>
                 </div>
@@ -1009,14 +1009,14 @@ export default function UploadPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50">
+                    <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
                       {parseResult.headers.map((h) => (
                         <th
                           key={h}
                           className={`px-3 py-2.5 text-left font-medium whitespace-nowrap ${
                             sensitiveColNames.has(h)
                               ? 'bg-red-50 text-red-700'
-                              : 'text-slate-600'
+                              : 'text-[rgba(6,3,43,0.62)]'
                           }`}
                         >
                           <div className="flex items-center gap-1">
@@ -1033,14 +1033,14 @@ export default function UploadPage() {
                   </thead>
                   <tbody>
                     {parseResult.previewRows.map((row, ri) => (
-                      <tr key={ri} className="border-b border-slate-50 hover:bg-slate-50/50">
+                      <tr key={ri} className="border-b border-[rgba(6,3,43,0.04)] hover:bg-[rgba(6,3,43,0.03)]/50">
                         {parseResult.headers.map((h) => (
                           <td
                             key={h}
                             className={`px-3 py-2 whitespace-nowrap max-w-[180px] truncate ${
                               sensitiveColNames.has(h)
                                 ? 'bg-red-50/60 text-red-700'
-                                : 'text-slate-600'
+                                : 'text-[rgba(6,3,43,0.62)]'
                             }`}
                           >
                             {String(row.raw[h] ?? '')}
@@ -1055,21 +1055,21 @@ export default function UploadPage() {
             </div>
 
             {/* ── Section 5: Column mapping ─────────────────────────────────── */}
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
               <button
                 onClick={() => toggleSection('mapping')}
-                className="w-full px-6 py-4 border-b border-slate-100 flex items-center justify-between text-left"
+                className="w-full px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between text-left"
               >
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">
                     3 — Mappatura colonne
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
                     Intestazioni mappate automaticamente ai campi UEF canonici di KORA.
                     {reviewCount > 0 && <span className="text-amber-600 ml-1">{reviewCount} colonne richiedono revisione.</span>}
                   </p>
                 </div>
-                <span className="text-slate-400 text-xs font-mono shrink-0 ml-4">
+                <span className="text-[rgba(6,3,43,0.40)] text-xs font-mono shrink-0 ml-4">
                   {collapsed.has('mapping') ? '▶ espandi' : '▼ comprimi'}
                 </span>
               </button>
@@ -1077,11 +1077,11 @@ export default function UploadPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-slate-100 bg-slate-50">
-                      <th className="px-4 py-2.5 text-left font-medium text-slate-600">Colonna nel file</th>
-                      <th className="px-4 py-2.5 text-left font-medium text-slate-600">Campo UEF</th>
-                      <th className="px-4 py-2.5 text-left font-medium text-slate-600">Confidenza</th>
-                      <th className="px-4 py-2.5 text-left font-medium text-slate-600">Motivo</th>
+                    <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
+                      <th className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Colonna nel file</th>
+                      <th className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Campo UEF</th>
+                      <th className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Confidenza</th>
+                      <th className="px-4 py-2.5 text-left font-medium text-[rgba(6,3,43,0.62)]">Motivo</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1090,15 +1090,15 @@ export default function UploadPage() {
                       const isSensitive = sensitiveColNames.has(h);
                       if (!mapping) {
                         return (
-                          <tr key={h} className="border-b border-slate-50">
-                            <td className={`px-4 py-2.5 font-mono ${isSensitive ? 'text-red-600' : 'text-slate-500'}`}>
+                          <tr key={h} className="border-b border-[rgba(6,3,43,0.04)]">
+                            <td className={`px-4 py-2.5 font-mono ${isSensitive ? 'text-red-600' : 'text-[rgba(6,3,43,0.52)]'}`}>
                               {isSensitive && <span className="mr-1">⚠</span>}{h}
                             </td>
-                            <td className="px-4 py-2.5 text-slate-400 italic">— non mappata</td>
+                            <td className="px-4 py-2.5 text-[rgba(6,3,43,0.40)] italic">— non mappata</td>
                             <td className="px-4 py-2.5">
-                              <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-400 border border-slate-200">—</span>
+                              <span className="px-2 py-0.5 rounded text-xs bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)]">—</span>
                             </td>
-                            <td className="px-4 py-2.5 text-slate-400 text-xs">
+                            <td className="px-4 py-2.5 text-[rgba(6,3,43,0.40)] text-xs">
                               Rinomina la colonna usando un alias dal template per il mapping automatico.
                             </td>
                           </tr>
@@ -1106,8 +1106,8 @@ export default function UploadPage() {
                       }
                       const badge = confidenceBadge(mapping.confidence);
                       return (
-                        <tr key={h} className="border-b border-slate-50 hover:bg-slate-50/50">
-                          <td className={`px-4 py-2.5 font-mono ${isSensitive ? 'text-red-600' : 'text-slate-700'}`}>
+                        <tr key={h} className="border-b border-[rgba(6,3,43,0.04)] hover:bg-[rgba(6,3,43,0.03)]/50">
+                          <td className={`px-4 py-2.5 font-mono ${isSensitive ? 'text-red-600' : 'text-[rgba(6,3,43,0.78)]'}`}>
                             {isSensitive && <span className="mr-1">⚠</span>}{h}
                           </td>
                           <td className="px-4 py-2.5">
@@ -1118,7 +1118,7 @@ export default function UploadPage() {
                               {badge.label}
                             </span>
                           </td>
-                          <td className="px-4 py-2.5 text-slate-500 max-w-[260px] truncate">{mapping.mappingReason}</td>
+                          <td className="px-4 py-2.5 text-[rgba(6,3,43,0.52)] max-w-[260px] truncate">{mapping.mappingReason}</td>
                         </tr>
                       );
                     })}
@@ -1152,23 +1152,23 @@ export default function UploadPage() {
                 {sensitiveFlags.some((f) => f.recommendedAction === 'pseudonymize') && (
                   <div className="px-6 pt-5 pb-3">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-2">Campi identità — non esporre in output employer</p>
-                    <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                    <p className="text-xs text-[rgba(6,3,43,0.62)] mb-3 leading-relaxed">
                       I campi nome, cognome, email, matricola sono ammessi nel Data Pack per la <strong>deduplicazione dei record</strong>.
                       Non devono apparire in nessun output employer.
                       La pseudonimizzazione tecnica è un requisito di implementazione futura — non ancora attiva in Foundation Light v0.
                     </p>
                     <div className="space-y-2">
                       {sensitiveFlags.filter((f) => f.recommendedAction === 'pseudonymize').map((flag) => (
-                        <div key={flag.columnName} className="rounded-lg border border-amber-200 bg-white p-3">
+                        <div key={flag.columnName} className="rounded-lg border border-amber-200 bg-[#F8F6F1] p-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="space-y-0.5 flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-semibold text-slate-800">{flag.columnName}</span>
+                                <span className="font-mono text-xs font-semibold text-[rgba(6,3,43,0.90)]">{flag.columnName}</span>
                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityBadgeCls(flag.severity)}`}>
                                   Campo identità
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-500">{flag.reason}</p>
+                              <p className="text-xs text-[rgba(6,3,43,0.52)]">{flag.reason}</p>
                             </div>
                             <span className="text-xs text-amber-700 shrink-0 font-medium">Non in output employer</span>
                           </div>
@@ -1181,17 +1181,17 @@ export default function UploadPage() {
                 {sensitiveFlags.some((f) => f.excludedByDefault) && (
                   <div className="px-6 pt-3 pb-5">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-red-600 mb-2">Dati ad alto rischio — da escludere</p>
-                    <p className="text-xs text-slate-600 mb-3 leading-relaxed">
+                    <p className="text-xs text-[rgba(6,3,43,0.62)] mb-3 leading-relaxed">
                       Le colonne seguenti non sono necessarie in Foundation Light Pilot e rappresentano rischio GDPR elevato.
                       Rimuoverle dal file originale prima del caricamento.
                     </p>
                     <div className="space-y-2">
                       {sensitiveFlags.filter((f) => f.excludedByDefault).map((flag) => (
-                        <div key={flag.columnName} className="rounded-lg border border-red-300 bg-white p-3">
+                        <div key={flag.columnName} className="rounded-lg border border-red-300 bg-[#F8F6F1] p-3">
                           <div className="flex items-start justify-between gap-3">
                             <div className="space-y-0.5 flex-1">
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-xs font-semibold text-slate-800">{flag.columnName}</span>
+                                <span className="font-mono text-xs font-semibold text-[rgba(6,3,43,0.90)]">{flag.columnName}</span>
                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${severityBadgeCls(flag.severity)}`}>
                                   Alto rischio
                                 </span>
@@ -1199,7 +1199,7 @@ export default function UploadPage() {
                                   Escludi
                                 </span>
                               </div>
-                              <p className="text-xs text-slate-500">{flag.reason}</p>
+                              <p className="text-xs text-[rgba(6,3,43,0.52)]">{flag.reason}</p>
                             </div>
                             <span className="text-xs text-red-700 shrink-0 font-medium">Rimuovi dal file</span>
                           </div>
@@ -1217,13 +1217,13 @@ export default function UploadPage() {
             )}
 
             {/* ── Section 7: BTI readiness ──────────────────────────────────── */}
-            <div className={`rounded-xl border-2 bg-white shadow-sm overflow-hidden ${btiStatus.cls}`}>
-              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className={`rounded-xl border-2 bg-[#F8F6F1] shadow-sm overflow-hidden ${btiStatus.cls}`}>
+              <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                  <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">
                     5 — Budget Evidence Readiness
                   </h2>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
                     Qualità dell&apos;evidenza economica per il macroblocco BTI (20% del KORA Index).
                   </p>
                 </div>
@@ -1232,21 +1232,21 @@ export default function UploadPage() {
                     ? 'border-emerald-300 bg-emerald-100 text-emerald-700'
                     : criticalMapped >= 1
                     ? 'border-amber-300 bg-amber-100 text-amber-700'
-                    : 'border-slate-200 bg-slate-100 text-slate-500'
+                    : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
                 }`}>
                   {btiStatus.label}
                 </span>
               </div>
 
               <div className="p-6 space-y-5">
-                <p className="text-sm text-slate-600">{btiStatus.sublabel}</p>
+                <p className="text-sm text-[rgba(6,3,43,0.62)]">{btiStatus.sublabel}</p>
 
                 <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs text-slate-500">
+                  <div className="flex justify-between text-xs text-[rgba(6,3,43,0.52)]">
                     <span>Colonne critiche BTI</span>
                     <span>{criticalMapped}/3</span>
                   </div>
-                  <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-2 rounded-full bg-[rgba(6,3,43,0.05)] overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${btiStatus.barCls}`}
                       style={{ width: `${(criticalMapped / 3) * 100}%` }}
@@ -1258,34 +1258,34 @@ export default function UploadPage() {
                   {CRITICAL_BTI_FIELDS.map((field) => {
                     const found = mappedTargetFields.has(field);
                     return (
-                      <div key={field} className={`flex items-center gap-3 p-3 rounded-lg border ${found ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${found ? 'bg-emerald-100' : 'bg-slate-100'}`}>
+                      <div key={field} className={`flex items-center gap-3 p-3 rounded-lg border ${found ? 'border-emerald-200 bg-emerald-50' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${found ? 'bg-emerald-100' : 'bg-[rgba(6,3,43,0.05)]'}`}>
                           {found ? (
                             <svg className="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                             </svg>
                           ) : (
-                            <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg className="w-3 h-3 text-[rgba(6,3,43,0.40)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           )}
                         </div>
                         <div className="flex-1">
-                          <span className={`text-xs font-medium ${found ? 'text-emerald-700' : 'text-slate-500'}`}>
+                          <span className={`text-xs font-medium ${found ? 'text-emerald-700' : 'text-[rgba(6,3,43,0.52)]'}`}>
                             {CRITICAL_BTI_LABELS[field]}
                           </span>
                           {!found && (
-                            <span className="text-xs text-slate-400 ml-2 italic">non rilevata nel file</span>
+                            <span className="text-xs text-[rgba(6,3,43,0.40)] ml-2 italic">non rilevata nel file</span>
                           )}
                         </div>
-                        <span className="font-mono text-xs text-slate-400">{field}</span>
+                        <span className="font-mono text-xs text-[rgba(6,3,43,0.40)]">{field}</span>
                       </div>
                     );
                   })}
                 </div>
 
-                <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
-                  <strong className="text-slate-700">Dottrina §4:</strong>{' '}
+                <div className="p-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-xs text-[rgba(6,3,43,0.52)]">
+                  <strong className="text-[rgba(6,3,43,0.78)]">Dottrina §4:</strong>{' '}
                   Il budget non è un dato valido se non ha una fonte documentabile.
                   Senza <code className="font-mono">budget_source</code> e <code className="font-mono">budget_evidence_type</code>,
                   l&apos;importo viene escluso dal calcolo BTI.
@@ -1294,13 +1294,13 @@ export default function UploadPage() {
             </div>
 
             {/* ── Section 8: Run KORA Preview ───────────────────────────────── */}
-            <div className="rounded-xl border-2 border-indigo-200 bg-white shadow-sm overflow-hidden">
+            <div className="rounded-xl border-2 border-[rgba(199,111,61,0.22)] bg-[#F8F6F1] shadow-sm overflow-hidden">
               <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-slate-900">
+                  <h2 className="text-base font-semibold text-[#06032B]">
                     6 — KORA Computation Preview
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[rgba(6,3,43,0.52)]">
                     Elaborazione locale nel browser · nessun dato salvato · output azienda aggregato
                   </p>
                   {koraStatus === 'done' && koraResult && (
@@ -1319,7 +1319,7 @@ export default function UploadPage() {
                     className={`
                       px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-150
                       ${!canRunKora || koraStatus === 'running'
-                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                        ? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)] cursor-not-allowed'
                         : koraStatus === 'done'
                         ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
                         : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
@@ -1328,7 +1328,7 @@ export default function UploadPage() {
                   >
                     {koraStatus === 'running' ? (
                       <span className="flex items-center gap-2">
-                        <span className="w-3.5 h-3.5 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+                        <span className="w-3.5 h-3.5 border-2 border-[rgba(6,3,43,0.14)] border-t-slate-500 rounded-full animate-spin" />
                         Elaborazione…
                       </span>
                     ) : koraStatus === 'done' ? (
@@ -1353,19 +1353,19 @@ export default function UploadPage() {
 
             {/* ── Board Pack CTA ────────────────────────────────────────────── */}
             {koraStatus === 'done' && koraResult && (
-              <div className="rounded-xl border-2 border-slate-900 bg-white shadow-sm overflow-hidden">
+              <div className="rounded-xl border-2 border-[#06032B] bg-[#F8F6F1] shadow-sm overflow-hidden">
                 <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="space-y-1">
-                    <h2 className="text-base font-semibold text-slate-900">
+                    <h2 className="text-base font-semibold text-[#06032B]">
                       Prepara Board Pack Preview
                     </h2>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[rgba(6,3,43,0.52)]">
                       Documento stampabile generato localmente dal dataset caricato · nessun dato salvato
                     </p>
                   </div>
                   <button
                     onClick={() => setShowBoardPack((v) => !v)}
-                    className="shrink-0 px-6 py-2.5 rounded-lg text-sm font-semibold bg-slate-900 text-white hover:bg-slate-700 transition-colors shadow-sm"
+                    className="shrink-0 px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#06032B] text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors shadow-sm"
                   >
                     {showBoardPack ? 'Chiudi Preview' : 'Prepara Board Pack Preview'}
                   </button>
@@ -1385,18 +1385,18 @@ export default function UploadPage() {
 
             {/* ── Operator flow link ────────────────────────────────────────── */}
             {koraStatus === 'done' && koraResult && (
-              <div className="rounded-xl border border-slate-300 bg-slate-50 p-5 space-y-3">
+              <div className="rounded-xl border border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.03)] p-5 space-y-3">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 mb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] mb-1">
                     Flusso KORA Operator
                   </p>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                  <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
                     Data Intake produce la coda di review. La Review Queue prepara Scoring e Decision Pack.
                   </p>
                 </div>
                 <Link
                   href="/company/uef-review"
-                  className="inline-flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-lg border border-[rgba(6,3,43,0.35)] bg-[#06032B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
                 >
                   Vai a Operator Review Queue →
                 </Link>
@@ -1404,36 +1404,36 @@ export default function UploadPage() {
             )}
 
             {/* ── Section 10: Next steps ────────────────────────────────────── */}
-            <div className="rounded-xl border border-slate-200 bg-white shadow-sm p-6">
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm p-6">
               <div className="space-y-1 mb-5">
-                <h2 className="text-sm font-semibold text-slate-700">Prossimi passi</h2>
-                <p className="text-xs text-slate-400 max-w-lg">
+                <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Prossimi passi</h2>
+                <p className="text-xs text-[rgba(6,3,43,0.40)] max-w-lg">
                   Il salvataggio della review, la cronologia e il Board Pack generato da dataset caricato richiedono backend/SaaS o export locale dedicato.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   disabled
-                  className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-left cursor-not-allowed"
+                  className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-left cursor-not-allowed"
                 >
                   <div>
-                    <p className="text-sm font-medium text-slate-400">Conferma review e genera Board Pack</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Salva le classificazioni e genera report esecutivo aggregato</p>
+                    <p className="text-sm font-medium text-[rgba(6,3,43,0.40)]">Conferma review e genera Board Pack</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Salva le classificazioni e genera report esecutivo aggregato</p>
                   </div>
-                  <span className="text-xs text-slate-400 border border-slate-200 rounded px-2 py-0.5 shrink-0 ml-3">Prossimo sprint</span>
+                  <span className="text-xs text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)] rounded px-2 py-0.5 shrink-0 ml-3">Prossimo sprint</span>
                 </button>
                 <button
                   disabled
-                  className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg border border-slate-200 bg-slate-50 text-left cursor-not-allowed"
+                  className="flex-1 flex items-center justify-between px-4 py-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-left cursor-not-allowed"
                 >
                   <div>
-                    <p className="text-sm font-medium text-slate-400">Esporta checklist Advisor</p>
-                    <p className="text-xs text-slate-400 mt-0.5">Lista record da revisionare con classificazioni KORA per il team Advisor</p>
+                    <p className="text-sm font-medium text-[rgba(6,3,43,0.40)]">Esporta checklist Advisor</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Lista record da revisionare con classificazioni KORA per il team Advisor</p>
                   </div>
-                  <span className="text-xs text-slate-400 border border-slate-200 rounded px-2 py-0.5 shrink-0 ml-3">Prossimo sprint</span>
+                  <span className="text-xs text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)] rounded px-2 py-0.5 shrink-0 ml-3">Prossimo sprint</span>
                 </button>
               </div>
-              <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
+              <div className="mt-4 pt-4 border-t border-[rgba(6,3,43,0.05)] flex items-center gap-2 text-xs text-[rgba(6,3,43,0.40)]">
                 <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
                 </svg>
@@ -1448,8 +1448,8 @@ export default function UploadPage() {
 
         {/* ── Idle state: quick guidance ────────────────────────────────────── */}
         {status === 'idle' && (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6">
-            <h3 className="text-sm font-semibold text-slate-700 mb-3">Come funziona</h3>
+          <div className="rounded-xl border border-dashed border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6">
+            <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] mb-3">Come funziona</h3>
             <ol className="space-y-2">
               {[
                 'Carica un file CSV o Excel con dati welfare, budget o HR aggregati',
@@ -1459,7 +1459,7 @@ export default function UploadPage() {
                 'Esegui il KORA Preview nel browser — KORA Index, Confidence, BTI, Attivazione e Pillar calcolati localmente',
                 'Salvataggio, report history e Board Pack: disponibili dalla fase SaaS/pilot operativo',
               ].map((step, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
+                <li key={i} className="flex items-start gap-3 text-sm text-[rgba(6,3,43,0.62)]">
                   <span className="w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                     {i + 1}
                   </span>
@@ -1530,27 +1530,27 @@ function WorkflowStepper({
   ];
 
   const DOT: Record<StepState, string> = {
-    done:    'bg-slate-900 text-white',
+    done:    'bg-[#06032B] text-white',
     active:  'bg-indigo-600 text-white animate-pulse',
-    pending: 'bg-slate-100 text-slate-400 border border-slate-200',
+    pending: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] border border-[rgba(6,3,43,0.08)]',
     blocked: 'bg-red-100 text-red-600 border border-red-200',
   };
   const TEXT: Record<StepState, string> = {
-    done:    'text-slate-900 font-semibold',
+    done:    'text-[#06032B] font-semibold',
     active:  'text-indigo-700 font-semibold',
-    pending: 'text-slate-400',
+    pending: 'text-[rgba(6,3,43,0.40)]',
     blocked: 'text-red-600',
   };
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 flex flex-wrap items-center gap-2">
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-center gap-2">
       {steps.map((step, i) => (
         <div key={step.label} className="flex items-center gap-1.5">
           <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${DOT[step.state]}`}>
             {step.state === 'done' ? '✓' : step.state === 'blocked' ? '✕' : String(i + 1)}
           </span>
           <span className={`text-xs whitespace-nowrap ${TEXT[step.state]}`}>{step.label}</span>
-          {i < steps.length - 1 && <span className="text-slate-200 text-sm ml-1">→</span>}
+          {i < steps.length - 1 && <span className="text-[rgba(6,3,43,0.16)] text-sm ml-1">→</span>}
         </div>
       ))}
     </div>
@@ -1563,31 +1563,31 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
   return (
     <div className="p-6 space-y-5">
       <div>
-        <p className="text-sm text-slate-600">{template.description}</p>
-        <p className="text-xs text-slate-400 mt-1">
-          <span className="font-medium text-indigo-600">Supporta:</span> {template.helpsWith}
+        <p className="text-sm text-[rgba(6,3,43,0.62)]">{template.description}</p>
+        <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">
+          <span className="font-medium text-[#C76F3D]">Supporta:</span> {template.helpsWith}
         </p>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">
         <div>
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Colonne obbligatorie</h4>
+          <h4 className="text-xs font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide mb-2">Colonne obbligatorie</h4>
           <ul className="space-y-1">
             {template.requiredColumns.map((col) => (
               <li key={col} className="flex items-center gap-2 text-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                <span className="font-mono text-slate-700">{col}</span>
+                <span className="font-mono text-[rgba(6,3,43,0.78)]">{col}</span>
               </li>
             ))}
           </ul>
         </div>
         <div>
-          <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Colonne opzionali</h4>
+          <h4 className="text-xs font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide mb-2">Colonne opzionali</h4>
           <ul className="space-y-1">
             {template.optionalColumns.map((col) => (
               <li key={col} className="flex items-center gap-2 text-xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
-                <span className="font-mono text-slate-500">{col}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[rgba(6,3,43,0.18)] shrink-0" />
+                <span className="font-mono text-[rgba(6,3,43,0.52)]">{col}</span>
               </li>
             ))}
           </ul>
@@ -1600,7 +1600,7 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">Intestazioni del template</h4>
+        <h4 className="text-xs font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide mb-2">Intestazioni del template</h4>
         <div className="overflow-x-auto">
           <div className="inline-flex gap-1.5 pb-1">
             {template.headers.map((h) => (
@@ -1608,8 +1608,8 @@ function TemplatePanel({ template }: { template: SampleTemplate }) {
                 key={h}
                 className={`px-2.5 py-1 rounded text-xs whitespace-nowrap border ${
                   template.requiredColumns.includes(h)
-                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 font-medium'
-                    : 'bg-slate-50 text-slate-500 border-slate-200'
+                    ? 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)] font-medium'
+                    : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]'
                 }`}
               >
                 {h}
@@ -1636,7 +1636,7 @@ function KoraPreviewSection({ result }: { result: KoraComputationResult }) {
   return (
     <div className="space-y-6">
       {/* Boundary note */}
-      <div className="flex items-start gap-3 p-4 rounded-lg border border-indigo-200 bg-indigo-50 text-sm">
+      <div className="flex items-start gap-3 p-4 rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] text-sm">
         <svg className="w-4 h-4 text-indigo-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
         </svg>
@@ -1729,29 +1729,29 @@ function KoraSummaryCards({ result }: { result: KoraComputationResult }) {
       value: formatEur(result.bti.activationDebt),
       unit: '',
       sublabel: 'Budget non convertito in attivazione',
-      cls: result.bti.activationDebt > 0 ? 'text-amber-700 text-base' : 'text-slate-500 text-base',
+      cls: result.bti.activationDebt > 0 ? 'text-amber-700 text-base' : 'text-[rgba(6,3,43,0.52)] text-base',
       note: result.bti.activationDebt > 0 ? 'Ottimizzazione consigliata' : 'Nessun debito rilevato',
     },
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Sintesi risultati</h3>
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Sintesi risultati</h3>
         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${sg.bg} ${sg.text} ${sg.border}`}>
           Safeguard: {result.activation.safeguardStatus}
         </span>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 divide-y divide-x divide-slate-100">
+      <div className="grid grid-cols-2 sm:grid-cols-3 divide-y divide-x divide-[rgba(6,3,43,0.05)]">
         {cards.map((card) => (
           <div key={card.label} className="p-4 space-y-0.5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">{card.label}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">{card.label}</p>
             <p className={`text-2xl font-bold leading-none ${card.cls}`}>
               {card.value}
-              {card.unit && <span className="text-sm font-normal text-slate-400 ml-0.5">{card.unit}</span>}
+              {card.unit && <span className="text-sm font-normal text-[rgba(6,3,43,0.40)] ml-0.5">{card.unit}</span>}
             </p>
-            <p className="text-xs text-slate-500">{card.sublabel}</p>
-            <p className="text-[10px] text-slate-400 font-mono">{card.note}</p>
+            <p className="text-xs text-[rgba(6,3,43,0.52)]">{card.sublabel}</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono">{card.note}</p>
           </div>
         ))}
       </div>
@@ -1790,16 +1790,16 @@ function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
       label: 'Review Required',
       count: es.reviewRequiredCount,
       desc: 'Classificazione ambigua — validazione umana necessaria',
-      cls: 'bg-slate-100 text-slate-600 border-slate-200',
-      barCls: 'bg-slate-400',
+      cls: 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
+      barCls: 'bg-[rgba(6,3,43,0.35)]',
     },
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Eligibility Gate</h3>
-        <span className="text-xs text-slate-400">{es.totalCount} record totali</span>
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Eligibility Gate</h3>
+        <span className="text-xs text-[rgba(6,3,43,0.40)]">{es.totalCount} record totali</span>
       </div>
       <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
         {buckets.map((b) => (
@@ -1808,7 +1808,7 @@ function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
               <span className="text-xs font-semibold">{b.label}</span>
               <span className="text-lg font-bold">{b.count}</span>
             </div>
-            <div className="h-1.5 rounded-full bg-white/50 overflow-hidden">
+            <div className="h-1.5 rounded-full bg-[#F8F6F1]/50 overflow-hidden">
               <div className={`h-full rounded-full ${b.barCls}`} style={{ width: barW(b.count, total) }} />
             </div>
             <p className="text-[10px] leading-relaxed opacity-80">{b.desc}</p>
@@ -1816,7 +1816,7 @@ function KoraEligibilityPanel({ result }: { result: KoraComputationResult }) {
         ))}
       </div>
       {es.reviewRequiredCount > es.totalCount * 0.25 && (
-        <div className="px-6 py-3 border-t border-slate-100 bg-amber-50 text-xs text-amber-700">
+        <div className="px-6 py-3 border-t border-[rgba(6,3,43,0.05)] bg-amber-50 text-xs text-amber-700">
           <strong>{Math.round((es.reviewRequiredCount / es.totalCount) * 100)}% di record in review_required</strong> — la classificazione è incompleta.
           Il KORA Index sottostima il potenziale reale fino alla revisione umana.
         </div>
@@ -1833,27 +1833,27 @@ function KoraPillarPanel({ result }: { result: KoraComputationResult }) {
   const pillars = Object.entries(dist) as [string, number][];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Distribuzione Pillar</h3>
-        <span className="text-xs text-slate-400">{total} record classificati</span>
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Distribuzione Pillar</h3>
+        <span className="text-xs text-[rgba(6,3,43,0.40)]">{total} record classificati</span>
       </div>
       <div className="p-4 space-y-3">
         {pillars.map(([pillar, count]) => {
-          const cfg = PILLAR_CONFIG[pillar] ?? { label: pillar, color: 'text-slate-600', barColor: 'bg-slate-400' };
+          const cfg = PILLAR_CONFIG[pillar] ?? { label: pillar, color: 'text-[rgba(6,3,43,0.62)]', barColor: 'bg-[rgba(6,3,43,0.35)]' };
           return (
             <div key={pillar} className="flex items-center gap-3">
               <span className={`text-xs font-bold w-24 shrink-0 ${cfg.color}`}>{cfg.label}</span>
-              <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div className="flex-1 h-2 rounded-full bg-[rgba(6,3,43,0.05)] overflow-hidden">
                 <div className={`h-full rounded-full transition-all duration-500 ${cfg.barColor}`} style={{ width: barW(count, total) }} />
               </div>
-              <span className="text-xs text-slate-500 w-8 text-right shrink-0">{count}</span>
-              <span className="text-xs text-slate-400 w-8 text-right shrink-0">{formatPct(count / total)}</span>
+              <span className="text-xs text-[rgba(6,3,43,0.52)] w-8 text-right shrink-0">{count}</span>
+              <span className="text-xs text-[rgba(6,3,43,0.40)] w-8 text-right shrink-0">{formatPct(count / total)}</span>
             </div>
           );
         })}
         {total === 0 && (
-          <p className="text-xs text-slate-400 text-center py-2">Nessun segnale pillar rilevato nel dataset.</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] text-center py-2">Nessun segnale pillar rilevato nel dataset.</p>
         )}
       </div>
     </div>
@@ -1873,26 +1873,26 @@ function KoraBTIPanel({ result }: { result: KoraComputationResult }) {
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Budget-to-Human-Impact (BTI)</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Macroblocco 4 · peso 20% nel KORA Index v3</p>
+          <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Budget-to-Human-Impact (BTI)</h3>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Macroblocco 4 · peso 20% nel KORA Index v3</p>
         </div>
         <span className={`text-2xl font-bold ${koraIndexTextCls(bti.btiScore)}`}>
-          {bti.btiScore}<span className="text-sm font-normal text-slate-400">/100</span>
+          {bti.btiScore}<span className="text-sm font-normal text-[rgba(6,3,43,0.40)]">/100</span>
         </span>
       </div>
 
       <div className="p-4 space-y-4">
         <div className="space-y-2">
           {rows.map((row) => (
-            <div key={row.label} className={`flex items-center justify-between py-2 px-3 rounded-lg text-sm ${row.highlight ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50'}`}>
+            <div key={row.label} className={`flex items-center justify-between py-2 px-3 rounded-lg text-sm ${row.highlight ? 'bg-amber-50 border border-amber-200' : 'bg-[rgba(6,3,43,0.03)]'}`}>
               <div>
-                <span className={`font-medium ${row.highlight ? 'text-amber-800' : 'text-slate-700'}`}>{row.label}</span>
-                {row.note && <span className="text-xs text-slate-400 ml-2">{row.note}</span>}
+                <span className={`font-medium ${row.highlight ? 'text-amber-800' : 'text-[rgba(6,3,43,0.78)]'}`}>{row.label}</span>
+                {row.note && <span className="text-xs text-[rgba(6,3,43,0.40)] ml-2">{row.note}</span>}
               </div>
-              <span className={`font-mono text-sm ${row.highlight && row.label === 'Activation Debt' && bti.activationDebt > 0 ? 'text-amber-700 font-semibold' : 'text-slate-600'}`}>
+              <span className={`font-mono text-sm ${row.highlight && row.label === 'Activation Debt' && bti.activationDebt > 0 ? 'text-amber-700 font-semibold' : 'text-[rgba(6,3,43,0.62)]'}`}>
                 {row.value}
               </span>
             </div>
@@ -1900,17 +1900,17 @@ function KoraBTIPanel({ result }: { result: KoraComputationResult }) {
         </div>
 
         <div className="space-y-1.5">
-          <div className="flex justify-between text-xs text-slate-500">
+          <div className="flex justify-between text-xs text-[rgba(6,3,43,0.52)]">
             <span>Budget Evidence Quality</span>
             <span>{Math.round(bti.budgetEvidenceQuality * 100)}/100</span>
           </div>
-          <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+          <div className="h-2 rounded-full bg-[rgba(6,3,43,0.05)] overflow-hidden">
             <div className={`h-full rounded-full ${barCls(bti.budgetEvidenceQuality * 100)}`} style={{ width: barW(bti.budgetEvidenceQuality * 100) }} />
           </div>
         </div>
 
-        <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
-          <strong className="text-slate-600">Dottrina:</strong>{' '}
+        <div className="p-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-xs text-[rgba(6,3,43,0.52)]">
+          <strong className="text-[rgba(6,3,43,0.62)]">Dottrina:</strong>{' '}
           Il budget non è trattato come impatto. Entra nel BTI solo in base a evidenza, eleggibilità e attivazione.
         </div>
       </div>
@@ -1928,11 +1928,11 @@ function KoraActivationPanel({ result }: { result: KoraComputationResult }) {
   );
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Activation & Reach Quality</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Output aggregato — nessun valore identità restituito</p>
+          <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Activation & Reach Quality</h3>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Output aggregato — nessun valore identità restituito</p>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${sg.bg} ${sg.text} ${sg.border}`}>
           {activation.safeguardStatus}
@@ -1947,9 +1947,9 @@ function KoraActivationPanel({ result }: { result: KoraComputationResult }) {
             { label: 'Mai attivati', value: activation.neverActivatedWorkers },
             { label: 'Concentrazione top', value: `${formatPct(activation.concentrationTopShare)}`, raw: true },
           ].map((m) => (
-            <div key={m.label} className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center">
-              <p className="text-lg font-bold text-slate-700">{m.value}</p>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-tight">{m.label}</p>
+            <div key={m.label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-3 text-center">
+              <p className="text-lg font-bold text-[rgba(6,3,43,0.78)]">{m.value}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5 leading-tight">{m.label}</p>
             </div>
           ))}
         </div>
@@ -1960,15 +1960,15 @@ function KoraActivationPanel({ result }: { result: KoraComputationResult }) {
             { label: 'Meaningful AR (MAR)', value: activation.meaningfulActivationReach, threshold: 0.30, thresholdLabel: 'CLEAR ≥ 30%' },
           ].map((metric) => (
             <div key={metric.label} className="space-y-1">
-              <div className="flex justify-between text-xs text-slate-500">
+              <div className="flex justify-between text-xs text-[rgba(6,3,43,0.52)]">
                 <span>{metric.label}</span>
                 <span className="font-medium">{formatPct(metric.value)} <span className="font-normal opacity-60">({metric.thresholdLabel})</span></span>
               </div>
-              <div className="relative h-2 rounded-full bg-slate-100 overflow-visible">
+              <div className="relative h-2 rounded-full bg-[rgba(6,3,43,0.05)] overflow-visible">
                 <div className={`h-full rounded-full ${barCls(metric.value * 100)}`} style={{ width: barW(metric.value * 100) }} />
                 {/* Threshold marker */}
                 <div
-                  className="absolute top-0 bottom-0 w-0.5 bg-slate-400 opacity-60"
+                  className="absolute top-0 bottom-0 w-0.5 bg-[rgba(6,3,43,0.35)] opacity-60"
                   style={{ left: `${metric.threshold * 100}%` }}
                 />
               </div>
@@ -1984,8 +1984,8 @@ function KoraActivationPanel({ result }: { result: KoraComputationResult }) {
         )}
 
         {activation.safeguardStatus !== 'CLEAR' && (
-          <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
-            <strong className="text-slate-600">D-21 Activation Safeguard:</strong>{' '}
+          <div className="p-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-xs text-[rgba(6,3,43,0.52)]">
+            <strong className="text-[rgba(6,3,43,0.62)]">D-21 Activation Safeguard:</strong>{' '}
             CLEAR = AR ≥ 40% AND MAR ≥ 30% · WARNING = sotto soglia · FLAGGED = AR &lt; 20% OR MAR &lt; 15%.
             CLEAR è bloccato anche se review_required &gt; 25% o concentrazione top &gt; 60%.
           </div>
@@ -1999,16 +1999,16 @@ function KoraActivationPanel({ result }: { result: KoraComputationResult }) {
 
 function KoraCarePanel({ careSignalCount }: { careSignalCount: number }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Care Economy</h3>
-          <p className="text-xs text-slate-400 mt-0.5">Modulo premium — segnali informativi, non nel KORA Index v3</p>
+          <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Care Economy</h3>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Modulo premium — segnali informativi, non nel KORA Index v3</p>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
           careSignalCount > 0
             ? 'bg-blue-100 text-blue-700 border-blue-200'
-            : 'bg-slate-100 text-slate-500 border-slate-200'
+            : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]'
         }`}>
           {careSignalCount} segnali
         </span>
@@ -2016,7 +2016,7 @@ function KoraCarePanel({ careSignalCount }: { careSignalCount: number }) {
       <div className="p-4">
         {careSignalCount > 0 ? (
           <div className="space-y-3">
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-[rgba(6,3,43,0.78)]">
               <strong>{careSignalCount} segnali care economy</strong> rilevati nel dataset.
               Childcare, eldercare, caregiver, family support, flessibilità, accesso equo.
             </p>
@@ -2026,7 +2026,7 @@ function KoraCarePanel({ careSignalCount }: { careSignalCount: number }) {
             </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-400 text-center py-2">
+          <p className="text-sm text-[rgba(6,3,43,0.40)] text-center py-2">
             Nessun segnale Care Economy rilevato in questo dataset.
           </p>
         )}
@@ -2062,16 +2062,16 @@ function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
   ];
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Confidence & Avvertenze</h3>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Confidence & Avvertenze</h3>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
             KORA espone i limiti del dataset invece di nasconderli.
           </p>
         </div>
         <span className={`text-xl font-bold ${koraIndexTextCls(cs.score)}`}>
-          CS {cs.score}<span className="text-sm font-normal text-slate-400">/100</span>
+          CS {cs.score}<span className="text-sm font-normal text-[rgba(6,3,43,0.40)]">/100</span>
         </span>
       </div>
 
@@ -2080,11 +2080,11 @@ function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
         <div className="space-y-2">
           {subscores.map((s) => (
             <div key={s.label} className="space-y-0.5">
-              <div className="flex justify-between text-xs text-slate-500">
+              <div className="flex justify-between text-xs text-[rgba(6,3,43,0.52)]">
                 <span>{s.label}</span>
                 <span className="font-medium">{Math.round(s.value * 100)}%</span>
               </div>
-              <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.05)] overflow-hidden">
                 <div className={`h-full rounded-full ${barCls(s.value * 100)}`} style={{ width: barW(s.value * 100) }} />
               </div>
             </div>
@@ -2094,10 +2094,10 @@ function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
         {/* Warnings */}
         {allWarnings.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Avvertenze diagnostiche</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Avvertenze diagnostiche</p>
             <ul className="space-y-1.5">
               {allWarnings.map((w, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-slate-600">
+                <li key={i} className="flex items-start gap-2 text-xs text-[rgba(6,3,43,0.62)]">
                   <span className="w-1 h-1 rounded-full bg-amber-400 shrink-0 mt-1.5" />
                   {w}
                 </li>
@@ -2106,7 +2106,7 @@ function KoraWarningsPanel({ result }: { result: KoraComputationResult }) {
           </div>
         )}
 
-        <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs text-slate-500">
+        <div className="p-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-xs text-[rgba(6,3,43,0.52)]">
           Confidence Score è <strong>esterno al KORA Index</strong> — peso=0 nel calcolo.
           Indica l&apos;affidabilità del dato, non il livello di attivazione.
           CS basso non annulla il KORA Index ma segnala che i risultati devono essere interpretati con cautela.
@@ -2175,24 +2175,24 @@ function EligibilityReviewSection({
   const isTruncated = filtered.length > REVIEW_MAX_DISPLAY;
 
   return (
-    <div className="rounded-xl border-2 border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-xl border-2 border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-slate-100 bg-slate-50/80">
+      <div className="px-6 py-5 border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]/80">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div className="space-y-1">
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="text-base font-semibold text-[#06032B]">
               7 — Eligibility &amp; Evidence Review per Iniziativa
             </h2>
-            <p className="text-xs text-slate-500 max-w-2xl leading-relaxed">
+            <p className="text-xs text-[rgba(6,3,43,0.52)] max-w-2xl leading-relaxed">
               Rilettura metodologica raggruppata per iniziativa: eleggibilità, pillar, evidenza budget,
               trattamento BTI e punti che richiedono revisione. I record raw vengono aggregati per iniziativa.
             </p>
           </div>
           <div className="shrink-0 flex flex-col items-end gap-1">
-            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.08)]">
               {groups.length} iniziative
             </span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-50 text-slate-500 border border-slate-200">
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)] border border-[rgba(6,3,43,0.08)]">
               {counts.totalRecords} record raw
             </span>
           </div>
@@ -2213,27 +2213,27 @@ function EligibilityReviewSection({
 
         {/* Data Quality Board */}
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
             Data Quality Board
           </p>
-          <p className="text-xs text-slate-500 mb-3">
+          <p className="text-xs text-[rgba(6,3,43,0.52)] mb-3">
             KORA espone i punti deboli del dataset prima di produrre un Decision Pack. I conteggi si riferiscono a iniziative, non a record raw.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             {[
               { label: 'Iniziative in review',  value: counts.review_required + counts.mixed, dotCls: 'bg-amber-400', valCls: 'text-amber-700', sub: 'Classificazione mista o incompleta' },
               { label: 'Budget mancante',        value: counts.missingBudget,                  dotCls: 'bg-red-400',   valCls: 'text-red-600',   sub: 'Fonte budget assente o L0' },
-              { label: 'Escluse per design',     value: counts.blocked,                        dotCls: 'bg-slate-300', valCls: 'text-slate-500', sub: 'Compliance obbligatoria baseline' },
+              { label: 'Escluse per design',     value: counts.blocked,                        dotCls: 'bg-[rgba(6,3,43,0.18)]', valCls: 'text-[rgba(6,3,43,0.52)]', sub: 'Compliance obbligatoria baseline' },
               { label: 'Evidenza debole (L0/L1)',value: counts.l0l1,                           dotCls: 'bg-amber-300', valCls: 'text-amber-600', sub: 'Qualità evidenza budget bassa' },
               { label: 'Campi identità',         value: identityColCount,                      dotCls: 'bg-blue-300',  valCls: 'text-blue-600',  sub: "Record con campi identità — esclusi dall'output" },
-              { label: 'Bassa confidence',       value: counts.lowConfidence,                  dotCls: 'bg-slate-400', valCls: 'text-slate-600', sub: 'Confidence aggregata < 50%' },
+              { label: 'Bassa confidence',       value: counts.lowConfidence,                  dotCls: 'bg-[rgba(6,3,43,0.35)]', valCls: 'text-[rgba(6,3,43,0.62)]', sub: 'Confidence aggregata < 50%' },
             ].map((item) => (
-              <div key={item.label} className="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50">
+              <div key={item.label} className="flex items-start gap-2.5 p-3 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]">
                 <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${item.dotCls}`} />
                 <div>
                   <p className={`text-lg font-bold leading-none ${item.valCls}`}>{item.value}</p>
-                  <p className="text-[10px] font-semibold text-slate-600 mt-1 leading-tight">{item.label}</p>
-                  <p className="text-[10px] text-slate-400 leading-relaxed">{item.sub}</p>
+                  <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.62)] mt-1 leading-tight">{item.label}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed">{item.sub}</p>
                 </div>
               </div>
             ))}
@@ -2242,7 +2242,7 @@ function EligibilityReviewSection({
 
         {/* Primary filter tabs */}
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Filtra per status iniziativa</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Filtra per status iniziativa</p>
           <div className="flex flex-wrap gap-1.5">
             {[
               { key: 'all',             label: `Tutte (${groups.length})` },
@@ -2257,8 +2257,8 @@ function EligibilityReviewSection({
                 onClick={() => setActiveFilter(f.key)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   activeFilter === f.key
-                    ? 'bg-slate-800 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-[#06032B] text-white shadow-sm'
+                    : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.12)]'
                 }`}
               >
                 {f.label}
@@ -2269,7 +2269,7 @@ function EligibilityReviewSection({
 
         {/* Secondary filters */}
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Filtri secondari</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Filtri secondari</p>
           <div className="flex flex-wrap gap-1.5">
             {[
               { key: 'missing_budget',     label: `Budget mancante (${counts.missingBudget})` },
@@ -2282,8 +2282,8 @@ function EligibilityReviewSection({
                 onClick={() => toggleSecondary(f.key)}
                 className={`px-2.5 py-1 rounded-md text-[10px] font-medium border transition-colors ${
                   secondaryFilters.has(f.key)
-                    ? 'bg-indigo-100 text-indigo-700 border-indigo-200'
-                    : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                    ? 'bg-indigo-100 text-indigo-700 border-[rgba(199,111,61,0.22)]'
+                    : 'bg-[#F8F6F1] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)] hover:bg-[rgba(6,3,43,0.03)]'
                 }`}
               >
                 {secondaryFilters.has(f.key) ? '✕ ' : ''}{f.label}
@@ -2293,9 +2293,9 @@ function EligibilityReviewSection({
         </div>
 
         {/* Review table — grouped by initiative */}
-        <div className="rounded-lg border border-slate-200 overflow-hidden">
-          <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] overflow-hidden">
+          <div className="px-4 py-2.5 bg-[rgba(6,3,43,0.03)] border-b border-[rgba(6,3,43,0.08)] flex items-center justify-between">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)]">
               Review per iniziativa · output aggregato · nessun dato identità individuale
             </p>
             {isTruncated && (
@@ -2307,28 +2307,28 @@ function EligibilityReviewSection({
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-left border-b border-slate-200 bg-slate-50/60">
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[160px]">Iniziativa</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[100px]">Records / Part.</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[80px]">Lavoratori</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[120px]">Eligibility</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[70px]">Pillar</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[130px]">Budget Evidence</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[130px]">BTI Treatment</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[70px]">Review</th>
-                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-slate-500 min-w-[180px]">Azione consigliata</th>
+                <tr className="text-left border-b border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]/60">
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[160px]">Iniziativa</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[100px]">Records / Part.</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[80px]">Lavoratori</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[120px]">Eligibility</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[70px]">Pillar</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[130px]">Budget Evidence</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[130px]">BTI Treatment</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[70px]">Review</th>
+                  <th className="px-3 py-2.5 text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.52)] min-w-[180px]">Azione consigliata</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[rgba(6,3,43,0.05)]">
                 {displayGroups.map((grp) => {
                   const eligCfg   = eligibilityStatusConfig(grp.primaryEligibility);
                   const pillarCfg = grp.primaryPillar ? PILLAR_CONFIG[grp.primaryPillar] : null;
                   const confBadge = confidenceBadge(grp.confidence);
                   return (
-                    <tr key={grp.groupKey} className="hover:bg-slate-50/60 align-top">
+                    <tr key={grp.groupKey} className="hover:bg-[rgba(6,3,43,0.03)]/60 align-top">
                       {/* Iniziativa */}
                       <td className="px-3 py-2.5">
-                        <p className="font-medium text-slate-700 max-w-[200px] break-words leading-snug">{grp.groupLabel}</p>
+                        <p className="font-medium text-[rgba(6,3,43,0.78)] max-w-[200px] break-words leading-snug">{grp.groupLabel}</p>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {grp.isCareEconomy && (
                             <span className="text-[9px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
@@ -2336,12 +2336,12 @@ function EligibilityReviewSection({
                             </span>
                           )}
                           {grp.provider && (
-                            <span className="text-[9px] text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 max-w-[120px] truncate">
+                            <span className="text-[9px] text-[rgba(6,3,43,0.40)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 rounded border border-[rgba(6,3,43,0.08)] max-w-[120px] truncate">
                               {grp.provider}
                             </span>
                           )}
                           {grp.period && (
-                            <span className="text-[9px] text-slate-400 font-mono bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200">
+                            <span className="text-[9px] text-[rgba(6,3,43,0.40)] font-mono bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 rounded border border-[rgba(6,3,43,0.08)]">
                               {grp.period}
                             </span>
                           )}
@@ -2349,22 +2349,22 @@ function EligibilityReviewSection({
                       </td>
                       {/* Records / Partecipazioni */}
                       <td className="px-3 py-2.5">
-                        <p className="font-mono text-slate-700">{grp.recordCount}</p>
+                        <p className="font-mono text-[rgba(6,3,43,0.78)]">{grp.recordCount}</p>
                         {grp.participationCount !== null && (
-                          <p className="text-[10px] text-slate-400 mt-0.5">{grp.participationCount} part.</p>
+                          <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">{grp.participationCount} part.</p>
                         )}
                       </td>
                       {/* Lavoratori unici */}
                       <td className="px-3 py-2.5">
                         {grp.uniqueWorkerEstimate !== null ? (
                           <>
-                            <p className="font-mono text-slate-700">~{grp.uniqueWorkerEstimate}</p>
+                            <p className="font-mono text-[rgba(6,3,43,0.78)]">~{grp.uniqueWorkerEstimate}</p>
                             {grp.hasIdentityFields && (
                               <p className="text-[9px] text-blue-500 mt-0.5">da campi id</p>
                             )}
                           </>
                         ) : (
-                          <span className="text-[10px] text-slate-400">—</span>
+                          <span className="text-[10px] text-[rgba(6,3,43,0.40)]">—</span>
                         )}
                       </td>
                       {/* Eligibility */}
@@ -2376,11 +2376,11 @@ function EligibilityReviewSection({
                         {grp.isMixedStatus && (
                           <div className="mt-1 flex flex-wrap gap-0.5">
                             {Object.entries(grp.eligibilityMix).map(([s, n]) => (
-                              <span key={s} className="text-[9px] text-slate-400 font-mono">{s.replace('_', ' ')}: {n}</span>
+                              <span key={s} className="text-[9px] text-[rgba(6,3,43,0.40)] font-mono">{s.replace('_', ' ')}: {n}</span>
                             ))}
                           </div>
                         )}
-                        <p className="text-[10px] text-slate-400 mt-0.5 font-mono">
+                        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5 font-mono">
                           <span className={confBadge.cls + ' px-1 py-0.5 rounded text-[9px]'}>{confBadge.label}</span>
                         </p>
                       </td>
@@ -2394,7 +2394,7 @@ function EligibilityReviewSection({
                             )}
                           </>
                         ) : (
-                          <span className="text-[10px] text-slate-400">—</span>
+                          <span className="text-[10px] text-[rgba(6,3,43,0.40)]">—</span>
                         )}
                       </td>
                       {/* Budget Evidence */}
@@ -2423,19 +2423,19 @@ function EligibilityReviewSection({
                             Sì
                           </span>
                         ) : (
-                          <span className="text-[10px] text-slate-400">No</span>
+                          <span className="text-[10px] text-[rgba(6,3,43,0.40)]">No</span>
                         )}
                       </td>
                       {/* Azione consigliata */}
                       <td className="px-3 py-2.5">
-                        <p className="text-[11px] text-slate-600 leading-relaxed max-w-[230px]">{grp.recommendedAction}</p>
+                        <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed max-w-[230px]">{grp.recommendedAction}</p>
                       </td>
                     </tr>
                   );
                 })}
                 {displayGroups.length === 0 && (
                   <tr>
-                    <td colSpan={9} className="px-3 py-8 text-center text-xs text-slate-400">
+                    <td colSpan={9} className="px-3 py-8 text-center text-xs text-[rgba(6,3,43,0.40)]">
                       Nessuna iniziativa corrisponde ai filtri selezionati.
                     </td>
                   </tr>
@@ -2444,24 +2444,24 @@ function EligibilityReviewSection({
             </table>
           </div>
           {/* Status legend */}
-          <div className="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500">
+          <div className="px-4 py-3 bg-[rgba(6,3,43,0.03)] border-t border-[rgba(6,3,43,0.08)] flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[rgba(6,3,43,0.52)]">
             <span><strong className="text-emerald-700">Eligible</strong> — può contribuire se evidenza e attivazione sono sufficienti</span>
             <span><strong className="text-amber-700">Limited</strong> — sollievo economico / bassa profondità di attivazione</span>
             <span><strong className="text-red-600">Blocked</strong> — baseline legale/compliance, 0 impatto per design</span>
-            <span><strong className="text-slate-600">Review Required</strong> — revisione umana/advisor necessaria</span>
+            <span><strong className="text-[rgba(6,3,43,0.62)]">Review Required</strong> — revisione umana/advisor necessaria</span>
             <span><strong className="text-purple-700">Mixed</strong> — record con classificazioni eterogenee — richiede validazione</span>
           </div>
         </div>
 
         {/* Advisor-ready framing */}
-        <div className="p-4 rounded-lg border border-slate-200 bg-slate-50 space-y-1.5">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Framing Advisor — pre-empirical</p>
-          <p className="text-xs text-slate-600 leading-relaxed">
+        <div className="p-4 rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] space-y-1.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Framing Advisor — pre-empirical</p>
+          <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed">
             Questa vista prepara il futuro Advisor Review: le classificazioni sono rule-based e pre-empirical,
             raggruppate per iniziativa per facilitare la validazione umana prima del Board Pack finale.
             Le iniziative con evidenza L0/L1 o BTI mixed devono essere validate e aggiornate con export provider (L3+).
           </p>
-          <p className="text-[10px] text-slate-400 font-mono">
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono">
             Engine: deterministic · no LLM · no external calls ·
             {result.koraIndex.methodologyVersion} · {result.koraIndex.calibrationStatus}
           </p>
@@ -2515,9 +2515,9 @@ function generateUploadRecommendations(result: KoraComputationResult): UploadRec
 
 function BpDocFooter({ fileName }: { fileName: string }) {
   return (
-    <div className="mt-8 pt-3 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-mono">
+    <div className="mt-8 pt-3 border-t border-[rgba(6,3,43,0.08)] flex items-center justify-between text-[9px] text-[rgba(6,3,43,0.40)] font-mono">
       <span>KORA Foundation Light · Board Pack Preview · {fileName.slice(0, 48)}</span>
-      <span className="text-slate-300 italic">Preview locale — non distribuire come report certificato</span>
+      <span className="text-[rgba(6,3,43,0.28)] italic">Preview locale — non distribuire come report certificato</span>
     </div>
   );
 }
@@ -2525,12 +2525,12 @@ function BpDocFooter({ fileName }: { fileName: string }) {
 function BpSectionTitle({ n, title, sub }: { n: string; title: string; sub?: string }) {
   return (
     <div className="mb-5">
-      <div className="border-t-2 border-slate-900 pt-3">
+      <div className="border-t-2 border-[#06032B] pt-3">
         <div className="flex items-baseline gap-2.5">
-          <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">{n}</span>
-          <h2 className="text-[15px] font-bold tracking-tight text-slate-900 leading-tight">{title}</h2>
+          <span className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{n}</span>
+          <h2 className="text-[15px] font-bold tracking-tight text-[#06032B] leading-tight">{title}</h2>
         </div>
-        {sub && <p className="text-[10px] text-slate-500 mt-0.5 ml-7">{sub}</p>}
+        {sub && <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5 ml-7">{sub}</p>}
       </div>
     </div>
   );
@@ -2539,8 +2539,8 @@ function BpSectionTitle({ n, title, sub }: { n: string; title: string; sub?: str
 function BpExhibit({ n, title }: { n: string; title: string }) {
   return (
     <div className="mb-3">
-      <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400 font-semibold">Exhibit {n}</p>
-      <p className="text-[11px] font-bold text-slate-700 mt-0.5">{title}</p>
+      <p className="text-[9px] uppercase tracking-[0.12em] text-[rgba(6,3,43,0.40)] font-semibold">Exhibit {n}</p>
+      <p className="text-[11px] font-bold text-[rgba(6,3,43,0.78)] mt-0.5">{title}</p>
     </div>
   );
 }
@@ -2608,37 +2608,37 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
       `}</style>
 
       {/* Screen-only bar */}
-      <div className="bp-upload-no-print flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-white px-6 py-4">
+      <div className="bp-upload-no-print flex items-center justify-between gap-4 rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-4">
         <div>
-          <p className="text-sm font-semibold text-slate-800">KORA Board Pack Preview — Dataset caricato</p>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">KORA Board Pack Preview — Dataset caricato</p>
+          <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">
             Preview locale, pre-empirical, non certificata. Nessun dato viene salvato.
           </p>
         </div>
         <button
           onClick={() => window.print()}
-          className="shrink-0 px-4 py-2 rounded-lg border border-slate-900 bg-slate-900 text-xs font-semibold text-white hover:bg-slate-700 transition-colors"
+          className="shrink-0 px-4 py-2 rounded-lg border border-[#06032B] bg-[#06032B] text-xs font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
         >
           Stampa / salva PDF
         </button>
       </div>
 
       {/* ── Document body ── */}
-      <div className="bp-upload-print max-w-[794px] mx-auto bg-white text-slate-900 pb-8">
+      <div className="bp-upload-print max-w-[794px] mx-auto bg-[#F8F6F1] text-[#06032B] pb-8">
 
         {/* ═══ PAGE 1 — COVER ═══ */}
         <div className="bp-avoid-break px-1 pt-6 min-h-[820px] flex flex-col">
-          <div className="border-t-4 border-slate-900 pt-5 mb-8">
+          <div className="border-t-4 border-[#06032B] pt-5 mb-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[9px] uppercase tracking-[0.15em] text-slate-400 font-semibold mb-0.5">
+                <p className="text-[9px] uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)] font-semibold mb-0.5">
                   KORA Foundation Light · Board Pack Preview · Dataset caricato
                 </p>
-                <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400">
+                <p className="text-[9px] uppercase tracking-[0.12em] text-[rgba(6,3,43,0.40)]">
                   Preparato per: Executive / HR / Finance / ESG
                 </p>
               </div>
-              <div className="text-right text-[9px] text-slate-400 font-mono space-y-0.5">
+              <div className="text-right text-[9px] text-[rgba(6,3,43,0.40)] font-mono space-y-0.5">
                 <p>{generatedAt}</p>
                 <p>{METHOD_ID}</p>
               </div>
@@ -2646,22 +2646,22 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           </div>
 
           <div className="mb-5">
-            <h1 className="text-[38px] font-bold tracking-tight text-slate-900 leading-none mb-2">
+            <h1 className="text-[38px] font-bold tracking-tight text-[#06032B] leading-none mb-2">
               Board Pack Preview
             </h1>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-mono text-slate-500 border border-slate-200 rounded px-2 py-0.5 bg-slate-50 max-w-xs truncate">{fileName}</span>
+              <span className="text-[10px] font-mono text-[rgba(6,3,43,0.52)] border border-[rgba(6,3,43,0.08)] rounded px-2 py-0.5 bg-[rgba(6,3,43,0.03)] max-w-xs truncate">{fileName}</span>
               <span className="text-[10px] font-semibold text-amber-700 border border-amber-200 bg-amber-50 rounded px-2 py-0.5">{CALIB}</span>
-              <span className="text-[10px] text-slate-500 border border-slate-200 rounded px-2 py-0.5">production_ready: false</span>
-              <span className="text-[10px] text-slate-500 border border-slate-200 rounded px-2 py-0.5">Uploaded dataset preview</span>
+              <span className="text-[10px] text-[rgba(6,3,43,0.52)] border border-[rgba(6,3,43,0.08)] rounded px-2 py-0.5">production_ready: false</span>
+              <span className="text-[10px] text-[rgba(6,3,43,0.52)] border border-[rgba(6,3,43,0.08)] rounded px-2 py-0.5">Uploaded dataset preview</span>
             </div>
           </div>
 
-          <div className="border-t border-slate-200 mb-8" />
+          <div className="border-t border-[rgba(6,3,43,0.08)] mb-8" />
 
           <div className="mb-10">
-            <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400 font-semibold mb-2">Diagnosi principale</p>
-            <p className="text-[20px] font-light text-slate-800 leading-snug tracking-tight">
+            <p className="text-[9px] uppercase tracking-[0.12em] text-[rgba(6,3,43,0.40)] font-semibold mb-2">Diagnosi principale</p>
+            <p className="text-[20px] font-light text-[rgba(6,3,43,0.90)] leading-snug tracking-tight">
               {isInsufficient
                 ? 'Dataset insufficiente — KORA Index non calcolabile.'
                 : activation.safeguardStatus === 'CLEAR'
@@ -2675,40 +2675,40 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           {!isInsufficient && (
             <div className="grid grid-cols-4 gap-5 mb-10 bp-avoid-break">
               <div className="space-y-1">
-                <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">KORA Index Preview</p>
-                <p className="text-[44px] font-bold text-slate-900 leading-none">{koraIndex.value}</p>
-                <p className="text-[10px] text-slate-500">/ 100 · pre-calibration</p>
+                <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold">KORA Index Preview</p>
+                <p className="text-[44px] font-bold text-[#06032B] leading-none">{koraIndex.value}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)]">/ 100 · pre-calibration</p>
               </div>
-              <div className="space-y-1 border-l border-slate-200 pl-5">
-                <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">Confidence Score</p>
-                <p className="text-[36px] font-bold text-slate-700 leading-none">{confidence.score}</p>
-                <p className="text-[10px] text-slate-500">/ 100 · esterno · peso 0</p>
+              <div className="space-y-1 border-l border-[rgba(6,3,43,0.08)] pl-5">
+                <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold">Confidence Score</p>
+                <p className="text-[36px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{confidence.score}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)]">/ 100 · esterno · peso 0</p>
               </div>
-              <div className="space-y-1 border-l border-slate-200 pl-5">
-                <p className={`text-[9px] uppercase tracking-[0.1em] font-semibold ${activation.safeguardStatus !== 'CLEAR' ? 'text-amber-600' : 'text-slate-400'}`}>Activation Safeguard</p>
+              <div className="space-y-1 border-l border-[rgba(6,3,43,0.08)] pl-5">
+                <p className={`text-[9px] uppercase tracking-[0.1em] font-semibold ${activation.safeguardStatus !== 'CLEAR' ? 'text-amber-600' : 'text-[rgba(6,3,43,0.40)]'}`}>Activation Safeguard</p>
                 <p className={`text-[24px] font-bold leading-none mt-1 ${sg.text}`}>{activation.safeguardStatus}</p>
-                <p className="text-[10px] text-slate-500">AR {formatPct(activation.activationReach)} · MAR {formatPct(activation.meaningfulActivationReach)}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)]">AR {formatPct(activation.activationReach)} · MAR {formatPct(activation.meaningfulActivationReach)}</p>
               </div>
-              <div className="space-y-1 border-l border-slate-200 pl-5">
-                <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">BTI Score</p>
-                <p className="text-[24px] font-bold text-slate-900 leading-none mt-1">{bti.btiScore}</p>
-                <p className="text-[10px] text-slate-500">/ 100 · macroblocco 20%</p>
+              <div className="space-y-1 border-l border-[rgba(6,3,43,0.08)] pl-5">
+                <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold">BTI Score</p>
+                <p className="text-[24px] font-bold text-[#06032B] leading-none mt-1">{bti.btiScore}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)]">/ 100 · macroblocco 20%</p>
               </div>
             </div>
           )}
 
-          <div className="mt-auto border-t border-slate-200 pt-5">
-            <div className="grid grid-cols-3 gap-6 text-[10px] text-slate-500">
+          <div className="mt-auto border-t border-[rgba(6,3,43,0.08)] pt-5">
+            <div className="grid grid-cols-3 gap-6 text-[10px] text-[rgba(6,3,43,0.52)]">
               <div className="space-y-1">
-                <p className="font-semibold text-slate-700">Sorgente dati</p>
+                <p className="font-semibold text-[rgba(6,3,43,0.78)]">Sorgente dati</p>
                 <p>File caricato in sessione<br />Nessun dato trasmesso a server<br />{totalRecords} record analizzati</p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-slate-700">Generato da</p>
+                <p className="font-semibold text-[rgba(6,3,43,0.78)]">Generato da</p>
                 <p>KORA Foundation Light<br />Human Impact Intelligence Platform</p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-slate-700">Metodologia</p>
+                <p className="font-semibold text-[rgba(6,3,43,0.78)]">Metodologia</p>
                 <p className="font-mono">{METHOD_ID}<br />{CALIB}</p>
               </div>
             </div>
@@ -2729,32 +2729,32 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           ) : (
             <>
               <div className="grid grid-cols-4 gap-4 mb-5 bp-avoid-break">
-                <div className="border-t-2 border-slate-800 pt-3 space-y-1">
-                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">KORA Index</p>
-                  <p className="text-[28px] font-bold text-slate-900 leading-none">{koraIndex.value}<span className="text-[12px] font-normal text-slate-400">/100</span></p>
-                  <p className="text-[10px] text-slate-600">{CALIB}</p>
+                <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-1">
+                  <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">KORA Index</p>
+                  <p className="text-[28px] font-bold text-[#06032B] leading-none">{koraIndex.value}<span className="text-[12px] font-normal text-[rgba(6,3,43,0.40)]">/100</span></p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.62)]">{CALIB}</p>
                 </div>
-                <div className="border-t-2 border-slate-300 pt-3 space-y-1">
-                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Confidence</p>
-                  <p className="text-[28px] font-bold text-slate-700 leading-none">{confidence.score}<span className="text-[12px] font-normal text-slate-400">/100</span></p>
-                  <p className="text-[10px] text-slate-600">Esterno · peso 0</p>
+                <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-1">
+                  <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Confidence</p>
+                  <p className="text-[28px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{confidence.score}<span className="text-[12px] font-normal text-[rgba(6,3,43,0.40)]">/100</span></p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.62)]">Esterno · peso 0</p>
                 </div>
                 <div className={`border-t-2 pt-3 space-y-1 ${activation.safeguardStatus === 'CLEAR' ? 'border-emerald-400' : activation.safeguardStatus === 'FLAGGED' ? 'border-red-400' : 'border-amber-400'}`}>
                   <p className={`text-[9px] uppercase tracking-wider font-semibold ${activation.safeguardStatus === 'CLEAR' ? 'text-emerald-600' : activation.safeguardStatus === 'FLAGGED' ? 'text-red-600' : 'text-amber-600'}`}>Safeguard</p>
                   <p className={`text-[24px] font-bold leading-none ${sg.text}`}>{activation.safeguardStatus}</p>
-                  <p className="text-[10px] text-slate-600">AR {formatPct(activation.activationReach)} · MAR {formatPct(activation.meaningfulActivationReach)}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.62)]">AR {formatPct(activation.activationReach)} · MAR {formatPct(activation.meaningfulActivationReach)}</p>
                 </div>
-                <div className="border-t-2 border-slate-200 pt-3 space-y-1">
-                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Activation Debt</p>
-                  <p className="text-[22px] font-bold text-slate-900 leading-none mt-1">{formatEur(bti.activationDebt)}</p>
-                  <p className="text-[10px] text-slate-600">Budget non convertito</p>
+                <div className="border-t-2 border-[rgba(6,3,43,0.08)] pt-3 space-y-1">
+                  <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Activation Debt</p>
+                  <p className="text-[22px] font-bold text-[#06032B] leading-none mt-1">{formatEur(bti.activationDebt)}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.62)]">Budget non convertito</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-5 bp-avoid-break">
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">Macroblocks</p>
-                  <ul className="space-y-1.5 text-[11px] text-slate-700">
+                  <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2 border-b border-[rgba(6,3,43,0.08)] pb-1">Macroblocks</p>
+                  <ul className="space-y-1.5 text-[11px] text-[rgba(6,3,43,0.78)]">
                     <li className="flex justify-between"><span>Activation Reach (25%)</span><span className="font-mono font-bold">{koraIndex.macroblocks.activationReach}</span></li>
                     <li className="flex justify-between"><span>Activation Quality (30%)</span><span className="font-mono font-bold">{koraIndex.macroblocks.activationQuality}</span></li>
                     <li className="flex justify-between"><span>Distribution & Equity (25%)</span><span className="font-mono font-bold">{koraIndex.macroblocks.distributionEquity}</span></li>
@@ -2762,21 +2762,21 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                   </ul>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">Eligibility Gate</p>
-                  <ul className="space-y-1.5 text-[11px] text-slate-700">
+                  <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2 border-b border-[rgba(6,3,43,0.08)] pb-1">Eligibility Gate</p>
+                  <ul className="space-y-1.5 text-[11px] text-[rgba(6,3,43,0.78)]">
                     <li className="flex justify-between"><span>Eligible</span><span className="font-mono font-bold text-emerald-700">{eligibilitySummary.eligibleCount}</span></li>
                     <li className="flex justify-between"><span>Limited (0 IU)</span><span className="font-mono font-bold text-amber-600">{eligibilitySummary.limitedCount}</span></li>
-                    <li className="flex justify-between"><span>Blocked</span><span className="font-mono font-bold text-slate-400">{eligibilitySummary.blockedCount}</span></li>
-                    <li className="flex justify-between"><span>Review Required</span><span className="font-mono font-bold text-slate-600">{eligibilitySummary.reviewRequiredCount}</span></li>
+                    <li className="flex justify-between"><span>Blocked</span><span className="font-mono font-bold text-[rgba(6,3,43,0.40)]">{eligibilitySummary.blockedCount}</span></li>
+                    <li className="flex justify-between"><span>Review Required</span><span className="font-mono font-bold text-[rgba(6,3,43,0.62)]">{eligibilitySummary.reviewRequiredCount}</span></li>
                   </ul>
                 </div>
                 <div>
-                  <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">Segnali chiave</p>
-                  <ul className="space-y-1.5 text-[11px] text-slate-700">
+                  <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2 border-b border-[rgba(6,3,43,0.08)] pb-1">Segnali chiave</p>
+                  <ul className="space-y-1.5 text-[11px] text-[rgba(6,3,43,0.78)]">
                     {recs.slice(0, 3).map((r, i) => (
-                      <li key={i} className="flex gap-2"><span className="text-slate-300 shrink-0">{i + 1}.</span><span className="leading-tight">{r.title}</span></li>
+                      <li key={i} className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">{i + 1}.</span><span className="leading-tight">{r.title}</span></li>
                     ))}
-                    {recs.length === 0 && <li className="text-slate-400">Nessun segnale critico rilevato.</li>}
+                    {recs.length === 0 && <li className="text-[rgba(6,3,43,0.40)]">Nessun segnale critico rilevato.</li>}
                   </ul>
                 </div>
               </div>
@@ -2791,20 +2791,20 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <BpSectionTitle n="02" title="Dataset Readiness" sub="Qualità del dataset caricato · nessun dato individuale esposto" />
 
           <div className="grid grid-cols-3 gap-6 mb-5 bp-avoid-break">
-            <div className="border-t-2 border-slate-800 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Record totali</p>
-              <p className="text-[32px] font-bold text-slate-900 leading-none">{totalRecords}</p>
-              <p className="text-[10px] text-slate-500">righe nel file caricato</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Record totali</p>
+              <p className="text-[32px] font-bold text-[#06032B] leading-none">{totalRecords}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">righe nel file caricato</p>
             </div>
-            <div className="border-t-2 border-slate-300 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Iniziative rilevate</p>
-              <p className="text-[32px] font-bold text-slate-700 leading-none">{groups.length}</p>
-              <p className="text-[10px] text-slate-500">gruppi per nome/categoria</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Iniziative rilevate</p>
+              <p className="text-[32px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{groups.length}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">gruppi per nome/categoria</p>
             </div>
-            <div className="border-t-2 border-slate-200 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">In Review Required</p>
-              <p className="text-[32px] font-bold text-slate-700 leading-none">{groups.filter((g) => g.reviewRequired || g.isMixedStatus).length}</p>
-              <p className="text-[10px] text-slate-500">iniziative da validare</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.08)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">In Review Required</p>
+              <p className="text-[32px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{groups.filter((g) => g.reviewRequired || g.isMixedStatus).length}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">iniziative da validare</p>
             </div>
           </div>
 
@@ -2812,10 +2812,10 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break mb-5">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Indicatore</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Conteggio</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Nota</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Indicatore</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Conteggio</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Nota</th>
                 </tr>
               </thead>
               <tbody>
@@ -2828,10 +2828,10 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                   ['Blocked (compliance)', `${groups.filter((g) => g.primaryEligibility === 'blocked').length}`, 'Escluse per design — non penalizzate'],
                   ['Campi identità rilevati', `${groups.filter((g) => g.hasIdentityFields).length}`, 'Usati solo per stima unici — mai in output employer'],
                 ] as [string, string, string][]).map(([label, val, note]) => (
-                  <tr key={label} className="border-b border-slate-100">
-                    <td className="py-1.5 pr-4 font-semibold text-slate-700">{label}</td>
-                    <td className="py-1.5 pr-4 text-right font-mono font-bold text-slate-900">{val}</td>
-                    <td className="py-1.5 text-slate-500 text-[10px]">{note}</td>
+                  <tr key={label} className="border-b border-[rgba(6,3,43,0.05)]">
+                    <td className="py-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.78)]">{label}</td>
+                    <td className="py-1.5 pr-4 text-right font-mono font-bold text-[#06032B]">{val}</td>
+                    <td className="py-1.5 text-[rgba(6,3,43,0.52)] text-[10px]">{note}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2842,17 +2842,17 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="space-y-2 bp-avoid-break mb-4">
             {csSubscores.map((s) => (
               <div key={s.label} className="flex items-center gap-4">
-                <span className="w-36 text-[10px] text-slate-600 shrink-0">{s.label}</span>
-                <div className="flex-1 h-1.5 bg-slate-100 rounded-full">
-                  <div className={`h-1.5 rounded-full ${s.pct >= 60 ? 'bg-slate-700' : s.pct >= 35 ? 'bg-amber-400' : 'bg-red-400'}`} style={{ width: `${s.pct}%` }} />
+                <span className="w-36 text-[10px] text-[rgba(6,3,43,0.62)] shrink-0">{s.label}</span>
+                <div className="flex-1 h-1.5 bg-[rgba(6,3,43,0.05)] rounded-full">
+                  <div className={`h-1.5 rounded-full ${s.pct >= 60 ? 'bg-[rgba(6,3,43,0.65)]' : s.pct >= 35 ? 'bg-amber-400' : 'bg-red-400'}`} style={{ width: `${s.pct}%` }} />
                 </div>
-                <span className="w-10 text-right text-[10px] font-mono text-slate-500">{s.pct}%</span>
+                <span className="w-10 text-right text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{s.pct}%</span>
               </div>
             ))}
           </div>
 
-          <div className="border border-slate-200 rounded px-4 py-3 text-[11px] text-slate-600">
-            <strong className="text-slate-800">Nota privacy:</strong> I campi identità (nome, cognome, email, matricola) sono usati esclusivamente per stimare il conteggio di lavoratori unici. I valori non sono mai restituiti né visualizzati in questo Board Pack. Output employer: solo conteggi aggregati.
+          <div className="border border-[rgba(6,3,43,0.08)] rounded px-4 py-3 text-[11px] text-[rgba(6,3,43,0.62)]">
+            <strong className="text-[rgba(6,3,43,0.90)]">Nota privacy:</strong> I campi identità (nome, cognome, email, matricola) sono usati esclusivamente per stimare il conteggio di lavoratori unici. I valori non sono mai restituiti né visualizzati in questo Board Pack. Output employer: solo conteggi aggregati.
           </div>
 
           <BpDocFooter fileName={fileName} />
@@ -2864,21 +2864,21 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
 
           <div className="grid grid-cols-4 gap-4 mb-5 bp-avoid-break">
             {([
-              { label: 'Eligible', count: eligibilitySummary.eligibleCount, note: 'Genera IU → KORA Index', border: 'border-slate-800' },
-              { label: 'Limited', count: eligibilitySummary.limitedCount, note: '0 IU · solo BTI engine', border: 'border-slate-300' },
-              { label: 'Blocked', count: eligibilitySummary.blockedCount, note: 'Compliance · escluso per design', border: 'border-slate-200' },
+              { label: 'Eligible', count: eligibilitySummary.eligibleCount, note: 'Genera IU → KORA Index', border: 'border-[rgba(6,3,43,0.85)]' },
+              { label: 'Limited', count: eligibilitySummary.limitedCount, note: '0 IU · solo BTI engine', border: 'border-[rgba(6,3,43,0.14)]' },
+              { label: 'Blocked', count: eligibilitySummary.blockedCount, note: 'Compliance · escluso per design', border: 'border-[rgba(6,3,43,0.08)]' },
               { label: 'Review Required', count: eligibilitySummary.reviewRequiredCount, note: 'Validazione advisor necessaria', border: 'border-amber-300' },
             ] as { label: string; count: number; note: string; border: string }[]).map((b) => (
               <div key={b.label} className={`border-t-2 pt-3 space-y-0.5 ${b.border}`}>
-                <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">{b.label}</p>
-                <p className="text-[28px] font-bold text-slate-900 leading-none">{b.count}</p>
-                <p className="text-[10px] text-slate-500">{b.note}</p>
+                <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">{b.label}</p>
+                <p className="text-[28px] font-bold text-[#06032B] leading-none">{b.count}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)]">{b.note}</p>
               </div>
             ))}
           </div>
 
-          <div className="mb-4 border-l-4 border-slate-800 pl-4 py-1">
-            <p className="text-[11px] text-slate-700 leading-relaxed">
+          <div className="mb-4 border-l-4 border-[rgba(6,3,43,0.85)] pl-4 py-1">
+            <p className="text-[11px] text-[rgba(6,3,43,0.78)] leading-relaxed">
               <strong>KORA non trasforma compliance o budget non documentato in impatto.</strong>{' '}
               La conformità legale obbligatoria è esclusa per design. Il budget non documentato entra nel BTI solo come dichiarato o stimato, con confidence esplicita.
             </p>
@@ -2888,47 +2888,47 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break overflow-x-auto mb-3">
             <table className="w-full text-[10px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Iniziativa</th>
-                  <th className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Rec.</th>
-                  <th className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Lav. unici</th>
-                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Eligibility</th>
-                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Pillar</th>
-                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Evidenza</th>
-                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">BTI</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Azione</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Iniziativa</th>
+                  <th className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Rec.</th>
+                  <th className="py-1.5 pr-2 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Lav. unici</th>
+                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Eligibility</th>
+                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Pillar</th>
+                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Evidenza</th>
+                  <th className="py-1.5 pr-2 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">BTI</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Azione</th>
                 </tr>
               </thead>
               <tbody>
                 {boardPackGroups.map((grp) => (
-                  <tr key={grp.groupKey} className="border-b border-slate-100">
+                  <tr key={grp.groupKey} className="border-b border-[rgba(6,3,43,0.05)]">
                     <td className="py-1.5 pr-3 align-top">
-                      <p className="font-semibold text-slate-800 max-w-[150px] leading-tight">{grp.groupLabel}</p>
+                      <p className="font-semibold text-[rgba(6,3,43,0.90)] max-w-[150px] leading-tight">{grp.groupLabel}</p>
                       {grp.isCareEconomy && <span className="text-[9px] text-blue-600">care economy</span>}
                     </td>
-                    <td className="py-1.5 pr-2 text-right font-mono text-slate-600 align-top">{grp.recordCount}</td>
-                    <td className="py-1.5 pr-2 text-right font-mono text-slate-600 align-top">
+                    <td className="py-1.5 pr-2 text-right font-mono text-[rgba(6,3,43,0.62)] align-top">{grp.recordCount}</td>
+                    <td className="py-1.5 pr-2 text-right font-mono text-[rgba(6,3,43,0.62)] align-top">
                       {grp.uniqueWorkerEstimate !== null ? `~${grp.uniqueWorkerEstimate}` : '—'}
                     </td>
                     <td className="py-1.5 pr-2 align-top">
                       <span className={`text-[9px] font-bold rounded px-1 py-0.5 ${
-                        grp.primaryEligibility === 'eligible' ? 'bg-slate-900 text-white' :
-                        grp.primaryEligibility === 'limited' ? 'bg-slate-200 text-slate-700' :
-                        grp.primaryEligibility === 'blocked' ? 'bg-slate-100 text-slate-400' :
+                        grp.primaryEligibility === 'eligible' ? 'bg-[#06032B] text-white' :
+                        grp.primaryEligibility === 'limited' ? 'bg-[rgba(6,3,43,0.12)] text-[rgba(6,3,43,0.78)]' :
+                        grp.primaryEligibility === 'blocked' ? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)]' :
                         'bg-amber-100 text-amber-700'
                       }`}>{grp.primaryEligibility}</span>
                     </td>
-                    <td className="py-1.5 pr-2 align-top text-[10px] font-semibold text-slate-600">{grp.primaryPillar ?? '—'}</td>
-                    <td className="py-1.5 pr-2 align-top text-[9px] font-mono text-slate-500">{evidenceLevelLabel(grp.strongestEvidence)}</td>
-                    <td className="py-1.5 pr-2 align-top text-[9px] font-mono text-slate-500">{btiTreatmentLabel(grp.primaryBtiTreatment)}</td>
-                    <td className="py-1.5 align-top text-[9px] text-slate-600 max-w-[120px] leading-tight">{grp.recommendedAction}</td>
+                    <td className="py-1.5 pr-2 align-top text-[10px] font-semibold text-[rgba(6,3,43,0.62)]">{grp.primaryPillar ?? '—'}</td>
+                    <td className="py-1.5 pr-2 align-top text-[9px] font-mono text-[rgba(6,3,43,0.52)]">{evidenceLevelLabel(grp.strongestEvidence)}</td>
+                    <td className="py-1.5 pr-2 align-top text-[9px] font-mono text-[rgba(6,3,43,0.52)]">{btiTreatmentLabel(grp.primaryBtiTreatment)}</td>
+                    <td className="py-1.5 align-top text-[9px] text-[rgba(6,3,43,0.62)] max-w-[120px] leading-tight">{grp.recommendedAction}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
           {isTruncated && (
-            <p className="text-[9px] text-slate-400 mb-3">
+            <p className="text-[9px] text-[rgba(6,3,43,0.40)] mb-3">
               Prime 15 iniziative per priorità di revisione. Dataset completo: {groups.length} iniziative · nessuna riga raw · nessun dato identità.
             </p>
           )}
@@ -2941,20 +2941,20 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <BpSectionTitle n="04" title="Budget-to-Human-Impact (BTI)" sub="Macroblocco 4 · peso 20% nel KORA Index v3 · nessun budget inventato" />
 
           <div className="grid grid-cols-3 gap-5 mb-5 bp-avoid-break">
-            <div className="border-t-2 border-slate-800 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Budget totale rilevato</p>
-              <p className="text-[26px] font-bold text-slate-900 leading-none">{formatEur(bti.totalBudget)}</p>
-              <p className="text-[10px] text-slate-500">da colonne budget nel dataset</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Budget totale rilevato</p>
+              <p className="text-[26px] font-bold text-[#06032B] leading-none">{formatEur(bti.totalBudget)}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">da colonne budget nel dataset</p>
             </div>
-            <div className="border-t-2 border-slate-300 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Deep Activation Spend</p>
-              <p className="text-[26px] font-bold text-slate-700 leading-none">{formatEur(bti.deepActivationSpend)}</p>
-              <p className="text-[10px] text-slate-500">{bti.totalBudget > 0 ? `${Math.round((bti.deepActivationSpend / bti.totalBudget) * 100)}%` : '—'} del totale</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Deep Activation Spend</p>
+              <p className="text-[26px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{formatEur(bti.deepActivationSpend)}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">{bti.totalBudget > 0 ? `${Math.round((bti.deepActivationSpend / bti.totalBudget) * 100)}%` : '—'} del totale</p>
             </div>
-            <div className="border-t-2 border-slate-200 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Activation Debt</p>
-              <p className="text-[26px] font-bold text-slate-900 leading-none">{formatEur(bti.activationDebt)}</p>
-              <p className="text-[10px] text-slate-500">budget non convertito in IU</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.08)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Activation Debt</p>
+              <p className="text-[26px] font-bold text-[#06032B] leading-none">{formatEur(bti.activationDebt)}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">budget non convertito in IU</p>
             </div>
           </div>
 
@@ -2962,11 +2962,11 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break mb-5">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Categoria</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Importo</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Share</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Trattamento BTI</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Categoria</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Importo</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Share</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Trattamento BTI</th>
                 </tr>
               </thead>
               <tbody>
@@ -2976,13 +2976,13 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                   { label: 'Blocked Compliance Spend', amount: bti.blockedComplianceSpend, treatment: '0 IU · escluso per design' },
                   { label: 'Activation Debt', amount: bti.activationDebt, treatment: 'Budget non convertito in attivazione' },
                 ] as { label: string; amount: number; treatment: string }[]).map((r) => (
-                  <tr key={r.label} className="border-b border-slate-100">
-                    <td className="py-2 pr-4 font-semibold text-slate-800">{r.label}</td>
-                    <td className="py-2 pr-4 text-right font-mono font-bold text-slate-900">{formatEur(r.amount)}</td>
-                    <td className="py-2 pr-4 text-right font-mono text-slate-600">
+                  <tr key={r.label} className="border-b border-[rgba(6,3,43,0.05)]">
+                    <td className="py-2 pr-4 font-semibold text-[rgba(6,3,43,0.90)]">{r.label}</td>
+                    <td className="py-2 pr-4 text-right font-mono font-bold text-[#06032B]">{formatEur(r.amount)}</td>
+                    <td className="py-2 pr-4 text-right font-mono text-[rgba(6,3,43,0.62)]">
                       {bti.totalBudget > 0 ? `${Math.round((r.amount / bti.totalBudget) * 100)}%` : '—'}
                     </td>
-                    <td className="py-2 text-slate-600 text-[10px]">{r.treatment}</td>
+                    <td className="py-2 text-[rgba(6,3,43,0.62)] text-[10px]">{r.treatment}</td>
                   </tr>
                 ))}
               </tbody>
@@ -2991,15 +2991,15 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
 
           <BpExhibit n="4.2" title="Budget Evidence Quality" />
           <div className="flex items-center gap-4 mb-2 bp-avoid-break">
-            <div className="flex-1 h-3 bg-slate-100 rounded-full">
+            <div className="flex-1 h-3 bg-[rgba(6,3,43,0.05)] rounded-full">
               <div
-                className={`h-3 rounded-full ${bti.budgetEvidenceQuality >= 0.6 ? 'bg-slate-800' : bti.budgetEvidenceQuality >= 0.35 ? 'bg-amber-400' : 'bg-red-400'}`}
+                className={`h-3 rounded-full ${bti.budgetEvidenceQuality >= 0.6 ? 'bg-[#06032B]' : bti.budgetEvidenceQuality >= 0.35 ? 'bg-amber-400' : 'bg-red-400'}`}
                 style={{ width: `${Math.round(bti.budgetEvidenceQuality * 100)}%` }}
               />
             </div>
-            <span className="text-[13px] font-bold font-mono text-slate-900 w-10 text-right">{Math.round(bti.budgetEvidenceQuality * 100)}%</span>
+            <span className="text-[13px] font-bold font-mono text-[#06032B] w-10 text-right">{Math.round(bti.budgetEvidenceQuality * 100)}%</span>
           </div>
-          <p className="text-[10px] text-slate-500 mb-4">
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mb-4">
             {bti.totalBudget === 0
               ? 'Nessun importo budget rilevato nel dataset. Aggiungere budget_amount, budget_source, budget_evidence_type per abilitare il BTI Engine.'
               : bti.budgetEvidenceQuality < 0.4
@@ -3007,9 +3007,9 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                 : 'Qualità evidenza accettabile. Verificare con Advisor KORA per full_weight nel BTI Engine.'}
           </p>
 
-          <div className="border border-slate-200 rounded px-4 py-3 bp-avoid-break">
-            <p className="text-[11px] font-bold text-slate-800 mb-1">Il budget non è un dato valido se non ha una fonte.</p>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+          <div className="border border-[rgba(6,3,43,0.08)] rounded px-4 py-3 bp-avoid-break">
+            <p className="text-[11px] font-bold text-[rgba(6,3,43,0.90)] mb-1">Il budget non è un dato valido se non ha una fonte.</p>
+            <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">
               La qualità della fonte budget (L0–L4) determina il peso di ogni record nel BTI Engine. Budget stimato o dichiarato riceve un trust score inferiore — si riflette nel Confidence Score (esterno al KORA Index, peso = 0).
             </p>
           </div>
@@ -3022,57 +3022,57 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <BpSectionTitle n="05" title="Activation & Reach" sub="Output aggregato · nessun dato individuale · nessun nominativo" />
 
           <div className="grid grid-cols-4 gap-4 mb-5 bp-avoid-break">
-            <div className="border-t-2 border-slate-800 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Lavoratori attivi</p>
-              <p className="text-[28px] font-bold text-slate-900 leading-none">{activation.activeWorkers}</p>
-              <p className="text-[10px] text-slate-500">AR {formatPct(activation.activationReach)}</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Lavoratori attivi</p>
+              <p className="text-[28px] font-bold text-[#06032B] leading-none">{activation.activeWorkers}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">AR {formatPct(activation.activationReach)}</p>
             </div>
-            <div className="border-t-2 border-slate-300 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Attivazione significativa</p>
-              <p className="text-[28px] font-bold text-slate-700 leading-none">{activation.meaningfullyActiveWorkers}</p>
-              <p className="text-[10px] text-slate-500">MAR {formatPct(activation.meaningfulActivationReach)}</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Attivazione significativa</p>
+              <p className="text-[28px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{activation.meaningfullyActiveWorkers}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">MAR {formatPct(activation.meaningfulActivationReach)}</p>
             </div>
-            <div className="border-t-2 border-slate-200 pt-3 space-y-0.5">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Mai attivati</p>
-              <p className="text-[28px] font-bold text-slate-700 leading-none">{activation.neverActivatedWorkers}</p>
-              <p className="text-[10px] text-slate-500">potenziale non convertito</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.08)] pt-3 space-y-0.5">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Mai attivati</p>
+              <p className="text-[28px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{activation.neverActivatedWorkers}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">potenziale non convertito</p>
             </div>
             <div className={`border-t-2 pt-3 space-y-0.5 ${activation.safeguardStatus === 'CLEAR' ? 'border-emerald-400' : activation.safeguardStatus === 'FLAGGED' ? 'border-red-400' : 'border-amber-400'}`}>
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Safeguard</p>
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Safeguard</p>
               <p className={`text-[22px] font-bold leading-none mt-1 ${sg.text}`}>{activation.safeguardStatus}</p>
-              <p className="text-[10px] text-slate-500">D-21 threshold</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">D-21 threshold</p>
             </div>
           </div>
 
           <BpExhibit n="5.1" title="Activation Rate vs soglie Safeguard (D-21)" />
-          <div className="space-y-3 mb-5 bp-avoid-break border border-slate-100 rounded px-4 py-4">
+          <div className="space-y-3 mb-5 bp-avoid-break border border-[rgba(6,3,43,0.05)] rounded px-4 py-4">
             {([
               { label: 'Activation Rate (AR)', val: activation.activationReach, threshold: 0.40, note: 'CLEAR ≥ 40%' },
               { label: 'Meaningful Activation Rate (MAR)', val: activation.meaningfulActivationReach, threshold: 0.30, note: 'CLEAR ≥ 30%' },
             ] as { label: string; val: number; threshold: number; note: string }[]).map((m) => (
               <div key={m.label} className="space-y-1">
-                <div className="flex justify-between text-[10px] text-slate-500">
+                <div className="flex justify-between text-[10px] text-[rgba(6,3,43,0.52)]">
                   <span>{m.label}</span>
                   <span className="font-mono font-medium">{formatPct(m.val)} <span className="font-normal opacity-60">({m.note})</span></span>
                 </div>
-                <div className="relative h-2 rounded-full bg-slate-100">
+                <div className="relative h-2 rounded-full bg-[rgba(6,3,43,0.05)]">
                   <div
                     className={`h-2 rounded-full ${m.val >= m.threshold ? 'bg-emerald-500' : m.val >= m.threshold * 0.5 ? 'bg-amber-400' : 'bg-red-400'}`}
                     style={{ width: `${Math.min(100, Math.round(m.val * 100))}%` }}
                   />
-                  <div className="absolute top-0 bottom-0 w-px bg-slate-600 opacity-40" style={{ left: `${m.threshold * 100}%` }} />
+                  <div className="absolute top-0 bottom-0 w-px bg-[rgba(6,3,43,0.35)]" style={{ left: `${m.threshold * 100}%` }} />
                 </div>
               </div>
             ))}
-            <p className="text-[9px] text-slate-400 pt-1">
+            <p className="text-[9px] text-[rgba(6,3,43,0.40)] pt-1">
               Nessun nominativo. Nessun PIB individuale. Solo conteggi aggregati.
               {activation.warnings.some((w) => w.includes('stima') || w.includes('bounded')) ? ' Reach stimata: dati identità parziali, stima conservativa.' : ''}
             </p>
           </div>
 
-          <div className="border border-slate-200 rounded px-4 py-3 bp-avoid-break">
-            <p className="text-[11px] font-bold text-slate-800 mb-1">Confine privacy — output employer</p>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+          <div className="border border-[rgba(6,3,43,0.08)] rounded px-4 py-3 bp-avoid-break">
+            <p className="text-[11px] font-bold text-[rgba(6,3,43,0.90)] mb-1">Confine privacy — output employer</p>
+            <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">
               Output employer: solo conteggi aggregati sopra soglia N ≥ 10. Nessun campo identità (nome, email, matricola) è incluso in questo Board Pack.
               I campi identità nei dati caricati sono stati usati esclusivamente per stimare il conteggio di lavoratori unici — i valori non sono mai restituiti.
             </p>
@@ -3089,29 +3089,29 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break mb-6">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold w-16">Prior.</th>
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Azione</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Razionale</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-16">Prior.</th>
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Azione</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Razionale</th>
                 </tr>
               </thead>
               <tbody>
                 {recs.map((r, i) => (
-                  <tr key={i} className={i < recs.length - 1 ? 'border-b border-slate-100' : ''}>
+                  <tr key={i} className={i < recs.length - 1 ? 'border-b border-[rgba(6,3,43,0.05)]' : ''}>
                     <td className="py-2 pr-3 align-top">
                       <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
-                        r.priority === 'Alta'  ? 'border-slate-800 bg-slate-900 text-white' :
-                        r.priority === 'Media' ? 'border-slate-300 bg-slate-100 text-slate-700' :
-                                                 'border-slate-200 bg-white text-slate-400'
+                        r.priority === 'Alta'  ? 'border-[rgba(6,3,43,0.85)] bg-[#06032B] text-white' :
+                        r.priority === 'Media' ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.78)]' :
+                                                 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.40)]'
                       }`}>{r.priority}</span>
                     </td>
-                    <td className="py-2 pr-3 align-top font-semibold text-slate-800">{r.title}</td>
-                    <td className="py-2 align-top text-slate-600">{r.body}</td>
+                    <td className="py-2 pr-3 align-top font-semibold text-[rgba(6,3,43,0.90)]">{r.title}</td>
+                    <td className="py-2 align-top text-[rgba(6,3,43,0.62)]">{r.body}</td>
                   </tr>
                 ))}
                 {recs.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="py-4 text-center text-[10px] text-slate-400">
+                    <td colSpan={3} className="py-4 text-center text-[10px] text-[rgba(6,3,43,0.40)]">
                       Nessuna raccomandazione critica rilevata. Procedere con revisione Advisor KORA.
                     </td>
                   </tr>
@@ -3124,9 +3124,9 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
           <div className="bp-avoid-break mb-4">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold w-48">Elemento</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Nota</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-48">Elemento</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Nota</th>
                 </tr>
               </thead>
               <tbody>
@@ -3141,23 +3141,23 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
                   ['Certificazione', 'Board Pack Preview non certificato. Revisione Advisor KORA richiesta prima di uso formale.'],
                   ['Dati salvati', 'Nessun dato trasmesso a server o salvato. Elaborazione interamente client-side in questa sessione.'],
                 ] as [string, string][]).map(([label, val]) => (
-                  <tr key={label} className="border-b border-slate-100">
-                    <td className="py-1.5 pr-4 font-semibold text-slate-600 align-top">{label}</td>
-                    <td className="py-1.5 text-slate-700">{val}</td>
+                  <tr key={label} className="border-b border-[rgba(6,3,43,0.05)]">
+                    <td className="py-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.62)] align-top">{label}</td>
+                    <td className="py-1.5 text-[rgba(6,3,43,0.78)]">{val}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className="border border-slate-200 rounded px-4 py-3 bp-avoid-break">
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+          <div className="border border-[rgba(6,3,43,0.08)] rounded px-4 py-3 bp-avoid-break">
+            <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
               Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
               Questo Board Pack Preview è generato localmente dal dataset caricato in sessione. È pre-empirical e non certificato.
               Revisione Advisor KORA raccomandata prima di qualsiasi uso formale o distribuzione.
             </p>
-            <p className="text-[9px] font-mono text-slate-400 mt-2">
+            <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] mt-2">
               {METHOD_ID} · {CALIB} · production_ready: false · foundation_light_dynamic_preview · {generatedAt}
             </p>
           </div>
@@ -3176,24 +3176,24 @@ function KoraExplainPanel({ trace }: { trace: ExplainabilityTraceItem[] }) {
   const [open, setOpen] = useState<string | null>(null);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-slate-100">
-        <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Explainability Trace</h3>
-        <p className="text-xs text-slate-400 mt-0.5">
+    <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)]">
+        <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Explainability Trace</h3>
+        <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
           9 stage — solo valori aggregati. Nessun dato identità. Per revisione Advisor / Data Room.
         </p>
       </div>
-      <div className="divide-y divide-slate-100">
+      <div className="divide-y divide-[rgba(6,3,43,0.05)]">
         {trace.map((item) => (
           <div key={item.id} className="group">
             <button
               onClick={() => setOpen(open === item.id ? null : item.id)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50/80 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[rgba(6,3,43,0.03)]/80 transition-colors"
             >
               <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.warning ? 'bg-amber-400' : 'bg-emerald-400'}`} />
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-slate-700 truncate">{item.stage}</p>
-                <p className="text-[10px] text-slate-400 font-mono truncate">{item.output}</p>
+                <p className="text-xs font-medium text-[rgba(6,3,43,0.78)] truncate">{item.stage}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono truncate">{item.output}</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className={`text-[10px] px-1.5 py-0.5 rounded border font-mono ${
@@ -3201,28 +3201,28 @@ function KoraExplainPanel({ trace }: { trace: ExplainabilityTraceItem[] }) {
                     ? 'bg-emerald-50 text-emerald-600 border-emerald-200'
                     : item.confidence >= 0.4
                     ? 'bg-amber-50 text-amber-600 border-amber-200'
-                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                    : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]'
                 }`}>
                   {Math.round(item.confidence * 100)}%
                 </span>
-                <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${open === item.id ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg className={`w-3.5 h-3.5 text-[rgba(6,3,43,0.40)] transition-transform ${open === item.id ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </button>
             {open === item.id && (
               <div className="px-4 pb-4 space-y-2">
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 space-y-2 text-xs text-slate-600">
+                <div className="p-3 rounded-lg bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.05)] space-y-2 text-xs text-[rgba(6,3,43,0.62)]">
                   <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-0.5">Input</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] block mb-0.5">Input</span>
                     <span className="font-mono">{item.input}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-0.5">Output</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] block mb-0.5">Output</span>
                     <span className="font-mono">{item.output}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 block mb-0.5">Regola applicata</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] block mb-0.5">Regola applicata</span>
                     <span>{item.ruleApplied}</span>
                   </div>
                   {item.warning && (

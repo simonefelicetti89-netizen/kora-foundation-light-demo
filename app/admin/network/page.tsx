@@ -86,7 +86,7 @@ const COVERAGE_STYLE: Record<CoverageStatus, string> = {
   forte:    'bg-green-50 text-green-700 border-green-200',
   media:    'bg-amber-50 text-amber-700 border-amber-200',
   debole:   'bg-rose-50 text-rose-600 border-rose-200',
-  scoperta: 'bg-slate-50 text-slate-400 border-slate-200',
+  scoperta: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
 
 const PILLAR_CHIP: Record<string, string> = {
@@ -442,15 +442,15 @@ export default function NetworkPage() {
           <span className="rounded border border-teal-200 bg-teal-50 px-2 py-0.5 text-xs font-semibold text-teal-700">
             Foundation Light Preview
           </span>
-          <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-500">
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
             Solo dati sintetici
           </span>
-          <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-400">
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">
             Solo Admin
           </span>
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">KORA Activation Network</h1>
-        <p className="text-sm text-slate-500 mt-1.5 max-w-2xl leading-relaxed">
+        <h1 className="text-2xl font-bold text-[#06032B]">KORA Activation Network</h1>
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1.5 max-w-2xl leading-relaxed">
           La vista ecosistemica che collega territori, partner, pillar, protocolli evidenze e opportunità di attivazione.
         </p>
         <div className="mt-3 rounded-lg border border-teal-200 bg-teal-50 px-4 py-2.5">
@@ -467,7 +467,7 @@ export default function NetworkPage() {
             'Nessun pricing engine',
             'Nessun dato individuale lavoratore',
           ].map((b) => (
-            <span key={b} className="rounded border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
+            <span key={b} className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] font-medium text-[rgba(6,3,43,0.40)]">
               {b}
             </span>
           ))}
@@ -478,28 +478,28 @@ export default function NetworkPage() {
       <div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {HERO_METRICS.map((m) => (
-            <div key={m.label} className="rounded-lg border border-slate-200 bg-white p-3">
-              <p className="text-xs text-slate-400 leading-snug">{m.label}</p>
-              <p className="text-2xl font-bold text-slate-800 mt-1">{m.value}</p>
-              <p className="text-[10px] text-slate-300 mt-0.5 font-mono">{m.note}</p>
+            <div key={m.label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
+              <p className="text-xs text-[rgba(6,3,43,0.40)] leading-snug">{m.label}</p>
+              <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{m.value}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.28)] mt-0.5 font-mono">{m.note}</p>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-slate-400 mt-2 font-mono">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-2 font-mono">
           Dati sintetici demo. Nessun dato reale di geolocalizzazione, nessuna classifica pubblica, nessun marketplace o pricing engine.
         </p>
       </div>
 
       {/* ── 3. Territory coverage matrix ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Copertura territoriale e pillar
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white overflow-x-auto">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-x-auto">
           <table className="w-full min-w-[680px] text-xs">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left px-4 py-2.5 text-slate-400 font-medium w-36">Territorio</th>
+              <tr className="border-b border-[rgba(6,3,43,0.05)]">
+                <th className="text-left px-4 py-2.5 text-[rgba(6,3,43,0.40)] font-medium w-36">Territorio</th>
                 {PILLARS.map((p) => (
                   <th key={p} className="px-3 py-2.5 text-center">
                     <span className={cn('rounded px-2 py-0.5 text-[10px] font-semibold', PILLAR_CHIP[p])}>
@@ -511,10 +511,10 @@ export default function NetworkPage() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {COVERAGE_MATRIX.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50/50">
+                <tr key={row.id} className="hover:bg-[rgba(6,3,43,0.03)]/50">
                   <td className="px-4 py-3">
-                    <p className="font-semibold text-slate-800">{row.label}</p>
-                    <p className="text-[10px] text-slate-400 font-mono">{row.region}</p>
+                    <p className="font-semibold text-[rgba(6,3,43,0.90)]">{row.label}</p>
+                    <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono">{row.region}</p>
                   </td>
                   {PILLARS.map((p) => {
                     const cell: TerritoryPillarCell = row.cells[p] ?? {
@@ -529,11 +529,11 @@ export default function NetworkPage() {
                             {cell.status}
                           </span>
                           {cell.partner_count > 0 && (
-                            <span className="text-[10px] text-slate-500 font-mono">
+                            <span className="text-[10px] text-[rgba(6,3,43,0.52)] font-mono">
                               {cell.partner_count}p
                             </span>
                           )}
-                          <span className="text-[9px] text-slate-300 font-mono leading-snug max-w-[80px] text-center">
+                          <span className="text-[9px] text-[rgba(6,3,43,0.28)] font-mono leading-snug max-w-[80px] text-center">
                             {cell.protocol_note}
                           </span>
                         </div>
@@ -545,46 +545,46 @@ export default function NetworkPage() {
             </tbody>
           </table>
         </div>
-        <p className="text-[10px] text-slate-400 mt-2">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-2">
           La copertura misura disponibilità ecosistemica e protocollo evidenze. Non misura qualità individuale dei lavoratori o ranking partner.
         </p>
       </div>
 
       {/* ── 4. Partner network panel ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Partner disponibili nella rete — preview
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="divide-y divide-slate-100">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          <div className="divide-y divide-[rgba(6,3,43,0.05)]">
             {NETWORK_PARTNERS.map((partner) => (
               <div key={partner.id} className="px-4 py-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-semibold text-slate-800">{partner.name}</p>
+                      <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{partner.name}</p>
                       <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', FIT_STYLE[partner.activation_fit])}>
                         fit {partner.activation_fit}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">{partner.service_type}</p>
-                    <p className="text-[10px] text-slate-400 font-mono mt-0.5">{partner.territory}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">{partner.service_type}</p>
+                    <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono mt-0.5">{partner.territory}</p>
                   </div>
                   <div className="flex flex-col items-end gap-1.5 shrink-0">
                     <div className="flex flex-wrap justify-end gap-1">
                       {partner.pillars.map((pl) => (
-                        <span key={pl} className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold', PILLAR_CHIP[pl] ?? 'bg-slate-100 text-slate-600')}>
+                        <span key={pl} className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold', PILLAR_CHIP[pl] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)]')}>
                           {pl}
                         </span>
                       ))}
                     </div>
-                    <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', PROTOCOL_BADGE[partner.evidence_protocol_status] ?? 'bg-slate-50 text-slate-400 border-slate-200')}>
+                    <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', PROTOCOL_BADGE[partner.evidence_protocol_status] ?? 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]')}>
                       {partner.evidence_protocol_status}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono">{partner.availability_signal}</span>
+                    <span className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono">{partner.availability_signal}</span>
                   </div>
                 </div>
-                <div className="mt-1.5 flex flex-wrap items-center gap-3 text-[10px] text-slate-400 font-mono">
+                <div className="mt-1.5 flex flex-wrap items-center gap-3 text-[10px] text-[rgba(6,3,43,0.40)] font-mono">
                   <span>audit: {partner.advisor_process_audit_status}</span>
                   {partner.next_review && (
                     <span>prossima review: {partner.next_review}</span>
@@ -594,8 +594,8 @@ export default function NetworkPage() {
             ))}
           </div>
         </div>
-        <div className="mt-2 rounded border border-slate-100 bg-slate-50 px-3 py-2">
-          <p className="text-[10px] text-slate-400">
+        <div className="mt-2 rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
             Nessun prezzo. Nessuna prenotazione diretta. Nessuna classifica pubblica.
             Il campo &quot;fit&quot; è una stima dimostrativa di compatibilità ecosistemica, non un ranking.
           </p>
@@ -604,7 +604,7 @@ export default function NetworkPage() {
 
       {/* ── 5. Gap diagnostics ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Gap territoriali rilevati
         </h2>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -619,56 +619,56 @@ export default function NetworkPage() {
               )}
             >
               <div className="flex items-center gap-2 mb-2">
-                <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-semibold', PILLAR_CHIP[gap.pillar] ?? 'bg-slate-100 text-slate-600')}>
+                <span className={cn('rounded px-1.5 py-0.5 text-[10px] font-semibold', PILLAR_CHIP[gap.pillar] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)]')}>
                   {gap.pillar}
                 </span>
-                <span className="text-xs font-semibold text-slate-700">{gap.territory}</span>
+                <span className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{gap.territory}</span>
                 {gap.severity === 'alta' && (
                   <span className="ml-auto rounded border border-rose-200 bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold text-rose-700">
                     alta priorità
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-700 leading-relaxed">{gap.problem}</p>
-              <div className="mt-2 rounded border border-slate-200 bg-white px-2.5 py-1.5">
-                <p className="text-[10px] font-semibold text-slate-500 mb-0.5">Azione suggerita</p>
-                <p className="text-xs text-slate-600">{gap.suggested_action}</p>
+              <p className="text-xs text-[rgba(6,3,43,0.78)] leading-relaxed">{gap.problem}</p>
+              <div className="mt-2 rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2.5 py-1.5">
+                <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.52)] mb-0.5">Azione suggerita</p>
+                <p className="text-xs text-[rgba(6,3,43,0.62)]">{gap.suggested_action}</p>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-slate-400 mt-2">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-2">
           Questi gap orientano decisioni di attivazione. Non sono scoring pubblico dei territori o dei partner.
         </p>
       </div>
 
       {/* ── 6. Company-to-Partner Matching ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Company-to-Partner Matching — preview
         </h2>
-        <p className="text-xs text-slate-500 mb-3">
+        <p className="text-xs text-[rgba(6,3,43,0.52)] mb-3">
           Come KORA orienta la scelta del partner in base ai gap di attivazione aziendali.
         </p>
         <div className="space-y-3">
           {MATCHING_RECS.map((rec, i) => (
-            <div key={rec.id} className="rounded-lg border border-indigo-100 bg-indigo-50/60 p-4">
+            <div key={rec.id} className="rounded-lg border border-indigo-100 bg-[rgba(199,111,61,0.08)]/60 p-4">
               <div className="flex items-start gap-3">
                 <div className="shrink-0 w-6 h-6 rounded-full bg-indigo-200 text-indigo-700 text-xs font-bold flex items-center justify-center">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0 space-y-1.5">
                   <div className="flex flex-wrap items-baseline gap-1.5">
-                    <span className="text-[10px] font-semibold text-slate-500">Esigenza:</span>
-                    <span className="text-xs text-slate-700 italic">{rec.company_need}</span>
+                    <span className="text-[10px] font-semibold text-[rgba(6,3,43,0.52)]">Esigenza:</span>
+                    <span className="text-xs text-[rgba(6,3,43,0.78)] italic">{rec.company_need}</span>
                   </div>
                   <div className="flex flex-wrap items-baseline gap-1.5">
-                    <span className="text-[10px] font-semibold text-indigo-600">Partner raccomandato:</span>
+                    <span className="text-[10px] font-semibold text-[#C76F3D]">Partner raccomandato:</span>
                     <span className="text-xs font-bold text-indigo-800">{rec.recommended_partner}</span>
                   </div>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">{rec.reason}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.52)] leading-relaxed">{rec.reason}</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-semibold text-slate-400">Passo successivo:</span>
+                    <span className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)]">Passo successivo:</span>
                     <span className="rounded border border-teal-200 bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-700">
                       {rec.next_step}
                     </span>
@@ -678,18 +678,18 @@ export default function NetworkPage() {
             </div>
           ))}
         </div>
-        <p className="text-[10px] text-slate-400 mt-2">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-2">
           Matching dimostrativo. Non è marketplace, non mostra prezzi, non esegue prenotazioni o pagamenti.
         </p>
       </div>
 
       {/* ── 7. Territorial initiatives ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Iniziative territoriali — preview
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="divide-y divide-slate-100">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          <div className="divide-y divide-[rgba(6,3,43,0.05)]">
             {INITIATIVES.map((init) => (
               <div
                 key={init.id}
@@ -698,27 +698,27 @@ export default function NetworkPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <p className="text-sm font-semibold text-slate-800">{init.name}</p>
+                      <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{init.name}</p>
                       <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', init.status_style)}>
                         {init.status}
                       </span>
                     </div>
                     <div className="flex flex-wrap gap-1 mb-1">
                       {init.pillars.map((pl) => (
-                        <span key={pl} className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold', PILLAR_CHIP[pl] ?? 'bg-slate-100 text-slate-600')}>
+                        <span key={pl} className={cn('rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold', PILLAR_CHIP[pl] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)]')}>
                           {pl}
                         </span>
                       ))}
                     </div>
-                    <p className="text-[10px] text-slate-400 font-mono">{init.territory} · {init.partner}</p>
+                    <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono">{init.territory} · {init.partner}</p>
                   </div>
                   <div className="shrink-0 text-right space-y-1">
-                    <p className="text-[10px] text-slate-400">protocollo: {init.evidence_protocol}</p>
+                    <p className="text-[10px] text-[rgba(6,3,43,0.40)]">protocollo: {init.evidence_protocol}</p>
                     {init.participation_note && (
                       <p className="text-[10px] text-green-600 font-medium">{init.participation_note}</p>
                     )}
                     {!init.participation_note && !init.is_future_vision && (
-                      <p className="text-[10px] text-slate-300 font-mono">aggregato: non ancora disponibile</p>
+                      <p className="text-[10px] text-[rgba(6,3,43,0.28)] font-mono">aggregato: non ancora disponibile</p>
                     )}
                     {init.is_future_vision && (
                       <p className="text-[10px] text-orange-500 font-semibold">Future Vision — Non attivo</p>
@@ -729,33 +729,33 @@ export default function NetworkPage() {
             ))}
           </div>
         </div>
-        <p className="text-[10px] text-slate-400 mt-2">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-2">
           La partecipazione è mostrata solo in forma aggregata sopra soglia (minimo 10 lavoratori per segmento). Nessun dato individuale.
         </p>
       </div>
 
       {/* ── 8. Synthetic network map ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">
           Mappa sintetica della rete
         </h2>
-        <p className="text-[10px] text-slate-400 mb-3 font-mono">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mb-3 font-mono">
           Mappa dimostrativa non geolocalizzata. Nessun dato reale di posizione o tracking.
         </p>
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4">
           <div className="space-y-3">
             {MAP_NODES.map((node) => (
               <div key={node.territory} className="flex items-start gap-3">
                 {/* Territory node */}
                 <div className={cn(
                   'shrink-0 rounded-lg border p-3 w-32 text-center',
-                  SAFEGUARD_NODE_STYLE[node.safeguard_signal] ?? 'border-slate-200 bg-white',
+                  SAFEGUARD_NODE_STYLE[node.safeguard_signal] ?? 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1]',
                 )}>
-                  <p className="text-xs font-bold text-slate-700">{node.territory}</p>
-                  <p className="text-[9px] text-slate-400 font-mono">{node.region}</p>
+                  <p className="text-xs font-bold text-[rgba(6,3,43,0.78)]">{node.territory}</p>
+                  <p className="text-[9px] text-[rgba(6,3,43,0.40)] font-mono">{node.region}</p>
                   <div className="mt-1.5 flex flex-wrap gap-0.5 justify-center">
                     {node.pillar_coverage.map((p) => (
-                      <span key={p} className={cn('rounded px-1 py-0.5 text-[8px] font-bold', PILLAR_CHIP[p] ?? 'bg-slate-100 text-slate-600')}>
+                      <span key={p} className={cn('rounded px-1 py-0.5 text-[8px] font-bold', PILLAR_CHIP[p] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)]')}>
                         {p[0]}
                       </span>
                     ))}
@@ -763,20 +763,20 @@ export default function NetworkPage() {
                 </div>
 
                 {/* Connector */}
-                <div className="mt-5 shrink-0 text-slate-300 text-sm select-none">→</div>
+                <div className="mt-5 shrink-0 text-[rgba(6,3,43,0.28)] text-sm select-none">→</div>
 
                 {/* Partner nodes */}
                 <div className="flex-1 flex flex-wrap gap-2 pt-2">
                   {node.partners.map((pName) => (
-                    <div key={pName} className="rounded border border-slate-200 bg-white px-2.5 py-1.5">
-                      <p className="text-[10px] font-medium text-slate-600">{pName}</p>
+                    <div key={pName} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2.5 py-1.5">
+                      <p className="text-[10px] font-medium text-[rgba(6,3,43,0.62)]">{pName}</p>
                     </div>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-          <div className="mt-4 flex flex-wrap gap-4 border-t border-slate-200 pt-3 text-[10px] text-slate-400 font-mono">
+          <div className="mt-4 flex flex-wrap gap-4 border-t border-[rgba(6,3,43,0.08)] pt-3 text-[10px] text-[rgba(6,3,43,0.40)] font-mono">
             <span className="flex items-center gap-1.5">
               <span className="inline-block w-3 h-3 rounded border border-green-200 bg-green-50" />
               CLEAR — attivazione OK
@@ -805,7 +805,7 @@ export default function NetworkPage() {
           {['Public Snapshot — Future Vision', 'KORA Value Chain — Future Vision', 'Territorial Contribution — Future Vision'].map((label) => (
             <span
               key={label}
-              className="rounded border border-orange-200 bg-white px-2.5 py-1 text-xs font-medium text-orange-400 opacity-60 cursor-not-allowed"
+              className="rounded border border-orange-200 bg-[#F8F6F1] px-2.5 py-1 text-xs font-medium text-orange-400 opacity-60 cursor-not-allowed"
             >
               {label}
             </span>
@@ -815,29 +815,29 @@ export default function NetworkPage() {
 
       {/* ── 10. Advisor network (condensed) ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Advisor attivi nella rete
         </h2>
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="divide-y divide-slate-100">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          <div className="divide-y divide-[rgba(6,3,43,0.05)]">
             {advisors.map((a) => (
               <div key={a.id} className="px-4 py-2.5 flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-800">{a.name}</p>
-                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">{a.specialization}</p>
+                  <p className="text-sm font-medium text-[rgba(6,3,43,0.90)]">{a.name}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)] font-mono mt-0.5">{a.specialization}</p>
                   {a.assigned_companies.length > 0 && (
-                    <p className="text-[10px] text-slate-400 mt-0.5">
+                    <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
                       Assegnato a: {a.assigned_companies.join(', ')}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0 text-xs">
-                  <span className="font-mono text-slate-400">{a.pending_reviews} review in coda</span>
+                  <span className="font-mono text-[rgba(6,3,43,0.40)]">{a.pending_reviews} review in coda</span>
                   <span className={cn(
                     'rounded border px-1.5 py-0.5 text-[10px] font-medium',
                     a.status === 'active'
                       ? 'bg-green-50 text-green-700 border-green-200'
-                      : 'bg-slate-50 text-slate-400 border-slate-200',
+                      : 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
                   )}>
                     {a.status}
                   </span>
@@ -846,27 +846,27 @@ export default function NetworkPage() {
             ))}
           </div>
         </div>
-        <p className="text-[10px] text-slate-400 mt-1.5">
+        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-1.5">
           Advisor-reviewed ≠ KORA Certified. Gli advisor eseguono Advisor Process Audit — non validazione azione per azione.
         </p>
       </div>
 
       {/* ── 11. Boundary block ── */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <p className="text-xs font-semibold text-slate-600 mb-1.5">Perimetro KORA Activation Network</p>
-        <p className="text-xs text-slate-500 leading-relaxed">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1.5">Perimetro KORA Activation Network</p>
+        <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
           KORA Activation Network non è un marketplace. Non mostra prezzi, non classifica partner,
           non abilita pagamenti, non espone dati individuali e non pubblica ranking territoriali.
           In Foundation Light è una preview sintetica della copertura ecosistemica.
         </p>
-        <p className="mt-2 text-[10px] font-mono text-slate-300">
+        <p className="mt-2 text-[10px] font-mono text-[rgba(6,3,43,0.28)]">
           synthetic_demo_data: true · no_marketplace: true · no_pricing: true · no_geolocation: true · no_public_ranking: true
         </p>
       </div>
 
       {/* ── 12. Cross-links ── */}
       <div>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-3">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Navigazione correlata
         </h2>
         <div className="grid gap-2 sm:grid-cols-2">
@@ -876,9 +876,9 @@ export default function NetworkPage() {
             { label: 'Partner Workspace — /partner',           note: 'Switch ruolo Partner per visualizzare' },
             { label: 'Future Vision — /future-vision',         note: 'Accessibile da tutti i ruoli' },
           ].map((link) => (
-            <div key={link.label} className="rounded border border-slate-200 bg-white px-3 py-2">
-              <p className="text-xs font-medium text-slate-600">{link.label}</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{link.note}</p>
+            <div key={link.label} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2">
+              <p className="text-xs font-medium text-[rgba(6,3,43,0.62)]">{link.label}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">{link.note}</p>
             </div>
           ))}
         </div>

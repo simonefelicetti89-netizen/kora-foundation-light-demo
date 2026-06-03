@@ -442,7 +442,7 @@ export default function FinancialGovernance() {
             { key: BTI_DOCTRINE.relief_neq_activation },
             { key: BTI_DOCTRINE.limited_reframe },
           ].map(({ key }) => (
-            <div key={key} style={{ background: 'rgba(97,86,245,0.04)', border: '1px solid rgba(97,86,245,0.12)', borderRadius: 8, padding: '10px 12px', fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55, fontStyle: 'italic' }}>
+            <div key={key} style={{ background: 'rgba(199,111,61,0.04)', border: '1px solid rgba(199,111,61,0.12)', borderRadius: 8, padding: '10px 12px', fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55, fontStyle: 'italic' }}>
               {key}
             </div>
           ))}
@@ -507,8 +507,8 @@ export default function FinancialGovernance() {
       {btiRecord?.non_budget_mediated_activation_note && (
         <div
           style={{
-            background:   'rgba(97,86,245,0.05)',
-            border:       '1px solid rgba(97,86,245,0.14)',
+            background:   'rgba(199,111,61,0.05)',
+            border:       '1px solid rgba(199,111,61,0.14)',
             borderRadius: TOKENS.cardRadius,
             padding:      '1rem 1.25rem',
             fontSize:     '12px',

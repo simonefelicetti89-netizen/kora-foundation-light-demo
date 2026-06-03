@@ -166,7 +166,7 @@ export function AttachmentLifecycleActions({
   const typedOk = !cfg?.confirmToken || typedConfirm === cfg.confirmToken;
 
   return (
-    <div className="mt-2 pt-2 border-t border-slate-100 space-y-2">
+    <div className="mt-2 pt-2 border-t border-[rgba(6,3,43,0.05)] space-y-2">
 
       {/* Result feedback (outside confirmation panel) */}
       {result && (
@@ -212,11 +212,11 @@ export function AttachmentLifecycleActions({
             <p className={`text-[10px] font-bold ${cfg.destructive ? 'text-red-700' : 'text-amber-700'}`}>
               {cfg.destructive ? '⚠ ' : ''}{cfg.label}
             </p>
-            <button onClick={cancelAction} className="text-slate-400 hover:text-slate-600 text-[9px]">Annulla</button>
+            <button onClick={cancelAction} className="text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] text-[9px]">Annulla</button>
           </div>
 
           {/* Filename for context (safe — already sanitized) */}
-          <p className="text-[9px] font-mono text-slate-500 truncate">{fileNameSafe}</p>
+          <p className="text-[9px] font-mono text-[rgba(6,3,43,0.52)] truncate">{fileNameSafe}</p>
 
           {/* Warning for destructive */}
           {cfg.warning && (
@@ -226,7 +226,7 @@ export function AttachmentLifecycleActions({
           {/* Optional reason */}
           {cfg.action !== 'restore' && (
             <div>
-              <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">
+              <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] mb-0.5">
                 Motivazione (opzionale, max 200 car.)
               </label>
               <input
@@ -234,7 +234,7 @@ export function AttachmentLifecycleActions({
                 value={reason}
                 onChange={e => setReason(e.target.value.slice(0, 200))}
                 placeholder="es. Documento duplicato"
-                className="w-full rounded border border-slate-200 bg-white px-2 py-1 text-[10px] text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1 text-[10px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-slate-400"
               />
             </div>
           )}
@@ -242,8 +242,8 @@ export function AttachmentLifecycleActions({
           {/* Typed confirmation */}
           {cfg.confirmToken && (
             <div>
-              <label className="block text-[9px] font-semibold text-slate-500 mb-0.5">
-                Digita <code className="bg-white/80 px-1 rounded font-mono">{cfg.confirmToken}</code> per confermare
+              <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] mb-0.5">
+                Digita <code className="bg-[#F8F6F1]/80 px-1 rounded font-mono">{cfg.confirmToken}</code> per confermare
               </label>
               <input
                 type="text"
@@ -251,7 +251,7 @@ export function AttachmentLifecycleActions({
                 onChange={e => setTypedConfirm(e.target.value)}
                 placeholder={cfg.confirmToken}
                 autoFocus
-                className="w-full rounded border border-slate-200 bg-white px-2 py-1 text-[10px] font-mono text-slate-700 focus:outline-none focus:ring-1 focus:ring-red-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-1 text-[10px] font-mono text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-red-400"
               />
             </div>
           )}
@@ -265,7 +265,7 @@ export function AttachmentLifecycleActions({
             >
               {loading ? '⏳ In corso…' : cfg.label}
             </button>
-            <button onClick={cancelAction} className="rounded border border-slate-200 bg-white px-3 py-1 text-[10px] text-slate-600 hover:bg-slate-50 transition-colors">
+            <button onClick={cancelAction} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1 text-[10px] text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] transition-colors">
               Annulla
             </button>
           </div>

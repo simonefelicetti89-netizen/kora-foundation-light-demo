@@ -388,7 +388,7 @@ export default function Activation() {
             <div className="divide-y" style={{ borderColor: TOKENS.inkBorder }}>
               {nextActions.map((na) => (
                 <div key={na.priority} className="flex items-start gap-4 py-3 first:pt-0 last:pb-0">
-                  <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold" style={{ background: 'rgba(97,86,245,0.10)', color: TOKENS.accent, marginTop: 1 }}>
+                  <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold" style={{ background: 'rgba(199,111,61,0.10)', color: TOKENS.accent, marginTop: 1 }}>
                     {na.priority}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -404,7 +404,7 @@ export default function Activation() {
 
           {/* ── Partner suggeriti ── */}
           <SectionLabel>Partner suggeriti — copertura pillar mancante</SectionLabel>
-          <div style={{ background: 'rgba(97,86,245,0.04)', border: '1px solid rgba(97,86,245,0.12)', borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+          <div style={{ background: 'rgba(199,111,61,0.04)', border: '1px solid rgba(199,111,61,0.12)', borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
             <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, marginBottom: 12 }}>
               Suggerimenti basati sui pillar con Debt alto. Nessun marketplace, nessun prezzo, nessuna prenotazione.
             </p>

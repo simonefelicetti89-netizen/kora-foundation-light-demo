@@ -169,7 +169,7 @@ function computeReadiness(s: WizardState): ReadinessItem[] {
 
 const READINESS_BADGE: Record<ReadinessItemStatus, string> = {
   blocked:                  'border-rose-300 bg-rose-50 text-rose-700',
-  draft:                    'border-slate-200 bg-slate-50 text-slate-500',
+  draft:                    'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
   data_required:            'border-amber-200 bg-amber-50 text-amber-700',
   access_required:          'border-blue-200 bg-blue-50 text-blue-600',
   privacy_review_required:  'border-purple-200 bg-purple-50 text-purple-700',
@@ -195,13 +195,13 @@ function Input({ label, value, onChange, placeholder, required }: {
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-xs font-semibold text-slate-600">
+      <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">
         {label}{required && <span className="text-rose-500 ml-0.5">*</span>}
       </label>
       <input
         type="text" value={value} onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300"
+        className="w-full rounded-md border border-[rgba(6,3,43,0.08)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] placeholder:text-[rgba(6,3,43,0.28)] focus:outline-none focus:ring-2 focus:ring-slate-300"
       />
     </div>
   );
@@ -213,12 +213,12 @@ function Select({ label, value, onChange, options, required }: {
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-xs font-semibold text-slate-600">
+      <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">
         {label}{required && <span className="text-rose-500 ml-0.5">*</span>}
       </label>
       <select
         value={value} onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-300"
+        className="w-full rounded-md border border-[rgba(6,3,43,0.08)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-2 focus:ring-slate-300"
       >
         <option value="">— Seleziona —</option>
         {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -249,11 +249,11 @@ function Checklist({ items, selected, onChange, doctrine }: {
               type="button"
               onClick={() => onChange(item.id)}
               className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-left text-xs transition-all ${
-                checked ? 'border-slate-700 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                checked ? 'border-[rgba(6,3,43,0.35)] bg-[#06032B] text-white' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.78)] hover:border-[rgba(6,3,43,0.14)]'
               }`}
             >
               <span className={`shrink-0 w-4 h-4 rounded flex items-center justify-center text-[10px] ${
-                checked ? 'bg-white text-slate-900 font-bold' : 'bg-slate-100 text-slate-400'
+                checked ? 'bg-[#F8F6F1] text-[#06032B] font-bold' : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)]'
               }`}>
                 {checked ? '✓' : ''}
               </span>
@@ -262,7 +262,7 @@ function Checklist({ items, selected, onChange, doctrine }: {
           );
         })}
       </div>
-      <p className="text-[10px] text-slate-400">{selected.size} elementi selezionati</p>
+      <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{selected.size} elementi selezionati</p>
     </div>
   );
 }
@@ -336,17 +336,17 @@ export default function EnterpriseOnboardingWizard() {
 
       {/* ── Header ── */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           KORA Admin — Enterprise Company Onboarding
         </p>
-        <h1 className="text-xl font-bold text-slate-900 mt-0.5">Enterprise Onboarding</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-xl font-bold text-[#06032B] mt-0.5">Enterprise Onboarding</h1>
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
           Configura una nuova azienda cliente per il pilota KORA Foundation Light.
         </p>
       </div>
 
       {/* ── Admin note ── */}
-      <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800 leading-relaxed">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 leading-relaxed">
         <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
         Questa sezione è riservata agli operatori KORA. Il cliente non vede questo wizard.
         Gli utenti aziendali sono company-scoped: vedono solo la propria azienda.
@@ -362,16 +362,16 @@ export default function EnterpriseOnboardingWizard() {
                 onClick={() => setStep(s.id)}
                 className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
                   s.id === step
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-[#06032B] text-white'
                     : s.id < step
-                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                    : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                    ? 'bg-[rgba(6,3,43,0.12)] text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.18)]'
+                    : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.40)] hover:bg-[rgba(6,3,43,0.12)]'
                 }`}
               >
                 <span>{s.id}</span>
                 <span>{s.label}</span>
               </button>
-              {i < STEPS.length - 1 && <span className="mx-1 text-slate-300 text-xs">›</span>}
+              {i < STEPS.length - 1 && <span className="mx-1 text-[rgba(6,3,43,0.28)] text-xs">›</span>}
             </div>
           ))}
         </div>
@@ -390,8 +390,8 @@ export default function EnterpriseOnboardingWizard() {
       {step === 1 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">1 — Identità Azienda</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Dati anagrafici e coordinare dell&apos;azienda cliente.</p>
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">1 — Identità Azienda</h2>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Dati anagrafici e coordinare dell&apos;azienda cliente.</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Nome commerciale" value={state.company_name} onChange={(v) => update('company_name', v)} placeholder="es. Meridiana Group" required />
@@ -403,11 +403,11 @@ export default function EnterpriseOnboardingWizard() {
             <Input label="Territorio" value={state.territory} onChange={(v) => update('territory', v)} placeholder="es. Lombardia — Nord Italia" required />
             <Input label="Sede principale" value={state.headquarters_location} onChange={(v) => update('headquarters_location', v)} placeholder="es. Milano, MI" required />
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-600">N. dipendenti <span className="text-rose-500">*</span></label>
+              <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">N. dipendenti <span className="text-rose-500">*</span></label>
               <input type="number" min={1} value={state.employee_count}
                 onChange={(e) => update('employee_count', e.target.value)}
                 placeholder="es. 250"
-                className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                className="w-full rounded-md border border-[rgba(6,3,43,0.08)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] placeholder:text-[rgba(6,3,43,0.28)] focus:outline-none focus:ring-2 focus:ring-slate-300"
               />
               {state.employee_count && parseInt(state.employee_count) < 30 && (
                 <p className="text-[10px] text-rose-600">Foundation Light richiede almeno 30 lavoratori.</p>
@@ -437,8 +437,8 @@ export default function EnterpriseOnboardingWizard() {
       {step === 2 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">2 — Perimetro Operativo</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Definisci le entità legali, i siti e la popolazione in scope per il KORA Index.</p>
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">2 — Perimetro Operativo</h2>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Definisci le entità legali, i siti e la popolazione in scope per il KORA Index.</p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Entità legali incluse" value={state.included_legal_entities} onChange={(v) => update('included_legal_entities', v)} placeholder="es. Meridiana Group S.r.l." />
@@ -449,11 +449,11 @@ export default function EnterpriseOnboardingWizard() {
             <Input label="Fine periodo di riferimento" value={state.reporting_period_end} onChange={(v) => update('reporting_period_end', v)} placeholder="2025-12-31" />
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-600">Limitazioni di scope</label>
+            <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">Limitazioni di scope</label>
             <textarea value={state.scope_limitations} onChange={(e) => update('scope_limitations', e.target.value)}
               placeholder="es. Interinali esclusi, contratti < 3 mesi esclusi..."
               rows={3}
-              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"
+              className="w-full rounded-md border border-[rgba(6,3,43,0.08)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] placeholder:text-[rgba(6,3,43,0.28)] focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"
             />
           </div>
           <div className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-700">
@@ -467,8 +467,8 @@ export default function EnterpriseOnboardingWizard() {
       {step === 3 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">3 — Contesto Budget & Dati Disponibili</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Raccoglie il contesto operativo budget per attivare l&apos;azienda. Classificazione fiscale a seguire.</p>
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">3 — Contesto Budget & Dati Disponibili</h2>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Raccoglie il contesto operativo budget per attivare l&apos;azienda. Classificazione fiscale a seguire.</p>
           </div>
 
           <div className="rounded border border-blue-100 bg-blue-50 px-3 py-2.5 text-xs text-blue-800 leading-relaxed space-y-1">
@@ -484,15 +484,15 @@ export default function EnterpriseOnboardingWizard() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-600">Note contesto budget (opzionale)</label>
+            <label className="text-xs font-semibold text-[rgba(6,3,43,0.62)]">Note contesto budget (opzionale)</label>
             <textarea value={state.fiscal_notes} onChange={(e) => update('fiscal_notes', e.target.value)}
               placeholder="es. Budget approssimato, accordi in corso di definizione, contatto Finance da coinvolgere..."
               rows={3}
-              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"
+              className="w-full rounded-md border border-[rgba(6,3,43,0.08)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] placeholder:text-[rgba(6,3,43,0.28)] focus:outline-none focus:ring-2 focus:ring-slate-300 resize-none"
             />
           </div>
 
-          <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500 space-y-1">
+          <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[10px] text-[rgba(6,3,43,0.52)] space-y-1">
             <p>Le categorie fiscali non sono un prerequisito di onboarding: servono nella fase di classificazione, allocazione budget e governance finanziaria.</p>
             <p>La classificazione Eligible / Limited / Blocked e il perimetro welfare/fringe/people ESG vengono definiti in Data Intake, con supporto KORA Admin e Advisor.</p>
           </div>
@@ -503,8 +503,8 @@ export default function EnterpriseOnboardingWizard() {
       {step === 4 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">4 — Fonti Dati & Evidenze</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Seleziona le fonti dati disponibili per questa azienda.</p>
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">4 — Fonti Dati & Evidenze</h2>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Seleziona le fonti dati disponibili per questa azienda.</p>
           </div>
           <Checklist
             items={DATA_SOURCES}
@@ -519,8 +519,8 @@ export default function EnterpriseOnboardingWizard() {
       {step === 5 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">5 — Policy Strutturali</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Seleziona le policy organizzative formali attive in azienda.</p>
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">5 — Policy Strutturali</h2>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Seleziona le policy organizzative formali attive in azienda.</p>
           </div>
           <Checklist
             items={STRUCTURAL_POLICIES}
@@ -528,7 +528,7 @@ export default function EnterpriseOnboardingWizard() {
             onChange={(id) => toggleSet('structural_policies', id)}
             doctrine="Non tutte le azioni KORA passano da un partner o da una fattura. KORA riconosce anche policy organizzative strutturali, se formalizzate, verificabili, aggregate e privacy-safe. La fiducia organizzativa è misurabile solo come capacità collettiva, non come controllo individuale."
           />
-          <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500">
+          <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[10px] text-[rgba(6,3,43,0.52)]">
             Le policy strutturali generano Impact Units aggregate senza un costo diretto. Non sono budget-mediated.
             Il dato individuale di utilizzo non viene mai raccolto (individual_usage_visible = false).
           </div>
@@ -539,8 +539,8 @@ export default function EnterpriseOnboardingWizard() {
       {step === 6 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">6 — Primo Admin Aziendale</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Configura il primo accesso company-scoped per il cliente.</p>
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">6 — Primo Admin Aziendale</h2>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Configura il primo accesso company-scoped per il cliente.</p>
           </div>
           <div className="rounded border border-blue-100 bg-blue-50 px-3 py-2.5 text-xs text-blue-800 leading-relaxed space-y-0.5">
             <p><span className="font-semibold">Foundation Light usa ruoli semplici ma supporta più utenti per azienda.</span></p>
@@ -571,7 +571,7 @@ export default function EnterpriseOnboardingWizard() {
               Non viene salvata in nessun database. In produzione usare sempre invite link o auth provider esterno.
             </div>
           )}
-          <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500">
+          <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[10px] text-[rgba(6,3,43,0.52)]">
             COMPANY_ADMIN: executive-cockpit, kora-index, reports, financial, pillars, activation, contribution, profile. COMPANY_VIEWER: executive-cockpit, kora-index, profile. È possibile aggiungere ulteriori utenti con ruolo COMPANY_VIEWER per condividere l&apos;accesso in sola lettura.
             Sezioni operative (setup, ingestion, uef-review, scoring) rimangono gestite lato KORA Admin.
           </div>
@@ -582,10 +582,10 @@ export default function EnterpriseOnboardingWizard() {
       {step === 7 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">7 — Worker Roster & My KORA</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Configura le basi per la popolazione lavoratori e My KORA.</p>
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">7 — Worker Roster & My KORA</h2>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Configura le basi per la popolazione lavoratori e My KORA.</p>
           </div>
-          <div className="rounded border border-indigo-100 bg-indigo-50 px-3 py-2.5 text-xs text-indigo-800 leading-relaxed space-y-0.5">
+          <div className="rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-3 py-2.5 text-xs text-indigo-800 leading-relaxed space-y-0.5">
             <p><span className="font-semibold">Privacy boundary costituzionale.</span> Il PIB individuale resta privato al lavoratore.</p>
             <p>L&apos;azienda vede solo aggregati privacy-safe (N≥10). employer_can_view_individual_pib = false su ogni record.</p>
           </div>
@@ -625,18 +625,18 @@ export default function EnterpriseOnboardingWizard() {
                 type="button"
                 onClick={() => update(field, !state[field])}
                 className={`rounded-lg border p-3 text-left transition-all ${
-                  state[field] ? 'border-slate-700 bg-slate-900' : 'border-slate-200 bg-white hover:border-slate-300'
+                  state[field] ? 'border-[rgba(6,3,43,0.35)] bg-[#06032B]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] hover:border-[rgba(6,3,43,0.14)]'
                 }`}
               >
                 <div className="flex items-center gap-2">
-                  <span className={`text-xs font-semibold ${state[field] ? 'text-white' : 'text-slate-800'}`}>{label}</span>
+                  <span className={`text-xs font-semibold ${state[field] ? 'text-white' : 'text-[rgba(6,3,43,0.90)]'}`}>{label}</span>
                   {state[field] && <span className="rounded bg-emerald-500 px-1 py-0.5 text-[8px] font-bold text-white">ON</span>}
                 </div>
-                <p className={`text-[10px] mt-1 leading-snug ${state[field] ? 'text-slate-300' : 'text-slate-500'}`}>{desc}</p>
+                <p className={`text-[10px] mt-1 leading-snug ${state[field] ? 'text-[rgba(6,3,43,0.28)]' : 'text-[rgba(6,3,43,0.52)]'}`}>{desc}</p>
               </button>
             ))}
           </div>
-          <div className="rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[10px] text-slate-500 leading-relaxed">
+          <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[10px] text-[rgba(6,3,43,0.52)] leading-relaxed">
             Privacy threshold N=10: gruppi con meno di 10 lavoratori sono soppressi automaticamente in tutti gli aggregati aziendali.
             L&apos;azienda non può mai identificare un lavoratore individuale.
           </div>
@@ -647,21 +647,21 @@ export default function EnterpriseOnboardingWizard() {
       {step === 8 && (
         <section className="space-y-5">
           <div>
-            <h2 className="text-sm font-semibold text-slate-800">8 — Readiness Finale</h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">8 — Readiness Finale</h2>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
               {readyCount} / {readiness.length} elementi pronti.
             </p>
           </div>
 
           {/* Readiness matrix */}
-          <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-            <div className="px-4 py-2 bg-slate-50 border-b border-slate-200">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">Matrice Readiness</p>
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+            <div className="px-4 py-2 bg-[rgba(6,3,43,0.03)] border-b border-[rgba(6,3,43,0.08)]">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Matrice Readiness</p>
             </div>
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-[rgba(6,3,43,0.05)]">
               {readiness.map((item) => (
-                <div key={item.label} className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50">
-                  <p className="text-xs text-slate-700">{item.label}</p>
+                <div key={item.label} className="flex items-center justify-between px-4 py-2.5 hover:bg-[rgba(6,3,43,0.03)]">
+                  <p className="text-xs text-[rgba(6,3,43,0.78)]">{item.label}</p>
                   <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${READINESS_BADGE[item.status]}`}>
                     {READINESS_LABEL[item.status]}
                   </span>
@@ -672,17 +672,17 @@ export default function EnterpriseOnboardingWizard() {
 
           {/* Summary */}
           {state.company_name && (
-            <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
-              <p className="text-xs font-semibold text-slate-700">Riepilogo azienda</p>
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-2">
+              <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">Riepilogo azienda</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-[10px]">
-                <div><p className="text-slate-400">Azienda</p><p className="text-slate-700 font-semibold">{state.company_name}</p></div>
-                <div><p className="text-slate-400">Dipendenti</p><p className="text-slate-700 font-semibold">{state.employee_count || '—'}</p></div>
-                <div><p className="text-slate-400">Settore</p><p className="text-slate-700 font-semibold">{(SECTOR_LABELS[state.sector] ?? state.sector) || '—'}</p></div>
-                <div><p className="text-slate-400">Piano</p><p className="text-slate-700 font-semibold">{state.kora_plan}</p></div>
-                <div><p className="text-slate-400">Fonti dati</p><p className="text-slate-700 font-semibold">{state.data_sources.size} selezionate</p></div>
-                <div><p className="text-slate-400">Policy strutturali</p><p className="text-slate-700 font-semibold">{state.structural_policies.size} selezionate</p></div>
-                <div><p className="text-slate-400">Admin aziendale</p><p className="text-slate-700 font-semibold">{state.admin_name || '—'}</p></div>
-                <div><p className="text-slate-400">My KORA</p><p className="text-slate-700 font-semibold">{state.my_kora_enabled ? 'Abilitato' : 'Non abilitato'}</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Azienda</p><p className="text-[rgba(6,3,43,0.78)] font-semibold">{state.company_name}</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Dipendenti</p><p className="text-[rgba(6,3,43,0.78)] font-semibold">{state.employee_count || '—'}</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Settore</p><p className="text-[rgba(6,3,43,0.78)] font-semibold">{(SECTOR_LABELS[state.sector] ?? state.sector) || '—'}</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Piano</p><p className="text-[rgba(6,3,43,0.78)] font-semibold">{state.kora_plan}</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Fonti dati</p><p className="text-[rgba(6,3,43,0.78)] font-semibold">{state.data_sources.size} selezionate</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Policy strutturali</p><p className="text-[rgba(6,3,43,0.78)] font-semibold">{state.structural_policies.size} selezionate</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">Admin aziendale</p><p className="text-[rgba(6,3,43,0.78)] font-semibold">{state.admin_name || '—'}</p></div>
+                <div><p className="text-[rgba(6,3,43,0.40)]">My KORA</p><p className="text-[rgba(6,3,43,0.78)] font-semibold">{state.my_kora_enabled ? 'Abilitato' : 'Non abilitato'}</p></div>
               </div>
             </div>
           )}
@@ -693,19 +693,19 @@ export default function EnterpriseOnboardingWizard() {
               type="button"
               onClick={handleCreateDraft}
               disabled={!(state.company_name && state.legal_name)}
-              className="rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="rounded-lg bg-[#06032B] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Crea bozza tenant
             </button>
             {draft && (
               <>
-                <Link href="/admin/companies" className="rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                <Link href="/admin/companies" className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-2.5 text-xs font-semibold text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.03)] transition-colors">
                   Company Registry →
                 </Link>
                 <button
                   type="button"
                   onClick={() => { setState(INITIAL); setDraft(null); setAdminDraft(null); setResult(null); setStep(1); }}
-                  className="rounded border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 transition-colors"
+                  className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs font-medium text-[rgba(6,3,43,0.52)] hover:bg-[rgba(6,3,43,0.05)] transition-colors"
                 >
                   Archivia bozza
                 </button>
@@ -736,29 +736,29 @@ export default function EnterpriseOnboardingWizard() {
             </div>
           )}
 
-          <p className="text-[10px] font-mono text-slate-300">
+          <p className="text-[10px] font-mono text-[rgba(6,3,43,0.28)]">
             demo_session_only: true · production_ready: false · synthetic_demo_data: true
           </p>
         </section>
       )}
 
       {/* ── Navigation ── */}
-      <div className="flex items-center justify-between border-t border-slate-100 pt-5">
+      <div className="flex items-center justify-between border-t border-[rgba(6,3,43,0.05)] pt-5">
         <div className="flex gap-3">
           {step > 1 && (
             <button type="button" onClick={() => setStep((s) => s - 1)}
-              className="rounded border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+              className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-2 text-xs font-semibold text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.03)] transition-colors">
               ← Indietro
             </button>
           )}
           {step < STEPS.length && (
             <button type="button" onClick={() => setStep((s) => s + 1)}
-              className="rounded bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-700 transition-colors">
+              className="rounded bg-[#06032B] px-4 py-2 text-xs font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors">
               Avanti →
             </button>
           )}
         </div>
-        <Link href="/admin/companies" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+        <Link href="/admin/companies" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           ← Company Registry
         </Link>
       </div>

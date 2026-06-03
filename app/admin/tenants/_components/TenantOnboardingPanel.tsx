@@ -39,7 +39,7 @@ function ts(s: string) {
 const STATUS_CLS: Record<string, string> = {
   active:        'bg-green-50 text-green-700 border-green-200',
   intake_ready:  'bg-blue-50 text-blue-700 border-blue-200',
-  not_ready:     'bg-slate-50 text-slate-500 border-slate-200',
+  not_ready:     'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
 export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
@@ -116,11 +116,11 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
           <p className="text-sm text-white/45 mt-0.5">B9 — Registra nuova azienda per il pilot live</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
             {['No worker identity', 'No PII', 'N≥10 enforced'].map(m => (
-              <span key={m} className="rounded border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] text-white/40 font-medium">{m}</span>
+              <span key={m} className="rounded border border-white/15 bg-[#F8F6F1]/5 px-2 py-0.5 text-[10px] text-white/40 font-medium">{m}</span>
             ))}
           </div>
         </div>
@@ -130,11 +130,11 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
 
         {/* ── Left: create form ── */}
         <div className="space-y-3">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Registra nuova azienda</p>
-          <form onSubmit={handleCreate} className="rounded-lg border border-slate-200 bg-white px-5 py-5 space-y-3.5">
+          <p className="text-xs font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Registra nuova azienda</p>
+          <form onSubmit={handleCreate} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-5 space-y-3.5">
 
             <div>
-              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
                 Codice azienda *
               </label>
               <input
@@ -143,56 +143,56 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                 placeholder="ACME-001"
                 pattern="[A-Z0-9-]{2,32}"
                 title="Uppercase letters, digits, dashes. 2–32 chars."
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
               />
-              <p className="text-[10px] text-slate-400 mt-0.5">Uppercase A–Z, 0–9, dash. Must be unique.</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Uppercase A–Z, 0–9, dash. Must be unique.</p>
             </div>
 
             <div>
-              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
                 Company Name *
               </label>
               <input
                 required value={companyName}
                 onChange={e => setCompanyName(e.target.value)}
                 placeholder="Acme S.p.A."
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
                 Reporting Period *
               </label>
               <input
                 required value={reportingPeriod}
                 onChange={e => setReportingPeriod(e.target.value)}
                 placeholder="2026-Q1"
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
               />
             </div>
 
             <div>
-              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
                 Workforce Population * (≥10)
               </label>
               <input
                 required type="number" min={10} value={workforcePopulation}
                 onChange={e => setWorkforcePopulation(e.target.value)}
                 placeholder="50"
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm tabular-nums text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm tabular-nums text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
               />
-              <p className="text-[10px] text-slate-400 mt-0.5">Aggregate only — no worker names. N≥10 enforced.</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Aggregate only — no worker names. N≥10 enforced.</p>
             </div>
 
             <div>
-              <label className="block text-[10px] font-semibold text-slate-500 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
                 Notes (optional)
               </label>
               <input
                 value={notes} onChange={e => setNotes(e.target.value)}
                 placeholder="Pilot Foundation Light — Q1 2026"
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-400"
+                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
               />
             </div>
 
@@ -239,38 +239,38 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
         {/* ── Right: tenant list ── */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">Aziende attive</p>
+            <p className="text-xs font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Aziende attive</p>
             <button onClick={refreshTenants}
-              className="text-[10px] text-slate-400 underline hover:text-slate-700 transition-colors">
+              className="text-[10px] text-[rgba(6,3,43,0.40)] underline hover:text-[rgba(6,3,43,0.78)] transition-colors">
               ↻ Refresh
             </button>
           </div>
 
-          {tenantsLoading && <p className="text-xs text-slate-400">Caricamento aziende…</p>}
+          {tenantsLoading && <p className="text-xs text-[rgba(6,3,43,0.40)]">Caricamento aziende…</p>}
 
           {!tenantsLoading && tenants.length === 0 && (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-400">
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)]">
               Nessuna azienda ancora. Creane una.
             </div>
           )}
 
           {tenants.map(t => (
-            <div key={t.id} className="rounded-lg border border-slate-200 bg-white px-4 py-3 space-y-2">
+            <div key={t.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 space-y-2">
               <div className="flex items-start justify-between gap-2 flex-wrap">
                 <div>
-                  <p className="text-sm font-bold text-slate-800">{t.companyName}</p>
-                  <p className="text-xs font-mono text-slate-500">{t.tenantCode}</p>
+                  <p className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{t.companyName}</p>
+                  <p className="text-xs font-mono text-[rgba(6,3,43,0.52)]">{t.tenantCode}</p>
                 </div>
                 <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${STATUS_CLS[t.dataReadinessStatus] ?? STATUS_CLS['not_ready']}`}>
                   {t.dataReadinessStatus}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-3 text-[10px] text-slate-500">
+              <div className="flex flex-wrap gap-3 text-[10px] text-[rgba(6,3,43,0.52)]">
                 <span>Onboarding: <strong>{t.onboardingStatus}</strong></span>
                 <span>DP: <strong>{/* t.decisionPackStatus */t.isActive ? 'active' : 'inactive'}</strong></span>
                 <span>Created: {ts(t.createdAt)}</span>
               </div>
-              <div className="flex gap-2 pt-1 border-t border-slate-100">
+              <div className="flex gap-2 pt-1 border-t border-[rgba(6,3,43,0.05)]">
                 <a href={`/admin/data-intake?tenantCode=${encodeURIComponent(t.tenantCode)}`} className="text-[10px] text-[#C76F3D] underline">Data Intake</a>
                 <a href="/admin/uef-review" className="text-[10px] text-[#C76F3D] underline">UEF Review</a>
               </div>

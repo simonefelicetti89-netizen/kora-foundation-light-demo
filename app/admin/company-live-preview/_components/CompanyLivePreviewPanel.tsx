@@ -77,7 +77,7 @@ const PILOT_LABEL: Record<string, string> = {
   decision_pack_exported:  'Decision Pack esportato',
 };
 const PILOT_CLS: Record<string, string> = {
-  not_started:            'bg-slate-100 text-slate-500 border-slate-200',
+  not_started:            'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
   batch_pending:          'bg-blue-50 text-blue-600 border-blue-200',
   review_ready:           'bg-amber-50 text-amber-700 border-amber-200',
   needs_enrichment:       'bg-orange-50 text-orange-700 border-orange-200',
@@ -90,7 +90,7 @@ const READINESS_BADGE: Record<string, string> = {
   report_ready:      'bg-green-100 text-green-700 border-green-200',
   usable_with_caveat:'bg-amber-50 text-amber-700 border-amber-200',
   needs_evidence:    'bg-red-50 text-red-600 border-red-200',
-  not_ready:         'bg-slate-100 text-slate-500 border-slate-200',
+  not_ready:         'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 const READINESS_LABEL: Record<string, string> = {
   report_ready:      'Report Ready',
@@ -114,7 +114,7 @@ function pct(n: number | null) {
 
 function Card({ title, children, accent }: { title: string; children: React.ReactNode; accent?: boolean }) {
   return (
-    <div className="rounded-xl border bg-white p-5" style={{ borderColor: accent ? '#c7c4f8' : '#eaebf4', background: accent ? '#f5f4ff' : '#fff' }}>
+    <div className="rounded-xl border bg-[#F8F6F1] p-5" style={{ borderColor: accent ? '#c7c4f8' : '#eaebf4', background: accent ? '#f5f4ff' : '#fff' }}>
       <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.18em]" style={{ color: '#9899b3' }}>{title}</p>
       {children}
     </div>
@@ -124,16 +124,16 @@ function Card({ title, children, accent }: { title: string; children: React.Reac
 function Stat({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
     <div>
-      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-400 mb-0.5">{label}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)] mb-0.5">{label}</p>
       <p className="text-2xl font-bold leading-tight" style={{ color: color ?? '#06032B' }}>{value}</p>
-      {sub && <p className="text-[11px] text-slate-400 mt-0.5">{sub}</p>}
+      {sub && <p className="text-[11px] text-[rgba(6,3,43,0.40)] mt-0.5">{sub}</p>}
     </div>
   );
 }
 
 function EmptyState({ msg }: { msg: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-200 py-6 text-center text-sm text-slate-400">{msg}</div>
+    <div className="rounded-lg border border-dashed border-[rgba(6,3,43,0.08)] py-6 text-center text-sm text-[rgba(6,3,43,0.40)]">{msg}</div>
   );
 }
 
@@ -191,7 +191,7 @@ export function CompanyLivePreviewPanel() {
     <div className="min-h-screen" style={{ background: '#f4f4f9' }}>
 
       {/* ── Header ───────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-10 border-b border-slate-200 bg-white px-8 py-4 shadow-sm">
+      <div className="sticky top-0 z-10 border-b border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-8 py-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-8 w-1 rounded bg-[#C76F3D]" />
@@ -208,7 +208,7 @@ export function CompanyLivePreviewPanel() {
             </span>
             <Link
               href="/admin/company-workspace"
-              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-medium text-slate-500 hover:text-slate-700 transition-colors"
+              className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-[12px] font-medium text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)] transition-colors"
             >
               ← KORA Admin Workspace
             </Link>
@@ -217,14 +217,14 @@ export function CompanyLivePreviewPanel() {
       </div>
 
       {/* ── Selector bar ─────────────────────────────────────────────────── */}
-      <div className="border-b border-slate-200 bg-white px-8 py-3">
+      <div className="border-b border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-8 py-3">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Azienda</label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)]">Azienda</label>
             <select
               value={tenantCode}
               onChange={e => setTenantCode(e.target.value)}
-              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#C76F3D]/30"
+              className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-sm text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-2 focus:ring-[#C76F3D]/30"
             >
               <option value="">— seleziona —</option>
               {tenants.map(t => (
@@ -233,11 +233,11 @@ export function CompanyLivePreviewPanel() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-400">Periodo</label>
+            <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)]">Periodo</label>
             <select
               value={period}
               onChange={e => setPeriod(e.target.value)}
-              className="rounded border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#C76F3D]/30"
+              className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-sm text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-2 focus:ring-[#C76F3D]/30"
             >
               {['2026-Q1','2026-Q2','2026-H1','2025-Q4'].map(p => (
                 <option key={p} value={p}>{p}</option>
@@ -245,7 +245,7 @@ export function CompanyLivePreviewPanel() {
             </select>
           </div>
           {loading && (
-            <span className="text-[12px] text-slate-400 italic">Caricamento...</span>
+            <span className="text-[12px] text-[rgba(6,3,43,0.40)] italic">Caricamento...</span>
           )}
           {error && (
             <span className="text-[12px] text-red-500">{error}</span>
@@ -256,7 +256,7 @@ export function CompanyLivePreviewPanel() {
       {/* ── No selection state ────────────────────────────────────────────── */}
       {!tenantCode && (
         <div className="flex h-64 items-center justify-center">
-          <p className="text-slate-400 text-sm">Seleziona un&apos;azienda per visualizzare la live preview.</p>
+          <p className="text-[rgba(6,3,43,0.40)] text-sm">Seleziona un&apos;azienda per visualizzare la live preview.</p>
         </div>
       )}
 
@@ -276,21 +276,21 @@ export function CompanyLivePreviewPanel() {
             {/* Pilot Status */}
             <Card title="Stato Pilot">
               <div className="space-y-3">
-                <span className={`inline-block rounded border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${PILOT_CLS[data.pilotStatus] ?? 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                <span className={`inline-block rounded border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] ${PILOT_CLS[data.pilotStatus] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]'}`}>
                   {PILOT_LABEL[data.pilotStatus] ?? data.pilotStatus}
                 </span>
-                <div className="space-y-1.5 text-[12px] text-slate-600">
+                <div className="space-y-1.5 text-[12px] text-[rgba(6,3,43,0.62)]">
                   {data.workforce.totalWorkers !== null && (
-                    <p><span className="text-slate-400">Workforce: </span><strong>{data.workforce.totalWorkers}</strong> lavoratori</p>
+                    <p><span className="text-[rgba(6,3,43,0.40)]">Workforce: </span><strong>{data.workforce.totalWorkers}</strong> lavoratori</p>
                   )}
                   {data.latestBatch && (
-                    <p><span className="text-slate-400">Ultimo batch: </span><strong>{data.latestBatch.rowCount}</strong> record · {data.latestBatch.status}</p>
+                    <p><span className="text-[rgba(6,3,43,0.40)]">Ultimo batch: </span><strong>{data.latestBatch.rowCount}</strong> record · {data.latestBatch.status}</p>
                   )}
                   {data.uef && (
-                    <p><span className="text-slate-400">UEF: </span><strong>{data.uef.approved}</strong> approvati su {data.uef.total}</p>
+                    <p><span className="text-[rgba(6,3,43,0.40)]">UEF: </span><strong>{data.uef.approved}</strong> approvati su {data.uef.total}</p>
                   )}
                   {data.latestBatch && (
-                    <p className="text-slate-400 text-[11px]">Caricato il {fmtDate(data.latestBatch.createdAt)}</p>
+                    <p className="text-[rgba(6,3,43,0.40)] text-[11px]">Caricato il {fmtDate(data.latestBatch.createdAt)}</p>
                   )}
                 </div>
               </div>
@@ -302,7 +302,7 @@ export function CompanyLivePreviewPanel() {
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-1">
                     <span className="text-5xl font-bold text-[#C76F3D] leading-none">{Math.round(data.scoring.koraIndex * 10) / 10}</span>
-                    <span className="text-xl text-slate-400">/100</span>
+                    <span className="text-xl text-[rgba(6,3,43,0.40)]">/100</span>
                   </div>
                   <div className="flex gap-2 flex-wrap">
                     <span className="rounded border px-2 py-0.5 text-[11px] font-bold" style={{ background: SF_BG[data.scoring.safeguard] ?? '#f3f4f6', color: SF_COLOR[data.scoring.safeguard] ?? '#6b7280', borderColor: SF_COLOR[data.scoring.safeguard] ?? '#d1d5db' }}>
@@ -312,8 +312,8 @@ export function CompanyLivePreviewPanel() {
                       CS {Math.round(data.scoring.confidenceScore * 100)}%
                     </span>
                   </div>
-                  <p className="text-[10px] text-slate-400 uppercase tracking-[0.12em]">{data.scoring.calibrationStatus}</p>
-                  <p className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-2">
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)] uppercase tracking-[0.12em]">{data.scoring.calibrationStatus}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-2">
                     Efficacia nel convertire iniziative people in attivazione verificata, distribuita e significativa. Output aziendale aggregato — nessun individuo misurabile.
                   </p>
                 </div>
@@ -332,21 +332,21 @@ export function CompanyLivePreviewPanel() {
                 return (
                   <div className="space-y-3">
                     <div>
-                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-0.5">Meaningful AR <span className="text-[#C76F3D]">· SEGNALE PRIMARIO</span></p>
+                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[rgba(6,3,43,0.40)] mb-0.5">Meaningful AR <span className="text-[#C76F3D]">· SEGNALE PRIMARIO</span></p>
                       <p className="text-3xl font-bold text-[#C76F3D] leading-none">{pct(mar)}</p>
                     </div>
                     <div>
-                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-slate-400 mb-0.5">Activation Rate · reach complessivo</p>
+                      <p className="text-[9px] font-bold tracking-[0.14em] uppercase text-[rgba(6,3,43,0.40)] mb-0.5">Activation Rate · reach complessivo</p>
                       <p className="text-2xl font-bold text-[#06032B] leading-none">{pct(ar)}</p>
                     </div>
                     {gapPp > 0 && (
-                      <div className={`rounded px-2.5 py-2 text-[10px] leading-relaxed ${gapWarn ? 'bg-amber-50 border border-amber-200 text-amber-800' : 'bg-slate-50 border border-slate-100 text-slate-500'}`}>
+                      <div className={`rounded px-2.5 py-2 text-[10px] leading-relaxed ${gapWarn ? 'bg-amber-50 border border-amber-200 text-amber-800' : 'bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'}`}>
                         {gapWarn
                           ? `⚠ Gap AR→MAR: +${gapPp}pp — differenza attribuibile principalmente a benefit economici ad ampia copertura (voucher, fringe benefit). MAR è il segnale rilevante.`
                           : `Gap AR→MAR: +${gapPp}pp (economic relief reach)`}
                       </div>
                     )}
-                    <p className="text-[10px] text-slate-400 leading-relaxed border-t border-slate-100 pt-2">
+                    <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-2">
                       Safeguard CLEAR: AR ≥ 40% e MAR ≥ 30%. Reach ≠ depth.
                     </p>
                   </div>
@@ -376,14 +376,14 @@ export function CompanyLivePreviewPanel() {
                           <span className="text-[12px] font-semibold text-[#06032B]">{PILLAR_LABELS[k]}</span>
                           <span className="text-[13px] font-bold" style={{ color }}>{p}%</span>
                         </div>
-                        <div className="h-2.5 rounded-full bg-slate-100">
+                        <div className="h-2.5 rounded-full bg-[rgba(6,3,43,0.05)]">
                           <div className="h-2.5 rounded-full" style={{ width: `${p}%`, background: color }} />
                         </div>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{v} eventi classificati</p>
+                        <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">{v} eventi classificati</p>
                       </div>
                     );
                   })}
-                  <p className="text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+                  <p className="text-[11px] text-[rgba(6,3,43,0.40)] pt-2 border-t border-[rgba(6,3,43,0.05)]">
                     Distribuzione aggregata · nessun dato individuale · N≥10 threshold · Alta EQUITY = programma diversificato su più pillar
                   </p>
                 </div>
@@ -410,21 +410,21 @@ export function CompanyLivePreviewPanel() {
                   </div>
                   {totalBudget > 0 && (
                     <div className="mb-4">
-                      <p className="text-[10px] text-slate-400 uppercase tracking-[0.12em] mb-2">Classificazione budget</p>
+                      <p className="text-[10px] text-[rgba(6,3,43,0.40)] uppercase tracking-[0.12em] mb-2">Classificazione budget</p>
                       <div className="h-4 rounded flex overflow-hidden">
                         <div style={{ width: `${deepPct}%`, background: '#06032B' }} title={`Deep ${deepPct}%`} />
                         <div style={{ width: `${reliefPct}%`, background: '#c7c8dc' }} title={`Relief ${reliefPct}%`} />
                         <div style={{ width: `${blockedPct}%`, background: '#fde68a' }} title={`Blocked ${blockedPct}%`} />
                         <div style={{ flex: 1, background: '#eaebf4' }} />
                       </div>
-                      <div className="flex gap-5 mt-2 text-[11px] text-slate-500">
+                      <div className="flex gap-5 mt-2 text-[11px] text-[rgba(6,3,43,0.52)]">
                         <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#06032B' }} />Deep {deepPct}%</span>
-                        <span><span className="inline-block w-2 h-2 rounded-full mr-1 border border-slate-300" style={{ background: '#c7c8dc' }} />Relief {reliefPct}%</span>
+                        <span><span className="inline-block w-2 h-2 rounded-full mr-1 border border-[rgba(6,3,43,0.14)]" style={{ background: '#c7c8dc' }} />Relief {reliefPct}%</span>
                         <span><span className="inline-block w-2 h-2 rounded-full mr-1" style={{ background: '#fde68a' }} />Blocked {blockedPct}%</span>
                       </div>
                     </div>
                   )}
-                  <p className="text-[11px] text-slate-400 border-t border-slate-100 pt-3">
+                  <p className="text-[11px] text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)] pt-3">
                     BTI è indicatore informativo — non dimostra causalità, non certifica ROI. Correlazione ≠ causalità.
                   </p>
                 </div>
@@ -454,31 +454,31 @@ export function CompanyLivePreviewPanel() {
                       </div>
                     ))}
                   </div>
-                  <p className="text-[11px] text-slate-400 mb-3">{totalAreas} aree ESRS mappate · evidence-driven, non auto-compliance</p>
+                  <p className="text-[11px] text-[rgba(6,3,43,0.40)] mb-3">{totalAreas} aree ESRS mappate · evidence-driven, non auto-compliance</p>
 
                   {/* Top evidence gaps */}
                   {topGaps.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 mb-2">Top Evidence Gaps — Azioni Prioritarie</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)] mb-2">Top Evidence Gaps — Azioni Prioritarie</p>
                       {topGaps.map(g => (
-                        <div key={g.areaCode} className="rounded-lg border border-slate-100 bg-slate-50/60 p-3">
+                        <div key={g.areaCode} className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]/60 p-3">
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <span className="text-[12px] font-semibold text-[#06032B]">{g.areaLabel}</span>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${READINESS_BADGE[g.readiness] ?? 'bg-slate-100 border-slate-200 text-slate-500'}`}>
+                              <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold ${READINESS_BADGE[g.readiness] ?? 'bg-[rgba(6,3,43,0.05)] border-[rgba(6,3,43,0.08)] text-[rgba(6,3,43,0.52)]'}`}>
                                 {READINESS_LABEL[g.readiness] ?? g.readiness}
                               </span>
-                              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">{g.ownerHint}</span>
+                              <span className="text-[10px] font-bold uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)]">{g.ownerHint}</span>
                             </div>
                           </div>
                           {g.missingEvidence.length > 0 && (
-                            <p className="text-[11px] text-slate-600 mb-1">
+                            <p className="text-[11px] text-[rgba(6,3,43,0.62)] mb-1">
                               <span className="font-semibold">Mancante: </span>
                               {g.missingEvidence.join(' · ')}
                             </p>
                           )}
                           {g.recommendedActions.length > 0 && (
-                            <p className="text-[11px] text-slate-500">
+                            <p className="text-[11px] text-[rgba(6,3,43,0.52)]">
                               <span className="font-semibold">Azione: </span>
                               {g.recommendedActions[0]}
                             </p>
@@ -488,8 +488,8 @@ export function CompanyLivePreviewPanel() {
                     </div>
                   )}
 
-                  <div className="mt-4 rounded border border-slate-200 bg-white px-3 py-2 text-[11px] text-slate-400 leading-relaxed">
-                    <strong className="text-slate-500">Nota:</strong> Readiness ≠ compliance CSRD/ESRS. Report Ready = evidenza sufficiente per supportare rendicontazione. Non costituisce assurance o certificazione.
+                  <div className="mt-4 rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2 text-[11px] text-[rgba(6,3,43,0.40)] leading-relaxed">
+                    <strong className="text-[rgba(6,3,43,0.52)]">Nota:</strong> Readiness ≠ compliance CSRD/ESRS. Report Ready = evidenza sufficiente per supportare rendicontazione. Non costituisce assurance o certificazione.
                   </div>
                 </div>
               );
@@ -501,28 +501,28 @@ export function CompanyLivePreviewPanel() {
           {/* ── Row 5: Reporting Alignment (B18) ──────────────────────────── */}
           {data.reportingAlignment && (
             <Card title="Reporting Alignment — Aree ESRS (B18)">
-              <p className="text-[12px] text-slate-500 mb-3">
+              <p className="text-[12px] text-[rgba(6,3,43,0.52)] mb-3">
                 {data.reportingAlignment.totalMapped} iniziative mappate su {data.reportingAlignment.areas.length} aree ESRS possibili.
                 Mapping indicativo — non certifica compliance.
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {data.reportingAlignment.areas.slice(0, 6).map(a => (
-                  <div key={a.code} className="flex items-center justify-between rounded border border-slate-100 bg-slate-50 px-3 py-2">
+                  <div key={a.code} className="flex items-center justify-between rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
                     <div>
                       <p className="text-[12px] font-semibold text-[#06032B]">{a.label}</p>
-                      <p className="text-[10px] text-slate-400">{a.code} · {a.count} iniziative</p>
+                      <p className="text-[10px] text-[rgba(6,3,43,0.40)]">{a.code} · {a.count} iniziative</p>
                     </div>
                     <span className={`rounded border px-1.5 py-0.5 text-[10px] font-bold capitalize ${
                       a.maxStrength === 'strong' ? 'bg-green-100 text-green-700 border-green-200' :
                       a.maxStrength === 'medium' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                                                    'bg-slate-100 text-slate-500 border-slate-200'
+                                                    'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]'
                     }`}>
                       {a.maxStrength}
                     </span>
                   </div>
                 ))}
               </div>
-              <p className="mt-3 text-[11px] text-slate-400">
+              <p className="mt-3 text-[11px] text-[rgba(6,3,43,0.40)]">
                 KORA non certifica compliance CSRD/ESRS. Queste mappature indicano possibile supporto alla rendicontazione solo.
               </p>
             </Card>
@@ -540,8 +540,8 @@ export function CompanyLivePreviewPanel() {
                   }`}>
                     {data.decisionPack.status.toUpperCase()}
                   </span>
-                  <p className="text-[12px] text-slate-500">Creato il {fmtDate(data.decisionPack.createdAt)}</p>
-                  <p className="text-[11px] text-slate-400">
+                  <p className="text-[12px] text-[rgba(6,3,43,0.52)]">Creato il {fmtDate(data.decisionPack.createdAt)}</p>
+                  <p className="text-[11px] text-[rgba(6,3,43,0.40)]">
                     Include KORA Index, Pillar Balance, BTI, Reporting Alignment, Evidence Gaps, Methodology & Provenance.
                   </p>
                 </div>
@@ -558,7 +558,7 @@ export function CompanyLivePreviewPanel() {
                     href={data.decisionPack.pdfUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded border border-slate-200 bg-white px-4 py-2 text-[12px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                    className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-2 text-[12px] font-semibold text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
                   >
                     Scarica PDF
                   </a>
@@ -572,7 +572,7 @@ export function CompanyLivePreviewPanel() {
           {/* ── Row 7: Privacy & Methodology Boundary ─────────────────────── */}
           <div className="rounded-xl border border-[#c7c4f8] bg-[#f5f4ff] p-5">
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#C76F3D] mb-3">Privacy & Methodology Boundary</p>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px] text-slate-600">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px] text-[rgba(6,3,43,0.62)]">
               <p>🔒 <strong>Organization-Level Only</strong> — nessun worker identificabile</p>
               <p>🛡️ <strong>N≥10 Threshold</strong> — segmenti sotto soglia soppressi</p>
               <p>📊 <strong>Confidence Score Esterno</strong> — non influenza KORA Index</p>
@@ -580,7 +580,7 @@ export function CompanyLivePreviewPanel() {
               <p>🚫 <strong>No Worker Surveillance</strong> — PIB individuale non visibile</p>
               <p>📋 <strong>Read-Only Preview</strong> — nessuna azione operativa da questa vista</p>
             </div>
-            <div className="mt-4 rounded border border-[#c7c4f8] bg-white px-3 py-2 text-[11px] text-slate-500 leading-relaxed">
+            <div className="mt-4 rounded border border-[#c7c4f8] bg-[#F8F6F1] px-3 py-2 text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed">
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
               Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
               Decision Pack supporta discussioni board/HR/ESG — non è certificazione.
@@ -589,10 +589,10 @@ export function CompanyLivePreviewPanel() {
 
           {/* ── B29: Evidence Archive link ──────────────────────────────────── */}
           {data && (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-5 py-3 flex items-center justify-between flex-wrap gap-3">
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-5 py-3 flex items-center justify-between flex-wrap gap-3">
               <div>
-                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">Company Evidence Archive</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">
+                <p className="text-[11px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Company Evidence Archive</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
                   Lineage read-only: quali iniziative contribuiscono al KORA Index, BTI, Reporting Readiness.
                   Nessun dato individuale. Nessuna azione operativa.
                 </p>

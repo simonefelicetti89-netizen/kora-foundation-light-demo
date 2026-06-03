@@ -27,19 +27,19 @@ export function PrivacyBoundaryNotice({ reason, dataType, groupSize, className }
   return (
     <div
       className={cn(
-        'rounded-md border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600',
+        'rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4 text-sm text-[rgba(6,3,43,0.62)]',
         className,
       )}
       role="status"
       aria-label="Privacy boundary notice"
     >
       <div className="flex items-start gap-2">
-        <span className="mt-0.5 text-slate-400">🔒</span>
+        <span className="mt-0.5 text-[rgba(6,3,43,0.40)]">🔒</span>
         <div>
-          <p className="font-medium text-slate-700">Privacy Boundary</p>
+          <p className="font-medium text-[rgba(6,3,43,0.78)]">Privacy Boundary</p>
           <p className="mt-1">{message}</p>
           {dataType && (
-            <p className="mt-1 text-xs text-slate-500">Data type: {dataType}</p>
+            <p className="mt-1 text-xs text-[rgba(6,3,43,0.52)]">Data type: {dataType}</p>
           )}
         </div>
       </div>

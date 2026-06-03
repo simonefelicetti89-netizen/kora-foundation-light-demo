@@ -64,7 +64,7 @@ const STATUS_STYLES: Record<string, string> = {
   matched:        'bg-green-100 text-green-800 border-green-200',
   possible_match: 'bg-amber-100 text-amber-800 border-amber-200',
   needs_review:   'bg-purple-100 text-purple-800 border-purple-200',
-  unmatched:      'bg-slate-100 text-slate-500 border-slate-200',
+  unmatched:      'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -85,10 +85,10 @@ function ConfidenceBar({ value }: { value: number }) {
   const color = pct >= 85 ? 'bg-green-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-400';
   return (
     <div className="flex items-center gap-1.5">
-      <div className="h-1.5 w-16 rounded-full bg-slate-200 overflow-hidden">
+      <div className="h-1.5 w-16 rounded-full bg-[rgba(6,3,43,0.12)] overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] font-mono text-slate-500">{pct}%</span>
+      <span className="text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{pct}%</span>
     </div>
   );
 }
@@ -144,7 +144,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
   const nrCount       = matchReview.matches.filter(m => m.status !== 'unmatched' && effectiveDecision(m) === 'needs_review').length;
 
   return (
-    <div className="rounded-lg border border-[#C76F3D]/25 bg-white space-y-0 overflow-hidden">
+    <div className="rounded-lg border border-[#C76F3D]/25 bg-[#F8F6F1] space-y-0 overflow-hidden">
 
       {/* Header */}
       <div className="bg-[#f5f4ff] px-4 py-3 border-b border-[#c7c4f8]/50">
@@ -153,7 +153,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
             <p className="text-[10px] font-bold text-[#C76F3D] uppercase tracking-wide">
               Match Review — Decisioni iniziativa
             </p>
-            <p className="text-[10px] text-slate-500 mt-0.5">
+            <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
               Rivedi i match multi-file prima dell&apos;accept. Le decisioni non bypassano UEF Review.
             </p>
           </div>
@@ -167,7 +167,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
             <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 text-purple-700 font-medium">
               ? Review: {matchReview.needsReview}
             </span>
-            <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 text-slate-600 font-medium">
+            <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[rgba(6,3,43,0.62)] font-medium">
               ✗ Unmatched: {matchReview.unmatched}
             </span>
             {matchReview.conflicts > 0 && (
@@ -189,7 +189,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
           <span className="rounded border border-red-200 bg-red-100 px-2 py-0.5 text-red-800 font-semibold">
             Rifiutati: {rejectCount}
           </span>
-          <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-500 font-semibold">
+          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[rgba(6,3,43,0.52)] font-semibold">
             Non abbinati: {matchReview.unmatched}
           </span>
         </div>
@@ -214,7 +214,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
       </div>
 
       {/* Match list */}
-      <div className="divide-y divide-slate-100 max-h-[520px] overflow-y-auto">
+      <div className="divide-y divide-[rgba(6,3,43,0.05)] max-h-[520px] overflow-y-auto">
         {matchReview.matches.map(m => {
           const dec = effectiveDecision(m);
           const isUnmatched = m.status === 'unmatched';
@@ -235,9 +235,9 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
 
                 {/* Initiative info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-slate-700 truncate">{m.primary.safeName}</p>
+                  <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)] truncate">{m.primary.safeName}</p>
                   <div className="flex flex-wrap gap-1 mt-0.5">
-                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono text-slate-500">
+                    <span className="rounded bg-[rgba(6,3,43,0.05)] px-1.5 py-0.5 text-[9px] font-mono text-[rgba(6,3,43,0.52)]">
                       file_{m.primary.fileIndex} · {m.primary.fileRole}
                     </span>
                     {m.linkedRows.map((lr, i) => (
@@ -247,7 +247,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
                     ))}
                   </div>
                   {m.mergedFields.length > 0 && (
-                    <p className="text-[10px] text-slate-500 mt-0.5">
+                    <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
                       Merge: {m.mergedFields.slice(0, 5).join(', ')}{m.mergedFields.length > 5 ? ` +${m.mergedFields.length - 5}` : ''}
                     </p>
                   )}
@@ -269,7 +269,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
                           className={`rounded border px-2 py-1 text-[9px] font-bold transition-colors ${
                             dec === d
                               ? DECISION_STYLES[d]
-                              : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'
+                              : 'bg-[#F8F6F1] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)] hover:bg-[rgba(6,3,43,0.03)]'
                           }`}
                         >
                           {d === 'accept' ? '✓' : d === 'needs_review' ? '?' : '✗'}
@@ -278,7 +278,7 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
                       ))}
                     </div>
                   ) : (
-                    <span className="rounded border border-slate-100 bg-slate-50 px-2 py-1 text-[9px] font-medium text-slate-400">
+                    <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-2 py-1 text-[9px] font-medium text-[rgba(6,3,43,0.40)]">
                       Nessun match
                     </span>
                   )}
@@ -298,15 +298,15 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
                 <div className="mt-2 ml-[102px] space-y-1">
                   {m.reasonCodes.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide mr-1">Segnali:</span>
+                      <span className="text-[9px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mr-1">Segnali:</span>
                       {m.reasonCodes.map((r, i) => (
-                        <span key={i} className="rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono text-slate-600">{r}</span>
+                        <span key={i} className="rounded bg-[rgba(6,3,43,0.05)] px-1.5 py-0.5 text-[9px] font-mono text-[rgba(6,3,43,0.62)]">{r}</span>
                       ))}
                     </div>
                   )}
                   {m.mergedFields.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide mr-1">Campi merged:</span>
+                      <span className="text-[9px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mr-1">Campi merged:</span>
                       {m.mergedFields.map((f, i) => (
                         <span key={i} className="rounded bg-blue-50 border border-blue-100 px-1.5 py-0.5 text-[9px] font-mono text-blue-700">{f}</span>
                       ))}
@@ -338,8 +338,8 @@ export function MatchReviewPanel({ matchReview, decisions, onDecisionsChange }: 
       )}
 
       {/* Caveat */}
-      <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-100">
-        <p className="text-[10px] text-slate-500">
+      <div className="px-4 py-2.5 bg-[rgba(6,3,43,0.03)] border-t border-[rgba(6,3,43,0.05)]">
+        <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
           ⓘ {matchReview.caveat}
         </p>
       </div>

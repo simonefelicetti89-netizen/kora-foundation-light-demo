@@ -32,7 +32,7 @@ const UPLOAD_STATUS_LABELS: Record<string, string> = {
 };
 
 const UPLOAD_STATUS_COLORS: Record<string, string> = {
-  not_started:                  'border-slate-200 bg-slate-50 text-slate-500',
+  not_started:                  'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
   uploaded:                     'border-blue-200 bg-blue-50 text-blue-700',
   validated:                    'border-green-200 bg-green-50 text-green-700',
   needs_review:                 'border-amber-200 bg-amber-50 text-amber-700',
@@ -61,18 +61,18 @@ export default function AdminWorkforceBaselinePage() {
     return (
       <div className="space-y-6 max-w-5xl">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">KORA Admin — Validazione Workforce</p>
-          <h1 className="text-xl font-bold text-slate-900 mt-0.5">Workforce Baseline</h1>
+          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">KORA Admin — Validazione Workforce</p>
+          <h1 className="text-xl font-bold text-[#06032B] mt-0.5">Workforce Baseline</h1>
         </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Azienda cliente</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Azienda cliente</p>
           <div className="flex flex-wrap gap-2">
             {tenants.map((t) => {
               const hasBaseline = baselines.some((b) => b.company_id === t.company_id);
               return (
                 <button key={t.company_id} type="button" onClick={() => setSelectedCompanyId(t.company_id)}
-                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedCompanyId === t.company_id ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}`}>
-                  {t.company_name}{!hasBaseline && <span className="ml-1 text-[9px] text-slate-400">(nessuna baseline)</span>}
+                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedCompanyId === t.company_id ? 'border-indigo-300 bg-[rgba(199,111,61,0.08)] text-indigo-700' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'}`}>
+                  {t.company_name}{!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
                 </button>
               );
             })}
@@ -92,17 +92,17 @@ export default function AdminWorkforceBaselinePage() {
 
       {/* ── Header ── */}
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           KORA Admin — Validazione Workforce Azienda Cliente
         </p>
-        <h1 className="text-xl font-bold text-slate-900 mt-0.5">Workforce Baseline</h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <h1 className="text-xl font-bold text-[#06032B] mt-0.5">Workforce Baseline</h1>
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
           Validazione aggregata della popolazione aziendale — gestita lato KORA Admin.
         </p>
       </div>
 
       {/* ── Admin identity ── */}
-      <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-4 py-3 text-xs text-indigo-800 leading-relaxed space-y-1">
         <p>
           <span className="font-semibold">KORA Admin — gestione azienda cliente.</span>{' '}
           Questa sezione è riservata agli operatori KORA.
@@ -114,8 +114,8 @@ export default function AdminWorkforceBaselinePage() {
       </div>
 
       {/* ── Company selector ── */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Azienda cliente</p>
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Azienda cliente</p>
         <div className="flex flex-wrap gap-2">
           {tenants.map((t) => {
             const hasBaseline = baselines.some((b) => b.company_id === t.company_id);
@@ -126,12 +126,12 @@ export default function AdminWorkforceBaselinePage() {
                 onClick={() => setSelectedCompanyId(t.company_id)}
                 className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
                   selectedCompanyId === t.company_id
-                    ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                    ? 'border-indigo-300 bg-[rgba(199,111,61,0.08)] text-indigo-700'
+                    : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'
                 }`}
               >
                 {t.company_name}
-                {!hasBaseline && <span className="ml-1 text-[9px] text-slate-400">(nessuna baseline)</span>}
+                {!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
               </button>
             );
           })}
@@ -140,11 +140,11 @@ export default function AdminWorkforceBaselinePage() {
 
       {/* ── Upload batch status ── */}
       {batch && (
-        <div className="rounded-lg border border-slate-200 bg-white p-5 space-y-3">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Stato Upload Workforce</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Stato Upload Workforce</p>
             <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
-              UPLOAD_STATUS_COLORS[batch.upload_status] ?? 'border-slate-200 text-slate-500'
+              UPLOAD_STATUS_COLORS[batch.upload_status] ?? 'border-[rgba(6,3,43,0.08)] text-[rgba(6,3,43,0.52)]'
             )}>
               {UPLOAD_STATUS_LABELS[batch.upload_status] ?? batch.upload_status}
             </span>
@@ -157,8 +157,8 @@ export default function AdminWorkforceBaselinePage() {
               ['Duplicati',       batch.duplicate_rows],
             ].map(([label, value]) => (
               <div key={label as string}>
-                <p className="text-slate-400">{label}</p>
-                <p className="text-slate-700 font-semibold">{value}</p>
+                <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
+                <p className="text-[rgba(6,3,43,0.78)] font-semibold">{value}</p>
               </div>
             ))}
           </div>
@@ -171,9 +171,9 @@ export default function AdminWorkforceBaselinePage() {
 
       {/* ── Validation result ── */}
       {validation && (
-        <div className="rounded-lg border border-slate-200 bg-white p-5 space-y-3">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Validazione</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Validazione</p>
             <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
               validation.minimum_company_threshold_met
                 ? 'border-green-200 bg-green-50 text-green-700'
@@ -190,8 +190,8 @@ export default function AdminWorkforceBaselinePage() {
               ['Cluster soppressi',   validation.suppressed_groups],
             ].map(([label, value]) => (
               <div key={label as string}>
-                <p className="text-slate-400">{label}</p>
-                <p className="text-slate-700 font-semibold">{value}</p>
+                <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
+                <p className="text-[rgba(6,3,43,0.78)] font-semibold">{value}</p>
               </div>
             ))}
           </div>
@@ -207,7 +207,7 @@ export default function AdminWorkforceBaselinePage() {
           {validation.limitations.length > 0 && (
             <div className="space-y-1">
               {validation.limitations.map((note, i) => (
-                <p key={i} className="text-[10px] text-slate-400 leading-relaxed">{note}</p>
+                <p key={i} className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed">{note}</p>
               ))}
             </div>
           )}
@@ -217,8 +217,8 @@ export default function AdminWorkforceBaselinePage() {
       {/* ── Aggregate groups by dimension ── */}
       <div className="space-y-4">
         <div>
-          <p className="text-sm font-semibold text-slate-800">Gruppi Aggregati per Dimensione</p>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">Gruppi Aggregati per Dimensione</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
             Solo gruppi ≥ 10 lavoratori. Nessun dato individuale — aggregati per privacy.
           </p>
         </div>
@@ -233,8 +233,8 @@ export default function AdminWorkforceBaselinePage() {
               className={cn(
                 'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
                 activeDimension === dim
-                  ? 'border-slate-700 bg-slate-900 text-white'
-                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300',
+                  ? 'border-[rgba(6,3,43,0.35)] bg-[#06032B] text-white'
+                  : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]',
               )}
             >
               {DIMENSION_LABELS[dim]}
@@ -246,21 +246,21 @@ export default function AdminWorkforceBaselinePage() {
         {visibleGroups.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {visibleGroups.map((g) => (
-              <div key={g.group_id} className="rounded-lg border border-slate-100 bg-white p-3 space-y-2">
+              <div key={g.group_id} className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[#F8F6F1] p-3 space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="text-xs font-semibold text-slate-800">{g.dimension_label}</p>
-                    <p className="text-[9px] font-mono text-slate-400">{g.dimension_type}</p>
+                    <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{g.dimension_label}</p>
+                    <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)]">{g.dimension_type}</p>
                   </div>
-                  <span className="text-lg font-bold text-slate-700 shrink-0">{g.employee_count}</span>
+                  <span className="text-lg font-bold text-[rgba(6,3,43,0.78)] shrink-0">{g.employee_count}</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-slate-100">
+                <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.05)]">
                   <div
                     className="h-1.5 rounded-full bg-indigo-400"
                     style={{ width: `${Math.min(g.share_of_workforce * 100, 100)}%` }}
                   />
                 </div>
-                <div className="flex items-center justify-between text-[9px] text-slate-400">
+                <div className="flex items-center justify-between text-[9px] text-[rgba(6,3,43,0.40)]">
                   <span>{(g.share_of_workforce * 100).toFixed(1)}% del totale</span>
                   {!g.included_in_breakdown && (
                     <span className="text-amber-600 font-semibold">soppresso</span>
@@ -270,7 +270,7 @@ export default function AdminWorkforceBaselinePage() {
             ))}
           </div>
         ) : (
-          <p className="text-xs text-slate-400 italic">Nessun gruppo visibile per questa dimensione.</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] italic">Nessun gruppo visibile per questa dimensione.</p>
         )}
 
         {suppressed.length > 0 && (
@@ -282,8 +282,8 @@ export default function AdminWorkforceBaselinePage() {
 
       {/* ── Readiness ── */}
       {readiness && (
-        <div className="rounded-lg border border-slate-200 bg-white p-5 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Readiness Pipeline</p>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Readiness Pipeline</p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[10px]">
             {[
               ['Company threshold N≥30',  validation?.minimum_company_threshold_met ? '✓ OK' : '✕ Non soddisfatta'],
@@ -294,8 +294,8 @@ export default function AdminWorkforceBaselinePage() {
               ['Cluster soppressi',        validation ? `${validation.suppressed_groups}` : '—'],
             ].map(([label, value]) => (
               <div key={label as string}>
-                <p className="text-slate-400">{label}</p>
-                <p className={cn('text-slate-700 font-semibold mt-0.5',
+                <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
+                <p className={cn('text-[rgba(6,3,43,0.78)] font-semibold mt-0.5',
                   (value as string).startsWith('✕') ? 'text-rose-600' :
                   (value as string).startsWith('✓') ? 'text-emerald-600' : ''
                 )}>
@@ -305,20 +305,20 @@ export default function AdminWorkforceBaselinePage() {
             ))}
           </div>
           {readiness.next_action && (
-            <p className="text-[10px] text-slate-400 italic leading-relaxed">{readiness.next_action}</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)] italic leading-relaxed">{readiness.next_action}</p>
           )}
         </div>
       )}
 
       {/* ── Navigation ── */}
-      <div className="border-t border-slate-100 pt-4 flex items-center gap-4 flex-wrap">
-        <Link href="/admin/companies" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+      <div className="border-t border-[rgba(6,3,43,0.05)] pt-4 flex items-center gap-4 flex-wrap">
+        <Link href="/admin/companies" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           ← Company Registry
         </Link>
-        <Link href="/admin/companies/onboarding" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+        <Link href="/admin/companies/onboarding" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           Onboarding Studio
         </Link>
-        <Link href="/company/ingestion" className="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2">
+        <Link href="/company/ingestion" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           AI Ingestion →
         </Link>
       </div>

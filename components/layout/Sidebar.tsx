@@ -79,7 +79,7 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Strategy & Admin',
         groupBadge: 'ADMIN',
-        groupBadgeStyle: 'bg-slate-700/40 text-slate-400 border border-slate-600/40',
+        groupBadgeStyle: 'bg-white/10 text-white/50 border border-white/20',
         items: [
           { href: '/admin',         label: 'Admin Console' },
           { href: '/admin/gtm',     label: 'GTM & Roadmap' },

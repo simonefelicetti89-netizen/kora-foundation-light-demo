@@ -30,8 +30,8 @@ function SectionTitle({ n, title, subtitle }: { n: string; title: string; subtit
         {n}
       </span>
       <div>
-        <h2 className="text-sm font-bold text-slate-800">{title}</h2>
-        {subtitle && <p className="text-[10.5px] text-slate-500 mt-0.5">{subtitle}</p>}
+        <h2 className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{title}</h2>
+        {subtitle && <p className="text-[10.5px] text-[rgba(6,3,43,0.52)] mt-0.5">{subtitle}</p>}
       </div>
     </div>
   );
@@ -48,7 +48,7 @@ const SUBMISSION_STATUS_CLS: Record<string, string> = {
   submission_accepted:            'bg-green-50 text-green-700 border-green-200',
   submission_needs_clarification: 'bg-amber-50 text-amber-700 border-amber-200',
   submission_pending:             'bg-blue-50 text-blue-700 border-blue-200',
-  submission_draft:               'bg-slate-50 text-slate-500 border-slate-200',
+  submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
 const READINESS_CLS: Record<string, string> = {
@@ -112,8 +112,8 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* ── Quick nav ─────────────────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-slate-200 bg-white px-5 py-4">
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Percorso guidato KORA</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4">
+        <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest mb-3">Percorso guidato KORA</p>
         <div className="grid grid-cols-4 gap-2">
           {[
             { n: '01', label: 'KORA Index',        href: '#kora-index' },
@@ -129,10 +129,10 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
               <a
                 key={step.n}
                 href={step.href}
-                className="rounded border border-slate-200 bg-slate-50 px-2 py-2 text-center hover:bg-slate-100 transition-colors"
+                className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-2 text-center hover:bg-[rgba(6,3,43,0.05)] transition-colors"
               >
-                <p className="text-[9px] font-bold text-slate-400">{step.n}</p>
-                <p className="text-[10.5px] font-semibold text-slate-700 leading-tight">{step.label}</p>
+                <p className="text-[9px] font-bold text-[rgba(6,3,43,0.40)]">{step.n}</p>
+                <p className="text-[10.5px] font-semibold text-[rgba(6,3,43,0.78)] leading-tight">{step.label}</p>
               </a>
             ) : (
               <Link
@@ -149,76 +149,76 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* ── 01: KORA Index ────────────────────────────────────────────────────── */}
-      <div id="kora-index" className="rounded-xl border border-slate-200 bg-white px-6 py-5 space-y-5 scroll-mt-4">
+      <div id="kora-index" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-5 scroll-mt-4">
         <SectionTitle n="01" title="KORA Index" subtitle="Foundation Light v0.1 · pre_empirical_calibration · dati sintetici" />
 
         {/* Hero metrics */}
         <div className="flex items-start gap-6 flex-wrap">
           <div>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">KORA Index</p>
+            <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">KORA Index</p>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-bold text-[#06032B] tracking-tight">{ACME_KORA_INDEX.value}</span>
-              <span className="text-sm text-slate-400">/100</span>
+              <span className="text-sm text-[rgba(6,3,43,0.40)]">/100</span>
             </div>
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Confidence Score</p>
-            <span className="text-2xl font-bold text-slate-700">{Math.round(ACME_KORA_INDEX.confidenceScore * 100)}%</span>
-            <p className="text-[9px] text-slate-400 mt-0.5">Esterno al KORA Index · doc 21b</p>
+            <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Confidence Score</p>
+            <span className="text-2xl font-bold text-[rgba(6,3,43,0.78)]">{Math.round(ACME_KORA_INDEX.confidenceScore * 100)}%</span>
+            <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-0.5">Esterno al KORA Index · doc 21b</p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-1">Activation Safeguard</p>
+            <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Activation Safeguard</p>
             <Badge label={`Safeguard: ${ACME_KORA_INDEX.safeguardStatus}`} cls="bg-green-50 text-green-700 border-green-200" />
-            <p className="text-[9px] text-slate-400 mt-1">AR {Math.round(ACME_KORA_INDEX.activationRate * 100)}% · MAR {Math.round(ACME_KORA_INDEX.meaningfulActivationRate * 100)}%</p>
+            <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-1">AR {Math.round(ACME_KORA_INDEX.activationRate * 100)}% · MAR {Math.round(ACME_KORA_INDEX.meaningfulActivationRate * 100)}%</p>
           </div>
         </div>
 
         {/* Macroblocks */}
         <div className="grid grid-cols-2 gap-3">
           {Object.entries(ACME_MACROBLOCKS).map(([key, mb]) => (
-            <div key={key} className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-1">
+            <div key={key} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 space-y-1">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide">{mb.label}</p>
+                <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">{mb.label}</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[9px] text-slate-400">{Math.round(mb.weight * 100)}%</span>
-                  <span className="text-base font-bold text-slate-800">{mb.score}</span>
+                  <span className="text-[9px] text-[rgba(6,3,43,0.40)]">{Math.round(mb.weight * 100)}%</span>
+                  <span className="text-base font-bold text-[rgba(6,3,43,0.90)]">{mb.score}</span>
                 </div>
               </div>
-              <div className="h-1.5 rounded-full bg-slate-200">
+              <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.12)]">
                 <div
                   className="h-1.5 rounded-full bg-[#C76F3D]"
                   style={{ width: `${mb.score}%` }}
                 />
               </div>
-              <p className="text-[9.5px] text-slate-500 leading-snug">{mb.note}</p>
+              <p className="text-[9.5px] text-[rgba(6,3,43,0.52)] leading-snug">{mb.note}</p>
             </div>
           ))}
         </div>
 
         {/* Pillar distribution */}
         <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Distribuzione Pilastri</p>
+          <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest mb-2">Distribuzione Pilastri</p>
           <div className="space-y-1.5">
             {ACME_PILLARS.map((p) => (
               <div key={p.code} className="flex items-center gap-3">
-                <span className="text-[10px] font-mono font-semibold text-slate-500 w-14 shrink-0">{p.code}</span>
-                <div className="flex-1 h-2 rounded-full bg-slate-100">
+                <span className="text-[10px] font-mono font-semibold text-[rgba(6,3,43,0.52)] w-14 shrink-0">{p.code}</span>
+                <div className="flex-1 h-2 rounded-full bg-[rgba(6,3,43,0.05)]">
                   <div className="h-2 rounded-full bg-[#C76F3D]" style={{ width: `${Math.round(p.share * 100)}%` }} />
                 </div>
-                <span className="text-[10px] font-semibold text-slate-600 w-8 shrink-0 text-right">{Math.round(p.share * 100)}%</span>
-                <p className="text-[9.5px] text-slate-400 flex-1 max-w-[250px] truncate" title={p.note}>{p.note}</p>
+                <span className="text-[10px] font-semibold text-[rgba(6,3,43,0.62)] w-8 shrink-0 text-right">{Math.round(p.share * 100)}%</span>
+                <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] flex-1 max-w-[250px] truncate" title={p.note}>{p.note}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-[9.5px] text-slate-400 pt-1 border-t border-slate-100 leading-relaxed">
+        <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] pt-1 border-t border-[rgba(6,3,43,0.05)] leading-relaxed">
           {ACME_KORA_INDEX.disclaimer}
         </p>
       </div>
 
       {/* ── 02: Evidence Archive ──────────────────────────────────────────────── */}
-      <div id="evidence" className="rounded-xl border border-slate-200 bg-white px-6 py-5 space-y-4 scroll-mt-4">
+      <div id="evidence" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4 scroll-mt-4">
         <SectionTitle n="02" title="Evidence Archive" subtitle="27 iniziative sintetiche — nessun dato individuale" />
 
         {/* Summary counts */}
@@ -229,28 +229,28 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
             { label: 'Sollievo econ.',  value: ACME_EVIDENCE_SUMMARY.limited,        cls: 'text-amber-600' },
             { label: 'Bloccati',        value: ACME_EVIDENCE_SUMMARY.blocked,        cls: 'text-red-500' },
           ].map(({ label, value, cls }) => (
-            <div key={label} className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-center">
-              <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-              <p className={`text-xl font-bold text-slate-800 mt-0.5 ${cls}`}>{value}</p>
+            <div key={label} className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-center">
+              <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{label}</p>
+              <p className={`text-xl font-bold text-[rgba(6,3,43,0.90)] mt-0.5 ${cls}`}>{value}</p>
             </div>
           ))}
         </div>
 
         {/* Evidence table */}
-        <div className="overflow-hidden rounded border border-slate-200">
+        <div className="overflow-hidden rounded border border-[rgba(6,3,43,0.08)]">
           <table className="w-full text-[10.5px]">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
+              <tr className="border-b border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]">
                 {['Iniziativa', 'Pilastro', 'Eligibilità', 'Evidenza', 'Stato'].map((h) => (
-                  <th key={h} className="px-3 py-2 text-left text-[9px] font-bold text-slate-400 uppercase tracking-widest">{h}</th>
+                  <th key={h} className="px-3 py-2 text-left text-[9px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {ACME_EVIDENCE_RECORDS.slice(0, 12).map((ev) => (
-                <tr key={ev.id} className="border-b border-slate-50 hover:bg-slate-50/40">
-                  <td className="px-3 py-2 text-slate-700 max-w-[180px] truncate" title={ev.note}>{ev.safeName}</td>
-                  <td className="px-3 py-2 text-slate-500">{ev.pillar}</td>
+                <tr key={ev.id} className="border-b border-[rgba(6,3,43,0.04)] hover:bg-[rgba(6,3,43,0.03)]/40">
+                  <td className="px-3 py-2 text-[rgba(6,3,43,0.78)] max-w-[180px] truncate" title={ev.note}>{ev.safeName}</td>
+                  <td className="px-3 py-2 text-[rgba(6,3,43,0.52)]">{ev.pillar}</td>
                   <td className="px-3 py-2">
                     <Badge
                       label={ev.eligibility}
@@ -260,27 +260,27 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
                            'bg-blue-50 text-blue-700 border-blue-200'}
                     />
                   </td>
-                  <td className="px-3 py-2 text-slate-500">{ev.evidenceLevel}</td>
-                  <td className="px-3 py-2 text-slate-500 text-[9px]">{ev.reviewStatus.replace(/_/g, ' ')}</td>
+                  <td className="px-3 py-2 text-[rgba(6,3,43,0.52)]">{ev.evidenceLevel}</td>
+                  <td className="px-3 py-2 text-[rgba(6,3,43,0.52)] text-[9px]">{ev.reviewStatus.replace(/_/g, ' ')}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="px-3 py-2 text-[9.5px] text-slate-400 border-t border-slate-100">
+          <p className="px-3 py-2 text-[9.5px] text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)]">
             Mostrate 12 di 27 iniziative · Nessun dato individuale · No storagePath · No signedUrl
           </p>
         </div>
 
         {/* Evidence gaps */}
         <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Evidence Gaps</p>
+          <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-widest mb-2">Evidence Gaps</p>
           <div className="space-y-1.5">
             {ACME_EVIDENCE_GAPS.map((gap, i) => (
-              <div key={i} className={`rounded border px-3 py-2 text-[10.5px] flex gap-2 ${gap.severity === 'high' ? 'border-red-200 bg-red-50' : gap.severity === 'medium' ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-slate-50'}`}>
-                <Badge label={gap.pillar} cls="border-slate-300 bg-white text-slate-600 shrink-0" />
+              <div key={i} className={`rounded border px-3 py-2 text-[10.5px] flex gap-2 ${gap.severity === 'high' ? 'border-red-200 bg-red-50' : gap.severity === 'medium' ? 'border-amber-200 bg-amber-50' : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)]'}`}>
+                <Badge label={gap.pillar} cls="border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <span className={`font-semibold ${gap.severity === 'high' ? 'text-red-700' : gap.severity === 'medium' ? 'text-amber-700' : 'text-slate-600'}`}>{gap.gap}</span>
-                  <span className="text-slate-500 ml-1">— {gap.action}</span>
+                  <span className={`font-semibold ${gap.severity === 'high' ? 'text-red-700' : gap.severity === 'medium' ? 'text-amber-700' : 'text-[rgba(6,3,43,0.62)]'}`}>{gap.gap}</span>
+                  <span className="text-[rgba(6,3,43,0.52)] ml-1">— {gap.action}</span>
                 </div>
               </div>
             ))}
@@ -289,7 +289,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* ── 03: Data Submissions ──────────────────────────────────────────────── */}
-      <div id="submissions" className="rounded-xl border border-slate-200 bg-white px-6 py-5 space-y-4 scroll-mt-4">
+      <div id="submissions" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4 scroll-mt-4">
         <SectionTitle n="03" title="Data Submission" subtitle="Company-side upload flow (B39) — revisione KORA Admin obbligatoria" />
 
         <div className="rounded border border-amber-200 bg-amber-50 px-4 py-2 text-[10px] text-amber-700">
@@ -298,22 +298,22 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
 
         <div className="space-y-3">
           {ACME_SUBMISSIONS.map((sub) => (
-            <div key={sub.id} className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 space-y-2">
+            <div key={sub.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 space-y-2">
               <div className="flex items-start justify-between gap-2 flex-wrap">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge label={SUBMISSION_STATUS_LABEL[sub.status] ?? sub.status} cls={SUBMISSION_STATUS_CLS[sub.status] ?? 'border-slate-200 bg-slate-50 text-slate-500'} />
-                    <span className="text-[10px] font-semibold text-slate-600">{sub.submissionType}</span>
-                    <span className="text-[9px] text-slate-400">{sub.period}</span>
-                    <span className="text-[9px] text-slate-400">{sub.fileCount} file</span>
+                    <Badge label={SUBMISSION_STATUS_LABEL[sub.status] ?? sub.status} cls={SUBMISSION_STATUS_CLS[sub.status] ?? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'} />
+                    <span className="text-[10px] font-semibold text-[rgba(6,3,43,0.62)]">{sub.submissionType}</span>
+                    <span className="text-[9px] text-[rgba(6,3,43,0.40)]">{sub.period}</span>
+                    <span className="text-[9px] text-[rgba(6,3,43,0.40)]">{sub.fileCount} file</span>
                   </div>
                   {sub.companyNote && (
-                    <p className="text-[10px] text-slate-500">
-                      <span className="font-semibold text-slate-600">Nota azienda: </span>{sub.companyNote}
+                    <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
+                      <span className="font-semibold text-[rgba(6,3,43,0.62)]">Nota azienda: </span>{sub.companyNote}
                     </p>
                   )}
                   {sub.adminComment && (
-                    <p className="text-[10px] text-indigo-700 rounded border border-indigo-100 bg-indigo-50 px-2 py-1 mt-1">
+                    <p className="text-[10px] text-indigo-700 rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-2 py-1 mt-1">
                       <span className="font-semibold">KORA Admin: </span>{sub.adminComment}
                     </p>
                   )}
@@ -322,7 +322,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
               {sub.files.length > 0 && (
                 <div className="flex gap-2 flex-wrap">
                   {sub.files.map((f, fi) => (
-                    <span key={fi} className="rounded border border-slate-200 bg-white px-2 py-0.5 text-[9px] text-slate-500 font-mono">
+                    <span key={fi} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-2 py-0.5 text-[9px] text-[rgba(6,3,43,0.52)] font-mono">
                       .{f.fileType} · {f.safeName.slice(0, 30)} · {Math.round(f.fileSizeBytes / 1024)}KB
                     </span>
                   ))}
@@ -341,30 +341,30 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* ── 04: Decision Pack ─────────────────────────────────────────────────── */}
-      <div id="decision-pack" className="rounded-xl border border-slate-200 bg-white px-6 py-5 space-y-4 scroll-mt-4">
+      <div id="decision-pack" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4 scroll-mt-4">
         <SectionTitle n="04" title="Decision Pack" subtitle={`${ACME_DECISION_PACK.versionId} · ${ACME_DECISION_PACK.status} · ${ACME_DECISION_PACK.reportingPeriod}`} />
 
         <div className="flex items-center gap-2">
           <Badge label="DRAFT" cls="bg-amber-50 text-amber-700 border-amber-200" />
-          <span className="text-[10.5px] text-slate-500">Generato: {new Date(ACME_DECISION_PACK.generatedAt).toLocaleDateString('it-IT')}</span>
+          <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">Generato: {new Date(ACME_DECISION_PACK.generatedAt).toLocaleDateString('it-IT')}</span>
         </div>
 
         <div className="space-y-2">
           {ACME_DECISION_PACK.sections.map((s, i) => (
-            <div key={i} className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-[10px] font-bold text-slate-600 uppercase tracking-wide mb-1">{s.title}</p>
-              <p className="text-[10.5px] text-slate-600 leading-relaxed">{s.summary}</p>
+            <div key={i} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3">
+              <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide mb-1">{s.title}</p>
+              <p className="text-[10.5px] text-[rgba(6,3,43,0.62)] leading-relaxed">{s.summary}</p>
             </div>
           ))}
         </div>
 
-        <p className="text-[9.5px] text-slate-400 pt-1 border-t border-slate-100 leading-relaxed">
+        <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] pt-1 border-t border-[rgba(6,3,43,0.05)] leading-relaxed">
           {ACME_DECISION_PACK.disclaimer}
         </p>
       </div>
 
       {/* ── 05: Reporting Readiness ───────────────────────────────────────────── */}
-      <div id="readiness" className="rounded-xl border border-slate-200 bg-white px-6 py-5 space-y-4 scroll-mt-4">
+      <div id="readiness" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-4 scroll-mt-4">
         <SectionTitle n="05" title="Reporting Readiness" subtitle="Non equivale a certificazione di conformità normativa" />
 
         <div className="flex items-center gap-3">
@@ -372,7 +372,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
             label={ACME_REPORTING_READINESS.overallLevel.replace(/_/g, ' ')}
             cls="bg-amber-50 text-amber-700 border-amber-200"
           />
-          <span className="text-[10.5px] text-slate-500">
+          <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">
             Score sintetico: {ACME_REPORTING_READINESS.readinessScore}%
           </span>
         </div>
@@ -380,34 +380,34 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
         <div className="space-y-2">
           {ACME_REPORTING_READINESS.pillars.map((p) => (
             <div key={p.pillar} className="flex items-start gap-3 text-[10.5px]">
-              <span className="font-mono font-semibold text-slate-500 w-16 shrink-0">{p.pillar}</span>
-              <span className={`font-semibold w-32 shrink-0 ${READINESS_CLS[p.status] ?? 'text-slate-500'}`}>
+              <span className="font-mono font-semibold text-[rgba(6,3,43,0.52)] w-16 shrink-0">{p.pillar}</span>
+              <span className={`font-semibold w-32 shrink-0 ${READINESS_CLS[p.status] ?? 'text-[rgba(6,3,43,0.52)]'}`}>
                 {READINESS_LABEL[p.status] ?? p.status}
               </span>
-              <span className="text-slate-500 leading-snug">{p.note}</span>
+              <span className="text-[rgba(6,3,43,0.52)] leading-snug">{p.note}</span>
             </div>
           ))}
         </div>
 
-        <p className="text-[9.5px] text-slate-400 rounded border border-slate-200 bg-slate-50 px-3 py-2 leading-relaxed">
+        <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 leading-relaxed">
           {ACME_REPORTING_READINESS.caveat}
         </p>
       </div>
 
       {/* ── 06: Next Best Actions ─────────────────────────────────────────────── */}
-      <div id="actions" className="rounded-xl border border-slate-200 bg-white px-6 py-5 space-y-3 scroll-mt-4">
+      <div id="actions" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-3 scroll-mt-4">
         <SectionTitle n="06" title="Next Best Actions" subtitle="Priorità metodologiche — dati sintetici" />
 
         {ACME_NEXT_ACTIONS.map((a) => (
           <div key={a.priority} className="flex items-start gap-3 text-[10.5px]">
             <span className="rounded bg-[#06032B] text-white text-[9px] font-bold px-1.5 py-0.5 shrink-0">{a.priority}</span>
             <div className="flex-1 min-w-0">
-              <span className="font-semibold text-slate-700">[{a.pillar}] </span>
-              <span className="text-slate-600">{a.action}</span>
+              <span className="font-semibold text-[rgba(6,3,43,0.78)]">[{a.pillar}] </span>
+              <span className="text-[rgba(6,3,43,0.62)]">{a.action}</span>
             </div>
             <div className="shrink-0 space-y-0.5 text-right">
               <p className="text-[9px] text-green-600 font-semibold">{a.impact}</p>
-              <p className="text-[9px] text-slate-400">Effort: {a.effort}</p>
+              <p className="text-[9px] text-[rgba(6,3,43,0.40)]">Effort: {a.effort}</p>
             </div>
           </div>
         ))}
@@ -416,7 +416,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       {/* ── 07: Company Workspace Preview ─────────────────────────────────────── */}
       <div className="rounded-xl border border-[#C76F3D]/30 bg-[#C76F3D]/5 px-6 py-5 space-y-3">
         <SectionTitle n="07" title="Company Workspace Preview" subtitle="Apre una visualizzazione del workspace come lo vedrebbe COMPANY_ADMIN" />
-        <p className="text-[10.5px] text-slate-600 leading-relaxed">
+        <p className="text-[10.5px] text-[rgba(6,3,43,0.62)] leading-relaxed">
           La demo workspace preview mostra come apparirà il workspace aziendale reale con dati simili ad ACME-001. Layout identico a quello che vedrebbe un Company Admin autenticato su un tenant live.
         </p>
         <div className="flex gap-3 flex-wrap">
@@ -426,7 +426,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
           >
             Apri Workspace Preview →
           </Link>
-          <span className="text-[9px] text-slate-400 self-center">Solo KORA_ADMIN · Dati sintetici · Nessuna mutazione live</span>
+          <span className="text-[9px] text-[rgba(6,3,43,0.40)] self-center">Solo KORA_ADMIN · Dati sintetici · Nessuna mutazione live</span>
         </div>
       </div>
 
@@ -449,7 +449,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
             { name: 'Generational Transition', note: 'Intelligence su trasferimento intergenerazionale — fase pilota avanzata.' },
             { name: 'Future Readiness',        note: 'Modulo di readiness futura — dipende da benchmark cross-settore.' },
           ].map((m) => (
-            <div key={m.name} className="rounded-lg border border-amber-200 bg-white/60 p-3 opacity-80 space-y-1">
+            <div key={m.name} className="rounded-lg border border-amber-200 bg-[#F8F6F1]/60 p-3 opacity-80 space-y-1">
               <p className="text-[10.5px] font-semibold text-amber-800">{m.name}</p>
               <p className="text-[9.5px] text-amber-700 leading-snug">{m.note}</p>
               <p className="text-[9px] font-semibold text-amber-500 uppercase tracking-wide">Vision</p>
@@ -465,15 +465,15 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
       </div>
 
       {/* ── Methodology footer ────────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-slate-200 bg-white px-5 py-4 space-y-2 text-[10px] text-slate-500">
-        <p className="font-semibold text-slate-600">Metodologia & Privacy</p>
+      <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4 space-y-2 text-[10px] text-[rgba(6,3,43,0.52)]">
+        <p className="font-semibold text-[rgba(6,3,43,0.62)]">Metodologia & Privacy</p>
         {[
           ACME_METHODOLOGY.disclaimerKoraMeasures,
           ACME_METHODOLOGY.disclaimerPrivacy,
           ACME_METHODOLOGY.disclaimerCompliance,
           ACME_METHODOLOGY.csrDisclaimer,
         ].map((d, i) => <p key={i}>{d}</p>)}
-        <p className="text-[9px] text-slate-400 pt-1 border-t border-slate-100">
+        <p className="text-[9px] text-[rgba(6,3,43,0.40)] pt-1 border-t border-[rgba(6,3,43,0.05)]">
           ACME-001 · Synthetic Guided Demo · {ACME_PROFILE.methodologyVersion} · {ACME_KORA_INDEX.calibrationStatus} · synthetic_demo_data: true
         </p>
       </div>

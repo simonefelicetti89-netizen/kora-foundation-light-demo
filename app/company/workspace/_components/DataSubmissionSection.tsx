@@ -41,12 +41,12 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_CLS: Record<string, string> = {
-  submission_draft:               'bg-slate-50 text-slate-500 border-slate-200',
+  submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
   submission_pending:             'bg-blue-50 text-blue-700 border-blue-200',
   submission_needs_clarification: 'bg-amber-50 text-amber-700 border-amber-200',
   submission_accepted:            'bg-green-50 text-green-700 border-green-200',
   submission_rejected:            'bg-red-50 text-red-500 border-red-200',
-  submission_archived:            'bg-slate-50 text-slate-400 border-slate-200',
+  submission_archived:            'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
 
 const SUBMISSION_TYPES = ['initiatives','budget','participation','evidence','lms','provider','policy','mixed','other'] as const;
@@ -101,17 +101,17 @@ function UploadForm({ submissionId, onFileDone }: { submissionId: string; onFile
     <div className="space-y-2">
       <div className="flex gap-2 flex-wrap items-end">
         <div>
-          <label className="block text-[9px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Scopo</label>
+          <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-0.5">Scopo</label>
           <select value={purpose} onChange={e => setPurpose(e.target.value)}
-            className="rounded border border-slate-300 px-2 py-1.5 text-xs text-slate-700 focus:outline-none">
+            className="rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none">
             {FILE_PURPOSES.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
         <div className="flex-1 min-w-0">
-          <label className="block text-[9px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">File (CSV, XLSX, PDF)</label>
+          <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-0.5">File (CSV, XLSX, PDF)</label>
           <input type="file" accept=".csv,.xlsx,.pdf"
             onChange={e => setFile(e.target.files?.[0] ?? null)}
-            className="text-xs text-slate-700 w-full" />
+            className="text-xs text-[rgba(6,3,43,0.78)] w-full" />
         </div>
         <button onClick={upload} disabled={!file || status === 'loading'}
           className="rounded-lg bg-[#06032B] text-white px-3 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors shrink-0">
@@ -155,28 +155,28 @@ function CreateForm({ onCreated }: { onCreated: (id: string) => void }) {
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
-      <p className="text-xs font-semibold text-slate-700">Nuova Submission Dati</p>
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-3">
+      <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">Nuova Submission Dati</p>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-[9px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Tipo dati</label>
+          <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-0.5">Tipo dati</label>
           <select value={type} onChange={e => setType(e.target.value)}
-            className="w-full rounded border border-slate-300 px-2 py-1.5 text-xs text-slate-700 focus:outline-none">
+            className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none">
             {SUBMISSION_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
         <div>
-          <label className="block text-[9px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Periodo</label>
+          <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-0.5">Periodo</label>
           <input value={period} onChange={e => setPeriod(e.target.value)}
             placeholder="2026-Q1"
-            className="w-full rounded border border-slate-300 px-2 py-1.5 text-xs font-mono text-slate-700 focus:outline-none" />
+            className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.78)] focus:outline-none" />
         </div>
       </div>
       <div>
-        <label className="block text-[9px] font-semibold text-slate-500 uppercase tracking-wide mb-0.5">Nota (facoltativa, max 300 car., senza PII)</label>
+        <label className="block text-[9px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-0.5">Nota (facoltativa, max 300 car., senza PII)</label>
         <textarea value={note} onChange={e => setNote(e.target.value.slice(0, 300))}
           rows={2} placeholder="Descrizione breve dei dati inviati…"
-          className="w-full rounded border border-slate-300 px-2 py-1.5 text-xs text-slate-700 focus:outline-none resize-none" />
+          className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none resize-none" />
       </div>
       {status === 'error' && <p className="text-red-500 text-[10px]">⚠ {msg}</p>}
       <button onClick={create} disabled={status === 'loading'}
@@ -271,8 +271,8 @@ export function DataSubmissionSection({ userRole }: Props) {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Data Submission</p>
-          <p className="text-[10px] text-slate-400 mt-0.5">
+          <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Data Submission</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
             I dati caricati saranno revisionati da KORA Admin prima di entrare nella pipeline di scoring.
           </p>
         </div>
@@ -298,12 +298,12 @@ export function DataSubmissionSection({ userRole }: Props) {
       )}
 
       {/* Submissions list */}
-      {loading && <p className="text-xs text-slate-400 text-center py-3">Caricamento…</p>}
+      {loading && <p className="text-xs text-[rgba(6,3,43,0.40)] text-center py-3">Caricamento…</p>}
 
       {!loading && list.length === 0 && !showCreate && !activeDraft && (
         <div className="text-center py-5 space-y-1">
-          <p className="text-xs text-slate-600 font-semibold">Nessuna data submission inviata.</p>
-          <p className="text-[10px] text-slate-400">
+          <p className="text-xs text-[rgba(6,3,43,0.62)] font-semibold">Nessuna data submission inviata.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
             {isAdmin
               ? 'Crea una submission per inviare dati a KORA Admin.'
               : 'Il Company Admin potrà inviare dati per la revisione KORA.'}
@@ -314,15 +314,15 @@ export function DataSubmissionSection({ userRole }: Props) {
       {list.length > 0 && (
         <div className="space-y-2">
           {list.slice(0, 10).map((sub) => (
-            <div key={sub.submissionId} className="rounded-lg border border-slate-200 bg-white px-4 py-3">
+            <div key={sub.submissionId} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
               <div className="flex items-start justify-between gap-2 flex-wrap">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge label={STATUS_LABEL[sub.status] ?? sub.status} cls={STATUS_CLS[sub.status] ?? 'border-slate-200 bg-slate-50 text-slate-500'} />
-                    {sub.submissionType && <span className="text-[10px] text-slate-500">{sub.submissionType}</span>}
-                    <span className="text-[10px] text-slate-400">{sub.period}</span>
+                    <Badge label={STATUS_LABEL[sub.status] ?? sub.status} cls={STATUS_CLS[sub.status] ?? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'} />
+                    {sub.submissionType && <span className="text-[10px] text-[rgba(6,3,43,0.52)]">{sub.submissionType}</span>}
+                    <span className="text-[10px] text-[rgba(6,3,43,0.40)]">{sub.period}</span>
                   </div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-[10px] text-[rgba(6,3,43,0.40)]">
                     {sub.fileCount} file
                     {sub.submittedAt ? ` · Inviato: ${ts(sub.submittedAt)}` : ` · Bozza · ${ts(sub.createdAt)}`}
                   </div>
@@ -345,7 +345,7 @@ export function DataSubmissionSection({ userRole }: Props) {
         </div>
       )}
 
-      <p className="text-[9.5px] text-slate-400 pt-1">
+      <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] pt-1">
         Caricamento dati ≠ scoring KORA · La revisione è svolta da KORA Admin · Nessuna UEF generata automaticamente.
       </p>
     </div>

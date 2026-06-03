@@ -59,12 +59,12 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_CLS: Record<string, string> = {
-  submission_draft:               'bg-slate-50 text-slate-500 border-slate-200',
+  submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
   submission_pending:             'bg-amber-50 text-amber-700 border-amber-200',
   submission_needs_clarification: 'bg-orange-50 text-orange-700 border-orange-200',
   submission_accepted:            'bg-green-50 text-green-700 border-green-200',
   submission_rejected:            'bg-red-50 text-red-600 border-red-200',
-  submission_archived:            'bg-slate-50 text-slate-400 border-slate-200',
+  submission_archived:            'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
 };
 
 function Badge({ label, cls }: { label: string; cls: string }) {
@@ -116,12 +116,12 @@ function ReviewPanel({ sub, onDone }: { sub: Submission; onDone: () => void }) {
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2.5 text-[10.5px]">
-      <p className="font-semibold text-slate-700 text-[10px] uppercase tracking-wide">Azione di revisione</p>
+    <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-3 space-y-2.5 text-[10.5px]">
+      <p className="font-semibold text-[rgba(6,3,43,0.78)] text-[10px] uppercase tracking-wide">Azione di revisione</p>
 
       <select
         value={action} onChange={e => setAction(e.target.value)}
-        className="w-full rounded border border-slate-300 px-2 py-1.5 text-slate-800 text-xs focus:outline-none"
+        className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-[rgba(6,3,43,0.90)] text-xs focus:outline-none"
       >
         <option value="">Seleziona azione…</option>
         <option value="needs_clarification">Richiedi chiarimento</option>
@@ -142,13 +142,13 @@ function ReviewPanel({ sub, onDone }: { sub: Submission; onDone: () => void }) {
         value={comment} onChange={e => setComment(e.target.value.slice(0, 500))}
         placeholder="Commento admin (opzionale, max 500 caratteri, senza PII)…"
         rows={2}
-        className="w-full rounded border border-slate-300 px-2 py-1.5 text-slate-800 text-xs focus:outline-none resize-none"
+        className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-[rgba(6,3,43,0.90)] text-xs focus:outline-none resize-none"
       />
       <div className="flex items-center gap-1.5">
         <input type="checkbox" id={`vis-${sub.submissionId}`} checked={visible}
           onChange={e => setVisible(e.target.checked)}
           className="rounded" />
-        <label htmlFor={`vis-${sub.submissionId}`} className="text-[10px] text-slate-500 cursor-pointer">
+        <label htmlFor={`vis-${sub.submissionId}`} className="text-[10px] text-[rgba(6,3,43,0.52)] cursor-pointer">
           Mostra commento all&apos;azienda
         </label>
       </div>
@@ -206,7 +206,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#9d97ff]">KORA_ADMIN</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">KORA_ADMIN</span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <button onClick={load} className="text-[9px] text-white/30 hover:text-white/60 underline">↻ Aggiorna</button>
         </div>
@@ -218,7 +218,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
         Dopo aver accettato una submission, aprire Data Intake per creare il batch ufficiale manualmente.
       </div>
 
-      {loading && <p className="text-xs text-slate-400 text-center py-6">Caricamento queue…</p>}
+      {loading && <p className="text-xs text-[rgba(6,3,43,0.40)] text-center py-6">Caricamento queue…</p>}
       {error   && <p className="text-xs text-red-500 px-4 py-2">⚠ {error}</p>}
 
       {data && !loading && (
@@ -231,9 +231,9 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
               { label: 'Accettati',     value: data.summary.accepted,            cls: 'text-green-700' },
               { label: 'Rifiutati',     value: data.summary.rejected,            cls: '' },
             ].map(({ label, value, cls }) => (
-              <div key={label} className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-center">
-                <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-                <p className={`text-xl font-bold text-slate-800 mt-0.5 ${cls}`}>{value}</p>
+              <div key={label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2.5 text-center">
+                <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{label}</p>
+                <p className={`text-xl font-bold text-[rgba(6,3,43,0.90)] mt-0.5 ${cls}`}>{value}</p>
               </div>
             ))}
           </div>
@@ -241,7 +241,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
           {/* Filter */}
           <div className="flex gap-2 flex-wrap items-center">
             <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-              className="rounded border border-slate-300 px-2 py-1.5 text-xs text-slate-700 focus:outline-none">
+              className="rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs text-[rgba(6,3,43,0.78)] focus:outline-none">
               <option value="all">Tutti gli stati</option>
               <option value="submission_pending">In attesa</option>
               <option value="submission_needs_clarification">Chiarimento</option>
@@ -250,53 +250,53 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
               <option value="submission_archived">Archiviati</option>
               <option value="submission_draft">Bozze</option>
             </select>
-            <span className="ml-auto text-[10px] text-slate-400">{filtered.length} di {data.submissions.length}</span>
+            <span className="ml-auto text-[10px] text-[rgba(6,3,43,0.40)]">{filtered.length} di {data.submissions.length}</span>
           </div>
 
           {/* Empty state */}
           {data.submissions.length === 0 && (
-            <div className="rounded-xl border border-slate-200 bg-white px-6 py-10 text-center">
-              <p className="text-sm font-semibold text-slate-700">Nessuna submission ricevuta.</p>
-              <p className="text-xs text-slate-400 mt-1">Le submission aziendali appariranno qui quando le aziende invieranno dati dal workspace.</p>
+            <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-10 text-center">
+              <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Nessuna submission ricevuta.</p>
+              <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">Le submission aziendali appariranno qui quando le aziende invieranno dati dal workspace.</p>
             </div>
           )}
 
           {/* Submissions list */}
           <div className="space-y-3">
             {filtered.map((sub) => (
-              <div key={sub.submissionId} className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+              <div key={sub.submissionId} className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
                 {/* Row header */}
                 <button
                   onClick={() => setExpanded(expanded === sub.submissionId ? null : sub.submissionId)}
-                  className="w-full flex items-start gap-3 px-5 py-4 text-left hover:bg-slate-50/50 transition-colors"
+                  className="w-full flex items-start gap-3 px-5 py-4 text-left hover:bg-[rgba(6,3,43,0.03)]/50 transition-colors"
                 >
                   <div className="flex-1 min-w-0 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-bold text-slate-800">{sub.companyName}</p>
-                      {sub.tenantCode && <span className="font-mono text-[9px] text-slate-400">{sub.tenantCode}</span>}
+                      <p className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{sub.companyName}</p>
+                      {sub.tenantCode && <span className="font-mono text-[9px] text-[rgba(6,3,43,0.40)]">{sub.tenantCode}</span>}
                     </div>
                     <div className="flex gap-2 flex-wrap items-center">
-                      <Badge label={STATUS_LABEL[sub.status] ?? sub.status} cls={STATUS_CLS[sub.status] ?? 'border-slate-200 bg-slate-50 text-slate-500'} />
-                      {sub.submissionType && <span className="text-[10px] text-slate-500">{sub.submissionType}</span>}
-                      <span className="text-[10px] text-slate-400">{sub.period}</span>
-                      <span className="text-[10px] text-slate-400">{sub.fileCount} file</span>
+                      <Badge label={STATUS_LABEL[sub.status] ?? sub.status} cls={STATUS_CLS[sub.status] ?? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'} />
+                      {sub.submissionType && <span className="text-[10px] text-[rgba(6,3,43,0.52)]">{sub.submissionType}</span>}
+                      <span className="text-[10px] text-[rgba(6,3,43,0.40)]">{sub.period}</span>
+                      <span className="text-[10px] text-[rgba(6,3,43,0.40)]">{sub.fileCount} file</span>
                     </div>
-                    <div className="flex gap-3 text-[10px] text-slate-400">
+                    <div className="flex gap-3 text-[10px] text-[rgba(6,3,43,0.40)]">
                       {sub.submittedByEmail && <span>Da: {sub.submittedByEmail}</span>}
                       {sub.submittedAt && <span>Inviato: {ts(sub.submittedAt)}</span>}
                     </div>
                   </div>
-                  <span className="text-slate-400 text-xs shrink-0">{expanded === sub.submissionId ? '▲' : '▼'}</span>
+                  <span className="text-[rgba(6,3,43,0.40)] text-xs shrink-0">{expanded === sub.submissionId ? '▲' : '▼'}</span>
                 </button>
 
                 {/* Expanded detail + review panel */}
                 {expanded === sub.submissionId && (
-                  <div className="border-t border-slate-100 px-5 py-4 space-y-4">
+                  <div className="border-t border-[rgba(6,3,43,0.05)] px-5 py-4 space-y-4">
 
                     {/* Company note */}
                     {sub.companyNote && (
-                      <div className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-[10.5px] text-slate-600">
-                        <span className="font-semibold text-slate-500 text-[9px] uppercase tracking-wide">Nota azienda: </span>
+                      <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[10.5px] text-[rgba(6,3,43,0.62)]">
+                        <span className="font-semibold text-[rgba(6,3,43,0.52)] text-[9px] uppercase tracking-wide">Nota azienda: </span>
                         {sub.companyNote}
                       </div>
                     )}
@@ -304,19 +304,19 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
                     {/* Files */}
                     {sub.files.length > 0 && (
                       <div>
-                        <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-wide mb-1.5">File allegati</p>
+                        <p className="text-[9px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1.5">File allegati</p>
                         <div className="space-y-1">
                           {sub.files.map((f) => (
-                            <div key={f.fileId} className="flex items-center gap-2 text-[10px] text-slate-600 rounded border border-slate-100 bg-slate-50 px-3 py-1.5">
-                              <span className="font-mono text-slate-400">.{f.fileType}</span>
+                            <div key={f.fileId} className="flex items-center gap-2 text-[10px] text-[rgba(6,3,43,0.62)] rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-1.5">
+                              <span className="font-mono text-[rgba(6,3,43,0.40)]">.{f.fileType}</span>
                               <span className="truncate">{f.safeName}</span>
-                              <span className="text-slate-400 shrink-0">{Math.round(f.fileSizeBytes / 1024)} KB</span>
-                              <span className="text-slate-400 shrink-0">{f.purpose}</span>
-                              <Badge label={f.storageStatus === 'stored_private' ? 'Archiviato' : 'Solo metadata'} cls="border-slate-200 bg-white text-slate-500" />
+                              <span className="text-[rgba(6,3,43,0.40)] shrink-0">{Math.round(f.fileSizeBytes / 1024)} KB</span>
+                              <span className="text-[rgba(6,3,43,0.40)] shrink-0">{f.purpose}</span>
+                              <Badge label={f.storageStatus === 'stored_private' ? 'Archiviato' : 'Solo metadata'} cls="border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.52)]" />
                             </div>
                           ))}
                         </div>
-                        <p className="text-[9.5px] text-slate-400 mt-1">
+                        <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] mt-1">
                           Nessun accesso diretto ai file. Usare Data Intake per caricare i file nel pipeline ufficiale.
                         </p>
                       </div>
@@ -324,7 +324,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
 
                     {/* Admin comment */}
                     {sub.adminComment && (
-                      <div className="rounded border border-indigo-100 bg-indigo-50 px-3 py-2 text-[10.5px] text-indigo-700">
+                      <div className="rounded border border-indigo-100 bg-[rgba(199,111,61,0.08)] px-3 py-2 text-[10.5px] text-indigo-700">
                         <span className="font-semibold">Commento admin: </span>{sub.adminComment}
                         {sub.adminReviewedBy && (
                           <p className="text-[9px] text-indigo-500 mt-0.5">{sub.adminReviewedBy} · {ts(sub.adminReviewedAt)}</p>
@@ -348,7 +348,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
             ))}
           </div>
 
-          <p className="text-[9.5px] text-slate-400 text-right">
+          <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] text-right">
             Generato: {ts(data.generatedAt)} · Accepted_for_intake non avvia scoring automatico.
           </p>
         </>

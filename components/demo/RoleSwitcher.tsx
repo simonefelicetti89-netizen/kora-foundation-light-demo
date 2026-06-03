@@ -8,8 +8,8 @@ import type { KoraRole } from '@/lib/types';
 
 const ROLE_COLORS: Record<string, string> = {
   KORA_ADMIN:     'text-indigo-700',
-  COMPANY_ADMIN:  'text-slate-700',
-  COMPANY_VIEWER: 'text-slate-600',
+  COMPANY_ADMIN:  'text-[rgba(6,3,43,0.78)]',
+  COMPANY_VIEWER: 'text-[rgba(6,3,43,0.62)]',
   WORKER:         'text-emerald-700',
   PARTNER:        'text-violet-700',
   ADVISOR:        'text-blue-700',
@@ -17,11 +17,11 @@ const ROLE_COLORS: Record<string, string> = {
 
 export function RoleSwitcher() {
   const { activeRole, setRole } = useRole();
-  const colorClass = ROLE_COLORS[activeRole] ?? 'text-slate-700';
+  const colorClass = ROLE_COLORS[activeRole] ?? 'text-[rgba(6,3,43,0.78)]';
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 select-none whitespace-nowrap">
+      <span className="text-[9px] font-bold uppercase tracking-widest text-[rgba(6,3,43,0.40)] select-none whitespace-nowrap">
         Vista
       </span>
       <div className="relative">
@@ -29,7 +29,7 @@ export function RoleSwitcher() {
           value={activeRole}
           onChange={(e) => setRole(e.target.value as KoraRole)}
           className={cn(
-            'appearance-none rounded-md border border-slate-200 bg-slate-50 pl-2.5 pr-6 py-1.5 text-xs font-semibold shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-300',
+            'appearance-none rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] pl-2.5 pr-6 py-1.5 text-xs font-semibold shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-300',
             colorClass,
           )}
           aria-label="Switch demo role"
@@ -40,7 +40,7 @@ export function RoleSwitcher() {
             </option>
           ))}
         </select>
-        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-slate-400 text-[10px]">
+        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-[rgba(6,3,43,0.40)] text-[10px]">
           ▾
         </span>
       </div>

@@ -49,9 +49,9 @@ function eur(n: number) {
 // Section-level page footer (prints on every section)
 function DocFooter({ page, of = 8 }: { page: number; of?: number }) {
   return (
-    <div className="mt-8 pt-3 border-t border-slate-200 flex items-center justify-between text-[9px] text-slate-400 font-mono print-footer">
+    <div className="mt-8 pt-3 border-t border-[rgba(6,3,43,0.08)] flex items-center justify-between text-[9px] text-[rgba(6,3,43,0.40)] font-mono print-footer">
       <span>KORA Foundation Light · Decision Pack Preview · {COMPANY} · {PERIOD}</span>
-      <span className="text-slate-300 italic">Demo sintetica — non condividere come report certificato</span>
+      <span className="text-[rgba(6,3,43,0.28)] italic">Demo sintetica — non condividere come report certificato</span>
       <span>Pag. {page} / {of}</span>
     </div>
   );
@@ -61,10 +61,10 @@ function DocFooter({ page, of = 8 }: { page: number; of?: number }) {
 function Exhibit({ n, title, src }: { n: string; title: string; src?: string }) {
   return (
     <div className="mb-3">
-      <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400 font-semibold">
+      <p className="text-[9px] uppercase tracking-[0.12em] text-[rgba(6,3,43,0.40)] font-semibold">
         Exhibit {n}{src ? ` · ${src}` : ''}
       </p>
-      <p className="text-[11px] font-bold text-slate-700 mt-0.5">{title}</p>
+      <p className="text-[11px] font-bold text-[rgba(6,3,43,0.78)] mt-0.5">{title}</p>
     </div>
   );
 }
@@ -73,12 +73,12 @@ function Exhibit({ n, title, src }: { n: string; title: string; src?: string }) 
 function SectionTitle({ n, title, sub }: { n: string; title: string; sub?: string }) {
   return (
     <div className="mb-5">
-      <div className="border-t-2 border-slate-900 pt-3">
+      <div className="border-t-2 border-[#06032B] pt-3">
         <div className="flex items-baseline gap-2.5">
-          <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">{n}</span>
-          <h2 className="text-[15px] font-bold tracking-tight text-slate-900 leading-tight">{title}</h2>
+          <span className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{n}</span>
+          <h2 className="text-[15px] font-bold tracking-tight text-[#06032B] leading-tight">{title}</h2>
         </div>
-        {sub && <p className="text-[10px] text-slate-500 mt-0.5 ml-7">{sub}</p>}
+        {sub && <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5 ml-7">{sub}</p>}
       </div>
     </div>
   );
@@ -88,12 +88,12 @@ function SectionTitle({ n, title, sub }: { n: string; title: string; sub?: strin
 function KPI({ label, value, unit, note }: { label: string; value: string; unit?: string; note?: string }) {
   return (
     <div className="space-y-0.5">
-      <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold leading-none">{label}</p>
+      <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold leading-none">{label}</p>
       <div className="flex items-baseline gap-1">
-        <span className="text-[26px] font-bold text-slate-900 leading-none tracking-tight">{value}</span>
-        {unit && <span className="text-[11px] text-slate-500 font-normal">{unit}</span>}
+        <span className="text-[26px] font-bold text-[#06032B] leading-none tracking-tight">{value}</span>
+        {unit && <span className="text-[11px] text-[rgba(6,3,43,0.52)] font-normal">{unit}</span>}
       </div>
-      {note && <p className="text-[9px] text-slate-500 leading-tight">{note}</p>}
+      {note && <p className="text-[9px] text-[rgba(6,3,43,0.52)] leading-tight">{note}</p>}
     </div>
   );
 }
@@ -102,14 +102,14 @@ function KPI({ label, value, unit, note }: { label: string; value: string; unit?
 function Bar({ label, pct, dark = false }: { label: string; pct: number; dark?: boolean }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="w-32 text-[10px] text-slate-600 shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 bg-slate-100 rounded-full">
+      <span className="w-32 text-[10px] text-[rgba(6,3,43,0.62)] shrink-0">{label}</span>
+      <div className="flex-1 h-1.5 bg-[rgba(6,3,43,0.05)] rounded-full">
         <div
-          className={`h-1.5 rounded-full ${dark ? 'bg-slate-800' : 'bg-slate-400'}`}
+          className={`h-1.5 rounded-full ${dark ? 'bg-[#06032B]' : 'bg-[rgba(6,3,43,0.35)]'}`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-8 text-right text-[10px] font-mono text-slate-500">{pct}%</span>
+      <span className="w-8 text-right text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{pct}%</span>
     </div>
   );
 }
@@ -137,15 +137,15 @@ export default function BoardPackPreview() {
       `}</style>
 
       {/* ── Screen-only top bar ─────────────────────────────────────────────── */}
-      <div className="no-print mb-4 flex items-center justify-between gap-4 border-b border-slate-200 pb-3">
+      <div className="no-print mb-4 flex items-center justify-between gap-4 border-b border-[rgba(6,3,43,0.08)] pb-3">
         <Link
           href="/company/reports"
-          className="text-xs text-slate-500 hover:text-slate-900 underline underline-offset-2 transition-colors"
+          className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[#06032B] underline underline-offset-2 transition-colors"
         >
           ← Decision Pack Console
         </Link>
         <div className="flex items-center gap-3">
-          <p className="text-[10px] text-slate-400 italic">
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)] italic">
             Documento ottimizzato per stampa A4 · salva come PDF dal browser
           </p>
           <PrintButton />
@@ -153,7 +153,7 @@ export default function BoardPackPreview() {
       </div>
 
       {/* ── Document body ───────────────────────────────────────────────────── */}
-      <div className="bp-doc max-w-[794px] mx-auto bg-white text-slate-900 pb-8">
+      <div className="bp-doc max-w-[794px] mx-auto bg-[#F8F6F1] text-[#06032B] pb-8">
 
         {/* ══════════════════════════════════════════════════════════════════
             PAGE 1 — COVER
@@ -161,17 +161,17 @@ export default function BoardPackPreview() {
         <div className="avoid-break min-h-[900px] flex flex-col px-1">
 
           {/* Top rule + eyebrow */}
-          <div className="border-t-4 border-slate-900 pt-5 mb-8">
+          <div className="border-t-4 border-[#06032B] pt-5 mb-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[9px] uppercase tracking-[0.15em] text-slate-400 font-semibold mb-1">
+                <p className="text-[9px] uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)] font-semibold mb-1">
                   KORA Foundation Light · Decision Pack Preview
                 </p>
-                <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400">
+                <p className="text-[9px] uppercase tracking-[0.12em] text-[rgba(6,3,43,0.40)]">
                   Preparato per: Executive / HR / Finance / ESG
                 </p>
               </div>
-              <div className="text-right text-[9px] text-slate-400 font-mono space-y-0.5">
+              <div className="text-right text-[9px] text-[rgba(6,3,43,0.40)] font-mono space-y-0.5">
                 <p>Draft Preview · {GENERATED}</p>
                 <p>{METHOD_ID}</p>
               </div>
@@ -180,12 +180,12 @@ export default function BoardPackPreview() {
 
           {/* Company + period */}
           <div className="mb-6">
-            <h1 className="text-[42px] font-bold tracking-tight text-slate-900 leading-none mb-2">
+            <h1 className="text-[42px] font-bold tracking-tight text-[#06032B] leading-none mb-2">
               {COMPANY}
             </h1>
             <div className="flex flex-wrap items-center gap-2 mb-3">
-              <span className="text-[11px] font-semibold text-slate-600 border border-slate-300 rounded px-2 py-0.5">{PERIOD}</span>
-              <span className="text-[11px] font-semibold text-slate-600 border border-slate-300 rounded px-2 py-0.5">{SCENARIO}</span>
+              <span className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.14)] rounded px-2 py-0.5">{PERIOD}</span>
+              <span className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)] border border-[rgba(6,3,43,0.14)] rounded px-2 py-0.5">{SCENARIO}</span>
               <span className="text-[11px] text-amber-700 border border-amber-200 bg-amber-50 rounded px-2 py-0.5">
                 Bozza — revisione advisor richiesta
               </span>
@@ -193,14 +193,14 @@ export default function BoardPackPreview() {
           </div>
 
           {/* Horizontal rule */}
-          <div className="border-t border-slate-300 mb-8" />
+          <div className="border-t border-[rgba(6,3,43,0.14)] mb-8" />
 
           {/* Thesis statement */}
           <div className="mb-10">
-            <p className="text-[9px] uppercase tracking-[0.12em] text-slate-400 font-semibold mb-2">
+            <p className="text-[9px] uppercase tracking-[0.12em] text-[rgba(6,3,43,0.40)] font-semibold mb-2">
               Diagnosi principale
             </p>
-            <p className="text-[22px] font-light text-slate-800 leading-snug tracking-tight">
+            <p className="text-[22px] font-light text-[rgba(6,3,43,0.90)] leading-snug tracking-tight">
               La spesa esiste.<br />
               L&apos;attivazione significativa è ancora concentrata.
             </p>
@@ -209,40 +209,40 @@ export default function BoardPackPreview() {
           {/* Key metrics row */}
           <div className="grid grid-cols-4 gap-6 mb-10">
             <div className="space-y-1 avoid-break">
-              <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">KORA Index v3</p>
-              <p className="text-[52px] font-bold text-slate-900 leading-none">{KORA_INDEX}</p>
-              <p className="text-[10px] text-slate-500">/ 100 · pre-calibration</p>
+              <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold">KORA Index v3</p>
+              <p className="text-[52px] font-bold text-[#06032B] leading-none">{KORA_INDEX}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">/ 100 · pre-calibration</p>
             </div>
-            <div className="space-y-1 avoid-break border-l border-slate-200 pl-6">
-              <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">Confidence Score</p>
-              <p className="text-[40px] font-bold text-slate-700 leading-none">{CS_PCT}%</p>
-              <p className="text-[10px] text-slate-500">esterno · peso 0</p>
+            <div className="space-y-1 avoid-break border-l border-[rgba(6,3,43,0.08)] pl-6">
+              <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold">Confidence Score</p>
+              <p className="text-[40px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{CS_PCT}%</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">esterno · peso 0</p>
             </div>
-            <div className="space-y-1 avoid-break border-l border-slate-200 pl-6">
+            <div className="space-y-1 avoid-break border-l border-[rgba(6,3,43,0.08)] pl-6">
               <p className="text-[9px] uppercase tracking-[0.1em] text-amber-600 font-semibold">Activation Safeguard</p>
               <p className="text-[28px] font-bold text-amber-700 leading-none mt-1">{SAFEGUARD}</p>
               <p className="text-[10px] text-amber-600">soglia CLEAR non raggiunta</p>
             </div>
-            <div className="space-y-1 avoid-break border-l border-slate-200 pl-6">
-              <p className="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-semibold">Activation Debt</p>
-              <p className="text-[28px] font-bold text-slate-900 leading-none mt-1">{eur(ACTIVATION_DEBT_EUR)}</p>
-              <p className="text-[10px] text-slate-500">budget non convertito in IU</p>
+            <div className="space-y-1 avoid-break border-l border-[rgba(6,3,43,0.08)] pl-6">
+              <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold">Activation Debt</p>
+              <p className="text-[28px] font-bold text-[#06032B] leading-none mt-1">{eur(ACTIVATION_DEBT_EUR)}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)]">budget non convertito in IU</p>
             </div>
           </div>
 
           {/* Document metadata */}
-          <div className="mt-auto border-t border-slate-200 pt-5">
-            <div className="grid grid-cols-3 gap-6 text-[10px] text-slate-500">
+          <div className="mt-auto border-t border-[rgba(6,3,43,0.08)] pt-5">
+            <div className="grid grid-cols-3 gap-6 text-[10px] text-[rgba(6,3,43,0.52)]">
               <div className="space-y-1">
-                <p className="font-semibold text-slate-700">Preparato per</p>
+                <p className="font-semibold text-[rgba(6,3,43,0.78)]">Preparato per</p>
                 <p>Executive Leadership<br />HR · Finance · ESG</p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-slate-700">Preparato da</p>
+                <p className="font-semibold text-[rgba(6,3,43,0.78)]">Preparato da</p>
                 <p>KORA Foundation Light<br />Human Impact Intelligence Platform</p>
               </div>
               <div className="space-y-1">
-                <p className="font-semibold text-slate-700">Versione</p>
+                <p className="font-semibold text-[rgba(6,3,43,0.78)]">Versione</p>
                 <p className="font-mono">{METHOD_ID}<br />{CALIB}</p>
               </div>
             </div>
@@ -258,7 +258,7 @@ export default function BoardPackPreview() {
           <SectionTitle n="01" title="Executive Summary" />
 
           {/* Memo header */}
-          <div className="border border-slate-200 rounded px-5 py-4 mb-5 text-[11px] avoid-break">
+          <div className="border border-[rgba(6,3,43,0.08)] rounded px-5 py-4 mb-5 text-[11px] avoid-break">
             <div className="grid grid-cols-2 gap-x-8 gap-y-1">
               {[
                 ['A:', 'Executive Leadership · HR · Finance · ESG'],
@@ -267,8 +267,8 @@ export default function BoardPackPreview() {
                 ['Data:', GENERATED],
               ].map(([k, v]) => (
                 <div key={k} className="flex gap-3">
-                  <span className="font-semibold text-slate-500 w-14 shrink-0">{k}</span>
-                  <span className="text-slate-800">{v}</span>
+                  <span className="font-semibold text-[rgba(6,3,43,0.52)] w-14 shrink-0">{k}</span>
+                  <span className="text-[rgba(6,3,43,0.90)]">{v}</span>
                 </div>
               ))}
             </div>
@@ -276,32 +276,32 @@ export default function BoardPackPreview() {
 
           {/* 4 key findings */}
           <div className="grid grid-cols-4 gap-4 mb-6 avoid-break">
-            <div className="border-t-2 border-slate-800 pt-3 space-y-1">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">KORA Index</p>
-              <p className="text-[28px] font-bold text-slate-900 leading-none">34<span className="text-[13px] font-normal text-slate-400">/100</span></p>
-              <p className="text-[10px] text-slate-600">Activation Reach 30 · Quality 37 · Equity 40 · BTI 28</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-1">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">KORA Index</p>
+              <p className="text-[28px] font-bold text-[#06032B] leading-none">34<span className="text-[13px] font-normal text-[rgba(6,3,43,0.40)]">/100</span></p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.62)]">Activation Reach 30 · Quality 37 · Equity 40 · BTI 28</p>
             </div>
-            <div className="border-t-2 border-slate-300 pt-3 space-y-1">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Attivazione</p>
-              <p className="text-[28px] font-bold text-slate-900 leading-none">38<span className="text-[13px] font-normal text-slate-400">%</span></p>
-              <p className="text-[10px] text-slate-600">{NEVER_ACTIVATED} lavoratori mai attivati su {TOTAL_WORKERS}</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-1">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Attivazione</p>
+              <p className="text-[28px] font-bold text-[#06032B] leading-none">38<span className="text-[13px] font-normal text-[rgba(6,3,43,0.40)]">%</span></p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.62)]">{NEVER_ACTIVATED} lavoratori mai attivati su {TOTAL_WORKERS}</p>
             </div>
             <div className="border-t-2 border-amber-400 pt-3 space-y-1">
               <p className="text-[9px] uppercase tracking-wider text-amber-600 font-semibold">Safeguard</p>
               <p className="text-[28px] font-bold text-amber-700 leading-none">WARN</p>
               <p className="text-[10px] text-amber-700">AR 38% (soglia CLEAR: 40%)</p>
             </div>
-            <div className="border-t-2 border-slate-300 pt-3 space-y-1">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Budget</p>
-              <p className="text-[28px] font-bold text-slate-900 leading-none">€185k</p>
-              <p className="text-[10px] text-slate-600">Utilizzato {eur(BUDGET_USED)} · Debt {eur(ACTIVATION_DEBT_EUR)}</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3 space-y-1">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Budget</p>
+              <p className="text-[28px] font-bold text-[#06032B] leading-none">€185k</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.62)]">Utilizzato {eur(BUDGET_USED)} · Debt {eur(ACTIVATION_DEBT_EUR)}</p>
             </div>
           </div>
 
           {/* What this means */}
           <div className="mb-5 avoid-break">
-            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Cosa significa</p>
-            <p className="text-[12px] text-slate-700 leading-relaxed">
+            <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2">Cosa significa</p>
+            <p className="text-[12px] text-[rgba(6,3,43,0.78)] leading-relaxed">
               Meridiana Group investe in persone e welfare — ma l&apos;attivazione significativa è
               concentrata in una minoranza della workforce. Il top 12% dei lavoratori genera il {TOP12_PCT_IU}%
               degli Impact Units totali. Il {Math.round(NEVER_ACTIVATED / TOTAL_WORKERS * 100)}% della forza lavoro
@@ -314,32 +314,32 @@ export default function BoardPackPreview() {
           {/* Three columns: risks / opportunities / decisions */}
           <div className="grid grid-cols-3 gap-5 avoid-break">
             <div>
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2 border-b border-[rgba(6,3,43,0.08)] pb-1">
                 Rischi principali
               </p>
-              <ul className="space-y-2 text-[11px] text-slate-700">
-                <li className="flex gap-2"><span className="text-slate-300 shrink-0">1.</span>Plant Bergamo/Operations: AR 11% — rischio concentrazione attivazione in sede HQ.</li>
-                <li className="flex gap-2"><span className="text-slate-300 shrink-0">2.</span>48% del budget classificato Economic Relief (0 IU) — ROI people limitato.</li>
-                <li className="flex gap-2"><span className="text-slate-300 shrink-0">3.</span>Confidence Score 60% — dati parzialmente non verificati. Board Pack non certificabile senza revisione advisor.</li>
+              <ul className="space-y-2 text-[11px] text-[rgba(6,3,43,0.78)]">
+                <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">1.</span>Plant Bergamo/Operations: AR 11% — rischio concentrazione attivazione in sede HQ.</li>
+                <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">2.</span>48% del budget classificato Economic Relief (0 IU) — ROI people limitato.</li>
+                <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">3.</span>Confidence Score 60% — dati parzialmente non verificati. Board Pack non certificabile senza revisione advisor.</li>
               </ul>
             </div>
             <div>
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2 border-b border-[rgba(6,3,43,0.08)] pb-1">
                 Opportunità immediate
               </p>
-              <ul className="space-y-2 text-[11px] text-slate-700">
-                <li className="flex gap-2"><span className="text-slate-300 shrink-0">1.</span>Riallocare €20k–25k da Economic Relief a programmi Eligible aumenta KORA Index stimato +8–12 punti.</li>
-                <li className="flex gap-2"><span className="text-slate-300 shrink-0">2.</span>Programmi LIFE+CONNECTION mirati a Plant Bergamo portano AR sopra soglia CLEAR.</li>
-                <li className="flex gap-2"><span className="text-slate-300 shrink-0">3.</span>Scenario S2 già modellato: KORA Index 54, Safeguard CLEAR — usarlo come target 6 mesi.</li>
+              <ul className="space-y-2 text-[11px] text-[rgba(6,3,43,0.78)]">
+                <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">1.</span>Riallocare €20k–25k da Economic Relief a programmi Eligible aumenta KORA Index stimato +8–12 punti.</li>
+                <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">2.</span>Programmi LIFE+CONNECTION mirati a Plant Bergamo portano AR sopra soglia CLEAR.</li>
+                <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">3.</span>Scenario S2 già modellato: KORA Index 54, Safeguard CLEAR — usarlo come target 6 mesi.</li>
               </ul>
             </div>
             <div>
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2 border-b border-slate-200 pb-1">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2 border-b border-[rgba(6,3,43,0.08)] pb-1">
                 Decisioni necessarie
               </p>
-              <ul className="space-y-2 text-[11px] text-slate-700">
-                <li className="flex gap-2"><span className="text-slate-300 shrink-0">1.</span>Autorizzare revisione advisor KORA prima della distribuzione formale del Board Pack.</li>
-                <li className="flex gap-2"><span className="text-slate-300 shrink-0">2.</span>Avviare workshop esecutivo per validare scenario S2 come target operativo Q4–Q1.</li>
+              <ul className="space-y-2 text-[11px] text-[rgba(6,3,43,0.78)]">
+                <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">1.</span>Autorizzare revisione advisor KORA prima della distribuzione formale del Board Pack.</li>
+                <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">2.</span>Avviare workshop esecutivo per validare scenario S2 come target operativo Q4–Q1.</li>
               </ul>
             </div>
           </div>
@@ -366,17 +366,17 @@ export default function BoardPackPreview() {
               { label: 'Distribution & Equity',  weight: 25, value: 40, comps: 'WB · PC · PB · EQ',  note: 'PC 60 · EQ 38' },
               { label: 'Budget-to-Human-Impact', weight: 20, value: 28, comps: 'BTI Engine',          note: `BTI Score ${ACTIVATION_DEBT_EUR > 0 ? 'limitato da Activation Debt' : ''}` },
             ].map((mb) => (
-              <div key={mb.label} className="avoid-break border-t-2 border-slate-200 pt-3 space-y-2">
+              <div key={mb.label} className="avoid-break border-t-2 border-[rgba(6,3,43,0.08)] pt-3 space-y-2">
                 <div className="flex items-baseline justify-between gap-1">
-                  <p className="text-[10px] font-bold text-slate-800 leading-tight">{mb.label}</p>
-                  <span className="text-[9px] font-mono text-slate-400 shrink-0">peso {mb.weight}%</span>
+                  <p className="text-[10px] font-bold text-[rgba(6,3,43,0.90)] leading-tight">{mb.label}</p>
+                  <span className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] shrink-0">peso {mb.weight}%</span>
                 </div>
-                <p className="text-[32px] font-bold text-slate-900 leading-none">{mb.value}</p>
-                <div className="h-1.5 bg-slate-100 rounded-full">
-                  <div className="h-1.5 bg-slate-700 rounded-full" style={{ width: `${mb.value}%` }} />
+                <p className="text-[32px] font-bold text-[#06032B] leading-none">{mb.value}</p>
+                <div className="h-1.5 bg-[rgba(6,3,43,0.05)] rounded-full">
+                  <div className="h-1.5 bg-[rgba(6,3,43,0.65)] rounded-full" style={{ width: `${mb.value}%` }} />
                 </div>
-                <p className="text-[9px] font-mono text-slate-400">{mb.comps}</p>
-                <p className="text-[9px] text-slate-500">{mb.note}</p>
+                <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)]">{mb.comps}</p>
+                <p className="text-[9px] text-[rgba(6,3,43,0.52)]">{mb.note}</p>
               </div>
             ))}
           </div>
@@ -386,11 +386,11 @@ export default function BoardPackPreview() {
           <div className="avoid-break mb-4">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Cod.</th>
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Componente</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Valore</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Macroblocco</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Cod.</th>
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Componente</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Valore</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Macroblocco</th>
                 </tr>
               </thead>
               <tbody>
@@ -406,11 +406,11 @@ export default function BoardPackPreview() {
                   { code: 'EQ',  label: 'Equity',                     val: '38',   mb: 'Distribution & Equity' },
                   { code: 'CS',  label: 'Confidence Score',           val: '60%',  mb: '— esterno, peso 0' },
                 ].map((c) => (
-                  <tr key={c.code} className={`border-b ${c.code === 'CS' ? 'border-slate-100 bg-slate-50/40' : 'border-slate-100'}`}>
-                    <td className="py-1.5 pr-4 font-mono font-bold text-slate-700">{c.code}</td>
-                    <td className={`py-1.5 pr-4 ${c.code === 'CS' ? 'text-slate-500 italic' : 'text-slate-800'}`}>{c.label}</td>
-                    <td className={`py-1.5 pr-4 text-right font-mono font-bold ${c.code === 'CS' ? 'text-slate-400' : 'text-slate-900'}`}>{c.val}</td>
-                    <td className={`py-1.5 text-[10px] ${c.code === 'CS' ? 'text-slate-400 italic' : 'text-slate-500'}`}>{c.mb}</td>
+                  <tr key={c.code} className={`border-b ${c.code === 'CS' ? 'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]/40' : 'border-[rgba(6,3,43,0.05)]'}`}>
+                    <td className="py-1.5 pr-4 font-mono font-bold text-[rgba(6,3,43,0.78)]">{c.code}</td>
+                    <td className={`py-1.5 pr-4 ${c.code === 'CS' ? 'text-[rgba(6,3,43,0.52)] italic' : 'text-[rgba(6,3,43,0.90)]'}`}>{c.label}</td>
+                    <td className={`py-1.5 pr-4 text-right font-mono font-bold ${c.code === 'CS' ? 'text-[rgba(6,3,43,0.40)]' : 'text-[#06032B]'}`}>{c.val}</td>
+                    <td className={`py-1.5 text-[10px] ${c.code === 'CS' ? 'text-[rgba(6,3,43,0.40)] italic' : 'text-[rgba(6,3,43,0.52)]'}`}>{c.mb}</td>
                   </tr>
                 ))}
               </tbody>
@@ -418,14 +418,14 @@ export default function BoardPackPreview() {
           </div>
 
           {/* CS external note */}
-          <div className="border border-slate-200 bg-slate-50 rounded px-4 py-3 avoid-break">
+          <div className="border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] rounded px-4 py-3 avoid-break">
             <div className="flex items-start gap-4">
               <div className="shrink-0">
-                <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">Confidence Score</p>
-                <p className="text-[24px] font-bold text-slate-700 leading-none">{CS_PCT}%</p>
-                <p className="text-[9px] text-slate-500">External indicator · weight 0</p>
+                <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold">Confidence Score</p>
+                <p className="text-[24px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{CS_PCT}%</p>
+                <p className="text-[9px] text-[rgba(6,3,43,0.52)]">External indicator · weight 0</p>
               </div>
-              <div className="text-[11px] text-slate-600 leading-relaxed border-l border-slate-200 pl-4">
+              <div className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed border-l border-[rgba(6,3,43,0.08)] pl-4">
                 Il Confidence Score è <strong>esterno</strong> al KORA Index v3: peso = 0.
                 Indica la qualità e completezza dei dati usati per il calcolo.
                 CS 60% = dati parzialmente verificati — alcuni record basati su dichiarazione interna.
@@ -457,11 +457,11 @@ export default function BoardPackPreview() {
 
           {/* IU concentration */}
           <Exhibit n="3.1" title="Concentrazione Impact Units — distribuzione aggregata interna" />
-          <div className="mb-5 space-y-2.5 avoid-break border border-slate-100 rounded px-4 py-4">
+          <div className="mb-5 space-y-2.5 avoid-break border border-[rgba(6,3,43,0.05)] rounded px-4 py-4">
             <Bar label={`Top 12% (${Math.round(TOTAL_WORKERS * 0.12)} lav.)`} pct={TOP12_PCT_IU} dark />
             <Bar label="Fascia media (38–88%)" pct={100 - TOP12_PCT_IU - BOTTOM50_PCT_IU} />
             <Bar label="Bottom 50%" pct={BOTTOM50_PCT_IU} />
-            <p className="text-[10px] text-slate-500 pt-1">
+            <p className="text-[10px] text-[rgba(6,3,43,0.52)] pt-1">
               Il top 12% genera il {TOP12_PCT_IU}% degli Impact Units totali. Alta concentrazione = Activation Debt strutturale.
               Nessun nominativo. Nessun PIB individuale visibile.
             </p>
@@ -472,11 +472,11 @@ export default function BoardPackPreview() {
           <div className="avoid-break mb-5">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Sede</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Lavoratori</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Activation Rate</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Status</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Sede</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Lavoratori</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Activation Rate</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -486,14 +486,14 @@ export default function BoardPackPreview() {
                   { site: 'Sede Torino',          n: 35,  ar: 38, status: 'WARNING', flag: false },
                   { site: 'Remoto / distribuito', n: 25,  ar: 55, status: 'CLEAR', flag: false },
                 ].map((s) => (
-                  <tr key={s.site} className={`border-b border-slate-100 ${s.flag ? 'bg-red-50/60' : ''}`}>
-                    <td className={`py-2 pr-4 font-semibold ${s.flag ? 'text-red-800' : 'text-slate-800'}`}>{s.site}</td>
-                    <td className="py-2 pr-4 text-right font-mono text-slate-600">{s.n}</td>
-                    <td className={`py-2 pr-4 text-right font-mono font-bold ${s.flag ? 'text-red-700' : s.ar >= 40 ? 'text-slate-800' : 'text-amber-700'}`}>{s.ar}%</td>
+                  <tr key={s.site} className={`border-b border-[rgba(6,3,43,0.05)] ${s.flag ? 'bg-red-50/60' : ''}`}>
+                    <td className={`py-2 pr-4 font-semibold ${s.flag ? 'text-red-800' : 'text-[rgba(6,3,43,0.90)]'}`}>{s.site}</td>
+                    <td className="py-2 pr-4 text-right font-mono text-[rgba(6,3,43,0.62)]">{s.n}</td>
+                    <td className={`py-2 pr-4 text-right font-mono font-bold ${s.flag ? 'text-red-700' : s.ar >= 40 ? 'text-[rgba(6,3,43,0.90)]' : 'text-amber-700'}`}>{s.ar}%</td>
                     <td className="py-2">
                       <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
                         s.flag ? 'border-red-200 bg-red-50 text-red-700' :
-                        s.status === 'CLEAR' ? 'border-slate-200 bg-slate-50 text-slate-600' :
+                        s.status === 'CLEAR' ? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)]' :
                         'border-amber-200 bg-amber-50 text-amber-700'
                       }`}>{s.status}</span>
                     </td>
@@ -501,16 +501,16 @@ export default function BoardPackPreview() {
                 ))}
               </tbody>
             </table>
-            <p className="text-[9px] text-slate-400 mt-1">Sedi con N &lt; 10 soppresse per safe_aggregation_threshold = 10. Nessun nominativo.</p>
+            <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-1">Sedi con N &lt; 10 soppresse per safe_aggregation_threshold = 10. Nessun nominativo.</p>
           </div>
 
           {/* Implications */}
-          <div className="border-t border-slate-200 pt-4 avoid-break">
-            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-2">Implicazioni operative</p>
-            <ul className="space-y-1.5 text-[11px] text-slate-700">
-              <li className="flex gap-2"><span className="text-slate-300 shrink-0">·</span>Plant Bergamo (90 lavoratori, AR 11%) richiede intervento prioritario. Senza azione, il gap sito/HQ si consolida.</li>
-              <li className="flex gap-2"><span className="text-slate-300 shrink-0">·</span>Worker Balance (WB = 29) segnala distribuzione irregolare degli IU — intervento di equità necessario.</li>
-              <li className="flex gap-2"><span className="text-slate-300 shrink-0">·</span>157 lavoratori mai attivati rappresentano il principale potenziale inespresso del portfolio.</li>
+          <div className="border-t border-[rgba(6,3,43,0.08)] pt-4 avoid-break">
+            <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-2">Implicazioni operative</p>
+            <ul className="space-y-1.5 text-[11px] text-[rgba(6,3,43,0.78)]">
+              <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">·</span>Plant Bergamo (90 lavoratori, AR 11%) richiede intervento prioritario. Senza azione, il gap sito/HQ si consolida.</li>
+              <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">·</span>Worker Balance (WB = 29) segnala distribuzione irregolare degli IU — intervento di equità necessario.</li>
+              <li className="flex gap-2"><span className="text-[rgba(6,3,43,0.28)] shrink-0">·</span>157 lavoratori mai attivati rappresentano il principale potenziale inespresso del portfolio.</li>
             </ul>
           </div>
 
@@ -539,39 +539,39 @@ export default function BoardPackPreview() {
 
           {/* Segmented bar */}
           <Exhibit n="4.1" title={`Composizione budget utilizzato — ${eur(BUDGET_USED)}`} />
-          <div className="h-8 rounded flex overflow-hidden border border-slate-200 mb-2 avoid-break">
+          <div className="h-8 rounded flex overflow-hidden border border-[rgba(6,3,43,0.08)] mb-2 avoid-break">
             <div
-              className="bg-slate-900 flex items-center justify-center"
+              className="bg-[#06032B] flex items-center justify-center"
               style={{ width: `${Math.round(DEEP_ACTIVATION_SPEND / BUDGET_USED * 100)}%` }}
             >
               <span className="text-[9px] font-bold text-white px-1">
                 Deep Activation · {Math.round(DEEP_ACTIVATION_SPEND / BUDGET_USED * 100)}%
               </span>
             </div>
-            <div className="bg-slate-400 flex items-center justify-center flex-1">
+            <div className="bg-[rgba(6,3,43,0.35)] flex items-center justify-center flex-1">
               <span className="text-[9px] font-semibold text-white">
                 Economic Relief · {Math.round(ECONOMIC_RELIEF_SPEND / BUDGET_USED * 100)}%
               </span>
             </div>
           </div>
-          <p className="text-[10px] text-slate-500 mb-6">
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mb-6">
             Economic Relief (buoni pasto, voucher, fringe) = 0 Impact Units. Tracciato come <span className="font-mono">economic_relief_spend</span> nel BTI Engine — non convertito in attivazione.
           </p>
 
           {/* Budget Evidence Quality */}
-          <div className="border-t-2 border-slate-900 pt-3 mb-3">
-            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-0.5">Budget Evidence Quality</p>
-            <p className="text-[10px] text-slate-500">Preview metodologica — valori non certificati nel dataset demo</p>
+          <div className="border-t-2 border-[#06032B] pt-3 mb-3">
+            <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-0.5">Budget Evidence Quality</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.52)]">Preview metodologica — valori non certificati nel dataset demo</p>
           </div>
           <Exhibit n="4.2" title="Qualità della fonte budget — distribuzione per tier" src="KORA Budget Evidence Model v0.1" />
 
           <div className="avoid-break mb-5">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Tier</th>
-                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Share</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Descrizione</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Tier</th>
+                  <th className="py-1.5 pr-4 text-right text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Share</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Descrizione</th>
                 </tr>
               </thead>
               <tbody>
@@ -581,19 +581,19 @@ export default function BoardPackPreview() {
                   { tier: 'Stimato (L0–L1)',          pct: 10, desc: 'Stima senza fonte strutturata — abbassa il Confidence Score' },
                   { tier: 'Non valorizzato / N/A',   pct: 4,  desc: 'Spesa non quantificata o non applicabile (programmi in natura)' },
                 ].map((r) => (
-                  <tr key={r.tier} className="border-b border-slate-100">
-                    <td className="py-2 pr-4 font-semibold text-slate-800">{r.tier}</td>
-                    <td className="py-2 pr-4 text-right font-mono font-bold text-slate-900">{r.pct}%</td>
-                    <td className="py-2 text-slate-600">{r.desc}</td>
+                  <tr key={r.tier} className="border-b border-[rgba(6,3,43,0.05)]">
+                    <td className="py-2 pr-4 font-semibold text-[rgba(6,3,43,0.90)]">{r.tier}</td>
+                    <td className="py-2 pr-4 text-right font-mono font-bold text-[#06032B]">{r.pct}%</td>
+                    <td className="py-2 text-[rgba(6,3,43,0.62)]">{r.desc}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className="border border-slate-200 rounded px-4 py-3 avoid-break">
-            <p className="text-[11px] font-bold text-slate-800 mb-1">Il budget non è un dato valido se non ha una fonte.</p>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+          <div className="border border-[rgba(6,3,43,0.08)] rounded px-4 py-3 avoid-break">
+            <p className="text-[11px] font-bold text-[rgba(6,3,43,0.90)] mb-1">Il budget non è un dato valido se non ha una fonte.</p>
+            <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">
               La qualità della fonte budget determina il peso di ogni record nel BTI Engine.
               Un budget stimato o dichiarato riceve un trust score inferiore rispetto a uno documentato —
               questo si riflette nel Confidence Score (CS = {CS_PCT}% in questo scenario).
@@ -616,20 +616,20 @@ export default function BoardPackPreview() {
 
           {/* Gate counts */}
           <div className="grid grid-cols-3 gap-6 mb-6 avoid-break">
-            <div className="border-t-2 border-slate-900 pt-3">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Eligible</p>
-              <p className="text-[40px] font-bold text-slate-900 leading-none">{ELIGIBLE_RECORDS.toLocaleString('it-IT')}</p>
-              <p className="text-[10px] text-slate-600 mt-1">record · generano Impact Units</p>
+            <div className="border-t-2 border-[#06032B] pt-3">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-1">Eligible</p>
+              <p className="text-[40px] font-bold text-[#06032B] leading-none">{ELIGIBLE_RECORDS.toLocaleString('it-IT')}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.62)] mt-1">record · generano Impact Units</p>
             </div>
-            <div className="border-t-2 border-slate-300 pt-3">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Limited</p>
-              <p className="text-[40px] font-bold text-slate-700 leading-none">{LIMITED_RECORDS.toLocaleString('it-IT')}</p>
-              <p className="text-[10px] text-slate-600 mt-1">record · 0 IU · solo BTI engine</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.14)] pt-3">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-1">Limited</p>
+              <p className="text-[40px] font-bold text-[rgba(6,3,43,0.78)] leading-none">{LIMITED_RECORDS.toLocaleString('it-IT')}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.62)] mt-1">record · 0 IU · solo BTI engine</p>
             </div>
-            <div className="border-t-2 border-slate-200 pt-3">
-              <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Blocked</p>
-              <p className="text-[40px] font-bold text-slate-400 leading-none">{BLOCKED_RECORDS.toLocaleString('it-IT')}</p>
-              <p className="text-[10px] text-slate-500 mt-1">record · 0 IU · governance only</p>
+            <div className="border-t-2 border-[rgba(6,3,43,0.08)] pt-3">
+              <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-1">Blocked</p>
+              <p className="text-[40px] font-bold text-[rgba(6,3,43,0.40)] leading-none">{BLOCKED_RECORDS.toLocaleString('it-IT')}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1">record · 0 IU · governance only</p>
             </div>
           </div>
 
@@ -638,10 +638,10 @@ export default function BoardPackPreview() {
           <div className="avoid-break mb-6">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Gate</th>
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Logica</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Esempi</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Gate</th>
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Logica</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Esempi</th>
                 </tr>
               </thead>
               <tbody>
@@ -662,16 +662,16 @@ export default function BoardPackPreview() {
                     ex: 'DVR, DUVRI, sorveglianza sanitaria obbligatoria, DPI, formazione sicurezza cogente',
                   },
                 ].map((r, i) => (
-                  <tr key={r.gate} className={i < 2 ? 'border-b border-slate-100' : ''}>
+                  <tr key={r.gate} className={i < 2 ? 'border-b border-[rgba(6,3,43,0.05)]' : ''}>
                     <td className="py-2.5 pr-4 align-top">
                       <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
-                        r.gate === 'Eligible' ? 'border-slate-800 bg-slate-900 text-white' :
-                        r.gate === 'Limited'  ? 'border-slate-300 bg-slate-100 text-slate-700' :
-                                                'border-slate-200 bg-slate-50 text-slate-400'
+                        r.gate === 'Eligible' ? 'border-[rgba(6,3,43,0.85)] bg-[#06032B] text-white' :
+                        r.gate === 'Limited'  ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.78)]' :
+                                                'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.40)]'
                       }`}>{r.gate}</span>
                     </td>
-                    <td className="py-2.5 pr-4 align-top text-slate-700">{r.logic}</td>
-                    <td className="py-2.5 align-top text-slate-500">{r.ex}</td>
+                    <td className="py-2.5 pr-4 align-top text-[rgba(6,3,43,0.78)]">{r.logic}</td>
+                    <td className="py-2.5 align-top text-[rgba(6,3,43,0.52)]">{r.ex}</td>
                   </tr>
                 ))}
               </tbody>
@@ -679,9 +679,9 @@ export default function BoardPackPreview() {
           </div>
 
           {/* Care Economy Signal */}
-          <div className="border-t-2 border-slate-200 pt-4 avoid-break">
-            <p className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold mb-0.5">Care Economy Signal</p>
-            <p className="text-[10px] text-slate-500 mb-3">Preview · modulo premium non attivo in Foundation Light · aggregato aziendale · nessun dato familiare individuale</p>
+          <div className="border-t-2 border-[rgba(6,3,43,0.08)] pt-4 avoid-break">
+            <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-0.5">Care Economy Signal</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.52)] mb-3">Preview · modulo premium non attivo in Foundation Light · aggregato aziendale · nessun dato familiare individuale</p>
 
             <div className="grid grid-cols-2 gap-4 text-[11px]">
               {[
@@ -690,9 +690,9 @@ export default function BoardPackPreview() {
                 { label: 'Solo dati aggregati', body: 'Nessun dato familiare individuale raccolto. Aggregazioni sopra soglia N ≥ 10. Nessun profiling individuale.' },
                 { label: 'Modulo non certificato', body: 'Non validato empiricamente. Non usare per rendicontazione ESG/HR formale. Output direzionale. Preview metodologica.' },
               ].map((item) => (
-                <div key={item.label} className="border-l-2 border-slate-200 pl-3 space-y-0.5">
-                  <p className="font-semibold text-slate-700">{item.label}</p>
-                  <p className="text-slate-500">{item.body}</p>
+                <div key={item.label} className="border-l-2 border-[rgba(6,3,43,0.08)] pl-3 space-y-0.5">
+                  <p className="font-semibold text-[rgba(6,3,43,0.78)]">{item.label}</p>
+                  <p className="text-[rgba(6,3,43,0.52)]">{item.body}</p>
                 </div>
               ))}
             </div>
@@ -716,12 +716,12 @@ export default function BoardPackPreview() {
           <div className="avoid-break mb-6">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Prior.</th>
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Azione</th>
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Effetto atteso</th>
-                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Owner</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Orizzonte</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Prior.</th>
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Azione</th>
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Effetto atteso</th>
+                  <th className="py-1.5 pr-3 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Owner</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Orizzonte</th>
                 </tr>
               </thead>
               <tbody>
@@ -757,18 +757,18 @@ export default function BoardPackPreview() {
                     owner: 'C-Suite · HR', horizon: '60–90 gg',
                   },
                 ].map((r, idx) => (
-                  <tr key={idx} className={idx < 5 ? 'border-b border-slate-100' : ''}>
+                  <tr key={idx} className={idx < 5 ? 'border-b border-[rgba(6,3,43,0.05)]' : ''}>
                     <td className="py-2 pr-3 align-top">
                       <span className={`rounded border px-1.5 py-0.5 text-[9px] font-bold ${
-                        r.p === 'Alta'  ? 'border-slate-800 bg-slate-900 text-white' :
-                        r.p === 'Media' ? 'border-slate-300 bg-slate-100 text-slate-700' :
-                                          'border-slate-200 bg-white text-slate-400'
+                        r.p === 'Alta'  ? 'border-[rgba(6,3,43,0.85)] bg-[#06032B] text-white' :
+                        r.p === 'Media' ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.78)]' :
+                                          'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.40)]'
                       }`}>{r.p}</span>
                     </td>
-                    <td className="py-2 pr-3 align-top font-semibold text-slate-800">{r.action}</td>
-                    <td className="py-2 pr-3 align-top text-slate-600">{r.effect}</td>
-                    <td className="py-2 pr-3 align-top text-slate-500 whitespace-nowrap">{r.owner}</td>
-                    <td className="py-2 align-top font-mono text-slate-500 whitespace-nowrap">{r.horizon}</td>
+                    <td className="py-2 pr-3 align-top font-semibold text-[rgba(6,3,43,0.90)]">{r.action}</td>
+                    <td className="py-2 pr-3 align-top text-[rgba(6,3,43,0.62)]">{r.effect}</td>
+                    <td className="py-2 pr-3 align-top text-[rgba(6,3,43,0.52)] whitespace-nowrap">{r.owner}</td>
+                    <td className="py-2 align-top font-mono text-[rgba(6,3,43,0.52)] whitespace-nowrap">{r.horizon}</td>
                   </tr>
                 ))}
               </tbody>
@@ -780,9 +780,9 @@ export default function BoardPackPreview() {
           <div className="avoid-break">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Fase</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Attività</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Fase</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Attività</th>
                 </tr>
               </thead>
               <tbody>
@@ -792,9 +792,9 @@ export default function BoardPackPreview() {
                   { phase: 'Settimane 5–8', activity: 'Lancio programmi nuovi · Attivazione push Plant Bergamo · Monitoraggio AR settimanale' },
                   { phase: 'Settimane 9–12', activity: 'Misurazione intermedia · Scenario S2 — confronto direzionale · Workshop C-Suite · Preparazione Board Pack Q4' },
                 ].map((r, i) => (
-                  <tr key={i} className={i < 3 ? 'border-b border-slate-100' : ''}>
-                    <td className="py-2 pr-4 font-semibold text-slate-700 whitespace-nowrap align-top">{r.phase}</td>
-                    <td className="py-2 text-slate-600">{r.activity}</td>
+                  <tr key={i} className={i < 3 ? 'border-b border-[rgba(6,3,43,0.05)]' : ''}>
+                    <td className="py-2 pr-4 font-semibold text-[rgba(6,3,43,0.78)] whitespace-nowrap align-top">{r.phase}</td>
+                    <td className="py-2 text-[rgba(6,3,43,0.62)]">{r.activity}</td>
                   </tr>
                 ))}
               </tbody>
@@ -813,9 +813,9 @@ export default function BoardPackPreview() {
           <div className="avoid-break mb-5">
             <table className="w-full text-[11px] border-collapse">
               <thead>
-                <tr className="border-b-2 border-slate-900">
-                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold w-44">Elemento</th>
-                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-slate-500 font-semibold">Valore / nota</th>
+                <tr className="border-b-2 border-[#06032B]">
+                  <th className="py-1.5 pr-4 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold w-44">Elemento</th>
+                  <th className="py-1.5 text-left text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.52)] font-semibold">Valore / nota</th>
                 </tr>
               </thead>
               <tbody>
@@ -835,22 +835,22 @@ export default function BoardPackPreview() {
                   ['Compliance',           'La conformità legale (Blocked) è una baseline, non impatto. KORA non la trasforma in IU.'],
                   ['Economic Relief',      'Budget Limited (buoni pasto, voucher) tracciato nel BTI Engine — 0 Impact Units per design'],
                 ].map(([label, value]) => (
-                  <tr key={label} className="border-b border-slate-100">
-                    <td className="py-1.5 pr-4 font-semibold text-slate-600 align-top">{label}</td>
-                    <td className="py-1.5 text-slate-700">{value}</td>
+                  <tr key={label} className="border-b border-[rgba(6,3,43,0.05)]">
+                    <td className="py-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.62)] align-top">{label}</td>
+                    <td className="py-1.5 text-[rgba(6,3,43,0.78)]">{value}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className="border border-slate-200 rounded px-4 py-3 avoid-break">
-            <p className="text-[11px] text-slate-600 leading-relaxed">
+          <div className="border border-[rgba(6,3,43,0.08)] rounded px-4 py-3 avoid-break">
+            <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">
               KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
               Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
               Il Decision Pack è un output direzionale in {CALIB}. Revisione advisor KORA raccomandata prima di ogni uso formale.
             </p>
-            <p className="text-[9px] font-mono text-slate-400 mt-2">
+            <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] mt-2">
               {METHOD_ID} · {CALIB} · production_ready: false · synthetic_demo_data: true · {GENERATED}
             </p>
           </div>

@@ -13,8 +13,8 @@ export default function PrivacySharing() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Privacy & Sharing</h1>
-          <p className="text-sm text-slate-500">Preferenze di consenso e condivisione dati del lavoratore</p>
+          <h1 className="text-xl font-bold text-[#06032B]">Privacy & Sharing</h1>
+          <p className="text-sm text-[rgba(6,3,43,0.52)]">Preferenze di consenso e condivisione dati del lavoratore</p>
         </div>
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-center">
           <p className="text-sm font-semibold text-rose-700">Accesso Limitato</p>
@@ -33,12 +33,12 @@ export default function PrivacySharing() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-slate-900">Privacy & Sharing</h1>
-        <p className="text-sm text-slate-500">{privacy.persona_label}</p>
+        <h1 className="text-xl font-bold text-[#06032B]">Privacy & Sharing</h1>
+        <p className="text-sm text-[rgba(6,3,43,0.52)]">{privacy.persona_label}</p>
       </div>
 
       {/* Core privacy guarantee — non-suppressible */}
-      <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+      <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-4">
         <p className="text-sm font-semibold text-indigo-800">La tua privacy è costituzionale.</p>
         <p className="mt-1 text-xs text-indigo-700 leading-relaxed">{privacy.privacy_guarantee}</p>
       </div>
@@ -78,7 +78,7 @@ export default function PrivacySharing() {
 
       {/* Consent toggles */}
       <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Preferenze di Consenso
         </h2>
 
@@ -90,14 +90,14 @@ export default function PrivacySharing() {
           </p>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="divide-y divide-slate-100">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          <div className="divide-y divide-[rgba(6,3,43,0.05)]">
             {privacy.consent_toggles.map((toggle) => (
               <div key={toggle.id} className="px-4 py-3 flex items-start gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-700">{toggle.label}</p>
-                  <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">{toggle.description}</p>
-                  <p className="text-xs font-mono text-slate-300 mt-0.5">scope: {toggle.scope}</p>
+                  <p className="text-sm font-medium text-[rgba(6,3,43,0.78)]">{toggle.label}</p>
+                  <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5 leading-relaxed">{toggle.description}</p>
+                  <p className="text-xs font-mono text-[rgba(6,3,43,0.28)] mt-0.5">scope: {toggle.scope}</p>
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1">
                   {/* Visual toggle — non-interactive in Foundation Light */}
@@ -105,18 +105,18 @@ export default function PrivacySharing() {
                     disabled
                     className={cn(
                       'relative inline-flex h-5 w-9 items-center rounded-full transition-colors cursor-not-allowed',
-                      toggle.current_state === 'on' ? 'bg-indigo-400' : 'bg-slate-200',
+                      toggle.current_state === 'on' ? 'bg-indigo-400' : 'bg-[rgba(6,3,43,0.12)]',
                     )}
                     aria-label={`${toggle.label} — preview only`}
                   >
                     <span
                       className={cn(
-                        'inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform mx-0.5',
+                        'inline-block h-3.5 w-3.5 rounded-full bg-[#F8F6F1] transition-transform mx-0.5',
                         toggle.current_state === 'on' ? 'translate-x-4' : 'translate-x-0',
                       )}
                     />
                   </button>
-                  <span className="text-xs text-slate-400 font-mono">solo anteprima</span>
+                  <span className="text-xs text-[rgba(6,3,43,0.40)] font-mono">solo anteprima</span>
                 </div>
               </div>
             ))}
@@ -126,7 +126,7 @@ export default function PrivacySharing() {
 
       {/* Consent & Sharing Vault */}
       <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Consent &amp; Sharing Vault
         </h2>
 
@@ -137,8 +137,8 @@ export default function PrivacySharing() {
           </p>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-          <div className="divide-y divide-slate-100">
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          <div className="divide-y divide-[rgba(6,3,43,0.05)]">
             {[
               {
                 id: 'vault-pib',
@@ -160,7 +160,7 @@ export default function PrivacySharing() {
                 id: 'vault-cv',
                 data_type: 'Dynamic Impact CV',
                 status: 'Worker-controlled',
-                status_color: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+                status_color: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
                 employer_visibility: 'Solo esplicito',
                 note: 'Puoi scegliere tu cosa condividere, con chi e per quanto tempo. Nessuna condivisione automatica.',
               },
@@ -176,7 +176,7 @@ export default function PrivacySharing() {
                 id: 'vault-partner',
                 data_type: 'Partner KORA',
                 status: 'Solo iniziative autorizzate',
-                status_color: 'bg-slate-50 text-slate-600 border-slate-200',
+                status_color: 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
                 employer_visibility: 'Nessun PIB / timeline',
                 note: "I partner vedono solo l'esito di partecipazione a iniziative cui hai aderito. Non accedono al tuo PIB né alla timeline.",
               },
@@ -184,7 +184,7 @@ export default function PrivacySharing() {
                 id: 'vault-advisor',
                 data_type: 'Advisor KORA',
                 status: 'Solo review assegnate',
-                status_color: 'bg-slate-50 text-slate-600 border-slate-200',
+                status_color: 'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
                 employer_visibility: 'Perimetro review',
                 note: "L'advisor accede solo agli UEF che rientrano nella review formalmente assegnata. Non ha accesso al profilo completo.",
               },
@@ -193,16 +193,16 @@ export default function PrivacySharing() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="text-sm font-medium text-slate-700">{row.data_type}</p>
+                      <p className="text-sm font-medium text-[rgba(6,3,43,0.78)]">{row.data_type}</p>
                       <span className={cn('rounded border px-1.5 py-0.5 text-xs font-medium', row.status_color)}>
                         {row.status}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">{row.note}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1 leading-relaxed">{row.note}</p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-xs text-slate-400">Visibilità employer</p>
-                    <p className="text-xs font-medium text-slate-600 mt-0.5">{row.employer_visibility}</p>
+                    <p className="text-xs text-[rgba(6,3,43,0.40)]">Visibilità employer</p>
+                    <p className="text-xs font-medium text-[rgba(6,3,43,0.62)] mt-0.5">{row.employer_visibility}</p>
                   </div>
                 </div>
               </div>
@@ -212,13 +212,13 @@ export default function PrivacySharing() {
       </div>
 
       {/* Data deletion notice */}
-      <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-        <p className="text-xs font-semibold text-slate-600 mb-1">Cancellazione Dati & Portabilità</p>
-        <p className="text-xs text-slate-500 leading-relaxed">
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-3">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">Cancellazione Dati & Portabilità</p>
+        <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
           In produzione, i lavoratori possono richiedere la cancellazione completa dei dati o l&apos;esportazione portabile in qualsiasi momento.
           Foundation Light non elabora dati reali — nessun flusso di cancellazione è attivo in questa demo.
         </p>
-        <p className="mt-1.5 text-xs font-mono text-slate-400">
+        <p className="mt-1.5 text-xs font-mono text-[rgba(6,3,43,0.40)]">
           delete_request: preview_only · export_request: preview_only
         </p>
       </div>

@@ -47,13 +47,13 @@ export function PipelineConnectorBanner() {
       <Link
         key={`step-${step.num}`}
         href={step.href}
-        className="flex-1 rounded-lg border border-indigo-200 bg-white p-3 text-xs hover:border-indigo-400 hover:shadow-sm transition-all min-w-0"
+        className="flex-1 rounded-lg border border-indigo-200 bg-[#F8F6F1] p-3 text-xs hover:border-indigo-400 hover:shadow-sm transition-all min-w-0"
       >
         <p className="font-mono text-[10px] font-bold text-indigo-300 mb-1">
           {String(step.num).padStart(2, '0')}
         </p>
-        <p className="text-[11px] font-semibold text-slate-800 leading-snug">{step.label}</p>
-        <p className="text-[10px] text-slate-500 mt-0.5">{step.sublabel}</p>
+        <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.90)] leading-snug">{step.label}</p>
+        <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">{step.sublabel}</p>
       </Link>,
     );
     if (i < PIPELINE_STEPS.length - 1) {

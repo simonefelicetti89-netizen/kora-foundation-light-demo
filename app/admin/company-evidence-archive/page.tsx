@@ -11,7 +11,7 @@ export const metadata = {
 export default function CompanyEvidenceArchivePage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen text-sm text-slate-500">
+      <div className="flex items-center justify-center min-h-screen text-sm text-[rgba(6,3,43,0.52)]">
         Caricamento Evidence Archive…
       </div>
     }>
