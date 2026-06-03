@@ -1,4 +1,6 @@
 'use client';
+// Sidebar — chrome condiviso. Navigazione per ruolo, badge Layer-aligned.
+// Scopo: fornire la struttura di navigazione coerente per tutti i ruoli KORA.
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -6,6 +8,7 @@ import { useRole, useEnvironment } from '@/lib/demo-state';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { KoraLogo } from '@/components/brand/KoraLogo';
 import { cn } from '@/lib/utils';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const ENV_LABEL: Record<string, string> = {
   demo:   'DEMO',
@@ -22,33 +25,43 @@ const ROLE_DISPLAY: Record<string, string> = {
   ADVISOR:       'Advisor',
 };
 
+// ── Badge styles — inline, Layer token–aligned, no raw Tailwind color classes ──
+// Sidebar background: #06032B. Badges must be readable against dark bg.
+const BADGE: Record<string, React.CSSProperties> = {
+  LIVE:      { background: 'rgba(47,125,85,0.22)',  color: 'rgba(120,210,145,0.90)', border: '1px solid rgba(47,125,85,0.40)' },
+  LIVE_PILOT:{ background: 'rgba(47,125,85,0.22)',  color: 'rgba(120,210,145,0.90)', border: '1px solid rgba(47,125,85,0.40)' },
+  PIPELINE:  { background: 'rgba(74,127,224,0.18)', color: 'rgba(130,180,240,0.88)', border: '1px solid rgba(74,127,224,0.35)' },
+  ADMIN:     { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.48)', border: '1px solid rgba(255,255,255,0.14)' },
+  STRATEGIA: { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.48)', border: '1px solid rgba(255,255,255,0.14)' },
+  ROADMAP:   { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.10)' },
+  SYNTHETIC: { background: 'rgba(199,111,61,0.18)',  color: '#C76F3D',                border: '1px solid rgba(199,111,61,0.38)' },
+};
+
 interface NavItem {
   href:        string;
   label:       string;
   comingSoon?: boolean;
   inactive?:   boolean;
-  badge?:      string;
-  badgeStyle?: string;
 }
 
 interface NavGroup {
-  heading:        string;
-  groupBadge?:    string;
-  groupBadgeStyle?: string;
-  items:          NavItem[];
+  heading:      string;
+  groupBadge?:  string;    // badge text
+  badgeKey?:    string;    // key into BADGE object
+  items:        NavItem[];
 }
 
 // ── Navigation builds — groups communicate KORA logic, not lists of routes ──
 
 function buildNavGroups(role: string): NavGroup[] {
 
-  // ── KORA Admin: Control Tower architecture ──────────────────────────────────
+  // ── KORA Admin: Control Tower ───────────────────────────────────────────────
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
     return [
       {
         heading: 'Controllo Operativo',
         groupBadge: 'LIVE',
-        groupBadgeStyle: 'bg-green-900/40 text-green-400 border border-green-800/50',
+        badgeKey: 'LIVE',
         items: [
           { href: '/admin',                      label: 'Control Tower' },
           { href: '/admin/companies',            label: 'Company Console' },
@@ -59,7 +72,7 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Intake & Pipeline',
         groupBadge: 'PIPELINE',
-        groupBadgeStyle: 'bg-blue-900/30 text-blue-400 border border-blue-800/40',
+        badgeKey: 'PIPELINE',
         items: [
           { href: '/admin/data-intake',              label: 'Data Intake' },
           { href: '/admin/uef-review',               label: 'UEF™ Review & Scoring' },
@@ -70,39 +83,38 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Workspace Aziende',
         groupBadge: 'ADMIN',
-        groupBadgeStyle: 'bg-slate-700/40 text-white/50 border border-white/20',
+        badgeKey: 'ADMIN',
         items: [
-          { href: '/admin/company-workspace',      label: 'Workspace Admin' },
-          { href: '/admin/company-users',          label: 'Utenti Aziendali' },
-          { href: '/admin/company-live-preview',   label: 'Live Preview' },
+          { href: '/admin/company-workspace',    label: 'Workspace Admin' },
+          { href: '/admin/company-users',        label: 'Utenti Aziendali' },
+          { href: '/admin/company-live-preview', label: 'Live Preview' },
         ],
       },
       {
         heading: 'Network & GTM',
         groupBadge: 'STRATEGIA',
-        groupBadgeStyle: 'bg-slate-700/40 text-white/50 border border-white/20',
+        badgeKey: 'STRATEGIA',
         items: [
-          { href: '/admin/network',   label: 'Rete Advisor & Partner' },
-          { href: '/admin/gtm',       label: 'GTM & Validazione' },
-          { href: '/admin/operator',  label: 'Operator Console' },
+          { href: '/admin/network',    label: 'Rete Advisor & Partner' },
+          { href: '/admin/gtm',        label: 'GTM & Validazione' },
+          { href: '/admin/operator',   label: 'Operator Console' },
           { href: '/admin/benchmarks', label: 'Benchmark' },
         ],
       },
       {
         heading: 'Demo Lab',
         groupBadge: 'SYNTHETIC',
-        groupBadgeStyle: 'bg-[rgba(199,111,61,0.18)] text-[#C76F3D] border border-[rgba(199,111,61,0.35)]',
+        badgeKey: 'SYNTHETIC',
         items: [
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
           { href: '/company',             label: 'Demo Meridiana' },
-          { href: '/admin/operator',      label: 'Benchmark sintetico' },
           { href: '/demo-guide',          label: 'Demo Guide' },
         ],
       },
       {
         heading: 'Visione',
         groupBadge: 'ROADMAP',
-        groupBadgeStyle: 'bg-slate-700/40 text-white/50 border border-white/20',
+        badgeKey: 'ROADMAP',
         items: [
           { href: '/future-vision', label: 'Future Vision', inactive: true },
         ],
@@ -110,14 +122,14 @@ function buildNavGroups(role: string): NavGroup[] {
     ];
   }
 
-  // ── Company Admin: KORA intelligence architecture ───────────────────────────
+  // ── Company Admin: intelligence architecture ─────────────────────────────────
   if (role === 'COMPANY_ADMIN') {
     return [
       {
         heading: 'Command',
         items: [
-          { href: '/company',             label: 'Executive Cockpit' },
-          { href: '/company/kora-index',  label: 'KORA Index™' },
+          { href: '/company',            label: 'Executive Cockpit' },
+          { href: '/company/kora-index', label: 'KORA Index™' },
         ],
       },
       {
@@ -139,14 +151,14 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Network',
         items: [
-          { href: '/company/shared',  label: 'Spazio Condiviso' },
+          { href: '/company/shared', label: 'Spazio Condiviso' },
         ],
       },
       {
         heading: 'Governance',
         items: [
-          { href: '/company/profile',    label: 'Profilo & Stato' },
-          { href: '/company/workspace',  label: 'Workspace Live' },
+          { href: '/company/profile',   label: 'Profilo & Stato' },
+          { href: '/company/workspace', label: 'Workspace Live' },
         ],
       },
     ];
@@ -254,7 +266,7 @@ function buildNavGroups(role: string): NavGroup[] {
     {
       heading: 'KORA',
       items: [
-        { href: '/demo-guide', label: 'Demo Guide' },
+        { href: '/demo-guide',   label: 'Demo Guide' },
         { href: '/future-vision', label: 'Future Vision', inactive: true },
       ],
     },
@@ -277,7 +289,7 @@ export function Sidebar() {
         borderRight: '1px solid rgba(255,255,255,0.06)',
       }}
     >
-      {/* Logo */}
+      {/* Logo — KoraLogo asset reale, variante on-dark */}
       <div
         className="flex items-center"
         style={{
@@ -293,27 +305,39 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-4 px-2">
+      <nav
+        className="flex-1 overflow-y-auto py-4 px-2"
+        aria-label="Navigazione principale"
+      >
         {groups.map((group) => (
           <div key={group.heading} className="mb-5">
-            {/* Section heading */}
+            {/* Section heading + badge */}
             <div className="flex items-center gap-1.5 px-3 pb-1.5">
               <p
                 className="text-[9px] font-bold uppercase tracking-[0.20em]"
-                style={{ color: 'rgba(255,255,255,0.25)' }}
+                style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
               >
                 {group.heading}
               </p>
-              {group.groupBadge && (
+              {group.groupBadge && group.badgeKey && (
                 <span
-                  className={cn('rounded px-1 py-[1px] text-[8px] font-bold uppercase tracking-wide', group.groupBadgeStyle)}
+                  style={{
+                    borderRadius: 4,
+                    padding:      '1px 5px',
+                    fontSize:     '7.5px',
+                    fontWeight:   700,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                    ...BADGE[group.badgeKey],
+                  }}
                 >
                   {group.groupBadge}
                 </span>
               )}
             </div>
 
-            {/* Items */}
+            {/* Nav items */}
             {group.items.map((item) => {
               const isActive =
                 pathname === item.href ||
@@ -324,21 +348,23 @@ export function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={cn(
                     'group flex items-center justify-between rounded-[12px] py-[7px] px-3 text-[13px] font-medium transition-all duration-150',
                     isActive ? 'text-white' : 'text-white/65 hover:text-white/90',
                     (item.comingSoon || item.inactive) && 'opacity-45',
                   )}
-                  style={
-                    isActive
+                  style={{
+                    fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                    margin:     '1px 4px',
+                    ...(isActive
                       ? {
-                          background: '#C76F3D',
+                          background: TOKENS.accent,  // #C76F3D terracotta
                           border:     '1px solid rgba(255,255,255,0.10)',
                           boxShadow:  '0 6px 20px rgba(199,111,61,0.22)',
-                          margin:     '1px 4px',
                         }
-                      : { margin: '1px 4px' }
-                  }
+                      : {}),
+                  }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
                       (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
@@ -351,22 +377,36 @@ export function Sidebar() {
                   }}
                 >
                   <span className="truncate leading-snug">{item.label}</span>
+
                   <div className="flex items-center gap-1 shrink-0 ml-1">
                     {item.comingSoon && (
-                      <span className="rounded px-1 py-0.5 text-[8.5px] font-medium"
-                        style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.30)' }}>
+                      <span
+                        style={{
+                          borderRadius: 4,
+                          padding:      '1px 5px',
+                          fontSize:     '8px',
+                          fontWeight:   600,
+                          fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                          background:   'rgba(255,255,255,0.07)',
+                          color:        'rgba(255,255,255,0.30)',
+                        }}
+                      >
                         presto
                       </span>
                     )}
                     {item.inactive && (
-                      <span className="rounded px-1 py-0.5 text-[8.5px] font-medium"
-                        style={{ background: 'rgba(199,111,61,0.14)', color: 'rgba(199,111,61,0.80)' }}>
+                      <span
+                        style={{
+                          borderRadius: 4,
+                          padding:      '1px 5px',
+                          fontSize:     '8px',
+                          fontWeight:   600,
+                          fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                          background:   'rgba(199,111,61,0.14)',
+                          color:        'rgba(199,111,61,0.80)',
+                        }}
+                      >
                         inattivo
-                      </span>
-                    )}
-                    {item.badge && (
-                      <span className={cn('rounded px-1 py-0.5 text-[7.5px] font-bold uppercase', item.badgeStyle)}>
-                        {item.badge}
                       </span>
                     )}
                   </div>
@@ -386,23 +426,30 @@ export function Sidebar() {
           className="flex items-center gap-2 rounded-xl px-3 py-2.5"
           style={{ background: 'rgba(255,255,255,0.05)' }}
         >
+          {/* Avatar initials */}
           <div
             className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold"
+            aria-hidden="true"
             style={{
-              background: 'rgba(199,111,61,0.20)',
-              border:     '1.5px solid #C76F3D',
-              color:      '#C76F3D',
+              background:  'rgba(199,111,61,0.20)',
+              border:      '1.5px solid #C76F3D',
+              color:       '#C76F3D',
+              fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             }}
           >
             {roleLabel.charAt(0)}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10.5px] font-semibold leading-tight truncate"
-              style={{ color: 'rgba(255,255,255,0.88)' }}>
+            <p
+              className="text-[10.5px] font-semibold leading-tight truncate"
+              style={{ color: 'rgba(255,255,255,0.88)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+            >
               {roleLabel}
             </p>
-            <p className="text-[8.5px] font-semibold uppercase tracking-[0.10em] mt-0.5"
-              style={{ color: 'rgba(199,111,61,0.75)' }}>
+            <p
+              className="text-[8.5px] font-semibold uppercase tracking-[0.10em] mt-0.5"
+              style={{ color: 'rgba(199,111,61,0.75)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+            >
               {ENV_LABEL[activeEnvironment] ?? 'DEMO'}
             </p>
           </div>

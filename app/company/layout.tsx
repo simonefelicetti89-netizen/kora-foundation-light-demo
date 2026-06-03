@@ -89,14 +89,24 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
         <div
           className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 text-[11px] font-semibold"
           style={{
-            background: 'rgba(186,117,23,0.12)',
-            borderBottom: '1px solid rgba(186,117,23,0.25)',
-            color: '#c9862d',
+            background:   'var(--env-soft)',
+            borderBottom: '1px solid var(--env-border)',
+            color:        'var(--env-text)',
+            fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           }}
         >
           <span
-            className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"
-            style={{ background: 'rgba(186,117,23,0.22)', color: '#d4943a' }}
+            style={{
+              borderRadius: 4,
+              padding:      '2px 6px',
+              fontSize:     '9px',
+              fontWeight:   700,
+              letterSpacing: '0.10em',
+              textTransform: 'uppercase',
+              fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              background:   'var(--env-border)',
+              color:        'var(--env-text)',
+            }}
           >
             SYNTHETIC DEMO
           </span>

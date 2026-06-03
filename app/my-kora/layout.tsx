@@ -18,12 +18,20 @@ export default function MyKoraLayout({ children }: { children: React.ReactNode }
 
   return (
     <div className="p-6" style={{ maxWidth: 600 }}>
-      <p
-        className="font-kora-serif text-kora-ink mb-6"
-        style={{ fontSize: '1.875rem', letterSpacing: '-0.02em', lineHeight: 1.1 }}
+      {/* Title — Jakarta, no serif class (fase 0 flip active) */}
+      <h1
+        style={{
+          fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+          fontWeight:    800,
+          fontSize:      '2rem',
+          letterSpacing: '-0.03em',
+          lineHeight:    1.06,
+          color:         '#06032B',
+          marginBottom:  24,
+        }}
       >
         My KORA
-      </p>
+      </h1>
       <PrivacyBoundaryNotice
         reason="employer_role"
         dataType="my_kora"

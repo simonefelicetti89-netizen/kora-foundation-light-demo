@@ -6,13 +6,14 @@ import { formatRole } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 import type { KoraRole } from '@/lib/types';
 
+// Role colors — Layer token–aligned, no raw Tailwind color classes
 const ROLE_COLORS: Record<string, string> = {
   KORA_ADMIN:     'text-[#C76F3D]',
   COMPANY_ADMIN:  'text-[rgba(6,3,43,0.78)]',
   COMPANY_VIEWER: 'text-[rgba(6,3,43,0.62)]',
   WORKER:         'text-[#2F7D55]',
-  PARTNER:        'text-violet-700',
-  ADVISOR:        'text-blue-700',
+  PARTNER:        'text-[#D99767]',   // warm sand — partner color
+  ADVISOR:        'text-[#4A7FE0]',   // institutional blue — advisor
 };
 
 export function RoleSwitcher() {
