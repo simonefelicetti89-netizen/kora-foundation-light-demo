@@ -71,9 +71,10 @@ function buildNavGroups(role: string): NavGroup[] {
         groupBadge: 'SYNTHETIC DEMO',
         groupBadgeStyle: 'bg-amber-900/30 text-amber-400 border border-amber-800/40',
         items: [
-          { href: '/company',        label: 'Meridiana Demo' },
-          { href: '/admin/operator', label: 'Synthetic Benchmark' },
-          { href: '/demo-guide',     label: 'Demo Guide' },
+          { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
+          { href: '/company',             label: 'Meridiana Demo' },
+          { href: '/admin/operator',      label: 'Synthetic Benchmark' },
+          { href: '/demo-guide',          label: 'Demo Guide' },
         ],
       },
       {
