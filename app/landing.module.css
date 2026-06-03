@@ -10,20 +10,7 @@
 .d4 { transition-delay: .28s; }
 .d5 { transition-delay: .35s; }
 
-/* ── NAV ── */
-.nav { position: sticky; top: 0; z-index: 80; background: rgba(8,6,31,.82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid rgba(247,245,239,.07); }
-.navInner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-.brand { display: flex; align-items: center; gap: 11px; text-decoration: none; }
-.brandWord { font-weight: 800; font-size: 21px; letter-spacing: -.04em; color: rgba(247,245,239,1); line-height: 1; }
-.brandTm { font-size: 9px; color: rgba(247,245,239,.38); vertical-align: super; margin-left: 1px; }
-.navLinks { display: flex; align-items: center; gap: 2rem; }
-.link { font-size: 13px; font-weight: 500; color: rgba(247,245,239,.52); transition: color .25s; text-decoration: none; }
-.link:hover { color: rgba(247,245,239,1); }
-.navCta { font-size: 13px; font-weight: 700; color: #06032B; background: #EFEBE2; border-radius: 9px; padding: 9px 18px; transition: transform .25s, box-shadow .25s; text-decoration: none; display: inline-block; }
-.navCta:hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(0,0,0,.3); }
-.navLogin { font-size: 13px; font-weight: 600; color: rgba(247,245,239,.72); transition: color .25s; text-decoration: none; display: inline-block; }
-.navLogin:hover { color: rgba(247,245,239,1); }
-@media (max-width: 720px) { .navLinks .link { display: none; } }
+/* Nav moved to components/landing/marketing.module.css via MarketingNav component */
 
 /* ── WRAP ── */
 .wrap { max-width: 1180px; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 3rem); }
@@ -193,10 +180,7 @@
 .btnOut { background: #FAF9F6; border: 1px solid rgba(6,3,43,.14); color: rgba(6,3,43,.62); font-size: 14px; font-weight: 600; border-radius: 10px; padding: 13px 28px; transition: border-color .25s; text-decoration: none; display: inline-block; }
 .btnOut:hover { border-color: rgba(6,3,43,.42); }
 
-/* ── FOOTER ── */
-.foot { background: #FAF9F6; border-top: 1px solid rgba(6,3,43,.08); padding: 2.3rem 0; }
-.footInner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.2rem; }
-.footMeth { font-size: 10.5px; font-weight: 600; letter-spacing: .06em; color: rgba(6,3,43,.42); line-height: 1.8; max-width: 60ch; text-transform: uppercase; }
+/* Footer moved to components/landing/marketing.module.css via MarketingFooter component */
 
 @media (prefers-reduced-motion: reduce) {
   .reveal, .revealIn { opacity: 1 !important; transform: none !important; transition: none !important; }

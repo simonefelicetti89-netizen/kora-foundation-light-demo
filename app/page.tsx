@@ -10,9 +10,18 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { LandingMotion } from '@/components/landing/LandingMotion';
+import { MarketingNav } from '@/components/landing/MarketingNav';
+import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 import { PACKAGES } from '@/lib/landing/packages';
 import styles from './landing.module.css';
+
+const LANDING_NAV_LINKS = [
+  { label: 'Il problema',       href: '#problema' },
+  { label: 'Come funziona',     href: '#metodo'   },
+  { label: 'KORA Index',        href: '#indice'   },
+  { label: 'Foundation Light',  href: '#pilot'    },
+];
 
 // ── Numeri canonici — single source of truth (scenario S1, Meridiana Group) ──
 // Fonte: lib/scoring-result + data/synthetic/kora-index-outputs.json
@@ -64,29 +73,13 @@ export default function LandingPage() {
     >
 
       {/* ── NAV ──────────────────────────────────────────────────────────── */}
-      <nav className={styles.nav}>
-        <div className={`${styles.wrap} ${styles.navInner}`}>
-          <Link href="#top" className={styles.brand} aria-label="KORA">
-            {/* Modifica 1: logo reale (on-dark) */}
-            <Image
-              src="/kora/logo-white.png"
-              alt="KORA"
-              width={90}
-              height={28}
-              priority
-              style={{ height: 26, width: 'auto' }}
-            />
-          </Link>
-          <div className={styles.navLinks}>
-            <a className={styles.link} href="#problema">Il problema</a>
-            <a className={styles.link} href="#metodo">Come funziona</a>
-            <a className={styles.link} href="#indice">KORA Index</a>
-            <a className={styles.link} href="#pilot">Foundation Light</a>
-            <Link className={styles.navLogin} href="/admin/login">Accedi</Link>
-            <Link className={styles.navCta} href="/pilot">Avvia un pilot →</Link>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav
+        brandHref="#top"
+        links={LANDING_NAV_LINKS}
+        loginHref="/admin/login"
+        ctaHref="/pilot"
+        ctaLabel="Avvia un pilot →"
+      />
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <header className={styles.hero} id="top">
@@ -530,23 +523,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer className={styles.foot}>
-        <div className={`${styles.wrap} ${styles.footInner}`}>
-          <Link href="#top" className={styles.brand} aria-label="KORA">
-            {/* Modifica 1: logo reale (on-light) */}
-            <Image
-              src="/kora/logo-dark.png"
-              alt="KORA"
-              width={90}
-              height={28}
-              style={{ height: 24, width: 'auto', opacity: 0.55 }}
-            />
-          </Link>
-          <p className={styles.footMeth}>
-            synthetic_demo_data: true · KORA-METHOD-v0.1.0 · pre_empirical_calibration · organization-level only · KORA misura organizzazioni, non individui.
-          </p>
-        </div>
-      </footer>
+      <MarketingFooter meth="synthetic_demo_data: true · KORA-METHOD-v0.1.0 · pre_empirical_calibration · organization-level only · KORA misura organizzazioni, non individui." />
 
       {/* Modifica 4: animazioni in client component isolato */}
       <LandingMotion />

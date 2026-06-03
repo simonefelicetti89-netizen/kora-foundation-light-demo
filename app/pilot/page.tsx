@@ -4,36 +4,18 @@
 // 'use client' per: useState del form + IntersectionObserver reveal.
 // Form → mailto: zero backend. prefers-reduced-motion respected.
 
-import { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
+import { useState } from 'react';
 import Link from 'next/link';
 import { PACKAGES, PILOT_EMAIL } from '@/lib/landing/packages';
+import { useLandingReveal } from '@/components/landing/useLandingReveal';
+import { MarketingNav } from '@/components/landing/MarketingNav';
+import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import styles from './pilot.module.css';
 
-// ── Reveal observer ──────────────────────────────────────────────────────────
-function useReveal() {
-  const rootRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const elements = rootRef.current?.querySelectorAll<HTMLElement>(`.${styles.reveal}:not(.${styles.revealIn})`);
-    if (!elements) return;
-    if (reduced) {
-      elements.forEach((el) => el.classList.add(styles.revealIn));
-      return;
-    }
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          e.target.classList.add(styles.revealIn);
-          io.unobserve(e.target);
-        }
-      });
-    }, { threshold: 0.14 });
-    elements.forEach((el) => io.observe(el));
-    return () => io.disconnect();
-  }, []);
-  return rootRef;
-}
+const PILOT_NAV_LINKS = [
+  { label: '← Home',         href: '/'           },
+  { label: 'Esplora la demo', href: '/demo-guide' },
+];
 
 // ── FAQ item ─────────────────────────────────────────────────────────────────
 function FAQ({ q, a }: { q: string; a: string }) {
@@ -145,24 +127,18 @@ function ContactForm() {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 export default function PilotPage() {
-  const rootRef = useReveal();
+  const rootRef = useLandingReveal(styles.reveal, styles.revealIn);
 
   return (
     <div ref={rootRef} className={styles.root}>
 
       {/* ── NAV ── */}
-      <nav className={styles.nav}>
-        <div className={`${styles.wrap} ${styles.navInner}`}>
-          <Link href="/" className={styles.brand} aria-label="KORA">
-            <Image src="/kora/logo-white.png" alt="KORA" width={90} height={28} priority style={{ height: 24, width: 'auto' }} />
-          </Link>
-          <div className={styles.navR}>
-            <Link className={styles.link} href="/">← Home</Link>
-            <Link className={styles.link} href="/demo-guide">Esplora la demo</Link>
-            <a className={styles.navCta} href="#contatto">Richiedi informazioni</a>
-          </div>
-        </div>
-      </nav>
+      <MarketingNav
+        brandHref="/"
+        links={PILOT_NAV_LINKS}
+        ctaHref="#contatto"
+        ctaLabel="Richiedi informazioni"
+      />
 
       {/* ── HERO ── */}
       <header className={styles.hero}>
@@ -315,16 +291,7 @@ export default function PilotPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className={styles.foot}>
-        <div className={`${styles.wrap} ${styles.footInner}`}>
-          <Link href="/" className={styles.brand} aria-label="KORA">
-            <Image src="/kora/logo-dark.png" alt="KORA" width={90} height={28} style={{ height: 22, width: 'auto', opacity: 0.55 }} />
-          </Link>
-          <p className={styles.footMeth}>
-            KORA misura organizzazioni, non individui · pre_empirical_calibration · organization-level only · evidence-based
-          </p>
-        </div>
-      </footer>
+      <MarketingFooter />
 
     </div>
   );
