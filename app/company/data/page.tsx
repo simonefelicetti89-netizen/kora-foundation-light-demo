@@ -1,4 +1,7 @@
 'use client';
+// C-03: Data Intake Studio™ — stato delle fonti dati e readiness per il calcolo KORA.
+// Scopo: rispondere a 'i dati sono pronti per lo scoring e quali sono i gap?'
+// Nessuna modifica dati disponibile qui: l'intake operativo è gestito da KORA Admin.
 
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';

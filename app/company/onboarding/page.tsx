@@ -1,4 +1,7 @@
 'use client';
+// C-12: Onboarding — stato del percorso di onboarding KORA.
+// Scopo: mostrare lo stato attuale dell'onboarding e i prossimi passi.
+// I dettagli operativi sono gestiti lato KORA Admin.
 
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
@@ -9,6 +12,7 @@ import { companyDataIntakeService } from '@/services/company-data-intake/Company
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { useScoringResult } from '@/lib/scoring-result';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { Explainer } from '@/components/ui/Explainer';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';

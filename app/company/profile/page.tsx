@@ -1,4 +1,7 @@
 'use client';
+// C-11: Profilo & Stato — metadati azienda e stato della pipeline KORA.
+// Scopo: rispondere a 'dove siamo nel percorso KORA e cosa manca per il Decision Pack?'
+// Read-only: nessuna modifica disponibile al company admin dal portale.
 
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
@@ -8,6 +11,7 @@ import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { Explainer } from '@/components/ui/Explainer';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';

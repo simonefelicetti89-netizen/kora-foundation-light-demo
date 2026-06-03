@@ -1,4 +1,7 @@
 'use client';
+// C-08: Activation Intelligence™ — chi non viene raggiunto e dove si accumula il debt.
+// Scopo: rispondere a "chi è la maggioranza silenziosa e dove il budget non converte?"
+// Privacy: aggregato aziendale, N≥10, nessun dato individuale.
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import { useScoringResult } from '@/lib/scoring-result';
@@ -14,6 +17,9 @@ import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { KPICard } from '@/components/ui/KPICard';
+import { DataBar } from '@/components/ui/DataBar';
+import { Explainer } from '@/components/ui/Explainer';
 import type { PillarCode } from '@/lib/types';
 
 const SAFE_AGGREGATION_THRESHOLD = 10;
@@ -52,47 +58,9 @@ function pillarFill(rank: number): string {
   return `rgba(6,3,43,${op})`;
 }
 
-// Metric card — KORA style
-function MetricCard({ label, value, code, description }: {
-  label: string; value: string; code: string; description?: string;
-}) {
-  return (
-    <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
-      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: TOKENS.inkHint }}>
-        {code}
-      </p>
-      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, letterSpacing: '-0.025em', margin: '8px 0 4px' }}>
-        {value}
-      </p>
-      <p style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>{label}</p>
-      {description && (
-        <p style={{ fontSize: '11px', color: TOKENS.inkTertiary, lineHeight: 1.55, marginTop: '10px', paddingTop: '10px', borderTop: TOKENS.cardBorder }}>
-          {description}
-        </p>
-      )}
-    </div>
-  );
-}
+// MetricCard replaced by Layer KPICard — see usage below.
 
-// Horizontal bar row
-function BarRow({ label, value, fill, suffix, rightSlot }: {
-  label: string; value: number; fill: string; suffix?: string; rightSlot?: React.ReactNode;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <span style={{ width: 160, fontSize: '12px', color: TOKENS.inkSecondary, flexShrink: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-        {label}
-      </span>
-      <div style={{ flex: 1, height: 6, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
-        <div style={{ height: 6, borderRadius: 9999, width: `${Math.min(value * 100, 100)}%`, background: fill }} />
-      </div>
-      <span style={{ width: 40, textAlign: 'right', fontSize: '11px', fontFamily: 'var(--font-jakarta)', color: TOKENS.inkSecondary, flexShrink: 0 }}>
-        {suffix ?? pct(value)}
-      </span>
-      {rightSlot}
-    </div>
-  );
-}
+// BarRow replaced by Layer DataBar — see usage below.
 
 // C-08: Activation & Participation
 export default function Activation() {
@@ -158,7 +126,7 @@ export default function Activation() {
     <div className="space-y-6">
       <PageMasthead
         eyebrow={`Intelligence operativa · ${activeScenario}`}
-        title={<><span className="font-kora-serif">Activation Debt</span><sup className="tm-mark">™</sup> & Partecipazione</>}
+        title="Activation Debt™ & Partecipazione"
         subline={`Aggregato aziendale — gruppi < ${SAFE_AGGREGATION_THRESHOLD} soppressi · nessun PIB individuale · nessun dato lavoratore`}
       />
       <DecisionContext
@@ -289,14 +257,58 @@ export default function Activation() {
           {/* ── Metriche principali ── */}
           <SectionLabel>Metriche di attivazione</SectionLabel>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <MetricCard label="Activation Rate" value={pct(aggregate.activation_rate)} code="AR"
-              description="Quota della forza lavoro idonea con almeno un'Impact Unit approvata nel periodo." />
-            <MetricCard label="Meaningful Activation" value={pct(aggregate.meaningful_activation_rate)} code="MAR"
-              description="Quota di lavoratori la cui partecipazione supera la soglia di materialità." />
-            <MetricCard label="Continuity Rate" value={pct(aggregate.continuity_rate)} code="CO"
-              description="Quota di lavoratori con engagement sostenuto in più periodi di rendicontazione." />
-            <MetricCard label="Verification Rate" value={pct(aggregate.verification_rate)} code="VR"
-              description="Quota di attività supportata da evidenze verificate o parzialmente verificate." />
+            {/* Layer KPICard — replaced local MetricCard */}
+            <KPICard
+              code="AR"
+              label="Activation Rate"
+              value={pct(aggregate.activation_rate)}
+              status={aggregate.activation_rate >= 0.50 ? 'positive' : aggregate.activation_rate >= 0.30 ? 'warning' : 'critical'}
+              period="Workforce attivata"
+              important
+              size="md"
+            />
+            <KPICard
+              code="MAR"
+              label="Meaningful Activation"
+              value={pct(aggregate.meaningful_activation_rate)}
+              status={aggregate.meaningful_activation_rate >= 0.35 ? 'positive' : aggregate.meaningful_activation_rate >= 0.20 ? 'warning' : 'critical'}
+              period="Sopra soglia materialità"
+              size="md"
+            />
+            <KPICard
+              code="CO"
+              label="Continuity Rate"
+              value={pct(aggregate.continuity_rate)}
+              status={aggregate.continuity_rate >= 0.40 ? 'positive' : aggregate.continuity_rate >= 0.25 ? 'warning' : 'critical'}
+              period="Engagement sostenuto"
+              size="md"
+            />
+            <KPICard
+              code="VR"
+              label="Verification Rate"
+              value={pct(aggregate.verification_rate)}
+              status={aggregate.verification_rate >= 0.60 ? 'positive' : aggregate.verification_rate >= 0.40 ? 'warning' : 'critical'}
+              period="Evidenze verificate"
+              size="md"
+            />
+          </div>
+          {/* Explainer su metriche chiave */}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
+            <Explainer
+              what="AR misura la quota di workforce con almeno un'Impact Unit approvata nel periodo."
+              how="<40% segnala Activation Safeguard WARNING. Più alto = più lavoratori raggiunti."
+              compact
+            />
+            <Explainer
+              what="MAR è la quota di lavoratori con attivazione sopra la soglia di materialità."
+              how="MAR < AR per definizione. Il gap indica partecipazione superficiale da approfondire."
+              compact
+            />
+            <Explainer
+              what="VR è la quota di Impact Units supportata da evidenza verificata o parziale."
+              how="Più basso = Confidence Score™ più basso. <60% è area critica."
+              compact
+            />
           </div>
 
           {/* ── Popolazione ── */}
@@ -327,7 +339,7 @@ export default function Activation() {
                 { label: 'Fascia 38–88%',       value: debtConcentration.next_40_iu_pct,  fill: `rgba(6,3,43,0.50)` },
                 { label: 'Bottom 50%',           value: debtConcentration.bottom_50_iu_pct, fill: `rgba(6,3,43,0.25)` },
               ].map((row) => (
-                <BarRow key={row.label} label={row.label} value={row.value} fill={row.fill} />
+                <DataBar value={row.value * 100} label={row.label} color={row.fill} animate suffix={pct(row.value)} />
               ))}
             </div>
             <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 12 }}>
@@ -346,11 +358,13 @@ export default function Activation() {
               return (
                 <div className="space-y-3">
                   {pillarShares.map(({ pillar, share }, rank) => (
-                    <BarRow
+                    <DataBar
                       key={pillar}
                       label={pillar}
-                      value={share}
-                      fill={rank === 0 ? TOKENS.accent : pillarFill(rank)}
+                      value={share * 100}
+                      suffix={`${Math.round(share * 100)}%`}
+                      color={rank === 0 ? TOKENS.accent : pillarFill(rank)}
+                      animate
                     />
                   ))}
                 </div>
@@ -365,17 +379,20 @@ export default function Activation() {
               {pillarDebt.map((row, rank) => {
                 const badge = DEBT_BADGE[row.level];
                 return (
-                  <BarRow
-                    key={row.pillar}
-                    label={row.pillar}
-                    value={row.coverage}
-                    fill={rank === 0 ? TOKENS.accent : pillarFill(rank)}
-                    rightSlot={
-                      <span className="inline-flex items-center gap-1 rounded shrink-0" style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 500, background: badge.bg, color: badge.text, padding: '2px 7px', marginLeft: 8 }}>
-                        {badge.label}
-                      </span>
-                    }
-                  />
+                  <div key={row.pillar} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <DataBar
+                        label={row.pillar}
+                        value={row.coverage * 100}
+                        suffix={`${Math.round(row.coverage * 100)}%`}
+                        color={rank === 0 ? TOKENS.accent : pillarFill(rank)}
+                        animate
+                      />
+                    </div>
+                    <span style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '10px', fontWeight: 500, background: badge.bg, color: badge.text, padding: '2px 7px', borderRadius: 4, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                      {badge.label}
+                    </span>
+                  </div>
                 );
               })}
             </div>
@@ -386,11 +403,13 @@ export default function Activation() {
           <ChartFrame subtitle={`Visualizzati solo i dipartimenti con ≥${SAFE_AGGREGATION_THRESHOLD} lavoratori.`}>
             <div className="space-y-3">
               {Object.entries(aggregate.department_activation).map(([deptId, rate]) => (
-                <BarRow
+                <DataBar
                   key={deptId}
                   label={DEPT_LABELS[deptId] ?? deptId}
-                  value={rate}
-                  fill={TOKENS.ink}
+                  value={(rate as number) * 100}
+                  suffix={`${Math.round((rate as number) * 100)}%`}
+                  color={TOKENS.ink}
+                  animate
                 />
               ))}
             </div>
@@ -410,17 +429,20 @@ export default function Activation() {
                 }
                 const sb = SITE_BADGE[site.status];
                 return (
-                  <BarRow
-                    key={site.name}
-                    label={`${site.name} (${site.workers} lav.)`}
-                    value={site.ar}
-                    fill={TOKENS.ink}
-                    rightSlot={
-                      <span className="rounded shrink-0 font-medium" style={{ fontFamily: 'var(--font-jakarta)', fontSize: '10px', background: sb.bg, color: sb.text, padding: '2px 7px', marginLeft: 8 }}>
-                        {sb.label}
-                      </span>
-                    }
-                  />
+                  <div key={site.name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <DataBar
+                        label={`${site.name} (${site.workers} lav.)`}
+                        value={site.ar * 100}
+                        suffix={`${Math.round(site.ar * 100)}%`}
+                        color={TOKENS.ink}
+                        animate
+                      />
+                    </div>
+                    <span style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '10px', background: sb.bg, color: sb.text, padding: '2px 7px', borderRadius: 4, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                      {sb.label}
+                    </span>
+                  </div>
                 );
               })}
             </div>

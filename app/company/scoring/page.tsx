@@ -1,4 +1,7 @@
 'use client';
+// C-13: Scoring — strumento operativo KORA Operator (non self-service).
+// Scopo: mostrare al Company Admin che il scoring è gestito dall'operatore KORA.
+// Nessuna azione disponibile qui: lo scoring avviene nel workspace KORA Admin.
 
 import Link from 'next/link';
 import { useRole } from '@/lib/demo-state';

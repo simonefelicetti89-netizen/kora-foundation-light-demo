@@ -1,39 +1,84 @@
 import Link from 'next/link';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
-// C-15 (retired): Workforce Baseline — moved to KORA Admin
-// Operational workspace now lives at /admin/companies/workforce-baseline
+// C-15 (retired): Workforce Baseline — funzione gestita lato KORA Admin.
+// Scopo: comunicare che il setup baseline vive su /admin/companies/workforce-baseline.
 export default function WorkforceBaselineBoundaryNotice() {
   return (
-    <div className="space-y-6 max-w-xl">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
-          Workforce Baseline
-        </p>
-        <h1 className="text-xl font-bold text-[#06032B] mt-0.5">Questa funzione è gestita lato KORA Admin.</h1>
-      </div>
+    <div style={{ maxWidth: 560 }}>
+      <p style={{
+        fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+        fontWeight:    600,
+        fontSize:      '10.5px',
+        letterSpacing: '0.10em',
+        textTransform: 'uppercase',
+        color:         TOKENS.accent,
+        marginBottom:  10,
+      }}>
+        Workforce Baseline
+      </p>
+      <h1 style={{
+        fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+        fontWeight:    800,
+        fontSize:      '1.75rem',
+        letterSpacing: '-0.03em',
+        lineHeight:    1.06,
+        color:         TOKENS.ink,
+        marginBottom:  20,
+      }}>
+        Questa funzione è gestita lato KORA Admin.
+      </h1>
 
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-4 text-sm text-[rgba(6,3,43,0.62)] leading-relaxed space-y-2">
-        <p>
-          Il setup operativo e la validazione dati sono gestiti lato KORA Admin.
-        </p>
-        <p>
-          Lo stato della workforce baseline è visibile nel tuo profilo KORA.
-        </p>
-        <p className="text-xs text-[rgba(6,3,43,0.40)]">
+      <div style={{
+        borderRadius:  TOKENS.cardRadius,
+        border:        TOKENS.cardBorder,
+        background:    TOKENS.taupe,
+        padding:       '16px 20px',
+        fontSize:      '13.5px',
+        color:         TOKENS.inkSecondary,
+        lineHeight:    1.65,
+        marginBottom:  24,
+        display:       'flex',
+        flexDirection: 'column',
+        gap:           8,
+      }}>
+        <p>Il setup operativo e la validazione dati sono gestiti lato KORA Admin.</p>
+        <p>Lo stato della workforce baseline è visibile nel tuo profilo KORA.</p>
+        <p style={{ fontSize: '11px', color: TOKENS.inkMeta }}>
           KORA misura l&apos;organizzazione, non gli individui.
         </p>
       </div>
 
-      <div className="flex items-center gap-4 flex-wrap">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
         <Link
           href="/company/profile"
-          className="rounded-md bg-[#06032B] px-4 py-2 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors"
+          style={{
+            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+            fontWeight:    700,
+            fontSize:      '13px',
+            borderRadius:  12,
+            padding:       '10px 20px',
+            background:    TOKENS.ink,
+            color:         '#FFFFFF',
+            textDecoration: 'none',
+            display:       'inline-block',
+            minHeight:     44,
+            lineHeight:    '1.8',
+          }}
         >
           Il tuo spazio KORA
         </Link>
         <Link
           href="/company"
-          className="text-sm text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)] hover:underline"
+          style={{
+            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+            fontSize:      '13px',
+            color:         TOKENS.inkSecondary,
+            textDecoration: 'none',
+            minHeight:     44,
+            display:       'inline-flex',
+            alignItems:    'center',
+          }}
         >
           Executive Cockpit
         </Link>

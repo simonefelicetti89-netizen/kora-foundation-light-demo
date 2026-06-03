@@ -1,4 +1,8 @@
 'use client';
+// C-01: Executive Cockpit™ — vista di comando per CEO/HR/Finance.
+// Scopo: rispondere a 'qual è lo stato dell'attivazione umana e dove devo agire?'
+// Struttura narrativa: Hero → Segnali → Metriche → Macroblocchi → Azione → Deep dive.
+
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import Link from 'next/link';

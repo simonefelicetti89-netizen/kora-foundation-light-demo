@@ -1,4 +1,7 @@
 'use client';
+// C-10: Spazio Condiviso — aggregati privacy-safe condivisibili internamente.
+// Scopo: fornire a board, intranet e comunicazione interna una vista KORA aggregata.
+// Nessun dato individuale. Soglia privacy N≥10.
 
 import Link from 'next/link';
 import { useDemoState } from '@/lib/demo-state';
@@ -11,6 +14,7 @@ import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/Bu
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { Explainer } from '@/components/ui/Explainer';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';

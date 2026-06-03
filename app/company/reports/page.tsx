@@ -1,4 +1,7 @@
 'use client';
+// C-09: Decision Pack — output board-ready con scomposizione metodologica.
+// Scopo: fornire a HR/CFO/ESG un documento strutturato, spiegabile e con confini espliciti.
+// Confidence/Safeguard sempre visibili; nessun dato individuale.
 
 import Link from 'next/link';
 import { useDemoState } from '@/lib/demo-state';
@@ -20,6 +23,7 @@ import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { Explainer } from '@/components/ui/Explainer';
 import type {
   DecisionPackSection, DecisionPackMetric, DecisionPackInsight,
   DecisionPackRecommendation, DecisionPackStatus, DecisionPackVersion,
@@ -184,7 +188,7 @@ function SectionBlock({ section, children }: { section: DecisionPackSection; chi
             </span>
           ))}
         </div>
-        <h3 className="font-kora-serif text-kora-ink" style={{ fontSize: '1.25rem', letterSpacing: '-0.01em' }}>{section.title}</h3>
+        <h3 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, color: "var(--kora-ink)", fontSize: '1.25rem', letterSpacing: '-0.01em' }}>{section.title}</h3>
         {section.subtitle && <p style={{ fontSize: '12px', color: TOKENS.inkSecondary }}>{section.subtitle}</p>}
       </div>
       {section.summary && <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.7 }}>{section.summary}</p>}
@@ -490,7 +494,7 @@ export default function Reports() {
             <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 4 }}>
               KORA Decision Pack · Foundation Light v0.1
             </p>
-            <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.5rem', letterSpacing: '-0.015em', lineHeight: 1.15 }}>
+            <p style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, color: "var(--kora-ink)", fontSize: '1.5rem', letterSpacing: '-0.015em', lineHeight: 1.15 }}>
               {companyName}
             </p>
             <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 4 }}>
@@ -831,7 +835,7 @@ export default function Reports() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span style={{ fontFamily: 'monospace', fontSize: '10px', background: TOKENS.inkBorder, color: TOKENS.inkSecondary, borderRadius: 4, padding: '2px 6px' }}>pillar_analysis</span>
                   </div>
-                  <h3 className="font-kora-serif text-kora-ink" style={{ fontSize: '1.25rem', letterSpacing: '-0.01em', marginTop: 4 }}>Pillar Balance</h3>
+                  <h3 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, color: "var(--kora-ink)", fontSize: '1.25rem', letterSpacing: '-0.01em', marginTop: 4 }}>Pillar Balance</h3>
                   <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 2 }}>Distribuzione aggregata aziendale · dati sintetici demo canonici</p>
                 </div>
                 <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 12 }}>

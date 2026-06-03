@@ -1,4 +1,7 @@
 'use client';
+// C-07: Contribution Intelligence™ — indicatore companion al KORA Index™.
+// Scopo: misurare il contributo collettivo e territoriale oltre il perimetro aziendale.
+// Non è una componente del KORA Index™ — mostrato separatamente come segnale complementare.
 
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
@@ -6,6 +9,7 @@ import { koraContributionService } from '@/services/kora-contribution/KoraContri
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { Explainer } from '@/components/ui/Explainer';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';

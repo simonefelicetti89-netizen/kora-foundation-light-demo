@@ -1,4 +1,7 @@
 'use client';
+// C-04: Ingestion Pipeline — stato del processo di intake dati.
+// Scopo: visualizzare lo stato della pipeline ingestion (fonti → classificazione → UEF → scoring).
+// I dettagli operativi (match review, approvazione) avvengono su KORA Admin.
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';

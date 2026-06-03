@@ -1,9 +1,13 @@
-// C-07-BP: Board Pack Preview — print-ready, McKinsey-style strategic document
+// C-07-BP: Board Pack Preview — documento board-ready per CEO/CFO/ESG.
+// Scopo: fornire output stampabile con KORA Index™, macroblocchi, BTI™ e raccomandazioni.
+// Nota metodologica: pre_empirical_calibration · non certificativo · dati sintetici Meridiana. — print-ready, McKinsey-style strategic document
 // Canonical S1 values — Meridiana Group Q1–Q3 2025 — KORA_DOCTRINE.md §4
 // Static server component. No backend. No PDF library. Print-to-PDF via browser.
 
 import Link from 'next/link';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { PrintButton } from './PrintButton';
+import { Explainer } from '@/components/ui/Explainer';
 
 export const metadata = {
   title: 'Board Pack Preview — Meridiana Group — KORA Foundation Light',
@@ -49,9 +53,9 @@ function eur(n: number) {
 // Section-level page footer (prints on every section)
 function DocFooter({ page, of = 8 }: { page: number; of?: number }) {
   return (
-    <div className="mt-8 pt-3 border-t border-[rgba(6,3,43,0.08)] flex items-center justify-between text-[9px] text-[rgba(6,3,43,0.40)] font-mono print-footer">
+    <div className="mt-8 pt-3 border-t flex items-center justify-between text-[9px] font-mono print-footer" style={{ borderColor: TOKENS.inkBorder, color: TOKENS.inkMeta }}>
       <span>KORA Foundation Light · Decision Pack Preview · {COMPANY} · {PERIOD}</span>
-      <span className="text-[rgba(6,3,43,0.28)] italic">Demo sintetica — non condividere come report certificato</span>
+      <span style={{ color: TOKENS.inkHint, fontStyle: "italic" }}>Demo sintetica — non condividere come report certificato</span>
       <span>Pag. {page} / {of}</span>
     </div>
   );
@@ -73,10 +77,10 @@ function Exhibit({ n, title, src }: { n: string; title: string; src?: string }) 
 function SectionTitle({ n, title, sub }: { n: string; title: string; sub?: string }) {
   return (
     <div className="mb-5">
-      <div className="border-t-2 border-[#06032B] pt-3">
+      <div className="border-t-2 pt-3">
         <div className="flex items-baseline gap-2.5">
           <span className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] uppercase tracking-widest">{n}</span>
-          <h2 className="text-[15px] font-bold tracking-tight text-[#06032B] leading-tight">{title}</h2>
+          <h2 className="text-[15px] font-bold tracking-tight leading-tight" style={{ color: TOKENS.ink }}>{title}</h2>
         </div>
         {sub && <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5 ml-7">{sub}</p>}
       </div>
@@ -88,9 +92,9 @@ function SectionTitle({ n, title, sub }: { n: string; title: string; sub?: strin
 function KPI({ label, value, unit, note }: { label: string; value: string; unit?: string; note?: string }) {
   return (
     <div className="space-y-0.5">
-      <p className="text-[9px] uppercase tracking-[0.1em] text-[rgba(6,3,43,0.40)] font-semibold leading-none">{label}</p>
+      <p className="text-[9px] uppercase tracking-[0.1em] font-semibold leading-none" style={{ color: TOKENS.inkHint }}>{label}</p>
       <div className="flex items-baseline gap-1">
-        <span className="text-[26px] font-bold text-[#06032B] leading-none tracking-tight">{value}</span>
+        <span className="text-[26px] font-bold leading-none tracking-tight" style={{ color: TOKENS.ink, fontVariantNumeric: "tabular-nums" }}>{value}</span>
         {unit && <span className="text-[11px] text-[rgba(6,3,43,0.52)] font-normal">{unit}</span>}
       </div>
       {note && <p className="text-[9px] text-[rgba(6,3,43,0.52)] leading-tight">{note}</p>}
@@ -559,7 +563,7 @@ export default function BoardPackPreview() {
           </p>
 
           {/* Budget Evidence Quality */}
-          <div className="border-t-2 border-[#06032B] pt-3 mb-3">
+          <div className="border-t-2 pt-3 mb-3">
             <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-0.5">Budget Evidence Quality</p>
             <p className="text-[10px] text-[rgba(6,3,43,0.52)]">Preview metodologica — valori non certificati nel dataset demo</p>
           </div>
@@ -616,7 +620,7 @@ export default function BoardPackPreview() {
 
           {/* Gate counts */}
           <div className="grid grid-cols-3 gap-6 mb-6 avoid-break">
-            <div className="border-t-2 border-[#06032B] pt-3">
+            <div className="border-t-2 pt-3">
               <p className="text-[9px] uppercase tracking-wider text-[rgba(6,3,43,0.40)] font-semibold mb-1">Eligible</p>
               <p className="text-[40px] font-bold text-[#06032B] leading-none">{ELIGIBLE_RECORDS.toLocaleString('it-IT')}</p>
               <p className="text-[10px] text-[rgba(6,3,43,0.62)] mt-1">record · generano Impact Units</p>

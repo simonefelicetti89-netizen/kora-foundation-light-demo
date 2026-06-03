@@ -1,4 +1,7 @@
 'use client';
+// C-06: Financial Governance — risponde a 'dove va il budget e quanto diventa attivazione profonda?'.
+// Scopo: connettere spesa welfare, attivazione verificata, Activation Debt™ e Reallocation Opportunity™.
+// La metrica chiave: BTI™. Il board ottiene risposta sul ROI direzionale — mai causale.
 
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
@@ -8,6 +11,7 @@ import { financialGovernanceService } from '@/services/financial-governance/Fina
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { PILLAR_LABELS, BTI_DOCTRINE } from '@/lib/constants/kora';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { Explainer } from '@/components/ui/Explainer';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
@@ -324,6 +328,25 @@ export default function FinancialGovernance() {
         />
       </div>
 
+      {/* ── Explainer KPI strip — BTI™, DA%, costo per IU ─ */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+        <Explainer
+          what="BTI™ misura quanto efficacemente il budget welfare si converte in attivazione profonda (Impact Units reali)."
+          how="0–100. <50 = alta quota in economic relief o compliance; >70 = budget ben orientato all'attivazione."
+          compact
+        />
+        <Explainer
+          what="Deep Activation Share™: quota del budget che va a programmi che generano Impact Units verificate."
+          how=">50% = target solido. <30% = urgenza di riallocazione verso attivazione profonda."
+          compact
+        />
+        <Explainer
+          what="Costo per Impact Unit™: euro spesi per ogni unità di attivazione verificata generata."
+          how="Più basso = maggiore efficienza. Non è un KPI isolato: leggere insieme ad AR e BTI™."
+          compact
+        />
+      </div>
+
       {/* ── 2. Executive Reading Block ─────────────────────────────────────── */}
       <div
         style={{
@@ -470,7 +493,7 @@ export default function FinancialGovernance() {
           padding:      '1.25rem',
         }}
       >
-        <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.0625rem', letterSpacing: '-0.01em', marginBottom: 12 }}>
+        <p style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, color: "var(--kora-ink)", fontSize: '1.0625rem', letterSpacing: '-0.01em', marginBottom: 12 }}>
           Dal budget all&apos;attivazione profonda
         </p>
         <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.7, maxWidth: '80ch', marginBottom: 16 }}>

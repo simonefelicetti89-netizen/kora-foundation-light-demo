@@ -1,4 +1,7 @@
 'use client';
+// C-05: Pillar Intelligence — distribuzione delle Initiative sui 5 pillar KORA.
+// Scopo: rispondere a 'dove investe l'organizzazione e dove c'è il gap?'
+// Pillar: LIFE, GROWTH, CONNECTION, IMPACT, LEGACY — mai overlappanti.
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import { useScoringResult } from '@/lib/scoring-result';
@@ -14,6 +17,7 @@ import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { Explainer } from '@/components/ui/Explainer';
 import { cn } from '@/lib/utils';
 import type { PillarCode } from '@/lib/types';
 

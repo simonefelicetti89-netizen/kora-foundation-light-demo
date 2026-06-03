@@ -1,4 +1,7 @@
 // app/company/workspace/page.tsx
+// C-00: Company Workspace — vista autenticata per sessioni COMPANY_ADMIN reali.
+// Scopo: entry point per pilot aziendali live. Dati reali, sessione Supabase autenticata.
+// Demo: KORA_ADMIN viene reindirizzato a /admin/company-workspace con messaggio esplicativo.
 // B36 PART 4 — Company workspace — session-authenticated access.
 // This is the real company-facing entry point (not demo-state based).
 // requireCompanyUser() is called in layout.tsx — this page only runs if session is valid.

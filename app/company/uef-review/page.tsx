@@ -1,4 +1,7 @@
 'use client';
+// C-14: UEF Review — revisione record Unified Event Frame.
+// Scopo: mostrare lo stato dei record UEF (approvati/in revisione/bloccati) in forma aggregata.
+// Strumento operativo: la revisione avviene su KORA Admin; qui è view-only per Company Admin.
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';

@@ -1,8 +1,11 @@
 'use client';
 
-// C-02: KORA Index™ — narrative-first architecture
-// Structure: Hero Diagnosis → Score Drivers → Board Actions → Technical Breakdown
-// Meaning before numbers. Verdict before components.
+// C-02: KORA Index™ — scomposizione analitica del punteggio.
+// Scopo: rispondere a "come si costruisce il punteggio, cosa lo vincola
+//        e cosa lo può migliorare?" — la domanda decisionale di un HR/CFO.
+// Struttura: Hero Diagnosis → Score Drivers → Board Actions → Technical Breakdown.
+// Significato prima dei numeri. Verdetto prima dei componenti.
+// Explainer compact su ogni metrica non autoesplicativa.
 
 import { useDemoState } from '@/lib/demo-state';
 import { useScoringResult, useDemoScenarioComparison } from '@/lib/scoring-result';
@@ -23,8 +26,50 @@ import { BoardActions }    from '@/components/kora-index/BoardActions';
 // ── UI primitives ─────────────────────────────────────────────────────────────
 import { PageMasthead }    from '@/components/ui/PageMasthead';
 import { SectionLabel }    from '@/components/ui/SectionLabel';
+import { Explainer }       from '@/components/ui/Explainer';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TM }              from '@/components/ui/TM';
+
+// ── Explainer definitions — cosa misura / come si legge ──────────────────────
+// Per COPY_GUIDE: ogni metrica non autoesplicativa deve avere un Explainer.
+const EXP = {
+  koraIndex: {
+    what: 'Efficacia complessiva nel convertire iniziative people in attivazione verificata, distribuita e significativa.',
+    how:  '0–100. ≥70 = solido; 50–69 = in sviluppo; <50 = intervento necessario. Il punteggio è a livello organizzazione, mai individuale.',
+  },
+  cs: {
+    what: 'Qualità e completezza delle fonti dati usate nel calcolo del KORA Index™.',
+    how:  'Esterno al KORA Index™ (peso = 0). Non misura impatto: segnala affidabilità. Più alto = fonti più solide e verificabili.',
+  },
+  safeguard: {
+    what: 'Gate interpretativo che verifica se i requisiti minimi di attivazione sono soddisfatti.',
+    how:  'CLEAR = soglie rispettate. WARNING = sotto i minimi. FLAGGED = intervento urgente. Non è una componente del punteggio.',
+  },
+  reach: {
+    what: 'Misura se l\'attivazione raggiunge una quota significativa della popolazione aziendale.',
+    how:  'Basso reach = la maggior parte della workforce non è mai stata attivata nel periodo.',
+  },
+  quality: {
+    what: 'Misura se le azioni generano attivazione profonda, verificata, addizionale e continua.',
+    how:  'Bassa quality = il programma esiste ma l\'attivazione è superficiale o non sostenuta.',
+  },
+  equity: {
+    what: 'Misura se valore e attivazione sono distribuiti tra lavoratori, sedi, reparti e cluster demografici.',
+    how:  'Bassa equity = l\'attivazione è concentrata su un subset privilegiato della workforce.',
+  },
+  bti: {
+    what: 'Misura quanto efficacemente il budget welfare si converte in attivazione umana reale.',
+    how:  'Basso BTI™ = alta quota di budget va in economic relief o compliance, non in attivazione profonda.',
+  },
+  eligibility: {
+    what: 'Classifica ogni record come Eligible (genera IU), Limited (economic relief, 0 IU) o Blocked (compliance, 0 IU).',
+    how:  'Solo i record Eligible contribuiscono al KORA Index™. Blocked e Limited sono tracciati nel BTI™.',
+  },
+  confidence: {
+    what: 'Dettaglio delle fonti che compongono il Confidence Score™: completezza, verifica, qualità.',
+    how:  'CS basso = fonti autodichiarate o incomplete. Non impatta il KORA Index™ ma segnala fragilità dell\'output.',
+  },
+} as const;
 
 // ── Technical breakdown components — LAST ────────────────────────────────────
 import { MacroblockCard }           from '@/components/kora-index/MacroblockCard';
@@ -310,6 +355,7 @@ export default function KoraIndexDetail() {
 
       {/* Macroblock grid */}
       <SectionLabel>4 macroblocchi</SectionLabel>
+      {/* Explainer: ogni macroblocco pesa differentemente sul KORA Index™ */}
       <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
         {macroblocks.map((mb) => {
           const prevScore = activeScenario === 'S2' ? s1Mbs.find((m) => m.code === mb.code)?.score : undefined;
@@ -337,6 +383,9 @@ export default function KoraIndexDetail() {
       {/* Eligibility gate */}
       <div className="mt-6">
         <SectionLabel>Eligibility gate</SectionLabel>
+        <div style={{ marginBottom: 12 }}>
+          <Explainer {...EXP.eligibility} compact />
+        </div>
         <div className="mt-4">
           <EligibilityGatePanel summary={eligibilityGate} />
         </div>
@@ -365,6 +414,10 @@ export default function KoraIndexDetail() {
       {/* Safeguard + Confidence */}
       <div className="mt-6">
         <SectionLabel>Safeguard & confidence</SectionLabel>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap' }}>
+          <Explainer {...EXP.safeguard} compact />
+          <Explainer {...EXP.cs} compact />
+        </div>
         <div className="grid gap-4 lg:grid-cols-2 mt-4">
           <ActivationSafeguardPanel result={safeguard} explanation={explanation?.safeguard_explanation} />
           <ConfidenceBreakdown record={confidence} />
