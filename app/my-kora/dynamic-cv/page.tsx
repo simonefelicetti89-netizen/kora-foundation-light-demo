@@ -1,4 +1,7 @@
 'use client';
+// W-03: Dynamic Impact CV — portfolio di impatto personale del lavoratore.
+// Scopo: mostrare al lavoratore le sue attività verificate in formato CV portabile.
+// Il lavoratore decide cosa esportare o condividere — il datore non accede mai.
 
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
@@ -6,10 +9,10 @@ import { cn } from '@/lib/utils';
 
 const PILLAR_LIGHT: Record<string, string> = {
   LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
+  GROWTH:     'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  CONNECTION: 'bg-[rgba(217,151,103,0.10)] text-[#D99767] border-[rgba(217,151,103,0.25)]',
   IMPACT:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
-  LEGACY:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  LEGACY:     'bg-[rgba(138,117,98,0.10)] text-[#8A7562] border-[rgba(138,117,98,0.25)]',
 };
 
 const VERIF_BADGE: Record<string, string> = {
@@ -33,7 +36,7 @@ export default function DynamicCV() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Dynamic Impact CV</h1>
+          <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Dynamic Impact CV</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Portfolio di impatto personale del lavoratore</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -54,8 +57,8 @@ export default function DynamicCV() {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Dynamic Impact CV</h1>
-          <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
+          <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Dynamic Impact CV</h1>
+          <span style={{ borderRadius: 999, border: "1px solid rgba(6,3,43,0.14)", background: "rgba(6,3,43,0.04)", padding: "2px 8px", fontSize: "10px", fontWeight: 600, color: "rgba(6,3,43,0.52)", fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif" }}>
             Anteprima
           </span>
         </div>

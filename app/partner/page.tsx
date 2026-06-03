@@ -1,4 +1,7 @@
 'use client';
+// P-01: Partner Workspace — portale operativo per attori di attivazione KORA.
+// Scopo: rispondere a 'quali richieste sono attive e cosa richiede il protocollo evidenze KORA?'
+// I partner KORA non sono vendor marketplace: abilitano iniziative verificabili.
 
 import { useState } from 'react';
 import { PageMasthead } from '@/components/ui/PageMasthead';
@@ -149,7 +152,7 @@ const ACTIVATION_REQUESTS: ActivationRequest[] = [
 
 const REQUEST_STATUS_BADGE: Record<string, { style: string; label: string }> = {
   confermata:         { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',    label: 'Confermata' },
-  in_attesa:          { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',    label: 'In attesa' },
+  in_attesa:          { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',    label: 'In attesa' },
   evidenza_richiesta: { style: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',       label: 'Evidenza richiesta' },
 };
 
@@ -195,7 +198,7 @@ const EVIDENCE_ITEMS: EvidenceItem[] = [
 ];
 
 const EVIDENCE_STATUS_BADGE: Record<string, { style: string; label: string }> = {
-  in_revisione: { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',    label: 'In revisione' },
+  in_revisione: { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',    label: 'In revisione' },
   parziale:     { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]', label: 'Parziale' },
   approvata:    { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',    label: 'Approvata' },
 };
@@ -259,7 +262,7 @@ const ACTION_LOG = [
 
 const LOG_STATUS_BADGE: Record<string, { style: string; label: string }> = {
   completata: { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',  label: 'Completata' },
-  in_corso:   { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',  label: 'In corso' },
+  in_corso:   { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',  label: 'In corso' },
 };
 
 // ─── Style helpers ────────────────────────────────────────────────────────────
@@ -268,13 +271,13 @@ const PILLAR_BADGE: Record<string, string> = {
   IMPACT:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   CONNECTION: 'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]',
   LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  GROWTH:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  GROWTH:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   LEGACY:     'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
 };
 
 const PROTOCOL_BADGE: Record<string, { style: string; label: string }> = {
   audit_completed: { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',   label: 'Audit processo completato' },
-  audit_pending:   { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',   label: 'Audit processo in corso' },
+  audit_pending:   { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',   label: 'Audit processo in corso' },
   not_requested:   { style: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',   label: 'Protocollo non definito' },
 };
 
@@ -335,7 +338,7 @@ const PARTNER_COMPANY_SCOPE: CompanyScope[] = [
 
 const RELATIONSHIP_STATUS_BADGE: Record<string, { style: string }> = {
   'Pilot attivo':        { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' },
-  'Richiesta in review': { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]' },
+  'Richiesta in review': { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]' },
   'Interesse ricevuto':  { style: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]' },
 };
 
@@ -444,7 +447,7 @@ const TODAY_AGENDA: AgendaItem[] = [
 ];
 
 const AGENDA_TYPE_BADGE: Record<AgendaItemType, { style: string; label: string }> = {
-  request_review:       { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',    label: 'Review richiesta' },
+  request_review:       { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',    label: 'Review richiesta' },
   scheduled_activation: { style: 'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',       label: 'Attivazione' },
   evidence_followup:    { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]', label: 'Follow-up evidenza' },
   advisor_check:        { style: 'bg-[rgba(107,122,146,0.10)] text-[#344256] border-[rgba(107,122,146,0.22)]', label: 'Check Advisor' },
@@ -506,7 +509,7 @@ const PARTNER_FINANCIAL_PREVIEW: FinancialRow[] = [
 
 const FINANCIAL_STATUS_BADGE: Record<string, string> = {
   'Da consuntivare':                       'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  'In verifica evidenze':                  'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  'In verifica evidenze':                  'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   'Liquidabile — demo':                    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   'Non fatturabile — evidenza incompleta': 'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
 };
@@ -585,7 +588,7 @@ export default function PartnerDashboard() {
                   </div>
                 </div>
                 {co.aggregate_participants === null && (
-                  <p className="text-[10px] text-amber-600 italic">{co.privacy_status}</p>
+                  <p className="text-[10px] text-[#D99A2B] italic">{co.privacy_status}</p>
                 )}
                 <div className="flex items-start gap-1.5">
                   <span className="text-[10px] text-[rgba(6,3,43,0.40)] shrink-0 mt-0.5">→</span>
@@ -677,7 +680,7 @@ export default function PartnerDashboard() {
             </div>
             <div>
               <p className="text-xs text-[rgba(6,3,43,0.40)]">Affidabilità evidenza</p>
-              <span className="inline-block mt-0.5 rounded border bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)] px-1.5 py-0.5 text-[10px] font-medium text-amber-700">
+              <span className="inline-block mt-0.5 rounded border bg-[rgba(217,154,43,0.08)] border-[rgba(217,154,43,0.25)] px-1.5 py-0.5 text-[10px] font-medium text-[#8A5A00]">
                 Parziale — revisione protocollo evidenze in corso
               </span>
             </div>
@@ -765,7 +768,7 @@ export default function PartnerDashboard() {
                   {req.participants_aggregate !== null && (
                     <span>Partecipanti aggregati: <span className="font-medium text-[rgba(6,3,43,0.62)]">{req.participants_aggregate}</span></span>
                   )}
-                  <span>Evidenza: <span className={`font-medium ${req.evidence_submitted ? 'text-green-700' : 'text-amber-600'}`}>{req.evidence_submitted ? 'Presentata' : 'Non ancora presentata'}</span></span>
+                  <span>Evidenza: <span className={`font-medium ${req.evidence_submitted ? 'text-green-700' : 'text-[#D99A2B]'}`}>{req.evidence_submitted ? 'Presentata' : 'Non ancora presentata'}</span></span>
                 </div>
                 {demoAction ? (
                   <div className="rounded bg-green-50 border border-green-100 px-2.5 py-1.5 text-[11px] text-green-700 font-medium">
@@ -824,7 +827,7 @@ export default function PartnerDashboard() {
                   Partecipanti:{' '}
                   {cohort.participant_count !== null
                     ? <span className="font-semibold text-[rgba(6,3,43,0.78)]">{cohort.participant_count}</span>
-                    : <span className="italic text-amber-600">{cohort.privacy_threshold_status}</span>
+                    : <span className="italic text-[#D99A2B]">{cohort.privacy_threshold_status}</span>
                   }
                 </span>
                 <span>Stato: <span className="font-medium text-[rgba(6,3,43,0.62)]">{cohort.action_status}</span></span>
@@ -924,7 +927,7 @@ export default function PartnerDashboard() {
             </tbody>
           </table>
         </div>
-        <div className="mt-3 rounded bg-blue-50 border border-blue-100 px-3 py-2.5 text-[11px] text-blue-700 leading-relaxed">
+        <div className="mt-3 rounded bg-[rgba(47,125,85,0.06)] border border-blue-100 px-3 py-2.5 text-[11px] text-[#2F7D55] leading-relaxed">
           <span className="font-semibold">Modello di validazione KORA: </span>
           L&apos;Advisor non valida ogni singola azione. L&apos;Advisor esegue un audit preliminare del processo
           e del protocollo evidenze del partner. Le azioni successive sono considerate ammissibili se
@@ -1047,11 +1050,11 @@ export default function PartnerDashboard() {
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-3">
           Iniziativa Collettiva — Preview
         </p>
-        <div className="rounded-lg border border-blue-100 bg-blue-50 p-5 space-y-4">
+        <div className="rounded-lg border border-blue-100 bg-[rgba(47,125,85,0.06)] p-5 space-y-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
               <p className="text-sm font-bold text-blue-900">{DEMO_INITIATIVE.name}</p>
-              <p className="text-xs text-blue-700 mt-0.5">
+              <p className="text-xs text-[#2F7D55] mt-0.5">
                 Iniziativa cross-company — {DEMO_INITIATIVE.companies}
               </p>
             </div>
@@ -1075,15 +1078,15 @@ export default function PartnerDashboard() {
             </div>
             <div>
               <p className="text-xs text-blue-600">Stato evidenza</p>
-              <p className="text-sm text-blue-800 mt-0.5">{DEMO_INITIATIVE.evidence_status}</p>
+              <p className="text-sm text-[#2F7D55] mt-0.5">{DEMO_INITIATIVE.evidence_status}</p>
             </div>
             <div>
               <p className="text-xs text-blue-600">Revisione advisor</p>
-              <p className="text-sm text-blue-800 mt-0.5">{DEMO_INITIATIVE.advisor_status}</p>
+              <p className="text-sm text-[#2F7D55] mt-0.5">{DEMO_INITIATIVE.advisor_status}</p>
             </div>
           </div>
 
-          <div className="rounded bg-blue-100 border border-blue-200 px-3 py-2 text-[11px] text-blue-700">
+          <div className="rounded bg-\[rgba(47,125,85,0.10)\] border border-[rgba(47,125,85,0.22)] px-3 py-2 text-[11px] text-[#2F7D55]">
             <span className="font-semibold">Segnale KORA Contribution: </span>
             {DEMO_INITIATIVE.kora_contribution_note}
           </div>

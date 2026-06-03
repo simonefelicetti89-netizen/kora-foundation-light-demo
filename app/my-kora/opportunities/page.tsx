@@ -1,4 +1,8 @@
 'use client';
+// W-04: Opportunità — iniziative consigliate per deepening dell'attivazione.
+// Scopo: mostrare al lavoratore opportunità personalizzate per pillar
+//        (partner KORA, interne, community) e IU stimati per ognuna.
+// Le opportunità sono suggerimenti, non obblighi. Il lavoratore decide.
 
 import { useRole } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
@@ -6,18 +10,18 @@ import { cn } from '@/lib/utils';
 
 const PILLAR_COLORS: Record<string, string> = {
   LIFE:       'bg-[#2F7D55]',
-  GROWTH:     'bg-blue-500',
-  CONNECTION: 'bg-purple-500',
-  IMPACT:     'bg-[rgba(217,154,43,0.08)]0',
-  LEGACY:     'bg-[rgba(217,154,43,0.08)]0',
+  GROWTH:     'bg-[#2F7D55]',
+  CONNECTION: 'bg-[#D99767]',
+  IMPACT:     'bg-[#D99A2B]',
+  LEGACY:     'bg-[#8A7562]',
 };
 
 const PILLAR_LIGHT: Record<string, string> = {
   LIFE:       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
-  GROWTH:     'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
-  CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
+  GROWTH:     'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  CONNECTION: 'bg-[rgba(217,151,103,0.10)] text-[#D99767] border-[rgba(217,151,103,0.25)]',
   IMPACT:     'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
-  LEGACY:     'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  LEGACY:     'bg-[rgba(138,117,98,0.10)] text-[#8A7562] border-[rgba(138,117,98,0.25)]',
 };
 
 interface Opportunity {
@@ -128,7 +132,7 @@ export default function Opportunities() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Opportunità per te</h1>
+          <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Opportunità per te</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Percorsi e iniziative abbinati al tuo profilo di impatto</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -146,7 +150,7 @@ export default function Opportunities() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Opportunità per te</h1>
+        <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Opportunità per te</h1>
         <p className="text-sm text-[rgba(6,3,43,0.52)]">
           Percorsi e iniziative abbinati al tuo profilo di impatto — {OPPORTUNITIES.length} suggerimenti
         </p>
@@ -163,8 +167,8 @@ export default function Opportunities() {
 
       {/* Demo notice */}
       <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3">
-        <p className="text-xs font-semibold text-amber-700">Solo anteprima — Foundation Light</p>
-        <p className="text-xs text-amber-700 mt-0.5">
+        <p className="text-xs font-semibold text-\[#8A5A00\]">Solo anteprima — Foundation Light</p>
+        <p className="text-xs text-\[#8A5A00\] mt-0.5">
           I pulsanti di adesione non sono attivi in questa demo. Nessuna prenotazione reale, nessuna
           notifica a partner, nessun pagamento. In produzione, la richiesta passerebbe da KORA verso
           il partner autorizzato.

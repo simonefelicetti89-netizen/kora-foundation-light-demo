@@ -1,4 +1,8 @@
 'use client';
+// W-01: My KORA Home — spazio personale del lavoratore.
+// Scopo: rispondere a 'come sta crescendo la mia attivazione e cosa posso fare oggi?'
+// Il PIB™ è privato — mai visibile al datore di lavoro. N≥10 per ogni aggregato aziendale.
+// Dati sintetici Persona A — Foundation Light v0.1.
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -15,24 +19,24 @@ import { cn } from '@/lib/utils';
 // ─── Pillar styling ───────────────────────────────────────────────────────────
 
 const PILLAR_COLORS: Record<string, string> = {
-  LIFE: 'bg-pillar-life', GROWTH: 'bg-pillar-growth', CONNECTION: 'bg-pillar-connection',
-  IMPACT: 'bg-[#2F7D55]', LEGACY: 'bg-pillar-legacy',
+  LIFE: 'bg-[#C76F3D]', GROWTH: 'bg-[#2F7D55]', CONNECTION: 'bg-[#D99767]',
+  IMPACT: 'bg-[#2F7D55]', LEGACY: 'bg-[#8A7562]',
 };
 
 const PILLAR_LIGHT: Record<string, string> = {
-  LIFE:       'bg-pillar-life/10 text-pillar-life border-pillar-life/30',
-  GROWTH:     'bg-pillar-growth/10 text-pillar-growth border-pillar-growth/30',
-  CONNECTION: 'bg-pillar-connection/10 text-pillar-connection border-pillar-connection/30',
+  LIFE:       'bg-[#C76F3D]/10 text-[#C76F3D] border-pillar-life/30',
+  GROWTH:     'bg-[#2F7D55]/10 text-[#2F7D55] border-pillar-growth/30',
+  CONNECTION: 'bg-[#D99767]/10 text-[#D99767] border-pillar-connection/30',
   IMPACT:     'bg-[rgba(199,111,61,0.10)] text-[#C76F3D] border-[rgba(199,111,61,0.25)]',
-  LEGACY:     'bg-pillar-legacy/10 text-pillar-legacy border-pillar-legacy/30',
+  LEGACY:     'bg-[#8A7562]/10 text-[#8A7562] border-pillar-legacy/30',
 };
 
 const PILLAR_TEXT: Record<string, string> = {
-  LIFE:       'text-pillar-life',
-  GROWTH:     'text-pillar-growth',
-  CONNECTION: 'text-pillar-connection',
-  IMPACT:     'text-kora-cosmic-blue',
-  LEGACY:     'text-pillar-legacy',
+  LIFE:       'text-[#C76F3D]',
+  GROWTH:     'text-[#2F7D55]',
+  CONNECTION: 'text-[#D99767]',
+  IMPACT:     'text-[#06032B]',
+  LEGACY:     'text-[#8A7562]',
 };
 
 const TREND_ICON: Record<string, string> = { up: '↑', stable: '→', down: '↓' };
@@ -110,7 +114,7 @@ export default function MyKoraHome() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>My KORA</h1>
+          <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>My KORA</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Spazio personale del lavoratore</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -390,15 +394,15 @@ export default function MyKoraHome() {
               >
                 <span className={cn(
                   'shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5',
-                  isComplete ? 'bg-[#2F7D55] text-kora-cosmic-blue' : 'bg-[rgba(6,3,43,0.12)] text-[rgba(6,3,43,0.52)]',
+                  isComplete ? 'bg-[#2F7D55] text-[#06032B]' : 'bg-[rgba(6,3,43,0.12)] text-[rgba(6,3,43,0.52)]',
                 )}>
                   {isComplete ? '✓' : stepNum}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className={cn('text-xs font-semibold', isComplete ? 'text-kora-cosmic-blue' : 'text-[rgba(6,3,43,0.62)]')}>
+                  <p className={cn('text-xs font-semibold', isComplete ? 'text-[#06032B]' : 'text-[rgba(6,3,43,0.62)]')}>
                     {step.label}
                   </p>
-                  <p className={cn('text-[10px] leading-snug', isComplete ? 'text-kora-cosmic-blue/70' : 'text-[rgba(6,3,43,0.40)]')}>
+                  <p className={cn('text-[10px] leading-snug', isComplete ? 'text-[#06032B]/70' : 'text-[rgba(6,3,43,0.40)]')}>
                     {step.desc}
                   </p>
                 </div>

@@ -1,4 +1,7 @@
 'use client';
+// AD-01: Advisor Workspace — workspace di governance per advisor certificati KORA.
+// Scopo: rispondere a 'cosa richiede revisione, quale evidenza è debole e quale raccomandazione emettere?'
+// Advisor-reviewed ≠ KORA Certified. Perimetro: solo company/partner assegnati.
 
 import Link from 'next/link';
 import { PageMasthead } from '@/components/ui/PageMasthead';
@@ -71,7 +74,7 @@ const ADVISOR_ASSIGNMENTS = [
 const ASSIGNMENT_STATUS_BADGE: Record<string, string> = {
   'Attivo':     'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   'Completato': 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
-  'In corso':   'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  'In corso':   'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
   'Periodico':  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
 };
 
@@ -162,14 +165,14 @@ const REVIEW_QUEUE: ReviewQueueItem[] = [
 ];
 
 const STATUS_BADGE: Record<ReviewStatus, { style: string; label: string }> = {
-  pending:           { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',  label: 'In attesa' },
+  pending:           { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',  label: 'In attesa' },
   reviewed:          { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',  label: 'Revisionato' },
-  needs_information: { style: 'bg-sky-50 text-sky-700 border-sky-200',        label: 'Richiede info' },
+  needs_information: { style: 'bg-[rgba(47,125,85,0.06)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',        label: 'Richiede info' },
 };
 
 const PRIORITY_BADGE: Record<Priority, string> = {
   alta:  'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
-  media: 'bg-[rgba(217,154,43,0.08)] text-amber-600 border-[rgba(217,154,43,0.25)]',
+  media: 'bg-[rgba(217,154,43,0.08)] text-[#D99A2B] border-[rgba(217,154,43,0.25)]',
   bassa: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
 };
 
@@ -224,7 +227,7 @@ const REVIEW_THREADS = [
     participants: ['Advisor', 'VitaLab Network', 'KORA Admin'],
     last_update: '2026-04-03',
     status: 'Aperta',
-    status_style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+    status_style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
     latest_note: 'Documentazione incompleta per protocollo LIFE. Richiesta integrazione entro 2026-04-05.',
   },
   {
@@ -295,7 +298,7 @@ const ACADEMY_COURSES: {
 
 const COURSE_STATUS_BADGE: Record<CourseStatus, { style: string; label: string }> = {
   completato:   { style: 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',  label: 'Completato' },
-  in_corso:     { style: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',  label: 'In corso' },
+  in_corso:     { style: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',  label: 'In corso' },
   da_iniziare:  { style: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',  label: 'Da iniziare' },
 };
 
@@ -408,7 +411,7 @@ export default function AdvisorDashboard() {
         </div>
 
         <div className="mt-2 rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2">
-          <p className="text-xs text-amber-700 leading-relaxed">
+          <p className="text-xs text-[#8A5A00] leading-relaxed">
             Licenza Advisor demo. Non rappresenta abilitazione professionale reale,
             certificazione regolatoria o KORA Certified attivo.
           </p>
@@ -473,7 +476,7 @@ export default function AdvisorDashboard() {
           <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
             Review Queue — Process Audit
           </h2>
-          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A00]">
             {REVIEW_QUEUE.filter((r) => r.status === 'pending').length} in attesa
           </span>
         </div>
@@ -517,11 +520,11 @@ export default function AdvisorDashboard() {
       </div>
 
       {/* ── 5. Process Audit Model ── */}
-      <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 space-y-1.5">
-        <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide">
+      <div className="rounded-lg border border-blue-100 bg-[rgba(47,125,85,0.06)] px-4 py-3 space-y-1.5">
+        <p className="text-xs font-semibold text-[#2F7D55] uppercase tracking-wide">
           Modello di audit processo KORA
         </p>
-        <p className="text-sm text-blue-800 leading-relaxed">
+        <p className="text-sm text-[#2F7D55] leading-relaxed">
           L&apos;Advisor non valida ogni singola azione. L&apos;Advisor esegue un audit preliminare del processo
           e del protocollo evidenze del partner. Le azioni successive sono considerate ammissibili se
           rispettano il protocollo approvato, con monitoraggio periodico, controlli a campione e
@@ -535,7 +538,7 @@ export default function AdvisorDashboard() {
             "Re-review — l'Advisor può riaprire la review in caso di eccezioni o variazioni",
             'Trust Ledger — storico audit, acceptance rate, prossima review',
           ].map((item) => (
-            <li key={item} className="flex gap-2 text-xs text-blue-700">
+            <li key={item} className="flex gap-2 text-xs text-[#2F7D55]">
               <span className="text-blue-400 shrink-0 mt-0.5">·</span>
               {item}
             </li>
@@ -578,13 +581,13 @@ export default function AdvisorDashboard() {
 
           <div className="rounded bg-[rgba(217,154,43,0.08)] border border-amber-100 px-3 py-3 space-y-1">
             <p className="text-xs font-semibold text-[#8A5A00]">Nota advisor</p>
-            <p className="text-xs text-amber-700 leading-relaxed">{EVIDENCE_DETAIL.advisor_note}</p>
+            <p className="text-xs text-[#8A5A00] leading-relaxed">{EVIDENCE_DETAIL.advisor_note}</p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2 text-sm">
             <div>
               <p className="text-xs text-[rgba(6,3,43,0.40)]">Raccomandazione</p>
-              <span className="inline-block mt-0.5 rounded border bg-sky-50 border-sky-200 px-2 py-0.5 text-xs font-semibold text-sky-700">
+              <span className="inline-block mt-0.5 rounded border bg-[rgba(47,125,85,0.06)] border-[rgba(47,125,85,0.22)] px-2 py-0.5 text-xs font-semibold text-[#2F7D55]">
                 Richiedi informazioni aggiuntive
               </span>
             </div>

@@ -1,8 +1,13 @@
 'use client';
+// W-02: Privacy & Condivisione — confini dati del lavoratore.
+// Scopo: rispondere a 'chi vede cosa dei miei dati KORA?' con chiarezza cristallina.
+// Il PIB™ è del lavoratore, mai esposto al datore di lavoro.
+// Soglia privacy N≥10 per ogni aggregato aziendale.
 
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { cn } from '@/lib/utils';
+import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 // W-02: Privacy & Sharing
 export default function PrivacySharing() {
@@ -13,7 +18,7 @@ export default function PrivacySharing() {
     return (
       <div className="space-y-4">
         <div>
-          <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Privacy & Sharing</h1>
+          <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Privacy & Condivisione</h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Preferenze di consenso e condivisione dati del lavoratore</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -33,7 +38,7 @@ export default function PrivacySharing() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-kora-serif text-[#06032B]" style={{ fontSize: "1.875rem", letterSpacing: "-0.02em", lineHeight: 1.1 }}>Privacy & Sharing</h1>
+        <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Privacy & Condivisione</h1>
         <p className="text-sm text-[rgba(6,3,43,0.52)]">{privacy.persona_label}</p>
       </div>
 
@@ -53,7 +58,7 @@ export default function PrivacySharing() {
           <ul className="space-y-1.5">
             {privacy.company_can_see.map((item, i) => (
               <li key={i} className="text-xs text-[#2F7D55] leading-relaxed flex gap-1.5">
-                <span className="text-green-400 shrink-0 mt-0.5">·</span>
+                <span className="text-[#2F7D55] shrink-0 mt-0.5">·</span>
                 {item}
               </li>
             ))}
@@ -83,8 +88,8 @@ export default function PrivacySharing() {
         </h2>
 
         <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3 mb-3">
-          <p className="text-xs font-semibold text-amber-700">Solo anteprima</p>
-          <p className="text-xs text-amber-700 mt-0.5">
+          <p className="text-xs font-semibold text-[#8A5A00]">Solo anteprima — Foundation Light</p>
+          <p className="text-xs text-[#8A5A00] mt-0.5">
             Questi controlli sono mostrati solo a scopo illustrativo. Nessuna azione di consenso reale avviene in Foundation Light.
             In produzione, le modifiche sarebbero registrate crittograficamente e applicate immediatamente.
           </p>
@@ -131,8 +136,8 @@ export default function PrivacySharing() {
         </h2>
 
         <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3 mb-3">
-          <p className="text-xs font-semibold text-amber-700">Solo anteprima — Foundation Light</p>
-          <p className="text-xs text-amber-700 mt-0.5">
+          <p className="text-xs font-semibold text-[#D99A2B]">Solo anteprima — Foundation Light</p>
+          <p className="text-xs text-[#8A5A00] mt-0.5">
             Il Vault è mostrato solo a scopo illustrativo. Nessuna modifica di consenso reale avviene in questa demo.
           </p>
         </div>
