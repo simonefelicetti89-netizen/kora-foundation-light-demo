@@ -9,6 +9,7 @@
 
 import { useDemoState } from '@/lib/demo-state';
 import { useScoringResult, useDemoScenarioComparison } from '@/lib/scoring-result';
+import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
 import { explainabilityService }       from '@/services/explainability/ExplainabilityService';
 import { budgetToHumanImpactService }  from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
@@ -152,41 +153,77 @@ function NoDataState({ tenantId }: { tenantId: string }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function KoraIndexDetail() {
+  const { isLive, tenantId: liveId, sessionLoading } = useCompanySession();
   const { activeScenario, activeRole } = useDemoState();
 
-  const currentUser = accountProvisioningService.getCurrentDemoUser(activeRole);
-  const COMPANY_ID  = currentUser.company_id ?? 'meridiana-group';
-  const tenant      = tenantService.getTenant(COMPANY_ID);
+  // B59: When a real company session is detected, use live tenantId.
+  // Otherwise use the demo user's company_id (Meridiana seed).
+  const demoUser   = accountProvisioningService.getCurrentDemoUser(activeRole);
+  const COMPANY_ID = isLive ? (liveId ?? 'meridiana-group') : (demoUser.company_id ?? 'meridiana-group');
+  const tenant     = isLive ? null : tenantService.getTenant(COMPANY_ID);
 
-  const { data: scoring }                        = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
+  const { data: scoring, loading } = useScoringResult({
+    tenantId:         COMPANY_ID,
+    scenarioId:       activeScenario,
+    forceEnvironment: isLive ? 'live' : undefined,
+  });
+
+  // S1/S2 scenario comparison is demo-only — live tenants have a single current period.
   const { s1: scoringS1, s2: scoringS2, isDemo } = useDemoScenarioComparison(COMPANY_ID);
 
-  const hasKoraData = scoring?.status === 'ok';
+  // While session detection is in progress, show nothing until we know the mode.
+  if (sessionLoading || (loading && isLive)) {
+    return (
+      <div style={{ padding: 48, textAlign: 'center' }}>
+        <p style={{ fontSize: '13px', color: 'rgba(6,3,43,0.40)' }}>Caricamento in corso…</p>
+      </div>
+    );
+  }
 
+  const hasKoraData = scoring?.status === 'ok';
   if (!hasKoraData) return <NoDataState tenantId={COMPANY_ID} />;
 
-  const output      = scoring!.koraIndex!;
-  const aggregate   = scoring!.aggregate;
-  const confidence  = scoring!.confidence;
-  const safeguard   = activationSafeguardService.evaluateFromSeed(COMPANY_ID, activeScenario);
-  const explanation = explainabilityService.getExplanation(COMPANY_ID, activeScenario);
+  const output     = scoring!.koraIndex!;
+  const aggregate  = scoring!.aggregate;
+  const confidence = scoring!.confidence;
+
+  // Activation Safeguard: for live sessions compute from real AR/MAR;
+  // for demo sessions read from the seed fixture.
+  const safeguard = isLive
+    ? activationSafeguardService.evaluate(
+        aggregate?.activation_rate ?? 0,
+        aggregate?.meaningful_activation_rate ?? 0,
+      )
+    : (activationSafeguardService.evaluateFromSeed(COMPANY_ID, activeScenario) ??
+       activationSafeguardService.evaluate(
+         aggregate?.activation_rate ?? 0,
+         aggregate?.meaningful_activation_rate ?? 0,
+       ));
+
+  // Explainability — demo seed only; null for live sessions.
+  const explanation = isLive ? null : explainabilityService.getExplanation(COMPANY_ID, activeScenario);
   const weakCodes   = (explanation?.weak_components ?? []).map((c) => c.code);
 
   const macroblocks: MacroblockScore[] = output.macroblocks ?? [];
   const s1Mbs: MacroblockScore[] = scoringS1?.koraIndex?.macroblocks ?? [];
 
-  const s1BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S1', activeRole);
-  const s2BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S2', activeRole);
-  const s1BtiScore  = s1Mbs.find((m) => m.code === 'BTI')?.score;
-  const s2BtiScore  = (scoringS2?.koraIndex?.macroblocks ?? []).find((m) => m.code === 'BTI')?.score;
+  // BTI panels — demo seed only; null for live sessions.
+  const s1BtiResult = isLive ? { record: null } : budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S1', activeRole);
+  const s2BtiResult = isLive ? { record: null } : budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S2', activeRole);
+  const s1BtiScore  = isLive ? macroblocks.find((m) => m.code === 'BTI')?.score
+                              : s1Mbs.find((m) => m.code === 'BTI')?.score;
+  const s2BtiScore  = isLive ? undefined
+                              : (scoringS2?.koraIndex?.macroblocks ?? []).find((m) => m.code === 'BTI')?.score;
 
-  const btiRecommendations = budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
-  const eligibilityGate    = ingestionSimulatorService.getEligibilityGateSummary(COMPANY_ID, activeScenario);
+  const btiRecommendations = isLive ? [] : budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
+  const eligibilityGate    = isLive
+    ? { eligible_count: 0, limited_count: 0, blocked_count: 0, total_count: 0, blocked_note: '', high_confidence_count: 0, ready_for_index_count: 0, limited_note: '', eligible_row_count: 0, total_row_count: 0 }
+    : ingestionSimulatorService.getEligibilityGateSummary(COMPANY_ID, activeScenario);
 
-  const s1EconRelief = budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S1', activeRole);
-  const s2EconRelief = budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S2', activeRole);
+  const s1EconRelief = isLive ? null : budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S1', activeRole);
+  const s2EconRelief = isLive ? null : budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S2', activeRole);
 
-  // Generate diagnosis sentence — pure frontend
+  // Generate diagnosis sentence — pure frontend, works for both live and demo.
   const diagnosisSentence = generateDiagnosisSentence(
     output.kora_index_value,
     output.safeguard_status,
@@ -194,8 +231,8 @@ export default function KoraIndexDetail() {
     explanation?.weak_components[0]?.code,
   );
 
-  // Map explainability next actions to BoardActions format
-  const boardActions = explainabilityService
+  // Board actions — demo seed only; empty for live.
+  const boardActions = isLive ? [] : explainabilityService
     .getNextBestActions(COMPANY_ID, activeScenario)
     .slice(0, 3)
     .map((a, i) => ({
@@ -230,7 +267,7 @@ export default function KoraIndexDetail() {
           letterSpacing: '-0.02em',
           lineHeight:  1.08,
         }}>
-          {tenant?.company_name ?? COMPANY_ID}
+          {tenant?.company_name ?? (isLive ? 'La tua organizzazione' : COMPANY_ID)}
         </h1>
       </div>
 

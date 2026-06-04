@@ -5,6 +5,7 @@
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import { useScoringResult } from '@/lib/scoring-result';
+import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
 import { PILLAR_CODES } from '@/lib/constants/kora';
 import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
@@ -64,12 +65,36 @@ function pillarFill(rank: number): string {
 
 // C-08: Activation & Participation
 export default function Activation() {
+  const { isLive, tenantId: liveId, sessionLoading } = useCompanySession();
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
-  const companyId  = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
-  const { data: scoring } = useScoringResult({ tenantId: companyId, scenarioId: activeScenario });
+
+  const demoId    = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const companyId = isLive ? (liveId ?? demoId) : demoId;
+
+  const { data: scoring, loading } = useScoringResult({
+    tenantId:         companyId,
+    scenarioId:       activeScenario,
+    forceEnvironment: isLive ? 'live' : undefined,
+  });
   const aggregate  = scoring?.aggregate;
-  const safeguard  = activationSafeguardService.evaluateFromSeed(companyId, activeScenario);
+  const safeguard  = isLive
+    ? activationSafeguardService.evaluate(aggregate?.activation_rate ?? 0, aggregate?.meaningful_activation_rate ?? 0)
+    : (activationSafeguardService.evaluateFromSeed(companyId, activeScenario) ?? activationSafeguardService.evaluate(0, 0));
+
+  if ((sessionLoading || loading) && isLive) {
+    return <div style={{ padding: 48, textAlign: 'center' }}><p style={{ fontSize: '13px', color: 'rgba(6,3,43,0.40)' }}>Caricamento…</p></div>;
+  }
+  if (isLive && scoring?.status === 'insufficient_data') {
+    return (
+      <div className="space-y-4">
+        <div style={{ padding: '32px 0' }}>
+          <p style={{ fontSize: '14px', fontWeight: 700, color: '#06032B' }}>Dati di attivazione non ancora disponibili</p>
+          <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.52)', marginTop: 6 }}>Completa il processo di intake e scoring per visualizzare i dati di attivazione live.</p>
+        </div>
+      </div>
+    );
+  }
 
   const isS2 = activeScenario === 'S2';
   const debtEur = isS2 ? 35_000 : 45_000;
@@ -122,10 +147,47 @@ export default function Activation() {
         { pillar: 'CONNECTION', type: 'Programma community interna',   note: 'Bassa copertura cross-reparto'   },
       ];
 
+  const arLive  = aggregate?.activation_rate ?? 0;
+  const marLive = aggregate?.meaningful_activation_rate ?? 0;
+
   return (
     <div className="space-y-6">
+
+      {/* B59: Live KPI panel — shown only for authenticated company sessions */}
+      {isLive && scoring?.status === 'ok' && (
+        <div className="rounded-xl border border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.06)] px-5 py-4 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-bold text-[#2F7D55] uppercase tracking-wide">Dati di attivazione live · La tua organizzazione</p>
+            <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">LIVE</span>
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-[10px] text-[rgba(6,3,43,0.42)]">Activation Rate</p>
+              <p className="text-2xl font-bold text-[#06032B] mt-1">{pct(arLive)}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.38)]">Lavoratori attivi</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-[rgba(6,3,43,0.42)]">Meaningful AR</p>
+              <p className="text-2xl font-bold text-[#06032B] mt-1">{pct(marLive)}</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.38)]">Attivazione profonda</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-[rgba(6,3,43,0.42)]">Activation Safeguard</p>
+              <p className={`text-lg font-bold mt-1 ${safeguard?.status === 'CLEAR' ? 'text-[#2F7D55]' : safeguard?.status === 'WARNING' ? 'text-[#D99A2B]' : 'text-[#9E3B2F]'}`}>
+                {safeguard?.status ?? '—'}
+              </p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.38)]">Soglie D-21</p>
+            </div>
+          </div>
+          {aggregate?.total_workers && (
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Workforce baseline: {aggregate.total_workers} lavoratori · Lavoratori attivi: {aggregate.active_worker_count} · Meaningful: {aggregate.meaningful_active_worker_count}</p>
+          )}
+          <p className="text-[10px] text-[rgba(47,125,85,0.70)] italic">I pannelli di dettaglio sotto mostrano la struttura della pagina con dati demo di esempio.</p>
+        </div>
+      )}
+
       <PageMasthead
-        eyebrow={`Intelligence operativa · ${activeScenario}`}
+        eyebrow={`Intelligence operativa · ${isLive ? 'LIVE' : activeScenario}`}
         title="Activation Debt™ & Partecipazione"
         subline={`Aggregato aziendale — gruppi < ${SAFE_AGGREGATION_THRESHOLD} soppressi · nessun PIB individuale · nessun dato lavoratore`}
       />

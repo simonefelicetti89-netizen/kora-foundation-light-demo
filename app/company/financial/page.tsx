@@ -5,6 +5,8 @@
 
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
+import { useScoringResult } from '@/lib/scoring-result';
+import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
 import { financialGovernanceService } from '@/services/financial-governance/FinancialGovernanceService';
@@ -213,19 +215,54 @@ function TableHead({ cols }: { cols: { label: string; align?: 'left' | 'right' |
 
 // C-08: Financial Governance + Budget-to-Human-Impact
 export default function FinancialGovernance() {
+  const { isLive, tenantId: liveId, sessionLoading } = useCompanySession();
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
 
-  const COMPANY_ID  = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
-  const tenant      = tenantService.getTenant(COMPANY_ID);
-  const companyName = tenant?.company_name ?? COMPANY_ID;
+  const demoId     = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const COMPANY_ID = isLive ? (liveId ?? demoId) : demoId;
+  const tenant     = isLive ? null : tenantService.getTenant(COMPANY_ID);
+  const companyName = isLive ? 'La tua organizzazione' : (tenant?.company_name ?? COMPANY_ID);
 
-  const result = financialGovernanceService.getFinancialGovernance(COMPANY_ID, activeScenario, activeRole);
+  // B59: Live scoring result contains BTI macroblock score.
+  const { data: liveScoring, loading: liveLoading } = useScoringResult({
+    tenantId:         COMPANY_ID,
+    scenarioId:       activeScenario,
+    forceEnvironment: isLive ? 'live' : undefined,
+  });
+  const liveBtiScore = isLive
+    ? (liveScoring?.koraIndex?.macroblocks?.find((m: { code: string }) => m.code === 'BTI')?.score ?? null)
+    : null;
 
-  const btiResult  = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, activeScenario, activeRole);
+  const result = isLive
+    ? { allowed: true, record: null, reason: null }  // live: bypass demo access check
+    : financialGovernanceService.getFinancialGovernance(COMPANY_ID, activeScenario, activeRole);
+
+  const btiResult  = isLive
+    ? { allowed: true, record: null }
+    : budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, activeScenario, activeRole);
   const btiRecord  = btiResult.allowed ? btiResult.record : undefined;
   const spendByPillar = btiRecord?.spend_by_pillar   ?? {};
   const deepByPillar  = btiRecord?.deep_activation_by_pillar ?? {};
+
+  // B59: Live session early returns
+  if ((sessionLoading || liveLoading) && isLive) {
+    return <div style={{ padding: 48, textAlign: 'center' }}><p style={{ fontSize: '13px', color: 'rgba(6,3,43,0.40)' }}>Caricamento…</p></div>;
+  }
+  if (isLive && liveScoring?.status === 'insufficient_data') {
+    return (
+      <div className="space-y-5">
+        <PageMasthead eyebrow="Governance finanziaria" title="Budget-to-Human-Impact™"
+          subline="La tua organizzazione · dati live non ancora disponibili" />
+        <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '2rem', textAlign: 'center' }}>
+          <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink }}>Dati BTI™ non ancora disponibili</p>
+          <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 6 }}>
+            Completa intake e scoring per visualizzare Budget-to-Human-Impact™ live.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // ── Access denied state ──────────────────────────────────────────────────────
   if (!result.allowed) {
@@ -250,7 +287,9 @@ export default function FinancialGovernance() {
   }
 
   const rec = result.record;
-  if (!rec) {
+  // For live sessions: if demo record unavailable, we continue (liveBtiScore provides BTI data).
+  // For demo sessions: show no-data state.
+  if (!rec && !isLive) {
     return (
       <div className="space-y-5">
         <PageMasthead
@@ -265,6 +304,31 @@ export default function FinancialGovernance() {
     );
   }
 
+  // For live sessions without a demo record, render the BTI panel only (already shown above)
+  // then show a clear "example structure" notice for the demo panels.
+  if (isLive && !rec) {
+    return (
+      <div className="space-y-6">
+        {liveBtiScore !== null && (
+          <div className="rounded-xl border border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.06)] px-5 py-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold text-[#2F7D55] uppercase tracking-wide">BTI™ Score live · La tua organizzazione</p>
+              <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">LIVE</span>
+            </div>
+            <p className="text-3xl font-bold text-[#06032B]">{Math.round(liveBtiScore)}<span className="text-sm text-[rgba(6,3,43,0.40)] ml-1">/100</span></p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.52)]">Budget-to-Human-Impact™ — macroblocco KORA Index (peso 20%). Misura quanto il budget welfare si converte in attivazione profonda.</p>
+          </div>
+        )}
+        <PageMasthead eyebrow="Governance finanziaria · LIVE" title="Budget-to-Human-Impact™ Engine"
+          subline={`La tua organizzazione · ${liveScoring?.koraIndex?.reporting_period ?? 'Periodo attivo'}`} />
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.52)]">
+          Il dettaglio dei sottomacroblocchi BTI™ (Activation Debt, Economic Relief, Compliance Split) richiede la visualizzazione dal pannello Admin.
+          Il BTI Score è disponibile nel KORA Index live.
+        </div>
+      </div>
+    );
+  }
+
   // Pillar spend sorted for ink ramp
   const pillarOrder: PillarCode[] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
   const pillarRanked = [...pillarOrder].sort((a, b) => {
@@ -275,17 +339,30 @@ export default function FinancialGovernance() {
   const pillarRankMap: Record<string, number> = {};
   pillarRanked.forEach((p, i) => { pillarRankMap[p] = i; });
 
-  const utilizationAbove70 = rec.budget_utilization_rate >= 0.70;
+  const utilizationAbove70 = rec!.budget_utilization_rate >= 0.70;
 
   return (
     <div className="space-y-6">
 
+      {/* B59: Live BTI score panel — shown for authenticated company sessions */}
+      {isLive && liveBtiScore !== null && (
+        <div className="rounded-xl border border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.06)] px-5 py-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-[#2F7D55] uppercase tracking-wide">BTI™ Score live · La tua organizzazione</p>
+            <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">LIVE</span>
+          </div>
+          <p className="text-3xl font-bold text-[#06032B]">{Math.round(liveBtiScore)}<span className="text-sm text-[rgba(6,3,43,0.40)] ml-1">/100</span></p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)]">Budget-to-Human-Impact™ — macroblocco KORA Index (peso 20%). Misura quanto il budget welfare si converte in attivazione profonda.</p>
+          <p className="text-[10px] text-[rgba(47,125,85,0.70)] italic">I pannelli di dettaglio sotto mostrano la struttura con dati demo di esempio.</p>
+        </div>
+      )}
+
       {/* ── 1. PageMasthead ────────────────────────────────────────────────── */}
       <PageMasthead
-        eyebrow={`Governance Finanziaria · ${activeScenario} · ${rec.reporting_period}`}
+        eyebrow={`Governance Finanziaria · ${isLive ? 'LIVE' : activeScenario} · ${rec?.reporting_period ?? (isLive ? 'Periodo attivo' : activeScenario)}`}
         title={<><TM>Budget-to-Human-Impact</TM> Engine</>}
         subline="Rapporto tra budget people, attivazione profonda e opportunità di riallocazione. Non certificativo, non causale."
-        meta={`${companyName} · Foundation Light Preview · dati sintetici demo`}
+        meta={`${companyName} · Foundation Light Preview · ${isLive ? 'dati live' : 'dati sintetici demo'}`}
       />
       <DecisionContext
         question="Come si converte il budget welfare in attivazione profonda e dove si accumula Activation Debt™?"
@@ -297,32 +374,32 @@ export default function FinancialGovernance() {
         <KPICard
           code="BTI™"
           label="Budget-to-Human-Impact"
-          value={rec.bti_indicators?.bti_score ?? '—'}
+          value={rec!.bti_indicators?.bti_score ?? '—'}
           period="Punteggio macroblocco"
-          status={!rec.bti_indicators ? 'neutral' : rec.bti_indicators.bti_score >= 70 ? 'positive' : rec.bti_indicators.bti_score >= 50 ? 'warning' : 'critical'}
+          status={!rec!.bti_indicators ? 'neutral' : rec!.bti_indicators.bti_score >= 70 ? 'positive' : rec!.bti_indicators.bti_score >= 50 ? 'warning' : 'critical'}
           important
           size="md"
         />
         <KPICard
           code="€ TOTALE"
           label="Welfare spend"
-          value={eur(rec.budget_allocated_total)}
-          period={rec.reporting_period}
+          value={eur(rec!.budget_allocated_total)}
+          period={rec!.currency}
           size="md"
         />
         <KPICard
           code="DA%"
           label="Deep Activation Share™"
-          value={rec.bti_indicators ? pct(rec.bti_indicators.deep_activation_share) : '—'}
+          value={rec!.bti_indicators ? pct(rec!.bti_indicators.deep_activation_share) : '—'}
           period="Del budget totale"
-          status={!rec.bti_indicators ? 'neutral' : rec.bti_indicators.deep_activation_share >= 0.5 ? 'positive' : rec.bti_indicators.deep_activation_share >= 0.3 ? 'warning' : 'critical'}
+          status={!rec!.bti_indicators ? 'neutral' : rec!.bti_indicators.deep_activation_share >= 0.5 ? 'positive' : rec!.bti_indicators.deep_activation_share >= 0.3 ? 'warning' : 'critical'}
           important
           size="md"
         />
         <KPICard
           code="€/IU"
           label="Costo per Impact Unit™"
-          value={`€${rec.cost_per_iu_indicator.toFixed(0)}`}
+          value={`€${rec!.cost_per_iu_indicator.toFixed(0)}`}
           period="Per IU generata"
           size="md"
         />
@@ -367,7 +444,7 @@ export default function FinancialGovernance() {
           non sostituisce analisi fiscale, legale o ESG obbligatoria.
         </p>
         <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 10, lineHeight: 1.6 }}>
-          {rec.disclaimer}
+          {rec!.disclaimer}
         </p>
       </div>
 
@@ -376,30 +453,30 @@ export default function FinancialGovernance() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
         <FinCard
           label="Budget allocato"
-          value={eur(rec.budget_allocated_total)}
-          sub={rec.currency}
+          value={eur(rec!.budget_allocated_total)}
+          sub={rec!.currency}
           note="Budget allocato ≠ Budget attivato"
         />
         <FinCard
           label="Budget utilizzato"
-          value={eur(rec.budget_used_total)}
-          sub={`${(rec.budget_utilization_rate * 100).toFixed(0)}% utilizzo`}
+          value={eur(rec!.budget_used_total)}
+          sub={`${(rec!.budget_utilization_rate * 100).toFixed(0)}% utilizzo`}
           accent={utilizationAbove70}
         />
         <FinCard
           label="Impegnato"
-          value={eur(rec.budget_committed_total)}
+          value={eur(rec!.budget_committed_total)}
           sub="in attesa di conferma"
         />
         <FinCard
           label="Residuo"
-          value={eur(rec.budget_residual)}
+          value={eur(rec!.budget_residual)}
           sub="non convertito in attivazione"
           note="Componente dell'Activation Debt"
         />
         <FinCard
           label="Costo per IU"
-          value={`€${rec.cost_per_iu_indicator}`}
+          value={`€${rec!.cost_per_iu_indicator}`}
           sub="per IU verificata"
           note="Solo attivazioni budget-mediated"
         />
@@ -420,28 +497,28 @@ export default function FinancialGovernance() {
             <div className="flex justify-between items-baseline mb-2">
               <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink }}>Utilizzo budget</p>
               <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '18px', color: utilizationAbove70 ? TOKENS.accent : TOKENS.safeguard.watch.text, fontVariantNumeric: 'tabular-nums' }}>
-                {(rec.budget_utilization_rate * 100).toFixed(0)}%
+                {(rec!.budget_utilization_rate * 100).toFixed(0)}%
               </span>
             </div>
             <div style={{ height: 8, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
-              <div style={{ height: 8, borderRadius: 9999, width: `${rec.budget_utilization_rate * 100}%`, background: utilizationAbove70 ? TOKENS.accent : TOKENS.safeguard.watch.dot }} />
+              <div style={{ height: 8, borderRadius: 9999, width: `${rec!.budget_utilization_rate * 100}%`, background: utilizationAbove70 ? TOKENS.accent : TOKENS.safeguard.watch.dot }} />
             </div>
             <div className="flex justify-between mt-1.5">
-              <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>{eur(rec.budget_used_total)} utilizzati</span>
-              <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>{eur(rec.budget_allocated_total)} allocati</span>
+              <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>{eur(rec!.budget_used_total)} utilizzati</span>
+              <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>{eur(rec!.budget_allocated_total)} allocati</span>
             </div>
             <div className="mt-3" style={{ borderTop: TOKENS.cardBorder, paddingTop: 12 }}>
               <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, fontVariantNumeric: 'tabular-nums' }}>
-                Costo per IU (informativo): <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, color: TOKENS.ink }}>€{rec.cost_per_iu_indicator}</span>
+                Costo per IU (informativo): <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, color: TOKENS.ink }}>€{rec!.cost_per_iu_indicator}</span>
               </p>
-              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.55 }}>{rec.cost_per_iu_note}</p>
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.55 }}>{rec!.cost_per_iu_note}</p>
             </div>
           </div>
 
           {/* Narrative */}
           <div>
             <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink, marginBottom: 8 }}>Contesto periodo</p>
-            <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.7 }}>{rec.narrative}</p>
+            <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.7 }}>{rec!.narrative}</p>
           </div>
         </div>
       </ChartFrame>
@@ -687,7 +764,7 @@ export default function FinancialGovernance() {
         </table>
         <p style={{ padding: '10px 14px', fontSize: '11px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder }}>
           Le cifre di budget sono solo informative. Non alimentano il calcolo del KORA Index.
-          {rec.pillar_budget_note && <span style={{ marginLeft: 8 }}>{rec.pillar_budget_note}</span>}
+          {rec!.pillar_budget_note && <span style={{ marginLeft: 8 }}>{rec!.pillar_budget_note}</span>}
         </p>
       </div>
 
@@ -972,7 +1049,7 @@ export default function FinancialGovernance() {
       <ProvenanceFooter
         methodologyVersionId="KORA Index v3 / KORA Methodology v0.1"
         calibrationStatus="pre_empirical_calibration"
-        reportingPeriod={rec.reporting_period}
+        reportingPeriod={rec!.reporting_period}
       />
 
     </div>

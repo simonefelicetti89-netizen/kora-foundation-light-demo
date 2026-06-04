@@ -168,17 +168,21 @@ function getDemoScoringResult({
  * Live:  async — fetches from Supabase, returns loading=true while pending.
  *        LIVE must NEVER fallback to demo seed data.
  *
- * The { data, loading, error } contract is stable across Phase 1 → 2 → 2B.
- * Consumer components need no changes when the live fetch is fully wired.
+ * forceEnvironment: when provided, overrides the global demo-state environment.
+ * Company intelligence pages pass forceEnvironment='live' when a real Supabase
+ * session is detected, so the live path activates without changing global state.
  */
 export function useScoringResult({
   tenantId,
   scenarioId,
+  forceEnvironment,
 }: {
   tenantId: string;
   scenarioId: ScenarioId;
+  forceEnvironment?: Environment;
 }): UseScoringResultReturn {
-  const { activeEnvironment: environment } = useEnvironment();
+  const { activeEnvironment: globalEnvironment } = useEnvironment();
+  const environment: Environment = forceEnvironment ?? globalEnvironment;
 
   // Async state for live mode. useState/useEffect called unconditionally (React rules).
   const [liveState, setLiveState] = useState<UseScoringResultReturn>({

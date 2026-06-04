@@ -5,6 +5,7 @@
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import { useScoringResult } from '@/lib/scoring-result';
+import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { demoDataService } from '@/services/demo-data/DemoDataService';
 import { koraContributionService } from '@/services/kora-contribution/KoraContributionService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
@@ -120,24 +121,43 @@ const INITIATIVE_PREVIEW: InitiativePreview[] = [
 
 // C-05: Pillars & Initiatives
 export default function PillarsInitiatives() {
+  const { isLive, tenantId: liveId, sessionLoading } = useCompanySession();
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
-  const companyId   = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
-  const tenant      = tenantService.getTenant(companyId);
-  const companyName = tenant?.company_name ?? companyId;
 
-  const { data: scoring } = useScoringResult({ tenantId: companyId, scenarioId: activeScenario });
+  const demoId     = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const companyId  = isLive ? (liveId ?? demoId) : demoId;
+  const tenant     = isLive ? null : tenantService.getTenant(companyId);
+  const companyName = isLive ? 'La tua organizzazione' : (tenant?.company_name ?? companyId);
+
+  const { data: scoring, loading } = useScoringResult({
+    tenantId:         companyId,
+    scenarioId:       activeScenario,
+    forceEnvironment: isLive ? 'live' : undefined,
+  });
   const aggregate   = scoring?.aggregate;
-  const programs    = demoDataService.getPrograms(companyId);
-  const initiatives = koraContributionService.getCollectiveInitiatives(companyId, activeScenario);
+  const programs    = isLive ? [] : demoDataService.getPrograms(companyId);
+  const initiatives = isLive ? [] : koraContributionService.getCollectiveInitiatives(companyId, activeScenario);
   const pillarDist  = aggregate?.pillar_distribution as Partial<Record<PillarCode, number>> | undefined;
+
+  if ((sessionLoading || loading) && isLive) {
+    return <div style={{ padding: 48, textAlign: 'center' }}><p style={{ fontSize: '13px', color: 'rgba(6,3,43,0.40)' }}>Caricamento…</p></div>;
+  }
+  if (isLive && scoring?.status === 'insufficient_data') {
+    return (
+      <div style={{ padding: '32px 0' }}>
+        <p style={{ fontSize: '14px', fontWeight: 700, color: '#06032B' }}>Distribuzione pillar non ancora disponibile</p>
+        <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.52)', marginTop: 6 }}>Completa il processo di intake e scoring per visualizzare i dati live.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
       <PageMasthead
-        eyebrow={`Pillar Intelligence · ${activeScenario}`}
+        eyebrow={`Pillar Intelligence · ${isLive ? 'LIVE' : activeScenario}`}
         title="Pillar Intelligence"
-        subline={`${companyName} · ${aggregate?.reporting_period ?? activeScenario} · distribuzione aggregata`}
+        subline={`${companyName} · ${aggregate?.reporting_period ?? (isLive ? 'Periodo attivo' : activeScenario)} · distribuzione aggregata`}
       />
       <DecisionContext
         question="Come sono distribuiti budget e attivazione tra i 5 pilastri KORA e dove è il gap?"

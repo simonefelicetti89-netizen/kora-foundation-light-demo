@@ -5,6 +5,7 @@
 
 import Link from 'next/link';
 import { useDemoState } from '@/lib/demo-state';
+import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
 import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
 import { useScoringResult } from '@/lib/scoring-result';
@@ -419,8 +420,11 @@ const CANONICAL_PILLAR_AGGREGATE = [
 
 // C-07: Reports — KORA Company Decision Pack Console
 export default function Reports() {
+  const { isLive, tenantId: liveId, sessionLoading } = useCompanySession();
   const { activeScenario, activeRole } = useDemoState();
-  const COMPANY_ID = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+
+  const demoId     = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
+  const COMPANY_ID = isLive ? (liveId ?? demoId) : demoId;
 
   const factoryStatus  = reportFactoryService.getDecisionPackFactoryStatus(COMPANY_ID);
   const versionHistory = reportFactoryService.getDecisionPackVersionHistory(COMPANY_ID);
@@ -428,10 +432,13 @@ export default function Reports() {
   const exportActions  = reportFactoryService.getDecisionPackExportActions(COMPANY_ID);
   const limitations    = reportFactoryService.getDecisionPackLimitations(COMPANY_ID);
 
-  const tenant      = tenantService.getTenant(COMPANY_ID);
-  const companyName = tenant?.company_name ?? COMPANY_ID;
+  const tenant      = isLive ? null : tenantService.getTenant(COMPANY_ID);
+  const companyName = isLive ? 'La tua organizzazione' : (tenant?.company_name ?? COMPANY_ID);
 
-  const { data: scoring }   = useScoringResult({ tenantId: COMPANY_ID, scenarioId: activeScenario });
+  const { data: scoring, loading: liveLoading }   = useScoringResult({
+    tenantId: COMPANY_ID, scenarioId: activeScenario,
+    forceEnvironment: isLive ? 'live' : undefined,
+  });
   const { data: scoringS1 } = useScoringResult({ tenantId: COMPANY_ID, scenarioId: 'S1' });
   const koraIndex    = scoring?.koraIndex ?? scoringS1?.koraIndex ?? null;
   const hasFullReport = koraIndex !== null;
@@ -451,12 +458,71 @@ export default function Reports() {
   const safegTk = koraIndex ? safeguardToken(koraIndex.safeguard_status) : null;
   const latestSt = latestVersion ? statusToken(latestVersion.status) : null;
 
+  if ((sessionLoading || liveLoading) && isLive) {
+    return <div style={{ padding: 48, textAlign: 'center' }}><p style={{ fontSize: '13px', color: 'rgba(6,3,43,0.40)' }}>Caricamento…</p></div>;
+  }
+
   return (
     <div className="space-y-6">
 
+      {/* B59: Live Decision Pack panel for authenticated sessions */}
+      {isLive && (
+        <div className={`rounded-xl border px-5 py-4 space-y-3 ${scoring?.status === 'ok' ? 'border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.06)]' : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.06)]'}`}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className={`text-xs font-bold uppercase tracking-wide ${scoring?.status === 'ok' ? 'text-[#2F7D55]' : 'text-[#8A5A00]'}`}>
+              Decision Pack · La tua organizzazione
+            </p>
+            <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">LIVE</span>
+          </div>
+          {scoring?.status === 'ok' && scoring.koraIndex ? (
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-[10px] text-[rgba(6,3,43,0.42)]">KORA Index™</p>
+                <p className="text-2xl font-bold text-[#06032B] mt-1">{Math.round(scoring.koraIndex.kora_index_value)}<span className="text-xs text-[rgba(6,3,43,0.40)] ml-1">/100</span></p>
+              </div>
+              <div>
+                <p className="text-[10px] text-[rgba(6,3,43,0.42)]">Data Reliability Index</p>
+                <p className="text-2xl font-bold text-[#06032B] mt-1">{Math.round((scoring.koraIndex.confidence_score ?? 0) * 100)}%</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-[rgba(6,3,43,0.42)]">Activation Safeguard</p>
+                <p className={`text-lg font-bold mt-1 ${scoring.koraIndex.safeguard_status === 'CLEAR' ? 'text-[#2F7D55]' : scoring.koraIndex.safeguard_status === 'WARNING' ? 'text-[#D99A2B]' : 'text-[#9E3B2F]'}`}>
+                  {scoring.koraIndex.safeguard_status}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-sm text-[rgba(6,3,43,0.52)]">Nessun KORA Index disponibile. Completa intake e scoring per generare il Decision Pack.</p>
+          )}
+          {scoring?.status === 'ok' && (
+            <div className="flex gap-3 flex-wrap pt-2 border-t border-[rgba(6,3,43,0.06)]">
+              <a
+                href={`/api/company/decision-pack?reportingPeriod=${scoring.koraIndex?.reporting_period ?? ''}`}
+                target="_blank" rel="noopener noreferrer"
+                className="rounded border border-[rgba(6,3,43,0.14)] px-3 py-1.5 text-xs font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.04)] transition-colors"
+              >
+                ↗ Anteprima Decision Pack
+              </a>
+              <a
+                href={`/api/company/decision-pack/pdf?reportingPeriod=${scoring.koraIndex?.reporting_period ?? ''}`}
+                download
+                className="rounded border border-[#C76F3D] bg-[rgba(199,111,61,0.08)] px-3 py-1.5 text-xs font-semibold text-[#C76F3D] hover:bg-[rgba(199,111,61,0.12)] transition-colors"
+              >
+                ↓ Scarica PDF
+              </a>
+            </div>
+          )}
+          <p className="text-[10px] text-[rgba(47,125,85,0.70)] italic">
+            {scoring?.status === 'ok'
+              ? 'I pannelli di dettaglio sotto mostrano la struttura demo di esempio.'
+              : 'Periodo di riferimento: ' + (scoring?.koraIndex?.reporting_period ?? 'N/A')}
+          </p>
+        </div>
+      )}
+
       {/* ── 1. PageMasthead ─────────────────────────────────────────────────── */}
       <PageMasthead
-        eyebrow={`Decision Pack · ${activeScenario} · ${companyName}`}
+        eyebrow={`Decision Pack · ${isLive ? 'LIVE' : activeScenario} · ${companyName}`}
         title="Report direzionali"
         subline="Output board-ready per HR, Finance, ESG e board. Evidenze strutturate, attivazione e raccomandazioni in formato decisionale."
         meta="Foundation Light v0.1 · pre_empirical_calibration · dati sintetici demo"

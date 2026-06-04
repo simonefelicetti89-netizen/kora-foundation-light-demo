@@ -4,10 +4,11 @@ import { usePathname } from 'next/navigation';
 import { useRole } from '@/lib/demo-state';
 import { AccessDeniedState } from '@/components/privacy/AccessDeniedState';
 import { isEmployerRole, isAdminRole, isViewerRole } from '@/lib/permissions';
+import { CompanySessionProvider, useCompanySession } from './_providers/CompanySessionProvider';
 
-// B36.1: All /company/* routes that are demo-driven (use synthetic Meridiana data).
-// These are DEMO_SYNTHETIC pages — accessible via demo-state, labeled clearly.
-// Real company sessions are blocked upstream in middleware.ts (redirected to /company/workspace).
+// B36.1: All /company/* routes that are demo-driven (use synthetic Meridiana data)
+// when accessed without a real Supabase company session.
+// B59: Real company sessions (COMPANY_ADMIN/VIEWER) now access these routes with live data.
 const DEMO_DRIVEN_ROUTES = [
   '/company/shared',
   '/company/profile',
@@ -29,7 +30,6 @@ const DEMO_DRIVEN_ROUTES = [
   '/company/setup',
 ];
 
-// Routes that require COMPANY_ADMIN or KORA_ADMIN — COMPANY_VIEWER is blocked.
 const VIEWER_BLOCKED_ROUTES = [
   '/company/data',
   '/company/financial',
@@ -48,14 +48,18 @@ const VIEWER_BLOCKED_ROUTES = [
   '/company/shared',
 ];
 
-export default function CompanyLayout({ children }: { children: React.ReactNode }) {
+// ── Inner layout — uses session context for DEMO banner suppression ─────────────
+// Separate from the outer layout so it can consume the CompanySessionProvider.
+
+function CompanyLayoutInner({ children }: { children: React.ReactNode }) {
   const { activeRole } = useRole();
+  const { isLive, sessionLoading } = useCompanySession();
   const pathname = usePathname();
 
-  // /company/workspace has its own server-side auth (requireCompanyUser) — bypass demo-state check.
   const isWorkspacePath = pathname.startsWith('/company/workspace');
 
-  const allowed = isEmployerRole(activeRole) || isAdminRole(activeRole) || isWorkspacePath;
+  // Demo-state role check applies to non-live, non-workspace paths
+  const allowed = isEmployerRole(activeRole) || isAdminRole(activeRole) || isWorkspacePath || isLive;
   if (!allowed) {
     return (
       <AccessDeniedState
@@ -66,7 +70,9 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
     );
   }
 
-  if (isViewerRole(activeRole) && VIEWER_BLOCKED_ROUTES.some((r) => pathname.startsWith(r))) {
+  // COMPANY_VIEWER blocks: applies in demo mode. In live mode, middleware + server auth
+  // handle viewer restrictions; the layout does not need to re-enforce them.
+  if (!isLive && isViewerRole(activeRole) && VIEWER_BLOCKED_ROUTES.some((r) => pathname.startsWith(r))) {
     return (
       <AccessDeniedState
         role={activeRole}
@@ -76,16 +82,19 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
     );
   }
 
-  // B36.1: Show synthetic demo banner on all non-workspace company pages.
-  // Middleware has already redirected any real company session users to /company/workspace,
-  // so this banner is only seen by demo-state users (KORA_ADMIN, demo roles, demo guide).
+  // Show SYNTHETIC DEMO banner only when:
+  //   - Not a live session (isLive = false after session check completes)
+  //   - Not the workspace path (workspace has its own auth)
+  //   - On a demo-driven route
+  // Hidden for real company sessions (they see their own live data, not Meridiana).
   const isDemoDrivenPath = !isWorkspacePath && (
     pathname === '/company' || DEMO_DRIVEN_ROUTES.some((r) => pathname.startsWith(r))
   );
+  const showDemoBanner = isDemoDrivenPath && !isLive && !sessionLoading;
 
   return (
     <>
-      {isDemoDrivenPath && (
+      {showDemoBanner && (
         <div
           className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 text-[11px] font-semibold"
           style={{
@@ -115,5 +124,17 @@ export default function CompanyLayout({ children }: { children: React.ReactNode 
       )}
       {children}
     </>
+  );
+}
+
+// ── Outer layout — wraps children with CompanySessionProvider ─────────────────
+
+export default function CompanyLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <CompanySessionProvider>
+      <CompanyLayoutInner>
+        {children}
+      </CompanyLayoutInner>
+    </CompanySessionProvider>
   );
 }
