@@ -158,6 +158,10 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
   const [actionState, setActionState] = useState<Record<string, 'loading'|'done'|'error'>>({});
 
+  // P1.3: Bulk approve high-confidence state
+  const [bulkStatus, setBulkStatus]       = useState<'idle'|'loading'|'done'|'error'>('idle');
+  const [bulkProgress, setBulkProgress]   = useState<{ processed: number; success: number; failed: number; total: number } | null>(null);
+
   // B11: enrichment panel state
   const [enrichOpen, setEnrichOpen]       = useState<string | null>(null);  // uefRecordId
   const [enrichForm, setEnrichForm]       = useState<EnrichmentForm>(EMPTY_ENRICHMENT);
@@ -343,6 +347,39 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
     } catch { setActionState(s => ({ ...s, [uefRecordId]: 'error' })); }
   }
 
+  // ── P1.3: Bulk approve high-confidence candidates ────────────────────────────
+  // Approves all pending_review candidates with mappingConfidence >= 0.70.
+  // Uses the existing per-record review endpoint sequentially — no new API needed.
+  async function handleBulkApprove() {
+    const eligible = candidates.filter(
+      c => c.reviewStatus === 'pending_review' && c.mappingConfidence >= 0.70,
+    );
+    if (eligible.length === 0) return;
+
+    setBulkStatus('loading');
+    setBulkProgress({ processed: 0, success: 0, failed: 0, total: eligible.length });
+
+    let success = 0;
+    let failed  = 0;
+
+    for (let i = 0; i < eligible.length; i++) {
+      const c = eligible[i];
+      try {
+        const res  = await fetch('/api/admin/uef/review', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uefRecordId: c.id, action: 'approve' }),
+        });
+        const data = await res.json() as { ok?: boolean };
+        if (res.ok && data.ok) { success++; } else { failed++; }
+      } catch { failed++; }
+      setBulkProgress({ processed: i + 1, success, failed, total: eligible.length });
+    }
+
+    setBulkStatus(failed === 0 ? 'done' : 'error');
+    if (selectedBatchId) loadCandidates(selectedBatchId);
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div className="max-w-5xl mx-auto py-6 px-3 space-y-5">
@@ -459,6 +496,42 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               <span className="text-[rgba(6,3,43,0.52)]">Avg confidence: <strong>{Math.round(summary.avgConfidence * 100)}%</strong></span>
             </div>
           )}
+
+          {/* P1.3: Bulk approve high-confidence */}
+          {(() => {
+            const highConfPending = candidates.filter(
+              c => c.reviewStatus === 'pending_review' && c.mappingConfidence >= 0.70,
+            );
+            if (highConfPending.length === 0) return null;
+            return (
+              <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 px-4 py-3 space-y-2">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <p className="text-xs font-bold text-green-700">Approve All High Confidence</p>
+                    <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
+                      {highConfPending.length} candidate{highConfPending.length !== 1 ? 's' : ''} with confidence ≥70% pending review.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleBulkApprove}
+                    disabled={bulkStatus === 'loading'}
+                    className="rounded-lg border border-green-300 bg-green-100 px-4 py-1.5 text-xs font-semibold text-green-700 hover:bg-[rgba(47,125,85,0.15)] disabled:opacity-50 transition-colors">
+                    {bulkStatus === 'loading' ? '⏳ Approving…' : `✓ Approve ${highConfPending.length} high-confidence`}
+                  </button>
+                </div>
+                {bulkProgress && (
+                  <div className="text-[10px] text-[rgba(6,3,43,0.52)] font-mono">
+                    {bulkProgress.processed}/{bulkProgress.total} processed
+                    {' · '}
+                    <span className="text-green-700">{bulkProgress.success} approved</span>
+                    {bulkProgress.failed > 0 && <span className="text-[#9E3B2F]"> · {bulkProgress.failed} failed</span>}
+                  </div>
+                )}
+                {bulkStatus === 'done'  && <p className="text-[10px] text-green-700 font-semibold">✓ Bulk approve complete.</p>}
+                {bulkStatus === 'error' && <p className="text-[10px] text-[#9E3B2F]">⚠ Some records failed. Review individually.</p>}
+              </div>
+            );
+          })()}
 
           {/* Candidate cards */}
           {candidates.map(c => (

@@ -6,6 +6,22 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
 
+export interface PdfComponent {
+  code: string;
+  label: string;
+  value: number;       // 0–1
+  weight: number;      // effective weight in KORA Index
+  macroblock: string | null;
+  external: boolean;
+}
+
+export interface PdfMacroblock {
+  code: string;
+  label: string;
+  weight: number;      // macroblock weight (e.g. 0.25)
+  score: number;       // 0–100
+}
+
 export interface PdfData {
   meta: {
     tenantCode: string;
@@ -16,8 +32,9 @@ export interface PdfData {
     decisionPackVersionId: string;
     decisionPackId: string;
     decisionPackStatus: string;
-    syntheticData: true;
+    isLiveData: boolean;           // true = from real company data, false = synthetic/demo
     notCertification: true;
+    methodologyNote: string;       // "KORA Foundation Light v1.0 — pre-empirical calibration"
   };
   koraIndex: {
     value: number;
@@ -31,6 +48,9 @@ export interface PdfData {
     createdAt: string;
     componentCount: number;
   };
+  // v1.0: 10 diagnostic components and 4 macroblocks from persisted kora_index_result
+  components: PdfComponent[] | null;
+  macroblocks: PdfMacroblock[] | null;
   pillarDistribution: {
     LIFE:       number;
     GROWTH:     number;
@@ -445,19 +465,50 @@ export async function fetchPdfData(
   const rawConf = confRow?.confidence_score ?? 0;
   const confidence01 = rawConf > 1 ? rawConf / 100 : rawConf;
 
+  // v1.0: extract persisted components and macroblocks from kora_index_result JSONB
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawComponents = ((ki as any).components ?? []) as Array<Record<string, unknown>>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawMacroblocks = ((ki as any).macroblocks ?? []) as Array<Record<string, unknown>>;
+
+  const components: PdfComponent[] | null = rawComponents.length > 0
+    ? rawComponents.map(c => ({
+        code:       String(c['code'] ?? ''),
+        label:      String(c['label'] ?? c['code'] ?? ''),
+        value:      Number(c['value'] ?? 0),
+        weight:     Number(c['weight'] ?? 0),
+        macroblock: c['macroblock'] != null ? String(c['macroblock']) : null,
+        external:   Boolean(c['external']),
+      }))
+    : null;
+
+  const macroblocks: PdfMacroblock[] | null = rawMacroblocks.length > 0
+    ? rawMacroblocks.map(m => ({
+        code:   String(m['code'] ?? ''),
+        label:  String(m['label'] ?? m['code'] ?? ''),
+        weight: Number(m['weight'] ?? 0),
+        score:  Number(m['score'] ?? 0),
+      }))
+    : null;
+
   return {
     meta: {
       tenantCode,
       companyName: (tenant as { id: string; company_name?: string | null }).company_name
-        ?? `${tenantCode} Synthetic Organization`,
+        ?? `${tenantCode} Organization`,
       reportingPeriod,
       generatedAt: new Date().toISOString(),
       decisionPackVersionId: (dp as { version_id?: string } | null)?.version_id ?? 'N/A',
       decisionPackId: (dp as { id?: string } | null)?.id ?? 'N/A',
       decisionPackStatus: (dp as { status?: string } | null)?.status ?? 'draft',
-      syntheticData: true,
+      // isLiveData: true when built from real Supabase data (not a synthetic demo fixture).
+      // tenantCode 'OP-001' is the synthetic demo operator; all others are live pilot tenants.
+      isLiveData: tenantCode !== 'OP-001',
       notCertification: true,
+      methodologyNote: 'KORA Foundation Light v1.0 — pre-empirical calibration. Output diagnostico pilota. Non certificato, non regulatory-grade.',
     },
+    components,
+    macroblocks,
     pillarDistribution,
     bti,
     enrichment,
@@ -474,13 +525,12 @@ export async function fetchPdfData(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       calibrationStatus: (ki as any).calibration_status ?? 'pre_empirical_calibration',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      methodologyVersionId: (ki as any).methodology_version_id ?? 'KORA Index v3',
+      methodologyVersionId: (ki as any).methodology_version_id ?? 'KORA Index v1.0',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       isCurrent: (ki as any).is_current ?? true,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       createdAt: (ki as any).created_at ?? '',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      componentCount: ((ki as any).components ?? []).length,
+      componentCount: rawComponents.length,
     },
     auditSummary: (auditEvents ?? []).map(e => ({
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

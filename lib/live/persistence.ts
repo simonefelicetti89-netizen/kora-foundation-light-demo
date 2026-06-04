@@ -27,57 +27,49 @@ import {
   type SuppressionSummary,
 } from '@/lib/privacy/group-threshold';
 
-// ── Component array builder (v0.1 approximations) ─────────────────────────────
-// Individual component values derived from available engine outputs.
-// Phase 2B note: NI, WB, PB, EQ are proxies — full component engine is post-pilot.
+// ── Component array builder — v1.0 methodology ────────────────────────────────
+// Uses ComponentDetail from koraIndex (computed by component-engine + kora-index-engine).
+// No proxy values. No synthetic 0.5 defaults.
+// Components with status=insufficient_data are included with value=0 and a status label.
 
 function buildComponentArray(
   result: KoraComputationResult,
   weights: Record<string, number>,
 ): KoraIndexComponent[] {
-  const { activation, confidence, pillarDistribution, koraIndex } = result;
+  const { activation, confidence, koraIndex } = result;
+  const d = koraIndex.componentDetail;
 
-  // PC: fraction of 5 pillars with ≥1 event
-  const activePillarCount = (Object.values(pillarDistribution) as number[]).filter(c => c > 0).length;
-  const pcValue = activePillarCount / 5;
+  // AR and MAR come from the activation engine directly (always computed when records exist)
+  const arValue  = activation.activationReach;           // 0–1
+  const marValue = activation.meaningfulActivationReach; // 0–1
 
-  // PB: 1 − coefficient of variation across active pillars
-  const activeCounts = (Object.values(pillarDistribution) as number[]).filter(c => c > 0);
-  let pbValue = 0;
-  if (activeCounts.length >= 2) {
-    const mean = activeCounts.reduce((a, b) => a + b, 0) / activeCounts.length;
-    const variance = activeCounts.reduce((a, b) => a + (b - mean) ** 2, 0) / activeCounts.length;
-    const cv = mean > 0 ? Math.sqrt(variance) / mean : 1;
-    pbValue = Math.max(0, Math.min(1, 1 - cv));
-  } else if (activeCounts.length === 1) {
-    pbValue = 0.2;
-  }
+  // v1.0 components from ComponentDetail (computed by component engine + index engine)
+  // When status = insufficient_data, value = 0 and the component notes why.
+  const niValue  = d?.niStatus  === 'computed' ? d.ni  : 0;  // 0–1
+  const vrValue  = d?.vrStatus  === 'computed' ? d.vr  : 0;  // 0–1
+  const coValue  = d?.coStatus  === 'computed' ? d.co  : 0;  // 0–1
+  const wbValue  = d?.wbStatus  === 'computed' ? d.wb  : 0;  // 0–1
+  const eqValue  = d?.eqStatus  === 'computed' ? d.eq  : 0;  // 0–1
+  const pcValue  = d?.pcStatus  === 'computed' ? d.pc / 100 : 0;  // convert 0–100 → 0–1
+  const pbValue  = d?.pbStatus  === 'computed' ? d.pb / 100 : 0;  // convert 0–100 → 0–1
 
-  // WB: worker balance — bottomFiftyShare as equity proxy (0–1)
-  const wbValue = Math.max(0, Math.min(1, activation.bottomFiftyShare));
-
-  // EQ: 1 − max(departmentGap) proxy
-  const gapValues = Object.values(activation.departmentGaps) as number[];
-  const eqValue = gapValues.length > 0
-    ? Math.max(0, Math.min(1, 1 - Math.max(...gapValues)))
-    : 0.5;
-
-  // NI: normalized intensity proxy from QUALITY macroblock score
-  const niValue = Math.max(0, Math.min(1, koraIndex.macroblocks.activationQuality / 100));
+  // CS = Data Reliability Index — external to KORA Index, weight always 0.
+  // Stored as 0–1 in DB (confidence engine returns 0–100; divide by 100).
+  const csValue = confidence.score / 100;
 
   const w = weights;
 
   return [
-    { code: 'AR',  label: COMPONENT_LABELS['AR'],  value: activation.activationReach,          weight: w['AR']  ?? 0, macroblock: 'REACH'  as MacroblockCode },
-    { code: 'MAR', label: COMPONENT_LABELS['MAR'], value: activation.meaningfulActivationReach, weight: w['MAR'] ?? 0, macroblock: 'REACH'  as MacroblockCode },
-    { code: 'NI',  label: COMPONENT_LABELS['NI'],  value: niValue,                             weight: w['NI']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
-    { code: 'VR',  label: COMPONENT_LABELS['VR'],  value: confidence.verificationConfidence,   weight: w['VR']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
-    { code: 'CO',  label: COMPONENT_LABELS['CO'],  value: confidence.reviewConfidence,         weight: w['CO']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
-    { code: 'WB',  label: COMPONENT_LABELS['WB'],  value: wbValue,                             weight: w['WB']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
-    { code: 'PC',  label: COMPONENT_LABELS['PC'],  value: pcValue,                             weight: w['PC']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
-    { code: 'PB',  label: COMPONENT_LABELS['PB'],  value: pbValue,                             weight: w['PB']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
-    { code: 'EQ',  label: COMPONENT_LABELS['EQ'],  value: eqValue,                             weight: w['EQ']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
-    { code: 'CS',  label: COMPONENT_LABELS['CS'],  value: confidence.score / 100,              weight: 0,             external: true },
+    { code: 'AR',  label: COMPONENT_LABELS['AR'],  value: arValue,  weight: w['AR']  ?? 0, macroblock: 'REACH'  as MacroblockCode },
+    { code: 'MAR', label: COMPONENT_LABELS['MAR'], value: marValue, weight: w['MAR'] ?? 0, macroblock: 'REACH'  as MacroblockCode },
+    { code: 'NI',  label: COMPONENT_LABELS['NI'],  value: niValue,  weight: w['NI']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'VR',  label: COMPONENT_LABELS['VR'],  value: vrValue,  weight: w['VR']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'CO',  label: COMPONENT_LABELS['CO'],  value: coValue,  weight: w['CO']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'WB',  label: COMPONENT_LABELS['WB'],  value: wbValue,  weight: w['WB']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'PC',  label: COMPONENT_LABELS['PC'],  value: pcValue,  weight: w['PC']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'PB',  label: COMPONENT_LABELS['PB'],  value: pbValue,  weight: w['PB']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'EQ',  label: COMPONENT_LABELS['EQ'],  value: eqValue,  weight: w['EQ']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'CS',  label: COMPONENT_LABELS['CS'],  value: csValue,  weight: 0, external: true },
   ] as KoraIndexComponent[];
 }
 

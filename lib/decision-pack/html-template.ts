@@ -85,7 +85,7 @@ const PILLAR_ORDER = ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'] as const;
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, pillarDistribution, bti, enrichment, reportingAlignment, reportingReadiness } = data;
+  const { meta, koraIndex, pillarDistribution, bti, enrichment, reportingAlignment, reportingReadiness, components, macroblocks } = data;
 
   const sf       = koraIndex.safeguardStatus;
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
@@ -687,7 +687,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
 <div class="page cover">
   <div class="cv-top">
     <img src="${logoWhite}" class="cv-logo" alt="KORA">
-    <span class="cv-badge">${esc(meta.syntheticData ? 'Synthetic Demo' : 'Foundation Light v0.1')}</span>
+    <span class="cv-badge">${esc(meta.isLiveData ? 'Foundation Light v1.0' : 'Synthetic Demo')}</span>
   </div>
 
   <div class="cv-body">
@@ -1441,11 +1441,87 @@ export function buildDecisionPackHtml(data: PdfData): string {
         <div class="mp-prov-lbl">Status</div>
         <div class="mp-prov-val">${esc(meta.decisionPackStatus.toUpperCase())}</div>
       </div>
+      <div class="mp-prov-item">
+        <div class="mp-prov-lbl">Fonte dati</div>
+        <div class="mp-prov-val">${meta.isLiveData ? 'Dati reali aziendali' : 'Dati sintetici demo'}</div>
+      </div>
     </div>
 
   </div>
   ${pageFooter()}
 </div>
+
+${/* ── 10 Diagnostic Components + 4 Macroblocks (v1.0) ── */ ''}
+${(components && components.length > 0) || (macroblocks && macroblocks.length > 0) ? `
+<div class="page" style="padding:28pt 32pt;">
+  <div style="font-size:8pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#6156F5;margin-bottom:12pt;">
+    Scomposizione Metodologica — KORA Foundation Light v1.0
+  </div>
+
+  ${macroblocks && macroblocks.length > 0 ? `
+  <div style="margin-bottom:18pt;">
+    <div style="font-size:7pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#06032B;margin-bottom:8pt;">4 Macroblocchi</div>
+    <table style="width:100%;border-collapse:collapse;font-size:8pt;">
+      <thead>
+        <tr style="background:#f0f0fa;">
+          <th style="text-align:left;padding:5pt 7pt;color:#555670;font-weight:600;">Macroblocco</th>
+          <th style="text-align:center;padding:5pt 7pt;color:#555670;font-weight:600;">Peso</th>
+          <th style="text-align:center;padding:5pt 7pt;color:#555670;font-weight:600;">Score</th>
+          <th style="text-align:left;padding:5pt 7pt;color:#555670;font-weight:600;">Barra</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${macroblocks.map(m => `
+        <tr style="border-top:1px solid #eaebf4;">
+          <td style="padding:5pt 7pt;font-weight:600;color:#06032B;">${esc(m.label || m.code)}</td>
+          <td style="padding:5pt 7pt;text-align:center;color:#555670;">${Math.round(m.weight * 100)}%</td>
+          <td style="padding:5pt 7pt;text-align:center;font-weight:700;color:#06032B;">${Math.round(m.score)}/100</td>
+          <td style="padding:5pt 7pt;">
+            <div style="background:#eaebf4;border-radius:3pt;height:7pt;width:120pt;">
+              <div style="background:#6156F5;border-radius:3pt;height:7pt;width:${Math.round(Math.min(100,Math.max(0,m.score)))}%;"></div>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>` : ''}
+
+  ${components && components.length > 0 ? `
+  <div>
+    <div style="font-size:7pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#06032B;margin-bottom:8pt;">10 Componenti Diagnostici</div>
+    <table style="width:100%;border-collapse:collapse;font-size:7.5pt;">
+      <thead>
+        <tr style="background:#f0f0fa;">
+          <th style="text-align:left;padding:4pt 6pt;color:#555670;font-weight:600;">Cod.</th>
+          <th style="text-align:left;padding:4pt 6pt;color:#555670;font-weight:600;">Componente</th>
+          <th style="text-align:center;padding:4pt 6pt;color:#555670;font-weight:600;">Macroblocco</th>
+          <th style="text-align:center;padding:4pt 6pt;color:#555670;font-weight:600;">Valore</th>
+          <th style="text-align:center;padding:4pt 6pt;color:#555670;font-weight:600;">Peso eff.</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${components.map(c => {
+          const pct    = Math.round(c.value * 100);
+          const extLbl = c.external ? '(esterno)' : '';
+          const mbLbl  = c.macroblock ?? extLbl;
+          return `
+        <tr style="border-top:1px solid #eaebf4;">
+          <td style="padding:4pt 6pt;font-weight:700;color:#6156F5;">${esc(c.code)}</td>
+          <td style="padding:4pt 6pt;color:#06032B;">${esc(c.label)}</td>
+          <td style="padding:4pt 6pt;text-align:center;color:#555670;font-size:7pt;">${esc(mbLbl)}</td>
+          <td style="padding:4pt 6pt;text-align:center;font-weight:600;color:#06032B;">${pct}%</td>
+          <td style="padding:4pt 6pt;text-align:center;color:#555670;">${c.external ? '0 (est.)' : (Math.round(c.weight * 1000) / 10) + '%'}</td>
+        </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:8pt;font-size:6.5pt;color:#9899b3;line-height:1.5;">
+      CS = Data Reliability Index™ — esterno al KORA Index™ (peso = 0). Mostrato sempre affianco come indicatore di affidabilità dati. ${meta.methodologyNote}
+    </div>
+  </div>` : ''}
+
+  ${pageFooter()}
+</div>` : ''}
 
 
 </body>

@@ -320,6 +320,23 @@ export interface KoraIndexMacroblocks {
   budgetToHumanImpact: number;  // 0–100
 }
 
+// Extended component detail — produced by computeKoraIndex and used by persistence.
+// Contains WB and EQ values (computed inside computeKoraIndex) alongside
+// the NI/VR/CO signals passed in from the pipeline.
+export interface ComponentDetail {
+  ni: number; niStatus: ComponentStatus;
+  vr: number; vrStatus: ComponentStatus;
+  co: number; coStatus: ComponentStatus;
+  wb: number; wbStatus: ComponentStatus;
+  eq: number; eqStatus: ComponentStatus;
+  pc: number; pcStatus: ComponentStatus;
+  pb: number; pbStatus: ComponentStatus;
+  // Effective macroblock weights after dynamic rebalancing (may differ when
+  // some components are insufficient_data)
+  qualityWeightsUsed: { ni: number; vr: number; co: number };
+  equityWeightsUsed:  { wb: number; pc: number; pb: number; eq: number };
+}
+
 export interface KoraIndexResult {
   value: number;                  // 0–100
   macroblocks: KoraIndexMacroblocks;
@@ -328,6 +345,7 @@ export interface KoraIndexResult {
   calibrationStatus: CalibrationStatus;
   productionReady: false;
   confidenceExternal: number;    // 0–100 — shown alongside, never aggregated into value
+  componentDetail?: ComponentDetail; // v1.0: per-component values for persistence
   warnings: string[];
 }
 
@@ -363,6 +381,44 @@ export interface ReachSemanticsResult {
   caveat: string;
 }
 
+// ── ComponentSignals — v1.0 methodology component computation results ─────────
+// Computed inside runKoraPipeline from approved records + activation result.
+// NI, VR, CO require record-level evidence/participant data.
+// WB and EQ are derived inside computeKoraIndex from the activation result.
+//
+// Status 'insufficient_data' means the computation was not possible
+// (e.g., no eligible records, no participant data, no segment data).
+// In that case value = 0 and the component is excluded from macroblock computation.
+// NEVER use arbitrary placeholder values (0.5, 0.0) as stand-ins for missing data.
+
+export type ComponentStatus = 'computed' | 'insufficient_data';
+
+export interface ComponentSignals {
+  // NI — Activation Evidence Intensity
+  // = Σ(participants × evidenceWeight) / Σ(participants), eligible records only
+  // evidenceWeight: L0=0.25, L1=0.50, L2=0.75, L3=1.00
+  ni: number;
+  niStatus: ComponentStatus;
+  niSourceRecords: number;        // number of eligible records contributing to NI
+
+  // VR — Verification Rate
+  // = Σ(participants × [evidenceLevel ≥ L2]) / Σ(participants), eligible records only
+  vr: number;
+  vrStatus: ComponentStatus;
+  vrSourceRecords: number;        // number of eligible records contributing to VR
+
+  // CO — Program Continuity (v0.1 proxy: program recurrence share)
+  // = recurringEligiblePrograms / totalEligiblePrograms
+  // v0.1: measures structural/ongoing program presence, NOT cross-period worker retention
+  co: number;
+  coStatus: ComponentStatus;
+  coRecurringPrograms: number;    // count of recurring-classified eligible programs
+  coTotalPrograms: number;        // total eligible programs evaluated
+
+  // WB and EQ are computed inside computeKoraIndex from activation result.
+  // They are returned in KoraIndexResult.componentDetail for persistence.
+}
+
 export interface KoraComputationResult {
   tenantId: string;
   batchId: string;
@@ -373,6 +429,7 @@ export interface KoraComputationResult {
   activation: ActivationResult;
   koraIndex: KoraIndexResult;
   confidence: ConfidenceResult;
+  componentSignals: ComponentSignals;  // v1.0: NI, VR, CO pre-computed signals
   explainabilityTrace: ExplainabilityTraceItem[];
   reachSemantics?: ReachSemanticsResult;  // B24: optional — present when records available
   warnings: string[];

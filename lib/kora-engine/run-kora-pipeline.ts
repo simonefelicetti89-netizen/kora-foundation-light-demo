@@ -1,15 +1,21 @@
 // lib/kora-engine/run-kora-pipeline.ts
-// KORA Computation Pipeline v0.1 — Foundation Light Pilot.
+// KORA Computation Pipeline v1.0 — Foundation Light Pilot.
 //
-// Orchestrates the full 10-step pipeline:
+// Orchestrates the full pipeline:
 //   records → Eligibility → Pillar → Care Economy → Budget Evidence
-//   → BTI → Activation → KORA Index → Confidence → Explainability
+//   → Component Signals (NI, VR, CO) → BTI → Activation → KORA Index
+//   → Confidence → Explainability
+//
+// v1.0 changes:
+//   Step 3.5 — computeComponentSignals() added between eligibility and BTI.
+//   QUALITY now uses NI×40% + VR×40% + CO×20% (MAR removed — no double-counting).
+//   EQUITY now uses WB×20% + PC×25% + PB×30% + EQ×25%.
 //
 // Design constraints:
 //   - Never throws — returns insufficient_data on any unhandled error.
-//   - Real tenants must never fall back to synthetic seed (doc upload-engine-v0-boundary.md).
+//   - Real tenants must never fall back to synthetic seed.
 //   - Empty records → scoringMode=insufficient_data immediately.
-//   - Identity signals are confined to computeActivation (reach quality block) — never returned.
+//   - Identity signals are confined to computeActivation — never returned.
 //   - All methodology weights read from lib/methodology-config/v0.1.ts — never hardcoded here.
 
 import type {
@@ -21,6 +27,7 @@ import type {
   KoraIndexResult,
   ConfidenceResult,
   KoraComputationResult,
+  ComponentSignals,
   ScoringMode,
   Pillar,
 } from './types';
@@ -28,6 +35,7 @@ import { classifyEligibilityBatch } from './eligibility-gate';
 import { mapPillarBatch } from './pillar-mapping';
 import { mapCareEconomyBatch } from './care-economy-mapping';
 import { assessBudgetEvidenceBatch } from './budget-evidence';
+import { computeComponentSignals } from './component-engine';
 import { computeBTI } from './bti-engine';
 import { computeActivation } from './activation-engine';
 import { computeKoraIndex } from './kora-index-engine';
@@ -36,7 +44,7 @@ import { buildExplainabilityTrace } from './explainability';
 import { computeReachSemantics } from './reach-semantics';
 import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 
-const PIPELINE_SOURCE = 'KoraPipeline_v0.1';
+const PIPELINE_SOURCE = 'KoraPipeline_v1.0';
 
 // ── Insufficient data result ──────────────────────────────────────────────────
 
@@ -66,7 +74,7 @@ function buildInsufficientDataResult(
     value: 0,
     macroblocks: { activationReach: 0, activationQuality: 0, distributionEquity: 0, budgetToHumanImpact: 0 },
     weights: getMacroblockWeights(),
-    methodologyVersion: 'KORA-METHOD-v0.1.0',
+    methodologyVersion: 'KORA-METHOD-v1.0',
     calibrationStatus: 'pre_empirical_calibration',
     productionReady: false,
     confidenceExternal: 0,
@@ -77,7 +85,13 @@ function buildInsufficientDataResult(
     score: 0, mappingConfidence: 0, budgetEvidenceConfidence: 0,
     dataCompleteness: 0, verificationConfidence: 0, reviewConfidence: 0,
     externalToIndex: true,
-    warnings: ['insufficient_data: Confidence Score non calcolabile.'],
+    warnings: ['insufficient_data: Data Reliability Index non calcolabile.'],
+  };
+
+  const zeroSignals: ComponentSignals = {
+    ni: 0, niStatus: 'insufficient_data', niSourceRecords: 0,
+    vr: 0, vrStatus: 'insufficient_data', vrSourceRecords: 0,
+    co: 0, coStatus: 'insufficient_data', coRecurringPrograms: 0, coTotalPrograms: 0,
   };
 
   return {
@@ -90,6 +104,7 @@ function buildInsufficientDataResult(
     activation: zeroActivation,
     koraIndex: zeroKoraIndex,
     confidence: zeroConfidence,
+    componentSignals: zeroSignals,
     explainabilityTrace: [],
     warnings: [...warnings, `Fonte: ${PIPELINE_SOURCE} | scoringMode=insufficient_data`],
     createdAt: new Date().toISOString(),
@@ -136,6 +151,11 @@ export function runKoraPipeline(params: {
 
     // Step 5: Budget Evidence Assessment — L0→L4 for each record
     const budgetEvidenceResults = assessBudgetEvidenceBatch(records);
+
+    // Step 5.5: Component Signals — NI, VR, CO (v1.0 methodology)
+    // Computed from approved UEF records using evidence levels and participant counts.
+    // Uses eligibilityResults to filter ELIGIBLE records only.
+    const componentSignals = computeComponentSignals(records, eligibilityResults);
 
     // Step 6: BTI Engine — aggregate spend routing and BTI Score
     const bti = computeBTI({
@@ -187,12 +207,15 @@ export function runKoraPipeline(params: {
     });
 
     // Step 11: KORA Index — four macroblock aggregate + CS external link
+    // v1.0: componentSignals passed in for NI/VR/CO in QUALITY macroblock.
+    // WB and EQ are computed inside computeKoraIndex from the activation result.
     const koraIndex = computeKoraIndex({
       bti,
       activation,
       eligibilitySummary,
       pillarDistribution,
       confidenceScore: confidence.score,
+      componentSignals,
     });
 
     // Step 12: Explainability Trace — 9-stage aggregate trace, no identity values
@@ -248,6 +271,7 @@ export function runKoraPipeline(params: {
       activation,
       koraIndex,
       confidence,
+      componentSignals,
       explainabilityTrace,
       reachSemantics,
       warnings: pipelineWarnings,
