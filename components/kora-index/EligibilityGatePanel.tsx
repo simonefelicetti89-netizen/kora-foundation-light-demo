@@ -36,7 +36,7 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
       style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
     >
       <div>
-        <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
           Eligibility Gate
         </p>
         <p className="mt-1 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
@@ -87,7 +87,7 @@ export function EligibilityGatePanel({ summary }: EligibilityGatePanelProps) {
       {/* KORA Activation Core */}
       <div className="space-y-3 pt-4" style={{ borderTop: TOKENS.cardBorder }}>
         <div>
-          <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1rem' }}>KORA Activation Core</p>
+          <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1rem' }}>KORA Activation Core</p>
           <p className="mt-1 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
             Queste sono le azioni che possono contribuire all&apos;attivazione umana profonda quando sono verificate, distribuite e continue.
           </p>

@@ -38,7 +38,7 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
       style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
     >
       <div className="flex items-center justify-between">
-        <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
           Confidence Score — Dettaglio
         </p>
         {record && (

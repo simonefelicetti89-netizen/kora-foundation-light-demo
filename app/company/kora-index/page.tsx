@@ -223,7 +223,7 @@ export default function KoraIndexDetail() {
           <TM>KORA Index</TM> v3 · Intelligence analitica
         </p>
         <h1 style={{
-          fontFamily:  'var(--font-instrument-serif), Georgia, serif',
+          fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontSize:    'clamp(1.75rem, 3vw, 2.25rem)',
           fontWeight:  400,
           color:       TOKENS.ink,

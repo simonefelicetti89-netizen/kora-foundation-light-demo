@@ -12,7 +12,7 @@ interface PageMastheadProps {
 
 // PageMasthead — kept for backward compatibility during migration.
 // New code should use PageHeader from components/ui/PageHeader.tsx.
-// NOTE: h1 uses font-kora-serif which, after Fase 0 font flip, renders Jakarta.
+// NOTE: h1 uses font-kora-sans which, after Fase 0 font flip, renders Jakarta.
 export function PageMasthead({ eyebrow, title, subline, meta }: PageMastheadProps) {
   return (
     <div className="mb-8">
@@ -29,9 +29,9 @@ export function PageMasthead({ eyebrow, title, subline, meta }: PageMastheadProp
         {eyebrow}
       </p>
 
-      {/* Title — font-kora-serif now aliases Jakarta after Fase 0 flip */}
+      {/* Title — font-kora-sans now aliases Jakarta after Fase 0 flip */}
       <h1
-        className="font-kora-serif text-kora-ink leading-[1.04]"
+        className="font-kora-sans text-kora-ink leading-[1.04]"
         style={{ fontSize: 'clamp(2rem, 4vw, 2.75rem)', letterSpacing: '-0.02em' }}
       >
         {title}

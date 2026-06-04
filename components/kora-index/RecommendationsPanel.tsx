@@ -24,7 +24,7 @@ export function RecommendationsPanel({ btiRecommendations }: RecommendationsPane
   return (
     <div className="p-5 space-y-5" style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}>
       <div>
-        <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
           Raccomandazioni
         </p>
         <p className="mt-1 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>

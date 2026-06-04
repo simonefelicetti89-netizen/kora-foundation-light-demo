@@ -135,7 +135,7 @@ export default function KoraControlTower() {
         <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 10 }}>
           KORA Admin · Control Tower™
         </p>
-        <h1 style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 400, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.08, marginBottom: 8 }}>
+        <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 400, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.08, marginBottom: 8 }}>
           Vista operativa cross-azienda
         </h1>
         <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '13px', color: 'rgba(255,255,255,0.50)', maxWidth: 520, lineHeight: 1.5, marginBottom: 28 }}>
@@ -192,7 +192,7 @@ export default function KoraControlTower() {
       <div style={{ marginBottom: 4 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 14 }}>
           <div>
-            <p style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', fontSize: '1.25rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '1.25rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
               Coda priorità
             </p>
             <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', color: TOKENS.inkHint, marginTop: 3 }}>

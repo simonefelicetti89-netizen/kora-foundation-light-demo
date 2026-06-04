@@ -16,7 +16,7 @@ export function ExplainabilityPanel({ record }: ExplainabilityPanelProps) {
       className="p-4 space-y-4"
       style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
     >
-      <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+      <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
         Spiegazione del Punteggio
       </p>
 

@@ -24,7 +24,7 @@ export function BoardActions({ actions }: BoardActionsProps) {
     <div>
       <div style={{ marginBottom: 16 }}>
         <p style={{
-          fontFamily:    'var(--font-instrument-serif), Georgia, serif',
+          fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontSize:      '1.375rem',
           color:         TOKENS.ink,
           letterSpacing: '-0.01em',

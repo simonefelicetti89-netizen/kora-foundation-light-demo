@@ -88,7 +88,7 @@ export function EconomicReliefPanel({ s1, s2, s1BtiScore, s2BtiScore }: Economic
       style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}
     >
       <div>
-        <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
           Benefit monetari &amp; opportunità di attivazione
         </p>
         <p className="mt-0.5 text-xs" style={{ color: TOKENS.inkHint }}>Sollievo economico e opportunità di attivazione</p>

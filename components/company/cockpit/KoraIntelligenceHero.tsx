@@ -63,7 +63,7 @@ export function KoraIntelligenceHero({
             Human Impact Intelligence · Executive Cockpit
           </p>
           <h2 style={{
-            fontFamily:  'var(--font-instrument-serif), Georgia, serif',
+            fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontSize:    'clamp(1.75rem, 3vw, 2.25rem)',
             fontWeight:  400,
             color:       '#FFFFFF',

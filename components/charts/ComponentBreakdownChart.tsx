@@ -71,7 +71,7 @@ export function ComponentBreakdownChart({ components, weakCodes = [] }: Componen
       {/* Header */}
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
         <div>
-          <p style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', fontSize: '1.05rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.25 }}>
+          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '1.05rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.25 }}>
             10-Component Breakdown
           </p>
           <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 3 }}>

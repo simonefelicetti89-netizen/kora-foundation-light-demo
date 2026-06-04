@@ -50,7 +50,7 @@ export function ProssimaAzioneCard({ action }: ProssimaAzioneCardProps) {
 
       {/* Action title */}
       <p
-        className="font-kora-serif"
+        className="font-kora-sans"
         style={{
           fontSize:      '1.25rem',
           color:         '#FFFFFF',

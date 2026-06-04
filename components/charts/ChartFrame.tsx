@@ -36,7 +36,7 @@ export function ChartFrame({ title, subtitle, badge, children, className, hover 
           <div>
             {title && (
               <p
-                className="font-kora-serif text-kora-ink"
+                className="font-kora-sans text-kora-ink"
                 style={{ fontSize: '1.05rem', letterSpacing: '-0.01em', lineHeight: 1.25 }}
               >
                 {title}

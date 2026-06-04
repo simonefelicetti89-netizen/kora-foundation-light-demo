@@ -58,7 +58,7 @@ export function IndexRingCard({ value, safeguardStatus, confidenceScore }: Index
 
       {/* Title serif */}
       <p
-        className="font-kora-serif pr-10"
+        className="font-kora-sans pr-10"
         style={{ fontSize: '2rem', letterSpacing: '-0.02em', lineHeight: 1.08, color: TOKENS.ink }}
       >
         <TM>KORA Index</TM>

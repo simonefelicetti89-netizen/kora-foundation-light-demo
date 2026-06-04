@@ -47,7 +47,7 @@ export function MacroblockCompositionCard({ macroblocks }: MacroblockComposition
       {/* Card header */}
       <div style={{ marginBottom: 20, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ minWidth: 0, flex: 1 }}>
-          <p style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', fontSize: '1.25rem', letterSpacing: '-0.01em', lineHeight: 1.2, color: TOKENS.ink }}>
+          <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '1.25rem', letterSpacing: '-0.01em', lineHeight: 1.2, color: TOKENS.ink }}>
             Composizione <TM>KORA Index</TM>
           </p>
           <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '11px', color: TOKENS.inkSecondary, marginTop: 4 }}>

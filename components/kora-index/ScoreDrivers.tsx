@@ -109,7 +109,7 @@ export function ScoreDrivers({ weakComponents, macroblockScores }: ScoreDriversP
       {/* Section header */}
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'baseline', gap: 10 }}>
         <p style={{
-          fontFamily:    'var(--font-instrument-serif), Georgia, serif',
+          fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           fontSize:      '1.375rem',
           color:         TOKENS.ink,
           letterSpacing: '-0.01em',

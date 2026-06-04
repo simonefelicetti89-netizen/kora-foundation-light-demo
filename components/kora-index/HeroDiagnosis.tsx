@@ -69,7 +69,7 @@ export function HeroDiagnosis({
           </p>
           {/* Diagnosis sentence — the most important line on the page */}
           <p style={{
-            fontFamily:  'var(--font-instrument-serif), Georgia, serif',
+            fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
             fontSize:    'clamp(1.25rem, 2.5vw, 1.625rem)',
             fontWeight:  400,
             color:       '#FFFFFF',

@@ -40,7 +40,7 @@ export function BudgetToHumanImpactPanel({ s1, s2 }: BudgetToHumanImpactPanelPro
   if (!s1 && !s2) {
     return (
       <div className="p-5" style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}>
-        <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem' }}>Budget-to-Human-Impact</p>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem' }}>Budget-to-Human-Impact</p>
         <p className="mt-2 text-sm" style={{ color: TOKENS.inkHint }}>Dati BTI non disponibili per questo scenario.</p>
       </div>
     );
@@ -50,7 +50,7 @@ export function BudgetToHumanImpactPanel({ s1, s2 }: BudgetToHumanImpactPanelPro
   return (
     <div className="p-5 space-y-5" style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius }}>
       <div>
-        <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+        <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
           Budget-to-Human-Impact
         </p>
         <p className="mt-1 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>

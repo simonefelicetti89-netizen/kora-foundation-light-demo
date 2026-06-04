@@ -389,7 +389,7 @@ export default function MyKoraHome() {
                 key={step.label}
                 className={cn(
                   'flex items-start gap-3 rounded-md border p-2.5 transition-colors',
-                  isComplete ? 'border-kora-fun-green/40 bg-[#2F7D55]/15' : 'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]',
+                  isComplete ? 'border-[rgba(47,125,85,0.40)] bg-[rgba(47,125,85,0.10)]' : 'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]',
                 )}
               >
                 <span className={cn(

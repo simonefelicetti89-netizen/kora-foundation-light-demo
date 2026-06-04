@@ -35,7 +35,7 @@ export function BlockedByDesignPanel({ blockedCount, blockedNote }: BlockedByDes
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-kora-serif text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
+          <p className="font-kora-sans text-kora-ink" style={{ fontSize: '1.125rem', letterSpacing: '-0.01em' }}>
             Blocked by Design
           </p>
           <p className="mt-1 text-xs leading-relaxed max-w-2xl" style={{ color: TOKENS.inkSecondary }}>
