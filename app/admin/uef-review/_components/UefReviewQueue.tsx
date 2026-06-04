@@ -7,6 +7,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -399,6 +400,9 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           </div>
         </div>
       </div>
+
+      {/* B61-B: Pilot checklist — step 6/7 highlighted (generate then review) */}
+      <PilotOnboardingChecklist currentStep={6} compact />
 
       {/* Mandatory messages */}
       <div className="flex flex-wrap gap-2">

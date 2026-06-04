@@ -3,6 +3,7 @@
 'use client';
 
 import Link from 'next/link';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
@@ -93,6 +94,13 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
 
       {/* ── Header ── */}
       <div>
+      <DemoFlowBanner
+        title="Synthetic Demo — Company Onboarding"
+        description="Questo flusso usa dati demo. Per onboarding live usa Crea Azienda."
+        canonicalHref="/admin/companies/new"
+        canonicalLabel="Crea Azienda (live)"
+      />
+
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           KORA Admin — Onboarding Operativo
         </p>

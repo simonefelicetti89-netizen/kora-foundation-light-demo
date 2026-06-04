@@ -4,6 +4,7 @@
 // I dettagli operativi (match review, approvazione) avvengono su KORA Admin.
 
 import { useState, useMemo } from 'react';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import Link from 'next/link';
 import { OperatorToolBoundary } from '@/components/demo/OperatorToolBoundary';
 import {
@@ -129,6 +130,14 @@ export default function AIIngestionAssistant() {
 
   return (
     <div className="space-y-6">
+
+      {/* B61-B: Demo flow banner */}
+      <DemoFlowBanner
+        title="Synthetic Demo Flow — Ingestion Pipeline"
+        description="Questa visualizzazione usa dati sintetici Meridiana. L'ingestion reale avviene nell'admin tramite Data Intake e UEF Review."
+        canonicalHref="/admin/data-intake"
+        canonicalLabel="Data Intake (live)"
+      />
 
       {/* ── Operator boundary banner ─────────────────────────────────────── */}
       <OperatorToolBoundary />

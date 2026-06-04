@@ -4,6 +4,7 @@
 //        dei file di dati welfare/HR inviati dall'azienda.
 
 import Link from 'next/link';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { tenantService } from '@/services/tenant/TenantService';
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 
@@ -13,6 +14,14 @@ export default function AdminDataIntakeLanding() {
 
   return (
     <div className="space-y-6 max-w-3xl">
+
+      <DemoFlowBanner
+        title="Synthetic Demo Flow — Data Intake"
+        description="Questo flusso mostra dati sintetici. Per l'intake reale usa Data Intake nello Scoring Pipeline."
+        canonicalHref="/admin/data-intake"
+        canonicalLabel="Data Intake (live)"
+      />
+
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">

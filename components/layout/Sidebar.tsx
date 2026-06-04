@@ -55,22 +55,27 @@ interface NavGroup {
 
 function buildNavGroups(role: string): NavGroup[] {
 
-  // ── KORA Admin: Control Tower ───────────────────────────────────────────────
+  // ── KORA Admin: Control Tower — B61-B restructured ─────────────────────────
+  // Group 1: Onboarding Pilot — canonical live onboarding entry points.
+  // Group 2: Scoring Pipeline — intake → UEF → scoring → lifecycle.
+  // Group 3: Delivery & Preview — workspace, preview, submissions.
+  // Group 4: Demo Lab — all synthetic/demo flows clearly separated.
+  // Group 5: Visione — roadmap only.
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
     return [
       {
-        heading: 'Controllo Operativo',
+        heading: 'Onboarding Pilot',
         groupBadge: 'LIVE',
         badgeKey: 'LIVE',
         items: [
-          { href: '/admin',                      label: 'Control Tower' },
-          { href: '/admin/companies',            label: 'Company Console' },
-          { href: '/admin/company-submissions',  label: 'Submission Queue' },
-          { href: '/admin/tenants',              label: 'Onboarding' },
+          { href: '/admin/companies/new', label: 'Crea Azienda' },   // primary: creates tenant + user in one step
+          { href: '/admin/companies',     label: 'Company Console' },
+          { href: '/admin/company-users', label: 'Utenti Aziendali' },
+          { href: '/admin/tenants',       label: 'Tenant Registry' }, // secondary: create tenant only (no user)
         ],
       },
       {
-        heading: 'Intake & Pipeline',
+        heading: 'Scoring Pipeline',
         groupBadge: 'PIPELINE',
         badgeKey: 'PIPELINE',
         items: [
@@ -81,33 +86,28 @@ function buildNavGroups(role: string): NavGroup[] {
         ],
       },
       {
-        heading: 'Workspace Aziende',
+        heading: 'Delivery & Preview',
         groupBadge: 'ADMIN',
         badgeKey: 'ADMIN',
         items: [
           { href: '/admin/company-workspace',    label: 'Workspace Admin' },
-          { href: '/admin/company-users',        label: 'Utenti Aziendali' },
           { href: '/admin/company-live-preview', label: 'Live Preview' },
-        ],
-      },
-      {
-        heading: 'Network & GTM',
-        groupBadge: 'STRATEGIA',
-        badgeKey: 'STRATEGIA',
-        items: [
-          { href: '/admin/network',    label: 'Rete Advisor & Partner' },
-          { href: '/admin/gtm',        label: 'GTM & Validazione' },
-          { href: '/admin/operator',   label: 'Operator Console' },
-          { href: '/admin/benchmarks', label: 'Benchmark' },
+          { href: '/admin/company-submissions',  label: 'Submission Queue' },
+          { href: '/admin/network',              label: 'Rete Advisor & Partner' },
         ],
       },
       {
         heading: 'Demo Lab',
         groupBadge: 'SYNTHETIC',
         badgeKey: 'SYNTHETIC',
+        // Everything in this group is synthetic/demo — clearly separated from live flows.
         items: [
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
-          { href: '/company',             label: 'Demo Meridiana' },
+          { href: '/company',             label: 'Meridiana Demo' },
+          { href: '/admin/operator',      label: 'Demo Scoring (Synthetic)' },  // operator-flow uses OP-001 synthetic batch
+          { href: '/admin/ai-onboarding', label: 'AI Ingestion Preview' },
+          { href: '/admin/gtm',           label: 'GTM Preview' },
+          { href: '/admin/benchmarks',    label: 'Benchmark Preview' },
           { href: '/demo-guide',          label: 'Demo Guide' },
         ],
       },
@@ -144,7 +144,7 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Evidence & Report',
         items: [
-          { href: '/company/data',    label: 'Data Intake' },
+          { href: '/company/data',    label: 'Stato Dati' },   // informational — intake managed by KORA Admin
           { href: '/company/reports', label: 'Decision Pack' },
         ],
       },

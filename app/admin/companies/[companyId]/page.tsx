@@ -4,6 +4,7 @@
 //        decisioni e stato operativo di un'azienda specifica.
 
 import { useState } from 'react';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import Link from 'next/link';
 import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
@@ -89,6 +90,13 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
 
       {/* ── SECTION A: Header ────────────────────────────────────────────────── */}
       <div>
+      <DemoFlowBanner
+        title="Synthetic Demo — Company Detail"
+        description="Questa vista usa servizi demo sintetici. Non riflette dati live di nessun tenant reale."
+        canonicalHref="/admin/companies"
+        canonicalLabel="Company Console (live)"
+      />
+
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           KORA Admin — Company Control Room
         </p>

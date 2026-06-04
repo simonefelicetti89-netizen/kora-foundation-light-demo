@@ -631,6 +631,56 @@ export default function UploadPage() {
     <div className="min-h-screen bg-[rgba(6,3,43,0.03)]">
       <div className="max-w-5xl mx-auto px-6 py-8 space-y-8">
 
+        {/* ── B61-B: LOCAL PREVIEW banner — always visible, never suppressible ── */}
+        <div
+          role="alert"
+          style={{
+            background:   'rgba(43,92,230,0.07)',
+            border:       '1px solid rgba(43,92,230,0.28)',
+            borderRadius: 10,
+            padding:      '14px 18px',
+            display:      'flex',
+            alignItems:   'flex-start',
+            gap:          12,
+          }}
+        >
+          <span style={{
+            flexShrink:   0,
+            marginTop:    2,
+            borderRadius: 4,
+            background:   'rgba(43,92,230,0.15)',
+            border:       '1px solid rgba(43,92,230,0.30)',
+            padding:      '2px 6px',
+            fontSize:     9,
+            fontWeight:   700,
+            letterSpacing:'0.12em',
+            textTransform:'uppercase',
+            color:        '#1E4A8A',
+            fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+            whiteSpace:   'nowrap',
+          }}>
+            LOCAL ONLY
+          </span>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1E4A8A', marginBottom: 4, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+              KORA Preview Locale™
+            </p>
+            <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.62)', lineHeight: 1.6, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+              Questa elaborazione viene eseguita nel browser e <strong>non salva alcun dato</strong>.{' '}
+              Nessun file viene inviato a KORA.{' '}
+              Nessun onboarding viene avviato.{' '}
+              Nessun UEF™ viene creato.{' '}
+              Nessun KORA Index™ viene registrato.
+            </p>
+            <p style={{ fontSize: 11.5, color: '#1E4A8A', marginTop: 6, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+              Per avviare un onboarding reale contatta il tuo KORA Admin o vai a{' '}
+              <a href="/admin/data-intake" style={{ fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 2 }}>
+                /admin/data-intake →
+              </a>
+            </p>
+          </div>
+        </div>
+
         {/* ── Operator boundary banner ───────────────────────────────────────── */}
         <OperatorToolBoundary />
 
@@ -654,10 +704,10 @@ export default function UploadPage() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-[#06032B] tracking-tight">
-                KORA Operator Data Intake Studio
+                KORA Preview Locale™
               </h1>
               <p className="mt-1 text-[rgba(6,3,43,0.52)] text-sm leading-relaxed max-w-xl">
-                Carica i file ricevuti dall&apos;azienda, verifica qualità e privacy, lancia la preview metodologica e prepara il Decision Pack.
+                Anteprima locale del KORA Index su un file caricato nel browser. Nessun dato viene salvato. Per l&apos;onboarding reale usa il flusso admin.
               </p>
             </div>
             <div className="flex flex-wrap gap-2 shrink-0">

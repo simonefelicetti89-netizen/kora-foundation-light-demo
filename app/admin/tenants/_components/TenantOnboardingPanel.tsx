@@ -2,10 +2,12 @@
 
 // app/admin/tenants/_components/TenantOnboardingPanel.tsx
 // B9 — Tenant Onboarding Panel.
+// B61-B: Added PilotOnboardingChecklist and "Crea Azienda" notice.
 // Create new company/tenant + workforce baseline for KORA pilot.
 // No worker names. No worker emails. No PIB. No scoring.
 
 import { useEffect, useState } from 'react';
+import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 
 interface TenantSummary {
   id:                  string;
@@ -113,7 +115,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Onboarding Azienda</h1>
-          <p className="text-sm text-white/45 mt-0.5">B9 — Registra nuova azienda per il pilot live</p>
+          <p className="text-sm text-white/45 mt-0.5">Tenant Registry — crea baseline e registra tenant. Per provisioning utente completo usa Crea Azienda.</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
           <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
@@ -123,6 +125,24 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
               <span key={m} className="rounded border border-white/15 bg-[#F8F6F1]/5 px-2 py-0.5 text-[10px] text-white/40 font-medium">{m}</span>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* B61-B: Pilot onboarding checklist — step 1 highlighted */}
+      <PilotOnboardingChecklist currentStep={1} compact />
+
+      {/* B61-B: Notice about Crea Azienda */}
+      <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] px-4 py-3 flex items-start gap-3">
+        <span className="text-[#2F7D55] font-bold text-sm mt-0.5">→</span>
+        <div>
+          <p className="text-xs font-semibold text-[#2F7D55]">Flusso completo consigliato</p>
+          <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">
+            Per creare un&apos;azienda e il primo utente Company Admin in un solo passaggio, usa{' '}
+            <a href="/admin/companies/new" className="font-semibold text-[#2F7D55] underline underline-offset-2">
+              Crea Azienda →
+            </a>
+            . Questo pannello registra solo il tenant (senza provisioning utente automatico).
+          </p>
         </div>
       </div>
 

@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
 import type { OnboardingReadinessCheck } from '@/lib/types';
 
@@ -67,6 +68,13 @@ export default function AdminOnboardingStudio() {
 
   return (
     <div className="space-y-8 max-w-5xl">
+
+      <DemoFlowBanner
+        title="Synthetic Demo Flow — Dati sintetici Meridiana"
+        description="Questo flusso mostra dati demo sintetici. Non modifica alcun tenant live. Per l'onboarding reale usa il flusso Crea Azienda."
+        canonicalHref="/admin/companies/new"
+        canonicalLabel="Crea Azienda (live)"
+      />
 
       {/* ── Header ── */}
       <div>

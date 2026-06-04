@@ -11,6 +11,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 import { MatchReviewPanel, type MatchReviewDecision, type MatchReviewSection } from './MatchReviewPanel';
 
 // ── API response types ─────────────────────────────────────────────────────
@@ -580,6 +581,9 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <span className="rounded border border-[#C8FF47]/40 bg-[#C8FF47]/10 px-2 py-0.5 text-xs font-semibold text-[#d4ff6b]">Synthetic data only</span>
         </div>
       </div>
+
+      {/* B61-B: Pilot checklist — step 3 highlighted */}
+      <PilotOnboardingChecklist currentStep={3} compact />
 
       {/* ── B4.1 / B26. CSV + XLSX DRY-RUN PREVIEW ── */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4 space-y-3">

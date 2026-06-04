@@ -4,6 +4,7 @@
 // I dettagli operativi sono gestiti lato KORA Admin.
 
 import Link from 'next/link';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { useRole, useScenario } from '@/lib/demo-state';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
@@ -101,6 +102,13 @@ export default function CompanyOnboardingRoom() {
 
   return (
     <div className="space-y-5">
+
+      <DemoFlowBanner
+        title="Synthetic Demo Flow — Stato Onboarding"
+        description="Questa pagina mostra dati sintetici Meridiana. Lo stato onboarding reale è visibile nel Workspace Live."
+        canonicalHref="/company/workspace"
+        canonicalLabel="Workspace Live"
+      />
 
       {/* 1. PageMasthead */}
       <PageMasthead

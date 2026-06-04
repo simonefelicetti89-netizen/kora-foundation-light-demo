@@ -3,6 +3,7 @@
 'use client';
 
 import { useState } from 'react';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
@@ -117,6 +118,13 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
 
       {/* ── Header ── */}
       <div>
+      <DemoFlowBanner
+        title="Synthetic Demo — Company Data Intake"
+        description="Questo flusso usa dati demo. Per intake live usa Data Intake nello Scoring Pipeline."
+        canonicalHref="/admin/data-intake"
+        canonicalLabel="Data Intake (live)"
+      />
+
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
           KORA Admin — Data Intake & Fiscal Perimeter
         </p>

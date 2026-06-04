@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { lifecycleService } from '@/services/lifecycle/LifecycleService';
@@ -336,6 +337,13 @@ export default function EnterpriseOnboardingWizard() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+
+      <DemoFlowBanner
+        title="Demo Setup Wizard — Non salva dati"
+        description="Questo wizard crea una bozza di sessione in memoria. Nessun tenant viene creato in Supabase. Per creare un'azienda live usa Crea Azienda."
+        canonicalHref="/admin/companies/new"
+        canonicalLabel="Crea Azienda (live)"
+      />
 
       {/* ── Header ── */}
       <div>

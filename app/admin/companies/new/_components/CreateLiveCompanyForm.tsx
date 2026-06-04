@@ -6,6 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -283,6 +284,9 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
   // ── Form ──────────────────────────────────────────────────────────────────
   return (
     <div className="max-w-2xl mx-auto py-6 px-3 space-y-5">
+
+      {/* B61-B: Pilot checklist — step 1 highlighted */}
+      <PilotOnboardingChecklist currentStep={1} compact />
 
       {/* Header */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between gap-4 flex-wrap">

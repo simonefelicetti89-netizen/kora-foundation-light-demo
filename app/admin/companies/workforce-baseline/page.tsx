@@ -7,6 +7,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { workforceBaselineService } from '@/services/workforce-baseline/WorkforceBaselineService';
+import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { tenantService } from '@/services/tenant/TenantService';
 import type { WorkforceDimensionType } from '@/lib/types';
 
@@ -92,6 +93,13 @@ export default function AdminWorkforceBaselinePage() {
 
   return (
     <div className="space-y-8 max-w-5xl">
+
+      <DemoFlowBanner
+        title="Synthetic Demo Flow — Workforce Baseline"
+        description="Questo flusso legge dati sintetici da JSON seed. Non scrive nel database live. Per aggiornare la baseline reale usa l'API workforce-baseline."
+        canonicalHref="/admin/tenants"
+        canonicalLabel="Tenant Registry (crea/aggiorna baseline)"
+      />
 
       {/* ── Header ── */}
       <div>
