@@ -2,8 +2,8 @@
 // MarketingNav — shared navigation for KORA marketing pages (/ and /pilot).
 // Accepts configurable links so each page keeps its own anchor/route structure.
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { KoraLogo } from '@/components/brand/KoraLogo';
 import styles from './marketing.module.css';
 
 interface NavLink { label: string; href: string; }
@@ -26,15 +26,8 @@ export function MarketingNav({
   return (
     <nav className={styles.nav}>
       <div className={styles.navInner}>
-        <Link href={brandHref} className={styles.brand} aria-label="KORA">
-          <Image
-            src="/kora/logo-white.png"
-            alt="KORA"
-            width={90}
-            height={28}
-            priority
-            style={{ height: 26, width: 'auto' }}
-          />
+        <Link href={brandHref} className={styles.brand}>
+          <KoraLogo variant="on-dark" className="h-[26px] w-auto" />
         </Link>
         <div className={styles.navLinks}>
           {links.map((l) => (

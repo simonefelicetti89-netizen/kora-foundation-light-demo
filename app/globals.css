@@ -164,9 +164,15 @@ body {
   color: #06032B;
 }
 
-/* ── Serif utility class ────────────────────────────────────────────── */
+/* ── Ex-serif utility — ora Jakarta display (Fase 0 flip completato) ── */
 .font-editorial {
-  font-family: var(--font-instrument-serif), 'Playfair Display', Georgia, serif;
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+/* Titoli ex-serif: Jakarta bold display, non thin 400 */
+.font-kora-serif,
+.font-editorial {
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* ── Trademark superscript utility ──────────────────────────────────── */

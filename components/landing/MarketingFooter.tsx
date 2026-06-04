@@ -1,7 +1,7 @@
 // MarketingFooter — shared footer for KORA marketing pages (/ and /pilot).
 
-import Image from 'next/image';
 import Link from 'next/link';
+import { KoraLogo } from '@/components/brand/KoraLogo';
 import styles from './marketing.module.css';
 
 interface MarketingFooterProps {
@@ -16,13 +16,7 @@ export function MarketingFooter({ meth = DEFAULT_METH }: MarketingFooterProps) {
     <footer className={styles.foot}>
       <div className={styles.footInner}>
         <Link href="/" aria-label="KORA">
-          <Image
-            src="/kora/logo-dark.png"
-            alt="KORA"
-            width={90}
-            height={28}
-            style={{ height: 22, width: 'auto', opacity: 0.55 }}
-          />
+          <KoraLogo variant="on-light" className="h-[24px] w-auto opacity-60" />
         </Link>
         <p className={styles.footMeth}>{meth}</p>
       </div>
