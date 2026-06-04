@@ -114,7 +114,7 @@
      .font-editorial / .font-kora-serif avviene pagina per pagina nelle Fasi 1–5.
      Instrument Serif e Playfair Display restano caricati per retrocompatibilità
      dei componenti non ancora migrati, ma non devono apparire nell'UI. */
-  --font-kora-serif:    var(--font-kora-sans);
+  --font-kora-serif:    var(--font-jakarta), 'Plus Jakarta Sans', system-ui, sans-serif;
   /* Canonical aliases */
   --font-kora-editorial: var(--font-kora-sans);
   --font-sans:  'Plus Jakarta Sans', var(--font-jakarta), system-ui, sans-serif;
