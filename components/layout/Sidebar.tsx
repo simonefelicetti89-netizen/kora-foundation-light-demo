@@ -71,7 +71,7 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/admin/companies/new', label: 'Crea Azienda' },   // primary: creates tenant + user in one step
           { href: '/admin/companies',     label: 'Company Console' },
           { href: '/admin/company-users', label: 'Utenti Aziendali' },
-          { href: '/admin/tenants',       label: 'Tenant Registry' }, // secondary: create tenant only (no user)
+          { href: '/admin/tenants',       label: 'Registro Tenant' }, // registry/management only — creation via /admin/companies/new
         ],
       },
       {

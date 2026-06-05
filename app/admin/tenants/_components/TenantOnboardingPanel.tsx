@@ -1,13 +1,18 @@
 'use client';
 
 // app/admin/tenants/_components/TenantOnboardingPanel.tsx
-// B9 — Tenant Onboarding Panel.
-// B61-B: Added PilotOnboardingChecklist and "Crea Azienda" notice.
-// Create new company/tenant + workforce baseline for KORA pilot.
-// No worker names. No worker emails. No PIB. No scoring.
+// Registro Tenant — KORA_ADMIN only. Registry/management view.
+//
+// This page is read-only registry + baseline management.
+// Tenant creation happens exclusively at /admin/companies/new.
+//
+// Supported actions per tenant:
+//   - View status, data readiness, Decision Pack status
+//   - View reporting period and workforce baseline info
+//   - Update baseline via POST /api/admin/workforce-baseline
+//   - Navigate to Data Intake, UEF Review, Workspace Admin, Live Preview
 
 import { useEffect, useState } from 'react';
-import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 
 interface TenantSummary {
   id:                  string;
@@ -15,25 +20,20 @@ interface TenantSummary {
   companyName:         string;
   onboardingStatus:    string;
   dataReadinessStatus: string;
+  decisionPackStatus:  string;
   isActive:            boolean;
+  methodologyVersionId: string;
   createdAt:           string;
 }
 
-interface CreateResult {
-  ok:                      boolean;
-  tenantId?:               string;
-  tenantCode?:             string;
-  companyName?:            string;
-  reportingPeriod?:        string;
-  workforceBaselineCreated?: boolean;
-  status?:                 string;
-  baselineWarning?:        string;
-  error?:                  string;
+interface BaselineFormState {
+  reportingPeriod: string;
+  totalWorkers:    string;
 }
 
 interface Props { userEmail: string; userRole: string; }
 
-function ts(s: string) {
+function fmtDate(s: string) {
   try { return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }); }
   catch { return s; }
 }
@@ -42,36 +42,27 @@ const STATUS_CLS: Record<string, string> = {
   active:        'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
   intake_ready:  'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
   not_ready:     'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
+  pending:       'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
 };
 
+function statusCls(s: string): string {
+  return STATUS_CLS[s] ?? STATUS_CLS['not_ready'];
+}
+
 export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
-  const [tenants, setTenants]             = useState<TenantSummary[]>([]);
+  const [tenants, setTenants]               = useState<TenantSummary[]>([]);
   const [tenantsLoading, setTenantsLoading] = useState(true);
 
-  const [tenantCode,        setTenantCode]        = useState('');
-  const [companyName,       setCompanyName]        = useState('');
-  const [reportingPeriod,   setReportingPeriod]    = useState('2026-Q1');
-  const [workforcePopulation, setWorkforcePopulation] = useState('');
-  const [notes,             setNotes]              = useState('');
+  // Per-tenant inline baseline update
+  const [expandedBaseline, setExpandedBaseline] = useState<string | null>(null);
+  const [baselineForm, setBaselineForm]          = useState<BaselineFormState>({ reportingPeriod: '2026-Q1', totalWorkers: '' });
+  const [baselineStatus, setBaselineStatus]      = useState<Record<string, 'idle'|'loading'|'ok'|'error'>>({});
+  const [baselineMsg, setBaselineMsg]            = useState<Record<string, string>>({});
 
-  const [createStatus, setCreateStatus] = useState<'idle'|'loading'|'created'|'error'>('idle');
-  const [createResult, setCreateResult] = useState<CreateResult | null>(null);
-
-  // Load tenants on mount
-  useEffect(() => {
-    fetch('/api/admin/tenants', { credentials: 'include' })
-      .then(r => r.json())
-      .then((d: { ok?: boolean; tenants?: TenantSummary[] }) => {
-        if (d.ok) setTenants(d.tenants ?? []);
-      })
-      .catch(() => {})
-      .finally(() => setTenantsLoading(false));
-  }, []);
-
-  function refreshTenants() {
+  function loadTenants() {
     setTenantsLoading(true);
     fetch('/api/admin/tenants', { credentials: 'include' })
-      .then(r => r.json())
+      .then((r) => r.json())
       .then((d: { ok?: boolean; tenants?: TenantSummary[] }) => {
         if (d.ok) setTenants(d.tenants ?? []);
       })
@@ -79,225 +70,246 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
       .finally(() => setTenantsLoading(false));
   }
 
-  async function handleCreate(e: React.FormEvent) {
+  useEffect(() => { loadTenants(); }, []);
+
+  function toggleBaseline(tenantId: string, tenantCode: string) {
+    if (expandedBaseline === tenantId) {
+      setExpandedBaseline(null);
+    } else {
+      setExpandedBaseline(tenantId);
+      setBaselineForm({ reportingPeriod: '2026-Q1', totalWorkers: '' });
+      setBaselineStatus((s) => ({ ...s, [tenantId]: 'idle' }));
+      setBaselineMsg((m) => ({ ...m, [tenantId]: '' }));
+    }
+    void tenantCode; // used in the form label below
+  }
+
+  async function handleUpdateBaseline(e: React.FormEvent, tenantId: string) {
     e.preventDefault();
-    setCreateStatus('loading'); setCreateResult(null);
+    const workers = parseInt(baselineForm.totalWorkers, 10);
+    setBaselineStatus((s) => ({ ...s, [tenantId]: 'loading' }));
+    setBaselineMsg((m) => ({ ...m, [tenantId]: '' }));
     try {
-      const res  = await fetch('/api/admin/tenants', {
+      const res  = await fetch('/api/admin/workforce-baseline', {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantCode:           tenantCode.trim().toUpperCase(),
-          companyName:          companyName.trim(),
-          reportingPeriod:      reportingPeriod.trim(),
-          workforcePopulation:  parseInt(workforcePopulation, 10),
-          notes:                notes.trim() || null,
-        }),
+        body: JSON.stringify({ tenantId, reportingPeriod: baselineForm.reportingPeriod.trim(), totalWorkers: workers }),
       });
-      const data = await res.json() as CreateResult;
-      setCreateResult(data);
-      setCreateStatus(data.ok ? 'created' : 'error');
+      const data = await res.json() as { ok?: boolean; error?: string };
       if (data.ok) {
-        setTenantCode(''); setCompanyName(''); setWorkforcePopulation(''); setNotes('');
-        refreshTenants();
+        setBaselineStatus((s) => ({ ...s, [tenantId]: 'ok' }));
+        setBaselineMsg((m) => ({ ...m, [tenantId]: `Baseline aggiornata — periodo ${baselineForm.reportingPeriod}, ${workers} lavoratori.` }));
+        setExpandedBaseline(null);
+        loadTenants();
+      } else {
+        setBaselineStatus((s) => ({ ...s, [tenantId]: 'error' }));
+        setBaselineMsg((m) => ({ ...m, [tenantId]: data.error ?? 'Errore aggiornamento baseline.' }));
       }
-    } catch (e) {
-      setCreateResult({ ok: false, error: e instanceof Error ? e.message : String(e) });
-      setCreateStatus('error');
+    } catch (err) {
+      setBaselineStatus((s) => ({ ...s, [tenantId]: 'error' }));
+      setBaselineMsg((m) => ({ ...m, [tenantId]: err instanceof Error ? err.message : 'Errore di rete.' }));
     }
   }
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-3 space-y-5">
 
-      {/* Header */}
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
-          <h1 className="text-xl font-bold text-white tracking-tight">Onboarding Azienda</h1>
-          <p className="text-sm text-white/45 mt-0.5">Tenant Registry — crea baseline e registra tenant. Per provisioning utente completo usa Crea Azienda.</p>
+          <h1 className="text-xl font-bold text-white tracking-tight">Registro Tenant</h1>
+          <p className="text-sm text-white/45 mt-0.5">
+            Gestione stato, baseline e navigazione per ogni azienda registrata.
+          </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
-          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-[#FFFFFF]">{userRole}</span>
+          <span className="rounded border border-[#C76F3D]/60 bg-[#C76F3D]/15 px-2 py-0.5 text-xs font-semibold text-white">
+            {userRole}
+          </span>
           <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           <div className="flex flex-wrap gap-1">
-            {['No worker identity', 'No PII', 'N≥10 enforced'].map(m => (
-              <span key={m} className="rounded border border-white/15 bg-[#F8F6F1]/5 px-2 py-0.5 text-[10px] text-white/40 font-medium">{m}</span>
+            {['Registry only', 'No PII', 'N≥10 enforced'].map((m) => (
+              <span key={m} className="rounded border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] text-white/40 font-medium">
+                {m}
+              </span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* B61-B: Pilot onboarding checklist — step 1 highlighted */}
-      <PilotOnboardingChecklist currentStep={1} compact />
-
-      {/* B61-B: Notice about Crea Azienda */}
-      <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] px-4 py-3 flex items-start gap-3">
-        <span className="text-[#2F7D55] font-bold text-sm mt-0.5">→</span>
+      {/* ── Create notice ───────────────────────────────────────────────────── */}
+      <div className="rounded-lg border border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.07)] px-5 py-4 flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold text-[#2F7D55]">Flusso completo consigliato</p>
-          <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">
-            Per creare un&apos;azienda e il primo utente Company Admin in un solo passaggio, usa{' '}
-            <a href="/admin/companies/new" className="font-semibold text-[#2F7D55] underline underline-offset-2">
-              Crea Azienda →
-            </a>
-            . Questo pannello registra solo il tenant (senza provisioning utente automatico).
+          <p className="text-sm font-semibold text-[#2F7D55]">Per creare una nuova azienda live usa Crea Azienda.</p>
+          <p className="text-xs text-[rgba(6,3,43,0.55)] mt-1">
+            Questa pagina è solo per gestire i tenant esistenti. La creazione di tenant e utente Company Admin
+            avviene esclusivamente tramite il flusso dedicato.
           </p>
         </div>
+        <a
+          href="/admin/companies/new"
+          className="shrink-0 rounded-lg bg-[#06032B] text-white px-4 py-2 text-sm font-semibold hover:bg-[#1a1756] transition-colors whitespace-nowrap"
+        >
+          Crea Azienda →
+        </a>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[340px_1fr]">
-
-        {/* ── Left: create form ── */}
-        <div className="space-y-3">
-          <p className="text-xs font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Registra nuova azienda</p>
-          <form onSubmit={handleCreate} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-5 space-y-3.5">
-
-            <div>
-              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
-                Codice azienda *
-              </label>
-              <input
-                required value={tenantCode}
-                onChange={e => setTenantCode(e.target.value.toUpperCase())}
-                placeholder="ACME-001"
-                pattern="[A-Z0-9-]{2,32}"
-                title="Uppercase letters, digits, dashes. 2–32 chars."
-                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
-              />
-              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Uppercase A–Z, 0–9, dash. Must be unique.</p>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
-                Company Name *
-              </label>
-              <input
-                required value={companyName}
-                onChange={e => setCompanyName(e.target.value)}
-                placeholder="Acme S.p.A."
-                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
-                Reporting Period *
-              </label>
-              <input
-                required value={reportingPeriod}
-                onChange={e => setReportingPeriod(e.target.value)}
-                placeholder="2026-Q1"
-                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
-                Workforce Population * (≥10)
-              </label>
-              <input
-                required type="number" min={10} value={workforcePopulation}
-                onChange={e => setWorkforcePopulation(e.target.value)}
-                placeholder="50"
-                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm tabular-nums text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
-              />
-              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Aggregate only — no worker names. N≥10 enforced.</p>
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide mb-1">
-                Notes (optional)
-              </label>
-              <input
-                value={notes} onChange={e => setNotes(e.target.value)}
-                placeholder="Pilot Foundation Light — Q1 2026"
-                className="w-full rounded border border-[rgba(6,3,43,0.14)] px-3 py-2 text-sm text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
-              />
-            </div>
-
-            <button type="submit" disabled={createStatus === 'loading'}
-              className="w-full rounded-lg bg-[#06032B] text-white px-4 py-2 text-sm font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors">
-              {createStatus === 'loading' ? '⏳ Creazione…' : '+ Crea azienda'}
-            </button>
-
-            {/* Success */}
-            {createStatus === 'created' && createResult?.ok && (
-              <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 px-4 py-3 space-y-1.5">
-                <p className="text-xs font-bold text-green-700">✓ Azienda creata</p>
-                <div className="text-[10px] text-green-600 space-y-0.5">
-                  <p>Code: <strong className="font-mono">{createResult.tenantCode}</strong></p>
-                  <p>Company: {createResult.companyName}</p>
-                  <p>Period: {createResult.reportingPeriod}</p>
-                  <p>Baseline: {createResult.workforceBaselineCreated ? '✓ Created' : '⚠ Failed'}</p>
-                  <p>Status: <strong>{createResult.status}</strong></p>
-                </div>
-                {createResult.baselineWarning && (
-                  <p className="text-[10px] text-[#8A5A00]">⚠ {createResult.baselineWarning}</p>
-                )}
-                {/* B9.2: dynamic CTA with query params for seamless next-step navigation */}
-                <div className="pt-2 border-t border-green-100">
-                  <a
-                    href={`/admin/data-intake?tenantCode=${encodeURIComponent(createResult.tenantCode ?? '')}&reportingPeriod=${encodeURIComponent(createResult.reportingPeriod ?? '')}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
-                  >
-                    Go to Data Intake →
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* Error */}
-            {createStatus === 'error' && createResult && (
-              <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-2 text-xs text-[#9E3B2F]">
-                ⚠ {createResult.error}
-              </div>
-            )}
-          </form>
+      {/* ── Tenant list ─────────────────────────────────────────────────────── */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">
+            Aziende registrate {!tenantsLoading && `(${tenants.length})`}
+          </p>
+          <button
+            onClick={loadTenants}
+            className="text-[10px] text-[rgba(6,3,43,0.40)] underline hover:text-[rgba(6,3,43,0.78)] transition-colors"
+          >
+            ↻ Aggiorna
+          </button>
         </div>
 
-        {/* ── Right: tenant list ── */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Aziende attive</p>
-            <button onClick={refreshTenants}
-              className="text-[10px] text-[rgba(6,3,43,0.40)] underline hover:text-[rgba(6,3,43,0.78)] transition-colors">
-              ↻ Refresh
-            </button>
+        {tenantsLoading && (
+          <p className="text-xs text-[rgba(6,3,43,0.40)]">Caricamento aziende…</p>
+        )}
+
+        {!tenantsLoading && tenants.length === 0 && (
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-4 text-sm text-[rgba(6,3,43,0.40)] text-center">
+            Nessuna azienda registrata.{' '}
+            <a href="/admin/companies/new" className="underline text-[#2F7D55] font-medium">Crea la prima →</a>
           </div>
+        )}
 
-          {tenantsLoading && <p className="text-xs text-[rgba(6,3,43,0.40)]">Caricamento aziende…</p>}
+        {tenants.map((t) => {
+          const bStatus = baselineStatus[t.id] ?? 'idle';
+          const bMsg    = baselineMsg[t.id] ?? '';
+          const isBaselineOpen = expandedBaseline === t.id;
 
-          {!tenantsLoading && tenants.length === 0 && (
-            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)]">
-              Nessuna azienda ancora. Creane una.
-            </div>
-          )}
+          return (
+            <div key={t.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
 
-          {tenants.map(t => (
-            <div key={t.id} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 space-y-2">
-              <div className="flex items-start justify-between gap-2 flex-wrap">
-                <div>
-                  <p className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{t.companyName}</p>
-                  <p className="text-xs font-mono text-[rgba(6,3,43,0.52)]">{t.tenantCode}</p>
+              {/* Card body */}
+              <div className="px-4 py-4 space-y-3">
+
+                {/* Row 1: name + status badges */}
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div>
+                    <p className="text-sm font-bold text-[rgba(6,3,43,0.90)]">{t.companyName}</p>
+                    <p className="text-xs font-mono text-[rgba(6,3,43,0.52)]">{t.tenantCode}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 items-center">
+                    <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${statusCls(t.dataReadinessStatus)}`}>
+                      {t.dataReadinessStatus}
+                    </span>
+                    <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${statusCls(t.onboardingStatus)}`}>
+                      {t.onboardingStatus}
+                    </span>
+                    {t.decisionPackStatus && t.decisionPackStatus !== 'none' && (
+                      <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${statusCls(t.decisionPackStatus)}`}>
+                        DP: {t.decisionPackStatus}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${STATUS_CLS[t.dataReadinessStatus] ?? STATUS_CLS['not_ready']}`}>
-                  {t.dataReadinessStatus}
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-3 text-[10px] text-[rgba(6,3,43,0.52)]">
-                <span>Onboarding: <strong>{t.onboardingStatus}</strong></span>
-                <span>DP: <strong>{/* t.decisionPackStatus */t.isActive ? 'active' : 'inactive'}</strong></span>
-                <span>Created: {ts(t.createdAt)}</span>
-              </div>
-              <div className="flex gap-2 pt-1 border-t border-[rgba(6,3,43,0.05)]">
-                <a href={`/admin/data-intake?tenantCode=${encodeURIComponent(t.tenantCode)}`} className="text-[10px] text-[#C76F3D] underline">Data Intake</a>
-                <a href="/admin/uef-review" className="text-[10px] text-[#C76F3D] underline">UEF Review</a>
-              </div>
-            </div>
-          ))}
-        </div>
 
+                {/* Row 2: metadata */}
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-[rgba(6,3,43,0.52)]">
+                  <span>Creata: <strong>{fmtDate(t.createdAt)}</strong></span>
+                  {t.methodologyVersionId && (
+                    <span>Metodologia: <strong className="font-mono">{t.methodologyVersionId}</strong></span>
+                  )}
+                  <span>Stato: <strong>{t.isActive ? 'attivo' : 'inattivo'}</strong></span>
+                </div>
+
+                {/* Row 3: baseline update feedback */}
+                {bStatus === 'ok' && bMsg && (
+                  <p className="text-[10px] text-[#2F7D55] font-medium">✓ {bMsg}</p>
+                )}
+                {bStatus === 'error' && bMsg && (
+                  <p className="text-[10px] text-[#9E3B2F]">⚠ {bMsg}</p>
+                )}
+
+                {/* Row 4: action links */}
+                <div className="flex flex-wrap gap-x-3 gap-y-1 pt-2 border-t border-[rgba(6,3,43,0.05)]">
+                  <a
+                    href={`/admin/data-intake?tenantCode=${encodeURIComponent(t.tenantCode)}`}
+                    className="text-[11px] text-[#C76F3D] underline hover:no-underline"
+                  >
+                    Data Intake
+                  </a>
+                  <a
+                    href="/admin/uef-review"
+                    className="text-[11px] text-[#C76F3D] underline hover:no-underline"
+                  >
+                    UEF Review
+                  </a>
+                  <a
+                    href={`/admin/company-workspace?tenantCode=${encodeURIComponent(t.tenantCode)}`}
+                    className="text-[11px] text-[rgba(6,3,43,0.55)] underline hover:no-underline"
+                  >
+                    Workspace Admin
+                  </a>
+                  <a
+                    href={`/admin/company-live-preview?tenantCode=${encodeURIComponent(t.tenantCode)}`}
+                    className="text-[11px] text-[rgba(6,3,43,0.55)] underline hover:no-underline"
+                  >
+                    Live Preview
+                  </a>
+                  <button
+                    onClick={() => toggleBaseline(t.id, t.tenantCode)}
+                    className="text-[11px] text-[rgba(43,92,230,0.80)] underline hover:no-underline"
+                  >
+                    {isBaselineOpen ? 'Chiudi baseline' : 'Aggiorna Baseline'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Inline baseline update form */}
+              {isBaselineOpen && (
+                <form
+                  onSubmit={(e) => handleUpdateBaseline(e, t.id)}
+                  className="px-4 py-3 border-t border-[rgba(6,3,43,0.08)] bg-[rgba(43,92,230,0.03)] space-y-3"
+                >
+                  <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">
+                    Aggiorna baseline — {t.tenantCode}
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] mb-1">Periodo *</label>
+                      <input
+                        required
+                        value={baselineForm.reportingPeriod}
+                        onChange={(e) => setBaselineForm((f) => ({ ...f, reportingPeriod: e.target.value }))}
+                        placeholder="2026-Q1"
+                        className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-semibold text-[rgba(6,3,43,0.52)] mb-1">Lavoratori (≥10) *</label>
+                      <input
+                        required type="number" min={10}
+                        value={baselineForm.totalWorkers}
+                        onChange={(e) => setBaselineForm((f) => ({ ...f, totalWorkers: e.target.value }))}
+                        placeholder="50"
+                        className="w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1.5 text-xs tabular-nums text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-slate-400"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="submit"
+                      disabled={bStatus === 'loading'}
+                      className="rounded bg-[#06032B] text-white px-3 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors"
+                    >
+                      {bStatus === 'loading' ? 'Salvataggio…' : 'Salva Baseline'}
+                    </button>
+                    <p className="text-[9px] text-[rgba(6,3,43,0.35)]">N≥10 enforced · aggregate only · no worker names</p>
+                  </div>
+                </form>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
