@@ -81,6 +81,7 @@ function buildNavGroups(role: string): NavGroup[] {
         items: [
           { href: '/admin/data-intake',              label: 'Data Intake' },
           { href: '/admin/uef-review',               label: 'UEF™ Review & Scoring' },
+          { href: '/admin/impact-units',             label: 'Impact Units™' },
           { href: '/admin/data-lifecycle',           label: 'Data Lifecycle' },
           { href: '/admin/company-evidence-archive', label: 'Evidence Archive' },
         ],
