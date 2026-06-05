@@ -13,6 +13,7 @@ import { financialGovernanceService } from '@/services/financial-governance/Fina
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { btiIntelligenceService } from '@/services/bti-intelligence/BTIIntelligenceService';
 import type { PillarInvestmentStatus } from '@/services/bti-intelligence/BTIIntelligenceService';
+import { careEconomyIntelligenceService } from '@/services/care-economy/CareEconomyIntelligenceService';
 import { LIFE_SUBCATEGORY_META } from '@/services/life-diversity/LifeDiversityService';
 import type { ConcentrationStatus, LifePrivacyWarningLevel } from '@/services/life-diversity/LifeDiversityService';
 import { PILLAR_LABELS, BTI_DOCTRINE } from '@/lib/constants/kora';
@@ -251,6 +252,11 @@ export default function FinancialGovernance() {
 
   // B66: intelligence layer — rule-based, no LLM, aggregate-only
   const btiIntelligence = btiRecord ? btiIntelligenceService.compute(btiRecord, activeRole) : null;
+
+  // B69-B: Care Economy Intelligence™ — reads LifeDiversitySummary from BTI intelligence layer
+  const careEconomy = btiIntelligence?.lifeDiversityProfile
+    ? careEconomyIntelligenceService.compute(btiIntelligence.lifeDiversityProfile, activeRole)
+    : null;
 
   // B59: Live session early returns
   if ((sessionLoading || liveLoading) && isLive) {
@@ -1074,6 +1080,114 @@ export default function FinancialGovernance() {
 
             <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
               LIFE Diversity Intelligence™ · pre_empirical_calibration · non modifica KORA Index™ · not_kora_index_component · synthetic_demo_data: true
+            </p>
+          </div>
+        );
+      })()}
+
+      {/* ── 7b. Care Economy Intelligence™ ───────────────────────────────────── */}
+      {careEconomy && (() => {
+        const statusToken: Record<string, { bg: string; text: string; label: string }> = {
+          absent:     { bg: TOKENS.safeguard.cap.bg,    text: TOKENS.safeguard.cap.text,    label: 'Assente'     },
+          limited:    { bg: TOKENS.safeguard.watch.bg,  text: TOKENS.safeguard.watch.text,  label: 'Limitata'    },
+          developing: { bg: 'rgba(6,3,43,0.06)',        text: TOKENS.inkSecondary,           label: 'In sviluppo' },
+          broad:      { bg: TOKENS.safeguard.pass.bg,   text: TOKENS.safeguard.pass.text,   label: 'Completa'    },
+        };
+        const tok = statusToken[careEconomy.careEconomyStatus];
+        return (
+          <div
+            style={{
+              background:   TOKENS.surface,
+              border:       TOKENS.cardBorder,
+              borderRadius: TOKENS.cardRadius,
+              overflow:     'hidden',
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
+                Care Economy Intelligence™
+              </p>
+              <span style={{ fontSize: '10px', fontWeight: 600, background: tok.bg, color: tok.text, borderRadius: 4, padding: '2px 8px' }}>
+                {tok.label}
+              </span>
+              <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
+                {Math.round(careEconomy.careCoverageScore * 100)}% copertura
+              </span>
+            </div>
+
+            <div style={{ padding: '1rem 1.25rem' }}>
+              {/* Coverage bar */}
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink }}>Copertura aree Care Economy</p>
+                  <p style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>
+                    {careEconomy.activeCareSubcategories.length} / 3 aree attive
+                  </p>
+                </div>
+                <div style={{ height: 6, background: 'rgba(6,3,43,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${careEconomy.careCoverageScore * 100}%`, background: TOKENS.accent, borderRadius: 3, transition: 'width 0.4s ease' }} />
+                </div>
+              </div>
+
+              {/* Subcategory grid */}
+              {(['childcare', 'eldercare_caregiving', 'family_parental_support'] as const).map((sub) => {
+                const isActive = careEconomy.activeCareSubcategories.includes(sub);
+                const labels: Record<string, string> = {
+                  childcare: 'Childcare & Nido',
+                  eldercare_caregiving: 'Eldercare & Caregiving',
+                  family_parental_support: 'Supporto Familiare & Genitorialità',
+                };
+                return (
+                  <div
+                    key={sub}
+                    style={{
+                      display:       'flex',
+                      alignItems:    'center',
+                      gap:           8,
+                      padding:       '7px 10px',
+                      background:    isActive ? 'rgba(6,3,43,0.03)' : 'transparent',
+                      borderRadius:  6,
+                      marginBottom:  4,
+                      border:        isActive ? `1px solid rgba(6,3,43,0.08)` : '1px solid transparent',
+                    }}
+                  >
+                    <span style={{ fontSize: '13px' }}>{isActive ? '✓' : '○'}</span>
+                    <p style={{ fontSize: '12px', color: isActive ? TOKENS.ink : TOKENS.inkHint, fontWeight: isActive ? 500 : 400, flex: 1 }}>
+                      {labels[sub]}
+                    </p>
+                    <span style={{ fontSize: '10px', color: isActive ? TOKENS.safeguard.pass.text : TOKENS.inkHint }}>
+                      {isActive ? 'presente' : 'non presente'}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {/* Narrative */}
+              <p style={{ marginTop: '1rem', fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65 }}>
+                {careEconomy.narrative}
+              </p>
+
+              {/* Recommendations */}
+              {careEconomy.recommendations.length > 0 && (
+                <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
+                  {careEconomy.recommendations.map((rec) => (
+                    <div
+                      key={rec.id}
+                      style={{ display: 'flex', gap: 8, padding: '8px 10px', background: 'rgba(6,3,43,0.03)', borderRadius: 6, border: `1px solid rgba(6,3,43,0.07)` }}
+                    >
+                      <span style={{ fontSize: '10px', fontWeight: 600, background: rec.priority === 'alta' ? TOKENS.safeguard.cap.bg : TOKENS.safeguard.watch.bg, color: rec.priority === 'alta' ? TOKENS.safeguard.cap.text : TOKENS.safeguard.watch.text, borderRadius: 4, padding: '1px 6px', whiteSpace: 'nowrap' as const, alignSelf: 'flex-start', marginTop: 1 }}>
+                        {rec.priority === 'alta' ? 'Priorità alta' : 'Priorità media'}
+                      </span>
+                      <p style={{ fontSize: '11px', color: TOKENS.ink, lineHeight: 1.55 }}>{rec.text}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+              Care Economy Intelligence™ · pre_empirical_calibration · non modifica KORA Index™ · not_kora_index_component · {careEconomy.privacyNote}
             </p>
           </div>
         );

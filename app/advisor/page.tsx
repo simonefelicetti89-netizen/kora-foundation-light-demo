@@ -8,6 +8,7 @@ import { PageMasthead } from '@/components/ui/PageMasthead';
 import { TM } from '@/components/ui/TM';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { DecisionContext } from '@/components/ui/DecisionContext';
+import { evidenceReliabilityIntelligenceService } from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';
 
 // AD-01: Advisor Professional Workspace — Foundation Light Preview
 // Synthetic demo data only. No real review workflow. No certification.
@@ -303,6 +304,13 @@ const COURSE_STATUS_BADGE: Record<CourseStatus, { style: string; label: string }
 };
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+// Synthetic evidence reliability snapshot for advisor demo view
+const ADVISOR_EVIDENCE_RELIABILITY = evidenceReliabilityIntelligenceService.computeFromData(
+  { total_records: 40, computed_records: 28, blocked_records: 5, limited_records: 7, review_required_records: 3, total_impact_units: 420, impact_units_by_pillar: { LIFE: 180, GROWTH: 115, CONNECTION: 55, IMPACT: 50, LEGACY: 20 }, records_without_iu: 12, average_cq: 0.78, average_ev: 0.62, average_cf: 0.85, average_agf: 0.92, methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration' },
+  { total_records: 40, pending_count: 4, approved_for_scoring_count: 24, approved_for_bti_governance_count: 7, blocked_count: 5, needs_more_data_count: 2, rejected_count: 0, override_count: 1, kora_ready_for_iu_count: 24, kora_ready_for_bti_count: 7, review_completion_rate: 0.68, methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration' },
+  { id: 'cs-s1', company_id: 'meridiana-group', scenario_id: 'S1', confidence_score: 0.58, confidence_level: 'medium', data_completeness: 0.72, evidence_quality: 0.61, mapping_confidence: 0.80, verification_weight: 0.55, source_coverage: {}, gaps_identified: ['Dati LMS non caricati', 'Partecipazione volunteering non verificata'], limitations: 'Dati sintetici demo', methodology_version_id: 'v0.1', calibration_status: 'pre_empirical_calibration' },
+);
 
 export default function AdvisorDashboard() {
   const creditsPercent = Math.round((ADVISOR_PROFILE.academy_credits / ADVISOR_PROFILE.required_credits) * 100);
@@ -723,6 +731,91 @@ export default function AdvisorDashboard() {
         </div>
         <p className="mt-1.5 text-[11px] text-[rgba(6,3,43,0.40)]">
           synthetic_demo_data: true · Audit trail solo nel perimetro assegnato.
+        </p>
+      </div>
+
+      {/* ── 9b. Evidence Reliability Intelligence™ — advisor view ── */}
+      <div className="rounded-xl border border-[rgba(6,3,43,0.10)] bg-white p-6 space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-sm font-bold text-[rgba(6,3,43,0.78)] flex-1">Evidence Reliability Intelligence™</h2>
+          <span className={`rounded px-2 py-0.5 text-[9px] font-semibold ${
+            ADVISOR_EVIDENCE_RELIABILITY.evidenceRiskLevel === 'alta'  ? 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]'
+          : ADVISOR_EVIDENCE_RELIABILITY.evidenceRiskLevel === 'media' ? 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.85)]'
+          : 'bg-[rgba(47,125,85,0.10)] text-[rgba(47,125,85,0.90)]'
+          }`}>
+            Rischio evidenza: {ADVISOR_EVIDENCE_RELIABILITY.evidenceRiskLevel}
+          </span>
+          <span className="text-[9px] text-[rgba(6,3,43,0.35)] bg-[rgba(6,3,43,0.05)] rounded px-2 py-0.5">
+            {ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.primaryTier}
+          </span>
+        </div>
+
+        {/* Evidence distribution */}
+        <div className="space-y-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[rgba(6,3,43,0.40)]">Distribuzione livello evidenza</p>
+          <div className="flex h-2 rounded overflow-hidden gap-0.5">
+            {ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.strongShare > 0 && (
+              <div style={{ flex: ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.strongShare }} className="bg-[rgba(47,125,85,0.70)]" title={`Strong: ${Math.round(ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.strongShare * 100)}%`} />
+            )}
+            {ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.acceptableShare > 0 && (
+              <div style={{ flex: ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.acceptableShare }} className="bg-[rgba(138,90,0,0.55)]" title={`Acceptable: ${Math.round(ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.acceptableShare * 100)}%`} />
+            )}
+            {ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.weakShare > 0 && (
+              <div style={{ flex: ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.weakShare }} className="bg-[rgba(158,59,47,0.60)]" title={`Weak: ${Math.round(ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.weakShare * 100)}%`} />
+            )}
+          </div>
+          <div className="flex gap-3">
+            {[
+              { label: `Strong (L3/L4): ${Math.round(ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.strongShare * 100)}%`, color: 'text-[rgba(47,125,85,0.85)]' },
+              { label: `Acceptable (L2): ${Math.round(ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.acceptableShare * 100)}%`, color: 'text-[rgba(138,90,0,0.85)]' },
+              { label: `Weak (L0/L1): ${Math.round(ADVISOR_EVIDENCE_RELIABILITY.evidenceLevelDistribution.weakShare * 100)}%`, color: 'text-[rgba(158,59,47,0.85)]' },
+            ].map(({ label, color }) => (
+              <span key={label} className={`text-[10px] font-medium ${color}`}>{label}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* Advisor narrative */}
+        <div className="rounded-lg border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)] px-4 py-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-[rgba(6,3,43,0.40)] mb-1.5">Analisi Advisor</p>
+          <p className="text-[12px] text-[rgba(6,3,43,0.70)] leading-relaxed">{ADVISOR_EVIDENCE_RELIABILITY.advisorNarrative}</p>
+        </div>
+
+        {/* Upgrade opportunities */}
+        {ADVISOR_EVIDENCE_RELIABILITY.upgradeOpportunities.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[rgba(6,3,43,0.40)]">Opportunità upgrade evidenza</p>
+            {ADVISOR_EVIDENCE_RELIABILITY.upgradeOpportunities.map((opp, i) => (
+              <div key={i} className="rounded border border-[rgba(6,3,43,0.07)] bg-[rgba(6,3,43,0.02)] px-3 py-2.5 flex gap-3 items-start">
+                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold ${
+                  opp.priority === 'alta' ? 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]' : 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.85)]'
+                }`}>
+                  {opp.priority === 'alta' ? 'Alta' : 'Media'}
+                </span>
+                <div>
+                  <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.70)]">{opp.area}</p>
+                  <p className="text-[10px] text-[rgba(6,3,43,0.50)] leading-relaxed mt-0.5">{opp.upgradeAction}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Recommendations */}
+        {ADVISOR_EVIDENCE_RELIABILITY.recommendations.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[rgba(6,3,43,0.40)]">Raccomandazioni</p>
+            {ADVISOR_EVIDENCE_RELIABILITY.recommendations.map((rec, i) => (
+              <div key={i} className="flex gap-2 items-start">
+                <span className="shrink-0 text-[rgba(6,3,43,0.30)] text-[11px] mt-0.5">›</span>
+                <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">{rec}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p className="text-[9px] text-[rgba(6,3,43,0.35)] italic border-t border-[rgba(6,3,43,0.06)] pt-2">
+          Evidence Reliability Intelligence™ · pre_empirical_calibration · non modifica CS, VR né KORA Index™ · not_kora_index_component: true · synthetic_demo_data: true · Solo advisor con perimetro assegnato.
         </p>
       </div>
 

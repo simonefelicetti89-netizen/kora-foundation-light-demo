@@ -1,9 +1,12 @@
-import type { BudgetToHumanImpactRecord } from '@/lib/types';
+import type { BudgetToHumanImpactRecord, CompanyAggregateExtended, ConfidenceRecord, UEFReviewSummary } from '@/lib/types';
 import type { MacroblockScore, ScenarioId, KoraRole } from '@/lib/types';
 import { btiIntelligenceService } from '@/services/bti-intelligence/BTIIntelligenceService';
 import type { PillarInvestmentStatus } from '@/services/bti-intelligence/BTIIntelligenceService';
 import { LIFE_SUBCATEGORY_META } from '@/services/life-diversity/LifeDiversityService';
 import type { ConcentrationStatus } from '@/services/life-diversity/LifeDiversityService';
+import { careEconomyIntelligenceService } from '@/services/care-economy/CareEconomyIntelligenceService';
+import { equityAccessIntelligenceService } from '@/services/equity-access/EquityAccessIntelligenceService';
+import { evidenceReliabilityIntelligenceService } from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';
 
 interface Props {
   s1Record: BudgetToHumanImpactRecord | undefined;
@@ -12,6 +15,11 @@ interface Props {
   s2Macroblocks: MacroblockScore[];
   activeScenario: ScenarioId;
   role?: KoraRole;
+  // B69-B: optional intelligence layer data sources
+  aggregate?: CompanyAggregateExtended | null;
+  eqValue?: number;
+  confidenceRecord?: ConfidenceRecord | null;
+  uefSummary?: UEFReviewSummary | null;
 }
 
 function fmt(n: number, currency = 'EUR') {
@@ -44,11 +52,20 @@ const STATUS_STYLES: Record<PillarInvestmentStatus, { label: string; color: stri
   under_invested:    { label: 'sotto-investito',    color: 'rgba(138,90,0,0.85)'  },
 };
 
-export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macroblocks, activeScenario, role = 'COMPANY_ADMIN' }: Props) {
+export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macroblocks, activeScenario, role = 'COMPANY_ADMIN', aggregate, eqValue = 0, confidenceRecord, uefSummary }: Props) {
   const activeRecord = activeScenario === 'S2' ? s2Record : s1Record;
 
   // B66: intelligence layer — rule-based, no LLM
   const activeIntelligence = activeRecord ? btiIntelligenceService.compute(activeRecord, role) : null;
+
+  // B69-B: additive intelligence layers — not_kora_index_component: true
+  const careEconomy        = activeIntelligence?.lifeDiversityProfile
+    ? careEconomyIntelligenceService.compute(activeIntelligence.lifeDiversityProfile, role)
+    : null;
+  const equityAccess       = aggregate
+    ? equityAccessIntelligenceService.compute(aggregate, eqValue, role)
+    : null;
+  const evidenceReliability = evidenceReliabilityIntelligenceService.compute(null, uefSummary ?? null, confidenceRecord ?? null, role);
 
   if (!s1Record && !s2Record) {
     return (
@@ -304,6 +321,116 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
 
           <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-3 italic">
             Intelligence rule-based da BTIIntelligenceService · nessun LLM · nessun dato individuale · segnale direzionale, non garantito · correlazione ≠ causalità
+          </p>
+        </div>
+      )}
+
+      {/* ── C-ter. Care Economy Intelligence™ ── */}
+      {careEconomy && (
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] flex-1">C-ter — Care Economy Intelligence™</p>
+            <span className={`text-[9px] font-semibold rounded px-2 py-0.5 ${
+              careEconomy.careEconomyStatus === 'absent'     ? 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]'
+            : careEconomy.careEconomyStatus === 'limited'    ? 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.85)]'
+            : careEconomy.careEconomyStatus === 'developing' ? 'bg-[rgba(6,3,43,0.07)] text-[rgba(6,3,43,0.52)]'
+            : 'bg-[rgba(47,125,85,0.10)] text-[rgba(47,125,85,0.90)]'
+            }`}>
+              {careEconomy.careEconomyStatus === 'absent' ? 'Assente' : careEconomy.careEconomyStatus === 'limited' ? 'Limitata' : careEconomy.careEconomyStatus === 'developing' ? 'In sviluppo' : 'Completa'}
+            </span>
+            <span className="text-[9px] text-[rgba(6,3,43,0.40)]">{Math.round(careEconomy.careCoverageScore * 100)}%</span>
+          </div>
+          <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">{careEconomy.narrative}</p>
+          {careEconomy.recommendations.length > 0 && (
+            <div className="space-y-1.5">
+              {careEconomy.recommendations.map((rec) => (
+                <div key={rec.id} className="flex gap-2 items-start text-[10px] px-2 py-1.5 rounded bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.06)]">
+                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold ${rec.priority === 'alta' ? 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]' : 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.85)]'}`}>
+                    {rec.priority}
+                  </span>
+                  <p className="text-[rgba(6,3,43,0.62)] leading-relaxed">{rec.text}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-[9px] text-[rgba(6,3,43,0.35)] italic pt-1 border-t border-[rgba(6,3,43,0.05)]">
+            Indicatore intelligence pre-empirico · non modifica il KORA Index™ · not_kora_index_component: true
+          </p>
+        </div>
+      )}
+
+      {/* ── C-quater. Equity & Access Intelligence™ ── */}
+      {equityAccess && equityAccess.accessRiskLevel !== 'insufficient_data' && (
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] flex-1">C-quater — Equity &amp; Access Intelligence™</p>
+            <span className={`text-[9px] font-semibold rounded px-2 py-0.5 ${
+              equityAccess.accessRiskLevel === 'alta'  ? 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]'
+            : equityAccess.accessRiskLevel === 'media' ? 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.85)]'
+            : 'bg-[rgba(47,125,85,0.10)] text-[rgba(47,125,85,0.90)]'
+            }`}>
+              Rischio equità: {equityAccess.accessRiskLevel}
+            </span>
+            <span className="text-[9px] text-[rgba(6,3,43,0.40)]">EQ = {Math.round(equityAccess.eqValue * 100)}%</span>
+          </div>
+          <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">{equityAccess.narrative}</p>
+          {equityAccess.underActivatedSegments.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-[rgba(6,3,43,0.35)]">Segmenti sotto-attivati</p>
+              {equityAccess.underActivatedSegments.map((seg) => (
+                <div key={seg.segmentId} className="flex items-center gap-2 px-2 py-1.5 rounded bg-[rgba(158,59,47,0.04)] border border-[rgba(158,59,47,0.08)]">
+                  <p className="flex-1 text-[10px] text-[rgba(6,3,43,0.70)]">{seg.segmentLabel}</p>
+                  <span className="text-[10px] font-mono text-[rgba(6,3,43,0.52)]">{Math.round(seg.activationRate * 100)}%</span>
+                  <span className="text-[9px] font-semibold text-[rgba(158,59,47,0.85)]">{Math.round(seg.gapVsAverage * 100)}pp</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {equityAccess.recommendations.length > 0 && (
+            <div className="space-y-1.5">
+              {equityAccess.recommendations.slice(0, 2).map((rec, i) => (
+                <p key={i} className="text-[10px] text-[rgba(6,3,43,0.52)] leading-relaxed pl-2 border-l border-[rgba(6,3,43,0.12)]">{rec}</p>
+              ))}
+            </div>
+          )}
+          <p className="text-[9px] text-[rgba(6,3,43,0.35)] italic pt-1 border-t border-[rgba(6,3,43,0.05)]">
+            Indicatore intelligence pre-empirico · non modifica EQ né KORA Index™ · not_kora_index_component: true
+          </p>
+        </div>
+      )}
+
+      {/* ── C-quinquies. Evidence Reliability Intelligence™ ── */}
+      {evidenceReliability && (
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] flex-1">C-quinquies — Evidence Reliability Intelligence™</p>
+            <span className={`text-[9px] font-semibold rounded px-2 py-0.5 ${
+              evidenceReliability.evidenceRiskLevel === 'alta'  ? 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]'
+            : evidenceReliability.evidenceRiskLevel === 'media' ? 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.85)]'
+            : 'bg-[rgba(47,125,85,0.10)] text-[rgba(47,125,85,0.90)]'
+            }`}>
+              Rischio evidenza: {evidenceReliability.evidenceRiskLevel}
+            </span>
+          </div>
+          <p className="text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">{evidenceReliability.advisorNarrative}</p>
+          {evidenceReliability.upgradeOpportunities.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-[rgba(6,3,43,0.35)]">Opportunità upgrade evidenza</p>
+              {evidenceReliability.upgradeOpportunities.map((opp, i) => (
+                <div key={i} className="flex gap-2 items-start text-[10px] px-2 py-1.5 rounded bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.06)]">
+                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold ${opp.priority === 'alta' ? 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]' : 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.85)]'}`}>
+                    {opp.priority}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-[rgba(6,3,43,0.62)]">{opp.area}</p>
+                    <p className="text-[rgba(6,3,43,0.45)] leading-relaxed mt-0.5">{opp.upgradeAction}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="text-[9px] text-[rgba(6,3,43,0.35)] italic pt-1 border-t border-[rgba(6,3,43,0.05)]">
+            Indicatore intelligence pre-empirico · non modifica CS, VR né KORA Index™ · not_kora_index_component: true · Migliorare l&apos;evidenza può migliorare VR e Data Reliability Index™ — non implica variazione causale del KORA Index™.
           </p>
         </div>
       )}
