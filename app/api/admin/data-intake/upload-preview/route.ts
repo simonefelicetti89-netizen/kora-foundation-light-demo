@@ -38,6 +38,7 @@ import {
 } from '@/lib/data-intake/initiative-matching';
 import { buildRowProvenance, summarizeProvenance } from '@/lib/data-intake/evidence-provenance';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
+import { mappingConfidenceService } from '@/services/mapping-confidence/MappingConfidenceService';
 
 // ── Limits ───────────────────────────────────────────────────────────────────
 
@@ -189,6 +190,7 @@ async function processOneFile(params: {
   let headers: string[];
   let originalRows: Record<string, string>[];
   let parseWarnings: string[];
+  let skippedPreHeaderRows = 0;
 
   if (isCsv) {
     const parsed = parseCsvContent(buf.toString('utf-8'));
@@ -198,6 +200,7 @@ async function processOneFile(params: {
     headers = parsed.headers;
     originalRows = parsed.rows;
     parseWarnings = flattenCsvWarnings(parsed);
+    skippedPreHeaderRows = parsed.skippedPreHeaderRows;
   } else {
     // XLSX: if no sheet selected, need sheet list — caller handles this
     if (!selectedSheetName) {
@@ -220,6 +223,7 @@ async function processOneFile(params: {
     headers = parsed.headers;
     originalRows = parsed.rows;
     parseWarnings = parsed.warnings.map(w => w.message);
+    skippedPreHeaderRows = parsed.skippedPreHeaderRows;
   }
 
   if (originalRows.length > maxRows) {
@@ -278,6 +282,7 @@ async function processOneFile(params: {
       headers,
       rows: mappedRows,
       warnings: parseWarnings,
+      skippedPreHeaderRows,
     },
   };
 }
@@ -301,8 +306,24 @@ function buildPreviewPayload(params: {
   const piiResult = runPiiCheck(headers, originalRows, selectedSheetName);
   if (piiResult.rejected) return { piiResult };
 
-  // Step 2: suggest mapping from original headers
-  const mappingSuggestions = suggestColumnMapping(headers);
+  // Step 2: suggest mapping from original headers + BCM pillar hint via MappingConfidenceService
+  const rawMappingSuggestions = suggestColumnMapping(headers);
+  const mappingSuggestions = rawMappingSuggestions.map(s => {
+    const sampleValues = originalRows.slice(0, 20)
+      .map(row => row[s.sourceHeader] ?? '')
+      .filter(Boolean);
+    const bcm = mappingConfidenceService.classify(s.sourceHeader, sampleValues, 'manual');
+    const showHint = bcm.event_type_code !== 'measurement_field' && bcm.event_type_code !== 'unclassified' && bcm.confidence_score >= 0.55;
+    return {
+      ...s,
+      pillarHint: showHint ? {
+        pillar:        bcm.pillar_code,
+        eventType:     bcm.event_type_code,
+        confidence:    bcm.confidence_score,
+        requiresReview: bcm.requires_human_review,
+      } : undefined,
+    };
+  });
 
   // Step 3: build effective mapping (user mapping or fall back to suggestions)
   const effectiveMapping = columnMapping ?? Object.fromEntries(
@@ -581,6 +602,7 @@ export async function POST(request: NextRequest) {
         headers:    f.headers,
         selectedSheetName: f.selectedSheetName,
         warnings:   f.warnings,
+        skippedPreHeaderRows: f.skippedPreHeaderRows ?? 0,
       })),
       matchSummary: matchResult.matchSummary,
       matches: matchResult.matches.slice(0, 20).map(m => ({
@@ -721,6 +743,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       ok: true, ...preview,
+      skippedPreHeaderRows: parsed.skippedPreHeaderRows,
       dryRunNote: 'File compatible with KORA intake preview. No data has been stored.',
       synthetic_test: false,
       lockedFeatures: [
@@ -825,6 +848,7 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     ok: true, ...xlsxPreview,
+    skippedPreHeaderRows: parsed.skippedPreHeaderRows,
     dryRunNote: `Sheet "${selectedSheetName}" compatible with KORA intake preview. No data has been stored.`,
     synthetic_test: false,
     lockedFeatures: [

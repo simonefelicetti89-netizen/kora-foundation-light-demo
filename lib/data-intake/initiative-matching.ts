@@ -33,6 +33,7 @@ export interface ParsedIntakeFile {
   headers: string[];
   rows: Array<Record<string, string>>;
   warnings: string[];
+  skippedPreHeaderRows?: number;
 }
 
 // B30.1: per-field provenance for fields merged from secondary files

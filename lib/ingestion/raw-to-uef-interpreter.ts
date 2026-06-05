@@ -72,6 +72,7 @@ export interface UefCandidateProposal {
   eventNature:            string | null;
   budgetAmount:           number | null;
   amountParsingStatus:    AmountParsingStatus;
+  rawAmountValue:         string | null;   // original raw string — preserved only when status='invalid'
   participants:           number | null;
   participantsApproximate: boolean;
   evidenceLevel:          EvidenceLevel | null;
@@ -803,6 +804,7 @@ export function interpretUploadedRecord(
     eventNature,
     budgetAmount,
     amountParsingStatus,
+    rawAmountValue: amountParse.status === 'invalid' ? amountParse.raw : null,
     participants,
     participantsApproximate,
     evidenceLevel,

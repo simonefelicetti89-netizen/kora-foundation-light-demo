@@ -87,6 +87,7 @@ interface AcceptResult {
   batchStatus?: string;
   message?: string;
   warnings?: string[];
+  skippedPreHeaderRows?: number;
   forbiddenHeaders?: string[];
   findings?: Array<{ rowIndex: number; fieldPath: string; riskType: string; severity: string }>;
   error?: string;
@@ -131,10 +132,11 @@ interface DryRunResult {
   sheets?: XlsxSheetInfo[];
   selectedSheetName?: string;
   affectedSheet?: string;
+  skippedPreHeaderRows?: number;
   // B28 multi-file
   fileMode?: 'single' | 'multi';
   fileCount?: number;
-  files?: Array<{ fileIndex: number; fileName: string; fileType: string; role: string; rowCount: number; headers: string[]; warnings: string[] }>;
+  files?: Array<{ fileIndex: number; fileName: string; fileType: string; role: string; rowCount: number; headers: string[]; warnings: string[]; skippedPreHeaderRows?: number }>;
   matchSummary?: { matched: number; possibleMatch: number; unmatched: number; needsReview: number; totalFromPrimary: number; totalFromSecondary: number };
   matches?: Array<{ matchId: string; status: string; confidence: number; initiativeName: string; linkedFileCount: number; conflictCount: number }>;
   mergedPreviewRows?: Array<Record<string, string | number>>;
@@ -150,6 +152,7 @@ interface DryRunResult {
     confidence: number;
     reason: string;
     alternatives: string[];
+    pillarHint?: { pillar: string; eventType: string; confidence: number; requiresReview: boolean };
   }>;
   appliedMapping?: Record<string, string>;
   manualCompletionApplied?: string[];
@@ -834,6 +837,11 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 </div>
               </div>
             )}
+            {csvResult.skippedPreHeaderRows != null && csvResult.skippedPreHeaderRows > 0 && (
+              <div className="rounded border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] text-blue-700">
+                ℹ {csvResult.skippedPreHeaderRows} riga{csvResult.skippedPreHeaderRows > 1 ? 'he' : ''} di intestazione pre-header saltata{csvResult.skippedPreHeaderRows > 1 ? '' : ''} automaticamente. Prima riga valida usata come header.
+              </div>
+            )}
             {csvResult.warnings && csvResult.warnings.length > 0 && (
               <div className="space-y-0.5">
                 {csvResult.warnings.map((w, i) => (
@@ -862,7 +870,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <table className="w-full text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-[rgba(6,3,43,0.08)]">
-                    {['Colonna file', 'Campo canonico KORA', 'Confidence'].map(h => (
+                    {['Colonna file', 'Campo canonico KORA', 'Conf.', 'Pillar hint'].map(h => (
                       <th key={h} className="text-left py-1.5 px-2 text-[10px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">{h}</th>
                     ))}
                   </tr>
@@ -871,6 +879,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                   {csvResult.mappingSuggestions.map((s, i) => {
                     const currentVal = userMapping[s.sourceHeader] ?? s.suggestedField ?? 'keep_original';
                     const confColor = s.confidence >= 0.9 ? 'text-green-700' : s.confidence >= 0.7 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.40)]';
+                    const PILLAR_COLORS: Record<string, string> = {
+                      LIFE: 'bg-blue-50 text-blue-700 border-blue-200',
+                      GROWTH: 'bg-green-50 text-green-700 border-green-200',
+                      CONNECTION: 'bg-purple-50 text-purple-700 border-purple-200',
+                      IMPACT: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.28)]',
+                      LEGACY: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.28)]',
+                    };
                     return (
                       <tr key={i} className="border-b border-[rgba(6,3,43,0.05)] hover:bg-[rgba(6,3,43,0.03)]">
                         <td className="py-1.5 px-2 font-mono text-[rgba(6,3,43,0.78)]">{s.sourceHeader}</td>
@@ -892,6 +907,14 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                         </td>
                         <td className={`py-1.5 px-2 text-[10px] font-mono ${confColor}`}>
                           {s.confidence > 0 ? `${Math.round(s.confidence * 100)}%` : '—'}
+                        </td>
+                        <td className="py-1.5 px-2">
+                          {s.pillarHint
+                            ? <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${PILLAR_COLORS[s.pillarHint.pillar] ?? ''}`}>
+                                {s.pillarHint.pillar}{s.pillarHint.requiresReview ? ' ?' : ''}
+                              </span>
+                            : <span className="text-[9px] text-[rgba(6,3,43,0.28)]">—</span>
+                          }
                         </td>
                       </tr>
                     );
@@ -1212,6 +1235,18 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 {(acceptResult.matchReviewSummary.default_skipped ?? 0) > 0 && (
                   <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-[rgba(6,3,43,0.52)]">Skipped (possible): {acceptResult.matchReviewSummary.default_skipped}</span>
                 )}
+              </div>
+            )}
+            {acceptResult.skippedPreHeaderRows != null && acceptResult.skippedPreHeaderRows > 0 && (
+              <div className="rounded border border-blue-200 bg-blue-50 px-3 py-1.5 text-[10px] text-blue-700">
+                ℹ {acceptResult.skippedPreHeaderRows} riga{acceptResult.skippedPreHeaderRows > 1 ? 'he' : ''} pre-header saltata{acceptResult.skippedPreHeaderRows > 1 ? '' : ''} automaticamente durante l&apos;accettazione.
+              </div>
+            )}
+            {acceptResult.warnings && acceptResult.warnings.length > 0 && (
+              <div className="space-y-0.5">
+                {acceptResult.warnings.map((w, i) => (
+                  <p key={i} className="text-[10px] text-[#8A5A00]">⚠ {w}</p>
+                ))}
               </div>
             )}
             <div className="space-y-0.5">

@@ -167,6 +167,10 @@ export async function POST(request: NextRequest) {
         participants:               proposal.participants,
         evidence_level:             proposal.evidenceLevel,
         source_tier:                proposal.sourceTier,
+        // ── B65-B2: parsing transparency ────────────────────────────────
+        amount_parsing_status:      proposal.amountParsingStatus,
+        participants_approximate:   proposal.participantsApproximate,
+        raw_amount_value:           proposal.rawAmountValue ?? null,
         // ── B11: enrichment classification ──────────────────────────────
         initiative_domain:          proposal.initiativeDomain,
         budget_class:               proposal.budgetClass,

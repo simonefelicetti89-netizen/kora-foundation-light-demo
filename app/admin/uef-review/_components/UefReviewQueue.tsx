@@ -54,6 +54,10 @@ interface UefCandidate {
   enrichedBy:              string | null;
   enrichedAt:              string | null;
   b11Enriched:             boolean;
+  // B65-B2: parsing transparency
+  amountParsingStatus:     string;
+  participantsApproximate: boolean;
+  rawAmountValue:          string | null;
 }
 
 // B11 enrichment form state
@@ -521,11 +525,21 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <p className="text-xs font-bold text-green-700">Approvazione Massiva — Alta Confidenza</p>
-                    <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
-                      {eligible.length} record approvabili (confidenza ≥70%, nessun arricchimento mancante).
-                      {skippedEnrichment > 0 && <span className="text-[#C76F3D]"> · {skippedEnrichment} bloccati (arricchimento richiesto)</span>}
-                      {skippedLowConf > 0 && <span className="text-[rgba(6,3,43,0.45)]"> · {skippedLowConf} esclusi (bassa confidenza)</span>}
-                    </p>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      <span className="rounded border border-green-300 bg-green-100 px-2 py-0.5 text-[9px] font-semibold text-green-700">
+                        ✓ {eligible.length} approvabili
+                      </span>
+                      {skippedEnrichment > 0 && (
+                        <span className="rounded border border-[rgba(199,111,61,0.28)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-[9px] font-semibold text-[#C76F3D]">
+                          ⚡ {skippedEnrichment} arricchimento richiesto
+                        </span>
+                      )}
+                      {skippedLowConf > 0 && (
+                        <span className="rounded border border-[rgba(6,3,43,0.14)] bg-[rgba(6,3,43,0.04)] px-2 py-0.5 text-[9px] font-semibold text-[rgba(6,3,43,0.52)]">
+                          — {skippedLowConf} bassa confidenza esclusi
+                        </span>
+                      )}
+                    </div>
                   </div>
                   {eligible.length > 0 && (
                     <button
@@ -575,8 +589,21 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
               {/* Details grid */}
               <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[10px] text-[rgba(6,3,43,0.52)]">
-                {c.budgetAmount      != null && <span>Budget: <strong>€{c.budgetAmount.toLocaleString('it-IT')}</strong></span>}
-                {c.participants      != null && <span>Participants: <strong>{c.participants}</strong></span>}
+                <span>Budget:{' '}
+                  {c.budgetAmount != null
+                    ? <strong>€{c.budgetAmount.toLocaleString('it-IT')}</strong>
+                    : c.amountParsingStatus === 'invalid'
+                      ? <span className="font-semibold text-red-600">⚠ formato non valido</span>
+                      : <span className="font-semibold text-[#8A5A00]">—</span>
+                  }
+                </span>
+                <span>Partecipanti:{' '}
+                  {c.participants != null
+                    ? <strong>{c.participantsApproximate ? `~${c.participants}` : c.participants}</strong>
+                    : <span className="font-semibold text-[rgba(6,3,43,0.36)]">—</span>
+                  }
+                  {c.participantsApproximate && <span className="ml-1 text-[9px] text-[#8A5A00]">(approssimativo)</span>}
+                </span>
                 {c.evidenceLevel     != null && <span>Evidence: <strong>{c.evidenceLevel}</strong></span>}
                 {c.actionFamily      != null && <span>Category: <strong>{c.actionFamily}</strong></span>}
                 {c.initiativeDomain  != null && <span>Domain: <strong>{c.initiativeDomain}</strong></span>}
@@ -670,6 +697,12 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                         className="block w-full rounded border border-[rgba(6,3,43,0.14)] px-2 py-1 text-[11px] text-[rgba(6,3,43,0.78)] focus:outline-none focus:ring-1 focus:ring-[#C76F3D]" />
                     </label>
                   </div>
+                  {c.rawAmountValue && (
+                    <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">
+                      Valore originale non parsato: <code className="font-mono font-semibold">{c.rawAmountValue}</code>
+                      {' — '}correggi manualmente il campo Budget Amount sopra.
+                    </div>
+                  )}
                   <label className="block space-y-0.5 text-[10px]">
                     <span className="text-[rgba(6,3,43,0.52)] font-medium">Note enrichment (max 500 car.)</span>
                     <textarea rows={2} value={enrichForm.notes} maxLength={500}

@@ -130,6 +130,10 @@ export async function GET(request: NextRequest) {
       sourceTier:               pl['source_tier'] ?? null,
       interpreterVersion:       pl['interpreter_version'] ?? null,
       scoringLocked:            pl['scoring_locked'] ?? true,
+      // ── B65-B2: parsing transparency ─────────────────────────────────────────
+      amountParsingStatus:      pl['amount_parsing_status']     ?? 'missing',
+      participantsApproximate:  pl['participants_approximate']  ?? false,
+      rawAmountValue:           pl['raw_amount_value']          ?? null,
       // ── B11: enrichment classification fields ─────────────────────────────────
       initiativeDomain:         pl['initiative_domain']         ?? null,
       budgetClass:              pl['budget_class']              ?? null,

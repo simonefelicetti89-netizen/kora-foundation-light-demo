@@ -215,15 +215,18 @@ async function parseAndValidateOneFile(params: {
   let headers: string[];
   let originalRows: Record<string, string>[];
   let parseWarnings: string[];
+  let fileSkippedPreHeaderRows = 0;
 
   if (isCsv) {
     const parsed = parseCsvContent(buf.toString('utf-8'));
     if (parsed.errors.length > 0) return { ok: false, error: `File ${file.name}: ${parsed.errors[0].message}`, status: 400 };
     headers = parsed.headers; originalRows = parsed.rows; parseWarnings = flattenCsvWarnings(parsed);
+    fileSkippedPreHeaderRows = parsed.skippedPreHeaderRows;
   } else {
     const parsed = parseExcelSheet(buf, selectedSheetName!, maxRows);
     if (parsed.errors.length > 0) return { ok: false, error: `File ${file.name}: ${parsed.errors[0].message}`, status: 400 };
     headers = parsed.headers; originalRows = parsed.rows; parseWarnings = parsed.warnings.map(w => w.message);
+    fileSkippedPreHeaderRows = parsed.skippedPreHeaderRows;
   }
 
   if (originalRows.length > maxRows) return { ok: false, error: `File ${file.name}: too many rows.`, status: 400 };
@@ -252,6 +255,7 @@ async function parseAndValidateOneFile(params: {
       fileType: isXlsx ? 'xlsx' : 'csv',
       selectedSheetName: selectedSheetName ?? undefined,
       role: detectedRole, headers, rows: mappedRows, warnings: parseWarnings,
+      skippedPreHeaderRows: fileSkippedPreHeaderRows,
     },
   };
 }
@@ -381,6 +385,7 @@ export async function POST(request: NextRequest) {
   let headers: string[];
   let rows: Record<string, string>[];
   let parseWarnings: string[];
+  let skippedPreHeaderRows = 0;
 
   if (isXlsx) {
     const parsed = parseExcelSheet(buf, selectedSheetName!, MAX_ROWS);
@@ -393,6 +398,7 @@ export async function POST(request: NextRequest) {
     headers      = parsed.headers;
     rows         = parsed.rows;
     parseWarnings = parsed.warnings.map(w => w.message);
+    skippedPreHeaderRows = parsed.skippedPreHeaderRows;
   } else {
     const content = buf.toString('utf-8');
     const parsed  = parseCsvContent(content);
@@ -404,6 +410,7 @@ export async function POST(request: NextRequest) {
     headers      = parsed.headers;
     rows         = parsed.rows;
     parseWarnings = flattenCsvWarnings(parsed);
+    skippedPreHeaderRows = parsed.skippedPreHeaderRows;
   }
 
   // ── 6. Row count limit ───────────────────────────────────────────────────────
@@ -927,6 +934,7 @@ export async function POST(request: NextRequest) {
     lockedFeatures:   ['scoring_run', 'kora_index_generation', 'decision_pack_generation'],
     auditEventsWritten: auditRows.length,
     warnings:         parseWarnings,
+    skippedPreHeaderRows,
     synthetic_test:   false,
   });
 }
