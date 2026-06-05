@@ -11,6 +11,8 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { tenantService } from '@/services/tenant/TenantService';
 import { financialGovernanceService } from '@/services/financial-governance/FinancialGovernanceService';
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
+import { btiIntelligenceService } from '@/services/bti-intelligence/BTIIntelligenceService';
+import type { PillarInvestmentStatus } from '@/services/bti-intelligence/BTIIntelligenceService';
 import { PILLAR_LABELS, BTI_DOCTRINE } from '@/lib/constants/kora';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { Explainer } from '@/components/ui/Explainer';
@@ -244,6 +246,9 @@ export default function FinancialGovernance() {
   const btiRecord  = btiResult.allowed ? btiResult.record : undefined;
   const spendByPillar = btiRecord?.spend_by_pillar   ?? {};
   const deepByPillar  = btiRecord?.deep_activation_by_pillar ?? {};
+
+  // B66: intelligence layer — rule-based, no LLM, aggregate-only
+  const btiIntelligence = btiRecord ? btiIntelligenceService.compute(btiRecord, activeRole) : null;
 
   // B59: Live session early returns
   if ((sessionLoading || liveLoading) && isLive) {
@@ -618,18 +623,74 @@ export default function FinancialGovernance() {
           note="Non è spesa sbagliata — può diventare più intelligente"
         />
         <FinCard
-          label="Costo per Impact Unit"
+          label="Costo per Impact Unit™"
           value={btiRecord ? `€${btiRecord.cost_per_impact_unit.toFixed(1)}` : '—'}
           sub="per IU verificata · solo budget-mediated"
-          note="Indicatore direzionale — non ROI certificato"
+          note={btiIntelligence
+            ? `Efficienza: ${btiIntelligence.costPerIUConfidence} · ${btiIntelligence.costPerIUConfidence === 'alta' ? 'ottimizzata' : btiIntelligence.costPerIUConfidence === 'media' ? 'margine di miglioramento' : 'priorità di riallocazione'}`
+            : 'Indicatore direzionale — non ROI certificato'}
+          accent={btiIntelligence?.costPerIUConfidence === 'alta'}
         />
         <FinCard
-          label="Activation Debt"
+          label="Activation Debt™"
           value={btiRecord ? eur(btiRecord.activation_debt_eur) : '—'}
           sub="budget non convertito in attivazione"
           note="Stima direzionale — non garantito"
         />
       </div>
+
+      {/* ── B66: Executive Narrative ──────────────────────────────────────── */}
+      {btiIntelligence && (
+        <div
+          style={{
+            background:   TOKENS.surface,
+            border:       `1px solid ${TOKENS.accent}22`,
+            borderRadius: TOKENS.cardRadius,
+            padding:      '1.25rem 1.5rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink }}>
+              Lettura executive — Budget-to-Human-Impact™
+            </p>
+            <span style={{
+              fontSize: '10px', fontWeight: 500, fontFamily: 'var(--font-jakarta)',
+              background: TOKENS.inkBorder, color: TOKENS.inkSecondary,
+              borderRadius: 4, padding: '2px 7px',
+            }}>
+              regola · non AI
+            </span>
+          </div>
+          <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.75, maxWidth: '80ch' }}>
+            {btiIntelligence.executiveNarrative}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, paddingTop: 10, borderTop: TOKENS.cardBorder }}>
+            <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>
+              Pillar Investment Balance:
+            </span>
+            <span style={{
+              fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-jakarta)',
+              background: btiIntelligence.pillarInvestmentBalanceSignal === 'bilanciato'
+                ? TOKENS.safeguard.pass.bg
+                : btiIntelligence.pillarInvestmentBalanceSignal === 'moderato'
+                  ? TOKENS.safeguard.watch.bg
+                  : TOKENS.safeguard.cap.bg,
+              color: btiIntelligence.pillarInvestmentBalanceSignal === 'bilanciato'
+                ? TOKENS.safeguard.pass.text
+                : btiIntelligence.pillarInvestmentBalanceSignal === 'moderato'
+                  ? TOKENS.safeguard.watch.text
+                  : TOKENS.safeguard.cap.text,
+              borderRadius: 4, padding: '2px 8px',
+            }}>
+              {btiIntelligence.pillarInvestmentBalanceSignal}
+            </span>
+            <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>
+              ({btiRecord ? Math.round(btiRecord.pillar_investment_balance * 100) : '—'}
+              /100) · segnale direzionale
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Activation Debt description + non-budget-mediated note */}
       {btiRecord?.activation_debt_description_it && (
@@ -648,6 +709,58 @@ export default function FinancialGovernance() {
           {btiRecord.activation_debt_description_it}
         </div>
       )}
+
+      {/* ── B66: Reallocation WHY Trace ────────────────────────────────────── */}
+      {btiIntelligence && btiIntelligence.reallocationAnalysis.reasons.length > 0 && (
+        <div
+          style={{
+            background:   TOKENS.surface,
+            border:       TOKENS.cardBorder,
+            borderRadius: TOKENS.cardRadius,
+            padding:      '1.125rem 1.25rem',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 12 }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink }}>
+              Reallocation Opportunity™ — perché
+            </p>
+            <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.accent, fontVariantNumeric: 'tabular-nums' }}>
+              €{btiIntelligence.reallocationAnalysis.totalOpportunity.toLocaleString('it-IT')}
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {btiIntelligence.reallocationAnalysis.reasons.map((r, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex', gap: 12, alignItems: 'flex-start',
+                  background: r.contribution === 'primary' ? 'rgba(199,111,61,0.04)' : 'rgba(6,3,43,0.02)',
+                  border: r.contribution === 'primary' ? '1px solid rgba(199,111,61,0.14)' : TOKENS.cardBorder,
+                  borderRadius: 8, padding: '10px 12px',
+                }}
+              >
+                <span style={{
+                  flexShrink: 0, marginTop: 1,
+                  fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-jakarta)',
+                  background: r.contribution === 'primary' ? `${TOKENS.accent}18` : TOKENS.inkBorder,
+                  color: r.contribution === 'primary' ? TOKENS.accent : TOKENS.inkSecondary,
+                  borderRadius: 4, padding: '2px 7px',
+                }}>
+                  {r.contribution === 'primary' ? 'primario' : 'secondario'}
+                </span>
+                <div>
+                  <p style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.ink, marginBottom: 2 }}>{r.driver}</p>
+                  <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>{r.evidence}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 10, lineHeight: 1.6, fontStyle: 'italic' }}>
+            Reallocation Opportunity™ è una stima direzionale — non una garanzia di risultato. KORA non gestisce fondi. Correlazione ≠ causalità.
+          </p>
+        </div>
+      )}
+
       {btiRecord?.non_budget_mediated_activation_note && (
         <div
           style={{
@@ -767,6 +880,81 @@ export default function FinancialGovernance() {
           {rec!.pillar_budget_note && <span style={{ marginLeft: 8 }}>{rec!.pillar_budget_note}</span>}
         </p>
       </div>
+
+      {/* ── B66: Pillar Investment Balance classification ───────────────────── */}
+      {btiIntelligence && (
+        <div
+          style={{
+            background:   TOKENS.surface,
+            border:       TOKENS.cardBorder,
+            borderRadius: TOKENS.cardRadius,
+            overflow:     'hidden',
+          }}
+        >
+          <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink }}>
+              Pillar Investment Balance — classificazione
+            </p>
+            <span style={{
+              fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-jakarta)',
+              background: btiIntelligence.pillarInvestmentBalanceSignal === 'bilanciato'
+                ? TOKENS.safeguard.pass.bg
+                : btiIntelligence.pillarInvestmentBalanceSignal === 'moderato'
+                  ? TOKENS.safeguard.watch.bg
+                  : TOKENS.safeguard.cap.bg,
+              color: btiIntelligence.pillarInvestmentBalanceSignal === 'bilanciato'
+                ? TOKENS.safeguard.pass.text
+                : btiIntelligence.pillarInvestmentBalanceSignal === 'moderato'
+                  ? TOKENS.safeguard.watch.text
+                  : TOKENS.safeguard.cap.text,
+              borderRadius: 4, padding: '2px 8px',
+            }}>
+              {btiIntelligence.pillarInvestmentBalanceSignal}
+            </span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 0 }}>
+            {btiIntelligence.pillarClassifications.map((pc, i) => {
+              const statusColor: Record<PillarInvestmentStatus, { bg: string; text: string; label: string }> = {
+                over_concentrated: { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   label: 'sovra-concentrato' },
+                balanced:          { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text,  label: 'bilanciato'        },
+                under_invested:    { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, label: 'sotto-investito'   },
+              };
+              const sc = statusColor[pc.status];
+              return (
+                <div
+                  key={pc.pillar}
+                  style={{
+                    padding: '12px 14px',
+                    borderRight: i < 4 ? TOKENS.cardBorder : 'none',
+                    background: i % 2 === 0 ? TOKENS.surface : 'rgba(6,3,43,0.015)',
+                  }}
+                >
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>{pc.label}</p>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '15px', color: TOKENS.ink, marginBottom: 4, fontVariantNumeric: 'tabular-nums' }}>
+                    {Math.round(pc.budgetShare * 100)}%
+                  </p>
+                  <span style={{
+                    display: 'inline-block', marginBottom: 6,
+                    fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-jakarta)',
+                    background: sc.bg, color: sc.text, borderRadius: 4, padding: '2px 7px',
+                  }}>
+                    {sc.label}
+                  </span>
+                  <p style={{ fontSize: '10px', color: TOKENS.inkHint, lineHeight: 1.5 }}>{pc.reason}</p>
+                  {pc.deepActivationConversionRate > 0 && (
+                    <p style={{ fontSize: '10px', color: TOKENS.inkSecondary, marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
+                      Conversione: {Math.round(pc.deepActivationConversionRate * 100)}%
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ padding: '10px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+            Classificazione direzionale da BTIIntelligenceService · regole deterministiche · nessun dato individuale · synthetic_demo_data: true
+          </p>
+        </div>
+      )}
 
       {/* ── 8. People KPI Correlation ──────────────────────────────────────── */}
       <SectionLabel>People KPI — lettura direzionale</SectionLabel>

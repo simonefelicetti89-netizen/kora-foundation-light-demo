@@ -1,5 +1,7 @@
 import type { BudgetToHumanImpactRecord } from '@/lib/types';
-import type { MacroblockScore, ScenarioId } from '@/lib/types';
+import type { MacroblockScore, ScenarioId, KoraRole } from '@/lib/types';
+import { btiIntelligenceService } from '@/services/bti-intelligence/BTIIntelligenceService';
+import type { PillarInvestmentStatus } from '@/services/bti-intelligence/BTIIntelligenceService';
 
 interface Props {
   s1Record: BudgetToHumanImpactRecord | undefined;
@@ -7,6 +9,7 @@ interface Props {
   s1Macroblocks: MacroblockScore[];
   s2Macroblocks: MacroblockScore[];
   activeScenario: ScenarioId;
+  role?: KoraRole;
 }
 
 function fmt(n: number, currency = 'EUR') {
@@ -33,8 +36,17 @@ const MB_ACCENT: Record<string, string> = {
   BTI:    'text-amber-700',
 };
 
-export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macroblocks, activeScenario }: Props) {
+const STATUS_STYLES: Record<PillarInvestmentStatus, { label: string; color: string }> = {
+  over_concentrated: { label: 'sovra-concentrato', color: 'rgba(158,59,47,0.85)' },
+  balanced:          { label: 'bilanciato',         color: 'rgba(47,125,85,0.85)' },
+  under_invested:    { label: 'sotto-investito',    color: 'rgba(138,90,0,0.85)'  },
+};
+
+export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macroblocks, activeScenario, role = 'COMPANY_ADMIN' }: Props) {
   const activeRecord = activeScenario === 'S2' ? s2Record : s1Record;
+
+  // B66: intelligence layer — rule-based, no LLM
+  const activeIntelligence = activeRecord ? btiIntelligenceService.compute(activeRecord, role) : null;
 
   if (!s1Record && !s2Record) {
     return (
@@ -120,6 +132,105 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
 
   return (
     <div className="space-y-5">
+
+      {/* ── C-bis. BTI Executive Intelligence ── */}
+      {activeIntelligence && (
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">C-bis — BTI Executive Intelligence</p>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1 italic">
+              Lettura rule-based · aggregata · nessun LLM · nessun dato individuale
+            </p>
+          </div>
+
+          {/* Executive Narrative */}
+          <div className="rounded-lg border border-[rgba(199,111,61,0.18)] bg-[rgba(199,111,61,0.04)] px-4 py-3">
+            <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)] mb-1.5">Narrative</p>
+            <p className="text-[12px] text-[rgba(6,3,43,0.78)] leading-relaxed">{activeIntelligence.executiveNarrative}</p>
+          </div>
+
+          {/* Cost per IU first-class */}
+          <div className="flex gap-3 items-start">
+            <div className="flex-1 rounded-lg border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)] px-3 py-2.5 space-y-1">
+              <div className="flex items-center gap-2">
+                <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)]">Cost per Impact Unit™</p>
+                <span className={`text-[10px] font-semibold rounded px-1.5 py-0.5 ${
+                  activeIntelligence.costPerIUConfidence === 'alta'
+                    ? 'bg-[rgba(47,125,85,0.10)] text-[rgba(47,125,85,0.90)]'
+                    : activeIntelligence.costPerIUConfidence === 'media'
+                      ? 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.90)]'
+                      : 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]'
+                }`}>
+                  efficienza {activeIntelligence.costPerIUConfidence}
+                </span>
+              </div>
+              <p className="text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed">{activeIntelligence.costPerIUNote}</p>
+            </div>
+          </div>
+
+          {/* Reallocation WHY traces */}
+          {activeIntelligence.reallocationAnalysis.reasons.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)]">
+                Reallocation Opportunity™ — traccia WHY (€{activeIntelligence.reallocationAnalysis.totalOpportunity.toLocaleString('it-IT')})
+              </p>
+              {activeIntelligence.reallocationAnalysis.reasons.map((r, i) => (
+                <div key={i} className={`flex gap-2 items-start rounded px-3 py-2 text-[11px] ${
+                  r.contribution === 'primary'
+                    ? 'border border-[rgba(199,111,61,0.20)] bg-[rgba(199,111,61,0.04)]'
+                    : 'border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)]'
+                }`}>
+                  <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-semibold ${
+                    r.contribution === 'primary'
+                      ? 'bg-[rgba(199,111,61,0.16)] text-[rgba(199,111,61,0.90)]'
+                      : 'bg-[rgba(6,3,43,0.07)] text-[rgba(6,3,43,0.45)]'
+                  }`}>
+                    {r.contribution === 'primary' ? 'primario' : 'secondario'}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-[rgba(6,3,43,0.78)]">{r.driver}</p>
+                    <p className="text-[rgba(6,3,43,0.52)] leading-relaxed mt-0.5">{r.evidence}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Pillar Investment Balance classification */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)]">Pillar Investment Balance</p>
+              <span className={`text-[10px] font-semibold rounded px-1.5 py-0.5 ${
+                activeIntelligence.pillarInvestmentBalanceSignal === 'bilanciato'
+                  ? 'bg-[rgba(47,125,85,0.10)] text-[rgba(47,125,85,0.90)]'
+                  : activeIntelligence.pillarInvestmentBalanceSignal === 'moderato'
+                    ? 'bg-[rgba(138,90,0,0.10)] text-[rgba(138,90,0,0.90)]'
+                    : 'bg-[rgba(158,59,47,0.10)] text-[rgba(158,59,47,0.85)]'
+              }`}>
+                {activeIntelligence.pillarInvestmentBalanceSignal}
+              </span>
+            </div>
+            <div className="grid grid-cols-5 gap-1">
+              {activeIntelligence.pillarClassifications.map((pc) => {
+                const sc = STATUS_STYLES[pc.status];
+                return (
+                  <div key={pc.pillar} className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)] px-2 py-2 text-center">
+                    <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.62)] mb-1">{pc.label.split(' ')[0]}</p>
+                    <p className="font-mono font-bold text-[13px] text-[rgba(6,3,43,0.78)] mb-1">
+                      {Math.round(pc.budgetShare * 100)}%
+                    </p>
+                    <p className="text-[9px] font-semibold" style={{ color: sc.color }}>{sc.label}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-3 italic">
+            Intelligence rule-based da BTIIntelligenceService · nessun LLM · nessun dato individuale · segnale direzionale, non garantito · correlazione ≠ causalità
+          </p>
+        </div>
+      )}
 
       {/* ── D. Budget-to-Human-Impact Summary ── */}
       <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-5">

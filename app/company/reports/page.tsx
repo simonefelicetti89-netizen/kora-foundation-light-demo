@@ -865,6 +865,7 @@ export default function Reports() {
                   s1Macroblocks={pack.s1_macroblocks}
                   s2Macroblocks={pack.s2_macroblocks}
                   activeScenario={activeScenario}
+                  role={activeRole}
                 />
                 <InsightList insights={sectionMap.budget_to_human_impact.insights} />
                 <RecList recommendations={sectionMap.budget_to_human_impact.recommendations} />
