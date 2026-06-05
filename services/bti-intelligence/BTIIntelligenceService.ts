@@ -4,6 +4,8 @@
 
 import type { BudgetToHumanImpactRecord, PillarCode, KoraRole } from '@/lib/types';
 import { PILLAR_LABELS } from '@/lib/constants/kora';
+import { lifeDiversityService, LIFE_SUBCATEGORY_META } from '@/services/life-diversity/LifeDiversityService';
+import type { LifeDiversitySummary } from '@/services/life-diversity/LifeDiversityService';
 
 const ALLOWED_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>([
   'KORA_ADMIN',
@@ -42,6 +44,8 @@ export interface BTIIntelligenceSummary {
   costPerIUConfidence: 'alta' | 'media' | 'bassa';
   costPerIUNote: string;
   pillarInvestmentBalanceSignal: 'bilanciato' | 'moderato' | 'sbilanciato';
+  // B68-B: LIFE Diversity Intelligence™ — additive layer, not_kora_index_component
+  lifeDiversityProfile: LifeDiversitySummary | null;
 }
 
 const PILLAR_ORDER: PillarCode[] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
@@ -54,13 +58,17 @@ export class BTIIntelligenceService {
   compute(record: BudgetToHumanImpactRecord, role: KoraRole): BTIIntelligenceSummary | null {
     if (!this.canAccess(role)) return null;
 
+    // B68-B: compute LIFE diversity profile first — passed to reallocation analysis for enrichment
+    const lifeDiversityProfile = lifeDiversityService.computeFromBTI(record, role);
+
     return {
       executiveNarrative:          this.buildExecutiveNarrative(record),
-      reallocationAnalysis:        this.buildReallocationAnalysis(record),
+      reallocationAnalysis:        this.buildReallocationAnalysis(record, lifeDiversityProfile),
       pillarClassifications:       this.buildPillarClassifications(record),
       costPerIUConfidence:         this.buildCostPerIUConfidence(record),
       costPerIUNote:               this.buildCostPerIUNote(record),
       pillarInvestmentBalanceSignal: this.buildPillarBalanceSignal(record),
+      lifeDiversityProfile,
     };
   }
 
@@ -82,7 +90,10 @@ export class BTIIntelligenceService {
     return `Il budget è efficacemente orientato all'attivazione profonda: il ${deepPct}% genera Impact Units verificati e il costo per Impact Unit è €${cpiu}. La quota di benefit monetari si è ridotta al ${reliefPct}% — la direzione è corretta. I margini residui riguardano la conversione dell'Activation Debt (€${debt}) e il completamento della copertura su pillar sotto-investiti.`;
   }
 
-  private buildReallocationAnalysis(r: BudgetToHumanImpactRecord): ReallocationWhyTrace {
+  private buildReallocationAnalysis(
+    r: BudgetToHumanImpactRecord,
+    lifeDiversity?: LifeDiversitySummary | null,
+  ): ReallocationWhyTrace {
     const reasons: ReallocationWhyReason[] = [];
     const total = r.total_people_welfare_budget;
     const spendByPillar = r.spend_by_pillar as Record<string, number>;
@@ -133,6 +144,24 @@ export class BTIIntelligenceService {
         driver: 'Budget non convertito (Activation Debt)',
         evidence: `€${debtEur} di budget welfare non convertito in attivazione verificata nel periodo — potenziale direttamente riorientabile verso programmi eligible`,
         contribution: reasons.filter((x) => x.contribution === 'primary').length === 0 ? 'primary' : 'secondary',
+      });
+    }
+
+    // B68-B: LIFE intra-pillar concentration driver — only when LIFE share is high and diversity is low
+    if (
+      lifeDiversity &&
+      lifeDiversity.concentrationStatus !== 'no_life_data' &&
+      lifeShare >= 0.40 &&
+      lifeDiversity.diversityScore < 0.30
+    ) {
+      const activeSub = lifeDiversity.activeSubcategories.length;
+      const domLabel = lifeDiversity.dominantSubcategory
+        ? (LIFE_SUBCATEGORY_META[lifeDiversity.dominantSubcategory]?.label ?? lifeDiversity.dominantSubcategory)
+        : 'singola subcategoria';
+      reasons.push({
+        driver: 'Concentrazione intra-pillar LIFE',
+        evidence: `Portfolio LIFE concentrato in ${activeSub} su 10 subcategorie disponibili (LIFE Diversity Score: ${Math.round(lifeDiversity.diversityScore * 100)}% — dominante: ${domLabel}). Riallocare all'interno del pillar LIFE verso subcategorie mancanti aumenta la profondità di attivazione senza incrementare la spesa totale.`,
+        contribution: 'secondary',
       });
     }
 

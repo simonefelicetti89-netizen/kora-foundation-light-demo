@@ -2,6 +2,8 @@ import type { BudgetToHumanImpactRecord } from '@/lib/types';
 import type { MacroblockScore, ScenarioId, KoraRole } from '@/lib/types';
 import { btiIntelligenceService } from '@/services/bti-intelligence/BTIIntelligenceService';
 import type { PillarInvestmentStatus } from '@/services/bti-intelligence/BTIIntelligenceService';
+import { LIFE_SUBCATEGORY_META } from '@/services/life-diversity/LifeDiversityService';
+import type { ConcentrationStatus } from '@/services/life-diversity/LifeDiversityService';
 
 interface Props {
   s1Record: BudgetToHumanImpactRecord | undefined;
@@ -225,6 +227,80 @@ export function BudgetImpactReport({ s1Record, s2Record, s1Macroblocks, s2Macrob
               })}
             </div>
           </div>
+
+          {/* C-bis.4 — LIFE Diversity Intelligence™ */}
+          {activeIntelligence.lifeDiversityProfile && (() => {
+            const ld = activeIntelligence.lifeDiversityProfile!;
+            const CONC_LABEL: Record<ConcentrationStatus, string> = {
+              diverse:                  'diversificato',
+              moderately_concentrated:  'moderatamente concentrato',
+              highly_concentrated:      'altamente concentrato',
+              single_category_dominant: 'singola categoria',
+              no_life_data:             'nessun dato LIFE',
+            };
+            const CONC_COLOR: Record<ConcentrationStatus, string> = {
+              diverse:                  'text-[rgba(47,125,85,0.90)] bg-[rgba(47,125,85,0.10)]',
+              moderately_concentrated:  'text-[rgba(138,90,0,0.90)] bg-[rgba(138,90,0,0.10)]',
+              highly_concentrated:      'text-[rgba(158,59,47,0.85)] bg-[rgba(158,59,47,0.10)]',
+              single_category_dominant: 'text-[rgba(158,59,47,0.85)] bg-[rgba(158,59,47,0.10)]',
+              no_life_data:             'text-[rgba(6,3,43,0.40)] bg-[rgba(6,3,43,0.05)]',
+            };
+            return (
+              <div className="space-y-2 pt-2 border-t border-[rgba(6,3,43,0.05)]">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.62)]">LIFE Diversity Intelligence™</p>
+                  <span className={`text-[9px] font-semibold rounded px-1.5 py-0.5 ${CONC_COLOR[ld.concentrationStatus]}`}>
+                    {CONC_LABEL[ld.concentrationStatus]}
+                  </span>
+                  <span className="text-[10px] text-[rgba(6,3,43,0.40)] ml-auto">
+                    Score: <strong className="text-[rgba(6,3,43,0.70)]">{Math.round(ld.diversityScore * 100)}%</strong> · {ld.activeSubcategories.length}/10 subcategorie
+                  </span>
+                </div>
+
+                {/* Active subcategory pills */}
+                {ld.activeSubcategories.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {ld.activeSubcategories.map((code) => {
+                      const meta = LIFE_SUBCATEGORY_META[code];
+                      const dom = code === ld.dominantSubcategory;
+                      return (
+                        <span key={code} className={`text-[9px] rounded px-2 py-0.5 font-medium ${
+                          dom
+                            ? 'bg-[rgba(199,111,61,0.12)] text-[rgba(199,111,61,0.90)] font-semibold'
+                            : 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.52)]'
+                        }`}>
+                          {meta.label}{dom ? ' ↑' : ''}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Top recommendation */}
+                {ld.recommendations[0] && (
+                  <p className="text-[10px] text-[rgba(6,3,43,0.52)] leading-relaxed">
+                    <span className="font-semibold text-[rgba(6,3,43,0.62)]">Raccomandazione: </span>
+                    {ld.recommendations[0].text}
+                  </p>
+                )}
+
+                {/* Privacy warning */}
+                {ld.privacyWarningLevel !== 'none' && ld.privacyWarningMessage && (
+                  <p className={`text-[10px] leading-relaxed px-2 py-1.5 rounded ${
+                    ld.privacyWarningLevel === 'hard'
+                      ? 'bg-[rgba(158,59,47,0.06)] text-[rgba(158,59,47,0.85)]'
+                      : 'bg-[rgba(138,90,0,0.06)] text-[rgba(138,90,0,0.85)]'
+                  }`}>
+                    ⚠ {ld.privacyWarningMessage}
+                  </p>
+                )}
+
+                <p className="text-[9px] text-[rgba(6,3,43,0.35)] italic">
+                  Indicatore intelligence pre-empirico · non modifica il KORA Index™ · not_kora_index_component: true
+                </p>
+              </div>
+            );
+          })()}
 
           <p className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed border-t border-[rgba(6,3,43,0.05)] pt-3 italic">
             Intelligence rule-based da BTIIntelligenceService · nessun LLM · nessun dato individuale · segnale direzionale, non garantito · correlazione ≠ causalità

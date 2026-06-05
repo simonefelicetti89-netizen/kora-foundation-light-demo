@@ -13,6 +13,8 @@ import { financialGovernanceService } from '@/services/financial-governance/Fina
 import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { btiIntelligenceService } from '@/services/bti-intelligence/BTIIntelligenceService';
 import type { PillarInvestmentStatus } from '@/services/bti-intelligence/BTIIntelligenceService';
+import { LIFE_SUBCATEGORY_META } from '@/services/life-diversity/LifeDiversityService';
+import type { ConcentrationStatus, LifePrivacyWarningLevel } from '@/services/life-diversity/LifeDiversityService';
 import { PILLAR_LABELS, BTI_DOCTRINE } from '@/lib/constants/kora';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { Explainer } from '@/components/ui/Explainer';
@@ -955,6 +957,127 @@ export default function FinancialGovernance() {
           </p>
         </div>
       )}
+
+      {/* ── B68-B: LIFE Diversity Intelligence™ ──────────────────────────── */}
+      {btiIntelligence?.lifeDiversityProfile && (() => {
+        const ld = btiIntelligence.lifeDiversityProfile!;
+
+        const CONCENTRATION_TOKEN: Record<ConcentrationStatus, { label: string; bg: string; text: string }> = {
+          diverse:                  { label: 'diversificato',          bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text  },
+          moderately_concentrated:  { label: 'moderatamente concentrato', bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text },
+          highly_concentrated:      { label: 'altamente concentrato',  bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text   },
+          single_category_dominant: { label: 'singola categoria',      bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text   },
+          no_life_data:             { label: 'nessun dato LIFE',       bg: TOKENS.inkBorder,          text: TOKENS.inkSecondary          },
+        };
+        const WARNING_TOKEN: Record<LifePrivacyWarningLevel, { bg: string; text: string; border: string }> = {
+          none: { bg: 'transparent', text: TOKENS.inkHint, border: 'transparent' },
+          soft: { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text, border: TOKENS.safeguard.watch.bg },
+          hard: { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text,   border: TOKENS.safeguard.cap.bg   },
+        };
+        const ct = CONCENTRATION_TOKEN[ld.concentrationStatus];
+        const wt = WARNING_TOKEN[ld.privacyWarningLevel];
+        return (
+          <div
+            style={{
+              background:   TOKENS.surface,
+              border:       TOKENS.cardBorder,
+              borderRadius: TOKENS.cardRadius,
+              overflow:     'hidden',
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink }}>
+                LIFE Diversity Intelligence™
+              </p>
+              <span style={{ fontSize: '10px', fontWeight: 500, fontFamily: 'var(--font-jakarta)', background: TOKENS.inkBorder, color: TOKENS.inkSecondary, borderRadius: 4, padding: '2px 7px' }}>
+                regola · non AI
+              </span>
+              <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-jakarta)', background: ct.bg, color: ct.text, borderRadius: 4, padding: '2px 8px' }}>
+                {ct.label}
+              </span>
+              <span style={{ fontSize: '10px', color: TOKENS.inkHint, marginLeft: 'auto' }}>
+                LIFE Diversity Score: <span style={{ fontWeight: 700, fontFamily: 'var(--font-jakarta)', color: TOKENS.ink }}>{Math.round(ld.diversityScore * 100)}%</span> ({ld.activeSubcategories.length}/10 subcategorie)
+              </span>
+            </div>
+
+            <div style={{ padding: '1rem 1.25rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              {/* Active subcategories */}
+              <div>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.inkSecondary, marginBottom: 8 }}>Subcategorie LIFE attive</p>
+                {ld.activeSubcategories.length === 0 ? (
+                  <p style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic' }}>Nessuna subcategoria rilevata</p>
+                ) : (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {ld.activeSubcategories.map((code) => {
+                      const meta = LIFE_SUBCATEGORY_META[code];
+                      const isDominant = code === ld.dominantSubcategory;
+                      return (
+                        <span
+                          key={code}
+                          style={{
+                            fontSize: '10px', fontWeight: isDominant ? 700 : 500,
+                            background: isDominant ? `${TOKENS.accent}14` : TOKENS.inkBorder,
+                            color: isDominant ? TOKENS.accent : TOKENS.inkSecondary,
+                            border: isDominant ? `1px solid ${TOKENS.accent}30` : `1px solid transparent`,
+                            borderRadius: 4, padding: '2px 8px',
+                          }}
+                          title={meta.description}
+                        >
+                          {meta.label}{isDominant ? ' ↑' : ''}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+                {ld.dominantSubcategory && (
+                  <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 8 }}>
+                    Dominante: {LIFE_SUBCATEGORY_META[ld.dominantSubcategory].label} ({Math.round(ld.dominantSubcategoryShare * 100)}% dei programmi LIFE)
+                  </p>
+                )}
+              </div>
+
+              {/* Recommendations */}
+              <div>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.inkSecondary, marginBottom: 8 }}>Raccomandazioni portfolio LIFE</p>
+                {ld.recommendations.length === 0 ? (
+                  <p style={{ fontSize: '11px', color: TOKENS.inkHint, fontStyle: 'italic' }}>Portfolio LIFE ben diversificato.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {ld.recommendations.slice(0, 2).map((rec) => (
+                      <div key={rec.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                        <span style={{
+                          flexShrink: 0, marginTop: 1,
+                          fontSize: '9px', fontWeight: 700, fontFamily: 'var(--font-jakarta)',
+                          background: rec.priority === 'alta' ? `${TOKENS.accent}18` : TOKENS.inkBorder,
+                          color: rec.priority === 'alta' ? TOKENS.accent : TOKENS.inkSecondary,
+                          borderRadius: 3, padding: '1px 5px', textTransform: 'uppercase' as const, letterSpacing: '0.04em',
+                        }}>
+                          {rec.priority}
+                        </span>
+                        <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>{rec.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Privacy warning */}
+            {ld.privacyWarningLevel !== 'none' && ld.privacyWarningMessage && (
+              <div style={{ margin: '0 1.25rem 1rem', padding: '8px 12px', borderRadius: 6, background: wt.bg, border: `1px solid ${wt.border}` }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: wt.text, lineHeight: 1.55 }}>
+                  ⚠ Privacy — {ld.privacyWarningMessage}
+                </p>
+              </div>
+            )}
+
+            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+              LIFE Diversity Intelligence™ · pre_empirical_calibration · non modifica KORA Index™ · not_kora_index_component · synthetic_demo_data: true
+            </p>
+          </div>
+        );
+      })()}
 
       {/* ── 8. People KPI Correlation ──────────────────────────────────────── */}
       <SectionLabel>People KPI — lettura direzionale</SectionLabel>
