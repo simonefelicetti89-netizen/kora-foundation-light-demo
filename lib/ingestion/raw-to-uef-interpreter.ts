@@ -60,6 +60,9 @@ export type InitiativeDomain =
 export type BudgetClass =
   | 'deep_activation' | 'economic_relief' | 'compliance_blocked' | 'unknown';
 
+export type AmountParsingStatus = 'parsed' | 'missing' | 'invalid';
+export type ParticipantsParsingStatus = 'parsed' | 'missing' | 'invalid' | 'approximate';
+
 export interface UefCandidateProposal {
   rawName:                string;
   eventType:              string;
@@ -68,7 +71,9 @@ export interface UefCandidateProposal {
   actionFamily:           string | null;
   eventNature:            string | null;
   budgetAmount:           number | null;
+  amountParsingStatus:    AmountParsingStatus;
   participants:           number | null;
+  participantsApproximate: boolean;
   evidenceLevel:          EvidenceLevel | null;
   sourceTier:             string | null;
   mappingConfidence:      number;        // 0.30–0.95
@@ -276,12 +281,104 @@ function firstKw(text: string, kws: string[]): string | null {
   return kws.find(kw => text.includes(kw)) ?? null;
 }
 
-function extractNumber(v: unknown): number | null {
-  if (v === null || v === undefined) return null;
-  if (typeof v === 'number') return isFinite(v) && v >= 0 ? v : null;
-  const s = String(v).replace(/[€$£\s]/g, '').replace(',', '.');
-  const n = parseFloat(s);
-  return isFinite(n) && n >= 0 ? n : null;
+// ── B65-B1: Amount normalization — handles European (1.234,56) and US (1,234.56) formats
+interface AmountParseResult {
+  value: number | null;
+  raw: string;
+  status: AmountParsingStatus;
+}
+
+function normalizeAmount(v: unknown): AmountParseResult {
+  if (v === null || v === undefined) return { value: null, raw: '', status: 'missing' };
+  const raw = String(v).trim();
+  if (!raw) return { value: null, raw, status: 'missing' };
+
+  if (typeof v === 'number') {
+    if (isFinite(v) && v >= 0) return { value: v, raw, status: 'parsed' };
+    return { value: null, raw, status: 'invalid' };
+  }
+
+  // Strip currency symbols and keyword prefixes/suffixes
+  let s = raw
+    .replace(/^(EUR|USD|GBP|CHF)\s*/i, '')
+    .replace(/\s*(EUR|USD|GBP|CHF)$/i, '')
+    .replace(/^[€$£]\s*/, '')
+    .replace(/\s*[€$£]$/, '')
+    .replace(/\s+/g, '');  // also handles space-as-thousands-separator (1 234,56)
+
+  if (!s) return { value: null, raw, status: 'missing' };
+
+  const hasDot   = s.includes('.');
+  const hasComma = s.includes(',');
+
+  let normalized: string;
+
+  if (hasDot && hasComma) {
+    // Both present — determine which is decimal by position of last occurrence
+    if (s.lastIndexOf('.') > s.lastIndexOf(',')) {
+      // US format: 1,234.56 → strip commas, keep dot
+      normalized = s.replace(/,/g, '');
+    } else {
+      // European format: 1.234,56 → strip dots, comma → dot
+      normalized = s.replace(/\./g, '').replace(',', '.');
+    }
+  } else if (hasComma && !hasDot) {
+    const parts = s.split(',');
+    if (parts.length === 2 && parts[1].length <= 2) {
+      // Decimal comma: 1234,56 or 12,5
+      normalized = parts[0] + '.' + parts[1];
+    } else {
+      // Thousands comma(s): 1,234 or 1,234,567 → strip all
+      normalized = s.replace(/,/g, '');
+    }
+  } else if (hasDot && !hasComma) {
+    const parts = s.split('.');
+    if (parts.length === 2 && parts[1].length <= 2) {
+      // Decimal dot: 1234.56 or 1234.5
+      normalized = s;
+    } else {
+      // Thousands dot(s): 1.234 or 1.234.567 → strip all
+      normalized = s.replace(/\./g, '');
+    }
+  } else {
+    normalized = s;
+  }
+
+  if (!/^-?\d+(\.\d+)?$/.test(normalized)) return { value: null, raw, status: 'invalid' };
+  const n = parseFloat(normalized);
+  if (!isFinite(n) || n < 0) return { value: null, raw, status: 'invalid' };
+  return { value: n, raw, status: 'parsed' };
+}
+
+// ── B65-B1: Participants normalization — handles text like "~30", "circa 30 persone"
+interface ParticipantsParseResult {
+  value: number | null;
+  raw: string;
+  status: ParticipantsParsingStatus;
+  approximate: boolean;
+}
+
+function normalizeParticipants(v: unknown): ParticipantsParseResult {
+  if (v === null || v === undefined) return { value: null, raw: '', status: 'missing', approximate: false };
+  const raw = String(v).trim();
+  if (!raw) return { value: null, raw, status: 'missing', approximate: false };
+
+  if (typeof v === 'number') {
+    if (isFinite(v) && v >= 0) return { value: Math.round(v), raw, status: 'parsed', approximate: false };
+    return { value: null, raw, status: 'invalid', approximate: false };
+  }
+
+  const lower = raw.toLowerCase();
+  const isApproximate = /^~/.test(lower) || /\bcirca\b/.test(lower) || /\bapprox\b/.test(lower) || /\bca\.?\b/.test(lower);
+
+  const match = lower.match(/\d+/);
+  if (!match) return { value: null, raw, status: 'invalid', approximate: false };
+
+  const n = parseInt(match[0], 10);
+  if (!isFinite(n) || n < 0) return { value: null, raw, status: 'invalid', approximate: false };
+
+  if (isApproximate) return { value: n, raw, status: 'approximate', approximate: true };
+  return { value: n, raw, status: 'parsed', approximate: false };
 }
 
 function detectEvidence(payload: Record<string, unknown>): {
@@ -364,19 +461,22 @@ function deriveBudgetClass(eligibility: EligibilityProposal, budgetAmount: numbe
 }
 
 function computeEnrichmentStatus(params: {
-  eligibility:     EligibilityProposal;
-  budgetAmount:    number | null;
-  sourceTier:      string | null;
-  evidenceLevel:   EvidenceLevel | null;
-  initiativeDomain: InitiativeDomain;
-  eventType:       string;
-  pillar:          Pillar | null;
+  eligibility:       EligibilityProposal;
+  budgetAmount:      number | null;
+  amountParsingStatus: AmountParsingStatus;
+  sourceTier:        string | null;
+  evidenceLevel:     EvidenceLevel | null;
+  initiativeDomain:  InitiativeDomain;
+  eventType:         string;
+  pillar:            Pillar | null;
 }): { needsEnrichment: boolean; missingFields: string[] } {
-  const { eligibility, budgetAmount, sourceTier, evidenceLevel, initiativeDomain, eventType, pillar } = params;
+  const { eligibility, budgetAmount, amountParsingStatus, sourceTier, evidenceLevel, initiativeDomain, eventType, pillar } = params;
   const missing: string[] = [];
 
+  // Invalid amount format requires human correction — treat same as missing for enrichment
+  if (eligibility !== 'blocked' && amountParsingStatus === 'invalid') missing.push('budget_amount_invalid_format');
   // Non-compliance records need a budget amount for BTI contribution
-  if (eligibility !== 'blocked' && budgetAmount === null) missing.push('budget_amount');
+  if (eligibility !== 'blocked' && budgetAmount === null && amountParsingStatus !== 'invalid') missing.push('budget_amount');
   // Source/evidence needed for credible financial reporting
   if (eligibility !== 'blocked' && (!sourceTier || !evidenceLevel || evidenceLevel === 'L0')) {
     missing.push('budget_source');
@@ -426,16 +526,28 @@ export function interpretUploadedRecord(
   const rawName = rawNameRaw || record.action_family || 'Unknown initiative';
   if (!rawNameRaw) warnings.push('warning:missing_initiative_name');
 
-  const budgetAmount = extractNumber(p['amount'] ?? p['importo'] ?? p['budget_amount'] ?? p['cost']);
-  const participants = extractNumber(p['participants'] ?? p['partecipanti']);
+  const amountParse = normalizeAmount(p['amount'] ?? p['importo'] ?? p['budget_amount'] ?? p['cost']);
+  const participantsParse = normalizeParticipants(p['participants'] ?? p['partecipanti']);
+
+  const budgetAmount = amountParse.value;
+  const amountParsingStatus = amountParse.status;
+  const participants = participantsParse.value;
+  const participantsApproximate = participantsParse.approximate;
+
   if (budgetAmount !== null) reasonCodes.push('budget_amount_detected');
   if (participants !== null) reasonCodes.push('participants_detected');
-  if (budgetAmount === null) {
+  if (participantsApproximate) reasonCodes.push('participants_approximate');
+
+  if (amountParsingStatus === 'invalid') {
+    warnings.push('warning:amount_parse_failed');
+    reasonCodes.push('amount_parse:invalid_format');
+  } else if (budgetAmount === null) {
     warnings.push('warning:missing_budget_amount');
     // B11.3: batch context never invents amounts — budget_amount stays null
     if (batchContext) reasonCodes.push('batch_financial_metadata:amount_not_provided');
   }
-  if (participants === null) warnings.push('warning:missing_participants');
+  if (participantsParse.status === 'invalid') warnings.push('warning:participants_parse_failed');
+  else if (participants === null) warnings.push('warning:missing_participants');
 
   // B11.3: evidence level and source tier — record-level data takes priority.
   // Batch context is used only as fallback when record has no source (L0).
@@ -632,7 +744,7 @@ export function interpretUploadedRecord(
   const budgetClass = deriveBudgetClass(eligibility, budgetAmount);
 
   const { needsEnrichment, missingFields } = computeEnrichmentStatus({
-    eligibility, budgetAmount, sourceTier, evidenceLevel,
+    eligibility, budgetAmount, amountParsingStatus, sourceTier, evidenceLevel,
     initiativeDomain, eventType, pillar,
   });
 
@@ -690,7 +802,9 @@ export function interpretUploadedRecord(
     actionFamily,
     eventNature,
     budgetAmount,
+    amountParsingStatus,
     participants,
+    participantsApproximate,
     evidenceLevel,
     sourceTier,
     mappingConfidence,

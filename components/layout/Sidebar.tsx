@@ -106,7 +106,7 @@ function buildNavGroups(role: string): NavGroup[] {
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
           { href: '/company',             label: 'Meridiana Demo' },
           { href: '/admin/operator',      label: 'Demo Scoring (Synthetic)' },  // operator-flow uses OP-001 synthetic batch
-          { href: '/admin/ai-onboarding', label: 'AI Ingestion Preview' },
+          { href: '/admin/ai-onboarding', label: 'Anteprima Classificazione' },
           { href: '/admin/gtm',           label: 'GTM Preview' },
           { href: '/admin/benchmarks',    label: 'Benchmark Preview' },
           { href: '/demo-guide',          label: 'Demo Guide' },

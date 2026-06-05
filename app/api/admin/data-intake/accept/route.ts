@@ -94,7 +94,7 @@ function parseAndValidateFinancialMetadata(raw: string): BatchFinancialContext {
 
 // ── Limits (same as upload-preview — re-validated here) ───────────────────────
 
-const MAX_BYTES = 2 * 1024 * 1024;
+const MAX_BYTES = 10 * 1024 * 1024; // B65-B1: 10MB for real-world CSV files
 const MAX_ROWS  = 500;
 
 // ── Header blocklist (never trust client — copied from upload-preview) ─────────
@@ -368,10 +368,10 @@ export async function POST(request: NextRequest) {
   }
 
   // ── 4. Validate file size ────────────────────────────────────────────────────
-  const fileSizeLimit = isXlsx ? 5 * 1024 * 1024 : MAX_BYTES;
+  const fileSizeLimit = isXlsx ? 10 * 1024 * 1024 : MAX_BYTES;
   if (file.size > fileSizeLimit) {
     return NextResponse.json({
-      error: `File too large: ${(file.size / 1024 / 1024).toFixed(1)} MB. Maximum: ${isXlsx ? '5' : '2'} MB.`,
+      error: `File too large: ${(file.size / 1024 / 1024).toFixed(1)} MB. Maximum: 10 MB.`,
     }, { status: 413 });
   }
 
@@ -562,7 +562,7 @@ export async function POST(request: NextRequest) {
         selectedSheetName: ssNames[idx] ?? null,
         columnMapping: cmaps[idx] ?? null,
         fileRole: froles[idx] ?? null,
-        maxRows: MAX_ROWS, maxBytes: isXlsx ? 5 * 1024 * 1024 : MAX_BYTES,
+        maxRows: MAX_ROWS, maxBytes: isXlsx ? 10 * 1024 * 1024 : MAX_BYTES,
       });
       if (!result.ok) {
         if (result.piiRejected) {

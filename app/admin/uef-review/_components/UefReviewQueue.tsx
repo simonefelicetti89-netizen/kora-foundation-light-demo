@@ -159,9 +159,10 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
   const [actionState, setActionState] = useState<Record<string, 'loading'|'done'|'error'>>({});
 
-  // P1.3: Bulk approve high-confidence state
+  // P1.3 / B65-B1: Bulk approve high-confidence state
   const [bulkStatus, setBulkStatus]       = useState<'idle'|'loading'|'done'|'error'>('idle');
   const [bulkProgress, setBulkProgress]   = useState<{ processed: number; success: number; failed: number; total: number } | null>(null);
+  const [bulkSkipCounts, setBulkSkipCounts] = useState<{ enrichment: number; lowConf: number } | null>(null);
 
   // B11: enrichment panel state
   const [enrichOpen, setEnrichOpen]       = useState<string | null>(null);  // uefRecordId
@@ -348,13 +349,19 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
     } catch { setActionState(s => ({ ...s, [uefRecordId]: 'error' })); }
   }
 
-  // ── P1.3: Bulk approve high-confidence candidates ────────────────────────────
-  // Approves all pending_review candidates with mappingConfidence >= 0.70.
-  // Uses the existing per-record review endpoint sequentially — no new API needed.
+  // ── P1.3 / B65-B1: Bulk approve high-confidence candidates ──────────────────
+  // Safety guard: skip records with needsEnrichment=true, invalid amount/participants,
+  // or confidence < 0.70. Approves only clean high-confidence records.
   async function handleBulkApprove() {
-    const eligible = candidates.filter(
-      c => c.reviewStatus === 'pending_review' && c.mappingConfidence >= 0.70,
+    const pending = candidates.filter(c => c.reviewStatus === 'pending_review');
+    const skippedEnrichment = pending.filter(c => c.needsEnrichment).length;
+    const eligible = pending.filter(
+      c => !c.needsEnrichment && c.mappingConfidence >= 0.70,
     );
+    const skippedLowConf = pending.filter(
+      c => !c.needsEnrichment && c.mappingConfidence < 0.70,
+    ).length;
+
     if (eligible.length === 0) return;
 
     setBulkStatus('loading');
@@ -378,6 +385,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
     }
 
     setBulkStatus(failed === 0 ? 'done' : 'error');
+    setBulkSkipCounts({ enrichment: skippedEnrichment, lowConf: skippedLowConf });
     if (selectedBatchId) loadCandidates(selectedBatchId);
   }
 
@@ -501,38 +509,46 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
             </div>
           )}
 
-          {/* P1.3: Bulk approve high-confidence */}
+          {/* P1.3 / B65-B1: Bulk approve — safety guard: skip needsEnrichment + low-confidence */}
           {(() => {
-            const highConfPending = candidates.filter(
-              c => c.reviewStatus === 'pending_review' && c.mappingConfidence >= 0.70,
-            );
-            if (highConfPending.length === 0) return null;
+            const pending = candidates.filter(c => c.reviewStatus === 'pending_review');
+            const skippedEnrichment = pending.filter(c => c.needsEnrichment).length;
+            const eligible = pending.filter(c => !c.needsEnrichment && c.mappingConfidence >= 0.70);
+            const skippedLowConf = pending.filter(c => !c.needsEnrichment && c.mappingConfidence < 0.70).length;
+            if (eligible.length === 0 && skippedEnrichment === 0) return null;
             return (
               <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-green-50 px-4 py-3 space-y-2">
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <p className="text-xs font-bold text-green-700">Approve All High Confidence</p>
+                    <p className="text-xs font-bold text-green-700">Approvazione Massiva — Alta Confidenza</p>
                     <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
-                      {highConfPending.length} candidate{highConfPending.length !== 1 ? 's' : ''} with confidence ≥70% pending review.
+                      {eligible.length} record approvabili (confidenza ≥70%, nessun arricchimento mancante).
+                      {skippedEnrichment > 0 && <span className="text-[#C76F3D]"> · {skippedEnrichment} bloccati (arricchimento richiesto)</span>}
+                      {skippedLowConf > 0 && <span className="text-[rgba(6,3,43,0.45)]"> · {skippedLowConf} esclusi (bassa confidenza)</span>}
                     </p>
                   </div>
-                  <button
-                    onClick={handleBulkApprove}
-                    disabled={bulkStatus === 'loading'}
-                    className="rounded-lg border border-green-300 bg-green-100 px-4 py-1.5 text-xs font-semibold text-green-700 hover:bg-[rgba(47,125,85,0.15)] disabled:opacity-50 transition-colors">
-                    {bulkStatus === 'loading' ? '⏳ Approving…' : `✓ Approve ${highConfPending.length} high-confidence`}
-                  </button>
+                  {eligible.length > 0 && (
+                    <button
+                      onClick={handleBulkApprove}
+                      disabled={bulkStatus === 'loading'}
+                      className="rounded-lg border border-green-300 bg-green-100 px-4 py-1.5 text-xs font-semibold text-green-700 hover:bg-[rgba(47,125,85,0.15)] disabled:opacity-50 transition-colors">
+                      {bulkStatus === 'loading' ? '⏳ Approvazione…' : `✓ Approva ${eligible.length} record`}
+                    </button>
+                  )}
                 </div>
                 {bulkProgress && (
                   <div className="text-[10px] text-[rgba(6,3,43,0.52)] font-mono">
-                    {bulkProgress.processed}/{bulkProgress.total} processed
+                    {bulkProgress.processed}/{bulkProgress.total} elaborati
                     {' · '}
-                    <span className="text-green-700">{bulkProgress.success} approved</span>
-                    {bulkProgress.failed > 0 && <span className="text-[#9E3B2F]"> · {bulkProgress.failed} failed</span>}
+                    <span className="text-green-700">{bulkProgress.success} approvati</span>
+                    {bulkProgress.failed > 0 && <span className="text-[#9E3B2F]"> · {bulkProgress.failed} falliti</span>}
+                    {bulkSkipCounts && bulkSkipCounts.enrichment > 0 && (
+                      <span className="text-[#C76F3D]"> · {bulkSkipCounts.enrichment} saltati (arricchimento)</span>
+                    )}
                   </div>
                 )}
-                {bulkStatus === 'done'  && <p className="text-[10px] text-green-700 font-semibold">✓ Bulk approve complete.</p>}
-                {bulkStatus === 'error' && <p className="text-[10px] text-[#9E3B2F]">⚠ Some records failed. Review individually.</p>}
+                {bulkStatus === 'done'  && <p className="text-[10px] text-green-700 font-semibold">✓ Approvazione massiva completata.</p>}
+                {bulkStatus === 'error' && <p className="text-[10px] text-[#9E3B2F]">⚠ Alcuni record hanno fallito. Rivedi manualmente.</p>}
               </div>
             );
           })()}

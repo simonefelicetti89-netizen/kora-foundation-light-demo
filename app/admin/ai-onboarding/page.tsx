@@ -1,5 +1,5 @@
-// A-15: AI Onboarding Engine — pipeline AI-assisted per intake.
-// Scopo: mostrare il percorso AI-assisted dall'intake al Decision Pack;
+// A-15: KORA Classification Engine™ — pipeline rule-based per intake.
+// Scopo: mostrare il percorso dall'intake al Decision Pack;
 //        tassonomia BCM rule-based, nessun LLM esterno su dati HR.
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 
@@ -49,7 +49,7 @@ export default function AIOnboardingPage() {
       {/* Page header */}
       <div>
         <div className="flex items-center gap-2">
-          <h1 className="text-xl font-bold text-[#06032B]">AI Onboarding Engine</h1>
+          <h1 className="text-xl font-bold text-[#06032B]">KORA Classification Engine™</h1>
           <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-[#8A5A00]">
             KORA Admin / Interno
           </span>
@@ -64,8 +64,8 @@ export default function AIOnboardingPage() {
           revisionati da esseri umani e resi pronti per il calcolo.
         </p>
         <AIBoundaryNotice>
-          L&apos;AI assiste il mapping e la revisione. Non calcola punteggi sui lavoratori.
-          AI v0.1 è rule-based/taxonomy-based. Nessun LLM esterno viene usato su dati HR o lavoratori.
+          KORA Classification Engine™ assiste il mapping e la revisione. Non calcola punteggi sui lavoratori.
+          Motore rule-based/taxonomy-based. Nessun LLM esterno viene usato su dati HR o lavoratori.
           Solo i record UEF revisionati e approvati possono entrare nel calcolo.
         </AIBoundaryNotice>
       </div>

@@ -330,7 +330,7 @@ export default function AdminWorkforceBaselinePage() {
           Onboarding Studio
         </Link>
         <Link href="/company/ingestion" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
-          AI Ingestion →
+          KORA Intake Engine™ →
         </Link>
       </div>
 

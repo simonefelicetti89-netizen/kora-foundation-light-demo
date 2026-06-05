@@ -73,7 +73,7 @@ const STORY_90: { n: number; title: string; body: string; tag: string }[] = [
   {
     n: 2,
     title: 'KORA li normalizza',
-    body: 'AI Onboarding → UEF draft. Un operatore umano approva ogni record prima che entri nella pipeline. Nessuna automazione cieca.',
+    body: 'KORA Classification Engine™ → UEF draft. Un operatore umano approva ogni record prima che entri nella pipeline. Nessuna automazione cieca.',
     tag: 'Stage 1–5',
   },
   {

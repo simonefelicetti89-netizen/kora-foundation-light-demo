@@ -119,7 +119,7 @@ function getDoctrineCopy(row: PipelineAnalyzedRow): { header: string; body: stri
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
-// C-03: AI Ingestion Assistant
+// C-03: KORA Intake Engine™
 export default function AIIngestionAssistant() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -145,7 +145,7 @@ export default function AIIngestionAssistant() {
       {/* ── A: Header ── */}
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <h1 className="text-xl font-bold text-[#06032B]">KORA AI Ingestion Assistant</h1>
+          <h1 className="text-xl font-bold text-[#06032B]">KORA Intake Engine™</h1>
           <span className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-600">
             Foundation Light Preview
           </span>
@@ -479,15 +479,15 @@ export default function AIIngestionAssistant() {
       {/* ── I: Privacy & Governance Boundaries ── */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-4 space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.52)]">
-          Privacy & Governance — Limiti dell&apos;AI Ingestion
+          Privacy & Governance — Limiti di KORA Intake Engine™
         </p>
         <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
-          KORA AI Ingestion lavora su dati aziendali e record di iniziativa. Non espone Worker PIB individuali,
+          KORA Intake Engine™ lavora su dati aziendali e record di iniziativa. Non espone Worker PIB individuali,
           dati sensibili individuali o ranking dei lavoratori.
         </p>
         <div className="grid sm:grid-cols-2 gap-3 pt-1">
           <div>
-            <p className="text-[10px] font-semibold text-green-600 mb-1">L&apos;AI Ingestion può:</p>
+            <p className="text-[10px] font-semibold text-green-600 mb-1">KORA Intake Engine™ può:</p>
             <ul className="space-y-0.5">
               {[
                 'Classificare tipo di azione/programma/evento',
@@ -504,7 +504,7 @@ export default function AIIngestionAssistant() {
             </ul>
           </div>
           <div>
-            <p className="text-[10px] font-semibold text-[rgba(158,59,47,0.90)] mb-1">L&apos;AI Ingestion NON può:</p>
+            <p className="text-[10px] font-semibold text-[rgba(158,59,47,0.90)] mb-1">KORA Intake Engine™ NON può:</p>
             <ul className="space-y-0.5">
               {[
                 'Inferire stato di salute individuale',

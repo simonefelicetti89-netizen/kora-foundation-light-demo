@@ -132,7 +132,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
           {tenant?.company_name ?? companyId}
         </h1>
         <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">
-          Prepara budget, perimetro fiscale, iniziative, policy e dati grezzi prima di AI Ingestion, Eligibility Gate e UEF Review.
+          Prepara budget, perimetro fiscale, iniziative, policy e dati grezzi prima di KORA Intake Engine™, Eligibility Gate e UEF Review.
         </p>
       </div>
 
@@ -545,7 +545,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
           Workforce Baseline
         </Link>
         <Link href="/company/ingestion" className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
-          AI Ingestion →
+          KORA Intake Engine™ →
         </Link>
       </div>
 

@@ -16,6 +16,7 @@
 // Admin-only upload path; real-data gate requires Gate 3B confirmation.
 
 import * as XLSX from 'xlsx';
+import { suggestColumnMapping } from './column-mapping';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ export type ParsedExcelSheet = {
   rows: Array<Record<string, string>>;
   warnings: ExcelParseWarning[];
   errors: ExcelParseError[];
+  skippedPreHeaderRows: number;
 };
 
 export type ExcelSheetSummary = {
@@ -71,6 +73,23 @@ function cellToString(cell: unknown): string {
   return String(cell).trim();
 }
 
+// ── B65-B1: Pre-header row detection ─────────────────────────────────────────
+// Scans up to 5 rows; returns index of first row with ≥2 canonical field matches.
+const PRE_HEADER_MAX_SCAN = 5;
+const PRE_HEADER_MIN_MATCH = 2;
+
+function detectExcelPreHeaderRows(rawRows: unknown[][]): number {
+  for (let i = 0; i < Math.min(rawRows.length, PRE_HEADER_MAX_SCAN); i++) {
+    const row = (rawRows[i] as unknown[]) ?? [];
+    const cells = row.map(c => String(c ?? '').trim()).filter(Boolean);
+    if (cells.length === 0) continue;
+    const suggestions = suggestColumnMapping(cells);
+    const matchCount = suggestions.filter(s => s.suggestedField !== null && s.confidence >= 0.65).length;
+    if (matchCount >= PRE_HEADER_MIN_MATCH) return i;
+  }
+  return 0;
+}
+
 // ── Sheet parser ──────────────────────────────────────────────────────────────
 
 function parseWorksheetToRows(
@@ -86,6 +105,7 @@ function parseWorksheetToRows(
       sheetName, headers: [], rows: [],
       warnings,
       errors: [{ code: 'EMPTY_SHEET', message: `Sheet "${sheetName}" is empty or has no range.` }],
+      skippedPreHeaderRows: 0,
     };
   }
 
@@ -99,16 +119,25 @@ function parseWorksheetToRows(
 
   if (raw.length === 0) {
     errors.push({ code: 'EMPTY_SHEET', message: `Sheet "${sheetName}" has no content.` });
-    return { sheetName, headers: [], rows: [], warnings, errors };
+    return { sheetName, headers: [], rows: [], warnings, errors, skippedPreHeaderRows: 0 };
   }
 
-  // First row → headers
-  const rawHeaders: string[] = (raw[0] as unknown[] ?? []).map(h => String(h ?? ''));
+  // B65-B1: Detect and skip pre-header rows (title/metadata rows before column headers)
+  const headerRowIndex = detectExcelPreHeaderRows(raw as unknown[][]);
+  if (headerRowIndex > 0) {
+    warnings.push({
+      code: 'PRE_HEADER_ROWS_SKIPPED',
+      message: `Skipped ${headerRowIndex} pre-header row(s) before column headers.`,
+    });
+  }
+
+  // Header row at headerRowIndex (was always row[0])
+  const rawHeaders: string[] = ((raw[headerRowIndex] as unknown[]) ?? []).map(h => String(h ?? ''));
   const normalHeaders = rawHeaders.map(normalizeHeader);
 
   if (normalHeaders.every(h => h === '')) {
     errors.push({ code: 'EMPTY_HEADERS', message: 'Header row is empty or contains only special characters.' });
-    return { sheetName, headers: [], rows: [], warnings, errors };
+    return { sheetName, headers: [], rows: [], warnings, errors, skippedPreHeaderRows: headerRowIndex };
   }
 
   // Duplicate header check
@@ -137,11 +166,12 @@ function parseWorksheetToRows(
 
   const usedHeaders = normalHeaders.filter(h => h !== '');
 
-  // Data rows (index 1+)
+  // Data rows start after header row
+  const dataStartIndex = headerRowIndex + 1;
   const rows: Array<Record<string, string>> = [];
-  const limit = maxRows !== undefined ? Math.min(raw.length, maxRows + 1) : raw.length;
+  const limit = maxRows !== undefined ? Math.min(raw.length, dataStartIndex + maxRows) : raw.length;
 
-  for (let i = 1; i < limit; i++) {
+  for (let i = dataStartIndex; i < limit; i++) {
     const rawRow = (raw[i] as unknown[]) ?? [];
 
     // Skip completely empty rows
@@ -164,7 +194,7 @@ function parseWorksheetToRows(
     });
   }
 
-  return { sheetName, headers: usedHeaders, rows, warnings, errors };
+  return { sheetName, headers: usedHeaders, rows, warnings, errors, skippedPreHeaderRows: headerRowIndex };
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -208,6 +238,7 @@ export function parseExcelSheet(buf: Buffer, sheetName: string, maxRows?: number
         code: 'SHEET_NOT_FOUND',
         message: `Sheet "${sheetName}" not found. Available: ${workbook.SheetNames.map(s => `"${s}"`).join(', ')}.`,
       }],
+      skippedPreHeaderRows: 0,
     };
   }
 

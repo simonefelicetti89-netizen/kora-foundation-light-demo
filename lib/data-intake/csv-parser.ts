@@ -7,6 +7,7 @@
 // Server-side only (Node.js runtime). Do NOT import from browser components.
 
 import Papa from 'papaparse';
+import { suggestColumnMapping } from './column-mapping';
 
 export type CsvParseWarning = {
   code: string;
@@ -27,10 +28,29 @@ export type ParsedCsvResult = {
   delimiter: ',' | ';' | '\t';
   warnings: CsvParseWarning[];
   errors: CsvParseError[];
+  skippedPreHeaderRows: number;
 };
 
 function normalizeHeader(raw: string): string {
   return raw.trim().toLowerCase().replace(/[\s\-]+/g, '_').replace(/[^a-z0-9_]/g, '');
+}
+
+// B65-B1: Detect pre-header rows (title rows, metadata rows before actual column headers).
+// Scans first MAX_SCAN rows; returns index of first row with MIN_MATCH canonical field matches.
+const PRE_HEADER_MAX_SCAN = 5;
+const PRE_HEADER_MIN_MATCH = 2;
+
+function detectPreHeaderRows(lines: string[], delimiter: string): number {
+  for (let i = 0; i < Math.min(lines.length, PRE_HEADER_MAX_SCAN); i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    // Parse cells — handle quoted values crudely (good enough for header detection)
+    const cells = line.split(delimiter).map(c => c.replace(/^"(.*)"$/, '$1').trim());
+    const suggestions = suggestColumnMapping(cells);
+    const matchCount = suggestions.filter(s => s.suggestedField !== null && s.confidence >= 0.65).length;
+    if (matchCount >= PRE_HEADER_MIN_MATCH) return i;
+  }
+  return 0;
 }
 
 function detectDelimiter(firstLine: string): ',' | ';' | '\t' {
@@ -50,13 +70,25 @@ export function parseCsvContent(content: string): ParsedCsvResult {
 
   if (!text.trim()) {
     errors.push({ code: 'EMPTY_FILE', message: 'Empty file: no content found.' });
-    return { rows: [], headers: [], delimiter: ',', warnings, errors };
+    return { rows: [], headers: [], delimiter: ',', warnings, errors, skippedPreHeaderRows: 0 };
   }
 
-  const firstLine = text.split(/\r?\n/)[0] ?? '';
+  const allLines = text.split(/\r?\n/);
+  const firstLine = allLines[0] ?? '';
   const delimiter = detectDelimiter(firstLine);
 
-  const result = Papa.parse<Record<string, string>>(text, {
+  // B65-B1: Skip pre-header rows (title/metadata rows before real column header)
+  const headerRowIndex = detectPreHeaderRows(allLines, delimiter);
+  let parseText = text;
+  if (headerRowIndex > 0) {
+    parseText = allLines.slice(headerRowIndex).join('\n');
+    warnings.push({
+      code: 'PRE_HEADER_ROWS_SKIPPED',
+      message: `Skipped ${headerRowIndex} pre-header row(s) before column headers.`,
+    });
+  }
+
+  const result = Papa.parse<Record<string, string>>(parseText, {
     header:         true,
     delimiter,
     skipEmptyLines: true,
@@ -77,15 +109,15 @@ export function parseCsvContent(content: string): ParsedCsvResult {
 
   if (headers.length === 0) {
     errors.push({ code: 'NO_HEADERS', message: 'No headers detected in first row.' });
-    return { rows: [], headers: [], delimiter, warnings, errors };
+    return { rows: [], headers: [], delimiter, warnings, errors, skippedPreHeaderRows: headerRowIndex };
   }
   if (headers.every(h => h === '')) {
     errors.push({ code: 'EMPTY_HEADERS', message: 'Header row is empty or contains only special characters.' });
-    return { rows: [], headers: [], delimiter, warnings, errors };
+    return { rows: [], headers: [], delimiter, warnings, errors, skippedPreHeaderRows: headerRowIndex };
   }
   if (result.data.length === 0) {
     errors.push({ code: 'NO_DATA_ROWS', message: 'File must contain at least one data row after the header.' });
-    return { rows: [], headers, delimiter, warnings, errors };
+    return { rows: [], headers, delimiter, warnings, errors, skippedPreHeaderRows: headerRowIndex };
   }
 
   // Detect duplicate headers
@@ -109,7 +141,7 @@ export function parseCsvContent(content: string): ParsedCsvResult {
     return out;
   });
 
-  return { rows, headers, delimiter, warnings, errors };
+  return { rows, headers, delimiter, warnings, errors, skippedPreHeaderRows: headerRowIndex };
 }
 
 // Flatten structured warnings to plain string array for route response compatibility.
