@@ -120,6 +120,43 @@ export interface PdfData {
     }>;
     caveat: string;
   } | null;
+  // B62-B: Impact Units™ aggregate summary — safe for company-level display.
+  // Never includes raw factor traces (server-side only).
+  iuSummary: {
+    totalRecords:          number;
+    computedRecords:       number;
+    blockedRecords:        number;
+    limitedRecords:        number;
+    reviewRequiredRecords: number;
+    totalImpactUnits:      number;
+    impactUnitsByPillar:   { LIFE: number; GROWTH: number; CONNECTION: number; IMPACT: number; LEGACY: number };
+    recordsWithoutIu:      number;
+    averageCq:             number;
+    averageEv:             number;
+    methodologyVersion:    string;
+    calibrationStatus:     string;
+  } | null;
+  // B63-B: PIB Aggregation Summary — Stage 11 mandatory intermediate layer (AG-01).
+  // Aggregate-safe: no individual worker data, no PIB snapshots, no workerPseudonymId.
+  // estimationBasis='aggregate_estimate' in Foundation Light v0.1.
+  pibAggregation: {
+    period:                string;
+    workforceCount:        number;
+    activatedWorkers:      number;
+    meaningfulWorkers:     number;
+    estimatedAR:           number;
+    estimatedMAR:          number;
+    totalIU:               number;
+    avgEstimatedPIB:       number;
+    pillarTotals:          { LIFE: number; GROWTH: number; CONNECTION: number; IMPACT: number; LEGACY: number };
+    pillarShares:          { LIFE: number; GROWTH: number; CONNECTION: number; IMPACT: number; LEGACY: number };
+    wbEstimate:            number | null;
+    pibSnapshotsAvailable: boolean;
+    estimationBasis:       string;
+    estimationNote:        string;
+    calibrationStatus:     string;
+    methodologyVersion:    string;
+  } | null;
   auditSummary: Array<{
     action: string;
     resourceType: string | null;
@@ -461,6 +498,54 @@ export async function fetchPdfData(
     }
   }
 
+  // ── B62-B: IU summary — aggregate from analytics.impact_unit ───────────────────
+  // Aggregate only: never surfaces raw factor traces.
+  // Keyed by tenant_id + reporting_period (same batch scope as enrichment).
+  let iuSummary: PdfData['iuSummary'] = null;
+  {
+    const { data: iuRows, error: iuErr } = await (db as any)
+      .schema('analytics')
+      .from('impact_unit')
+      .select('computed, exclusion_reason, impact_units_total, life_iu, growth_iu, connection_iu, impact_iu, legacy_iu, cq, ev, methodology_version, calibration_status')
+      .eq('tenant_id', (tenant as { id: string }).id)
+      .eq('reporting_period', reportingPeriod);
+
+    if (iuErr) {
+      console.error('[fetchPdfData] impact_unit fetch failed:', iuErr.message);
+    } else if (iuRows && iuRows.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rows = iuRows as any[];
+      const computedRows  = rows.filter((r) => Boolean(r.computed));
+      const blockedRows   = rows.filter((r) => !r.computed && String(r.exclusion_reason ?? '').startsWith('Blocked'));
+      const limitedRows   = rows.filter((r) => !r.computed && String(r.exclusion_reason ?? '').includes('Economic Relief'));
+      const reviewRows    = rows.filter((r) => !r.computed && String(r.exclusion_reason ?? '').includes('Review'));
+
+      const totalIU = rows.reduce((s: number, r: any) => s + (Number(r.impact_units_total) || 0), 0);
+      const avg = (arr: number[]) => arr.length === 0 ? 0 : +(arr.reduce((s, v) => s + v, 0) / arr.length).toFixed(3);
+
+      iuSummary = {
+        totalRecords:          rows.length,
+        computedRecords:       computedRows.length,
+        blockedRecords:        blockedRows.length,
+        limitedRecords:        limitedRows.length,
+        reviewRequiredRecords: reviewRows.length,
+        totalImpactUnits:      +totalIU.toFixed(4),
+        impactUnitsByPillar:   {
+          LIFE:       +rows.reduce((s: number, r: any) => s + (Number(r.life_iu)       || 0), 0).toFixed(4),
+          GROWTH:     +rows.reduce((s: number, r: any) => s + (Number(r.growth_iu)     || 0), 0).toFixed(4),
+          CONNECTION: +rows.reduce((s: number, r: any) => s + (Number(r.connection_iu) || 0), 0).toFixed(4),
+          IMPACT:     +rows.reduce((s: number, r: any) => s + (Number(r.impact_iu)     || 0), 0).toFixed(4),
+          LEGACY:     +rows.reduce((s: number, r: any) => s + (Number(r.legacy_iu)     || 0), 0).toFixed(4),
+        },
+        recordsWithoutIu:   rows.length - computedRows.length,
+        averageCq:          avg(rows.map((r: any) => Number(r.cq) || 0)),
+        averageEv:          avg(rows.map((r: any) => Number(r.ev) || 0)),
+        methodologyVersion: rows[0].methodology_version ?? 'KORA-METHOD-v1.0',
+        calibrationStatus:  rows[0].calibration_status  ?? 'pre_empirical_calibration',
+      };
+    }
+  }
+
   // Normalize confidence: DB may store 0–1 or 0–100 depending on pipeline version.
   const rawConf = confRow?.confidence_score ?? 0;
   const confidence01 = rawConf > 1 ? rawConf / 100 : rawConf;
@@ -512,6 +597,11 @@ export async function fetchPdfData(
     pillarDistribution,
     bti,
     enrichment,
+    iuSummary,
+    // B63-B: PIB Aggregation not persisted server-side in Foundation Light v0.1.
+    // Set to null — the pipeline computes it in-memory only for now.
+    // Post-Gate 2: persist CompanyPIBAggregation to analytics.pib_result table.
+    pibAggregation: null,
     reportingAlignment,
     reportingReadiness,
     koraIndex: {

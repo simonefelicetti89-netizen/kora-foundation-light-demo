@@ -8,6 +8,8 @@ import type {
   SafeguardStatus,
   EligibilityClass,
   IngestionSourceType,
+  ImpactUnitComputationResult,
+  ImpactUnitComputationSummary,
 } from '@/lib/types';
 
 // ── Part 1 — Tenant / mode types ─────────────────────────────────────────────
@@ -419,6 +421,61 @@ export interface ComponentSignals {
   // They are returned in KoraIndexResult.componentDetail for persistence.
 }
 
+// ── PIB Types — Stage 11 of the 14-stage algorithm ────────────────────────────
+//
+// PIB (Personal Impact Balance) is the mandatory intermediate layer before the
+// KORA Index. AG-01 canonical rule (doc 10 §26): every KORA Index calculation
+// must pass through individual PIBs.
+//
+// Foundation Light v0.1 constraint:
+//   UEF records are program-level aggregates (not per-worker).
+//   PIBSnapshot[] (individual PIBs) requires per-worker UEF records — not
+//   available in the Foundation Light aggregate upload model.
+//   CompanyPIBAggregation uses estimationBasis='aggregate_estimate' in v0.1.
+//   Individual PIBs become available in Pilot+ when My KORA participation
+//   confirmation or individual provider exports are active.
+
+export type PIBEstimationBasis = 'individual_pib' | 'aggregate_estimate';
+
+// Per-worker PIB snapshot — never employer-visible (AG-01 / D-04).
+// Foundation Light v0.1: not computed (aggregate model). Future My KORA consumer.
+export interface PIBSnapshot {
+  workerPseudonymId: string;  // pseudonymized — never employer-visible
+  period: string;
+  totalPIB: number;
+  lifePIB: number;
+  growthPIB: number;
+  connectionPIB: number;
+  impactPIB: number;
+  legacyPIB: number;
+  impactUnitCount: number;
+  initiativeCount: number;
+}
+
+// Company-level PIB aggregate — privacy-safe output for KORA Index Engine.
+// Employer-facing. Never includes workerPseudonymId or individual PIBs.
+export interface CompanyPIBAggregation {
+  period: string;
+  workforceCount: number;
+  activatedWorkers: number;           // workers estimated to have PIB > 0
+  meaningfulWorkers: number;          // workers estimated to have meaningful PIB (L2+ evidence)
+  estimatedAR: number;                // 0–1 — upper-bound aggregate estimate
+  estimatedMAR: number;               // 0–1 — upper-bound aggregate estimate
+  totalIU: number;
+  avgEstimatedPIB: number;            // totalIU / activatedWorkers (or 0 if none)
+  pillarTotals: Record<Pillar, number>;
+  pillarShares: Record<Pillar, number>;   // 0–1 shares summing to 1
+  // WB Gini coefficient — null in aggregate model (requires individual PIB distribution).
+  // Available in Pilot+ when individual PIBSnapshots are computed.
+  wbEstimate: number | null;
+  pibSnapshotsAvailable: boolean;
+  estimationBasis: PIBEstimationBasis;
+  estimationNote: string;
+  calibrationStatus: 'pre_empirical_calibration';
+  methodologyVersion: string;
+  warnings: string[];
+}
+
 export interface KoraComputationResult {
   tenantId: string;
   batchId: string;
@@ -432,6 +489,15 @@ export interface KoraComputationResult {
   componentSignals: ComponentSignals;  // v1.0: NI, VR, CO pre-computed signals
   explainabilityTrace: ExplainabilityTraceItem[];
   reachSemantics?: ReachSemanticsResult;  // B24: optional — present when records available
+  // B62-B: Impact Units™ trace layer — Stage 10 of the 14-stage algorithm.
+  // iuSummary: aggregate view safe for company-level display.
+  // iuResults: per-record results with factor traces — server-side only, never returned to employer-facing API responses.
+  iuSummary?: ImpactUnitComputationSummary;
+  iuResults?: ImpactUnitComputationResult[];
+  // B63-B: PIB Aggregation — Stage 11 of the 14-stage algorithm (AG-01 compliance).
+  // Mandatory intermediate layer between IU and KORA Index.
+  // estimationBasis='aggregate_estimate' in Foundation Light v0.1 (program-level UEF records).
+  pibAggregation?: CompanyPIBAggregation;
   warnings: string[];
   createdAt: string;
 }

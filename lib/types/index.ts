@@ -614,7 +614,7 @@ export interface ImpactUnitComputationResult {
   base_contribution_bc: number;
   completeness_quality_cq: number;
   evidence_verification_ev: number;
-  contextual_factor_cf: number;
+  continuity_factor_cf: number;
   anti_gaming_factor_agf: number;
   impact_units_total: number;
   impact_units_by_pillar: Partial<Record<PillarCode, number>>;

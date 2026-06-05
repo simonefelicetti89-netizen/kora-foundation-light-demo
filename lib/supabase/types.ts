@@ -209,6 +209,37 @@ export interface ConfidenceResultRow {
   updated_at: string;
 }
 
+// ── analytics.impact_unit ─────────────────────────────────────────────────────
+// Stage 10 of the 14-stage algorithm: IU_{e,p} = NM × BC × CQ × EV × CF × AGF
+// No worker identity. No PIB. Aggregate-safe record-level only.
+// factor_trace is stored as JSONB — never returned to employer-facing API responses.
+
+export interface ImpactUnitRow {
+  id:                  string;
+  tenant_id:           string;
+  uef_record_id:       string;
+  source_batch_id:     string;
+  reporting_period:    string;
+  nm:                  number;
+  bc:                  number;
+  cq:                  number;
+  ev:                  number;
+  cf:                  number;
+  agf:                 number;
+  impact_units_total:  number;
+  life_iu:             number;
+  growth_iu:           number;
+  connection_iu:       number;
+  impact_iu:           number;
+  legacy_iu:           number;
+  computed:            boolean;
+  exclusion_reason:    string | null;
+  factor_trace:        Json;           // ImpactUnitFactorTrace[] — server-side only
+  methodology_version: string;
+  calibration_status:  string;
+  created_at:          string;
+}
+
 // ── analytics.decision_pack_version ───────────────────────────────────────────
 
 export interface DecisionPackVersionRow {
@@ -275,6 +306,7 @@ export interface Database {
       source_batch:           { Row: SourceBatchRow;         Insert: Omit<SourceBatchRow,  'id'|'created_at'|'updated_at'>; Update: Partial<SourceBatchRow>; Relationships: [] };
       uef_record:             { Row: UefRecordRow;           Insert: Omit<UefRecordRow,    'id'|'created_at'|'updated_at'>; Update: Partial<UefRecordRow>; Relationships: [] };
       kora_index_result:      { Row: KoraIndexResultRow;     Insert: Omit<KoraIndexResultRow, 'id'|'created_at'>; Update: Partial<KoraIndexResultRow>; Relationships: [] };
+      impact_unit:            { Row: ImpactUnitRow;          Insert: Omit<ImpactUnitRow, 'id'|'created_at'>; Update: never; Relationships: [] };
       bti_result:             { Row: BtiResultRow;           Insert: Omit<BtiResultRow,    'id'|'created_at'|'updated_at'>; Update: Partial<BtiResultRow>; Relationships: [] };
       activation_result:      { Row: ActivationResultRow;    Insert: Omit<ActivationResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ActivationResultRow>; Relationships: [] };
       confidence_result:      { Row: ConfidenceResultRow;    Insert: Omit<ConfidenceResultRow,'id'|'created_at'|'updated_at'>; Update: Partial<ConfidenceResultRow>; Relationships: [] };

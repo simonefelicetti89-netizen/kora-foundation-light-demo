@@ -13,13 +13,15 @@ import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 // Matches the fields selected from analytics.uef_record.
 
 export interface UefRowForScoring {
-  id:             string;
-  raw_name:       string;
-  eligibility:    string;            // 'eligible' | 'limited' | 'blocked'
-  primary_pillar: string | null;
-  action_family:  string | null;
-  event_nature:   string | null;
-  payload:        Record<string, unknown>;
+  id:                        string;
+  raw_name:                  string;
+  eligibility:               string;            // 'eligible' | 'limited' | 'blocked'
+  primary_pillar:            string | null;
+  action_family:             string | null;
+  event_nature:              string | null;
+  missing_fields:            string[];
+  approved_for_impact_units: boolean;
+  payload:                   Record<string, unknown>;
 }
 
 // ── Adapter ───────────────────────────────────────────────────────────────────
@@ -94,6 +96,9 @@ export function buildScoringRecordsFromApprovedUef(
       b6_reason_codes:    pl['reason_codes']   ?? [],
       b6_interpreter:     pl['interpreter_version'] ?? '0.1',
       b6_approved_for_scoring: true,
+      // ── IU traceability — passed through to IUComputationService ────────────
+      b6_missing_fields:       row.missing_fields,
+      b6_approved_for_iu:      row.approved_for_impact_units,
       b11_enriched:       pl['b11_enriched']   ?? false,
 
       // B15: UEF-approved classification — eligibility-gate must not re-classify these records.

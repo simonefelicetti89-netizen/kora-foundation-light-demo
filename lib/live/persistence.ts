@@ -13,6 +13,7 @@
 
 import { getSupabaseServiceClient, type ServiceDb } from '@/lib/supabase/server';
 import type { KoraComputationResult, KoraIndexMacroblocks } from '@/lib/kora-engine/types';
+import type { Json } from '@/lib/supabase/types';
 import type { KoraIndexComponent, MacroblockScore, MacroblockCode } from '@/lib/types';
 import {
   getMethodologyVersion,
@@ -94,6 +95,7 @@ export interface PersistenceResult {
   confidenceResultId:    string;
   btiResultId:           string;
   koraIndexResultId:     string;
+  iuCount:               number;   // number of impact_unit rows persisted (0 if none)
   // N≥10 suppression applied to department_activation before persist.
   // Caller should write audit events using this metadata.
   segmentSuppression:    SegmentSuppressionMeta[];
@@ -256,5 +258,60 @@ export async function persistKoraComputationResult(params: {
   if (kiErr || !kiData) throw new Error(`[KORA persist] kora_index_result: ${kiErr?.message ?? 'no data'}`);
   const koraIndexResultId = kiData.id as string;
 
-  return { activationResultId, confidenceResultId, btiResultId, koraIndexResultId, segmentSuppression };
+  // ── 5. impact_unit — persist per-record IU rows ──────────────────────────────
+  // No worker identity. No PIB. Record-level only. factor_trace stored as JSONB.
+  // cost_per_impact_unit = total eligible activation spend ÷ total IU generated.
+  let iuCount = 0;
+
+  if (result.iuResults && result.iuResults.length > 0) {
+    const iuRows = result.iuResults.map((r) => ({
+      tenant_id:           tenantId,
+      uef_record_id:       r.record_id,
+      source_batch_id:     batchId,
+      reporting_period:    reportingPeriod,
+      nm:                  r.normalized_magnitude_nm,
+      bc:                  r.base_contribution_bc,
+      cq:                  r.completeness_quality_cq,
+      ev:                  r.evidence_verification_ev,
+      cf:                  r.continuity_factor_cf,
+      agf:                 r.anti_gaming_factor_agf,
+      impact_units_total:  r.impact_units_total,
+      life_iu:             r.impact_units_by_pillar['LIFE']       ?? 0,
+      growth_iu:           r.impact_units_by_pillar['GROWTH']     ?? 0,
+      connection_iu:       r.impact_units_by_pillar['CONNECTION'] ?? 0,
+      impact_iu:           r.impact_units_by_pillar['IMPACT']     ?? 0,
+      legacy_iu:           r.impact_units_by_pillar['LEGACY']     ?? 0,
+      computed:            r.computed,
+      exclusion_reason:    r.exclusion_reason,
+      factor_trace:        r.formula_trace as unknown as Json,
+      methodology_version: r.methodology_version,
+      calibration_status:  r.calibration_status,
+    }));
+
+    const { error: iuErr } = await (db as any)
+      .schema('analytics')
+      .from('impact_unit')
+      .insert(iuRows);
+
+    if (iuErr) {
+      console.error('[KORA persist] impact_unit insert error:', iuErr.message, '— IU persistence skipped.');
+    } else {
+      iuCount = iuRows.length;
+    }
+
+    // Update cost_per_impact_unit in bti_result:
+    // = total deep activation spend ÷ total IU generated (budget-mediated only).
+    // Returns null when denominator = 0 (no IU generated).
+    const totalIU = result.iuSummary?.total_impact_units ?? 0;
+    if (totalIU > 0 && result.bti.deepActivationSpend > 0) {
+      const cpiu = +(result.bti.deepActivationSpend / totalIU).toFixed(2);
+      await db
+        .schema('analytics')
+        .from('bti_result')
+        .update({ cost_per_impact_unit: cpiu })
+        .eq('id', btiResultId);
+    }
+  }
+
+  return { activationResultId, confidenceResultId, btiResultId, koraIndexResultId, iuCount, segmentSuppression };
 }

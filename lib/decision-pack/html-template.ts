@@ -85,7 +85,7 @@ const PILLAR_ORDER = ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'] as const;
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, pillarDistribution, bti, enrichment, reportingAlignment, reportingReadiness, components, macroblocks } = data;
+  const { meta, koraIndex, pillarDistribution, bti, iuSummary, pibAggregation, enrichment, reportingAlignment, reportingReadiness, components, macroblocks } = data;
 
   const sf       = koraIndex.safeguardStatus;
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
@@ -1070,7 +1070,200 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
 
 <!-- ═══════════════════════════════════════════
-     PAGE 6 — EVIDENCE & CONFIDENCE
+     PAGE 6 — IMPACT UNITS™ TRACE LAYER
+     ═══════════════════════════════════════════ -->
+<div class="page cp">
+  ${pageHeader('Impact Units™ — Strato di Computazione')}
+  <div class="pc">
+
+    <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:16pt;max-width:440pt;">
+      Impact Units™ (IU) è lo strato computazionale canonico del 14° stage della metodologia KORA.
+      Formula: IU = NM × BC × CQ × EV × CF × AGF. Ogni record UEF approvato genera un valore IU.
+      Questa sezione mostra l'aggregato — i dettagli per-record (factor trace) sono riservati al server.
+    </p>
+
+    ${iuSummary ? (() => {
+      const totalIU    = iuSummary.totalImpactUnits;
+      const computed   = iuSummary.computedRecords;
+      const total      = iuSummary.totalRecords;
+      const computedPct = total > 0 ? Math.round((computed / total) * 100) : 0;
+      const pillarKeys = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
+      const pillarColors: Record<string, string> = {
+        LIFE: '#10B981', GROWTH: '#6156F5', CONNECTION: '#F59E0B', IMPACT: '#EF4444', LEGACY: '#8B5CF6',
+      };
+      return `
+    <div class="fg-kpi-row">
+      <div class="fg-kpi fg-kpi-hi">
+        <div class="fg-kpi-label">Total Impact Units™</div>
+        <div class="fg-kpi-val">${totalIU > 0 ? totalIU.toFixed(2) : '—'}</div>
+        <div class="fg-kpi-sub">IU generate da record approvati</div>
+      </div>
+      <div class="fg-kpi" style="border-color:#6156F5;background:#f5f4ff;">
+        <div class="fg-kpi-label">Record Computati</div>
+        <div class="fg-kpi-val" style="color:#6156F5;">${computed}<span style="font-size:10pt;font-weight:400;color:#9899b3;"> / ${total}</span></div>
+        <div class="fg-kpi-sub">${computedPct}% dei record eligible producono IU</div>
+      </div>
+      <div class="fg-kpi">
+        <div class="fg-kpi-label">Qualità Media (CQ)</div>
+        <div class="fg-kpi-val">${Math.round(iuSummary.averageCq * 100)}%</div>
+        <div class="fg-kpi-sub">completeness quality — media ponderata</div>
+      </div>
+      <div class="fg-kpi">
+        <div class="fg-kpi-label">Verifica Media (EV)</div>
+        <div class="fg-kpi-val">${Math.round(iuSummary.averageEv * 100)}%</div>
+        <div class="fg-kpi-sub">evidence verification — media ponderata</div>
+      </div>
+    </div>
+
+    ${totalIU > 0 ? `
+    <div class="fg-bar-section">
+      <div class="fg-bar-lbl">Distribuzione IU per Pillar</div>
+      <div class="fg-class-grid">
+        ${pillarKeys.map((p) => {
+          const iu  = iuSummary.impactUnitsByPillar[p] ?? 0;
+          const pct = totalIU > 0 ? Math.round((iu / totalIU) * 100) : 0;
+          return `
+        <div class="fg-class-card" style="border-color:${pillarColors[p]}33;background:${pillarColors[p]}0d;">
+          <div class="fg-class-label" style="color:${pillarColors[p]};">${esc(p)}</div>
+          <div class="fg-class-count">${iu > 0 ? iu.toFixed(2) : '—'}</div>
+          <div class="fg-class-amount">${pct}% del totale IU</div>
+        </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+
+    ${iuSummary.blockedRecords > 0 || iuSummary.limitedRecords > 0 || iuSummary.reviewRequiredRecords > 0 ? `
+    <div class="fg-board-note">
+      ${iuSummary.blockedRecords > 0 ? `<strong>${iuSummary.blockedRecords} record Blocked by Design</strong> — compliance obbligatoria. IU = 0 per architettura. ` : ''}
+      ${iuSummary.limitedRecords > 0 ? `<strong>${iuSummary.limitedRecords} record Economic Relief</strong> — tracciati solo in BTI. No IU. ` : ''}
+      ${iuSummary.reviewRequiredRecords > 0 ? `<strong>${iuSummary.reviewRequiredRecords} record in Human Review</strong> — IU computation sospesa fino a revisione. ` : ''}
+    </div>` : ''}
+
+    <div class="fg-note">
+      <strong>Nota metodologica:</strong> Impact Units™ è uno strato di computazione, non un punteggio di performance individuale.
+      I fattori NM, BC, CQ, EV, CF e AGF sono stub pre-calibrazione empirica (Foundation Light v0.1).
+      CF (Continuity Factor) è una proxy sito-based in v0.1 — il valore canonico richiede dati cross-periodo post-PIB.
+      Tutti i parametri vengono letti da <code>lib/methodology-config/v0.1.ts</code> — nessun valore codificato a mano.
+      ${iuSummary.calibrationStatus ? `calibration_status: <strong>${esc(iuSummary.calibrationStatus)}</strong>` : ''} ·
+      ${iuSummary.methodologyVersion ? `methodology: <strong>${esc(iuSummary.methodologyVersion)}</strong>` : ''}
+    </div>
+`;
+    })() : `
+    <div class="fg-stub">
+      Impact Units™ non disponibili per questo batch.
+      Verificare che il batch sia stato elaborato con la pipeline v1.0+ e che i record UEF abbiano approved_for_impact_units = true.
+    </div>
+    `}
+
+  </div>
+  ${pageFooter()}
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE 6B — PIB AGGREGATION SUMMARY (AG-01)
+     ═══════════════════════════════════════════ -->
+<div class="page cp">
+  ${pageHeader('PIB Aggregation — Stage 11 / AG-01')}
+  <div class="pc">
+
+    <div class="fg-intro">
+      Personal Impact Balance (PIB) è lo strato intermedio obbligatorio tra Impact Units™ e il KORA Index.
+      Ogni calcolo del KORA Index passa attraverso i PIB individuali — regola AG-01 (doc 10 §26).
+      In Foundation Light v0.1, i record UEF sono aggregati per programma; i PIB individuali per lavoratore
+      saranno disponibili in Pilot+ con la conferma di partecipazione via My KORA.
+    </div>
+
+    ${pibAggregation ? (() => {
+      const totalIU    = pibAggregation.totalIU;
+      const avgPIB     = pibAggregation.avgEstimatedPIB;
+      const arPct2     = Math.round(pibAggregation.estimatedAR * 100);
+      const marPct2    = Math.round(pibAggregation.estimatedMAR * 100);
+      return `
+    <div class="fg-kpi-row">
+      <div class="fg-kpi">
+        <div class="fg-kpi-val">${totalIU.toFixed(2)}</div>
+        <div class="fg-kpi-label">Total Impact Units™</div>
+      </div>
+      <div class="fg-kpi">
+        <div class="fg-kpi-val">${avgPIB.toFixed(3)}</div>
+        <div class="fg-kpi-label">Avg Estimated PIB / worker attivo</div>
+      </div>
+      <div class="fg-kpi">
+        <div class="fg-kpi-val">${pibAggregation.activatedWorkers}</div>
+        <div class="fg-kpi-label">Lavoratori attivati (stima bounded reach)</div>
+      </div>
+      <div class="fg-kpi">
+        <div class="fg-kpi-val">${pibAggregation.meaningfulWorkers}</div>
+        <div class="fg-kpi-label">Lavoratori meaningful (stima bounded reach)</div>
+      </div>
+    </div>
+
+    <div class="fg-kpi-row" style="margin-top:8pt;">
+      <div class="fg-kpi">
+        <div class="fg-kpi-val">${arPct2}%</div>
+        <div class="fg-kpi-label">AR stimato (da motore attivazione)</div>
+      </div>
+      <div class="fg-kpi">
+        <div class="fg-kpi-val">${marPct2}%</div>
+        <div class="fg-kpi-label">MAR stimato (da motore attivazione)</div>
+      </div>
+      <div class="fg-kpi">
+        <div class="fg-kpi-val">${pibAggregation.wbEstimate !== null ? pibAggregation.wbEstimate.toFixed(3) : '—'}</div>
+        <div class="fg-kpi-label">WB Gini${pibAggregation.wbEstimate === null ? ' (n/d — aggregate model)' : ''}</div>
+      </div>
+      <div class="fg-kpi">
+        <div class="fg-kpi-val">${pibAggregation.workforceCount}</div>
+        <div class="fg-kpi-label">Forza lavoro baseline</div>
+      </div>
+    </div>
+
+    ${totalIU > 0 ? `
+    <div style="margin-top:12pt;">
+      <div style="font-size:8.5pt;font-weight:700;color:#06032B;margin-bottom:6pt;">IU per Pillar (componente PIB)</div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6pt;">
+      ${PILLAR_ORDER.map(p => {
+        const iu    = pibAggregation.pillarTotals[p] ?? 0;
+        const share = Math.round((pibAggregation.pillarShares[p] ?? 0) * 100);
+        const color = PILLAR_COLORS[p] ?? '#6156F5';
+        return `
+        <div style="background:#f8f8fc;border:1px solid #eaebf4;border-radius:6pt;padding:8pt;text-align:center;">
+          <div style="font-size:7pt;font-weight:700;color:${color};letter-spacing:.04em;">${esc(p)}</div>
+          <div style="font-size:11pt;font-weight:700;color:#06032B;margin:3pt 0;">${iu.toFixed(2)}</div>
+          <div style="font-size:7pt;color:#9899b3;">${share}% del totale</div>
+        </div>`;
+      }).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    <div class="fg-note" style="margin-top:12pt;">
+      <strong>AG-01 — Mandatory Intermediate Layer:</strong> questo strato garantisce che il KORA Index
+      non venga calcolato direttamente da aggregati aziendali bypassando il PIB individuale.
+      In v0.1 (aggregate_estimate): AR/MAR derivati dal motore di attivazione (bounded reach).
+      Il WB Gini è null — richiede distribuzione PIB individuale.
+      PIB individuale: <strong>mai visibile al datore di lavoro</strong> (D-04 / privacy constitutional rule).
+      ${pibAggregation.estimationBasis === 'aggregate_estimate' ? `
+      <span style="color:#d97706;font-weight:600;">estimation_basis=aggregate_estimate</span> ·
+      PIB individuali disponibili in Pilot+ con My KORA participation confirmation.
+      ` : `<span style="color:#059669;font-weight:600;">estimation_basis=individual_pib</span>`}
+      · ${esc(pibAggregation.calibrationStatus)} · ${esc(pibAggregation.methodologyVersion)}
+    </div>
+`;
+    })() : `
+    <div class="fg-stub">
+      PIB Aggregation non disponibile per questo batch.
+      Verificare che la pipeline v1.0+ abbia elaborato i record IU.
+    </div>
+    `}
+
+  </div>
+  ${pageFooter()}
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE 7 — EVIDENCE & CONFIDENCE
      ═══════════════════════════════════════════ -->
 <div class="page cp">
   ${pageHeader('Evidence &amp; Confidence')}

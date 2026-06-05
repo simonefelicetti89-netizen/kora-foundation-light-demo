@@ -30,9 +30,12 @@ import type {
   ComponentSignals,
   ScoringMode,
   Pillar,
+  CompanyPIBAggregation,
 } from './types';
 import { classifyEligibilityBatch } from './eligibility-gate';
 import { mapPillarBatch } from './pillar-mapping';
+import type { ActionFamily, EligibilityClass } from '@/lib/types';
+import { iuComputationService, type IULiveInput } from '@/services/iu-computation/IUComputationService';
 import { mapCareEconomyBatch } from './care-economy-mapping';
 import { assessBudgetEvidenceBatch } from './budget-evidence';
 import { computeComponentSignals } from './component-engine';
@@ -43,6 +46,7 @@ import { computeConfidence } from './confidence-engine';
 import { buildExplainabilityTrace } from './explainability';
 import { computeReachSemantics } from './reach-semantics';
 import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
+import { pibAggregationService } from '@/services/pib-aggregation/PIBAggregationService';
 
 const PIPELINE_SOURCE = 'KoraPipeline_v1.0';
 
@@ -94,6 +98,26 @@ function buildInsufficientDataResult(
     co: 0, coStatus: 'insufficient_data', coRecurringPrograms: 0, coTotalPrograms: 0,
   };
 
+  const zeroPIBAggregation: CompanyPIBAggregation = {
+    period: 'unknown',
+    workforceCount: 0,
+    activatedWorkers: 0,
+    meaningfulWorkers: 0,
+    estimatedAR: 0,
+    estimatedMAR: 0,
+    totalIU: 0,
+    avgEstimatedPIB: 0,
+    pillarTotals:  { LIFE: 0, GROWTH: 0, CONNECTION: 0, IMPACT: 0, LEGACY: 0 },
+    pillarShares:  { LIFE: 0, GROWTH: 0, CONNECTION: 0, IMPACT: 0, LEGACY: 0 },
+    wbEstimate: null,
+    pibSnapshotsAvailable: false,
+    estimationBasis: 'aggregate_estimate',
+    estimationNote: 'insufficient_data: no records to aggregate.',
+    calibrationStatus: 'pre_empirical_calibration',
+    methodologyVersion: 'KORA-METHOD-v1.0',
+    warnings: ['Nessun record: PIB aggregation non calcolabile.'],
+  };
+
   return {
     tenantId,
     batchId,
@@ -106,6 +130,7 @@ function buildInsufficientDataResult(
     confidence: zeroConfidence,
     componentSignals: zeroSignals,
     explainabilityTrace: [],
+    pibAggregation: zeroPIBAggregation,
     warnings: [...warnings, `Fonte: ${PIPELINE_SOURCE} | scoringMode=insufficient_data`],
     createdAt: new Date().toISOString(),
   };
@@ -145,6 +170,40 @@ export function runKoraPipeline(params: {
     // Step 3: Pillar Mapping — map each record to its primary pillar
     const pillarMappings = mapPillarBatch(records, eligibilityResults);
 
+    // Step 3.5: Impact Units™ Computation — Stage 10 of the 14-stage algorithm.
+    // Runs after Eligibility + Pillar Mapping and before Component Signals.
+    // Produces per-record IU with full factor trace (NM × BC × CQ × EV × CF × AGF).
+    // iuResults are server-side only — never passed to employer-facing API responses.
+    // iuSummary is the aggregate-safe view used in Decision Pack and company reports.
+    const iuLiveInputs: IULiveInput[] = records.map((record, i) => {
+      const elig = eligibilityResults[i];
+      const pm   = pillarMappings[i];
+      // 'raw' is only present on RawUploadedRecord; NormalizedUEFRecord uses a different shape.
+      // For the live scoring path all records are RawUploadedRecord, so this guard is defensive.
+      const raw: Record<string, unknown> = 'raw' in record
+        ? (record as RawUploadedRecord).raw
+        : {};
+      const fallbackId = 'recordId' in record
+        ? (record as RawUploadedRecord).recordId
+        : (record as NormalizedUEFRecord).uefId;
+      return {
+        uef_record_id:             String(raw['b6_uef_record_id'] ?? fallbackId),
+        eligibility:               elig.status as (EligibilityClass | 'review_required'),
+        review_required:           elig.reviewRequired,
+        approved_for_impact_units: Boolean(raw['b6_approved_for_iu']),
+        action_family:             (String(raw['categoria'] ?? 'blocked_compliance')) as ActionFamily,
+        event_nature:              String(raw['tipo'] ?? ''),
+        primary_pillar:            pm.primaryPillar,
+        pillar_distribution:       {},
+        missing_fields:            Array.isArray(raw['b6_missing_fields']) ? raw['b6_missing_fields'] as string[] : [],
+        evidence_type:             String(raw['b6_evidence_level'] ?? 'L0'),
+        site_or_cluster:           raw['site'] ? String(raw['site']) : null,
+      };
+    });
+
+    const iuResults = iuComputationService.computeIUForLiveInputBatch(iuLiveInputs);
+    const iuSummary = iuComputationService.summarizeLiveResults(iuResults);
+
     // Step 4: Care Economy Tagging — detect care signals (premium module, signals only in v3)
     const careSignals = mapCareEconomyBatch(records, eligibilityResults, pillarMappings);
     const careSignalCount = careSignals.filter((s) => s !== null).length;
@@ -171,6 +230,24 @@ export function runKoraPipeline(params: {
       eligibilityResults,
       pillarMappings,
       workforcePopulation,
+    });
+
+    // Step 4: PIB Aggregation — Stage 11 of the 14-stage algorithm (AG-01 compliance).
+    // Mandatory intermediate layer between IU (Stage 10) and KORA Index (Stage 14).
+    // Placed after activation engine (Step 7) to reuse the activation result's
+    // bounded-reach activeWorkers / meaningfullyActiveWorkers — the best available
+    // estimate in Foundation Light v0.1 aggregate model.
+    // Foundation Light v0.1: estimationBasis='aggregate_estimate' — UEF records are
+    // program-level (no individual worker tracking). Individual PIBs available in Pilot+.
+    const pibAggregation = pibAggregationService.aggregatePIBForCompany({
+      iuResults,
+      iuSummary,
+      records,
+      eligibilityResults,
+      activatedWorkers:          activation.activeWorkers,
+      meaningfullyActiveWorkers: activation.meaningfullyActiveWorkers,
+      workforcePopulation:       workforcePopulation ?? 0,
+      period:                    batchId,
     });
 
     // Step 8: Eligibility Summary
@@ -274,6 +351,9 @@ export function runKoraPipeline(params: {
       componentSignals,
       explainabilityTrace,
       reachSemantics,
+      iuSummary,
+      iuResults,
+      pibAggregation,
       warnings: pipelineWarnings,
       createdAt: new Date().toISOString(),
     };

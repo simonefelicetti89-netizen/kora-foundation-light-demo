@@ -2,13 +2,13 @@ import type {
   PillarCode,
   ActionFamily,
   CalibrationStatus,
+  EligibilityClass,
+  EventNature,
   ImpactUnitComputationResult,
   ImpactUnitComputationSummary,
   ImpactUnitFactorTrace,
 } from '@/lib/types';
 import type { PipelineAnalyzedRow } from '@/services/ingestion-pipeline/IngestionPipelineService';
-import type { EligibilityClassificationResult } from '@/services/eligibility-gate/EligibilityGateService';
-import type { KoraReadyRecord } from '@/lib/types';
 import { getMethodologyVersion, getCalibrationStatus } from '@/lib/methodology-config/v0.1';
 
 // ── Foundation Light factor defaults — BC by action family ──────────────────────
@@ -30,7 +30,16 @@ const BC_BY_FAMILY: Record<ActionFamily, number> = {
 
 // EV by evidence_type from ingestion seed field.
 // Maps source-level evidence codes to evidence verification weights.
+// L-code entries (L0–L4) handle the live pipeline path (from uef_record.payload.evidence_level).
+// Long-form codes handle the ingestion pipeline demo path (from NormalizedIngestionRow.evidence_type).
 const EV_BY_EVIDENCE_TYPE: Record<string, number> = {
+  // ── Live pipeline L-codes ─────────────────────────────────────────────────────
+  'L0': 0.50,  // L0_NO_EVIDENCE — fallback, low confidence
+  'L1': 0.60,  // L1_SELF_DECLARED — low verification
+  'L2': 0.75,  // L2_INTERNAL_DOCUMENT — moderate verification
+  'L3': 0.90,  // L3_THIRD_PARTY_DOCUMENT — high verification
+  'L4': 1.00,  // L4_VERIFIED_EVIDENCE — full verification
+  // ── Ingestion pipeline long-form codes ────────────────────────────────────────
   certified_partner_evidence:    1.0,
   partner_participation_report:  0.9,
   provider_participation_report: 0.9,
@@ -47,32 +56,34 @@ const EV_BY_EVIDENCE_TYPE: Record<string, number> = {
   declaration_self_certified:    0.6,
   manual_note:                   0.6,
   // Structural policy evidence types — aggregate-only, no individual usage data
-  third_party_hr_audit:          0.92, // independent HR audit confirming policy coverage
-  board_approval_record:         0.90, // board/CDA deliberation or signed policy document
-  collective_agreement_signed:   0.90, // CCNL improvement or integrative collective agreement
-  advisor_validated_policy:      0.88, // KORA advisor or certified HR consultant validation
-  formal_policy_document:        0.85, // internal HR policy document with coverage data
-  hr_policy_register:            0.80, // HR policy register entry with effective date + coverage
-  self_declared_policy:          0.55, // policy declared by company without external validation
+  third_party_hr_audit:          0.92,
+  board_approval_record:         0.90,
+  collective_agreement_signed:   0.90,
+  advisor_validated_policy:      0.88,
+  formal_policy_document:        0.85,
+  hr_policy_register:            0.80,
+  self_declared_policy:          0.55,
 };
 
 type FactorResult = { value: number; reason: string; data_source: string; foundation_light_stub: boolean };
 
 // ── Factor derivation functions ─────────────────────────────────────────────────
 
-function deriveAGF(
-  classification: EligibilityClassificationResult,
-  koraReady: KoraReadyRecord,
-): FactorResult {
-  if (classification.kora_eligibility === 'blocked') {
+function deriveAGF(params: {
+  kora_eligibility: EligibilityClass | 'review_required';
+  review_required: boolean;
+  approved_for_impact_units: boolean;
+  blocked_reason?: string;
+}): FactorResult {
+  if (params.kora_eligibility === 'blocked') {
     return {
       value: 0,
-      reason: 'Blocked by Design — compliance obbligatoria. IU = 0 per design.',
+      reason: `Blocked by Design — compliance obbligatoria. IU = 0 per design.${params.blocked_reason ? ` Motivo: ${params.blocked_reason}` : ''}`,
       data_source: 'eligibility_gate.kora_eligibility',
       foundation_light_stub: false,
     };
   }
-  if (classification.kora_eligibility === 'limited') {
+  if (params.kora_eligibility === 'limited') {
     return {
       value: 0,
       reason: 'Economic Relief — 0 IU. Tracciato solo in BTI governance.',
@@ -80,7 +91,7 @@ function deriveAGF(
       foundation_light_stub: false,
     };
   }
-  if (classification.review_required) {
+  if (params.review_required || params.kora_eligibility === 'review_required') {
     return {
       value: 0,
       reason: 'Human Review Required — IU computation sospesa fino a risoluzione.',
@@ -88,7 +99,7 @@ function deriveAGF(
       foundation_light_stub: false,
     };
   }
-  if (!koraReady.approved_for_impact_units) {
+  if (!params.approved_for_impact_units) {
     return {
       value: 0,
       reason: 'Governance flag approved_for_impact_units=false — IU non autorizzate.',
@@ -107,7 +118,7 @@ function deriveAGF(
 function deriveNM(): FactorResult {
   // TODO: future NM must normalize duration, intensity, beneficiary count
   // against reference baselines per action family (post Delphi Study).
-  // For structural policies specifically, NM = f(coverage_rate × policy_depth × accessibility × duration_months)
+  // For structural policies: NM = f(coverage_rate × policy_depth × accessibility × duration_months)
   // — requires post-Delphi calibration. Foundation Light uses proxy stub = 1.0 for all families.
   return {
     value: 1.0,
@@ -165,18 +176,23 @@ function deriveEV(evidenceType: string): FactorResult {
   };
 }
 
+// CF — Continuity Factor (canonical canonical range: 1.00–1.20, cross-period worker engagement).
+// Foundation Light v0.1 stub: canonical CF requires PIB (Personal Impact Balance) and
+// cross-period worker activity data. These are not available in the current pipeline.
+// Stub implementation: uses site/cluster targeting as a first-order proxy.
+// Label: "Continuity Factor (foundation_light_stub)" — must not be presented as canonical CF.
 function deriveCF(siteOrCluster: string | null): FactorResult {
   if (siteOrCluster) {
     return {
       value: 1.1,
-      reason: `Intervento mirato a sede/cluster "${siteOrCluster}" — CF amplificato per targeting specifico.`,
+      reason: `Intervento mirato a sede/cluster "${siteOrCluster}" — proxy continuità engagement (foundation_light_stub). Canonical CF richiede dati cross-periodo post-PIB.`,
       data_source: 'normalized_row.site_or_cluster',
       foundation_light_stub: true,
     };
   }
   return {
     value: 1.0,
-    reason: 'Iniziativa aziendale generica — CF neutro (1.0).',
+    reason: 'Iniziativa aziendale generica — CF neutro (1.0). Canonical CF (cross-period engagement) richiede dati PIB post-calibrazione.',
     data_source: 'foundation_light_default',
     foundation_light_stub: true,
   };
@@ -232,14 +248,54 @@ function buildExplanation(
   return `IU = NM(${nm}) × BC(${bc}) × CQ(${cq.toFixed(2)}) × EV(${ev}) × CF(${cf}) × AGF(${agf}) = ${totalIU.toFixed(4)} · Foundation Light stub v0.1 — pre-calibrazione empirica.`;
 }
 
+// ── Core extracted-params type (shared by both demo and live paths) ──────────────
+
+interface IUExtractedParams {
+  record_id:                string;
+  kora_eligibility:         EligibilityClass | 'review_required';
+  review_required:          boolean;
+  approved_for_impact_units: boolean;
+  action_family:            ActionFamily;
+  event_nature:             string;
+  primary_pillar:           PillarCode | null;
+  pillar_distribution:      Partial<Record<PillarCode, number>>;
+  blocked_reason:           string | undefined;
+  missing_fields:           string[];
+  evidence_type:            string;
+  site_or_cluster:          string | null;
+}
+
+// ── IULiveInput — input contract for the live pipeline (UEF approved batch path) ─
+// Used by run-kora-pipeline.ts after eligibility + pillar mapping.
+// Evidence type is an L-code string (L0/L1/L2/L3/L4) from uef_record.payload.evidence_level.
+
+export interface IULiveInput {
+  uef_record_id:             string;
+  eligibility:               EligibilityClass | 'review_required';
+  review_required:           boolean;
+  approved_for_impact_units: boolean;
+  action_family:             ActionFamily;
+  event_nature?:             string;
+  primary_pillar:            PillarCode | null;
+  pillar_distribution?:      Partial<Record<PillarCode, number>>;
+  missing_fields:            string[];
+  evidence_type:             string;  // L0/L1/L2/L3/L4 from live pipeline
+  site_or_cluster:           string | null;
+}
+
 // ── Service interface ────────────────────────────────────────────────────────────
 
 export interface IIUComputationService {
+  // Demo path (ingestion pipeline)
   computeIUForRecord(row: PipelineAnalyzedRow): ImpactUnitComputationResult;
   computeIUForRecords(rows: PipelineAnalyzedRow[]): ImpactUnitComputationResult[];
   getIUComputationTrace(row: PipelineAnalyzedRow): ImpactUnitFactorTrace[];
   getIUComputationSummary(rows: PipelineAnalyzedRow[]): ImpactUnitComputationSummary;
   explainFactors(row: PipelineAnalyzedRow): ImpactUnitFactorTrace[];
+  // Live pipeline path
+  computeIUForLiveInput(input: IULiveInput): ImpactUnitComputationResult;
+  computeIUForLiveInputBatch(inputs: IULiveInput[]): ImpactUnitComputationResult[];
+  summarizeLiveResults(results: ImpactUnitComputationResult[]): ImpactUnitComputationSummary;
 }
 
 // ── Service ──────────────────────────────────────────────────────────────────────
@@ -253,15 +309,20 @@ export class IUComputationService implements IIUComputationService {
     this.calibrationStatus = getCalibrationStatus() as CalibrationStatus;
   }
 
-  computeIUForRecord(row: PipelineAnalyzedRow): ImpactUnitComputationResult {
-    const { classification, kora_ready, normalized } = row;
+  // ── Core computation — shared by demo and live paths ────────────────────────
 
-    const agfResult = deriveAGF(classification, kora_ready);
+  private _computeFromExtracted(p: IUExtractedParams): ImpactUnitComputationResult {
+    const agfResult = deriveAGF({
+      kora_eligibility:         p.kora_eligibility,
+      review_required:          p.review_required,
+      approved_for_impact_units: p.approved_for_impact_units,
+      blocked_reason:           p.blocked_reason,
+    });
     const nmResult  = deriveNM();
-    const bcResult  = deriveBC(classification.action_family);
-    const cqResult  = deriveCQ(normalized.missing_fields);
-    const evResult  = deriveEV(normalized.evidence_type);
-    const cfResult  = deriveCF(normalized.site_or_cluster);
+    const bcResult  = deriveBC(p.action_family);
+    const cqResult  = deriveCQ(p.missing_fields);
+    const evResult  = deriveEV(p.evidence_type);
+    const cfResult  = deriveCF(p.site_or_cluster);
 
     const agf = agfResult.value;
     const nm  = nmResult.value;
@@ -272,50 +333,50 @@ export class IUComputationService implements IIUComputationService {
 
     const impact_units_total = agf === 0 ? 0 : +(nm * bc * cq * ev * cf * agf).toFixed(4);
 
-    const isBlocked       = classification.kora_eligibility === 'blocked';
-    const isLimited       = classification.kora_eligibility === 'limited';
-    const isReviewReq     = classification.review_required;
-    const isComputed      = !isBlocked && !isLimited && !isReviewReq && kora_ready.approved_for_impact_units;
+    const isBlocked   = p.kora_eligibility === 'blocked';
+    const isLimited   = p.kora_eligibility === 'limited';
+    const isReviewReq = p.review_required || p.kora_eligibility === 'review_required';
+    const isComputed  = !isBlocked && !isLimited && !isReviewReq && p.approved_for_impact_units;
 
     const impact_units_by_pillar = distributeByPillar(
       impact_units_total,
-      classification.primary_pillar,
-      classification.pillar_distribution,
+      p.primary_pillar,
+      p.pillar_distribution,
     );
 
     let exclusion_reason: string | null = null;
     if (isBlocked) {
-      exclusion_reason = classification.blocked_reason ?? 'Blocked by Design — 0 IU per design.';
+      exclusion_reason = p.blocked_reason ?? 'Blocked by Design — 0 IU per design.';
     } else if (isLimited) {
       exclusion_reason = 'Economic Relief — 0 IU in Foundation Light. BTI governance only.';
     } else if (isReviewReq) {
       exclusion_reason = 'Human Review Required — IU computation sospesa.';
-    } else if (!kora_ready.approved_for_impact_units) {
+    } else if (!p.approved_for_impact_units) {
       exclusion_reason = 'approved_for_impact_units = false.';
     }
 
     const formula_trace: ImpactUnitFactorTrace[] = [
-      { factor_code: 'NM',  label: 'Normalized Magnitude',   ...nmResult },
-      { factor_code: 'BC',  label: 'Base Contribution',       ...bcResult },
-      { factor_code: 'CQ',  label: 'Completeness Quality',    ...cqResult },
-      { factor_code: 'EV',  label: 'Evidence Verification',   ...evResult },
-      { factor_code: 'CF',  label: 'Contextual Factor',       ...cfResult },
-      { factor_code: 'AGF', label: 'Anti-Gaming Factor',      ...agfResult },
+      { factor_code: 'NM',  label: 'Normalized Magnitude',               ...nmResult },
+      { factor_code: 'BC',  label: 'Base Contribution',                   ...bcResult },
+      { factor_code: 'CQ',  label: 'Completeness Quality',                ...cqResult },
+      { factor_code: 'EV',  label: 'Evidence Verification',               ...evResult },
+      { factor_code: 'CF',  label: 'Continuity Factor (foundation_light_stub)', ...cfResult },
+      { factor_code: 'AGF', label: 'Anti-Gaming Factor',                  ...agfResult },
     ];
 
     return {
-      record_id:                normalized.id,
-      source_row_id:            normalized.id,
-      action_family:            classification.action_family,
-      event_nature:             classification.event_nature,
-      eligibility:              classification.kora_eligibility,
-      primary_pillar:           classification.primary_pillar,
-      pillar_distribution:      classification.pillar_distribution,
+      record_id:                p.record_id,
+      source_row_id:            p.record_id,
+      action_family:            p.action_family,
+      event_nature:             (p.event_nature || 'consumed_service') as EventNature,
+      eligibility:              (p.kora_eligibility === 'review_required' ? 'eligible' : p.kora_eligibility) as EligibilityClass,
+      primary_pillar:           p.primary_pillar,
+      pillar_distribution:      p.pillar_distribution,
       normalized_magnitude_nm:  nm,
       base_contribution_bc:     bc,
       completeness_quality_cq:  cq,
       evidence_verification_ev: ev,
-      contextual_factor_cf:     cf,
+      continuity_factor_cf:     cf,
       anti_gaming_factor_agf:   agf,
       impact_units_total,
       impact_units_by_pillar,
@@ -331,6 +392,26 @@ export class IUComputationService implements IIUComputationService {
     };
   }
 
+  // ── Demo path — PipelineAnalyzedRow ─────────────────────────────────────────
+
+  computeIUForRecord(row: PipelineAnalyzedRow): ImpactUnitComputationResult {
+    const { classification, kora_ready, normalized } = row;
+    return this._computeFromExtracted({
+      record_id:                normalized.id,
+      kora_eligibility:         classification.kora_eligibility,
+      review_required:          classification.review_required,
+      approved_for_impact_units: kora_ready.approved_for_impact_units,
+      action_family:            classification.action_family,
+      event_nature:             classification.event_nature,
+      primary_pillar:           classification.primary_pillar,
+      pillar_distribution:      classification.pillar_distribution,
+      blocked_reason:           classification.blocked_reason,
+      missing_fields:           normalized.missing_fields,
+      evidence_type:            normalized.evidence_type,
+      site_or_cluster:          normalized.site_or_cluster,
+    });
+  }
+
   computeIUForRecords(rows: PipelineAnalyzedRow[]): ImpactUnitComputationResult[] {
     return rows.map((r) => this.computeIUForRecord(r));
   }
@@ -340,8 +421,39 @@ export class IUComputationService implements IIUComputationService {
   }
 
   getIUComputationSummary(rows: PipelineAnalyzedRow[]): ImpactUnitComputationSummary {
-    const results = this.computeIUForRecords(rows);
+    return this.summarizeLiveResults(this.computeIUForRecords(rows));
+  }
 
+  explainFactors(row: PipelineAnalyzedRow): ImpactUnitFactorTrace[] {
+    return this.getIUComputationTrace(row);
+  }
+
+  // ── Live pipeline path — IULiveInput ─────────────────────────────────────────
+
+  computeIUForLiveInput(input: IULiveInput): ImpactUnitComputationResult {
+    return this._computeFromExtracted({
+      record_id:                input.uef_record_id,
+      kora_eligibility:         input.eligibility,
+      review_required:          input.review_required,
+      approved_for_impact_units: input.approved_for_impact_units,
+      action_family:            input.action_family,
+      event_nature:             input.event_nature ?? '',
+      primary_pillar:           input.primary_pillar,
+      pillar_distribution:      input.pillar_distribution ?? {},
+      blocked_reason:           undefined,
+      missing_fields:           input.missing_fields,
+      evidence_type:            input.evidence_type,
+      site_or_cluster:          input.site_or_cluster,
+    });
+  }
+
+  computeIUForLiveInputBatch(inputs: IULiveInput[]): ImpactUnitComputationResult[] {
+    return inputs.map((i) => this.computeIUForLiveInput(i));
+  }
+
+  // ── Summary builder — accepts pre-computed results (both paths) ───────────────
+
+  summarizeLiveResults(results: ImpactUnitComputationResult[]): ImpactUnitComputationSummary {
     const total_impact_units = results.reduce((s, r) => s + r.impact_units_total, 0);
 
     const impact_units_by_pillar: Partial<Record<PillarCode, number>> = {};
@@ -366,15 +478,11 @@ export class IUComputationService implements IIUComputationService {
       records_without_iu:      results.filter((r) => !r.computed).length,
       average_cq:  avg(results.map((r) => r.completeness_quality_cq)),
       average_ev:  avg(results.map((r) => r.evidence_verification_ev)),
-      average_cf:  avg(results.map((r) => r.contextual_factor_cf)),
+      average_cf:  avg(results.map((r) => r.continuity_factor_cf)),
       average_agf: avg(results.map((r) => r.anti_gaming_factor_agf)),
       methodology_version: this.methodologyVersion,
       calibration_status:  this.calibrationStatus,
     };
-  }
-
-  explainFactors(row: PipelineAnalyzedRow): ImpactUnitFactorTrace[] {
-    return this.getIUComputationTrace(row);
   }
 }
 

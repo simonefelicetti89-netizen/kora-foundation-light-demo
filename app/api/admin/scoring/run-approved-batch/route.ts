@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
   // Pending, rejected, needs_info records are explicitly excluded by this query.
   const { data: uefData, error: uefErr } = await db
     .schema('analytics').from('uef_record')
-    .select('id, raw_name, eligibility, primary_pillar, action_family, event_nature, payload')
+    .select('id, raw_name, eligibility, primary_pillar, action_family, event_nature, missing_fields, approved_for_impact_units, payload')
     .eq('batch_id', batchId)
     .eq('review_status', 'approved')
     .eq('approved_for_scoring', true);
@@ -198,13 +198,15 @@ export async function POST(request: NextRequest) {
 
   // ── 8. Build scoring records from approved UEF — no synthetic fixture ─────────
   const typedUefRows = uefRows.map(row => ({
-    id:             row.id as string,
-    raw_name:       row.raw_name as string,
-    eligibility:    row.eligibility as string,
-    primary_pillar: row.primary_pillar as string | null,
-    action_family:  row.action_family as string | null,
-    event_nature:   row.event_nature as string | null,
-    payload:        (row.payload ?? {}) as Record<string, unknown>,
+    id:                        row.id as string,
+    raw_name:                  row.raw_name as string,
+    eligibility:               row.eligibility as string,
+    primary_pillar:            row.primary_pillar as string | null,
+    action_family:             row.action_family as string | null,
+    event_nature:              row.event_nature as string | null,
+    missing_fields:            Array.isArray(row.missing_fields) ? row.missing_fields as string[] : [],
+    approved_for_impact_units: Boolean(row.approved_for_impact_units),
+    payload:                   (row.payload ?? {}) as Record<string, unknown>,
   })) satisfies UefRowForScoring[];
 
   const records = buildScoringRecordsFromApprovedUef(typedUefRows, batchId);
