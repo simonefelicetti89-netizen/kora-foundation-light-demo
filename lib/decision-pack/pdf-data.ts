@@ -5,6 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
+import { computeExecutiveIntelligence } from '@/services/executive-intelligence/ExecutiveIntelligenceService';
 
 export interface PdfComponent {
   code: string;
@@ -162,6 +163,15 @@ export interface PdfData {
     resourceType: string | null;
     createdAt: string;
   }>;
+  // B77-B: Executive Intelligence Layer™ — board-readable synthesis of all signals.
+  // Computed server-side from available PdfData. notKoraIndexComponent: true.
+  executiveBrief: {
+    organizationStatus: string;
+    primaryConstraint:  string;
+    wasteSignal:        string;
+    primaryAction:      string;
+    confidenceNote:     string;
+  } | null;
 }
 
 export async function fetchPdfData(
@@ -630,5 +640,44 @@ export async function fetchPdfData(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       createdAt: (e as any).created_at as string,
     })),
+    // B77-B: Executive Intelligence Layer™ — computed from available PdfData signals.
+    // Uses simplified inputs (no EquityAccess / LifeDiversity — not in PdfData scope).
+    // notKoraIndexComponent: true — synthesis display only.
+    executiveBrief: (() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const kiVal    = (ki as any).kora_index_value ?? 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const sf       = ((ki as any).safeguard_status ?? 'FLAGGED') as 'CLEAR' | 'WARNING' | 'FLAGGED';
+      const cs       = confidence01;
+      const ar       = actRow?.activation_rate ?? 0;
+      const mar      = actRow?.meaningful_activation_rate ?? 0;
+      const ecrShare = bti ? (bti.economicReliefSpend / Math.max(bti.totalPeopleWelfareBudget, 1)) : null;
+      const limitedSh = enrichment
+        ? (enrichment.budgetClassBreakdown.economicRelief.count / Math.max(enrichment.totalUefRecords, 1))
+        : null;
+      const avgEv    = iuSummary?.averageEv ?? null;
+      const weakShare = avgEv !== null ? Math.max(0, Math.min(1, 1 - avgEv / 0.65)) : null;
+      const evidenceRisk = weakShare !== null && weakShare > 0.40 ? 'alta' as const : weakShare !== null && weakShare > 0.25 ? 'media' as const : 'bassa' as const;
+      const brief = computeExecutiveIntelligence({
+        koraIndexValue:           kiVal,
+        safeguardStatus:          sf,
+        confidenceScore:          cs,
+        activationRate:           ar,
+        meaningfulActivationRate: mar,
+        macroblocks:              (macroblocks ?? []).map((m) => ({ code: m.code as 'REACH' | 'QUALITY' | 'EQUITY' | 'BTI', label: m.label, weight: m.weight, score: m.score, component_codes: [] })),
+        equityAccess:             null,
+        evidenceReliability:      avgEv !== null ? { evidenceRiskLevel: evidenceRisk, evidenceLevelDistribution: { weakShare: weakShare ?? 0, acceptableShare: 0, strongShare: 0, primaryTier: 'weak' as const }, dataReliabilityValue: cs, verificationRate: avgEv, weakEvidenceInitiativeCount: 0, upgradeOpportunities: [], strongestEvidenceAreas: [], advisorNarrative: '', recommendations: [], methodologyStatus: 'pre_empirical_calibration' as const, notKoraIndexComponent: true as const } : null,
+        lifeDiversity:            null,
+        limitedShare:             limitedSh,
+        economicReliefShare:      ecrShare,
+      });
+      return {
+        organizationStatus: brief.organizationStatus,
+        primaryConstraint:  brief.primaryConstraint,
+        wasteSignal:        brief.wasteSignal,
+        primaryAction:      brief.primaryAction,
+        confidenceNote:     brief.confidenceNote,
+      };
+    })(),
   };
 }

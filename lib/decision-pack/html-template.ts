@@ -82,6 +82,79 @@ const PILLAR_FULL: Record<string, string> = {
 
 const PILLAR_ORDER = ['LIFE','GROWTH','CONNECTION','IMPACT','LEGACY'] as const;
 
+// ── Executive brief page — B77-B ─────────────────────────────────────────────
+// Board-readable one-pager. No jargon. No formulas. Fits one printed page.
+
+function buildExecutiveBriefPage(data: PdfData): string {
+  const { meta, executiveBrief } = data;
+  if (!executiveBrief) return '';
+
+  const sfColor = data.koraIndex.safeguardStatus === 'CLEAR' ? '#059669'
+    : data.koraIndex.safeguardStatus === 'WARNING' ? '#d97706' : '#dc2626';
+  const sfBg = data.koraIndex.safeguardStatus === 'CLEAR' ? '#ecfdf5'
+    : data.koraIndex.safeguardStatus === 'WARNING' ? '#fffbeb' : '#fef2f2';
+
+  const rows: Array<{ label: string; content: string; accent?: boolean }> = [
+    { label: 'PERCHÉ',               content: executiveBrief.primaryConstraint },
+    { label: 'OPPORTUNITÀ PRINCIPALE', content: executiveBrief.wasteSignal },
+    { label: 'AZIONE PRIORITARIA',   content: executiveBrief.primaryAction, accent: true },
+  ];
+
+  const rowsHtml = rows.map(({ label, content, accent }) => `
+    <tr>
+      <td style="padding:14px 16px 14px 0;width:180px;vertical-align:top;border-bottom:1px solid #eaebf4;">
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${accent ? '#C76F3D' : '#9899b3'};">${esc(label)}</span>
+      </td>
+      <td style="padding:14px 0;vertical-align:top;border-bottom:1px solid #eaebf4;">
+        <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:${accent ? '600' : '400'};line-height:1.6;color:${accent ? '#06032B' : '#4b4c6a'};">${esc(content)}</span>
+      </td>
+    </tr>
+  `).join('');
+
+  return `
+  <div style="page-break-before:always;min-height:100vh;padding:56px 72px;background:#F8F8FC;font-family:'Plus Jakarta Sans',sans-serif;box-sizing:border-box;">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:40px;padding-bottom:20px;border-bottom:2px solid #06032B;">
+      <div>
+        <p style="font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9899b3;margin:0 0 6px;">Executive Brief — KORA Intelligence™</p>
+        <h1 style="font-size:26px;font-weight:400;color:#06032B;letter-spacing:-0.02em;margin:0 0 4px;">${esc(meta.companyName)}</h1>
+        <p style="font-size:12px;color:#9899b3;margin:0;">${esc(meta.reportingPeriod)} · ${esc(fmtDate(meta.generatedAt))}</p>
+      </div>
+      <div style="text-align:right;">
+        <span style="display:inline-block;padding:3px 10px;border-radius:4px;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;background:#f0f0f9;color:#6156F5;border:1px solid #d4d2f8;">pre_empirical_calibration</span>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div style="background:${sfBg};border:1px solid ${sfColor}22;border-radius:10px;padding:20px 24px;margin-bottom:32px;">
+      <p style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${sfColor};margin:0 0 6px;">COME STIAMO</p>
+      <p style="font-size:22px;font-weight:700;color:${sfColor};margin:0 0 10px;letter-spacing:-0.01em;">${esc(executiveBrief.organizationStatus)}</p>
+      <p style="font-size:12px;color:#4b4c6a;line-height:1.65;margin:0;">
+        KORA Index™: <strong style="color:#06032B;">${Math.round(data.koraIndex.value * 10) / 10}/100</strong>
+        &nbsp;·&nbsp;Activation Safeguard: <strong style="color:${sfColor};">${esc(data.koraIndex.safeguardStatus)}</strong>
+        &nbsp;·&nbsp;Data Reliability Index™: <strong style="color:#06032B;">${Math.round(data.koraIndex.confidenceScore * 100)}%</strong>
+      </p>
+    </div>
+
+    <!-- Four questions table -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:32px;">
+      <tbody>${rowsHtml}</tbody>
+    </table>
+
+    <!-- Confidence note -->
+    <div style="background:#f0f0f9;border-radius:8px;padding:14px 20px;margin-bottom:24px;">
+      <p style="font-size:11px;color:#4b4c6a;line-height:1.55;margin:0;">${esc(executiveBrief.confidenceNote)}</p>
+    </div>
+
+    <!-- Footer disclaimer -->
+    <p style="font-size:9.5px;color:#9899b3;line-height:1.6;margin:0;padding-top:16px;border-top:1px solid #eaebf4;">
+      Questo brief è generato da KORA Foundation Light v0.1 (pre_empirical_calibration). I valori sono diagnostici e di pilota — non certificati, non regulatory-grade. Non sostituisce analisi HR, consulenza legale, fiscale o ESG. KORA misura l'attivazione a livello organizzativo, non individuale.
+    </p>
+
+  </div>`;
+}
+
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
@@ -745,6 +818,9 @@ export function buildDecisionPackHtml(data: PdfData): string {
     <div class="cv-lime"></div>
   </div>
 </div>
+
+
+${buildExecutiveBriefPage(data)}
 
 
 <!-- ═══════════════════════════════════════════

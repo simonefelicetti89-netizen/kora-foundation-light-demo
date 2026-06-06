@@ -26,6 +26,8 @@ import { workforceBaselineService }             from '@/services/workforce-basel
 import { uefReviewService }                     from '@/services/uef-review/UEFReviewService';
 import { generateLiveRecommendations }         from '@/lib/live/live-recommendations';
 import { generateLiveBoardActions }            from '@/lib/live/live-board-actions';
+import { computeExecutiveIntelligence }        from '@/services/executive-intelligence/ExecutiveIntelligenceService';
+import { ExecutiveIntelligencePanel }          from '@/components/executive-intelligence/ExecutiveIntelligencePanel';
 import type { UEFReviewSummary, ImpactUnitComputationSummary } from '@/lib/types';
 import type { LiveEligibilityContext }         from '@/app/api/company/live-eligibility/route';
 import { TOKENS }                      from '@/lib/design/kora-design-tokens';
@@ -405,6 +407,27 @@ export default function KoraIndexDetail() {
       })
     : budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
 
+  // ── Executive Intelligence Layer™ ─────────────────────────────────────────
+  // Synthesis layer — reads already-computed signals, produces 4 executive answers.
+  // No formula change. No DB. notKoraIndexComponent: true.
+  const btiRecord = isLive ? null : (s2BtiResult.record ?? s1BtiResult.record ?? null);
+  const limitedShareRaw = eligibilityGate.total_row_count > 0
+    ? eligibilityGate.limited_count / eligibilityGate.total_row_count
+    : null;
+  const executiveIntelligence = computeExecutiveIntelligence({
+    koraIndexValue:           output.kora_index_value,
+    safeguardStatus:          output.safeguard_status,
+    confidenceScore:          output.confidence_score,
+    activationRate:           aggregate?.activation_rate ?? 0,
+    meaningfulActivationRate: aggregate?.meaningful_activation_rate ?? 0,
+    macroblocks,
+    equityAccess,
+    evidenceReliability,
+    lifeDiversity:            lifeSummary,
+    limitedShare:             limitedShareRaw,
+    economicReliefShare:      btiRecord?.economic_relief_share ?? null,
+  });
+
   return (
     <div style={{ maxWidth: 900 }}>
 
@@ -432,6 +455,18 @@ export default function KoraIndexDetail() {
           {liveCompanyName ?? tenant?.company_name ?? (isLive ? 'La tua organizzazione' : COMPANY_ID)}
         </h1>
       </div>
+
+      {/* ══════════════════════════════════════════════════════════ */}
+      {/* EXECUTIVE INTELLIGENCE LAYER™ — answers 4 questions       */}
+      {/* COME STIAMO · PERCHÉ · OPPORTUNITÀ · AZIONE PRIORITARIA   */}
+      {/* Above all charts. Visible in 60 seconds.                  */}
+      {/* ══════════════════════════════════════════════════════════ */}
+
+      <ExecutiveIntelligencePanel
+        summary={executiveIntelligence}
+        companyName={liveCompanyName ?? tenant?.company_name ?? null}
+        reportingPeriod={output.reporting_period}
+      />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/* SECTION 1: HERO DIAGNOSIS — first thing user sees         */}
