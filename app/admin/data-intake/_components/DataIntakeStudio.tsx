@@ -1249,17 +1249,18 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               </div>
             )}
             <div className="space-y-0.5">
-              <p className="text-[10px] text-green-700 font-medium">Batch created for review. Scoring remains locked until B5.</p>
-              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Scoring is not executed in B4.2.</p>
+              <p className="text-[10px] text-green-700 font-medium">Batch creato — in attesa di review UEF. Lo scoring rimane bloccato fino all&apos;approvazione.</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Lo scoring non viene eseguito in questa fase.</p>
             </div>
             {/* B9.2: next-step CTA with batchId query param */}
             {acceptResult.batchId && (
-              <div className="pt-1 border-t border-green-100">
+              <div className="pt-2 border-t border-green-100 space-y-1">
+                <p className="text-[9px] font-bold uppercase tracking-widest text-green-700">Passo successivo</p>
                 <a
                   href={`/admin/uef-review?batchId=${encodeURIComponent(acceptResult.batchId)}`}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
                 >
-                  Go to UEF Review →
+                  → Genera candidati UEF
                 </a>
               </div>
             )}
@@ -1547,7 +1548,12 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
         {/* ── G. ACTIONS ── */}
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4">
-          <p className="text-xs font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-3">Actions</p>
+          <p className="text-xs font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wider mb-1">Actions</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)] mb-3">
+            {isOp001
+              ? 'Pipeline sintetica OP-001 — dati di demo, non tenant live.'
+              : 'Attenzione: il flusso operator-flow usa la pipeline sintetica OP-001. Per i tenant live usa il flusso standard: Data Intake → UEF Review → Scoring.'}
+          </p>
           <div className="flex flex-wrap gap-2.5">
             <button onClick={handleRun} disabled={isOp}
               className="bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#1a1756] disabled:opacity-50 disabled:cursor-not-allowed transition-colors">

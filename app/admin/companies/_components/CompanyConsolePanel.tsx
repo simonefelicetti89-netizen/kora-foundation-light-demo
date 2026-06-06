@@ -416,7 +416,12 @@ function TenantRow({ tenant: t }: { tenant: ConsoleTenant }) {
 
       {/* Lifecycle */}
       <td className="px-4 py-3 min-w-[140px]">
-        <Badge label={LIFECYCLE_LABEL[t.lifecycleStatus]} cls={LIFECYCLE_CLS[t.lifecycleStatus]} />
+        <div className="flex flex-wrap gap-1">
+          <Badge label={LIFECYCLE_LABEL[t.lifecycleStatus]} cls={LIFECYCLE_CLS[t.lifecycleStatus]} />
+          {t.latestKoraIndex !== null && t.decisionPack?.status === 'exported' && (
+            <Badge label="Pilot completo" cls="text-green-700 bg-green-50 border-[rgba(47,125,85,0.30)]" />
+          )}
+        </div>
         {t.latestBatch && (
           <p className="text-[9px] text-[rgba(6,3,43,0.40)] mt-1">
             Periodo: {t.latestBatch.reportingPeriod}

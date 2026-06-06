@@ -502,13 +502,26 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
           {/* Summary bar */}
           {summary && summary.total > 0 && (
-            <div className="flex flex-wrap gap-3 text-[10px]">
-              <span className="text-[rgba(6,3,43,0.52)]">Total: <strong>{summary.total}</strong></span>
-              <span className="text-green-700">Approved: <strong>{summary.approved}</strong></span>
-              <span className="text-[#9E3B2F]">Rejected: <strong>{summary.rejected}</strong></span>
-              <span className="text-[#8A5A00]">Needs info: <strong>{summary.needsInfo}</strong></span>
-              <span className="text-[rgba(6,3,43,0.52)]">Pending: <strong>{summary.pending}</strong></span>
-              <span className="text-[rgba(6,3,43,0.52)]">Avg confidence: <strong>{Math.round(summary.avgConfidence * 100)}%</strong></span>
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap gap-3 text-[10px]">
+                <span className="text-[rgba(6,3,43,0.52)]">Total: <strong>{summary.total}</strong></span>
+                <span className="text-green-700">Approved: <strong>{summary.approved}</strong></span>
+                <span className="text-[#9E3B2F]">Rejected: <strong>{summary.rejected}</strong></span>
+                <span className="text-[#8A5A00]">Needs info: <strong>{summary.needsInfo}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">Pending: <strong>{summary.pending}</strong></span>
+                <span className="text-[rgba(6,3,43,0.52)]">Avg confidence: <strong>{Math.round(summary.avgConfidence * 100)}%</strong></span>
+              </div>
+              {/* Scoring readiness indicator (P5) */}
+              {summary.pending === 0 && summary.approved > 0 && (
+                <span className="inline-flex items-center gap-1 rounded border border-[rgba(47,125,85,0.30)] bg-green-50 px-2.5 py-0.5 text-[10px] font-semibold text-green-700">
+                  ✓ Pronto per lo scoring
+                </span>
+              )}
+              {summary.pending > 0 && (
+                <span className="inline-flex items-center gap-1 rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2.5 py-0.5 text-[10px] font-semibold text-[#8A5A00]">
+                  ⏳ {summary.pending} {summary.pending === 1 ? 'record' : 'record'} in attesa di review
+                </span>
+              )}
             </div>
           )}
 

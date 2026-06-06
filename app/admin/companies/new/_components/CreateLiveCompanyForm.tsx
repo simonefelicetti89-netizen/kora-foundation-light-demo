@@ -192,27 +192,39 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
             </p>
           )}
 
-          {/* Links */}
+          {/* Baseline missing — recovery note */}
+          {!result.baselineCreated && (
+            <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-[10.5px] text-[#8A5A00]">
+              <span className="font-semibold">Azione richiesta: </span>
+              La baseline forza lavoro non è stata creata. Imposta la baseline nello Spazio Azienda prima di caricare dati.
+            </div>
+          )}
+
+          {/* Next Steps */}
           {result.links && (
-            <div className="flex flex-wrap gap-2 pt-2 border-t border-green-100">
-              <Link
-                href={result.links.companyConsole}
-                className="rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
-              >
-                Company Console →
-              </Link>
+            <div className="rounded-lg border border-[rgba(47,125,85,0.35)] bg-green-100/60 px-4 py-3 space-y-2.5">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-green-700">Passo successivo obbligatorio</p>
               <Link
                 href={result.links.manageUsers}
-                className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors"
+                className="flex items-center justify-between rounded-lg bg-[#06032B] text-white px-4 py-2.5 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
               >
-                Gestisci utenti
+                <span>Assegna utente aziendale</span>
+                <span>→</span>
               </Link>
-              <Link
-                href={result.links.companyWorkspace}
-                className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-4 py-2 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors"
-              >
-                Workspace Admin view
-              </Link>
+              <div className="flex flex-wrap gap-2 pt-1 border-t border-green-200">
+                <Link
+                  href={result.links.companyConsole}
+                  className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-3 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors"
+                >
+                  Company Console
+                </Link>
+                <Link
+                  href={result.links.companyWorkspace}
+                  className="rounded-lg border border-[rgba(6,3,43,0.14)] text-[rgba(6,3,43,0.78)] px-3 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.03)] transition-colors"
+                >
+                  Spazio Azienda (Admin)
+                </Link>
+              </div>
             </div>
           )}
 

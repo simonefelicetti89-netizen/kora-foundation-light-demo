@@ -126,6 +126,10 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
   const [loading, setLoading]           = useState(false);
   const isOp001                         = tenantCode === 'OP-001';
 
+  // Decision Pack promotion state (P4)
+  const [dpPromoStatus, setDpPromoStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
+  const [dpPromoError, setDpPromoError]   = useState<string | null>(null);
+
   // Workforce baseline form state (Task 2)
   const [baselineWorkers, setBaselineWorkers] = useState('');
   const [baselinePeriod, setBaselinePeriod]   = useState('');
@@ -189,6 +193,27 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
       setBaselineLoading(false);
     }
   }
+  async function handleDpPromotion(nextStatus: 'ready' | 'exported') {
+    if (!w) return;
+    setDpPromoStatus('loading');
+    setDpPromoError(null);
+    try {
+      const res = await fetch('/api/admin/decision-pack/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ tenantCode, reportingPeriod: period, nextStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setDpPromoError((data as { error?: string }).error ?? 'Errore durante la promozione.'); setDpPromoStatus('error'); return; }
+      setDpPromoStatus('done');
+      loadWorkspace();
+    } catch {
+      setDpPromoError('Errore di rete — riprova.');
+      setDpPromoStatus('error');
+    }
+  }
+
   const tcEnc = encodeURIComponent(tenantCode);
   const rpEnc = encodeURIComponent(period);
 
@@ -463,6 +488,31 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                       <a href={w.decisionPack.previewUrl} className="text-[#C76F3D] underline mr-2" target="_blank" rel="noopener noreferrer">Preview</a>
                       <a href={w.decisionPack.pdfUrl} className="text-[#C76F3D] underline" target="_blank" rel="noopener noreferrer">PDF</a>
                     </span>
+                    {/* DP promotion buttons */}
+                    {w.decisionPack.status === 'draft' && (
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => { void handleDpPromotion('ready'); }}
+                          disabled={dpPromoStatus === 'loading'}
+                          className="rounded border border-blue-300 bg-blue-50 px-3 py-1 text-[10px] font-semibold text-blue-700 hover:bg-blue-100 disabled:opacity-50 transition-colors"
+                        >
+                          {dpPromoStatus === 'loading' ? '⏳…' : 'Marca come Pronto'}
+                        </button>
+                        {dpPromoError && <span className="text-[10px] text-[#9E3B2F]">⚠ {dpPromoError}</span>}
+                      </div>
+                    )}
+                    {w.decisionPack.status === 'ready' && (
+                      <div className="mt-2 flex items-center gap-2 flex-wrap">
+                        <button
+                          onClick={() => { void handleDpPromotion('exported'); }}
+                          disabled={dpPromoStatus === 'loading'}
+                          className="rounded border border-[rgba(47,125,85,0.30)] bg-green-50 px-3 py-1 text-[10px] font-semibold text-green-700 hover:bg-green-100 disabled:opacity-50 transition-colors"
+                        >
+                          {dpPromoStatus === 'loading' ? '⏳…' : 'Segna come Esportato'}
+                        </button>
+                        {dpPromoError && <span className="text-[10px] text-[#9E3B2F]">⚠ {dpPromoError}</span>}
+                      </div>
+                    )}
                   </>
                 : <span className="text-[#D99A2B]">Scoring completato — apri preview per generare il Decision Pack.</span>
               }
@@ -479,6 +529,17 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
             </StepCard>
 
           </div>
+
+          {/* Pilot complete banner (P7) */}
+          {w.scoring?.hasResult && w.decisionPack?.status === 'exported' && (
+            <div className="rounded-lg border border-[rgba(47,125,85,0.30)] bg-green-50 px-4 py-3 flex items-center gap-3">
+              <span className="text-green-600 font-bold text-base">✓</span>
+              <div>
+                <p className="text-xs font-bold text-green-700">Pilota completato — il workspace aziendale è attivo</p>
+                <p className="text-[10px] text-green-600">Decision Pack esportato. L&apos;azienda può accedere al proprio workspace KORA.</p>
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="text-[10px] text-[rgba(6,3,43,0.40)] text-center pt-2">
