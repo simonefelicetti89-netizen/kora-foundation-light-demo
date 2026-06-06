@@ -1,6 +1,13 @@
 'use client';
 // W-03: Dynamic Impact CV™ — Foundation Light v0.1 completion (B73-B).
 // Worker-controlled impact portfolio. Employer has zero access — enforced at service level.
+//
+// B81-B route classification: PREVIEW
+// Current: CV items from MyKoraPreviewService (synthetic, export_available: false).
+//          DynamicCVService.getProfile() delegates to persona fixtures.
+// Pilot+:  DynamicCVService reads verified UEF records tagged to real worker_kora_id.
+//          Worker-controlled sharing flags persisted in Supabase.
+//          export_readiness becomes true when worker confirms export intent.
 
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService, type DynamicCVItem } from '@/services/my-kora-preview/MyKoraPreviewService';

@@ -1,9 +1,15 @@
 'use client';
 
+// B81-B: My KORA layout gates on role, then wraps permitted sessions in
+// WorkerSessionProvider so all child pages can call useWorkerSession().
+// Current mode: always PREVIEW (synthetic personas, no live worker JWT).
+// Pilot+: WorkerSessionProvider detects real Supabase worker session automatically.
+
 import { useRole } from '@/lib/demo-state';
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { WorkerSessionProvider } from './_providers/WorkerSessionProvider';
 
 // My KORA is worker-private.
 // WORKER roles: full access — their personal space.
@@ -13,7 +19,7 @@ export default function MyKoraLayout({ children }: { children: React.ReactNode }
   const { activeRole } = useRole();
 
   if (isWorkerRole(activeRole) || isAdminRole(activeRole)) {
-    return <>{children}</>;
+    return <WorkerSessionProvider>{children}</WorkerSessionProvider>;
   }
 
   return (

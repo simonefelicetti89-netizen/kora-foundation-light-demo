@@ -3,6 +3,13 @@
 // Scopo: rispondere a 'come sta crescendo la mia attivazione e cosa posso fare oggi?'
 // Il PIB™ è privato — mai visibile al datore di lavoro. N≥10 per ogni aggregato aziendale.
 // Dati sintetici per-persona — Foundation Light v0.1.
+//
+// B81-B route classification: PREVIEW
+// Current: data from MyKoraPreviewService (synthetic persona fixtures).
+//          Session from WorkerSessionProvider (demo-state, no live JWT).
+// Pilot+:  WorkerSessionProvider resolves LIVE session from Supabase worker JWT.
+//          Data from MyKoraService (real Supabase per-worker UEF records + PIB).
+//          No component changes required — only provider and service swap.
 
 import { useState } from 'react';
 import Link from 'next/link';

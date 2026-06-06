@@ -3,6 +3,13 @@
 // Foundation Light: dati sintetici illustrativi per-persona.
 // Nessuna identità worker reale, nessun ranking, nessun social feed, nessun conteggio co-partecipanti.
 // KORA Contribution™ è un indicatore companion — mai parte del KORA Index™.
+//
+// B81-B route classification: PREVIEW
+// Current: contribution timeline from MyKoraPreviewService persona fixtures.
+//          KORA Contribution™ computed from synthetic events only.
+// Pilot+:  contribution events sourced from per-worker UEF records (partner-verified
+//          or KORA Link events). No social feed, no co-participant counts, no ranking.
+//          Only the worker's own contribution is shown — never others'.
 
 import { usePersona, useRole, useScenario } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
