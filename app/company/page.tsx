@@ -2,10 +2,12 @@
 // C-01: Executive Cockpit™ — vista di comando per CEO/HR/Finance.
 // Scopo: rispondere a 'qual è lo stato dell'attivazione umana e dove devo agire?'
 // Struttura narrativa: Hero → Segnali → Metriche → Macroblocchi → Azione → Deep dive.
+// B80-B: pure DEMO page — synthetic Meridiana scenario data only.
 
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import Link from 'next/link';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── Cockpit components ────────────────────────────────────────────────────────
 import { KoraIntelligenceHero }      from '@/components/company/cockpit/KoraIntelligenceHero';
@@ -117,6 +119,7 @@ export default function ExecutiveCockpit() {
 
   return (
     <div style={{ maxWidth: 860 }}>
+      <BoundaryBadge mode="DEMO" variant="light" suffix="· Meridiana · dati sintetici" style={{ marginBottom: 16 }} />
 
       {/* ── Section 1: Intelligence Hero — flagship, full-width ── */}
       <KoraIntelligenceHero

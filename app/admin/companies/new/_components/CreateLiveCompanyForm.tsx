@@ -7,6 +7,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -305,6 +306,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA Admin · Pilot</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Crea Azienda Live</h1>
+          <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
             Crea un nuovo tenant live e provisiona il primo Company Admin
           </p>

@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { TM } from '@/components/ui/TM';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 // P-01: Partner Workspace Light — Foundation Light Preview
@@ -522,6 +523,7 @@ export default function PartnerDashboard() {
 
       {/* ── Header ── */}
       <div>
+        <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" style={{ marginBottom: 6 }} />
         <PageMasthead
           eyebrow="Partner KORA · Foundation Light Preview"
           title={<><TM>KORA Network</TM> Partner</>}

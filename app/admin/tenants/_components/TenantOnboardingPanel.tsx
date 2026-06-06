@@ -14,6 +14,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 interface TenantSummary {
   id:                  string;
@@ -120,6 +121,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Registro Tenant</h1>
+          <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
             Gestione stato, baseline e navigazione per ogni azienda registrata.
           </p>

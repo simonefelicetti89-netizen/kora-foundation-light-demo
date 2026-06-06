@@ -4,6 +4,7 @@
 // KORA_ADMIN only. No worker identity. Factor trace is audit-safe (methodology values only).
 
 import { Fragment, useState, useEffect, useCallback } from 'react';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── Types mirroring the API response ─────────────────────────────────────────
 
@@ -144,6 +145,7 @@ export function ImpactUnitsExplorer({ userEmail }: { userEmail: string }) {
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Impact Units™ Explorer</h1>
+        <BoundaryBadge mode="LIVE" variant="light" style={{ marginTop: 6 }} />
         <p style={{ color: '#64748b', fontSize: '0.8rem', marginTop: 4 }}>
           Trace layer metodologico — KORA_ADMIN only · Nessun dato individuale
         </p>

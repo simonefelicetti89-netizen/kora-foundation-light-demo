@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 
 // C-02: KORA Index™ — scomposizione analitica del punteggio.
+// B80-B dual-path: live when authenticated company session exists; otherwise demo scenario (Meridiana).
 // Scopo: rispondere a "come si costruisce il punteggio, cosa lo vincola
 //        e cosa lo può migliorare?" — la domanda decisionale di un HR/CFO.
 // Struttura: Hero Diagnosis → Score Drivers → Board Actions → Technical Breakdown.
@@ -100,6 +101,8 @@ import { BlockedByDesignPanel }     from '@/components/kora-index/BlockedByDesig
 import { BudgetToHumanImpactPanel } from '@/components/kora-index/BudgetToHumanImpactPanel';
 import { RecommendationsPanel }     from '@/components/kora-index/RecommendationsPanel';
 import { MethodologyGlossary }      from '@/components/kora-index/MethodologyGlossary';
+import { BoundaryBadge }            from '@/components/ui/BoundaryBadge';
+import { BoundaryBanner }           from '@/components/ui/BoundaryBanner';
 
 // ── Section divider ──────────────────────────────────────────────────────────
 
@@ -444,17 +447,22 @@ export default function KoraIndexDetail() {
         }}>
           <TM>KORA Index</TM> v3 · Intelligence analitica
         </p>
-        <h1 style={{
-          fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-          fontSize:    'clamp(1.75rem, 3vw, 2.25rem)',
-          fontWeight:  400,
-          color:       TOKENS.ink,
-          letterSpacing: '-0.02em',
-          lineHeight:  1.08,
-        }}>
-          {liveCompanyName ?? tenant?.company_name ?? (isLive ? 'La tua organizzazione' : COMPANY_ID)}
-        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <h1 style={{
+            fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+            fontSize:    'clamp(1.75rem, 3vw, 2.25rem)',
+            fontWeight:  400,
+            color:       TOKENS.ink,
+            letterSpacing: '-0.02em',
+            lineHeight:  1.08,
+          }}>
+            {liveCompanyName ?? tenant?.company_name ?? (isLive ? 'La tua organizzazione' : COMPANY_ID)}
+          </h1>
+          <BoundaryBadge mode={isLive ? 'LIVE' : 'DEMO'} variant="light" suffix={isLive ? undefined : '· Meridiana'} />
+        </div>
       </div>
+
+      <BoundaryBanner isLive={isLive} />
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/* EXECUTIVE INTELLIGENCE LAYER™ — answers 4 questions       */}

@@ -13,6 +13,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 import { MatchReviewPanel, type MatchReviewDecision, type MatchReviewSection } from './MatchReviewPanel';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── API response types ─────────────────────────────────────────────────────
 
@@ -575,6 +576,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <span className="text-xs font-semibold tracking-widest uppercase text-white/40">Admin</span>
           </div>
           <h1 className="text-xl font-bold text-white tracking-tight">Data Intake Studio</h1>
+          <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">Synthetic Live v1 · {TENANT} · {PERIOD}</p>
         </div>
         <div className="flex flex-col items-end gap-2 mt-1">

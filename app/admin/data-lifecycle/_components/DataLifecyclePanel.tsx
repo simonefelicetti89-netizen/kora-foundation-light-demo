@@ -5,6 +5,7 @@
 // No scoring. No tenant delete. No PII in display.
 
 import { useEffect, useState } from 'react';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 interface BatchSummary {
   batchId: string; sourceName: string | null; sourceType: string;
@@ -119,6 +120,7 @@ export function DataLifecyclePanel({ userEmail, userRole }: { userEmail:string; 
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Data Lifecycle</h1>
+          <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">B10 — Inspect · Archive · Controlled Delete</p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">

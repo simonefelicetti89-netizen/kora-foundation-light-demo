@@ -6,6 +6,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { getPdfLinkConfig } from '@/lib/decision-pack/pdf-strategy';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -226,6 +227,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Spazio azienda</h1>
+          <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
             Gestisci il flusso pilot: Data Intake, Assisted Ingestion, Review, Scoring e Decision Pack.
           </p>

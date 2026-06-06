@@ -2,6 +2,7 @@
 // C-09: Decision Pack — output board-ready con scomposizione metodologica.
 // Scopo: fornire a HR/CFO/ESG un documento strutturato, spiegabile e con confini espliciti.
 // Confidence/Safeguard sempre visibili; nessun dato individuale.
+// B80-B dual-path: live when authenticated company session exists; otherwise demo scenario (Meridiana).
 
 import Link from 'next/link';
 import { useDemoState } from '@/lib/demo-state';
@@ -21,6 +22,8 @@ import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
 import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { BoundaryBanner } from '@/components/ui/BoundaryBanner';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
@@ -520,12 +523,14 @@ export default function Reports() {
       )}
 
       {/* ── 1. PageMasthead ─────────────────────────────────────────────────── */}
+      <BoundaryBadge mode={isLive ? 'LIVE' : 'DEMO'} variant="light" suffix={isLive ? undefined : '· Meridiana'} style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow={`Decision Pack · ${isLive ? 'LIVE' : activeScenario} · ${companyName}`}
         title="Report direzionali"
         subline="Output board-ready per HR, Finance, ESG e board. Evidenze strutturate, attivazione e raccomandazioni in formato decisionale."
         meta="Foundation Light v0.1 · pre_empirical_calibration · dati sintetici demo"
       />
+      <BoundaryBanner isLive={isLive} />
       <DecisionContext
         question="Quali output portare al board, agli advisor ESG e alle funzioni HR e Finance?"
         boundary="Foundation Light v0.1 · pre_empirical_calibration · non certificativo · dati sintetici"

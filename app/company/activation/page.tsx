@@ -2,6 +2,7 @@
 // C-08: Activation Intelligence™ — chi non viene raggiunto e dove si accumula il debt.
 // Scopo: rispondere a "chi è la maggioranza silenziosa e dove il budget non converte?"
 // Privacy: aggregato aziendale, N≥10, nessun dato individuale.
+// B80-B dual-path: live when authenticated company session exists; otherwise demo scenario (Meridiana).
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import { useScoringResult } from '@/lib/scoring-result';
@@ -12,6 +13,8 @@ import { activationSafeguardService } from '@/services/activation-safeguard/Acti
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { BoundaryBanner } from '@/components/ui/BoundaryBanner';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
@@ -186,11 +189,13 @@ export default function Activation() {
         </div>
       )}
 
+      <BoundaryBadge mode={isLive ? 'LIVE' : 'DEMO'} variant="light" suffix={isLive ? undefined : '· Meridiana'} style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow={`Intelligence operativa · ${isLive ? 'LIVE' : activeScenario}`}
         title="Activation Debt™ & Partecipazione"
         subline={`Aggregato aziendale — gruppi < ${SAFE_AGGREGATION_THRESHOLD} soppressi · nessun PIB individuale · nessun dato lavoratore`}
       />
+      <BoundaryBanner isLive={isLive} />
       <DecisionContext
         question="Chi non viene raggiunto e dove si accumula l'Activation Debt™ nella forza lavoro?"
         boundary="Soglia privacy N≥10 per segmento · nessun dato individuale · aggregato aziendale"

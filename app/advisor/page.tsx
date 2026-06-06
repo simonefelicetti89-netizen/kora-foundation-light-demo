@@ -5,6 +5,7 @@
 
 import Link from 'next/link';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { evidenceReliabilityIntelligenceService } from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';
@@ -319,6 +320,7 @@ export default function AdvisorDashboard() {
 
       {/* ── 1. Header ── */}
       <div>
+        <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" style={{ marginBottom: 6 }} />
         <PageMasthead
           eyebrow="Advisor KORA · Foundation Light Preview"
           title="Advisor Workspace"

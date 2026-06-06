@@ -7,6 +7,7 @@
 
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService, type OpportunityItem } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { cn } from '@/lib/utils';
 
 const PILLAR_COLORS: Record<string, string> = {
@@ -69,6 +70,7 @@ export default function Opportunities() {
   return (
     <div className="space-y-6">
       <div>
+        <BoundaryBadge mode="PREVIEW" variant="light" suffix="· Worker layer · dati sintetici" style={{ marginBottom: 6 }} />
         <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>
           Opportunità per te
         </h1>

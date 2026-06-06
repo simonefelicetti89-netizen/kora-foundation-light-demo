@@ -5,6 +5,7 @@
 // Read-only list + review action panel.
 
 import { useEffect, useState, useMemo } from 'react';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import Link from 'next/link';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -201,6 +202,7 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA Admin · Review Queue</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Company Submissions</h1>
+          <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
             Submission aziendali in attesa di revisione · Nessuno scoring automatico
           </p>

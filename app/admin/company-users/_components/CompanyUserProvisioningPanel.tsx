@@ -5,6 +5,7 @@
 // Reads tenants from /api/admin/tenants, assigns users via /api/admin/company-users.
 
 import { useEffect, useState, useCallback } from 'react';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 interface TenantOption {
   id: string;
@@ -132,6 +133,7 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">KORA · Admin</p>
           <h1 className="text-xl font-bold text-white tracking-tight">Utenti aziendali</h1>
+          <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
             Assegna accesso al workspace aziendale KORA. Ruoli: Company Admin e Company Viewer.
           </p>

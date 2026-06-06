@@ -2,6 +2,7 @@
 // C-06: Financial Governance — risponde a 'dove va il budget e quanto diventa attivazione profonda?'.
 // Scopo: connettere spesa welfare, attivazione verificata, Activation Debt™ e Reallocation Opportunity™.
 // La metrica chiave: BTI™. Il board ottiene risposta sul ROI direzionale — mai causale.
+// B80-B dual-path: live when authenticated company session exists; otherwise demo scenario (Meridiana).
 
 import Link from 'next/link';
 import { useRole, useScenario } from '@/lib/demo-state';
@@ -20,6 +21,8 @@ import { PILLAR_LABELS, BTI_DOCTRINE } from '@/lib/constants/kora';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { Explainer } from '@/components/ui/Explainer';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { BoundaryBanner } from '@/components/ui/BoundaryBanner';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
@@ -370,12 +373,14 @@ export default function FinancialGovernance() {
       )}
 
       {/* ── 1. PageMasthead ────────────────────────────────────────────────── */}
+      <BoundaryBadge mode={isLive ? 'LIVE' : 'DEMO'} variant="light" suffix={isLive ? undefined : '· Meridiana'} style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow={`Governance Finanziaria · ${isLive ? 'LIVE' : activeScenario} · ${rec?.reporting_period ?? (isLive ? 'Periodo attivo' : activeScenario)}`}
         title={<><TM>Budget-to-Human-Impact</TM> Engine</>}
         subline="Rapporto tra budget people, attivazione profonda e opportunità di riallocazione. Non certificativo, non causale."
         meta={`${companyName} · Foundation Light Preview · ${isLive ? 'dati live' : 'dati sintetici demo'}`}
       />
+      <BoundaryBanner isLive={isLive} />
       <DecisionContext
         question="Come si converte il budget welfare in attivazione profonda e dove si accumula Activation Debt™?"
         boundary="Solo dati sintetici Meridiana Group · nessun dato individuale · Foundation Light v0.1"

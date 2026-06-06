@@ -4,6 +4,7 @@
 
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService, type DynamicCVItem } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { cn } from '@/lib/utils';
 
 // ── Pillar styling ────────────────────────────────────────────────────────────
@@ -147,6 +148,7 @@ export default function DynamicCV() {
 
       {/* ── Header ── */}
       <div>
+        <BoundaryBadge mode="PREVIEW" variant="light" suffix="· Worker layer · dati sintetici" style={{ marginBottom: 6 }} />
         <div className="flex items-center gap-2">
           <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>
             Dynamic Impact CV

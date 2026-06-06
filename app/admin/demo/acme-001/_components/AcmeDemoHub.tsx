@@ -5,6 +5,7 @@
 // Pure static rendering — no API calls, no DB reads.
 
 import Link from 'next/link';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import {
   ACME_PROFILE, ACME_KORA_INDEX, ACME_MACROBLOCKS,
   ACME_PILLARS, ACME_EVIDENCE_RECORDS, ACME_EVIDENCE_SUMMARY, ACME_EVIDENCE_GAPS,
@@ -95,6 +96,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
             <h1 className="text-xl font-bold text-white tracking-tight">
               {ACME_PROFILE.companyName}
             </h1>
+            <BoundaryBadge mode="DEMO" variant="dark" suffix="· Guided Demo" style={{ marginTop: 6, marginBottom: 4 }} />
             <p className="text-sm text-white/45 mt-0.5">
               {ACME_PROFILE.tenantCode} · {ACME_PROFILE.industry} · {ACME_PROFILE.workforce} dipendenti · {ACME_PROFILE.period}
             </p>

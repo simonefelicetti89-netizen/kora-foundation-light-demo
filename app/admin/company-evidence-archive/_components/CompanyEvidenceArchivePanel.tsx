@@ -9,6 +9,7 @@ import { EvidenceAttachmentPanel } from './EvidenceAttachmentPanel';
 import { EvidenceRecordDrawer } from './EvidenceRecordDrawer';
 import { AttachmentLifecycleActions } from './AttachmentLifecycleActions';
 import { useSearchParams } from 'next/navigation';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -288,6 +289,7 @@ export function CompanyEvidenceArchivePanel() {
             <span className="text-xs font-semibold tracking-widest uppercase text-white/40">Admin</span>
           </div>
           <h1 className="text-xl font-bold text-white tracking-tight">Company Evidence Archive</h1>
+          <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">Archivio Evidenze Azienda · Read-only lineage · {TENANT || '—'} · {PERIOD}</p>
         </div>
         <div className="flex flex-col items-end gap-2 mt-1">

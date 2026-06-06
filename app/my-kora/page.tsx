@@ -11,6 +11,7 @@ import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewSe
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { TM } from '@/components/ui/TM';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { cn } from '@/lib/utils';
@@ -108,6 +109,7 @@ export default function MyKoraHome() {
     <div className="space-y-6">
 
       {/* ── Header ── */}
+      <BoundaryBadge mode="PREVIEW" variant="light" suffix="· Worker layer · dati sintetici" style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow={`My KORA · Spazio personale · ${activeScenario} · ${preview.persona_label}`}
         title={<>Il tuo <TM>Worker PIB</TM></>}

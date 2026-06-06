@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { useRole, useEnvironment } from '@/lib/demo-state';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { KoraLogo } from '@/components/brand/KoraLogo';
-import { cn } from '@/lib/utils';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const ENV_LABEL: Record<string, string> = {
@@ -61,24 +60,20 @@ function buildNavGroups(role: string): NavGroup[] {
   // Group 3: Delivery & Preview — workspace, preview, submissions.
   // Group 4: Demo Lab — all synthetic/demo flows clearly separated.
   // Group 5: Visione — roadmap only.
+  // B80-B: Admin sidebar split into LIVE OPERATIONS / DEMO PREVIEW / FUTURE VISION.
+  // Live routes (backed by real Supabase) are strictly separated from demo preview routes.
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
     return [
       {
-        heading: 'Onboarding Pilot',
+        heading: 'Live Operations',
         groupBadge: 'LIVE',
         badgeKey: 'LIVE',
         items: [
-          { href: '/admin/companies/new', label: 'Crea Azienda' },   // primary: creates tenant + user in one step
-          { href: '/admin/companies',     label: 'Company Console' },
-          { href: '/admin/company-users', label: 'Utenti Aziendali' },
-          { href: '/admin/tenants',       label: 'Registro Tenant' }, // registry/management only — creation via /admin/companies/new
-        ],
-      },
-      {
-        heading: 'Scoring Pipeline',
-        groupBadge: 'PIPELINE',
-        badgeKey: 'PIPELINE',
-        items: [
+          { href: '/admin/companies/new',            label: 'Crea Azienda Live' },
+          { href: '/admin/company-workspace',        label: 'Workspace Admin' },
+          { href: '/admin/company-users',            label: 'Utenti Aziendali' },
+          { href: '/admin/company-submissions',      label: 'Submission Queue' },
+          { href: '/admin/tenants',                  label: 'Registro Tenant' },
           { href: '/admin/data-intake',              label: 'Data Intake' },
           { href: '/admin/uef-review',               label: 'UEF™ Review & Scoring' },
           { href: '/admin/impact-units',             label: 'Impact Units™' },
@@ -87,25 +82,16 @@ function buildNavGroups(role: string): NavGroup[] {
         ],
       },
       {
-        heading: 'Delivery & Preview',
-        groupBadge: 'ADMIN',
-        badgeKey: 'ADMIN',
-        items: [
-          { href: '/admin/company-workspace',    label: 'Workspace Admin' },
-          { href: '/admin/company-live-preview', label: 'Live Preview' },
-          { href: '/admin/company-submissions',  label: 'Submission Queue' },
-          { href: '/admin/network',              label: 'Rete Advisor & Partner' },
-        ],
-      },
-      {
-        heading: 'Demo Lab',
+        heading: 'Demo Preview',
         groupBadge: 'SYNTHETIC',
         badgeKey: 'SYNTHETIC',
-        // Everything in this group is synthetic/demo — clearly separated from live flows.
+        // All routes in this group use synthetic/demo data — no live Supabase queries.
         items: [
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
           { href: '/company',             label: 'Meridiana Demo' },
-          { href: '/admin/operator',      label: 'Demo Scoring (Synthetic)' },  // operator-flow uses OP-001 synthetic batch
+          { href: '/admin/companies',     label: 'Company Console' },
+          { href: '/admin/network',       label: 'Rete Advisor & Partner' },
+          { href: '/admin/operator',      label: 'Demo Scoring (Synthetic)' },
           { href: '/admin/ai-onboarding', label: 'Anteprima Classificazione' },
           { href: '/admin/gtm',           label: 'GTM Preview' },
           { href: '/admin/benchmarks',    label: 'Benchmark Preview' },
@@ -113,7 +99,7 @@ function buildNavGroups(role: string): NavGroup[] {
         ],
       },
       {
-        heading: 'Visione',
+        heading: 'Future Vision',
         groupBadge: 'ROADMAP',
         badgeKey: 'ROADMAP',
         items: [
@@ -345,41 +331,38 @@ export function Sidebar() {
                 (item.href !== '/company' && pathname.startsWith(item.href)) ||
                 (item.href.includes('#') && pathname === item.href.split('#')[0]);
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={cn(
-                    'group flex items-center justify-between rounded-[12px] py-[7px] px-3 text-[13px] font-medium transition-all duration-150',
-                    isActive ? 'text-white' : 'text-white/65 hover:text-white/90',
-                    (item.comingSoon || item.inactive) && 'opacity-45',
-                  )}
-                  style={{
-                    fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                    margin:     '1px 4px',
-                    ...(isActive
-                      ? {
-                          background: TOKENS.accent,  // #C76F3D terracotta
-                          border:     '1px solid rgba(255,255,255,0.10)',
-                          boxShadow:  '0 6px 20px rgba(199,111,61,0.22)',
-                        }
-                      : {}),
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isActive) {
-                      (e.currentTarget as HTMLElement).style.background = '';
-                    }
-                  }}
-                >
-                  <span className="truncate leading-snug">{item.label}</span>
+              const isDisabled = item.comingSoon || item.inactive;
 
-                  <div className="flex items-center gap-1 shrink-0 ml-1">
+              const sharedStyle: React.CSSProperties = {
+                fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                margin:        '1px 4px',
+                display:       'flex',
+                alignItems:    'center',
+                justifyContent: 'space-between',
+                borderRadius:  12,
+                padding:       '7px 12px',
+                fontSize:      '13px',
+                fontWeight:    500,
+                transition:    'all 150ms',
+                opacity:       isDisabled ? 0.40 : 1,
+                cursor:        isDisabled ? 'not-allowed' : 'pointer',
+                pointerEvents: isDisabled ? 'none' : undefined,
+                color:         isActive ? '#FFFFFF' : 'rgba(255,255,255,0.65)',
+                ...(isActive && !isDisabled
+                  ? {
+                      background: TOKENS.accent,
+                      border:     '1px solid rgba(255,255,255,0.10)',
+                      boxShadow:  '0 6px 20px rgba(199,111,61,0.22)',
+                    }
+                  : {}),
+              };
+
+              const innerContent = (
+                <>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
+                    {item.label}
+                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 4 }}>
                     {item.comingSoon && (
                       <span
                         style={{
@@ -389,10 +372,10 @@ export function Sidebar() {
                           fontWeight:   600,
                           fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
                           background:   'rgba(255,255,255,0.07)',
-                          color:        'rgba(255,255,255,0.30)',
+                          color:        'rgba(255,255,255,0.35)',
                         }}
                       >
-                        presto
+                        preview
                       </span>
                     )}
                     {item.inactive && (
@@ -404,13 +387,49 @@ export function Sidebar() {
                           fontWeight:   600,
                           fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
                           background:   'rgba(199,111,61,0.14)',
-                          color:        'rgba(199,111,61,0.80)',
+                          color:        'rgba(199,111,61,0.70)',
                         }}
                       >
                         inattivo
                       </span>
                     )}
                   </div>
+                </>
+              );
+
+              // B80-B: inactive and comingSoon items are NOT rendered as navigable links.
+              // They render as non-interactive div elements with pointer-events: none.
+              if (isDisabled) {
+                return (
+                  <div
+                    key={item.href}
+                    aria-hidden="true"
+                    title="Non attivo in Foundation Light"
+                    style={sharedStyle}
+                  >
+                    {innerContent}
+                  </div>
+                );
+              }
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
+                  style={sharedStyle}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      (e.currentTarget as HTMLElement).style.background = '';
+                    }
+                  }}
+                >
+                  {innerContent}
                 </Link>
               );
             })}

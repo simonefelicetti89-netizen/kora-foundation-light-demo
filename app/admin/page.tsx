@@ -6,6 +6,7 @@ import { adminPreviewService } from '@/services/admin-preview/AdminPreviewServic
 import { PriorityQueue } from '@/components/admin/PriorityQueue';
 import type { PriorityItem } from '@/components/admin/PriorityQueue';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import type React from 'react';
 
 const SAFEGUARD_PILL: Record<string, { bg: string; text: string; border: string }> = {
@@ -136,6 +137,7 @@ export default function KoraControlTower() {
         <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: 'clamp(1.75rem, 3vw, 2.25rem)', fontWeight: 400, color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.08, marginBottom: 8 }}>
           Vista operativa cross-azienda
         </h1>
+        <BoundaryBadge mode="DEMO" variant="dark" suffix="· dati sintetici" style={{ marginBottom: 16 }} />
         <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '13px', color: 'rgba(255,255,255,0.50)', maxWidth: 520, lineHeight: 1.5, marginBottom: 28 }}>
           Governance metodologica, pipeline dati, network e analisi piattaforma. Tutto ciò che richiede attenzione dell&apos;operatore KORA.
         </p>

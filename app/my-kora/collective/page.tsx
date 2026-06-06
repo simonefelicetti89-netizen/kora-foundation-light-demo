@@ -7,6 +7,7 @@
 import { usePersona, useRole, useScenario } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { isContributionEligibleEvent, CONTRIBUTION_PILLARS } from '@/lib/kora-engine/contribution-family-detector';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { isWorkerRole } from '@/lib/permissions';
 
@@ -73,6 +74,7 @@ export default function CollectiveImpact() {
 
       {/* Header */}
       <div>
+        <BoundaryBadge mode="PREVIEW" variant="light" suffix="· Worker layer · dati sintetici" style={{ marginBottom: 6 }} />
         <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 10 }}>
           My KORA · Impatto Collettivo
         </p>

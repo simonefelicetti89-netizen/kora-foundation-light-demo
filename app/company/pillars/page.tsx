@@ -2,6 +2,7 @@
 // C-05: Pillar Intelligence — distribuzione delle Initiative sui 5 pillar KORA.
 // Scopo: rispondere a 'dove investe l'organizzazione e dove c'è il gap?'
 // Pillar: LIFE, GROWTH, CONNECTION, IMPACT, LEGACY — mai overlappanti.
+// B80-B dual-path: live when authenticated company session exists; otherwise demo scenario (Meridiana).
 
 import { useRole, useScenario } from '@/lib/demo-state';
 import { useScoringResult } from '@/lib/scoring-result';
@@ -12,6 +13,8 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { tenantService } from '@/services/tenant/TenantService';
 import { PILLAR_CODES, PILLAR_LABELS } from '@/lib/constants/kora';
 import { PageMasthead } from '@/components/ui/PageMasthead';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { BoundaryBanner } from '@/components/ui/BoundaryBanner';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
@@ -152,11 +155,13 @@ export default function PillarsInitiatives() {
 
   return (
     <div className="space-y-5">
+      <BoundaryBadge mode={isLive ? 'LIVE' : 'DEMO'} variant="light" suffix={isLive ? undefined : '· Meridiana'} style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow={`Pillar Intelligence · ${isLive ? 'LIVE' : activeScenario}`}
         title="Pillar Intelligence"
         subline={`${companyName} · ${aggregate?.reporting_period ?? (isLive ? 'Periodo attivo' : activeScenario)} · distribuzione aggregata`}
       />
+      <BoundaryBanner isLive={isLive} />
       <DecisionContext
         question="Come sono distribuiti budget e attivazione tra i 5 pilastri KORA e dove è il gap?"
         boundary="Aggregato aziendale · N≥10 per segmento · nessun dato individuale"
