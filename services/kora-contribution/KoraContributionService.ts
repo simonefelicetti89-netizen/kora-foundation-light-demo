@@ -2,6 +2,11 @@ import type { ScenarioId } from '@/lib/types';
 import { getMethodologyVersion, getCalibrationStatus } from '@/lib/methodology-config/v0.1';
 import contributionOutputsRaw from '@/data/synthetic/kora-contribution-outputs.json';
 import collectiveInitiativesRaw from '@/data/synthetic/collective-initiatives.json';
+import {
+  isContributionEligibleEvent,
+  CONTRIBUTION_ACTION_FAMILIES,
+  CONTRIBUTION_PILLARS,
+} from '@/lib/kora-engine/contribution-family-detector';
 
 // KORA Contribution is a companion indicator — never a KORA Index component (CLAUDE.md §12.7)
 
@@ -110,12 +115,179 @@ export interface KoraContributionOutput {
   synthetic_demo_data: true;
 }
 
+// ── Pipeline input contract ───────────────────────────────────────────────────
+// Structural subset of ImpactUnitComputationResult — accepts real IU results from
+// run-kora-pipeline without importing the IU service types directly.
+
+export interface ContributionPipelineInput {
+  action_family: string;
+  primary_pillar: string | null;
+  impact_units_total: number;
+  evidence_verification_ev: number;
+  computed: boolean;
+  event_nature?: string;
+}
+
+// ── ContributionSummary — pipeline-computed companion indicator output ────────
+// Replaces seed-only approach. Supports both pipeline and seed-derived paths.
+
+export interface ContributionSummary {
+  company_id: string;
+  scenario_id: ScenarioId;
+  reporting_period: string;
+  contributionScore: number;         // 0–100, provisional_companion_indicator
+  contributionLevel: 'minimal' | 'emerging' | 'active' | 'advanced';
+  initiativesCount: number;
+  ecosystemPartners: number;
+  territorialBreadth: number;        // 0.0–1.0 share of territorial events
+  contributionFamilies: string[];    // which of the 3 contribution families are present
+  evidenceDistribution: {
+    verified: number;                // count
+    partial: number;
+    self_declared: number;
+  };
+  totalContributionIU: number;
+  pillarBreakdown: Partial<Record<string, number>>;  // IMPACT/CONNECTION/LEGACY → IU total
+  methodologyStatus: 'pre_empirical_calibration';
+  /** Always true — KORA Contribution is never a KORA Index component */
+  notKoraIndexComponent: true;
+  noRanking: true;
+  noRewards: true;
+  noLeaderboard: true;
+  dataSource: 'pipeline' | 'seed_derived';
+  synthetic_demo_data: true;
+  // Legacy narrative fields (from seed, optional)
+  contribution_explanation?: string;
+  limitations_text?: string;
+  companion_label?: string;
+}
+
+// ── Provisional score formula — clearly labeled non-empirical ────────────────
+// Five simple bounded components — no empirical calibration claimed.
+// Component weights are directional scaffolding, not validated.
+
+function computeProvisionalScore(inputs: ContributionPipelineInput[]): {
+  score: number;
+  level: ContributionSummary['contributionLevel'];
+  familiesPresent: string[];
+  territorialBreadth: number;
+  evidenceDistribution: ContributionSummary['evidenceDistribution'];
+  totalContributionIU: number;
+  pillarBreakdown: Partial<Record<string, number>>;
+  initiativesCount: number;
+} {
+  const contributions = inputs.filter((r) =>
+    isContributionEligibleEvent({
+      action_family: r.action_family,
+      event_nature:  r.event_nature,
+      pillar:        r.primary_pillar ?? undefined,
+    }) && r.computed && r.impact_units_total > 0
+  );
+
+  const count    = contributions.length;
+  const totalIU  = contributions.reduce((s, r) => s + r.impact_units_total, 0);
+  const families = [...new Set(
+    contributions
+      .map((r) => r.action_family)
+      .filter((f) => CONTRIBUTION_ACTION_FAMILIES.includes(f as never)),
+  )];
+  const pillars = [...new Set(
+    contributions
+      .map((r) => r.primary_pillar)
+      .filter((p): p is string => p !== null && CONTRIBUTION_PILLARS.includes(p as never)),
+  )];
+  const territorialCount = contributions.filter(
+    (r) => r.action_family === 'territorial_impact',
+  ).length;
+
+  // Evidence distribution
+  const evDist = { verified: 0, partial: 0, self_declared: 0 };
+  for (const r of contributions) {
+    if (r.evidence_verification_ev >= 0.85)      evDist.verified++;
+    else if (r.evidence_verification_ev >= 0.70) evDist.partial++;
+    else                                          evDist.self_declared++;
+  }
+
+  // Pillar breakdown (IU by pillar)
+  const pillarBreakdown: Partial<Record<string, number>> = {};
+  for (const p of pillars) {
+    pillarBreakdown[p] = contributions
+      .filter((r) => r.primary_pillar === p)
+      .reduce((s, r) => s + r.impact_units_total, 0);
+  }
+
+  const familyBreadth   = families.length / 3;
+  const initiativesNorm = Math.min(count, 10) / 10;
+  const evidenceQ       = count > 0 ? evDist.verified / count : 0;
+  const territorial     = territorialCount > 0 ? 1 : 0;
+  const ecosystem       = families.length >= 2 ? 1 : 0;
+
+  const score = Math.round(
+    familyBreadth * 30 +
+    initiativesNorm * 20 +
+    evidenceQ * 25 +
+    territorial * 15 +
+    ecosystem * 10,
+  );
+
+  const level: ContributionSummary['contributionLevel'] =
+    score >= 66 ? 'advanced' :
+    score >= 36 ? 'active'   :
+    score >= 16 ? 'emerging' : 'minimal';
+
+  return {
+    score,
+    level,
+    familiesPresent:      families,
+    territorialBreadth:   count > 0 ? territorialCount / count : 0,
+    evidenceDistribution: evDist,
+    totalContributionIU:  +totalIU.toFixed(3),
+    pillarBreakdown,
+    initiativesCount:     count,
+  };
+}
+
+// ── Seed-to-pipeline mapper ──────────────────────────────────────────────────
+// Converts collective initiative seed records into ContributionPipelineInput[]
+// for use in getSummaryV2 (demo path). IU values are estimates for display only.
+
+const INITIATIVE_TYPE_TO_FAMILY: Record<string, string> = {
+  cross_company_volunteering:    'territorial_impact',
+  partner_collective_event:      'territorial_impact',
+  collective_community_event:    'inclusion_and_connection',
+  internal_mentoring_collective: 'future_and_legacy',
+  collective_upskilling:         'professional_growth',  // NOT contribution-eligible
+};
+
+const VERIFICATION_TO_EV: Record<string, number> = {
+  verified:    0.90,
+  partial:     0.75,
+  pending:     0.60,
+  not_started: 0.50,
+};
+
+const PILLAR_TO_BC: Record<string, number> = {
+  IMPACT:     1.00,
+  CONNECTION: 1.00,
+  LEGACY:     1.10,
+  GROWTH:     1.10,
+  LIFE:       1.20,
+};
+
 export interface IKoraContributionService {
   getContribution(companyId: string, scenarioId: ScenarioId): KoraContributionOutput;
   getContributionSummary(companyId: string, scenarioId: ScenarioId): KoraContributionSummary | null;
   getContributionScore(companyId: string, scenarioId: ScenarioId): number;
   getCollectiveInitiatives(companyId: string, scenarioId: ScenarioId): CollectiveInitiative[];
   getContributionInitiatives(companyId: string, scenarioId: ScenarioId): CollectiveInitiative[];
+  /** Pipeline-computed path: accepts IU results from run-kora-pipeline, returns ContributionSummary */
+  computeFromPipelineResult(
+    companyId: string,
+    scenarioId: ScenarioId,
+    iuResults: ContributionPipelineInput[],
+  ): ContributionSummary;
+  /** Demo/seed path: synthesizes ContributionSummary from collective-initiatives seed data */
+  getSummaryV2(companyId: string, scenarioId: ScenarioId): ContributionSummary;
 }
 
 export class KoraContributionService implements IKoraContributionService {
@@ -230,6 +402,90 @@ export class KoraContributionService implements IKoraContributionService {
     return this.filterInitiativesByScenario(scenarioId)
       .filter((r) => r.kora_contribution_relevant)
       .map(this.mapInitiative);
+  }
+
+  /**
+   * Pipeline-computed path: accepts IU results from run-kora-pipeline.
+   * Merges pipeline data with seed narrative fields (explanation, limitations).
+   * is_kora_index_component is always false — enforced here, not at call site.
+   */
+  computeFromPipelineResult(
+    companyId: string,
+    scenarioId: ScenarioId,
+    iuResults: ContributionPipelineInput[],
+  ): ContributionSummary {
+    const seedRec  = this.findContribution(companyId, scenarioId);
+    const computed = computeProvisionalScore(iuResults);
+
+    return {
+      company_id:             companyId,
+      scenario_id:            scenarioId,
+      reporting_period:       seedRec?.reporting_period ?? scenarioId,
+      contributionScore:      computed.score,
+      contributionLevel:      computed.level,
+      initiativesCount:       computed.initiativesCount,
+      ecosystemPartners:      seedRec?.ecosystem_partners_active ?? 0,
+      territorialBreadth:     computed.territorialBreadth,
+      contributionFamilies:   computed.familiesPresent,
+      evidenceDistribution:   computed.evidenceDistribution,
+      totalContributionIU:    computed.totalContributionIU,
+      pillarBreakdown:        computed.pillarBreakdown,
+      methodologyStatus:      'pre_empirical_calibration',
+      notKoraIndexComponent:  true,
+      noRanking:              true,
+      noRewards:              true,
+      noLeaderboard:          true,
+      dataSource:             'pipeline',
+      synthetic_demo_data:    true,
+      contribution_explanation: seedRec?.contribution_explanation,
+      limitations_text:         seedRec?.limitations_text,
+      companion_label:          seedRec?.companion_label,
+    };
+  }
+
+  /**
+   * Demo/seed path: synthesizes ContributionSummary from collective-initiatives seed data.
+   * Builds ContributionPipelineInput[] from initiative participation counts and evidence quality,
+   * then runs them through computeProvisionalScore — same computation path as pipeline mode.
+   */
+  getSummaryV2(companyId: string, scenarioId: ScenarioId): ContributionSummary {
+    const seedRec   = this.findContribution(companyId, scenarioId);
+    const contribIs = this.filterInitiativesByScenario(scenarioId)
+      .filter((r) => r.kora_contribution_relevant);
+
+    // Synthesize one ContributionPipelineInput per initiative.
+    // IU estimate: participation_count × NM(0.8) × BC(pillar) × EV(evidence) — demo approximation.
+    // 'computed' = true only if evidence_status allows (not 'not_started' or 'na').
+    const pipelineInputs: ContributionPipelineInput[] = contribIs.map((init) => {
+      const actionFamily = INITIATIVE_TYPE_TO_FAMILY[init.initiative_type] ?? 'territorial_impact';
+      const pillar       = init.pillar;
+      const ev           = VERIFICATION_TO_EV[init.verification_status] ?? 0.60;
+      const bc           = PILLAR_TO_BC[pillar] ?? 1.00;
+      const nm           = 0.80;
+      // IU total = participation_count × NM × BC × EV (simplified; CQ/CF/AGF omitted for demo)
+      const iuEstimate   = +(init.aggregate_participation_count * nm * bc * ev * 0.10).toFixed(3);
+      const isComputed   = init.status !== 'archived' && iuEstimate > 0;
+      return {
+        action_family:            actionFamily,
+        primary_pillar:           pillar,
+        impact_units_total:       isComputed ? iuEstimate : 0,
+        evidence_verification_ev: ev,
+        computed:                 isComputed,
+        event_nature:             init.initiative_type === 'cross_company_volunteering'
+                                    ? 'collective_initiative'
+                                    : init.initiative_type === 'partner_collective_event'
+                                      ? 'partner_service'
+                                      : 'collective_initiative',
+      };
+    });
+
+    const summary = this.computeFromPipelineResult(companyId, scenarioId, pipelineInputs);
+    // Override ecosystemPartners from seed (richer source for demo)
+    return {
+      ...summary,
+      ecosystemPartners: seedRec?.ecosystem_partners_active ?? summary.ecosystemPartners,
+      dataSource:        'seed_derived',
+    };
   }
 }
 

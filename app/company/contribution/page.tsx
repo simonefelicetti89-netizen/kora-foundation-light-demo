@@ -172,15 +172,16 @@ export default function KoraContribution() {
   const tenant      = tenantService.getTenant(companyId);
   const companyName = tenant?.company_name ?? companyId;
 
-  const summary                 = koraContributionService.getContributionSummary(companyId, activeScenario);
+  const legacySummary           = koraContributionService.getContributionSummary(companyId, activeScenario);
+  const summaryV2               = koraContributionService.getSummaryV2(companyId, activeScenario);
   const contributionInitiatives = koraContributionService.getContributionInitiatives(companyId, activeScenario);
   const allInitiatives          = koraContributionService.getCollectiveInitiatives(companyId, activeScenario);
   const nonContribInits         = allInitiatives.filter((i) => !i.kora_contribution_relevant);
 
-  const levelCfg      = LEVEL_CONFIG[summary?.contribution_level ?? 'minimal'] ?? LEVEL_CONFIG.minimal;
-  const scorePct      = summary ? Math.min(summary.contribution_score, 100) : 0;
-  const planningCount = summary
-    ? Math.max(0, summary.collective_initiatives_count - summary.active_initiatives_count - summary.completed_initiatives_count)
+  const levelCfg      = LEVEL_CONFIG[summaryV2.contributionLevel] ?? LEVEL_CONFIG.minimal;
+  const scorePct      = Math.min(summaryV2.contributionScore, 100);
+  const planningCount = legacySummary
+    ? Math.max(0, legacySummary.collective_initiatives_count - legacySummary.active_initiatives_count - legacySummary.completed_initiatives_count)
     : 0;
 
   const internalInits    = contributionInitiatives.filter((i) => ARCHITECTURE_LAYERS[0].types.includes(i.initiative_type as never));
@@ -188,12 +189,15 @@ export default function KoraContribution() {
   const ecosystemInits   = contributionInitiatives.filter((i) => i.companies_involved.length > 1);
   const layerInitCounts  = [internalInits, territorialInits, ecosystemInits];
 
-  const signals = summary ? [
-    { label: 'Partecipazioni collettive verificate', value: summary.verified_initiative_participations > 0 ? `${summary.verified_initiative_participations} nel periodo di reporting` : 'Non ancora sufficienti nel dataset demo', ok: summary.verified_initiative_participations > 0 },
-    { label: 'Iniziative collettive attive', value: summary.active_initiatives_count > 0 ? `${summary.active_initiatives_count} attiva/e nel periodo` : planningCount > 0 ? `${planningCount} in planning — partecipazione non ancora avviata` : 'Nessuna nel perimetro demo corrente', ok: summary.active_initiatives_count > 0 },
+  const totalEvCount = summaryV2.evidenceDistribution.verified + summaryV2.evidenceDistribution.partial + summaryV2.evidenceDistribution.self_declared;
+  const evVerifiedPct = totalEvCount > 0 ? Math.round((summaryV2.evidenceDistribution.verified / totalEvCount) * 100) : 0;
+
+  const signals = legacySummary ? [
+    { label: 'Partecipazioni collettive verificate', value: legacySummary.verified_initiative_participations > 0 ? `${legacySummary.verified_initiative_participations} nel periodo di reporting` : 'Non ancora sufficienti nel dataset demo', ok: legacySummary.verified_initiative_participations > 0 },
+    { label: 'Iniziative collettive attive', value: legacySummary.active_initiatives_count > 0 ? `${legacySummary.active_initiatives_count} attiva/e nel periodo` : planningCount > 0 ? `${planningCount} in planning — partecipazione non ancora avviata` : 'Nessuna nel perimetro demo corrente', ok: legacySummary.active_initiatives_count > 0 },
     { label: 'Iniziative territoriali', value: territorialInits.length > 0 ? `${territorialInits.length} iniziativa/e territoriale/i — verifica ${territorialInits.every(i => i.verification_status === 'verified') ? 'completata' : 'in corso'}` : planningCount > 0 ? '1 in planning, nessuna ancora verificata' : 'Non presenti nel dataset demo corrente', ok: territorialInits.length > 0 },
-    { label: 'Cross-company activation', value: summary.cross_company_initiatives_count > 0 ? `${summary.cross_company_initiatives_count} programma/i cross-company attivo/i` : `Non presente — ${summary.ecosystem_partners_active} partner ecosistema attivi`, ok: summary.cross_company_initiatives_count > 0 },
-    { label: 'Evidenza advisor-verified', value: summary.completed_initiatives_count > 0 ? `${summary.completed_initiatives_count} iniziativa/e completata/e e validata/e da advisor` : 'Non ancora disponibile nel perimetro demo', ok: summary.completed_initiatives_count > 0 },
+    { label: 'Cross-company activation', value: legacySummary.cross_company_initiatives_count > 0 ? `${legacySummary.cross_company_initiatives_count} programma/i cross-company attivo/i` : `Non presente — ${legacySummary.ecosystem_partners_active} partner ecosistema attivi`, ok: legacySummary.cross_company_initiatives_count > 0 },
+    { label: 'Evidenza advisor-verified', value: legacySummary.completed_initiatives_count > 0 ? `${legacySummary.completed_initiatives_count} iniziativa/e completata/e e validata/e da advisor` : 'Non ancora disponibile nel perimetro demo', ok: legacySummary.completed_initiatives_count > 0 },
   ] : [];
 
   return (
@@ -241,18 +245,27 @@ export default function KoraContribution() {
         </div>
       </div>
 
+      {/* Methodology boundary — non-suppressible */}
+      <div style={{ background: `${TOKENS.accent}08`, border: `1px solid ${TOKENS.accent}33`, borderRadius: TOKENS.cardRadius, padding: '10px 14px', fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65 }}>
+        <span style={{ fontWeight: 600, color: TOKENS.ink }}>KORA Contribution™ è un indicatore companion pre-empirico.</span>
+        {' '}Non modifica il KORA Index™. Score e livello sono indicativi — provisional_companion_indicator, pre_empirical_calibration.
+      </div>
+
       {/* 3. Score */}
-      <SectionLabel>Contribution Score — {summary?.reporting_period ?? activeScenario}</SectionLabel>
+      <SectionLabel>Contribution Score — {summaryV2.reporting_period}</SectionLabel>
       <ChartFrame>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 24, flexWrap: 'wrap' }}>
           <div>
             <div className="flex items-end gap-3">
               <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '3.25rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
-                {summary?.contribution_score ?? 0}
+                {summaryV2.contributionScore}
               </span>
               <span style={{ fontSize: '13px', color: TOKENS.inkHint, paddingBottom: 8 }}>/100</span>
               <span style={{ fontSize: '11px', fontWeight: 500, background: levelCfg.bg, color: levelCfg.text, borderRadius: 4, padding: '3px 9px', marginBottom: 8 }}>
                 {levelCfg.label}
+              </span>
+              <span style={{ fontSize: '10px', color: TOKENS.inkHint, marginBottom: 8, fontFamily: 'monospace' }}>
+                provisional_companion_indicator
               </span>
             </div>
             <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 6 }}>
@@ -266,28 +279,107 @@ export default function KoraContribution() {
         <div style={{ marginTop: 12, padding: '10px 12px', background: TOKENS.safeguard.watch.bg, borderRadius: 8, fontSize: '12px', color: TOKENS.safeguard.watch.text, lineHeight: 1.6 }}>
           Il punteggio basso non indica fallimento operativo. Segnala che le iniziative territoriali, cross-company o collettive verificate non sono ancora sufficientemente presenti nel perimetro Foundation Light.
         </div>
-        {summary?.contribution_explanation && (
-          <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 10, lineHeight: 1.6 }}>{summary.contribution_explanation}</p>
+        {summaryV2.contribution_explanation && (
+          <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 10, lineHeight: 1.6 }}>{summaryV2.contribution_explanation}</p>
         )}
       </ChartFrame>
 
-      {/* 4. Stats row */}
-      {summary && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {[
-            { label: 'Iniziative collettive',     value: summary.collective_initiatives_count,       sub: undefined },
-            { label: 'Partecipazioni verificate',  value: summary.verified_initiative_participations, sub: 'aggregato' },
-            { label: 'Cross-azienda',             value: summary.cross_company_initiatives_count,    sub: undefined },
-            { label: 'Partner ecosistema',        value: summary.ecosystem_partners_active,          sub: undefined },
-          ].map(({ label, value, sub }) => (
-            <div key={label} style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem', textAlign: 'center' }}>
-              <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{label}</p>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
-              {sub && <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{sub}</p>}
-            </div>
-          ))}
+      {/* 4. Stats row — pipeline-computed */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        {[
+          { label: 'Iniziative contribution',    value: summaryV2.initiativesCount,     sub: 'dataset demo' },
+          { label: 'Total Contribution IU',       value: summaryV2.totalContributionIU.toFixed(2), sub: 'stima aggregata' },
+          { label: 'Family attive',              value: summaryV2.contributionFamilies.length, sub: `/ 3 max` },
+          { label: 'Partner ecosistema',         value: summaryV2.ecosystemPartners,    sub: undefined },
+        ].map(({ label, value, sub }) => (
+          <div key={label} style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem', textAlign: 'center' }}>
+            <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{label}</p>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2rem', color: TOKENS.ink, lineHeight: 1, margin: '8px 0 4px', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+            {sub && <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{sub}</p>}
+          </div>
+        ))}
+      </div>
+
+      {/* 4b. Pipeline breakdown — pillar + evidence + families */}
+      <div className="grid gap-4 sm:grid-cols-3">
+
+        {/* Pillar breakdown */}
+        <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 10 }}>
+            Pillar Contribution IU
+          </p>
+          {(['IMPACT', 'CONNECTION', 'LEGACY'] as const).map((p) => {
+            const iu  = (summaryV2.pillarBreakdown[p] ?? 0);
+            const max = Math.max(...(['IMPACT', 'CONNECTION', 'LEGACY'].map((x) => summaryV2.pillarBreakdown[x] ?? 0)), 0.01);
+            return (
+              <div key={p} style={{ marginBottom: 8 }}>
+                <div className="flex justify-between items-center mb-1">
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-jakarta)', fontWeight: 600, color: TOKENS.ink }}>{p}</span>
+                  <span style={{ fontSize: '11px', color: TOKENS.inkHint, fontVariantNumeric: 'tabular-nums' }}>{iu.toFixed(2)} IU</span>
+                </div>
+                <div style={{ height: 4, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
+                  <div style={{ height: 4, borderRadius: 9999, width: `${(iu / max) * 100}%`, background: TOKENS.ink }} />
+                </div>
+              </div>
+            );
+          })}
+          <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 8 }}>Distribuzione IU per pillar contribution · seed_derived</p>
         </div>
-      )}
+
+        {/* Evidence distribution */}
+        <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 10 }}>
+            Qualità Evidenza
+          </p>
+          {(
+            [
+              { key: 'verified',     label: 'Verificata',     color: TOKENS.safeguard.pass.dot  },
+              { key: 'partial',      label: 'Parziale',       color: TOKENS.safeguard.watch.dot },
+              { key: 'self_declared',label: 'Autodichiarata', color: TOKENS.inkHint             },
+            ] as const
+          ).map(({ key, label, color }) => {
+            const count = summaryV2.evidenceDistribution[key];
+            const pct   = totalEvCount > 0 ? Math.round((count / totalEvCount) * 100) : 0;
+            return (
+              <div key={key} style={{ marginBottom: 8 }}>
+                <div className="flex justify-between items-center mb-1">
+                  <span style={{ fontSize: '11px', color: TOKENS.inkSecondary }}>{label}</span>
+                  <span style={{ fontSize: '11px', fontVariantNumeric: 'tabular-nums', color: TOKENS.ink }}>{pct}%</span>
+                </div>
+                <div style={{ height: 4, borderRadius: 9999, background: TOKENS.inkTrack, overflow: 'hidden' }}>
+                  <div style={{ height: 4, borderRadius: 9999, width: `${pct}%`, background: color }} />
+                </div>
+              </div>
+            );
+          })}
+          <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 8 }}>
+            Verifica ≥85%: {evVerifiedPct}% · EV factor range L0–L3
+          </p>
+        </div>
+
+        {/* Contribution families */}
+        <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1rem' }}>
+          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '10px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 10 }}>
+            Contribution Families
+          </p>
+          {(['territorial_impact', 'inclusion_and_connection', 'future_and_legacy'] as const).map((f) => {
+            const active = summaryV2.contributionFamilies.includes(f);
+            return (
+              <div key={f} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: '13px', color: active ? TOKENS.safeguard.pass.dot : TOKENS.inkHint }}>
+                  {active ? '✓' : '○'}
+                </span>
+                <span style={{ fontSize: '11px', color: active ? TOKENS.ink : TOKENS.inkHint, fontWeight: active ? 500 : 400 }}>
+                  {f.replace(/_/g, ' ')}
+                </span>
+              </div>
+            );
+          })}
+          <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 8 }}>
+            {summaryV2.contributionFamilies.length} / 3 famiglie · breadth = {(summaryV2.contributionFamilies.length / 3 * 100).toFixed(0)}%
+          </p>
+        </div>
+      </div>
 
       {/* 5. Architecture layers */}
       <SectionLabel>Contribution Architecture — tre layer strategici</SectionLabel>
@@ -356,7 +448,7 @@ export default function KoraContribution() {
       </ChartFrame>
 
       {/* 7. Diagnostic signals */}
-      {summary && signals.length > 0 && (
+      {legacySummary && signals.length > 0 && (
         <>
           <SectionLabel>Segnali diagnostici — dataset demo</SectionLabel>
           <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, overflow: 'hidden' }}>
@@ -492,9 +584,9 @@ export default function KoraContribution() {
 
       {/* 13. ProvenanceFooter */}
       <ProvenanceFooter
-        methodologyVersionId={summary?.methodology_version_id ?? 'KORA Methodology v0.1'}
+        methodologyVersionId={legacySummary?.methodology_version_id ?? 'KORA Methodology v0.1'}
         calibrationStatus="pre_empirical_calibration"
-        reportingPeriod={summary?.reporting_period ?? activeScenario}
+        reportingPeriod={summaryV2.reporting_period}
       />
     </div>
   );

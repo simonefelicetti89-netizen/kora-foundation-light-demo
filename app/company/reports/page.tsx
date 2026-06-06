@@ -8,6 +8,7 @@ import { useDemoState } from '@/lib/demo-state';
 import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
 import { reportFactoryService } from '@/services/report-factory/ReportFactoryService';
+import { koraContributionService } from '@/services/kora-contribution/KoraContributionService';
 import { useScoringResult } from '@/lib/scoring-result';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
@@ -426,6 +427,7 @@ export default function Reports() {
   const demoId     = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
   const COMPANY_ID = isLive ? (liveId ?? demoId) : demoId;
 
+  const contributionV2 = koraContributionService.getSummaryV2(COMPANY_ID, activeScenario);
   const factoryStatus  = reportFactoryService.getDecisionPackFactoryStatus(COMPANY_ID);
   const versionHistory = reportFactoryService.getDecisionPackVersionHistory(COMPANY_ID);
   const latestVersion  = versionHistory[0] ?? null;
@@ -996,7 +998,74 @@ export default function Reports() {
         )}
       </div>
 
-      {/* ── 12. ProvenanceFooter ─────────────────────────────────────────────── */}
+      {/* ── 12. KORA Contribution™ companion section ────────────────────────── */}
+      <SectionLabel>KORA Contribution™ — Indicatore Companion</SectionLabel>
+      <div style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.accent}33`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <span style={{ fontSize: '10px', fontWeight: 700, background: `${TOKENS.accent}14`, color: TOKENS.accent, borderRadius: 4, padding: '2px 7px' }}>
+            Indicatore Companion
+          </span>
+          <span style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>
+            not_kora_index_component: true
+          </span>
+          <span style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>
+            provisional_companion_indicator
+          </span>
+        </div>
+        <p style={{ fontSize: '12.5px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginBottom: 16 }}>
+          KORA Contribution™ misura il contributo collettivo e territoriale dell&apos;organizzazione oltre il perimetro interno.{' '}
+          <strong style={{ color: TOKENS.ink }}>Non modifica e non influenza il KORA Index™.</strong>{' '}
+          È un segnale complementare per ESG people-side e reporting territoriale.
+        </p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-4">
+          {[
+            { label: 'Contribution Score', value: String(contributionV2.contributionScore), sub: `/ 100 · ${contributionV2.contributionLevel}` },
+            { label: 'Total Contribution IU', value: contributionV2.totalContributionIU.toFixed(2), sub: 'stima aggregata' },
+            { label: 'Iniziative contribution', value: String(contributionV2.initiativesCount), sub: 'dataset demo' },
+            { label: 'Partner ecosistema', value: String(contributionV2.ecosystemPartners), sub: undefined },
+          ].map(({ label, value, sub }) => (
+            <div key={label} style={{ background: TOKENS.inkBorder, borderRadius: 8, padding: '0.75rem', textAlign: 'center' }}>
+              <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginBottom: 4 }}>{label}</p>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.375rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+              {sub && <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginTop: 3 }}>{sub}</p>}
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {/* Evidence distribution mini */}
+          {(
+            [
+              { key: 'verified' as const,     label: 'Verificata',     color: TOKENS.safeguard.pass.dot  },
+              { key: 'partial' as const,       label: 'Parziale',       color: TOKENS.safeguard.watch.dot },
+              { key: 'self_declared' as const, label: 'Autodichiarata', color: TOKENS.inkHint             },
+            ]
+          ).map(({ key, label, color }) => {
+            const total = contributionV2.evidenceDistribution.verified + contributionV2.evidenceDistribution.partial + contributionV2.evidenceDistribution.self_declared;
+            const pct   = total > 0 ? Math.round((contributionV2.evidenceDistribution[key] / total) * 100) : 0;
+            return (
+              <div key={key} style={{ background: TOKENS.inkBorder, borderRadius: 6, padding: '8px 10px' }}>
+                <p style={{ fontSize: '10px', color: TOKENS.inkHint, marginBottom: 4 }}>{label}</p>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.125rem', color, fontVariantNumeric: 'tabular-nums' }}>{pct}%</p>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ borderTop: TOKENS.cardBorder, paddingTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {(['IMPACT', 'CONNECTION', 'LEGACY'] as const).map((p) => {
+            const iu = (contributionV2.pillarBreakdown[p] ?? 0).toFixed(2);
+            return (
+              <span key={p} style={{ fontSize: '11px', background: TOKENS.inkBorder, color: TOKENS.inkSecondary, borderRadius: 4, padding: '3px 8px', fontVariantNumeric: 'tabular-nums' }}>
+                {p}: {iu} IU
+              </span>
+            );
+          })}
+          <span style={{ fontSize: '10px', color: TOKENS.inkHint, fontStyle: 'italic', alignSelf: 'center', marginLeft: 4 }}>
+            distribuzione IU per pillar contribution
+          </span>
+        </div>
+      </div>
+
+      {/* ── 13. ProvenanceFooter ─────────────────────────────────────────────── */}
       <ProvenanceFooter
         methodologyVersionId={pack?.methodology_version ?? 'KORA Methodology v0.1'}
         calibrationStatus="pre_empirical_calibration"
