@@ -1,4 +1,26 @@
 // lib/kora-engine/eligibility-gate.ts
+// ══════════════════════════════════════════════════════════════════════════════
+// CANONICAL ELIGIBILITY ENGINE — used by run-kora-pipeline.ts for live scoring.
+// ══════════════════════════════════════════════════════════════════════════════
+//
+// This is the authoritative eligibility classifier for KORA scoring.
+// It is the ONLY engine that controls:
+//   - Whether a record generates Impact Units (IU)
+//   - Whether a record contributes to the KORA Index
+//   - Whether a record advances to PIB Aggregation
+//   - Whether a record reaches the UEF stage
+//
+// Input:  RawUploadedRecord | NormalizedUEFRecord  (pipeline record types)
+// Output: EligibilityResult[]  (status, reviewRequired, doctrineReference)
+//
+// DISTINCTION FROM services/eligibility-gate/EligibilityGateService.ts:
+//   EligibilityGateService is a TAXONOMY/PREPROCESSING classifier.
+//   It operates on EligibilityClassificationInput (name, description, category)
+//   and is used in the admin BCM mapping UI and AI Upload Studio matching.
+//   It does NOT control scoring — it informs the operator before records enter
+//   the pipeline. Only this canonical engine (lib/kora-engine/eligibility-gate.ts)
+//   controls what enters IU computation and the KORA Index.
+//
 // Rule-based Eligibility Gate Engine v0.1 — KORA Foundation Light Pilot.
 //
 // Classifies RawUploadedRecord | NormalizedUEFRecord as:

@@ -1,3 +1,31 @@
+// services/eligibility-gate/EligibilityGateService.ts
+// ══════════════════════════════════════════════════════════════════════════════
+// TAXONOMY / PREPROCESSING CLASSIFIER — NOT the live scoring eligibility engine.
+// ══════════════════════════════════════════════════════════════════════════════
+//
+// This service classifies human-readable action descriptions against the BCM
+// taxonomy (action-taxonomy.json). It is used in:
+//   - Admin BCM Mapping Review (AI Upload Studio)
+//   - Pre-ingestion operator classification UI
+//   - Taxonomy exploration and confidence preview
+//
+// It operates on EligibilityClassificationInput {name, description, category}
+// and returns EligibilityClassificationResult with taxonomy metadata.
+//
+// IT DOES NOT CONTROL SCORING.
+//
+// The live scoring eligibility engine is:
+//   lib/kora-engine/eligibility-gate.ts  ← canonical, pipeline-authoritative
+//
+// That engine operates on RawUploadedRecord | NormalizedUEFRecord and is the
+// ONLY classifier that determines IU computation and KORA Index contribution.
+// This service and the canonical engine may disagree on edge cases — the
+// canonical engine always wins for scoring purposes.
+//
+// When to use which:
+//   EligibilityGateService (this file) — taxonomy lookup, admin UI, BCM matching
+//   lib/kora-engine/eligibility-gate.ts — any scoring, IU, UEF, KORA Index path
+
 import type {
   ActionTaxonomyEntry,
   EligibilityClass,
