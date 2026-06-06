@@ -3,9 +3,10 @@
 // Scopo: mostrare al lavoratore opportunità personalizzate per pillar
 //        (partner KORA, interne, community) e IU stimati per ognuna.
 // Le opportunità sono suggerimenti, non obblighi. Il lavoratore decide.
+// Dati erogati da MyKoraPreviewService — nessun dato hardcoded nel componente.
 
-import { useRole } from '@/lib/demo-state';
-import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { useRole, usePersona } from '@/lib/demo-state';
+import { myKoraPreviewService, type OpportunityItem } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { cn } from '@/lib/utils';
 
 const PILLAR_COLORS: Record<string, string> = {
@@ -24,94 +25,6 @@ const PILLAR_LIGHT: Record<string, string> = {
   LEGACY:     'bg-[rgba(138,117,98,0.10)] text-[#8A7562] border-[rgba(138,117,98,0.25)]',
 };
 
-interface Opportunity {
-  id: string;
-  title: string;
-  subtitle: string;
-  pillar: string;
-  pillar_label: string;
-  provider: string;
-  format: string;
-  iu_potential: string;
-  match_reason: string;
-  type: 'partner' | 'internal' | 'community';
-}
-
-const OPPORTUNITIES: Opportunity[] = [
-  {
-    id: 'opp-01',
-    title: 'Workshop Community Leadership',
-    subtitle: 'Leadership collaborativa e facilitazione di comunità',
-    pillar: 'CONNECTION',
-    pillar_label: 'CONNECTION',
-    provider: 'Città Aperta APS',
-    format: '2 sessioni · 4h totali',
-    iu_potential: '+12–18 IU stimati',
-    match_reason: 'Il tuo pilastro CONNECTION ha spazio di crescita. Questa attività potenzia mentoring e coesione.',
-    type: 'partner',
-  },
-  {
-    id: 'opp-02',
-    title: 'Percorso Mentoring Legacy',
-    subtitle: 'Trasferimento di conoscenza e memoria organizzativa',
-    pillar: 'LEGACY',
-    pillar_label: 'LEGACY',
-    provider: 'GrowthLab Academy',
-    format: '6 sessioni · 12h totali',
-    iu_potential: '+20–30 IU stimati',
-    match_reason: 'Il pilastro LEGACY è il tuo punto di forza. Un percorso mentoring rafforza continuità organizzativa.',
-    type: 'partner',
-  },
-  {
-    id: 'opp-03',
-    title: 'Check prevenzione LIFE',
-    subtitle: 'Screening di prevenzione e check salute di base',
-    pillar: 'LIFE',
-    pillar_label: 'LIFE',
-    provider: 'VitaLab Network',
-    format: '1 sessione · 2h',
-    iu_potential: '+8–12 IU stimati',
-    match_reason: 'Il pilastro LIFE mostra bassa continuità. Un check prevenzione supporta benessere sostenuto.',
-    type: 'partner',
-  },
-  {
-    id: 'opp-04',
-    title: 'Volontariato territoriale',
-    subtitle: 'Progetto di impatto comunitario e ambientale',
-    pillar: 'IMPACT',
-    pillar_label: 'IMPACT',
-    provider: 'Città Aperta APS',
-    format: '1 giornata · 6h',
-    iu_potential: '+15–22 IU stimati',
-    match_reason: 'Attività IMPACT con evidenza esterna verificata. Massimo potenziale per il pilastro.',
-    type: 'community',
-  },
-  {
-    id: 'opp-05',
-    title: 'Emerging Leaders',
-    subtitle: 'Sviluppo competenze leadership e digital skills',
-    pillar: 'GROWTH',
-    pillar_label: 'GROWTH',
-    provider: 'LMS Aziendale',
-    format: '4 moduli · 8h totali',
-    iu_potential: '+18–26 IU stimati',
-    match_reason: 'Il pilastro GROWTH può crescere. Certificazione interna con evidenza LMS verificata.',
-    type: 'internal',
-  },
-  {
-    id: 'opp-06',
-    title: 'Ciclo Mentoring Cross-Generazionale',
-    subtitle: 'Collaborazione senior-junior e scambio intergenerazionale',
-    pillar: 'CONNECTION',
-    pillar_label: 'CONNECTION',
-    provider: 'Iniziativa interna',
-    format: '8 sessioni · 16h totali',
-    iu_potential: '+25–35 IU stimati',
-    match_reason: 'Copre CONNECTION e LEGACY contemporaneamente. Alta coerenza con il tuo profilo.',
-    type: 'internal',
-  },
-];
-
 const TYPE_BADGE: Record<string, string> = {
   partner:   'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
   internal:  'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
@@ -127,12 +40,15 @@ const TYPE_LABEL: Record<string, string> = {
 // W-04: Opportunità per te
 export default function Opportunities() {
   const { activeRole } = useRole();
+  const { activePersona } = usePersona();
 
   if (!myKoraPreviewService.canAccess(activeRole)) {
     return (
       <div className="space-y-4">
         <div>
-          <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Opportunità per te</h1>
+          <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>
+            Opportunità per te
+          </h1>
           <p className="text-sm text-[rgba(6,3,43,0.52)]">Percorsi e iniziative abbinati al tuo profilo di impatto</p>
         </div>
         <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] p-6 text-center">
@@ -147,12 +63,17 @@ export default function Opportunities() {
     );
   }
 
+  const personaId = activePersona?.id ?? 'persona-elena-m';
+  const opportunities: OpportunityItem[] = myKoraPreviewService.getOpportunitiesForPersona(personaId);
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Opportunità per te</h1>
+        <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>
+          Opportunità per te
+        </h1>
         <p className="text-sm text-[rgba(6,3,43,0.52)]">
-          Percorsi e iniziative abbinati al tuo profilo di impatto — {OPPORTUNITIES.length} suggerimenti
+          Percorsi e iniziative abbinati al tuo profilo di impatto — {opportunities.length} suggerimenti
         </p>
       </div>
 
@@ -167,17 +88,17 @@ export default function Opportunities() {
 
       {/* Demo notice */}
       <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3">
-        <p className="text-xs font-semibold text-\[#8A5A00\]">Solo anteprima — Foundation Light</p>
-        <p className="text-xs text-\[#8A5A00\] mt-0.5">
+        <p className="text-xs font-semibold text-[#8A5A00]">Solo anteprima — Foundation Light</p>
+        <p className="text-xs text-[#8A5A00] mt-0.5">
           I pulsanti di adesione non sono attivi in questa demo. Nessuna prenotazione reale, nessuna
           notifica a partner, nessun pagamento. In produzione, la richiesta passerebbe da KORA verso
           il partner autorizzato.
         </p>
       </div>
 
-      {/* Opportunity cards */}
+      {/* Opportunity cards — service-driven, persona-specific */}
       <div className="space-y-3">
-        {OPPORTUNITIES.map((opp) => (
+        {opportunities.map((opp) => (
           <div
             key={opp.id}
             className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden"
@@ -196,10 +117,7 @@ export default function Opportunities() {
                     )}>
                       {opp.pillar_label}
                     </span>
-                    <span className={cn(
-                      'rounded border px-1.5 py-0.5 text-xs',
-                      TYPE_BADGE[opp.type],
-                    )}>
+                    <span className={cn('rounded border px-1.5 py-0.5 text-xs', TYPE_BADGE[opp.type])}>
                       {TYPE_LABEL[opp.type]}
                     </span>
                   </div>

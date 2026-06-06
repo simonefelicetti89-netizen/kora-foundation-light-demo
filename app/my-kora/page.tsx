@@ -2,7 +2,7 @@
 // W-01: My KORA Home — spazio personale del lavoratore.
 // Scopo: rispondere a 'come sta crescendo la mia attivazione e cosa posso fare oggi?'
 // Il PIB™ è privato — mai visibile al datore di lavoro. N≥10 per ogni aggregato aziendale.
-// Dati sintetici Persona A — Foundation Light v0.1.
+// Dati sintetici per-persona — Foundation Light v0.1.
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -48,42 +48,6 @@ const VERIF_LABEL: Record<string, string> = {
 const VERIF_COLOR: Record<string, string> = {
   verified: 'text-[#2F7D55]', partial: 'text-[#D99A2B]', self_declared: 'text-[rgba(6,3,43,0.42)]',
 };
-const IU_COLOR: Record<string, string> = {
-  high: 'text-[#C76F3D]', medium: 'text-[#C76F3D]', low: 'text-[rgba(6,3,43,0.40)]',
-};
-
-// ─── Enhanced pillar detail — inline synthetic data extending service data ────
-
-const PILLAR_ENHANCED: Record<string, { continuity: string; latest: string }> = {
-  LIFE:       { continuity: 'media', latest: 'Check prevenzione e benessere' },
-  GROWTH:     { continuity: 'alta',  latest: 'Corso leadership avanzato' },
-  CONNECTION: { continuity: 'media', latest: 'Workshop community team' },
-  IMPACT:     { continuity: 'alta',  latest: 'Volontariato territoriale' },
-  LEGACY:     { continuity: 'bassa', latest: 'Mentoring neoassunti' },
-};
-
-const CONTINUITY_BADGE: Record<string, string> = {
-  alta:  'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.25)]',
-  media: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
-  bassa: 'bg-[rgba(158,59,47,0.08)] text-[rgba(158,59,47,0.85)] border-[rgba(158,59,47,0.22)]',
-};
-
-// ─── Timeline extra attributes — keyed by service timeline item ID ────────────
-
-const TIMELINE_EXTRA: Record<string, {
-  source: string;
-  visibility: string;
-  can_become: string | null;
-}> = {
-  'tl-001': { source: 'Welfare Provider',  visibility: 'Solo sopra soglia',    can_become: null },
-  'tl-002': { source: 'LMS aziendale',     visibility: 'Privato/aggregabile', can_become: 'Dynamic Impact CV + IU' },
-  'tl-003': { source: 'Welfare Provider',  visibility: 'Privato',             can_become: null },
-  'tl-004': { source: 'Partner evento',    visibility: 'Privato',             can_become: null },
-  'tl-005': { source: 'LMS aziendale',     visibility: 'Privato/aggregabile', can_become: 'Dynamic Impact CV' },
-  'tl-006': { source: 'Partner ESG',       visibility: 'Privato',             can_become: 'Dynamic Impact CV' },
-  'tl-007': { source: 'Partner evento',    visibility: 'Privato',             can_become: 'Dynamic Impact CV' },
-  'tl-008': { source: 'Upload manuale',    visibility: 'Privato',             can_become: null },
-};
 
 // ─── KORA Link / QR stepper steps ────────────────────────────────────────────
 
@@ -97,9 +61,6 @@ const KORA_LINK_STEPS = [
   { label: 'PIB privato aggiornato', desc: 'Il tuo Personal Impact Balance si aggiorna — visibile solo a te.' },
   { label: 'Aggregazione aziendale', desc: "Contribuisce all'aggregato aziendale solo sopra soglia privacy — in forma anonima." },
 ];
-
-// Shareable items count matches CV service data (3 verified+shareable items in synthetic demo)
-const HERO_SHAREABLE_ITEMS = 3;
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -121,8 +82,7 @@ export default function MyKoraHome() {
           <p className="text-sm font-semibold text-[#9E3B2F]">Accesso Limitato</p>
           <p className="mt-1 text-xs text-[rgba(158,59,47,0.90)] max-w-sm mx-auto">
             My KORA è uno spazio privato del lavoratore. I ruoli datore di lavoro e admin non possono accedere
-            ai dati individuali. I dati individuali del lavoratore non sono mai visibili al di fuori della
-            sessione del lavoratore stesso.
+            ai dati individuali. Il datore di lavoro vede l&apos;organizzazione, non il singolo.
           </p>
           <p className="mt-3 text-xs font-mono text-[rgba(158,59,47,0.55)]">Ruolo attivo: {activeRole}</p>
           <p className="mt-1 text-xs text-[rgba(158,59,47,0.55)]">Passa al ruolo WORKER per visualizzare questo spazio.</p>
@@ -131,10 +91,8 @@ export default function MyKoraHome() {
     );
   }
 
-  const preview = myKoraPreviewService.getMyKoraHomePreview(
-    activePersona?.id ?? 'persona-a',
-    activeScenario,
-  );
+  const personaId = activePersona?.id ?? 'persona-elena-m';
+  const preview = myKoraPreviewService.getMyKoraHomePreview(personaId, activeScenario);
   const workerCompanyId = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
   const aggregate = scoringSimulatorService.getCompanyAggregate(workerCompanyId, activeScenario);
 
@@ -145,14 +103,16 @@ export default function MyKoraHome() {
     preview.pib_light.pillar_breakdown[0],
   );
 
+  const shareableCount = myKoraPreviewService.getDynamicCvPreview(personaId).items.filter((i) => i.shareable).length;
+
   return (
     <div className="space-y-6">
 
       {/* ── Header ── */}
       <PageMasthead
-        eyebrow={`My KORA · Spazio personale · ${activeScenario}`}
+        eyebrow={`My KORA · Spazio personale · ${activeScenario} · ${preview.persona_label}`}
         title={<>Il tuo <TM>Worker PIB</TM></>}
-        subline={`${activePersona ? activePersona.display_name : preview.persona_label} — Personal Impact Balance privato. L'azienda non vede mai i tuoi dati individuali.`}
+        subline={`${preview.persona_label} — Personal Impact Balance privato. L'azienda non vede mai i tuoi dati individuali.`}
         meta="Dati sintetici · Foundation Light v0.1 · layer worker-owned"
       />
       <DecisionContext
@@ -172,10 +132,11 @@ export default function MyKoraHome() {
         </p>
         <p className="text-[11px] text-[rgba(6,3,43,0.52)] mt-1.5 italic">
           My KORA non è performance management. Non è una classifica. Non è accessibile al datore di lavoro.
+          KORA misura l&apos;organizzazione, non sorveglia il lavoratore.
         </p>
       </div>
 
-      {/* ── Hero metric cards — 4 cards ── */}
+      {/* ── Hero metric cards ── */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
           <p className="text-xs text-[rgba(6,3,43,0.40)]">PIB privato</p>
@@ -193,76 +154,86 @@ export default function MyKoraHome() {
             {strongestPillar?.pillar ?? '—'}
           </p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">score {strongestPillar?.score ?? 0}</p>
-          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 italic">Pillar con maggiore continuità personale.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 italic">Pillar con maggiore IU accumulati.</p>
         </div>
 
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
           <p className="text-xs text-[rgba(6,3,43,0.40)]">Opportunità</p>
-          <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{preview.opportunities.length + 3}</p>
+          <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{preview.opportunities.length}</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">iniziative e servizi</p>
           <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 italic">Suggeriti per te — visibili solo a te.</p>
         </div>
 
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
           <p className="text-xs text-[rgba(6,3,43,0.40)]">Elementi condivisibili</p>
-          <p className="text-2xl font-bold text-[#C76F3D] mt-1">{HERO_SHAREABLE_ITEMS}</p>
+          <p className="text-2xl font-bold text-[#C76F3D] mt-1">{shareableCount}</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Dynamic Impact CV</p>
           <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-1 italic">Badge / esperienze esportabili solo se decidi tu.</p>
         </div>
       </div>
 
-      {/* ── Il tuo PIB privato — enhanced pillar section ── */}
+      {/* ── Il tuo PIB privato — derivazione IU sintetici ── */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Il tuo PIB privato</h2>
-          <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-xs font-mono text-[#C76F3D]">
-            privato-lavoratore
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-xs font-mono text-[#C76F3D]">
+              privato-lavoratore
+            </span>
+            <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.42)]">
+              IU sintetici pre-computati
+            </span>
+          </div>
         </div>
+
+        {/* PIB derivation disclosure — non-suppressible per B70-B */}
+        <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.06)] px-3 py-2">
+          <p className="text-[10px] font-semibold text-[#8A5A00]">Dato sintetico · derivato da IU computati</p>
+          <p className="text-[10px] text-[#8A5A00] mt-0.5 leading-relaxed">
+            {preview.pib_light.pib_derivation_note}
+          </p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.42)] mt-1 italic">
+            Il PIB reale richiederà identità worker-owned e consenso (Pilot+) — KORA Methodology v0.1 pre-calibrazione empirica.
+          </p>
+        </div>
+
         <p className="text-xs text-[rgba(6,3,43,0.40)]">
           {preview.pib_light.active_pillars} pillar attivi · {preview.pib_light.total_events} eventi · {preview.pib_light.period}
         </p>
 
-        <div className="divide-y divide-[rgba(6,3,43,0.05)]50">
-          {preview.pib_light.pillar_breakdown.map((p) => {
-            const extra = PILLAR_ENHANCED[p.pillar];
-            const contBadge = extra ? CONTINUITY_BADGE[extra.continuity] : '';
-            return (
-              <div key={p.pillar} className="py-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className={cn('text-xs font-mono font-semibold', PILLAR_TEXT[p.pillar] ?? 'text-[rgba(6,3,43,0.62)]')}>
-                      {p.pillar}
-                    </span>
-                    {extra && (
-                      <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-medium', contBadge)}>
-                        continuità {extra.continuity}
-                      </span>
-                    )}
-                    <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.40)]">
-                      Privato
-                    </span>
-                  </div>
-                  <span className="flex items-center gap-1 text-xs font-mono text-[rgba(6,3,43,0.52)] shrink-0">
-                    {p.score}
-                    <span className={cn('text-xs', TREND_COLOR[p.trend])}>
-                      {TREND_ICON[p.trend]}
-                    </span>
-                    <span className="text-[rgba(6,3,43,0.28)] ml-1">{p.event_count} eventi</span>
+        <div className="divide-y divide-[rgba(6,3,43,0.05)]">
+          {preview.pib_light.pillar_breakdown.map((p) => (
+            <div key={p.pillar} className="py-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={cn('text-xs font-mono font-semibold', PILLAR_TEXT[p.pillar] ?? 'text-[rgba(6,3,43,0.62)]')}>
+                    {p.pillar}
                   </span>
+                  <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.40)]">
+                    Privato
+                  </span>
+                  {p.iu_total > 0 && (
+                    <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.38)]">
+                      {p.iu_total.toFixed(2)} IU
+                    </span>
+                  )}
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-[rgba(6,3,43,0.05)] mb-1">
-                  <div
-                    className={cn('h-1.5 rounded-full', PILLAR_COLORS[p.pillar] ?? 'bg-[rgba(6,3,43,0.35)]')}
-                    style={{ width: `${p.score}%` }}
-                  />
-                </div>
-                {extra && (
-                  <p className="text-[10px] text-[rgba(6,3,43,0.40)] italic">Ultima attività: {extra.latest}</p>
-                )}
+                <span className="flex items-center gap-1 text-xs font-mono text-[rgba(6,3,43,0.52)] shrink-0">
+                  {p.score}
+                  <span className={cn('text-xs', TREND_COLOR[p.trend])}>
+                    {TREND_ICON[p.trend]}
+                  </span>
+                  <span className="text-[rgba(6,3,43,0.28)] ml-1">{p.event_count} eventi</span>
+                </span>
               </div>
-            );
-          })}
+              <div className="h-1.5 w-full rounded-full bg-[rgba(6,3,43,0.05)] mb-1">
+                <div
+                  className={cn('h-1.5 rounded-full', PILLAR_COLORS[p.pillar] ?? 'bg-[rgba(6,3,43,0.35)]')}
+                  style={{ width: `${p.score}%` }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
 
         <p className="text-[11px] text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)] pt-2 leading-relaxed">
@@ -272,61 +243,54 @@ export default function MyKoraHome() {
         </p>
       </div>
 
-      {/* ── Personal impact timeline — enhanced ── */}
+      {/* ── Personal impact timeline — con valori IU ── */}
       <div>
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Timeline personale</h2>
-          <span className="text-xs text-[rgba(6,3,43,0.40)] font-mono">privata</span>
+          <span className="text-xs text-[rgba(6,3,43,0.40)] font-mono">privata · IU sintetici</span>
         </div>
         <p className="text-xs text-[rgba(6,3,43,0.40)] mb-3 leading-relaxed">
           La timeline personale appartiene al lavoratore. Può contribuire agli aggregati aziendali solo in
-          forma anonima e sopra soglia privacy.
+          forma anonima e sopra soglia privacy. I valori IU mostrati sono derivati dalla formula
+          KORA Methodology v0.1 su dati sintetici.
         </p>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
           <div className="divide-y divide-[rgba(6,3,43,0.05)]">
-            {preview.timeline.map((item) => {
-              const extra = TIMELINE_EXTRA[item.id];
-              return (
-                <div key={item.id} className="px-4 py-3 hover:bg-[rgba(6,3,43,0.03)]">
-                  <div className="flex items-start gap-3">
-                    <div className="text-xs font-mono text-[rgba(6,3,43,0.40)] w-24 shrink-0 mt-0.5">{item.date}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-[rgba(6,3,43,0.90)]">{item.category}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-mono',
-                          PILLAR_LIGHT[item.pillar] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
-                        )}>
-                          {item.pillar}
-                        </span>
-                        {extra && <span className="text-[10px] text-[rgba(6,3,43,0.40)]">{extra.source}</span>}
-                        <span className={cn('text-[10px] font-medium', VERIF_COLOR[item.verification_status])}>
-                          {VERIF_LABEL[item.verification_status] ?? item.verification_status}
-                        </span>
-                        <span className={cn('text-[10px] font-mono', IU_COLOR[item.iu_contribution])}>
-                          IU: {item.iu_contribution}
-                        </span>
-                      </div>
-                      {extra && (
-                        <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.40)]">
-                            {extra.visibility}
-                          </span>
-                          {extra.can_become && (
-                            <span className="text-[10px] text-[rgba(6,3,43,0.52)] italic">
-                              → può alimentare: {extra.can_become}
-                            </span>
-                          )}
-                        </div>
-                      )}
+            {preview.timeline.map((item) => (
+              <div key={item.id} className="px-4 py-3 hover:bg-[rgba(6,3,43,0.03)]">
+                <div className="flex items-start gap-3">
+                  <div className="text-xs font-mono text-[rgba(6,3,43,0.40)] w-24 shrink-0 mt-0.5">{item.date}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-[rgba(6,3,43,0.90)]">{item.category}</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-mono',
+                        PILLAR_LIGHT[item.pillar] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
+                      )}>
+                        {item.pillar}
+                      </span>
+                      <span className={cn('text-[10px] font-medium', VERIF_COLOR[item.verification_status])}>
+                        {VERIF_LABEL[item.verification_status] ?? item.verification_status}
+                      </span>
+                      {/* IU value — pre-computed via formula */}
+                      <span className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.48)]">
+                        {item.iu_value.toFixed(2)} IU
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.40)]">
+                        Privato
+                      </span>
+                      <span className="text-[10px] text-[rgba(6,3,43,0.38)] font-mono">sintetico</span>
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
         <p className="mt-1.5 text-xs text-[rgba(6,3,43,0.40)]">
           Solo visualizzazione a livello di categoria. Nessun dettaglio sanitario, nome o identificatore personale.
+          Valori IU = NM × BC × CQ × EV × CF × AGF (pre-computati, sintetici).
         </p>
       </div>
 
@@ -523,10 +487,11 @@ export default function MyKoraHome() {
 
       {/* ── Synthetic demo notice ── */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)] leading-relaxed">
-        Dati sintetici demo. My KORA è una preview del layer personale. Non rappresenta account reali,
-        identità reali, wallet, booking, pagamenti o certificazioni attive.
+        Questa anteprima usa dati sintetici. My KORA è una preview del layer personale.
+        Non rappresenta account reali, identità reali, wallet, booking, pagamenti o certificazioni attive.
+        Il PIB reale richiederà identità worker-owned e consenso (Pilot+).
         <span className="block mt-0.5 font-mono text-[rgba(6,3,43,0.28)]">
-          synthetic_demo_data: true · Foundation Light Preview · KORA Methodology v0.1
+          synthetic_demo_data: true · Foundation Light Preview · KORA Methodology v0.1 · pre_empirical_calibration
         </span>
       </div>
     </div>
