@@ -7,7 +7,6 @@
 //   5) CTA su route esistenti (/demo-guide, /company, /admin/company-live-preview)
 //   6) Numeri canonici in un unico blocco CANONICAL (sotto)
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { LandingMotion } from '@/components/landing/LandingMotion';
 import { MarketingNav } from '@/components/landing/MarketingNav';

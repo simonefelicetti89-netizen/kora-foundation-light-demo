@@ -18,7 +18,7 @@ import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guar
 import { parseCsvContent } from '@/lib/data-intake/csv-parser';
 import { parseExcelSheet } from '@/lib/data-intake/excel-parser';
 import {
-  storeEvidenceAttachment, ATTACHMENT_BUCKET,
+  ATTACHMENT_BUCKET,
   isBinaryStorable, getAttachmentContentType,
 } from '@/lib/data-intake/evidence-attachment-storage';
 import { randomUUID } from 'crypto';

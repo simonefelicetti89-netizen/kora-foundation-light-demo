@@ -122,7 +122,6 @@ export async function GET(request: NextRequest) {
   try {
     const { data: usersData } = await db.auth.admin.listUsers({ perPage: 1000 });
     for (const user of usersData?.users ?? []) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const meta = user.app_metadata as Record<string, unknown> | undefined;
       const tenantId = meta?.kora_tenant_id as string | undefined;
       const role     = meta?.kora_role as string | undefined;

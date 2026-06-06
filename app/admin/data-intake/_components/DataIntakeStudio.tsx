@@ -224,7 +224,6 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         if (d.ok && d.tenants) setTenantList(d.tenants);
       })
       .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [preview, setPreview]     = useState<PreviewData | null>(null);

@@ -121,45 +121,45 @@ Upload row (RawUploadedRecord)
   ▼ Step 3: Pillar Mapping  [lib/kora-engine/pillar-mapping.ts]
   │         LIFE | GROWTH | CONNECTION | IMPACT | LEGACY
   │
-  ▼ Step 3.5: Impact Units™ (Stage 10)  [services/iu-computation/IUComputationService.ts]
+  ▼ Step 4: Impact Units™  [services/iu-computation/IUComputationService.ts] — canonical Stage 10
   │         IU = NM × BC × CQ × EV × CF × AGF
   │         iuResults[] — server-side only
   │
-  ▼ Step 4: Care Economy Tagging  [lib/kora-engine/care-economy-mapping.ts]
+  ▼ Step 5: Care Economy Tagging  [lib/kora-engine/care-economy-mapping.ts]
   │         premium signal detection (informational, no KORA Index impact in v0.1)
   │
-  ▼ Step 5: Budget Evidence Assessment  [lib/kora-engine/budget-evidence.ts]
+  ▼ Step 6: Budget Evidence Assessment  [lib/kora-engine/budget-evidence.ts]
   │         L0–L4 evidence tier per record
   │
-  ▼ Step 5.5: Component Signals  [lib/kora-engine/component-engine.ts]
+  ▼ Step 7: Component Signals  [lib/kora-engine/component-engine.ts]
   │         NI (Normalized Intensity), VR (Verification Rate), CO (Continuity)
   │
-  ▼ Step 6: BTI Engine™  [lib/kora-engine/bti-engine.ts]
+  ▼ Step 8: BTI Engine™  [lib/kora-engine/bti-engine.ts]
   │         Budget-to-Human-Impact: spend routing, Activation Debt, BTI Score
   │
-  ▼ Step 7: Activation Engine  [lib/kora-engine/activation-engine.ts]
+  ▼ Step 9: Activation Engine  [lib/kora-engine/activation-engine.ts] — canonical Stage 13
   │         AR, MAR, Activation Safeguard (CLEAR / WARNING / FLAGGED)
   │         Department and site concentration analysis
   │
-  ▼ Step 8: PIB Aggregation™ (Stage 11)  [services/pib-aggregation/PIBAggregationService.ts]
+  ▼ Step 10: PIB Aggregation™  [services/pib-aggregation/PIBAggregationService.ts] — canonical Stage 11
   │         MANDATORY INTERMEDIATE — AG-01 canonical rule
   │         estimationBasis='aggregate_estimate' in Foundation Light v0.1
   │         pibSnapshotsAvailable=false (individual PIBs require Pilot+)
   │
-  ▼ Step 9: Eligibility Summary
+  ▼ Step 11: Eligibility Summary
   │
-  ▼ Step 10: Pillar Distribution
+  ▼ Step 12: Pillar Distribution
   │
-  ▼ Step 11: Confidence Score  [lib/kora-engine/confidence-engine.ts]
+  ▼ Step 13: Confidence Score  [lib/kora-engine/confidence-engine.ts] — canonical Stage 14
   │         CS — external to KORA Index, always displayed alongside
   │
-  ▼ Step 12: KORA Index Engine™  [lib/kora-engine/kora-index-engine.ts]
+  ▼ Step 14: KORA Index Engine™  [lib/kora-engine/kora-index-engine.ts] — canonical Stage 14
   │         4 macroblocks × component signals → KORA Index 0–100
   │
-  ▼ Step 13: Explainability Trace  [lib/kora-engine/explainability.ts]
+  ▼ Step 15: Explainability Trace  [lib/kora-engine/explainability.ts]
   │         9-stage aggregate trace, zero identity values
   │
-  ▼ Step 14: Reach Semantics  [lib/kora-engine/reach-semantics.ts]
+  ▼ Step 16: Reach Semantics  [lib/kora-engine/reach-semantics.ts]
              Board-safe AR/MAR separation (explanatory layer)
 ```
 

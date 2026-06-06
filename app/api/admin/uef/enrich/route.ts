@@ -110,7 +110,6 @@ export async function POST(request: NextRequest) {
     .eq('id', uefRecordId).maybeSingle();
 
   if (recErr) return NextResponse.json({ error: recErr.message }, { status: 500 });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!rec) return NextResponse.json({ error: `UEF record not found: ${uefRecordId}` }, { status: 404 });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const r = rec as any;

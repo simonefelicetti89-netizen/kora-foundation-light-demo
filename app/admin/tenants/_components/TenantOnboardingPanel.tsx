@@ -13,6 +13,7 @@
 //   - Navigate to Data Intake, UEF Review, Workspace Admin, Live Preview
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 interface TenantSummary {
   id:                  string;
@@ -147,12 +148,12 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
             avviene esclusivamente tramite il flusso dedicato.
           </p>
         </div>
-        <a
+        <Link
           href="/admin/companies/new"
           className="shrink-0 rounded-lg bg-[#06032B] text-white px-4 py-2 text-sm font-semibold hover:bg-[#1a1756] transition-colors whitespace-nowrap"
         >
           Crea Azienda →
-        </a>
+        </Link>
       </div>
 
       {/* ── Tenant list ─────────────────────────────────────────────────────── */}
@@ -176,7 +177,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
         {!tenantsLoading && tenants.length === 0 && (
           <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-4 text-sm text-[rgba(6,3,43,0.40)] text-center">
             Nessuna azienda registrata.{' '}
-            <a href="/admin/companies/new" className="underline text-[#2F7D55] font-medium">Crea la prima →</a>
+            <Link href="/admin/companies/new" className="underline text-[#2F7D55] font-medium">Crea la prima →</Link>
           </div>
         )}
 

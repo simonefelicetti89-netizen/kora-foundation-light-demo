@@ -93,7 +93,6 @@ export async function POST(request: NextRequest) {
   const rawTenantCode     = typeof body['tenantCode']     === 'string' ? body['tenantCode'].trim().toUpperCase() : '';
   const country           = typeof body['country']        === 'string' ? body['country'].trim().toUpperCase().slice(0, 2) : 'IT';
   const industry          = typeof body['industry']       === 'string' ? body['industry'].trim().slice(0, 64)  : null;
-  const companySizeBand   = typeof body['companySizeBand'] === 'string' ? body['companySizeBand'].trim().slice(0, 32) : null;
   const estimatedWorkers  = body['estimatedWorkers'] != null ? Number(body['estimatedWorkers']) : null;
   const assessmentPeriod  = typeof body['assessmentPeriod'] === 'string' ? body['assessmentPeriod'].trim() : '2026-Q1';
   const adminName         = typeof body['adminName']      === 'string' ? body['adminName'].trim().slice(0, 128) : null;

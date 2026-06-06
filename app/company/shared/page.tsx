@@ -14,7 +14,6 @@ import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/Bu
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 import { reportGeneratorService } from '@/services/report-generator/ReportGeneratorService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import { Explainer } from '@/components/ui/Explainer';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
@@ -82,12 +81,6 @@ function macroblockAccentColor(code: string): string {
 
 function pct(val: number): string { return `${(val * 100).toFixed(0)}%`; }
 function eur(val: number): string  { return `€${val.toLocaleString('it-IT')}`; }
-
-function safeguardToken(status: string): { bg: string; text: string } {
-  if (status === 'CLEAR')   return { bg: TOKENS.safeguard.pass.bg,  text: TOKENS.safeguard.pass.text  };
-  if (status === 'FLAGGED') return { bg: TOKENS.safeguard.cap.bg,   text: TOKENS.safeguard.cap.text   };
-  return                           { bg: TOKENS.safeguard.watch.bg, text: TOKENS.safeguard.watch.text };
-}
 
 // ─── C-SV: KORA Shared View ───────────────────────────────────────────────────
 

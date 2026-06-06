@@ -36,7 +36,6 @@ export async function GET(
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const sub = subRow as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cs = (sub.payload_sample?._cs ?? {}) as Record<string, unknown>;
 
   // Safe file metadata — NO storagePath, NO signedUrl

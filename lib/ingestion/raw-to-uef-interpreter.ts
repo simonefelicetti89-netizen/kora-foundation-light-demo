@@ -300,7 +300,7 @@ function normalizeAmount(v: unknown): AmountParseResult {
   }
 
   // Strip currency symbols and keyword prefixes/suffixes
-  let s = raw
+  const s = raw
     .replace(/^(EUR|USD|GBP|CHF)\s*/i, '')
     .replace(/\s*(EUR|USD|GBP|CHF)$/i, '')
     .replace(/^[€$£]\s*/, '')

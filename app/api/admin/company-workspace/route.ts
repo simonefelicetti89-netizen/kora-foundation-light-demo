@@ -61,7 +61,6 @@ export async function GET(request: NextRequest) {
     .eq('tenant_code', tenantCode).eq('is_active', true).maybeSingle();
 
   if (tErr) return NextResponse.json({ error: tErr.message }, { status: 500 });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!tenantRow) return NextResponse.json({ error: `Tenant not found: ${tenantCode}` }, { status: 404 });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = tenantRow as any;

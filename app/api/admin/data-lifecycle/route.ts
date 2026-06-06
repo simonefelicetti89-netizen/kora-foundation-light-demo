@@ -33,7 +33,6 @@ export async function GET(request: NextRequest) {
       .eq('id', batchId).maybeSingle();
 
     if (bErr) return NextResponse.json({ error: bErr.message }, { status: 500 });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!batch) return NextResponse.json({ error: `Batch not found: ${batchId}` }, { status: 404 });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const b = batch as any;
@@ -123,9 +122,7 @@ export async function GET(request: NextRequest) {
         uploadedRecords:  uploadedCount  ?? 0,
         uefRecords:       uefCount       ?? 0,
         uefApproved:      uefApprovedCount ?? 0,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         koraIndexResults: (kiResults ?? []).length,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         decisionPacks:    (dpVersions ?? []).length,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

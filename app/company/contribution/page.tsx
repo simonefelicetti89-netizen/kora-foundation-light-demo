@@ -9,7 +9,6 @@ import { koraContributionService } from '@/services/kora-contribution/KoraContri
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { tenantService } from '@/services/tenant/TenantService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import { Explainer } from '@/components/ui/Explainer';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';

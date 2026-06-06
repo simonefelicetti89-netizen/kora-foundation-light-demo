@@ -5,7 +5,6 @@
 
 import Link from 'next/link';
 import { PageMasthead } from '@/components/ui/PageMasthead';
-import { TM } from '@/components/ui/TM';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { evidenceReliabilityIntelligenceService } from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';

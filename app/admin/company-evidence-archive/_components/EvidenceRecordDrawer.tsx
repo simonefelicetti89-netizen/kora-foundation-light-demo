@@ -146,7 +146,6 @@ export function EvidenceRecordDrawer({ tenantCode, recordIdFull, batchIdFull, on
       .catch((e: Error) => { if (!ctrl.signal.aborted) { setError(e.message); setLoading(false); } });
 
     return () => ctrl.abort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenantCode, recordIdFull, refreshKey]);
 
   const handleOpenSecureLink = useCallback(async (att: AttachmentItem) => {

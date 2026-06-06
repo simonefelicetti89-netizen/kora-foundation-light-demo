@@ -18,8 +18,6 @@ import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import { Explainer } from '@/components/ui/Explainer';
-import { cn } from '@/lib/utils';
 import type { PillarCode } from '@/lib/types';
 
 function pct(val: number) { return `${(val * 100).toFixed(0)}%`; }

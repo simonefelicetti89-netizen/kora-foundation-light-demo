@@ -217,7 +217,6 @@ export function CompanyEvidenceArchivePanel() {
         if (d.ok && d.tenants) setTenantList(d.tenants);
       })
       .catch(() => {});
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadArchive = useCallback(() => {
@@ -229,7 +228,6 @@ export function CompanyEvidenceArchivePanel() {
       .then(r => r.json() as Promise<ArchiveData>)
       .then(d => { setData(d); setLoading(false); })
       .catch((e: Error) => { setError(e.message); setLoading(false); });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [TENANT, PERIOD]);
 
   // Client-side filter + search

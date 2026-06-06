@@ -12,7 +12,6 @@ import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSim
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { TM } from '@/components/ui/TM';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { DecisionContext } from '@/components/ui/DecisionContext';
 import { cn } from '@/lib/utils';
 
@@ -281,6 +280,16 @@ export default function MyKoraHome() {
                         Privato
                       </span>
                       <span className="text-[10px] text-[rgba(6,3,43,0.38)] font-mono">sintetico</span>
+                      {/* CV eligibility — whether this event can enter Dynamic Impact CV */}
+                      {item.cv_eligible ? (
+                        <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] px-1.5 py-0.5 text-[10px] text-[#2F7D55]">
+                          Dynamic CV™ — {item.cv_eligible_reason}
+                        </span>
+                      ) : (
+                        <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.38)]">
+                          Non idoneo — {item.cv_eligible_reason}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import type { ConfidenceRecord } from '@/services/scoring-simulator/ScoringSimulatorService';
 

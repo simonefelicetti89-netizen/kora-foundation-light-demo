@@ -7,7 +7,6 @@
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { cn } from '@/lib/utils';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 // W-02: Privacy & Sharing
 export default function PrivacySharing() {

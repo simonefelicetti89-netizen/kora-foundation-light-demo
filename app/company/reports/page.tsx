@@ -25,7 +25,6 @@ import { DecisionContext } from '@/components/ui/DecisionContext';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import { Explainer } from '@/components/ui/Explainer';
 import type {
   DecisionPackSection, DecisionPackMetric, DecisionPackInsight,
   DecisionPackRecommendation, DecisionPackStatus, DecisionPackVersion,

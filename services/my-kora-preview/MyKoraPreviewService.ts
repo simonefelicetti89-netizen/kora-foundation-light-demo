@@ -31,6 +31,48 @@ export interface TimelineItem {
   verification_status: 'verified' | 'partial' | 'self_declared';
   iu_contribution: 'high' | 'medium' | 'low';  // qualitative bucket
   iu_value: number;      // IU = NM × BC × CQ × EV × CF × AGF (pre-computed)
+  // CV eligibility — computed from verification_status + source_type + pillar
+  cv_eligible: boolean;
+  cv_eligible_reason: string;
+}
+
+// Internal raw type for data arrays — cv_eligible fields are computed at access time
+type RawTimelineItem = Omit<TimelineItem, 'cv_eligible' | 'cv_eligible_reason'>;
+
+function computeCVEligibility(item: RawTimelineItem): { cv_eligible: boolean; cv_eligible_reason: string } {
+  if (item.verification_status === 'self_declared') {
+    return { cv_eligible: false, cv_eligible_reason: 'Verifica insufficiente — autodichiarato' };
+  }
+  if (item.source_type === 'manual_upload') {
+    return { cv_eligible: false, cv_eligible_reason: 'Controllo lavoratore — verifica esterna richiesta' };
+  }
+  const pending = item.verification_status === 'partial';
+  if (item.source_type === 'lms_training') {
+    return { cv_eligible: true, cv_eligible_reason: pending ? 'Attività formativa — verifica in attesa' : 'Attività formativa verificata' };
+  }
+  if (item.source_type === 'esg_initiatives') {
+    return { cv_eligible: true, cv_eligible_reason: pending ? 'Contributo comunitario — verifica in attesa' : 'Contributo comunitario verificato' };
+  }
+  if (item.source_type === 'welfare_provider') {
+    return { cv_eligible: true, cv_eligible_reason: pending ? 'Attività benessere — verifica in attesa' : 'Attività benessere verificata' };
+  }
+  if (item.source_type === 'partner_events') {
+    if (item.pillar === 'LEGACY') {
+      return { cv_eligible: true, cv_eligible_reason: pending ? 'Mentoring — verifica in attesa' : 'Attività mentoring verificata' };
+    }
+    if (item.pillar === 'CONNECTION') {
+      return { cv_eligible: true, cv_eligible_reason: pending ? 'Attività community — verifica in attesa' : 'Attività community verificata' };
+    }
+    if (item.pillar === 'IMPACT') {
+      return { cv_eligible: true, cv_eligible_reason: pending ? 'Contributo partner — verifica in attesa' : 'Contributo partner verificato' };
+    }
+    return { cv_eligible: true, cv_eligible_reason: pending ? 'Attività partner — verifica in attesa' : 'Attività partner verificata' };
+  }
+  return { cv_eligible: true, cv_eligible_reason: 'Idoneo per Dynamic Impact CV™' };
+}
+
+function enrichTimeline(items: RawTimelineItem[]): TimelineItem[] {
+  return items.map((item) => ({ ...item, ...computeCVEligibility(item) }));
 }
 
 export interface PibLightPreview {
@@ -120,7 +162,7 @@ const DERIVATION_NOTE =
 // Profile: LIFE-dominant (field worker, health benefits primary), growing GROWTH,
 // baseline CONNECTION. Factory/operations context.
 
-const PERSONA_A_TIMELINE_S1: TimelineItem[] = [
+const PERSONA_A_TIMELINE_S1: RawTimelineItem[] = [
   {
     id: 'ea-tl-001', date: '2025-03-12',
     category: 'Check prevenzione e benessere',
@@ -158,7 +200,7 @@ const PERSONA_A_TIMELINE_S1: TimelineItem[] = [
   },
 ];
 
-const PERSONA_A_TIMELINE_S2: TimelineItem[] = [
+const PERSONA_A_TIMELINE_S2: RawTimelineItem[] = [
   ...PERSONA_A_TIMELINE_S1,
   {
     id: 'ea-tl-006', date: '2025-06-10',
@@ -321,7 +363,7 @@ const PERSONA_A_OPPORTUNITIES: OpportunityItem[] = [
 // Profile: CONNECTION-dominant (sales requires networking), growing GROWTH,
 // moderate LIFE, emerging IMPACT in S2.
 
-const PERSONA_B_TIMELINE_S1: TimelineItem[] = [
+const PERSONA_B_TIMELINE_S1: RawTimelineItem[] = [
   {
     id: 'mt-tl-001', date: '2025-03-08',
     category: 'Workshop networking e relazioni professionali',
@@ -366,7 +408,7 @@ const PERSONA_B_TIMELINE_S1: TimelineItem[] = [
   },
 ];
 
-const PERSONA_B_TIMELINE_S2: TimelineItem[] = [
+const PERSONA_B_TIMELINE_S2: RawTimelineItem[] = [
   ...PERSONA_B_TIMELINE_S1,
   {
     id: 'mt-tl-007', date: '2025-07-15',
@@ -492,7 +534,7 @@ const PERSONA_B_OPPORTUNITIES: OpportunityItem[] = [
 // Profile: GROWTH-dominant (digital/tech specialist), strong LIFE (remote wellness),
 // emerging IMPACT (tech for good), low CONNECTION (individual contributor).
 
-const PERSONA_C_TIMELINE_S1: TimelineItem[] = [
+const PERSONA_C_TIMELINE_S1: RawTimelineItem[] = [
   {
     id: 'sr-tl-001', date: '2025-03-15',
     category: 'Certificazione architettura cloud',
@@ -530,7 +572,7 @@ const PERSONA_C_TIMELINE_S1: TimelineItem[] = [
   },
 ];
 
-const PERSONA_C_TIMELINE_S2: TimelineItem[] = [
+const PERSONA_C_TIMELINE_S2: RawTimelineItem[] = [
   ...PERSONA_C_TIMELINE_S1,
   {
     id: 'sr-tl-006', date: '2025-07-20',
@@ -663,7 +705,7 @@ const PERSONA_C_OPPORTUNITIES: OpportunityItem[] = [
 // Profile: LEGACY-dominant (knowledge transfer, succession planning), strong
 // CONNECTION (facilitator, coaching), stable GROWTH, healthy LIFE.
 
-const PERSONA_D_TIMELINE_S1: TimelineItem[] = [
+const PERSONA_D_TIMELINE_S1: RawTimelineItem[] = [
   {
     id: 'gb-tl-001', date: '2025-03-20',
     category: 'Programma mentoring senior',
@@ -722,7 +764,7 @@ const PERSONA_D_TIMELINE_S1: TimelineItem[] = [
   },
 ];
 
-const PERSONA_D_TIMELINE_S2: TimelineItem[] = [
+const PERSONA_D_TIMELINE_S2: RawTimelineItem[] = [
   ...PERSONA_D_TIMELINE_S1,
   {
     id: 'gb-tl-009', date: '2025-08-05',
@@ -885,7 +927,7 @@ const PIB_BY_PERSONA_SCENARIO: Record<PersonaKey, Record<'S1' | 'S2' | 'S3' | 'S
   d: { S1: PERSONA_D_PIB_S1, S2: PERSONA_D_PIB_S2, S3: PERSONA_D_PIB_S2, S4: PERSONA_D_PIB_S2 },
 };
 
-const TIMELINE_BY_PERSONA_SCENARIO: Record<PersonaKey, Record<'S1' | 'S2' | 'S3' | 'S4', TimelineItem[]>> = {
+const TIMELINE_BY_PERSONA_SCENARIO: Record<PersonaKey, Record<'S1' | 'S2' | 'S3' | 'S4', RawTimelineItem[]>> = {
   a: { S1: PERSONA_A_TIMELINE_S1, S2: PERSONA_A_TIMELINE_S2, S3: PERSONA_A_TIMELINE_S2, S4: PERSONA_A_TIMELINE_S2 },
   b: { S1: PERSONA_B_TIMELINE_S1, S2: PERSONA_B_TIMELINE_S2, S3: PERSONA_B_TIMELINE_S2, S4: PERSONA_B_TIMELINE_S2 },
   c: { S1: PERSONA_C_TIMELINE_S1, S2: PERSONA_C_TIMELINE_S2, S3: PERSONA_C_TIMELINE_S2, S4: PERSONA_C_TIMELINE_S2 },
@@ -982,7 +1024,7 @@ class MyKoraPreviewService {
     const scenario = (scenarioId === 'S2' || scenarioId === 'S3' || scenarioId === 'S4') ? scenarioId : 'S1';
 
     const pib = PIB_BY_PERSONA_SCENARIO[key][scenario];
-    const timeline = TIMELINE_BY_PERSONA_SCENARIO[key][scenario];
+    const rawTimeline = TIMELINE_BY_PERSONA_SCENARIO[key][scenario];
     const opportunities = OPPORTUNITIES_BY_PERSONA[key];
 
     return {
@@ -990,7 +1032,7 @@ class MyKoraPreviewService {
       persona_id: workerPersonaId,
       scenario_id: scenarioId,
       pib_light: pib,
-      timeline,
+      timeline: enrichTimeline(rawTimeline),
       opportunities,
       synthetic_demo_data: true,
     };

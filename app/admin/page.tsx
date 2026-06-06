@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 import { PriorityQueue } from '@/components/admin/PriorityQueue';
 import type { PriorityItem } from '@/components/admin/PriorityQueue';
-import { TM } from '@/components/ui/TM';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import type React from 'react';
 
@@ -50,7 +49,6 @@ export default function KoraControlTower() {
   const gtm        = adminPreviewService.getFounderValidationPreview();
   const advisors   = adminPreviewService.getAdvisorNetworkPreview();
   const partners   = adminPreviewService.getPartnerNetworkPreview();
-  const benchmarks = adminPreviewService.getBenchmarkPreview();
   const onb        = adminPreviewService.getAIOnboardingPreview();
   const registry   = adminPreviewService.getIndexRegistryPreview();
 

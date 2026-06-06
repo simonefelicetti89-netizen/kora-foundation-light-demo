@@ -55,7 +55,6 @@ export async function POST(request: NextRequest) {
 
   if (tenantErr)
     return NextResponse.json({ error: `Tenant lookup failed: ${tenantErr.message}` }, { status: 500 });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!tenantRow)
     return NextResponse.json({ error: `Tenant not found: ${tenantId}` }, { status: 404 });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

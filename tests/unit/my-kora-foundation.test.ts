@@ -370,4 +370,217 @@ describe('MyKoraPreviewService.getDynamicCvPreview — persona-specific items', 
     const expected = preview.items.filter((i) => i.verification_status === 'verified').length;
     expect(preview.verified_count).toBe(expected);
   });
+
+  it('no DynamicCVItem exposes an iu_value field — IU must not appear in CV', () => {
+    const ids = ['persona-elena-m', 'persona-marco-t', 'persona-sofia-r', 'persona-giovanni-b'];
+    for (const id of ids) {
+      const preview = myKoraPreviewService.getDynamicCvPreview(id);
+      for (const item of preview.items) {
+        expect('iu_value' in item).toBe(false);
+      }
+    }
+  });
+
+  it('only verified items are shareable — partial and self_declared are not', () => {
+    const ids = ['persona-elena-m', 'persona-marco-t', 'persona-sofia-r', 'persona-giovanni-b'];
+    for (const id of ids) {
+      const preview = myKoraPreviewService.getDynamicCvPreview(id);
+      for (const item of preview.items) {
+        if (item.shareable) {
+          expect(item.verification_status).toBe('verified');
+        }
+        if (item.verification_status !== 'verified') {
+          expect(item.shareable).toBe(false);
+        }
+      }
+    }
+  });
+});
+
+// ── B73-B: TimelineItem — cv_eligible enrichment ─────────────────────────────
+
+describe('B73-B: TimelineItem — cv_eligible and cv_eligible_reason', () => {
+  function getTimeline(personaId: string): TimelineItem[] {
+    const preview = myKoraPreviewService.getMyKoraHomePreview(personaId, 'S1');
+    return preview!.timeline;
+  }
+
+  it('all timeline items have cv_eligible field (boolean)', () => {
+    const items = getTimeline('persona-elena-m');
+    expect(items.length).toBeGreaterThan(0);
+    for (const item of items) {
+      expect(typeof item.cv_eligible).toBe('boolean');
+    }
+  });
+
+  it('all timeline items have non-empty cv_eligible_reason', () => {
+    const ids = ['persona-elena-m', 'persona-marco-t', 'persona-sofia-r', 'persona-giovanni-b'];
+    for (const id of ids) {
+      for (const item of getTimeline(id)) {
+        expect(item.cv_eligible_reason.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('verified items from lms_training are cv_eligible', () => {
+    const items = getTimeline('persona-elena-m');
+    const lmsVerified = items.filter(
+      (i) => i.source_type === 'lms_training' && i.verification_status === 'verified',
+    );
+    expect(lmsVerified.length).toBeGreaterThan(0);
+    for (const item of lmsVerified) {
+      expect(item.cv_eligible).toBe(true);
+    }
+  });
+
+  it('self_declared items are not cv_eligible', () => {
+    const allItems: TimelineItem[] = [
+      'persona-elena-m', 'persona-marco-t', 'persona-sofia-r', 'persona-giovanni-b',
+    ].flatMap((id) => getTimeline(id));
+    const selfDeclared = allItems.filter((i) => i.verification_status === 'self_declared');
+    for (const item of selfDeclared) {
+      expect(item.cv_eligible).toBe(false);
+    }
+  });
+
+  it('manual_upload items are not cv_eligible regardless of verification', () => {
+    const allItems: TimelineItem[] = [
+      'persona-elena-m', 'persona-marco-t', 'persona-sofia-r', 'persona-giovanni-b',
+    ].flatMap((id) => getTimeline(id));
+    const manualUploads = allItems.filter((i) => i.source_type === 'manual_upload');
+    for (const item of manualUploads) {
+      expect(item.cv_eligible).toBe(false);
+    }
+  });
+
+  it('esg_initiatives items are cv_eligible when at least partially verified', () => {
+    const items = getTimeline('persona-elena-m');
+    const esgItems = items.filter(
+      (i) => i.source_type === 'esg_initiatives' && i.verification_status !== 'self_declared',
+    );
+    for (const item of esgItems) {
+      expect(item.cv_eligible).toBe(true);
+    }
+  });
+
+  it('cv_eligible_reason for verified lms_training mentions formativa', () => {
+    const allItems: TimelineItem[] = [
+      'persona-elena-m', 'persona-marco-t', 'persona-sofia-r', 'persona-giovanni-b',
+    ].flatMap((id) => getTimeline(id));
+    const lmsVerified = allItems.filter(
+      (i) => i.source_type === 'lms_training' && i.verification_status === 'verified',
+    );
+    expect(lmsVerified.length).toBeGreaterThan(0);
+    for (const item of lmsVerified) {
+      expect(item.cv_eligible_reason.toLowerCase()).toContain('formativa');
+    }
+  });
+});
+
+// ── B73-B: Dynamic CV pillar distribution ────────────────────────────────────
+
+describe('B73-B: Dynamic CV pillar distribution', () => {
+  const ALL_PILLARS = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
+
+  function computePillarDistribution(personaId: string): Record<string, number> {
+    const preview = myKoraPreviewService.getDynamicCvPreview(personaId);
+    const dist: Record<string, number> = {};
+    for (const p of ALL_PILLARS) {
+      dist[p] = preview.items.filter((i) => i.pillar === p).length;
+    }
+    return dist;
+  }
+
+  it('pillar distribution covers all 5 canonical pillars', () => {
+    const dist = computePillarDistribution('persona-elena-m');
+    for (const p of ALL_PILLARS) {
+      expect(p in dist).toBe(true);
+    }
+  });
+
+  it('sum of pillar counts equals total_items', () => {
+    const ids = ['persona-elena-m', 'persona-marco-t', 'persona-sofia-r', 'persona-giovanni-b'];
+    for (const id of ids) {
+      const preview = myKoraPreviewService.getDynamicCvPreview(id);
+      const dist = computePillarDistribution(id);
+      const total = ALL_PILLARS.reduce((s, p) => s + dist[p], 0);
+      expect(total).toBe(preview.total_items);
+    }
+  });
+
+  it('pillar counts are non-negative integers', () => {
+    const dist = computePillarDistribution('persona-sofia-r');
+    for (const p of ALL_PILLARS) {
+      expect(dist[p]).toBeGreaterThanOrEqual(0);
+      expect(Number.isInteger(dist[p])).toBe(true);
+    }
+  });
+
+  it('GROWTH pillar has at least one item for all personas (learning activities)', () => {
+    for (const id of ['persona-elena-m', 'persona-marco-t', 'persona-sofia-r', 'persona-giovanni-b']) {
+      const dist = computePillarDistribution(id);
+      expect(dist['GROWTH']).toBeGreaterThanOrEqual(1);
+    }
+  });
+});
+
+// ── B73-B: Contribution section — IMPACT items exist ─────────────────────────
+
+describe('B73-B: Contribution section — IMPACT pillar items', () => {
+  it('persona-elena-m S2 has IMPACT pillar CV items (contribution events)', () => {
+    const preview = myKoraPreviewService.getDynamicCvPreview('persona-elena-m');
+    const impactItems = preview.items.filter((i) => i.pillar === 'IMPACT');
+    expect(impactItems.length).toBeGreaterThan(0);
+  });
+
+  it('persona-giovanni-b has IMPACT pillar CV items', () => {
+    const preview = myKoraPreviewService.getDynamicCvPreview('persona-giovanni-b');
+    const impactItems = preview.items.filter((i) => i.pillar === 'IMPACT');
+    expect(impactItems.length).toBeGreaterThan(0);
+  });
+
+  it('IMPACT items have a non-empty export_label (verifier identification)', () => {
+    const preview = myKoraPreviewService.getDynamicCvPreview('persona-sofia-r');
+    const impactItems = preview.items.filter((i) => i.pillar === 'IMPACT');
+    for (const item of impactItems) {
+      expect(item.export_label.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+// ── B73-B: Privacy regression — employer still blocked ───────────────────────
+
+describe('B73-B: Privacy regression — employer access still blocked after B73-B', () => {
+  const service = new DynamicCVService();
+
+  it('COMPANY_ADMIN still throws after B73-B changes', () => {
+    expect(() => service.getProfile('any-worker', 'COMPANY_ADMIN')).toThrow();
+  });
+
+  it('COMPANY_VIEWER still throws after B73-B changes', () => {
+    expect(() => service.getProfile('any-worker', 'COMPANY_VIEWER')).toThrow();
+  });
+
+  it('PARTNER still throws after B73-B changes', () => {
+    expect(() => service.getProfile('any-worker', 'PARTNER')).toThrow();
+  });
+
+  it('ADVISOR still throws after B73-B changes', () => {
+    expect(() => service.getProfile('any-worker', 'ADVISOR')).toThrow();
+  });
+
+  it('MyKoraPreviewService still blocks COMPANY_ADMIN', () => {
+    expect(myKoraPreviewService.canAccess('COMPANY_ADMIN')).toBe(false);
+  });
+
+  it('MyKoraPreviewService still blocks COMPANY_VIEWER', () => {
+    expect(myKoraPreviewService.canAccess('COMPANY_VIEWER')).toBe(false);
+  });
+
+  it('enriched timeline is still not returned for employer roles — canAccess prevents it', () => {
+    // canAccess is the gate; employer roles never reach getMyKoraHomePreview
+    expect(myKoraPreviewService.canAccess('COMPANY_ADMIN')).toBe(false);
+    expect(myKoraPreviewService.canAccess('COMPANY_VIEWER')).toBe(false);
+    expect(myKoraPreviewService.canAccess('PARTNER')).toBe(false);
+  });
 });

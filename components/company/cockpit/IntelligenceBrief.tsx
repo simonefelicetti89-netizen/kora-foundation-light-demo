@@ -1,7 +1,6 @@
 'use client';
 
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import { TM } from '@/components/ui/TM';
 
 interface BriefInsight {
   signal:      string;  // short headline — what is the signal

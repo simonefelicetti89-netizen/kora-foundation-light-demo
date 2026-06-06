@@ -74,7 +74,6 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
 
   if (batchErr) return NextResponse.json({ error: `Batch lookup failed: ${batchErr.message}` }, { status: 500 });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!batch) return NextResponse.json({ error: `Batch not found: ${batchId}` }, { status: 404 });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,7 +89,6 @@ export async function POST(request: NextRequest) {
     .maybeSingle();
 
   if (tenantErr) return NextResponse.json({ error: tenantErr.message }, { status: 500 });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!tenant) return NextResponse.json({ error: `Tenant not found for batch.` }, { status: 404 });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

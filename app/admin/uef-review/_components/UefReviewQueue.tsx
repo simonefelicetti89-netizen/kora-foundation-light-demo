@@ -247,7 +247,6 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
       })
       .catch((e: Error) => setBatchesErr(e.message))
       .finally(() => setBatchesLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ── Load candidates for selected batch ───────────────────────────────────────

@@ -7,7 +7,6 @@
 import Link from 'next/link';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { PrintButton } from './PrintButton';
-import { Explainer } from '@/components/ui/Explainer';
 
 export const metadata = {
   title: 'Board Pack Preview — Meridiana Group — KORA Foundation Light',

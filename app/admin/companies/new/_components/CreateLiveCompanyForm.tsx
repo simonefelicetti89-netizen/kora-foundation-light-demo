@@ -220,7 +220,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
             onClick={resetForm}
             className="text-[10.5px] text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.78)] underline"
           >
-            Crea un'altra azienda
+            Crea un&apos;altra azienda
           </button>
         </div>
       </div>

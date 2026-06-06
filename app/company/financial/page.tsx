@@ -24,7 +24,6 @@ import { SectionLabel } from '@/components/ui/SectionLabel';
 import { ChartFrame } from '@/components/charts/ChartFrame';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
-import { MethodologyBadge } from '@/components/ui/MethodologyBadge';
 import { KPICard } from '@/components/ui/KPICard';
 import { TM } from '@/components/ui/TM';
 import { DecisionContext } from '@/components/ui/DecisionContext';

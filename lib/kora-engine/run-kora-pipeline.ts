@@ -7,7 +7,7 @@
 //   → Confidence → Explainability
 //
 // v1.0 changes:
-//   Step 3.5 — computeComponentSignals() added between eligibility and BTI.
+//   Step 7 — computeComponentSignals() added between budget evidence and BTI.
 //   QUALITY now uses NI×40% + VR×40% + CO×20% (MAR removed — no double-counting).
 //   EQUITY now uses WB×20% + PC×25% + PB×30% + EQ×25%.
 //
@@ -170,7 +170,7 @@ export function runKoraPipeline(params: {
     // Step 3: Pillar Mapping — map each record to its primary pillar
     const pillarMappings = mapPillarBatch(records, eligibilityResults);
 
-    // Step 3.5: Impact Units™ Computation — Stage 10 of the 14-stage algorithm.
+    // Step 4: Impact Units™ Computation — canonical Stage 10.
     // Runs after Eligibility + Pillar Mapping and before Component Signals.
     // Produces per-record IU with full factor trace (NM × BC × CQ × EV × CF × AGF).
     // iuResults are server-side only — never passed to employer-facing API responses.
@@ -204,19 +204,19 @@ export function runKoraPipeline(params: {
     const iuResults = iuComputationService.computeIUForLiveInputBatch(iuLiveInputs);
     const iuSummary = iuComputationService.summarizeLiveResults(iuResults);
 
-    // Step 4: Care Economy Tagging — detect care signals (premium module, signals only in v3)
+    // Step 5: Care Economy Tagging — detect care signals (premium module, signals only in v3)
     const careSignals = mapCareEconomyBatch(records, eligibilityResults, pillarMappings);
     const careSignalCount = careSignals.filter((s) => s !== null).length;
 
-    // Step 5: Budget Evidence Assessment — L0→L4 for each record
+    // Step 6: Budget Evidence Assessment — L0→L4 for each record
     const budgetEvidenceResults = assessBudgetEvidenceBatch(records);
 
-    // Step 5.5: Component Signals — NI, VR, CO (v1.0 methodology)
+    // Step 7: Component Signals — NI, VR, CO (v1.0 methodology)
     // Computed from approved UEF records using evidence levels and participant counts.
     // Uses eligibilityResults to filter ELIGIBLE records only.
     const componentSignals = computeComponentSignals(records, eligibilityResults);
 
-    // Step 6: BTI Engine — aggregate spend routing and BTI Score
+    // Step 8: BTI Engine — aggregate spend routing and BTI Score
     const bti = computeBTI({
       records,
       eligibilityResults,
@@ -224,7 +224,7 @@ export function runKoraPipeline(params: {
       pillarMappings,
     });
 
-    // Step 7: Activation Engine — AR, MAR, safeguard, concentration
+    // Step 9: Activation Engine — AR, MAR, safeguard, concentration — canonical Stage 13
     const activation = computeActivation({
       records,
       eligibilityResults,
@@ -232,7 +232,7 @@ export function runKoraPipeline(params: {
       workforcePopulation,
     });
 
-    // Step 8: PIB Aggregation — Stage 11 of the 14-stage algorithm (AG-01 compliance).
+    // Step 10: PIB Aggregation — canonical Stage 11 (AG-01 compliance).
     // Mandatory intermediate layer between IU (Stage 10) and KORA Index (Stage 14).
     // Placed after activation engine (Step 7) to reuse the activation result's
     // bounded-reach activeWorkers / meaningfullyActiveWorkers — the best available
@@ -250,7 +250,7 @@ export function runKoraPipeline(params: {
       period:                    batchId,
     });
 
-    // Step 9: Eligibility Summary
+    // Step 11: Eligibility Summary
     const eligibilitySummary: EligibilitySummary = {
       eligibleCount:       eligibilityResults.filter((r) => r.status === 'eligible').length,
       limitedCount:        eligibilityResults.filter((r) => r.status === 'limited').length,
@@ -259,7 +259,7 @@ export function runKoraPipeline(params: {
       totalCount:          eligibilityResults.length,
     };
 
-    // Step 10: Pillar Distribution — count by primary pillar
+    // Step 12: Pillar Distribution — count by primary pillar
     const pillarDistribution: Record<Pillar, number> = {
       LIFE: 0, GROWTH: 0, CONNECTION: 0, IMPACT: 0, LEGACY: 0,
     };
@@ -274,7 +274,7 @@ export function runKoraPipeline(params: {
       (workforcePopulation !== undefined && workforcePopulation > 0) ||
       activation.activationReach > 0;
 
-    // Step 11: Confidence Score — computed before KORA Index (CS fed into confidenceExternal)
+    // Step 13: Confidence Score — canonical Stage 14 (CS fed into confidenceExternal, external to KORA Index)
     const confidence = computeConfidence({
       bti,
       activation,
@@ -283,7 +283,7 @@ export function runKoraPipeline(params: {
       workforceKnown,
     });
 
-    // Step 12: KORA Index — four macroblock aggregate + CS external link
+    // Step 14: KORA Index — canonical Stage 14, four macroblock aggregate + CS external link
     // v1.0: componentSignals passed in for NI/VR/CO in QUALITY macroblock.
     // WB and EQ are computed inside computeKoraIndex from the activation result.
     const koraIndex = computeKoraIndex({
@@ -295,7 +295,7 @@ export function runKoraPipeline(params: {
       componentSignals,
     });
 
-    // Step 13: Explainability Trace — 9-stage aggregate trace, no identity values
+    // Step 15: Explainability Trace — 9-stage aggregate trace, no identity values
     const resolvedWf: number | null =
       workforcePopulation !== undefined && workforcePopulation > 0
         ? workforcePopulation
@@ -315,7 +315,7 @@ export function runKoraPipeline(params: {
       careSignalCount,
     });
 
-    // Step 14: Reach Semantics — B24 board-safe AR/MAR separation (explanatory, no KORA Index impact)
+    // Step 16: Reach Semantics — B24 board-safe AR/MAR separation (explanatory, no KORA Index impact)
     const reachSemantics = computeReachSemantics({
       records,
       eligibilityResults,

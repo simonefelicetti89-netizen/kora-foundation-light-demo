@@ -401,7 +401,7 @@ export default function Activation() {
                 { label: 'Fascia 38–88%',       value: debtConcentration.next_40_iu_pct,  fill: `rgba(6,3,43,0.50)` },
                 { label: 'Bottom 50%',           value: debtConcentration.bottom_50_iu_pct, fill: `rgba(6,3,43,0.25)` },
               ].map((row) => (
-                <DataBar value={row.value * 100} label={row.label} color={row.fill} animate suffix={pct(row.value)} />
+                <DataBar key={row.label} value={row.value * 100} label={row.label} color={row.fill} animate suffix={pct(row.value)} />
               ))}
             </div>
             <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 12 }}>
