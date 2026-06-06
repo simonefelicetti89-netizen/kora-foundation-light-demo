@@ -139,6 +139,22 @@ export default function BoardPackPreview() {
         .print-footer { }
       `}</style>
 
+      {/* ── DEPRECATION NOTICE — screen only ───────────────────────────────── */}
+      <div className="no-print mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
+        <strong>Pagina non più aggiornata.</strong>{' '}
+        Questo Board Pack statico contiene dati hardcoded (Meridiana Group, S1 Baseline).
+        Il documento dinamico ufficiale è disponibile su{' '}
+        <a
+          href="/api/company/decision-pack"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-2 font-semibold hover:text-amber-700"
+        >
+          KORA Decision Pack™ (apri documento)
+        </a>
+        . Usa Cmd+P / Ctrl+P per salvare come PDF.
+      </div>
+
       {/* ── Screen-only top bar ─────────────────────────────────────────────── */}
       <div className="no-print mb-4 flex items-center justify-between gap-4 border-b border-[rgba(6,3,43,0.08)] pb-3">
         <Link
@@ -149,7 +165,7 @@ export default function BoardPackPreview() {
         </Link>
         <div className="flex items-center gap-3">
           <p className="text-[10px] text-[rgba(6,3,43,0.40)] italic">
-            Documento ottimizzato per stampa A4 · salva come PDF dal browser
+            Anteprima statica · documento dinamico disponibile su /api/company/decision-pack
           </p>
           <PrintButton />
         </div>

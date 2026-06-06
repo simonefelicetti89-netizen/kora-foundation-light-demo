@@ -158,7 +158,7 @@ function buildExecutiveBriefPage(data: PdfData): string {
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, pillarDistribution, bti, iuSummary, pibAggregation, enrichment, reportingAlignment, reportingReadiness, components, macroblocks } = data;
+  const { meta, koraIndex, pillarDistribution, bti, iuSummary, pibAggregation, enrichment, reportingAlignment, reportingReadiness, components, macroblocks, contributionSummary } = data;
 
   const sf       = koraIndex.safeguardStatus;
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
@@ -689,6 +689,144 @@ export function buildDecisionPackHtml(data: PdfData): string {
       padding:8pt 12pt; background:#f8f8fc; border:1px solid #eaebf4;
       border-radius:4pt; font-size:7pt; color:#9899b3; line-height:1.5;
     }
+
+    /* ── TABLE OF CONTENTS ─────────────────────────────────────────────── */
+    .toc-page{ background:#f8f8fc; }
+    .toc-title{
+      font-size:9pt; font-weight:700; letter-spacing:.22em;
+      text-transform:uppercase; color:#6156F5; margin-bottom:24pt;
+    }
+    .toc-list{ display:flex; flex-direction:column; gap:0; }
+    .toc-row{
+      display:flex; align-items:baseline; padding:9pt 0;
+      border-bottom:1px solid #eaebf4;
+    }
+    .toc-num{
+      font-size:9pt; font-weight:700; color:#6156F5;
+      letter-spacing:.04em; width:24pt; flex-shrink:0;
+    }
+    .toc-label{ font-size:10.5pt; font-weight:600; color:#06032B; flex:1; }
+    .toc-sub{ font-size:7.5pt; color:#9899b3; margin-top:2pt; }
+    .toc-dots{ flex:1; border-bottom:1px dotted #d4d2f8; margin:0 10pt 3pt; }
+
+    /* ── COVER IMPROVEMENTS ────────────────────────────────────────────── */
+    .cv-doc-type{
+      font-size:9pt; font-weight:700; letter-spacing:.08em;
+      color:#fff; margin-bottom:4pt;
+    }
+    .cv-subtitle{
+      font-size:9pt; font-weight:400; color:rgba(255,255,255,.45);
+      letter-spacing:.01em; margin-bottom:26pt;
+    }
+    .cv-confidential{
+      font-size:6pt; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
+      color:#C8FF47; border:1px solid rgba(200,255,71,.35); padding:3pt 8pt; border-radius:2pt;
+    }
+
+    /* ── MACROBLOCK DIAGNOSIS ──────────────────────────────────────────── */
+    .mb-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12pt; margin-bottom:18pt; }
+    .mb-card{
+      padding:18pt 20pt; border:1px solid #eaebf4; border-radius:6pt;
+      background:#fff; break-inside:avoid;
+    }
+    .mb-card-reach { border-top:3pt solid #06032B; }
+    .mb-card-quality{ border-top:3pt solid #059669; }
+    .mb-card-equity { border-top:3pt solid #6156F5; }
+    .mb-card-bti    { border-top:3pt solid #d97706; }
+    .mb-code{
+      font-size:7pt; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
+      color:#9899b3; margin-bottom:4pt;
+    }
+    .mb-weight{
+      font-size:7pt; font-weight:600; color:#9899b3;
+    }
+    .mb-score{
+      font-size:38pt; font-weight:700; color:#06032B;
+      letter-spacing:-.04em; line-height:1; margin:8pt 0 4pt;
+    }
+    .mb-denom{ font-size:14pt; font-weight:400; color:#9899b3; }
+    .mb-contribution{
+      font-size:8pt; color:#555670; margin-bottom:8pt;
+    }
+    .mb-desc{ font-size:8.5pt; color:#7778a0; line-height:1.5; }
+    .mb-status{
+      display:inline-block; font-size:6.5pt; font-weight:700; letter-spacing:.1em;
+      text-transform:uppercase; padding:2pt 7pt; border-radius:2pt; margin-top:8pt;
+    }
+
+    /* ── DIAGNOSTIC COMPONENTS ─────────────────────────────────────────── */
+    .comp-table{ width:100%; border-collapse:collapse; font-size:8.5pt; }
+    .comp-thead th{
+      padding:6pt 8pt; text-align:left; font-size:6pt; font-weight:700;
+      letter-spacing:.16em; text-transform:uppercase; color:#9899b3;
+      border-bottom:1.5px solid #06032B; background:#f8f8fc;
+    }
+    .comp-row{ border-bottom:1px solid #eaebf4; }
+    .comp-row:hover{ background:#f8f8fc; }
+    .comp-code{
+      padding:8pt 8pt; font-family:'Courier New',monospace; font-size:9pt;
+      font-weight:700; color:#6156F5; white-space:nowrap;
+    }
+    .comp-name{ padding:8pt 8pt; font-weight:600; color:#06032B; }
+    .comp-mb{
+      padding:8pt 8pt; font-size:7pt; font-weight:600; letter-spacing:.06em;
+      text-transform:uppercase; color:#9899b3;
+    }
+    .comp-val{
+      padding:8pt 8pt; font-size:12pt; font-weight:700; color:#06032B;
+      letter-spacing:-.02em; text-align:right; white-space:nowrap;
+    }
+    .comp-weight{ padding:8pt 8pt; color:#9899b3; text-align:right; white-space:nowrap; }
+    .comp-desc{ padding:8pt 8pt; font-size:7.5pt; color:#7778a0; line-height:1.4; max-width:160pt; }
+    .comp-external{ color:#d97706; }
+
+    /* ── ELIGIBILITY & DATA QUALITY ────────────────────────────────────── */
+    .elig-grid{ display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10pt; margin-bottom:18pt; }
+    .elig-card{
+      padding:14pt 12pt; border:1px solid #eaebf4; border-radius:5pt;
+      text-align:center; background:#fafafa; break-inside:avoid;
+    }
+    .elig-count{ font-size:28pt; font-weight:700; color:#06032B; letter-spacing:-.03em; line-height:1; }
+    .elig-label{
+      font-size:6pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:#9899b3; margin-top:5pt;
+    }
+    .elig-desc{ font-size:7pt; color:#b0b1cc; margin-top:3pt; line-height:1.4; }
+
+    /* ── CONTRIBUTION COMPANION ────────────────────────────────────────── */
+    .contrib-hero{
+      padding:20pt 24pt; background:#06032B; border-radius:6pt; margin-bottom:18pt;
+      break-inside:avoid; display:flex; gap:20pt; align-items:center;
+    }
+    .contrib-score-block{ flex-shrink:0; }
+    .contrib-score{ font-size:52pt; font-weight:700; color:#C8FF47; letter-spacing:-.04em; line-height:1; }
+    .contrib-score-label{
+      font-size:6.5pt; font-weight:700; letter-spacing:.2em; text-transform:uppercase;
+      color:rgba(255,255,255,.38); margin-top:4pt;
+    }
+    .contrib-right{ flex:1; }
+    .contrib-level{ font-size:14pt; font-weight:700; color:#fff; margin-bottom:6pt; }
+    .contrib-desc{ font-size:9pt; color:rgba(255,255,255,.60); line-height:1.5; }
+    .contrib-kpi-row{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:10pt; margin-bottom:16pt; }
+    .contrib-kpi{
+      padding:12pt 14pt; border:1px solid #eaebf4; border-radius:4pt;
+      background:#fafafa; text-align:center; break-inside:avoid;
+    }
+    .contrib-kpi-val{ font-size:20pt; font-weight:700; color:#06032B; letter-spacing:-.02em; line-height:1; }
+    .contrib-kpi-label{
+      font-size:6pt; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:#9899b3; margin-top:4pt;
+    }
+    .contrib-nota{
+      padding:11pt 16pt; background:#f5f4ff; border:1px solid #c7c4f8;
+      border-radius:4pt; font-size:9pt; color:#3d3a6a; line-height:1.55;
+    }
+    .contrib-na{
+      padding:30pt 20pt; text-align:center; border:1px dashed #d4d2f8;
+      border-radius:6pt; background:#f8f8fc;
+    }
+    .contrib-na-label{ font-size:11pt; font-weight:600; color:#3d3a6a; margin-bottom:8pt; }
+    .contrib-na-desc{ font-size:9pt; color:#9899b3; line-height:1.55; max-width:340pt; margin:0 auto; }
   `;
 
   // Page header helper (repeated on every content page)
@@ -760,15 +898,22 @@ export function buildDecisionPackHtml(data: PdfData): string {
 <div class="page cover">
   <div class="cv-top">
     <img src="${logoWhite}" class="cv-logo" alt="KORA">
-    <span class="cv-badge">${esc(meta.isLiveData ? 'Foundation Light v1.0' : 'Synthetic Demo')}</span>
+    <div style="display:flex;gap:8pt;align-items:center;">
+      <span class="cv-confidential">Pilot Confidential</span>
+      <span class="cv-badge">${esc(meta.isLiveData ? 'Foundation Light v1.0' : 'Synthetic Demo')}</span>
+    </div>
   </div>
 
   <div class="cv-body">
     <div class="cv-eyebrow">KORA Human Impact Intelligence Platform</div>
 
+    <!-- Document type and company name -->
+    <div class="cv-doc-type">KORA Decision Pack™</div>
+    <div class="cv-subtitle">Human Activation &amp; Budget-to-Human-Impact Diagnostic</div>
+
     <!-- Company name is the HERO — bigger than the product name -->
     <div class="cv-company">${esc(meta.companyName)}</div>
-    <div class="cv-product">KORA Decision Pack &nbsp;·&nbsp; ${esc(meta.reportingPeriod)}</div>
+    <div class="cv-product">${esc(meta.reportingPeriod)} &nbsp;·&nbsp; ${esc(koraIndex.methodologyVersionId)}</div>
 
     <div class="cv-rule"></div>
 
@@ -817,6 +962,101 @@ export function buildDecisionPackHtml(data: PdfData): string {
     </div>
     <div class="cv-lime"></div>
   </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     TOC — TABLE OF CONTENTS
+     ═══════════════════════════════════════════ -->
+<div class="page cp toc-page">
+  ${pageHeader('Indice dei Contenuti')}
+  <div class="pc">
+
+    <div class="toc-title">KORA Decision Pack™ — Struttura del Documento</div>
+
+    <div class="toc-list">
+      <div class="toc-row">
+        <span class="toc-num">1</span>
+        <div style="flex:1;">
+          <div class="toc-label">Executive Summary</div>
+          <div class="toc-sub">Risponde a: Come stiamo? Perché? Opportunità principale. Azione prioritaria.</div>
+        </div>
+      </div>
+      <div class="toc-row">
+        <span class="toc-num">2</span>
+        <div style="flex:1;">
+          <div class="toc-label">KORA Index &amp; Activation Safeguard</div>
+          <div class="toc-sub">Valore KORA Index v3, Confidence Score, Activation Safeguard, Reach Semantics.</div>
+        </div>
+      </div>
+      <div class="toc-row">
+        <span class="toc-num">3</span>
+        <div style="flex:1;">
+          <div class="toc-label">Macroblock Diagnosis</div>
+          <div class="toc-sub">Score di REACH, QUALITY, EQUITY e BTI con peso e contributo al KORA Index.</div>
+        </div>
+      </div>
+      <div class="toc-row">
+        <span class="toc-num">4</span>
+        <div style="flex:1;">
+          <div class="toc-label">Diagnostic Components</div>
+          <div class="toc-sub">I 10 componenti diagnostici: AR, MAR, NI, VR, CO, WB, PC, PB, EQ, BTI.</div>
+        </div>
+      </div>
+      <div class="toc-row">
+        <span class="toc-num">5</span>
+        <div style="flex:1;">
+          <div class="toc-label">Budget-to-Human-Impact (BTI™)</div>
+          <div class="toc-sub">Allocazione budget welfare, Activation Debt, costo per Impact Unit.</div>
+        </div>
+      </div>
+      <div class="toc-row">
+        <span class="toc-num">6</span>
+        <div style="flex:1;">
+          <div class="toc-label">Eligibility &amp; Data Quality</div>
+          <div class="toc-sub">Classificazione record: eligible, limited, blocked, review required. Distribuzione evidenze.</div>
+        </div>
+      </div>
+      <div class="toc-row">
+        <span class="toc-num">7</span>
+        <div style="flex:1;">
+          <div class="toc-label">Impact Units™ &amp; PIB Aggregation</div>
+          <div class="toc-sub">Totale IU computate, distribuzione per pillar, strato aggregato PIB.</div>
+        </div>
+      </div>
+      <div class="toc-row">
+        <span class="toc-num">8</span>
+        <div style="flex:1;">
+          <div class="toc-label">KORA Contribution™</div>
+          <div class="toc-sub">Indicatore companion: impegno collettivo ed ecosistema. Non modifica il KORA Index.</div>
+        </div>
+      </div>
+      <div class="toc-row">
+        <span class="toc-num">9</span>
+        <div style="flex:1;">
+          <div class="toc-label">Recommendations &amp; 90-Day Action Plan</div>
+          <div class="toc-sub">Tre decisioni board-level con ownership e implicazioni operative.</div>
+        </div>
+      </div>
+      <div class="toc-row" style="border-bottom:none;">
+        <span class="toc-num">10</span>
+        <div style="flex:1;">
+          <div class="toc-label">Methodology &amp; Privacy Notes</div>
+          <div class="toc-sub">Governance metodologica, privacy boundary, calibration status, provenance.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto;padding-top:14pt;border-top:1px solid #eaebf4;">
+      <p style="font-size:8pt;color:#9899b3;line-height:1.6;">
+        <strong>Nota:</strong> Questo documento è generato da KORA Foundation Light v0.1 — calibrazione pre-empirica.
+        I valori sono diagnostici e di pilota, non certificati. Non sostituisce analisi HR, consulenza ESG, legale o fiscale.
+        KORA misura l'attivazione organizzativa — non individui. Nessun lavoratore è identificabile in questo documento.
+      </p>
+    </div>
+
+  </div>
+  ${pageFooter()}
 </div>
 
 
@@ -891,6 +1131,144 @@ ${buildExecutiveBriefPage(data)}
         &nbsp;·&nbsp; ${esc(koraIndex.calibrationStatus)}
       </p>
     </div>
+
+  </div>
+  ${pageFooter()}
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE — MACROBLOCK DIAGNOSIS (§3)
+     Score per macroblocco con peso e contributo
+     ═══════════════════════════════════════════ -->
+<div class="page cp">
+  ${pageHeader('Macroblock Diagnosis')}
+  <div class="pc">
+
+    <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:16pt;max-width:460pt;">
+      Il KORA Index v3 è composto da 4 macroblocchi con pesi differenziati. Ogni macroblocco esprime una
+      dimensione strategica dell'attivazione organizzativa. I valori sono pre-calibrazione empirica (v0.1).
+    </p>
+
+    ${macroblocks && macroblocks.length === 4 ? (() => {
+      const MB_DESC: Record<string, { desc: string; cardClass: string; color: string }> = {
+        REACH:   { desc: "Misura quanto l'attivazione raggiunge la popolazione aziendale. Combina Activation Rate (reach complessivo) e Meaningful Activation Rate (segnale primario — esclude economic relief).", cardClass: 'mb-card-reach',   color: '#06032B' },
+        QUALITY: { desc: "Misura la profondità e la qualità dell'attivazione. Combina intensità normalizzata (NI), verification rate (VR) e continuità cross-periodo (CO).", cardClass: 'mb-card-quality', color: '#059669' },
+        EQUITY:  { desc: "Misura la distribuzione dell'attivazione sui 5 pillar KORA. Combina Pillar Coverage (PC — quanti pillar attivi) e Pillar Balance (PB — quanto equilibrata la distribuzione).", cardClass: 'mb-card-equity',  color: '#6156F5' },
+        BTI:     { desc: "Misura l'efficienza del budget people. Budget-to-Human-Impact: quota di welfare convertita in attivazione profonda vs economic relief vs compliance blocked.", cardClass: 'mb-card-bti',    color: '#d97706' },
+      };
+      const statusForScore = (score: number) => score >= 70 ? { label: 'Buono', bg: '#dcfce7', color: '#166534' } : score >= 50 ? { label: 'In sviluppo', bg: '#fffbeb', color: '#92400e' } : { label: 'Critico', bg: '#fee2e2', color: '#991b1b' };
+      return `
+    <div class="mb-grid">
+      ${macroblocks.map(mb => {
+        const info = MB_DESC[mb.code] ?? { desc: '', cardClass: '', color: '#06032B' };
+        const contrib = +(mb.score * mb.weight / 100).toFixed(1);
+        const st = statusForScore(mb.score);
+        return `
+      <div class="mb-card ${info.cardClass}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div class="mb-code">${esc(mb.code)}</div>
+          <span class="mb-weight">peso ${Math.round(mb.weight * 100)}%</span>
+        </div>
+        <div class="mb-score" style="color:${info.color};">${Math.round(mb.score)}<span class="mb-denom">/100</span></div>
+        <div class="mb-contribution">Contributo al KORA Index: <strong>+${contrib} pt</strong></div>
+        <div class="mb-desc">${esc(info.desc)}</div>
+        <span class="mb-status" style="background:${st.bg};color:${st.color};">${esc(st.label)}</span>
+      </div>`;
+      }).join('')}
+    </div>
+
+    <div style="padding:11pt 16pt;background:#f8f8fc;border:1px solid #eaebf4;border-radius:4pt;font-size:8.5pt;color:#555670;line-height:1.55;">
+      <strong>Come leggere:</strong> il contributo di ogni macroblocco al KORA Index è score × peso.
+      Un REACH di ${Math.round(macroblocks.find(m=>m.code==='REACH')?.score??0)}/100 × 25% contribuisce
+      ${+(((macroblocks.find(m=>m.code==='REACH')?.score??0)*0.25)/100).toFixed(1)} pt al valore finale.
+      Somma dei contributi = KORA Index (pre-calibrazione empirica, v0.1).
+      Calibrazione definitiva post-pilot (Delphi Study).
+    </div>
+    `;
+    })() : `
+    <div style="padding:24pt;text-align:center;border:1px dashed #eaebf4;border-radius:6pt;color:#9899b3;">
+      <div style="font-size:11pt;font-weight:600;color:#555670;margin-bottom:8pt;">Dati macroblocchi non disponibili</div>
+      <div style="font-size:9pt;">Eseguire il ciclo di scoring dalla pipeline v1.0+ per popolare questa sezione.</div>
+    </div>
+    `}
+
+  </div>
+  ${pageFooter()}
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE — DIAGNOSTIC COMPONENTS (§4)
+     I 10 componenti del KORA Index v3
+     ═══════════════════════════════════════════ -->
+<div class="page cp">
+  ${pageHeader('Diagnostic Components')}
+  <div class="pc">
+
+    <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:14pt;max-width:460pt;">
+      Il KORA Index v3 è composto da 10 componenti fissi. Ogni componente misura una dimensione specifica
+      dell'attivazione organizzativa. Il Confidence Score (CS) è esterno al KORA Index — peso = 0.
+    </p>
+
+    ${components && components.length > 0 ? (() => {
+      const COMP_DESC: Record<string, string> = {
+        AR:  'Activation Rate — share of workforce con almeno un IU approvato nel periodo',
+        MAR: 'Meaningful Activation Rate — share con IU sopra soglia materialità (segnale primario)',
+        NI:  'Normalized Intensity — intensità media IU per worker attivo',
+        VR:  'Verification Rate — share IU sostenuta da evidenza verificata o parzialmente verificata',
+        CO:  'Continuity — share workers con engagement cross-periodo sostenuto',
+        WB:  'Worker Balance — distribuzione IU tra workers attivi (equità individuale)',
+        PC:  'Pillar Coverage — numero pillar con presenza significativa (su 5 totali)',
+        PB:  'Pillar Balance — equità distribuzione IU tra pillar coperti',
+        EQ:  "Equity — equità distributiva dell'attivazione tra segmenti workforce (≥N10)",
+        BTI: 'Budget-to-Human-Impact — efficienza budget welfare → attivazione profonda',
+        CS:  'Confidence Score — qualità e completezza dati. Esterno al KORA Index (peso = 0)',
+      };
+      const nonExternal = components.filter(c => !c.external);
+      const external    = components.filter(c => c.external);
+      const renderRow = (c: typeof components[0]) => {
+        const val100 = c.external ? Math.round(c.value * 100) : Math.round(c.value * 100);
+        const weightPct = c.external ? '—' : `${(c.weight * 100).toFixed(1)}%`;
+        return `
+      <tr class="comp-row">
+        <td class="comp-code">${esc(c.code)}</td>
+        <td class="comp-name">${esc(c.label)}</td>
+        <td class="comp-mb">${esc(c.macroblock ?? (c.external ? 'EXTERNAL' : '—'))}</td>
+        <td class="comp-val${c.external ? ' comp-external' : ''}">${val100}${c.code === 'CS' ? '%' : c.code === 'PC' ? '/5' : '%'}</td>
+        <td class="comp-weight">${weightPct}</td>
+        <td class="comp-desc">${esc(COMP_DESC[c.code] ?? c.label)}</td>
+      </tr>`;
+      };
+      return `
+    <table class="comp-table">
+      <thead class="comp-thead">
+        <tr>
+          <th>Codice</th>
+          <th>Nome</th>
+          <th>Macroblocco</th>
+          <th style="text-align:right;">Valore</th>
+          <th style="text-align:right;">Peso</th>
+          <th>Descrizione</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${nonExternal.map(renderRow).join('')}
+        ${external.map(renderRow).join('')}
+      </tbody>
+    </table>
+    <div style="margin-top:12pt;padding:9pt 14pt;background:#fffbeb;border:1px solid #fde68a;border-radius:4pt;font-size:8pt;color:#92400e;line-height:1.5;">
+      <strong>CS = Confidence Score</strong> è un indicatore esterno al KORA Index v3 (peso = 0). Non entra nel calcolo.
+      Viene mostrato affianco al KORA Index come indicatore di affidabilità dei dati sottostanti.
+      EQ = Equity misura equità distributiva tra segmenti workforce — non include equità tra individui.
+    </div>
+    `;
+    })() : `
+    <div style="padding:24pt;text-align:center;border:1px dashed #eaebf4;border-radius:6pt;color:#9899b3;">
+      <div style="font-size:11pt;font-weight:600;color:#555670;margin-bottom:8pt;">Componenti non disponibili</div>
+      <div style="font-size:9pt;">Eseguire il ciclo di scoring dalla pipeline v1.0+ (con components JSON) per popolare questa sezione.</div>
+    </div>
+    `}
 
   </div>
   ${pageFooter()}
@@ -1147,6 +1525,100 @@ ${buildExecutiveBriefPage(data)}
 
 
 <!-- ═══════════════════════════════════════════
+     PAGE — ELIGIBILITY & DATA QUALITY (§6)
+     Record classification + evidence distribution
+     ═══════════════════════════════════════════ -->
+<div class="page cp">
+  ${pageHeader('Eligibility &amp; Data Quality')}
+  <div class="pc">
+
+    <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:16pt;max-width:460pt;">
+      Ogni record UEF è classificato da un gate di eligibilità prima del calcolo IU.
+      La classificazione determina se un'iniziativa genera Impact Units, è tracciata solo in BTI, o è esclusa per design.
+    </p>
+
+    ${iuSummary ? (() => {
+      const total = iuSummary.totalRecords;
+      const elig  = iuSummary.computedRecords;
+      const lim   = iuSummary.limitedRecords;
+      const blk   = iuSummary.blockedRecords;
+      const rev   = iuSummary.reviewRequiredRecords;
+      const eligPct = total > 0 ? Math.round(elig / total * 100) : 0;
+      const limPct  = total > 0 ? Math.round(lim  / total * 100) : 0;
+      const blkPct  = total > 0 ? Math.round(blk  / total * 100) : 0;
+      const revPct  = total > 0 ? Math.round(rev  / total * 100) : 0;
+      return `
+    <div class="elig-grid">
+      <div class="elig-card" style="border-top:3pt solid #059669;">
+        <div class="elig-count" style="color:#059669;">${elig}</div>
+        <div class="elig-label">Eligible</div>
+        <div class="elig-desc">${eligPct}% del totale · generano Impact Units</div>
+      </div>
+      <div class="elig-card" style="border-top:3pt solid #d97706;">
+        <div class="elig-count" style="color:#d97706;">${lim}</div>
+        <div class="elig-label">Limited</div>
+        <div class="elig-desc">${limPct}% · economic relief · tracciati solo in BTI</div>
+      </div>
+      <div class="elig-card" style="border-top:3pt solid #dc2626;">
+        <div class="elig-count" style="color:#dc2626;">${blk}</div>
+        <div class="elig-label">Blocked</div>
+        <div class="elig-desc">${blkPct}% · compliance baseline · IU = 0 by design</div>
+      </div>
+      <div class="elig-card" style="border-top:3pt solid #7778a0;">
+        <div class="elig-count" style="color:#7778a0;">${rev}</div>
+        <div class="elig-label">In Review</div>
+        <div class="elig-desc">${revPct}% · IU computation sospesa</div>
+      </div>
+    </div>
+
+    <div style="padding:10pt 14pt;background:#f8f8fc;border:1px solid #eaebf4;border-radius:4pt;font-size:8.5pt;color:#555670;line-height:1.6;margin-bottom:16pt;">
+      <strong>Eligible:</strong> iniziative con potenziale di attivazione profonda — generano IU e contribuiscono al KORA Index. ·
+      <strong>Limited (Economic Relief):</strong> benefit monetari (voucher, fringe, welfare wallet) — tracciati in BTI, no IU. ·
+      <strong>Blocked (Compliance):</strong> formazione obbligatoria, sicurezza — esclusi per architettura, IU = 0. ·
+      <strong>In Review:</strong> in attesa di validazione advisor — IU computation sospesa.
+    </div>
+    ${enrichment ? (() => {
+      const lvl = enrichment.evidenceLevelBreakdown;
+      const totalEv = Object.values(lvl).reduce((s,v) => s+v, 0);
+      const lvlPct = (n: number) => totalEv > 0 ? Math.round(n/totalEv*100) : 0;
+      const EV_DESC: Record<string, string> = {
+        L0: 'Autodichiarato', L1: 'Fattura/documento', L2: 'Dato verificato provider',
+        L3: 'Partecipazione confirmata', L4: 'Attestazione indipendente',
+      };
+      const EV_COLOR: Record<string, string> = { L0: '#dc2626', L1: '#d97706', L2: '#059669', L3: '#6156F5', L4: '#06032B' };
+      return `
+    <div class="ev-enrich-title">Distribuzione Livelli di Evidenza</div>
+    <div class="ev-lvl-row">
+      ${(['L0','L1','L2','L3','L4'] as const).map(l => `
+      <div class="ev-lvl-card" style="border-top:2.5pt solid ${EV_COLOR[l]};">
+        <div class="ev-lvl-label" style="color:${EV_COLOR[l]};">${l}</div>
+        <div class="ev-lvl-count" style="color:${EV_COLOR[l]};">${lvlPct(lvl[l])}%</div>
+        <div style="font-size:6.5pt;color:#9899b3;margin-top:3pt;">${EV_DESC[l]}</div>
+        <div style="font-size:7pt;color:#b0b1cc;">${lvl[l]} record</div>
+      </div>`).join('')}
+    </div>
+    ${enrichment.averageFinancialConfidence !== null ? `
+    <div style="padding:8pt 12pt;background:#fafafa;border:1px solid #eaebf4;border-radius:4pt;font-size:8pt;color:#555670;">
+      Confidence finanziaria media: <strong>${Math.round(enrichment.averageFinancialConfidence * 100)}%</strong>
+      ${enrichment.averageFinancialConfidence < 0.5 ? ' <span style="color:#d97706;font-weight:600;">⚠ sotto soglia operativa (< 50%)</span>' : ''}
+      &nbsp;·&nbsp; Record arricchiti manualmente: <strong>${enrichment.manualEnrichmentCount}</strong>
+    </div>` : ''}
+    `;
+    })() : ''}
+    `;
+    })() : `
+    <div style="padding:24pt;text-align:center;border:1px dashed #eaebf4;border-radius:6pt;color:#9899b3;">
+      <div style="font-size:11pt;font-weight:600;color:#555670;margin-bottom:8pt;">Dati eligibilità non disponibili</div>
+      <div style="font-size:9pt;">Completare intake, enrichment e scoring dalla pipeline v1.0+.</div>
+    </div>
+    `}
+
+  </div>
+  ${pageFooter()}
+</div>
+
+
+<!-- ═══════════════════════════════════════════
      PAGE 6 — IMPACT UNITS™ TRACE LAYER
      ═══════════════════════════════════════════ -->
 <div class="page cp">
@@ -1251,6 +1723,35 @@ ${buildExecutiveBriefPage(data)}
       saranno disponibili in Pilot+ con la conferma di partecipazione via My KORA.
     </div>
 
+    ${!pibAggregation && iuSummary ? `
+    <div style="margin-bottom:18pt;">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10pt;margin-bottom:12pt;">
+        <div style="padding:14pt 12pt;border:1px solid #eaebf4;border-radius:4pt;background:#fafafa;text-align:center;">
+          <div style="font-size:7pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#9899b3;margin-bottom:5pt;">Lavoratori attivati (stima)</div>
+          <div style="font-size:22pt;font-weight:700;color:#06032B;letter-spacing:-.03em;line-height:1;">${arPct}%</div>
+          <div style="font-size:7pt;color:#9899b3;margin-top:3pt;">Activation Rate — bounded reach</div>
+        </div>
+        <div style="padding:14pt 12pt;border:1px solid #c7c4f8;border-radius:4pt;background:#f5f4ff;text-align:center;">
+          <div style="font-size:7pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#6156F5;margin-bottom:5pt;">Attivazione profonda (stima)</div>
+          <div style="font-size:22pt;font-weight:700;color:#6156F5;letter-spacing:-.03em;line-height:1;">${marPct}%</div>
+          <div style="font-size:7pt;color:#9899b3;margin-top:3pt;">Meaningful Activation Rate — segnale primario</div>
+        </div>
+        <div style="padding:14pt 12pt;border:1px solid #eaebf4;border-radius:4pt;background:#fafafa;text-align:center;">
+          <div style="font-size:7pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#9899b3;margin-bottom:5pt;">Total Impact Units™</div>
+          <div style="font-size:22pt;font-weight:700;color:#06032B;letter-spacing:-.03em;line-height:1;">${iuSummary.totalImpactUnits > 0 ? iuSummary.totalImpactUnits.toFixed(1) : '—'}</div>
+          <div style="font-size:7pt;color:#9899b3;margin-top:3pt;">aggregate da ${iuSummary.computedRecords} record eligible</div>
+        </div>
+      </div>
+      <div style="padding:12pt 16pt;background:#f5f4ff;border:1px solid #c7c4f8;border-radius:4pt;font-size:9pt;color:#3d3a6a;line-height:1.55;">
+        <strong>AG-01 — Strato Intermedio Obbligatorio:</strong> In Foundation Light v0.1, il PIB è utilizzato come
+        strato aggregato di metodologia per garantire che il KORA Index non bypassa la fase di aggregazione individuale.
+        I dati AR/MAR qui rappresentati derivano dal motore di attivazione (bounded reach, stima aggregata).
+        <br>
+        <strong>Il PIB individuale per lavoratore non è mai visibile al datore di lavoro</strong> — regola costituzionale D-04.
+        I record PIB individuali saranno disponibili in Pilot+ con conferma partecipazione via My KORA.
+      </div>
+    </div>
+    ` : ''}
     ${pibAggregation ? (() => {
       const totalIU    = pibAggregation.totalIU;
       const avgPIB     = pibAggregation.avgEstimatedPIB;
@@ -1327,12 +1828,7 @@ ${buildExecutiveBriefPage(data)}
       · ${esc(pibAggregation.calibrationStatus)} · ${esc(pibAggregation.methodologyVersion)}
     </div>
 `;
-    })() : `
-    <div class="fg-stub">
-      PIB Aggregation non disponibile per questo batch.
-      Verificare che la pipeline v1.0+ abbia elaborato i record IU.
-    </div>
-    `}
+    })() : ''}
 
   </div>
   ${pageFooter()}
@@ -1465,6 +1961,82 @@ ${buildExecutiveBriefPage(data)}
         Delphi Study calibration: post-pilot &nbsp;·&nbsp;
         ${esc(koraIndex.methodologyVersionId)}
       </p>
+    </div>
+
+  </div>
+  ${pageFooter()}
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     PAGE — KORA CONTRIBUTION™ (§8)
+     Indicatore companion — non modifica KORA Index
+     ═══════════════════════════════════════════ -->
+<div class="page cp">
+  ${pageHeader('KORA Contribution™ — Companion Indicator')}
+  <div class="pc">
+
+    ${contributionSummary ? (() => {
+      const levelColor = (lv: string) => lv === 'alto' ? '#059669' : lv === 'medio' ? '#d97706' : '#9899b3';
+      return `
+    <div class="contrib-hero">
+      <div class="contrib-score-block">
+        <div class="contrib-score">${Math.round(contributionSummary.contributionScore)}</div>
+        <div style="font-size:20pt;color:rgba(200,255,71,.5);font-weight:400;line-height:1;">/100</div>
+        <div class="contrib-score-label">Contribution Score</div>
+      </div>
+      <div class="contrib-right">
+        <div class="contrib-level" style="color:${levelColor(contributionSummary.contributionLevel)};">${esc(contributionSummary.contributionLevel.charAt(0).toUpperCase() + contributionSummary.contributionLevel.slice(1))}</div>
+        <div class="contrib-desc">KORA Contribution™ misura l'impegno collettivo e l'attivazione dell'ecosistema aziendale.
+        Non modifica il KORA Index — è un companion indicator che arricchisce il quadro diagnostico.</div>
+      </div>
+    </div>
+
+    <div class="contrib-kpi-row">
+      <div class="contrib-kpi">
+        <div class="contrib-kpi-val">${contributionSummary.totalContributionIU.toFixed(1)}</div>
+        <div class="contrib-kpi-label">Total Contribution IU</div>
+      </div>
+      <div class="contrib-kpi">
+        <div class="contrib-kpi-val">${contributionSummary.initiativeCount}</div>
+        <div class="contrib-kpi-label">Iniziative Contribution</div>
+      </div>
+      <div class="contrib-kpi">
+        <div class="contrib-kpi-val">${contributionSummary.ecosystemPartnerCount}</div>
+        <div class="contrib-kpi-label">Partner Ecosistema</div>
+      </div>
+    </div>
+
+    ${contributionSummary.pillarSplit ? `
+    <div style="margin-bottom:16pt;">
+      <div style="font-size:7pt;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#9899b3;margin-bottom:8pt;">Distribuzione Pillar Contribution</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8pt;">
+        ${['IMPACT','CONNECTION','LEGACY'].map(p => {
+          const pct = Math.round((contributionSummary.pillarSplit?.[p as 'IMPACT'|'CONNECTION'|'LEGACY'] ?? 0) * 100);
+          return `<div style="padding:10pt;border:1px solid #eaebf4;border-radius:4pt;text-align:center;background:#fafafa;">
+            <div style="font-size:7pt;font-weight:700;color:${PILLAR_COLORS[p]};letter-spacing:.04em;margin-bottom:4pt;">${esc(p)}</div>
+            <div style="font-size:18pt;font-weight:700;color:#06032B;">${pct}%</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : ''}
+    `;
+    })() : `
+    <div class="contrib-na">
+      <div class="contrib-na-label">KORA Contribution™ — Dati non disponibili in questo pacchetto</div>
+      <div class="contrib-na-desc">
+        KORA Contribution™ è un indicatore companion che misura l'impegno collettivo e l'ecosistema aziendale.
+        I dati di Contribution non sono ancora attivi per questo periodo di reporting.
+        Disponibile in pilota con attivazione della pipeline KORA Contribution.
+      </div>
+    </div>
+    `}
+
+    <div class="contrib-nota" style="margin-top:${contributionSummary ? '0' : '18pt'};">
+      <strong>KORA Contribution™ è un indicatore companion.</strong>
+      Non modifica il KORA Index™ e non entra nella formula di calcolo. Viene mostrato separatamente come
+      misura complementare dell'attivazione collettiva e dell'ecosistema di partner. &nbsp;·&nbsp;
+      <span style="font-family:'Courier New',monospace;font-size:8pt;">notKoraIndexComponent: true</span>
     </div>
 
   </div>

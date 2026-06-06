@@ -172,6 +172,18 @@ export interface PdfData {
     primaryAction:      string;
     confidenceNote:     string;
   } | null;
+  // B79-B: KORA Contribution™ companion indicator summary.
+  // Not persisted in Foundation Light v0.1 — always null until Contribution pipeline is live.
+  // notKoraIndexComponent: true — companion indicator, never part of KORA Index computation.
+  contributionSummary: {
+    contributionScore:       number;
+    contributionLevel:       string;
+    totalContributionIU:     number;
+    initiativeCount:         number;
+    ecosystemPartnerCount:   number;
+    pillarSplit:             { IMPACT: number; CONNECTION: number; LEGACY: number } | null;
+    evidenceDistribution:    { L0: number; L1: number; L2: number; L3: number; L4: number } | null;
+  } | null;
 }
 
 export async function fetchPdfData(
@@ -643,6 +655,9 @@ export async function fetchPdfData(
     // B77-B: Executive Intelligence Layer™ — computed from available PdfData signals.
     // Uses simplified inputs (no EquityAccess / LifeDiversity — not in PdfData scope).
     // notKoraIndexComponent: true — synthesis display only.
+    // B79-B: KORA Contribution™ — not persisted in Foundation Light v0.1.
+    // Will be populated post-Contribution pipeline implementation.
+    contributionSummary: null,
     executiveBrief: (() => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const kiVal    = (ki as any).kora_index_value ?? 0;

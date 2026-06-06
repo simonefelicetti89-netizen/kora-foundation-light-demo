@@ -496,21 +496,19 @@ export default function Reports() {
             <p className="text-sm text-[rgba(6,3,43,0.52)]">Nessun KORA Index disponibile. Completa intake e scoring per generare il Decision Pack.</p>
           )}
           {scoring?.status === 'ok' && (
-            <div className="flex gap-3 flex-wrap pt-2 border-t border-[rgba(6,3,43,0.06)]">
-              <a
-                href={`/api/company/decision-pack?reportingPeriod=${scoring.koraIndex?.reporting_period ?? ''}`}
-                target="_blank" rel="noopener noreferrer"
-                className="rounded border border-[rgba(6,3,43,0.14)] px-3 py-1.5 text-xs font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.04)] transition-colors"
-              >
-                ↗ Anteprima Decision Pack
-              </a>
-              <a
-                href={`/api/company/decision-pack/pdf?reportingPeriod=${scoring.koraIndex?.reporting_period ?? ''}`}
-                download
-                className="rounded border border-[#C76F3D] bg-[rgba(199,111,61,0.08)] px-3 py-1.5 text-xs font-semibold text-[#C76F3D] hover:bg-[rgba(199,111,61,0.12)] transition-colors"
-              >
-                ↓ Scarica PDF
-              </a>
+            <div className="flex flex-col gap-2 pt-2 border-t border-[rgba(6,3,43,0.06)]">
+              <div className="flex gap-3 flex-wrap">
+                <a
+                  href={`/api/company/decision-pack?reportingPeriod=${scoring.koraIndex?.reporting_period ?? ''}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="rounded border border-[#C76F3D] bg-[rgba(199,111,61,0.08)] px-3 py-1.5 text-xs font-semibold text-[#C76F3D] hover:bg-[rgba(199,111,61,0.12)] transition-colors"
+                >
+                  ↗ Apri Board Pack
+                </a>
+              </div>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
+                Usa <strong>Stampa / Salva come PDF</strong> dal browser (Cmd+P) per esportare il documento.
+              </p>
             </div>
           )}
           <p className="text-[10px] text-[rgba(47,125,85,0.70)] italic">
@@ -622,14 +620,15 @@ export default function Reports() {
 
         {/* CTAs */}
         <div className="flex flex-wrap items-center gap-3">
-          <Link
-            href="/company/reports/board-pack"
+          <a
+            href="/api/company/decision-pack"
+            target="_blank" rel="noopener noreferrer"
             style={{ borderRadius: 6, background: TOKENS.ink, padding: '8px 16px', fontSize: '13px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none' }}
           >
-            Apri Board Pack Preview →
-          </Link>
+            Apri Board Pack →
+          </a>
           <span style={{ fontSize: '11px', color: TOKENS.inkHint }}>
-            Stampa/salva come PDF da browser · Export automatico non attivo in Foundation Light
+            Usa Stampa / Salva come PDF dal browser (Cmd+P)
           </span>
         </div>
       </div>
@@ -660,12 +659,13 @@ export default function Reports() {
           <span style={{ fontSize: '11px', fontWeight: 600, background: TOKENS.surface, color: TOKENS.safeguard.watch.text, borderRadius: 4, padding: '4px 10px', border: `1px solid ${TOKENS.safeguard.watch.dot}44` }}>
             {versionHistory.length} {versionHistory.length === 1 ? 'versione' : 'versioni'}
           </span>
-          <Link
-            href="/company/reports/board-pack"
+          <a
+            href="/api/company/decision-pack"
+            target="_blank" rel="noopener noreferrer"
             style={{ borderRadius: 6, background: TOKENS.ink, padding: '6px 14px', fontSize: '12px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none', whiteSpace: 'nowrap' }}
           >
-            Board Pack Preview →
-          </Link>
+            Apri Board Pack →
+          </a>
         </div>
       </div>
 
@@ -749,15 +749,17 @@ export default function Reports() {
           Il Board Pack Preview è disponibile come documento stampabile PDF-ready.
           Export PDF automatico non attivo in Foundation Light — usare il browser per Salva come PDF.
         </p>
-        <Link
-          href="/company/reports/board-pack"
+        <a
+          href="/api/company/decision-pack"
+          target="_blank"
+          rel="noopener noreferrer"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 6, background: TOKENS.ink, padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none', marginBottom: 16 }}
         >
-          Apri Board Pack Preview →
+          Apri Board Pack →
           <span style={{ fontWeight: 400, fontSize: '10px', color: 'rgba(244,241,233,0.60)' }}>
-            Scarica/stampa da browser · Export PDF automatico non attivo in Foundation Light
+            Stampa / Salva PDF dal browser (Cmd+P) · Export PDF automatico non attivo in Foundation Light
           </span>
-        </Link>
+        </a>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {exportActions.map((action) => (
             <div
