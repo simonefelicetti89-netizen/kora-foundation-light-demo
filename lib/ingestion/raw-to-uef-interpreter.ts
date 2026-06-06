@@ -16,6 +16,7 @@
 
 import { deriveReportingAlignment, type ReportingAlignment } from '@/lib/reporting/reporting-alignment';
 import { deriveEvidenceGaps, type EvidenceGap } from '@/lib/reporting/evidence-gap-engine';
+import { parseAmount } from '@/lib/data-intake/amount-parser';
 
 export type Pillar = 'LIFE' | 'GROWTH' | 'CONNECTION' | 'IMPACT' | 'LEGACY';
 export type EligibilityProposal = 'eligible' | 'limited' | 'blocked';
@@ -282,7 +283,8 @@ function firstKw(text: string, kws: string[]): string | null {
   return kws.find(kw => text.includes(kw)) ?? null;
 }
 
-// ── B65-B1: Amount normalization — handles European (1.234,56) and US (1,234.56) formats
+// ── Amount normalization — delegates to shared parseAmount (lib/data-intake/amount-parser.ts)
+// B79-P0-1: now handles "euro"/"EURO" text prefix/suffix and rejects "10k"-style strings.
 interface AmountParseResult {
   value: number | null;
   raw: string;
@@ -290,65 +292,7 @@ interface AmountParseResult {
 }
 
 function normalizeAmount(v: unknown): AmountParseResult {
-  if (v === null || v === undefined) return { value: null, raw: '', status: 'missing' };
-  const raw = String(v).trim();
-  if (!raw) return { value: null, raw, status: 'missing' };
-
-  if (typeof v === 'number') {
-    if (isFinite(v) && v >= 0) return { value: v, raw, status: 'parsed' };
-    return { value: null, raw, status: 'invalid' };
-  }
-
-  // Strip currency symbols and keyword prefixes/suffixes
-  const s = raw
-    .replace(/^(EUR|USD|GBP|CHF)\s*/i, '')
-    .replace(/\s*(EUR|USD|GBP|CHF)$/i, '')
-    .replace(/^[€$£]\s*/, '')
-    .replace(/\s*[€$£]$/, '')
-    .replace(/\s+/g, '');  // also handles space-as-thousands-separator (1 234,56)
-
-  if (!s) return { value: null, raw, status: 'missing' };
-
-  const hasDot   = s.includes('.');
-  const hasComma = s.includes(',');
-
-  let normalized: string;
-
-  if (hasDot && hasComma) {
-    // Both present — determine which is decimal by position of last occurrence
-    if (s.lastIndexOf('.') > s.lastIndexOf(',')) {
-      // US format: 1,234.56 → strip commas, keep dot
-      normalized = s.replace(/,/g, '');
-    } else {
-      // European format: 1.234,56 → strip dots, comma → dot
-      normalized = s.replace(/\./g, '').replace(',', '.');
-    }
-  } else if (hasComma && !hasDot) {
-    const parts = s.split(',');
-    if (parts.length === 2 && parts[1].length <= 2) {
-      // Decimal comma: 1234,56 or 12,5
-      normalized = parts[0] + '.' + parts[1];
-    } else {
-      // Thousands comma(s): 1,234 or 1,234,567 → strip all
-      normalized = s.replace(/,/g, '');
-    }
-  } else if (hasDot && !hasComma) {
-    const parts = s.split('.');
-    if (parts.length === 2 && parts[1].length <= 2) {
-      // Decimal dot: 1234.56 or 1234.5
-      normalized = s;
-    } else {
-      // Thousands dot(s): 1.234 or 1.234.567 → strip all
-      normalized = s.replace(/\./g, '');
-    }
-  } else {
-    normalized = s;
-  }
-
-  if (!/^-?\d+(\.\d+)?$/.test(normalized)) return { value: null, raw, status: 'invalid' };
-  const n = parseFloat(normalized);
-  if (!isFinite(n) || n < 0) return { value: null, raw, status: 'invalid' };
-  return { value: n, raw, status: 'parsed' };
+  return parseAmount(v);
 }
 
 // ── B65-B1: Participants normalization — handles text like "~30", "circa 30 persone"

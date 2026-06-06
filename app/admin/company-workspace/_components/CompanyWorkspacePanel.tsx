@@ -5,6 +5,7 @@
 // Reads from /api/admin/company-workspace (read-only, no PII, no scoring).
 
 import { useEffect, useState, useCallback } from 'react';
+import { getPdfLinkConfig } from '@/lib/decision-pack/pdf-strategy';
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -486,7 +487,12 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
                     {' · '}{ts(w.decisionPack.createdAt)}
                     <span className="ml-2">
                       <a href={w.decisionPack.previewUrl} className="text-[#C76F3D] underline mr-2" target="_blank" rel="noopener noreferrer">Preview</a>
-                      <a href={w.decisionPack.pdfUrl} className="text-[#C76F3D] underline" target="_blank" rel="noopener noreferrer">PDF</a>
+                      {(() => {
+                        const cfg = getPdfLinkConfig(w.decisionPack.previewUrl, w.decisionPack.pdfUrl);
+                        return (
+                          <a href={cfg.href} title={cfg.title} className="text-[#C76F3D] underline" target={cfg.openInNewTab ? '_blank' : '_self'} rel="noopener noreferrer">{cfg.label}</a>
+                        );
+                      })()}
                     </span>
                     {/* DP promotion buttons */}
                     {w.decisionPack.status === 'draft' && (

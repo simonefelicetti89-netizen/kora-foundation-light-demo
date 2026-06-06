@@ -211,6 +211,22 @@ export function HeroDiagnosis({
           </>
         )}
       </div>
+
+      {/* B79-P0-5: Benchmark guidance — no sector benchmark in Foundation Light v0.1 */}
+      <div style={{
+        marginTop:    16,
+        paddingTop:   12,
+        borderTop:    '1px solid rgba(255,255,255,0.07)',
+        fontSize:     '9px',
+        color:        'rgba(255,255,255,0.25)',
+        lineHeight:   1.5,
+        fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+      }}>
+        <strong style={{ color: 'rgba(255,255,255,0.40)', fontWeight: 600 }}>Interpretazione score:</strong>{' '}
+        KORA Index v0.1 è in calibrazione pre-empirica. Non esistono ancora benchmark di settore validati —
+        i valori sono diagnostici e interni. Confronto settoriale disponibile post-pilot (Delphi Study).
+        &nbsp;·&nbsp; Calibrazione: <span style={{ fontFamily: 'ui-monospace, monospace' }}>pre_empirical_calibration</span>
+      </div>
     </div>
   );
 }

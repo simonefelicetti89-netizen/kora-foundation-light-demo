@@ -24,6 +24,7 @@ import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guar
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { parseCsvContent, flattenCsvWarnings } from '@/lib/data-intake/csv-parser';
 import { parseExcelSheet } from '@/lib/data-intake/excel-parser';
+import { filterTotalsRows } from '@/lib/data-intake/totals-row-filter';
 import { detectFileRole, type IntakeFileRole } from '@/lib/data-intake/file-role-detection';
 import {
   runInitiativeMatching, applyMatchReviewOverrides,
@@ -698,6 +699,13 @@ export async function POST(request: NextRequest) {
   });
   const provenanceSummary = summarizeProvenance(allRowProvenances);
 
+  // ── 10b. Totals row filter — removes aggregate/summary rows (B79-P0-2) ────────
+  const totalsFilterResult = filterTotalsRows(finalRows);
+  finalRows = totalsFilterResult.rows;
+  if (totalsFilterResult.warning) {
+    parseWarnings.push(totalsFilterResult.warning);
+  }
+
   // ── 11. Eligibility classification on mapped rows ────────────────────────────
   const records: RawUploadedRecord[] = csvToUploadedRecords(finalRows);
   const eligResults = classifyEligibilityBatch(records);
@@ -918,6 +926,8 @@ export async function POST(request: NextRequest) {
     fileType:         isXlsx ? 'xlsx' : 'csv',
     ...(isXlsx ? { selectedSheetName } : {}),
     rowCount:         finalRows.length,
+    totalsRowsFiltered: totalsFilterResult.filteredCount,
+    totalsFilterWarning: totalsFilterResult.warning,
     eligibilitySummary: eligCounts,
     batchStatus:      'pending',
     mappingApplied:   Object.keys(effectiveMapping).length > 0,

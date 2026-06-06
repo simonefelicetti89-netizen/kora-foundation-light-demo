@@ -842,6 +842,7 @@ ${buildExecutiveBriefPage(data)}
         <div class="bm-metric-val" style="font-size:56pt;">${kiVal}</div>
         <div class="bm-metric-sub">/100 · ${esc(koraIndex.methodologyVersionId)}</div>
         <div style="font-size:7pt;color:#9899b3;margin-top:6pt;line-height:1.4;text-align:left;padding:0 3pt;">Efficacia nel convertire iniziative people in attivazione verificata, distribuita e significativa. Output aziendale aggregato — nessun individuo misurabile.</div>
+        <div style="font-size:6.5pt;color:#b0b1cc;margin-top:5pt;line-height:1.4;text-align:left;padding:0 3pt;border-top:1px solid #eaebf4;padding-top:5pt;">Benchmark settoriale: non disponibile in Foundation Light v0.1 (calibrazione pre-empirica). Confronto settoriale pianificato post-pilot (Delphi Study).</div>
       </div>
       <div class="bm-metric" style="border:1px solid #c7c4f8;border-radius:5pt;background:#f5f4ff;">
         <div class="bm-metric-label">Confidence Score</div>
@@ -1676,6 +1677,35 @@ ${buildExecutiveBriefPage(data)}
       })() : ''}
     </div>
     <!-- ─────────────────────────────────────────────────────────────────── -->
+
+    <!-- B79-P0-4: Methodology disclosure — mandatory pilot-grade framing ────── -->
+    <div style="margin-top:18pt;padding:12pt 14pt;background:#faf9ff;border:1px solid #d4d2f8;border-radius:6pt;">
+      <div style="font-size:8pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6156F5;margin-bottom:8pt;">Note Metodologiche — Foundation Light v0.1</div>
+      <table style="width:100%;border-collapse:collapse;font-size:7.5pt;color:#444;">
+        <tbody>
+          <tr style="border-bottom:1px solid #e8e7f7;">
+            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;width:38%;">Stato calibrazione</td>
+            <td style="padding:5pt 8pt;"><span style="background:#f0f0f9;color:#6156F5;padding:2px 8px;border-radius:3px;font-size:7pt;font-weight:700;">pre_empirical_calibration</span> — pesi v0.1 provvisori. Calibrazione definitiva (Delphi Study) è pianificata post-pilot. Output diagnostici e di pilota, non certificati.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #e8e7f7;">
+            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">NM — Normalized Magnitude</td>
+            <td style="padding:5pt 8pt;">NM = 1.0 in Foundation Light v0.1 (stub uniforme). La calibrazione empirica differenzierà l'intensità per tipo di evento. Tutti i valori IU riflettono questo stub.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #e8e7f7;">
+            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">CF — Continuity Factor</td>
+            <td style="padding:5pt 8pt;">CF è una proxy sito/cluster in v0.1. Il valore canonico (cross-periodo, basato su PIB individuale) richiede dati multi-periodo non disponibili in questo pilota.</td>
+          </tr>
+          <tr style="border-bottom:1px solid #e8e7f7;">
+            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">Pesi KORA Index v3</td>
+            <td style="padding:5pt 8pt;">REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20% — calibrazione v0.1 pre-empirica. Non validati esternamente. Non vi è benchmark di settore disponibile in Foundation Light v0.1.</td>
+          </tr>
+          <tr>
+            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">Uso consentito</td>
+            <td style="padding:5pt 8pt;">Output diagnostico per discussione interna e pilota KORA. Non regulatory-grade. Non sostituisce analisi HR, consulenza ESG, legale o fiscale certificata. Non utilizzare per decisioni operative senza revisione advisor KORA.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div class="mp-prov">
       <div class="mp-prov-item">
