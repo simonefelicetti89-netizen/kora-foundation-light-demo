@@ -21,6 +21,7 @@ export interface CompanySessionCtx {
   isLive: boolean;                   // true = real Supabase session with company role
   tenantId: string | null;           // UUID from app_metadata.kora_tenant_id
   koraRole: 'COMPANY_ADMIN' | 'COMPANY_VIEWER' | null;
+  companyName: string | null;        // from analytics.tenant — null if lookup fails
   sessionLoading: boolean;           // true while session is being detected
 }
 
@@ -28,6 +29,7 @@ const CompanySessionContext = createContext<CompanySessionCtx>({
   isLive: false,
   tenantId: null,
   koraRole: null,
+  companyName: null,
   sessionLoading: true,
 });
 
@@ -42,6 +44,7 @@ export function CompanySessionProvider({ children }: Props) {
     isLive: false,
     tenantId: null,
     koraRole: null,
+    companyName: null,
     sessionLoading: true,
   });
 
@@ -55,7 +58,7 @@ export function CompanySessionProvider({ children }: Props) {
         const { data: { session } } = await supabase.auth.getSession();
 
         if (!session || !active) {
-          if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, sessionLoading: false });
+          if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, companyName: null, sessionLoading: false });
           return;
         }
 
@@ -68,17 +71,30 @@ export function CompanySessionProvider({ children }: Props) {
         const isActive      = status !== 'suspended' && status !== 'disabled';
 
         if (isCompanyRole && isActive && tid) {
+          // Fetch company name from analytics.tenant — tenantId from session JWT only.
+          let companyName: string | null = null;
+          try {
+            const { data: tenantRow } = await supabase
+              .schema('analytics')
+              .from('tenant')
+              .select('company_name')
+              .eq('id', tid)
+              .maybeSingle();
+            companyName = (tenantRow as { company_name?: string } | null)?.company_name ?? null;
+          } catch { /* fallback: null shown as "La tua organizzazione" */ }
+
           if (active) setCtx({
             isLive:        true,
             tenantId:      tid,
             koraRole:      role as 'COMPANY_ADMIN' | 'COMPANY_VIEWER',
+            companyName,
             sessionLoading: false,
           });
         } else {
-          if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, sessionLoading: false });
+          if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, companyName: null, sessionLoading: false });
         }
       } catch {
-        if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, sessionLoading: false });
+        if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, companyName: null, sessionLoading: false });
       }
     }
 

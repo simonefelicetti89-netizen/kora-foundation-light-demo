@@ -16,17 +16,9 @@ export type { ConfidenceRecord };
 
 // ── Type notes ─────────────────────────────────────────────────────────────────
 //
-// KoraIndexOutput has `synthetic_demo_data: true` as a required literal — valid
-// only for demo seed objects. Phase 2B task: make that field optional in
-// lib/types/index.ts so live DB rows can satisfy the type without type assertions.
-//
-// KoraIndexSnapshot and CompanyAggregateSnapshot are exported as Phase 2B
-// building blocks for the live mapper — they omit the demo-only sentinel fields.
-//
-// ScoringResult.koraIndex stays typed as KoraIndexOutput | null so existing
-// components (which expect KoraIndexOutput) require no prop-type changes.
-// The live path currently returns null; Phase 2B will return a properly mapped
-// object after lib/types is updated to make synthetic_demo_data optional.
+// KoraIndexOutput.synthetic_demo_data is optional — live DB rows satisfy the
+// type without assertions. KoraIndexSnapshot / CompanyAggregateSnapshot omit
+// the demo-only sentinel fields for use in live mapper output shapes.
 
 export type KoraIndexSnapshot       = Omit<KoraIndexOutput, 'synthetic_demo_data'>;
 export type CompanyAggregateSnapshot = Omit<CompanyAggregateExtended, 'synthetic_demo_data' | 'not_live_data' | 'generated_for'>;
@@ -43,12 +35,7 @@ export type ScoringResultStatus = 'ok' | 'insufficient_data' | 'not_implemented'
  * This is the ONLY interface that all output pages consume.
  *
  * koraIndex / aggregate / confidence are null when status !== 'ok'.
- *
- * Phase 2B note: when the live mapper is wired, koraIndex will be typed as
- * KoraIndexSnapshot (no synthetic_demo_data field). Update prop types at that point.
- *
- * LIVE branch: NEVER fall back to demo seed data. If the DB has no result yet,
- * return status 'insufficient_data' with null payloads — never Meridiana data.
+ * LIVE branch: NEVER fall back to demo seed data — return 'insufficient_data' if empty.
  */
 export interface ScoringResult {
   status:      ScoringResultStatus;
@@ -66,33 +53,8 @@ export interface UseScoringResultReturn {
   error:   Error | null;
 }
 
-// ── DB row → ScoringResult mapper (Phase 2B) ──────────────────────────────────
+// ── DB row → ScoringResult mapper ─────────────────────────────────────────────
 
-/**
- * Maps Supabase kora_index_result rows to a ScoringResult.
- * Phase 2B: implement full mapping after lib/types is updated to make
- * synthetic_demo_data optional in KoraIndexOutput and CompanyAggregateExtended.
- *
- * Shape reference for implementer:
- *   import type { KoraIndexResultRow, ActivationResultRow, ConfidenceResultRow }
- *     from '@/lib/supabase/types';
- *
- *   const koraIndex: KoraIndexSnapshot = {
- *     id:                     row.id,
- *     company_id:             row.tenant_id,
- *     scenario_id:            scenarioId,
- *     reporting_period:       row.reporting_period,
- *     kora_index_value:       row.kora_index_value,
- *     components:             row.components as KoraIndexComponent[],
- *     macroblocks:            row.macroblocks as MacroblockScore[],
- *     methodology_version_id: row.methodology_version_id,
- *     calibration_status:     row.calibration_status as CalibrationStatus,
- *     confidence_score:       row.confidence_result?.confidence_score ?? 0,
- *     safeguard_status:       row.safeguard_status as SafeguardStatus,
- *     generated_at:           row.created_at,
- *     limitations_text:       row.limitations_text ?? undefined,
- *   };
- */
 function mapDbRowToScoringResult(
   row: LiveRow,
   tenantId: string,
@@ -102,7 +64,7 @@ function mapDbRowToScoringResult(
   return { ...mapped, tenantId, scenarioId, environment: 'live' };
 }
 
-// ── Live fetch (async, Phase 2B) ───────────────────────────────────────────────
+// ── Live fetch (async) ─────────────────────────────────────────────────────────
 
 /**
  * Fetches scoring data from Supabase for a live tenant.

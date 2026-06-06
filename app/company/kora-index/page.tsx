@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 // C-02: KORA Index™ — scomposizione analitica del punteggio.
 // Scopo: rispondere a "come si costruisce il punteggio, cosa lo vincola
 //        e cosa lo può migliorare?" — la domanda decisionale di un HR/CFO.
@@ -18,8 +20,14 @@ import { accountProvisioningService }           from '@/services/account/Account
 import { tenantService }                        from '@/services/tenant/TenantService';
 import { equityAccessIntelligenceService }      from '@/services/equity-access/EquityAccessIntelligenceService';
 import { evidenceReliabilityIntelligenceService } from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';
+import { lifeDiversityService }                from '@/services/life-diversity/LifeDiversityService';
+import { careEconomyIntelligenceService }      from '@/services/care-economy/CareEconomyIntelligenceService';
 import { workforceBaselineService }             from '@/services/workforce-baseline/WorkforceBaselineService';
 import { uefReviewService }                     from '@/services/uef-review/UEFReviewService';
+import { generateLiveRecommendations }         from '@/lib/live/live-recommendations';
+import { generateLiveBoardActions }            from '@/lib/live/live-board-actions';
+import type { UEFReviewSummary, ImpactUnitComputationSummary } from '@/lib/types';
+import type { LiveEligibilityContext }         from '@/app/api/company/live-eligibility/route';
 import { TOKENS }                      from '@/lib/design/kora-design-tokens';
 import type { MacroblockScore }        from '@/lib/types';
 
@@ -112,13 +120,14 @@ function Divider({ label }: { label: string }) {
 
 // ── No-data state ─────────────────────────────────────────────────────────────
 
-function NoDataState({ tenantId }: { tenantId: string }) {
+function NoDataState({ tenantId, companyName }: { tenantId: string; companyName?: string | null }) {
   const tenant = tenantService.getTenant(tenantId);
+  const displayName = companyName ?? tenant?.company_name ?? tenantId;
   return (
     <div className="space-y-5">
       <PageMasthead
         eyebrow="KORA Index™ v3 · Scomposizione analitica"
-        title={tenant?.company_name ?? tenantId}
+        title={displayName}
         subline="Il KORA Index™ sarà disponibile al termine della pipeline dati."
       />
       <div style={{
@@ -157,8 +166,12 @@ function NoDataState({ tenantId }: { tenantId: string }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function KoraIndexDetail() {
-  const { isLive, tenantId: liveId, sessionLoading } = useCompanySession();
+  const { isLive, tenantId: liveId, sessionLoading, koraRole, companyName: liveCompanyName } = useCompanySession();
   const { activeScenario, activeRole } = useDemoState();
+
+  // Live intelligence context: fetched on demand once scoring result is ready.
+  // Provides eligibility breakdown, UEF review stats, LIFE program names, average EV.
+  const [liveCtx, setLiveCtx] = useState<LiveEligibilityContext | null>(null);
 
   // B59: When a real company session is detected, use live tenantId.
   // Otherwise use the demo user's company_id (Meridiana seed).
@@ -175,6 +188,33 @@ export default function KoraIndexDetail() {
   // S1/S2 scenario comparison is demo-only — live tenants have a single current period.
   const { s1: scoringS1, s2: scoringS2, isDemo } = useDemoScenarioComparison(COMPANY_ID);
 
+  // Live intelligence context: fetched from /api/company/live-eligibility once
+  // the scoring result reporting period is known. Provides eligibility breakdown,
+  // UEF review stats, LIFE program names, and average EV for intelligence computation.
+  // No new persistence — computes on demand from existing analytics.uef_record + impact_unit.
+  const reportingPeriodForLive = scoring?.status === 'ok' ? scoring.koraIndex?.reporting_period : undefined;
+  useEffect(() => {
+    let active = true;
+    async function fetchLiveCtx() {
+      if (!isLive || !reportingPeriodForLive) {
+        if (active) setLiveCtx(null);
+        return;
+      }
+      try {
+        const r = await fetch(
+          `/api/company/live-eligibility?period=${encodeURIComponent(reportingPeriodForLive)}`,
+          { credentials: 'include' },
+        );
+        const d = r.ok ? (await r.json() as LiveEligibilityContext) : null;
+        if (active) setLiveCtx(d);
+      } catch {
+        if (active) setLiveCtx(null);
+      }
+    }
+    fetchLiveCtx();
+    return () => { active = false; };
+  }, [isLive, reportingPeriodForLive]);
+
   // While session detection is in progress, show nothing until we know the mode.
   if (sessionLoading || (loading && isLive)) {
     return (
@@ -185,7 +225,7 @@ export default function KoraIndexDetail() {
   }
 
   const hasKoraData = scoring?.status === 'ok';
-  if (!hasKoraData) return <NoDataState tenantId={COMPANY_ID} />;
+  if (!hasKoraData) return <NoDataState tenantId={COMPANY_ID} companyName={isLive ? liveCompanyName : null} />;
 
   const output     = scoring!.koraIndex!;
   const aggregate  = scoring!.aggregate;
@@ -219,20 +259,93 @@ export default function KoraIndexDetail() {
   const s2BtiScore  = isLive ? undefined
                               : (scoringS2?.koraIndex?.macroblocks ?? []).find((m) => m.code === 'BTI')?.score;
 
-  const btiRecommendations = isLive ? [] : budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
+  // Role used for intelligence services: live sessions use the JWT role,
+  // demo sessions use the demo-state role switcher.
+  const effectiveRole = isLive ? (koraRole ?? 'COMPANY_VIEWER') : activeRole;
 
-  // B69-B: Equity & Access Intelligence™ — near EQ component
-  const eqValue         = output.components.find((c) => c.code === 'EQ')?.value ?? 0;
-  const visibleGroups   = isLive ? undefined : workforceBaselineService.getVisibleGroups(COMPANY_ID);
-  const equityAccess    = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, activeRole, visibleGroups);
+  // ── Equity & Access Intelligence™ ─────────────────────────────────────────
+  // Live: uses real aggregate.department_activation from the scoring result.
+  // No visibleGroups needed for live — department_activation already filters N≥10.
+  const eqValue       = output.components.find((c) => c.code === 'EQ')?.value ?? 0;
+  const visibleGroups = isLive ? undefined : workforceBaselineService.getVisibleGroups(COMPANY_ID);
+  const equityAccess  = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, effectiveRole, visibleGroups);
 
-  // B69-B: Evidence Reliability Intelligence™ — near Safeguard & Confidence
-  const uefSummary     = isLive ? null : uefReviewService.getReviewSummary();
-  const evidenceReliability = evidenceReliabilityIntelligenceService.compute(null, uefSummary, confidence ?? null, activeRole);
+  // ── Evidence Reliability Intelligence™ ────────────────────────────────────
+  // Live: uses UEF review stats + average EV from liveCtx (computed on demand).
+  // Demo: reads from seed fixtures.
+  const liveUefSummary: UEFReviewSummary | null = isLive && liveCtx ? {
+    total_records:                   liveCtx.uef_review.total,
+    pending_count:                   liveCtx.uef_review.pending_count,
+    approved_for_scoring_count:      liveCtx.uef_review.approved_for_scoring_count,
+    approved_for_bti_governance_count: liveCtx.eligibility.limited,
+    blocked_count:                   liveCtx.eligibility.blocked,
+    needs_more_data_count:           liveCtx.uef_review.needs_more_data_count,
+    rejected_count:                  liveCtx.uef_review.rejected_count,
+    override_count:                  0,
+    kora_ready_for_iu_count:         liveCtx.uef_review.approved_for_scoring_count,
+    kora_ready_for_bti_count:        liveCtx.eligibility.limited,
+    review_completion_rate:          liveCtx.uef_review.review_completion_rate,
+    methodology_version:             'KORA Methodology v0.1',
+    calibration_status:              'pre_empirical_calibration',
+  } : null;
 
-  const eligibilityGate    = isLive
-    ? { eligible_count: 0, limited_count: 0, blocked_count: 0, total_count: 0, blocked_note: '', high_confidence_count: 0, ready_for_index_count: 0, limited_note: '', eligible_row_count: 0, total_row_count: 0 }
-    : ingestionSimulatorService.getEligibilityGateSummary(COMPANY_ID, activeScenario);
+  const liveIuSummary: ImpactUnitComputationSummary | null = isLive && liveCtx ? {
+    total_records:            liveCtx.eligibility.total,
+    computed_records:         liveCtx.uef_review.approved_for_scoring_count,
+    blocked_records:          liveCtx.eligibility.blocked,
+    limited_records:          liveCtx.eligibility.limited,
+    review_required_records:  liveCtx.uef_review.pending_count + liveCtx.uef_review.needs_more_data_count,
+    total_impact_units:       0,
+    impact_units_by_pillar:   {},
+    records_without_iu:       liveCtx.eligibility.blocked + liveCtx.eligibility.limited,
+    average_cq:               0,
+    average_ev:               liveCtx.iu_average_ev,
+    average_cf:               0,
+    average_agf:              0,
+    methodology_version:      'KORA Methodology v0.1',
+    calibration_status:       'pre_empirical_calibration',
+  } : null;
+
+  const uefSummary         = isLive ? liveUefSummary : uefReviewService.getReviewSummary();
+  const iuSummaryForEv     = isLive ? liveIuSummary : null;
+  const evidenceReliability = evidenceReliabilityIntelligenceService.compute(
+    iuSummaryForEv, uefSummary, confidence ?? null, effectiveRole,
+  );
+
+  // ── LIFE Diversity Intelligence™ ──────────────────────────────────────────
+  // Live: classifies program names from UEF records (liveCtx).
+  // Demo: uses BTI record demo profile (scenario-matched).
+  const lifePillarShare = (aggregate?.pillar_distribution?.['LIFE'] as number | undefined) ?? 0;
+  const lifeSummary = isLive && liveCtx
+    ? lifeDiversityService.computeFromProgramNames(
+        liveCtx.life_program_names,
+        lifePillarShare,
+        0, // lifeTotalIU is a display field; not persisted individually in Foundation Light
+      )
+    : (s2BtiResult.record
+        ? lifeDiversityService.computeFromBTI(s2BtiResult.record, effectiveRole)
+        : s1BtiResult.record
+          ? lifeDiversityService.computeFromBTI(s1BtiResult.record, effectiveRole)
+          : null);
+
+  // ── Care Economy Intelligence™ ─────────────────────────────────────────────
+  const careSummary = careEconomyIntelligenceService.compute(lifeSummary, effectiveRole);
+
+  // ── Eligibility gate ───────────────────────────────────────────────────────
+  // Live: aggregate counts from liveCtx (UEF records for this tenant/period).
+  // Demo: reads from ingestion simulator seed.
+  const eligibilityGate = isLive && liveCtx
+    ? {
+        eligible_row_count: liveCtx.eligibility.eligible,
+        limited_count:      liveCtx.eligibility.limited,
+        blocked_count:      liveCtx.eligibility.blocked,
+        total_row_count:    liveCtx.eligibility.total,
+        blocked_note:       'Record compliance/HSE esclusi per design — 0 IU per design.',
+        limited_note:       'Benefit monetari: supporto economico verificato, contributo IU nullo.',
+      }
+    : isLive
+      ? { eligible_row_count: 0, limited_count: 0, blocked_count: 0, total_row_count: 0, blocked_note: 'Caricamento…', limited_note: 'Caricamento…' }
+      : ingestionSimulatorService.getEligibilityGateSummary(COMPANY_ID, activeScenario);
 
   const s1EconRelief = isLive ? null : budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S1', activeRole);
   const s2EconRelief = isLive ? null : budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S2', activeRole);
@@ -245,17 +358,52 @@ export default function KoraIndexDetail() {
     explanation?.weak_components[0]?.code,
   );
 
-  // Board actions — demo seed only; empty for live.
-  const boardActions = isLive ? [] : explainabilityService
-    .getNextBestActions(COMPANY_ID, activeScenario)
-    .slice(0, 3)
-    .map((a, i) => ({
-      priority: i + 1,
-      action:   a.action,
-      detail:   a.detail,
-      signal:   undefined as string | undefined,
-      effort:   undefined as string | undefined,
-    }));
+  // ── Board Actions ──────────────────────────────────────────────────────────
+  // Live: generated from rule-based engine using persisted scoring data.
+  // Demo: from explainability service seed.
+  const boardActions = isLive
+    ? generateLiveBoardActions({
+        macroblocks,
+        safeguardStatus: output.safeguard_status,
+        confidenceScore: output.confidence_score,
+        equityAccess,
+        evidenceReliability,
+      })
+    : explainabilityService
+        .getNextBestActions(COMPANY_ID, activeScenario)
+        .slice(0, 3)
+        .map((a, i) => ({
+          priority: i + 1,
+          action:   a.action,
+          detail:   a.detail,
+          signal:   undefined as string | undefined,
+          effort:   undefined as string | undefined,
+        }));
+
+  // ── Recommendations ────────────────────────────────────────────────────────
+  // Live: generated from rule-based engine using persisted scoring + intelligence data.
+  // Demo: from BTI service seed.
+  const vrValue  = output.components.find((c) => c.code === 'VR')?.value ?? 0;
+  const arValue  = aggregate?.activation_rate ?? 0;
+  const marValue = aggregate?.meaningful_activation_rate ?? 0;
+
+  const btiRecommendations = isLive
+    ? generateLiveRecommendations({
+        safeguardStatus:          output.safeguard_status,
+        arValue,
+        marValue,
+        vrValue,
+        eqValue,
+        confidenceScore:          output.confidence_score,
+        confidenceGaps:           confidence?.gaps_identified ?? [],
+        eligibleCount:            liveCtx?.eligibility.eligible ?? 0,
+        limitedCount:             liveCtx?.eligibility.limited ?? 0,
+        totalUef:                 liveCtx?.eligibility.total ?? 0,
+        equityAccess,
+        evidenceReliability,
+        lifeConcentrationStatus:  lifeSummary?.concentrationStatus ?? null,
+      })
+    : budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
 
   return (
     <div style={{ maxWidth: 900 }}>
@@ -281,7 +429,7 @@ export default function KoraIndexDetail() {
           letterSpacing: '-0.02em',
           lineHeight:  1.08,
         }}>
-          {tenant?.company_name ?? (isLive ? 'La tua organizzazione' : COMPANY_ID)}
+          {liveCompanyName ?? tenant?.company_name ?? (isLive ? 'La tua organizzazione' : COMPANY_ID)}
         </h1>
       </div>
 
@@ -654,6 +802,82 @@ export default function KoraIndexDetail() {
           </div>
         )}
       </div>
+
+      {/* LIFE Diversity + Care Economy Intelligence™ — concise summary card */}
+      {lifeSummary && (
+        <div style={{ marginTop: 16 }}>
+          <div
+            style={{
+              background:   TOKENS.surface,
+              border:       TOKENS.cardBorder,
+              borderRadius: TOKENS.cardRadius,
+              overflow:     'hidden',
+            }}
+          >
+            <div style={{ padding: '0.875rem 1.25rem', borderBottom: TOKENS.cardBorder, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, flex: 1 }}>
+                LIFE Diversity & Care Economy Intelligence™
+              </p>
+              <span style={{
+                fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                background: lifeSummary.concentrationStatus === 'diverse' ? TOKENS.safeguard.pass.bg
+                  : lifeSummary.concentrationStatus === 'no_life_data' ? TOKENS.inkBorder
+                  : TOKENS.safeguard.watch.bg,
+                color: lifeSummary.concentrationStatus === 'diverse' ? TOKENS.safeguard.pass.text
+                  : lifeSummary.concentrationStatus === 'no_life_data' ? TOKENS.inkSecondary
+                  : TOKENS.safeguard.watch.text,
+              }}>
+                {lifeSummary.concentrationStatus.replace(/_/g, ' ')}
+              </span>
+              {careSummary && (
+                <span style={{
+                  fontSize: '10px', fontWeight: 600, borderRadius: 4, padding: '2px 8px',
+                  background: careSummary.careEconomyStatus === 'broad' ? TOKENS.safeguard.pass.bg
+                    : careSummary.careEconomyStatus === 'absent' ? TOKENS.safeguard.cap.bg
+                    : TOKENS.safeguard.watch.bg,
+                  color: careSummary.careEconomyStatus === 'broad' ? TOKENS.safeguard.pass.text
+                    : careSummary.careEconomyStatus === 'absent' ? TOKENS.safeguard.cap.text
+                    : TOKENS.safeguard.watch.text,
+                }}>
+                  Care Economy: {careSummary.careEconomyStatus}
+                </span>
+              )}
+            </div>
+            <div style={{ padding: '1rem 1.25rem', display: 'grid', gap: 12, gridTemplateColumns: careSummary ? '1fr 1fr' : '1fr' }}>
+              {/* LIFE Diversity column */}
+              <div>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>LIFE Diversity</p>
+                <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, marginBottom: 8 }}>
+                  Subcategorie attive: <strong>{lifeSummary.activeSubcategories.length}/10</strong>
+                  {lifeSummary.dominantSubcategory && ` · Dominante: ${lifeSummary.dominantSubcategory.replace(/_/g, ' ')}`}
+                </p>
+                {lifeSummary.recommendations.slice(0, 1).map((rec) => (
+                  <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 5, border: `1px solid rgba(6,3,43,0.07)` }}>
+                    › {rec.text}
+                  </div>
+                ))}
+              </div>
+              {/* Care Economy column */}
+              {careSummary && (
+                <div>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>Care Economy</p>
+                  <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55, marginBottom: 8 }}>
+                    {careSummary.narrative}
+                  </p>
+                  {careSummary.recommendations.slice(0, 1).map((rec) => (
+                    <div key={rec.id} style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5, padding: '6px 8px', background: 'rgba(6,3,43,0.03)', borderRadius: 5, border: `1px solid rgba(6,3,43,0.07)` }}>
+                      › {rec.text}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
+              LIFE Diversity & Care Economy Intelligence™ · pre_empirical_calibration · non modifica KORA Index™ · not_kora_index_component
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/* SECTION 6: EXPLAINABILITY + RECOMMENDATIONS + GLOSSARY    */}

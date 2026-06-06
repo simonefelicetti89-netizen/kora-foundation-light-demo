@@ -126,6 +126,13 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
   const [loading, setLoading]           = useState(false);
   const isOp001                         = tenantCode === 'OP-001';
 
+  // Workforce baseline form state (Task 2)
+  const [baselineWorkers, setBaselineWorkers] = useState('');
+  const [baselinePeriod, setBaselinePeriod]   = useState('');
+  const [baselineError, setBaselineError]     = useState<string | null>(null);
+  const [baselineSuccess, setBaselineSuccess] = useState(false);
+  const [baselineLoading, setBaselineLoading] = useState(false);
+
   // Load tenant list
   useEffect(() => {
     fetch('/api/admin/tenants', { credentials: 'include' })
@@ -150,6 +157,38 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
   useEffect(() => { loadWorkspace(); }, [loadWorkspace]);
 
   const w = workspace?.ok ? workspace : null;
+
+  async function handleBaselineSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!w) return;
+    setBaselineError(null);
+    setBaselineSuccess(false);
+    const workers = Number(baselineWorkers);
+    const bp = (baselinePeriod.trim() || period).trim();
+    if (!Number.isInteger(workers) || workers < 10) {
+      setBaselineError('Il numero di lavoratori deve essere un intero ≥ 10.');
+      return;
+    }
+    setBaselineLoading(true);
+    try {
+      const res = await fetch('/api/admin/workforce-baseline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ tenantId: w.tenant.id, reportingPeriod: bp, totalWorkers: workers }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setBaselineError((data as { error?: string }).error ?? 'Errore durante il salvataggio.'); return; }
+      setBaselineSuccess(true);
+      setBaselineWorkers('');
+      setBaselinePeriod('');
+      loadWorkspace();
+    } catch {
+      setBaselineError('Errore di rete — riprova.');
+    } finally {
+      setBaselineLoading(false);
+    }
+  }
   const tcEnc = encodeURIComponent(tenantCode);
   const rpEnc = encodeURIComponent(period);
 
@@ -268,9 +307,54 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
               cta={{ label: 'Gestisci azienda', href: '/admin/tenants' }}>
               {w.workforce.exists
                 ? <><span className="text-green-600 font-medium">✓ Baseline presente</span>{w.workforce.totalWorkers !== null && ` · ${w.workforce.totalWorkers} lavoratori`}</>
-                : <span className="text-[#D99A2B]">⚠ Workforce baseline mancante — crea azienda per iniziare.</span>
+                : <span className="text-[#D99A2B]">⚠ Workforce baseline mancante — imposta il numero di lavoratori prima di procedere.</span>
               }
             </StepCard>
+
+            {/* Workforce baseline inline form — visible only when baseline is missing */}
+            {!w.workforce.exists && (
+              <form onSubmit={handleBaselineSubmit}
+                className="rounded-lg border border-[rgba(217,154,43,0.28)] bg-[rgba(217,154,43,0.05)] px-4 py-3.5 space-y-3">
+                <p className="text-[11px] font-semibold text-[#8A5A00]">Imposta Baseline Forza Lavoro</p>
+                <div className="flex flex-wrap items-end gap-3">
+                  <div>
+                    <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Lavoratori totali (≥ 10)</p>
+                    <input
+                      type="number"
+                      min={10}
+                      step={1}
+                      required
+                      value={baselineWorkers}
+                      onChange={(e) => { setBaselineWorkers(e.target.value); setBaselineSuccess(false); setBaselineError(null); }}
+                      placeholder="Es. 120"
+                      className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#D99A2B] w-28"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Reporting Period</p>
+                    <input
+                      type="text"
+                      value={baselinePeriod}
+                      onChange={(e) => setBaselinePeriod(e.target.value)}
+                      placeholder={period}
+                      className="rounded border border-[rgba(6,3,43,0.14)] px-2.5 py-1.5 text-xs font-mono text-[rgba(6,3,43,0.90)] focus:outline-none focus:ring-1 focus:ring-[#D99A2B] w-28"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={baselineLoading || !baselineWorkers}
+                    className="rounded bg-[#8A5A00] text-white px-3 py-1.5 text-xs font-semibold hover:bg-[#5C3509] disabled:opacity-40 transition-colors">
+                    {baselineLoading ? 'Salvataggio…' : 'Salva baseline'}
+                  </button>
+                </div>
+                {baselineError && (
+                  <p className="text-[11px] text-[#9E3B2F]">⚠ {baselineError}</p>
+                )}
+                {baselineSuccess && (
+                  <p className="text-[11px] text-green-700 font-medium">✓ Baseline salvata. Aggiornamento in corso…</p>
+                )}
+              </form>
+            )}
 
             {/* Step 2 — Data Intake */}
             <StepCard
