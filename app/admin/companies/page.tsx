@@ -8,6 +8,7 @@
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { CompanyConsolePanel } from './_components/CompanyConsolePanel';
+import { WorkforceQuickAccessPanel } from '@/components/admin/WorkforceQuickAccessPanel';
 import { redirect } from 'next/navigation';
 
 export const metadata = {
@@ -18,5 +19,10 @@ export default async function CompanyConsolePage() {
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');
 
-  return <CompanyConsolePanel userEmail={auth.email} />;
+  return (
+    <>
+      <WorkforceQuickAccessPanel />
+      <CompanyConsolePanel userEmail={auth.email} />
+    </>
+  );
 }

@@ -37,10 +37,11 @@ const BADGE: Record<string, React.CSSProperties> = {
 };
 
 interface NavItem {
-  href:        string;
-  label:       string;
-  comingSoon?: boolean;
-  inactive?:   boolean;
+  href:         string;
+  label:        string;
+  comingSoon?:  boolean;
+  inactive?:    boolean;
+  description?: string; // small hint line rendered below the label
 }
 
 interface NavGroup {
@@ -52,7 +53,9 @@ interface NavGroup {
 
 // ── Navigation builds — groups communicate KORA logic, not lists of routes ──
 
-function buildNavGroups(role: string): NavGroup[] {
+// Exported for unit testing (b95c-workforce-navigation.test.ts).
+// activeCompanyId: extracted from pathname when on /admin/companies/[id]/... routes.
+export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup[] {
 
   // ── KORA Admin: Control Tower — B61-B restructured ─────────────────────────
   // Group 1: Onboarding Pilot — canonical live onboarding entry points.
@@ -63,6 +66,12 @@ function buildNavGroups(role: string): NavGroup[] {
   // B80-B: Admin sidebar split into LIVE OPERATIONS / DEMO PREVIEW / FUTURE VISION.
   // Live routes (backed by real Supabase) are strictly separated from demo preview routes.
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
+    const workforceHref = activeCompanyId
+      ? `/admin/companies/${activeCompanyId}/workforce`
+      : '/admin/companies';
+    const workforceDescription = activeCompanyId
+      ? undefined
+      : 'Seleziona un\'azienda →';
     return [
       {
         heading: 'Live Operations',
@@ -70,6 +79,7 @@ function buildNavGroups(role: string): NavGroup[] {
         badgeKey: 'LIVE',
         items: [
           { href: '/admin/pipeline',                 label: 'Pilot Lifecycle' },
+          { href: workforceHref,                     label: 'Workforce Management', description: workforceDescription },
           { href: '/admin/companies',                label: 'Company Console' },
           { href: '/admin/company-live-preview',     label: 'Anteprima Live Cockpit' },
           { href: '/admin/companies/new',            label: 'Crea Azienda Live' },
@@ -277,7 +287,12 @@ export function Sidebar() {
   const { activeRole } = useRole();
   const { activeEnvironment } = useEnvironment();
   const pathname = usePathname();
-  const groups = buildNavGroups(activeRole);
+
+  // Extract companyId from /admin/companies/[companyId]/... but not from /admin/companies/new.
+  const companyIdMatch = pathname.match(/^\/admin\/companies\/([^/]+)(?:\/|$)/);
+  const activeCompanyId = companyIdMatch?.[1] !== 'new' ? companyIdMatch?.[1] : undefined;
+
+  const groups = buildNavGroups(activeRole, activeCompanyId);
   const roleLabel = ROLE_DISPLAY[activeRole] ?? activeRole;
 
   return (
@@ -372,9 +387,16 @@ export function Sidebar() {
 
               const innerContent = (
                 <>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
-                    {item.label}
-                  </span>
+                  <div style={{ flex: 1, overflow: 'hidden' }}>
+                    <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.3 }}>
+                      {item.label}
+                    </span>
+                    {item.description && (
+                      <span style={{ display: 'block', fontSize: '9px', color: 'rgba(255,255,255,0.30)', fontWeight: 400, marginTop: 1, whiteSpace: 'normal', lineHeight: 1.2, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+                        {item.description}
+                      </span>
+                    )}
+                  </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 4 }}>
                     {item.comingSoon && (
                       <span

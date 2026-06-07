@@ -289,9 +289,9 @@ export default function PilotLifecyclePage() {
         </p>
         <div className="flex flex-wrap gap-2">
           {[
-            { label: 'Company Control Room',    href: `/admin/companies/${DEMO_COMPANY_ID}` },
-            { label: 'Workforce Management',    href: `/admin/companies/${DEMO_COMPANY_ID}/workforce` },
-            { label: 'Utenti Aziendali',        href: `/admin/companies/${DEMO_COMPANY_ID}/users` },
+            { label: 'Company Control Room',                      href: `/admin/companies/${DEMO_COMPANY_ID}` },
+            { label: 'Workforce Management · DEMO · Meridiana',   href: `/admin/companies/${DEMO_COMPANY_ID}/workforce` },
+            { label: 'Utenti Aziendali',                          href: `/admin/companies/${DEMO_COMPANY_ID}/users` },
             { label: 'Submission Queue',        href: '/admin/company-submissions' },
             { label: 'UEF Review & Scoring',    href: '/admin/uef-review' },
           ].map(({ label, href }) => (
