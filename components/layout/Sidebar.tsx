@@ -69,6 +69,7 @@ function buildNavGroups(role: string): NavGroup[] {
         groupBadge: 'LIVE',
         badgeKey: 'LIVE',
         items: [
+          { href: '/admin/pipeline',                 label: 'Pilot Lifecycle' },
           { href: '/admin/companies',                label: 'Company Console' },
           { href: '/admin/company-live-preview',     label: 'Anteprima Live Cockpit' },
           { href: '/admin/companies/new',            label: 'Crea Azienda Live' },
