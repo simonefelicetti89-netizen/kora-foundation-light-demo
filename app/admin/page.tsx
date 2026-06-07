@@ -8,6 +8,7 @@ import { PriorityQueue } from '@/components/admin/PriorityQueue';
 import type { PriorityItem } from '@/components/admin/PriorityQueue';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { ADMIN_QUICKSTART_STEPS } from '@/lib/feature-discovery';
 import type React from 'react';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
@@ -142,6 +143,40 @@ export default function KoraControlTower() {
 
   return (
     <div style={{ maxWidth: 960 }}>
+
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* QUICK START — Live workflow numbered steps — Task 6      */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <div
+        data-testid="admin-quickstart-panel"
+        style={{ background: TOKENS.surface, border: `2px solid ${TOKENS.accent}`, borderRadius: TOKENS.cardRadius, padding: '22px 28px', marginBottom: 24 }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '11px', color: TOKENS.accent, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Live Workflow — Quick Start
+          </p>
+          <BoundaryBadge mode="LIVE" variant="light" />
+        </div>
+        <p style={{ fontFamily: FONT, fontSize: '11.5px', color: TOKENS.inkSecondary, marginBottom: 16, lineHeight: 1.5 }}>
+          Segui questi passaggi in sequenza per onboardare un&apos;azienda e produrre il primo KORA Index live.
+        </p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {ADMIN_QUICKSTART_STEPS.map((s) => (
+            <Link
+              key={`qs-${s.step}`}
+              href={s.href}
+              data-testid={`quickstart-step-${s.step}`}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 10, border: `1px solid rgba(199,111,61,0.22)`, background: 'rgba(199,111,61,0.06)', padding: '7px 14px', textDecoration: 'none', fontFamily: FONT, fontSize: '11.5px', color: TOKENS.ink, fontWeight: 500 }}
+            >
+              <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '10px', color: TOKENS.accent, fontWeight: 700, flexShrink: 0 }}>
+                {String(s.step).padStart(2, '0')}
+              </span>
+              {s.label} →
+            </Link>
+          ))}
+        </div>
+      </div>
 
       {/* ════════════════════════════════════════════════════════ */}
       {/* SECTION 0: LIVE PLATFORM — real operational tools        */}

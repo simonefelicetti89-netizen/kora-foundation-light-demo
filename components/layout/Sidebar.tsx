@@ -119,11 +119,13 @@ function buildNavGroups(role: string): NavGroup[] {
         items: [
           { href: '/company',            label: 'Executive Cockpit' },
           { href: '/company/kora-index', label: 'KORA Index™' },
+          { href: '/company/workspace',  label: 'Worker Space' },
         ],
       },
       {
         heading: 'Intelligence',
         items: [
+          { href: '/company/opportunities', label: 'Opportunità' },
           { href: '/company/financial',    label: 'Budget-to-Human-Impact™' },
           { href: '/company/activation',   label: 'Activation Intelligence™' },
           { href: '/company/contribution', label: 'Contribution' },
@@ -133,7 +135,7 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Evidence & Report',
         items: [
-          { href: '/company/data',    label: 'Stato Dati' },   // informational — intake managed by KORA Admin
+          { href: '/company/data',    label: 'Stato Dati' },
           { href: '/company/reports', label: 'Decision Pack' },
         ],
       },
@@ -146,8 +148,8 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Governance',
         items: [
-          { href: '/company/profile',   label: 'Profilo & Stato' },
-          { href: '/company/workspace', label: 'Workspace Live' },
+          { href: '/company/profile', label: 'Profilo & Stato' },
+          { href: '/my-kora',         label: 'My KORA Preview' },
         ],
       },
     ];
@@ -157,10 +159,17 @@ function buildNavGroups(role: string): NavGroup[] {
   if (role === 'COMPANY_VIEWER') {
     return [
       {
-        heading: 'Intelligence',
+        heading: 'Command',
         items: [
           { href: '/company',            label: 'Executive Cockpit' },
           { href: '/company/kora-index', label: 'KORA Index™' },
+          { href: '/company/workspace',  label: 'Worker Space' },
+        ],
+      },
+      {
+        heading: 'Intelligence',
+        items: [
+          { href: '/company/opportunities', label: 'Opportunità' },
         ],
       },
       {
@@ -172,8 +181,8 @@ function buildNavGroups(role: string): NavGroup[] {
       {
         heading: 'Governance',
         items: [
-          { href: '/company/workspace', label: 'Workspace Live' },
-          { href: '/company/profile',   label: 'Profilo & Stato' },
+          { href: '/company/profile', label: 'Profilo & Stato' },
+          { href: '/my-kora',         label: 'My KORA Preview' },
         ],
       },
     ];
