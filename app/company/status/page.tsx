@@ -1,7 +1,7 @@
 'use client';
 
 // /company/status — Company Status Center
-// B92-B Task 1+2+3+4+5+6+7+9+10
+// B92-B Task 1+2+3+4+5+6+7+9+10 · B94-B Task 7 (Submission Transparency integration)
 // Answers in <60s: Dove sono? / Cosa devo fare? / I miei dati sono stati ricevuti?
 //                 KORA sta lavorando? / Il Decision Pack è pronto? / Worker Space è attivo?
 
@@ -12,6 +12,8 @@ import { tenantService }              from '@/services/tenant/TenantService';
 import { workerProvisioningService }  from '@/services/worker-provisioning/WorkerProvisioningService';
 import { CompanyPipelineStatus }      from '@/components/company/status/CompanyPipelineStatus';
 import { TemplateLibrary }            from '@/components/company/submissions/TemplateLibrary';
+import { SubmissionFeedbackPanel }    from '@/components/company/transparency/SubmissionFeedbackPanel';
+import { submissionFeedbackService }  from '@/services/submission-feedback/SubmissionFeedbackService';
 import {
   derivePipelineStatus,
   deriveChecklist,
@@ -545,6 +547,16 @@ export default function CompanyStatusCenterPage() {
             Compila, carica nel workspace e invia a KORA Admin.
           </p>
           <TemplateLibrary />
+        </SectionCard>
+      </div>
+
+      {/* ── SECTION I — Submission Transparency ────────────────────────────── */}
+      <div id="submission-transparency" style={{ marginTop: 16 }}>
+        <SectionCard title="Trasparenza dati — che fine hanno fatto i tuoi file?">
+          <SubmissionFeedbackPanel
+            feedback={submissionFeedbackService.getDemoFeedback(FL_COMPANY_ID)}
+            submissions={submissions}
+          />
         </SectionCard>
       </div>
 

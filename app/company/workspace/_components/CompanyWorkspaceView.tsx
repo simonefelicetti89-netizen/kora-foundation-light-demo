@@ -9,6 +9,8 @@
 import { useState, useEffect } from 'react';
 import { DataSubmissionSection } from './DataSubmissionSection';
 import { WorkerAdoptionPanel } from '@/components/company/cockpit/WorkerAdoptionPanel';
+import { SubmissionTransparencyCompact } from '@/components/company/transparency/SubmissionFeedbackPanel';
+import { submissionFeedbackService } from '@/services/submission-feedback/SubmissionFeedbackService';
 
 // Foundation Light: workspace always runs on the Meridiana demo tenant.
 // Pilot+: companyId will be resolved from the authenticated session tenant claim.
@@ -423,6 +425,12 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       {/* ── Data Submission ──────────────────────────────────────────────────── */}
       <Section title="Data Submission" id="data-submission">
         <DataSubmissionSection userRole={userRole} />
+        {/* B94-B Task 8 — compact transparency link below submission list */}
+        <div className="mt-4 pt-4 border-t border-[rgba(6,3,43,0.08)]">
+          <SubmissionTransparencyCompact
+            feedback={submissionFeedbackService.getDemoFeedback(FL_COMPANY_ID)}
+          />
+        </div>
       </Section>
 
       {/* ── Worker Space ─────────────────────────────────────────────────────── */}
