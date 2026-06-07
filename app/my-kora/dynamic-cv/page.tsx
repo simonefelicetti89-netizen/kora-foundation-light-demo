@@ -11,6 +11,7 @@
 
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService, type DynamicCVItem } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { workerAttributionService } from '@/services/worker-attribution/WorkerAttributionService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
@@ -76,9 +77,34 @@ function computePillarDistribution(items: DynamicCVItem[]): Array<{ pillar: stri
   }));
 }
 
+// ── CV attribution reason — Task 3 B85-B ─────────────────────────────────────
+
+function cvAttributionReason(item: DynamicCVItem, contribution: boolean): string {
+  if (item.verification_status === 'verified') {
+    if (contribution) return 'Contributo validato';
+    return 'Attività verificata';
+  }
+  if (item.verification_status === 'partial') {
+    return 'Verifica in corso — completa la verifica per condividerlo';
+  }
+  return 'Autodichiarato — richiede verifica esterna';
+}
+
 // ── CV item card ──────────────────────────────────────────────────────────────
 
 function CVItemCard({ item, contribution }: { item: DynamicCVItem; contribution: boolean }) {
+  // B85-B Task 3 — derive attribution class for "why it appears" explanation
+  const attribution = workerAttributionService.classify({
+    verification_status: item.verification_status,
+    source_type: item.source_category.toLowerCase().includes('lms') ? 'lms_training'
+      : item.source_category.toLowerCase().includes('esg') ? 'esg_initiatives'
+      : item.source_category.toLowerCase().includes('welfare') ? 'welfare_provider'
+      : item.source_category.toLowerCase().includes('partner') ? 'partner_events'
+      : 'manual_upload',
+  });
+
+  const reason = cvAttributionReason(item, contribution);
+
   return (
     <div className={cn(
       'rounded-lg border p-4',
@@ -106,6 +132,25 @@ function CVItemCard({ item, contribution }: { item: DynamicCVItem; contribution:
           </span>
         </div>
       </div>
+
+      {/* Task 3 B85-B — Attribution explainability: why this item appears */}
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.52)]">
+          Classe {attribution.code}
+        </span>
+        <span
+          className={cn(
+            'rounded border px-1.5 py-0.5 text-[10px] font-medium',
+            attribution.workerPibEligible
+              ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] text-[#2F7D55]'
+              : 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.42)]',
+          )}
+          data-testid={`cv-item-attribution-reason-${item.id}`}
+        >
+          {reason}
+        </span>
+      </div>
+
       <div className="mt-2 flex items-center justify-between">
         <p className="text-xs text-[rgba(6,3,43,0.40)] italic">{item.export_label}</p>
         <span className={cn(

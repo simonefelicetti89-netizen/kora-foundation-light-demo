@@ -1,12 +1,13 @@
 'use client';
 // W-04: Opportunità — iniziative consigliate per deepening dell'attivazione.
 // Scopo: mostrare al lavoratore opportunità personalizzate per pillar
-//        (partner KORA, interne, community) e IU stimati per ognuna.
+//        (learning, mentoring, community, wellbeing) e IU stimati per ognuna.
 // Le opportunità sono suggerimenti, non obblighi. Il lavoratore decide.
-// Dati erogati da MyKoraPreviewService — nessun dato hardcoded nel componente.
+// Dati erogati da WorkerOpportunityService — nessun dato hardcoded nel componente.
+// not_employer_visible: true — questa pagina non è mai visibile ai ruoli aziendali.
 
-import { useRole, usePersona } from '@/lib/demo-state';
-import { myKoraPreviewService, type OpportunityItem } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { useRole, usePersona, useScenario } from '@/lib/demo-state';
+import { workerOpportunityService, type WorkerOpportunity } from '@/services/worker-opportunity/WorkerOpportunityService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
@@ -28,23 +29,32 @@ const PILLAR_LIGHT: Record<string, string> = {
 };
 
 const TYPE_BADGE: Record<string, string> = {
-  partner:   'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
-  internal:  'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
+  learning:  'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  mentoring: 'bg-[rgba(97,86,245,0.08)] text-[#6156F5] border-[rgba(97,86,245,0.22)]',
   community: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  wellbeing: 'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
 };
 
 const TYPE_LABEL: Record<string, string> = {
-  partner:   'Partner',
-  internal:  'Interno',
+  learning:  'Formazione',
+  mentoring: 'Mentoring',
   community: 'Community',
+  wellbeing: 'Benessere',
+};
+
+const PRIORITY_BADGE: Record<string, string> = {
+  high:   'bg-[rgba(158,59,47,0.07)] text-[#9E3B2F] border-[rgba(158,59,47,0.20)]',
+  medium: 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.22)]',
+  low:    'bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.08)]',
 };
 
 // W-04: Opportunità per te
 export default function Opportunities() {
-  const { activeRole } = useRole();
-  const { activePersona } = usePersona();
+  const { activeRole }     = useRole();
+  const { activePersona }  = usePersona();
+  const { activeScenario } = useScenario();
 
-  if (!myKoraPreviewService.canAccess(activeRole)) {
+  if (!workerOpportunityService.canAccess(activeRole)) {
     return (
       <div className="space-y-4">
         <div>
@@ -66,7 +76,7 @@ export default function Opportunities() {
   }
 
   const personaId = activePersona?.id ?? 'persona-elena-m';
-  const opportunities: OpportunityItem[] = myKoraPreviewService.getOpportunitiesForPersona(personaId);
+  const opportunities: WorkerOpportunity[] = workerOpportunityService.compute(personaId, activeRole, activeScenario);
 
   return (
     <div className="space-y-6">
@@ -107,11 +117,12 @@ export default function Opportunities() {
         </p>
       </div>
 
-      {/* Opportunity cards — service-driven, persona-specific */}
+      {/* Opportunity cards — WorkerOpportunityService driven, persona-specific */}
       <div className="space-y-3">
         {opportunities.map((opp) => (
           <div
             key={opp.id}
+            data-testid={`worker-opp-${opp.pillar}`}
             className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden"
           >
             {/* Pillar accent bar */}
@@ -128,8 +139,11 @@ export default function Opportunities() {
                     )}>
                       {opp.pillar_label}
                     </span>
-                    <span className={cn('rounded border px-1.5 py-0.5 text-xs', TYPE_BADGE[opp.type])}>
+                    <span className={cn('rounded border px-1.5 py-0.5 text-xs', TYPE_BADGE[opp.type] ?? '')}>
                       {TYPE_LABEL[opp.type]}
+                    </span>
+                    <span className={cn('rounded border px-1.5 py-0.5 text-xs', PRIORITY_BADGE[opp.priority] ?? '')}>
+                      {opp.priority === 'high' ? 'Priorità alta' : opp.priority === 'medium' ? 'Media' : 'Bassa'}
                     </span>
                   </div>
                   <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">{opp.subtitle}</p>
@@ -151,8 +165,21 @@ export default function Opportunities() {
                 </div>
               </div>
 
+              {/* Match reason */}
               <div className="mt-3 rounded bg-[rgba(6,3,43,0.03)] border border-[rgba(6,3,43,0.05)] px-3 py-2">
                 <p className="text-xs text-[rgba(6,3,43,0.52)] italic leading-relaxed">{opp.match_reason}</p>
+              </div>
+
+              {/* Explainability — source signal */}
+              <div className="mt-2 rounded bg-[rgba(6,3,43,0.02)] border border-[rgba(6,3,43,0.05)] px-3 py-2">
+                <p className="text-xs font-semibold text-[rgba(6,3,43,0.45)] mb-0.5 uppercase tracking-widest" style={{ fontSize: '9px' }}>Suggerito perché</p>
+                <p className="text-xs text-[rgba(6,3,43,0.45)] leading-relaxed">{opp.source_signal}</p>
+              </div>
+
+              {/* Partner type hint — Task 7 */}
+              <div className="mt-2 rounded bg-[rgba(199,111,61,0.04)] border border-[rgba(199,111,61,0.14)] px-3 py-2">
+                <p className="text-xs font-semibold text-[rgba(199,111,61,0.75)] mb-0.5 uppercase tracking-widest" style={{ fontSize: '9px' }}>Tipo partner KORA (anteprima)</p>
+                <p className="text-xs text-[rgba(6,3,43,0.50)] leading-relaxed">{opp.partner_type_hint}</p>
               </div>
 
               <div className="mt-3 flex items-center justify-end">

@@ -2,13 +2,26 @@
 // AD-01: Advisor Workspace — workspace di governance per advisor certificati KORA.
 // Scopo: rispondere a 'cosa richiede revisione, quale evidenza è debole e quale raccomandazione emettere?'
 // Advisor-reviewed ≠ KORA Certified. Perimetro: solo company/partner assegnati.
+//
+// B86-B: Evidence review workflow wired. Buttons are now functional within the session.
+// In-memory state — resets on reload (correct for Foundation Light demo).
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { DecisionContext } from '@/components/ui/DecisionContext';
-import { evidenceReliabilityIntelligenceService } from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';
+import {
+  evidenceReliabilityIntelligenceService,
+  type PillarEvidenceBreakdown,
+} from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';
+import {
+  advisorEvidenceReviewService,
+  type ReviewDecision,
+  type PendingReviewItem,
+  type EvidenceReviewRecord,
+} from '@/services/advisor-evidence-review/AdvisorEvidenceReviewService';
 
 // AD-01: Advisor Professional Workspace — Foundation Light Preview
 // Synthetic demo data only. No real review workflow. No certification.
@@ -306,14 +319,44 @@ const COURSE_STATUS_BADGE: Record<CourseStatus, { style: string; label: string }
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 // Synthetic evidence reliability snapshot for advisor demo view
+const ADVISOR_IU_SUMMARY = { total_records: 40, computed_records: 28, blocked_records: 5, limited_records: 7, review_required_records: 3, total_impact_units: 420, impact_units_by_pillar: { LIFE: 180, GROWTH: 115, CONNECTION: 55, IMPACT: 50, LEGACY: 20 }, records_without_iu: 12, average_cq: 0.78, average_ev: 0.62, average_cf: 0.85, average_agf: 0.92, methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration' } as const;
 const ADVISOR_EVIDENCE_RELIABILITY = evidenceReliabilityIntelligenceService.computeFromData(
-  { total_records: 40, computed_records: 28, blocked_records: 5, limited_records: 7, review_required_records: 3, total_impact_units: 420, impact_units_by_pillar: { LIFE: 180, GROWTH: 115, CONNECTION: 55, IMPACT: 50, LEGACY: 20 }, records_without_iu: 12, average_cq: 0.78, average_ev: 0.62, average_cf: 0.85, average_agf: 0.92, methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration' },
+  ADVISOR_IU_SUMMARY,
   { total_records: 40, pending_count: 4, approved_for_scoring_count: 24, approved_for_bti_governance_count: 7, blocked_count: 5, needs_more_data_count: 2, rejected_count: 0, override_count: 1, kora_ready_for_iu_count: 24, kora_ready_for_bti_count: 7, review_completion_rate: 0.68, methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration' },
   { id: 'cs-s1', company_id: 'meridiana-group', scenario_id: 'S1', confidence_score: 0.58, confidence_level: 'medium', data_completeness: 0.72, evidence_quality: 0.61, mapping_confidence: 0.80, verification_weight: 0.55, source_coverage: {}, gaps_identified: ['Dati LMS non caricati', 'Partecipazione volunteering non verificata'], limitations: 'Dati sintetici demo', methodology_version_id: 'v0.1', calibration_status: 'pre_empirical_calibration' },
 );
+const ADVISOR_PILLAR_BREAKDOWN: PillarEvidenceBreakdown[] = evidenceReliabilityIntelligenceService.getPillarEvidenceBreakdown(ADVISOR_IU_SUMMARY);
 
 export default function AdvisorDashboard() {
   const creditsPercent = Math.round((ADVISOR_PROFILE.academy_credits / ADVISOR_PROFILE.required_credits) * 100);
+
+  // B86-B: Advisor evidence review state — in-memory, functional within session.
+  const [pending, setPending] = useState<PendingReviewItem[]>(() => advisorEvidenceReviewService.getPendingItems());
+  const [reviewed, setReviewed] = useState<EvidenceReviewRecord[]>(() => advisorEvidenceReviewService.getAllReviewed());
+  const [activeNotes, setActiveNotes] = useState<Record<string, string>>({});
+
+  function handleReview(item: PendingReviewItem, decision: ReviewDecision) {
+    const notes = activeNotes[item.itemId] ?? null;
+    const record = advisorEvidenceReviewService.submitReview(
+      item.itemId, item.itemTitle, item.evidenceLevel, item.pillar,
+      decision, notes ? notes : null, ADVISOR_PROFILE.advisor_id,
+    );
+    setPending(advisorEvidenceReviewService.getPendingItems());
+    setReviewed(advisorEvidenceReviewService.getAllReviewed());
+    setActiveNotes((prev) => { const n = { ...prev }; delete n[item.itemId]; return n; });
+    return record;
+  }
+
+  const DECISION_STYLE: Record<ReviewDecision, string> = {
+    approved: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+    rejected: 'bg-[rgba(158,59,47,0.10)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]',
+    flagged:  'bg-[rgba(217,154,43,0.10)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]',
+  };
+  const DECISION_LABEL: Record<ReviewDecision, string> = {
+    approved: 'Approvato',
+    rejected: 'Rifiutato',
+    flagged:  'Segnalato',
+  };
 
   return (
     <div className="space-y-10 max-w-3xl">
@@ -525,6 +568,123 @@ export default function AdvisorDashboard() {
         </div>
         <p className="mt-1.5 text-[11px] text-[rgba(6,3,43,0.40)]">
           synthetic_demo_data: true · Foundation Light preview
+        </p>
+      </div>
+
+      {/* ── 4b. Operative Evidence Review — B86-B ── */}
+      <div data-testid="advisor-evidence-review-panel">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
+            Revisione Evidenze — Operativa
+          </h2>
+          <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${
+            pending.length > 0
+              ? 'bg-[rgba(217,154,43,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]'
+              : 'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]'
+          }`}>
+            {pending.length > 0 ? `${pending.length} in attesa` : 'Nessuna pendente'}
+          </span>
+        </div>
+        <p className="text-xs text-[rgba(6,3,43,0.40)] mb-3 leading-relaxed">
+          Approva, rifiuta o segnala i record evidenza in attesa di revisione. Le decisioni sono registrate nella sessione corrente.
+          <span className="ml-1 text-[rgba(6,3,43,0.30)]">Solo dati sintetici demo.</span>
+        </p>
+
+        {/* Pending items */}
+        {pending.length > 0 ? (
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden divide-y divide-[rgba(6,3,43,0.05)]">
+            {pending.map((item) => (
+              <div key={item.itemId} className="px-4 py-4 space-y-3" data-testid={`review-item-${item.itemId}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">{item.itemTitle}</p>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      <span className="rounded border border-[rgba(6,3,43,0.10)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.52)]">
+                        Pillar: {item.pillar}
+                      </span>
+                      <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-1.5 py-0.5 text-[10px] font-medium text-[#8A5A00]">
+                        {item.evidenceLevel === 'partial' ? 'Parziale' : item.evidenceLevel}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-1.5 py-0.5 text-[10px] font-semibold text-[#8A5A00] shrink-0">
+                    In attesa
+                  </span>
+                </div>
+
+                {/* Notes field */}
+                <textarea
+                  placeholder="Note advisor (opzionale)..."
+                  value={activeNotes[item.itemId] ?? ''}
+                  onChange={(e) => setActiveNotes((prev) => ({ ...prev, [item.itemId]: e.target.value }))}
+                  className="w-full rounded border border-[rgba(6,3,43,0.10)] bg-white px-3 py-2 text-xs text-[rgba(6,3,43,0.78)] placeholder:text-[rgba(6,3,43,0.28)] resize-none focus:outline-none focus:border-[rgba(6,3,43,0.25)]"
+                  rows={2}
+                  data-testid={`review-notes-${item.itemId}`}
+                />
+
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => handleReview(item, 'approved')}
+                    className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] px-3 py-1.5 text-xs font-semibold text-[#2F7D55] hover:bg-[rgba(47,125,85,0.14)] transition-colors"
+                    data-testid={`approve-btn-${item.itemId}`}
+                  >
+                    Approva
+                  </button>
+                  <button
+                    onClick={() => handleReview(item, 'rejected')}
+                    className="rounded border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.08)] px-3 py-1.5 text-xs font-semibold text-[#9E3B2F] hover:bg-[rgba(158,59,47,0.14)] transition-colors"
+                    data-testid={`reject-btn-${item.itemId}`}
+                  >
+                    Rifiuta
+                  </button>
+                  <button
+                    onClick={() => handleReview(item, 'flagged')}
+                    className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-1.5 text-xs font-semibold text-[#8A5A00] hover:bg-[rgba(217,154,43,0.14)] transition-colors"
+                    data-testid={`flag-btn-${item.itemId}`}
+                  >
+                    Segnala
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-[rgba(47,125,85,0.18)] bg-[rgba(47,125,85,0.05)] px-4 py-4 text-center">
+            <p className="text-sm font-semibold text-[#2F7D55]">Nessuna evidenza in attesa</p>
+            <p className="text-xs text-[rgba(47,125,85,0.70)] mt-1">Tutte le evidenze in coda sono state revisionate in questa sessione.</p>
+          </div>
+        )}
+
+        {/* Reviewed items log */}
+        {reviewed.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[rgba(6,3,43,0.40)] mb-2">
+              Revisioni completate in questa sessione ({reviewed.length})
+            </p>
+            <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden divide-y divide-[rgba(6,3,43,0.05)]">
+              {reviewed.map((rec) => (
+                <div key={rec.itemId} className="px-4 py-3 flex items-start justify-between gap-3" data-testid={`reviewed-item-${rec.itemId}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]">{rec.itemTitle}</p>
+                    {rec.notes && (
+                      <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5 italic">{rec.notes}</p>
+                    )}
+                    <p className="text-[10px] font-mono text-[rgba(6,3,43,0.35)] mt-0.5">
+                      {new Date(rec.reviewedAt).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })} · {rec.reviewedBy}
+                    </p>
+                  </div>
+                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold shrink-0 ${DECISION_STYLE[rec.decision]}`}>
+                    {DECISION_LABEL[rec.decision]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <p className="mt-2 text-[11px] text-[rgba(6,3,43,0.35)]">
+          Advisor-reviewed ≠ KORA Certified · Stato sessione · synthetic_demo_data: true · Nessun dato individuale lavoratore
         </p>
       </div>
 
@@ -817,6 +977,71 @@ export default function AdvisorDashboard() {
 
         <p className="text-[9px] text-[rgba(6,3,43,0.35)] italic border-t border-[rgba(6,3,43,0.06)] pt-2">
           Evidence Reliability Intelligence™ · pre_empirical_calibration · non modifica CS, VR né KORA Index™ · not_kora_index_component: true · synthetic_demo_data: true · Solo advisor con perimetro assegnato.
+        </p>
+      </div>
+
+      {/* ── 9c. Per-Pillar Evidence Breakdown — B86-B T7+T8 ── */}
+      <div className="rounded-xl border border-[rgba(6,3,43,0.10)] bg-white p-6 space-y-4" data-testid="pillar-evidence-breakdown-panel">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-sm font-bold text-[rgba(6,3,43,0.78)] flex-1">
+            Qualità Evidenza per Pillar — Aggregate
+          </h2>
+          <span className="text-[9px] text-[rgba(6,3,43,0.35)] bg-[rgba(6,3,43,0.05)] rounded px-2 py-0.5">
+            pre_empirical_estimate
+          </span>
+        </div>
+        <p className="text-[11px] text-[rgba(6,3,43,0.45)] leading-relaxed -mt-2">
+          Distribuzione aggregata della qualità evidenza per pillar. Nessun dato individuale lavoratore.
+          Stima derivata dall&apos;EV medio e dalla quota IU per pillar — non da classificazione record-per-record.
+        </p>
+
+        <div className="space-y-2.5">
+          {ADVISOR_PILLAR_BREAKDOWN.map((pb) => {
+            const qualityColor = pb.qualityLabel === 'buona'
+              ? { bar: 'bg-[rgba(47,125,85,0.65)]', badge: 'bg-[rgba(47,125,85,0.10)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]' }
+              : pb.qualityLabel === 'accettabile'
+              ? { bar: 'bg-[rgba(138,90,0,0.55)]', badge: 'bg-[rgba(138,90,0,0.08)] text-[#8A5A00] border-[rgba(217,154,43,0.25)]' }
+              : { bar: 'bg-[rgba(158,59,47,0.60)]', badge: 'bg-[rgba(158,59,47,0.08)] text-[#9E3B2F] border-[rgba(158,59,47,0.22)]' };
+
+            return (
+              <div key={pb.pillar} className="rounded-lg border border-[rgba(6,3,43,0.07)] bg-[rgba(6,3,43,0.02)] px-3 py-3 space-y-2" data-testid={`pillar-ev-${pb.pillar}`}>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold text-[rgba(6,3,43,0.80)]">{pb.pillarLabel}</p>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className={`rounded border px-1.5 py-0.5 text-[9px] font-semibold ${qualityColor.badge}`}>
+                      {pb.qualityLabel}
+                    </span>
+                    <span className="text-[10px] font-mono text-[rgba(6,3,43,0.45)]">
+                      EV {Math.round(pb.estimatedEvScore * 100)}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* EV bar */}
+                <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.06)] overflow-hidden">
+                  <div
+                    className={`h-1.5 rounded-full transition-all ${qualityColor.bar}`}
+                    style={{ width: `${Math.round(pb.estimatedEvScore * 100)}%` }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-[rgba(6,3,43,0.40)]">
+                    Quota IU: <span className="font-mono text-[rgba(6,3,43,0.60)]">{Math.round(pb.iuShare * 100)}%</span>
+                  </span>
+                  {pb.weakEvidenceNote && (
+                    <span className="text-[9.5px] text-[#9E3B2F] italic leading-tight max-w-[60%] text-right">
+                      {pb.weakEvidenceNote}
+                    </span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-[9px] text-[rgba(6,3,43,0.35)] italic border-t border-[rgba(6,3,43,0.06)] pt-2">
+          Stima aggregata EV per pillar · pre_empirical_estimate · non modifica IU né KORA Index™ · nessun dato individuale lavoratore · synthetic_demo_data: true
         </p>
       </div>
 

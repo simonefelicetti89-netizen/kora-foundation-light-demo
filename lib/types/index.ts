@@ -333,6 +333,7 @@ export interface BookingRequest {
 export interface DynamicCVProfile {
   worker_id: string;
   cv_items: Array<{ id: string; title: string; pillar: PillarCode; status: string }>;
+  excluded_items?: Array<{ id: string; title: string; pillar: PillarCode; status: string; excluded_reason: string }>;
   milestones: Array<{ id: string; label: string; achieved_at: string }>;
   sharing_settings: Record<string, boolean>;
   export_readiness: boolean;

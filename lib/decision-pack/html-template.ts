@@ -15,6 +15,12 @@
 import fs from 'fs';
 import path from 'path';
 import type { PdfData } from './pdf-data';
+import {
+  activationOpportunityService,
+  deriveSignalsSlim,
+  type ActivationOpportunity,
+  type OpportunityPriority,
+} from '@/services/activation-opportunity/ActivationOpportunityService';
 
 function getLogoBase64(variant: 'white' | 'dark'): string {
   const file = variant === 'white' ? 'logo-white.png' : 'logo-dark.png';
@@ -2393,6 +2399,215 @@ ${(components && components.length > 0) || (macroblocks && macroblocks.length > 
 
   ${pageFooter()}
 </div>` : ''}
+
+
+${/* ── Evidence Intelligence™ — aggregate-only, no individual data ── */ ''}
+${(iuSummary || enrichment) ? (() => {
+  const avgEv   = iuSummary?.averageEv ?? null;
+  const lvl     = enrichment?.evidenceLevelBreakdown ?? null;
+  const cs      = koraIndex.confidenceScore;
+  const total   = lvl ? (lvl.L0 + lvl.L1 + lvl.L2 + lvl.L3 + lvl.L4) : 0;
+  const pct     = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0;
+  const evPct   = avgEv !== null ? Math.round(avgEv * 100) : null;
+  const evLabel = avgEv === null ? 'N/D' : avgEv >= 0.75 ? 'Buona' : avgEv >= 0.60 ? 'Accettabile' : 'Debole';
+  const evColor = avgEv === null ? '#9899b3' : avgEv >= 0.75 ? '#059669' : avgEv >= 0.60 ? '#d97706' : '#dc2626';
+  return `
+<div class="page" style="padding:28pt 32pt;">
+  <div style="font-size:8pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#6156F5;margin-bottom:12pt;">
+    Evidence Intelligence™ — Qualità Evidenza Aggregata
+  </div>
+
+  <div style="font-size:7pt;color:#9899b3;margin-bottom:14pt;">
+    Indicatore metodologico Foundation Light · Aggregate only — nessun dato individuale lavoratore ·
+    non modifica KORA Index™ né IU · pre_empirical_calibration · not_kora_index_component: true
+  </div>
+
+  ${avgEv !== null ? `
+  <div style="display:flex;gap:16pt;margin-bottom:16pt;flex-wrap:wrap;">
+
+    <div style="flex:1;min-width:120pt;border:1px solid #eaebf4;border-radius:6pt;padding:12pt;background:#f8f8fc;">
+      <div style="font-size:7pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#555670;margin-bottom:6pt;">
+        EV Factor Medio
+      </div>
+      <div style="font-size:22pt;font-weight:800;color:${evColor};line-height:1;">${evPct}%</div>
+      <div style="margin-top:4pt;font-size:7.5pt;font-weight:600;color:${evColor};">${evLabel}</div>
+      <div style="margin-top:6pt;font-size:6.5pt;color:#9899b3;line-height:1.5;">
+        EV = Evidence Verification factor nella formula IU™.<br>
+        Range metodologico: 0.50 (solo autodichiarato) → 1.00 (terza parte verificata).
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:120pt;border:1px solid #eaebf4;border-radius:6pt;padding:12pt;background:#f8f8fc;">
+      <div style="font-size:7pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#555670;margin-bottom:6pt;">
+        Data Reliability Index™
+      </div>
+      <div style="font-size:22pt;font-weight:800;color:#6156F5;line-height:1;">${Math.round(cs * 100)}%</div>
+      <div style="margin-top:4pt;font-size:7.5pt;font-weight:600;color:#6156F5;">
+        ${cs >= 0.70 ? 'High' : cs >= 0.45 ? 'Medium' : 'Low'} confidence
+      </div>
+      <div style="margin-top:6pt;font-size:6.5pt;color:#9899b3;line-height:1.5;">
+        Mostrato sempre affianco al KORA Index™.<br>
+        Peso nel KORA Index™ = 0 (indicatore esterno di affidabilità dati).
+      </div>
+    </div>
+  </div>` : ''}
+
+  ${lvl && total > 0 ? `
+  <div style="margin-bottom:16pt;">
+    <div style="font-size:7pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#06032B;margin-bottom:8pt;">
+      Distribuzione Livelli Evidenza (L0–L4)
+    </div>
+
+    <div style="display:flex;height:10pt;border-radius:4pt;overflow:hidden;margin-bottom:6pt;">
+      ${pct(lvl.L4) > 0 ? `<div style="width:${pct(lvl.L4)}%;background:#059669;" title="L4: ${pct(lvl.L4)}%"></div>` : ''}
+      ${pct(lvl.L3) > 0 ? `<div style="width:${pct(lvl.L3)}%;background:#34d399;" title="L3: ${pct(lvl.L3)}%"></div>` : ''}
+      ${pct(lvl.L2) > 0 ? `<div style="width:${pct(lvl.L2)}%;background:#d97706;" title="L2: ${pct(lvl.L2)}%"></div>` : ''}
+      ${pct(lvl.L1) > 0 ? `<div style="width:${pct(lvl.L1)}%;background:#f87171;" title="L1: ${pct(lvl.L1)}%"></div>` : ''}
+      ${pct(lvl.L0) > 0 ? `<div style="width:${pct(lvl.L0)}%;background:#dc2626;" title="L0: ${pct(lvl.L0)}%"></div>` : ''}
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:7.5pt;">
+      <thead>
+        <tr style="background:#f0f0fa;">
+          <th style="text-align:left;padding:4pt 6pt;color:#555670;font-weight:600;">Livello</th>
+          <th style="text-align:left;padding:4pt 6pt;color:#555670;font-weight:600;">Descrizione</th>
+          <th style="text-align:center;padding:4pt 6pt;color:#555670;font-weight:600;">Conteggio</th>
+          <th style="text-align:center;padding:4pt 6pt;color:#555670;font-weight:600;">%</th>
+          <th style="text-align:left;padding:4pt 6pt;color:#555670;font-weight:600;">Barra</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${[
+          { code:'L4', label:'Verificata terza parte', count: lvl.L4, color:'#059669' },
+          { code:'L3', label:'Verificata interna', count: lvl.L3, color:'#34d399' },
+          { code:'L2', label:'Documentazione parziale', count: lvl.L2, color:'#d97706' },
+          { code:'L1', label:'Autodichiarata con fonte', count: lvl.L1, color:'#f87171' },
+          { code:'L0', label:'Autodichiarata', count: lvl.L0, color:'#dc2626' },
+        ].map(row => `
+        <tr style="border-top:1px solid #eaebf4;">
+          <td style="padding:4pt 6pt;font-weight:700;color:#06032B;">${row.code}</td>
+          <td style="padding:4pt 6pt;color:#555670;">${row.label}</td>
+          <td style="padding:4pt 6pt;text-align:center;font-weight:600;color:#06032B;">${row.count}</td>
+          <td style="padding:4pt 6pt;text-align:center;color:#555670;">${pct(row.count)}%</td>
+          <td style="padding:4pt 6pt;">
+            <div style="background:#eaebf4;border-radius:3pt;height:6pt;width:80pt;">
+              <div style="background:${row.color};border-radius:3pt;height:6pt;width:${pct(row.count)}%;"></div>
+            </div>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+
+    <div style="margin-top:8pt;font-size:6.5pt;color:#9899b3;line-height:1.5;">
+      L0–L4 classificati da UEF pipeline per ogni iniziativa approvata per scoring.
+      L3/L4 = evidenza forte · L2 = parziale/accettabile · L0/L1 = autodichiarata/debole.
+      Total record nella distribuzione: ${total}.
+    </div>
+  </div>` : '<div style="font-size:8pt;color:#9899b3;margin-bottom:12pt;">Distribuzione livelli evidenza non disponibile per questo periodo.</div>'}
+
+  <div style="border-top:1px solid #eaebf4;padding-top:10pt;font-size:6.5pt;color:#9899b3;line-height:1.6;">
+    Evidence Intelligence™ è un indicatore metodologico Foundation Light v0.1.
+    Non modifica il KORA Index™ né la formula IU™.
+    EV factor è una componente della formula IU — il suo miglioramento può aumentare il Verification Rate (VR).
+    Data Reliability Index™ è esterno al KORA Index™ (peso = 0): sempre mostrato affianco come indicatore di affidabilità.
+    Aggregate only — nessun dato individuale lavoratore · pre_empirical_calibration · not_kora_index_component: true
+  </div>
+
+  ${pageFooter()}
+</div>`;
+})() : ''}
+
+${(() => {
+  // ── Activation Opportunities — B87-B ──────────────────────────────────────
+  // Deterministic rule-based recommendations from KORA signals. No AI. No LLM.
+  // Top 5 opportunities by priority.
+  // not_kora_index_component: true · not_predictions: true · not_roi_claims: true
+
+  const signals = deriveSignalsSlim({
+    safeguardStatus:          koraIndex.safeguardStatus,
+    confidenceScore:          koraIndex.confidenceScore,
+    activationRate:           koraIndex.activationRate,
+    meaningfulActivationRate: koraIndex.meaningfulActivationRate,
+    components:               (components ?? []).map(c => ({ code: c.code, value: c.value })),
+    pillarDistribution:       pillarDistribution ?? {},
+    economicReliefShare:      bti
+      ? bti.economicReliefSpend / Math.max(bti.totalPeopleWelfareBudget, 1)
+      : undefined,
+  });
+
+  const opps: ActivationOpportunity[] = activationOpportunityService.computeFromSignals(signals).slice(0, 5);
+  if (opps.length === 0) return '';
+
+  const priorityLabel = (p: OpportunityPriority): string =>
+    p === 'critical' ? 'CRITICA' : p === 'high' ? 'ALTA' : p === 'medium' ? 'MEDIA' : 'BASSA';
+
+  const priorityColor = (p: OpportunityPriority): string =>
+    p === 'critical' ? '#9E3B2F' : p === 'high' ? '#C76F3D' : p === 'medium' ? '#8A5A00' : '#9899b3';
+
+  const priorityBg = (p: OpportunityPriority): string =>
+    p === 'critical' ? '#fef2f2' : p === 'high' ? '#fff7f0' : p === 'medium' ? '#fffbeb' : '#f9fafb';
+
+  return `
+<div class="page" style="page-break-before:always;">
+  <div style="margin-bottom:22pt;">
+    <p style="font-size:7pt;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#6156F5;margin-bottom:6pt;">
+      Activation Opportunity Engine™
+    </p>
+    <p style="font-size:16pt;font-weight:800;letter-spacing:-.02em;color:#06032B;margin-bottom:4pt;">
+      Opportunità di Attivazione
+    </p>
+    <p style="font-size:8.5pt;color:#7778a0;line-height:1.5;margin-bottom:0;">
+      Raccomandazioni deterministiche basate sui segnali KORA. Nessuna AI. Nessuna previsione. Nessuna claim ROI.
+      Ogni opportunità è spiegata dal segnale che l'ha generata. Foundation Light v0.1 — pre-calibrazione empirica.
+    </p>
+  </div>
+
+  ${opps.map((opp, idx) => `
+  <div style="background:#fafafa;border:1pt solid #eaebf4;border-radius:5pt;margin-bottom:12pt;overflow:hidden;break-inside:avoid;">
+    <div style="height:3pt;background:${opp.pillar === 'ALL' ? '#6156F5' : opp.pillar === 'COMPANY' ? '#C76F3D' : '#C76F3D'};"></div>
+    <div style="padding:12pt 14pt;">
+      <div style="display:flex;align-items:center;gap:8pt;margin-bottom:8pt;flex-wrap:wrap;">
+        <span style="font-size:5.5pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:${priorityBg(opp.priority)};color:${priorityColor(opp.priority)};border:1pt solid ${priorityColor(opp.priority)}44;border-radius:10pt;padding:2pt 7pt;">
+          ${priorityLabel(opp.priority)}
+        </span>
+        ${opp.pillar !== 'ALL' && opp.pillar !== 'COMPANY'
+          ? `<span style="font-size:5.5pt;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#6156F5;background:#f5f4ff;border:1pt solid #c7c4f8;border-radius:10pt;padding:2pt 7pt;">${opp.pillar}</span>`
+          : ''}
+        <span style="font-size:7pt;font-weight:600;color:#06032B;">${esc(opp.title)}</span>
+      </div>
+
+      <div style="background:#f5f4ff;border:1pt solid #e0defd;border-radius:4pt;padding:8pt 10pt;margin-bottom:8pt;">
+        <p style="font-size:6pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6156F5;margin-bottom:3pt;">Segnale rilevato</p>
+        <p style="font-size:7.5pt;color:#3d3a6a;line-height:1.4;margin:0;">${esc(opp.sourceSignal)}</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8pt;">
+        <div style="background:#f0fdf4;border:1pt solid #bbf7d0;border-radius:4pt;padding:7pt 9pt;">
+          <p style="font-size:6pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#166534;margin-bottom:3pt;">Beneficio atteso</p>
+          <p style="font-size:7.5pt;color:#14532d;line-height:1.4;margin:0;">${esc(opp.expectedImpact)}</p>
+        </div>
+        <div style="background:#fff7f0;border:1pt solid #fed7aa;border-radius:4pt;padding:7pt 9pt;">
+          <p style="font-size:6pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#C76F3D;margin-bottom:3pt;">Azione raccomandata</p>
+          <p style="font-size:7.5pt;color:#7c2d12;line-height:1.4;margin:0;">${esc(opp.recommendedAction)}</p>
+        </div>
+      </div>
+
+      <p style="font-size:6pt;color:#9899b3;letter-spacing:.08em;text-transform:uppercase;margin:7pt 0 0 0;">
+        Regola ${opp.ruleId} · ${idx + 1}/${opps.length} opportunità · nessuna AI
+      </p>
+    </div>
+  </div>`).join('')}
+
+  <div style="border-top:1pt solid #eaebf4;padding-top:9pt;font-size:6.5pt;color:#9899b3;line-height:1.6;">
+    Activation Opportunity Engine™ — regole deterministiche · no AI · no LLM · no previsioni · no claim ROI.
+    Le opportunità sono derivate dai segnali KORA (AR, MAR, EQ, VR, CO, NI, Pillar Distribution, Confidence Score).
+    Non modificano il KORA Index™ né alcuna formula metodologica.
+    Foundation Light v0.1 · pre_empirical_calibration · not_kora_index_component: true
+  </div>
+
+  ${pageFooter()}
+</div>`;
+})()}
 
 
 </body>

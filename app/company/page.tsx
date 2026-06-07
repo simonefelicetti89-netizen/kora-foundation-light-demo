@@ -30,6 +30,10 @@ import { TOKENS }                          from '@/lib/design/kora-design-tokens
 // ── Worker Space panel ─────────────────────────────────────────────────────────
 import { WorkerAdoptionPanel } from '@/components/company/cockpit/WorkerAdoptionPanel';
 
+// ── Activation Opportunity Engine ─────────────────────────────────────────────
+import { ActivationOpportunityPanel } from '@/components/company/cockpit/ActivationOpportunityPanel';
+import { activationOpportunityService } from '@/services/activation-opportunity/ActivationOpportunityService';
+
 // Section label between major page sections
 function SectionMark({ label }: { label: string }) {
   return (
@@ -66,6 +70,10 @@ export default function ExecutiveCockpit() {
 
   const actions          = explainabilityService.getNextBestActions(companyId, activeScenario);
   const primaryAction    = actions[0] ?? null;
+
+  const opportunities = hasKoraData && output && aggregate
+    ? activationOpportunityService.getTop(output, aggregate, 3)
+    : [];
   const workerSummary    = workerProvisioningService.getWorkerProvisioningSummary(companyId);
   const workerCapability = workerSpaceCapabilityService.getCapabilityByCompanyId(companyId);
 
@@ -158,6 +166,14 @@ export default function ExecutiveCockpit() {
         </div>
       )}
 
+      {/* ── Section 3b: Activation Opportunities — "Cosa devo fare adesso?" ── */}
+      {opportunities.length > 0 && (
+        <div style={{ marginTop: 36 }}>
+          <SectionMark label="Opportunità di attivazione" />
+          <ActivationOpportunityPanel opportunities={opportunities} maxVisible={3} />
+        </div>
+      )}
+
       {/* ── Section 4: Macroblock Composition ── */}
       {macroblocks.length > 0 && (
         <div style={{ marginTop: 36 }}>
@@ -189,13 +205,14 @@ export default function ExecutiveCockpit() {
         <SectionMark label="Approfondimenti disponibili" />
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {[
-            { href: '/company/kora-index',   label: 'KORA Index™ — scomposizione' },
-            { href: '/company/financial',    label: 'Budget-to-Human-Impact™' },
-            { href: '/company/activation',   label: 'Activation Debt™' },
-            { href: '/company/reports',      label: 'Decision Pack' },
-            { href: '/company/pillars',      label: 'Pillar Intelligence' },
-            { href: '/company/contribution', label: 'Contribution' },
-            { href: '/company/workspace',    label: `Worker Space · ${workerCapability.status === 'ENABLED' ? 'ATTIVO' : 'NON ATTIVO'}` },
+            { href: '/company/kora-index',     label: 'KORA Index™ — scomposizione' },
+            { href: '/company/opportunities',  label: 'Opportunità di attivazione' },
+            { href: '/company/financial',      label: 'Budget-to-Human-Impact™' },
+            { href: '/company/activation',     label: 'Activation Debt™' },
+            { href: '/company/reports',        label: 'Decision Pack' },
+            { href: '/company/pillars',        label: 'Pillar Intelligence' },
+            { href: '/company/contribution',   label: 'Contribution' },
+            { href: '/company/workspace',      label: `Worker Space · ${workerCapability.status === 'ENABLED' ? 'ATTIVO' : 'NON ATTIVO'}` },
           ].map(({ href, label }) => (
             <Link
               key={href}

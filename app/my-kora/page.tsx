@@ -17,6 +17,8 @@ import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
+import { workerAttributionService } from '@/services/worker-attribution/WorkerAttributionService';
+import { AttributionMatrix } from '@/components/my-kora/AttributionMatrix';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
@@ -291,6 +293,61 @@ export default function MyKoraHome() {
         </p>
       </div>
 
+      {/* ── "Quando un Impact Unit diventa tuo?" — Task 4 — B85-B ── */}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-4" data-testid="iu-educational-panel">
+        <div>
+          <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Quando un Impact Unit diventa tuo?</h2>
+          <p className="text-[11px] text-[rgba(6,3,43,0.40)] mt-0.5">
+            In Foundation Light vedi IU sintetici. In Pilot+, i tuoi IU reali seguono questo percorso.
+          </p>
+        </div>
+        <div className="space-y-2">
+          {([
+            {
+              step: '1',
+              label: "L'attività deve essere idonea.",
+              desc: 'Non tutte le attività generano Impact Units. Solo quelle che producono attivazione reale — verificabile, volontaria, non obbligatoria per legge o contratto.',
+            },
+            {
+              step: '2',
+              label: 'Deve essere verificata.',
+              desc: "Una verifica esterna — da LMS, welfare provider, partner KORA o advisor — è necessaria. L'autodichiarazione non è sufficiente da sola.",
+            },
+            {
+              step: '3',
+              label: 'Non può essere solo conformità o sostegno economico.',
+              desc: "La sicurezza obbligatoria, i voucher e i fringe benefit non generano IU. La baseline non è impatto. KORA misura ciò che va oltre il minimo dovuto.",
+            },
+            {
+              step: '4',
+              label: 'Nel programma Pilot+ verrà associata al tuo profilo.',
+              desc: 'Solo in Pilot+, con identità worker-owned e consenso, gli IU vengono collegati al tuo PIB personale. In Foundation Light sono sintetici.',
+            },
+          ] as { step: string; label: string; desc: string }[]).map(({ step, label, desc }) => (
+            <div key={step} className="flex items-start gap-3 rounded-md border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] p-3">
+              <span className="shrink-0 w-6 h-6 rounded-full bg-[#C76F3D] flex items-center justify-center text-[10px] font-bold text-white mt-0.5">
+                {step}
+              </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-[rgba(6,3,43,0.82)]">{label}</p>
+                <p className="text-[11px] text-[rgba(6,3,43,0.52)] mt-0.5 leading-relaxed">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Task 10 — Trust copy — non-suppressible */}
+        <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2.5">
+          <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed italic">
+            Non tutte le attività diventano parte del tuo percorso personale.
+            KORA considera solo attività idonee e verificabili.
+          </p>
+        </div>
+
+        {/* Task 9 — Attribution Matrix */}
+        <AttributionMatrix />
+      </div>
+
       {/* ── Personal impact timeline — con valori IU ── */}
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -304,46 +361,92 @@ export default function MyKoraHome() {
         </p>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
           <div className="divide-y divide-[rgba(6,3,43,0.05)]">
-            {preview.timeline.map((item) => (
-              <div key={item.id} className="px-4 py-3 hover:bg-[rgba(6,3,43,0.03)]">
-                <div className="flex items-start gap-3">
-                  <div className="text-xs font-mono text-[rgba(6,3,43,0.40)] w-24 shrink-0 mt-0.5">{item.date}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-[rgba(6,3,43,0.90)]">{item.category}</p>
-                    <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-mono',
-                        PILLAR_LIGHT[item.pillar] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
-                      )}>
-                        {item.pillar}
-                      </span>
-                      <span className={cn('text-[10px] font-medium', VERIF_COLOR[item.verification_status])}>
-                        {VERIF_LABEL[item.verification_status] ?? item.verification_status}
-                      </span>
-                      {/* IU value — pre-computed via formula */}
-                      <span className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.48)]">
-                        {item.iu_value.toFixed(2)} IU
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.40)]">
-                        Privato
-                      </span>
-                      <span className="text-[10px] text-[rgba(6,3,43,0.38)] font-mono">sintetico</span>
-                      {/* CV eligibility — whether this event can enter Dynamic Impact CV */}
-                      {item.cv_eligible ? (
-                        <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] px-1.5 py-0.5 text-[10px] text-[#2F7D55]">
-                          Dynamic CV™ — {item.cv_eligible_reason}
+            {preview.timeline.map((item) => {
+              // B85-B: derive attribution class for explainability labels
+              const attribution = workerAttributionService.classify({
+                verification_status: item.verification_status,
+                source_type: item.source_type,
+              });
+              return (
+                <div key={item.id} className="px-4 py-3 hover:bg-[rgba(6,3,43,0.03)]">
+                  <div className="flex items-start gap-3">
+                    <div className="text-xs font-mono text-[rgba(6,3,43,0.40)] w-24 shrink-0 mt-0.5">{item.date}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[rgba(6,3,43,0.90)]">{item.category}</p>
+
+                      {/* Row 1: pillar · verification · IU · Task 2 attribution badge */}
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className={cn('rounded border px-1.5 py-0.5 text-[10px] font-mono',
+                          PILLAR_LIGHT[item.pillar] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.62)] border-[rgba(6,3,43,0.08)]',
+                        )}>
+                          {item.pillar}
                         </span>
-                      ) : (
-                        <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.38)]">
-                          Non idoneo — {item.cv_eligible_reason}
+                        <span className={cn('text-[10px] font-medium', VERIF_COLOR[item.verification_status])}>
+                          {VERIF_LABEL[item.verification_status] ?? item.verification_status}
                         </span>
-                      )}
+                        <span className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.48)]">
+                          {item.iu_value.toFixed(2)} IU
+                        </span>
+                        {/* Task 2 — Attribution class badge */}
+                        <span
+                          className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.52)]"
+                          data-testid={`attribution-badge-${item.id}`}
+                        >
+                          Classe {attribution.code}
+                        </span>
+                        <span className="text-[10px] text-[rgba(6,3,43,0.38)]">{attribution.label}</span>
+                      </div>
+
+                      {/* Row 2: privacy · Task 5 PIB eligibility · Task 6 Dynamic CV eligibility */}
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.40)]">
+                          Privato
+                        </span>
+
+                        {/* Task 5 — PIB eligibility */}
+                        {attribution.workerPibEligible ? (
+                          <span
+                            className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] px-1.5 py-0.5 text-[10px] text-[#2F7D55]"
+                            data-testid={`pib-eligible-${item.id}`}
+                          >
+                            Può contribuire al tuo PIB
+                          </span>
+                        ) : (
+                          <span
+                            className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.38)]"
+                            data-testid={`pib-not-eligible-${item.id}`}
+                          >
+                            Non contribuisce al tuo PIB
+                          </span>
+                        )}
+
+                        {/* Task 6 — Dynamic CV eligibility (attribution-derived) */}
+                        {attribution.dynamicCvEligible ? (
+                          <span
+                            className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] px-1.5 py-0.5 text-[10px] text-[#2F7D55]"
+                            data-testid={`cv-eligible-attr-${item.id}`}
+                          >
+                            Può comparire nel Dynamic CV
+                          </span>
+                        ) : (
+                          <span
+                            className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.38)]"
+                            data-testid={`cv-not-eligible-attr-${item.id}`}
+                          >
+                            Non idoneo al Dynamic CV
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Existing detail: CV eligible reason */}
+                      <p className="text-[10px] text-[rgba(6,3,43,0.38)] mt-0.5 leading-relaxed">
+                        {item.cv_eligible_reason}
+                      </p>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         <p className="mt-1.5 text-xs text-[rgba(6,3,43,0.40)]">

@@ -607,6 +607,12 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
           <Field label="Depth level"        value={c.depth_level} />
           <Field label="Additionality"      value={c.additionality_level} />
           <Field label="Taxonomy match"     value={c.matched_taxonomy_id ?? '— nessuna corrispondenza'} />
+          {/* Task 8 B85-B — Worker PIB eligibility label in classification grid */}
+          <Field
+            label="Worker PIB"
+            value={c.worker_pib_allowed ? 'consentito' : 'non consentito'}
+            highlight={c.worker_pib_allowed ? 'eligible' : 'blocked'}
+          />
         </div>
       </div>
 
@@ -628,9 +634,12 @@ function DetailPanel({ row }: { row: PipelineAnalyzedRow }) {
           <FlagBadge label="BTI governance approvato" value={kr.approved_for_bti_governance} />
           <FlagBadge label="Impact Units approvati"   value={kr.approved_for_impact_units} />
           <FlagBadge label="Review richiesta"         value={c.review_required} invert />
+          {/* Task 7 B85-B — Worker PIB allowed indicator for KORA operator clarity */}
+          <FlagBadge label="Worker PIB consentito"    value={c.worker_pib_allowed} />
         </div>
         <p className="mt-1.5 text-[10px] text-[rgba(6,3,43,0.40)]">
           Blocked → tutti false. Limited → solo BTI. Eligible + review_required → tutti false. Eligible + approvato → scoring e IU abilitati.
+          Worker PIB consentito indica se questa tipologia di azione è consentita nella futura attribuzione individuale lavoratore (Pilot+).
         </p>
       </div>
 

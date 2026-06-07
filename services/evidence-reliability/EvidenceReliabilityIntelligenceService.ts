@@ -10,6 +10,7 @@
 
 import type {
   KoraRole,
+  PillarCode,
   ImpactUnitComputationSummary,
   UEFReviewSummary,
   ConfidenceRecord,
@@ -68,11 +69,7 @@ export interface EvidenceReliabilitySummary {
 // Foundation Light uses average_ev as a proxy for evidence mix.
 // Deterministic estimation: not a record-level classification.
 
-function estimateDistribution(
-  avgEv: number,
-  totalRecords: number,
-  reviewCompletionRate: number,
-): EvidenceLevelDistribution {
+function estimateDistribution(avgEv: number): EvidenceLevelDistribution {
   // EV factor distribution approximation:
   // Low ev → high weak share, High ev → high strong share
   const strongShare      = Math.max(0, Math.min(1, (avgEv - 0.50) / 0.50));
@@ -221,6 +218,42 @@ function buildRecommendations(
   return recs;
 }
 
+// ── Pillar evidence breakdown ─────────────────────────────────────────────────
+// Aggregate-only. Derived from IU share per pillar × overall average_ev.
+// Pillars with more IU have a higher likelihood of verified evidence
+// (more participation → more provider reports).
+// Formula: pillar_ev_estimate = clamp(avgEv × pillar_share_factor, 0.40, 0.98)
+// where share_factor = pillar_iu / max_pillar_iu (relative dominance).
+// This is an approximation. Pilot+: compute from actual per-record ev values.
+
+export type EvidenceQualityLabel = 'buona' | 'accettabile' | 'debole';
+
+export interface PillarEvidenceBreakdown {
+  pillar:           PillarCode;
+  pillarLabel:      string;
+  estimatedEvScore: number;        // 0–1
+  qualityLabel:     EvidenceQualityLabel;
+  iuShare:          number;        // 0–1, share of total company IU
+  weakEvidenceNote: string | null; // present if qualityLabel === 'debole'
+  methodologyNote:  'pre_empirical_estimate';
+}
+
+const PILLAR_LABELS: Record<PillarCode, string> = {
+  LIFE:       'Life — Salute & Benessere',
+  GROWTH:     'Growth — Crescita & Formazione',
+  CONNECTION: 'Connection — Mentoring & Comunità',
+  IMPACT:     'Impact — Impatto Territoriale',
+  LEGACY:     'Legacy — Trasferimento Conoscenza',
+};
+
+const PILLAR_CODES: PillarCode[] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
+
+function evToQualityLabel(ev: number): EvidenceQualityLabel {
+  if (ev >= 0.75) return 'buona';
+  if (ev >= 0.60) return 'accettabile';
+  return 'debole';
+}
+
 // ── Service class ─────────────────────────────────────────────────────────────
 
 export class EvidenceReliabilityIntelligenceService {
@@ -238,6 +271,40 @@ export class EvidenceReliabilityIntelligenceService {
     return this.computeFromData(iuSummary, uefSummary, confidenceRecord);
   }
 
+  // Returns per-pillar evidence quality breakdown — aggregate-only, no individual data.
+  // Employer-safe: no worker-level information, no IU traces.
+  getPillarEvidenceBreakdown(
+    iuSummary: ImpactUnitComputationSummary | null,
+  ): PillarEvidenceBreakdown[] {
+    const avgEv      = iuSummary?.average_ev ?? 0.65;
+    const iuByPillar = iuSummary?.impact_units_by_pillar ?? { LIFE: 0, GROWTH: 0, CONNECTION: 0, IMPACT: 0, LEGACY: 0 };
+    const totalIU    = PILLAR_CODES.reduce((s, p) => s + (iuByPillar[p] ?? 0), 0);
+    const maxIU      = Math.max(...PILLAR_CODES.map((p) => iuByPillar[p] ?? 0), 1);
+
+    return PILLAR_CODES.map((pillar): PillarEvidenceBreakdown => {
+      const pillarIU   = iuByPillar[pillar] ?? 0;
+      const iuShare    = totalIU > 0 ? pillarIU / totalIU : 0;
+      // Pillars with more IU get a slight EV boost (more participation → more verifiable evidence).
+      // Pillars with zero IU get a conservative floor of 0.45.
+      const shareFactor = maxIU > 0 ? pillarIU / maxIU : 0;
+      const rawEv       = pillarIU === 0 ? 0.45 : avgEv * (0.85 + 0.15 * shareFactor);
+      const estimatedEv = Math.round(Math.max(0.40, Math.min(0.98, rawEv)) * 1000) / 1000;
+      const qualityLabel = evToQualityLabel(estimatedEv);
+
+      return {
+        pillar,
+        pillarLabel:      PILLAR_LABELS[pillar],
+        estimatedEvScore: estimatedEv,
+        qualityLabel,
+        iuShare:          Math.round(iuShare * 1000) / 1000,
+        weakEvidenceNote: qualityLabel === 'debole'
+          ? `Evidenza prevalentemente autodichiarata per il pillar ${pillar}. Raccogliere documentazione dai fornitori.`
+          : null,
+        methodologyNote:  'pre_empirical_estimate',
+      };
+    });
+  }
+
   // Test-friendly: no role check — caller is responsible for access control.
   computeFromData(
     iuSummary: ImpactUnitComputationSummary | null,
@@ -252,7 +319,7 @@ export class EvidenceReliabilityIntelligenceService {
     const totalRecords     = iuSummary?.total_records ?? 0;
     const gaps             = confidenceRecord?.gaps_identified ?? [];
 
-    const distribution       = estimateDistribution(avgEv, totalRecords, reviewCompletion);
+    const distribution       = estimateDistribution(avgEv);
     const weakInitCount      = Math.round(totalRecords * distribution.weakShare);
     const riskLevel          = classifyEvidenceRisk(avgEv, reviewCompletion, gaps.length);
     const upgradeOpps        = buildUpgradeOpportunities(avgEv, pendingCount, needsMoreData, gaps);
