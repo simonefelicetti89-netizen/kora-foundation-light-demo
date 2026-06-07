@@ -297,6 +297,47 @@ export function DataSubmissionSection({ userRole }: Props) {
         />
       )}
 
+      {/* Clarification alert — shown prominently when any submission needs clarification */}
+      {(() => {
+        const clarSub = list.find((s) => s.status === 'submission_needs_clarification');
+        if (!clarSub) return null;
+        return (
+          <div className="rounded-lg px-4 py-3.5 space-y-1.5"
+            style={{ background: 'rgba(217,154,43,0.10)', border: '2px solid rgba(217,154,43,0.42)' }}>
+            <div className="flex items-center gap-2">
+              <span style={{
+                fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
+                background: 'rgba(217,154,43,0.20)', color: '#b45309',
+                border: '1.5px solid rgba(217,154,43,0.40)', borderRadius: 4, padding: '2px 6px',
+              }}>
+                Azione richiesta
+              </span>
+              <span className="text-sm font-bold text-amber-800">Chiarimento richiesto da KORA Admin</span>
+            </div>
+            {clarSub.adminComment && (
+              <p className="text-[11px] text-amber-700 italic">
+                &ldquo;{clarSub.adminComment}&rdquo;
+              </p>
+            )}
+            <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
+              Carica i file aggiuntivi richiesti o riprendi la bozza qui sotto per rispondere.
+            </p>
+          </div>
+        );
+      })()}
+
+      {/* Template download hint */}
+      {isAdmin && !showCreate && !activeDraft && (
+        <div className="rounded-lg border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)] px-3 py-2 flex items-center gap-2">
+          <span className="text-[10px] text-[rgba(6,3,43,0.40)]">
+            Hai bisogno di un template CSV?
+          </span>
+          <a href="/company/status" className="text-[10px] font-semibold text-[#4A7FE0] hover:underline">
+            Scarica dal Template Library →
+          </a>
+        </div>
+      )}
+
       {/* Submissions list */}
       {loading && <p className="text-xs text-[rgba(6,3,43,0.40)] text-center py-3">Caricamento…</p>}
 
@@ -314,7 +355,16 @@ export function DataSubmissionSection({ userRole }: Props) {
       {list.length > 0 && (
         <div className="space-y-2">
           {list.slice(0, 10).map((sub) => (
-            <div key={sub.submissionId} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
+            <div key={sub.submissionId}
+              className="rounded-lg border px-4 py-3"
+              style={{
+                background: sub.status === 'submission_needs_clarification'
+                  ? 'rgba(217,154,43,0.06)' : '#F8F6F1',
+                borderColor: sub.status === 'submission_needs_clarification'
+                  ? 'rgba(217,154,43,0.35)' : 'rgba(6,3,43,0.08)',
+                borderWidth: sub.status === 'submission_needs_clarification' ? '1.5px' : '1px',
+              }}
+            >
               <div className="flex items-start justify-between gap-2 flex-wrap">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -328,17 +378,28 @@ export function DataSubmissionSection({ userRole }: Props) {
                   </div>
                   {sub.adminComment && (
                     <p className="text-[10px] text-amber-700 rounded border border-amber-100 bg-[rgba(217,154,43,0.08)] px-2 py-0.5 mt-1">
-                      KORA: {sub.adminComment}
+                      KORA Admin: {sub.adminComment}
                     </p>
                   )}
                 </div>
-                {/* Resume draft */}
-                {isAdmin && sub.status === 'submission_draft' && !activeDraft && (
-                  <button onClick={() => setActiveDraft(sub.submissionId)}
-                    className="text-[10px] text-[#C76F3D] hover:underline shrink-0">
-                    Continua bozza →
-                  </button>
-                )}
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                  {/* Resume draft */}
+                  {isAdmin && sub.status === 'submission_draft' && !activeDraft && (
+                    <button onClick={() => setActiveDraft(sub.submissionId)}
+                      className="rounded-md px-3 py-1 text-[10px] font-semibold transition-colors shrink-0"
+                      style={{ background: 'rgba(199,111,61,0.12)', color: '#C76F3D', border: '1px solid rgba(199,111,61,0.30)' }}>
+                      Continua bozza →
+                    </button>
+                  )}
+                  {/* Respond to clarification */}
+                  {isAdmin && sub.status === 'submission_needs_clarification' && !activeDraft && (
+                    <button onClick={() => setActiveDraft(sub.submissionId)}
+                      className="rounded-md px-3 py-1 text-[10px] font-semibold transition-colors shrink-0"
+                      style={{ background: 'rgba(217,154,43,0.18)', color: '#b45309', border: '1.5px solid rgba(217,154,43,0.40)' }}>
+                      Rispondi al chiarimento →
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ))}

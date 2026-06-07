@@ -1,4 +1,5 @@
 import type { WorkerRosterRecord, WorkerProvisioningSummary } from '@/lib/types';
+import type { ValidatedRosterRow } from '@/lib/roster-import/types';
 import rosterData from '@/data/synthetic/worker-roster.json';
 
 const records = (rosterData as { data: WorkerRosterRecord[] }).data;
@@ -85,6 +86,81 @@ class WorkerProvisioningService {
   getWorkerPrivateProfile(workerId: string): WorkerRosterRecord | null {
     // Only roster data (no PIB). PIB is computed by ScoringSimulatorService, never stored here.
     return records.find((w) => w.worker_id === workerId) ?? null;
+  }
+
+  /**
+   * Create a demo-only roster record (no DB write, no email, no auth, no PIB).
+   * The caller (Workforce Command Center page) manages the returned record in
+   * component state — this service does not mutate its module-level seed cache.
+   *
+   * employer_can_view_individual_pib is typed as `false` — invariant enforced here.
+   */
+  createDemoWorker(params: {
+    companyId: string;
+    tenantId: string;
+    firstName: string;
+    lastName: string;
+    department: string;
+    site: string;
+    myKoraEnabled: boolean;
+  }): { success: boolean; note: string; record: WorkerRosterRecord } {
+    const workerId = `WRK-DEMO-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const record: WorkerRosterRecord = {
+      worker_id: workerId,
+      tenant_id: params.tenantId,
+      company_id: params.companyId,
+      display_name: `${params.firstName} ${params.lastName}`,
+      role_family: 'demo_created',
+      site: params.site || 'Non specificato',
+      department: params.department || 'Non specificato',
+      worker_account_status: 'draft',
+      consent_status: 'not_collected',
+      my_kora_enabled: params.myKoraEnabled,
+      pib_private_enabled: false,
+      employer_can_view_individual_pib: false,
+      included_in_aggregates: false,
+      privacy_threshold_cluster: false,
+      created_at: new Date().toISOString(),
+    };
+    return {
+      success: true,
+      note: `Demo: lavoratore "${params.firstName} ${params.lastName}" aggiunto al roster (${workerId}). Nessun account creato. Nessuna email inviata. Nessun PIB generato.`,
+      record,
+    };
+  }
+
+  /**
+   * Bulk import validated roster rows into demo session state.
+   * Returns WorkerRosterRecord[] for the caller to merge into sessionWorkers.
+   *
+   * No DB write. No email. No auth. No PIB. No consent collection.
+   * worker_id is deterministic from employee_code to enable cross-import dedup.
+   * employer_can_view_individual_pib = false — typed invariant enforced here.
+   */
+  importDemoRoster(
+    companyId: string,
+    tenantId: string,
+    validatedRows: ValidatedRosterRow[],
+  ): WorkerRosterRecord[] {
+    const createdAt = new Date().toISOString();
+    return validatedRows.map((row): WorkerRosterRecord => ({
+      worker_id:   `WRK-IMP-${row.employee_code.toUpperCase().replace(/[^A-Z0-9]/g, '')}`,
+      tenant_id:   tenantId,
+      company_id:  companyId,
+      display_name: row.display_name,
+      role_family:  row.job_family || 'imported',
+      site:         row.site,
+      department:   row.department,
+      cluster:      row.cluster || undefined,
+      worker_account_status:         'draft',
+      consent_status:                'not_collected',
+      my_kora_enabled:               row.my_kora_enabled,
+      pib_private_enabled:           false,
+      employer_can_view_individual_pib: false,
+      included_in_aggregates:        true,
+      privacy_threshold_cluster:     false,
+      created_at:                    createdAt,
+    }));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

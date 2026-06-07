@@ -658,6 +658,14 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             {workerSummary.privacy_notes}
           </div>
           <p className="text-[10px] text-[#8A5A00] font-medium">{workerSummary.next_action}</p>
+          <div className="pt-1">
+            <Link
+              href={`/admin/companies/${companyId}/workforce`}
+              className="inline-flex items-center gap-1.5 rounded border border-[rgba(6,3,43,0.14)] bg-white px-3 py-1.5 text-[10px] font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
+            >
+              Gestione Workforce →
+            </Link>
+          </div>
         </div>
 
         {/* Roster table — admin-only view, no individual PIB */}
@@ -756,6 +764,9 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         </Link>
         <Link href={`/admin/companies/${companyId}/onboarding`} className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
           Onboarding Operativo →
+        </Link>
+        <Link href={`/admin/companies/${companyId}/workforce`} className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
+          Workforce Management →
         </Link>
       </div>
 

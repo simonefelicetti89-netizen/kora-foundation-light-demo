@@ -28,6 +28,7 @@ const DEMO_DRIVEN_ROUTES = [
   '/company/uef-review',
   '/company/workforce-baseline',
   '/company/setup',
+  '/company/status',
 ];
 
 const VIEWER_BLOCKED_ROUTES = [
@@ -96,30 +97,37 @@ function CompanyLayoutInner({ children }: { children: React.ReactNode }) {
     <>
       {showDemoBanner && (
         <div
-          className="sticky top-0 z-10 flex items-center gap-2 px-4 py-2 text-[11px] font-semibold"
+          className="sticky top-0 z-10 flex items-center gap-3 px-4"
           style={{
-            background:   'var(--env-soft)',
-            borderBottom: '1px solid var(--env-border)',
-            color:        'var(--env-text)',
+            minHeight:    40,
+            background:   'rgba(199,111,61,0.14)',
+            borderBottom: '1.5px solid rgba(199,111,61,0.38)',
+            color:        '#C76F3D',
             fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
           }}
         >
           <span
             style={{
-              borderRadius: 4,
-              padding:      '2px 6px',
-              fontSize:     '9px',
-              fontWeight:   700,
-              letterSpacing: '0.10em',
+              borderRadius:  5,
+              padding:       '3px 8px',
+              fontSize:      '9px',
+              fontWeight:    800,
+              letterSpacing: '0.12em',
               textTransform: 'uppercase',
-              fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-              background:   'var(--env-border)',
-              color:        'var(--env-text)',
+              background:    'rgba(199,111,61,0.25)',
+              color:         '#C76F3D',
+              border:        '1.5px solid rgba(199,111,61,0.45)',
+              flexShrink:    0,
             }}
           >
             SYNTHETIC DEMO
           </span>
-          <span>Dati sintetici Meridiana Group · Non un workspace aziendale live</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(199,111,61,0.85)' }}>
+            Stai visualizzando dati sintetici di Meridiana Group S.r.l.
+          </span>
+          <span style={{ fontSize: 11, color: 'rgba(199,111,61,0.55)', marginLeft: 'auto' }}>
+            Non un workspace aziendale live
+          </span>
         </div>
       )}
       {children}

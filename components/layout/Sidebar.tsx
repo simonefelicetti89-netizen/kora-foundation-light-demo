@@ -118,6 +118,7 @@ function buildNavGroups(role: string): NavGroup[] {
         heading: 'Command',
         items: [
           { href: '/company',            label: 'Executive Cockpit' },
+          { href: '/company/status',     label: 'Status Center' },
           { href: '/company/kora-index', label: 'KORA Index™' },
           { href: '/company/workspace',  label: 'Worker Space' },
         ],

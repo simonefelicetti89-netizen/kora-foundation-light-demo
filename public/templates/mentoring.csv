@@ -1,0 +1,4 @@
+mentor_pseudonym_id,mentee_pseudonym_id,tipologia,data_inizio,data_fine,ore_totali,pillar_prevalente,obiettivo,outcome
+MENTOR-001,MENTEE-001,mentoring_formale,2025-01-15,2025-06-30,18,LEGACY,Trasferimento competenze tecniche,Completato con successo
+MENTOR-002,MENTEE-002,mentoring_formale,2025-02-01,2025-07-31,12,GROWTH,Sviluppo leadership,In corso
+MENTOR-003,MENTEE-003,peer_support,2025-03-01,2025-05-31,6,CONNECTION,Integrazione nel team,Completato

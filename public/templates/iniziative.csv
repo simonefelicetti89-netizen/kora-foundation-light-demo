@@ -1,0 +1,4 @@
+nome_iniziativa,tipologia,descrizione,data_inizio,data_fine,numero_partecipanti,budget_euro,provider,sede,note
+Programma Benessere 2025,welfare,Sessioni di mindfulness e gestione dello stress,2025-01-01,2025-12-31,45,12000,InternalHR,Milano,Frequenza settimanale
+Supporto Psicologico,welfare,Accesso a 6 sessioni di supporto psicologico per dipendente,2025-01-01,2025-12-31,30,18000,PsicologiAssociati,Remote,Servizio in remoto
+Giornata del Volontariato,comunità,Partecipazione collettiva a iniziative territoriali,2025-04-15,2025-04-15,80,2000,InternalHR,Bergamo,Giornata intera
