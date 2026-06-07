@@ -3,6 +3,7 @@
 //        commerciale e preparare presentazioni a investor/pilot prospect.
 import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ─── Static GTM data ──────────────────────────────────────────────────────────
 
@@ -195,14 +196,9 @@ export default function GtmPilotConsole() {
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <h1 className="text-2xl font-bold text-[#06032B]">KORA GTM & Pilot Console</h1>
+          <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" />
           <span className="rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-2 py-0.5 text-xs font-semibold text-[#9E3B2F]">
             Vista interna KORA
-          </span>
-          <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-[#8A5A00]">
-            Internal GTM
-          </span>
-          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">
-            Foundation Light
           </span>
         </div>
         <p className="text-sm text-[rgba(6,3,43,0.52)] max-w-2xl leading-relaxed">

@@ -6,6 +6,7 @@
 // The wizard is purely a presentation layer over the same API calls and state.
 
 import { useState } from 'react';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── API response types ────────────────────────────────────────────────────────
 
@@ -231,7 +232,10 @@ export function OperatorConsole({ userEmail, userRole }: Props) {
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-lg font-bold text-[#06032B]">Operator Flow</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-lg font-bold text-[#06032B]">Operator Flow</h1>
+            <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" />
+          </div>
           <p className="text-xs text-[rgba(6,3,43,0.52)] mt-0.5">Synthetic OP-001 · 2026-Q1 · Foundation Light</p>
         </div>
         <div className="flex flex-wrap gap-1.5 justify-end shrink-0">

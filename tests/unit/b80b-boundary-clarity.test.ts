@@ -115,8 +115,8 @@ describe('B80-B Task 2+3 — Admin sidebar LIVE/DEMO groups + non-navigable item
     expect(src).toContain('Live Operations');
   });
 
-  it('has Demo Preview group heading', () => {
-    expect(src).toContain('Demo Preview');
+  it('has Demo · Sintetico group heading (B82-B renamed from Demo Preview)', () => {
+    expect(src).toContain('Demo · Sintetico');
   });
 
   it('has Future Vision group heading', () => {

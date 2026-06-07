@@ -153,23 +153,36 @@ export default function CompanyProfilePage() {
         </div>
       </div>
 
-      {/* 5. Worker & My KORA */}
-      <SectionLabel>Worker & My KORA</SectionLabel>
+      {/* 5. Worker Space — link to canonical section */}
+      <SectionLabel>Worker Space</SectionLabel>
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: 'My KORA abilitati',   value: workerSummary.my_kora_enabled_count },
-            { label: 'PIB privato',         value: workerSummary.pib_private_enabled_count },
-            { label: 'Lavoratori in roster', value: workerSummary.total_workers },
-          ].map(({ label, value }) => (
-            <div key={label}>
-              <p style={{ fontSize: '11px', color: TOKENS.inkHint }}>{label}</p>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '1.875rem', color: TOKENS.ink, lineHeight: 1, marginTop: 6, fontVariantNumeric: 'tabular-nums' }}>{value}</p>
-            </div>
-          ))}
-        </div>
-        <div style={{ marginTop: 12, background: `${TOKENS.accent}08`, border: `1px solid ${TOKENS.accent}22`, borderRadius: 8, padding: '10px 12px', fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
-          Questo spazio è personale: l&apos;azienda non vede il PIB individuale del lavoratore. L&apos;azienda vede solo aggregati anonimizzati sopra soglia privacy (N≥10).
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <p style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.ink, marginBottom: 4 }}>
+              {workerSummary.my_kora_enabled_count > 0 ? `${workerSummary.my_kora_enabled_count} lavoratori con My KORA abilitata` : 'My KORA non ancora abilitata'}
+              {' '}su {workerSummary.total_workers} nel roster
+            </p>
+            <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+              I dettagli di adozione, la distribuzione per pilastro e i confini privacy sono nel Worker Space.
+            </p>
+          </div>
+          <a
+            href="/company/workspace#worker-space"
+            style={{
+              fontFamily:     'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontSize:       '11.5px',
+              fontWeight:     600,
+              color:          TOKENS.accent,
+              background:     TOKENS.accentSoft,
+              border:         `1px solid ${TOKENS.accent}44`,
+              borderRadius:   999,
+              padding:        '6px 16px',
+              textDecoration: 'none',
+              whiteSpace:     'nowrap',
+            }}
+          >
+            Vai a Worker Space →
+          </a>
         </div>
       </div>
 

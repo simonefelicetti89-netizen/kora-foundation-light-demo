@@ -6,6 +6,7 @@
 
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 import { TOKENS, CHART_COLORS } from '@/lib/design/kora-design-tokens';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -16,9 +17,12 @@ export default function BenchmarksPage() {
     <div style={{ maxWidth: 800 }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>
-          KORA Admin · Benchmark
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.accent }}>
+            KORA Admin · Benchmark
+          </p>
+          <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" />
+        </div>
         <h1 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: TOKENS.ink, marginBottom: 6 }}>
           Benchmark di posizionamento
         </h1>

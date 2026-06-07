@@ -20,11 +20,15 @@ import { ProvenanceFooter }          from '@/components/company/cockpit/Provenan
 
 // ── Data seam — unchanged ─────────────────────────────────────────────────────
 import { useScoringResult, useDemoScenarioComparison } from '@/lib/scoring-result';
-import { explainabilityService }      from '@/services/explainability/ExplainabilityService';
-import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
-import { tenantService }              from '@/services/tenant/TenantService';
-import { workerProvisioningService }  from '@/services/worker-provisioning/WorkerProvisioningService';
-import { TOKENS }                     from '@/lib/design/kora-design-tokens';
+import { explainabilityService }           from '@/services/explainability/ExplainabilityService';
+import { accountProvisioningService }      from '@/services/account/AccountProvisioningService';
+import { tenantService }                   from '@/services/tenant/TenantService';
+import { workerProvisioningService }       from '@/services/worker-provisioning/WorkerProvisioningService';
+import { workerSpaceCapabilityService }    from '@/services/worker-space/WorkerSpaceCapabilityService';
+import { TOKENS }                          from '@/lib/design/kora-design-tokens';
+
+// ── Worker Space panel ─────────────────────────────────────────────────────────
+import { WorkerAdoptionPanel } from '@/components/company/cockpit/WorkerAdoptionPanel';
 
 // Section label between major page sections
 function SectionMark({ label }: { label: string }) {
@@ -60,9 +64,10 @@ export default function ExecutiveCockpit() {
   const aggregate   = scoring?.aggregate;
   const macroblocks = output?.macroblocks ?? [];
 
-  const actions       = explainabilityService.getNextBestActions(companyId, activeScenario);
-  const primaryAction = actions[0] ?? null;
-  const workerSummary = workerProvisioningService.getWorkerProvisioningSummary(companyId);
+  const actions          = explainabilityService.getNextBestActions(companyId, activeScenario);
+  const primaryAction    = actions[0] ?? null;
+  const workerSummary    = workerProvisioningService.getWorkerProvisioningSummary(companyId);
+  const workerCapability = workerSpaceCapabilityService.getCapabilityByCompanyId(companyId);
 
   const insights = hasKoraData && output && aggregate
     ? deriveInsights({
@@ -160,12 +165,18 @@ export default function ExecutiveCockpit() {
         </div>
       )}
 
-      {/* ── Section 5: Priority Action ── */}
+      {/* ── Section 5: Worker Space ── */}
+      <div style={{ marginTop: 36 }}>
+        <SectionMark label="Worker Space" />
+        <WorkerAdoptionPanel companyId={companyId} scenarioId={activeScenario} />
+      </div>
+
+      {/* ── Section 6: Priority Action ── */}
       <div style={{ marginTop: 24 }}>
         <ProssimaAzioneCard action={primaryAction} />
       </div>
 
-      {/* ── Section 6: Deep dive navigation ── */}
+      {/* ── Section 7: Deep dive navigation ── */}
       <div
         style={{
           marginTop:    32,
@@ -184,6 +195,7 @@ export default function ExecutiveCockpit() {
             { href: '/company/reports',      label: 'Decision Pack' },
             { href: '/company/pillars',      label: 'Pillar Intelligence' },
             { href: '/company/contribution', label: 'Contribution' },
+            { href: '/company/workspace',    label: `Worker Space · ${workerCapability.status === 'ENABLED' ? 'ATTIVO' : 'NON ATTIVO'}` },
           ].map(({ href, label }) => (
             <Link
               key={href}
@@ -208,7 +220,7 @@ export default function ExecutiveCockpit() {
         </div>
       </div>
 
-      {/* ── Section 7: Explainability + Provenance ── */}
+      {/* ── Section 8: Explainability + Provenance ── */}
       <div style={{ marginTop: 24 }}>
         <ExplainabilityHint />
       </div>

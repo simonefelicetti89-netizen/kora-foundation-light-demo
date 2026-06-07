@@ -5,6 +5,7 @@
 
 import { cn } from '@/lib/utils';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // AD-01 extension: KORA Activation Network — ecosystem intelligence view
 // Admin-only (protected by app/admin/layout.tsx — isAdminRole check).
@@ -442,12 +443,7 @@ export default function NetworkPage() {
       {/* ── 1. Header ── */}
       <div>
         <div className="flex flex-wrap items-center gap-2 mb-2">
-          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-2 py-0.5 text-xs font-semibold text-[rgba(6,3,43,0.72)]">
-            Foundation Light Preview
-          </span>
-          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
-            Solo dati sintetici
-          </span>
+          <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" />
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">
             Solo Admin
           </span>

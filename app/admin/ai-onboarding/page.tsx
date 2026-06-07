@@ -2,6 +2,7 @@
 // Scopo: mostrare il percorso dall'intake al Decision Pack;
 //        tassonomia BCM rule-based, nessun LLM esterno su dati HR.
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 const STATUS_PILL: Record<string, string> = {
   approved:          'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
@@ -48,13 +49,11 @@ export default function AIOnboardingPage() {
 
       {/* Page header */}
       <div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-bold text-[#06032B]">KORA Classification Engine™</h1>
+          <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" />
           <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-[#8A5A00]">
             KORA Admin / Interno
-          </span>
-          <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.40)]">
-            Solo dati sintetici
           </span>
         </div>
         <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">

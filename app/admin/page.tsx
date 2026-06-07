@@ -1,5 +1,6 @@
 // A-01: KORA Control Tower™ — narrative-first admin operating console
-// Structure: Command Hero → Priority Queue → Company Readiness Matrix → Intelligence Grid → Governance
+// B82-B: Structural LIVE / DEMO separation.
+// Structure: LIVE PLATFORM block → Priority Queue (DEMO) → Company Readiness Matrix (DEMO) → Intelligence Grid (DEMO) → GTM (DEMO) → Governance
 
 import Link from 'next/link';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
@@ -9,20 +10,27 @@ import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import type React from 'react';
 
+const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
+
 const SAFEGUARD_PILL: Record<string, { bg: string; text: string; border: string }> = {
   CLEAR:   { bg: TOKENS.safeguard.pass.bg,   text: TOKENS.safeguard.pass.text,  border: `1px solid ${TOKENS.safeguard.pass.dot}40`  },
   WARNING: { bg: TOKENS.safeguard.watch.bg,  text: TOKENS.safeguard.watch.text, border: `1px solid ${TOKENS.safeguard.watch.dot}40` },
   FLAGGED: { bg: TOKENS.safeguard.cap.bg,    text: TOKENS.safeguard.cap.text,   border: `1px solid ${TOKENS.safeguard.cap.dot}40`   },
 };
 
-function Panel({ title, n, children, href, hrefLabel }: {
-  title: string; n: string; children: React.ReactNode; href?: string; hrefLabel?: string;
+function Panel({ title, n, children, href, hrefLabel, badgeLabel }: {
+  title: string; n: string; children: React.ReactNode; href?: string; hrefLabel?: string; badgeLabel?: string;
 }) {
   return (
     <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: '20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
         <span style={{ fontFamily: 'ui-monospace, monospace', fontSize: '9px', fontWeight: 700, color: TOKENS.accent, letterSpacing: '0.06em' }}>{n}</span>
-        <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 700, fontSize: '12.5px', color: TOKENS.ink }}>{title}</p>
+        <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '12.5px', color: TOKENS.ink }}>{title}</p>
+        {badgeLabel && (
+          <span style={{ marginLeft: 'auto', borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa', whiteSpace: 'nowrap' }}>
+            {badgeLabel}
+          </span>
+        )}
       </div>
       <div style={{ flex: 1 }}>{children}</div>
       {href && hrefLabel && (
@@ -32,12 +40,22 @@ function Panel({ title, n, children, href, hrefLabel }: {
   );
 }
 
-function SectionHead({ label }: { label: string }) {
+function SectionHead({ label, badgeMode }: { label: string; badgeMode?: 'LIVE' | 'DEMO' }) {
   return (
-    <div style={{ paddingTop: 28, marginTop: 28, borderTop: `1px solid ${TOKENS.inkBorder}`, marginBottom: 16 }}>
-      <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 600, fontSize: '9.5px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
+    <div style={{ paddingTop: 28, marginTop: 28, borderTop: `1px solid ${TOKENS.inkBorder}`, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+      <p style={{ fontFamily: FONT, fontWeight: 600, fontSize: '9.5px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
         {label}
       </p>
+      {badgeMode === 'DEMO' && (
+        <span style={{ borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa', whiteSpace: 'nowrap' }}>
+          DEMO · sintetico
+        </span>
+      )}
+      {badgeMode === 'LIVE' && (
+        <span style={{ borderRadius: 4, padding: '1px 6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', whiteSpace: 'nowrap' }}>
+          LIVE
+        </span>
+      )}
     </div>
   );
 }
@@ -126,6 +144,50 @@ export default function KoraControlTower() {
     <div style={{ maxWidth: 960 }}>
 
       {/* ════════════════════════════════════════════════════════ */}
+      {/* SECTION 0: LIVE PLATFORM — real operational tools        */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: TOKENS.cardRadius, padding: '20px 24px', marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <BoundaryBadge mode="LIVE" variant="light" />
+          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '12px', color: '#166534', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            Piattaforma Live
+          </p>
+        </div>
+        <p style={{ fontFamily: FONT, fontSize: '11.5px', color: '#166534', marginBottom: 14, lineHeight: 1.5 }}>
+          Strumenti operativi reali — accesso diretto al tenant autenticato. Nessun dato sintetico.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
+          {([
+            { href: '/admin/companies',            label: 'Company Console · LIVE' },
+            { href: '/admin/company-live-preview', label: 'Anteprima Live Cockpit · LIVE' },
+            { href: '/admin/data-intake',          label: 'Data Intake · LIVE' },
+            { href: '/admin/uef-review',           label: 'UEF™ Review · LIVE' },
+            { href: '/admin/company-submissions',  label: 'Submission Queue · LIVE' },
+          ] as const).map(({ href, label }) => (
+            <Link key={href} href={href} style={{ display: 'block', borderRadius: 8, padding: '8px 12px', background: 'rgba(22,101,52,0.08)', border: '1px solid rgba(22,101,52,0.20)', fontSize: '11px', fontWeight: 600, color: '#166534', textDecoration: 'none', fontFamily: FONT }}>
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* DEMO · SINTETICO SEPARATOR                               */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <div style={{ flex: 1, height: 1, background: TOKENS.inkBorder }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 6, border: '1px solid #fed7aa', background: '#fff7ed', padding: '5px 12px' }}>
+          <BoundaryBadge mode="DEMO" variant="light" suffix="· dati sintetici" />
+          <p style={{ fontFamily: FONT, fontSize: '10.5px', color: '#9a3412', fontWeight: 600 }}>
+            Contenuto dimostrativo — nessun dato aziendale reale
+          </p>
+        </div>
+        <div style={{ flex: 1, height: 1, background: TOKENS.inkBorder }} />
+      </div>
+
+      {/* ════════════════════════════════════════════════════════ */}
       {/* SECTION 1: COMMAND HERO — operational state at a glance  */}
       {/* ════════════════════════════════════════════════════════ */}
 
@@ -192,10 +254,18 @@ export default function KoraControlTower() {
       <div style={{ marginBottom: 4 }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 14 }}>
           <div>
-            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontSize: '1.25rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
-              Coda priorità
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <p style={{ fontFamily: FONT, fontSize: '1.25rem', color: TOKENS.ink, letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+                Coda priorità
+              </p>
+              <span style={{ borderRadius: 4, padding: '2px 7px', fontSize: '9px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', fontFamily: FONT, background: '#fff7ed', color: '#9a3412', border: '1px solid #fed7aa' }}>
+                DEMO · sintetico
+              </span>
+            </div>
+            <p style={{ fontFamily: FONT, fontSize: '11px', color: TOKENS.accent, fontWeight: 600, marginTop: 4 }}>
+              Anteprima sintetica — non operativa
             </p>
-            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '11px', color: TOKENS.inkHint, marginTop: 3 }}>
+            <p style={{ fontFamily: FONT, fontSize: '11px', color: TOKENS.inkHint, marginTop: 2 }}>
               {priorityItems.length > 0
                 ? `${priorityItems.length} azioni richiedono attenzione`
                 : 'Nessuna azione urgente'}
@@ -214,7 +284,7 @@ export default function KoraControlTower() {
       {/* SECTION 3: COMPANY READINESS MATRIX                     */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <SectionHead label="Company readiness matrix" />
+      <SectionHead label="Company Readiness Matrix" badgeMode="DEMO" />
 
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, overflow: 'hidden' }}>
         {/* Table header */}
@@ -268,12 +338,12 @@ export default function KoraControlTower() {
       {/* SECTION 4: INTELLIGENCE GRID                            */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <SectionHead label="Intelligence operativa" />
+      <SectionHead label="Intelligence operativa" badgeMode="DEMO" />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
 
         {/* KORA Index Registry */}
-        <Panel n="01" title="KORA Index™ Registry" href="/admin/index-registry" hrefLabel="Registro">
+        <Panel n="01" title="KORA Index™ Registry" href="/admin/index-registry" hrefLabel="Registro" badgeLabel="DEMO · dati sintetici">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 40px 48px', gap: 8, paddingBottom: 6, borderBottom: TOKENS.cardBorder, marginBottom: 6 }}>
               {['Azienda', 'S', 'Index'].map((h, i) => (
@@ -293,7 +363,7 @@ export default function KoraControlTower() {
         </Panel>
 
         {/* Advisor Network */}
-        <Panel n="02" title="Advisor Network" href="/admin/network" hrefLabel="Rete advisor">
+        <Panel n="02" title="Advisor Network" href="/admin/network" hrefLabel="Rete advisor" badgeLabel="DEMO · dati sintetici">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {advisors.map((a) => (
               <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -314,7 +384,7 @@ export default function KoraControlTower() {
         </Panel>
 
         {/* Platform Analytics */}
-        <Panel n="03" title="Platform Analytics">
+        <Panel n="03" title="Platform Analytics" badgeLabel="DEMO · dati sintetici">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
               ['Confidence Score™ medio',  `${(analytics.avg_confidence_score * 100).toFixed(0)}%`],
@@ -330,7 +400,7 @@ export default function KoraControlTower() {
         </Panel>
 
         {/* Partner Network */}
-        <Panel n="04" title="Partner Network" href="/admin/network" hrefLabel="Rete partner">
+        <Panel n="04" title="Partner Network" href="/admin/network" hrefLabel="Rete partner" badgeLabel="DEMO · dati sintetici">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {partners.slice(0, 4).map((p) => (
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -347,7 +417,7 @@ export default function KoraControlTower() {
       {/* SECTION 5: GTM COCKPIT                                   */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <SectionHead label="GTM Founder Cockpit" />
+      <SectionHead label="GTM Founder Cockpit" badgeMode="DEMO" />
 
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, overflow: 'hidden' }}>
         {gtm.slice(0, 5).map((e, i) => (
@@ -373,7 +443,7 @@ export default function KoraControlTower() {
       {/* SECTION 6: METHODOLOGY GOVERNANCE                        */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <SectionHead label="Methodology governance" />
+      <SectionHead label="Methodology governance" badgeMode="DEMO" />
 
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, boxShadow: TOKENS.cardShadow, padding: '20px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
         <div>

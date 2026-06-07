@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -203,6 +204,7 @@ export function CompanyLivePreviewPanel() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <BoundaryBadge mode="LIVE" variant="light" />
             <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.15em] text-[#8A5A00]">
               Read-only · Live Preview
             </span>

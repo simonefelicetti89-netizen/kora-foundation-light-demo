@@ -7,6 +7,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import type { TenantLifecycleStatus } from '@/app/api/admin/company-console/route';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -213,6 +214,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
           </p>
         </div>
         <div className="flex flex-col items-end gap-2 mt-1 shrink-0">
+          <BoundaryBadge mode="LIVE" variant="dark" />
           <Link
             href="/admin/companies/new"
             className="rounded-lg bg-[#C76F3D] text-white px-4 py-2 text-xs font-semibold hover:bg-[#4f44e0] transition-colors whitespace-nowrap"
@@ -224,7 +226,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
             <span className="text-xs text-white/25 font-mono">{userEmail}</span>
           </div>
           <div className="flex gap-1 flex-wrap justify-end">
-            {['LIVE PILOT', 'No PII', 'No Worker Data'].map(m => (
+            {['No PII', 'No Worker Data'].map(m => (
               <span key={m} className="rounded border border-white/15 bg-[#F8F6F1]/5 px-1.5 py-0.5 text-[9px] text-white/40 font-semibold uppercase">{m}</span>
             ))}
           </div>

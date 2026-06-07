@@ -69,6 +69,8 @@ function buildNavGroups(role: string): NavGroup[] {
         groupBadge: 'LIVE',
         badgeKey: 'LIVE',
         items: [
+          { href: '/admin/companies',                label: 'Company Console' },
+          { href: '/admin/company-live-preview',     label: 'Anteprima Live Cockpit' },
           { href: '/admin/companies/new',            label: 'Crea Azienda Live' },
           { href: '/admin/company-workspace',        label: 'Workspace Admin' },
           { href: '/admin/company-users',            label: 'Utenti Aziendali' },
@@ -82,14 +84,14 @@ function buildNavGroups(role: string): NavGroup[] {
         ],
       },
       {
-        heading: 'Demo Preview',
+        heading: 'Demo · Sintetico',
         groupBadge: 'SYNTHETIC',
         badgeKey: 'SYNTHETIC',
         // All routes in this group use synthetic/demo data — no live Supabase queries.
         items: [
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
-          { href: '/company',             label: 'Meridiana Demo' },
-          { href: '/admin/companies',     label: 'Company Console' },
+          { href: '/admin/index-registry', label: 'Registro KORA Index' },
+          { href: '/admin/portfolio',      label: 'Portfolio Aziende' },
           { href: '/admin/network',       label: 'Rete Advisor & Partner' },
           { href: '/admin/operator',      label: 'Demo Scoring (Synthetic)' },
           { href: '/admin/ai-onboarding', label: 'Anteprima Classificazione' },

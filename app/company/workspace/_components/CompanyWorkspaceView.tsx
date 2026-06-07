@@ -4,9 +4,15 @@
 // B36 PART 4 — Company-facing workspace — board-grade, clean, read-only.
 // Rendered after session auth. No demo-state. No admin controls.
 // Covers: KORA Index summary, Reporting Readiness, Evidence Archive, Decision Pack, Methodology & Privacy.
+// B83-B: Worker Space section added (WorkerAdoptionPanel — aggregate-safe, no individual data).
 
 import { useState, useEffect } from 'react';
 import { DataSubmissionSection } from './DataSubmissionSection';
+import { WorkerAdoptionPanel } from '@/components/company/cockpit/WorkerAdoptionPanel';
+
+// Foundation Light: workspace always runs on the Meridiana demo tenant.
+// Pilot+: companyId will be resolved from the authenticated session tenant claim.
+const FL_COMPANY_ID = 'meridiana-group';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -417,6 +423,11 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       {/* ── Data Submission ──────────────────────────────────────────────────── */}
       <Section title="Data Submission" id="data-submission">
         <DataSubmissionSection userRole={userRole} />
+      </Section>
+
+      {/* ── Worker Space ─────────────────────────────────────────────────────── */}
+      <Section title="Worker Space" id="worker-space">
+        <WorkerAdoptionPanel companyId={FL_COMPANY_ID} />
       </Section>
 
       {/* ── Methodology & Privacy ────────────────────────────────────────────── */}
