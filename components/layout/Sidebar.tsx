@@ -34,6 +34,7 @@ const BADGE: Record<string, React.CSSProperties> = {
   STRATEGIA: { background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.48)', border: '1px solid rgba(255,255,255,0.14)' },
   ROADMAP:   { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.10)' },
   SYNTHETIC: { background: 'rgba(199,111,61,0.18)',  color: '#C76F3D',                border: '1px solid rgba(199,111,61,0.38)' },
+  FOUNDER:   { background: 'rgba(199,111,61,0.14)',  color: 'rgba(220,140,80,0.90)',  border: '1px solid rgba(199,111,61,0.30)' },
 };
 
 interface NavItem {
@@ -109,6 +110,14 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
           { href: '/admin/gtm',           label: 'GTM Preview' },
           { href: '/admin/benchmarks',    label: 'Benchmark Preview' },
           { href: '/demo-guide',          label: 'Demo Guide' },
+        ],
+      },
+      {
+        heading: 'Founder Tools',
+        groupBadge: 'FOUNDER',
+        badgeKey: 'FOUNDER',
+        items: [
+          { href: '/admin/founder-validation', label: 'Validation Cockpit' },
         ],
       },
       {
