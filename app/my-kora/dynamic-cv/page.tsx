@@ -12,6 +12,7 @@
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService, type DynamicCVItem } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
 
 // ── Pillar styling ────────────────────────────────────────────────────────────
@@ -166,6 +167,14 @@ export default function DynamicCV() {
         </div>
         <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">{cvPreview.persona_label}</p>
       </div>
+
+      {/* ── PreviewToLiveNotice — Task 3 */}
+      <PreviewToLiveNotice
+        what="Stai vedendo il tuo Dynamic Impact CV in anteprima."
+        preview="Le voci mostrate sono sintetiche — costruite su un profilo sintetico dimostrativo, non le tue attività reali."
+        live="In Pilot+, proverranno dai tuoi eventi verificati nella pipeline KORA, registrati nel tuo account worker-owned."
+        privacy="Il tuo datore di lavoro non ha accesso a questo CV in nessuna modalità."
+      />
 
       {/* ── Worker Ownership Block — non-suppressible ── */}
       <div className="rounded-lg border border-[rgba(47,125,85,0.30)] bg-[rgba(47,125,85,0.07)] p-4 space-y-2">

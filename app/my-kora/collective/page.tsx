@@ -15,6 +15,7 @@ import { usePersona, useRole, useScenario } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { isContributionEligibleEvent, CONTRIBUTION_PILLARS } from '@/lib/kora-engine/contribution-family-detector';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { isWorkerRole } from '@/lib/permissions';
 
@@ -94,6 +95,14 @@ export default function CollectiveImpact() {
           (indicatore companion, distinto dal KORA Index™).
         </p>
       </div>
+
+      {/* ── PreviewToLiveNotice — Task 3 */}
+      <PreviewToLiveNotice
+        what="Stai vedendo il tuo Contributo Collettivo in anteprima."
+        preview="Le attività mostrate sono sintetiche — costruite su un profilo dimostrativo, non le tue attività reali."
+        live="In Pilot+, proverranno dai tuoi eventi di contributo verificati — volontariato, mentoring, iniziative territoriali."
+        privacy="Il tuo datore di lavoro vede solo il Contribution Score aggregato aziendale — mai le tue attività individuali."
+      />
 
       {/* Synthetic data disclaimer — non-suppressible */}
       <div style={{ borderRadius: TOKENS.cardRadiusSm, border: `1px solid ${TOKENS.safeguard.watch.dot}44`, background: TOKENS.safeguard.watch.bg, padding: '10px 14px', fontSize: '11.5px', color: TOKENS.safeguard.watch.text, lineHeight: 1.6 }}>
@@ -231,12 +240,13 @@ export default function CollectiveImpact() {
       ) : (
         /* No contribution events for this persona/scenario */
         <div style={{ borderRadius: TOKENS.cardRadius, border: TOKENS.cardBorder, background: TOKENS.taupe, padding: '28px 24px', textAlign: 'center' }}>
-          <p style={{ fontFamily: FONT, fontSize: '13px', color: TOKENS.inkHint, lineHeight: 1.6 }}>
-            Nessuna attività collettiva registrata per {personaLabel} nello scenario {activeScenario}.
-            Prova a selezionare lo scenario S2 per visualizzare esempi di volontariato, mentoring e trasferimento conoscenza.
+          <p style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 600, color: TOKENS.inkSecondary, marginBottom: 8 }}>
+            Nessuna attività collettiva in questa anteprima.
           </p>
-          <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkMeta, marginTop: 12 }}>
-            contribution_events: 0 · scenario: {activeScenario}
+          <p style={{ fontFamily: FONT, fontSize: '12px', color: TOKENS.inkHint, lineHeight: 1.6, maxWidth: 380, margin: '0 auto' }}>
+            Il profilo dimostrativo selezionato non include attività di volontariato, mentoring o
+            iniziative territoriali in questo periodo. In Pilot+, qui appariranno le tue attività
+            collettive realmente verificate.
           </p>
         </div>
       )}

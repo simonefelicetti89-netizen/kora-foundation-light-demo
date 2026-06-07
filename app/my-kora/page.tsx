@@ -17,10 +17,8 @@ import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
-import { PageMasthead } from '@/components/ui/PageMasthead';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-import { TM } from '@/components/ui/TM';
-import { DecisionContext } from '@/components/ui/DecisionContext';
+import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
 
 // ─── Pillar styling ───────────────────────────────────────────────────────────
@@ -115,17 +113,41 @@ export default function MyKoraHome() {
   return (
     <div className="space-y-6">
 
-      {/* ── Header ── */}
-      <BoundaryBadge mode="PREVIEW" variant="light" suffix="· Worker layer · dati sintetici" style={{ marginBottom: 6 }} />
-      <PageMasthead
-        eyebrow={`My KORA · Spazio personale · ${activeScenario} · ${preview.persona_label}`}
-        title={<>Il tuo <TM>Worker PIB</TM></>}
-        subline={`${preview.persona_label} — Personal Impact Balance privato. L'azienda non vede mai i tuoi dati individuali.`}
-        meta="Dati sintetici · Foundation Light v0.1 · layer worker-owned"
-      />
-      <DecisionContext
-        question="Come sta crescendo la tua attivazione e cosa puoi fare per approfondirla?"
-        boundary="Il tuo Worker PIB™ è privato — non visibile al datore di lavoro · solo iniziative company-enabled"
+      {/* ── Header — Task 2: page identity is "My KORA", not the PIB score ── */}
+      <div>
+        <BoundaryBadge mode="PREVIEW" variant="light" suffix="· dati sintetici" style={{ marginBottom: 10 }} />
+        <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#06032B' }}>
+          My KORA
+        </h1>
+        <p style={{ fontSize: '13.5px', color: 'rgba(6,3,43,0.52)', marginTop: 4, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+          Il tuo spazio personale · {preview.persona_label}
+        </p>
+      </div>
+
+      {/* ── Entry framing block — Task 1: worker must understand My KORA in ≤60s ── */}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
+        <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)] mb-2">Questo spazio appartiene a te.</p>
+        <ul className="space-y-1.5">
+          {([
+            'Il tuo datore di lavoro non può vedere il tuo PIB individuale.',
+            'Il tuo datore di lavoro non può vedere il tuo Dynamic CV o la tua timeline personale.',
+            'I dati in questa anteprima sono sintetici — dimostrativi, non identità reale.',
+            'In Pilot+, My KORA si aggiornerà con le tue attività realmente verificate.',
+          ] as string[]).map((line, i) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-[rgba(6,3,43,0.72)]">
+              <span className="text-[#C76F3D] shrink-0 mt-0.5">—</span>
+              {line}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* ── PreviewToLiveNotice — Task 3 ── */}
+      <PreviewToLiveNotice
+        what="My KORA è il tuo spazio personale KORA — privato, non accessibile al datore di lavoro."
+        preview="Il PIB e la timeline mostrati sono costruiti su un profilo sintetico dimostrativo."
+        live="Proverranno dalle tue attività realmente verificate tramite la pipeline KORA aziendale."
+        privacy="Il tuo datore di lavoro non accede a questo spazio in nessuna modalità."
       />
 
       {/* ── Core privacy statement — non-suppressible ── */}
@@ -194,6 +216,13 @@ export default function MyKoraHome() {
           </div>
         </div>
 
+        {/* PIB plain-language explanation — Task 7 */}
+        <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed">
+          Il Personal Impact Balance (PIB) è la stima della tua attivazione nel tempo — quante iniziative hai
+          partecipato, con quale intensità verificata, distribuite tra i pillar KORA. Non è un voto.
+          Non è una classifica. Non è visibile al tuo datore di lavoro.
+        </p>
+
         {/* PIB derivation disclosure — non-suppressible per B70-B */}
         <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.06)] px-3 py-2">
           <p className="text-[10px] font-semibold text-[#8A5A00]">Dato sintetico · derivato da IU computati</p>
@@ -248,6 +277,17 @@ export default function MyKoraHome() {
           Questi valori non vengono mostrati all&apos;azienda. L&apos;azienda vede solo aggregati sopra soglia
           privacy (≥10 lavoratori). Il PIB è un indicatore personale — non un voto, non una classifica,
           non un parametro di performance.
+        </p>
+      </div>
+
+      {/* ── IU plain-language explanation — Task 6 */}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)] px-4 py-3">
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.72)] mb-1">Cosa sono gli Impact Unit (IU)?</p>
+        <p className="text-[11px] text-[rgba(6,3,43,0.58)] leading-relaxed">
+          Gli Impact Unit non servono per valutarti o confrontarti con altri lavoratori. Ogni partecipazione
+          verificata produce IU che contribuiscono all&apos;attivazione complessiva dell&apos;organizzazione —
+          mai come classifica individuale. Gli IU mostrati in questa anteprima sono calcolati su dati sintetici.
+          In Pilot+, deriveranno dalle tue attività realmente verificate.
         </p>
       </div>
 
@@ -315,10 +355,15 @@ export default function MyKoraHome() {
       {/* ── Company KORA Snapshot — aggregate only ── */}
       {aggregate && (
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-2">
             <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Company KORA Snapshot</h2>
             <span className="text-xs text-[rgba(6,3,43,0.40)] font-mono">aggregato · non individuale</span>
           </div>
+          {/* Company Snapshot orientation — Task 4 */}
+          <p className="text-xs text-[rgba(6,3,43,0.52)] mb-3 leading-relaxed">
+            Questi risultati descrivono la tua organizzazione nel suo insieme. Non mostrano i tuoi dati
+            individuali — i tuoi contributi entrano solo come aggregato anonimo sopra soglia privacy.
+          </p>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
               <p className="text-xs text-[rgba(6,3,43,0.40)]">Activation Rate</p>
@@ -348,16 +393,18 @@ export default function MyKoraHome() {
       {/* ── KORA Link / QR Action Preview — stepper ── */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-4">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">KORA Link / QR — Action Preview</h2>
-              <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.05)] px-1.5 py-0.5 text-[10px] font-semibold text-[rgba(6,3,43,0.52)]">
-                Demo
-              </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">KORA Link / QR</h2>
+              {/* Task 5: KORA Link is FUTURE_VISION — replace insufficient "Demo" badge */}
+              <BoundaryBadge mode="FUTURE_VISION" variant="light" />
             </div>
+            <p className="text-xs font-medium text-[rgba(6,3,43,0.60)] mb-1">
+              Non disponibile in Foundation Light.
+            </p>
             <p className="text-xs text-[rgba(6,3,43,0.40)] leading-relaxed">
-              Simula come un&apos;azione reale diventa evidenza, UEF candidate, Impact Units e aggiornamento
-              del PIB privato.
+              La simulazione qui sotto mostra come un&apos;azione reale diventerebbe evidenza, UEF candidate,
+              Impact Units e aggiornamento del PIB privato — in Pilot+, quando KORA Link sarà operativo.
             </p>
           </div>
         </div>

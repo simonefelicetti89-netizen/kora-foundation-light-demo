@@ -7,6 +7,7 @@
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
 
 // W-02: Privacy & Sharing
@@ -42,6 +43,14 @@ export default function PrivacySharing() {
         <h1 style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, fontSize: "1.875rem", letterSpacing: "-0.03em", lineHeight: 1.06, color: "#06032B" }}>Privacy & Condivisione</h1>
         <p className="text-sm text-[rgba(6,3,43,0.52)]">{privacy.persona_label}</p>
       </div>
+
+      {/* ── PreviewToLiveNotice — Task 3 */}
+      <PreviewToLiveNotice
+        what="Stai vedendo le tue impostazioni di Privacy & Condivisione in anteprima."
+        preview="Le preferenze mostrate sono illustrative — nessuna modifica ha effetto reale in Foundation Light."
+        live="In Pilot+, le tue scelte di consenso saranno registrate e applicate in modo sicuro al tuo account worker-owned."
+        privacy="Solo tu puoi vedere e modificare le tue impostazioni di consenso. Il tuo datore di lavoro non ha accesso."
+      />
 
       {/* Core privacy guarantee — non-suppressible */}
       <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-4">
@@ -87,6 +96,16 @@ export default function PrivacySharing() {
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">
           Preferenze di Consenso
         </h2>
+
+        {/* Task 9: Non-interactive toggle warning — workers must not think these do something real */}
+        <div className="rounded-lg border border-[rgba(199,111,61,0.30)] bg-[rgba(199,111,61,0.07)] p-4 mb-3">
+          <p className="text-sm font-semibold text-[rgba(6,3,43,0.88)] mb-1">Queste impostazioni non modificano dati reali.</p>
+          <p className="text-xs text-[rgba(6,3,43,0.72)] leading-relaxed">
+            In questa anteprima i controlli sono visivi — non attivi. Nessuna preferenza viene salvata,
+            nessuna azione di consenso ha effetto. In Pilot+, ogni modifica sarà registrata in modo
+            sicuro e applicata immediatamente al tuo account worker-owned.
+          </p>
+        </div>
 
         <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-3 mb-3">
           <p className="text-xs font-semibold text-[#8A5A00]">Solo anteprima — Foundation Light</p>

@@ -8,6 +8,7 @@
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService, type OpportunityItem } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
 
 const PILLAR_COLORS: Record<string, string> = {
@@ -78,6 +79,14 @@ export default function Opportunities() {
           Percorsi e iniziative abbinati al tuo profilo di impatto — {opportunities.length} suggerimenti
         </p>
       </div>
+
+      {/* ── PreviewToLiveNotice — Task 3 */}
+      <PreviewToLiveNotice
+        what="Stai vedendo le opportunità suggerite per il tuo profilo di impatto."
+        preview="Le opportunità mostrate sono illustrative — abbinate a un profilo sintetico dimostrativo."
+        live="In Pilot+, le opportunità proverranno da partner KORA reali e iniziative verificate dalla tua azienda."
+        privacy="Il tuo datore di lavoro non vede quali opportunità esplori o selezioni."
+      />
 
       {/* Privacy notice — non-suppressible */}
       <div className="rounded-lg border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] p-3">
@@ -159,11 +168,16 @@ export default function Opportunities() {
         ))}
       </div>
 
-      {/* IU estimate disclaimer */}
+      {/* IU generation clarification — Task 8 */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] p-3">
-        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">Nota sugli IU stimati</p>
+        <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">Come si generano gli Impact Unit dalle opportunità?</p>
         <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
-          Gli Impact Unit stimati sono indicazioni orientative basate sulla metodologia KORA v0.1 pre-calibrazione empirica.
+          Gli Impact Unit non vengono generati semplicemente esplorando questa pagina o visualizzando un&apos;opportunità.
+          Gli IU possono essere generati solo dopo una partecipazione reale e verificata — completamento dell&apos;attività,
+          evidenza registrata nel sistema KORA, revisione da parte di un advisor o partner autorizzato.
+        </p>
+        <p className="mt-1.5 text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
+          Gli &quot;IU potenziali&quot; mostrati su ogni opportunità sono stime orientative basate sulla metodologia KORA v0.1.
           Il valore reale dipende da completamento, verifica dell&apos;evidenza e fattori di correzione applicati.
           Questi dati sono sintetici e solo a scopo dimostrativo.
         </p>
