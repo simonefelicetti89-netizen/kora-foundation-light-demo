@@ -281,44 +281,7 @@ export function deriveNextAction(
   };
 }
 
-// ── Template library ──────────────────────────────────────────────────────────
-
-export interface TemplateEntry {
-  name:        string;
-  file:        string;
-  description: string;
-  pillarHint:  string;
-}
-
-export const SUBMISSION_TEMPLATES: ReadonlyArray<TemplateEntry> = [
-  {
-    name:        'Iniziative',
-    file:        'iniziative.csv',
-    description: 'Programmi welfare, wellbeing, community',
-    pillarHint:  'LIFE · CONNECTION · IMPACT',
-  },
-  {
-    name:        'Formazione',
-    file:        'formazione.csv',
-    description: 'Corsi, certificazioni, LMS export',
-    pillarHint:  'GROWTH',
-  },
-  {
-    name:        'Volontariato',
-    file:        'volontariato.csv',
-    description: 'Iniziative ESG e territoriali',
-    pillarHint:  'IMPACT · CONNECTION',
-  },
-  {
-    name:        'Mentoring',
-    file:        'mentoring.csv',
-    description: 'Programmi mentoring e peer-support',
-    pillarHint:  'LEGACY · CONNECTION · GROWTH',
-  },
-  {
-    name:        'Budget',
-    file:        'budget.csv',
-    description: 'Voci di spesa welfare e benefit per il BTI engine',
-    pillarHint:  'Budget-to-Human-Impact',
-  },
-];
+// Template config is now canonical in lib/company-submissions/templates.ts
+// Re-exported here for backward compatibility with existing imports.
+export type { SubmissionTemplate as TemplateEntry } from '@/lib/company-submissions/templates';
+export { SUBMISSION_TEMPLATES } from '@/lib/company-submissions/templates';

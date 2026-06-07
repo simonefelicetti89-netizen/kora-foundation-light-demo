@@ -1,0 +1,4 @@
+tipo_evidenza,descrizione,data,provider_o_fonte,riferimento_documento,numero_partecipanti_coinvolti,note
+attestato_formazione,Certificato completamento corso Excel Avanzato,2025-02-28,FormazionePro,CERT-2025-001,22,Allegare PDF certificato
+report_provider,Report trimestrale welfare Q1 2025,2025-03-31,WelfarePartner S.r.l.,REP-Q1-2025,180,Includere tabelle aggregate
+lista_partecipanti_anonimizzata,Lista aggregata per dipartimento — iniziativa wellbeing,2025-04-15,InternalHR,PART-2025-042,35,Solo conteggi aggregati — no nomi

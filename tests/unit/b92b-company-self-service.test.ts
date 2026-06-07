@@ -531,23 +531,24 @@ describe('clarification experience', () => {
 // ── TEMPLATE LIBRARY TESTS ────────────────────────────────────────────────────
 
 describe('SUBMISSION_TEMPLATES', () => {
-  it('has exactly 5 templates', () => {
-    expect(SUBMISSION_TEMPLATES).toHaveLength(5);
+  // B93-B expanded the template library to 6 (added evidenze.csv)
+  it('has at least 5 templates', () => {
+    expect(SUBMISSION_TEMPLATES.length).toBeGreaterThanOrEqual(5);
   });
 
   const EXPECTED_FILES = ['iniziative.csv', 'formazione.csv', 'volontariato.csv', 'mentoring.csv', 'budget.csv'];
 
-  it('contains all expected CSV files', () => {
-    const files = SUBMISSION_TEMPLATES.map((t) => t.file);
+  it('contains all original 5 CSV files', () => {
+    const files = SUBMISSION_TEMPLATES.map((t) => t.fileName);
     EXPECTED_FILES.forEach((f) => {
       expect(files).toContain(f);
     });
   });
 
-  it('all templates have name, file, description, pillarHint', () => {
+  it('all templates have title, fileName, description, pillarHint', () => {
     SUBMISSION_TEMPLATES.forEach((tmpl) => {
-      expect(tmpl.name).toBeTruthy();
-      expect(tmpl.file).toBeTruthy();
+      expect(tmpl.title).toBeTruthy();
+      expect(tmpl.fileName).toBeTruthy();
       expect(tmpl.description).toBeTruthy();
       expect(tmpl.pillarHint).toBeTruthy();
     });
@@ -555,27 +556,27 @@ describe('SUBMISSION_TEMPLATES', () => {
 
   it('all template files are CSV', () => {
     SUBMISSION_TEMPLATES.forEach((tmpl) => {
-      expect(tmpl.file).toMatch(/\.csv$/);
+      expect(tmpl.fileName).toMatch(/\.csv$/);
     });
   });
 
-  it('template names are unique', () => {
-    const names = SUBMISSION_TEMPLATES.map((t) => t.name);
-    expect(new Set(names).size).toBe(names.length);
+  it('template titles are unique', () => {
+    const titles = SUBMISSION_TEMPLATES.map((t) => t.title);
+    expect(new Set(titles).size).toBe(titles.length);
   });
 
   it('budget template mentions BTI / Budget-to-Human-Impact', () => {
-    const budget = SUBMISSION_TEMPLATES.find((t) => t.file === 'budget.csv');
+    const budget = SUBMISSION_TEMPLATES.find((t) => t.fileName === 'budget.csv');
     expect(budget?.pillarHint?.toLowerCase()).toContain('budget');
   });
 
   it('formazione template references GROWTH pillar', () => {
-    const formazione = SUBMISSION_TEMPLATES.find((t) => t.file === 'formazione.csv');
+    const formazione = SUBMISSION_TEMPLATES.find((t) => t.fileName === 'formazione.csv');
     expect(formazione?.pillarHint).toContain('GROWTH');
   });
 
   it('mentoring template references LEGACY pillar', () => {
-    const mentoring = SUBMISSION_TEMPLATES.find((t) => t.file === 'mentoring.csv');
+    const mentoring = SUBMISSION_TEMPLATES.find((t) => t.fileName === 'mentoring.csv');
     expect(mentoring?.pillarHint).toContain('LEGACY');
   });
 });

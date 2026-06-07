@@ -7,15 +7,15 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useCompanySession }   from '../_providers/CompanySessionProvider';
+import { useCompanySession }          from '../_providers/CompanySessionProvider';
 import { tenantService }              from '@/services/tenant/TenantService';
 import { workerProvisioningService }  from '@/services/worker-provisioning/WorkerProvisioningService';
 import { CompanyPipelineStatus }      from '@/components/company/status/CompanyPipelineStatus';
+import { TemplateLibrary }            from '@/components/company/submissions/TemplateLibrary';
 import {
   derivePipelineStatus,
   deriveChecklist,
   deriveNextAction,
-  SUBMISSION_TEMPLATES,
   type SubmissionSnapshot,
   type WorkspaceReadinessSnapshot,
   type ChecklistItem,
@@ -540,52 +540,11 @@ export default function CompanyStatusCenterPage() {
       {/* ── SECTION G — Template Library ───────────────────────────────────── */}
       <div style={{ marginTop: 16 }}>
         <SectionCard title="Template di submission">
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 16, marginTop: 0 }}>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 14, marginTop: 0 }}>
             Scarica il template CSV per la tipologia di dati che vuoi inviare.
             Compila, carica nel workspace e invia a KORA Admin.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {SUBMISSION_TEMPLATES.map((tmpl) => (
-              <a
-                key={tmpl.file}
-                href={`/templates/${tmpl.file}`}
-                download
-                style={{
-                  display: 'block', textDecoration: 'none', padding: '12px 14px', borderRadius: 8,
-                  background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-                  cursor: 'pointer', transition: 'border-color 0.15s',
-                }}
-              >
-                <div className="flex items-start gap-2">
-                  <div style={{
-                    width: 28, height: 28, borderRadius: 6, flexShrink: 0,
-                    background: 'rgba(74,127,224,0.12)', border: '1px solid rgba(74,127,224,0.25)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 12,
-                  }}>
-                    📄
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.82)' }}>
-                      {tmpl.name}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', marginTop: 1 }}>
-                      {tmpl.description}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'rgba(74,127,224,0.65)', marginTop: 2 }}>
-                      {tmpl.pillarHint}
-                    </div>
-                  </div>
-                </div>
-                <div style={{
-                  marginTop: 8, fontSize: 11, fontWeight: 600,
-                  color: 'rgba(74,127,224,0.70)', textAlign: 'right',
-                }}>
-                  ↓ Scarica CSV
-                </div>
-              </a>
-            ))}
-          </div>
+          <TemplateLibrary />
         </SectionCard>
       </div>
 
