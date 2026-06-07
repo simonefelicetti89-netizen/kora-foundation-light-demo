@@ -637,6 +637,28 @@ export default function MyKoraHome() {
         </ul>
       </div>
 
+      {/* ── KORA Commons entry ── */}
+      <div className="rounded-lg border border-[rgba(74,127,224,0.18)] bg-[rgba(74,127,224,0.05)] p-4">
+        <div className="flex flex-wrap items-center gap-2 mb-2">
+          <p className="text-sm font-semibold text-[#06032B]">KORA Commons — Attivazione condivisa</p>
+          <span className="rounded border border-[rgba(74,127,224,0.22)] bg-[rgba(74,127,224,0.10)] px-1.5 py-0.5 text-[9px] font-bold text-[rgba(74,127,224,0.85)] uppercase tracking-[0.08em]">
+            PREVIEW
+          </span>
+        </div>
+        <p className="text-xs text-[rgba(6,3,43,0.55)] leading-relaxed mb-3">
+          Scopri opportunità di attivazione aperte dalla rete KORA — formazione, volontariato, mentoring,
+          comunità. <strong className="text-[rgba(6,3,43,0.70)]">KORA Commons non è un social network.</strong>{' '}
+          I tuoi dati rimangono privati.
+        </p>
+        <Link
+          href="/commons"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#06032B] px-3.5 py-2 text-xs font-bold text-white hover:opacity-90 transition-opacity"
+          style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', textDecoration: 'none' }}
+        >
+          Esplora Commons →
+        </Link>
+      </div>
+
       {/* ── Navigation cards ── */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <Link href="/my-kora/dynamic-cv" className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 hover:bg-[rgba(6,3,43,0.03)] transition-colors">

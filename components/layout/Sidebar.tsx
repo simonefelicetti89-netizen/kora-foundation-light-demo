@@ -101,6 +101,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
         badgeKey: 'SYNTHETIC',
         // All routes in this group use synthetic/demo data — no live Supabase queries.
         items: [
+          { href: '/commons',             label: 'KORA Commons', comingSoon: true },
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
           { href: '/admin/index-registry', label: 'Registro KORA Index' },
           { href: '/admin/portfolio',      label: 'Portfolio Aziende' },
@@ -164,6 +165,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
         heading: 'Network',
         items: [
           { href: '/company/shared', label: 'Spazio Condiviso' },
+          { href: '/commons',        label: 'KORA Commons', comingSoon: true },
         ],
       },
       {
@@ -223,6 +225,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
         items: [
           { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV' },
           { href: '/my-kora/opportunities', label: 'Opportunità' },
+          { href: '/commons',               label: 'KORA Commons', comingSoon: true },
           { href: '/my-kora/bookings',      label: 'Prenotazioni', comingSoon: true },
           { href: '/my-kora/collective',    label: 'Collettivo',   comingSoon: true },
         ],

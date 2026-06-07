@@ -534,6 +534,62 @@ export default function KoraSharedView() {
         </p>
       </div>
 
+      {/* ── KORA Commons panel ──────────────────────────────────────────────── */}
+      <SectionLabel>KORA Commons — Layer Condiviso di Rete</SectionLabel>
+      <div style={{
+        background:   TOKENS.surface,
+        border:       TOKENS.cardBorder,
+        borderRadius: TOKENS.cardRadius,
+        padding:      '1.25rem',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <span style={{
+            fontSize:      9,
+            fontWeight:    700,
+            padding:       '2px 7px',
+            borderRadius:  4,
+            background:    'rgba(74,127,224,0.12)',
+            color:         'rgba(74,127,224,0.85)',
+            textTransform: 'uppercase' as const,
+            letterSpacing: '0.08em',
+            border:        '1px solid rgba(74,127,224,0.22)',
+            fontFamily:    'Plus Jakarta Sans, system-ui, sans-serif',
+          }}>
+            PREVIEW
+          </span>
+          <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, margin: 0 }}>
+            Opportunità di attivazione condivise nella rete KORA
+          </p>
+        </div>
+        <p style={{ fontSize: '13px', color: TOKENS.ink, fontWeight: 600, marginBottom: 6 }}>
+          KORA Commons non è un social network.
+        </p>
+        <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.6, marginBottom: 16 }}>
+          KORA Commons è il layer condiviso di attivazione umana tra organizzazioni della rete KORA.
+          Le aziende pubblicano opportunità — formazione, volontariato, mentoring, iniziative di comunità —
+          aperte ai lavoratori di tutta la rete. Nessun dato individuale è condiviso tra aziende.
+          Il lavoratore rimane sovrano sui propri dati.
+        </p>
+        <Link
+          href="/commons"
+          style={{
+            display:        'inline-flex',
+            alignItems:     'center',
+            gap:            6,
+            fontSize:       '12.5px',
+            fontWeight:     700,
+            padding:        '8px 16px',
+            borderRadius:   8,
+            background:     TOKENS.ink,
+            color:          '#FFFFFF',
+            textDecoration: 'none',
+            fontFamily:     'Plus Jakarta Sans, system-ui, sans-serif',
+          }}
+        >
+          Esplora KORA Commons →
+        </Link>
+      </div>
+
       {/* ── ExplainabilityHint ──────────────────────────────────────────────── */}
       <ExplainabilityHint />
 
