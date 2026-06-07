@@ -1,3 +1,24 @@
+// services/report-generator/ReportGeneratorService.ts
+//
+// ── REPORTING ARCHITECTURE NOTE ───────────────────────────────────────────────
+// KORA has two report services consumed by app/company/reports/page.tsx:
+//
+//   ReportFactoryService  (489L) — orchestrator role: versions, metadata, export
+//                                  actions, period comparison, change summaries.
+//   ReportGeneratorService (this) — content generation: Decision Pack body,
+//                                  section data, metrics, insights, recommendations.
+//
+// Target architecture: app routes consume ONLY ReportFactoryService.
+//   ReportFactoryService should call ReportGeneratorService internally.
+//   No app route should import both services simultaneously.
+//
+// Current state (Foundation Light v0.1): both services are imported directly by
+//   app/company/reports/page.tsx. This is architectural debt — safe for demo,
+//   but must be resolved before Pilot+.
+//
+// Pilot+ action: move content generation calls from the reports page into
+//   ReportFactoryService, then remove the direct reports page → generator import.
+
 import type {
   KoraRole,
   ScenarioId,

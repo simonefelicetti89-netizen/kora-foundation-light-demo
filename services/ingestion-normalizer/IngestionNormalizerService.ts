@@ -1,3 +1,16 @@
+// services/ingestion-normalizer/IngestionNormalizerService.ts
+//
+// Normalizes raw ingestion row data (RawIngestionRow) into structured
+// NormalizedIngestionRow records for further pipeline processing.
+//
+// Consumer: IngestionPipelineService (services/ingestion-pipeline/) — imported at line 8.
+// This service is NOT orphaned: it is an internal dependency of the ingestion pipeline.
+// It should not be imported directly in app/ routes or components.
+//
+// Architecture note: IngestionNormalizerService is a sub-module of the ingestion domain.
+// In Pilot+, this should be an internal class or module within IngestionPipelineService
+// rather than a peer service, unless multiple pipeline stages need to call it independently.
+
 import type { RawIngestionRow, NormalizedIngestionRow, IngestionSourceType } from '@/lib/types';
 import { CCNL_IMPROVEMENT_SIGNALS } from '@/lib/constants/kora';
 

@@ -1,9 +1,42 @@
+// lib/types/index.ts — KORA canonical TypeScript domain model.
+//
+// ── Domain Split Status ───────────────────────────────────────────────────────
+// This file is a monolith by design in Foundation Light v0.1 (~1,900 lines).
+// A planned domain split is scaffolded in lib/types/domains/ (see README there).
+// New types with no existing consumers should be added to the appropriate domain
+// file in lib/types/domains/ rather than to this file.
+//
+// Domain sections in this file (in order):
+//   [PLATFORM]     KoraRole, Environment, ScenarioId, SafeguardStatus, CalibrationStatus
+//   [METHODOLOGY]  EligibilityClass, ActionFamily, EventNature, MandatoryStatus, DepthLevel
+//   [POLICY]       StructuralPolicySubtype, StructuralPolicyRecord
+//   [SCORING]      MacroblockConfig, MacroblockScore, KoraIndexComponent, KoraIndexOutput,
+//                  CompanyAggregate, CompanyAggregateExtended
+//   [WORKER]       UEFRecord, ImpactUnit, PIBRecord, WorkerPersona
+//   [INGESTION]    IngestionSourceType, RawIngestionRow, NormalizedIngestionRow, action taxonomy
+//   [BTI]          Budget-to-Human-Impact engine types
+//   [PIPELINE]     AI Ingestion Pipeline types
+//   [IU]           IU Computation Foundation types
+//   [UEF_REVIEW]   UEF Review & Human Validation types
+//   [METHODOLOGY_CONFIG] Methodology Config types
+//   [DYNAMIC_SCORING]    Dynamic Scoring Preview types
+//   [SERVICE]      Service-compatible types
+//   [DECISION_PACK] Decision Pack types
+//   [ONBOARDING]   Company Onboarding Studio types
+//   [COMPANY_SETUP] Company Setup types
+//   [WORKFORCE]    Workforce Baseline Upload types
+//   [ACCESS_CONTROL] Access Control Foundation
+//   [TENANT]       Enterprise SaaS Backbone — Tenant & Account Lifecycle
+//   [DATA_INTAKE]  Tenant-Scoped Admin Data Intake
+
 import type {
   KORA_ROLES,
   PILLAR_CODES,
   KORA_INDEX_COMPONENTS,
   MACROBLOCK_CODES,
 } from '@/lib/constants/kora';
+
+// ── [PLATFORM] ────────────────────────────────────────────────────────────────
 
 export type KoraRole       = (typeof KORA_ROLES)[number];
 export type PillarCode     = (typeof PILLAR_CODES)[number];
