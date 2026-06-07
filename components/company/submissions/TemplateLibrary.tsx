@@ -24,8 +24,8 @@ function TemplateCard({ tmpl, compact }: { tmpl: SubmissionTemplate; compact?: b
         textDecoration: 'none',
         padding: compact ? '10px 12px' : '14px 16px',
         borderRadius: 8,
-        background: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'rgba(6,3,43,0.03)',
+        border: '1px solid rgba(6,3,43,0.08)',
         cursor: 'pointer',
       }}
       data-template-id={tmpl.id}
@@ -40,11 +40,11 @@ function TemplateCard({ tmpl, compact }: { tmpl: SubmissionTemplate; compact?: b
           📄
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.88)' }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(6,3,43,0.88)' }}>
             {tmpl.title}
           </div>
           {!compact && (
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)', marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', marginTop: 2 }}>
               {tmpl.description}
             </div>
           )}

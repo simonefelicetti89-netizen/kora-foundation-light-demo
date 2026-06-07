@@ -21,11 +21,11 @@ import type { SubmissionFeedbackData } from '@/services/submission-feedback/Subm
 // ── Shared design tokens ──────────────────────────────────────────────────────
 
 const COL = {
-  heading:   'rgba(255,255,255,0.85)',
-  body:      'rgba(255,255,255,0.55)',
-  muted:     'rgba(255,255,255,0.35)',
-  border:    'rgba(255,255,255,0.08)',
-  card:      'rgba(255,255,255,0.03)',
+  heading:   'rgba(6,3,43,0.85)',
+  body:      'rgba(6,3,43,0.58)',
+  muted:     'rgba(6,3,43,0.40)',
+  border:    'rgba(6,3,43,0.08)',
+  card:      'rgba(6,3,43,0.03)',
   green:     '#22c55e',
   greenBg:   'rgba(34,197,94,0.09)',
   greenBdr:  'rgba(34,197,94,0.25)',

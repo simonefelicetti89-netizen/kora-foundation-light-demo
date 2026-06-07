@@ -40,9 +40,10 @@ const BADGE: Record<string, React.CSSProperties> = {
 interface NavItem {
   href:         string;
   label:        string;
-  comingSoon?:  boolean;
-  inactive?:    boolean;
-  description?: string; // small hint line rendered below the label
+  comingSoon?:  boolean;  // disabled + muted (non-clickable)
+  inactive?:    boolean;  // disabled + "inattivo" badge (Future Vision)
+  preview?:     boolean;  // clickable + "preview" badge (PREVIEW routes)
+  description?: string;
 }
 
 interface NavGroup {
@@ -101,7 +102,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
         badgeKey: 'SYNTHETIC',
         // All routes in this group use synthetic/demo data — no live Supabase queries.
         items: [
-          { href: '/commons',             label: 'KORA Commons', comingSoon: true },
+          { href: '/commons',             label: 'KORA Commons', preview: true },
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
           { href: '/admin/index-registry', label: 'Registro KORA Index' },
           { href: '/admin/portfolio',      label: 'Portfolio Aziende' },
@@ -165,7 +166,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
         heading: 'Network',
         items: [
           { href: '/company/shared', label: 'Spazio Condiviso' },
-          { href: '/commons',        label: 'KORA Commons', comingSoon: true },
+          { href: '/commons',        label: 'KORA Commons', preview: true },
         ],
       },
       {
@@ -225,7 +226,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
         items: [
           { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV' },
           { href: '/my-kora/opportunities', label: 'Opportunità' },
-          { href: '/commons',               label: 'KORA Commons', comingSoon: true },
+          { href: '/commons',               label: 'KORA Commons', preview: true },
           { href: '/my-kora/bookings',      label: 'Prenotazioni', comingSoon: true },
           { href: '/my-kora/collective',    label: 'Collettivo',   comingSoon: true },
         ],
@@ -410,6 +411,22 @@ export function Sidebar() {
                     )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0, marginLeft: 4 }}>
+                    {item.preview && (
+                      <span
+                        style={{
+                          borderRadius: 4,
+                          padding:      '1px 5px',
+                          fontSize:     '8px',
+                          fontWeight:   700,
+                          fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                          background:   'rgba(199,111,61,0.22)',
+                          color:        'rgba(199,111,61,0.95)',
+                          border:       '1px solid rgba(199,111,61,0.35)',
+                        }}
+                      >
+                        preview
+                      </span>
+                    )}
                     {item.comingSoon && (
                       <span
                         style={{

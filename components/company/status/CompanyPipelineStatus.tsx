@@ -23,19 +23,19 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
             ? '#22c55e'
             : isCurrent
             ? 'rgba(74,127,224,0.9)'
-            : 'rgba(255,255,255,0.10)';
+            : 'rgba(6,3,43,0.10)';
 
           const dotBg = isDone
             ? '#22c55e'
             : isCurrent
             ? 'rgba(74,127,224,0.9)'
-            : 'rgba(255,255,255,0.12)';
+            : 'rgba(6,3,43,0.12)';
 
           const textColor = isDone
             ? '#22c55e'
             : isCurrent
-            ? 'rgba(255,255,255,0.92)'
-            : 'rgba(255,255,255,0.36)';
+            ? 'rgba(6,3,43,0.92)'
+            : 'rgba(6,3,43,0.36)';
 
           return (
             <div key={stage} className="flex-1 flex flex-col items-center relative">
@@ -53,7 +53,7 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
                   style={{
                     background: pipeline.completedStages.includes((stage + 1) as PipelineStage)
                       ? '#22c55e'
-                      : 'rgba(255,255,255,0.10)',
+                      : 'rgba(6,3,43,0.10)',
                   }}
                 />
               )}
@@ -79,7 +79,7 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
                     <path d="M2.5 7L5.5 10L11.5 4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 ) : (
-                  <span style={{ fontSize: 11, fontWeight: 700, color: isNotStarted ? 'rgba(255,255,255,0.30)' : '#fff' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: isNotStarted ? 'rgba(6,3,43,0.30)' : '#fff' }}>
                     {stage}
                   </span>
                 )}
@@ -141,7 +141,7 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
                     ? '#22c55e'
                     : isCurrent
                     ? 'rgba(74,127,224,0.9)'
-                    : 'rgba(255,255,255,0.10)',
+                    : 'rgba(6,3,43,0.10)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -159,7 +159,7 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
                 <div style={{
                   fontSize: 12,
                   fontWeight: isCurrent ? 700 : 500,
-                  color: isDone ? '#22c55e' : isCurrent ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.40)',
+                  color: isDone ? '#22c55e' : isCurrent ? 'rgba(6,3,43,0.92)' : 'rgba(6,3,43,0.40)',
                 }}>
                   {PIPELINE_STAGES[stage].label}
                   {isCurrent && (
@@ -178,7 +178,7 @@ export function CompanyPipelineStatus({ pipeline }: Props) {
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.35)', marginTop: 2 }}>
                   {PIPELINE_STAGES[stage].description}
                 </div>
               </div>

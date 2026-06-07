@@ -34,13 +34,13 @@ function SectionCard({ title, badge, children }: {
 }) {
   return (
     <div style={{
-      background:   'rgba(255,255,255,0.03)',
-      border:       '1px solid rgba(255,255,255,0.08)',
+      background:   'rgba(6,3,43,0.03)',
+      border:       '1px solid rgba(6,3,43,0.08)',
       borderRadius: 12,
       padding:      '20px 24px',
     }}>
       <div className="flex items-center gap-2 mb-4">
-        <h2 style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 700, color: 'rgba(6,3,43,0.85)', margin: 0 }}>
           {title}
         </h2>
         {badge}
@@ -60,7 +60,7 @@ function ChecklistRow({ item }: { item: ChecklistItem }) {
     ? { bg: 'rgba(34,197,94,0.15)', border: '1.5px solid rgba(34,197,94,0.35)', color: '#22c55e' }
     : isInProgress
     ? { bg: 'rgba(74,127,224,0.12)', border: '1.5px solid rgba(74,127,224,0.35)', color: 'rgba(74,127,224,0.9)' }
-    : { bg: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.28)' };
+    : { bg: 'rgba(6,3,43,0.04)', border: '1.5px solid rgba(6,3,43,0.12)', color: 'rgba(6,3,43,0.28)' };
 
   const content = (
     <div className="flex items-start gap-3">
@@ -84,12 +84,12 @@ function ChecklistRow({ item }: { item: ChecklistItem }) {
         <div style={{
           fontSize: 13,
           fontWeight: 600,
-          color: isComplete ? 'rgba(255,255,255,0.80)' : isInProgress ? 'rgba(255,255,255,0.88)' : 'rgba(255,255,255,0.38)',
+          color: isComplete ? 'rgba(6,3,43,0.80)' : isInProgress ? 'rgba(6,3,43,0.88)' : 'rgba(6,3,43,0.38)',
           lineHeight: 1.4,
         }}>
           {item.label}
         </div>
-        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)', marginTop: 2 }}>
+        <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', marginTop: 2 }}>
           {item.detail}
         </div>
       </div>
@@ -155,16 +155,16 @@ function deriveReadinessFromTenant(companyId: string): WorkspaceReadinessSnapsho
 // ── Submission status badge ───────────────────────────────────────────────────
 
 const STATUS_META: Record<string, { label: string; bg: string; color: string }> = {
-  submission_draft:               { label: 'Bozza',               bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.50)' },
+  submission_draft:               { label: 'Bozza',               bg: 'rgba(6,3,43,0.08)', color: 'rgba(6,3,43,0.50)' },
   submission_pending:             { label: 'In attesa revisione',  bg: 'rgba(74,127,224,0.15)',  color: 'rgba(130,180,240,0.90)' },
   submission_needs_clarification: { label: 'Chiarimento richiesto', bg: 'rgba(245,158,11,0.15)', color: 'rgba(251,191,36,0.90)' },
   submission_accepted:            { label: 'Accettata',            bg: 'rgba(34,197,94,0.12)',  color: '#22c55e' },
   submission_rejected:            { label: 'Rifiutata',            bg: 'rgba(239,68,68,0.12)',  color: '#f87171' },
-  submission_archived:            { label: 'Archiviata',           bg: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.38)' },
+  submission_archived:            { label: 'Archiviata',           bg: 'rgba(6,3,43,0.06)', color: 'rgba(6,3,43,0.38)' },
 };
 
 function SubmissionBadge({ status }: { status: string }) {
-  const meta = STATUS_META[status] ?? { label: status, bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.50)' };
+  const meta = STATUS_META[status] ?? { label: status, bg: 'rgba(6,3,43,0.08)', color: 'rgba(6,3,43,0.50)' };
   return (
     <span style={{
       fontSize: 11, fontWeight: 700, borderRadius: 5,
@@ -238,7 +238,7 @@ export default function CompanyStatusCenterPage() {
   // ── Loading states ────────────────────────────────────────────────────────
   if (sessionLoading || liveFetching) {
     return (
-      <div className="p-8" style={{ color: 'rgba(255,255,255,0.50)', fontSize: 14 }}>
+      <div className="p-8" style={{ color: 'rgba(6,3,43,0.50)', fontSize: 14 }}>
         Caricamento Status Center...
       </div>
     );
@@ -250,7 +250,7 @@ export default function CompanyStatusCenterPage() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'rgba(255,255,255,0.92)', margin: 0 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: 'rgba(6,3,43,0.92)', margin: 0 }}>
             Status Center
           </h1>
           {!isLive && (
@@ -272,7 +272,7 @@ export default function CompanyStatusCenterPage() {
             </span>
           )}
         </div>
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0 }}>
+        <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.45)', margin: 0 }}>
           {companyName} · Risponde a tutte le domande operative senza contattare KORA Admin.
         </p>
         {liveError && (
@@ -307,7 +307,7 @@ export default function CompanyStatusCenterPage() {
               <div style={{ fontSize: 14, fontWeight: 700, color: 'rgba(251,191,36,0.95)', marginBottom: 4 }}>
                 Chiarimento richiesto — risposta obbligatoria
               </div>
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.60)', marginBottom: 10 }}>
+              <div style={{ fontSize: 12, color: 'rgba(6,3,43,0.60)', marginBottom: 10 }}>
                 {clarificationSub?.adminComment
                   ? `KORA Admin ha scritto: "${clarificationSub.adminComment}"`
                   : 'KORA Admin ha richiesto informazioni aggiuntive sulla tua submission.'}
@@ -337,26 +337,26 @@ export default function CompanyStatusCenterPage() {
           ? 'rgba(245,158,11,0.08)'
           : nextAction.urgency === 'normal'
           ? 'rgba(74,127,224,0.08)'
-          : 'rgba(255,255,255,0.03)',
+          : 'rgba(6,3,43,0.03)',
         border: nextAction.urgency === 'critical'
           ? '1.5px solid rgba(245,158,11,0.40)'
           : nextAction.urgency === 'normal'
           ? '1.5px solid rgba(74,127,224,0.30)'
-          : '1px solid rgba(255,255,255,0.08)',
+          : '1px solid rgba(6,3,43,0.08)',
       }}>
         <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
           color: nextAction.urgency === 'critical'
             ? 'rgba(251,191,36,0.70)'
             : nextAction.urgency === 'normal'
             ? 'rgba(130,180,240,0.70)'
-            : 'rgba(255,255,255,0.35)',
+            : 'rgba(6,3,43,0.35)',
           marginBottom: 6 }}>
           Prossima azione
         </div>
-        <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.90)', marginBottom: 4 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(6,3,43,0.90)', marginBottom: 4 }}>
           {nextAction.action}
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.52)', marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: 'rgba(6,3,43,0.52)', marginBottom: 12 }}>
           {nextAction.detail}
         </div>
         {nextAction.urgency !== 'info' && (
@@ -382,8 +382,8 @@ export default function CompanyStatusCenterPage() {
         </div>
         <div style={{
           marginTop: 16, padding: '10px 14px', borderRadius: 8, fontSize: 11,
-          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-          color: 'rgba(255,255,255,0.42)',
+          background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.06)',
+          color: 'rgba(6,3,43,0.42)',
         }}>
           Il processo KORA è gestito da KORA Admin. Puoi tracciare lo stato ma non controllare i singoli step.
           {pipeline.isComplete ? ' ✓ Ciclo completato.' : ''}
@@ -399,8 +399,8 @@ export default function CompanyStatusCenterPage() {
             ))}
           </div>
           <div style={{
-            marginTop: 12, fontSize: 11, color: 'rgba(255,255,255,0.30)',
-            borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10,
+            marginTop: 12, fontSize: 11, color: 'rgba(6,3,43,0.30)',
+            borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 10,
           }}>
             {checklist.filter((i) => i.status === 'COMPLETE').length}/{checklist.length} completati
           </div>
@@ -415,14 +415,14 @@ export default function CompanyStatusCenterPage() {
             badge={
               <span style={{
                 fontSize: 10, fontWeight: 700, borderRadius: 4, padding: '2px 7px',
-                background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.40)',
+                background: 'rgba(6,3,43,0.07)', color: 'rgba(6,3,43,0.40)',
               }}>
                 {submissions.length} totali
               </span>
             }
           >
             {submissions.length === 0 ? (
-              <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', padding: '8px 0' }}>
+              <div style={{ fontSize: 13, color: 'rgba(6,3,43,0.35)', padding: '8px 0' }}>
                 Nessuna submission ancora. Vai al workspace per iniziare.
               </div>
             ) : (
@@ -434,17 +434,17 @@ export default function CompanyStatusCenterPage() {
                       padding: '12px 14px', borderRadius: 8,
                       background: sub.status === 'submission_needs_clarification'
                         ? 'rgba(245,158,11,0.08)'
-                        : 'rgba(255,255,255,0.03)',
+                        : 'rgba(6,3,43,0.03)',
                       border: sub.status === 'submission_needs_clarification'
                         ? '1.5px solid rgba(245,158,11,0.35)'
-                        : '1px solid rgba(255,255,255,0.06)',
+                        : '1px solid rgba(6,3,43,0.06)',
                     }}
                   >
                     <div className="flex items-start gap-3">
                       <div style={{ flex: 1 }}>
                         <div className="flex items-center gap-2 mb-1">
                           <SubmissionBadge status={sub.status} />
-                          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>
+                          <span style={{ fontSize: 11, color: 'rgba(6,3,43,0.35)' }}>
                             {sub.period} · {sub.submissionType ?? 'Dati'} · {sub.fileCount} file
                           </span>
                         </div>
@@ -457,7 +457,7 @@ export default function CompanyStatusCenterPage() {
                             Nota KORA Admin: {sub.adminComment}
                           </div>
                         )}
-                        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>
+                        <div style={{ fontSize: 10, color: 'rgba(6,3,43,0.25)', marginTop: 4 }}>
                           Creata {new Date(sub.createdAt).toLocaleDateString('it-IT')}
                           {sub.submittedAt && ` · Inviata ${new Date(sub.submittedAt).toLocaleDateString('it-IT')}`}
                         </div>
@@ -507,21 +507,21 @@ export default function CompanyStatusCenterPage() {
             ].map(({ label, value }) => (
               <div key={label} style={{
                 padding: '12px 14px', borderRadius: 8,
-                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)',
+                background: 'rgba(6,3,43,0.04)', border: '1px solid rgba(6,3,43,0.07)',
                 textAlign: 'center',
               }}>
-                <div style={{ fontSize: 22, fontWeight: 700, color: 'rgba(255,255,255,0.88)' }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: 'rgba(6,3,43,0.88)' }}>
                   {value}
                 </div>
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.40)', marginTop: 3 }}>
+                <div style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', marginTop: 3 }}>
                   {label}
                 </div>
               </div>
             ))}
           </div>
           <div style={{
-            fontSize: 11, color: 'rgba(255,255,255,0.32)',
-            background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+            fontSize: 11, color: 'rgba(6,3,43,0.32)',
+            background: 'rgba(6,3,43,0.02)', border: '1px solid rgba(6,3,43,0.05)',
             borderRadius: 6, padding: '8px 12px',
           }}>
             {workerAggregate.privacy_boundary_note}
@@ -530,9 +530,9 @@ export default function CompanyStatusCenterPage() {
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
             <div style={{
               width: 7, height: 7, borderRadius: '50%',
-              background: workerSpaceActive ? '#22c55e' : 'rgba(255,255,255,0.25)',
+              background: workerSpaceActive ? '#22c55e' : 'rgba(6,3,43,0.25)',
             }} />
-            <span style={{ fontSize: 12, color: workerSpaceActive ? '#22c55e' : 'rgba(255,255,255,0.40)' }}>
+            <span style={{ fontSize: 12, color: workerSpaceActive ? '#22c55e' : 'rgba(6,3,43,0.40)' }}>
               Worker Space {workerSpaceActive ? 'attivo' : 'non ancora attivo'}
             </span>
           </div>
@@ -542,7 +542,7 @@ export default function CompanyStatusCenterPage() {
       {/* ── SECTION G — Template Library ───────────────────────────────────── */}
       <div style={{ marginTop: 16 }}>
         <SectionCard title="Template di submission">
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', marginBottom: 14, marginTop: 0 }}>
+          <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', marginBottom: 14, marginTop: 0 }}>
             Scarica il template CSV per la tipologia di dati che vuoi inviare.
             Compila, carica nel workspace e invia a KORA Admin.
           </p>
@@ -587,16 +587,16 @@ export default function CompanyStatusCenterPage() {
               const card = (
                 <div style={{
                   padding: '14px 16px', borderRadius: 8,
-                  background: ready ? 'rgba(34,197,94,0.06)' : 'rgba(255,255,255,0.03)',
-                  border: ready ? '1px solid rgba(34,197,94,0.20)' : '1px solid rgba(255,255,255,0.07)',
+                  background: ready ? 'rgba(34,197,94,0.06)' : 'rgba(6,3,43,0.03)',
+                  border: ready ? '1px solid rgba(34,197,94,0.20)' : '1px solid rgba(6,3,43,0.07)',
                 }}>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)', marginBottom: 6 }}>{label}</div>
+                  <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', marginBottom: 6 }}>{label}</div>
                   <div className="flex items-center gap-2">
                     <div style={{
                       width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
-                      background: ready ? '#22c55e' : 'rgba(255,255,255,0.20)',
+                      background: ready ? '#22c55e' : 'rgba(6,3,43,0.20)',
                     }} />
-                    <span style={{ fontSize: 13, fontWeight: 600, color: ready ? '#22c55e' : 'rgba(255,255,255,0.45)' }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: ready ? '#22c55e' : 'rgba(6,3,43,0.45)' }}>
                       {value}
                     </span>
                   </div>
@@ -620,10 +620,10 @@ export default function CompanyStatusCenterPage() {
       {/* ── Footer disclaimer ────────────────────────────────────────────────── */}
       <div style={{
         marginTop: 32, padding: '14px 18px', borderRadius: 8, fontSize: 11,
-        color: 'rgba(255,255,255,0.30)', lineHeight: 1.6,
-        background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+        color: 'rgba(6,3,43,0.30)', lineHeight: 1.6,
+        background: 'rgba(6,3,43,0.02)', border: '1px solid rgba(6,3,43,0.05)',
       }}>
-        <strong style={{ color: 'rgba(255,255,255,0.40)' }}>KORA Methodology v0.1</strong>
+        <strong style={{ color: 'rgba(6,3,43,0.40)' }}>KORA Methodology v0.1</strong>
         {' · calibration_status: pre_empirical_calibration · '}
         {!isLive && 'synthetic_demo_data: true · '}
         Il KORA Index è un indicatore aggregato a livello aziendale.

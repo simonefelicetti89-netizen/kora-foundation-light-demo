@@ -121,11 +121,17 @@ export default function WorkforceCommandCenter({ params }: { params: { companyId
   const [form, setForm] = useState<NewWorkerForm>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Synchronous service calls (read from in-memory seed data)
-  const tenant = tenantService.getTenant(companyId);
-  const capability = workerSpaceCapabilityService.getCapabilityByCompanyId(companyId);
-  const aggregate = workerProvisioningService.getCompanyAggregateWorkerSummary(companyId);
-  const seedRoster = workerProvisioningService.getWorkersForCompany(companyId);
+  // Multi-field company resolution: accept company_id, tenant_id, or canonical demo slug.
+  const tenant = tenantService.getTenant(companyId)
+    ?? tenantService.getTenantByTenantId(companyId)
+    ?? (companyId === 'meridiana-group' || companyId === 'tenant-meridiana-001'
+        ? tenantService.getTenant('meridiana-group')
+        : null);
+  // Use the resolved company_id so services get the canonical key regardless of URL format.
+  const resolvedId = tenant?.company_id ?? companyId;
+  const capability = workerSpaceCapabilityService.getCapabilityByCompanyId(resolvedId);
+  const aggregate = workerProvisioningService.getCompanyAggregateWorkerSummary(resolvedId);
+  const seedRoster = workerProvisioningService.getWorkersForCompany(resolvedId);
 
   // Combined roster: seed (stable) + session workers (created this session)
   const allWorkers = [...seedRoster, ...sessionWorkers];
@@ -166,13 +172,34 @@ export default function WorkforceCommandCenter({ params }: { params: { companyId
     }
   }, [form, companyId, tenant]);
 
-  // Tenant not found — safe to return after all hooks
+  // Tenant not found — show company selector instead of dead empty screen
   if (!tenant) {
+    const allTenants = tenantService.getTenants();
     return (
-      <div className="space-y-4 max-w-xl">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">KORA Admin</p>
-        <h1 className="text-xl font-bold text-[#06032B]">Azienda non trovata</h1>
-        <p className="text-xs text-[rgba(6,3,43,0.52)] font-mono">company_id: {companyId}</p>
+      <div className="space-y-5 max-w-xl">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)] mb-1">KORA Admin · Workforce</p>
+          <h1 className="text-xl font-bold text-[#06032B]">Azienda non trovata</h1>
+          <p className="text-xs text-[rgba(6,3,43,0.52)] font-mono mt-0.5">company_id ricevuto: {companyId}</p>
+        </div>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-3">
+          <p className="text-xs font-semibold text-[rgba(6,3,43,0.70)]">Aziende disponibili nel portfolio demo</p>
+          <div className="flex flex-col gap-2">
+            {allTenants.map((t) => (
+              <Link
+                key={t.company_id}
+                href={`/admin/companies/${t.company_id}/workforce`}
+                className="flex items-center justify-between rounded border border-[rgba(6,3,43,0.10)] bg-white px-3 py-2.5 hover:bg-[rgba(6,3,43,0.02)] transition-colors"
+              >
+                <div>
+                  <p className="text-xs font-semibold text-[#06032B]">{t.company_name}</p>
+                  <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] mt-0.5">company_id: {t.company_id}</p>
+                </div>
+                <span className="text-[10px] font-semibold text-[#C76F3D]">Gestisci →</span>
+              </Link>
+            ))}
+          </div>
+        </div>
         <Link href="/admin/companies" className="text-xs font-semibold text-[#C76F3D] hover:underline">
           ← Company Mission Control
         </Link>
