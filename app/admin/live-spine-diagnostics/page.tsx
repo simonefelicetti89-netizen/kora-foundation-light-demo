@@ -209,6 +209,19 @@ export default async function LiveSpineDiagnosticsPage() {
         </div>
       </div>
 
+      {/* Golden Path hint */}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.10)] bg-white px-4 py-3 flex items-start gap-3">
+        <span className="text-base shrink-0 mt-0.5">▶</span>
+        <div className="space-y-0.5 min-w-0">
+          <p className="text-[11px] font-semibold text-[#06032B]">Primo utilizzo? Segui il Golden Path Runbook.</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
+            Guida operativa passo-passo: creazione tenant → upload → UEF Review → scoring → Decision Pack.
+            File sample disponibile in <span className="font-mono">data/golden-path/kora_golden_path_upload.csv</span>.
+          </p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Runbook: <span className="font-mono">docs/GOLDEN_PATH_RUNBOOK.md</span></p>
+        </div>
+      </div>
+
       {/* Error */}
       {!data && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">

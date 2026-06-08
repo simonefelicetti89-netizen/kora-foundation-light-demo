@@ -1399,6 +1399,14 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           className="text-[10px] text-[#C76F3D] underline underline-offset-2 hover:text-[#4a41d4] pb-1.5">
           + Crea azienda
         </a>
+        {/* B103: Golden Path hint */}
+        <div className="w-full mt-2 rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.02)] px-3 py-2">
+          <p className="text-[9px] font-bold uppercase tracking-wide text-[rgba(6,3,43,0.35)] mb-0.5">File sample disponibile</p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.52)]">
+            Usa <span className="font-mono text-[rgba(6,3,43,0.70)]">data/golden-path/kora_golden_path_upload.csv</span> per testare il flusso completo.
+            Copre tutti i 5 pillar KORA. Vedi <span className="font-mono text-[rgba(6,3,43,0.70)]">docs/GOLDEN_PATH_RUNBOOK.md</span>.
+          </p>
+        </div>
       </div>
 
       {/* ── B. FLOW TIMELINE ── */}
