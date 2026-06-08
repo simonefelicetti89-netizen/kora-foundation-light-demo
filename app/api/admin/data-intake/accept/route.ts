@@ -940,8 +940,8 @@ export async function POST(request: NextRequest) {
     },
     // B33: match review summary in response
     ...(isMultiFile && matchReviewSummaryForAudit ? { matchReviewSummary: matchReviewSummaryForAudit } : {}),
-    message:          'Batch created for review. Scoring remains locked until B5.',
-    lockedFeatures:   ['scoring_run', 'kora_index_generation', 'decision_pack_generation'],
+    message:          'Batch creato. Prossimo passo: genera UEF candidates → review → scoring.',
+    nextSteps:        ['generate_uef_candidates', 'review_and_approve_uef', 'run_live_scoring'],
     auditEventsWritten: auditRows.length,
     warnings:         parseWarnings,
     skippedPreHeaderRows,

@@ -420,10 +420,9 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
       {/* Mandatory messages */}
       <div className="flex flex-wrap gap-2">
         {[
-          'Scoring remains locked until B6.',
-          'Only approved UEF records can enter scoring.',
-          'Rule-based interpreter — no LLM.',
-          'Human review required for each candidate.',
+          'Solo record UEF approvati entrano nello scoring.',
+          'Interprete rule-based — nessun LLM.',
+          'Review umana richiesta per ogni candidato.',
         ].map(m => (
           <span key={m} className="text-[10px] border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] rounded px-2 py-0.5 text-[rgba(6,3,43,0.52)] font-medium">{m}</span>
         ))}

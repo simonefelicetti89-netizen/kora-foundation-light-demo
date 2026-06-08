@@ -1,7 +1,8 @@
 // lib/decision-pack/pdf-data.ts
 // Server-side data contract for Decision Pack PDF.
-// Reads persisted OP-001 data from Supabase — NO scoring recalculation.
+// Reads persisted scoring results from Supabase for any tenant — NO scoring recalculation.
 // Uses service_role server-side only (never exposed to client).
+// isLiveData = true for all non-OP-001 tenants (OP-001 is synthetic demo only).
 
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';

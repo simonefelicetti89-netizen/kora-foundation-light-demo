@@ -744,13 +744,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       ok: true, ...preview,
       skippedPreHeaderRows: parsed.skippedPreHeaderRows,
-      dryRunNote: 'File compatible with KORA intake preview. No data has been stored.',
+      dryRunNote: 'File compatibile con KORA intake. Nessun dato salvato — questo è solo un dry-run.',
       synthetic_test: false,
-      lockedFeatures: [
-        'source_batch creation — locked until B4.2',
-        'uploaded_record persistence — locked until B4.2',
-        'scoring run — locked until B5',
-      ],
+      nextStep: 'Invia il file via /api/admin/data-intake/accept con tenantCode + pseudonymizationConfirmation.',
     });
   }
 
@@ -792,11 +788,7 @@ export async function POST(request: NextRequest) {
         errors:     s.errors,
         sampleRows: s.sampleRows,
       })),
-      lockedFeatures: [
-        'intake preview — select a sheet first',
-        'source_batch creation — locked until sheet selected and preview passed',
-        'scoring run — locked until B5',
-      ],
+      nextStep: 'Seleziona un foglio per procedere con il preview. Nessun dato salvato.',
     });
   }
 
@@ -849,12 +841,8 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({
     ok: true, ...xlsxPreview,
     skippedPreHeaderRows: parsed.skippedPreHeaderRows,
-    dryRunNote: `Sheet "${selectedSheetName}" compatible with KORA intake preview. No data has been stored.`,
+    dryRunNote: `Foglio "${selectedSheetName}" compatibile con KORA intake. Nessun dato salvato — questo è solo un dry-run.`,
     synthetic_test: false,
-    lockedFeatures: [
-      'source_batch creation — locked until B4.2',
-      'uploaded_record persistence — locked until B4.2',
-      'scoring run — locked until B5',
-    ],
+    nextStep: 'Invia il file via /api/admin/data-intake/accept con tenantCode + selectedSheetName + pseudonymizationConfirmation.',
   });
 }

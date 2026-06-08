@@ -25,8 +25,16 @@ export async function GET(request: NextRequest) {
   if (isKoraAuthError(authResult)) return authResult;
 
   const { searchParams } = new URL(request.url);
-  const tenantCode      = searchParams.get('tenantCode')      ?? 'OP-001';
+  const tenantCode      = searchParams.get('tenantCode');
   const reportingPeriod = searchParams.get('reportingPeriod') ?? '2026-Q1';
+
+  // B101: tenantCode is required — no silent OP-001 fallback.
+  if (!tenantCode || !tenantCode.trim()) {
+    return NextResponse.json(
+      { error: 'tenantCode is required. Provide ?tenantCode=YOUR_CODE in the query string.' },
+      { status: 400 },
+    );
+  }
 
   const data = await fetchPdfData(tenantCode, reportingPeriod);
   if (!data) {
