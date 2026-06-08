@@ -12,6 +12,7 @@
 import { useRole, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService, type DynamicCVItem } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { workerAttributionService } from '@/services/worker-attribution/WorkerAttributionService';
+import { workerAchievementService } from '@/services/worker-achievements/WorkerAchievementService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
@@ -196,6 +197,8 @@ export default function DynamicCV() {
   const pillarDist = computePillarDistribution(cvPreview.items);
   const maxCount = Math.max(...pillarDist.map((p) => p.count), 1);
 
+  const achStats = workerAchievementService.getAchievementStats();
+
   return (
     <div className="space-y-6">
 
@@ -257,6 +260,56 @@ export default function DynamicCV() {
             {cvPreview.items.filter((i) => i.shareable).length}
           </p>
         </div>
+      </div>
+
+      {/* ── CV Readiness Panel — Task 6 B99-B ── */}
+      <div
+        data-testid="cv-readiness-panel"
+        className="rounded-lg border border-[rgba(47,125,85,0.25)] bg-[rgba(47,125,85,0.04)] p-4 space-y-3"
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.80)]">
+            Elementi pronti per il Dynamic CV
+          </h2>
+          <span className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#2F7D55]">
+            {achStats.shareable} condivisibili
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded border border-[rgba(47,125,85,0.18)] bg-[rgba(47,125,85,0.06)] p-2.5 text-center" data-testid="cv-ready-verified">
+            <p className="text-lg font-bold text-[#2F7D55]">{achStats.verified}</p>
+            <p className="text-[9px] text-[rgba(6,3,43,0.50)] mt-0.5">Verificati</p>
+          </div>
+          <div className="rounded border border-[rgba(199,111,61,0.18)] bg-[rgba(199,111,61,0.06)] p-2.5 text-center" data-testid="cv-ready-shareable">
+            <p className="text-lg font-bold text-[#C76F3D]">{achStats.shareable}</p>
+            <p className="text-[9px] text-[rgba(6,3,43,0.50)] mt-0.5">Condivisibili</p>
+          </div>
+          <div className="rounded border border-[rgba(217,154,43,0.18)] bg-[rgba(217,154,43,0.06)] p-2.5 text-center" data-testid="cv-ready-pending">
+            <p className="text-lg font-bold text-[#D99A2B]">{achStats.pending}</p>
+            <p className="text-[9px] text-[rgba(6,3,43,0.50)] mt-0.5">In verifica</p>
+          </div>
+        </div>
+
+        <div className="space-y-1.5 text-xs text-[rgba(6,3,43,0.62)] leading-relaxed">
+          <p>
+            <span className="font-semibold text-[#2F7D55]">Verificati:</span>{' '}
+            confermati da fonte esterna (LMS, partner KORA, advisor). Pronti per il CV.
+          </p>
+          <p>
+            <span className="font-semibold text-[#D99A2B]">In verifica:</span>{' '}
+            la fonte esterna non ha ancora completato la conferma. Non ancora nel CV.
+          </p>
+          <p>
+            <span className="font-semibold text-[rgba(6,3,43,0.50)]">Autodichiarati:</span>{' '}
+            caricati dal lavoratore. Richiedono una verifica esterna per entrare nel CV condivisibile.
+          </p>
+        </div>
+
+        <p className="text-[10px] text-[rgba(6,3,43,0.42)] italic border-t border-[rgba(47,125,85,0.12)] pt-2">
+          Il riconoscimento appartiene a te. Non è visibile individualmente al datore di lavoro.
+          Solo tu decidi cosa condividere dal tuo Dynamic CV.
+        </p>
       </div>
 
       {/* ── Dynamic Impact Profile™ — pillar distribution ── */}

@@ -36,6 +36,8 @@ import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSim
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
 import { workerAttributionService } from '@/services/worker-attribution/WorkerAttributionService';
 import { commonsService } from '@/services/commons/CommonsService';
+import { workerAchievementService } from '@/services/worker-achievements/WorkerAchievementService';
+import { STATUS_LABELS as ACHIEVEMENT_STATUS_LABELS } from '@/lib/worker-achievements/types';
 import { computeNextAction } from '@/lib/my-kora/nextActionLogic';
 import { AttributionMatrix } from '@/components/my-kora/AttributionMatrix';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
@@ -167,6 +169,10 @@ export default function MyKoraHome() {
     preview.pib_light.pillar_breakdown[0],
   );
 
+  // Achievement data — worker-private recognition layer
+  const achievementStats  = workerAchievementService.getAchievementStats();
+  const recentAchievements = workerAchievementService.getRecentAchievements(3);
+
   // Featured commons initiatives
   const featuredCommons = commonsService.getFeaturedInitiatives().slice(0, 2);
   const commonsPillars  = [...new Set(featuredCommons.map((i) => i.pillar))];
@@ -277,6 +283,140 @@ export default function MyKoraHome() {
                 </p>
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* ── 3b. I TUOI RICONOSCIMENTI ────────────────────────────────────────── */}
+      <div data-testid="achievements-section" className="space-y-4">
+
+        {/* Section header */}
+        <div className="flex items-center justify-between gap-2">
+          <h2 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 800, fontSize: '1.1rem', color: '#06032B' }}>
+            I tuoi riconoscimenti
+          </h2>
+          <span className="text-[10px] text-[rgba(6,3,43,0.40)] italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Privati · solo per te
+          </span>
+        </div>
+
+        {/* Participation journey — educational visual */}
+        <div
+          data-testid="participation-journey"
+          className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4"
+        >
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[rgba(6,3,43,0.40)] mb-3" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Come funziona il riconoscimento
+          </p>
+          <div className="flex items-start gap-0 overflow-x-auto">
+            {[
+              { step: 'Partecipazione', desc: 'Partecipi a un\'iniziativa verificabile nel tuo percorso.', color: 'rgba(6,3,43,0.55)', dot: 'rgba(6,3,43,0.30)' },
+              { step: 'Verifica',       desc: 'Una fonte esterna (LMS, partner, advisor) conferma la tua partecipazione.', color: '#D99A2B', dot: '#D99A2B' },
+              { step: 'Riconoscimento', desc: 'L\'attività viene riconosciuta nel tuo percorso personale.', color: '#C76F3D', dot: '#C76F3D' },
+              { step: 'Dynamic CV',     desc: 'Gli elementi verificati entrano nel tuo CV personale — condivisibili su tua iniziativa.', color: '#2F7D55', dot: '#2F7D55' },
+            ].map((item, idx, arr) => (
+              <div key={item.step} className="flex items-start" style={{ flex: '1 1 0', minWidth: 90 }}>
+                <div className="flex flex-col items-center flex-1">
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: item.dot, flexShrink: 0, marginBottom: 6 }} />
+                  <p style={{ fontSize: 11, fontWeight: 700, color: item.color, textAlign: 'center', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', lineHeight: 1.2, marginBottom: 4 }}>
+                    {item.step}
+                  </p>
+                  <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.45)', textAlign: 'center', lineHeight: 1.4, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+                    {item.desc}
+                  </p>
+                </div>
+                {idx < arr.length - 1 && (
+                  <div style={{ paddingTop: 3, paddingLeft: 4, paddingRight: 4, color: 'rgba(6,3,43,0.22)', fontSize: 12, flexShrink: 0 }}>→</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recognition summary — Task 7 */}
+        <div data-testid="recognition-summary" className="grid grid-cols-4 gap-2">
+          {[
+            { label: 'Totali',      value: achievementStats.total,      color: 'rgba(6,3,43,0.80)' },
+            { label: 'Verificati',  value: achievementStats.verified,    color: '#2F7D55'           },
+            { label: 'Condivisibili', value: achievementStats.shareable,  color: '#C76F3D'          },
+            { label: 'In verifica', value: achievementStats.pending,     color: '#D99A2B'           },
+          ].map(({ label, value, color }) => (
+            <div key={label} className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-white p-3 text-center">
+              <p style={{ fontSize: 20, fontWeight: 800, color, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>{value}</p>
+              <p style={{ fontSize: 9, color: 'rgba(6,3,43,0.45)', marginTop: 2, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>{label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Privacy copy — non-suppressible — Task 9 */}
+        <div
+          data-testid="achievement-privacy-note"
+          className="rounded-lg border border-[rgba(47,125,85,0.20)] bg-[rgba(47,125,85,0.05)] px-4 py-3 flex items-start gap-2"
+        >
+          <span className="text-[#2F7D55] text-sm shrink-0 mt-0.5">—</span>
+          <p className="text-xs text-[rgba(6,3,43,0.68)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            <span className="font-semibold">Il riconoscimento appartiene a te.</span>{' '}
+            Non è visibile individualmente al datore di lavoro. Solo tu decidi se e cosa condividere
+            dal tuo Dynamic CV.
+          </p>
+        </div>
+
+        {/* Recent achievement cards — Task 4 */}
+        {recentAchievements.length > 0 && (
+          <div className="space-y-2" data-testid="achievement-cards">
+            {recentAchievements.map((ach) => {
+              const statusColor =
+                ach.status === 'recognized'           ? '#C76F3D' :
+                ach.status === 'verified'             ? '#2F7D55' :
+                ach.status === 'pending_verification' ? '#D99A2B' :
+                'rgba(6,3,43,0.42)';
+              const statusBg =
+                ach.status === 'recognized'           ? 'rgba(199,111,61,0.08)' :
+                ach.status === 'verified'             ? 'rgba(47,125,85,0.08)' :
+                ach.status === 'pending_verification' ? 'rgba(217,154,43,0.08)' :
+                'rgba(6,3,43,0.04)';
+              return (
+                <div
+                  key={ach.id}
+                  data-testid={`achievement-card-${ach.id}`}
+                  className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)] leading-snug" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+                        {ach.title}
+                      </p>
+                      <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+                        {ach.organization} · {ach.completionDate}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span
+                        className={cn('rounded border px-1.5 py-0.5 text-[10px] font-mono',
+                          PILLAR_LIGHT[ach.pillar] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.60)] border-[rgba(6,3,43,0.08)]',
+                        )}
+                      >
+                        {ach.pillar}
+                      </span>
+                      <span
+                        style={{
+                          borderRadius: 6, padding: '2px 7px', fontSize: 10, fontWeight: 700,
+                          background: statusBg, color: statusColor,
+                          fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                        }}
+                      >
+                        {ACHIEVEMENT_STATUS_LABELS[ach.status]}
+                      </span>
+                    </div>
+                  </div>
+                  {ach.cvEligible && (
+                    <p className="text-[10px] text-[#2F7D55] mt-2 font-medium" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+                      ✓ Pronto per il Dynamic CV
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

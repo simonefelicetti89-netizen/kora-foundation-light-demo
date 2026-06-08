@@ -213,19 +213,26 @@ function InitiativeCard({ initiative, featured = false }: { initiative: CommonsI
           }}>
             {initiative.activation_potential === 'high' ? 'Alto' : initiative.activation_potential === 'medium' ? 'Medio' : 'Basso'}
           </span>
-          {initiative.verification_possible && (
-            <span style={{
+          <span
+            data-testid={`recognition-eligibility-${initiative.id}`}
+            style={{
               fontSize:     9,
               fontWeight:   600,
-              padding:      '1px 5px',
+              padding:      '1px 6px',
               borderRadius: 4,
-              background:   'rgba(47,125,85,0.10)',
-              color:        '#2F7D55',
               fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
-            }}>
-              Verificabile
-            </span>
-          )}
+              background:   initiative.verification_possible
+                ? 'rgba(47,125,85,0.10)'
+                : 'rgba(6,3,43,0.05)',
+              color:        initiative.verification_possible
+                ? '#2F7D55'
+                : 'rgba(6,3,43,0.40)',
+            }}
+          >
+            {initiative.verification_possible
+              ? 'Può generare un riconoscimento verificabile'
+              : 'Non genera riconoscimenti'}
+          </span>
         </div>
         <button
           style={{
