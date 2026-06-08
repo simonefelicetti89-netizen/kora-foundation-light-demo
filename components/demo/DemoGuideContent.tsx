@@ -142,7 +142,7 @@ export function DemoGuideContent() {
       <div>
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-xs font-semibold text-amber-700">
-            Foundation Light v0.1
+            KORA Foundation Light
           </span>
           <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-2 py-0.5 text-xs font-medium text-[rgba(6,3,43,0.52)]">
             Solo dati sintetici
@@ -613,7 +613,7 @@ export function DemoGuideContent() {
           ))}
         </div>
         <p className="mt-5 text-xs text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.08)] pt-3">
-          KORA Foundation Light v0.1 · Metodologia v0.1 · Società demo: Meridiana Group S.r.l. (sintetica)
+          KORA Foundation Light · Metodologia v0.1 · Società demo: Meridiana Group S.r.l. (sintetica)
         </p>
       </div>
 

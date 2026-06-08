@@ -288,7 +288,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
             {/* Hero row */}
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
-                <p className="text-[10px] text-[rgba(6,3,43,0.52)] font-semibold uppercase tracking-wide">KORA Index v3</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)] font-semibold uppercase tracking-wide">KORA Index v1.0</p>
                 <div className="flex items-end gap-3 mt-1">
                   <p className="text-3xl font-bold text-[#06032B]">{koraIndex.kora_index_value.toFixed(1)}</p>
                   <div className="mb-0.5 space-y-1">

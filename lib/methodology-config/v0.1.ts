@@ -15,13 +15,13 @@ export function getCalibrationStatus(): string {
 }
 
 /**
- * @deprecated Removed — KORA Index v3 uses macroblock weights.
+ * @deprecated Removed — KORA Index v1.0 uses macroblock weights.
  * Use getMacroblockWeights() or getAllComponentEffectiveWeights().
  * @throws Always throws to prevent accidental usage of old equal-weight scaffold.
  */
 export function getWeights(): never {
   throw new Error(
-    'Deprecated: KORA Index v3 uses macroblock weights. Use getMacroblockWeights() / getAllComponentEffectiveWeights().',
+    'Deprecated: KORA Index v1.0 uses macroblock weights. Use getMacroblockWeights() / getAllComponentEffectiveWeights().',
   );
 }
 
@@ -33,7 +33,7 @@ export function getMethodologyConfig(): MethodologyConfig {
   return config;
 }
 
-// ── KORA Index v3 functions ───────────────────────────────────────────────────
+// ── KORA Index v1.0 functions ───────────────────────────────────────────────────
 
 /** Returns the full kora_index_v3 configuration block from the methodology config. */
 export function getKoraIndexV3Config(): MethodologyConfig['kora_index_v3'] {
@@ -41,7 +41,7 @@ export function getKoraIndexV3Config(): MethodologyConfig['kora_index_v3'] {
 }
 
 /**
- * Returns the four macroblock weights for KORA Index v3.
+ * Returns the four macroblock weights for KORA Index v1.0.
  * REACH 0.25 · QUALITY 0.30 · EQUITY 0.25 · BTI 0.20
  * Falls back to canonical constants if config is not yet populated.
  */
@@ -61,7 +61,7 @@ export function getMacroblockConfig(code: MacroblockCode): MacroblockConfig | un
 }
 
 /**
- * Returns true for components excluded from KORA Index v3 computation.
+ * Returns true for components excluded from KORA Index v1.0 computation.
  * Currently only CS (Confidence Score) is external.
  */
 export function isComponentExternal(code: string): boolean {
@@ -69,7 +69,7 @@ export function isComponentExternal(code: string): boolean {
 }
 
 /**
- * Returns the effective weight of a component in the total KORA Index v3 computation.
+ * Returns the effective weight of a component in the total KORA Index v1.0 computation.
  *
  * CS → 0 (external — displayed but not computed)
  * BTI components → 0 (BTI score comes from BudgetToHumanImpactEngine, not component values)
@@ -95,7 +95,7 @@ export function getComponentEffectiveWeight(code: string): number {
 }
 
 /**
- * Returns the effective weight for every component in KORA Index v3.
+ * Returns the effective weight for every component in KORA Index v1.0.
  * CS = 0. BTI macroblock components = per-component weight.
  * All nine operational components + BTI = 1.00 total.
  */

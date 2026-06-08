@@ -19,7 +19,7 @@ export type WorkerPseudonymId = string & { readonly _brand: 'WorkerPseudonymId' 
 // PREVIEW  — synthetic persona data, no real worker JWT, no real PIB computation.
 //            Data source: MyKoraPreviewService (persona fixtures).
 //            Identity source: demo-state persona switcher.
-//            Foundation Light v0.1 is always PREVIEW.
+//            KORA Foundation Light is always PREVIEW.
 //
 // LIVE     — real Supabase worker session, WorkerKoraId resolved from JWT,
 //            PIB derived from per-worker UEF records via pipeline.

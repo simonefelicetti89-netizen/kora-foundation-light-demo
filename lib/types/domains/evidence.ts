@@ -1,9 +1,9 @@
 // lib/types/domains/evidence.ts
 //
 // Foundation Light type scaffold — Evidence as a first-class domain entity.
-// No persistence in Foundation Light v0.1: types only, no repository or DB schema.
+// No persistence in KORA Foundation Light: types only, no repository or DB schema.
 //
-// Context: in Foundation Light v0.1, evidence is an attribute on UEFRecord
+// Context: in KORA Foundation Light, evidence is an attribute on UEFRecord
 // (evidence_level) and an EV correction factor on ImpactUnit. This file
 // promotes evidence to a lifecycle-bearing entity for Pilot+ migration.
 //

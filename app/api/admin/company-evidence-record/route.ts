@@ -315,7 +315,7 @@ export async function GET(request: NextRequest) {
     caveats: [
       'Vista safe — solo metadati evidence canonici. Payload raw e dati lavoratori mai esposti.',
       'I livelli evidenza suggeriti richiedono UEF Review prima di influenzare lo scoring.',
-      'KORA Foundation Light v0.1 — pre_empirical_calibration.',
+      'KORA Foundation Light — pre_empirical_calibration.',
     ],
   });
 }

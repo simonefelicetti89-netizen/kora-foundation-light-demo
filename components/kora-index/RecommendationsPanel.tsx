@@ -81,7 +81,7 @@ export function RecommendationsPanel({ btiRecommendations }: RecommendationsPane
       )}
 
       <div className="rounded-[10px] p-3 text-[10px] leading-relaxed" style={{ background: TOKENS.inkBorder, color: TOKENS.inkSecondary }}>
-        Queste raccomandazioni sono generate da dati sintetici di Foundation Light v0.1 in condizioni pre-calibrazione empirica.
+        Queste raccomandazioni sono generate da dati sintetici di KORA Foundation Light in condizioni pre-calibrazione empirica.
         Non sono consigli legali, fiscali, HR o di strategia aziendale. Correlazione ≠ causalità.
       </div>
     </div>

@@ -290,7 +290,7 @@ export default function KoraIndexDetail() {
     kora_ready_for_iu_count:         liveCtx.uef_review.approved_for_scoring_count,
     kora_ready_for_bti_count:        liveCtx.eligibility.limited,
     review_completion_rate:          liveCtx.uef_review.review_completion_rate,
-    methodology_version:             'KORA Methodology v0.1',
+    methodology_version:             'KORA Index v1.0',
     calibration_status:              'pre_empirical_calibration',
   } : null;
 
@@ -307,7 +307,7 @@ export default function KoraIndexDetail() {
     average_ev:               liveCtx.iu_average_ev,
     average_cf:               0,
     average_agf:              0,
-    methodology_version:      'KORA Methodology v0.1',
+    methodology_version:      'KORA Index v1.0',
     calibration_status:       'pre_empirical_calibration',
   } : null;
 

@@ -1,14 +1,14 @@
 {
-  "version": "KORA Index v3 / KORA Methodology v0.1",
+  "version": "KORA Index v1.0",
   "calibration_status": "pre_empirical_calibration",
 
-  "methodology_note": "KORA Index v3 uses a theory-aligned v0.1 pre-empirical calibration. Previous equal weights were provisional scaffolding and are no longer canonical. Confidence Score is external to the KORA Index. Activation Safeguard is an interpretation gate, not a weighted component.",
+  "methodology_note": "KORA Index v1.0 uses a theory-aligned v0.1 pre-empirical calibration. Previous equal weights were provisional scaffolding and are no longer canonical. Confidence Score is external to the KORA Index. Activation Safeguard is an interpretation gate, not a weighted component.",
 
   "kora_index_v3": {
     "cs_external": true,
-    "cs_note": "Confidence Score (CS) is external to the KORA Index v3 computation. Weight = 0 in the KORA Index. CS is displayed in the 10-component breakdown as an external reliability indicator only — it does not influence the KORA Index value.",
+    "cs_note": "Confidence Score (CS) is external to the KORA Index v1.0 computation. Weight = 0 in the KORA Index. CS is displayed in the 10-component breakdown as an external reliability indicator only — it does not influence the KORA Index value.",
     "activation_safeguard_note": "Activation Safeguard (CLEAR / WARNING / FLAGGED) is an interpretation gate applied after KORA Index computation. It is not a weighted component and does not modify the KORA Index value.",
-    "note": "KORA Index v3 uses a theory-aligned v0.1 pre-empirical calibration. Weights are subject to expert validation and empirical calibration post-pilot.",
+    "note": "KORA Index v1.0 uses a theory-aligned v0.1 pre-empirical calibration. Weights are subject to expert validation and empirical calibration post-pilot.",
     "macroblocks": {
       "REACH": {
         "label": "Activation Reach",

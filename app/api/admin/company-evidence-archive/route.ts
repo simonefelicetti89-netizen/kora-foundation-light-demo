@@ -384,7 +384,7 @@ function buildCaveats(): string[] {
     'Compliance baseline activities are excluded from KORA activation impact.',
     'Economic relief is tracked in BTI and is not treated as deep activation.',
     'Reporting Readiness does not certify CSRD/ESRS compliance — it maps initiative evidence to possible reporting support areas.',
-    'KORA Foundation Light v0.1 — pre_empirical_calibration. Pilot-grade diagnostic intelligence, not certified output.',
+    'KORA Foundation Light — pre_empirical_calibration. Pilot-grade diagnostic intelligence, not certified output.',
     'Dati sintetici/demo per Foundation Light. Non contengono dati reali di lavoratori.',
   ];
 }

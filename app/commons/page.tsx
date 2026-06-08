@@ -2,7 +2,7 @@
 // C-01 (Commons): KORA Commons — layer condiviso di attivazione tra organizzazioni.
 // KORA Commons NON è un social network. È uno spazio per opportunità di attivazione umana.
 // Ogni iniziativa risponde a: "Quale opportunità di attivazione umana esiste?"
-// PREVIEW — Foundation Light v0.1. Nessun IU generato da questa pagina.
+// PREVIEW — KORA Foundation Light. Nessun IU generato da questa pagina.
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';

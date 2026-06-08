@@ -200,7 +200,7 @@ export function ActionPlanReport({ s1Record, s2Record, recommendations, eligibil
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">H — Piano d&apos;Azione 90 Giorni</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-1">
-            Piano direzionale derivato da KORA Index v3 e dati BTI — non un mandato operativo.
+            Piano direzionale derivato da KORA Index v1.0 e dati BTI — non un mandato operativo.
             Ogni azione richiede valutazione nel contesto organizzativo specifico.
           </p>
         </div>

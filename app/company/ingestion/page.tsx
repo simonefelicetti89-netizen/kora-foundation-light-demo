@@ -71,7 +71,7 @@ const PIPELINE_STEPS = [
   { label: 'Normalizzazione',  sub: 'Struttura + inference' },
   { label: 'Eligibility Gate', sub: 'Eligible / Limited / Blocked' },
   { label: 'UEF Review',       sub: 'Revisione umana' },
-  { label: 'KORA Index v3',    sub: 'Scoring + CS' },
+  { label: 'KORA Index v1.0',    sub: 'Scoring + CS' },
   { label: 'Decision Pack',    sub: 'Report e Board Pack' },
 ];
 
@@ -179,7 +179,7 @@ export default function AIIngestionAssistant() {
       {/* ── B: Pipeline flow ── */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)] mb-3">
-          Flusso pipeline — Raw → Normalizzazione → Eligibility Gate → KORA Index v3
+          Flusso pipeline — Raw → Normalizzazione → Eligibility Gate → KORA Index v1.0
         </p>
         <div className="flex flex-wrap items-center gap-1">
           {PIPELINE_STEPS.map((step, i) => (
@@ -210,7 +210,7 @@ export default function AIIngestionAssistant() {
         </div>
         <p className="mt-2.5 text-[11px] text-[rgba(6,3,43,0.40)]">
           La pipeline esegue: inferenza source_type · rilevamento campi mancanti · normalizzazione · classificazione Eligibility Gate · costruzione KoraReadyRecord con flag di governance.
-          La confidence di ingestion misura la qualità della classificazione AI — è distinta dal Confidence Score esterno al KORA Index v3.
+          La confidence di ingestion misura la qualità della classificazione AI — è distinta dal Confidence Score esterno al KORA Index v1.0.
         </p>
       </div>
 
@@ -449,8 +449,8 @@ export default function AIIngestionAssistant() {
             count={summary.routing.kora_activation_core}
             title="KORA Activation Core"
             badge="bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]"
-            description="Eligible → KORA Index v3 → Decision Pack"
-            detail="Record verificati e approvati dal revisore. Generano Impact Units e contribuiscono al KORA Index v3."
+            description="Eligible → KORA Index v1.0 → Decision Pack"
+            detail="Record verificati e approvati dal revisore. Generano Impact Units e contribuiscono al KORA Index v1.0."
           />
           <RoutingCard
             count={summary.routing.economic_relief_opportunity}
@@ -524,7 +524,7 @@ export default function AIIngestionAssistant() {
         </div>
         <p className="text-[10px] text-[rgba(6,3,43,0.40)] pt-1">
           Foundation Light usa una pipeline rule-based su dati demo: nessuna chiamata LLM esterna. Nessun dato reale lavoratore.
-          synthetic_demo_data: true · KORA Methodology v0.1 · pre_empirical_calibration
+          synthetic_demo_data: true · KORA Index v1.0 · pre_empirical_calibration
         </p>
       </div>
 

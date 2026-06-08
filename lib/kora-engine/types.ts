@@ -427,7 +427,7 @@ export interface ComponentSignals {
 // KORA Index. AG-01 canonical rule (doc 10 §26): every KORA Index calculation
 // must pass through individual PIBs.
 //
-// Foundation Light v0.1 constraint:
+// KORA Foundation Light constraint:
 //   UEF records are program-level aggregates (not per-worker).
 //   PIBSnapshot[] (individual PIBs) requires per-worker UEF records — not
 //   available in the Foundation Light aggregate upload model.
@@ -438,7 +438,7 @@ export interface ComponentSignals {
 export type PIBEstimationBasis = 'individual_pib' | 'aggregate_estimate';
 
 // Per-worker PIB snapshot — never employer-visible (AG-01 / D-04).
-// Foundation Light v0.1: not computed (aggregate model). Future My KORA consumer.
+// KORA Foundation Light: not computed (aggregate model). Future My KORA consumer.
 export interface PIBSnapshot {
   workerPseudonymId: string;  // pseudonymized — never employer-visible
   period: string;
@@ -496,7 +496,7 @@ export interface KoraComputationResult {
   iuResults?: ImpactUnitComputationResult[];
   // B63-B: PIB Aggregation — Stage 11 of the 14-stage algorithm (AG-01 compliance).
   // Mandatory intermediate layer between IU and KORA Index.
-  // estimationBasis='aggregate_estimate' in Foundation Light v0.1 (program-level UEF records).
+  // estimationBasis='aggregate_estimate' in KORA Foundation Light (program-level UEF records).
   pibAggregation?: CompanyPIBAggregation;
   warnings: string[];
   createdAt: string;

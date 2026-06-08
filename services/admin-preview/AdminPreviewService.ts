@@ -200,7 +200,7 @@ class AdminPreviewService {
       kora_index_value: vals.kora_index_value,
       confidence_score: vals.confidence_score,
       safeguard_status: vals.safeguard_status,
-      methodology_version_id: 'KORA Methodology v0.1',
+      methodology_version_id: 'KORA Index v1.0',
       calibration_status: 'pre_empirical_calibration',
       is_synthetic: true,
     }));
@@ -293,7 +293,7 @@ class AdminPreviewService {
   // 9. Gate & Methodology Status
   getGateStatusPreview(): GateStatusPreview {
     return {
-      methodology_version_id: 'KORA Methodology v0.1',
+      methodology_version_id: 'KORA Index v1.0',
       calibration_status: 'pre_empirical_calibration',
       synthetic_demo: true,
       gates: [

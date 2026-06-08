@@ -293,7 +293,7 @@ export default function CompanyProfilePage() {
 
       {/* 9. ProvenanceFooter */}
       <ProvenanceFooter
-        methodologyVersionId={koraOutput?.methodology_version_id ?? 'KORA Methodology v0.1'}
+        methodologyVersionId={koraOutput?.methodology_version_id ?? 'KORA Index v1.0'}
         calibrationStatus={koraOutput?.calibration_status ?? 'pre_empirical_calibration'}
         reportingPeriod={koraOutput?.reporting_period ?? activeScenario}
       />

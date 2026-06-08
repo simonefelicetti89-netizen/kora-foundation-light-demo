@@ -1,14 +1,14 @@
 {
   "file": "kora-index-outputs.json",
   "version": "2.0",
-  "methodology": "KORA Index v3",
+  "methodology": "KORA Index v1.0",
   "synthetic_demo_data": true,
   "generated_for": "foundation_light_demo",
   "not_live_data": true,
   "primary_consumer": "ScoringSimulatorService",
   "component_count_invariant": "Always exactly 10 components: AR, MAR, NI, WB, PC, PB, EQ, VR, CO, CS. Adding an 11th component is a methodology violation.",
   "kora_contribution_note": "KORA Contribution is a separate companion indicator. It is NOT a KORA Index component and is NOT included in this file. See kora-contribution-outputs.json.",
-  "v3_architecture_note": "KORA Index v3 = 4 macroblocks. CS weight=0 (external reliability indicator, not in computation). BTI macroblock score comes from BudgetToHumanImpactEngine, not from component values.",
+  "v3_architecture_note": "KORA Index v1.0 = 4 macroblocks. CS weight=0 (external reliability indicator, not in computation). BTI macroblock score comes from BudgetToHumanImpactEngine, not from component values.",
   "data": [
     {
       "id": "kora-idx-S1-meridiana-2025",
@@ -24,11 +24,11 @@
       "confidence_score": 0.60,
       "confidence_score_id": "conf-meridiana-S1-2025",
       "scoring_run_id": "run-meridiana-S1-2025-001",
-      "methodology_version_id": "KORA Index v3 / KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v1.0",
       "calibration_status": "pre_empirical_calibration",
-      "methodology_notes": "KORA Index v3 — macroblock architecture: REACH 25% (AR+MAR), QUALITY 30% (NI+VR+CO), EQUITY 25% (WB+PC+PB+EQ), BTI 20% (BudgetToHumanImpactEngine). CS external, weight=0. Pre-Delphi calibration.",
+      "methodology_notes": "KORA Index v1.0 — macroblock architecture: REACH 25% (AR+MAR), QUALITY 30% (NI+VR+CO), EQUITY 25% (WB+PC+PB+EQ), BTI 20% (BudgetToHumanImpactEngine). CS external, weight=0. Pre-Delphi calibration.",
       "generated_at": "2025-10-15T09:00:00Z",
-      "limitations_text": "Questo KORA Index è un output diagnostico provvisorio prodotto in condizioni di pre-calibrazione empirica (KORA Methodology v0.1). I pesi dei macroblocchi sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output non sono validati empiricamente, non sono di grado regolatorio e non sono adatti a claim legali, fiscali o comparativi. Presentato esclusivamente per intelligence diagnostica pilot-grade.",
+      "limitations_text": "Questo KORA Index è un output diagnostico provvisorio prodotto in condizioni di pre-calibrazione empirica (KORA Index v1.0). I pesi dei macroblocchi sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output non sono validati empiricamente, non sono di grado regolatorio e non sono adatti a claim legali, fiscali o comparativi. Presentato esclusivamente per intelligence diagnostica pilot-grade.",
       "components": [
         {
           "code": "AR",
@@ -108,7 +108,7 @@
           "value": 0.60,
           "weight": 0.0,
           "external": true,
-          "note": "Data completeness, source quality, verification weight. External reliability indicator — not included in KORA Index v3 computation. Shown alongside KORA Index as mandatory reliability signal."
+          "note": "Data completeness, source quality, verification weight. External reliability indicator — not included in KORA Index v1.0 computation. Shown alongside KORA Index as mandatory reliability signal."
         }
       ],
       "macroblocks": [
@@ -164,11 +164,11 @@
       "confidence_score": 0.72,
       "confidence_score_id": "conf-meridiana-S2-2025",
       "scoring_run_id": "run-meridiana-S2-2025-001",
-      "methodology_version_id": "KORA Index v3 / KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v1.0",
       "calibration_status": "pre_empirical_calibration",
-      "methodology_notes": "KORA Index v3 — macroblock architecture: REACH 25% (AR+MAR), QUALITY 30% (NI+VR+CO), EQUITY 25% (WB+PC+PB+EQ), BTI 20% (BudgetToHumanImpactEngine). CS external, weight=0. Pre-Delphi calibration.",
+      "methodology_notes": "KORA Index v1.0 — macroblock architecture: REACH 25% (AR+MAR), QUALITY 30% (NI+VR+CO), EQUITY 25% (WB+PC+PB+EQ), BTI 20% (BudgetToHumanImpactEngine). CS external, weight=0. Pre-Delphi calibration.",
       "generated_at": "2026-01-20T09:00:00Z",
-      "limitations_text": "Questo KORA Index è un output diagnostico provvisorio prodotto in condizioni di pre-calibrazione empirica (KORA Methodology v0.1). I pesi dei macroblocchi sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output non sono validati empiricamente, non sono di grado regolatorio e non sono adatti a claim legali, fiscali o comparativi. Presentato esclusivamente per intelligence diagnostica pilot-grade.",
+      "limitations_text": "Questo KORA Index è un output diagnostico provvisorio prodotto in condizioni di pre-calibrazione empirica (KORA Index v1.0). I pesi dei macroblocchi sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output non sono validati empiricamente, non sono di grado regolatorio e non sono adatti a claim legali, fiscali o comparativi. Presentato esclusivamente per intelligence diagnostica pilot-grade.",
       "components": [
         {
           "code": "AR",
@@ -248,7 +248,7 @@
           "value": 0.72,
           "weight": 0.0,
           "external": true,
-          "note": "Higher data completeness and better verification coverage. External reliability indicator — not included in KORA Index v3 computation. Shown alongside KORA Index as mandatory reliability signal."
+          "note": "Higher data completeness and better verification coverage. External reliability indicator — not included in KORA Index v1.0 computation. Shown alongside KORA Index as mandatory reliability signal."
         }
       ],
       "macroblocks": [

@@ -275,7 +275,7 @@ export default function CompanyOnboardingRoom() {
 
       {/* 9. ProvenanceFooter */}
       <ProvenanceFooter
-        methodologyVersionId="KORA Methodology v0.1"
+        methodologyVersionId="KORA Index v1.0"
         calibrationStatus="pre_empirical_calibration"
         reportingPeriod={tenant.analysis_period ?? activeScenario}
       />

@@ -152,28 +152,28 @@ const IU_HIGH: ImpactUnitComputationSummary = {
   review_required_records: 0, total_impact_units: 200,
   impact_units_by_pillar: { LIFE: 40, GROWTH: 40, CONNECTION: 40, IMPACT: 40, LEGACY: 40 },
   records_without_iu: 0, average_cq: 0.90, average_ev: 0.90, average_cf: 1, average_agf: 1,
-  methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+  methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
 };
 const IU_LOW: ImpactUnitComputationSummary = {
   total_records: 20, computed_records: 10, blocked_records: 5, limited_records: 3,
   review_required_records: 2, total_impact_units: 50,
   impact_units_by_pillar: { LIFE: 10, GROWTH: 10, CONNECTION: 10, IMPACT: 10, LEGACY: 10 },
   records_without_iu: 10, average_cq: 0.50, average_ev: 0.50, average_cf: 0.7, average_agf: 0.8,
-  methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+  methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
 };
 const UEF_HIGH: UEFReviewSummary = {
   total_records: 20, pending_count: 0, approved_for_scoring_count: 20,
   approved_for_bti_governance_count: 10, blocked_count: 0, needs_more_data_count: 0,
   rejected_count: 0, override_count: 0, kora_ready_for_iu_count: 20,
   kora_ready_for_bti_count: 10, review_completion_rate: 0.95,
-  methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+  methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
 };
 const UEF_LOW: UEFReviewSummary = {
   total_records: 20, pending_count: 12, approved_for_scoring_count: 5,
   approved_for_bti_governance_count: 2, blocked_count: 5, needs_more_data_count: 3,
   rejected_count: 0, override_count: 0, kora_ready_for_iu_count: 5,
   kora_ready_for_bti_count: 2, review_completion_rate: 0.25,
-  methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+  methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
 };
 
 describe('B86-B T3 — ConfidenceScoreService', () => {
@@ -199,14 +199,14 @@ describe('B86-B T3 — ConfidenceScoreService', () => {
       review_required_records: 0, total_impact_units: 100,
       impact_units_by_pillar: { LIFE: 20, GROWTH: 20, CONNECTION: 20, IMPACT: 20, LEGACY: 20 },
       records_without_iu: 0, average_cq: 0.80, average_ev: 0.80, average_cf: 1, average_agf: 1,
-      methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+      methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
     };
     const uefSummary: UEFReviewSummary = {
       total_records: 10, pending_count: 0, approved_for_scoring_count: 10,
       approved_for_bti_governance_count: 5, blocked_count: 0, needs_more_data_count: 0,
       rejected_count: 0, override_count: 0, kora_ready_for_iu_count: 10,
       kora_ready_for_bti_count: 5, review_completion_rate: 1.0,
-      methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+      methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
     };
     const result = confidenceScoreService.compute(iuSummary, uefSummary);
     // EV=0.80, review=1.00, CQ=0.80, VW=(0.80-0.50)/0.50=0.60
@@ -369,7 +369,7 @@ const IU_PILLAR: ImpactUnitComputationSummary = {
   review_required_records: 3, total_impact_units: 420,
   impact_units_by_pillar: { LIFE: 180, GROWTH: 115, CONNECTION: 55, IMPACT: 50, LEGACY: 20 },
   records_without_iu: 12, average_cq: 0.78, average_ev: 0.72, average_cf: 0.85, average_agf: 0.92,
-  methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+  methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
 };
 
 describe('B86-B T7 — EvidenceReliabilityIntelligenceService pillar breakdown', () => {
@@ -403,7 +403,7 @@ describe('B86-B T7 — EvidenceReliabilityIntelligenceService pillar breakdown',
       review_required_records: 0, total_impact_units: 100,
       impact_units_by_pillar: { LIFE: 20, GROWTH: 30, CONNECTION: 20, IMPACT: 20, LEGACY: 10 },
       records_without_iu: 0, average_cq: 0.80, average_ev: 0.75, average_cf: 1, average_agf: 1,
-      methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+      methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
     };
     const breakdown = evidenceReliabilityIntelligenceService.getPillarEvidenceBreakdown(iuSummary);
     const totalShare = breakdown.reduce((s, b) => s + b.iuShare, 0);
@@ -417,7 +417,7 @@ describe('B86-B T7 — EvidenceReliabilityIntelligenceService pillar breakdown',
       review_required_records: 1, total_impact_units: 50,
       impact_units_by_pillar: { LIFE: 50, GROWTH: 0, CONNECTION: 0, IMPACT: 0, LEGACY: 0 },
       records_without_iu: 5, average_cq: 0.5, average_ev: 0.50, average_cf: 0.8, average_agf: 0.9,
-      methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration',
+      methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration',
     };
     const breakdown = evidenceReliabilityIntelligenceService.getPillarEvidenceBreakdown(iuSummary);
     for (const item of breakdown) {

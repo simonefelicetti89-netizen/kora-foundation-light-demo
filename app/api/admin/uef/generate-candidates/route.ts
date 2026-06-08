@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       eligibility_status: row.eligibility_status ?? null,
     };
 
-    const proposal = interpretUploadedRecord(input, 'KORA Methodology v0.1', batchContext);
+    const proposal = interpretUploadedRecord(input, 'KORA Index v1.0', batchContext);
 
     // uef_record.eligibility is 'eligible'|'limited'|'blocked' — no 'review_required'
     const eligibility = proposal.eligibility;
@@ -184,7 +184,7 @@ export async function POST(request: NextRequest) {
         // ──────────────────────────────────────────────────────────────────
         interpreter_version:        proposal.interpreterVersion,
         generated_by:               proposal.generatedBy,
-        methodology_version:        'KORA Methodology v0.1',
+        methodology_version:        'KORA Index v1.0',
         b5_candidate:               true,
         scoring_locked:             true,  // locked until B6
       },

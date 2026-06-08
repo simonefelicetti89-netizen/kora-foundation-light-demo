@@ -1,7 +1,7 @@
 // lib/kora-engine/kora-index-engine.ts
 // KORA Index Engine v1.0 — Foundation Light Pilot.
 //
-// Combines four macroblock scores into the KORA Index v3.
+// Combines four macroblock scores into the KORA Index v1.0.
 // Data Reliability Index (CS) is EXTERNAL to KORA Index (weight=0) and shown
 // alongside — never aggregated. Renamed from "Confidence Score" in v1.0.
 //

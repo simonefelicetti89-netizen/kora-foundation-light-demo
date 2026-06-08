@@ -107,7 +107,7 @@ export function buildExplainabilityTrace(params: {
       'Rilevazione segnali care economy: childcare · asilo_nido · caregiver · eldercare · ' +
       'family_support · flexible_work_for_care · access_equity. ' +
       'Solo segnali aggregati — nessuna profilazione individuale familiare. ' +
-      'Modulo premium (near-term pilot): segnali informativi, non nel KORA Index v3.',
+      'Modulo premium (near-term pilot): segnali informativi, non nel KORA Index v1.0.',
     confidence: 0.70,
     warning: careSignalCount === 0
       ? 'Nessun segnale care economy rilevato nel batch.'
@@ -154,7 +154,7 @@ export function buildExplainabilityTrace(params: {
       'btiScore = deepActivationRatio×40 + evidenceQuality×25 + reliefBalance×20 + complianceClarity×15. ' +
       'reliefBalance = max(0, 1 − reliefRatio×0.60). ' +
       'activationDebt = max(0, usableBudget − deepActivation − relief×0.25). ' +
-      'Macroblocco BTI = 20% KORA Index v3 (peso da lib/methodology-config/v0.1.ts).',
+      'Macroblocco BTI = 20% KORA Index v1.0 (peso da lib/methodology-config/v0.1.ts).',
     confidence: round3(Math.min(1, bti.budgetEvidenceQuality + 0.10)),
     warning: bti.activationDebt > 0
       ? `Activation Debt: €${bti.activationDebt.toLocaleString('it-IT')} di budget non convertito in attivazione profonda.`
@@ -226,7 +226,7 @@ export function buildExplainabilityTrace(params: {
       `methodologyVersion=${koraIndex.methodologyVersion} | ` +
       `calibrationStatus=${koraIndex.calibrationStatus}`,
     ruleApplied:
-      `KORA Index v3 = REACH(${koraIndex.weights.REACH}) × REACH_mb + ` +
+      `KORA Index v1.0 = REACH(${koraIndex.weights.REACH}) × REACH_mb + ` +
       `QUALITY(${koraIndex.weights.QUALITY}) × QUALITY_mb + ` +
       `EQUITY(${koraIndex.weights.EQUITY}) × EQUITY_mb + ` +
       `BTI(${koraIndex.weights.BTI}) × BTI_mb. ` +
@@ -254,7 +254,7 @@ export function buildExplainabilityTrace(params: {
       `CS=${confidence.score}/100 | externalToIndex=true`,
     ruleApplied:
       'CS = budgetEvidence×30% + dataCompleteness×25% + mapping×20% + verification×15% + review×10%. ' +
-      'CS è ESTERNO al KORA Index v3 — mostrato sempre a fianco, mai incluso nel valore (doc 21b).',
+      'CS è ESTERNO al KORA Index v1.0 — mostrato sempre a fianco, mai incluso nel valore (doc 21b).',
     confidence: round3(confidence.score / 100),
     warning: confidence.score < 50
       ? `CS bassa (${confidence.score}/100): affidabilità limitata. Aumentare copertura evidenza e completezza dati.`

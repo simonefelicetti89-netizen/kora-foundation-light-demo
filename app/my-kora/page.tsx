@@ -792,7 +792,7 @@ export default function MyKoraHome() {
         <p className="text-xs text-[rgba(6,3,43,0.40)] mb-3 leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
           La timeline personale appartiene al lavoratore. Può contribuire agli aggregati aziendali solo in
           forma anonima e sopra soglia privacy. I valori IU mostrati sono derivati dalla formula
-          KORA Methodology v0.1 su dati sintetici.
+          KORA Index v1.0 su dati sintetici.
         </p>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
           <div className="divide-y divide-[rgba(6,3,43,0.05)]">
@@ -956,7 +956,7 @@ export default function MyKoraHome() {
         Non rappresenta account reali, identità reali, wallet, booking, pagamenti o certificazioni attive.
         Il percorso reale richiederà identità worker-owned e consenso (Pilot+).
         <span className="block mt-0.5 font-mono text-[rgba(6,3,43,0.28)]">
-          synthetic_demo_data: true · Foundation Light Preview · KORA Methodology v0.1 · pre_empirical_calibration
+          synthetic_demo_data: true · Foundation Light Preview · KORA Index v1.0 · pre_empirical_calibration
         </span>
       </div>
     </div>

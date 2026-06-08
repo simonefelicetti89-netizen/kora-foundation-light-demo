@@ -2,7 +2,7 @@
 // B63-B: PIB Aggregation Service — unit tests
 //
 // Tests: aggregate computation, privacy invariants, AG-01 compliance,
-//        Foundation Light v0.1 limitations, pillar distribution, edge cases.
+//        KORA Foundation Light limitations, pillar distribution, edge cases.
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PIBAggregationService } from '@/services/pib-aggregation/PIBAggregationService';
@@ -87,9 +87,9 @@ function makeEligibilityResult(status: 'eligible' | 'limited' | 'blocked' | 'rev
   };
 }
 
-// ── Tests — aggregateForBatch (Foundation Light v0.1 limitation) ──────────────
+// ── Tests — aggregateForBatch (KORA Foundation Light limitation) ──────────────
 
-describe('PIBAggregationService.aggregateForBatch — Foundation Light v0.1', () => {
+describe('PIBAggregationService.aggregateForBatch — KORA Foundation Light', () => {
   let svc: PIBAggregationService;
   beforeEach(() => { svc = new PIBAggregationService(); });
 
@@ -251,7 +251,7 @@ describe('PIBAggregationService.aggregatePIBForCompany — AG-01 compliance', ()
   let svc: PIBAggregationService;
   beforeEach(() => { svc = new PIBAggregationService(); });
 
-  it('estimationBasis = aggregate_estimate in Foundation Light v0.1', () => {
+  it('estimationBasis = aggregate_estimate in KORA Foundation Light', () => {
     const result = svc.aggregatePIBForCompany({
       iuResults: [], iuSummary: makeIUSummary(), records: [], eligibilityResults: [],
       activatedWorkers: 50, meaningfullyActiveWorkers: 30, workforcePopulation: 100,
@@ -327,14 +327,14 @@ describe('PIBAggregationService.getWorkerPIBSummary — privacy', () => {
     expect(result.reason).toContain('D-04');
   });
 
-  it('returns available=false for WORKER role in Foundation Light v0.1 (aggregate model)', () => {
+  it('returns available=false for WORKER role in KORA Foundation Light (aggregate model)', () => {
     const result = svc.getWorkerPIBSummary('pseudo-123', 'WORKER');
     expect((result as { available: false }).available).toBe(false);
   });
 
-  it('reason for WORKER contains Foundation Light v0.1 limitation note', () => {
+  it('reason for WORKER contains KORA Foundation Light limitation note', () => {
     const result = svc.getWorkerPIBSummary('pseudo-123', 'WORKER') as { available: false; reason: string };
-    expect(result.reason).toContain('Foundation Light v0.1');
+    expect(result.reason).toContain('KORA Foundation Light');
   });
 });
 

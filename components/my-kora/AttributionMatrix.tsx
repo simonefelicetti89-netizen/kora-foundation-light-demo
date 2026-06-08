@@ -99,7 +99,7 @@ export function AttributionMatrix() {
       </div>
       <div className="px-4 py-2 border-t border-[rgba(6,3,43,0.05)]">
         <p className="text-[10px] text-[rgba(6,3,43,0.38)] italic">
-          Condizionale = dipende dalla verifica completa in Pilot+. Dati sintetici — Foundation Light v0.1.
+          Condizionale = dipende dalla verifica completa in Pilot+. Dati sintetici — KORA Foundation Light.
         </p>
       </div>
     </div>

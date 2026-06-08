@@ -12,7 +12,7 @@
 //   ReportFactoryService should call ReportGeneratorService internally.
 //   No app route should import both services simultaneously.
 //
-// Current state (Foundation Light v0.1): both services are imported directly by
+// Current state (KORA Foundation Light): both services are imported directly by
 //   app/company/reports/page.tsx. This is architectural debt — safe for demo,
 //   but must be resolved before Pilot+.
 //
@@ -144,7 +144,7 @@ function explainActionsToRecs(
     owner_suggestion:   'HR',
     horizon:            HORIZONS[Math.min(i, 3)],
     related_metric:     a.target_components[0],
-    expected_direction: 'Miglioramento componente KORA Index v3.',
+    expected_direction: 'Miglioramento componente KORA Index v1.0.',
     caveat:             'Proxy diagnostico — correlazione ≠ causalità. Verificare con advisor prima di pianificare investimenti.',
   }));
 }
@@ -160,7 +160,7 @@ function sectionCover(
     title:     'KORA Company Decision Pack',
     subtitle:  `${companyName} · ${period}`,
     audience:  ['executive', 'hr', 'cfo', 'esg', 'advisor'],
-    summary:   `Report diagnostico KORA Index v3 per ${companyName}. Generato da KORA Foundation Light — pre-calibrazione empirica. Tutti gli output sono dati sintetici demo, non adatti a decisioni operative, di compliance o fiscali.`,
+    summary:   `Report diagnostico KORA Index v1.0 per ${companyName}. Generato da KORA Foundation Light — pre-calibrazione empirica. Tutti gli output sono dati sintetici demo, non adatti a decisioni operative, di compliance o fiscali.`,
     metrics:   [{
       code: 'report_status', label: 'Stato Report', value: status,
       interpretation: status === 'ready' ? 'Pronto per revisione advisor.'
@@ -174,7 +174,7 @@ function sectionCover(
       `Metodologia ${methodologyVersion} · calibration_status: ${calibrationStatus}.`,
       'Dati sintetici demo — non rappresentano la situazione reale dell\'azienda.',
     ],
-    methodology_notes: `KORA Index v3: 4 macroblocks — ${buildMacroblockWeightNotes()}. Confidence Score esterno al calcolo — mostrato come indicatore di affidabilità dati.`,
+    methodology_notes: `KORA Index v1.0: 4 macroblocks — ${buildMacroblockWeightNotes()}. Confidence Score esterno al calcolo — mostrato come indicatore di affidabilità dati.`,
   };
 }
 
@@ -193,7 +193,7 @@ function sectionExecutiveSummary(
   if (explanation) {
     insights.push({
       id:              'exec-ins-1',
-      title:           'Lettura KORA Index v3',
+      title:           'Lettura KORA Index v1.0',
       body:            explanation.kora_index_explanation,
       severity:        'medium',
       audience:        ['executive'],
@@ -217,13 +217,13 @@ function sectionExecutiveSummary(
   return {
     code:     'executive_summary',
     title:    'Executive Summary',
-    subtitle: 'Quadro diagnostico KORA Index v3',
+    subtitle: 'Quadro diagnostico KORA Index v1.0',
     audience: ['executive', 'hr', 'cfo', 'esg'],
-    summary:  `KORA Index v3: ${currentOutput.kora_index_value}/100 (Confidence Score: ${(confidenceScore * 100).toFixed(0)}%). Activation Safeguard: ${safeguardLabel}. Delta S1→S2: ${delta >= 0 ? '+' : ''}${delta} punti — ${delta > 0 ? 'miglioramento post-intervento.' : 'invariato o in calo.'}`,
+    summary:  `KORA Index v1.0: ${currentOutput.kora_index_value}/100 (Confidence Score: ${(confidenceScore * 100).toFixed(0)}%). Activation Safeguard: ${safeguardLabel}. Delta S1→S2: ${delta >= 0 ? '+' : ''}${delta} punti — ${delta > 0 ? 'miglioramento post-intervento.' : 'invariato o in calo.'}`,
     metrics:  [
       {
         code: 'kora_index',
-        label: 'KORA Index v3',
+        label: 'KORA Index v1.0',
         value: currentOutput.kora_index_value,
         unit: '/100',
         scenario_value_previous: s1Output.kora_index_value,
@@ -244,7 +244,7 @@ function sectionExecutiveSummary(
           : 'Dati incompleti o poco verificati — output a bassa fiducia interpretativa.',
         source:         'scoring_simulator_service',
         confidence:     'high',
-        limitation:     'Il Confidence Score non è un componente del KORA Index v3 — è un indicatore esterno di affidabilità.',
+        limitation:     'Il Confidence Score non è un componente del KORA Index v1.0 — è un indicatore esterno di affidabilità.',
       },
       {
         code:           'safeguard_status',
@@ -274,7 +274,7 @@ function sectionExecutiveSummary(
       ? explainActionsToRecs(explanation.next_best_actions.slice(0, 2))
       : [],
     limitations: [
-      'KORA Index v3 da seed canonico pre-empirico — non da pipeline IU live.',
+      'KORA Index v1.0 da seed canonico pre-empirico — non da pipeline IU live.',
       'Confidence Score non modifica il valore numerico del KORA Index — ne riduce la fiducia interpretativa.',
     ],
   };
@@ -323,10 +323,10 @@ function sectionKoraIndexV3(
 
   return {
     code:     'kora_index_v3',
-    title:    'KORA Index v3 — Dettaglio Macroblocks',
+    title:    'KORA Index v1.0 — Dettaglio Macroblocks',
     subtitle: `Valore: ${currentOutput.kora_index_value}/100`,
     audience: ['executive', 'hr', 'cfo', 'esg', 'advisor'],
-    summary:  `KORA Index v3 = ${currentOutput.kora_index_value}/100. 4 macroblocks: ${macroblocks.map((m) => `${m.code} ${m.score}`).join(', ')}.`,
+    summary:  `KORA Index v1.0 = ${currentOutput.kora_index_value}/100. 4 macroblocks: ${macroblocks.map((m) => `${m.code} ${m.score}`).join(', ')}.`,
     metrics:  mbMetrics,
     insights,
     recommendations: explanation
@@ -334,7 +334,7 @@ function sectionKoraIndexV3(
       : [],
     limitations:       [
       `Pesi macroblock v0.1 — pre-calibrazione empirica Delphi Study. calibration_status: ${calibrationStatus}.`,
-      'Confidence Score (CS) esterno al calcolo KORA Index v3 — peso = 0.',
+      'Confidence Score (CS) esterno al calcolo KORA Index v1.0 — peso = 0.',
       explanation?.limitations_statement ?? '',
     ].filter(Boolean),
     methodology_notes: buildMacroblockWeightNotes(),
@@ -380,7 +380,7 @@ function sectionDynamicScoringPreview(
     insights: [{
       id:              'dsp-ins-1',
       title:           'Natura proxy del calcolo',
-      body:            'Il Preview Dinamico usa proxy AR/MAR da record IU (non da lavoratori reali), WB e EQ fissi conservativi, BTI da seed canonico. Non sostituisce il KORA Index v3 ufficiale.',
+      body:            'Il Preview Dinamico usa proxy AR/MAR da record IU (non da lavoratori reali), WB e EQ fissi conservativi, BTI da seed canonico. Non sostituisce il KORA Index v1.0 ufficiale.',
       severity:        'high',
       audience:        ['advisor', 'founder'],
       related_section: 'dynamic_scoring_preview',
@@ -452,7 +452,7 @@ function sectionBTI(
   const metrics: DecisionPackMetric[] = [
     {
       code: 'bti_score', label: 'BTI Score', value: btiRecord.bti_score, unit: '/100',
-      interpretation: `Efficacia della spesa people-welfare in attivazione umana verificata. Macroblock BTI peso 20% nel KORA Index v3.`,
+      interpretation: `Efficacia della spesa people-welfare in attivazione umana verificata. Macroblock BTI peso 20% nel KORA Index v1.0.`,
       source: 'budget_to_human_impact_service', confidence: 'medium',
     },
     {
@@ -785,7 +785,7 @@ function sectionRecommendations(
     title:           'Raccomandazioni Diagnostiche',
     subtitle:        `${recs.length} azioni prioritarie`,
     audience:        ['executive', 'hr', 'cfo', 'advisor'],
-    summary:         `${recs.length} raccomandazioni derivate dall\'analisi KORA Index v3 e dal BTI engine. Tutte direzionali — non garantiscono risultati specifici. Verificare con advisor prima di pianificare investimenti.`,
+    summary:         `${recs.length} raccomandazioni derivate dall\'analisi KORA Index v1.0 e dal BTI engine. Tutte direzionali — non garantiscono risultati specifici. Verificare con advisor prima di pianificare investimenti.`,
     metrics:         [],
     insights:        [],
     recommendations: recs,
@@ -833,12 +833,12 @@ function sectionMethodologyBoundaries(
     title:    'Metodologia & Confini del Modello',
     subtitle: `${methodologyVersion} · ${calibrationStatus}`,
     audience: ['advisor', 'founder', 'executive'],
-    summary:  `KORA Index v3 — methodology_version: ${methodologyVersion}. calibration_status: ${calibrationStatus}. Tutti gli output sono production_ready: false. Il KORA Index è un indicatore composito aziendale — non una valutazione individuale, non un rating ESG certificato, non un indice di performance.`,
+    summary:  `KORA Index v1.0 — methodology_version: ${methodologyVersion}. calibration_status: ${calibrationStatus}. Tutti gli output sono production_ready: false. Il KORA Index è un indicatore composito aziendale — non una valutazione individuale, non un rating ESG certificato, non un indice di performance.`,
     metrics:  [
       {
         code: 'methodology_version', label: 'Versione Metodologia',
         value: methodologyVersion,
-        interpretation: 'Versione dei pesi, soglie e formula KORA Index v3.',
+        interpretation: 'Versione dei pesi, soglie e formula KORA Index v1.0.',
         source: 'methodology_config', confidence: 'high',
       },
       {
@@ -850,8 +850,8 @@ function sectionMethodologyBoundaries(
     ],
     insights: [{
       id:              'mb-ins-1',
-      title:           'Limiti del modello Foundation Light v0.1',
-      body:            'Foundation Light v0.1 è un\'applicazione demo pre-pilota su dati sintetici. Non è adatta a: decisioni di assunzione/licenziamento, compliance normativa, rendicontazione ESG obbligatoria, decision-making finanziario. Il KORA Index è un indicatore composito aziendale — non valuta individui.',
+      title:           'Limiti del modello KORA Foundation Light',
+      body:            'KORA Foundation Light è un\'applicazione demo pre-pilota su dati sintetici. Non è adatta a: decisioni di assunzione/licenziamento, compliance normativa, rendicontazione ESG obbligatoria, decision-making finanziario. Il KORA Index è un indicatore composito aziendale — non valuta individui.',
       severity:        'high',
       audience:        ['advisor', 'founder', 'executive'],
       related_section: 'methodology_boundaries',
@@ -1082,10 +1082,10 @@ export class ReportGeneratorService implements IReportGeneratorService {
 
   getDecisionPackLimitations(): string[] {
     return [
-      'Output di un\'applicazione demo Foundation Light v0.1 — non adatto a decisioni operative, di compliance o fiscali.',
+      'Output di un\'applicazione demo KORA Foundation Light — non adatto a decisioni operative, di compliance o fiscali.',
       'Dati sintetici — non rappresentano la situazione reale dell\'azienda.',
       `Metodologia ${getMethodologyVersion()} — pre-calibrazione empirica Delphi Study.`,
-      'KORA Index v3: pesi macroblock v0.1 provvisori — calibrazione empirica post-pilot.',
+      'KORA Index v1.0: pesi macroblock v0.1 provvisori — calibrazione empirica post-pilot.',
       'Confidence Score < 0.65 per S1 — dati parzialmente verificati, output a fiducia ridotta.',
       'Nessun dato individuale lavoratore — output aggregato aziendale.',
       'AR/MAR da seed canonico — non da dati workforce reali.',

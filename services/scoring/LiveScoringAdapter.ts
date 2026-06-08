@@ -4,7 +4,7 @@
 // Runs the full 14-stage KORA computation on uploaded RawUploadedRecord[].
 //
 // This is the ONLY authoritative scoring engine for real (non-demo) tenants.
-// Foundation Light v0.1: invoked via lib/scoring-result/index.ts when environment === 'live'.
+// KORA Foundation Light: invoked via lib/scoring-result/index.ts when environment === 'live'.
 // Pilot+ migration: replace the Supabase mapper stub in lib/live/ with calls to this adapter.
 //
 // Never call directly in app/ routes — use lib/scoring-result/index.ts.

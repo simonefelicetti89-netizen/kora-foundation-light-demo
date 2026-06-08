@@ -383,7 +383,7 @@ export default function FinancialGovernance() {
       <BoundaryBanner isLive={isLive} />
       <DecisionContext
         question="Come si converte il budget welfare in attivazione profonda e dove si accumula Activation Debt™?"
-        boundary="Solo dati sintetici Meridiana Group · nessun dato individuale · Foundation Light v0.1"
+        boundary="Solo dati sintetici Meridiana Group · nessun dato individuale · KORA Foundation Light"
       />
 
       {/* ── 1b. KPI decision strip ─────────────────────────────────────────── */}
@@ -1461,7 +1461,7 @@ export default function FinancialGovernance() {
             'KORA non garantisce ROI, riduzione assenteismo, retention o engagement.',
             'Budget figures informative only — non alimentano il KORA Index e non rappresentano fiscal compliance.',
             'EQ = Equity (equità distributiva dell\'attivazione) — non Evidence Quality.',
-            'synthetic_demo_data: true · KORA Methodology v0.1 · pre_empirical_calibration',
+            'synthetic_demo_data: true · KORA Index v1.0 · pre_empirical_calibration',
           ].map((note) => (
             <li key={note} style={{ display: 'flex', gap: 8, fontSize: '11.5px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
               <span style={{ flexShrink: 0, marginTop: 2, color: TOKENS.inkHint }}>·</span>
@@ -1476,7 +1476,7 @@ export default function FinancialGovernance() {
 
       {/* ── 15. ProvenanceFooter ───────────────────────────────────────────── */}
       <ProvenanceFooter
-        methodologyVersionId="KORA Index v3 / KORA Methodology v0.1"
+        methodologyVersionId="KORA Index v1.0"
         calibrationStatus="pre_empirical_calibration"
         reportingPeriod={rec!.reporting_period}
       />

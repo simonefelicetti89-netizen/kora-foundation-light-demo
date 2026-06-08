@@ -19,7 +19,7 @@
       "kora_index_output_id": "kora-idx-S1-meridiana-2025",
       "activation_safeguard_result_id": "safeguard-meridiana-S1-2025",
       "confidence_score_id": "conf-meridiana-S1-2025",
-      "methodology_version_id": "KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v1.0",
       "calibration_status": "pre_empirical_calibration",
       "kora_index_explanation": "Il KORA Index di 34 riflette un'azienda in fase di attivazione iniziale. I programmi esistono, i budget sono allocati e alcuni lavoratori sono genuinamente coinvolti — ma il pattern di attivazione è ristretto. Un nucleo del 12% dei lavoratori genera il 64% dell'impatto misurato. La forza lavoro più ampia, in particolare nelle Operations, ha una partecipazione registrata minima al di là degli eventi di compliance obbligatori.",
       "safeguard_explanation": "L'Activation Safeguard è in WARNING perché il Tasso di Attivazione (AR = 0,38) è al di sotto della soglia CLEAR di 0,40. Con logica OR, anche una sola metrica nella zona di warning è sufficiente ad attivare questo stato. Il KORA Index rimane disponibile come output diagnostico, ma deve essere interpretato con fiducia ridotta data la base di partecipazione limitata.",
@@ -90,7 +90,7 @@
           "target_components": ["PC", "PB"]
         }
       ],
-      "limitations_statement": "Questo record di spiegabilità è un output demo sintetico prodotto in condizioni pre-calibrazione empirica (KORA Methodology v0.1). I pesi dei macroblocks sono provvisori — REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20% — non ancora calibrati empiricamente. Le spiegazioni sono generate da soli dati sintetici. Gli output non sono validati empiricamente, non sono certificati, non sono adatti a decisioni legali, regolamentari o fiscali. Solo per intelligence diagnostica di livello pilot.",
+      "limitations_statement": "Questo record di spiegabilità è un output demo sintetico prodotto in condizioni pre-calibrazione empirica (KORA Index v1.0). I pesi dei macroblocks sono provvisori — REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20% — non ancora calibrati empiricamente. Le spiegazioni sono generate da soli dati sintetici. Gli output non sono validati empiricamente, non sono certificati, non sono adatti a decisioni legali, regolamentari o fiscali. Solo per intelligence diagnostica di livello pilot.",
       "individual_worker_data_present": false
     },
     {
@@ -104,7 +104,7 @@
       "kora_index_output_id": "kora-idx-S2-meridiana-2025",
       "activation_safeguard_result_id": "safeguard-meridiana-S2-2025",
       "confidence_score_id": "conf-meridiana-S2-2025",
-      "methodology_version_id": "KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v1.0",
       "calibration_status": "pre_empirical_calibration",
       "kora_index_explanation": "Il KORA Index di 54 riflette un miglioramento significativo in termini di ampiezza di attivazione, bilanciamento dei pillar e qualità della verifica. Il periodo Q4 dimostra che agire su specifiche raccomandazioni KORA può produrre cambiamenti misurabili. Il Tasso di Attivazione ha superato la soglia CLEAR. Il coinvolgimento delle Operations è migliorato. Più lavoratori tornano tra i periodi. Il problema di concentrazione si sta riducendo, ma non è ancora eliminato.",
       "safeguard_explanation": "L'Activation Safeguard è CLEAR perché sia AR (0,52 ≥ 0,40) che MAR (0,38 ≥ 0,30) soddisfano le soglie richieste. Il KORA Index può ora essere interpretato con maggiore fiducia come output diagnostico significativo.",
@@ -169,7 +169,7 @@
           "target_components": ["CO", "MAR"]
         }
       ],
-      "limitations_statement": "Questo record di spiegabilità è un output demo sintetico prodotto in condizioni pre-calibrazione empirica (KORA Methodology v0.1). I pesi dei macroblocks sono provvisori — REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20% — non ancora calibrati empiricamente. Le spiegazioni sono generate da soli dati sintetici. Gli output non sono validati empiricamente, non sono certificati, non sono adatti a decisioni legali, regolamentari o fiscali. Solo per intelligence diagnostica di livello pilot.",
+      "limitations_statement": "Questo record di spiegabilità è un output demo sintetico prodotto in condizioni pre-calibrazione empirica (KORA Index v1.0). I pesi dei macroblocks sono provvisori — REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20% — non ancora calibrati empiricamente. Le spiegazioni sono generate da soli dati sintetici. Gli output non sono validati empiricamente, non sono certificati, non sono adatti a decisioni legali, regolamentari o fiscali. Solo per intelligence diagnostica di livello pilot.",
       "individual_worker_data_present": false
     }
   ]

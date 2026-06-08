@@ -528,12 +528,12 @@ export default function Reports() {
         eyebrow={`Decision Pack · ${isLive ? 'LIVE' : activeScenario} · ${companyName}`}
         title="Report direzionali"
         subline="Output board-ready per HR, Finance, ESG e board. Evidenze strutturate, attivazione e raccomandazioni in formato decisionale."
-        meta="Foundation Light v0.1 · pre_empirical_calibration · dati sintetici demo"
+        meta="KORA Foundation Light · pre_empirical_calibration · dati sintetici demo"
       />
       <BoundaryBanner isLive={isLive} />
       <DecisionContext
         question="Quali output portare al board, agli advisor ESG e alle funzioni HR e Finance?"
-        boundary="Foundation Light v0.1 · pre_empirical_calibration · non certificativo · dati sintetici"
+        boundary="KORA Foundation Light · pre_empirical_calibration · non certificativo · dati sintetici"
       />
 
       {/* ── 2. Executive Output Reading ─────────────────────────────────────── */}
@@ -562,13 +562,13 @@ export default function Reports() {
         <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
           <div>
             <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 500, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 4 }}>
-              KORA Decision Pack · Foundation Light v0.1
+              KORA Decision Pack · KORA Foundation Light
             </p>
             <p style={{ fontFamily: "Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif", fontWeight: 800, color: "var(--kora-ink)", fontSize: '1.5rem', letterSpacing: '-0.015em', lineHeight: 1.15 }}>
               {companyName}
             </p>
             <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, marginTop: 4 }}>
-              Output direzionale company-scoped · Foundation Light v0.1 · pre-empirical calibration
+              Output direzionale company-scoped · KORA Foundation Light · pre-empirical calibration
             </p>
           </div>
           {latestVersion && latestSt && (
@@ -585,7 +585,7 @@ export default function Reports() {
         {hasFullReport && koraIndex ? (
           <div className="grid grid-cols-1 gap-4 mb-5 sm:grid-cols-3">
             <div style={{ background: TOKENS.inkBorder, borderRadius: 10, padding: '1rem', textAlign: 'center' }}>
-              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 6 }}>KORA Index v3</p>
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 6 }}>KORA Index v1.0</p>
               <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '2.5rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                 {koraIndex.kora_index_value}
               </p>
@@ -822,7 +822,7 @@ export default function Reports() {
             </>
           )}
 
-          {/* Section 2: KORA Index v3 */}
+          {/* Section 2: KORA Index v1.0 */}
           {sectionMap.kora_index_v3 && (
             <>
               <SectionBlock section={sectionMap.kora_index_v3}>
@@ -836,7 +836,7 @@ export default function Reports() {
                   style={{ borderRadius: TOKENS.cardRadius, border: TOKENS.cardBorder, background: TOKENS.inkBorder, padding: '0.875rem 1rem', marginTop: 8 }}
                 >
                   <summary style={{ cursor: 'pointer', fontFamily: 'var(--font-jakarta)', fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint, userSelect: 'none' }}>
-                    Technical Preview / Methodology Debug — Non sostituisce il KORA Index v3
+                    Technical Preview / Methodology Debug — Non sostituisce il KORA Index v1.0
                   </summary>
                   <div style={{ marginTop: 12, background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: 6, padding: '10px 12px', fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint, display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <p>calculation_mode: {pack.dynamic_preview.calculation_mode}</p>
@@ -977,8 +977,8 @@ export default function Reports() {
         <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {[
             'Dati sintetici demo — non rappresentativi della situazione reale dell\'azienda.',
-            'Foundation Light v0.1 · pre_empirical_calibration — output direzionale, non certificazione pubblica o attestazione regolatoria.',
-            'Confidence Score: indicatore esterno di affidabilità dati, peso = 0 nel KORA Index v3. Non è una componente del punteggio.',
+            'KORA Foundation Light · pre_empirical_calibration — output direzionale, non certificazione pubblica o attestazione regolatoria.',
+            'Confidence Score: indicatore esterno di affidabilità dati, peso = 0 nel KORA Index v1.0. Non è una componente del punteggio.',
             'Correlazione ≠ causalità — tutti i segnali KORA sono associativi, non predittivi.',
             'KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.',
           ].map((note) => (
@@ -1073,7 +1073,7 @@ export default function Reports() {
 
       {/* ── 13. ProvenanceFooter ─────────────────────────────────────────────── */}
       <ProvenanceFooter
-        methodologyVersionId={pack?.methodology_version ?? 'KORA Methodology v0.1'}
+        methodologyVersionId={pack?.methodology_version ?? 'KORA Index v1.0'}
         calibrationStatus="pre_empirical_calibration"
         reportingPeriod={pack?.period ?? activeScenario}
       />

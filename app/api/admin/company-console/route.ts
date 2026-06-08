@@ -303,7 +303,7 @@ export async function GET(request: NextRequest) {
       tenantCode,
       companyName:          t.company_name as string,
       tenantStatus:         isActive ? 'active' : 'suspended',
-      methodologyVersion:   (t.methodology_version_id as string | null) ?? 'KORA Methodology v0.1',
+      methodologyVersion:   (t.methodology_version_id as string | null) ?? 'KORA Index v1.0',
       createdAt:            t.created_at as string,
       onboardingStatus:     t.onboarding_status as string | null,
 
@@ -332,7 +332,7 @@ export async function GET(request: NextRequest) {
         safeguardStatus:    ki.safeguard_status as string,
         activationRate:     ki.activation_rate !== null ? Math.round((ki.activation_rate as number) * 1000) / 1000 : null,
         reportingPeriod:    ki.reporting_period as string,
-        methodologyVersion: (ki.methodology_version_id as string) ?? 'KORA Methodology v0.1',
+        methodologyVersion: (ki.methodology_version_id as string) ?? 'KORA Index v1.0',
         calibrationStatus:  (ki.calibration_status as string) ?? 'pre_empirical_calibration',
         scoredAt:           ki.created_at as string,
       } : null,

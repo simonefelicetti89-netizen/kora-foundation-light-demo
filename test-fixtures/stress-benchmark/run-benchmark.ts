@@ -239,7 +239,7 @@ const results = [resA, resB, resC];
 
 console.log('\n' + '═'.repeat(100));
 console.log('B21 — THREE-COMPANY STRESS BENCHMARK');
-console.log('KORA Index v3 / pre_empirical_calibration');
+console.log('KORA Index v1.0 / pre_empirical_calibration');
 console.log('═'.repeat(100));
 
 for (const r of results) {
@@ -263,7 +263,7 @@ for (const r of results) {
 
 // ── Ranking ───────────────────────────────────────────────────────────────────
 console.log('\n' + '═'.repeat(100));
-console.log('FINAL RANKING (KORA Index v3):');
+console.log('FINAL RANKING (KORA Index v1.0):');
 const ranked = [...results].sort((a, b) => b.koraIndex - a.koraIndex);
 ranked.forEach((r, i) => {
   console.log(`  ${i + 1}. ${r.tenantCode}: ${r.koraIndex}/100 | Safeguard: ${r.safeguard} | AR: ${r.ar}% MAR: ${r.mar}%`);

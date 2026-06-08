@@ -1,7 +1,7 @@
 // services/worker-space/WorkerSpaceCapabilityService.ts
 // B81-B: Determines what the worker space can do for a given tenant.
 //
-// Foundation Light v0.1: rule-based, no DB query, no Gate 2 dependency.
+// KORA Foundation Light: rule-based, no DB query, no Gate 2 dependency.
 // Pilot+: can be backed by a Supabase query on tenant.worker_space_status.
 //
 // Design: service is the single source of truth for "is the worker layer
@@ -82,7 +82,7 @@ class WorkerSpaceCapabilityService {
       pibSupported:         false,  // individual PIB requires Pilot+ (per-worker UEF records)
       collectiveSupported:  true,   // KORA Contribution™ worker layer available in PREVIEW
       note:
-        `Foundation Light v0.1 — Worker Space in PREVIEW mode. ` +
+        `KORA Foundation Light — Worker Space in PREVIEW mode. ` +
         `${myKoraEnabledCount}/${totalWorkers} lavoratori con My KORA abilitata. ` +
         `PIB individuale non disponibile (richiede Pilot+ con per-worker UEF records). ` +
         `Dynamic Impact CV™ disponibile in modalità anteprima sintetica.`,

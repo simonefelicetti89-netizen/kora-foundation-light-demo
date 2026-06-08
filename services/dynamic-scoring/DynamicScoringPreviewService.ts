@@ -171,7 +171,7 @@ function buildTrace(
       step:   'Dynamic KORA Preview',
       input:  macroblocks.map((m) => `${m.code}=${m.preview_score}`).join(', '),
       output: `preview_score=${previewScore}`,
-      note:   'Σ(macroblock_score × weight). Formula identica al KORA Index v3 ufficiale, inputs proxy.',
+      note:   'Σ(macroblock_score × weight). Formula identica al KORA Index v1.0 ufficiale, inputs proxy.',
     },
   ];
 }

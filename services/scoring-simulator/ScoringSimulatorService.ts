@@ -183,7 +183,7 @@ export class ScoringSimulatorService implements IScoringSimulatorService {
     };
   }
 
-  // KORA Index v3 = Σ (macroblock.score × macroblock.weight), rounded.
+  // KORA Index v1.0 = Σ (macroblock.score × macroblock.weight), rounded.
   // CS is excluded — it is an external reliability indicator with weight = 0.
   computeKoraIndexV3(macroblockScores: MacroblockScore[]): number {
     const mbWeights = getMacroblockWeights();

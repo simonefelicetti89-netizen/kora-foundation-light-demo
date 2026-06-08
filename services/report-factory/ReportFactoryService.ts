@@ -339,7 +339,7 @@ export class ReportFactoryService implements IReportFactoryService {
     const baseline = [
       'Decision Pack misura l\'organizzazione, non gli individui.',
       'Il PIB individuale resta privato al lavoratore.',
-      `Foundation Light v0.1 è in pre-empirical calibration: output direzionale, non certificazione pubblica o attestazione regolatoria.`,
+      `KORA Foundation Light è in pre-empirical calibration: output direzionale, non certificazione pubblica o attestazione regolatoria.`,
       'Dati sintetici demo — non rappresentano la situazione reale dell\'azienda.',
       'KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.',
       'correlazione ≠ causalità. Nessuna analisi causale inclusa.',

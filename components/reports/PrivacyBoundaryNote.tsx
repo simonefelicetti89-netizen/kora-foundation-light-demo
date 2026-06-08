@@ -53,7 +53,7 @@ export function PrivacyBoundaryNote() {
               {[
                 'synthetic_demo_data',
                 'pre_empirical_calibration',
-                'Foundation Light v0.1',
+                'KORA Foundation Light',
                 'not_live_data',
                 'informational_only',
               ].map((tag) => (

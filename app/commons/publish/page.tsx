@@ -1,6 +1,6 @@
 'use client';
 // KORA Commons — Pubblica Iniziativa
-// PREVIEW — Foundation Light v0.1. Nessuna persistenza. Mostra anteprima della card dopo submit.
+// PREVIEW — KORA Foundation Light. Nessuna persistenza. Mostra anteprima della card dopo submit.
 // Non è un social network. L'iniziativa deve rispondere: "Quale opportunità di attivazione umana esiste?"
 
 import { useState } from 'react';

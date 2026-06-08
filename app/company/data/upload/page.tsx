@@ -1927,7 +1927,7 @@ function KoraBTIPanel({ result }: { result: KoraComputationResult }) {
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Budget-to-Human-Impact (BTI)</h3>
-          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Macroblocco 4 · peso 20% nel KORA Index v3</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Macroblocco 4 · peso 20% nel KORA Index v1.0</p>
         </div>
         <span className={`text-2xl font-bold ${koraIndexTextCls(bti.btiScore)}`}>
           {bti.btiScore}<span className="text-sm font-normal text-[rgba(6,3,43,0.40)]">/100</span>
@@ -2053,7 +2053,7 @@ function KoraCarePanel({ careSignalCount }: { careSignalCount: number }) {
       <div className="px-6 py-4 border-b border-[rgba(6,3,43,0.05)] flex items-center justify-between">
         <div>
           <h3 className="text-sm font-semibold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Care Economy</h3>
-          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Modulo premium — segnali informativi, non nel KORA Index v3</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">Modulo premium — segnali informativi, non nel KORA Index v1.0</p>
         </div>
         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${
           careSignalCount > 0
@@ -2988,7 +2988,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
 
         {/* ═══ PAGE 5 — BUDGET-TO-HUMAN-IMPACT ═══ */}
         <div className="bp-page-break px-1 pt-6">
-          <BpSectionTitle n="04" title="Budget-to-Human-Impact (BTI)" sub="Macroblocco 4 · peso 20% nel KORA Index v3 · nessun budget inventato" />
+          <BpSectionTitle n="04" title="Budget-to-Human-Impact (BTI)" sub="Macroblocco 4 · peso 20% nel KORA Index v1.0 · nessun budget inventato" />
 
           <div className="grid grid-cols-3 gap-5 mb-5 bp-avoid-break">
             <div className="border-t-2 border-[rgba(6,3,43,0.85)] pt-3 space-y-0.5">
@@ -3182,7 +3182,7 @@ function UploadedBoardPackPreview({ result, fileName, totalRecords, rows }: Uplo
               <tbody>
                 {([
                   ['Calibrazione', `${METHOD_ID} · ${CALIB} · pesi v0.1 pre-empirici`],
-                  ['Confidence Score', 'Esterno al KORA Index v3 · peso = 0 · indicatore affidabilità dati'],
+                  ['Confidence Score', 'Esterno al KORA Index v1.0 · peso = 0 · indicatore affidabilità dati'],
                   ['Activation Safeguard', 'Gate interpretivo — non componente del KORA Index'],
                   ['Worker ranking', 'KORA non produce ranking. PIB è worker-private. Nessun dato individuale in questo Board Pack.'],
                   ['Output employer', 'Solo aggregati sopra N ≥ 10 · nessun PIB · nessun dato identità individuale'],

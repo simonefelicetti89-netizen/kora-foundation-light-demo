@@ -35,7 +35,7 @@ const FIXTURE_META: PdfData['meta'] = {
   decisionPackStatus:      'approved',
   isLiveData:              false,
   notCertification:        true,
-  methodologyNote:         'KORA Foundation Light v0.1 — pre_empirical_calibration',
+  methodologyNote:         'KORA Foundation Light — pre_empirical_calibration',
 };
 
 const FIXTURE_KORA_INDEX: PdfData['koraIndex'] = {
@@ -115,7 +115,7 @@ const FIXTURE_PIB: PdfData['pibAggregation'] = {
   wbEstimate:            0.52,
   pibSnapshotsAvailable: false,
   estimationBasis:       'aggregate_estimate',
-  estimationNote:        'Foundation Light v0.1 — nessun snapshot PIB persistito.',
+  estimationNote:        'KORA Foundation Light — nessun snapshot PIB persistito.',
   calibrationStatus:     'pre_empirical_calibration',
   methodologyVersion:    'KORA-METHOD-v0.1.0',
 };
@@ -472,7 +472,7 @@ describe('Invariant — No forbidden changes', () => {
     expect(src).toContain('contributionSummary');
   });
 
-  it('fetchPdfData returns contributionSummary: null (not persisted in Foundation Light v0.1)', () => {
+  it('fetchPdfData returns contributionSummary: null (not persisted in KORA Foundation Light)', () => {
     const src = read('lib/decision-pack/pdf-data.ts');
     expect(src).toContain('contributionSummary: null');
   });

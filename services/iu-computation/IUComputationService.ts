@@ -177,7 +177,7 @@ function deriveEV(evidenceType: string): FactorResult {
 }
 
 // CF — Continuity Factor (canonical canonical range: 1.00–1.20, cross-period worker engagement).
-// Foundation Light v0.1 stub: canonical CF requires PIB (Personal Impact Balance) and
+// KORA Foundation Light stub: canonical CF requires PIB (Personal Impact Balance) and
 // cross-period worker activity data. These are not available in the current pipeline.
 // Stub implementation: uses site/cluster targeting as a first-order proxy.
 // Label: "Continuity Factor (foundation_light_stub)" — must not be presented as canonical CF.

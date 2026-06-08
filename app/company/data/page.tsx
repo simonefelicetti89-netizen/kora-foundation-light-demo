@@ -271,7 +271,7 @@ export default function DataEvidence() {
           </span>
         </div>
         <p className="text-sm text-[rgba(6,3,43,0.52)]">
-          {companyName} — {activeScenario} — KORA Methodology v0.1 — pre_empirical_calibration
+          {companyName} — {activeScenario} — KORA Index v1.0 — pre_empirical_calibration
         </p>
       </div>
 
@@ -496,7 +496,7 @@ export default function DataEvidence() {
             Fonti principali attive e mapping confidence sopra soglia. Due gap documentati: evidenze ESG/CSR parziali (integrazione manuale Q3), perimetro presenze da definire con Operations. Dati wallet/voucher esclusi (Gate 5 — non attivi in Foundation Light). Consenso worker My KORA da completare. Pilot avviabile con caveats documentati.
           </p>
           <p className="text-xs text-[#D99A2B] italic font-medium">
-            Valutazione demo. Non rappresenta assessment contrattuale. synthetic_demo_data: true — KORA Methodology v0.1 — pre_empirical_calibration.
+            Valutazione demo. Non rappresenta assessment contrattuale. synthetic_demo_data: true — KORA Index v1.0 — pre_empirical_calibration.
           </p>
         </div>
       </section>

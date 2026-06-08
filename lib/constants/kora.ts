@@ -2,7 +2,7 @@ export const PILLAR_CODES = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY']
 
 export const KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'NI', 'WB', 'PC', 'PB', 'EQ', 'VR', 'CO', 'CS'] as const;
 
-// KORA Index v3 macroblock codes
+// KORA Index v1.0 macroblock codes
 export const MACROBLOCK_CODES = ['REACH', 'QUALITY', 'EQUITY', 'BTI'] as const;
 
 // Foundation Light active product roles are intentionally simplified.
@@ -56,16 +56,18 @@ export const WORKER_ROLES = ['WORKER'] as const;
 
 export const ADMIN_ROLES = ['KORA_ADMIN'] as const;
 
-// ── KORA Index v3 — Methodology versioning ─────────────────────────────────────
+// ── B100: Versioning canonico ─────────────────────────────────────────────────────
+// Product version:     KORA Foundation Light
+// Methodology version: KORA Index v1.0
+// Calibration status:  pre_empirical_calibration (non è una versione prodotto)
 
-export const KORA_INDEX_VERSION = 'KORA Index v3' as const;
-export const METHODOLOGY_CALIBRATION_VERSION = 'v0.1 pre-empirical calibration' as const;
+export const PRODUCT_VERSION              = 'KORA Foundation Light' as const;
+export const KORA_INDEX_VERSION           = 'KORA Index v1.0' as const;
+export const METHODOLOGY_VERSION          = 'KORA Index v1.0' as const;
+export const METHODOLOGY_CALIBRATION_VERSION = 'pre_empirical_calibration' as const;
 
-// Updated to reflect KORA Index v3 — replaces prior 'KORA Methodology v0.1'
-export const METHODOLOGY_VERSION = 'KORA Index v3 / KORA Methodology v0.1' as const;
-
-// ── KORA Index v3 — Macroblock structure ───────────────────────────────────────
-// KORA Index v3 = 25% Activation Reach + 30% Activation Quality
+// ── KORA Index v1.0 — Macroblock structure ───────────────────────────────────────
+// KORA Index v1.0 = 25% Activation Reach + 30% Activation Quality
 //               + 25% Distribution & Equity + 20% Budget-to-Human-Impact
 // CS (Confidence Score) is EXTERNAL — weight = 0, shown as reliability indicator only.
 
@@ -84,7 +86,7 @@ export const MACROBLOCK_WEIGHTS: Record<string, number> = {
 };
 
 // Operational components that feed each macroblock.
-// CS feeds no macroblock — it is external (weight = 0 in KORA Index v3).
+// CS feeds no macroblock — it is external (weight = 0 in KORA Index v1.0).
 // BTI score comes from the BudgetToHumanImpactEngine, not from component values.
 export const MACROBLOCK_COMPONENTS: Record<string, string[]> = {
   REACH:   ['AR', 'MAR'],
@@ -108,7 +110,7 @@ export const COMPONENT_MACROBLOCK: Record<string, string> = {
   CS:  'external',
 };
 
-// true for components excluded from KORA Index v3 computation
+// true for components excluded from KORA Index v1.0 computation
 export const COMPONENT_EXTERNAL: Record<string, boolean> = {
   AR: false, MAR: false, NI: false, WB: false, PC: false,
   PB: false, EQ: false,  VR: false, CO: false, CS: true,

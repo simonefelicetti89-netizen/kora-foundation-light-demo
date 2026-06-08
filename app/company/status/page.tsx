@@ -623,7 +623,7 @@ export default function CompanyStatusCenterPage() {
         color: 'rgba(6,3,43,0.30)', lineHeight: 1.6,
         background: 'rgba(6,3,43,0.02)', border: '1px solid rgba(6,3,43,0.05)',
       }}>
-        <strong style={{ color: 'rgba(6,3,43,0.40)' }}>KORA Methodology v0.1</strong>
+        <strong style={{ color: 'rgba(6,3,43,0.40)' }}>KORA Index v1.0</strong>
         {' · calibration_status: pre_empirical_calibration · '}
         {!isLive && 'synthetic_demo_data: true · '}
         Il KORA Index è un indicatore aggregato a livello aziendale.

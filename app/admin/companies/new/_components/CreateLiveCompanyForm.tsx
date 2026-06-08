@@ -434,7 +434,7 @@ export function CreateLiveCompanyForm({ userEmail }: { userEmail: string }) {
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-[9.5px] text-[rgba(6,3,43,0.52)] space-y-1">
           <p className="font-semibold text-[rgba(6,3,43,0.62)]">Nota metodologica</p>
           <p>KORA misura le organizzazioni, non gli individui. Nessun dato individuale del lavoratore è visibile al datore di lavoro (soglia privacy N≥10).</p>
-          <p>Foundation Light v0.1 — calibrazione pre-empirica. Non certifica conformità normativa e non sostituisce consulenza ESG, legale o fiscale.</p>
+          <p>KORA Foundation Light — calibrazione pre-empirica. Non certifica conformità normativa e non sostituisce consulenza ESG, legale o fiscale.</p>
           <p>Questo flusso è pilot-grade, non production IAM. Gestito da KORA Admin.</p>
         </div>
 

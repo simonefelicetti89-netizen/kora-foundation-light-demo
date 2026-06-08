@@ -299,7 +299,7 @@ export function CompanyLivePreviewPanel() {
             </Card>
 
             {/* KORA Index — B25: definition added */}
-            <Card title="KORA Index v3" accent>
+            <Card title="KORA Index v1.0" accent>
               {data.scoring ? (
                 <div className="space-y-3">
                   <div className="flex items-baseline gap-1">

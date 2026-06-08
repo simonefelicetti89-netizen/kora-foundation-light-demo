@@ -3,7 +3,7 @@
 // Replaces canned seed values with computation from live signals already
 // present in ImpactUnitComputationSummary and UEFReviewSummary.
 //
-// Does NOT change CS methodology, score range (0–1), or CS weight in KORA Index v3.
+// Does NOT change CS methodology, score range (0–1), or CS weight in KORA Index v1.0.
 // CS weight remains 0 — CS is external to KORA Index, displayed alongside it.
 //
 // Formula (Foundation Light pre-empirical):
@@ -163,8 +163,8 @@ export class ConfidenceScoreService {
       positive_drivers:    buildPositiveDrivers(evidenceQuality, dataCompleteness, mappingConfidence),
       negative_drivers:    buildNegativeDrivers(evidenceQuality, dataCompleteness, mappingConfidence, pendingCount),
       gaps_identified:     buildGaps(evidenceQuality, dataCompleteness, mappingConfidence),
-      limitations:         'Confidence Score calcolato su segnali pre-empirici Foundation Light v0.1. Non certificato. Non modifica il valore del KORA Index.',
-      methodology_version_id: 'KORA Methodology v0.1',
+      limitations:         'Confidence Score calcolato su segnali pre-empirici KORA Foundation Light. Non certificato. Non modifica il valore del KORA Index.',
+      methodology_version_id: 'KORA Index v1.0',
       calibration_status:  'pre_empirical_calibration',
       live_computation:    true,
     };

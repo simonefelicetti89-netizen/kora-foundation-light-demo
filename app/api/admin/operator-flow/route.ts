@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
           industry_code: 'SYNTHETIC', country_code: 'IT',
           onboarding_status: 'active', data_readiness_status: 'complete',
           decision_pack_status: 'not_ready',
-          methodology_version_id: 'KORA Methodology v0.1', is_active: true,
+          methodology_version_id: 'KORA Index v1.0', is_active: true,
         }).select('id').single();
       if (tErr || !created) return NextResponse.json({ error: `tenant: ${tErr?.message}` }, { status: 500 });
       tenantId = (created as { id: string }).id;

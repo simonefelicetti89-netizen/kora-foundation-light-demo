@@ -236,8 +236,8 @@ export function runKoraPipeline(params: {
     // Mandatory intermediate layer between IU (Stage 10) and KORA Index (Stage 14).
     // Placed after activation engine (Step 7) to reuse the activation result's
     // bounded-reach activeWorkers / meaningfullyActiveWorkers — the best available
-    // estimate in Foundation Light v0.1 aggregate model.
-    // Foundation Light v0.1: estimationBasis='aggregate_estimate' — UEF records are
+    // estimate in KORA Foundation Light aggregate model.
+    // KORA Foundation Light: estimationBasis='aggregate_estimate' — UEF records are
     // program-level (no individual worker tracking). Individual PIBs available in Pilot+.
     const pibAggregation = pibAggregationService.aggregatePIBForCompany({
       iuResults,

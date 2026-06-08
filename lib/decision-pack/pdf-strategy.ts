@@ -2,7 +2,7 @@
 // B79-P0-3: PDF delivery strategy for Vercel Hobby constraint.
 //
 // Vercel Hobby has a 50MB function size limit. @sparticuz/chromium weighs 67MB.
-// Foundation Light v0.1 uses HTML preview as the primary delivery path.
+// KORA Foundation Light uses HTML preview as the primary delivery path.
 // Automated PDF export is opt-in via NEXT_PUBLIC_KORA_PDF_ENABLED=true.
 //
 // When PDF is disabled (default):

@@ -450,7 +450,7 @@ function computeFinancialConfidence(
 export function interpretUploadedRecord(
   record: UploadedRecordInput,
   // methodologyVersion retained for future versioned config reads
-  _methodologyVersion = 'KORA Methodology v0.1',
+  _methodologyVersion = 'KORA Index v1.0',
   batchContext?: BatchFinancialContext,
 ): UefCandidateProposal {
   const p = record.payload;

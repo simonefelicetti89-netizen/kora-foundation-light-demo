@@ -71,7 +71,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Confidence Score',
     label_en: 'Confidence Score',
     definition_it:
-      'Indicatore di affidabilità dei dati (0–1) che misura la completezza delle fonti, la qualità delle evidenze e il peso della verifica. Il Confidence Score non contribuisce al calcolo del KORA Index v3 (peso = 0) ma è mostrato obbligatoriamente accanto ad esso. Un Confidence Score basso riduce la fiducia interpretativa nell\'output — non ne modifica il valore numerico.',
+      'Indicatore di affidabilità dei dati (0–1) che misura la completezza delle fonti, la qualità delle evidenze e il peso della verifica. Il Confidence Score non contribuisce al calcolo del KORA Index v1.0 (peso = 0) ma è mostrato obbligatoriamente accanto ad esso. Un Confidence Score basso riduce la fiducia interpretativa nell\'output — non ne modifica il valore numerico.',
     related_concepts: ['kora_index', 'verification_rate'],
   },
   activation_safeguard: {
@@ -87,7 +87,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Activation Reach',
     label_en: 'Activation Reach',
     definition_it:
-      'Il primo macroblocco del KORA Index v3 (peso 25%). Misura se l\'attivazione raggiunge una quota significativa della forza lavoro. Sintetizza due componenti analitici: AR (Activation Rate, peso 50%) e MAR (Meaningful Activation Rate, peso 50%). Un macroblocco basso segnala che la maggior parte dei lavoratori non è stata raggiunta da alcun programma di attivazione verificata nel periodo. Il macroblocco è una sintesi aggregata: non coincide con il solo AR. Un AR elevato con MAR basso (partecipazione formale ma non significativa) produce un macroblocco Activation Reach moderato, non massimo.',
+      'Il primo macroblocco del KORA Index v1.0 (peso 25%). Misura se l\'attivazione raggiunge una quota significativa della forza lavoro. Sintetizza due componenti analitici: AR (Activation Rate, peso 50%) e MAR (Meaningful Activation Rate, peso 50%). Un macroblocco basso segnala che la maggior parte dei lavoratori non è stata raggiunta da alcun programma di attivazione verificata nel periodo. Il macroblocco è una sintesi aggregata: non coincide con il solo AR. Un AR elevato con MAR basso (partecipazione formale ma non significativa) produce un macroblocco Activation Reach moderato, non massimo.',
     related_concepts: ['activation_rate', 'meaningful_activation_rate', 'kora_index'],
   },
   activation_quality: {
@@ -95,7 +95,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Activation Quality',
     label_en: 'Activation Quality',
     definition_it:
-      'Il secondo macroblocco del KORA Index v3 (peso 30%). Misura se le azioni generano attivazione profonda, verificata, addizionale e continua. Sintetizza tre componenti analitici: NI (Normalized Intensity, peso 33%), VR (Verification Rate, peso 33%), CO (Continuity, peso 34%). Un macroblocco basso segnala che l\'attivazione è superficiale, non verificata o episodica. Il macroblocco è una sintesi aggregata: non coincide con il solo CO o con il solo NI. Un NI alto con CO basso segnala engagement intenso ma non ricorrente.',
+      'Il secondo macroblocco del KORA Index v1.0 (peso 30%). Misura se le azioni generano attivazione profonda, verificata, addizionale e continua. Sintetizza tre componenti analitici: NI (Normalized Intensity, peso 33%), VR (Verification Rate, peso 33%), CO (Continuity, peso 34%). Un macroblocco basso segnala che l\'attivazione è superficiale, non verificata o episodica. Il macroblocco è una sintesi aggregata: non coincide con il solo CO o con il solo NI. Un NI alto con CO basso segnala engagement intenso ma non ricorrente.',
     related_concepts: ['normalized_intensity', 'verification_rate', 'continuity', 'kora_index'],
   },
   distribution_equity: {
@@ -103,7 +103,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Distribution & Equity',
     label_en: 'Distribution & Equity',
     definition_it:
-      'Il terzo macroblocco del KORA Index v3 (peso 25%). Misura se valore e attivazione sono distribuiti equamente tra lavoratori, sedi, dipartimenti e cluster. Sintetizza quattro componenti analitici: WB (Worker Balance, peso 25%), PC (Pillar Coverage, peso 25%), PB (Pillar Balance, peso 25%), EQ (Equity, peso 25%). Alta concentrazione tra pochi lavoratori o siti riduce questo macroblocco anche se il KORA Index totale è positivo. Non coincide con il solo EQ: un punteggio di Equity alto ma con bassa Pillar Coverage produce comunque un macroblocco Distribution & Equity moderato.',
+      'Il terzo macroblocco del KORA Index v1.0 (peso 25%). Misura se valore e attivazione sono distribuiti equamente tra lavoratori, sedi, dipartimenti e cluster. Sintetizza quattro componenti analitici: WB (Worker Balance, peso 25%), PC (Pillar Coverage, peso 25%), PB (Pillar Balance, peso 25%), EQ (Equity, peso 25%). Alta concentrazione tra pochi lavoratori o siti riduce questo macroblocco anche se il KORA Index totale è positivo. Non coincide con il solo EQ: un punteggio di Equity alto ma con bassa Pillar Coverage produce comunque un macroblocco Distribution & Equity moderato.',
     related_concepts: ['worker_balance', 'pillar_coverage', 'pillar_balance', 'equity', 'kora_index'],
   },
   activation_rate: {
@@ -183,7 +183,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Budget-to-Human-Impact (BTI)',
     label_en: 'Budget-to-Human-Impact macroblock',
     definition_it:
-      'Il quarto macroblocco del KORA Index v3 (peso 20%). Il punteggio BTI è calcolato dal motore Budget-to-Human-Impact — non deriva dai valori dei componenti. Misura l\'efficienza di conversione della spesa welfare in attivazione umana reale. Budget allocato ≠ Budget attivato. La spesa in benefit monetari (buoni pasto, fringe) non genera Impact Units.',
+      'Il quarto macroblocco del KORA Index v1.0 (peso 20%). Il punteggio BTI è calcolato dal motore Budget-to-Human-Impact — non deriva dai valori dei componenti. Misura l\'efficienza di conversione della spesa welfare in attivazione umana reale. Budget allocato ≠ Budget attivato. La spesa in benefit monetari (buoni pasto, fringe) non genera Impact Units.',
     related_concepts: ['economic_relief', 'deep_activation', 'activation_debt', 'reallocation_opportunity'],
   },
   economic_relief: {
@@ -239,7 +239,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Pre-calibrazione empirica',
     label_en: 'Pre-empirical calibration',
     definition_it:
-      'Stato metodologico attuale di Foundation Light v0.1. I pesi dei macroblocks (REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%) sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output sono strumenti di intelligence diagnostica pilot-grade, non certificati e non adatti a decisioni legali, fiscali o regolamentari. Lo stato di calibrazione è non sopprimibile e deve essere mostrato accanto a ogni output KORA Index.',
+      'Stato metodologico attuale di KORA Foundation Light. I pesi dei macroblocks (REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%) sono provvisori — non ancora calibrati empiricamente tramite lo Studio Delphi. Gli output sono strumenti di intelligence diagnostica pilot-grade, non certificati e non adatti a decisioni legali, fiscali o regolamentari. Lo stato di calibrazione è non sopprimibile e deve essere mostrato accanto a ogni output KORA Index.',
     related_concepts: ['kora_index', 'confidence_score'],
   },
   kora_contribution: {
@@ -247,7 +247,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'KORA Contribution',
     label_en: 'KORA Contribution',
     definition_it:
-      'Indicatore companion che misura il contributo collettivo ed ecosistemico dell\'azienda: iniziative di gruppo, attività KORA Network, contributi di sistema. KORA Contribution NON è un componente del KORA Index v3 — ha peso 0 nel calcolo dell\'indice. È mostrato separatamente come indicatore complementare. Non deve mai essere aggregato o sommato al KORA Index.',
+      'Indicatore companion che misura il contributo collettivo ed ecosistemico dell\'azienda: iniziative di gruppo, attività KORA Network, contributi di sistema. KORA Contribution NON è un componente del KORA Index v1.0 — ha peso 0 nel calcolo dell\'indice. È mostrato separatamente come indicatore complementare. Non deve mai essere aggregato o sommato al KORA Index.',
     related_concepts: ['kora_index', 'kora_pillar'],
   },
   kora_pillar: {
@@ -295,7 +295,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Benefit monetari & opportunità di attivazione',
     label_en: 'Economic Relief & Activation Opportunity',
     definition_it:
-      'Sezione diagnostica del KORA Index v3 che confronta la quota di spesa welfare destinata a benefit monetari (Limited) con quella destinata a programmi di attivazione profonda (Eligible). Un\'alta quota di benefit monetari (es. 48% in S1) segnala che il budget è concentrato in benefit a bassa attivazione. La riduzione verso S2 (30%) attraverso parziale riallocazione verso l\'attivazione profonda migliora il BTI score, la qualità dell\'attivazione e l\'equità della spesa. Il frame corretto: non è spesa sbagliata, è spesa che può diventare più intelligente.',
+      'Sezione diagnostica del KORA Index v1.0 che confronta la quota di spesa welfare destinata a benefit monetari (Limited) con quella destinata a programmi di attivazione profonda (Eligible). Un\'alta quota di benefit monetari (es. 48% in S1) segnala che il budget è concentrato in benefit a bassa attivazione. La riduzione verso S2 (30%) attraverso parziale riallocazione verso l\'attivazione profonda migliora il BTI score, la qualità dell\'attivazione e l\'equità della spesa. Il frame corretto: non è spesa sbagliata, è spesa che può diventare più intelligente.',
     related_concepts: ['economic_relief', 'deep_activation', 'reallocation_opportunity', 'bti_macroblock'],
   },
   budget_to_human_impact: {
@@ -343,7 +343,7 @@ const CONCEPT_GLOSSARY: Record<string, ConceptExplanation> = {
     label_it: 'Profondità della Policy (Policy Depth)',
     label_en: 'Policy Depth',
     definition_it:
-      'Dimensione qualitativa che misura il grado di strutturazione e impatto reale di una policy organizzativa. In Foundation Light v0.1, policy_depth è rappresentata come livello ordinale: superficial (policy dichiarata senza meccanismi di supporto), moderate (policy con misure di supporto parziali), deep (policy con meccanismi strutturati e verificati), transformative (policy che riorganizza strutturalmente i processi di lavoro). Il Normalized Magnitude (NM) per le policy strutturali richiede calibrazione post-Studio Delphi su coverage × depth × accessibility × duration. In Foundation Light: NM = 1.0 (stub pre-calibrazione).',
+      'Dimensione qualitativa che misura il grado di strutturazione e impatto reale di una policy organizzativa. In KORA Foundation Light, policy_depth è rappresentata come livello ordinale: superficial (policy dichiarata senza meccanismi di supporto), moderate (policy con misure di supporto parziali), deep (policy con meccanismi strutturati e verificati), transformative (policy che riorganizza strutturalmente i processi di lavoro). Il Normalized Magnitude (NM) per le policy strutturali richiede calibrazione post-Studio Delphi su coverage × depth × accessibility × duration. In Foundation Light: NM = 1.0 (stub pre-calibrazione).',
     related_concepts: ['structural_policy_activation', 'trust_and_flexibility_policy', 'non_budget_mediated_activation'],
   },
 };

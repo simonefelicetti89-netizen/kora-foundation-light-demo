@@ -88,7 +88,7 @@ export const LIFECYCLE_STEPS: ReadonlyArray<LifecycleStep> = [
     ownerRole:   'KORA_ADMIN',
     ownerLabel:  'KORA Admin',
     route:       '/admin/uef-review',
-    description: 'KORA Admin avvia il processo di scoring: UEF Review → IU computation → aggregazione company → KORA Index v3 (10 componenti) + Confidence Score + Activation Safeguard.',
+    description: 'KORA Admin avvia il processo di scoring: UEF Review → IU computation → aggregazione company → KORA Index v1.0 (10 componenti) + Confidence Score + Activation Safeguard.',
     nextAction:  'Avvia l\'UEF Review, poi lo Scoring Run per calcolare il KORA Index.',
   },
   {
@@ -98,7 +98,7 @@ export const LIFECYCLE_STEPS: ReadonlyArray<LifecycleStep> = [
     ownerRole:   'KORA_ADMIN',
     ownerLabel:  'KORA Admin',
     route:       '/admin/companies',
-    description: 'KORA Admin prepara il Decision Pack board-grade: KORA Index v3, Confidence Score, Activation Safeguard, 10 componenti, raccomandazioni strategiche. Il report viene reso disponibile all\'azienda.',
+    description: 'KORA Admin prepara il Decision Pack board-grade: KORA Index v1.0, Confidence Score, Activation Safeguard, 10 componenti, raccomandazioni strategiche. Il report viene reso disponibile all\'azienda.',
     nextAction:  'Genera il Decision Pack dalla Company Control Room e verifica con l\'advisor.',
   },
   {

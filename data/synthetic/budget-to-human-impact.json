@@ -1,14 +1,14 @@
 {
   "file": "budget-to-human-impact.json",
   "version": "1.1",
-  "methodology": "KORA Index v3 / BTI Macroblock",
+  "methodology": "KORA Index v1.0 / BTI Macroblock",
   "synthetic_demo_data": true,
   "generated_for": "foundation_light_demo",
   "not_live_data": true,
   "primary_consumer": "BudgetToHumanImpactService",
   "role_access_note": "BTI data accessible to company_finance, company_admin, and kora_admin roles only. Not accessible to company_hr, company_viewer, worker, partner, or advisor roles.",
   "constitutional_rule": "KORA misura ciò che accade dopo la spesa. Budget allocato ≠ Budget attivato. Budget speso ≠ Impatto umano. Tutti i valori sono indicatori direzionali informational only. Non costituiscono consulenza finanziaria, fiscale, o legale.",
-  "bti_macroblock_note": "BTI macroblock score feeds KORA Index v3 at 20% weight. Score is computed by BudgetToHumanImpactEngine — not derived from any of the 9 operational component values.",
+  "bti_macroblock_note": "BTI macroblock score feeds KORA Index v1.0 at 20% weight. Score is computed by BudgetToHumanImpactEngine — not derived from any of the 9 operational component values.",
   "spend_taxonomy_note": "Spesa in benefit monetari = benefit monetari a bassa attivazione (buoni pasto, fringe generici, card carburante) classificati Limited all'Eligibility Gate. Spesa in attivazione profonda = spesa su programmi eligible che generano Impact Units verificati. La somma benefit monetari + attivazione profonda = budget_used_total.",
   "data": [
     {

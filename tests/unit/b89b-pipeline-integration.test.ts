@@ -160,7 +160,7 @@ describe('KORA Pipeline — end-to-end smoke test', () => {
     // Confidence score is 0–100 (same scale as KORA Index)
     expect(result.confidence.score).toBeGreaterThanOrEqual(0);
     expect(result.confidence.score).toBeLessThanOrEqual(100);
-    // CS is always external to KORA Index v3 (architectural invariant)
+    // CS is always external to KORA Index v1.0 (architectural invariant)
     expect(result.confidence.externalToIndex).toBe(true);
   });
 

@@ -42,15 +42,15 @@ export function DecisionPackHero({
 
   const executiveSentence = (() => {
     if (activeScenario === 'S2' && indexDelta && indexDelta.positive) {
-      return `KORA Index v3 passa da ${s1Output.kora_index_value} a ${s2Output.kora_index_value} dopo una riallocazione parziale del budget da Economic Relief verso iniziative più profonde. Il sistema mostra un miglioramento strutturale, ma mantiene Activation Debt e opportunità residue di riallocazione.`;
+      return `KORA Index v1.0 passa da ${s1Output.kora_index_value} a ${s2Output.kora_index_value} dopo una riallocazione parziale del budget da Economic Relief verso iniziative più profonde. Il sistema mostra un miglioramento strutturale, ma mantiene Activation Debt e opportunità residue di riallocazione.`;
     }
     if (output.safeguard_status === 'CLEAR') {
-      return `KORA Index v3 è ${output.kora_index_value}/100 con Activation Safeguard CLEAR — entrambe le soglie di attivazione sono superate. Il sistema produce intelligence direzionale con validità interpretativa piena.`;
+      return `KORA Index v1.0 è ${output.kora_index_value}/100 con Activation Safeguard CLEAR — entrambe le soglie di attivazione sono superate. Il sistema produce intelligence direzionale con validità interpretativa piena.`;
     }
     if (output.safeguard_status === 'FLAGGED') {
-      return `KORA Index v3 è ${output.kora_index_value}/100 con Activation Safeguard FLAGGED — attivazione insufficiente. Azioni strutturali sono necessarie prima di interpretare il KORA Index come indicatore direzionale affidabile.`;
+      return `KORA Index v1.0 è ${output.kora_index_value}/100 con Activation Safeguard FLAGGED — attivazione insufficiente. Azioni strutturali sono necessarie prima di interpretare il KORA Index come indicatore direzionale affidabile.`;
     }
-    return `KORA Index v3 è ${output.kora_index_value}/100 con Activation Safeguard WARNING — attivazione parziale. Il KORA Index è da interpretare con cautela direzionale.`;
+    return `KORA Index v1.0 è ${output.kora_index_value}/100 con Activation Safeguard WARNING — attivazione parziale. Il KORA Index è da interpretare con cautela direzionale.`;
   })();
 
   return (
@@ -63,7 +63,7 @@ export function DecisionPackHero({
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {/* KORA Index */}
           <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">KORA Index v3</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.40)]">KORA Index v1.0</p>
             <div className="flex items-end gap-2">
               <span className="text-4xl font-bold text-[#06032B]">{output.kora_index_value}</span>
               <span className="text-sm text-[rgba(6,3,43,0.40)] mb-1">/100</span>
@@ -189,7 +189,7 @@ export function DecisionPackHero({
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-[11px] text-blue-700 leading-relaxed">
             <span className="font-semibold">Confidence Score (CS): </span>
-            esterno al calcolo del KORA Index v3. Peso = 0. Indicatore di affidabilità dei dati sottostanti, non componente pesato.
+            esterno al calcolo del KORA Index v1.0. Peso = 0. Indicatore di affidabilità dei dati sottostanti, non componente pesato.
           </div>
           <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[11px] text-[rgba(6,3,43,0.62)] leading-relaxed">
             <span className="font-semibold">Activation Safeguard: </span>

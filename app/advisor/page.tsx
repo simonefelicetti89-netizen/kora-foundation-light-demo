@@ -319,11 +319,11 @@ const COURSE_STATUS_BADGE: Record<CourseStatus, { style: string; label: string }
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 // Synthetic evidence reliability snapshot for advisor demo view
-const ADVISOR_IU_SUMMARY = { total_records: 40, computed_records: 28, blocked_records: 5, limited_records: 7, review_required_records: 3, total_impact_units: 420, impact_units_by_pillar: { LIFE: 180, GROWTH: 115, CONNECTION: 55, IMPACT: 50, LEGACY: 20 }, records_without_iu: 12, average_cq: 0.78, average_ev: 0.62, average_cf: 0.85, average_agf: 0.92, methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration' } as const;
+const ADVISOR_IU_SUMMARY = { total_records: 40, computed_records: 28, blocked_records: 5, limited_records: 7, review_required_records: 3, total_impact_units: 420, impact_units_by_pillar: { LIFE: 180, GROWTH: 115, CONNECTION: 55, IMPACT: 50, LEGACY: 20 }, records_without_iu: 12, average_cq: 0.78, average_ev: 0.62, average_cf: 0.85, average_agf: 0.92, methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration' } as const;
 const ADVISOR_EVIDENCE_RELIABILITY = evidenceReliabilityIntelligenceService.computeFromData(
   ADVISOR_IU_SUMMARY,
-  { total_records: 40, pending_count: 4, approved_for_scoring_count: 24, approved_for_bti_governance_count: 7, blocked_count: 5, needs_more_data_count: 2, rejected_count: 0, override_count: 1, kora_ready_for_iu_count: 24, kora_ready_for_bti_count: 7, review_completion_rate: 0.68, methodology_version: 'v0.1', calibration_status: 'pre_empirical_calibration' },
-  { id: 'cs-s1', company_id: 'meridiana-group', scenario_id: 'S1', confidence_score: 0.58, confidence_level: 'medium', data_completeness: 0.72, evidence_quality: 0.61, mapping_confidence: 0.80, verification_weight: 0.55, source_coverage: {}, gaps_identified: ['Dati LMS non caricati', 'Partecipazione volunteering non verificata'], limitations: 'Dati sintetici demo', methodology_version_id: 'v0.1', calibration_status: 'pre_empirical_calibration' },
+  { total_records: 40, pending_count: 4, approved_for_scoring_count: 24, approved_for_bti_governance_count: 7, blocked_count: 5, needs_more_data_count: 2, rejected_count: 0, override_count: 1, kora_ready_for_iu_count: 24, kora_ready_for_bti_count: 7, review_completion_rate: 0.68, methodology_version: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration' },
+  { id: 'cs-s1', company_id: 'meridiana-group', scenario_id: 'S1', confidence_score: 0.58, confidence_level: 'medium', data_completeness: 0.72, evidence_quality: 0.61, mapping_confidence: 0.80, verification_weight: 0.55, source_coverage: {}, gaps_identified: ['Dati LMS non caricati', 'Partecipazione volunteering non verificata'], limitations: 'Dati sintetici demo', methodology_version_id: 'KORA Index v1.0', calibration_status: 'pre_empirical_calibration' },
 );
 const ADVISOR_PILLAR_BREAKDOWN: PillarEvidenceBreakdown[] = evidenceReliabilityIntelligenceService.getPillarEvidenceBreakdown(ADVISOR_IU_SUMMARY);
 
@@ -1214,7 +1214,7 @@ export default function AdvisorDashboard() {
           chat o calendario live.
         </p>
         <p className="mt-1.5 text-[10px] font-mono text-[rgba(6,3,43,0.40)]">
-          synthetic_demo_data: true · KORA Methodology v0.1 · calibration_status: pre_empirical_calibration
+          synthetic_demo_data: true · KORA Index v1.0 · calibration_status: pre_empirical_calibration
         </p>
       </div>
 

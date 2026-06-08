@@ -35,7 +35,7 @@ export interface PdfData {
     decisionPackStatus: string;
     isLiveData: boolean;           // true = from real company data, false = synthetic/demo
     notCertification: true;
-    methodologyNote: string;       // "KORA Foundation Light v1.0 — pre-empirical calibration"
+    methodologyNote: string;       // "KORA KORA Foundation Light — pre-empirical calibration"
   };
   koraIndex: {
     value: number;
@@ -139,7 +139,7 @@ export interface PdfData {
   } | null;
   // B63-B: PIB Aggregation Summary — Stage 11 mandatory intermediate layer (AG-01).
   // Aggregate-safe: no individual worker data, no PIB snapshots, no workerPseudonymId.
-  // estimationBasis='aggregate_estimate' in Foundation Light v0.1.
+  // estimationBasis='aggregate_estimate' in KORA Foundation Light.
   pibAggregation: {
     period:                string;
     workforceCount:        number;
@@ -173,7 +173,7 @@ export interface PdfData {
     confidenceNote:     string;
   } | null;
   // B79-B: KORA Contribution™ companion indicator summary.
-  // Not persisted in Foundation Light v0.1 — always null until Contribution pipeline is live.
+  // Not persisted in KORA Foundation Light — always null until Contribution pipeline is live.
   // notKoraIndexComponent: true — companion indicator, never part of KORA Index computation.
   contributionSummary: {
     contributionScore:       number;
@@ -612,7 +612,7 @@ export async function fetchPdfData(
       // tenantCode 'OP-001' is the synthetic demo operator; all others are live pilot tenants.
       isLiveData: tenantCode !== 'OP-001',
       notCertification: true,
-      methodologyNote: 'KORA Foundation Light v1.0 — pre-empirical calibration. Output diagnostico pilota. Non certificato, non regulatory-grade.',
+      methodologyNote: 'KORA KORA Foundation Light — pre-empirical calibration. Output diagnostico pilota. Non certificato, non regulatory-grade.',
     },
     components,
     macroblocks,
@@ -620,7 +620,7 @@ export async function fetchPdfData(
     bti,
     enrichment,
     iuSummary,
-    // B63-B: PIB Aggregation not persisted server-side in Foundation Light v0.1.
+    // B63-B: PIB Aggregation not persisted server-side in KORA Foundation Light.
     // Set to null — the pipeline computes it in-memory only for now.
     // Post-Gate 2: persist CompanyPIBAggregation to analytics.pib_result table.
     pibAggregation: null,
@@ -655,7 +655,7 @@ export async function fetchPdfData(
     // B77-B: Executive Intelligence Layer™ — computed from available PdfData signals.
     // Uses simplified inputs (no EquityAccess / LifeDiversity — not in PdfData scope).
     // notKoraIndexComponent: true — synthesis display only.
-    // B79-B: KORA Contribution™ — not persisted in Foundation Light v0.1.
+    // B79-B: KORA Contribution™ — not persisted in KORA Foundation Light.
     // Will be populated post-Contribution pipeline implementation.
     contributionSummary: null,
     executiveBrief: (() => {

@@ -185,6 +185,6 @@ export const KORA_EDUCATION_STEPS: ReadonlyArray<EducationStep> = [
   {
     key:         'kora_index',
     label:       'KORA Index',
-    description: 'Le IU aggregate a livello aziendale alimentano il KORA Index v3 — 10 componenti, livello company.',
+    description: 'Le IU aggregate a livello aziendale alimentano il KORA Index v1.0 — 10 componenti, livello company.',
   },
 ] as const;

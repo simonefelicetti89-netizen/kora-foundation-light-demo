@@ -24,9 +24,9 @@
         "WARNING_triggers_if": "(0.20 ≤ AR < 0.40) OR (0.15 ≤ MAR < 0.30)",
         "FLAGGED_triggers_if": "(AR < 0.20) OR (MAR < 0.15)"
       },
-      "methodology_version_id": "KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v1.0",
       "calibration_status": "pre_empirical_calibration",
-      "methodology_notes": "KORA Index v3 — macroblock weight structure. REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%. Confidence Score is external and has weight = 0. Activation Safeguard is an interpretation gate, not a weighted component. v0.1 pre-empirical calibration; subject to expert validation and empirical calibration.",
+      "methodology_notes": "KORA Index v1.0 — macroblock weight structure. REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%. Confidence Score is external and has weight = 0. Activation Safeguard is an interpretation gate, not a weighted component. v0.1 pre-empirical calibration; subject to expert validation and empirical calibration.",
       "display_message": "Activation Safeguard — WARNING. Participation is insufficient for reliable diagnostic intelligence. KORA Index shown with reduced confidence."
     },
     {
@@ -46,9 +46,9 @@
         "WARNING_triggers_if": "(0.20 ≤ AR < 0.40) OR (0.15 ≤ MAR < 0.30)",
         "FLAGGED_triggers_if": "(AR < 0.20) OR (MAR < 0.15)"
       },
-      "methodology_version_id": "KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v1.0",
       "calibration_status": "pre_empirical_calibration",
-      "methodology_notes": "KORA Index v3 — macroblock weight structure. REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%. Confidence Score is external and has weight = 0. Activation Safeguard is an interpretation gate, not a weighted component. v0.1 pre-empirical calibration; subject to expert validation and empirical calibration.",
+      "methodology_notes": "KORA Index v1.0 — macroblock weight structure. REACH 25%, QUALITY 30%, EQUITY 25%, BTI 20%. Confidence Score is external and has weight = 0. Activation Safeguard is an interpretation gate, not a weighted component. v0.1 pre-empirical calibration; subject to expert validation and empirical calibration.",
       "display_message": "Activation Safeguard — CLEAR. Sufficient activation breadth for meaningful diagnostic intelligence."
     }
   ]

@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
     displayLabels: {
       methodology:   t.methodology_version_id as string,
       calibration:   'pre_empirical_calibration',
-      disclaimer:    'KORA Foundation Light v0.1 · Dati pilota · Calibrazione pre-empirica. Non audit-grade, non certificazione ESG, non compliance normativa.',
+      disclaimer:    'KORA Foundation Light · Dati pilota · Calibrazione pre-empirica. Non audit-grade, non certificazione ESG, non compliance normativa.',
     },
   } : null;
 
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
       kora_measures:      'KORA misura le organizzazioni, non gli individui.',
       privacy_guarantee:  'Nessun dato individuale del lavoratore è visibile al datore di lavoro. Soglia privacy N≥10 applicata.',
       no_compliance:      'KORA non certifica conformità normativa e non sostituisce consulenza ESG, legale o fiscale.',
-      data_status:        'pre_empirical_calibration — Foundation Light v0.1',
+      data_status:        'pre_empirical_calibration — KORA Foundation Light',
     },
   });
 }

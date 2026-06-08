@@ -155,7 +155,7 @@ function buildExecutiveBriefPage(data: PdfData): string {
 
     <!-- Footer disclaimer -->
     <p style="font-size:9.5px;color:#9899b3;line-height:1.6;margin:0;padding-top:16px;border-top:1px solid #eaebf4;">
-      Questo brief è generato da KORA Foundation Light v0.1 (pre_empirical_calibration). I valori sono diagnostici e di pilota — non certificati, non regulatory-grade. Non sostituisce analisi HR, consulenza legale, fiscale o ESG. KORA misura l'attivazione a livello organizzativo, non individuale.
+      Questo brief è generato da KORA Foundation Light (pre_empirical_calibration). I valori sono diagnostici e di pilota — non certificati, non regulatory-grade. Non sostituisce analisi HR, consulenza legale, fiscale o ESG. KORA misura l'attivazione a livello organizzativo, non individuale.
     </p>
 
   </div>`;
@@ -906,7 +906,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
     <img src="${logoWhite}" class="cv-logo" alt="KORA">
     <div style="display:flex;gap:8pt;align-items:center;">
       <span class="cv-confidential">Pilot Confidential</span>
-      <span class="cv-badge">${esc(meta.isLiveData ? 'Foundation Light v1.0' : 'Synthetic Demo')}</span>
+      <span class="cv-badge">${esc(meta.isLiveData ? 'KORA Foundation Light' : 'Synthetic Demo')}</span>
     </div>
   </div>
 
@@ -925,7 +925,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
     <!-- KORA Index as visual anchor -->
     <div class="cv-ki-block">
-      <span class="cv-ki-label">KORA Index v3</span>
+      <span class="cv-ki-label">KORA Index v1.0</span>
       <span class="cv-ki-num">${kiVal}</span>
       <span class="cv-ki-denom">/100</span>
     </div>
@@ -962,7 +962,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
   <div class="cv-bottom">
     <div class="cv-disclaimer">
       KORA misura l'attivazione organizzativa — non individui.
-      Dati sintetici/demo · Foundation Light v0.1 · pre_empirical_calibration
+      Dati sintetici/demo · KORA Foundation Light · pre_empirical_calibration
       Non è una certificazione ESG · Non è consulenza legale o fiscale.
       ${esc(meta.decisionPackVersionId.slice(0, 40))}
     </div>
@@ -992,7 +992,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
         <span class="toc-num">2</span>
         <div style="flex:1;">
           <div class="toc-label">KORA Index &amp; Activation Safeguard</div>
-          <div class="toc-sub">Valore KORA Index v3, Confidence Score, Activation Safeguard, Reach Semantics.</div>
+          <div class="toc-sub">Valore KORA Index v1.0, Confidence Score, Activation Safeguard, Reach Semantics.</div>
         </div>
       </div>
       <div class="toc-row">
@@ -1055,7 +1055,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
     <div style="margin-top:auto;padding-top:14pt;border-top:1px solid #eaebf4;">
       <p style="font-size:8pt;color:#9899b3;line-height:1.6;">
-        <strong>Nota:</strong> Questo documento è generato da KORA Foundation Light v0.1 — calibrazione pre-empirica.
+        <strong>Nota:</strong> Questo documento è generato da KORA Foundation Light — calibrazione pre-empirica.
         I valori sono diagnostici e di pilota, non certificati. Non sostituisce analisi HR, consulenza ESG, legale o fiscale.
         KORA misura l'attivazione organizzativa — non individui. Nessun lavoratore è identificabile in questo documento.
       </p>
@@ -1084,11 +1084,11 @@ ${buildExecutiveBriefPage(data)}
 
     <div class="bm-metrics">
       <div class="bm-metric" style="border:1px solid #eaebf4;border-radius:5pt;">
-        <div class="bm-metric-label">KORA Index v3</div>
+        <div class="bm-metric-label">KORA Index v1.0</div>
         <div class="bm-metric-val" style="font-size:56pt;">${kiVal}</div>
         <div class="bm-metric-sub">/100 · ${esc(koraIndex.methodologyVersionId)}</div>
         <div style="font-size:7pt;color:#9899b3;margin-top:6pt;line-height:1.4;text-align:left;padding:0 3pt;">Efficacia nel convertire iniziative people in attivazione verificata, distribuita e significativa. Output aziendale aggregato — nessun individuo misurabile.</div>
-        <div style="font-size:6.5pt;color:#b0b1cc;margin-top:5pt;line-height:1.4;text-align:left;padding:0 3pt;border-top:1px solid #eaebf4;padding-top:5pt;">Benchmark settoriale: non disponibile in Foundation Light v0.1 (calibrazione pre-empirica). Confronto settoriale pianificato post-pilot (Delphi Study).</div>
+        <div style="font-size:6.5pt;color:#b0b1cc;margin-top:5pt;line-height:1.4;text-align:left;padding:0 3pt;border-top:1px solid #eaebf4;padding-top:5pt;">Benchmark settoriale: non disponibile in KORA Foundation Light (calibrazione pre-empirica). Confronto settoriale pianificato post-pilot (Delphi Study).</div>
       </div>
       <div class="bm-metric" style="border:1px solid #c7c4f8;border-radius:5pt;background:#f5f4ff;">
         <div class="bm-metric-label">Confidence Score</div>
@@ -1152,7 +1152,7 @@ ${buildExecutiveBriefPage(data)}
   <div class="pc">
 
     <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:16pt;max-width:460pt;">
-      Il KORA Index v3 è composto da 4 macroblocchi con pesi differenziati. Ogni macroblocco esprime una
+      Il KORA Index v1.0 è composto da 4 macroblocchi con pesi differenziati. Ogni macroblocco esprime una
       dimensione strategica dell'attivazione organizzativa. I valori sono pre-calibrazione empirica (v0.1).
     </p>
 
@@ -1206,14 +1206,14 @@ ${buildExecutiveBriefPage(data)}
 
 <!-- ═══════════════════════════════════════════
      PAGE — DIAGNOSTIC COMPONENTS (§4)
-     I 10 componenti del KORA Index v3
+     I 10 componenti del KORA Index v1.0
      ═══════════════════════════════════════════ -->
 <div class="page cp">
   ${pageHeader('Diagnostic Components')}
   <div class="pc">
 
     <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:14pt;max-width:460pt;">
-      Il KORA Index v3 è composto da 10 componenti fissi. Ogni componente misura una dimensione specifica
+      Il KORA Index v1.0 è composto da 10 componenti fissi. Ogni componente misura una dimensione specifica
       dell'attivazione organizzativa. Il Confidence Score (CS) è esterno al KORA Index — peso = 0.
     </p>
 
@@ -1264,7 +1264,7 @@ ${buildExecutiveBriefPage(data)}
       </tbody>
     </table>
     <div style="margin-top:12pt;padding:9pt 14pt;background:#fffbeb;border:1px solid #fde68a;border-radius:4pt;font-size:8pt;color:#92400e;line-height:1.5;">
-      <strong>CS = Confidence Score</strong> è un indicatore esterno al KORA Index v3 (peso = 0). Non entra nel calcolo.
+      <strong>CS = Confidence Score</strong> è un indicatore esterno al KORA Index v1.0 (peso = 0). Non entra nel calcolo.
       Viene mostrato affianco al KORA Index come indicatore di affidabilità dei dati sottostanti.
       EQ = Equity misura equità distributiva tra segmenti workforce — non include equità tra individui.
     </div>
@@ -1351,7 +1351,7 @@ ${buildExecutiveBriefPage(data)}
 
     <div style="margin-top:auto;">
       <p style="font-size:7.5pt;color:#9899b3;">
-        Componenti KORA Index v3: ${koraIndex.componentCount > 0 ? koraIndex.componentCount : 10} / 10 &nbsp;·&nbsp;
+        Componenti KORA Index v1.0: ${koraIndex.componentCount > 0 ? koraIndex.componentCount : 10} / 10 &nbsp;·&nbsp;
         ${esc(koraIndex.methodologyVersionId)} &nbsp;·&nbsp; ${esc(koraIndex.calibrationStatus)}
       </p>
     </div>
@@ -1390,7 +1390,7 @@ ${buildExecutiveBriefPage(data)}
     ${pillarDistribution && dominantPillar && dominantPct > 60 ? `
     <div class="pb-note">
       <strong>Nota squilibrio:</strong> Il pillar ${esc(dominantPillar)} rappresenta il ${dominantPct}% dell'attivazione classificata.
-      Una distribuzione più equilibrata (Pillar Balance — PB) contribuisce positivamente al KORA Index v3.
+      Una distribuzione più equilibrata (Pillar Balance — PB) contribuisce positivamente al KORA Index v1.0.
       Considerare programmi nei pillar meno rappresentati.
     </div>` : ''}
 
@@ -1696,7 +1696,7 @@ ${buildExecutiveBriefPage(data)}
 
     <div class="fg-note">
       <strong>Nota metodologica:</strong> Impact Units™ è uno strato di computazione, non un punteggio di performance individuale.
-      I fattori NM, BC, CQ, EV, CF e AGF sono stub pre-calibrazione empirica (Foundation Light v0.1).
+      I fattori NM, BC, CQ, EV, CF e AGF sono stub pre-calibrazione empirica (KORA Foundation Light).
       CF (Continuity Factor) è una proxy sito-based in v0.1 — il valore canonico richiede dati cross-periodo post-PIB.
       Tutti i parametri vengono letti da <code>lib/methodology-config/v0.1.ts</code> — nessun valore codificato a mano.
       ${iuSummary.calibrationStatus ? `calibration_status: <strong>${esc(iuSummary.calibrationStatus)}</strong>` : ''} ·
@@ -1725,7 +1725,7 @@ ${buildExecutiveBriefPage(data)}
     <div class="fg-intro">
       Personal Impact Balance (PIB) è lo strato intermedio obbligatorio tra Impact Units™ e il KORA Index.
       Ogni calcolo del KORA Index passa attraverso i PIB individuali — regola AG-01 (doc 10 §26).
-      In Foundation Light v0.1, i record UEF sono aggregati per programma; i PIB individuali per lavoratore
+      In KORA Foundation Light, i record UEF sono aggregati per programma; i PIB individuali per lavoratore
       saranno disponibili in Pilot+ con la conferma di partecipazione via My KORA.
     </div>
 
@@ -1749,7 +1749,7 @@ ${buildExecutiveBriefPage(data)}
         </div>
       </div>
       <div style="padding:12pt 16pt;background:#f5f4ff;border:1px solid #c7c4f8;border-radius:4pt;font-size:9pt;color:#3d3a6a;line-height:1.55;">
-        <strong>AG-01 — Strato Intermedio Obbligatorio:</strong> In Foundation Light v0.1, il PIB è utilizzato come
+        <strong>AG-01 — Strato Intermedio Obbligatorio:</strong> In KORA Foundation Light, il PIB è utilizzato come
         strato aggregato di metodologia per garantire che il KORA Index non bypassa la fase di aggregazione individuale.
         I dati AR/MAR qui rappresentati derivano dal motore di attivazione (bounded reach, stima aggregata).
         <br>
@@ -2121,7 +2121,7 @@ ${buildExecutiveBriefPage(data)}
         <div class="mp-ic">📊</div>
         <div>
           <div class="mp-title">Confidence Score Esterno</div>
-          <div class="mp-desc">Il CS non è un componente del KORA Index v3 (peso = 0). È un indicatore di qualità dati — sempre mostrato affianco all'indice.</div>
+          <div class="mp-desc">Il CS non è un componente del KORA Index v1.0 (peso = 0). È un indicatore di qualità dati — sempre mostrato affianco all'indice.</div>
         </div>
       </div>
       <div class="mp-item">
@@ -2258,7 +2258,7 @@ ${buildExecutiveBriefPage(data)}
 
     <!-- B79-P0-4: Methodology disclosure — mandatory pilot-grade framing ────── -->
     <div style="margin-top:18pt;padding:12pt 14pt;background:#faf9ff;border:1px solid #d4d2f8;border-radius:6pt;">
-      <div style="font-size:8pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6156F5;margin-bottom:8pt;">Note Metodologiche — Foundation Light v0.1</div>
+      <div style="font-size:8pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#6156F5;margin-bottom:8pt;">Note Metodologiche — KORA Foundation Light</div>
       <table style="width:100%;border-collapse:collapse;font-size:7.5pt;color:#444;">
         <tbody>
           <tr style="border-bottom:1px solid #e8e7f7;">
@@ -2267,15 +2267,15 @@ ${buildExecutiveBriefPage(data)}
           </tr>
           <tr style="border-bottom:1px solid #e8e7f7;">
             <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">NM — Normalized Magnitude</td>
-            <td style="padding:5pt 8pt;">NM = 1.0 in Foundation Light v0.1 (stub uniforme). La calibrazione empirica differenzierà l'intensità per tipo di evento. Tutti i valori IU riflettono questo stub.</td>
+            <td style="padding:5pt 8pt;">NM = 1.0 in KORA Foundation Light (stub uniforme). La calibrazione empirica differenzierà l'intensità per tipo di evento. Tutti i valori IU riflettono questo stub.</td>
           </tr>
           <tr style="border-bottom:1px solid #e8e7f7;">
             <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">CF — Continuity Factor</td>
             <td style="padding:5pt 8pt;">CF è una proxy sito/cluster in v0.1. Il valore canonico (cross-periodo, basato su PIB individuale) richiede dati multi-periodo non disponibili in questo pilota.</td>
           </tr>
           <tr style="border-bottom:1px solid #e8e7f7;">
-            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">Pesi KORA Index v3</td>
-            <td style="padding:5pt 8pt;">REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20% — calibrazione v0.1 pre-empirica. Non validati esternamente. Non vi è benchmark di settore disponibile in Foundation Light v0.1.</td>
+            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">Pesi KORA Index v1.0</td>
+            <td style="padding:5pt 8pt;">REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20% — calibrazione v0.1 pre-empirica. Non validati esternamente. Non vi è benchmark di settore disponibile in KORA Foundation Light.</td>
           </tr>
           <tr>
             <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">Uso consentito</td>
@@ -2332,7 +2332,7 @@ ${/* ── 10 Diagnostic Components + 4 Macroblocks (v1.0) ── */ ''}
 ${(components && components.length > 0) || (macroblocks && macroblocks.length > 0) ? `
 <div class="page" style="padding:28pt 32pt;">
   <div style="font-size:8pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#6156F5;margin-bottom:12pt;">
-    Scomposizione Metodologica — KORA Foundation Light v1.0
+    Scomposizione Metodologica — KORA KORA Foundation Light
   </div>
 
   ${macroblocks && macroblocks.length > 0 ? `
@@ -2506,7 +2506,7 @@ ${(iuSummary || enrichment) ? (() => {
   </div>` : '<div style="font-size:8pt;color:#9899b3;margin-bottom:12pt;">Distribuzione livelli evidenza non disponibile per questo periodo.</div>'}
 
   <div style="border-top:1px solid #eaebf4;padding-top:10pt;font-size:6.5pt;color:#9899b3;line-height:1.6;">
-    Evidence Intelligence™ è un indicatore metodologico Foundation Light v0.1.
+    Evidence Intelligence™ è un indicatore metodologico KORA Foundation Light.
     Non modifica il KORA Index™ né la formula IU™.
     EV factor è una componente della formula IU — il suo miglioramento può aumentare il Verification Rate (VR).
     Data Reliability Index™ è esterno al KORA Index™ (peso = 0): sempre mostrato affianco come indicatore di affidabilità.
@@ -2558,7 +2558,7 @@ ${(() => {
     </p>
     <p style="font-size:8.5pt;color:#7778a0;line-height:1.5;margin-bottom:0;">
       Raccomandazioni deterministiche basate sui segnali KORA. Nessuna AI. Nessuna previsione. Nessuna claim ROI.
-      Ogni opportunità è spiegata dal segnale che l'ha generata. Foundation Light v0.1 — pre-calibrazione empirica.
+      Ogni opportunità è spiegata dal segnale che l'ha generata. KORA Foundation Light — pre-calibrazione empirica.
     </p>
   </div>
 
@@ -2602,7 +2602,7 @@ ${(() => {
     Activation Opportunity Engine™ — regole deterministiche · no AI · no LLM · no previsioni · no claim ROI.
     Le opportunità sono derivate dai segnali KORA (AR, MAR, EQ, VR, CO, NI, Pillar Distribution, Confidence Score).
     Non modificano il KORA Index™ né alcuna formula metodologica.
-    Foundation Light v0.1 · pre_empirical_calibration · not_kora_index_component: true
+    KORA Foundation Light · pre_empirical_calibration · not_kora_index_component: true
   </div>
 
   ${pageFooter()}

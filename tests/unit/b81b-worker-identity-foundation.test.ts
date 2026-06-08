@@ -301,7 +301,7 @@ describe('B81-B Task 4 — WorkerSpaceCapabilityService source', () => {
     expect(src).toContain("collectiveSupported:  true");
   });
 
-  it('documents Foundation Light v0.1 constraint in comments', () => {
+  it('documents KORA Foundation Light constraint in comments', () => {
     expect(src).toContain("Foundation Light");
   });
 });

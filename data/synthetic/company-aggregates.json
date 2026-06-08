@@ -40,7 +40,7 @@
       },
       "privacy_threshold_met": true,
       "privacy_note": "All department aggregates use groups of 10+ workers. No individual data present.",
-      "methodology_version_id": "KORA Index v3 / KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v1.0",
       "calibration_status": "pre_empirical_calibration",
       "macroblock_scores": {
         "REACH": { "score": 30, "weight": 0.25 },
@@ -82,7 +82,7 @@
       },
       "privacy_threshold_met": true,
       "privacy_note": "All department aggregates use groups of 10+ workers. No individual data present.",
-      "methodology_version_id": "KORA Index v3 / KORA Methodology v0.1",
+      "methodology_version_id": "KORA Index v1.0",
       "calibration_status": "pre_empirical_calibration",
       "macroblock_scores": {
         "REACH": { "score": 45, "weight": 0.25 },

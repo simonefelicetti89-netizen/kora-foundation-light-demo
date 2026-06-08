@@ -26,7 +26,7 @@ const LANDING_NAV_LINKS = [
 // Fonte: lib/scoring-result + data/synthetic/kora-index-outputs.json
 // Se/quando demo-tenants.ts esisterà, importare da lì.
 const CANONICAL = {
-  koraIndex:   34,     // KORA Index v3 · S1
+  koraIndex:   34,     // KORA Index v1.0 · S1
   confidence:  60,     // Confidence Score (esterno · peso = 0)
   safeguard:   'WARNING',
   macroblocks: {
@@ -327,7 +327,7 @@ export default function LandingPage() {
           <div className={styles.anat}>
             {/* Index card */}
             <div className={`${styles.indexCard} ${styles.reveal} ${styles.d2}`}>
-              <div className={styles.icLabel}>KORA Index v3 · Meridiana Group · S1</div>
+              <div className={styles.icLabel}>KORA Index v1.0 · Meridiana Group · S1</div>
               <div className={`${styles.icScore} ${styles.num}`}>
                 {CANONICAL.koraIndex}<span className={styles.icScoreSpan}>/100</span>
               </div>

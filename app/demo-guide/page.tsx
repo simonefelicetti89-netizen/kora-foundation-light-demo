@@ -71,7 +71,7 @@ export default function DemoGuidePage() {
         eyebrow="KORA Foundation Light™ · Guida operativa"
         title="Come leggere KORA"
         subline="Percorso guidato attraverso la logica di KORA: indice, attivazione, budget, evidenze, privacy e output board-ready."
-        meta="Product Vision Prototype · dati sintetici · Foundation Light v0.1"
+        meta="Product Vision Prototype · dati sintetici · KORA Foundation Light"
       />
 
       {/* Badge chips */}
@@ -81,7 +81,7 @@ export default function DemoGuidePage() {
           { label: 'Demo data sintetici',       bg: TOKENS.inkBorder,           text: TOKENS.inkSecondary         },
           { label: 'Non UI finale',             bg: TOKENS.safeguard.watch.bg,  text: TOKENS.safeguard.watch.text },
           { label: 'Non production-ready',      bg: TOKENS.safeguard.cap.bg,    text: TOKENS.safeguard.cap.text   },
-          { label: 'Foundation Light v0.1',     bg: TOKENS.inkBorder,           text: TOKENS.inkSecondary         },
+          { label: 'KORA Foundation Light',     bg: TOKENS.inkBorder,           text: TOKENS.inkSecondary         },
         ].map(({ label, bg, text }) => (
           <span key={label} style={{ fontSize: '10px', fontWeight: 600, background: bg, color: text, borderRadius: 4, padding: '3px 8px' }}>
             {label}
@@ -299,7 +299,7 @@ export default function DemoGuidePage() {
         <ul style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           {[
             'Dati demo sintetici — nessun dato aziendale reale.',
-            'Foundation Light v0.1 — pre-calibrazione empirica.',
+            'KORA Foundation Light — pre-calibrazione empirica.',
             'calibration_status: pre_empirical_calibration · Confidence Score esterno.',
             'Nessun production claim, assurance, compliance guarantee o ROI certificato.',
             'Foundation Light è il punto di ingresso attuale — non la versione finale del prodotto.',

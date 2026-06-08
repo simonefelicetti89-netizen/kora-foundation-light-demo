@@ -144,7 +144,7 @@ export default function ScoringBoundaryNotice() {
       )}
 
       <p className="text-[10px] font-mono text-[rgba(6,3,43,0.28)]">
-        KORA Methodology v0.1 · pre_empirical_calibration · scoring run = KORA Admin only · synthetic_demo_data: true
+        KORA Index v1.0 · pre_empirical_calibration · scoring run = KORA Admin only · synthetic_demo_data: true
       </p>
     </div>
   );

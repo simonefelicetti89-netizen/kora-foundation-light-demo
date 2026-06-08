@@ -8,7 +8,7 @@ interface ExplainabilityPanelProps {
 }
 
 const FALLBACK_LIMITATIONS =
-  'Questo punteggio è prodotto da KORA Foundation Light v0.1 con metodologia provvisoria. È intelligence diagnostica di livello pilot — non validata scientificamente, non calibrata empiricamente, non di livello regolamentare.';
+  'Questo punteggio è prodotto da KORA Foundation Light con metodologia provvisoria. È intelligence diagnostica di livello pilot — non validata scientificamente, non calibrata empiricamente, non di livello regolamentare.';
 
 export function ExplainabilityPanel({ record }: ExplainabilityPanelProps) {
   return (

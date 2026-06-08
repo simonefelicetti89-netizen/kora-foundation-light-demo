@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         onboarding_status:      'active',
         data_readiness_status:  'intake_ready',
         decision_pack_status:   'not_ready',
-        methodology_version_id: 'KORA Methodology v0.1',
+        methodology_version_id: 'KORA Index v1.0',
         deleted_at:             null,
       })
       .select('id')

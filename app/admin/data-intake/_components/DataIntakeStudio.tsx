@@ -1600,7 +1600,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               <KPICard label="Meaningful AR"        value={pct(snapshot.mar)} />
               {preview.resultSnapshot && <>
                 <KPICard label="Decision Pack" value={preview.resultSnapshot.decisionPack.status.toUpperCase()} />
-                <KPICard label="Metodologia"   value="v0.1" />
+                <KPICard label="Metodologia"   value="KORA Index v1.0" />
               </>}
             </div>
           </Section>

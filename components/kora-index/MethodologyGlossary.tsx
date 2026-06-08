@@ -104,7 +104,7 @@ export function MethodologyGlossary() {
       >
         <div>
           <p className="text-xs font-semibold" style={{ color: TOKENS.ink }}>
-            Glossario metodologico — KORA Index v3
+            Glossario metodologico — KORA Index v1.0
           </p>
           <p className="text-[10px] mt-0.5" style={{ color: TOKENS.inkHint }}>
             4 macroblocks · 9 componenti analitici · CS esterno · Indicatori BTI · Concetti metodologici
@@ -119,7 +119,7 @@ export function MethodologyGlossary() {
             className="mt-3 rounded-[8px] px-3 py-2 text-[10px] leading-relaxed"
             style={{ background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text }}
           >
-            <span className="font-semibold">Foundation Light v0.1 — Pre-calibrazione empirica. </span>
+            <span className="font-semibold">KORA Foundation Light — Pre-calibrazione empirica. </span>
             I pesi dei macroblocks sono provvisori, non ancora calibrati tramite Studio Delphi.
             Tutti gli output sono strumenti di intelligence diagnostica pilot-grade — non certificati, non adatti a decisioni legali, fiscali o regolamentari.
           </div>
@@ -139,7 +139,7 @@ export function MethodologyGlossary() {
           ))}
 
           <p className="text-[10px] font-mono pt-1" style={{ color: TOKENS.inkHint }}>
-            KORA Index v3 / KORA Methodology v0.1 · calibration_status: pre_empirical_calibration · synthetic_demo_data: true
+            KORA Index v1.0 · calibration_status: pre_empirical_calibration · synthetic_demo_data: true
           </p>
         </div>
       )}

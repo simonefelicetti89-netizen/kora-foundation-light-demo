@@ -152,7 +152,7 @@ export function AcmeDemoHub({ userEmail }: { userEmail: string }) {
 
       {/* ── 01: KORA Index ────────────────────────────────────────────────────── */}
       <div id="kora-index" className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-6 py-5 space-y-5 scroll-mt-4">
-        <SectionTitle n="01" title="KORA Index" subtitle="Foundation Light v0.1 · pre_empirical_calibration · dati sintetici" />
+        <SectionTitle n="01" title="KORA Index" subtitle="KORA Foundation Light · pre_empirical_calibration · dati sintetici" />
 
         {/* Hero metrics */}
         <div className="flex items-start gap-6 flex-wrap">

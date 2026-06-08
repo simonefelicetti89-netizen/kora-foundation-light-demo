@@ -31,7 +31,7 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   title: 'KORA Foundation Light — Demo',
-  description: 'KORA Foundation Light v0.1 — Synthetic Demo Data — Pre-Empirical Calibration',
+  description: 'KORA Foundation Light — Synthetic Demo Data — Pre-Empirical Calibration',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

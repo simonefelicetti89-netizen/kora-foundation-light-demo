@@ -2,7 +2,7 @@
 //
 // ── Scoring Path Contract ──────────────────────────────────────────────────────
 //
-// THREE scoring paths exist in Foundation Light v0.1:
+// THREE scoring paths exist in KORA Foundation Light:
 //
 //   1. DEMO (DemoScoringAdapter → ScoringSimulatorService)
 //      Reads pre-computed synthetic seed from data/synthetic/kora-index-outputs.json.

@@ -41,7 +41,7 @@ function makeAggregate(overrides?: Partial<CompanyAggregateExtended>): CompanyAg
       'dept-admin-finance':        0.30,
     },
     privacy_threshold_met: true,
-    methodology_version_id: 'KORA Index v3 / KORA Methodology v0.1',
+    methodology_version_id: 'KORA Index v1.0',
     calibration_status: 'pre_empirical_calibration',
     synthetic_demo_data: true,
     ...overrides,
@@ -90,7 +90,7 @@ function makeIUSummary(overrides?: Partial<ImpactUnitComputationSummary>): Impac
     average_ev: 0.62,
     average_cf: 0.85,
     average_agf: 0.92,
-    methodology_version: 'v0.1',
+    methodology_version: 'KORA Index v1.0',
     calibration_status: 'pre_empirical_calibration',
     ...overrides,
   };
@@ -109,7 +109,7 @@ function makeUEFSummary(overrides?: Partial<UEFReviewSummary>): UEFReviewSummary
     kora_ready_for_iu_count: 24,
     kora_ready_for_bti_count: 7,
     review_completion_rate: 0.68,
-    methodology_version: 'v0.1',
+    methodology_version: 'KORA Index v1.0',
     calibration_status: 'pre_empirical_calibration',
     ...overrides,
   };
@@ -129,7 +129,7 @@ function makeConfidence(overrides?: Partial<ConfidenceRecord>): ConfidenceRecord
     source_coverage: {},
     gaps_identified: ['Dati LMS non caricati', 'Partecipazione volunteering non verificata'],
     limitations: 'Demo only',
-    methodology_version_id: 'v0.1',
+    methodology_version_id: 'KORA Index v1.0',
     calibration_status: 'pre_empirical_calibration',
     ...overrides,
   };

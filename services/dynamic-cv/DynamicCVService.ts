@@ -5,7 +5,7 @@
 // in cv_items. Classes B–F are separated into excluded_items with Italian worker-readable
 // exclusion reasons. Single source of truth: WorkerAttributionService.classify().
 //
-// Foundation Light v0.1: returns synthetic per-persona CV items via
+// KORA Foundation Light: returns synthetic per-persona CV items via
 // MyKoraPreviewService. The attribution gate is live — it filters items correctly.
 //
 // Pilot+ path: this service will return items derived from verified UEF records

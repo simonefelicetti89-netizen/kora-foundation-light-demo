@@ -2,7 +2,7 @@ import type { KoraRole, ScenarioId } from '@/lib/types';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 
 // ── B70-B: IU values are pre-computed using the canonical formula:
-//   IU = NM × BC × CQ × EV × CF × AGF  (KORA Methodology v0.1)
+//   IU = NM × BC × CQ × EV × CF × AGF  (KORA Index v1.0)
 // BC reference: LIFE=1.20 (health_and_wellbeing), GROWTH=1.10 (professional_growth),
 //   CONNECTION=1.00 (inclusion_and_connection), IMPACT=1.00 (territorial_impact),
 //   LEGACY=1.10 (future_and_legacy)
@@ -154,7 +154,7 @@ export interface MyKoraHomePreview {
 
 const DERIVATION_NOTE =
   'IU sintetici pre-computati · formula IU = NM × BC × CQ × EV × CF × AGF · ' +
-  'KORA Methodology v0.1 pre-calibrazione empirica · ' +
+  'KORA Index v1.0 pre-calibrazione empirica · ' +
   'scala personale: pillar_score = round(pillar_iu_total × fattore_scala) · ' +
   'Il PIB reale richiede identità worker-owned e consenso (Pilot+).';
 

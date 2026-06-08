@@ -6,7 +6,7 @@
 //    It is not permitted to calculate the KORA Index directly from
 //    company-level aggregate data. PIB is the mandatory intermediate layer."
 //
-// Foundation Light v0.1 constraint:
+// KORA Foundation Light constraint:
 //   UEF records are program-level aggregates (one row per initiative, not per worker).
 //   Individual PIBSnapshots (workerPseudonymId → total IU) cannot be computed
 //   from the aggregate upload model — they require per-worker UEF records.
@@ -120,7 +120,7 @@ function zeroPIBAggregate(
     wbEstimate:            null,
     pibSnapshotsAvailable: false,
     estimationBasis:       'aggregate_estimate',
-    estimationNote:        'Foundation Light v0.1: aggregate_estimate — no individual PIB data available. AG-01 canonical layer present; individual PIBs require per-worker records (Pilot+).',
+    estimationNote:        'KORA Foundation Light: aggregate_estimate — no individual PIB data available. AG-01 canonical layer present; individual PIBs require per-worker records (Pilot+).',
     calibrationStatus:     'pre_empirical_calibration',
     methodologyVersion:    getMethodologyVersion(),
     warnings,
@@ -134,7 +134,7 @@ export class PIBAggregationService {
   // ── aggregateForBatch ──────────────────────────────────────────────────────
   // Stage 11: would aggregate IU by worker_pseudonym_id → PIBSnapshot per worker.
   //
-  // Foundation Light v0.1: UEF records are program-level aggregates.
+  // KORA Foundation Light: UEF records are program-level aggregates.
   // Individual PIBSnapshots are not computable from the aggregate upload model.
   // Returns empty snapshots with explanatory note.
   //
@@ -159,7 +159,7 @@ export class PIBAggregationService {
   // ── aggregatePIBForCompany ─────────────────────────────────────────────────
   // Computes the company-level PIB aggregate from available IU and activation data.
   //
-  // In Foundation Light v0.1 (aggregate model):
+  // In KORA Foundation Light (aggregate model):
   //   - activatedWorkers / meaningfulWorkers come from the activation engine result
   //     (which uses bounded reach — the most accurate estimate available).
   //   - totalIU and pillar breakdown come from iuResults / iuSummary.
@@ -280,7 +280,7 @@ export class PIBAggregationService {
     // ── Methodology annotation warnings ──────────────────────────────────────
     warnings.push(
       `${SERVICE_SOURCE} | estimationBasis=aggregate_estimate | ` +
-      'Individual PIB snapshots not available — Foundation Light v0.1 aggregate model. ' +
+      'Individual PIB snapshots not available — KORA Foundation Light aggregate model. ' +
       'AR/MAR from activation engine (bounded reach). ' +
       'WB=null (requires individual PIB distribution). ' +
       'CO cross-period: insufficient_data.',
@@ -301,7 +301,7 @@ export class PIBAggregationService {
       pibSnapshotsAvailable: false,
       estimationBasis:       'aggregate_estimate',
       estimationNote:
-        'Foundation Light v0.1: PIBAggregation uses program-level UEF aggregates. ' +
+        'KORA Foundation Light: PIBAggregation uses program-level UEF aggregates. ' +
         'Individual PIB per worker requires per-worker UEF records (Pilot+). ' +
         'activatedWorkers = bounded reach estimate from activation engine. ' +
         'avgEstimatedPIB = totalIU / activatedWorkers (upper-bound interpretation). ' +
@@ -316,7 +316,7 @@ export class PIBAggregationService {
   // My KORA consumer: worker-private PIB summary.
   // Returns individual PIBSnapshot for the authenticated worker.
   //
-  // Foundation Light v0.1: individual PIB not available (aggregate model).
+  // KORA Foundation Light: individual PIB not available (aggregate model).
   // Caller must be worker role — employer roles must never call this method.
   //
   // Privacy rule: this method's output is worker-private only.
@@ -335,11 +335,11 @@ export class PIBAggregationService {
       };
     }
 
-    // Foundation Light v0.1: individual PIB not computable from aggregate model.
+    // KORA Foundation Light: individual PIB not computable from aggregate model.
     return {
       available: false,
       reason:
-        'Foundation Light v0.1: individual PIB not available. ' +
+        'KORA Foundation Light: individual PIB not available. ' +
         `Worker (pseudonym: ${workerPseudonymId}) PIB requires per-worker UEF records ` +
         'via My KORA participation confirmation or individual provider export (Pilot+). ' +
         'This is an architecture limitation — PIB computation is canonical, ' +

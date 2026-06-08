@@ -1,7 +1,7 @@
 // lib/types/index.ts — KORA canonical TypeScript domain model.
 //
 // ── Domain Split Status ───────────────────────────────────────────────────────
-// This file is a monolith by design in Foundation Light v0.1 (~1,900 lines).
+// This file is a monolith by design in KORA Foundation Light (~1,900 lines).
 // A planned domain split is scaffolded in lib/types/domains/ (see README there).
 // New types with no existing consumers should be added to the appropriate domain
 // file in lib/types/domains/ rather than to this file.
@@ -115,8 +115,8 @@ export type DepthLevel = 'deep' | 'moderate' | 'surface' | 'none';
 //   1. Event/program-based activation (consumed_service, training, etc.)
 //   2. Budget/partner-mediated activation (partner_service, welfare programs)
 //   3. Structural policy activation (structural_policy — this type)
-// Structural policies flow into the existing IU → Aggregation → KORA Index v3 pipeline.
-// KORA Index v3 macroblocks and weights remain unchanged.
+// Structural policies flow into the existing IU → Aggregation → KORA Index v1.0 pipeline.
+// KORA Index v1.0 macroblocks and weights remain unchanged.
 // Privacy rule: individual_usage_visible = false on all structural_policy records.
 
 export type StructuralPolicySubtype =
@@ -167,8 +167,8 @@ export interface StructuralPolicyRecord {
   notes?: string;
 }
 
-// ── KORA Index v3 — Macroblock Architecture ─────────────────────────────────────
-// KORA Index v3 = 25% Activation Reach + 30% Activation Quality
+// ── KORA Index v1.0 — Macroblock Architecture ─────────────────────────────────────
+// KORA Index v1.0 = 25% Activation Reach + 30% Activation Quality
 //               + 25% Distribution & Equity + 20% Budget-to-Human-Impact
 // Confidence Score (CS) is EXTERNAL — weight = 0, shown separately as reliability indicator.
 
@@ -196,7 +196,7 @@ export interface KoraIndexComponent {
   label: string;
   value: number;               // 0–1
   weight: number;              // effective weight in KORA Index; CS = 0 in v3 (external)
-  external?: boolean;          // true for CS — not included in KORA Index v3 computation
+  external?: boolean;          // true for CS — not included in KORA Index v1.0 computation
   macroblock?: MacroblockCode; // which macroblock this component feeds (undefined for CS)
 }
 
@@ -210,7 +210,7 @@ export interface KoraIndexOutput {
   macroblocks?: MacroblockScore[];  // v3: 4 macroblock scores (REACH, QUALITY, EQUITY, BTI)
   methodology_version_id: string;
   calibration_status: CalibrationStatus;
-  confidence_score: number;         // 0–1, external to KORA Index v3 computation
+  confidence_score: number;         // 0–1, external to KORA Index v1.0 computation
   safeguard_status: SafeguardStatus;
   generated_at: string;
   synthetic_demo_data?: true;   // omitted for live rows
@@ -478,7 +478,7 @@ export interface BudgetToHumanImpactRecord {
   // Distribution quality (0–1)
   equity_of_spend: number;           // how evenly spend is distributed across workforce segments
   pillar_investment_balance: number; // how evenly spend is distributed across pillars
-  // BTI macroblock score (0–100) — feeds the BTI macroblock of KORA Index v3
+  // BTI macroblock score (0–100) — feeds the BTI macroblock of KORA Index v1.0
   bti_score: number;
   // Spend breakdown
   spend_by_pillar: Partial<Record<PillarCode, number>>;
@@ -778,9 +778,9 @@ export interface UEFAuditEvent {
 export interface MethodologyConfig {
   version: string;
   calibration_status: CalibrationStatus;
-  // Legacy equal weights — removed. Not canonical for KORA Index v3.
+  // Legacy equal weights — removed. Not canonical for KORA Index v1.0.
   weights?: Record<string, number>;
-  // KORA Index v3 macroblock structure — canonical for v3 computation
+  // KORA Index v1.0 macroblock structure — canonical for v3 computation
   kora_index_v3?: {
     macroblocks: Partial<Record<MacroblockCode, MacroblockConfig>>;
     cs_external: true;

@@ -209,7 +209,7 @@ export default function Opportunities() {
           Questi dati sono sintetici e solo a scopo dimostrativo.
         </p>
         <p className="mt-1.5 text-xs font-mono text-[rgba(6,3,43,0.28)]">
-          synthetic_demo_data: true · methodology_version: v0.1 · calibration_status: pre_empirical_calibration
+          synthetic_demo_data: true · methodology_version: KORA Index v1.0 · calibration_status: pre_empirical_calibration
         </p>
       </div>
     </div>

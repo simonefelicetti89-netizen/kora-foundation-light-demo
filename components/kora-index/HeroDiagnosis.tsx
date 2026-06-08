@@ -212,7 +212,7 @@ export function HeroDiagnosis({
         )}
       </div>
 
-      {/* B79-P0-5: Benchmark guidance — no sector benchmark in Foundation Light v0.1 */}
+      {/* B79-P0-5: Benchmark guidance — no sector benchmark in KORA Foundation Light */}
       <div style={{
         marginTop:    16,
         paddingTop:   12,

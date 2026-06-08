@@ -583,7 +583,7 @@ export default function KoraContribution() {
 
       {/* 13. ProvenanceFooter */}
       <ProvenanceFooter
-        methodologyVersionId={legacySummary?.methodology_version_id ?? 'KORA Methodology v0.1'}
+        methodologyVersionId={legacySummary?.methodology_version_id ?? 'KORA Index v1.0'}
         calibrationStatus="pre_empirical_calibration"
         reportingPeriod={summaryV2.reporting_period}
       />

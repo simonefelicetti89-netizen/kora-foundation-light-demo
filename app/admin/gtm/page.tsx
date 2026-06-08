@@ -212,7 +212,7 @@ export default function GtmPilotConsole() {
           <span>·</span>
           <span>calibration_status: pre_empirical_calibration</span>
           <span>·</span>
-          <span>methodology_version_id: KORA Methodology v0.1</span>
+          <span>methodology_version_id: KORA Index v1.0</span>
         </div>
       </div>
 
@@ -477,7 +477,7 @@ export default function GtmPilotConsole() {
               <span>·</span>
               <span>calibration_status: pre_empirical_calibration</span>
               <span>·</span>
-              <span>methodology_version_id: KORA Methodology v0.1</span>
+              <span>methodology_version_id: KORA Index v1.0</span>
             </div>
           </div>
         </div>

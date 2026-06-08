@@ -149,7 +149,7 @@ export default function KoraSharedView() {
         </p>
         <div className="flex flex-wrap gap-2 mt-3">
           <span style={{ fontFamily: 'monospace', fontSize: '10px', background: TOKENS.safeguard.watch.bg, color: TOKENS.safeguard.watch.text, borderRadius: 4, padding: '2px 7px' }}>
-            synthetic_demo_data: true · Foundation Light v0.1
+            synthetic_demo_data: true · KORA Foundation Light
           </span>
           {output?.methodology_version_id && (
             <span style={{ fontFamily: 'monospace', fontSize: '10px', background: TOKENS.inkBorder, color: TOKENS.inkSecondary, borderRadius: 4, padding: '2px 7px' }}>
@@ -196,7 +196,7 @@ export default function KoraSharedView() {
           <div className="grid gap-6 lg:grid-cols-3 mb-5">
             {/* KORA Index value */}
             <div>
-              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 8 }}>KORA Index v3</p>
+              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginBottom: 8 }}>KORA Index v1.0</p>
               <div className="flex items-baseline gap-2">
                 <span style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '3.5rem', color: TOKENS.ink, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                   {output?.kora_index_value}
@@ -431,7 +431,7 @@ export default function KoraSharedView() {
             const dpToken   = isReady ? TOKENS.safeguard.pass : isReview ? TOKENS.safeguard.watch : { bg: TOKENS.inkBorder, text: TOKENS.inkSecondary, dot: TOKENS.inkHint };
             const dpLabel   = isReady ? 'Disponibile' : isReview ? 'In revisione advisor' : 'Non disponibile';
             const dpText    = isReady
-              ? 'Il Decision Pack è pronto con Executive Summary, KORA Index v3, analisi BTI e raccomandazioni diagnostiche.'
+              ? 'Il Decision Pack è pronto con Executive Summary, KORA Index v1.0, analisi BTI e raccomandazioni diagnostiche.'
               : isReview
               ? 'Il Decision Pack è in attesa di revisione advisor (Confidence Score < 55%).'
               : 'Il Decision Pack sarà disponibile al termine della pipeline dati.';
@@ -514,7 +514,7 @@ export default function KoraSharedView() {
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
         <div className="grid gap-4 sm:grid-cols-2 mb-4">
           {[
-            ['Metodologia', output?.methodology_version_id ?? 'KORA Methodology v0.1'],
+            ['Metodologia', output?.methodology_version_id ?? 'KORA Index v1.0'],
             ['Stato calibrazione', output?.calibration_status ?? 'pre_empirical_calibration'],
             ['production_ready', 'false'],
             ['Dati', 'sintetici demo · synthetic_demo_data: true'],
@@ -595,7 +595,7 @@ export default function KoraSharedView() {
 
       {/* ── ProvenanceFooter ────────────────────────────────────────────────── */}
       <ProvenanceFooter
-        methodologyVersionId={output?.methodology_version_id ?? 'KORA Methodology v0.1'}
+        methodologyVersionId={output?.methodology_version_id ?? 'KORA Index v1.0'}
         calibrationStatus={output?.calibration_status ?? 'pre_empirical_calibration'}
         reportingPeriod={output?.reporting_period ?? activeScenario}
       />

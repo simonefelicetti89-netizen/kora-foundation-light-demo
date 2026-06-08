@@ -1,5 +1,5 @@
 {
-  "version": "KORA Action Taxonomy v0.1 / KORA Index v3",
+  "version": "KORA Action Taxonomy v0.1 / KORA Index v1.0",
   "calibration_status": "pre_empirical_calibration",
   "synthetic_demo_data": true,
   "note": "Canonical KORA eligibility taxonomy. Every uploaded action/event is classified as eligible, limited or blocked before scoring. Blocked items generate 0 IU and 0 KORA Index contribution — not low weight, zero. KORA non trasforma la compliance in impatto.",

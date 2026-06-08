@@ -1,5 +1,5 @@
 'use client';
-// W-03: Dynamic Impact CV™ — Foundation Light v0.1 completion (B73-B).
+// W-03: Dynamic Impact CV™ — KORA Foundation Light completion (B73-B).
 // Worker-controlled impact portfolio. Employer has zero access — enforced at service level.
 //
 // B81-B route classification: PREVIEW

@@ -26,7 +26,7 @@ export const ACME_PROFILE = {
   country:            'IT',
   workforce:          250,
   period:             '2026-Q1',
-  methodologyVersion: 'KORA Methodology v0.1',
+  methodologyVersion: 'KORA Index v1.0',
   calibrationStatus:  'pre_empirical_calibration',
   syntheticDemoData:  true,
   description:        'Azienda manifatturiera di medie dimensioni, 250 dipendenti, sede principale in Lombardia. Buona copertura welfare economica, attivazione disomogenea tra reparti.',
@@ -43,10 +43,10 @@ export const ACME_KORA_INDEX = {
   activationRate:          0.64,     // 64% — above CLEAR threshold
   meaningfulActivationRate: 0.53,    // 53% — above CLEAR threshold
   reportingPeriod:         '2026-Q1',
-  methodologyVersion:      'KORA Methodology v0.1',
+  methodologyVersion:      'KORA Index v1.0',
   calibrationStatus:       'pre_empirical_calibration',
   scoredAt:                '2026-05-15T09:30:00Z',
-  disclaimer: 'KORA Foundation Light v0.1 · Dati pilot sintetici · Calibrazione pre-empirica. Non audit-grade, non certificazione ESG, non compliance normativa.',
+  disclaimer: 'KORA Foundation Light · Dati pilot sintetici · Calibrazione pre-empirica. Non audit-grade, non certificazione ESG, non compliance normativa.',
 };
 
 // ── Macroblock scores ─────────────────────────────────────────────────────────
@@ -204,7 +204,7 @@ export const ACME_DECISION_PACK = {
     },
     {
       title: 'Methodology Snapshot',
-      summary: 'KORA Methodology v0.1 · pre_empirical_calibration · 27 iniziative esaminate · 14-stage algorithm · Confidence Score 71% (esterno al KORA Index).',
+      summary: 'KORA Index v1.0 · pre_empirical_calibration · 27 iniziative esaminate · 14-stage algorithm · Confidence Score 71% (esterno al KORA Index).',
     },
     {
       title: 'Eligibility Summary',
@@ -227,7 +227,7 @@ export const ACME_DECISION_PACK = {
       summary: 'Nessun dato individuale incluso. Tutti i valori sono aggregati aziendali con soglia N≥10. My KORA del lavoratore rimane privato e di proprietà del lavoratore.',
     },
   ],
-  disclaimer: 'Questo Decision Pack è sintetico e generato da dati demo. Non costituisce certificazione ESG, audit o giudizio di compliance. Foundation Light v0.1 — calibrazione pre-empirica.',
+  disclaimer: 'Questo Decision Pack è sintetico e generato da dati demo. Non costituisce certificazione ESG, audit o giudizio di compliance. KORA Foundation Light — calibrazione pre-empirica.',
 };
 
 // ── Next best actions ─────────────────────────────────────────────────────────
@@ -321,11 +321,11 @@ export const ACME_SUBMISSIONS: AcmeDemoSubmission[] = [
 // ── Methodology metadata ──────────────────────────────────────────────────────
 
 export const ACME_METHODOLOGY = {
-  versionId:         'KORA Methodology v0.1',
+  versionId:         'KORA Index v1.0',
   calibrationStatus: 'pre_empirical_calibration',
   disclaimerKoraMeasures:     'KORA misura le organizzazioni, non gli individui.',
   disclaimerPrivacy:          'Nessun dato individuale del lavoratore è visibile al datore di lavoro. Soglia privacy N≥10 applicata.',
   disclaimerCompliance:       'KORA non certifica conformità normativa e non sostituisce consulenza ESG, legale o fiscale.',
-  disclaimerCalibration:      'Foundation Light v0.1 — calibrazione pre-empirica. Non audit-grade, non production-ready.',
+  disclaimerCalibration:      'KORA Foundation Light — calibrazione pre-empirica. Non audit-grade, non production-ready.',
   csrDisclaimer:              'KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili. Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.',
 };
