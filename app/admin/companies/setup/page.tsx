@@ -6,10 +6,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
-import { tenantService } from '@/services/tenant/TenantService';
-import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
-import { lifecycleService } from '@/services/lifecycle/LifecycleService';
-import type { CompanyAdminProvisioningDraft, ReadinessItemStatus } from '@/lib/types';
+import type { ReadinessItemStatus } from '@/lib/types';
 
 // ── Step definitions ──────────────────────────────────────────────────────────
 
@@ -273,11 +270,26 @@ function Checklist({ items, selected, onChange, doctrine }: {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
+interface ProvisionResult {
+  ok: boolean;
+  provisioningStatus: string;
+  tenantId?: string;
+  tenantCode?: string;
+  tenantCreated?: boolean;
+  adminUserId?: string;
+  adminRole?: string;
+  inviteStatus?: 'sent' | 'existing' | 'not_sent';
+  warnings?: string[];
+  error?: string;
+  recovery?: string;
+  links?: { companyConsole?: string; manageUsers?: string; companyWorkspace?: string };
+}
+
 export default function EnterpriseOnboardingWizard() {
   const [step, setStep] = useState(1);
   const [state, setState] = useState<WizardState>(INITIAL);
-  const [draft, setDraft] = useState<ReturnType<typeof tenantService.createTenantDraft> | null>(null);
-  const [adminDraft, setAdminDraft] = useState<CompanyAdminProvisioningDraft | null>(null);
+  const [isProvisioning, setIsProvisioning] = useState(false);
+  const [provisionResult, setProvisionResult] = useState<ProvisionResult | null>(null);
   const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   function update<K extends keyof WizardState>(field: K, value: WizardState[K]) {
@@ -292,44 +304,37 @@ export default function EnterpriseOnboardingWizard() {
     });
   }
 
-  function handleCreateDraft() {
-    const headcount = parseInt(state.employee_count) || 0;
-    const newDraft = tenantService.createTenantDraft({
-      company_name: state.company_name,
-      legal_name: state.legal_name,
-      vat_number: state.vat_number || undefined,
-      fiscal_code: state.fiscal_code || undefined,
-      sector: state.sector,
-      territory: state.territory,
-      headquarters_location: state.headquarters_location,
-      employee_count: headcount,
-      size_band: state.size_band as Parameters<typeof tenantService.createTenantDraft>[0]['size_band'],
-      kora_plan: state.kora_plan,
-      analysis_period: state.analysis_period,
-    });
-    setDraft(newDraft);
-
-    if (state.admin_name && state.admin_email) {
-      const ad = accountProvisioningService.createCompanyAdminDraft(
-        newDraft.company_id,
-        newDraft.tenant_id,
-        {
-          admin_name: state.admin_name,
-          admin_email: state.admin_email,
-          admin_role: state.admin_role as 'COMPANY_ADMIN' | 'COMPANY_VIEWER',
-          password_setup_mode: state.password_setup_mode as CompanyAdminProvisioningDraft['password_setup_mode'],
-        },
-      );
-      setAdminDraft(ad);
+  async function handleProvision() {
+    if (!state.company_name || !state.admin_email) return;
+    setIsProvisioning(true);
+    setResult(null);
+    setProvisionResult(null);
+    try {
+      const res = await fetch('/api/admin/companies/provision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name: state.company_name,
+          admin_email:  state.admin_email,
+          admin_name:   state.admin_name || undefined,
+          admin_role:   state.admin_role,
+        }),
+      });
+      const data: ProvisionResult = await res.json();
+      setProvisionResult(data);
+      if (res.ok && data.ok) {
+        setResult({
+          type: 'success',
+          message: `Azienda ${data.tenantCode} provisioned. Invito: ${data.inviteStatus}.`,
+        });
+      } else {
+        setResult({ type: 'error', message: data.error ?? 'Provisioning fallito.' });
+      }
+    } catch {
+      setResult({ type: 'error', message: 'Errore di rete. Verificare la connessione.' });
+    } finally {
+      setIsProvisioning(false);
     }
-
-    lifecycleService.logLifecycleEvent(
-      'KORA_ADMIN', 'admin-001', 'tenant', newDraft.tenant_id,
-      'create_draft', 'Enterprise Onboarding Wizard completato',
-      `Bozza creata per ${state.company_name}`,
-    );
-
-    setResult({ type: 'success', message: `Bozza tenant creata: ${newDraft.tenant_id}` });
   }
 
   const readiness = computeReadiness(state);
@@ -339,10 +344,10 @@ export default function EnterpriseOnboardingWizard() {
     <div className="space-y-6 max-w-4xl">
 
       <DemoFlowBanner
-        title="Demo Setup Wizard — Non salva dati"
-        description="Questo wizard crea una bozza di sessione in memoria. Nessun tenant viene creato in Supabase. Per creare un'azienda live usa Crea Azienda."
+        title="Setup Wizard — Passi 1–7 locali, passo 8 reale"
+        description="I passi 1–7 configurano la bozza in memoria. Il passo 8 crea il tenant e l'utente auth in Supabase. Configurare SMTP per l'invito email automatico."
         canonicalHref="/admin/companies/new"
-        canonicalLabel="Crea Azienda (live)"
+        canonicalLabel="Crea Azienda rapida (live)"
       />
 
       {/* ── Header ── */}
@@ -388,11 +393,12 @@ export default function EnterpriseOnboardingWizard() {
         </div>
       </div>
 
-      {/* ── Demo disclaimer ── */}
-      <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-[#8A5A00]">
-        <span className="font-semibold">Bozza demo di sessione.</span>{' '}
-        Nessun dato viene salvato permanentemente. La persistenza database sarà collegata in produzione.
-        Nessuna password reale salvata. Nessuna email reale inviata.
+      {/* ── Step info ── */}
+      <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-xs text-[rgba(6,3,43,0.52)]">
+        <span className="font-semibold text-[rgba(6,3,43,0.78)]">Passi 1–7:</span>{' '}
+        configurazione locale — nessuna scrittura su database.{' '}
+        <span className="font-semibold text-[rgba(6,3,43,0.78)]">Passo 8:</span>{' '}
+        provisioning reale — crea tenant in <code>analytics.tenant</code> e utente auth con invito email.
       </div>
 
       {/* ─────────────────────── STEP CONTENT ─────────────────────────────── */}
@@ -698,33 +704,40 @@ export default function EnterpriseOnboardingWizard() {
             </div>
           )}
 
+          {/* Validazione pre-provisioning */}
+          {!(state.admin_name && state.admin_email) && (
+            <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-xs text-[#8A5A00]">
+              Completare il passo 6 (nome e email admin) prima di procedere al provisioning.
+            </div>
+          )}
+
           {/* CTAs */}
           <div className="flex flex-wrap gap-3 pt-2">
             <button
               type="button"
-              onClick={handleCreateDraft}
-              disabled={!(state.company_name && state.legal_name)}
+              onClick={handleProvision}
+              disabled={!(state.company_name && state.legal_name && state.admin_email) || isProvisioning}
               className="rounded-lg bg-[#06032B] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[rgba(6,3,43,0.88)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Crea bozza tenant
+              {isProvisioning ? 'Provisioning…' : 'Provisiona azienda'}
             </button>
-            {draft && (
+            {provisionResult?.ok && (
               <>
                 <Link href="/admin/companies" className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-2.5 text-xs font-semibold text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.03)] transition-colors">
                   Company Registry →
                 </Link>
                 <button
                   type="button"
-                  onClick={() => { setState(INITIAL); setDraft(null); setAdminDraft(null); setResult(null); setStep(1); }}
+                  onClick={() => { setState(INITIAL); setProvisionResult(null); setResult(null); setStep(1); }}
                   className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs font-medium text-[rgba(6,3,43,0.52)] hover:bg-[rgba(6,3,43,0.05)] transition-colors"
                 >
-                  Archivia bozza
+                  Nuova azienda
                 </button>
               </>
             )}
           </div>
 
-          {/* Result */}
+          {/* Result banner */}
           {result && (
             <div className={`rounded border px-3 py-2 text-xs ${
               result.type === 'success' ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]' : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
@@ -733,23 +746,58 @@ export default function EnterpriseOnboardingWizard() {
             </div>
           )}
 
-          {/* Admin draft preview */}
-          {adminDraft && (
-            <div className="rounded-lg border border-blue-100 bg-blue-50 p-4 space-y-2">
-              <p className="text-xs font-semibold text-blue-800">Bozza accesso admin aziendale</p>
-              <div className="grid grid-cols-2 gap-2 text-[10px]">
-                <div><p className="text-blue-600">ID provisioning</p><p className="text-blue-800 font-mono">{adminDraft.provisioning_id}</p></div>
-                <div><p className="text-blue-600">Ruolo</p><p className="text-blue-800">{adminDraft.admin_role}</p></div>
-                <div><p className="text-blue-600">Modalità accesso</p><p className="text-blue-800">{adminDraft.password_setup_mode}</p></div>
-                <div><p className="text-blue-600">Invito</p><p className="text-blue-800">{adminDraft.invitation_status}</p></div>
+          {/* Provisioning result detail */}
+          {provisionResult?.ok && (
+            <div className="rounded-lg border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] p-4 space-y-3">
+              <p className="text-xs font-semibold text-[#2F7D55]">Provisioning completato</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 text-[10px]">
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Tenant ID</p>
+                  <p className="font-mono text-[rgba(6,3,43,0.78)] break-all">{provisionResult.tenantId}</p>
+                </div>
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Tenant Code</p>
+                  <p className="font-mono font-semibold text-[rgba(6,3,43,0.78)]">{provisionResult.tenantCode}</p>
+                </div>
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Ruolo</p>
+                  <p className="text-[rgba(6,3,43,0.78)]">{provisionResult.adminRole}</p>
+                </div>
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Invito email</p>
+                  <p className="text-[rgba(6,3,43,0.78)]">
+                    {provisionResult.inviteStatus === 'sent' && 'Inviato'}
+                    {provisionResult.inviteStatus === 'existing' && 'Utente già esistente'}
+                    {provisionResult.inviteStatus === 'not_sent' && 'Non inviato (SMTP)'}
+                  </p>
+                </div>
               </div>
-              <p className="text-[10px] font-mono text-blue-500">{adminDraft.security_notes}</p>
+              {provisionResult.warnings && provisionResult.warnings.length > 0 && (
+                <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-[#8A5A00] space-y-0.5">
+                  {provisionResult.warnings.map((w, i) => <p key={i}>{w}</p>)}
+                </div>
+              )}
+              {provisionResult.links && (
+                <div className="flex gap-3 flex-wrap">
+                  <Link href={provisionResult.links.manageUsers ?? '/admin/company-users'}
+                    className="text-[10px] text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)] underline underline-offset-2">
+                    Gestisci utenti →
+                  </Link>
+                  <Link href={provisionResult.links.companyWorkspace ?? '/admin/company-workspace'}
+                    className="text-[10px] text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.78)] underline underline-offset-2">
+                    Workspace azienda →
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 
-          <p className="text-[10px] font-mono text-[rgba(6,3,43,0.28)]">
-            demo_session_only: true · production_ready: false · synthetic_demo_data: true
-          </p>
+          {/* Provisioning error recovery */}
+          {provisionResult && !provisionResult.ok && provisionResult.recovery && (
+            <div className="rounded border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-3 py-2 text-xs text-[#9E3B2F]">
+              <span className="font-semibold">Recovery: </span>{provisionResult.recovery}
+            </div>
+          )}
         </section>
       )}
 
