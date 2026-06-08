@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
 
   // Attempt invite — Supabase returns 422 / "already registered" if email exists.
   const { data: inviteData, error: inviteErr } = await db.auth.admin.inviteUserByEmail(adminEmail, {
-    redirectTo: `${siteUrl}/company/workspace`,
+    redirectTo: `${siteUrl}/auth/callback`,
     data: { admin_name: adminName ?? '', company_name: companyName },
   });
 

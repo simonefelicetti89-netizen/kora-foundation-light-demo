@@ -19,15 +19,17 @@ import { type NextRequest, NextResponse } from 'next/server';
 // B59: intelligence pages added so real sessions reach live-enabled pages.
 // All other paths still redirect to /company/workspace.
 const COMPANY_ALLOWED_PREFIXES = [
-  '/company/workspace',   // live workspace — full server-auth, Supabase-backed
-  '/company/kora-index',  // live intelligence — shows real KORA Index when session present
-  '/company/activation',  // live intelligence — shows real activation data
-  '/company/pillars',     // live intelligence — shows real pillar distribution
-  '/company/financial',   // live intelligence — shows real BTI data
-  '/company/reports',     // live intelligence — shows real Decision Pack status
-  '/api/',                // all API routes (have own auth)
-  '/_next',              // Next.js internals
-  '/admin/login',        // login page (needed if session expires)
+  '/company/workspace',      // live workspace — full server-auth, Supabase-backed
+  '/company/kora-index',     // live intelligence — shows real KORA Index when session present
+  '/company/activation',     // live intelligence — shows real activation data
+  '/company/pillars',        // live intelligence — shows real pillar distribution
+  '/company/financial',      // live intelligence — shows real BTI data
+  '/company/reports',        // live intelligence — shows real Decision Pack status
+  '/company/setup-password', // invite flow — set password after accepting KORA invite
+  '/auth/callback',          // Supabase PKCE code exchange — publicly reachable before session
+  '/api/',                   // all API routes (have own auth)
+  '/_next',                  // Next.js internals
+  '/admin/login',            // login page (needed if session expires)
 ];
 
 export async function middleware(request: NextRequest) {

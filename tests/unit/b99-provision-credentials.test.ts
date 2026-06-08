@@ -274,6 +274,117 @@ describe('Migration 006 — SQL correctness', () => {
   });
 });
 
+// ── Auth callback route — invite flow completion ──────────────────────────────
+
+describe('Auth callback route — structure', () => {
+  const callback = read('app/auth/callback/route.ts');
+
+  it('has GET handler for Supabase PKCE code exchange', () => {
+    expect(callback).toContain('export async function GET');
+  });
+
+  it('calls exchangeCodeForSession with the code query param', () => {
+    expect(callback).toContain('exchangeCodeForSession');
+    expect(callback).toContain("searchParams.get('code')");
+  });
+
+  it('redirects to /company/setup-password on successful exchange', () => {
+    expect(callback).toContain('/company/setup-password');
+  });
+
+  it('handles error param (expired token) by redirecting to setup-password with error', () => {
+    expect(callback).toContain("searchParams.get('error')");
+    const lines = callback.split('\n');
+    const errorRedirect = lines.find((l) => l.includes('setup-password?'));
+    expect(errorRedirect).toBeTruthy();
+  });
+
+  it('redirects to /admin/login when code is missing', () => {
+    expect(callback).toContain('/admin/login');
+    expect(callback).toContain('missing_auth_code');
+  });
+
+  it('is runtime nodejs (cookie store access)', () => {
+    expect(callback).toContain("runtime = 'nodejs'");
+  });
+
+  it('uses getSupabaseServerClient (not service client)', () => {
+    expect(callback).toContain('getSupabaseServerClient');
+    expect(callback).not.toContain('getSupabaseServiceClient');
+  });
+});
+
+describe('Setup password page — structure', () => {
+  const page = read('app/company/setup-password/page.tsx');
+  const form = read('app/company/setup-password/_form.tsx');
+
+  it('page.tsx wraps form in Suspense (required for useSearchParams)', () => {
+    expect(page).toContain('Suspense');
+    expect(page).toContain('SetupPasswordForm');
+  });
+
+  it('form is a client component', () => {
+    expect(form).toContain("'use client'");
+  });
+
+  it('form reads error and error_description from URL (token expiry detection)', () => {
+    expect(form).toContain('useSearchParams');
+    expect(form).toContain("searchParams.get('error')");
+    expect(form).toContain("searchParams.get('error_description')");
+  });
+
+  it('form calls supabase.auth.updateUser with password', () => {
+    expect(form).toContain('updateUser');
+    expect(form).toContain('password');
+  });
+
+  it('form redirects to /company/workspace on success', () => {
+    expect(form).toContain('/company/workspace');
+  });
+
+  it('form shows expired-token message when error param is present', () => {
+    expect(form).toContain('Link non valido o scaduto');
+  });
+
+  it('form enforces minimum password length', () => {
+    expect(form).toMatch(/minLength|length < 8/);
+  });
+
+  it('form validates password confirmation match', () => {
+    expect(form).toContain('Le password non coincidono');
+  });
+
+  it('form uses getSupabaseBrowserClient (not service client)', () => {
+    expect(form).toContain('getSupabaseBrowserClient');
+    expect(form).not.toContain('getSupabaseServiceClient');
+  });
+});
+
+describe('Provision route — redirectTo points to auth callback', () => {
+  const route = read('app/api/admin/companies/provision/route.ts');
+
+  it('redirectTo uses /auth/callback (not /company/workspace directly)', () => {
+    expect(route).toContain('/auth/callback');
+    // Find the redirectTo line and verify it points to the callback
+    const redirectLine = route.split('\n').find((l) => l.includes('redirectTo:'));
+    expect(redirectLine).toBeDefined();
+    expect(redirectLine).toContain('/auth/callback');
+    expect(redirectLine).not.toContain('/company/workspace');
+  });
+});
+
+describe('Middleware — allows auth callback and setup-password paths', () => {
+  const mw = read('middleware.ts');
+
+  it('COMPANY_ALLOWED_PREFIXES includes /company/setup-password', () => {
+    expect(mw).toContain('/company/setup-password');
+  });
+
+  it('COMPANY_ALLOWED_PREFIXES includes /auth/callback', () => {
+    expect(mw).toContain('/auth/callback');
+  });
+});
+
 // ── Tenant isolation — behaviour tests (pure logic, no Supabase) ──────────────
 // assertTenantAccess is the application-layer cross-tenant guard.
 // These tests verify its behaviour directly — no mocking needed (pure function).
