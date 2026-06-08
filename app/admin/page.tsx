@@ -194,11 +194,12 @@ export default function KoraControlTower() {
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
           {([
-            { href: '/admin/companies',            label: 'Company Console · LIVE' },
-            { href: '/admin/company-live-preview', label: 'Anteprima Live Cockpit · LIVE' },
-            { href: '/admin/data-intake',          label: 'Data Intake · LIVE' },
-            { href: '/admin/uef-review',           label: 'UEF™ Review · LIVE' },
-            { href: '/admin/company-submissions',  label: 'Submission Queue · LIVE' },
+            { href: '/admin/companies',               label: 'Company Console · LIVE' },
+            { href: '/admin/company-live-preview',    label: 'Anteprima Live Cockpit · LIVE' },
+            { href: '/admin/data-intake',             label: 'Data Intake · LIVE' },
+            { href: '/admin/uef-review',              label: 'UEF™ Review · LIVE' },
+            { href: '/admin/company-submissions',     label: 'Submission Queue · LIVE' },
+            { href: '/admin/live-spine-diagnostics',  label: 'Live Spine Diagnostics · LIVE' },
           ] as const).map(({ href, label }) => (
             <Link key={href} href={href} style={{ display: 'block', borderRadius: 8, padding: '8px 12px', background: 'rgba(22,101,52,0.08)', border: '1px solid rgba(22,101,52,0.20)', fontSize: '11px', fontWeight: 600, color: '#166534', textDecoration: 'none', fontFamily: FONT }}>
               {label}

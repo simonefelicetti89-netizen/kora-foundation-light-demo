@@ -94,6 +94,15 @@ export async function POST(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tenantCode = (tenant as any).tenant_code as string;
 
+  // B102: OP-001 is synthetic demo only — block live scoring explicitly.
+  if (tenantCode === 'OP-001') {
+    return NextResponse.json({
+      ok:    false,
+      error: 'Live scoring non disponibile per OP-001 (tenant sintetico demo).',
+      hint:  'Usa /admin/operator-flow per la pipeline sintetica OP-001. Per lo scoring live usa un tenant reale.',
+    }, { status: 422 });
+  }
+
   // ── 5. Read ONLY approved UEF records ────────────────────────────────────────
   // Strict filter: review_status='approved' AND approved_for_scoring=true.
   // Pending, rejected, needs_info records are explicitly excluded by this query.

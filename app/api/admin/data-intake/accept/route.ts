@@ -292,6 +292,13 @@ export async function POST(request: NextRequest) {
       hint:  'OP-001 is reserved for synthetic demo data only.',
     }, { status: 400 });
   }
+  // B102: block OP-001 in live data intake path explicitly.
+  if (tenantCode === 'OP-001') {
+    return NextResponse.json({
+      error: 'OP-001 non è un tenant live. Non caricare dati reali su OP-001.',
+      hint:  'OP-001 è riservato alla pipeline sintetica demo. Per dati reali usa un tenant live.',
+    }, { status: 422 });
+  }
   const reportingPeriod  = String(formData.get('reportingPeriod') ?? '2026-Q1');
   const batchLabelInput  = formData.get('batchLabel');
 
