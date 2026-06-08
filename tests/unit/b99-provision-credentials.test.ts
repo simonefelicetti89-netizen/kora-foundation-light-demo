@@ -273,3 +273,116 @@ describe('Migration 006 — SQL correctness', () => {
     expect(migration).toContain('provision');
   });
 });
+
+// ── Tenant isolation — behaviour tests (pure logic, no Supabase) ──────────────
+// assertTenantAccess is the application-layer cross-tenant guard.
+// These tests verify its behaviour directly — no mocking needed (pure function).
+
+import { assertTenantAccess, isKoraAdmin, isCompanyUser } from '../../lib/auth/kora-session';
+import { NextResponse } from 'next/server';
+import type { KoraCompanyUser, KoraUser } from '../../lib/auth/kora-session';
+
+const tenantA = '11111111-1111-1111-1111-111111111111';
+const tenantB = '22222222-2222-2222-2222-222222222222';
+
+function makeCompanyUser(tenantId: string, role: 'COMPANY_ADMIN' | 'COMPANY_VIEWER' = 'COMPANY_ADMIN'): KoraCompanyUser {
+  return { id: 'user-1', email: 'u@a.it', koraRole: role, tenantId, userStatus: 'active' };
+}
+
+describe('Tenant isolation — assertTenantAccess (pure logic)', () => {
+  it('returns null when user.tenantId matches requestedTenantId (access granted)', () => {
+    const user = makeCompanyUser(tenantA);
+    expect(assertTenantAccess(user, tenantA)).toBeNull();
+  });
+
+  it('returns 403 NextResponse when tenantId does not match (cross-tenant blocked)', () => {
+    const user = makeCompanyUser(tenantA);
+    const response = assertTenantAccess(user, tenantB);
+    expect(response).not.toBeNull();
+    expect(response).toBeInstanceOf(NextResponse);
+    expect(response?.status).toBe(403);
+  });
+
+  it('Company A user cannot access Company B tenant', () => {
+    const userA = makeCompanyUser(tenantA);
+    expect(assertTenantAccess(userA, tenantB)).not.toBeNull();
+  });
+
+  it('Company B user cannot access Company A tenant', () => {
+    const userB = makeCompanyUser(tenantB);
+    expect(assertTenantAccess(userB, tenantA)).not.toBeNull();
+  });
+
+  it('COMPANY_VIEWER is also blocked from cross-tenant (role does not elevate access)', () => {
+    const viewer = makeCompanyUser(tenantA, 'COMPANY_VIEWER');
+    expect(assertTenantAccess(viewer, tenantB)).not.toBeNull();
+  });
+
+  it('403 response body contains error message', async () => {
+    const user = makeCompanyUser(tenantA);
+    const response = assertTenantAccess(user, tenantB)!;
+    const body = await response.json();
+    expect(body.error).toBeTruthy();
+    expect(typeof body.error).toBe('string');
+  });
+});
+
+describe('Tenant isolation — session layer (structural)', () => {
+  const session = read('lib/auth/kora-session.ts');
+
+  it('requireCompanyUser reads tenantId from app_metadata (not from request body or query)', () => {
+    // tenantId is assigned from appMeta?.kora_tenant_id — server-controlled JWT
+    expect(session).toContain('const tenantId = appMeta?.kora_tenant_id');
+    // Must not read from request URL or body
+    expect(session).not.toContain('request.url');
+    expect(session).not.toContain('request.json');
+  });
+
+  it('getTenantFromSession reads kora_tenant_id (not bare tenant_id)', () => {
+    expect(session).toContain('appMeta?.kora_tenant_id');
+    // Must not read bare tenant_id
+    expect(session).not.toContain("appMeta?.tenant_id");
+  });
+
+  it('no company API route takes tenantId from URL query params for data access', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const routeDir = path.join(process.cwd(), 'app/api/company');
+    const routes = fs.readdirSync(routeDir, { recursive: true }) as string[];
+    const routeFiles = routes.filter((f: string) => f.endsWith('route.ts'));
+
+    for (const file of routeFiles) {
+      const content = fs.readFileSync(path.join(routeDir, file), 'utf-8') as string;
+      // No route should take tenantId from searchParams for data access
+      // (period and reportingPeriod from searchParams are allowed — only tenantId is forbidden)
+      const dangerousPattern = /searchParams\.get\(['"]tenantId['"]\)/;
+      expect(
+        dangerousPattern.test(content),
+        `${file} takes tenantId from searchParams — cross-tenant risk`,
+      ).toBe(false);
+    }
+  });
+});
+
+describe('Tenant isolation — type guards', () => {
+  const adminUser: KoraUser = { id: 'admin-1', email: 'admin@kora.io', koraRole: 'KORA_ADMIN' };
+  const companyAdmin = makeCompanyUser(tenantA, 'COMPANY_ADMIN');
+  const companyViewer = makeCompanyUser(tenantA, 'COMPANY_VIEWER');
+
+  it('isKoraAdmin returns true only for KORA_ADMIN', () => {
+    expect(isKoraAdmin(adminUser)).toBe(true);
+    expect(isKoraAdmin(companyAdmin)).toBe(false);
+    expect(isKoraAdmin(companyViewer)).toBe(false);
+  });
+
+  it('isCompanyUser returns true for COMPANY_ADMIN and COMPANY_VIEWER', () => {
+    expect(isCompanyUser(companyAdmin)).toBe(true);
+    expect(isCompanyUser(companyViewer)).toBe(true);
+    expect(isCompanyUser(adminUser)).toBe(false);
+  });
+
+  it('KORA_ADMIN cannot be a company user — distinct identity boundary', () => {
+    expect(isCompanyUser(adminUser)).toBe(false);
+    expect(isKoraAdmin(adminUser)).toBe(true);
+  });
+});
