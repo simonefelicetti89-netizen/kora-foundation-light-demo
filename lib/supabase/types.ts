@@ -55,6 +55,80 @@ export interface WorkforceBaselineRow {
   created_by: string | null;
 }
 
+// ── personal.worker_identity ──────────────────────────────────────────────────
+
+export interface WorkerIdentityRow {
+  id: string;
+  tenant_id: string;
+  auth_user_id: string;
+  worker_ref: string;
+  status: 'invited' | 'active' | 'pending' | 'disabled';
+  invited_at: string | null;
+  activated_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── personal.worker_profile_private ──────────────────────────────────────────
+
+export interface WorkerProfilePrivateRow {
+  id: string;
+  worker_id: string;
+  tenant_id: string;
+  display_name: string | null;
+  onboarding_done: boolean;
+  consent_version: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── personal.worker_initiative ────────────────────────────────────────────────
+// Published by KORA_ADMIN per tenant. Workers see published initiatives only.
+// Company roles have NO direct access — aggregates via service-role app layer.
+
+export type WorkerInitiativeStatus = 'draft' | 'published' | 'closed';
+export type PillarCode = 'LIFE' | 'GROWTH' | 'CONNECTION' | 'IMPACT' | 'LEGACY';
+
+export interface WorkerInitiativeRow {
+  id: string;
+  tenant_id: string;
+  title: string;
+  description: string | null;
+  pillar: PillarCode;
+  eligibility_class: 'eligible' | 'limited';
+  status: WorkerInitiativeStatus;
+  start_date: string | null;
+  end_date: string | null;
+  mode: string | null;
+  location: string | null;
+  provider: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type WorkerInitiativeInsert = Omit<WorkerInitiativeRow, 'id' | 'created_at' | 'updated_at'>;
+
+// ── personal.worker_participation ─────────────────────────────────────────────
+// Worker-private. Never accessible by company roles — no RLS policy on company.
+// private_note is worker-only and NEVER returned in any employer-facing response.
+
+export type WorkerParticipationStatus = 'interested' | 'registered' | 'attended' | 'cancelled';
+
+export interface WorkerParticipationRow {
+  id: string;
+  tenant_id: string;
+  worker_id: string;
+  initiative_id: string;
+  status: WorkerParticipationStatus;
+  private_note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type WorkerParticipationInsert = Omit<WorkerParticipationRow, 'id' | 'created_at' | 'updated_at'>;
+export type WorkerParticipationUpdate = Pick<WorkerParticipationRow, 'status' | 'private_note'>;
+
 // ── analytics.source_batch ────────────────────────────────────────────────────
 
 export interface SourceBatchRow {
@@ -321,8 +395,12 @@ export interface Database {
   // ── personal schema ───────────────────────────────────────────────────────
   personal: {
     Tables: {
-      workforce_baseline: { Row: WorkforceBaselineRow; Insert: Omit<WorkforceBaselineRow,'id'|'created_at'|'updated_at'>; Update: Partial<WorkforceBaselineRow>; Relationships: [] };
-      uploaded_record:    { Row: UploadedRecordRow;    Insert: Omit<UploadedRecordRow,   'id'|'created_at'|'updated_at'>; Update: Partial<UploadedRecordRow>; Relationships: [] };
+      workforce_baseline:    { Row: WorkforceBaselineRow;    Insert: Omit<WorkforceBaselineRow,    'id'|'created_at'|'updated_at'>; Update: Partial<WorkforceBaselineRow>; Relationships: [] };
+      uploaded_record:       { Row: UploadedRecordRow;       Insert: Omit<UploadedRecordRow,       'id'|'created_at'|'updated_at'>; Update: Partial<UploadedRecordRow>; Relationships: [] };
+      worker_identity:       { Row: WorkerIdentityRow;       Insert: Omit<WorkerIdentityRow,       'id'|'created_at'|'updated_at'>; Update: Partial<WorkerIdentityRow>; Relationships: [] };
+      worker_profile_private:{ Row: WorkerProfilePrivateRow; Insert: Omit<WorkerProfilePrivateRow, 'id'|'created_at'|'updated_at'>; Update: Partial<WorkerProfilePrivateRow>; Relationships: [] };
+      worker_initiative:     { Row: WorkerInitiativeRow;     Insert: WorkerInitiativeInsert;        Update: Partial<WorkerInitiativeInsert>; Relationships: [] };
+      worker_participation:  { Row: WorkerParticipationRow;  Insert: WorkerParticipationInsert;     Update: WorkerParticipationUpdate; Relationships: [] };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

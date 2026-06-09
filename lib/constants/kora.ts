@@ -246,3 +246,28 @@ export const BTI_DOCTRINE = {
   trust_collective:        'La fiducia organizzativa è misurabile solo come capacità collettiva, non come controllo individuale.',
   non_budget_mediated_note: 'Alcune policy strutturali generano Impact Units senza un costo diretto associato. Il BTI Engine separa le IU non budget-mediated dal calcolo di cost efficiency: la metrica di costo si applica solo alle attivazioni budget-mediated.',
 } as const;
+
+// ── B108: Score interpretation bands ─────────────────────────────────────────────
+// Orientative bands for KORA Index v1.0 output interpretation.
+// pre_empirical_calibration — boundaries are provisional and will be revised after Delphi Study.
+// Never present these as validated industry benchmarks.
+
+export const SCORE_BANDS = [
+  { min:  0, max: 35, key: 'weak',     label: 'Weak Activation',     labelIt: 'Attivazione Debole' },
+  { min: 35, max: 50, key: 'early',    label: 'Early Activation',    labelIt: 'Attivazione Iniziale' },
+  { min: 50, max: 65, key: 'solid',    label: 'Solid Foundation',    labelIt: 'Fondamenta Solide' },
+  { min: 65, max: 75, key: 'advanced', label: 'Advanced Activation', labelIt: 'Attivazione Avanzata' },
+  { min: 75, max: 101, key: 'leading', label: 'Leading Maturity',    labelIt: 'Maturità Leader' },
+] as const;
+
+export type ScoreBand = typeof SCORE_BANDS[number];
+
+export function getScoreBand(score: number): ScoreBand {
+  return (
+    SCORE_BANDS.find(b => score >= b.min && score < b.max)
+    ?? SCORE_BANDS[SCORE_BANDS.length - 1]
+  );
+}
+
+export const SCORE_BAND_DISCLAIMER =
+  'Le bande di punteggio sono indicative e pre_empirical_calibration. Non rappresentano benchmark validati.' as const;

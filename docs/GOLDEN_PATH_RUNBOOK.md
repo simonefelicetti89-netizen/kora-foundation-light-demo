@@ -115,7 +115,7 @@ Prima di iniziare, verifica:
 ```
 ✓ Preview OK
 Righe: 20
-Eligible: ~16 | Limited: ~1 | Blocked: ~1 | Review: ~2
+Eligible: ~18 | Limited: ~1 | Blocked: ~1 | Review: ~0
 Nessun errore bloccante
 ```
 
@@ -147,7 +147,7 @@ Spunta **tutte e 4** le checkbox:
 ✓ Batch creato
 batchId: abc123... (8 caratteri mostrati)
 status: pending
-Eligible: 16 | Limited: 1 | Blocked: 1 | Total: 20
+Eligible: 18 | Limited: 1 | Blocked: 1 | Total: 20
 ```
 
 **Pulsante successivo visibile**: `→ Genera candidati UEF` — clicca qui.
@@ -337,6 +337,44 @@ Dopo il Golden Path completato, il tenant `ACME-TST` deve mostrare:
 - **Record Blocked** (es. formazione antincendio) sono corretti per design — generano 0 IU.
 - **Record Limited** (es. buoni pasto) contribuiscono al BTI ma non agli IU pillared.
 - Il sample file è in `data/golden-path/kora_golden_path_upload.csv`. Vedi `data/golden-path/README.md` per i dettagli.
+
+---
+
+## Interpretare il punteggio Golden Path
+
+### Bande di interpretazione del KORA Index
+
+Dopo lo scoring, il Decision Pack riporta un valore numerico del KORA Index. Queste bande orientative aiutano a contestualizzarlo:
+
+| KORA Index | Banda | Descrizione sintetica |
+|---|---|---|
+| < 35 | **Weak Activation** | Attivazione debole — pochi programmi eligible, evidence L1, copertura pillar ridotta |
+| 35–50 | **Early Activation** | Attivazione iniziale — base presente ma limitata per coverage, evidence quality o reach |
+| 50–65 | **Solid Foundation** | Fondamenta solide — attivazione significativa su più pillar con evidence documentata |
+| 65–75 | **Advanced Activation** | Attivazione avanzata — alta copertura, multi-pillar, evidence verificata, BTI equilibrato |
+| > 75 | **Leading Maturity** | Maturità leader — attivazione profonda su tutti i pillar, evidence verificata, BTI ottimale |
+
+> **Disclaimer**: le bande sono stime tecniche in fase `pre_empirical_calibration`. Le soglie sono provvisorie e soggette a revisione dopo la calibrazione empirica (Delphi Study). Non rappresentano benchmark di settore validati.
+
+### Cosa leggere sempre insieme al KORA Index
+
+- **Confidence Score (CS)**: affidabilità del dato. Un KORA Index 68 con CS 40% è molto meno solido di un 65 con CS 85%.
+- **Activation Safeguard**: CLEAR / WARNING / FLAGGED. Un punteggio alto con Safeguard FLAGGED segnala un'anomalia strutturale (AR o MAR sotto soglia).
+- **`calibration_status = pre_empirical_calibration`**: label non sopprimibile — il punteggio è diagnostico, non certificato.
+
+### Dataset di calibrazione disponibili
+
+I range sono **verificati con il motore reale** (B108-B smoke test). Non sono target dichiarati, ma risultati riproducibili.
+
+| File | Scenario | KORA Index verificato | Score band | workforcePopulation |
+|---|---|---|---|---|
+| `kora_weak_company_upload.csv` | Azienda debole | **35–50** (engine: 42.4) | Early Activation | 100 |
+| `kora_average_company_upload.csv` | Azienda media | **52–65** (engine: 59.3) | Solid Foundation | 150 |
+| `kora_golden_path_upload.csv` | Golden path | **65–75** (engine: 69.1) | Advanced Activation | 300 |
+
+> Nota: EQUITY è sistematicamente più alto del previsto nei CSV senza colonne dipartimento/sede. WB e EQ risultano `insufficient_data` → redistribuiscono pesi a PC e PB, che sono alti quando i pillar sono ben distribuiti. Questo alza tutti e tre i punteggi rispetto a stime iniziali. È comportamento atteso del motore.
+
+Vedi `data/golden-path/README.md` per struttura, eligibility attesa e note metodologiche per ciascun dataset.
 
 ---
 
