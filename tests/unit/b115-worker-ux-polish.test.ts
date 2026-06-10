@@ -119,8 +119,14 @@ describe('Sidebar — worker navigation', () => {
     expect(sidebar).toContain("label: 'Dynamic Impact CV', comingSoon: true");
   });
 
-  it('Opportunità is marked comingSoon', () => {
-    expect(sidebar).toContain("label: 'Opportunità',       comingSoon: true");
+  it('Opportunità has a live worker route (not comingSoon since B116)', () => {
+    // B116 built /worker/opportunities — Opportunità is now a real nav entry, not comingSoon
+    expect(sidebar).toContain("href: '/worker/opportunities'");
+    // No longer comingSoon
+    const opportunitaLine = sidebar
+      .split('\n')
+      .find(l => l.includes('/worker/opportunities'));
+    expect(opportunitaLine).not.toContain('comingSoon');
   });
 
   it('worker nav does not contain /company/login', () => {

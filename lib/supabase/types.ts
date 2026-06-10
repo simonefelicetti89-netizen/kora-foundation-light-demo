@@ -366,6 +366,23 @@ export interface AuditLogRow {
   // No updated_at — append-only by design
 }
 
+// ── network.partner_profile ───────────────────────────────────────────────────
+
+export interface PartnerProfileRow {
+  id:            string;
+  name:          string;
+  description:   string | null;
+  pillar:        'LIFE' | 'GROWTH' | 'CONNECTION' | 'IMPACT' | 'LEGACY';
+  category:      string | null;
+  website_url:   string | null;
+  city:          string | null;
+  country:       string;
+  delivery_mode: 'online' | 'onsite' | 'hybrid';
+  status:        'draft' | 'published' | 'archived';
+  created_at:    string;
+  updated_at:    string;
+}
+
 // ── Database type map ─────────────────────────────────────────────────────────
 // Conforms to @supabase/supabase-js v2 GenericDatabase constraint.
 // Each schema entry includes Views/Functions/Enums/CompositeTypes (required
@@ -423,6 +440,22 @@ export interface Database {
   audit: {
     Tables: {
       audit_log: { Row: AuditLogRow; Insert: Omit<AuditLogRow,'id'|'created_at'>; Update: never; Relationships: [] };
+    };
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+
+  // ── network schema ────────────────────────────────────────────────────────
+  network: {
+    Tables: {
+      partner_profile: {
+        Row:    PartnerProfileRow;
+        Insert: Omit<PartnerProfileRow, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<PartnerProfileRow, 'id' | 'created_at'>>;
+        Relationships: [];
+      };
     };
     Views:          Record<string, never>;
     Functions:      Record<string, never>;

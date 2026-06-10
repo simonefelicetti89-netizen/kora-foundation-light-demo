@@ -189,6 +189,23 @@ export default async function WorkerWorkspacePage() {
   const workerRef      = (wi.worker_ref as string) ?? '—';
   const companyName    = (t.company_name as string) ?? '—';
 
+  // Fetch partner preview — up to 3 published partners for workspace card
+  const { data: rawPartnerPreview } = await db
+    .schema('network')
+    .from('partner_profile')
+    .select('id, name, pillar, category, delivery_mode')
+    .eq('status', 'published')
+    .limit(3);
+
+  type PartnerPreviewItem = { id: string; name: string; pillar: string; category: string | null; delivery_mode: string };
+  const partnerPreview: PartnerPreviewItem[] = (rawPartnerPreview ?? []).map(p => ({
+    id:            p.id as string,
+    name:          p.name as string,
+    pillar:        p.pillar as string,
+    category:      (p.category as string | null) ?? null,
+    delivery_mode: p.delivery_mode as string,
+  }));
+
   const STATUS_COLOR: Record<string, { bg: string; text: string; label: string }> = {
     invited:  { bg: '#fef9c3', text: '#854d0e', label: 'Invitato' },
     active:   { bg: '#dcfce7', text: '#15803d', label: 'Attivo' },
@@ -309,15 +326,57 @@ export default async function WorkerWorkspacePage() {
         <ActivationProfileSection profile={activationProfile} />
       </div>
 
+      {/* Partner preview section */}
+      <div
+        data-testid="workspace-partner-preview"
+        style={{
+          background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
+          padding: '20px 24px', marginBottom: 20,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <h2 style={sectionHeadingStyle}>Partner & opportunità</h2>
+          {partnerPreview.length > 0 && (
+            <a
+              href="/worker/opportunities"
+              style={{ fontSize: 11, color: '#2563eb', textDecoration: 'none', fontWeight: 600 }}
+            >
+              Vedi tutti →
+            </a>
+          )}
+        </div>
+        {partnerPreview.length === 0 ? (
+          <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.6 }}>
+            La rete partner sarà disponibile prossimamente.<br />
+            <span style={{ fontSize: 11 }}>
+              I partner vengono pubblicati dall&apos;amministratore KORA.
+            </span>
+          </p>
+        ) : (
+          <div style={{ display: 'grid', gap: 10 }}>
+            {partnerPreview.map(p => (
+              <PartnerPreviewRow key={p.id} partner={p} />
+            ))}
+            <a
+              href="/worker/opportunities"
+              style={{
+                fontSize: 11, fontWeight: 700, color: '#06032B',
+                background: 'rgba(6,3,43,0.04)', border: '1px solid rgba(6,3,43,0.10)',
+                borderRadius: 7, padding: '8px 14px', textDecoration: 'none',
+                display: 'inline-block', marginTop: 6, textAlign: 'center',
+              }}
+            >
+              Esplora tutti i partner →
+            </a>
+          </div>
+        )}
+      </div>
+
       {/* Placeholder sections — future sprint */}
       <div style={{ display: 'grid', gap: 16 }}>
         <PlaceholderSection
           title="Dynamic Impact CV"
           description="Il tuo CV di impatto — portabile, verificato, condivisibile. Disponibile nel prossimo sprint."
-        />
-        <PlaceholderSection
-          title="Le tue opportunità"
-          description="Programmi attivi nella tua azienda compatibili con il tuo profilo."
         />
       </div>
 
@@ -378,6 +437,37 @@ function HistoryRow({ item }: { item: HistoryItem }) {
           {item.private_note}
         </div>
       )}
+    </div>
+  );
+}
+
+const PILLAR_COLORS_MAP: Record<string, string> = {
+  LIFE: '#16a34a', GROWTH: '#2563eb', CONNECTION: '#9333ea',
+  IMPACT: '#dc2626', LEGACY: '#ca8a04',
+};
+const DELIVERY_SHORT: Record<string, string> = {
+  online: 'Online', onsite: 'In presenza', hybrid: 'Ibrido',
+};
+
+function PartnerPreviewRow({ partner }: { partner: { id: string; name: string; pillar: string; category: string | null; delivery_mode: string } }) {
+  const pc = PILLAR_COLORS_MAP[partner.pillar] ?? '#555';
+  return (
+    <div style={{
+      paddingBottom: 10, borderBottom: '1px solid rgba(6,3,43,0.05)',
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+    }}>
+      <div>
+        <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: pc, marginRight: 6 }}>
+          {partner.pillar}
+        </span>
+        <span style={{ fontSize: 12, color: '#06032B', fontWeight: 600 }}>{partner.name}</span>
+        {partner.category && (
+          <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', marginLeft: 6 }}>{partner.category}</span>
+        )}
+      </div>
+      <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)', flexShrink: 0 }}>
+        {DELIVERY_SHORT[partner.delivery_mode] ?? partner.delivery_mode}
+      </span>
     </div>
   );
 }
