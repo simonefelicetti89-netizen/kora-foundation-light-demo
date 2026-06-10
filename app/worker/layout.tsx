@@ -8,7 +8,7 @@ import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
 export default async function WorkerLayout({ children }: { children: React.ReactNode }) {
   const worker = await getCurrentWorkerUser();
   if (!worker) {
-    redirect('/company/login');
+    redirect('/worker/login');
   }
 
   return (

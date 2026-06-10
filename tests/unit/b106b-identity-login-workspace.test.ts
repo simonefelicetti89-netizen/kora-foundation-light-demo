@@ -100,9 +100,11 @@ describe('B106-B — middleware: role routing matrix', () => {
     expect(section).toContain("'/worker/'");
   });
 
-  it('WORKER_ALLOWED_PREFIXES include /company/login (per re-auth)', () => {
+  it('WORKER_ALLOWED_PREFIXES include /worker/ (covers /worker/login re-auth)', () => {
     const section = mw.split('WORKER_ALLOWED_PREFIXES')[1]?.split('];')[0] ?? '';
-    expect(section).toContain("'/company/login'");
+    expect(section).toContain("'/worker/'");
+    // B113-B: /worker/login is the dedicated worker re-auth — /company/login removed from worker prefixes
+    expect(section).not.toContain("'/company/login'");
   });
 
   it('WORKER_ALLOWED_PREFIXES NON include /company/ genericamente', () => {
@@ -177,9 +179,10 @@ describe('B106-B — /company/login: pagina login aziendale dedicata', () => {
     expect(login).toContain("COMPANY_ADMIN");
   });
 
-  it('gestisce WORKER → /worker/workspace', () => {
-    expect(login).toContain('/worker/workspace');
+  it('rifiuta WORKER con messaggio e link a /worker/login (B113-B)', () => {
     expect(login).toContain("WORKER");
+    expect(login).toContain('/worker/login');
+    expect(login).toContain('accesso lavoratore');
   });
 
   it('blocca KORA_ADMIN con signOut + errore', () => {
@@ -278,14 +281,16 @@ describe('B106-B — /worker/workspace: spazio privato worker', () => {
     expect(layout).toContain('getCurrentWorkerUser');
   });
 
-  it('worker layout ridirige a /company/login (non /admin/login)', () => {
-    expect(layout).toContain('/company/login');
+  it('worker layout ridirige a /worker/login (non /admin/login, non /company/login)', () => {
+    expect(layout).toContain('/worker/login');
     expect(layout).not.toContain('/admin/login');
+    expect(layout).not.toContain("redirect('/company/login')");
   });
 
-  it('worker workspace page ridirige a /company/login (non /admin/login)', () => {
+  it('worker workspace page ridirige a /worker/login (non /admin/login, non /company/login)', () => {
+    expect(workspace).toContain("redirect('/worker/login')");
     expect(workspace).not.toContain("redirect('/admin/login')");
-    expect(workspace).toContain('/company/login');
+    expect(workspace).not.toContain("redirect('/company/login')");
   });
 
   it('worker workspace chiama getCurrentWorkerUser()', () => {

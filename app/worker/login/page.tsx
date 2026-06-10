@@ -1,8 +1,10 @@
 'use client';
-// /company/login — dedicated login for COMPANY_ADMIN and COMPANY_VIEWER.
-// KORA_ADMIN must use /admin/login.
-// WORKER must use /worker/login.
-// B113-B: WORKERs are rejected with a message and link to /worker/login.
+
+// app/worker/login/page.tsx
+// B113-B: Dedicated worker login — "Accesso lavoratore".
+// WORKER → /worker/onboarding (gate redirects to workspace if done)
+// COMPANY_ADMIN / COMPANY_VIEWER → signOut + message with link to /company/login
+// KORA_ADMIN → signOut + message with link to /admin/login
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -13,12 +15,12 @@ import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
-export default function CompanyLoginPage() {
+export default function WorkerLoginPage() {
   const router = useRouter();
-  const [email,   setEmail]   = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [error,   setError]   = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [error,    setError]    = useState<string | null>(null);
+  const [loading,  setLoading]  = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -26,11 +28,10 @@ export default function CompanyLoginPage() {
     setError(null);
 
     const supabase = getSupabaseBrowserClient();
-
     const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (signInError || !data.session) {
-      setError('Credenziali non valide. Contatta il responsabile KORA della tua azienda.');
+      setError('Credenziali non valide. Contatta il tuo responsabile KORA per assistenza.');
       setLoading(false);
       return;
     }
@@ -39,20 +40,21 @@ export default function CompanyLoginPage() {
 
     if (koraRole === 'KORA_ADMIN') {
       await supabase.auth.signOut();
-      setError('Questo accesso è per referenti aziendali. Gli operatori KORA usano /admin/login.');
-      setLoading(false);
-      return;
-    }
-
-    if (koraRole === 'WORKER') {
-      await supabase.auth.signOut();
-      setError('Questo è l\'accesso aziendale. Se sei un lavoratore, usa l\'accesso lavoratore.');
+      setError('Questo è l\'accesso lavoratore. Gli operatori KORA usano /admin/login.');
       setLoading(false);
       return;
     }
 
     if (koraRole === 'COMPANY_ADMIN' || koraRole === 'COMPANY_VIEWER') {
-      router.push('/company/workspace');
+      await supabase.auth.signOut();
+      setError('Questo è l\'accesso lavoratore. I referenti aziendali usano l\'accesso aziendale.');
+      setLoading(false);
+      return;
+    }
+
+    if (koraRole === 'WORKER') {
+      // Onboarding gate in /worker/onboarding redirects to workspace if already done
+      router.push('/worker/onboarding');
       router.refresh();
       return;
     }
@@ -76,6 +78,9 @@ export default function CompanyLoginPage() {
     display:      'block',
   };
 
+  const isCompanyError = error?.includes('referenti aziendali') || error?.includes('accesso aziendale');
+  const isAdminError   = error?.includes('operatori KORA');
+
   return (
     <div
       style={{
@@ -87,18 +92,16 @@ export default function CompanyLoginPage() {
         padding:        '24px',
       }}
     >
-      {/* Background gradient */}
       <div
+        aria-hidden="true"
         style={{
-          position:     'absolute',
-          inset:        0,
-          background:   'radial-gradient(600px 440px at 20% 30%, rgba(97,86,245,0.12), transparent 60%), radial-gradient(500px 360px at 80% 80%, rgba(199,111,61,0.10), transparent 60%)',
+          position:      'absolute',
+          inset:         0,
+          background:    'radial-gradient(600px 440px at 20% 30%, rgba(97,86,245,0.10), transparent 60%), radial-gradient(500px 360px at 80% 80%, rgba(47,125,85,0.09), transparent 60%)',
           pointerEvents: 'none',
         }}
-        aria-hidden="true"
       />
 
-      {/* Login card */}
       <div
         style={{
           position:     'relative',
@@ -112,7 +115,6 @@ export default function CompanyLoginPage() {
           padding:      '36px 32px',
         }}
       >
-        {/* Logo */}
         <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'center' }}>
           <Image
             src="/kora/logo-dark.png"
@@ -124,48 +126,22 @@ export default function CompanyLoginPage() {
           />
         </div>
 
-        {/* Header */}
-        <div style={{ marginBottom: 28, textAlign: 'center' }}>
-          <p style={{
-            fontFamily:    FONT,
-            fontWeight:    700,
-            fontSize:      '10px',
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            color:         TOKENS.accent,
-            marginBottom:  8,
-          }}>
-            Accesso Aziendale
+        <div style={{ marginBottom: 24, textAlign: 'center' }}>
+          <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>
+            Accesso lavoratore
           </p>
-          <h1 style={{
-            fontFamily:    FONT,
-            fontWeight:    800,
-            fontSize:      '1.375rem',
-            letterSpacing: '-0.025em',
-            lineHeight:    1.1,
-            color:         TOKENS.ink,
-            marginBottom:  6,
-          }}>
-            Company Area
+          <h1 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '1.375rem', letterSpacing: '-0.025em', lineHeight: 1.1, color: TOKENS.ink, marginBottom: 8 }}>
+            Entra nel tuo spazio privato KORA
           </h1>
-          <p style={{
-            fontFamily: FONT,
-            fontSize:   '13px',
-            color:      TOKENS.inkSecondary,
-            lineHeight: 1.5,
-          }}>
-            Accedi con le credenziali ricevute via email da KORA.
+          <p style={{ fontFamily: FONT, fontSize: '12.5px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+            Il tuo datore di lavoro non vede il tuo profilo individuale.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Email */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <label
-                htmlFor="email"
-                style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}
-              >
+              <label htmlFor="email" style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
                 Email
               </label>
               <input
@@ -176,19 +152,16 @@ export default function CompanyLoginPage() {
                 aria-required="true"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="nome@azienda.it"
+                placeholder="la-tua-email@esempio.it"
+                disabled={loading}
                 style={inputStyle}
                 onFocus={(e) => { e.currentTarget.style.borderColor = TOKENS.accent; }}
                 onBlur={(e)  => { e.currentTarget.style.borderColor = ''; }}
               />
             </div>
 
-            {/* Password */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <label
-                htmlFor="password"
-                style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}
-              >
+              <label htmlFor="password" style={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.inkHint }}>
                 Password
               </label>
               <input
@@ -199,13 +172,13 @@ export default function CompanyLoginPage() {
                 aria-required="true"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
                 style={inputStyle}
                 onFocus={(e) => { e.currentTarget.style.borderColor = TOKENS.accent; }}
                 onBlur={(e)  => { e.currentTarget.style.borderColor = ''; }}
               />
             </div>
 
-            {/* Error */}
             {error && (
               <div
                 role="alert"
@@ -214,28 +187,35 @@ export default function CompanyLoginPage() {
                   borderRadius: 10,
                   border:       `1px solid ${TOKENS.safeguard.cap.dot}40`,
                   background:   TOKENS.safeguard.cap.bg,
-                  padding:      '10px 14px',
+                  padding:      '12px 14px',
                   fontSize:     '12.5px',
                   color:        TOKENS.safeguard.cap.text,
                   fontFamily:   FONT,
                   lineHeight:   1.5,
                 }}
               >
-                {error}
-                {error.includes('lavoratore') && (
+                <span>{error}</span>
+                {isCompanyError && (
                   <p style={{ marginTop: 8, marginBottom: 0 }}>
-                    <Link href="/worker/login" style={{ color: TOKENS.accent, fontWeight: 600, textDecoration: 'none' }}>
-                      → Accesso lavoratore
+                    <Link href="/company/login" style={{ color: TOKENS.accent, fontWeight: 600, textDecoration: 'none' }}>
+                      → Accesso aziendale
+                    </Link>
+                  </p>
+                )}
+                {isAdminError && (
+                  <p style={{ marginTop: 8, marginBottom: 0 }}>
+                    <Link href="/admin/login" style={{ color: TOKENS.accent, fontWeight: 600, textDecoration: 'none' }}>
+                      → Accesso KORA Admin
                     </Link>
                   </p>
                 )}
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
+              data-testid="worker-login-submit"
               style={{
                 fontFamily:   FONT,
                 fontWeight:   700,
@@ -251,31 +231,22 @@ export default function CompanyLoginPage() {
                 minHeight:    48,
               }}
             >
-              {loading ? 'Accesso in corso…' : 'Accedi →'}
+              {loading ? 'Accesso in corso…' : 'Entra nel mio spazio →'}
             </button>
           </div>
         </form>
 
-        {/* Forgot password */}
         <p style={{ fontFamily: FONT, fontSize: '11.5px', textAlign: 'center', marginTop: 16 }}>
           <Link
-            href="/auth/forgot-password"
+            href="/auth/forgot-password?from=worker"
             style={{ color: TOKENS.accent, textDecoration: 'none', fontWeight: 500 }}
           >
             Password dimenticata?
           </Link>
         </p>
 
-        {/* Footer */}
-        <p style={{
-          fontFamily:  FONT,
-          fontSize:    '10.5px',
-          color:       TOKENS.inkMeta,
-          textAlign:   'center',
-          marginTop:   12,
-          lineHeight:  1.5,
-        }}>
-          KORA Foundation Light · Workspace Aziendale
+        <p style={{ fontFamily: FONT, fontSize: '10.5px', color: TOKENS.inkMeta, textAlign: 'center', marginTop: 12, lineHeight: 1.5 }}>
+          KORA Foundation Light · Il tuo datore di lavoro non può vedere questi dati
         </p>
       </div>
     </div>

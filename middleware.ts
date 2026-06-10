@@ -37,12 +37,12 @@ const COMPANY_ALLOWED_PREFIXES = [
 
 // B104: Paths that authenticated worker users are allowed to access.
 // Workers are confined to their private /worker/* space only.
+// B113-B: /worker/login is the dedicated worker re-auth endpoint — /company/login removed.
 const WORKER_ALLOWED_PREFIXES = [
-  '/worker/',                // worker private space
+  '/worker/',                // worker private space (includes /worker/login)
   '/auth/callback',          // Supabase PKCE code exchange
   '/api/',                   // all API routes (have own requireWorkerUser auth)
   '/_next',
-  '/company/login',          // worker re-authentication (shared login page handles WORKER role)
 ];
 
 export async function middleware(request: NextRequest) {

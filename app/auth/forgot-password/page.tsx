@@ -6,8 +6,10 @@
 //   /auth/callback?type=recovery&code=xxx → /auth/reset-password
 //
 // Accessible from any login page. No session required.
+// ?from=worker → back link goes to /worker/login instead of /company/login.
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
@@ -15,9 +17,14 @@ import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
-export default function ForgotPasswordPage() {
-  const [email,   setEmail]   = useState('');
-  const [status,  setStatus]  = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
+function ForgotPasswordForm() {
+  const searchParams = useSearchParams();
+  const fromWorker   = searchParams.get('from') === 'worker';
+  const backHref     = fromWorker ? '/worker/login' : '/company/login';
+  const backLabel    = fromWorker ? "← Torna all'accesso lavoratore" : '← Torna al login';
+
+  const [email,    setEmail]    = useState('');
+  const [status,   setStatus]   = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -29,10 +36,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const supabase = getSupabaseBrowserClient();
-      // redirectTo must include /auth/callback so Supabase exchanges the code server-side.
-      // type=recovery is appended so /auth/callback routes to /auth/reset-password.
       const redirectTo = `${window.location.origin}/auth/callback?type=recovery`;
-
       const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo });
 
       if (error) {
@@ -86,7 +90,6 @@ export default function ForgotPasswordPage() {
           padding:      '36px 32px',
         }}
       >
-        {/* Logo */}
         <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'center' }}>
           <Image
             src="/kora/logo-dark.png"
@@ -209,10 +212,10 @@ export default function ForgotPasswordPage() {
 
         <p style={{ fontFamily: FONT, fontSize: '11.5px', textAlign: 'center', marginTop: 20 }}>
           <Link
-            href="/company/login"
+            href={backHref}
             style={{ color: TOKENS.accent, textDecoration: 'none', fontWeight: 500 }}
           >
-            ← Torna al login
+            {backLabel}
           </Link>
         </p>
 
@@ -221,5 +224,13 @@ export default function ForgotPasswordPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense>
+      <ForgotPasswordForm />
+    </Suspense>
   );
 }

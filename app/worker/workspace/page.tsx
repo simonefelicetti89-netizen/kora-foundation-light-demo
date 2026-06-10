@@ -28,7 +28,7 @@ type HistoryItem = {
 
 export default async function WorkerWorkspacePage() {
   const worker = await getCurrentWorkerUser();
-  if (!worker) redirect('/company/login');
+  if (!worker) redirect('/worker/login');
 
   const db = getSupabaseServiceClient();
 

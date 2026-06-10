@@ -299,8 +299,8 @@ describe('Auth callback route — structure', () => {
     expect(errorRedirect).toBeTruthy();
   });
 
-  it('redirects to /admin/login when code is missing', () => {
-    expect(callback).toContain('/admin/login');
+  it('redirects to /company/login when code is missing', () => {
+    expect(callback).toContain('/company/login');
     expect(callback).toContain('missing_auth_code');
   });
 

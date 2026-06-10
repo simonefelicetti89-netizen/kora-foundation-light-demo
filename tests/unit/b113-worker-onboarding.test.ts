@@ -181,8 +181,8 @@ describe('Onboarding page — auth', () => {
     expect(onboardingPage).toContain('getCurrentWorkerUser');
   });
 
-  it('onboarding page redirects non-authenticated to /company/login', () => {
-    expect(onboardingPage).toContain("redirect('/company/login')");
+  it('onboarding page redirects non-authenticated to /worker/login', () => {
+    expect(onboardingPage).toContain("redirect('/worker/login')");
   });
 });
 

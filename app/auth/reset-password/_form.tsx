@@ -5,10 +5,10 @@
 // Session is established by /auth/callback code exchange before this form renders.
 //
 // On success: redirects role-aware:
-//   KORA_ADMIN     → /admin
-//   COMPANY_ADMIN / COMPANY_VIEWER → /company/workspace
-//   WORKER         → /worker/workspace
-//   unknown        → /company/login
+//   KORA_ADMIN             → /admin
+//   COMPANY_ADMIN/VIEWER   → /company/workspace
+//   WORKER                 → /worker/onboarding (gate redirects to workspace if done)
+//   unknown                → /company/login
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -23,7 +23,7 @@ const ROLE_REDIRECT: Record<string, string> = {
   KORA_ADMIN:     '/admin',
   COMPANY_ADMIN:  '/company/workspace',
   COMPANY_VIEWER: '/company/workspace',
-  WORKER:         '/worker/workspace',
+  WORKER:         '/worker/onboarding',
 };
 
 export function ResetPasswordForm() {

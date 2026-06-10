@@ -84,7 +84,12 @@ describe('Logout route — role-aware redirect', () => {
     expect(logoutRoute).toContain("'KORA_ADMIN'");
   });
 
-  it('logout route redirects all other roles to /company/login', () => {
+  it('logout route redirects WORKER to /worker/login (B113-B)', () => {
+    expect(logoutRoute).toContain("'/worker/login'");
+    expect(logoutRoute).toContain("'WORKER'");
+  });
+
+  it('logout route redirects COMPANY_ADMIN/VIEWER to /company/login', () => {
     expect(logoutRoute).toContain("'/company/login'");
   });
 
@@ -172,7 +177,7 @@ describe('Reset password — role-aware redirect', () => {
     expect(resetForm).toContain("KORA_ADMIN");
     expect(resetForm).toContain("'/admin'");
     expect(resetForm).toContain("'/company/workspace'");
-    expect(resetForm).toContain("'/worker/workspace'");
+    expect(resetForm).toContain("'/worker/onboarding'");
   });
 
   it('KORA_ADMIN does not get redirected to /company setup pages', () => {

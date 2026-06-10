@@ -20,7 +20,7 @@ interface PageProps {
 
 export default async function WorkerOnboardingPage({ searchParams }: PageProps) {
   const worker = await getCurrentWorkerUser();
-  if (!worker) redirect('/company/login');
+  if (!worker) redirect('/worker/login');
 
   const db = getSupabaseServiceClient();
 
