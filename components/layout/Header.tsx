@@ -9,6 +9,7 @@ import { EnvironmentSwitcher } from '@/components/demo/EnvironmentSwitcher';
 import { isEmployerRole, isAdminRole } from '@/lib/permissions';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { AccountMenu } from '@/components/auth/AccountMenu';
 import type { Environment } from '@/lib/types';
 
 const ENV_BADGE_TEXT: Record<Environment, string> = {
@@ -91,6 +92,7 @@ export function Header() {
         {showDemoControls && <PersonaSwitcher />}
         {showScenarioSwitcher && <ScenarioSwitcher />}
         {showDemoControls && <RoleSwitcher />}
+        <AccountMenu />
       </div>
     </header>
   );
