@@ -86,6 +86,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next({ request });
   }
 
+  // B117-E: Root landing '/' is always public — never role-redirected.
+  // startsWith('/') would match every path, so exact match is required here.
+  // /demo-guide and /pilot remain restricted to unauthenticated/demo users (by design).
+  const pathname = request.nextUrl.pathname;
+  if (pathname === '/') {
+    return supabaseResponse;
+  }
+
   // B36.1: Redirect authenticated company users away from demo/admin/future-vision paths.
   // Only applies to users with a real Supabase session — demo-state users (no session)
   // are unaffected and can still access synthetic demo routes.
@@ -93,7 +101,6 @@ export async function middleware(request: NextRequest) {
     sessionKoraRole === 'COMPANY_ADMIN' || sessionKoraRole === 'COMPANY_VIEWER';
 
   if (isRealCompanyUser) {
-    const pathname = request.nextUrl.pathname;
     const isAllowed = COMPANY_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
     if (!isAllowed) {
@@ -106,7 +113,6 @@ export async function middleware(request: NextRequest) {
   const isRealWorker = sessionKoraRole === 'WORKER';
 
   if (isRealWorker) {
-    const pathname = request.nextUrl.pathname;
     const isAllowed = WORKER_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
     if (!isAllowed) {

@@ -75,7 +75,7 @@ export default function LandingPage() {
       <MarketingNav
         brandHref="#top"
         links={LANDING_NAV_LINKS}
-        loginHref="/admin/login"
+        loginHref="/login"
         ctaHref="/pilot"
         ctaLabel="Avvia un pilot →"
       />
