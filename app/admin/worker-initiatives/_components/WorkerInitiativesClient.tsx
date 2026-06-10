@@ -19,6 +19,15 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   published: { bg: '#dcfce7', text: '#15803d' },
   closed:    { bg: '#fef9c3', text: '#854d0e' },
 };
+const STATUS_LABELS_IT: Record<WorkerInitiativeRow['status'], string> = {
+  draft:     'Bozza',
+  published: 'Pubblicata',
+  closed:    'Chiusa',
+};
+const ELIGIBILITY_LABELS_IT: Record<string, string> = {
+  eligible: 'Tutti i worker',
+  limited:  'Accesso limitato',
+};
 
 export function WorkerInitiativesClient({
   tenants, adminEmail,
@@ -28,6 +37,7 @@ export function WorkerInitiativesClient({
   const [loading, setLoading]                   = useState(false);
   const [error, setError]                       = useState<string | null>(null);
   const [showForm, setShowForm]                 = useState(false);
+  const [statusError, setStatusError]           = useState<string | null>(null);
 
   // Form state
   const [form, setForm] = useState({
@@ -107,12 +117,18 @@ export function WorkerInitiativesClient({
   }
 
   async function handleStatusChange(id: string, status: WorkerInitiativeRow['status']) {
+    setStatusError(null);
     const res = await fetch(`/api/admin/worker-initiatives/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     });
-    if (res.ok) loadInitiatives(selectedTenantId);
+    if (res.ok) {
+      await loadInitiatives(selectedTenantId);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setStatusError((data as { error?: string }).error ?? `Errore aggiornamento stato a "${STATUS_LABELS_IT[status]}".`);
+    }
   }
 
   return (
@@ -178,17 +194,16 @@ export function WorkerInitiativesClient({
                       {PILLARS.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </Field>
-                  <Field label="Eligibility">
+                  <Field label="Eligibilità">
                     <select value={form.eligibility_class} onChange={e => setForm(f => ({ ...f, eligibility_class: e.target.value as 'eligible' | 'limited' }))} style={inputStyle}>
-                      <option value="eligible">Eligible</option>
-                      <option value="limited">Limited</option>
+                      <option value="eligible">Tutti i worker</option>
+                      <option value="limited">Accesso limitato</option>
                     </select>
                   </Field>
-                  <Field label="Status">
+                  <Field label="Stato iniziale">
                     <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as WorkerInitiativeRow['status'] }))} style={inputStyle}>
-                      <option value="draft">Draft</option>
-                      <option value="published">Published</option>
-                      <option value="closed">Closed</option>
+                      <option value="draft">Bozza (non visibile ai worker)</option>
+                      <option value="published">Pubblica subito (visibile ai worker del tenant)</option>
                     </select>
                   </Field>
                   <Field label="Modo">
@@ -221,6 +236,11 @@ export function WorkerInitiativesClient({
 
           {/* Initiative list */}
           {error && <div style={{ color: '#dc2626', fontSize: 12, marginBottom: 12 }}>{error}</div>}
+          {statusError && (
+            <div style={{ background: '#fee2e2', color: '#9b1c1c', borderRadius: 7, padding: '8px 12px', fontSize: 11, marginBottom: 12 }}>
+              {statusError}
+            </div>
+          )}
 
           {!loading && initiatives.length === 0 && (
             <div style={{ color: 'rgba(6,3,43,0.40)', fontSize: 12, padding: '20px 0' }}>
@@ -242,11 +262,11 @@ export function WorkerInitiativesClient({
                         {init.pillar}
                       </span>
                       <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: sc.bg, color: sc.text, borderRadius: 4, padding: '1px 5px' }}>
-                        {init.status}
+                        {STATUS_LABELS_IT[init.status] ?? init.status}
                       </span>
                       {init.eligibility_class === 'limited' && (
                         <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', background: '#fef9c3', color: '#854d0e', borderRadius: 4, padding: '1px 5px' }}>
-                          LIMITED
+                          {ELIGIBILITY_LABELS_IT['limited']}
                         </span>
                       )}
                     </div>
@@ -260,9 +280,14 @@ export function WorkerInitiativesClient({
                       {init.provider && ` · ${init.provider}`}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0, alignItems: 'flex-end' }}>
                     {init.status === 'draft' && (
-                      <StatusBtn label="Pubblica" onClick={() => handleStatusChange(init.id, 'published')} color="#15803d" />
+                      <>
+                        <StatusBtn label="Pubblica" onClick={() => handleStatusChange(init.id, 'published')} color="#15803d" />
+                        <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)', textAlign: 'right' }}>
+                          Visibile ai worker del tenant
+                        </span>
+                      </>
                     )}
                     {init.status === 'published' && (
                       <StatusBtn label="Chiudi" onClick={() => handleStatusChange(init.id, 'closed')} color="#854d0e" />

@@ -8,20 +8,45 @@
 
 import { useState, useEffect } from 'react';
 import { DataSubmissionSection } from './DataSubmissionSection';
-import { WorkerAdoptionPanel } from '@/components/company/cockpit/WorkerAdoptionPanel';
-import { SubmissionTransparencyCompact } from '@/components/company/transparency/SubmissionFeedbackPanel';
-import { submissionFeedbackService } from '@/services/submission-feedback/SubmissionFeedbackService';
-
-// Foundation Light: workspace always runs on the Meridiana demo tenant.
-// Pilot+: companyId will be resolved from the authenticated session tenant claim.
-const FL_COMPANY_ID = 'meridiana-group';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
+
+type PillarAggregateClear = {
+  pillar: string;
+  published_initiatives: number;
+  suppressed: false;
+  total_participations: number;
+};
+
+type PillarAggregateSuppressed = {
+  pillar: string;
+  published_initiatives: number;
+  suppressed: true;
+  suppression_reason: 'privacy_threshold';
+  suppression_threshold: number;
+};
+
+type PillarAggregate = PillarAggregateClear | PillarAggregateSuppressed;
+
+type CountOrSuppressed =
+  | { suppressed: false; value: number }
+  | { suppressed: true; suppression_reason: 'privacy_threshold'; suppression_threshold: number };
+
+interface WorkerInitiativeAggregateData {
+  ok: boolean;
+  aggregate: {
+    total_published_initiatives: number;
+    participation_summary: CountOrSuppressed;
+    pillar_breakdown: PillarAggregate[];
+    privacy_note: string;
+  };
+}
 
 interface WorkspaceData {
   ok: boolean;
   role: string;
   tenant: {
+    tenantCode: string;
     companyName: string;
     methodologyVersion: string;
     calibrationStatus: string;
@@ -33,6 +58,7 @@ interface WorkspaceData {
     confidenceScore: number;
     safeguardStatus: string;
     activationRate: number | null;
+    meaningfulActivationRate: number | null;
     reportingPeriod: string;
     methodologyVersion: string;
     calibrationStatus: string;
@@ -48,7 +74,7 @@ interface WorkspaceData {
     readinessLevel: string;
     caveat: string;
   };
-  decisionPack: { status: string; createdAt: string; viewLink: string } | null;
+  decisionPack: { status: string; reportingPeriod: string; versionId: string; createdAt: string; previewUrl: string | null } | null;
   methodologyDisclaimer: {
     kora_measures: string;
     privacy_guarantee: string;
@@ -144,8 +170,10 @@ interface Props {
 export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
   const [workspace, setWorkspace]   = useState<WorkspaceData | null>(null);
   const [archive, setArchive]       = useState<ArchiveData | null>(null);
+  const [aggData, setAggData]       = useState<WorkerInitiativeAggregateData | null>(null);
   const [wsLoading, setWsLoading]   = useState(true);
   const [archLoading, setArchLoading] = useState(true);
+  const [aggLoading, setAggLoading] = useState(true);
   const [wsError, setWsError]       = useState<string | null>(null);
   const [archError, setArchError]   = useState<string | null>(null);
 
@@ -167,6 +195,14 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       })
       .catch(() => setArchError('Errore di rete.'))
       .finally(() => setArchLoading(false));
+
+    fetch('/api/company/workers/activation-aggregate', { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: WorkerInitiativeAggregateData) => {
+        if (d.ok) setAggData(d);
+      })
+      .catch(() => { /* non-critical — silently skip */ })
+      .finally(() => setAggLoading(false));
   }, []);
 
   const w = workspace;
@@ -182,11 +218,16 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
-            {wsLoading ? 'KORA · Workspace' : (w?.tenant.companyName ?? 'KORA · Workspace')}
+            KORA · Workspace Aziendale
           </p>
-          <h1 className="text-xl font-bold text-white tracking-tight">Il tuo Workspace KORA</h1>
-          <p className="text-sm text-white/45 mt-0.5">
-            Vista aggregata — nessun dato individuale
+          <h1 className="text-xl font-bold text-white tracking-tight">
+            {wsLoading ? '…' : (w?.tenant.companyName ?? 'La tua organizzazione')}
+          </h1>
+          {!wsLoading && w?.tenant.tenantCode && (
+            <p className="text-xs text-white/35 mt-0.5 font-mono">{w.tenant.tenantCode}</p>
+          )}
+          <p className="text-sm text-white/45 mt-1">
+            Vista aggregata · nessun dato individuale
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
@@ -287,6 +328,50 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
               <p>La pipeline dati non è ancora stata completata per questa azienda.</p>
             </div>
           )}
+        </Section>
+      )}
+
+      {/* ── Iniziative Worker (aggregate-only, N≥10 privacy threshold) ─────────── */}
+      {!aggLoading && aggData && aggData.aggregate.total_published_initiatives > 0 && (
+        <Section title="Iniziative Worker — Aggregato" id="worker-initiatives">
+          <div className="space-y-3">
+            <div className="flex gap-4 text-[10.5px] text-[rgba(6,3,43,0.52)]">
+              <span>
+                <strong className="text-[rgba(6,3,43,0.90)]">{aggData.aggregate.total_published_initiatives}</strong> iniziative pubblicate
+              </span>
+              {!aggData.aggregate.participation_summary.suppressed && (
+                <span>
+                  <strong className="text-[#2F7D55]">{aggData.aggregate.participation_summary.value}</strong> adesioni aggregate
+                </span>
+              )}
+              {aggData.aggregate.participation_summary.suppressed && (
+                <span className="text-amber-600">
+                  Adesioni aggregate non disponibili (N&lt;{aggData.aggregate.participation_summary.suppression_threshold})
+                </span>
+              )}
+            </div>
+
+            {aggData.aggregate.pillar_breakdown.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {aggData.aggregate.pillar_breakdown.map(pb => (
+                  <div key={pb.pillar} className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[10.5px]">
+                    <p className="font-semibold text-[rgba(6,3,43,0.70)] uppercase text-[9px] tracking-wide mb-0.5">{pb.pillar}</p>
+                    <p className="text-[rgba(6,3,43,0.52)]">
+                      {pb.published_initiatives} iniziative ·{' '}
+                      {pb.suppressed
+                        ? <span className="text-amber-600">dati aggregati non disponibili (N&lt;{pb.suppression_threshold})</span>
+                        : <span>{pb.total_participations} adesioni</span>
+                      }
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] leading-relaxed rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
+              {aggData.aggregate.privacy_note}
+            </p>
+          </div>
         </Section>
       )}
 
@@ -407,17 +492,30 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                   : 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-amber-700'}
               />
               <span className="text-[10.5px] text-[rgba(6,3,43,0.52)]">Generato: {ts(dp.createdAt)}</span>
+              {dp.reportingPeriod && (
+                <span className="text-[10.5px] text-[rgba(6,3,43,0.40)] font-mono">{dp.reportingPeriod}</span>
+              )}
             </div>
-            <p className="text-[10.5px] text-[rgba(6,3,43,0.62)]">
-              Il Decision Pack è stato generato dall&apos;operatore KORA Admin. Contatta il tuo referente KORA per ricevere il documento.
-            </p>
+
+            {dp.previewUrl && (dp.status === 'ready' || dp.status === 'exported' || dp.status === 'draft') && (
+              <a
+                href={dp.previewUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.15)] bg-[#06032B] px-4 py-2 text-xs font-semibold text-white hover:bg-[#06032B]/90 transition-colors"
+              >
+                Apri Decision Pack →
+              </a>
+            )}
+
             <p className="text-[9.5px] text-[rgba(6,3,43,0.40)]">
-              Nota: il Decision Pack riflette il KORA Index di questo periodo con calibrazione pre-empirica. Non costituisce certificazione ESG, audit o giudizio di compliance.
+              Il Decision Pack riflette il KORA Index di questo periodo con calibrazione pre-empirica. Non costituisce certificazione ESG, audit o giudizio di compliance.
             </p>
           </div>
         ) : (
-          <div className="text-xs text-[rgba(6,3,43,0.52)] py-2">
-            Nessun Decision Pack disponibile per questo periodo. L&apos;operatore KORA Admin ti notificherà quando il documento sarà pronto.
+          <div className="text-xs text-[rgba(6,3,43,0.52)] py-2 space-y-1">
+            <p className="font-semibold text-[rgba(6,3,43,0.70)]">Nessun Decision Pack disponibile</p>
+            <p>La pipeline dati non è ancora stata completata per questa azienda. Il documento apparirà qui non appena il processo di scoring sarà completato dall&apos;operatore KORA.</p>
           </div>
         )}
       </Section>
@@ -425,17 +523,6 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       {/* ── Data Submission ──────────────────────────────────────────────────── */}
       <Section title="Data Submission" id="data-submission">
         <DataSubmissionSection userRole={userRole} />
-        {/* B94-B Task 8 — compact transparency link below submission list */}
-        <div className="mt-4 pt-4 border-t border-[rgba(6,3,43,0.08)]">
-          <SubmissionTransparencyCompact
-            feedback={submissionFeedbackService.getDemoFeedback(FL_COMPANY_ID)}
-          />
-        </div>
-      </Section>
-
-      {/* ── Worker Space ─────────────────────────────────────────────────────── */}
-      <Section title="Worker Space" id="worker-space">
-        <WorkerAdoptionPanel companyId={FL_COMPANY_ID} />
       </Section>
 
       {/* ── Methodology & Privacy ────────────────────────────────────────────── */}

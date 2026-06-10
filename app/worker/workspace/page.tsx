@@ -8,25 +8,17 @@ import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
+import { InitiativeCardsClient } from './_components/InitiativeCardsClient';
+import type { InitiativeItem } from './_components/InitiativeCardsClient';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-type InitiativeItem = {
-  id: string;
-  title: string;
-  pillar: WorkerInitiativeRow['pillar'];
-  description: string | null;
-  start_date: string | null;
-  end_date: string | null;
-  mode: string | null;
-  participation_status: WorkerParticipationRow['status'] | null;
-};
 
 type HistoryItem = {
   initiative_title: string;
   pillar: WorkerInitiativeRow['pillar'];
   participation_status: WorkerParticipationRow['status'];
-  participated_at: string;
+  updated_at: string;
+  private_note: string | null;
 };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
@@ -58,7 +50,7 @@ export default async function WorkerWorkspacePage() {
 
   // Fetch published initiatives for worker's tenant
   const { data: rawInitiatives } = await db.schema('personal').from('worker_initiative')
-    .select('id, title, pillar, description, start_date, end_date, mode')
+    .select('id, title, pillar, description, start_date, end_date, mode, location, eligibility_class')
     .eq('tenant_id', worker.tenantId)
     .eq('status', 'published')
     .order('start_date', { ascending: true, nullsFirst: false });
@@ -84,14 +76,16 @@ export default async function WorkerWorkspacePage() {
     start_date: i.start_date as string | null,
     end_date: i.end_date as string | null,
     mode: i.mode as string | null,
+    location: i.location as string | null,
+    eligibility_class: i.eligibility_class as string | null,
     participation_status: participationMap.get(i.id as string) ?? null,
   }));
 
-  // Fetch participation history (all statuses, own rows only)
+  // Fetch participation history — own rows only, includes private_note (worker is data owner)
   const { data: historyRows } = await db.schema('personal').from('worker_participation')
-    .select('initiative_id, status, created_at, worker_initiative:initiative_id(title, pillar)')
+    .select('initiative_id, status, updated_at, private_note, worker_initiative:initiative_id(title, pillar)')
     .eq('worker_id', worker.workerId)
-    .order('created_at', { ascending: false })
+    .order('updated_at', { ascending: false })
     .limit(20);
 
   const history: HistoryItem[] = (historyRows ?? []).map(r => {
@@ -101,7 +95,8 @@ export default async function WorkerWorkspacePage() {
       initiative_title:     (init.title as string) ?? '—',
       pillar:               (init.pillar as WorkerInitiativeRow['pillar']) ?? 'GROWTH',
       participation_status: r.status as WorkerParticipationRow['status'],
-      participated_at:      r.created_at as string,
+      updated_at:           r.updated_at as string,
+      private_note:         (r.private_note as string | null) ?? null,
     };
   });
 
@@ -178,17 +173,7 @@ export default async function WorkerWorkspacePage() {
         padding: '20px 24px', marginBottom: 20,
       }}>
         <h2 style={sectionHeadingStyle}>Le tue iniziative</h2>
-        {initiatives.length === 0 ? (
-          <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.5 }}>
-            Nessuna iniziativa disponibile per il tuo tenant. L'amministratore KORA le pubblica quando pronte.
-          </p>
-        ) : (
-          <div style={{ display: 'grid', gap: 12 }}>
-            {initiatives.map(init => (
-              <InitiativeCard key={init.id} init={init} />
-            ))}
-          </div>
-        )}
+        <InitiativeCardsClient initiatives={initiatives} />
       </div>
 
       {/* History section */}
@@ -251,86 +236,36 @@ const PARTICIPATION_LABELS: Record<string, string> = {
   cancelled:  'Cancellato',
 };
 
-function InitiativeCard({ init }: { init: InitiativeItem }) {
-  const pillarColor = PILLAR_COLORS[init.pillar] ?? '#555';
-  const partLabel   = init.participation_status ? PARTICIPATION_LABELS[init.participation_status] : null;
-
-  return (
-    <div style={{
-      background: '#f9f9fb', border: '1px solid rgba(6,3,43,0.08)',
-      borderRadius: 8, padding: '14px 16px',
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <span style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
-              color: pillarColor,
-            }}>
-              {init.pillar}
-            </span>
-            {init.mode && (
-              <span style={{ fontSize: 9, color: 'rgba(6,3,43,0.40)' }}>· {init.mode}</span>
-            )}
-          </div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#06032B', marginBottom: 2 }}>
-            {init.title}
-          </div>
-          {init.description && (
-            <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', lineHeight: 1.4 }}>
-              {init.description.slice(0, 140)}
-            </div>
-          )}
-          {(init.start_date || init.end_date) && (
-            <div style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', marginTop: 4 }}>
-              {init.start_date && `Dal ${init.start_date}`}
-              {init.end_date && ` al ${init.end_date}`}
-            </div>
-          )}
-        </div>
-        {partLabel && (
-          <span style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-            background: init.participation_status === 'attended' ? '#dcfce7' : 'rgba(6,3,43,0.07)',
-            color: init.participation_status === 'attended' ? '#15803d' : 'rgba(6,3,43,0.50)',
-            borderRadius: 4, padding: '2px 7px', flexShrink: 0, marginLeft: 10,
-          }}>
-            {partLabel}
-          </span>
-        )}
-      </div>
-      {!init.participation_status && (
-        <div style={{ marginTop: 10 }}>
-          <span style={{
-            display: 'inline-block', fontSize: 10, color: 'rgba(6,3,43,0.40)', fontStyle: 'italic',
-          }}>
-            Usa &quot;Mi interessa&quot; via API o app KORA per registrare la tua partecipazione.
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function HistoryRow({ item }: { item: HistoryItem }) {
   const pillarColor = PILLAR_COLORS[item.pillar] ?? '#555';
   const partLabel   = PARTICIPATION_LABELS[item.participation_status] ?? item.participation_status;
-  const date        = item.participated_at ? item.participated_at.slice(0, 10) : '—';
+  const date        = item.updated_at ? item.updated_at.slice(0, 10) : '—';
+
   return (
     <div style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      paddingBottom: 8, borderBottom: '1px solid rgba(6,3,43,0.05)',
+      paddingBottom: 10, borderBottom: '1px solid rgba(6,3,43,0.05)',
     }}>
-      <div>
-        <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: pillarColor, marginRight: 6 }}>
-          {item.pillar}
-        </span>
-        <span style={{ fontSize: 12, color: '#06032B' }}>{item.initiative_title}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <span style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', color: pillarColor, marginRight: 6 }}>
+            {item.pillar}
+          </span>
+          <span style={{ fontSize: 12, color: '#06032B' }}>{item.initiative_title}</span>
+        </div>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
+          <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.45)' }}>{partLabel}</span>
+          <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', fontFamily: 'monospace' }}>{date}</span>
+        </div>
       </div>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
-        <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.45)' }}>{partLabel}</span>
-        <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', fontFamily: 'monospace' }}>{date}</span>
-      </div>
+      {item.private_note && (
+        <div style={{
+          marginTop: 5, fontSize: 11, color: 'rgba(6,3,43,0.50)',
+          background: 'rgba(6,3,43,0.03)', borderRadius: 5, padding: '5px 8px',
+          fontStyle: 'italic', lineHeight: 1.4,
+        }}>
+          {item.private_note}
+        </div>
+      )}
     </div>
   );
 }
