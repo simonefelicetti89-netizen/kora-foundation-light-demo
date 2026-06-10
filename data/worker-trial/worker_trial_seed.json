@@ -1,0 +1,185 @@
+{
+  "file": "worker_trial_seed.json",
+  "version": "1.0",
+  "synthetic_demo_data": true,
+  "not_live_data": true,
+  "purpose": "B114 — Worker End-to-End Trial. Non-PII fixture for reproducible trial runs.",
+  "privacy_note": "All worker_refs are opaque codes. No real names, emails, salaries, health data, or identifiers. Email domain is @kora-trial.example — never a real domain.",
+  "trial_tenant": {
+    "tenant_code": "KORA-TRIAL",
+    "company_name": "KORA Trial S.r.l.",
+    "note": "Create this tenant via /admin/companies before running the trial. Use a unique code per trial run to avoid collisions."
+  },
+  "workers": [
+    { "worker_ref": "WRK-TRIAL-001", "email_placeholder": "worker.01@kora-trial.example", "role_family": "operations",   "site": "Milano",  "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-002", "email_placeholder": "worker.02@kora-trial.example", "role_family": "sales",        "site": "Roma",    "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-003", "email_placeholder": "worker.03@kora-trial.example", "role_family": "engineering",  "site": "Torino",  "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-004", "email_placeholder": "worker.04@kora-trial.example", "role_family": "hr",           "site": "Milano",  "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-005", "email_placeholder": "worker.05@kora-trial.example", "role_family": "finance",      "site": "Roma",    "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-006", "email_placeholder": "worker.06@kora-trial.example", "role_family": "operations",   "site": "Bergamo", "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-007", "email_placeholder": "worker.07@kora-trial.example", "role_family": "sales",        "site": "Milano",  "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-008", "email_placeholder": "worker.08@kora-trial.example", "role_family": "engineering",  "site": "Torino",  "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-009", "email_placeholder": "worker.09@kora-trial.example", "role_family": "operations",   "site": "Roma",    "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-010", "email_placeholder": "worker.10@kora-trial.example", "role_family": "marketing",    "site": "Milano",  "trial_status": "active"  },
+    { "worker_ref": "WRK-TRIAL-011", "email_placeholder": "worker.11@kora-trial.example", "role_family": "hr",           "site": "Bergamo", "trial_status": "invited" },
+    { "worker_ref": "WRK-TRIAL-012", "email_placeholder": "worker.12@kora-trial.example", "role_family": "sales",        "site": "Roma",    "trial_status": "invited" },
+    { "worker_ref": "WRK-TRIAL-013", "email_placeholder": "worker.13@kora-trial.example", "role_family": "finance",      "site": "Torino",  "trial_status": "invited" },
+    { "worker_ref": "WRK-TRIAL-014", "email_placeholder": "worker.14@kora-trial.example", "role_family": "engineering",  "site": "Milano",  "trial_status": "pending" },
+    { "worker_ref": "WRK-TRIAL-015", "email_placeholder": "worker.15@kora-trial.example", "role_family": "operations",   "site": "Roma",    "trial_status": "pending" }
+  ],
+  "initiatives": [
+    {
+      "id": "INIT-TRIAL-001",
+      "pillar": "LIFE",
+      "title": "Camminata aziendale — benessere fisico",
+      "description": "Iniziativa di attività fisica collettiva. 30 minuti di camminata durante la pausa pranzo, tre volte a settimana.",
+      "status": "published",
+      "max_participants": 50,
+      "trial_note": "Pillar LIFE — attività fisica e benessere"
+    },
+    {
+      "id": "INIT-TRIAL-002",
+      "pillar": "GROWTH",
+      "title": "Workshop Excel avanzato",
+      "description": "Sessione pratica su pivot table, formule avanzate e macro base. Livello: intermedio.",
+      "status": "published",
+      "max_participants": 20,
+      "trial_note": "Pillar GROWTH — formazione e sviluppo competenze"
+    },
+    {
+      "id": "INIT-TRIAL-003",
+      "pillar": "CONNECTION",
+      "title": "Lunch & Learn — condivisione team cross-funzionale",
+      "description": "Pranzo informale di scambio conoscenze tra team diversi. Ogni partecipante porta un argomento da 5 minuti.",
+      "status": "published",
+      "max_participants": 30,
+      "trial_note": "Pillar CONNECTION — collaborazione e coesione"
+    },
+    {
+      "id": "INIT-TRIAL-004",
+      "pillar": "IMPACT",
+      "title": "Raccolta alimentare — banco alimentare locale",
+      "description": "Raccolta collettiva di prodotti non deperibili per il banco alimentare del territorio.",
+      "status": "published",
+      "max_participants": 100,
+      "trial_note": "Pillar IMPACT — contributo al territorio"
+    },
+    {
+      "id": "INIT-TRIAL-005",
+      "pillar": "LEGACY",
+      "title": "Mentoring junior-senior: programma Q1",
+      "description": "Abbinamento formale senior-junior per trasferimento competenze. Durata: 6 sessioni da 1 ora.",
+      "status": "published",
+      "max_participants": 10,
+      "trial_note": "Pillar LEGACY — trasferimento conoscenza"
+    },
+    {
+      "id": "INIT-TRIAL-006",
+      "pillar": "LIFE",
+      "title": "Sessione mindfulness — gestione stress",
+      "description": "Sessione guidata di mindfulness e tecniche di respirazione per la gestione dello stress lavorativo.",
+      "status": "published",
+      "max_participants": 25,
+      "trial_note": "Pillar LIFE — supporto psicologico e benessere"
+    },
+    {
+      "id": "INIT-TRIAL-007",
+      "pillar": "GROWTH",
+      "title": "Certificazione cloud — percorso AWS",
+      "description": "Preparazione alla certificazione AWS Cloud Practitioner. Self-paced con tutoraggio interno.",
+      "status": "draft",
+      "max_participants": 15,
+      "trial_note": "Pillar GROWTH — upskilling digitale (ancora draft)"
+    },
+    {
+      "id": "INIT-TRIAL-008",
+      "pillar": "CONNECTION",
+      "title": "Hackathon interno — ottimizzazione processi",
+      "description": "Due giorni per proporre soluzioni creative a problemi operativi interni. Team cross-funzionali.",
+      "status": "closed",
+      "max_participants": 40,
+      "trial_note": "Pillar CONNECTION — chiuso, usato per testare storico"
+    }
+  ],
+  "participation_examples": [
+    {
+      "worker_ref": "WRK-TRIAL-001",
+      "initiative_id": "INIT-TRIAL-001",
+      "status": "registered",
+      "trial_note": "Worker 001 iscritto all'iniziativa LIFE"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-001",
+      "initiative_id": "INIT-TRIAL-003",
+      "status": "interested",
+      "trial_note": "Worker 001 interessato alla CONNECTION"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-002",
+      "initiative_id": "INIT-TRIAL-002",
+      "status": "attended",
+      "trial_note": "Worker 002 ha partecipato al GROWTH workshop"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-003",
+      "initiative_id": "INIT-TRIAL-004",
+      "status": "registered",
+      "trial_note": "Worker 003 iscritto all'IMPACT"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-004",
+      "initiative_id": "INIT-TRIAL-005",
+      "status": "registered",
+      "trial_note": "Worker 004 nel LEGACY mentoring"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-005",
+      "initiative_id": "INIT-TRIAL-001",
+      "status": "cancelled",
+      "trial_note": "Worker 005 ha annullato la partecipazione LIFE"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-006",
+      "initiative_id": "INIT-TRIAL-006",
+      "status": "interested",
+      "trial_note": "Worker 006 interessato mindfulness LIFE"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-007",
+      "initiative_id": "INIT-TRIAL-002",
+      "status": "attended",
+      "trial_note": "Worker 007 ha partecipato al GROWTH workshop"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-008",
+      "initiative_id": "INIT-TRIAL-003",
+      "status": "registered",
+      "trial_note": "Worker 008 iscritto CONNECTION"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-009",
+      "initiative_id": "INIT-TRIAL-004",
+      "status": "attended",
+      "trial_note": "Worker 009 ha partecipato all'IMPACT"
+    },
+    {
+      "worker_ref": "WRK-TRIAL-010",
+      "initiative_id": "INIT-TRIAL-005",
+      "status": "interested",
+      "trial_note": "Worker 010 interessato al LEGACY"
+    }
+  ],
+  "privacy_validation": {
+    "employer_can_see_individual_pib": false,
+    "employer_can_see_worker_ref": false,
+    "employer_can_see_private_note": false,
+    "employer_can_see_email": false,
+    "safe_aggregation_threshold": 10,
+    "suppression_applies_when": "total_participations per pillar < 10",
+    "expected_suppression_at_trial_start": true,
+    "note": "Con solo 10 worker attivi e partecipazioni sparse, la company vedrà SUPPRESSED su quasi tutti i pillar. Questo è il comportamento corretto e atteso."
+  },
+  "pillars_covered": ["LIFE", "GROWTH", "CONNECTION", "IMPACT", "LEGACY"],
+  "initiative_statuses_covered": ["published", "draft", "closed"],
+  "participation_statuses_covered": ["interested", "registered", "attended", "cancelled"]
+}
