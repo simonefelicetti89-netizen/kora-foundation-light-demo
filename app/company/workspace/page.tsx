@@ -8,6 +8,7 @@
 
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { CompanyWorkspaceView } from './_components/CompanyWorkspaceView';
+import { SessionBar } from '@/components/auth/SessionBar';
 
 export default async function CompanyWorkspacePage() {
   // Auth is guaranteed by layout.tsx — this is a safety re-check for direct page access
@@ -22,9 +23,12 @@ export default async function CompanyWorkspacePage() {
   }
 
   return (
-    <CompanyWorkspaceView
-      userEmail={authResult.email}
-      userRole={authResult.koraRole}
-    />
+    <>
+      <SessionBar email={authResult.email} role={authResult.koraRole} />
+      <CompanyWorkspaceView
+        userEmail={authResult.email}
+        userRole={authResult.koraRole}
+      />
+    </>
   );
 }

@@ -10,6 +10,7 @@
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { AdminDemoGuard } from './_components/AdminDemoGuard';
+import { SessionBar } from '@/components/auth/SessionBar';
 import Link from 'next/link';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -39,5 +40,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   // Layer 2: demo-state guard (client-side role switcher protection)
-  return <AdminDemoGuard>{children}</AdminDemoGuard>;
+  return (
+    <>
+      <SessionBar email={auth.email} role={auth.koraRole} />
+      <AdminDemoGuard>{children}</AdminDemoGuard>
+    </>
+  );
 }

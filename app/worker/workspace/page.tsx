@@ -5,6 +5,7 @@
 // NEVER shows PIB, rankings, employer analytics, or other workers' data.
 
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
+import { SessionBar } from '@/components/auth/SessionBar';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
@@ -191,6 +192,8 @@ export default async function WorkerWorkspacePage() {
   const sc = STATUS_COLOR[status] ?? STATUS_COLOR['pending'];
 
   return (
+    <>
+    <SessionBar email={worker.email} role={worker.koraRole} />
     <div style={{ maxWidth: 660, margin: '0 auto', padding: '40px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
 
       {/* Header */}
@@ -292,6 +295,7 @@ export default async function WorkerWorkspacePage() {
         KORA Foundation Light · Worker Workspace · B109 · I dati aziendali rimangono aggregati e non mostrano dati individuali.
       </div>
     </div>
+    </>
   );
 }
 

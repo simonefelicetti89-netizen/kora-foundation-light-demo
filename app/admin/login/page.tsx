@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
@@ -236,13 +237,23 @@ export default function AdminLoginPage() {
           </div>
         </form>
 
+        {/* Forgot password */}
+        <p style={{ fontFamily: FONT, fontSize: '11.5px', textAlign: 'center', marginTop: 16 }}>
+          <Link
+            href="/auth/forgot-password"
+            style={{ color: TOKENS.accent, textDecoration: 'none', fontWeight: 500 }}
+          >
+            Password dimenticata?
+          </Link>
+        </p>
+
         {/* Footer */}
         <p style={{
           fontFamily:  FONT,
           fontSize:    '10.5px',
           color:       TOKENS.inkMeta,
           textAlign:   'center',
-          marginTop:   20,
+          marginTop:   12,
           lineHeight:  1.5,
         }}>
           KORA misura organizzazioni, non individui · Account KORA_ADMIN only
