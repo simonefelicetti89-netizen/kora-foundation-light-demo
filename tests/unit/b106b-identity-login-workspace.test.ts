@@ -134,25 +134,26 @@ describe('B106-B — admin area: riservata a KORA_ADMIN', () => {
     expect(adminLayout).toContain('riservata agli operatori KORA Admin');
   });
 
-  it('admin layout linka a /admin/login per non autenticati', () => {
-    expect(adminLayout).toContain('/admin/login');
+  it('admin layout (B117-B) include link a /login?role_hint=admin per il caso 403', () => {
+    // B117-B: 401 redirects to /login, 403 shows error card with link to /login?role_hint=admin
+    expect(adminLayout).toContain('/login?role_hint=admin');
   });
 
-  it('admin login verifica kora_role === KORA_ADMIN lato client', () => {
-    expect(adminLogin).toContain("koraRole !== 'KORA_ADMIN'");
-    expect(adminLogin).toContain('signOut');
+  it('admin login (B117-B) è redirect wrapper — redirect a /admin se sessione ok', () => {
+    // B117-B: /admin/login is a redirect wrapper.
+    // Unauthenticated → admin layout redirects to /login?role_hint=admin (page never renders).
+    // Authenticated KORA_ADMIN → page redirects to /admin.
+    expect(adminLogin).toContain("redirect('/admin')");
+    expect(adminLogin).not.toContain('signInWithPassword');
   });
 
-  it('admin login redirige a /admin dopo login riuscito', () => {
-    expect(adminLogin).toContain("router.push('/admin')");
+  it('admin login non contiene form standalone (logica spostata in /login)', () => {
+    expect(adminLogin).not.toContain('useState');
+    expect(adminLogin).not.toContain('signOut');
   });
 
-  it('admin login non accetta COMPANY_ADMIN (signOut + errore)', () => {
-    expect(adminLogin).toContain("koraRole !== 'KORA_ADMIN'");
-    // Se il ruolo non è KORA_ADMIN, fa signOut e mostra errore
-    const afterCheck = adminLogin.split("koraRole !== 'KORA_ADMIN'")[1] ?? '';
-    expect(afterCheck).toContain('signOut');
-    expect(afterCheck).toContain("setError");
+  it('admin layout (B117-B) redirige unauthenticated a /login?role_hint=admin', () => {
+    expect(adminLayout).toContain("redirect('/login?role_hint=admin')");
   });
 });
 
@@ -167,8 +168,8 @@ describe('B106-B — /company/login: B117 redirect wrapper to /login', () => {
 
   const login = read('app/company/login/page.tsx');
 
-  it('page redirects to unified /login', () => {
-    expect(login).toContain("redirect('/login')");
+  it('page redirects to unified /login with role_hint=company (B117-B)', () => {
+    expect(login).toContain("redirect('/login?role_hint=company')");
   });
 
   it('page is not a standalone form (no signInWithPassword)', () => {
@@ -264,14 +265,18 @@ describe('B106-B — /worker/workspace: spazio privato worker', () => {
     expect(layout).toContain('getCurrentWorkerUser');
   });
 
-  it('worker layout ridirige a /worker/login (non /admin/login, non /company/login)', () => {
-    expect(layout).toContain('/worker/login');
-    expect(layout).not.toContain('/admin/login');
+  it('worker layout (B117-B) ridirige unauthenticated a /login (non /worker/login)', () => {
+    // B117-B: layout redirect target changed from /worker/login to /login to break loop
+    expect(layout).toContain("redirect('/login')");
+    expect(layout).not.toContain("redirect('/worker/login')");
+    expect(layout).not.toContain("redirect('/admin/login')");
     expect(layout).not.toContain("redirect('/company/login')");
   });
 
-  it('worker workspace page ridirige a /worker/login (non /admin/login, non /company/login)', () => {
-    expect(workspace).toContain("redirect('/worker/login')");
+  it('worker workspace page (B117-B) ridirige a /login (non /worker/login)', () => {
+    // B117-B: pages under worker layout now redirect to /login for consistency
+    expect(workspace).toContain("redirect('/login')");
+    expect(workspace).not.toContain("redirect('/worker/login')");
     expect(workspace).not.toContain("redirect('/admin/login')");
     expect(workspace).not.toContain("redirect('/company/login')");
   });

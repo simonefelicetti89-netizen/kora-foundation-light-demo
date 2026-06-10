@@ -42,8 +42,8 @@ describe('/worker/login — B117: redirect wrapper to unified /login', () => {
     expect(fileExists('app/worker/login/page.tsx')).toBe(true);
   });
 
-  it('page redirects to /login (not a standalone form)', () => {
-    expect(workerLogin).toContain("redirect('/login')");
+  it('page redirects to /login?role_hint=worker (B117-B adds role_hint for contextual copy)', () => {
+    expect(workerLogin).toContain("redirect('/login?role_hint=worker')");
   });
 
   it('page does not contain standalone signInWithPassword (role logic moved to /login)', () => {
@@ -57,19 +57,27 @@ describe('/worker/login — B117: redirect wrapper to unified /login', () => {
 
 // ─── 2. Worker routes redirect to /worker/login ───────────────────────────────
 
-describe('Worker routes — redirect to /worker/login (not /company/login)', () => {
-  it('worker layout redirects unauthenticated to /worker/login', () => {
-    expect(workerLayout).toContain("redirect('/worker/login')");
+// ─── 2. Worker routes — B117-B: redirect to /login ──────────────────────────
+// B117-B: Worker layout and pages redirect to /login (not /worker/login).
+// This breaks the loop: /worker/login inside WorkerLayout → WorkerLayout redirected
+// back to /worker/login → infinite loop. Now: all unauthenticated → /login (public).
+
+describe('Worker routes — B117-B: redirect to /login (unified, breaks loop)', () => {
+  it('worker layout (B117-B) redirects unauthenticated to /login (not /worker/login)', () => {
+    expect(workerLayout).toContain("redirect('/login')");
+    expect(workerLayout).not.toContain("redirect('/worker/login')");
     expect(workerLayout).not.toContain("redirect('/company/login')");
   });
 
-  it('worker workspace redirects unauthenticated to /worker/login', () => {
-    expect(workerWorkspace).toContain("redirect('/worker/login')");
+  it('worker workspace (B117-B) redirects unauthenticated to /login', () => {
+    expect(workerWorkspace).toContain("redirect('/login')");
+    expect(workerWorkspace).not.toContain("redirect('/worker/login')");
     expect(workerWorkspace).not.toContain("redirect('/company/login')");
   });
 
-  it('worker onboarding redirects unauthenticated to /worker/login', () => {
-    expect(workerOnboarding).toContain("redirect('/worker/login')");
+  it('worker onboarding (B117-B) redirects unauthenticated to /login', () => {
+    expect(workerOnboarding).toContain("redirect('/login')");
+    expect(workerOnboarding).not.toContain("redirect('/worker/login')");
     expect(workerOnboarding).not.toContain("redirect('/company/login')");
   });
 });
@@ -95,9 +103,9 @@ describe('Logout route — worker logout destination', () => {
 // B117 replaced /company/login with a redirect to the unified /login page.
 // Role rejection is now handled by /login after auth — no per-role login pages.
 
-describe('/company/login — B117: redirect wrapper to unified /login', () => {
-  it('company login redirects to /login (not a standalone form)', () => {
-    expect(companyLogin).toContain("redirect('/login')");
+describe('/company/login — B117-B: redirect wrapper with role_hint', () => {
+  it('company login redirects to /login?role_hint=company (B117-B)', () => {
+    expect(companyLogin).toContain("redirect('/login?role_hint=company')");
   });
 
   it('company login does not contain signInWithPassword (logic moved to /login)', () => {

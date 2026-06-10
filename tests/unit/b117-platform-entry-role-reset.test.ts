@@ -102,16 +102,14 @@ describe('getRoleHome() — role-to-home mapping', () => {
 // ─── 3. Old login pages are redirect wrappers ────────────────────────────────
 
 describe('Old login pages — redirect wrappers', () => {
-  it('/worker/login redirects to /login', () => {
-    expect(workerLoginPage).toContain("redirect('/login')");
-    // Must not be a standalone form anymore
+  it('/worker/login redirects to /login?role_hint=worker (B117-B adds role_hint)', () => {
+    expect(workerLoginPage).toContain("redirect('/login?role_hint=worker')");
     expect(workerLoginPage).not.toContain('signInWithPassword');
     expect(workerLoginPage).not.toContain('useState');
   });
 
-  it('/company/login redirects to /login', () => {
-    expect(companyLoginPage).toContain("redirect('/login')");
-    // Must not be a standalone form anymore
+  it('/company/login redirects to /login?role_hint=company (B117-B adds role_hint)', () => {
+    expect(companyLoginPage).toContain("redirect('/login?role_hint=company')");
     expect(companyLoginPage).not.toContain('signInWithPassword');
     expect(companyLoginPage).not.toContain('useState');
   });

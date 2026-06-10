@@ -181,8 +181,10 @@ describe('Onboarding page — auth', () => {
     expect(onboardingPage).toContain('getCurrentWorkerUser');
   });
 
-  it('onboarding page redirects non-authenticated to /worker/login', () => {
-    expect(onboardingPage).toContain("redirect('/worker/login')");
+  it('onboarding page redirects non-authenticated to /login (B117-B — unified entry)', () => {
+    // B117-B: worker pages redirect to /login (not /worker/login) to break layout loop
+    expect(onboardingPage).toContain("redirect('/login')");
+    expect(onboardingPage).not.toContain("redirect('/worker/login')");
   });
 });
 

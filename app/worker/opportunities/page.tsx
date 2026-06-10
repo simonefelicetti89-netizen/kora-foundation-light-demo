@@ -31,7 +31,7 @@ export type PartnerItem = {
 
 export default async function WorkerOpportunitiesPage() {
   const worker = await getCurrentWorkerUser();
-  if (!worker) redirect('/worker/login');
+  if (!worker) redirect('/login');
 
   const db = getSupabaseServiceClient();
 

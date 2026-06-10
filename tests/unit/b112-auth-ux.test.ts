@@ -104,19 +104,20 @@ describe('Logout route — role-aware redirect', () => {
 
 // ─── 5. Admin login has "Password dimenticata?" link ──────────────────────────
 
-describe('/admin/login — forgot password link', () => {
-  it('admin login page contains forgot-password link', () => {
-    expect(adminLogin).toContain('/auth/forgot-password');
-    expect(adminLogin).toContain('Password dimenticata?');
+describe('/admin/login — B117-B: redirect wrapper', () => {
+  it('admin login (B117-B) is a redirect wrapper to /admin (forgot-password lives on /login)', () => {
+    // B117-B: /admin/login renders only for authenticated KORA_ADMIN and redirects to /admin.
+    // Unauthenticated users never reach this page — admin layout redirects to /login first.
+    expect(adminLogin).toContain("redirect('/admin')");
+    expect(adminLogin).not.toContain('signInWithPassword');
   });
 });
 
 // ─── 6. Company login has "Password dimenticata?" link ────────────────────────
 
-describe('/company/login — B117: redirect wrapper', () => {
-  it('company login redirects to unified /login (B117 — forgot-password is now on /login)', () => {
-    // B117: /company/login is a redirect wrapper. The forgot-password link lives on /login.
-    expect(companyLogin).toContain("redirect('/login')");
+describe('/company/login — B117-B: redirect wrapper with role_hint', () => {
+  it('company login redirects to /login?role_hint=company (B117-B — adds role_hint for context)', () => {
+    expect(companyLogin).toContain("redirect('/login?role_hint=company')");
     expect(companyLogin).not.toContain('signInWithPassword');
   });
 });

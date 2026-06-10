@@ -116,7 +116,9 @@ describe('Worker opportunities page', () => {
 
   it('worker opportunities page requires getCurrentWorkerUser (not employer-accessible)', () => {
     expect(workerPage).toContain('getCurrentWorkerUser');
-    expect(workerPage).toContain("redirect('/worker/login')");
+    // B117-B: redirect target changed from /worker/login to /login (unified entry)
+    expect(workerPage).toContain("redirect('/login')");
+    expect(workerPage).not.toContain("redirect('/worker/login')");
   });
 
   it('worker opportunities page has non-suppressible privacy notice', () => {

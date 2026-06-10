@@ -1,10 +1,10 @@
 // app/company/login/page.tsx
-// B117: Company login is now unified at /login — this page redirects there.
-// Existing bookmarks and email links to /company/login continue to work.
-// The /login page auto-routes to /company/workspace on successful COMPANY_ADMIN/VIEWER auth.
+// B117-B: /company/login is a redirect wrapper to the unified /login page.
+// role_hint=company allows /login to show contextual copy ("Accesso aziendale").
+// Company layout is client-side — this server redirect fires before it runs.
 
 import { redirect } from 'next/navigation';
 
 export default function CompanyLoginRedirect() {
-  redirect('/login');
+  redirect('/login?role_hint=company');
 }

@@ -1,26 +1,61 @@
 'use client';
 // app/login/page.tsx
 // B117: Unified entry point — one login page for all roles.
-// On success, reads kora_role from app_metadata and routes to the correct home.
-// Workers no longer need to know /worker/login. Company users no longer need /company/login.
-// /admin/login is preserved as the internal operator entry (KORA_ADMIN only).
+// B117-B: Reads role_hint from URL to show contextual copy.
+//         role_hint is only for UX copy — never for authorization.
+//
+// On success: reads kora_role from app_metadata, routes via getRoleHome().
+// /admin/login → /login?role_hint=admin
+// /company/login → /login?role_hint=company
+// /worker/login → /login?role_hint=worker
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { getRoleHome } from '@/lib/auth/role-home';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
-export default function UnifiedLoginPage() {
+// Context copy per role_hint — shown below the H1 to orient the user.
+const ROLE_HINT_COPY: Record<string, { badge: string; heading: string; sub: string }> = {
+  admin:   {
+    badge:   'Accesso Operatore',
+    heading: 'KORA Admin',
+    sub:     'Riservato agli operatori KORA. Account provisionati via Admin API.',
+  },
+  company: {
+    badge:   'Accesso Aziendale',
+    heading: 'Area Aziendale',
+    sub:     'Accedi con le credenziali aziendali ricevute via email da KORA.',
+  },
+  worker:  {
+    badge:   'Accesso Lavoratore',
+    heading: 'Il tuo spazio privato KORA',
+    sub:     'Il tuo datore di lavoro non vede il tuo profilo individuale.',
+  },
+};
+
+const DEFAULT_COPY = {
+  badge:   'Accesso',
+  heading: 'Entra in KORA',
+  sub:     'Accedi con le credenziali ricevute via email da KORA.',
+};
+
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const roleHint = searchParams.get('role_hint') ?? '';
+
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [error,    setError]    = useState<string | null>(null);
   const [loading,  setLoading]  = useState(false);
+
+  const copy = ROLE_HINT_COPY[roleHint] ?? DEFAULT_COPY;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,10 +73,6 @@ export default function UnifiedLoginPage() {
 
     const koraRole = data.user?.app_metadata?.kora_role as string | undefined;
 
-    // KORA_ADMIN operators should use /admin/login for the dedicated operator experience.
-    // Still functional here as a fallback.
-    const destination = getRoleHome(koraRole);
-
     if (!koraRole) {
       await supabase.auth.signOut();
       setError('Ruolo non riconosciuto. Contatta il tuo responsabile KORA per assistenza.');
@@ -49,7 +80,7 @@ export default function UnifiedLoginPage() {
       return;
     }
 
-    router.push(destination);
+    router.push(getRoleHome(koraRole));
     router.refresh();
   }
 
@@ -124,7 +155,7 @@ export default function UnifiedLoginPage() {
             color:         TOKENS.accent,
             marginBottom:  8,
           }}>
-            Accesso
+            {copy.badge}
           </p>
           <h1 style={{
             fontFamily:    FONT,
@@ -135,10 +166,10 @@ export default function UnifiedLoginPage() {
             color:         TOKENS.ink,
             marginBottom:  8,
           }}>
-            Entra in KORA
+            {copy.heading}
           </h1>
           <p style={{ fontFamily: FONT, fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
-            Accedi con le credenziali ricevute via email da KORA.
+            {copy.sub}
           </p>
         </div>
 
@@ -258,5 +289,14 @@ export default function UnifiedLoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+// Wrap in Suspense — useSearchParams() requires it in Next.js App Router
+export default function UnifiedLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }
