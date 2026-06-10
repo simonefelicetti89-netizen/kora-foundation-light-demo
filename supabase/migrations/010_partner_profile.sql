@@ -1,24 +1,32 @@
--- supabase/migrations/010_partner_profile.sql
--- B116: Partner Map Foundation — network schema + partner_profile table.
+-- =============================================================================
+-- KORA Foundation Light — B116: Partner Map Foundation
+-- Migration:   010_partner_profile
+-- Schemas:     network (new)
+-- Gate:        Gate 2 OPEN — no Prisma, no ORM, apply via Supabase SQL Editor
+-- =============================================================================
 --
--- Creates network.partner_profile for the KORA partner catalog.
--- KORA_ADMIN manages partners via /admin/partners.
--- Workers read only published partners via /worker/opportunities (app-layer filter).
--- Company roles have no access to partner interaction data (app-layer enforced).
+-- PRIVACY DOCTRINE (network.partner_profile)
+-- -------------------------------------------
+-- KORA_ADMIN = ALL (full catalog management)
+-- WORKER     = SELECT WHERE status = 'published' (read-only, published only)
+-- Company    = NO POLICY (intentional — company roles never read partner data directly)
+-- anon       = NO POLICY (no public access)
 --
--- Privacy model:
---   - No worker interaction tracking in this migration (no click/view/favorite tables).
---   - No per-tenant visibility table — all published partners are visible to all workers.
---   - App layer always enforces role check before returning partner data.
+-- App layer enforces role check before any partner data is returned.
+-- No worker interaction tracking in this migration (no click/view/favorite tables).
+-- All published partners are visible to all authenticated workers globally
+-- (no per-tenant visibility table in Foundation Light).
+-- =============================================================================
 --
--- Apply via Supabase SQL Editor.
+-- IDEMPOTENT: safe to re-run. Uses IF NOT EXISTS and DROP POLICY IF EXISTS.
 -- Run AFTER migrations 007, 008, 009.
+-- =============================================================================
 
--- ── Schema ─────────────────────────────────────────────────────────────────────
+-- ── 1. Schema ─────────────────────────────────────────────────────────────────
 
 CREATE SCHEMA IF NOT EXISTS network;
 
--- ── partner_profile ───────────────────────────────────────────────────────────
+-- ── 2. partner_profile ────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS network.partner_profile (
   id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -41,10 +49,46 @@ CREATE TABLE IF NOT EXISTS network.partner_profile (
 CREATE INDEX IF NOT EXISTS idx_partner_profile_status ON network.partner_profile (status);
 CREATE INDEX IF NOT EXISTS idx_partner_profile_pillar ON network.partner_profile (pillar);
 
--- RLS: all app access uses the service role key (bypasses RLS).
--- RLS is enabled as belt-and-suspenders — actual enforcement is at the app layer.
+-- ── 3. Row Level Security ─────────────────────────────────────────────────────
+
 ALTER TABLE network.partner_profile ENABLE ROW LEVEL SECURITY;
 ALTER TABLE network.partner_profile FORCE ROW LEVEL SECURITY;
 
--- Signal PostgREST to reload schema cache
+-- Drop existing policies before recreating (idempotent)
+DROP POLICY IF EXISTS "network_partner_kora_admin_all"               ON network.partner_profile;
+DROP POLICY IF EXISTS "network_partner_worker_published_select"      ON network.partner_profile;
+
+-- KORA_ADMIN: full access for catalog management and diagnostics.
+CREATE POLICY "network_partner_kora_admin_all" ON network.partner_profile
+  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN');
+
+-- WORKER: read published partners only — cannot see draft or archived.
+CREATE POLICY "network_partner_worker_published_select" ON network.partner_profile
+  FOR SELECT USING (
+    kora.kora_role() = 'WORKER'
+    AND status = 'published'
+  );
+
+-- No company policy — intentional.
+-- Company roles (COMPANY_ADMIN, COMPANY_VIEWER) have zero visibility into this table.
+-- Aggregate partner intelligence (if ever built) must go through a separate,
+-- company-aggregate-only route — never directly from partner_profile.
+
+-- ── 4. Grants ─────────────────────────────────────────────────────────────────
+-- authenticated role must have table-level GRANT for RLS to evaluate at all.
+-- The policies above still restrict row visibility per role.
+
+GRANT SELECT, INSERT, UPDATE ON network.partner_profile TO authenticated;
+
+-- ── 5. Updated-at trigger ─────────────────────────────────────────────────────
+-- set_updated_at() is created in migration 001_live_v1_foundation.sql.
+
+DROP TRIGGER IF EXISTS trg_partner_profile_updated_at ON network.partner_profile;
+
+CREATE TRIGGER trg_partner_profile_updated_at
+  BEFORE UPDATE ON network.partner_profile
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- ── 6. Reload PostgREST schema cache ─────────────────────────────────────────
+
 NOTIFY pgrst, 'reload schema';
