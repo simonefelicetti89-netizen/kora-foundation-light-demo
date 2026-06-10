@@ -20,7 +20,7 @@ const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 function ForgotPasswordForm() {
   const searchParams = useSearchParams();
   const fromWorker   = searchParams.get('from') === 'worker';
-  const backHref     = fromWorker ? '/worker/login' : '/company/login';
+  const backHref     = fromWorker ? '/login?role_hint=worker' : '/login';
   const backLabel    = fromWorker ? "← Torna all'accesso lavoratore" : '← Torna al login';
 
   const [email,    setEmail]    = useState('');

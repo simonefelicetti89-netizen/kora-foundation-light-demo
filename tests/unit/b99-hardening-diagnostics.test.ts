@@ -241,8 +241,10 @@ describe('Required routes exist after 4044dfb', () => {
 describe('Middleware — auth flow paths are allowed', () => {
   const mw = read('middleware.ts');
 
-  it('COMPANY_ALLOWED_PREFIXES includes /auth/callback', () => {
-    expect(mw).toContain('/auth/callback');
+  it("COMPANY_ALLOWED_PREFIXES includes '/auth/' prefix (B117-D: covers callback + reset-password + forgot-password)", () => {
+    // B117-D: '/auth/callback' alone did not cover /auth/reset-password — replaced with '/auth/'
+    const companySection = mw.split('COMPANY_ALLOWED_PREFIXES')[1]?.split('];')[0] ?? '';
+    expect(companySection).toContain("'/auth/'");
   });
 
   it('COMPANY_ALLOWED_PREFIXES includes /company/setup-password', () => {

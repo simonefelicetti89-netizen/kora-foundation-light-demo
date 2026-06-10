@@ -174,12 +174,10 @@ describe('Reset password — validation', () => {
 // ─── 10. Reset password redirect is role-aware ────────────────────────────────
 
 describe('Reset password — role-aware redirect', () => {
-  it('reset form contains ROLE_REDIRECT mapping', () => {
-    expect(resetForm).toContain('ROLE_REDIRECT');
-    expect(resetForm).toContain("KORA_ADMIN");
-    expect(resetForm).toContain("'/admin'");
-    expect(resetForm).toContain("'/company/workspace'");
-    expect(resetForm).toContain("'/worker/onboarding'");
+  it('reset form uses getRoleHome for role-aware redirect (B117-D: replaces ROLE_REDIRECT map)', () => {
+    // B117-D: ROLE_REDIRECT map replaced with getRoleHome() from lib/auth/role-home
+    expect(resetForm).toContain('getRoleHome');
+    expect(resetForm).toContain("from '@/lib/auth/role-home'");
   });
 
   it('KORA_ADMIN does not get redirected to /company setup pages', () => {
@@ -256,10 +254,11 @@ describe('LogoutButton — form POST', () => {
 // ─── 14. Unknown role handled safely ─────────────────────────────────────────
 
 describe('Unknown role — safe handling', () => {
-  it('reset form falls back to /company/login for unknown role', () => {
-    expect(resetForm).toContain("'/company/login'");
-    // The fallback for undefined role
-    expect(resetForm).toContain('?? \'/company/login\'');
+  it('reset form uses getRoleHome which falls back to /login (B117-D: replaces hardcoded /company/login)', () => {
+    // B117-D: ROLE_REDIRECT with ?? '/company/login' replaced by getRoleHome()
+    // getRoleHome returns '/login' for unknown roles — consistent with unified login
+    expect(resetForm).toContain('getRoleHome');
+    expect(resetForm).not.toContain("'/company/login'");
   });
 
   it('logout route has safe fallback for undefined role', () => {

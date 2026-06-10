@@ -15,16 +15,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getRoleHome } from '@/lib/auth/role-home';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
-
-const ROLE_REDIRECT: Record<string, string> = {
-  KORA_ADMIN:     '/admin',
-  COMPANY_ADMIN:  '/company/workspace',
-  COMPANY_VIEWER: '/company/workspace',
-  WORKER:         '/worker/onboarding',
-};
 
 export function ResetPasswordForm() {
   const router       = useRouter();
@@ -95,7 +89,7 @@ export function ResetPasswordForm() {
       // Determine redirect based on role in session
       const { data: { user } } = await supabase.auth.getUser();
       const koraRole = user?.app_metadata?.kora_role as string | undefined;
-      const redirectTo = (koraRole && ROLE_REDIRECT[koraRole]) ?? '/company/login';
+      const redirectTo = getRoleHome(koraRole);
 
       setStatus('success');
       router.push(redirectTo);

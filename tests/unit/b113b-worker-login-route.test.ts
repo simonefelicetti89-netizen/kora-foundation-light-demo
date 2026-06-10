@@ -139,8 +139,9 @@ describe('/auth/forgot-password — worker back link', () => {
     expect(forgotPassword).toContain('fromWorker');
   });
 
-  it('forgot-password shows /worker/login as back link when from=worker', () => {
-    expect(forgotPassword).toContain("'/worker/login'");
+  it('forgot-password shows /login?role_hint=worker as back link when from=worker (B117-D: updated from /worker/login)', () => {
+    // B117-D: back link updated to unified login with role_hint — /worker/login is still a redirect wrapper
+    expect(forgotPassword).toContain("'/login?role_hint=worker'");
   });
 });
 

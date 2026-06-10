@@ -30,7 +30,8 @@ const COMPANY_ALLOWED_PREFIXES = [
   '/company/status',         // live status center — readiness and submission tracking
   '/company/login',          // company login page — for re-authentication after session expiry
   '/company/setup-password', // invite flow — set password after accepting KORA invite
-  '/auth/callback',          // Supabase PKCE code exchange — publicly reachable before session
+  '/auth/',                  // all auth routes (callback, reset-password, forgot-password) — session may be active during recovery flow
+  '/login',                  // unified login page — accessible after session expiry
   '/api/',                   // all API routes (have own auth)
   '/_next',                  // Next.js internals
 ];
@@ -40,7 +41,8 @@ const COMPANY_ALLOWED_PREFIXES = [
 // B113-B: /worker/login is the dedicated worker re-auth endpoint — /company/login removed.
 const WORKER_ALLOWED_PREFIXES = [
   '/worker/',                // worker private space (includes /worker/login)
-  '/auth/callback',          // Supabase PKCE code exchange
+  '/auth/',                  // all auth routes (callback, reset-password, forgot-password)
+  '/login',                  // unified login — accessible after session expiry
   '/api/',                   // all API routes (have own requireWorkerUser auth)
   '/_next',
 ];

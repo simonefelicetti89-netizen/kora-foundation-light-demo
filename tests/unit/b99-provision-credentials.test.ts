@@ -388,8 +388,10 @@ describe('Middleware — allows auth callback and setup-password paths', () => {
     expect(mw).toContain('/company/setup-password');
   });
 
-  it('COMPANY_ALLOWED_PREFIXES includes /auth/callback', () => {
-    expect(mw).toContain('/auth/callback');
+  it("COMPANY_ALLOWED_PREFIXES includes '/auth/' prefix (B117-D: covers callback + reset-password)", () => {
+    // B117-D: '/auth/callback' alone blocked /auth/reset-password — replaced with '/auth/'
+    const companySection = mw.split('COMPANY_ALLOWED_PREFIXES')[1]?.split('];')[0] ?? '';
+    expect(companySection).toContain("'/auth/'");
   });
 });
 
