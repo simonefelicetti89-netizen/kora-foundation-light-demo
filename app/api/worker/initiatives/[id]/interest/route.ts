@@ -1,5 +1,6 @@
 // app/api/worker/initiatives/[id]/interest/route.ts
 // B109: Worker Experience MVP — express interest or update participation status.
+// B109-B: Hardening — removed attended from worker self-declaration; added private_note max length.
 //
 // PRIVACY CONTRACT:
 //   - workerId and tenantId always from session — NEVER from request body
@@ -7,6 +8,7 @@
 //   - Worker can only modify their OWN participation row (enforced by workerId from session)
 //   - private_note is accepted from body — it is worker-controlled, never employer-visible
 //   - Initiative must belong to the worker's tenant and be published
+//   - attended status is NOT self-declarable: only admin/system can set it (B109-B)
 //
 // Callable by: WORKER only.
 
@@ -17,9 +19,14 @@ import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import type { WorkerParticipationRow } from '@/lib/supabase/types';
 
+// attended is intentionally excluded — workers cannot self-declare attendance.
+// Attendance is set only by admin/system flows to prevent gaming.
 const ALLOWED_STATUSES: WorkerParticipationRow['status'][] = [
-  'interested', 'registered', 'attended', 'cancelled',
+  'interested', 'registered', 'cancelled',
 ];
+
+// Maximum length for worker private notes — prevents abuse, not a content filter.
+const PRIVATE_NOTE_MAX_LENGTH = 500;
 
 export async function POST(
   request: NextRequest,
@@ -44,7 +51,16 @@ export async function POST(
 
   // worker_id and tenant_id from body are silently rejected — session-only.
   const status = body.status as WorkerParticipationRow['status'] | undefined;
-  const privateNote = typeof body.private_note === 'string' ? body.private_note : null;
+  const rawNote = body.private_note;
+  const privateNote = typeof rawNote === 'string' ? rawNote.slice(0, PRIVATE_NOTE_MAX_LENGTH) : null;
+
+  // Validate note length explicitly after truncation guard
+  if (typeof rawNote === 'string' && rawNote.length > PRIVATE_NOTE_MAX_LENGTH) {
+    return NextResponse.json(
+      { error: `private_note supera il limite massimo di ${PRIVATE_NOTE_MAX_LENGTH} caratteri.` },
+      { status: 400 },
+    );
+  }
 
   if (!status || !ALLOWED_STATUSES.includes(status)) {
     return NextResponse.json(

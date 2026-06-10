@@ -1,11 +1,14 @@
 // app/api/company/workers/activation-aggregate/route.ts
 // B109: Worker Experience MVP — company-facing participation aggregate.
+// B109-B: Hardening — replaced -1 sentinel with structured suppression object;
+//         added suppression_reason and suppression_threshold; response shape standardized.
 //
 // PRIVACY CONTRACT (absolute, non-negotiable):
 //   - Returns ONLY aggregate counts — never individual rows
-//   - No worker_id, no display_name, no email, no worker_ref
-//   - No private_note — never accessible by company roles
-//   - SAFE_AGGREGATION_THRESHOLD applied: pillar segments with N < 10 suppressed
+//   - Participation select: initiative_id + status only — no worker_id, no auth fields, no notes
+//   - Suppressed segments use { suppressed: true, suppression_reason, suppression_threshold }
+//     and OMIT total_participations entirely — no -1 sentinel that leaks "some data exists"
+//   - SAFE_AGGREGATION_THRESHOLD=10 applied to pillar-level and global totals
 //   - Uses service-role client — company JWT has no direct policy on personal schema
 //   - tenantId always from session app_metadata — never from request params
 //
@@ -20,12 +23,35 @@ import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase
 
 const SAFE_AGGREGATION_THRESHOLD = 10;
 
-type PillarAggregate = {
+// Suppressed pillar: total_participations is absent — omitting it is safer
+// than returning -1 which signals "some participation exists below threshold".
+type PillarAggregateClear = {
   pillar: WorkerInitiativeRow['pillar'];
   published_initiatives: number;
+  suppressed: false;
   total_participations: number;
-  suppressed: boolean;
 };
+
+type PillarAggregateSuppressed = {
+  pillar: WorkerInitiativeRow['pillar'];
+  published_initiatives: number;
+  suppressed: true;
+  suppression_reason: 'privacy_threshold';
+  suppression_threshold: typeof SAFE_AGGREGATION_THRESHOLD;
+};
+
+type PillarAggregate = PillarAggregateClear | PillarAggregateSuppressed;
+
+type CountOrSuppressed =
+  | { suppressed: false; value: number }
+  | { suppressed: true; suppression_reason: 'privacy_threshold'; suppression_threshold: number };
+
+function safeCount(n: number): CountOrSuppressed {
+  if (n > 0 && n < SAFE_AGGREGATION_THRESHOLD) {
+    return { suppressed: true, suppression_reason: 'privacy_threshold', suppression_threshold: SAFE_AGGREGATION_THRESHOLD };
+  }
+  return { suppressed: false, value: n };
+}
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = await requireCompanyUser(request);
@@ -55,16 +81,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       ok: true,
       aggregate: {
         total_published_initiatives: 0,
-        total_interests: 0,
-        total_registrations: 0,
+        participation_summary: { suppressed: false, value: 0 },
         pillar_breakdown: [],
+        privacy_note: 'Nessuna iniziativa pubblicata. Nessun dato individuale incluso.',
       },
     });
   }
 
   const initiativeIds = initiativeRows.map(i => i.id);
 
-  // Count participation rows — no PII, no private_note, no worker_id returned
+  // Fetch participation counts — initiative_id + status ONLY.
+  // No worker_id, no private_note, no auth fields, no timestamps, no display data.
   const { data: participations, error: partErr } = await db
     .schema('personal')
     .from('worker_participation')
@@ -78,51 +105,57 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const participationRows = (participations ?? []) as { initiative_id: string; status: string }[];
 
   // Build participation lookup by initiative_id
-  const partByInit = new Map<string, { status: string }[]>();
+  const partByInit = new Map<string, WorkerParticipationRow['status'][]>();
   for (const p of participationRows) {
     const existing = partByInit.get(p.initiative_id) ?? [];
-    existing.push({ status: p.status });
+    existing.push(p.status as WorkerParticipationRow['status']);
     partByInit.set(p.initiative_id, existing);
   }
 
   // Aggregate by pillar
-  const pillarMap = new Map<string, { initiatives: string[]; participations: WorkerParticipationRow['status'][] }>();
+  const pillarMap = new Map<string, { initiatives: string[]; statuses: WorkerParticipationRow['status'][] }>();
   for (const init of initiativeRows) {
-    const entry = pillarMap.get(init.pillar) ?? { initiatives: [], participations: [] };
+    const entry = pillarMap.get(init.pillar) ?? { initiatives: [], statuses: [] };
     entry.initiatives.push(init.id);
-    const parts = partByInit.get(init.id) ?? [];
-    entry.participations.push(...(parts.map(p => p.status as WorkerParticipationRow['status'])));
+    entry.statuses.push(...(partByInit.get(init.id) ?? []));
     pillarMap.set(init.pillar, entry);
   }
 
   const pillarBreakdown: PillarAggregate[] = [];
   for (const [pillar, data] of pillarMap.entries()) {
-    const totalParticipations = data.participations.length;
-    const suppressed = totalParticipations > 0 && totalParticipations < SAFE_AGGREGATION_THRESHOLD;
-    pillarBreakdown.push({
-      pillar: pillar as WorkerInitiativeRow['pillar'],
-      published_initiatives: data.initiatives.length,
-      // Privacy threshold: suppress counts < 10 to prevent re-identification
-      total_participations: suppressed ? -1 : totalParticipations,
-      suppressed,
-    });
+    const count = data.statuses.length;
+    const isSuppressed = count > 0 && count < SAFE_AGGREGATION_THRESHOLD;
+
+    if (isSuppressed) {
+      pillarBreakdown.push({
+        pillar: pillar as WorkerInitiativeRow['pillar'],
+        published_initiatives: data.initiatives.length,
+        suppressed: true,
+        suppression_reason: 'privacy_threshold',
+        suppression_threshold: SAFE_AGGREGATION_THRESHOLD,
+      });
+    } else {
+      pillarBreakdown.push({
+        pillar: pillar as WorkerInitiativeRow['pillar'],
+        published_initiatives: data.initiatives.length,
+        suppressed: false,
+        total_participations: count,
+      });
+    }
   }
 
-  const totalInterests = participationRows.filter(p => p.status === 'interested' || p.status === 'registered').length;
-  const totalRegistrations = participationRows.filter(p => p.status === 'registered' || p.status === 'attended').length;
-
-  // Apply threshold to totals as well
-  const totalInterestsSafe = totalInterests < SAFE_AGGREGATION_THRESHOLD && totalInterests > 0 ? -1 : totalInterests;
-  const totalRegistrationsSafe = totalRegistrations < SAFE_AGGREGATION_THRESHOLD && totalRegistrations > 0 ? -1 : totalRegistrations;
+  // Global engagement summary (interested + registered + attended combined)
+  const totalEngagements = participationRows.filter(
+    p => p.status === 'interested' || p.status === 'registered' || p.status === 'attended',
+  ).length;
 
   return NextResponse.json({
     ok: true,
     aggregate: {
       total_published_initiatives: totalPublished,
-      total_interests: totalInterestsSafe,
-      total_registrations: totalRegistrationsSafe,
+      participation_summary: safeCount(totalEngagements),
       pillar_breakdown: pillarBreakdown,
-      privacy_note: 'Conteggi <10 sono soppressi per privacy (SAFE_AGGREGATION_THRESHOLD). Nessun dato individuale incluso.',
+      privacy_note: `Conteggi inferiori a ${SAFE_AGGREGATION_THRESHOLD} sono soppressi per privacy. Nessun dato individuale incluso.`,
     },
   });
 }
