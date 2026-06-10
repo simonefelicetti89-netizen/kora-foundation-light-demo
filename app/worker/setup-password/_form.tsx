@@ -73,7 +73,8 @@ export function WorkerSetupPasswordForm() {
       }
 
       setStatus('success');
-      router.push('/worker/workspace');
+      // Redirect to onboarding — gate in workspace will redirect back if already done.
+      router.push('/worker/onboarding');
     } catch {
       setStatus('error');
       setErrorMsg('Errore imprevisto. Riprova o contatta il supporto KORA.');

@@ -45,11 +45,17 @@ export default async function WorkerWorkspacePage() {
     .eq('id', worker.tenantId)
     .maybeSingle();
 
-  // Fetch private profile
+  // Fetch private profile — includes onboarding gate check
   const { data: profRow } = await db.schema('personal').from('worker_profile_private')
-    .select('display_name, onboarding_done')
+    .select('display_name, onboarding_done, onboarding_completed_at')
     .eq('worker_id', worker.workerId)
     .maybeSingle();
+
+  // Onboarding gate: if not completed → redirect to onboarding
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!(profRow as any)?.onboarding_completed_at) {
+    redirect('/worker/onboarding');
+  }
 
   // Fetch published initiatives for worker's tenant
   const { data: rawInitiatives } = await db.schema('personal').from('worker_initiative')
@@ -209,9 +215,29 @@ export default async function WorkerWorkspacePage() {
             {sc.label}
           </span>
         </div>
-        <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: 0 }}>
-          {displayName} · {companyName}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: 0 }}>
+            {displayName} · {companyName}
+          </p>
+          {/* Privacy active badge */}
+          <span
+            data-testid="privacy-active-badge"
+            style={{
+              fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
+              background: 'rgba(22,101,52,0.10)', color: '#166534',
+              border: '1px solid rgba(22,101,52,0.22)', borderRadius: 999, padding: '2px 8px',
+            }}
+          >
+            Spazio privato attivo
+          </span>
+          {/* Review privacy link */}
+          <a
+            href="/worker/onboarding?mode=review"
+            style={{ fontSize: 11, color: 'rgba(6,3,43,0.40)', textDecoration: 'underline', textUnderlineOffset: 2, letterSpacing: '0.01em' }}
+          >
+            Rivedi privacy boundary
+          </a>
+        </div>
       </div>
 
       {/* Privacy notice — always visible */}
