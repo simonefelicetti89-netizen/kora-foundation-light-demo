@@ -385,6 +385,53 @@ Dopo il trial, se vuoi ripulire il tenant di test:
 
 ---
 
+## Checklist UX — verifica prima di presentare il trial
+
+Esegui questa verifica manuale per ogni sessione di trial demo:
+
+### Worker experience
+- [ ] `/worker/login` — la pagina mostra "Accesso lavoratore" con il messaggio privacy in basso
+- [ ] `/worker/onboarding` — i 5 step sono navigabili, il consenso è richiesto
+- [ ] `/worker/workspace` — il nome del worker appare nell'header (se ha display_name impostato)
+- [ ] `/worker/workspace` — la sezione "Le tue iniziative" mostra le card con date in formato italiano (es. "15 gen 2024")
+- [ ] `/worker/workspace` — il click su "Mi interessa" mostra "Aggiornamento salvato" dopo 2-3 secondi
+- [ ] `/worker/workspace` — se nessuna iniziativa → messaggio spiegativo ("quando attive, appariranno qui")
+- [ ] `/worker/workspace` — il profilo di attivazione è vuoto fino alla prima partecipazione (empty state corretto)
+- [ ] `/worker/workspace` — il footer non mostra riferimenti tecnici interni
+- [ ] `/worker/workspace` — "Rivedi privacy boundary" punta a `/worker/onboarding?mode=review`
+
+### Privacy boundary
+- [ ] Nessuna company route accessibile al worker (redirect a `/worker/login`)
+- [ ] Nessun `worker_ref` esposto nell'interfaccia worker
+- [ ] Il profilo di attivazione ha etichetta "non è una valutazione individuale"
+- [ ] La company workspace mostra SUPPRESSED per N < 10 partecipazioni per pillar
+
+### Navigazione
+- [ ] Nessun link rotto nel workspace worker
+- [ ] Nessun link a `/company/login` nel percorso worker
+
+---
+
+## MVP Limitations
+
+Funzionalità non ancora costruite in Foundation Light — non presentare come attive:
+
+| Funzionalità | Stato | Note |
+|---|---|---|
+| Dynamic Impact CV completo | Non disponibile | Placeholder "Prossimamente" nel workspace |
+| Partner Map | Non disponibile | Fuori scope Foundation Light |
+| KORA Commons / social feed | Non disponibile | Fuori scope Foundation Light |
+| Worker ranking o gamification | Fuori scope permanente | Non costruire — vietato dall'architettura |
+| Wallet / voucher / pagamenti | Fuori scope Foundation Light | Non costruire pre-Gate 3 |
+| Note private sulle partecipazioni | Parziale | Campo presente nel DB, UI non esposta |
+| Condivisione Dynamic CV (LinkedIn) | Non disponibile | Future Vision — mockup only |
+| Prenotazioni dirette servizi | Non disponibile | Booking Light = solo request/confirm |
+
+**Cosa dire al worker trial:**
+> "Stai provando KORA Foundation Light — il circuito core è completo. Dynamic Impact CV e la condivisione del profilo arrivano nel prossimo sprint. Tutto quello che vedi è privato e non visibile alla tua azienda."
+
+---
+
 ## Quanto manca alla Worker Platform MVP
 
 Dopo B114, lo stato della Worker Platform è:

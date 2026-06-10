@@ -224,8 +224,8 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
       {
         heading: 'Attivazione',
         items: [
-          { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV' },
-          { href: '/my-kora/opportunities', label: 'Opportunità' },
+          { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV', comingSoon: true },
+          { href: '/my-kora/opportunities', label: 'Opportunità',       comingSoon: true },
           { href: '/commons',               label: 'KORA Commons', preview: true },
           { href: '/my-kora/bookings',      label: 'Prenotazioni', comingSoon: true },
           { href: '/my-kora/collective',    label: 'Collettivo',   comingSoon: true },

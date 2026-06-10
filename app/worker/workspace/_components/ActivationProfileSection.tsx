@@ -98,13 +98,19 @@ export function ActivationProfileSection({ profile }: { profile: WorkerActivatio
         {/* Privacy card — always visible */}
         <PrivacyCard />
 
-        <div style={{
-          background: 'rgba(6,3,43,0.03)', border: '1px dashed rgba(6,3,43,0.12)',
-          borderRadius: 8, padding: '20px', textAlign: 'center', marginTop: 14,
-        }}>
+        <div
+          data-testid="activation-profile-empty"
+          style={{
+            background: 'rgba(6,3,43,0.03)', border: '1px dashed rgba(6,3,43,0.12)',
+            borderRadius: 8, padding: '20px', textAlign: 'center', marginTop: 14,
+          }}
+        >
           <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: 0, lineHeight: 1.6 }}>
             Nessuna attività registrata ancora.<br />
-            Esprimi interesse o iscriviti a un&apos;iniziativa per iniziare a costruire il tuo profilo.
+            Esprimi interesse o iscriviti a un&apos;iniziativa per iniziare.<br />
+            <span style={{ fontSize: 11, color: 'rgba(6,3,43,0.35)' }}>
+              Questo profilo non è una valutazione individuale e non viene condiviso con la tua azienda.
+            </span>
           </p>
         </div>
 

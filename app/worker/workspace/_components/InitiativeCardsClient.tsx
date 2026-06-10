@@ -43,6 +43,17 @@ const ELIGIBILITY_LABELS: Record<string, string> = {
   limited:  'Accesso limitato',
 };
 
+const MONTHS_IT = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+
+function formatDateIT(dateStr: string | null): string {
+  if (!dateStr) return '';
+  const parts = dateStr.slice(0, 10).split('-');
+  if (parts.length !== 3) return dateStr;
+  const [y, m, d] = parts;
+  const month = MONTHS_IT[parseInt(m ?? '0') - 1] ?? '';
+  return `${parseInt(d ?? '0')} ${month} ${y}`;
+}
+
 async function postInterest(
   initiativeId: string,
   status: WorkerParticipationRow['status'],
@@ -96,8 +107,9 @@ function InitiativeCard({
   currentStatus: WorkerParticipationRow['status'] | null;
   onStatusChange: (id: string, status: WorkerParticipationRow['status']) => void;
 }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [saved, setSaved]       = useState(false);
 
   const pillarColor = PILLAR_COLORS[init.pillar] ?? '#555';
   const isAttended  = currentStatus === 'attended';
@@ -105,9 +117,12 @@ function InitiativeCard({
   async function handleCTA(status: WorkerParticipationRow['status']) {
     setLoading(true);
     setError(null);
+    setSaved(false);
     const result = await postInterest(init.id, status);
     if (result.ok) {
       onStatusChange(init.id, status);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
     } else {
       setError(result.error ?? 'Errore sconosciuto.');
     }
@@ -149,13 +164,15 @@ function InitiativeCard({
           </div>
           {init.description && (
             <div style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', lineHeight: 1.4 }}>
-              {init.description.slice(0, 160)}
+              {init.description.length > 160
+                ? `${init.description.slice(0, 160)}…`
+                : init.description}
             </div>
           )}
           {(init.start_date ?? init.end_date) && (
             <div style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', marginTop: 4 }}>
-              {init.start_date && `Dal ${init.start_date}`}
-              {init.end_date && ` al ${init.end_date}`}
+              {init.start_date && `Dal ${formatDateIT(init.start_date)}`}
+              {init.end_date && ` al ${formatDateIT(init.end_date)}`}
             </div>
           )}
         </div>
@@ -205,6 +222,11 @@ function InitiativeCard({
               Aggiornamento…
             </span>
           )}
+          {saved && !loading && (
+            <span data-testid="initiative-saved-feedback" style={{ fontSize: 10, color: '#16a34a', fontStyle: 'italic' }}>
+              Aggiornamento salvato
+            </span>
+          )}
         </div>
       )}
 
@@ -226,9 +248,10 @@ export function InitiativeCardsClient({ initiatives }: { initiatives: Initiative
 
   if (initiatives.length === 0) {
     return (
-      <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.5 }}>
-        Nessuna iniziativa disponibile per il tuo tenant.
-        L&apos;amministratore KORA le pubblica quando pronte.
+      <p data-testid="initiative-cards-empty" style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.6 }}>
+        Nessuna iniziativa disponibile per la tua azienda.<br />
+        Le iniziative vengono pubblicate dall&apos;amministratore KORA —
+        quando attive, appariranno qui e potrai esprimere interesse o iscriverti.
       </p>
     );
   }

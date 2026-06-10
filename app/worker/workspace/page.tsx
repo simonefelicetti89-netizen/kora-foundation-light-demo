@@ -197,16 +197,20 @@ export default async function WorkerWorkspacePage() {
   };
   const sc = STATUS_COLOR[status] ?? STATUS_COLOR['pending'];
 
+  const firstName = (prof.display_name as string | null)
+    ? (prof.display_name as string).split(' ')[0]
+    : null;
+
   return (
     <>
     <SessionBar email={worker.email} role={worker.koraRole} />
-    <div style={{ maxWidth: 660, margin: '0 auto', padding: '40px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
+    <div data-testid="workspace-page" style={{ maxWidth: 660, margin: '0 auto', padding: '40px 24px', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
 
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <h1 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: 0 }}>
-            Il mio spazio
+          <h1 data-testid="workspace-hero" style={{ fontSize: '1.7rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: 0 }}>
+            {firstName ? `Ciao, ${firstName}` : 'Il mio spazio'}
           </h1>
           <span style={{
             fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -259,7 +263,6 @@ export default async function WorkerWorkspacePage() {
         <h2 style={sectionHeadingStyle}>La tua identità KORA</h2>
         <div style={{ display: 'grid', gap: 10 }}>
           <Row label="Email" value={worker.email} />
-          <Row label="Worker Ref" value={workerRef} mono />
           <Row label="Azienda" value={companyName} />
           <Row label="Onboarding" value={onboardingDone ? 'Completato' : 'In attesa'} />
         </div>
@@ -281,8 +284,9 @@ export default async function WorkerWorkspacePage() {
       }}>
         <h2 style={sectionHeadingStyle}>Il mio storico</h2>
         {history.length === 0 ? (
-          <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
-            Nessuna partecipazione registrata ancora.
+          <p data-testid="workspace-history-empty" style={{ fontSize: 12, color: 'rgba(6,3,43,0.40)', margin: 0, lineHeight: 1.6 }}>
+            Non hai ancora partecipazioni registrate.<br />
+            Esprimi interesse o iscriviti a un&apos;iniziativa nella sezione &ldquo;Le tue iniziative&rdquo; qui sopra.
           </p>
         ) : (
           <div style={{ display: 'grid', gap: 10 }}>
@@ -318,7 +322,7 @@ export default async function WorkerWorkspacePage() {
       </div>
 
       <div style={{ marginTop: 28, fontSize: 10, color: 'rgba(6,3,43,0.30)', lineHeight: 1.5 }}>
-        KORA Foundation Light · Worker Workspace · B109 · I dati aziendali rimangono aggregati e non mostrano dati individuali.
+        KORA Foundation Light · Spazio lavoratore · I dati aziendali rimangono aggregati e non mostrano dati individuali.
       </div>
     </div>
     </>
