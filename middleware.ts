@@ -1,4 +1,4 @@
-// middleware.ts — Supabase SSR session refresh + B36.1 company user route protection
+// middleware.ts — Supabase SSR session refresh + role-based route protection
 //
 // Purpose:
 //   1. Refresh the Supabase session cookie so auth.getUser() stays valid server-side.
@@ -6,6 +6,8 @@
 //      attempt to access any path outside their allowed set (demo routes, admin tools,
 //      future-vision, landing page). This enforces product mode separation so real
 //      company tenants never reach synthetic demo pages.
+//   3. B104: Redirect authenticated WORKER users to /worker/workspace if they attempt
+//      to access admin or company paths. Workers are confined to /worker/* only.
 //
 // Route-level fine-grained auth is in lib/auth/kora-session.ts.
 // KORA_ADMIN routes have their own requireKoraAdmin() checks — not blocked here.
@@ -25,11 +27,22 @@ const COMPANY_ALLOWED_PREFIXES = [
   '/company/pillars',        // live intelligence — shows real pillar distribution
   '/company/financial',      // live intelligence — shows real BTI data
   '/company/reports',        // live intelligence — shows real Decision Pack status
+  '/company/status',         // live status center — readiness and submission tracking
+  '/company/login',          // company login page — for re-authentication after session expiry
   '/company/setup-password', // invite flow — set password after accepting KORA invite
   '/auth/callback',          // Supabase PKCE code exchange — publicly reachable before session
   '/api/',                   // all API routes (have own auth)
   '/_next',                  // Next.js internals
-  '/admin/login',            // login page (needed if session expires)
+];
+
+// B104: Paths that authenticated worker users are allowed to access.
+// Workers are confined to their private /worker/* space only.
+const WORKER_ALLOWED_PREFIXES = [
+  '/worker/',                // worker private space
+  '/auth/callback',          // Supabase PKCE code exchange
+  '/api/',                   // all API routes (have own requireWorkerUser auth)
+  '/_next',
+  '/company/login',          // worker re-authentication (shared login page handles WORKER role)
 ];
 
 export async function middleware(request: NextRequest) {
@@ -83,6 +96,19 @@ export async function middleware(request: NextRequest) {
 
     if (!isAllowed) {
       return NextResponse.redirect(new URL('/company/workspace', request.url));
+    }
+  }
+
+  // B104: Redirect authenticated workers away from admin/company paths.
+  // Workers are confined to /worker/* — any other path redirects to their workspace.
+  const isRealWorker = sessionKoraRole === 'WORKER';
+
+  if (isRealWorker) {
+    const pathname = request.nextUrl.pathname;
+    const isAllowed = WORKER_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+    if (!isAllowed) {
+      return NextResponse.redirect(new URL('/worker/workspace', request.url));
     }
   }
 

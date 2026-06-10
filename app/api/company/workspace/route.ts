@@ -1,5 +1,6 @@
 // app/api/company/workspace/route.ts
 // B36 PART 2 — Company workspace summary — COMPANY_ADMIN / COMPANY_VIEWER only.
+// B105 FIX: table names corrected (scoring_result→kora_index_result, decision_pack→decision_pack_version).
 //
 // GET /api/company/workspace
 //
@@ -7,10 +8,10 @@
 // NEVER accepts tenantId from query params or request body for company users.
 //
 // Returns read-only workspace summary:
-//   - company name, period, methodology version
-//   - KORA Index (if available): value, confidence, safeguard
+//   - company name, tenant_code, period, methodology version
+//   - KORA Index (if available): value, confidence, safeguard, reporting_period
 //   - Reporting readiness: batch count, evidence availability
-//   - Decision pack status
+//   - Decision pack status + preview link (company-facing /api/company/decision-pack)
 //
 // NEVER returns:
 //   - Individual worker data / pseudonym_id / PIB records
@@ -46,6 +47,7 @@ export async function GET(request: NextRequest) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = tenantRow as any;
+  const tenantCode = t.tenant_code as string;
 
   // ── 2. Workforce baseline ──────────────────────────────────────────────────
   const { data: baselineRow } = await db
@@ -66,22 +68,22 @@ export async function GET(request: NextRequest) {
     .eq('tenant_id', tenantId)
     .neq('batch_status', 'rejected');
 
-  // ── 4. Scoring result (if available) ──────────────────────────────────────
-  const { data: scoringRow } = await db
-    .schema('analytics').from('scoring_result')
-    .select('id, kora_index_value, confidence_score, safeguard_status, activation_rate, reporting_period, created_at')
+  // ── 4. KORA Index result (B105: was wrongly querying non-existent 'scoring_result') ──
+  const { data: kiRow } = await db
+    .schema('analytics').from('kora_index_result')
+    .select('id, kora_index_value, confidence_score, safeguard_status, activation_rate, meaningful_activation_rate, reporting_period, methodology_version_id, calibration_status, created_at')
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sr = scoringRow as any | null;
+  const ki = kiRow as any | null;
 
-  // ── 5. Decision pack (if available) ───────────────────────────────────────
+  // ── 5. Decision pack (B105: was wrongly querying non-existent 'decision_pack') ──
   const { data: dpRow } = await db
-    .schema('analytics').from('decision_pack')
-    .select('id, version_id, status, created_at')
+    .schema('analytics').from('decision_pack_version')
+    .select('id, version_id, status, reporting_period, created_at')
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -90,42 +92,51 @@ export async function GET(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dp = dpRow as any | null;
 
+  const latestReportingPeriod: string = (ki?.reporting_period as string | undefined) ?? (dp?.reporting_period as string | undefined) ?? '';
+
   // ── 6. Derive reporting readiness ──────────────────────────────────────────
   const reportingReadiness = {
     hasWorkforceBaseline: !!wb,
     hasEvidenceBatches:   (batchCount ?? 0) > 0,
     batchCount:           batchCount ?? 0,
-    hasScoring:           !!sr,
+    hasScoring:           !!ki,
     hasDecisionPack:      !!dp,
     decisionPackStatus:   dp?.status ?? 'not_ready',
-    readinessLevel:       sr ? (dp ? 'decision_pack_ready' : 'scored') : (batchCount ?? 0) > 0 ? 'evidence_collected' : 'not_started',
+    readinessLevel:       ki ? (dp ? 'decision_pack_ready' : 'scored') : (batchCount ?? 0) > 0 ? 'evidence_collected' : 'not_started',
     caveat:               'La readiness rappresenta lo stato operativo del pilot KORA. Non certifica conformità normativa, non è un giudizio ESG, non è audit-grade.',
   } as const;
 
   // ── 7. Safe KORA Index summary ─────────────────────────────────────────────
-  const koraIndexSummary = sr ? {
-    koraIndexValue:    sr.kora_index_value as number,
-    confidenceScore:   sr.confidence_score as number,
-    safeguardStatus:   sr.safeguard_status as string,
-    activationRate:    typeof sr.activation_rate === 'number' ? sr.activation_rate : null,
-    reportingPeriod:   sr.reporting_period as string,
-    methodologyVersion: t.methodology_version_id as string,
-    calibrationStatus:  'pre_empirical_calibration' as const,
+  const koraIndexSummary = ki ? {
+    koraIndexValue:    ki.kora_index_value as number,
+    confidenceScore:   ki.confidence_score as number,
+    safeguardStatus:   ki.safeguard_status as string,
+    activationRate:    typeof ki.activation_rate === 'number' ? ki.activation_rate : null,
+    meaningfulActivationRate: typeof ki.meaningful_activation_rate === 'number' ? ki.meaningful_activation_rate : null,
+    reportingPeriod:   ki.reporting_period as string,
+    methodologyVersion: (ki.methodology_version_id as string) ?? (t.methodology_version_id as string),
+    calibrationStatus: (ki.calibration_status as string) ?? 'pre_empirical_calibration',
     // Non-suppressible labels required by doc 21b
     displayLabels: {
-      methodology:   t.methodology_version_id as string,
-      calibration:   'pre_empirical_calibration',
+      methodology:   (ki.methodology_version_id as string) ?? (t.methodology_version_id as string),
+      calibration:   (ki.calibration_status as string) ?? 'pre_empirical_calibration',
       disclaimer:    'KORA Foundation Light · Dati pilota · Calibrazione pre-empirica. Non audit-grade, non certificazione ESG, non compliance normativa.',
     },
   } : null;
+
+  // Decision Pack preview URL — company-facing endpoint (session-derived tenant, no admin routes)
+  const dpPreviewUrl = dp && latestReportingPeriod
+    ? `/api/company/decision-pack?reportingPeriod=${encodeURIComponent(latestReportingPeriod)}`
+    : null;
 
   return NextResponse.json({
     ok:              true,
     role:            koraRole,
     tenant: {
       id:                  tenantId,
+      tenantCode,
       companyName:         t.company_name as string,
-      methodologyVersion:  t.methodology_version_id as string,
+      methodologyVersion:  (t.methodology_version_id as string) ?? 'KORA Index v1.0',
       calibrationStatus:   'pre_empirical_calibration',
       isActive:            t.is_active as boolean,
     },
@@ -136,10 +147,11 @@ export async function GET(request: NextRequest) {
     koraIndex:         koraIndexSummary,
     reportingReadiness,
     decisionPack: dp ? {
-      status:     dp.status as string,
-      createdAt:  dp.created_at as string,
-      // No direct links to admin routes — company workspace links only
-      viewLink:   '/company/workspace',
+      status:        dp.status as string,
+      reportingPeriod: dp.reporting_period as string,
+      versionId:     dp.version_id as string,
+      createdAt:     dp.created_at as string,
+      previewUrl:    dpPreviewUrl,
     } : null,
     // Non-suppressible labels — always present
     methodologyDisclaimer: {

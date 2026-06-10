@@ -86,7 +86,7 @@ export default async function CompanyWorkspaceLayout({ children }: { children: R
 
         {is401 && (
           <Link
-            href="/admin/login"
+            href="/company/login"
             className="inline-block bg-[#06032B] text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-[#06032B] transition-colors">
             Accedi
           </Link>

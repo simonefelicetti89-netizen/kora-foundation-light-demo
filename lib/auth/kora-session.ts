@@ -1,5 +1,5 @@
 // lib/auth/kora-session.ts
-// Server-side session and role helper for KORA_ADMIN and company user access control.
+// Server-side session and role helper for KORA_ADMIN, company, and worker access control.
 //
 // Authorization rules:
 //   - kora_role is read ONLY from user.app_metadata (server-controlled, Admin API only)
@@ -12,9 +12,10 @@
 //   2. Authorization header: Bearer <access_token> (programmatic API clients, testing)
 //
 // Supported roles:
-//   KORA_ADMIN   — platform operator, full admin access
+//   KORA_ADMIN     — platform operator, full admin access
 //   COMPANY_ADMIN  — company-scoped, read/manage own tenant workspace
 //   COMPANY_VIEWER — company-scoped, strictly read-only
+//   WORKER         — worker-scoped, private personal space only
 
 import { getSupabaseServerClient, getSupabaseServiceClient } from '@/lib/supabase/server';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -215,16 +216,87 @@ export function assertTenantAccess(
   return null; // access granted
 }
 
+// ── KoraWorkerUser — authenticated worker in their private space ──────────────
+// workerId links to personal.worker_identity.id — always from app_metadata.
+// tenantId scopes which company this worker belongs to.
+// Company roles NEVER see this user's individual data — only aggregate counts.
+
+export interface KoraWorkerUser {
+  id: string;
+  email: string;
+  koraRole: 'WORKER';
+  tenantId: string;
+  workerId: string;
+  workerStatus: 'invited' | 'active' | 'pending' | 'disabled';
+}
+
+// ── requireWorkerUser — returns KoraWorkerUser or a 401/403 NextResponse ──────
+
+export async function requireWorkerUser(request?: NextRequest): Promise<KoraWorkerUser | NextResponse> {
+  const user = await resolveUser(request);
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const appMeta = user.app_metadata as Record<string, unknown> | undefined;
+  const koraRole = appMeta?.kora_role as string | undefined;
+
+  if (koraRole !== 'WORKER') {
+    return NextResponse.json(
+      { error: 'Forbidden — WORKER role required', role_found: koraRole ?? 'none' },
+      { status: 403 },
+    );
+  }
+
+  const tenantId = appMeta?.kora_tenant_id as string | undefined;
+  if (!tenantId) {
+    return NextResponse.json({ error: 'Forbidden — no tenant assigned to this worker' }, { status: 403 });
+  }
+
+  const workerId = appMeta?.kora_worker_id as string | undefined;
+  if (!workerId) {
+    return NextResponse.json({ error: 'Forbidden — no worker identity assigned' }, { status: 403 });
+  }
+
+  const workerStatus = (appMeta?.kora_status as string | undefined) ?? 'invited';
+  if (workerStatus === 'disabled') {
+    return NextResponse.json({ error: 'Account disabilitato. Contatta il tuo amministratore.' }, { status: 403 });
+  }
+
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    koraRole: 'WORKER',
+    tenantId,
+    workerId,
+    workerStatus: workerStatus as KoraWorkerUser['workerStatus'],
+  };
+}
+
+// ── getCurrentWorkerUser — returns KoraWorkerUser or null (no throw) ──────────
+
+export async function getCurrentWorkerUser(request?: NextRequest): Promise<KoraWorkerUser | null> {
+  const result = await requireWorkerUser(request);
+  return result instanceof NextResponse ? null : result;
+}
+
 // ── Type guards — distinguish error response from authorized user ──────────────
 
-export function isKoraAuthError(value: KoraUser | KoraCompanyUser | NextResponse): value is NextResponse {
+export function isKoraAuthError(
+  value: KoraUser | KoraCompanyUser | KoraWorkerUser | NextResponse,
+): value is NextResponse {
   return value instanceof NextResponse;
 }
 
-export function isKoraAdmin(value: KoraUser | KoraCompanyUser): value is KoraUser {
+export function isKoraAdmin(value: KoraUser | KoraCompanyUser | KoraWorkerUser): value is KoraUser {
   return value.koraRole === 'KORA_ADMIN';
 }
 
-export function isCompanyUser(value: KoraUser | KoraCompanyUser): value is KoraCompanyUser {
+export function isCompanyUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser): value is KoraCompanyUser {
   return value.koraRole === 'COMPANY_ADMIN' || value.koraRole === 'COMPANY_VIEWER';
+}
+
+export function isWorkerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser): value is KoraWorkerUser {
+  return value.koraRole === 'WORKER';
 }

@@ -553,10 +553,20 @@ export default function CompanyStatusCenterPage() {
       {/* ── SECTION I — Submission Transparency ────────────────────────────── */}
       <div id="submission-transparency" style={{ marginTop: 16 }}>
         <SectionCard title="Trasparenza dati — che fine hanno fatto i tuoi file?">
-          <SubmissionFeedbackPanel
-            feedback={submissionFeedbackService.getDemoFeedback(FL_COMPANY_ID)}
-            submissions={submissions}
-          />
+          {isLive ? (
+            <div style={{ padding: '8px 0' }}>
+              <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: 0 }}>
+                Lo stato dei tuoi invii è visibile nelle notifiche ricevute da KORA Admin.
+                {submissions.length > 0 && ` Invii registrati: ${submissions.length}.`}
+                {submissions.length === 0 && ' Nessun invio ancora registrato per questo tenant.'}
+              </p>
+            </div>
+          ) : (
+            <SubmissionFeedbackPanel
+              feedback={submissionFeedbackService.getDemoFeedback(FL_COMPANY_ID)}
+              submissions={submissions}
+            />
+          )}
         </SectionCard>
       </div>
 

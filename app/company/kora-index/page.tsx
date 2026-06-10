@@ -181,7 +181,7 @@ export default function KoraIndexDetail() {
   // B59: When a real company session is detected, use live tenantId.
   // Otherwise use the demo user's company_id (Meridiana seed).
   const demoUser   = accountProvisioningService.getCurrentDemoUser(activeRole);
-  const COMPANY_ID = isLive ? (liveId ?? 'meridiana-group') : (demoUser.company_id ?? 'meridiana-group');
+  const COMPANY_ID = isLive ? (liveId ?? '') : (demoUser.company_id ?? 'meridiana-group');
   const tenant     = isLive ? null : tenantService.getTenant(COMPANY_ID);
 
   const { data: scoring, loading } = useScoringResult({

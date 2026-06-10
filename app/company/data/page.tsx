@@ -10,6 +10,7 @@ import { accountProvisioningService } from '@/services/account/AccountProvisioni
 import { tenantService } from '@/services/tenant/TenantService';
 import { ingestionSimulatorService } from '@/services/ingestion-simulator/IngestionSimulatorService';
 import { cn } from '@/lib/utils';
+import { useCompanySession } from '../_providers/CompanySessionProvider';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -249,6 +250,7 @@ export default function DataEvidence() {
   const { activeRole }     = useRole();
   const { activeScenario } = useScenario();
   const isAdmin            = isAdminRole(activeRole);
+  const { isLive, companyName: liveCompanyName, sessionLoading } = useCompanySession();
 
   const companyId    = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
   const tenant       = tenantService.getTenant(companyId);
@@ -258,6 +260,40 @@ export default function DataEvidence() {
   const mapping      = ingestionSimulatorService.getMappingConfidenceSummary(companyId, activeScenario);
   const pending      = ingestionSimulatorService.getPendingReviewSummary(companyId, activeScenario);
   const evidence     = ingestionSimulatorService.getEvidenceCoverageSummary(companyId, activeScenario);
+
+  if (isLive) {
+    return (
+      <div className="space-y-6">
+        <div className="rounded-xl border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-5 py-4">
+          <p className="text-xs font-semibold text-[rgba(6,3,43,0.62)] mb-1">Elaborazione gestita da KORA Operator</p>
+          <p className="text-xs text-[rgba(6,3,43,0.52)] leading-relaxed">
+            KORA Admin elabora i tuoi file prima che entrino nel calcolo del KORA Index.
+            Lo stato delle tue evidenze viene aggiornato nel workspace quando KORA Admin completa la revisione.
+          </p>
+        </div>
+        <div style={{ padding: '8px 0' }}>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
+            Stato Dati &amp; Evidenze · LIVE
+          </p>
+          <h1 className="text-xl font-bold text-[#06032B] mb-2">
+            {sessionLoading ? '…' : (liveCompanyName ?? 'La tua organizzazione')}
+          </h1>
+          <p className="text-sm text-[rgba(6,3,43,0.55)] max-w-xl leading-relaxed">
+            Il dettaglio delle fonti dati e delle evidenze per il tuo tenant sarà visibile qui
+            una volta che KORA Admin avrà elaborato il primo batch di dati.
+          </p>
+          <div className="mt-4">
+            <Link
+              href="/company/workspace"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.12)] bg-[rgba(6,3,43,0.04)] px-3.5 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.08)] transition-colors"
+            >
+              ← Torna al Workspace
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

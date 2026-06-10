@@ -46,6 +46,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`/company/setup-password?${params}`, origin));
   }
 
-  // Session established — redirect to password setup
+  // Session established — route to the correct setup page by role.
+  // COMPANY_ADMIN / COMPANY_VIEWER → /company/setup-password
+  // WORKER → /worker/setup-password
+  // Unknown role → /company/login (safe fallback)
+  const { data: { user } } = await supabase.auth.getUser();
+  const koraRole = user?.app_metadata?.kora_role as string | undefined;
+
+  if (koraRole === 'WORKER') {
+    return NextResponse.redirect(new URL('/worker/setup-password', origin));
+  }
+
   return NextResponse.redirect(new URL('/company/setup-password', origin));
 }

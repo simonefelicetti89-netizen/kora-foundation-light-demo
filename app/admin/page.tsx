@@ -200,6 +200,8 @@ export default function KoraControlTower() {
             { href: '/admin/uef-review',              label: 'UEF™ Review · LIVE' },
             { href: '/admin/company-submissions',     label: 'Submission Queue · LIVE' },
             { href: '/admin/live-spine-diagnostics',  label: 'Live Spine Diagnostics · LIVE' },
+            { href: '/admin/workers',                 label: 'Worker Provisioning · LIVE' },
+            { href: '/admin/worker-diagnostics',      label: 'Worker Diagnostics · LIVE' },
           ] as const).map(({ href, label }) => (
             <Link key={href} href={href} style={{ display: 'block', borderRadius: 8, padding: '8px 12px', background: 'rgba(22,101,52,0.08)', border: '1px solid rgba(22,101,52,0.20)', fontSize: '11px', fontWeight: 600, color: '#166534', textDecoration: 'none', fontFamily: FONT }}>
               {label}

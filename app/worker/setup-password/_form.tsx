@@ -1,9 +1,9 @@
 'use client';
 
-// app/company/setup-password/_form.tsx
-// Password setup form for company users accepting a KORA invite.
+// app/worker/setup-password/_form.tsx
+// Password setup form for workers accepting a KORA invite.
 // Session is already established by /auth/callback before this page renders.
-// On success: redirects to /company/workspace.
+// On success: redirects to /worker/workspace.
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -13,7 +13,7 @@ import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
-export function SetupPasswordForm() {
+export function WorkerSetupPasswordForm() {
   const router       = useRouter();
   const searchParams = useSearchParams();
 
@@ -73,7 +73,7 @@ export function SetupPasswordForm() {
       }
 
       setStatus('success');
-      router.push('/company/workspace');
+      router.push('/worker/workspace');
     } catch {
       setStatus('error');
       setErrorMsg('Errore imprevisto. Riprova o contatta il supporto KORA.');
@@ -105,17 +105,6 @@ export function SetupPasswordForm() {
         padding:        '24px',
       }}
     >
-      {/* Background gradient */}
-      <div
-        style={{
-          position:     'absolute',
-          inset:        0,
-          background:   'radial-gradient(600px 440px at 20% 30%, rgba(97,86,245,0.12), transparent 60%), radial-gradient(500px 360px at 80% 80%, rgba(199,111,61,0.10), transparent 60%)',
-          pointerEvents: 'none',
-        }}
-        aria-hidden="true"
-      />
-
       <div
         style={{
           position:     'relative',
@@ -135,13 +124,13 @@ export function SetupPasswordForm() {
 
         <div style={{ marginBottom: 28, textAlign: 'center' }}>
           <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 8 }}>
-            Company Area · Primo accesso
+            My KORA · Primo accesso
           </p>
           <h1 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '1.375rem', letterSpacing: '-0.025em', lineHeight: 1.1, color: TOKENS.ink, marginBottom: 6 }}>
             Imposta la tua password
           </h1>
           <p style={{ fontFamily: FONT, fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
-            Benvenuto in KORA. Crea la tua password per accedere al workspace aziendale.
+            Benvenuto in KORA. Crea la tua password per accedere al tuo spazio personale.
           </p>
         </div>
 
@@ -234,7 +223,7 @@ export function SetupPasswordForm() {
         )}
 
         <p style={{ fontFamily: FONT, fontSize: '10.5px', color: TOKENS.inkMeta, textAlign: 'center', marginTop: 20, lineHeight: 1.5 }}>
-          KORA Foundation Light · Company Area
+          KORA Foundation Light · Il tuo datore di lavoro non può vedere questi dati
         </p>
       </div>
     </div>

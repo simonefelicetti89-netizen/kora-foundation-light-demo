@@ -97,20 +97,23 @@ describe('B83-B Task 2 — WorkerAdoptionPanel created', () => {
   });
 });
 
+// B105 update: WorkerAdoptionPanel and FL_COMPANY_ID removed from live workspace.
+// Live workspace no longer uses synthetic demo company ID — tenant comes from session.
+// The demo cockpit (/company/page.tsx) still renders WorkerAdoptionPanel correctly.
 describe('B83-B Task 2 — WorkerAdoptionPanel rendered in workspace', () => {
   const workspace = read('app/company/workspace/_components/CompanyWorkspaceView.tsx');
 
-  it('imports WorkerAdoptionPanel', () => {
-    expect(workspace).toContain('WorkerAdoptionPanel');
+  it('workspace live binding uses tenant from session (not FL_COMPANY_ID)', () => {
+    // B105: FL_COMPANY_ID removed — live workspace must not have demo hardcoded company
+    expect(workspace).not.toContain('FL_COMPANY_ID');
+    expect(workspace).not.toContain('meridiana-group');
   });
 
-  it('renders Worker Space section', () => {
-    expect(workspace).toContain('Worker Space');
-  });
-
-  it('passes companyId (FL constant)', () => {
-    expect(workspace).toContain('FL_COMPANY_ID');
-    expect(workspace).toContain('meridiana-group');
+  it('demo cockpit still renders WorkerAdoptionPanel with companyId', () => {
+    // The demo cockpit (/company/page.tsx) keeps WorkerAdoptionPanel for KORA_ADMIN demo review
+    const cockpit = read('app/company/page.tsx');
+    expect(cockpit).toContain('WorkerAdoptionPanel');
+    expect(cockpit).toContain('companyId={companyId}');
   });
 });
 

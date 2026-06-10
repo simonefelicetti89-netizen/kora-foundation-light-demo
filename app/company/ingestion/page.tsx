@@ -7,6 +7,7 @@ import { useState, useMemo } from 'react';
 import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import Link from 'next/link';
 import { OperatorToolBoundary } from '@/components/demo/OperatorToolBoundary';
+import { useCompanySession } from '../_providers/CompanySessionProvider';
 import {
   ingestionPipelineService,
 } from '@/services/ingestion-pipeline/IngestionPipelineService';
@@ -122,16 +123,48 @@ function getDoctrineCopy(row: PipelineAnalyzedRow): { header: string; body: stri
 // C-03: KORA Intake Engine™
 export default function AIIngestionAssistant() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { isLive, companyName: liveCompanyName, sessionLoading } = useCompanySession();
 
   const rows    = useMemo(() => ingestionPipelineService.analyzeBatch(), []);
   const summary = useMemo(() => ingestionPipelineService.getIngestionSummary(), []);
 
   const selectedRow = selectedId ? (rows.find((r) => r.raw.id === selectedId) ?? null) : null;
 
+  if (isLive) {
+    return (
+      <div className="space-y-6">
+        <OperatorToolBoundary />
+        <div style={{ padding: '20px 0' }}>
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
+            KORA Intake Engine™ · LIVE
+          </p>
+          <h1 className="text-xl font-bold text-[#06032B] mb-2">
+            {sessionLoading ? '…' : (liveCompanyName ?? 'La tua organizzazione')}
+          </h1>
+          <p className="text-sm text-[rgba(6,3,43,0.55)] max-w-xl leading-relaxed">
+            Il processo di intake dati per il tuo tenant è gestito da KORA Admin.
+            KORA Admin carica, classifica e rivede i tuoi file prima che entrino nel calcolo del KORA Index.
+          </p>
+          <p className="mt-2 text-xs text-[rgba(6,3,43,0.40)]">
+            Quando KORA Admin elabora nuovi dati per il tuo tenant, lo stato di attivazione verrà aggiornato nel tuo workspace.
+          </p>
+          <div className="mt-4">
+            <Link
+              href="/company/workspace"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.12)] bg-[rgba(6,3,43,0.04)] px-3.5 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.08)] transition-colors"
+            >
+              ← Torna al Workspace
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
 
-      {/* B61-B: Demo flow banner */}
+      {/* Demo flow banner — only shown in demo/KORA_ADMIN context */}
       <DemoFlowBanner
         title="Synthetic Demo Flow — Ingestion Pipeline"
         description="Questa visualizzazione usa dati sintetici Meridiana. L'ingestion reale avviene nell'admin tramite Data Intake e UEF Review."
