@@ -292,15 +292,23 @@ describe('Auth callback route — structure', () => {
     expect(callback).toContain('/company/setup-password');
   });
 
-  it('handles error param (expired token) by redirecting to setup-password with error', () => {
+  it('handles error param (expired token) — B117: invite errors now route to /login, recovery to /auth/reset-password', () => {
+    // B117: Invite-flow errors (non-recovery) route to /login?error=... (not company/setup-password)
+    // Recovery errors still route to /auth/reset-password
     expect(callback).toContain("searchParams.get('error')");
+    // Recovery path still redirects to reset-password
     const lines = callback.split('\n');
-    const errorRedirect = lines.find((l) => l.includes('setup-password?'));
-    expect(errorRedirect).toBeTruthy();
+    const recoveryErrorRedirect = lines.find((l) => l.includes('reset-password?'));
+    expect(recoveryErrorRedirect).toBeTruthy();
+    // Non-recovery errors now go to /login
+    const inviteErrorRedirect = lines.find((l) => l.includes("'/login?'") || l.includes("new URL('/login'"));
+    expect(inviteErrorRedirect ?? callback).toContain('/login');
   });
 
-  it('redirects to /company/login when code is missing', () => {
-    expect(callback).toContain('/company/login');
+  it('routes to /login when code is missing (B117: not /company/login)', () => {
+    // B117: unified entry — missing code errors route to /login, not /company/login
+    expect(callback).toContain('/login?error=missing_auth_code');
+    expect(callback).not.toContain('/company/login?error=missing_auth_code');
     expect(callback).toContain('missing_auth_code');
   });
 

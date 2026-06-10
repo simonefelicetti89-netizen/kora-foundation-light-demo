@@ -24,9 +24,11 @@ interface CompanyUser {
   emailConfirmed: boolean;
 }
 
+// B117: COMPANY_VIEWER soft-deprecated — removed from provisioning UI.
+// Existing COMPANY_VIEWER sessions remain valid (auth checks unchanged).
+// New accounts are always COMPANY_ADMIN.
 const ROLE_OPTIONS = [
-  { value: 'COMPANY_ADMIN',  label: 'Company Admin — gestione workspace, lettura completa' },
-  { value: 'COMPANY_VIEWER', label: 'Company Viewer — lettura soltanto, nessun controllo' },
+  { value: 'COMPANY_ADMIN', label: 'Company Admin — gestione workspace, lettura completa' },
 ];
 
 const STATUS_BADGE: Record<string, string> = {

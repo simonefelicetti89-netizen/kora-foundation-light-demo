@@ -9,6 +9,7 @@
 // type=invite (first-time setup)      → role-specific setup-password page
 //
 // This route must be publicly reachable (no session required on entry).
+// B117: Fallback errors route to /login (unified entry), not /company/login.
 
 export const runtime = 'nodejs';
 
@@ -27,16 +28,16 @@ export async function GET(request: NextRequest) {
   if (error) {
     const params = new URLSearchParams({ error });
     if (errorDescription) params.set('error_description', errorDescription);
-    // Recovery errors go to reset page; invite errors go to company setup
+    // Recovery errors go to reset page; invite errors go to unified login with error context
     const target = type === 'recovery'
       ? `/auth/reset-password?${params}`
-      : `/company/setup-password?${params}`;
+      : `/login?${params}`;
     return NextResponse.redirect(new URL(target, origin));
   }
 
-  // No code and no error — unexpected state, send to login
+  // No code and no error — unexpected state, send to unified login
   if (!code) {
-    return NextResponse.redirect(new URL('/company/login?error=missing_auth_code', origin));
+    return NextResponse.redirect(new URL('/login?error=missing_auth_code', origin));
   }
 
   // Exchange the PKCE code for a session (sets session cookies via cookie store)
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest) {
     });
     const target = type === 'recovery'
       ? `/auth/reset-password?${params}`
-      : `/company/setup-password?${params}`;
+      : `/login?${params}`;
     return NextResponse.redirect(new URL(target, origin));
   }
 
@@ -68,6 +69,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/worker/setup-password', origin));
   }
 
-  // COMPANY_ADMIN / COMPANY_VIEWER (and unknown) → company setup
-  return NextResponse.redirect(new URL('/company/setup-password', origin));
+  // COMPANY_ADMIN / COMPANY_VIEWER → company setup-password
+  if (koraRole === 'COMPANY_ADMIN' || koraRole === 'COMPANY_VIEWER') {
+    return NextResponse.redirect(new URL('/company/setup-password', origin));
+  }
+
+  // Unknown role or KORA_ADMIN invite → unified login
+  return NextResponse.redirect(new URL('/login', origin));
 }

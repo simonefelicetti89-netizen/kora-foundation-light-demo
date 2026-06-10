@@ -113,10 +113,11 @@ describe('/admin/login — forgot password link', () => {
 
 // ─── 6. Company login has "Password dimenticata?" link ────────────────────────
 
-describe('/company/login — forgot password link', () => {
-  it('company login page contains forgot-password link', () => {
-    expect(companyLogin).toContain('/auth/forgot-password');
-    expect(companyLogin).toContain('Password dimenticata?');
+describe('/company/login — B117: redirect wrapper', () => {
+  it('company login redirects to unified /login (B117 — forgot-password is now on /login)', () => {
+    // B117: /company/login is a redirect wrapper. The forgot-password link lives on /login.
+    expect(companyLogin).toContain("redirect('/login')");
+    expect(companyLogin).not.toContain('signInWithPassword');
   });
 });
 

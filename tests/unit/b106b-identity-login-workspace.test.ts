@@ -156,44 +156,27 @@ describe('B106-B — admin area: riservata a KORA_ADMIN', () => {
   });
 });
 
-// ── 4. Company login page — dedicated ──────────────────────────────────────────
+// ── 4. Company login page — B117: redirect wrapper ────────────────────────────
+// B117 replaced /company/login with a redirect to the unified /login page.
+// The role-checking logic previously in /company/login is now in /login + getRoleHome().
 
-describe('B106-B — /company/login: pagina login aziendale dedicata', () => {
+describe('B106-B — /company/login: B117 redirect wrapper to /login', () => {
   it('file esiste', () => {
     expect(exists('app/company/login/page.tsx')).toBe(true);
   });
 
   const login = read('app/company/login/page.tsx');
 
-  it('non è un admin login (non dice Accesso Operatore / KORA Admin only)', () => {
-    expect(login).not.toContain('Accesso Operatore');
-    expect(login).not.toContain('KORA Admin only');
+  it('page redirects to unified /login', () => {
+    expect(login).toContain("redirect('/login')");
   });
 
-  it('dice Company Area o Accesso Aziendale', () => {
-    expect(login).toContain('Company Area');
+  it('page is not a standalone form (no signInWithPassword)', () => {
+    expect(login).not.toContain('signInWithPassword');
   });
 
-  it('gestisce COMPANY_ADMIN → /company/workspace', () => {
-    expect(login).toContain('/company/workspace');
-    expect(login).toContain("COMPANY_ADMIN");
-  });
-
-  it('rifiuta WORKER con messaggio e link a /worker/login (B113-B)', () => {
-    expect(login).toContain("WORKER");
-    expect(login).toContain('/worker/login');
-    expect(login).toContain('accesso lavoratore');
-  });
-
-  it('blocca KORA_ADMIN con signOut + errore', () => {
-    expect(login).toContain("KORA_ADMIN");
-    expect(login).toContain('signOut');
-    expect(login).toContain('/admin/login');
-  });
-
-  it('usa design system KORA (TOKENS)', () => {
-    expect(login).toContain('TOKENS');
-    expect(login).toContain('kora-design-tokens');
+  it('page has no form state (no useState)', () => {
+    expect(login).not.toContain('useState');
   });
 });
 

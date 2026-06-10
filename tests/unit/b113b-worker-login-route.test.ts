@@ -32,44 +32,26 @@ const middleware      = readFile('middleware.ts');
 const forgotPassword  = readFile('app/auth/forgot-password/page.tsx');
 const setupForm       = readFile('app/worker/setup-password/_form.tsx');
 
-// ─── 1. /worker/login exists ──────────────────────────────────────────────────
+// ─── 1. /worker/login — B117: redirect wrapper to /login ─────────────────────
+// B113-B built /worker/login as a standalone form.
+// B117 replaced it with a redirect wrapper to the unified /login page.
+// Role-based routing after auth is now handled by /login + getRoleHome().
 
-describe('/worker/login — pagina dedicata ai lavoratori', () => {
+describe('/worker/login — B117: redirect wrapper to unified /login', () => {
   it('file exists at app/worker/login/page.tsx', () => {
     expect(fileExists('app/worker/login/page.tsx')).toBe(true);
   });
 
-  it('page shows "Accesso lavoratore"', () => {
-    expect(workerLogin).toContain('Accesso lavoratore');
+  it('page redirects to /login (not a standalone form)', () => {
+    expect(workerLogin).toContain("redirect('/login')");
   });
 
-  it('page shows privacy statement about employer not seeing individual data', () => {
-    expect(workerLogin).toContain('datore di lavoro non vede il tuo profilo individuale');
+  it('page does not contain standalone signInWithPassword (role logic moved to /login)', () => {
+    expect(workerLogin).not.toContain('signInWithPassword');
   });
 
-  it('WORKER logs in and is redirected to /worker/onboarding', () => {
-    expect(workerLogin).toContain("'/worker/onboarding'");
-    expect(workerLogin).toContain("'WORKER'");
-  });
-
-  it('COMPANY_ADMIN is rejected with signOut and message', () => {
-    expect(workerLogin).toContain('COMPANY_ADMIN');
-    expect(workerLogin).toContain('signOut');
-    expect(workerLogin).toContain('accesso aziendale');
-  });
-
-  it('COMPANY_ADMIN rejection shows link to /company/login', () => {
-    expect(workerLogin).toContain('/company/login');
-  });
-
-  it('KORA_ADMIN is rejected with signOut and message', () => {
-    expect(workerLogin).toContain('KORA_ADMIN');
-    // KORA_ADMIN error message references admin/login
-    expect(workerLogin).toContain('/admin/login');
-  });
-
-  it('forgot password link goes to /auth/forgot-password?from=worker', () => {
-    expect(workerLogin).toContain('/auth/forgot-password?from=worker');
+  it('page does not contain useState (no form state — it is a redirect)', () => {
+    expect(workerLogin).not.toContain('useState');
   });
 });
 
@@ -109,23 +91,21 @@ describe('Logout route — worker logout destination', () => {
   });
 });
 
-// ─── 4. /company/login rejects WORKER ────────────────────────────────────────
+// ─── 4. /company/login — B117: redirect wrapper to /login ────────────────────
+// B117 replaced /company/login with a redirect to the unified /login page.
+// Role rejection is now handled by /login after auth — no per-role login pages.
 
-describe('/company/login — rejects WORKER with link to /worker/login', () => {
-  it('company login rejects WORKER with signOut', () => {
-    const stripped = stripLineComments(companyLogin);
-    const workerBlock = stripped.split("koraRole === 'WORKER'")[1]?.split('}')[0] ?? '';
-    expect(workerBlock).toContain('signOut');
+describe('/company/login — B117: redirect wrapper to unified /login', () => {
+  it('company login redirects to /login (not a standalone form)', () => {
+    expect(companyLogin).toContain("redirect('/login')");
   });
 
-  it('company login shows /worker/login link in error message', () => {
-    expect(companyLogin).toContain('/worker/login');
+  it('company login does not contain signInWithPassword (logic moved to /login)', () => {
+    expect(companyLogin).not.toContain('signInWithPassword');
   });
 
-  it('company login does NOT redirect WORKER silently to /worker/workspace', () => {
-    const stripped = stripLineComments(companyLogin);
-    const workerBlock = stripped.split("koraRole === 'WORKER'")[1]?.split('}')[0] ?? '';
-    expect(workerBlock).not.toContain("/worker/workspace");
+  it('company login does not contain useState (no form state — it is a redirect)', () => {
+    expect(companyLogin).not.toContain('useState');
   });
 });
 

@@ -567,10 +567,10 @@ export default function EnterpriseOnboardingWizard() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Nome admin" value={state.admin_name} onChange={(v) => update('admin_name', v)} placeholder="es. Marco Bianchi" required />
             <Input label="Email admin" value={state.admin_email} onChange={(v) => update('admin_email', v)} placeholder="es. m.bianchi@azienda.it" required />
+            {/* B117: COMPANY_VIEWER removed from provisioning — new accounts are always COMPANY_ADMIN */}
             <Select label="Ruolo" value={state.admin_role} onChange={(v) => update('admin_role', v)}
               options={[
-                { value: 'COMPANY_ADMIN',  label: 'COMPANY_ADMIN — accesso completo portale aziendale' },
-                { value: 'COMPANY_VIEWER', label: 'COMPANY_VIEWER — sola lettura (Executive Cockpit e KORA Index)' },
+                { value: 'COMPANY_ADMIN', label: 'COMPANY_ADMIN — accesso completo portale aziendale' },
               ]}
             />
             <Select label="Modalità accesso" value={state.password_setup_mode} onChange={(v) => update('password_setup_mode', v)}
@@ -589,7 +589,7 @@ export default function EnterpriseOnboardingWizard() {
             </div>
           )}
           <div className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-[10px] text-[rgba(6,3,43,0.52)]">
-            COMPANY_ADMIN: executive-cockpit, kora-index, reports, financial, pillars, activation, contribution, profile. COMPANY_VIEWER: executive-cockpit, kora-index, profile. È possibile aggiungere ulteriori utenti con ruolo COMPANY_VIEWER per condividere l&apos;accesso in sola lettura.
+            COMPANY_ADMIN: accesso completo a executive-cockpit, kora-index, reports, financial, pillars, activation, contribution, profile.
             Sezioni operative (setup, ingestion, uef-review, scoring) rimangono gestite lato KORA Admin.
           </div>
         </section>
