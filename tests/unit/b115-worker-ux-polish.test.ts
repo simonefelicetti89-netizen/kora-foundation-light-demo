@@ -119,10 +119,11 @@ describe('Sidebar — worker navigation', () => {
     expect(sidebar).toContain("label: 'Dynamic Impact CV', comingSoon: true");
   });
 
-  it('Opportunità has a live worker route (not comingSoon since B116)', () => {
-    // B116 built /worker/opportunities — Opportunità is now a real nav entry, not comingSoon
-    expect(sidebar).toContain("href: '/worker/opportunities'");
-    // No longer comingSoon
+  it('Opportunità references /worker/opportunities in sidebar (B117-G: ternary for admin preview)', () => {
+    // B117-G: sidebar uses isAdminPreview ternary — WORKER default is /worker/opportunities,
+    // admin preview is /admin/preview/worker/opportunities. Both paths reference the string.
+    expect(sidebar).toContain("'/worker/opportunities'");
+    // No comingSoon on the Opportunità item (it is a live route for workers)
     const opportunitaLine = sidebar
       .split('\n')
       .find(l => l.includes('/worker/opportunities'));

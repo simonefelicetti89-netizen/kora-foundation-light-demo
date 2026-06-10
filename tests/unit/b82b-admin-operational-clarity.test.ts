@@ -261,11 +261,14 @@ describe('B82-B Task 10 — Structural LIVE / DEMO separation on admin landing',
 // ── Invariants: no forbidden changes ─────────────────────────────────────────
 
 describe('B82-B invariants — no forbidden changes', () => {
-  it('sidebar contains no scoring logic', () => {
+  it('sidebar contains no scoring logic or direct DB queries', () => {
     const src = read('components/layout/Sidebar.tsx');
     expect(src).not.toContain('computeScore');
     expect(src).not.toContain('IU_');
-    expect(src).not.toContain('supabase');
+    // B117-G: Supabase browser client is allowed for session detection (real role → admin preview mode).
+    // The check is that no direct DB queries appear, not that Supabase is absent entirely.
+    expect(src).not.toContain(".from('");
+    expect(src).not.toContain('.select(');
   });
 
   it('admin landing contains no SQL or Prisma artifacts', () => {

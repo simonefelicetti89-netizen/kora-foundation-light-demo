@@ -4,10 +4,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { useRole, useEnvironment } from '@/lib/demo-state';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { KoraLogo } from '@/components/brand/KoraLogo';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
 const ENV_LABEL: Record<string, string> = {
   demo:   'DEMO',
@@ -57,7 +59,9 @@ interface NavGroup {
 
 // Exported for unit testing (b95c-workforce-navigation.test.ts).
 // activeCompanyId: extracted from pathname when on /admin/companies/[id]/... routes.
-export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup[] {
+// isAdminPreview: true when a real KORA_ADMIN is using demo-state WORKER role —
+//   routes to /admin/preview/worker/* instead of live /worker/* routes.
+export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPreview = false): NavGroup[] {
 
   // ── KORA Admin: Control Tower — B61-B restructured ─────────────────────────
   // Group 1: Onboarding Pilot — canonical live onboarding entry points.
@@ -213,10 +217,12 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
   }
 
   // ── Worker: personal, sovereign, private ────────────────────────────────────
+  // isAdminPreview=true: KORA_ADMIN previewing worker space in demo mode.
+  // Live /worker/* routes require WORKER session — route to /admin/preview/worker/* instead.
   if (isWorkerRole(role as Parameters<typeof isWorkerRole>[0])) {
     return [
       {
-        heading: 'Il tuo spazio',
+        heading: isAdminPreview ? 'Worker Preview (Admin)' : 'Il tuo spazio',
         items: [
           { href: '/my-kora', label: 'My KORA Home' },
         ],
@@ -224,11 +230,15 @@ export function buildNavGroups(role: string, activeCompanyId?: string): NavGroup
       {
         heading: 'Attivazione',
         items: [
-          { href: '/my-kora/dynamic-cv',    label: 'Dynamic Impact CV', comingSoon: true },
-          { href: '/worker/opportunities',    label: 'Opportunità' },
-          { href: '/commons',               label: 'KORA Commons', preview: true },
-          { href: '/my-kora/bookings',      label: 'Prenotazioni', comingSoon: true },
-          { href: '/my-kora/collective',    label: 'Collettivo',   comingSoon: true },
+          { href: '/my-kora/dynamic-cv', label: 'Dynamic Impact CV', comingSoon: true },
+          {
+            href:    isAdminPreview ? '/admin/preview/worker/opportunities' : '/worker/opportunities',
+            label:   'Opportunità',
+            preview: isAdminPreview ? true : undefined,
+          },
+          { href: '/commons',          label: 'KORA Commons', preview: true },
+          { href: '/my-kora/bookings', label: 'Prenotazioni', comingSoon: true },
+          { href: '/my-kora/collective', label: 'Collettivo', comingSoon: true },
         ],
       },
       {
@@ -301,11 +311,28 @@ export function Sidebar() {
   const { activeEnvironment } = useEnvironment();
   const pathname = usePathname();
 
+  // B117-G: read real Supabase session role to detect admin-preview mode.
+  // When real role = KORA_ADMIN but demo-state = WORKER, route to /admin/preview/worker/* paths.
+  const [realRole, setRealRole] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    supabase.auth.getSession().then(({ data }) => {
+      setRealRole(data.session?.user?.app_metadata?.kora_role ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setRealRole(session?.user?.app_metadata?.kora_role ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // isAdminPreview: real session is KORA_ADMIN but demo state shows WORKER navigation
+  const isAdminPreview = realRole === 'KORA_ADMIN' && isWorkerRole(activeRole as Parameters<typeof isWorkerRole>[0]);
+
   // Extract companyId from /admin/companies/[companyId]/... but not from /admin/companies/new.
   const companyIdMatch = pathname.match(/^\/admin\/companies\/([^/]+)(?:\/|$)/);
   const activeCompanyId = companyIdMatch?.[1] !== 'new' ? companyIdMatch?.[1] : undefined;
 
-  const groups = buildNavGroups(activeRole, activeCompanyId);
+  const groups = buildNavGroups(activeRole, activeCompanyId, isAdminPreview);
   const roleLabel = ROLE_DISPLAY[activeRole] ?? activeRole;
 
   return (

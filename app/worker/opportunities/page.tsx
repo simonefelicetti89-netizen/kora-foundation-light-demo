@@ -12,7 +12,7 @@
 //   - Company roles cannot access this page (middleware + layout gate)
 //   - Privacy notice is non-suppressible
 
-import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
+import { getCurrentWorkerUser, requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { SessionBar } from '@/components/auth/SessionBar';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
@@ -31,7 +31,12 @@ export type PartnerItem = {
 
 export default async function WorkerOpportunitiesPage() {
   const worker = await getCurrentWorkerUser();
-  if (!worker) redirect('/login');
+  if (!worker) {
+    // B117-G: KORA_ADMIN navigating worker demo → send to admin preview, not login
+    const admin = await requireKoraAdmin();
+    if (!isKoraAuthError(admin)) redirect('/admin/preview/worker/opportunities');
+    redirect('/login');
+  }
 
   const db = getSupabaseServiceClient();
 

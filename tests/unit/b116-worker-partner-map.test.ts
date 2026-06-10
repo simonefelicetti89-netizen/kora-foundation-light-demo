@@ -178,8 +178,10 @@ describe('Workspace — partner preview integration', () => {
 // ─── 7. Sidebar — navigation ────────────────────────────────────────────────
 
 describe('Sidebar — worker navigation updated', () => {
-  it('Opportunità sidebar entry points to /worker/opportunities (not demo route)', () => {
-    expect(sidebar).toContain("href: '/worker/opportunities'");
+  it('Opportunità sidebar references /worker/opportunities (B117-G: ternary for admin preview)', () => {
+    // B117-G: sidebar uses isAdminPreview ternary — /worker/opportunities is the WORKER default,
+    // /admin/preview/worker/opportunities is the admin preview path.
+    expect(sidebar).toContain("'/worker/opportunities'");
   });
 
   it('Opportunità is no longer marked comingSoon', () => {
