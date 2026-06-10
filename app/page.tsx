@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { LandingMotion } from '@/components/landing/LandingMotion';
 import { MarketingNav } from '@/components/landing/MarketingNav';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
+import { RecoveryHashHandler } from '@/components/auth/RecoveryHashHandler';
 import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 import { PACKAGES } from '@/lib/landing/packages';
 import styles from './landing.module.css';
@@ -526,6 +527,9 @@ export default function LandingPage() {
 
       {/* Modifica 4: animazioni in client component isolato */}
       <LandingMotion />
+
+      {/* B117-F: intercetta hash recovery token da Supabase Dashboard implicit flow */}
+      <RecoveryHashHandler />
 
     </div>
   );

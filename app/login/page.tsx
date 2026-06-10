@@ -17,6 +17,7 @@ import { Suspense } from 'react';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { getRoleHome } from '@/lib/auth/role-home';
+import { RecoveryHashHandler } from '@/components/auth/RecoveryHashHandler';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -295,8 +296,12 @@ function LoginForm() {
 // Wrap in Suspense — useSearchParams() requires it in Next.js App Router
 export default function UnifiedLoginPage() {
   return (
-    <Suspense fallback={null}>
-      <LoginForm />
-    </Suspense>
+    <>
+      {/* B117-F: intercetta hash recovery token da Supabase Dashboard implicit flow */}
+      <RecoveryHashHandler />
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
+    </>
   );
 }
