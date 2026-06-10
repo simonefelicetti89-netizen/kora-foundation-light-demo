@@ -10,6 +10,8 @@ import { redirect } from 'next/navigation';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
 import { InitiativeCardsClient } from './_components/InitiativeCardsClient';
 import type { InitiativeItem } from './_components/InitiativeCardsClient';
+import { ActivationProfileSection } from './_components/ActivationProfileSection';
+import type { WorkerActivationProfile, PillarDistributionEntry } from '@/app/api/worker/activation-profile/route';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -99,6 +101,73 @@ export default async function WorkerWorkspacePage() {
       private_note:         (r.private_note as string | null) ?? null,
     };
   });
+
+  // Compute activation profile — server-side, no new table needed
+  // Re-uses already-fetched participation rows but needs pillar data from initiative
+  const { data: profileRows } = await db.schema('personal').from('worker_participation')
+    .select('status, updated_at, worker_initiative:initiative_id(pillar)')
+    .eq('worker_id', worker.workerId);
+
+  const ALL_PILLARS = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
+  type ProfilePillar = typeof ALL_PILLARS[number];
+
+  const pillarCounters: Record<ProfilePillar, { interested: number; registered: number; attended: number; cancelled: number }> = {
+    LIFE:       { interested: 0, registered: 0, attended: 0, cancelled: 0 },
+    GROWTH:     { interested: 0, registered: 0, attended: 0, cancelled: 0 },
+    CONNECTION: { interested: 0, registered: 0, attended: 0, cancelled: 0 },
+    IMPACT:     { interested: 0, registered: 0, attended: 0, cancelled: 0 },
+    LEGACY:     { interested: 0, registered: 0, attended: 0, cancelled: 0 },
+  };
+  let profileLastActivity: string | null = null;
+
+  for (const row of profileRows ?? []) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pillar = ((row.worker_initiative as any)?.pillar as ProfilePillar | undefined);
+    if (!pillar || !pillarCounters[pillar]) continue;
+    const s = row.status as string;
+    if (s === 'interested')       pillarCounters[pillar].interested++;
+    else if (s === 'registered')  pillarCounters[pillar].registered++;
+    else if (s === 'attended')    pillarCounters[pillar].attended++;
+    else if (s === 'cancelled')   pillarCounters[pillar].cancelled++;
+    const ua = row.updated_at as string;
+    if (!profileLastActivity || ua > profileLastActivity) profileLastActivity = ua;
+  }
+
+  const pillarDistribution: PillarDistributionEntry[] = ALL_PILLARS.map(pillar => {
+    const c = pillarCounters[pillar];
+    return { pillar, ...c, total_active: c.interested + c.registered + c.attended };
+  });
+
+  const totalActive = pillarDistribution.reduce((s, p) => s + p.total_active, 0);
+  const activePillars = pillarDistribution.filter(p => p.total_active > 0);
+
+  let strongestPillar: ProfilePillar | null = null;
+  if (activePillars.length > 0) {
+    strongestPillar = activePillars.reduce((best, p) => p.total_active > best.total_active ? p : best).pillar as ProfilePillar;
+  }
+  const nonStrongest = activePillars.filter(p => p.pillar !== strongestPillar);
+  let emergingPillar: ProfilePillar | null = null;
+  if (nonStrongest.length > 0) {
+    emergingPillar = nonStrongest.reduce((c, p) => p.total_active < c.total_active ? p : c).pillar as ProfilePillar;
+  }
+
+  const activationProfile: WorkerActivationProfile = {
+    profileStatus: totalActive === 0 ? 'empty' : 'active',
+    pillarDistribution,
+    activitySummary: {
+      total_interested: pillarDistribution.reduce((s, p) => s + p.interested, 0),
+      total_registered: pillarDistribution.reduce((s, p) => s + p.registered, 0),
+      total_attended:   pillarDistribution.reduce((s, p) => s + p.attended, 0),
+      total_cancelled:  pillarDistribution.reduce((s, p) => s + p.cancelled, 0),
+      last_activity_at: profileLastActivity,
+    },
+    strongestPillar,
+    emergingPillar,
+    missingPillars: pillarDistribution.filter(p => p.total_active === 0).map(p => p.pillar) as ProfilePillar[],
+    lastActivityAt: profileLastActivity,
+    privacyNotice:      'Il tuo datore di lavoro non può vedere questo profilo individuale. Solo tu puoi accedere a questi dati.',
+    interpretationNote: 'Questo profilo è basato sulle attività registrate in KORA. Non è una valutazione individuale, non genera ranking e non viene condiviso con la tua azienda.',
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const wi   = (wiRow   ?? {}) as any;
@@ -196,6 +265,15 @@ export default async function WorkerWorkspacePage() {
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', marginTop: 12, marginBottom: 0, lineHeight: 1.5 }}>
           Solo tu puoi vedere questo storico. Non è condiviso con l'azienda.
         </p>
+      </div>
+
+      {/* Private activation profile */}
+      <div style={{
+        background: '#fff', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 10,
+        padding: '20px 24px', marginBottom: 20,
+      }}>
+        <h2 style={sectionHeadingStyle}>Il mio profilo privato</h2>
+        <ActivationProfileSection profile={activationProfile} />
       </div>
 
       {/* Placeholder sections — future sprint */}
