@@ -99,6 +99,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/admin/impact-units',             label: 'Impact Units™' },
           { href: '/admin/data-lifecycle',           label: 'Data Lifecycle' },
           { href: '/admin/company-evidence-archive', label: 'Evidence Archive' },
+          { href: '/admin/commons',                  label: 'KORA Commons — Moderazione' },
         ],
       },
       {
@@ -107,7 +108,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         badgeKey: 'SYNTHETIC',
         // All routes in this group use synthetic/demo data — no live Supabase queries.
         items: [
-          { href: '/commons',             label: 'KORA Commons', preview: true },
+          { href: '/commons',             label: 'KORA Commons Network', preview: true },
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
           { href: '/admin/index-registry', label: 'Registro KORA Index' },
           { href: '/admin/portfolio',      label: 'Portfolio Aziende' },
@@ -171,8 +172,8 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Network',
         items: [
-          { href: '/company/shared', label: 'Spazio Condiviso' },
-          { href: '/commons',        label: 'KORA Commons', preview: true },
+          { href: '/company/shared',   label: 'Spazio Condiviso' },
+          { href: '/company/commons', label: 'KORA Commons' },
         ],
       },
       {
@@ -243,7 +244,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
             label:   'Opportunità',
             preview: isAdminPreview ? true : undefined,
           },
-          { href: '/commons',          label: 'KORA Commons', preview: true },
+          { href: '/worker/commons',   label: 'KORA Commons' },
           { href: '/my-kora/bookings', label: 'Prenotazioni', comingSoon: true },
           { href: '/my-kora/collective', label: 'Collettivo', comingSoon: true },
         ],

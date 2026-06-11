@@ -475,6 +475,62 @@ export interface Database {
     CompositeTypes: Record<string, never>;
   };
 
+  // ── commons schema — B128: KORA Commons tenant-scoped moderated posts ───────
+  commons: {
+    Tables: {
+      post: {
+        Row: {
+          id:             string;
+          tenant_id:      string;
+          author_user_id: string | null;
+          author_role:    'KORA_ADMIN' | 'COMPANY_ADMIN';
+          title:          string;
+          body:           string;
+          category:       'announcement' | 'initiative_update' | 'opportunity' | 'event' | 'request' | 'resource';
+          status:         'draft' | 'pending_review' | 'published' | 'archived' | 'rejected';
+          pillar:         'LIFE' | 'GROWTH' | 'CONNECTION' | 'IMPACT' | 'LEGACY' | null;
+          published_at:   string | null;
+          reviewed_by:    string | null;
+          reviewed_at:    string | null;
+          created_at:     string;
+          updated_at:     string;
+        };
+        Insert: {
+          id?:            string;
+          tenant_id:      string;
+          author_user_id?: string | null;
+          author_role:    'KORA_ADMIN' | 'COMPANY_ADMIN';
+          title:          string;
+          body:           string;
+          category:       string;
+          status?:        string;
+          pillar?:        string | null;
+          published_at?:  string | null;
+          reviewed_by?:   string | null;
+          reviewed_at?:   string | null;
+          created_at?:    string;
+          updated_at?:    string;
+        };
+        Update: {
+          title?:        string;
+          body?:         string;
+          category?:     string;
+          status?:       string;
+          pillar?:       string | null;
+          published_at?: string | null;
+          reviewed_by?:  string | null;
+          reviewed_at?:  string | null;
+          updated_at?:   string;
+        };
+        Relationships: [];
+      };
+    };
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+
   // ── public schema — required default for Supabase JS client typing ────────
   public: {
     Tables:         Record<string, never>;

@@ -98,22 +98,20 @@ describe('Workforce resolution', () => {
 // ── Task 5+6: Commons sidebar — clickable, not disabled ──────────────────────
 
 describe('Sidebar — KORA Commons nav item', () => {
-  it('COMPANY_ADMIN nav has KORA Commons with preview flag (not comingSoon)', () => {
+  it('COMPANY_ADMIN nav has KORA Commons as real route /company/commons (B128 — no preview flag)', () => {
     const groups = buildNavGroups('COMPANY_ADMIN');
     const allItems = groups.flatMap((g) => g.items);
-    const commons = allItems.find((i) => i.href === '/commons');
+    const commons = allItems.find((i) => i.href === '/company/commons');
     expect(commons).toBeDefined();
-    expect(commons?.preview).toBe(true);
     expect(commons?.comingSoon).toBeUndefined();
     expect(commons?.inactive).toBeUndefined();
   });
 
-  it('WORKER nav has KORA Commons with preview flag', () => {
+  it('WORKER nav has KORA Commons as real route /worker/commons (B128 — no preview flag)', () => {
     const groups = buildNavGroups('WORKER');
     const allItems = groups.flatMap((g) => g.items);
-    const commons = allItems.find((i) => i.href === '/commons');
+    const commons = allItems.find((i) => i.href === '/worker/commons');
     expect(commons).toBeDefined();
-    expect(commons?.preview).toBe(true);
     expect(commons?.comingSoon).toBeUndefined();
   });
 
