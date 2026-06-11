@@ -84,6 +84,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         groupBadge: 'LIVE',
         badgeKey: 'LIVE',
         items: [
+          { href: '/admin/trial-control-center',     label: 'Trial Control Center', description: 'Demo end-to-end & readiness' },
           { href: '/admin/pipeline',                 label: 'Pilot Lifecycle' },
           { href: workforceHref,                     label: 'Workforce Management', description: workforceDescription },
           { href: '/admin/companies',                label: 'Company Console' },

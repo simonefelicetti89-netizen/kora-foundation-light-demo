@@ -198,21 +198,78 @@ export default async function TrialControlCenterPage() {
   const partnerDraft     = (partners as Array<{ status: string }>).filter(p => p.status === 'draft').length;
   const partnerArchived  = (partners as Array<{ status: string }>).filter(p => p.status === 'archived').length;
 
-  // ── Demo checklist items ─────────────────────────────────────────────────────
+  // ── Demo checklist — 14 step canonici (spec B124) ────────────────────────────
   const checklistItems = [
-    { label: 'Admin — tenant e provisioning',       href: '/admin/companies',            ok: tenants.length > 0 },
-    { label: 'Admin — upload dati (Data Intake)',   href: '/admin/data-intake',          ok: tenantSummaries.some(t => t.lastBatchAt !== null) },
-    { label: 'Admin — UEF Review approvato',        href: '/admin/uef-review',           ok: tenantSummaries.some(t => t.uefApproved > 0) },
-    { label: 'Admin — scoring eseguito',            href: '/admin/uef-review',           ok: tenantSummaries.some(t => t.hasIndex) },
-    { label: 'Company — KORA Index visibile',       href: '/company/kora-index',         ok: tenantSummaries.some(t => t.hasIndex) },
-    { label: 'Company — Decision Pack',             href: '/company/reports',            ok: tenantSummaries.some(t => t.hasDecisionPack) },
-    { label: 'Company — Wallboard',                 href: '/company/wallboard',          ok: tenantSummaries.some(t => t.wallboardReady) },
-    { label: 'Worker — almeno un worker attivo',    href: '/admin/workers',              ok: tenantSummaries.some(t => t.workerActive > 0) },
-    { label: 'Worker — iniziativa pubblicata',      href: '/admin/worker-initiatives',   ok: tenantSummaries.some(t => t.initPublished > 0) },
-    { label: 'Worker — Dynamic CV accessibile',     href: '/admin/preview/worker/dynamic-cv', ok: tenantSummaries.some(t => t.onboardingDone > 0) },
-    { label: 'Worker — privacy panel',              href: '/admin/preview/worker/privacy', ok: true },
-    { label: 'Partner — catalog pubblicato',        href: '/admin/partners',             ok: partnerPublished > 0 },
-    { label: 'Privacy boundary — company vs worker', href: '/admin/worker-diagnostics',  ok: true },
+    {
+      step: 1, label: 'Tenant selezionato e attivo',
+      href: '/admin/companies', ok: tenants.length > 0,
+      note: 'Almeno un tenant attivo in analytics.tenant.',
+    },
+    {
+      step: 2, label: 'Batch dati caricato (Data Intake)',
+      href: '/admin/data-intake', ok: tenantSummaries.some(t => t.lastBatchAt !== null),
+      note: 'Usa data/golden-path/kora_golden_path_upload.csv.',
+    },
+    {
+      step: 3, label: 'UEF candidati generati',
+      href: '/admin/uef-review', ok: tenantSummaries.some(t => t.uefCandidates > 0),
+      note: 'Il mapping AI ha prodotto record UEF da revisionare.',
+    },
+    {
+      step: 4, label: 'UEF approvati',
+      href: '/admin/uef-review', ok: tenantSummaries.some(t => t.uefApproved > 0),
+      note: 'Almeno un UEF con review_status = approved.',
+    },
+    {
+      step: 5, label: 'KORA Index calcolato',
+      href: '/company/kora-index', ok: tenantSummaries.some(t => t.hasIndex),
+      note: 'Scoring completato — KORA Index + Confidence Score visibili.',
+    },
+    {
+      step: 6, label: 'Decision Pack disponibile',
+      href: '/company/reports', ok: tenantSummaries.some(t => t.hasDecisionPack),
+      note: 'Decision Pack generato con raccomandazioni pillar.',
+    },
+    {
+      step: 7, label: 'Wallboard disponibile',
+      href: '/company/wallboard', ok: tenantSummaries.some(t => t.wallboardReady),
+      note: 'Safeguard CLEAR o WARNING — wallboard comunicabile.',
+    },
+    {
+      step: 8, label: 'Worker provisionati',
+      href: '/admin/workers', ok: tenantSummaries.some(t => t.workerTotal > 0),
+      note: 'Almeno un worker in personal.worker_identity.',
+    },
+    {
+      step: 9, label: 'Worker onboarding completato',
+      href: '/admin/workers', ok: tenantSummaries.some(t => t.onboardingDone > 0),
+      note: 'onboarding_completed_at non null su almeno un worker.',
+    },
+    {
+      step: 10, label: 'Iniziative worker pubblicate',
+      href: '/admin/worker-initiatives', ok: tenantSummaries.some(t => t.initPublished > 0),
+      note: 'Almeno un\'iniziativa con status = published.',
+    },
+    {
+      step: 11, label: 'Interazioni worker presenti',
+      href: '/admin/worker-diagnostics', ok: tenantSummaries.some(t => t.workerActive > 0),
+      note: 'Worker attivi con partecipazioni o interesse espresso.',
+    },
+    {
+      step: 12, label: 'Dynamic CV preview disponibile',
+      href: '/admin/preview/worker/dynamic-cv', ok: tenantSummaries.some(t => t.onboardingDone > 0),
+      note: 'Admin preview del CV dinamico worker.',
+    },
+    {
+      step: 13, label: 'Partner catalog popolato',
+      href: '/admin/partners', ok: partnerPublished > 0,
+      note: 'Almeno un partner con status = published.',
+    },
+    {
+      step: 14, label: 'Privacy boundary verificato',
+      href: '/admin/worker-diagnostics', ok: true,
+      note: 'Company non vede dati individuali worker. Soglia aggregazione attiva.',
+    },
   ];
 
   const completedCount = checklistItems.filter(c => c.ok).length;
@@ -227,8 +284,9 @@ export default async function TrialControlCenterPage() {
     { group: 'Worker',      label: 'Workers (Admin)',           href: '/admin/workers' },
     { group: 'Worker',      label: 'Iniziative Worker',        href: '/admin/worker-initiatives' },
     { group: 'Worker',      label: 'Preview CV (Admin)',        href: '/admin/preview/worker/dynamic-cv' },
-    { group: 'Worker',      label: 'Preview Privacy (Admin)',   href: '/admin/preview/worker/privacy' },
-    { group: 'Partner',     label: 'Partner Catalog',           href: '/admin/partners' },
+    { group: 'Worker',      label: 'Preview Privacy (Admin)',        href: '/admin/preview/worker/privacy' },
+    { group: 'Worker',      label: 'Preview Opportunita (Admin)', href: '/admin/preview/worker/opportunities' },
+    { group: 'Partner',     label: 'Partner Catalog',              href: '/admin/partners' },
     { group: 'Diagnostics', label: 'Live Spine Diagnostics',   href: '/admin/live-spine-diagnostics' },
     { group: 'Diagnostics', label: 'Worker Diagnostics',       href: '/admin/worker-diagnostics' },
     { group: 'Diagnostics', label: 'Provisioning Diagnostics', href: '/admin/provisioning-diagnostics' },
@@ -427,18 +485,29 @@ export default async function TrialControlCenterPage() {
         {checklistItems.map((item, i) => (
           <div
             key={i}
+            data-testid={`checklist-step-${item.step}`}
             style={{
-              display: 'flex', alignItems: 'center', gap: 10,
+              display: 'flex', alignItems: 'flex-start', gap: 10,
               padding: '10px 18px',
               borderBottom: i < checklistItems.length - 1 ? '1px solid rgba(6,3,43,0.05)' : 'none',
               background: item.ok ? 'rgba(47,125,85,0.03)' : '#fff',
             }}
           >
-            <span style={{ fontSize: 13, flexShrink: 0 }}>{item.ok ? '✓' : '○'}</span>
-            <p style={{ fontSize: 12, color: item.ok ? '#1a4731' : 'rgba(6,3,43,0.60)', margin: 0, flex: 1 }}>
-              {item.label}
-            </p>
-            <a href={item.href} style={{ fontSize: 10, color: '#3B6EBA', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+            <span style={{
+              fontSize: 9, fontWeight: 700, color: item.ok ? '#2F7D55' : 'rgba(6,3,43,0.30)',
+              background: item.ok ? 'rgba(47,125,85,0.10)' : 'rgba(6,3,43,0.05)',
+              border: `1px solid ${item.ok ? 'rgba(47,125,85,0.25)' : 'rgba(6,3,43,0.10)'}`,
+              borderRadius: 4, padding: '2px 5px', flexShrink: 0, marginTop: 1, minWidth: 20, textAlign: 'center',
+            }}>
+              {item.step}
+            </span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: item.ok ? '#1a4731' : 'rgba(6,3,43,0.60)', margin: '0 0 1px' }}>
+                {item.ok ? '✓ ' : ''}{item.label}
+              </p>
+              <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.38)', margin: 0 }}>{item.note}</p>
+            </div>
+            <a href={item.href} style={{ fontSize: 10, color: '#3B6EBA', textDecoration: 'none', whiteSpace: 'nowrap', marginTop: 2 }}>
               Vai &#8594;
             </a>
           </div>

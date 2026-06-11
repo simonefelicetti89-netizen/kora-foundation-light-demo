@@ -192,6 +192,37 @@ export default function KoraControlTower() {
         <p style={{ fontFamily: FONT, fontSize: '11.5px', color: '#166534', marginBottom: 14, lineHeight: 1.5 }}>
           Strumenti operativi reali — accesso diretto al tenant autenticato. Nessun dato sintetico.
         </p>
+
+        {/* Trial Control Center — featured card */}
+        <Link
+          href="/admin/trial-control-center"
+          data-testid="admin-home-trial-control-center-card"
+          style={{
+            display:        'flex',
+            alignItems:     'center',
+            justifyContent: 'space-between',
+            gap:            12,
+            borderRadius:   10,
+            padding:        '12px 16px',
+            background:     'rgba(22,101,52,0.12)',
+            border:         '1.5px solid rgba(22,101,52,0.35)',
+            textDecoration: 'none',
+            marginBottom:   12,
+          }}
+        >
+          <div>
+            <p style={{ fontFamily: FONT, fontSize: '12.5px', fontWeight: 700, color: '#166534', margin: '0 0 2px' }}>
+              Trial Control Center
+            </p>
+            <p style={{ fontFamily: FONT, fontSize: '11px', color: 'rgba(22,101,52,0.75)', margin: 0 }}>
+              Guida il ciclo demo completo: data intake, scoring, company workspace, worker, wallboard, partner.
+            </p>
+          </div>
+          <span style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 700, color: '#166534', whiteSpace: 'nowrap' }}>
+            Apri Control Center &#8594;
+          </span>
+        </Link>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }}>
           {([
             { href: '/admin/companies',               label: 'Company Console · LIVE' },

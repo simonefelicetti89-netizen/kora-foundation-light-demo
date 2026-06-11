@@ -7,6 +7,14 @@
 
 ---
 
+## Punto di partenza
+
+**Prima di tutto: apri `/admin/trial-control-center`.**  
+Questa pagina aggrega lo stato di tutti i tenant, la checklist 14-step, i quick links e i warning.
+Se la checklist mostra step mancanti, risolvili prima di aprire KORA davanti a un prospect.
+
+---
+
 ## Risposta alla domanda guida
 
 > "Posso aprire KORA davanti a un potenziale cliente e mostrare il ciclo completo in 20 minuti, con dati trial controllati, ruoli separati e privacy boundary chiaro?"
@@ -296,11 +304,44 @@ Per la governance output: `docs/21b-methodology-risk-acceptance-and-provisional-
 
 ## Checklist pre-demo finale (30 minuti prima)
 
-- [ ] Trial Control Center — tutti i check critici verdi
+Apri `/admin/trial-control-center` — tutti i 14 step devono essere verdi.
+
+- [ ] Step 1: Tenant attivo in Trial Control Center
+- [ ] Step 2: Batch dati caricato
+- [ ] Step 3: UEF candidati generati
+- [ ] Step 4: UEF approvati
+- [ ] Step 5: KORA Index calcolato
+- [ ] Step 6: Decision Pack disponibile
+- [ ] Step 7: Wallboard disponibile
+- [ ] Step 8: Worker provisionati (≥ 10 per soglia privacy)
+- [ ] Step 9: Onboarding worker completato
+- [ ] Step 10: Iniziative pubblicate
+- [ ] Step 11: Interazioni worker presenti
+- [ ] Step 12: Dynamic CV preview disponibile
+- [ ] Step 13: Partner catalog popolato
+- [ ] Step 14: Privacy boundary verificato
 - [ ] 3 finestre browser autenticate (Admin, Company, Worker)
-- [ ] Tenant trial ha KORA Index calcolato
-- [ ] Tenant trial ha Decision Pack generato
-- [ ] Almeno 1 worker con onboarding completato
-- [ ] Almeno 1 iniziativa pubblicata
 - [ ] Network: connessione stabile verificata
-- [ ] Non ci sono sessioni attive di altri utenti sullo stesso tenant
+
+## Checklist post-demo
+
+- [ ] Nessun dato individuale worker esposto durante la demo
+- [ ] Nessun link a /worker/login o /company/login usato come KORA_ADMIN
+- [ ] Prospect ha visto privacy boundary (step 14) in azione
+- [ ] Prospect ha capito che KORA Index è company-level, non individuale
+- [ ] Follow-up schedulato
+
+## Se qualcosa è missing nel Control Center
+
+| Missing step | Azione rapida |
+|---|---|
+| Nessun tenant | Crea via `/admin/companies/new` |
+| Nessun batch | Carica `data/golden-path/kora_golden_path_upload.csv` in Data Intake |
+| UEF 0 | Verifica formato CSV — colonne obbligatorie nel README golden-path |
+| UEF non approvati | Approva manualmente in `/admin/uef-review` |
+| Scoring non eseguito | Lancia scoring dopo aver approvato UEF |
+| Decision Pack mancante | Genera dopo scoring in `/company/reports` |
+| Worker 0 | Provisiona via `/admin/workers` |
+| Onboarding 0 | Worker deve completare onboarding privacy via `/worker/onboarding` |
+| Iniziative 0 | Crea e pubblica via `/admin/worker-initiatives` |
+| Partner 0 | Crea e pubblica via `/admin/partners` |
