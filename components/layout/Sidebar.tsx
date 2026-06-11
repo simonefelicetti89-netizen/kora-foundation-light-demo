@@ -232,7 +232,11 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Attivazione',
         items: [
-          { href: '/my-kora/dynamic-cv', label: 'Dynamic Impact CV', comingSoon: true },
+          {
+            href:    isAdminPreview ? '/admin/preview/worker/dynamic-cv' : '/worker/dynamic-cv',
+            label:   'Dynamic Impact CV',
+            preview: isAdminPreview ? true : undefined,
+          },
           {
             href:    isAdminPreview ? '/admin/preview/worker/opportunities' : '/worker/opportunities',
             label:   'Opportunità',

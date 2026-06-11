@@ -191,8 +191,10 @@ describe('Sidebar — worker navigation updated', () => {
     expect(opportunitaLine).not.toContain('comingSoon');
   });
 
-  it('Dynamic Impact CV remains comingSoon', () => {
-    expect(sidebar).toContain("label: 'Dynamic Impact CV', comingSoon: true");
+  it('Dynamic Impact CV is now a live route (B121: links to /worker/dynamic-cv, not comingSoon)', () => {
+    // B121 implemented /worker/dynamic-cv. comingSoon is removed.
+    expect(sidebar).toContain("'/worker/dynamic-cv'");
+    expect(sidebar).toContain("'Dynamic Impact CV'");
   });
 });
 

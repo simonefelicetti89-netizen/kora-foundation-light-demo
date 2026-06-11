@@ -145,8 +145,9 @@ export default async function WorkerWorkspacePage() {
     return { pillar, ...c, total_active: c.interested + c.registered + c.attended };
   });
 
-  const totalActive = pillarDistribution.reduce((s, p) => s + p.total_active, 0);
-  const activePillars = pillarDistribution.filter(p => p.total_active > 0);
+  const totalActive    = pillarDistribution.reduce((s, p) => s + p.total_active, 0);
+  const hasAnyActivity = totalActive > 0;
+  const activePillars  = pillarDistribution.filter(p => p.total_active > 0);
 
   let strongestPillar: ProfilePillar | null = null;
   if (activePillars.length > 0) {
@@ -372,12 +373,64 @@ export default async function WorkerWorkspacePage() {
         )}
       </div>
 
-      {/* Placeholder sections — future sprint */}
-      <div style={{ display: 'grid', gap: 16 }}>
-        <PlaceholderSection
-          title="Dynamic Impact CV"
-          description="Il tuo CV di impatto — portabile, verificato, condivisibile. Disponibile nel prossimo sprint."
-        />
+      {/* Dynamic Impact CV — B121 */}
+      <div
+        data-testid="workspace-dynamic-cv-card"
+        style={{
+          border:       '1px solid rgba(6,3,43,0.10)',
+          borderRadius: 14,
+          padding:      '20px 22px',
+          background:   '#FAFAFA',
+          display:      'flex',
+          alignItems:   'flex-start',
+          justifyContent: 'space-between',
+          gap:          16,
+        }}
+      >
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3B6EBA', margin: '0 0 6px' }}>
+            Dynamic Impact CV
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+            {hasAnyActivity ? 'Il tuo percorso KORA è in costruzione' : 'Inizia a costruire il tuo profilo'}
+          </p>
+          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            {hasAnyActivity
+              ? 'CV privato disponibile. Il tuo datore di lavoro non vede questi dati.'
+              : 'Partecipa alle prime iniziative per generare il tuo CV KORA.'}
+          </p>
+          <a
+            href="/worker/dynamic-cv"
+            data-testid="workspace-dynamic-cv-link"
+            style={{
+              display:        'inline-block',
+              fontSize:       12,
+              fontWeight:     600,
+              color:          '#3B6EBA',
+              textDecoration: 'none',
+              padding:        '7px 14px',
+              border:         '1px solid rgba(59,110,186,0.28)',
+              borderRadius:   8,
+              background:     'rgba(59,110,186,0.06)',
+            }}
+          >
+            {hasAnyActivity ? 'Vedi il tuo CV →' : 'Esplora il tuo CV →'}
+          </a>
+        </div>
+        <span
+          style={{
+            fontSize:      9,
+            fontWeight:    700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding:       '3px 8px',
+            borderRadius:  999,
+            background:    hasAnyActivity ? 'rgba(47,125,85,0.10)' : 'rgba(6,3,43,0.06)',
+            color:         hasAnyActivity ? '#2F7D55' : 'rgba(6,3,43,0.40)',
+          }}
+        >
+          {hasAnyActivity ? 'Pronto' : 'In costruzione'}
+        </span>
       </div>
 
       <div style={{ marginTop: 28, fontSize: 10, color: 'rgba(6,3,43,0.30)', lineHeight: 1.5 }}>

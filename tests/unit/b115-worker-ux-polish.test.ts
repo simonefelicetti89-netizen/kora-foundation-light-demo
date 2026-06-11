@@ -115,8 +115,17 @@ describe('Activation Profile Section — UX polish', () => {
 // ─── 5. Sidebar — worker navigation ──────────────────────────────────────────
 
 describe('Sidebar — worker navigation', () => {
-  it('Dynamic Impact CV is marked comingSoon', () => {
-    expect(sidebar).toContain("label: 'Dynamic Impact CV', comingSoon: true");
+  it('Dynamic Impact CV is a live route (B121: comingSoon removed, links to /worker/dynamic-cv)', () => {
+    // B121 implemented /worker/dynamic-cv as a real route.
+    // comingSoon is removed; sidebar now routes to /worker/dynamic-cv.
+    expect(sidebar).toContain("'Dynamic Impact CV'");
+    expect(sidebar).toContain("'/worker/dynamic-cv'");
+    // comingSoon must not appear alongside this item
+    const cvBlock = sidebar.slice(
+      sidebar.indexOf("'Dynamic Impact CV'"),
+      sidebar.indexOf("'/worker/opportunities'"),
+    );
+    expect(cvBlock).not.toContain('comingSoon: true');
   });
 
   it('Opportunità references /worker/opportunities in sidebar (B117-G: ternary for admin preview)', () => {
