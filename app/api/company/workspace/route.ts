@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
   // ── 4. KORA Index result (B105: was wrongly querying non-existent 'scoring_result') ──
   const { data: kiRow } = await db
     .schema('analytics').from('kora_index_result')
-    .select('id, kora_index_value, confidence_score, safeguard_status, activation_rate, meaningful_activation_rate, reporting_period, methodology_version_id, calibration_status, created_at')
+    .select('id, kora_index_value, confidence_score, safeguard_status, activation_rate, meaningful_activation_rate, reporting_period, methodology_version_id, calibration_status, macroblocks, components, created_at')
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false })
     .limit(1)
@@ -116,6 +116,8 @@ export async function GET(request: NextRequest) {
     reportingPeriod:   ki.reporting_period as string,
     methodologyVersion: (ki.methodology_version_id as string) ?? (t.methodology_version_id as string),
     calibrationStatus: (ki.calibration_status as string) ?? 'pre_empirical_calibration',
+    // B120: macroblock scores — from kora_index_result.macroblocks JSONB (null-safe)
+    macroblocks: (ki.macroblocks as unknown[] | null | undefined) ?? null,
     // Non-suppressible labels required by doc 21b
     displayLabels: {
       methodology:   (ki.methodology_version_id as string) ?? (t.methodology_version_id as string),

@@ -23,6 +23,15 @@ const PILLAR_META: Record<string, { label: string; color: string; bg: string }> 
 
 const PILLAR_ORDER = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 
+const MACROBLOCK_ORDER = ['REACH', 'QUALITY', 'EQUITY', 'BTI'] as const;
+
+const MACROBLOCK_META: Record<string, { label: string; description: string; weight: number; color: string; bg: string }> = {
+  REACH:   { label: 'Activation Reach',       description: 'Quota della workforce raggiunta dall\'attivazione.',           weight: 0.25, color: '#3B6EBA', bg: 'rgba(59,110,186,0.06)'  },
+  QUALITY: { label: 'Activation Quality',     description: 'Profondita\', verifica e continuita\' dell\'attivazione.',     weight: 0.30, color: '#2F7D55', bg: 'rgba(47,125,85,0.06)'   },
+  EQUITY:  { label: 'Distribution & Equity',  description: 'Distribuzione equa tra lavoratori, reparti, sedi.',           weight: 0.25, color: '#7C3D8F', bg: 'rgba(124,61,143,0.06)'  },
+  BTI:     { label: 'Budget-to-Human-Impact', description: 'Quanto il budget welfare si traduce in valore umano reale.',   weight: 0.20, color: '#C07D2A', bg: 'rgba(192,125,42,0.06)'  },
+};
+
 const SAFEGUARD_STYLE: Record<string, { color: string; bg: string; border: string }> = {
   CLEAR:   { color: '#2F7D55', bg: 'rgba(47,125,85,0.08)',   border: 'rgba(47,125,85,0.25)'   },
   WARNING: { color: '#8A5A00', bg: 'rgba(217,154,43,0.10)',  border: 'rgba(217,154,43,0.30)'  },
@@ -56,6 +65,14 @@ type PillarAggregate =
   | { pillar: string; published_initiatives: number; suppressed: false; total_participations: number }
   | { pillar: string; published_initiatives: number; suppressed: true; suppression_reason: string; suppression_threshold: number };
 
+// Minimal macroblock shape consumed by the wallboard — subset of MacroblockScore.
+interface WallboardMacroblock {
+  code:   string;
+  label:  string;
+  score:  number;
+  weight: number;
+}
+
 interface WorkspaceData {
   ok: boolean;
   tenant: { tenantCode: string; companyName: string; methodologyVersion: string; calibrationStatus: string };
@@ -68,6 +85,7 @@ interface WorkspaceData {
     reportingPeriod: string;
     methodologyVersion: string;
     calibrationStatus: string;
+    macroblocks: WallboardMacroblock[] | null;
     displayLabels: { methodology: string; calibration: string; disclaimer: string };
   } | null;
 }
@@ -406,6 +424,62 @@ export function WallboardClient({ userEmail, userRole }: WallboardClientProps) {
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* 4 Macroblocchi */}
+          <div data-testid="wallboard-macroblocks-section">
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 12px' }}>
+              4 Macroblocchi KORA Index
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+              {MACROBLOCK_ORDER.map(code => {
+                const meta   = MACROBLOCK_META[code];
+                const mbRow  = ki.macroblocks?.find(m => m.code === code);
+                const score  = mbRow?.score ?? null;
+                const weight = mbRow?.weight ?? meta.weight;
+
+                return (
+                  <div
+                    key={code}
+                    data-testid={`wallboard-macroblock-${code.toLowerCase()}`}
+                    style={{
+                      border:       `1px solid ${meta.color}22`,
+                      borderRadius: 12,
+                      padding:      '14px 16px',
+                      background:   meta.bg,
+                    }}
+                  >
+                    <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: meta.color, margin: '0 0 2px' }}>
+                      {code}
+                    </p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#06032B', margin: '0 0 8px', lineHeight: 1.3 }}>
+                      {meta.label}
+                    </p>
+                    {score !== null ? (
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
+                        <span style={{ fontSize: '1.5rem', fontWeight: 900, color: meta.color, letterSpacing: '-0.03em' }}>
+                          {Math.round(score)}
+                        </span>
+                        <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)' }}>/100</span>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(6,3,43,0.30)', margin: '0 0 4px' }}>
+                        Dato disponibile dopo scoring
+                      </p>
+                    )}
+                    <div style={{
+                      height: 3, borderRadius: 999,
+                      background: score !== null ? meta.color : 'rgba(6,3,43,0.08)',
+                      width: score !== null ? `${Math.min(score, 100)}%` : '100%',
+                      opacity: score !== null ? 1 : 0.3,
+                    }} />
+                    <p style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)', margin: '6px 0 0' }}>
+                      Peso: {Math.round(weight * 100)}%
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

@@ -210,6 +210,68 @@ describe('B119 -- Canonical privacy footer', () => {
   });
 });
 
+// --- B120: Macroblocchi section -------------------------------------------
+// B120 adds macroblocchi (REACH, QUALITY, EQUITY, BTI) to the wallboard.
+
+describe('B120 -- Macroblocchi section', () => {
+  it('WallboardClient has data-testid="wallboard-macroblocks-section"', () => {
+    expect(wallboardClient).toContain('data-testid="wallboard-macroblocks-section"');
+  });
+
+  it('WallboardClient renders all 4 macroblock cards with testids', () => {
+    expect(wallboardClient).toContain('data-testid={`wallboard-macroblock-${code.toLowerCase()}`}');
+  });
+
+  it('WallboardClient MACROBLOCK_ORDER contains all 4 codes', () => {
+    expect(wallboardClient).toContain("'REACH'");
+    expect(wallboardClient).toContain("'QUALITY'");
+    expect(wallboardClient).toContain("'EQUITY'");
+    expect(wallboardClient).toContain("'BTI'");
+  });
+
+  it('WallboardClient macroblocchi section shows weight for each macroblock', () => {
+    expect(wallboardClient).toContain('Peso:');
+  });
+
+  it('WallboardClient macroblocchi section shows score from API if available', () => {
+    expect(wallboardClient).toContain('mbRow?.score');
+  });
+
+  it('WallboardClient macroblocchi section shows honest empty state when score not available', () => {
+    expect(wallboardClient).toContain('Dato disponibile dopo scoring');
+  });
+
+  it('workspace API SELECT now includes macroblocks column', () => {
+    const workspaceRoute = readFile('app/api/company/workspace/route.ts');
+    expect(workspaceRoute).toContain('macroblocks');
+  });
+
+  it('workspace API koraIndexSummary includes macroblocks field', () => {
+    const workspaceRoute = readFile('app/api/company/workspace/route.ts');
+    // Must be in the summary object, not just the select
+    const summaryBlock = workspaceRoute.slice(
+      workspaceRoute.indexOf('koraIndexSummary = ki ?'),
+      workspaceRoute.indexOf('} : null;'),
+    );
+    expect(summaryBlock).toContain('macroblocks');
+  });
+
+  it('WallboardClient WorkspaceData type includes macroblocks field', () => {
+    expect(wallboardClient).toContain('macroblocks');
+    expect(wallboardClient).toContain('WallboardMacroblock');
+  });
+
+  it('macroblocchi section does not expose individual worker data', () => {
+    const macroblockSection = wallboardClient.slice(
+      wallboardClient.indexOf('wallboard-macroblocks-section'),
+      wallboardClient.indexOf('wallboard-pillars-section'),
+    );
+    expect(macroblockSection).not.toContain('worker_id');
+    expect(macroblockSection).not.toContain('workerEmail');
+    expect(macroblockSection).not.toContain('private_note');
+  });
+});
+
 // --- 20: Scoring not modified ----------------------------------------------
 
 describe('B119 -- Scoring not modified', () => {
