@@ -162,8 +162,9 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Evidence & Report',
         items: [
-          { href: '/company/data',    label: 'Stato Dati' },
-          { href: '/company/reports', label: 'Decision Pack' },
+          { href: '/company/data',      label: 'Stato Dati' },
+          { href: '/company/reports',   label: 'Decision Pack' },
+          { href: '/company/wallboard', label: 'KORA Wallboard' },
         ],
       },
       {
@@ -203,7 +204,8 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Report',
         items: [
-          { href: '/company/reports', label: 'Decision Pack' },
+          { href: '/company/reports',   label: 'Decision Pack' },
+          { href: '/company/wallboard', label: 'KORA Wallboard' },
         ],
       },
       {
