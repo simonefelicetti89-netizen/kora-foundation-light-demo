@@ -55,6 +55,14 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     bg:          'rgba(37,99,235,0.10)',
     border:      'rgba(37,99,235,0.28)',
   },
+  PARTNER: {
+    label:       'Partner',
+    spaceLabel:  'Area Partner KORA',
+    description: 'Il tuo workspace partner. Puoi vedere il tuo profilo e lo stato di visibilità nel catalogo opportunità. Nessun accesso a dati individuali worker o KORA Index aziendale.',
+    color:       '#8A5A00',
+    bg:          'rgba(192,125,42,0.10)',
+    border:      'rgba(192,125,42,0.28)',
+  },
 };
 
 export default async function AccountPage() {
@@ -200,6 +208,28 @@ export default async function AccountPage() {
               }}
             >
               Privacy & Condivisione &#8594;
+            </Link>
+          </div>
+        )}
+
+        {koraRole === 'PARTNER' && (
+          <div style={{ padding: '12px 24px', borderBottom: '1px solid rgba(6,3,43,0.07)' }}>
+            <Link
+              href="/partner/workspace"
+              data-testid="account-partner-workspace-link"
+              style={{
+                display:        'inline-block',
+                fontSize:       12,
+                fontWeight:     600,
+                color:          '#8A5A00',
+                textDecoration: 'none',
+                padding:        '7px 14px',
+                border:         '1px solid rgba(192,125,42,0.28)',
+                borderRadius:   8,
+                background:     'rgba(192,125,42,0.06)',
+              }}
+            >
+              Area Partner &#8594;
             </Link>
           </div>
         )}

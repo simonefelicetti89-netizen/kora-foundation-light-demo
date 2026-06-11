@@ -53,7 +53,7 @@ The user never chooses their role. The user never chooses their tenant. Both are
 | `COMPANY_ADMIN` | KORA_ADMIN via `/api/admin/companies/provision` | `/company/workspace` |
 | `WORKER` | KORA_ADMIN via `/api/admin/workers/provision` | `/worker/workspace` |
 | `COMPANY_VIEWER` | Legacy only — not a new provisioning role | `/company/workspace` (read-only) |
-| `PARTNER` | Future — not active in Foundation Light | — |
+| `PARTNER` | KORA_ADMIN via `/api/admin/partners/[id]/invite-user` | `/partner/workspace` |
 
 **COMPANY_VIEWER** is legacy-compatible: existing sessions remain valid.
 New provisioning (`/api/admin/companies/provision`) only accepts `COMPANY_ADMIN`.

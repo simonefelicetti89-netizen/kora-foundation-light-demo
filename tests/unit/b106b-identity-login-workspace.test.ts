@@ -61,7 +61,7 @@ describe('B106-B — kora-session: auth metadata canonici', () => {
   });
 
   it('isKoraAuthError type guard accetta tutti i ruoli', () => {
-    expect(session).toContain('KoraUser | KoraCompanyUser | KoraWorkerUser | NextResponse');
+    expect(session).toContain('KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | NextResponse');
   });
 });
 

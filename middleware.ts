@@ -52,6 +52,18 @@ const WORKER_ALLOWED_PREFIXES = [
   '/_next',
 ];
 
+// B127: Paths that authenticated PARTNER users are allowed to access.
+// Partners are confined to /partner/* only — cannot access admin, company, or worker routes.
+const PARTNER_ALLOWED_PREFIXES = [
+  '/partner/',               // partner workspace — /partner/workspace, /partner/ demo
+  '/account',                // account page — accessible to all authenticated roles
+  '/auth/',                  // all auth routes (callback, reset-password, forgot-password)
+  '/login',                  // unified login — accessible after session expiry
+  '/request-access',         // public informational page
+  '/api/',                   // all API routes (have own requirePartnerUser auth)
+  '/_next',
+];
+
 export async function middleware(request: NextRequest) {
   const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -122,6 +134,18 @@ export async function middleware(request: NextRequest) {
 
     if (!isAllowed) {
       return NextResponse.redirect(new URL('/worker/workspace', request.url));
+    }
+  }
+
+  // B127: Redirect authenticated partners away from admin/company/worker paths.
+  // Partners are confined to /partner/* — any other path redirects to their workspace.
+  const isRealPartner = sessionKoraRole === 'PARTNER';
+
+  if (isRealPartner) {
+    const isAllowed = PARTNER_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+    if (!isAllowed) {
+      return NextResponse.redirect(new URL('/partner/workspace', request.url));
     }
   }
 

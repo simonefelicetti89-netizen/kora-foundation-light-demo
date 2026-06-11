@@ -17,6 +17,7 @@ const ROLE_BADGE: Record<string, { label: string; bg: string; color: string; bor
   COMPANY_ADMIN:  { label: 'Company Admin',  bg: 'rgba(22,101,52,0.10)',  color: '#166534', border: 'rgba(22,101,52,0.28)'  },
   COMPANY_VIEWER: { label: 'Company Viewer', bg: 'rgba(6,3,43,0.06)',     color: 'rgba(6,3,43,0.55)', border: 'rgba(6,3,43,0.14)' },
   WORKER:         { label: 'Worker',         bg: 'rgba(37,99,235,0.10)',  color: '#1e4a8a', border: 'rgba(37,99,235,0.28)'  },
+  PARTNER:        { label: 'Partner',        bg: 'rgba(192,125,42,0.10)', color: '#8A5A00', border: 'rgba(192,125,42,0.28)' },
 };
 
 function getInitials(emailStr: string): string {

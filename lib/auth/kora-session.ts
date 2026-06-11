@@ -216,6 +216,70 @@ export function assertTenantAccess(
   return null; // access granted
 }
 
+// ── KoraPartnerUser — authenticated partner in their workspace ───────────────
+// partnerId links to network.partner_profile.id — always from app_metadata.
+// PARTNER users are provisioned by KORA_ADMIN only — no self-signup.
+// Partner cannot access worker data, company KORA Index, or admin routes.
+
+export interface KoraPartnerUser {
+  id: string;
+  email: string;
+  koraRole: 'PARTNER';
+  partnerId: string;
+  partnerStatus: 'invited' | 'active' | 'disabled';
+}
+
+// ── requirePartnerUser — returns KoraPartnerUser or a 401/403 NextResponse ────
+
+export async function requirePartnerUser(request?: NextRequest): Promise<KoraPartnerUser | NextResponse> {
+  const user = await resolveUser(request);
+
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const appMeta = user.app_metadata as Record<string, unknown> | undefined;
+  const koraRole = appMeta?.kora_role as string | undefined;
+
+  if (koraRole !== 'PARTNER') {
+    return NextResponse.json(
+      { error: 'Forbidden — PARTNER role required', role_found: koraRole ?? 'none' },
+      { status: 403 },
+    );
+  }
+
+  const partnerId = appMeta?.kora_partner_id as string | undefined;
+  if (!partnerId) {
+    return NextResponse.json(
+      { error: 'Forbidden — no partner identity assigned. Contact KORA Admin.' },
+      { status: 403 },
+    );
+  }
+
+  const partnerStatus = (appMeta?.kora_status as string | undefined) ?? 'active';
+  if (partnerStatus === 'disabled') {
+    return NextResponse.json(
+      { error: 'Account partner disabilitato. Contatta il tuo KORA Admin.' },
+      { status: 403 },
+    );
+  }
+
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    koraRole: 'PARTNER',
+    partnerId,
+    partnerStatus: partnerStatus as KoraPartnerUser['partnerStatus'],
+  };
+}
+
+// ── getCurrentPartnerUser — returns KoraPartnerUser or null (no throw) ────────
+
+export async function getCurrentPartnerUser(request?: NextRequest): Promise<KoraPartnerUser | null> {
+  const result = await requirePartnerUser(request);
+  return result instanceof NextResponse ? null : result;
+}
+
 // ── KoraWorkerUser — authenticated worker in their private space ──────────────
 // workerId links to personal.worker_identity.id — always from app_metadata.
 // tenantId scopes which company this worker belongs to.
@@ -284,19 +348,23 @@ export async function getCurrentWorkerUser(request?: NextRequest): Promise<KoraW
 // ── Type guards — distinguish error response from authorized user ──────────────
 
 export function isKoraAuthError(
-  value: KoraUser | KoraCompanyUser | KoraWorkerUser | NextResponse,
+  value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | NextResponse,
 ): value is NextResponse {
   return value instanceof NextResponse;
 }
 
-export function isKoraAdmin(value: KoraUser | KoraCompanyUser | KoraWorkerUser): value is KoraUser {
+export function isKoraAdmin(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraUser {
   return value.koraRole === 'KORA_ADMIN';
 }
 
-export function isCompanyUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser): value is KoraCompanyUser {
+export function isCompanyUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraCompanyUser {
   return value.koraRole === 'COMPANY_ADMIN' || value.koraRole === 'COMPANY_VIEWER';
 }
 
-export function isWorkerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser): value is KoraWorkerUser {
+export function isWorkerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraWorkerUser {
   return value.koraRole === 'WORKER';
+}
+
+export function isPartnerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser): value is KoraPartnerUser {
+  return value.koraRole === 'PARTNER';
 }
