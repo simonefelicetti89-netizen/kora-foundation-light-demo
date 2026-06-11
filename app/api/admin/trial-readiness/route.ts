@@ -1,5 +1,6 @@
 // app/api/admin/trial-readiness/route.ts
 // B123: Trial readiness — KORA_ADMIN only, read-only aggregate endpoint.
+// B125: Added worker_participation aggregate counts; OP-001 isolation warning.
 //
 // Aggregates all trial state in one response:
 //   analytics.tenant              → tenant list
@@ -47,10 +48,11 @@ export interface TenantTrialStatus {
   };
 
   workers: {
-    total:              number;
-    active:             number;
-    invited:            number;
-    onboardingComplete: number;
+    total:               number;
+    active:              number;
+    invited:             number;
+    onboardingComplete:  number;
+    participationCount:  number;
   };
 
   initiatives: {
@@ -107,7 +109,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // ── 2. Pipeline data — fetch in parallel ─────────────────────────────────────
   const [
     batchRes, uefRes, kiRes, dpRes,
-    workerRes, profileRes, initiativeRes, partnerRes,
+    workerRes, profileRes, initiativeRes, participationRes, partnerRes,
   ] = await Promise.all([
     // last source_batch per tenant
     tenantIds.length > 0
@@ -161,27 +163,36 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
           .in('tenant_id', tenantIds)
       : Promise.resolve({ data: [], error: null }),
 
+    // worker_participation — aggregate counts only, no individual identifiers
+    tenantIds.length > 0
+      ? db.schema('personal').from('worker_participation')
+          .select('tenant_id, status')
+          .in('tenant_id', tenantIds)
+      : Promise.resolve({ data: [], error: null }),
+
     // partner_profile — global, not per-tenant
     db.schema('network').from('partner_profile')
       .select('status'),
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const batches        = (batchRes.data  ?? []) as any[];
+  const batches           = (batchRes.data        ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const uefRows        = (uefRes.data    ?? []) as any[];
+  const uefRows           = (uefRes.data          ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const kiRows         = (kiRes.data     ?? []) as any[];
+  const kiRows            = (kiRes.data           ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dpRows         = (dpRes.data     ?? []) as any[];
+  const dpRows            = (dpRes.data           ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const workerRows     = (workerRes.data ?? []) as any[];
+  const workerRows        = (workerRes.data        ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const profileRows    = (profileRes.data ?? []) as any[];
+  const profileRows       = (profileRes.data       ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const initRows       = (initiativeRes.data ?? []) as any[];
+  const initRows          = (initiativeRes.data    ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const partnerRows    = (partnerRes.data ?? []) as any[];
+  const participationRows = (participationRes.data ?? []) as any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const partnerRows       = (partnerRes.data       ?? []) as any[];
 
   // ── 3. Partner catalog summary (global) ──────────────────────────────────────
   const partners: PartnerCatalogStatus = {
@@ -215,7 +226,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const wallboardReady = lastKi !== null &&
       ['CLEAR', 'WARNING'].includes(lastKi.safeguard_status ?? '');
 
-    // Worker counts (aggregate only)
+    // Worker counts (aggregate only — no individual identifiers)
     const tenantWorkers = workerRows.filter((w: { tenant_id: string }) => w.tenant_id === tid);
     const workerTotal   = tenantWorkers.length;
     const workerActive  = tenantWorkers.filter((w: { status: string }) => w.status === 'active').length;
@@ -225,6 +236,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const tenantProfiles = profileRows.filter((p: { tenant_id: string }) => p.tenant_id === tid);
     const onboardingComplete = tenantProfiles.filter(
       (p: { onboarding_completed_at: string | null }) => p.onboarding_completed_at !== null
+    ).length;
+
+    // Participation count (aggregate only — no individual identifiers)
+    const tenantParticipations = participationRows.filter((p: { tenant_id: string }) => p.tenant_id === tid);
+    const participationCount = tenantParticipations.filter(
+      (p: { status: string }) => p.status !== 'cancelled'
     ).length;
 
     // Initiative counts
@@ -246,15 +263,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       scoringReadiness = 'NO_DATA';
     }
 
-    // Warnings
+    // Warnings — each includes next action hint
     const warnings: string[] = [];
-    if (!lastBatch) warnings.push('Nessun upload dati effettuato');
-    if (uefCandidates > 0 && uefApproved === 0) warnings.push(`${uefCandidates} UEF in attesa di approvazione`);
-    if (workerTotal === 0) warnings.push('Nessun worker provisionato');
-    if (workerTotal > 0 && workerActive === 0) warnings.push('Nessun worker attivo (tutti invited/pending)');
-    if (initPublished === 0) warnings.push('Nessuna iniziativa pubblicata');
-    if (!lastKi) warnings.push('Scoring non ancora eseguito');
-    if (lastKi && !lastDp) warnings.push('Decision Pack non ancora generato');
+    if (!lastBatch) warnings.push('Nessun upload dati — vai a /admin/data-intake');
+    if (uefCandidates > 0 && uefApproved === 0) warnings.push(`${uefCandidates} UEF in attesa di approvazione — vai a /admin/uef-review`);
+    if (workerTotal === 0) warnings.push('Nessun worker provisionato — vai a /admin/workers');
+    if (workerTotal > 0 && workerTotal < 10) warnings.push(`Solo ${workerTotal} worker — soglia privacy < 10 (dati soppressi) — aggiungi worker via /admin/workers`);
+    if (workerTotal > 0 && workerActive === 0) warnings.push('Nessun worker attivo (tutti invited/pending) — vai a /admin/workers');
+    if (initPublished === 0) warnings.push('Nessuna iniziativa pubblicata — vai a /admin/worker-initiatives');
+    if (!lastKi) warnings.push('Scoring non ancora eseguito — approva UEF e lancia scoring da /admin/uef-review');
+    if (lastKi && !lastDp) warnings.push('Decision Pack non ancora generato — vai a /company/reports');
+    if (participationCount === 0 && workerActive > 0) warnings.push('Nessuna interazione worker — Dynamic CV vuoto — vai a /admin/worker-diagnostics');
 
     // Readiness level
     let readiness: TrialReadinessLevel = 'NOT_STARTED';
@@ -288,6 +307,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         active:             workerActive,
         invited:            workerInvited,
         onboardingComplete,
+        participationCount,
       },
       initiatives: {
         total:     initTotal,
@@ -303,7 +323,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // ── 5. Global warnings ────────────────────────────────────────────────────────
   const globalWarnings: string[] = [];
   if (tenants.length === 0) globalWarnings.push('Nessun tenant attivo trovato — crea un tenant via /admin/companies');
-  if (partners.published === 0) globalWarnings.push('Nessun partner pubblicato — il catalogo opportunità appare vuoto ai worker');
+  if (partners.published === 0) globalWarnings.push('Nessun partner pubblicato — il catalogo opportunita appare vuoto ai worker — vai a /admin/partners');
+  // OP-001 isolation: should never appear as live tenant
+  if (result.some(r => r.tenantCode === 'OP-001'))
+    globalWarnings.push('OP-001 rilevato — usare KORA-TRIAL per il trial live, non OP-001 (riservato alla demo sintetica standalone)');
 
   const readyCount   = result.filter(r => r.readiness === 'READY').length;
   const partialCount = result.filter(r => r.readiness === 'PARTIAL').length;

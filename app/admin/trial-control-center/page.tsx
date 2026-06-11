@@ -1,5 +1,6 @@
 // app/admin/trial-control-center/page.tsx
 // B123: Trial Control Center — KORA_ADMIN only.
+// B125: Hardened — actionable warnings, participation-based step 11, OP-001 isolation.
 //
 // Single orchestration hub for running a full KORA end-to-end demo or trial.
 // Shows per-tenant pipeline status, worker state, initiatives, partner catalog,
@@ -61,7 +62,7 @@ async function fetchTrialData() {
 
   const [
     tenantRes, batchRes, uefRes, kiRes, dpRes,
-    workerRes, profileRes, initRes, partnerRes,
+    workerRes, profileRes, initRes, participationRes, partnerRes,
   ] = await Promise.all([
     db.schema('analytics').from('tenant')
       .select('id, tenant_code, company_name, is_active')
@@ -91,30 +92,36 @@ async function fetchTrialData() {
     db.schema('personal').from('worker_initiative')
       .select('tenant_id, status'),
 
+    // Aggregate participation counts only — no individual identifiers
+    db.schema('personal').from('worker_participation')
+      .select('tenant_id, status'),
+
     db.schema('network').from('partner_profile')
       .select('status'),
   ]);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tenants  = (tenantRes.data  ?? []) as any[];
+  const tenants       = (tenantRes.data       ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const batches  = (batchRes.data   ?? []) as any[];
+  const batches       = (batchRes.data        ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const uefs     = (uefRes.data     ?? []) as any[];
+  const uefs          = (uefRes.data          ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const kir      = (kiRes.data      ?? []) as any[];
+  const kir           = (kiRes.data           ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dps      = (dpRes.data      ?? []) as any[];
+  const dps           = (dpRes.data           ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const workers  = (workerRes.data  ?? []) as any[];
+  const workers       = (workerRes.data       ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const profiles = (profileRes.data ?? []) as any[];
+  const profiles      = (profileRes.data      ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const inits    = (initRes.data    ?? []) as any[];
+  const inits         = (initRes.data         ?? []) as any[];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const partners = (partnerRes.data ?? []) as any[];
+  const participations = (participationRes.data ?? []) as any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const partners      = (partnerRes.data      ?? []) as any[];
 
-  return { tenants, batches, uefs, kir, dps, workers, profiles, inits, partners };
+  return { tenants, batches, uefs, kir, dps, workers, profiles, inits, participations, partners };
 }
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -123,10 +130,12 @@ export default async function TrialControlCenterPage() {
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/login?role_hint=admin');
 
-  const { tenants, batches, uefs, kir, dps, workers, profiles, inits, partners } =
+  const { tenants, batches, uefs, kir, dps, workers, profiles, inits, participations, partners } =
     await fetchTrialData();
 
   // ── Per-tenant aggregations ──────────────────────────────────────────────────
+  type Warning = { text: string; href: string };
+
   type TenantSummary = {
     id: string; code: string; name: string; active: boolean;
     lastBatchAt: string | null;
@@ -136,9 +145,9 @@ export default async function TrialControlCenterPage() {
     hasDecisionPack: boolean; dpStatus: string | null;
     wallboardReady: boolean;
     workerTotal: number; workerActive: number; workerInvited: number;
-    onboardingDone: number;
+    onboardingDone: number; participationCount: number;
     initTotal: number; initPublished: number;
-    readiness: string; warnings: string[];
+    readiness: string; warnings: Warning[];
   };
 
   const tenantSummaries: TenantSummary[] = tenants.map(t => {
@@ -149,27 +158,41 @@ export default async function TrialControlCenterPage() {
     const uefApproved   = tenantUef.filter((u: { review_status: string }) => u.review_status === 'approved').length;
     const lastKi  = kir.find((k: { tenant_id: string }) => k.tenant_id === tid) ?? null;
     const lastDp  = dps.find((d: { tenant_id: string }) => d.tenant_id === tid) ?? null;
-    const wallboardReady = lastKi !== null && ['CLEAR','WARNING'].includes(lastKi.safeguard_status ?? '');
+    const wallboardReady = lastKi !== null && ['CLEAR', 'WARNING'].includes(lastKi.safeguard_status ?? '');
 
     const tw = workers.filter((w: { tenant_id: string }) => w.tenant_id === tid);
     const tp = profiles.filter((p: { tenant_id: string }) => p.tenant_id === tid);
     const ti = inits.filter((i: { tenant_id: string }) => i.tenant_id === tid);
+    // Aggregate participation count — no individual identifiers
+    const tp2 = participations.filter((p: { tenant_id: string }) => p.tenant_id === tid);
 
-    const workerTotal   = tw.length;
-    const workerActive  = tw.filter((w: { status: string }) => w.status === 'active').length;
-    const workerInvited = tw.filter((w: { status: string }) => w.status === 'invited').length;
-    const onboardingDone = tp.filter((p: { onboarding_completed_at: string|null }) => p.onboarding_completed_at !== null).length;
-    const initTotal      = ti.length;
-    const initPublished  = ti.filter((i: { status: string }) => i.status === 'published').length;
+    const workerTotal        = tw.length;
+    const workerActive       = tw.filter((w: { status: string }) => w.status === 'active').length;
+    const workerInvited      = tw.filter((w: { status: string }) => w.status === 'invited').length;
+    const onboardingDone     = tp.filter((p: { onboarding_completed_at: string|null }) => p.onboarding_completed_at !== null).length;
+    const participationCount = tp2.filter((p: { status: string }) => p.status !== 'cancelled').length;
+    const initTotal          = ti.length;
+    const initPublished      = ti.filter((i: { status: string }) => i.status === 'published').length;
 
-    const warnings: string[] = [];
-    if (!lastBatch)                        warnings.push('Nessun upload');
-    if (uefCandidates > 0 && uefApproved === 0) warnings.push(`${uefCandidates} UEF in attesa`);
-    if (workerTotal === 0)                 warnings.push('Nessun worker');
-    if (workerTotal > 0 && workerActive === 0) warnings.push('Nessun worker attivo');
-    if (initPublished === 0)               warnings.push('Nessuna iniziativa pubblicata');
-    if (!lastKi)                           warnings.push('Scoring non eseguito');
-    if (lastKi && !lastDp)                 warnings.push('Decision Pack mancante');
+    const warnings: Warning[] = [];
+    if (!lastBatch)
+      warnings.push({ text: 'Nessun upload dati', href: '/admin/data-intake' });
+    if (uefCandidates > 0 && uefApproved === 0)
+      warnings.push({ text: `${uefCandidates} UEF in attesa di approvazione`, href: '/admin/uef-review' });
+    if (workerTotal === 0)
+      warnings.push({ text: 'Nessun worker provisionato', href: '/admin/workers' });
+    if (workerTotal > 0 && workerTotal < 10)
+      warnings.push({ text: `Solo ${workerTotal} worker — soglia privacy < 10 (dati soppressi)`, href: '/admin/workers' });
+    if (workerTotal > 0 && workerActive === 0)
+      warnings.push({ text: 'Nessun worker attivo (tutti invited/pending)', href: '/admin/workers' });
+    if (initPublished === 0)
+      warnings.push({ text: 'Nessuna iniziativa pubblicata', href: '/admin/worker-initiatives' });
+    if (!lastKi)
+      warnings.push({ text: 'Scoring non ancora eseguito', href: '/admin/uef-review' });
+    if (lastKi && !lastDp)
+      warnings.push({ text: 'Decision Pack non ancora generato', href: '/company/reports' });
+    if (participationCount === 0 && workerActive > 0)
+      warnings.push({ text: 'Nessuna interazione worker — Dynamic CV vuoto', href: '/admin/worker-diagnostics' });
 
     let readiness = 'NOT_STARTED';
     if (lastKi && lastDp && workerActive > 0) readiness = 'READY';
@@ -187,7 +210,7 @@ export default async function TrialControlCenterPage() {
       hasDecisionPack: lastDp !== null,
       dpStatus: lastDp?.status ?? null,
       wallboardReady,
-      workerTotal, workerActive, workerInvited, onboardingDone,
+      workerTotal, workerActive, workerInvited, onboardingDone, participationCount,
       initTotal, initPublished,
       readiness, warnings,
     };
@@ -197,6 +220,17 @@ export default async function TrialControlCenterPage() {
   const partnerPublished = (partners as Array<{ status: string }>).filter(p => p.status === 'published').length;
   const partnerDraft     = (partners as Array<{ status: string }>).filter(p => p.status === 'draft').length;
   const partnerArchived  = (partners as Array<{ status: string }>).filter(p => p.status === 'archived').length;
+
+  // ── Global warnings ──────────────────────────────────────────────────────────
+  type GlobalWarning = { text: string; href: string };
+  const globalWarnings: GlobalWarning[] = [];
+  if (tenantSummaries.length === 0)
+    globalWarnings.push({ text: 'Nessun tenant attivo — crea un tenant prima di avviare il trial', href: '/admin/companies/new' });
+  if (partnerPublished === 0)
+    globalWarnings.push({ text: 'Nessun partner pubblicato — il catalogo opportunita appare vuoto ai worker', href: '/admin/partners' });
+  // OP-001 isolation guard — never use as live tenant
+  if (tenantSummaries.some(t => t.code === 'OP-001'))
+    globalWarnings.push({ text: 'OP-001 rilevato come tenant attivo — usare KORA-TRIAL per il trial live, non OP-001', href: '/admin/companies' });
 
   // ── Demo checklist — 14 step canonici (spec B124) ────────────────────────────
   const checklistItems = [
@@ -252,8 +286,8 @@ export default async function TrialControlCenterPage() {
     },
     {
       step: 11, label: 'Interazioni worker presenti',
-      href: '/admin/worker-diagnostics', ok: tenantSummaries.some(t => t.workerActive > 0),
-      note: 'Worker attivi con partecipazioni o interesse espresso.',
+      href: '/admin/worker-diagnostics', ok: tenantSummaries.some(t => t.participationCount > 0),
+      note: 'Almeno una partecipazione registrata (non cancelled) in worker_participation.',
     },
     {
       step: 12, label: 'Dynamic CV preview disponibile',
@@ -327,6 +361,36 @@ export default async function TrialControlCenterPage() {
         </div>
       </div>
 
+      {/* ── Global warnings ───────────────────────────────────────────────────────── */}
+      {globalWarnings.length > 0 && (
+        <div
+          data-testid="global-warnings"
+          style={{
+            marginBottom: 24, border: '1px solid rgba(199,111,61,0.28)',
+            borderRadius: 10, padding: '12px 16px', background: 'rgba(199,111,61,0.05)',
+          }}
+        >
+          <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: '#C07D2A', margin: '0 0 8px' }}>
+            &#9888; Attenzione
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {globalWarnings.map((gw, i) => (
+              <a
+                key={i}
+                href={gw.href}
+                data-testid="global-warning-action"
+                style={{
+                  fontSize: 11, fontWeight: 600, color: '#C07D2A',
+                  textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                {gw.text} <span style={{ opacity: 0.55 }}>&#8594;</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── SECTION 1: Tenant list ─────────────────────────────────────────────── */}
       <SectionHeading label="1. Tenant trial" />
 
@@ -365,15 +429,21 @@ export default async function TrialControlCenterPage() {
                 {readinessBadge(t.readiness)}
               </span>
               {t.warnings.length > 0 && (
-                <div style={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
                   {t.warnings.map((w, i) => (
-                    <span key={i} style={{
-                      fontSize: 9, fontWeight: 600, color: '#C07D2A',
-                      background: 'rgba(192,125,42,0.08)', border: '1px solid rgba(192,125,42,0.22)',
-                      borderRadius: 5, padding: '2px 7px',
-                    }}>
-                      {w}
-                    </span>
+                    <a
+                      key={i}
+                      href={w.href}
+                      data-testid="tenant-warning-action"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        fontSize: 10, fontWeight: 600, color: '#C07D2A',
+                        background: 'rgba(192,125,42,0.08)', border: '1px solid rgba(192,125,42,0.22)',
+                        borderRadius: 6, padding: '3px 9px', textDecoration: 'none', width: 'fit-content',
+                      }}
+                    >
+                      &#9888; {w.text} <span style={{ opacity: 0.6 }}>&#8594;</span>
+                    </a>
                   ))}
                 </div>
               )}
@@ -426,12 +496,13 @@ export default async function TrialControlCenterPage() {
             <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(6,3,43,0.35)', margin: '0 0 10px' }}>
               {t.code}
             </p>
-            <PipelineRow label="Worker totali"         value={String(t.workerTotal)}   ok={t.workerTotal > 0} />
+            <PipelineRow label="Worker totali"         value={String(t.workerTotal)}   ok={t.workerTotal >= 10} />
             <PipelineRow label="Worker attivi"         value={String(t.workerActive)}  ok={t.workerActive > 0} />
             <PipelineRow label="Worker invited"        value={String(t.workerInvited)} ok={false} />
             <PipelineRow label="Onboarding completati" value={String(t.onboardingDone)} ok={t.onboardingDone > 0} />
+            <PipelineRow label="Interazioni (partecipazioni)" value={String(t.participationCount)} ok={t.participationCount > 0} />
             <PipelineRow label="Iniziative pubblicate" value={String(t.initPublished)} ok={t.initPublished > 0} />
-            <PipelineRow label="Dynamic CV readiness"  value={t.onboardingDone > 0 ? 'Pronto' : 'In attesa'} ok={t.onboardingDone > 0} />
+            <PipelineRow label="Dynamic CV readiness"  value={t.participationCount > 0 ? 'Pronto' : 'In attesa partecipazioni'} ok={t.participationCount > 0} />
           </div>
         ))}
         {tenantSummaries.length === 0 && (

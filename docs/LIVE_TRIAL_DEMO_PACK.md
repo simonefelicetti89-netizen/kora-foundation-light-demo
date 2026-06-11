@@ -1,6 +1,6 @@
 # KORA Foundation Light — Live Trial Demo Pack
 
-**Versione:** B123  
+**Versione:** B125  
 **Per:** KORA_ADMIN / Founder  
 **Durata demo:** 20 minuti  
 **Aggiorna:** GOLDEN_PATH_RUNBOOK, WORKER_TRIAL_RUNBOOK, ACCESS_PROVISIONING_DOCTRINE, WORKER_PRIVACY_AND_SHARING  
@@ -285,6 +285,27 @@ Punti da toccare:
 ### Problema: azienda vede PrivacyBoundaryNotice ovunque
 → Il tenant ha meno di 10 worker — la soglia `SAFE_AGGREGATION_THRESHOLD = 10` è attiva  
 → Provisiona almeno 10 worker per il tenant trial prima della demo
+
+---
+
+## Risultato live — da compilare dopo ogni trial
+
+Dopo ogni sessione live, aggiorna questa sezione con i risultati osservati.
+
+| Campo | Valore |
+|---|---|
+| Data trial | — |
+| Tenant usato | KORA-TRIAL |
+| KORA Index ottenuto | — |
+| Confidence Score | — |
+| Activation Safeguard | — |
+| Worker provisionati | — |
+| Iniziative pubblicate | — |
+| Partner pubblicati | — |
+| Step 14/14 verdi | — |
+| Note | — |
+
+> **Regola:** usa sempre KORA-TRIAL, mai OP-001. Il tenant OP-001 e' riservato esclusivamente alla demo sintetica standalone — non contiene dati reali e non va usato per trial live con prospect.
 
 ---
 
