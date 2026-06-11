@@ -261,23 +261,20 @@ describe('B121 -- No score, ranking, or percentile', () => {
   });
 });
 
-// --- 27-28: Export/share is disabled ---------------------------------
+// --- 27-28: Export/share (B126 — active, not coming soon) ------------
+// NOTE: B126 activated the export section. Print link is active; share button creates real links.
 
-describe('B121 -- Export/share disabled (coming soon)', () => {
-  it('DynamicCVClient has export section with disabled buttons', () => {
-    expect(clientComp).toContain('data-testid="dynamic-cv-export-pdf-btn"');
+describe('B121 -- Export/share section (updated B126)', () => {
+  it('DynamicCVClient has export section with print link and share button', () => {
+    // B126: print link is now an active <a> tag, not a disabled button
+    expect(clientComp).toContain('data-testid="dynamic-cv-print-link"');
     expect(clientComp).toContain('data-testid="dynamic-cv-share-link-btn"');
-    // Both must be disabled
-    const exportSection = clientComp.slice(
-      clientComp.indexOf('dynamic-cv-export-pdf-btn'),
-      clientComp.indexOf('dynamic-cv-privacy-footer'),
-    );
-    const disabledCount = (exportSection.match(/disabled/g) ?? []).length;
-    expect(disabledCount).toBeGreaterThanOrEqual(2);
+    expect(clientComp).toContain('data-testid="dynamic-cv-export-section"');
   });
 
-  it('DynamicCVClient export section has La condivisione sara sempre sotto il tuo controllo copy', () => {
+  it('DynamicCVClient export section has condivisione volontaria copy', () => {
+    // B126: copy updated from "coming soon" to active voluntary sharing description
     expect(clientComp).toContain('La condivisione');
-    expect(clientComp).toContain('controllo');
+    expect(clientComp).toContain('volontaria');
   });
 });

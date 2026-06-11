@@ -2,6 +2,7 @@
 
 // app/worker/dynamic-cv/_components/DynamicCVClient.tsx
 // B121: Dynamic Impact CV — client component for the worker's private CV.
+// B126: Export & controlled sharing added — printable view + create/revoke share links.
 //
 // Privacy rules (absolute, non-bypassable):
 //   - Fetches from /api/worker/dynamic-cv — workerId always from server session
@@ -9,10 +10,12 @@
 //   - No employer-visible path to this component
 //   - No ranking, no score, no percentile, no comparison
 //   - cancelled experiences not shown as positive
-//   - export/share: disabled (coming soon) — no public anonymous link
+//   - Share links are worker-controlled, revocable, 30-day default expiry
+//   - token_hash never returned or displayed
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import type { DynamicCVResponse, CVPillarEntry } from '@/app/api/worker/dynamic-cv/route';
+import type { SharesResponse, ShareLinkItem } from '@/app/api/worker/dynamic-cv/shares/route';
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -39,6 +42,14 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
 
+  // Share state
+  const [shares,          setShares]          = useState<ShareLinkItem[]>([]);
+  const [sharesLoading,   setSharesLoading]   = useState(false);
+  const [creating,        setCreating]        = useState(false);
+  const [newShareUrl,     setNewShareUrl]      = useState<string | null>(null);
+  const [newShareExpires, setNewShareExpires]  = useState<string | null>(null);
+  const [revoking,        setRevoking]        = useState<string | null>(null);
+
   useEffect(() => {
     fetch('/api/worker/dynamic-cv', { credentials: 'include' })
       .then(r => r.json())
@@ -49,6 +60,49 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
       .catch(() => setError('Errore di rete.'))
       .finally(() => setLoading(false));
   }, []);
+
+  const loadShares = useCallback(() => {
+    setSharesLoading(true);
+    fetch('/api/worker/dynamic-cv/shares', { credentials: 'include' })
+      .then(r => r.json())
+      .then((d: SharesResponse) => { if (d.ok) setShares(d.shares); })
+      .catch(() => {/* silent — shares not critical */})
+      .finally(() => setSharesLoading(false));
+  }, []);
+
+  useEffect(() => { loadShares(); }, [loadShares]);
+
+  const handleCreateShare = useCallback(async () => {
+    setCreating(true);
+    setNewShareUrl(null);
+    try {
+      const r = await fetch('/api/worker/dynamic-cv/share', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      });
+      const d = await r.json();
+      if (d.ok && d.shareUrl) {
+        setNewShareUrl(d.shareUrl as string);
+        setNewShareExpires(d.expiresAt as string);
+        loadShares();
+      }
+    } catch {/* silent */} finally {
+      setCreating(false);
+    }
+  }, [loadShares]);
+
+  const handleRevoke = useCallback(async (shareId: string) => {
+    setRevoking(shareId);
+    try {
+      await fetch(`/api/worker/dynamic-cv/shares/${shareId}/revoke`, {
+        method: 'PATCH', credentials: 'include',
+      });
+      loadShares();
+    } catch {/* silent */} finally {
+      setRevoking(null);
+    }
+  }, [loadShares]);
 
   if (loading) {
     return (
@@ -70,6 +124,9 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
   const activePillarList  = pillars.filter((p: CVPillarEntry) => p.total_active > 0);
   const missingPillarList = pillars.filter((p: CVPillarEntry) => p.total_active === 0);
   const hasExperiences    = experiences.length > 0;
+
+  const activeShares   = shares.filter(s => s.status === 'active' && !s.isExpired);
+  const inactiveShares = shares.filter(s => s.status !== 'active' || s.isExpired);
 
   return (
     <div
@@ -339,7 +396,7 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
         )}
       </div>
 
-      {/* ── Export / share — foundation, non implementato ─────────────────── */}
+      {/* ── Export & condivisione — B126 ───────────────────────────────────── */}
       <div
         data-testid="dynamic-cv-export-section"
         style={{
@@ -353,44 +410,178 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
           Esporta e condividi
         </p>
         <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 14px', lineHeight: 1.5 }}>
-          La condivisione sarà sempre sotto il tuo controllo.
+          La condivisione è volontaria, revocabile e non viene inviata al tuo datore di lavoro.
+          KORA non crea CV employer-facing.
         </p>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button
-            data-testid="dynamic-cv-export-pdf-btn"
-            disabled
+
+        {/* Action buttons */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
+          <a
+            data-testid="dynamic-cv-print-link"
+            href="/worker/dynamic-cv/print"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
-              fontFamily:   FONT,
-              fontSize:     12,
-              fontWeight:   600,
-              padding:      '8px 16px',
-              borderRadius: 8,
-              border:       '1px solid rgba(6,3,43,0.15)',
-              background:   'rgba(6,3,43,0.04)',
-              color:        'rgba(6,3,43,0.35)',
-              cursor:       'not-allowed',
+              fontFamily:     FONT,
+              fontSize:       12,
+              fontWeight:     600,
+              padding:        '8px 16px',
+              borderRadius:   8,
+              border:         '1px solid rgba(6,3,43,0.18)',
+              background:     '#06032B',
+              color:          '#fff',
+              cursor:         'pointer',
+              textDecoration: 'none',
+              display:        'inline-block',
             }}
           >
-            Scarica PDF (prossimamente)
-          </button>
+            Stampa / Salva PDF
+          </a>
+
           <button
             data-testid="dynamic-cv-share-link-btn"
-            disabled
+            onClick={handleCreateShare}
+            disabled={creating}
             style={{
               fontFamily:   FONT,
               fontSize:     12,
               fontWeight:   600,
               padding:      '8px 16px',
               borderRadius: 8,
-              border:       '1px solid rgba(6,3,43,0.15)',
-              background:   'rgba(6,3,43,0.04)',
-              color:        'rgba(6,3,43,0.35)',
-              cursor:       'not-allowed',
+              border:       '1px solid rgba(59,110,186,0.30)',
+              background:   'rgba(59,110,186,0.08)',
+              color:        '#3B6EBA',
+              cursor:       creating ? 'not-allowed' : 'pointer',
+              opacity:      creating ? 0.6 : 1,
             }}
           >
-            Crea link condivisibile (prossimamente)
+            {creating ? 'Creazione…' : 'Crea link condivisibile'}
           </button>
         </div>
+
+        {/* New share link created — show URL once */}
+        {newShareUrl && (
+          <div
+            data-testid="dynamic-cv-new-share-url"
+            style={{
+              background:   'rgba(47,125,85,0.06)',
+              border:       '1px solid rgba(47,125,85,0.25)',
+              borderRadius: 8,
+              padding:      '12px 16px',
+              marginBottom: 12,
+            }}
+          >
+            <p style={{ fontSize: 11, fontWeight: 700, color: '#1a4731', margin: '0 0 6px' }}>
+              Link creato — copialo ora, non verrà mostrato di nuovo.
+            </p>
+            <code
+              style={{
+                display:      'block',
+                fontSize:     11,
+                color:        '#1a4731',
+                wordBreak:    'break-all',
+                marginBottom: 4,
+              }}
+            >
+              {newShareUrl}
+            </code>
+            {newShareExpires && (
+              <p style={{ fontSize: 10, color: 'rgba(26,71,49,0.60)', margin: 0 }}>
+                Scade: {new Date(newShareExpires).toLocaleDateString('it-IT')}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Active share links */}
+        {sharesLoading && (
+          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.35)', margin: 0 }}>Caricamento link…</p>
+        )}
+
+        {!sharesLoading && activeShares.length > 0 && (
+          <div
+            data-testid="dynamic-cv-active-shares"
+            style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+          >
+            <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.35)', margin: '0 0 4px' }}>
+              Link attivi
+            </p>
+            {activeShares.map(s => (
+              <div
+                key={s.id}
+                data-testid="dynamic-cv-share-item"
+                style={{
+                  border:       '1px solid rgba(6,3,43,0.08)',
+                  borderRadius: 8,
+                  padding:      '10px 14px',
+                  display:      'flex',
+                  alignItems:   'center',
+                  gap:          12,
+                  flexWrap:     'wrap',
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 160 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>
+                    Creato {new Date(s.created_at).toLocaleDateString('it-IT')}
+                  </p>
+                  <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>
+                    Scade {new Date(s.expires_at).toLocaleDateString('it-IT')} &middot; {s.access_count} accessi
+                  </p>
+                </div>
+                <button
+                  data-testid="dynamic-cv-revoke-btn"
+                  onClick={() => handleRevoke(s.id)}
+                  disabled={revoking === s.id}
+                  style={{
+                    fontFamily:   FONT,
+                    fontSize:     10,
+                    fontWeight:   700,
+                    padding:      '5px 12px',
+                    borderRadius: 6,
+                    border:       '1px solid rgba(158,59,47,0.28)',
+                    background:   'rgba(158,59,47,0.06)',
+                    color:        '#9E3B2F',
+                    cursor:       revoking === s.id ? 'not-allowed' : 'pointer',
+                    opacity:      revoking === s.id ? 0.6 : 1,
+                  }}
+                >
+                  {revoking === s.id ? 'Revoca…' : 'Revoca'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Revoked/expired share links */}
+        {!sharesLoading && inactiveShares.length > 0 && (
+          <div
+            data-testid="dynamic-cv-inactive-shares"
+            style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}
+          >
+            <p style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.25)', margin: '0 0 2px' }}>
+              Link revocati / scaduti
+            </p>
+            {inactiveShares.map(s => (
+              <div
+                key={s.id}
+                data-testid="dynamic-cv-inactive-share-item"
+                style={{
+                  border:       '1px solid rgba(6,3,43,0.05)',
+                  borderRadius: 8,
+                  padding:      '8px 14px',
+                  display:      'flex',
+                  alignItems:   'center',
+                  gap:          10,
+                  opacity:      0.5,
+                }}
+              >
+                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0, flex: 1 }}>
+                  {s.status === 'revoked' ? 'Revocato' : 'Scaduto'} &middot; creato {new Date(s.created_at).toLocaleDateString('it-IT')}
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Privacy footer — non-suppressible ─────────────────────────────── */}

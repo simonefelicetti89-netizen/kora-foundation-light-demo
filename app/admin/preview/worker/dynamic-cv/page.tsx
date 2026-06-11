@@ -175,11 +175,39 @@ export default async function AdminPreviewWorkerDynamicCVPage() {
         </div>
       </div>
 
+      {/* Export & share preview — CTA disabled, banner synthetic */}
+      <div
+        data-testid="admin-preview-export-section"
+        style={{
+          border:       '1px solid rgba(6,3,43,0.08)',
+          borderRadius: 12,
+          padding:      '16px 20px',
+          marginBottom: 16,
+          background:   'rgba(6,3,43,0.02)',
+        }}
+      >
+        <p style={{ fontSize: 11, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+          Esporta e condividi (anteprima)
+        </p>
+        <p style={{ fontSize: 11, color: 'rgba(199,111,61,0.80)', margin: '0 0 12px', fontWeight: 600 }}>
+          Esempio sintetico — nessun link reale generato. KORA_ADMIN non genera link per worker reali.
+        </p>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button disabled style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(6,3,43,0.12)', background: 'rgba(6,3,43,0.04)', color: 'rgba(6,3,43,0.30)', cursor: 'not-allowed' }}>
+            Stampa / Salva PDF (worker only)
+          </button>
+          <button disabled style={{ fontFamily: FONT, fontSize: 12, fontWeight: 600, padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(6,3,43,0.12)', background: 'rgba(6,3,43,0.04)', color: 'rgba(6,3,43,0.30)', cursor: 'not-allowed' }}>
+            Crea link (worker only)
+          </button>
+        </div>
+      </div>
+
       {/* Privacy footer */}
       <div style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 14 }}>
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.6 }}>
-          KORA Admin Preview · Dynamic Impact CV · B121 Foundation Light ·
+          KORA Admin Preview · Dynamic Impact CV · B126 Foundation Light ·
           Il CV reale è visibile solo al lavoratore autenticato. KORA misura le organizzazioni, non valuta i singoli.
+          Export e share link appartengono al worker — KORA_ADMIN non può generarli.
         </p>
       </div>
     </div>

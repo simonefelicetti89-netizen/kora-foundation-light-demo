@@ -40,8 +40,11 @@ const COMPANY_ALLOWED_PREFIXES = [
 // B104: Paths that authenticated worker users are allowed to access.
 // Workers are confined to their private /worker/* space only.
 // B113-B: /worker/login is the dedicated worker re-auth endpoint — /company/login removed.
+// B126: /cv/share/ is a public CV share view — workers must be able to access it
+//   (e.g., to preview their own shared link) without being redirected to /worker/workspace.
 const WORKER_ALLOWED_PREFIXES = [
   '/worker/',                // worker private space (includes /worker/login)
+  '/cv/share/',              // public CV share view — B126 (no auth required)
   '/auth/',                  // all auth routes (callback, reset-password, forgot-password)
   '/login',                  // unified login — accessible after session expiry
   '/request-access',         // B119: public informational page — no account creation

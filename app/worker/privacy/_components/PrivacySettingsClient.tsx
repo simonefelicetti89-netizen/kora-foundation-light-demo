@@ -145,7 +145,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
         </p>
       </div>
 
-      {/* Sharing controls — all disabled in Foundation Light */}
+      {/* Sharing controls — B126: CV share link active, others coming soon */}
       <div
         data-testid="privacy-sharing-controls"
         style={{
@@ -160,11 +160,11 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
           Controlli condivisione
         </p>
         <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.45)', margin: '0 0 16px', lineHeight: 1.5 }}>
-          La condivisione sarà sempre sotto il tuo controllo. Le funzioni qui sotto
-          saranno attivabili nelle prossime versioni di KORA.
+          La condivisione è sempre sotto il tuo controllo.
+          Solo tu puoi creare e revocare i link. Il datore di lavoro non vede mai questo CV.
         </p>
 
-        {/* CV Share toggle — disabled */}
+        {/* CV Share link — ACTIVE in B126 */}
         <div
           data-testid="privacy-sharing-cv-share"
           style={{
@@ -172,39 +172,61 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
             alignItems:     'center',
             justifyContent: 'space-between',
             padding:        '12px 16px',
-            border:         '1px solid rgba(6,3,43,0.08)',
+            border:         '1.5px solid rgba(59,110,186,0.25)',
             borderRadius:   10,
             marginBottom:   10,
-            opacity:        0.55,
+            background:     'rgba(59,110,186,0.04)',
           }}
         >
           <div>
             <p style={{ fontSize: 13, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>
-              Condivisione CV selettiva
+              Link condivisibile CV
             </p>
-            <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
-              Condividi il tuo Dynamic Impact CV con chi scegli tu.
+            <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.4 }}>
+              Crea un link con scadenza 30 giorni. Revocabile in qualsiasi momento.
+              Non visibile al datore di lavoro.
             </p>
           </div>
-          <button
-            disabled
+          <a
+            href="/worker/dynamic-cv"
             data-testid="privacy-sharing-cv-toggle"
             style={{
-              fontFamily:   FONT,
-              fontSize:     10,
-              fontWeight:   700,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              padding:      '5px 12px',
-              border:       '1px solid rgba(6,3,43,0.15)',
-              borderRadius: 6,
-              background:   'rgba(6,3,43,0.04)',
-              color:        'rgba(6,3,43,0.35)',
-              cursor:       'not-allowed',
+              fontFamily:     FONT,
+              fontSize:       10,
+              fontWeight:     700,
+              textTransform:  'uppercase',
+              letterSpacing:  '0.06em',
+              padding:        '5px 12px',
+              border:         '1px solid rgba(59,110,186,0.30)',
+              borderRadius:   6,
+              background:     'rgba(59,110,186,0.08)',
+              color:          '#3B6EBA',
+              textDecoration: 'none',
+              whiteSpace:     'nowrap',
             }}
           >
-            Prossimamente
-          </button>
+            Gestisci &#8594;
+          </a>
+        </div>
+
+        {/* CV share metadata */}
+        <div
+          data-testid="privacy-cv-share-details"
+          style={{
+            fontSize:     11,
+            color:        'rgba(6,3,43,0.45)',
+            marginBottom: 14,
+            paddingLeft:  4,
+            lineHeight:   1.6,
+            display:      'flex',
+            flexDirection: 'column',
+            gap:           3,
+          }}
+        >
+          <span>&#10003; Revocabile in qualsiasi momento</span>
+          <span>&#10003; Scadenza automatica 30 giorni</span>
+          <span>&#10003; Non visibile al datore di lavoro</span>
+          <span>&#10003; Solo se creato da te — nessun link automatico</span>
         </div>
 
         {/* Public link — disabled */}
@@ -226,7 +248,7 @@ export function PrivacySettingsClient({ userEmail: _userEmail }: PrivacySettings
               Snapshot pubblico anonimo
             </p>
             <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
-              Link revocabile e anonimizzato. Sempre sotto il tuo controllo.
+              Employer access: non consentito.
             </p>
           </div>
           <button
