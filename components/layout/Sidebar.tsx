@@ -250,7 +250,11 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Privacy',
         items: [
-          { href: '/my-kora/privacy', label: 'Privacy & Condivisione' },
+          {
+            href:    isAdminPreview ? '/admin/preview/worker/privacy' : '/worker/privacy',
+            label:   'Privacy & Condivisione',
+            preview: isAdminPreview ? true : undefined,
+          },
         ],
       },
       {

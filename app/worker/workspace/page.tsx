@@ -433,6 +433,65 @@ export default async function WorkerWorkspacePage() {
         </span>
       </div>
 
+      {/* Privacy & Condivisione — B122 */}
+      <div
+        data-testid="workspace-privacy-card"
+        style={{
+          border:         '1px solid rgba(6,3,43,0.10)',
+          borderRadius:   14,
+          padding:        '18px 22px',
+          background:     '#FAFAFA',
+          marginTop:      16,
+          display:        'flex',
+          alignItems:     'flex-start',
+          justifyContent: 'space-between',
+          gap:            16,
+        }}
+      >
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#2F7D55', margin: '0 0 6px' }}>
+            Privacy & Condivisione
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+            I tuoi dati restano privati
+          </p>
+          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            Il datore di lavoro vede solo medie aggregate anonime. Mai dati individuali.
+          </p>
+          <a
+            href="/worker/privacy"
+            data-testid="workspace-privacy-link"
+            style={{
+              display:        'inline-block',
+              fontSize:       12,
+              fontWeight:     600,
+              color:          '#2F7D55',
+              textDecoration: 'none',
+              padding:        '7px 14px',
+              border:         '1px solid rgba(47,125,85,0.28)',
+              borderRadius:   8,
+              background:     'rgba(47,125,85,0.06)',
+            }}
+          >
+            Scopri i tuoi diritti &#8594;
+          </a>
+        </div>
+        <span
+          style={{
+            fontSize:      9,
+            fontWeight:    700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding:       '3px 8px',
+            borderRadius:  999,
+            background:    'rgba(47,125,85,0.10)',
+            color:         '#2F7D55',
+          }}
+        >
+          Attivo
+        </span>
+      </div>
+
       <div style={{ marginTop: 28, fontSize: 10, color: 'rgba(6,3,43,0.30)', lineHeight: 1.5 }}>
         KORA Foundation Light · Spazio lavoratore · I dati aziendali rimangono aggregati e non mostrano dati individuali.
       </div>

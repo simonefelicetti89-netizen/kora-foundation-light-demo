@@ -182,6 +182,28 @@ export default async function AccountPage() {
           </Link>
         </div>
 
+        {koraRole === 'WORKER' && (
+          <div style={{ padding: '12px 24px', borderBottom: '1px solid rgba(6,3,43,0.07)' }}>
+            <Link
+              href="/worker/privacy"
+              data-testid="account-worker-privacy-link"
+              style={{
+                display:        'inline-block',
+                fontSize:       12,
+                fontWeight:     600,
+                color:          '#2F7D55',
+                textDecoration: 'none',
+                padding:        '7px 14px',
+                border:         '1px solid rgba(47,125,85,0.25)',
+                borderRadius:   8,
+                background:     'rgba(47,125,85,0.06)',
+              }}
+            >
+              Privacy & Condivisione &#8594;
+            </Link>
+          </div>
+        )}
+
         <div style={{ padding: '12px 24px' }}>
           <form action="/api/auth/logout" method="POST">
             <button
