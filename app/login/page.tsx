@@ -41,9 +41,9 @@ const ROLE_HINT_COPY: Record<string, { badge: string; heading: string; sub: stri
 };
 
 const DEFAULT_COPY = {
-  badge:   'Accesso',
-  heading: 'Entra in KORA',
-  sub:     'Accedi con le credenziali ricevute via email da KORA.',
+  badge:   'Accesso su invito',
+  heading: 'Accedi a KORA',
+  sub:     "L'accesso è riservato agli utenti invitati o provisionati da KORA.",
 };
 
 function LoginForm() {
@@ -67,7 +67,7 @@ function LoginForm() {
     const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
 
     if (signInError || !data.session) {
-      setError('Credenziali non valide. Verifica email e password oppure contatta il tuo responsabile KORA.');
+      setError('Credenziali non valide o account non ancora attivato. Contatta il tuo responsabile KORA.');
       setLoading(false);
       return;
     }
@@ -76,7 +76,7 @@ function LoginForm() {
 
     if (!koraRole) {
       await supabase.auth.signOut();
-      setError('Ruolo non riconosciuto. Contatta il tuo responsabile KORA per assistenza.');
+      setError('Account non configurato: ruolo mancante. Contatta il tuo responsabile KORA per assistenza.');
       setLoading(false);
       return;
     }
@@ -169,7 +169,10 @@ function LoginForm() {
           }}>
             {copy.heading}
           </h1>
-          <p style={{ fontFamily: FONT, fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+          <p
+            data-testid="login-provisioned-only-notice"
+            style={{ fontFamily: FONT, fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}
+          >
             {copy.sub}
           </p>
         </div>
@@ -274,6 +277,21 @@ function LoginForm() {
             style={{ color: TOKENS.accent, textDecoration: 'none', fontWeight: 500 }}
           >
             Password dimenticata?
+          </Link>
+        </p>
+
+        {/* No account — request access */}
+        <p
+          data-testid="login-request-access-notice"
+          style={{ fontFamily: FONT, fontSize: '11px', textAlign: 'center', marginTop: 8, color: TOKENS.inkHint, lineHeight: 1.5 }}
+        >
+          Non hai ancora un account?{' '}
+          <Link
+            href="/request-access"
+            data-testid="login-request-access-link"
+            style={{ color: TOKENS.accent, textDecoration: 'none', fontWeight: 500 }}
+          >
+            Richiedi accesso
           </Link>
         </p>
 

@@ -21,8 +21,10 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 // Canonical key — must match kora-session.ts and migration 006.
 const TENANT_META_KEY = 'kora_tenant_id' as const;
 
-const VALID_ROLES: ReadonlyArray<string> = ['COMPANY_ADMIN', 'COMPANY_VIEWER'];
-type CompanyRole = 'COMPANY_ADMIN' | 'COMPANY_VIEWER';
+// COMPANY_VIEWER is legacy-only — not a supported provisioning role (B119).
+// Existing COMPANY_VIEWER sessions remain valid; new provisioning only allows COMPANY_ADMIN.
+const VALID_ROLES: ReadonlyArray<string> = ['COMPANY_ADMIN'];
+type CompanyRole = 'COMPANY_ADMIN';
 
 // ── Tenant code helpers ───────────────────────────────────────────────────────
 

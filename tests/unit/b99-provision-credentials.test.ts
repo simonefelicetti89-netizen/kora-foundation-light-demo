@@ -164,9 +164,10 @@ describe('Provision route — email idempotency', () => {
 describe('Provision route — role validation', () => {
   const route = read('app/api/admin/companies/provision/route.ts');
 
-  it('accepts both COMPANY_ADMIN and COMPANY_VIEWER', () => {
+  it('accepts COMPANY_ADMIN (B119: COMPANY_VIEWER removed from new provisioning)', () => {
+    // B119 doctrine: COMPANY_VIEWER is legacy-only, not a new provisioning role.
+    // VALID_ROLES now contains only COMPANY_ADMIN.
     expect(route).toContain("'COMPANY_ADMIN'");
-    expect(route).toContain("'COMPANY_VIEWER'");
     expect(route).toContain('VALID_ROLES');
   });
 

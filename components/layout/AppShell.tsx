@@ -11,7 +11,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 
 // Route che non ricevono il chrome AppShell (sidebar + header + banner).
 // /pilot è pubblico come la landing.
-const PUBLIC_ROUTE_PREFIXES = ['/', '/demo-guide', '/pilot', '/login', '/admin/login', '/auth/'];
+const PUBLIC_ROUTE_PREFIXES = ['/', '/demo-guide', '/pilot', '/login', '/admin/login', '/auth/', '/request-access'];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTE_PREFIXES.some((p) =>

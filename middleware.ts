@@ -32,6 +32,7 @@ const COMPANY_ALLOWED_PREFIXES = [
   '/company/setup-password', // invite flow — set password after accepting KORA invite
   '/auth/',                  // all auth routes (callback, reset-password, forgot-password) — session may be active during recovery flow
   '/login',                  // unified login page — accessible after session expiry
+  '/request-access',         // B119: public informational page — no account creation
   '/api/',                   // all API routes (have own auth)
   '/_next',                  // Next.js internals
 ];
@@ -43,6 +44,7 @@ const WORKER_ALLOWED_PREFIXES = [
   '/worker/',                // worker private space (includes /worker/login)
   '/auth/',                  // all auth routes (callback, reset-password, forgot-password)
   '/login',                  // unified login — accessible after session expiry
+  '/request-access',         // B119: public informational page — no account creation
   '/api/',                   // all API routes (have own requireWorkerUser auth)
   '/_next',
 ];
