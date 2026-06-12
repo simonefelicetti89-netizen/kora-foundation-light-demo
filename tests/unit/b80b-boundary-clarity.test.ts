@@ -224,8 +224,9 @@ describe('B80-B Task 4 — Company executive cockpit has DEMO badge', () => {
 // ── Task 7: Dual-path comments on company pages ───────────────────────────────
 
 describe('B80-B Task 7 — Dual-path comments on company pages', () => {
+  // B129 Fase 3: /company/kora-index is now live-only — its header comment reflects that.
+  // Other pages still carry the B80-B dual-path comment until their Fase 3 migration.
   const dualPaths = [
-    'app/company/kora-index/page.tsx',
     'app/company/activation/page.tsx',
     'app/company/financial/page.tsx',
     'app/company/reports/page.tsx',
@@ -238,6 +239,13 @@ describe('B80-B Task 7 — Dual-path comments on company pages', () => {
       expect(src).toContain('B80-B dual-path');
     });
   }
+
+  it('app/company/kora-index/page.tsx is live-only (no B80-B dual-path comment)', () => {
+    const src = read('app/company/kora-index/page.tsx');
+    // B129 Fase 3: kora-index migrated to live-only; dual-path comment replaced
+    expect(src).toContain('C-02');
+    expect(src).not.toContain('B80-B dual-path');
+  });
 });
 
 // ── Worker pages: PREVIEW boundary label ──────────────────────────────────────

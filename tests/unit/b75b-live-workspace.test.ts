@@ -165,8 +165,8 @@ describe('Task 4 & 5 — Live intelligence layers compute on demand', () => {
     const src = read('app/company/kora-index/page.tsx');
     // equityAccess uses equityAccessIntelligenceService.compute with aggregate
     expect(src).toContain('equityAccessIntelligenceService.compute(aggregate');
-    // visibleGroups is undefined for live (already filtered N≥10 in activation_result)
-    expect(src).toContain('isLive ? undefined :');
+    // B129 Fase 3: live-only page passes visibleGroups=undefined directly (no ternary)
+    expect(src).toContain('equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, effectiveRole, undefined)');
   });
 
   it('liveCtx is fetched from /api/company/live-eligibility once period is known', () => {
@@ -185,8 +185,8 @@ describe('Task 4 & 5 — Live intelligence layers compute on demand', () => {
 
   it('intelligence layers fall back to null/insufficient_data when liveCtx missing', () => {
     const src = read('app/company/kora-index/page.tsx');
-    // liveUefSummary is null when liveCtx is null
-    expect(src).toContain('isLive && liveCtx ?');
+    // B129 Fase 3: live-only page — liveCtx ? ... : null (no isLive ternary)
+    expect(src).toContain('liveCtx ?');
     // eligibilityGate shows 0 counts when liveCtx not yet loaded
     expect(src).toContain('eligible_row_count: 0');
   });
@@ -242,11 +242,12 @@ describe('Task 5 & 6 — Live recommendations and board actions', () => {
 
   it('kora-index page uses generateLiveRecommendations for live sessions', () => {
     const src = read('app/company/kora-index/page.tsx');
+    // B129 Fase 3: live-only page uses live generators exclusively
     expect(src).toContain('generateLiveRecommendations');
     expect(src).toContain('generateLiveBoardActions');
-    expect(src).toContain('isLive');
-    // Live path: generateLiveRecommendations; demo path: budgetToHumanImpactService
-    expect(src).toContain('budgetToHumanImpactService.getRecommendations');
+    // Demo path (budgetToHumanImpactService) now in demo page only
+    const demoSrc = read('app/demo/company/kora-index/page.tsx');
+    expect(demoSrc).toContain('budgetToHumanImpactService.getRecommendations');
   });
 
 });

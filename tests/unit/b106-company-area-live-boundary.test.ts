@@ -150,8 +150,11 @@ describe('B106 P2 — kora-index: no meridiana-group hardcoded in live branch', 
   });
 
   it('demo branch still has meridiana-group as fallback (correct)', () => {
-    // Demo branch fallback is expected — meridiana is the canonical demo company
-    expect(koraIndex).toContain("'meridiana-group'");
+    // B129 Fase 3: meridiana-group fallback now lives exclusively in the demo page.
+    const demoPage = read('app/demo/company/kora-index/page.tsx');
+    expect(demoPage).toContain("'meridiana-group'");
+    // Live page must not contain it
+    expect(koraIndex).not.toContain("'meridiana-group'");
   });
 });
 

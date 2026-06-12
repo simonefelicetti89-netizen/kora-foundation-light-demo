@@ -64,35 +64,42 @@ describe('Live session — demo/live path separation', () => {
 
   it('company intelligence pages import useCompanySession', async () => {
     const fs = await import('fs');
-    const pages = [
-      '../../app/company/kora-index/page.tsx',
+    // B129 Fase 3: /company/kora-index is now live-only (no forceEnvironment ternary — hardcoded 'live').
+    // Other dual-path pages still use the forceEnvironment ternary pattern.
+    const dualPathPages = [
       '../../app/company/activation/page.tsx',
       '../../app/company/pillars/page.tsx',
       '../../app/company/financial/page.tsx',
       '../../app/company/reports/page.tsx',
     ];
-    for (const page of pages) {
+    for (const page of dualPathPages) {
       const content = fs.readFileSync(
         new URL(page, import.meta.url).pathname, 'utf-8',
       );
       expect(content, `${page} should import useCompanySession`).toContain('useCompanySession');
       expect(content, `${page} should use forceEnvironment`).toContain("forceEnvironment: isLive ? 'live' : undefined");
     }
+    // kora-index is live-only: still imports useCompanySession but hardcodes forceEnvironment='live'
+    const koraIndexContent = fs.readFileSync(
+      new URL('../../app/company/kora-index/page.tsx', import.meta.url).pathname, 'utf-8',
+    );
+    expect(koraIndexContent).toContain('useCompanySession');
+    expect(koraIndexContent).toContain("forceEnvironment: 'live'");
   });
 
-  it('live mode early return prevents rendering Meridiana demo data', async () => {
+  it('live kora-index page is live-only — no dual-path, no Meridiana fallback', async () => {
     const fs = await import('fs');
     const koraIndexContent = fs.readFileSync(
       new URL('../../app/company/kora-index/page.tsx', import.meta.url).pathname,
       'utf-8',
     );
-    // The page must check isLive before using demoUser/tenantService
-    expect(koraIndexContent).toContain('isLive');
-    // When insufficient_data in live mode, NoDataState must be returned — not Meridiana data
+    // B129 Fase 3: live-only page — no demo service imports, no dual-path ternaries
+    expect(koraIndexContent).not.toContain('demoUser');
+    expect(koraIndexContent).not.toContain('isLive ? (liveId');
+    expect(koraIndexContent.toLowerCase()).not.toContain('meridiana');
+    // Must still reach NoDataState for insufficient_data
     expect(koraIndexContent).toContain("status === 'ok'");
-    // demoUser fallback must be gated behind !isLive logic
-    expect(koraIndexContent).toContain('demoUser');
-    expect(koraIndexContent).toContain('isLive ? (liveId');
+    expect(koraIndexContent).toContain('NoDataState');
   });
 
   it('company Decision Pack route exists and requires company user auth', async () => {
@@ -140,14 +147,20 @@ describe('Live session — demo/live path separation', () => {
       new URL('../../app/company/kora-index/page.tsx', import.meta.url).pathname,
       'utf-8',
     );
-    // The page must NOT fall back to Meridiana when live + insufficient_data
-    // The NoDataState is returned early when !hasKoraData — which catches insufficient_data
+    // B129 Fase 3: live-only page — NoDataState is returned when !hasKoraData.
+    // Meridiana fallback lives exclusively in the demo page (/demo/company/kora-index).
     expect(koraIndex).toContain('hasKoraData');
     expect(koraIndex).toContain('NoDataState');
-    // Meridiana is only used as demoId fallback — not as the active company ID for live sessions
-    expect(koraIndex).toContain("'meridiana-group'");
-    // But must only be used when NOT isLive
-    expect(koraIndex).toContain('isLive ? (liveId');
+    // Meridiana must NOT appear in the live page (it belongs to the demo page only)
+    expect(koraIndex.toLowerCase()).not.toContain('meridiana');
+    // COMPANY_ID is liveId ?? '' — no demo fallback
+    expect(koraIndex).toContain("liveId ?? ''");
+    // Demo page has the Meridiana fallback
+    const demoKoraIndex = fs.readFileSync(
+      new URL('../../app/demo/company/kora-index/page.tsx', import.meta.url).pathname,
+      'utf-8',
+    );
+    expect(demoKoraIndex).toContain("'meridiana-group'");
   });
 
 });

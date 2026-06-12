@@ -117,7 +117,8 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/demo/ai-onboarding',  label: 'Anteprima Classificazione' },
           { href: '/demo/gtm',            label: 'GTM Preview' },
           { href: '/demo/benchmarks',     label: 'Benchmark Preview' },
-          { href: '/demo/guide',          label: 'Demo Guide' },
+          { href: '/demo/guide',               label: 'Demo Guide' },
+          { href: '/demo/company/kora-index', label: 'KORA Index™ Demo' },
         ],
       },
       {

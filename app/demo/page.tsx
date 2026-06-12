@@ -34,7 +34,8 @@ const DEMO_SCENARIOS = [
 ] as const;
 
 const DEMO_SURFACES = [
-  { label: 'Demo Guide',             href: '/demo/guide',          desc: 'Percorso guidato per presentare KORA a un nuovo interlocutore.' },
+  { label: 'Demo Guide',             href: '/demo/guide',               desc: 'Percorso guidato per presentare KORA a un nuovo interlocutore.' },
+  { label: 'KORA Index™ Detail',     href: '/demo/company/kora-index', desc: 'Scomposizione analitica: 10 componenti, 4 macroblocks, explainability, pipeline 14-stage.' },
   { label: 'Advisor Workspace',      href: '/demo/advisor',        desc: 'Revisione evidenze, raccomandazioni governance, queue priorità.' },
   { label: 'GTM Console',            href: '/demo/gtm',            desc: 'Demo script, pilot package, pipeline commerciale — uso interno KORA.' },
   { label: 'Activation Network',     href: '/demo/network',        desc: 'Copertura territoriale partner & advisor, protocolli attivi.' },

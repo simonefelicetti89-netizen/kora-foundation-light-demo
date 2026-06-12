@@ -16,7 +16,6 @@ const DEMO_DRIVEN_ROUTES = [
   '/company/contribution',
   '/company/pillars',
   '/company/onboarding',
-  '/company/kora-index',
   '/company/financial',
   '/company/reports',
   '/company/reports/board-pack',
