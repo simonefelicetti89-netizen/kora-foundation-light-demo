@@ -65,16 +65,16 @@ const PARTNER_ALLOWED_PREFIXES = [
 ];
 
 // B129: Paths that authenticated DEMO_VIEWER users are allowed to access.
-// Demo viewers are confined to /demo/* only — cannot access admin, company, worker,
-// partner, or any live operational route. /advisor, /demo-guide, /future-vision
-// are excluded (Fase 1): they have no auth guard and /commons is live (B128).
-// These surfaces will enter the allowed list in Fase 2 when moved under /demo.
+// Defense in depth: middleware blocks live routes before API guards run.
+// DEMO_VIEWER has no path to live API routes from the middleware layer.
+// Future demo-specific API routes must use /api/demo/* (not yet in Fase 1).
+// /auth/ covers the Supabase PKCE callback (/auth/callback) and reset flow —
+// all auth calls hit Supabase's external server directly, not local /api/* routes.
 const DEMO_VIEWER_ALLOWED_PREFIXES = [
   '/demo/',                  // demo area — synth-only, DEMO_VIEWER home
   '/login',                  // unified login — accessible after session expiry
-  '/auth/',                  // all auth routes (callback, reset-password, forgot-password)
-  '/api/',                   // all API routes (have own auth — DEMO_VIEWER will be rejected by live guards)
-  '/_next',
+  '/auth/',                  // Supabase callback + reset-password (PKCE flow)
+  '/_next',                  // Next.js internals
   '/request-access',         // public informational page
 ];
 

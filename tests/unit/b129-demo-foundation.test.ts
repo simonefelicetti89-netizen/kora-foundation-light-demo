@@ -100,7 +100,7 @@ describe('B129 — role-home: DEMO_VIEWER maps to /demo', () => {
   });
 });
 
-// ── Group 3: middleware.ts — DEMO_VIEWER confinement (4 tests) ───────────────
+// ── Group 3: middleware.ts — DEMO_VIEWER confinement (5 tests) ───────────────
 
 describe('B129 — middleware: DEMO_VIEWER confinement', () => {
   it('defines DEMO_VIEWER_ALLOWED_PREFIXES constant', () => {
@@ -111,11 +111,17 @@ describe('B129 — middleware: DEMO_VIEWER confinement', () => {
     expect(middleware).toContain("'/demo/'");
   });
 
+  it('DEMO_VIEWER_ALLOWED_PREFIXES does NOT include /api/ — defense in depth', () => {
+    // /api/ wildcard removed per B129 correction: middleware blocks live routes before
+    // server-side guards. Future demo API routes must use /api/demo/*, not Fase 1.
+    const blockStart = middleware.indexOf('DEMO_VIEWER_ALLOWED_PREFIXES');
+    const block = middleware.slice(blockStart, blockStart + 500);
+    expect(block).not.toContain("'/api/'");
+  });
+
   it('DEMO_VIEWER_ALLOWED_PREFIXES does NOT include /company or /worker or /admin', () => {
-    const block = middleware.slice(
-      middleware.indexOf('DEMO_VIEWER_ALLOWED_PREFIXES'),
-      middleware.indexOf('DEMO_VIEWER_ALLOWED_PREFIXES') + 400,
-    );
+    const blockStart = middleware.indexOf('DEMO_VIEWER_ALLOWED_PREFIXES');
+    const block = middleware.slice(blockStart, blockStart + 500);
     expect(block).not.toContain("'/company'");
     expect(block).not.toContain("'/worker'");
     expect(block).not.toContain("'/admin'");
