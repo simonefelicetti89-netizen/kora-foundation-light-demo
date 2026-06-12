@@ -43,19 +43,27 @@ ALTER TABLE analytics.tenant
   ADD COLUMN IF NOT EXISTS tenant_kind text NOT NULL DEFAULT 'LIVE'
   CHECK (tenant_kind IN ('LIVE', 'DEMO', 'TEST', 'SANDBOX'));
 
--- ── 2. Backfill — conservative, targeting only known synthetic tenants ─────────
+-- ── 2. Backfill — three-pass, ordered by specificity ─────────────────────────
 --
--- Criteria:
+-- Pass A: DEMO — known synthetic guided-demo tenants
 --   a. tenant_code = 'OP-001'        — canonical synthetic demo pipeline tenant
 --   b. industry_code = 'SYNTHETIC'   — operator-flow sets this on creation
 --
--- All other rows remain LIVE (the DEFAULT covers retrocompatibility for any
--- existing rows that do not match either criterion).
+-- Pass B: TEST — dev/QA tenants identified by industry_code
+--   c. industry_code = 'TEST'        — e.g. [SYNTHETIC TEST] tenants from QA runs
+--
+-- All other rows remain LIVE (the DEFAULT covers retrocompatibility).
+-- Ordering matters: DEMO pass runs first; TEST pass is independent (non-overlapping
+-- criteria), so the two UPDATE statements are safe to run in either order.
 
 UPDATE analytics.tenant
   SET tenant_kind = 'DEMO'
   WHERE tenant_code = 'OP-001'
      OR industry_code = 'SYNTHETIC';
+
+UPDATE analytics.tenant
+  SET tenant_kind = 'TEST'
+  WHERE industry_code = 'TEST';
 
 -- ── 3. Index for fast filtering ───────────────────────────────────────────────
 

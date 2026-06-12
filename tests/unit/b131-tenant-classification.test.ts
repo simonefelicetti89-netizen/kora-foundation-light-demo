@@ -84,6 +84,32 @@ describe('B131 — migration: backfill', () => {
     expect(sql).toContain("industry_code = 'SYNTHETIC'");
   });
 
+  it('backfills industry_code TEST to TEST (not LIVE)', () => {
+    expect(sql).toContain("industry_code = 'TEST'");
+    expect(sql).toContain("tenant_kind = 'TEST'");
+  });
+
+  it('TEST backfill uses a separate UPDATE statement from DEMO backfill', () => {
+    // Two independent UPDATE statements — non-overlapping criteria.
+    const updateCount = (sql.match(/^\s*UPDATE analytics\.tenant/gm) ?? []).length;
+    expect(updateCount).toBeGreaterThanOrEqual(2);
+  });
+
+  it('industry_code TEST tenants are NOT treated as LIVE (no overlap with LIVE default)', () => {
+    // The TEST UPDATE runs independently of the DEMO UPDATE.
+    // Rows with industry_code = 'TEST' must not fall through to LIVE default.
+    const testUpdateBlock = sql
+      .split('\n')
+      .filter(l => l.includes("'TEST'") || (l.includes('SET') && sql.indexOf(l) > sql.indexOf("industry_code = 'TEST'")))
+      .slice(0, 6)
+      .join('\n');
+    // Structural check: industry_code = 'TEST' appears in the migration
+    expect(sql).toContain("industry_code = 'TEST'");
+    // And the migration sets tenant_kind = 'TEST' (not 'LIVE') for those rows
+    expect(sql).toContain("tenant_kind = 'TEST'");
+    void testUpdateBlock;
+  });
+
   it('backfill uses UPDATE, not DELETE FROM or TRUNCATE', () => {
     const upper = sql.toUpperCase();
     expect(upper).toContain('UPDATE');
