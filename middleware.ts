@@ -64,6 +64,20 @@ const PARTNER_ALLOWED_PREFIXES = [
   '/_next',
 ];
 
+// B129: Paths that authenticated DEMO_VIEWER users are allowed to access.
+// Demo viewers are confined to /demo/* only — cannot access admin, company, worker,
+// partner, or any live operational route. /advisor, /demo-guide, /future-vision
+// are excluded (Fase 1): they have no auth guard and /commons is live (B128).
+// These surfaces will enter the allowed list in Fase 2 when moved under /demo.
+const DEMO_VIEWER_ALLOWED_PREFIXES = [
+  '/demo/',                  // demo area — synth-only, DEMO_VIEWER home
+  '/login',                  // unified login — accessible after session expiry
+  '/auth/',                  // all auth routes (callback, reset-password, forgot-password)
+  '/api/',                   // all API routes (have own auth — DEMO_VIEWER will be rejected by live guards)
+  '/_next',
+  '/request-access',         // public informational page
+];
+
 export async function middleware(request: NextRequest) {
   const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -146,6 +160,19 @@ export async function middleware(request: NextRequest) {
 
     if (!isAllowed) {
       return NextResponse.redirect(new URL('/partner/workspace', request.url));
+    }
+  }
+
+  // B129: Redirect authenticated demo viewers away from any live path.
+  // DEMO_VIEWER is confined to /demo/* — any other path redirects to /demo.
+  // The demo area is synth-only: no live DB queries, no tenant association.
+  const isDemoViewer = sessionKoraRole === 'DEMO_VIEWER';
+
+  if (isDemoViewer) {
+    const isAllowed = DEMO_VIEWER_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+
+    if (!isAllowed) {
+      return NextResponse.redirect(new URL('/demo', request.url));
     }
   }
 

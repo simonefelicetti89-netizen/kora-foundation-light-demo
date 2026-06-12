@@ -74,6 +74,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/company/setup-password', origin));
   }
 
+  // B129: DEMO_VIEWER invite → demo home (no separate setup page needed)
+  if (koraRole === 'DEMO_VIEWER') {
+    return NextResponse.redirect(new URL('/demo', origin));
+  }
+
   // Unknown role or KORA_ADMIN invite → unified login
   return NextResponse.redirect(new URL('/login', origin));
 }

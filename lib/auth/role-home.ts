@@ -10,5 +10,6 @@ export function getRoleHome(role: string | undefined): string {
   if (role === 'COMPANY_ADMIN' || role === 'COMPANY_VIEWER') return '/company/workspace';
   if (role === 'WORKER') return '/worker/onboarding';
   if (role === 'PARTNER') return '/partner/workspace';
+  if (role === 'DEMO_VIEWER') return '/demo';
   return '/login';
 }
