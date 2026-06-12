@@ -110,14 +110,14 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         items: [
           { href: '/commons',             label: 'KORA Commons Network', preview: true },
           { href: '/admin/demo/acme-001', label: 'Guided Demo — ACME-001' },
-          { href: '/admin/index-registry', label: 'Registro KORA Index' },
-          { href: '/admin/portfolio',      label: 'Portfolio Aziende' },
-          { href: '/admin/network',       label: 'Rete Advisor & Partner' },
+          { href: '/demo/index-registry', label: 'Registro KORA Index' },
+          { href: '/demo/portfolio',      label: 'Portfolio Aziende' },
+          { href: '/demo/network',        label: 'Rete Advisor & Partner' },
           { href: '/admin/operator',      label: 'Demo Scoring (Synthetic)' },
-          { href: '/admin/ai-onboarding', label: 'Anteprima Classificazione' },
-          { href: '/admin/gtm',           label: 'GTM Preview' },
-          { href: '/admin/benchmarks',    label: 'Benchmark Preview' },
-          { href: '/demo-guide',          label: 'Demo Guide' },
+          { href: '/demo/ai-onboarding',  label: 'Anteprima Classificazione' },
+          { href: '/demo/gtm',            label: 'GTM Preview' },
+          { href: '/demo/benchmarks',     label: 'Benchmark Preview' },
+          { href: '/demo/guide',          label: 'Demo Guide' },
         ],
       },
       {
@@ -133,7 +133,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         groupBadge: 'ROADMAP',
         badgeKey: 'ROADMAP',
         items: [
-          { href: '/future-vision', label: 'Future Vision', inactive: true },
+          { href: '/demo/future-vision', label: 'Future Vision', inactive: true },
         ],
       },
     ];
@@ -262,7 +262,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Roadmap',
         items: [
-          { href: '/future-vision', label: 'Future Vision', inactive: true },
+          { href: '/demo/future-vision', label: 'Future Vision', inactive: true },
         ],
       },
     ];
@@ -274,14 +274,14 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Portale Partner',
         items: [
-          { href: '/partner',    label: 'Workspace Partner' },
-          { href: '/demo-guide', label: 'Demo Guide' },
+          { href: '/partner',     label: 'Workspace Partner' },
+          { href: '/demo/guide',  label: 'Demo Guide' },
         ],
       },
       {
         heading: 'Roadmap',
         items: [
-          { href: '/future-vision', label: 'Future Vision', inactive: true },
+          { href: '/demo/future-vision', label: 'Future Vision', inactive: true },
         ],
       },
     ];
@@ -293,14 +293,14 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Workspace Advisor',
         items: [
-          { href: '/advisor',    label: 'Review & Governance' },
-          { href: '/demo-guide', label: 'Demo Guide' },
+          { href: '/demo/advisor', label: 'Review & Governance' },
+          { href: '/demo/guide',   label: 'Demo Guide' },
         ],
       },
       {
         heading: 'Roadmap',
         items: [
-          { href: '/future-vision', label: 'Future Vision', inactive: true },
+          { href: '/demo/future-vision', label: 'Future Vision', inactive: true },
         ],
       },
     ];
@@ -311,8 +311,8 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
     {
       heading: 'KORA',
       items: [
-        { href: '/demo-guide',   label: 'Demo Guide' },
-        { href: '/future-vision', label: 'Future Vision', inactive: true },
+        { href: '/demo/guide',        label: 'Demo Guide' },
+        { href: '/demo/future-vision', label: 'Future Vision', inactive: true },
       ],
     },
   ];

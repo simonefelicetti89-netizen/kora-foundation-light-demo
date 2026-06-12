@@ -333,29 +333,29 @@ describe('B86-B T5 — AdvisorEvidenceReviewService', () => {
 
 describe('B86-B T6 — Advisor review UI', () => {
   it('advisor page imports advisorEvidenceReviewService', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('advisorEvidenceReviewService');
   });
 
   it('advisor page has data-testid advisor-evidence-review-panel', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('advisor-evidence-review-panel');
   });
 
   it('advisor page has approve/reject/flag button test IDs', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('approve-btn-');
     expect(src).toContain('reject-btn-');
     expect(src).toContain('flag-btn-');
   });
 
   it('handleReview calls submitReview', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('advisorEvidenceReviewService.submitReview');
   });
 
   it('reviewed items log section exists', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('reviewed-item-');
   });
 });
@@ -450,27 +450,27 @@ describe('B86-B T7 — EvidenceReliabilityIntelligenceService pillar breakdown',
 
 describe('B86-B T8 — Pillar evidence breakdown in advisor page', () => {
   it('advisor page imports PillarEvidenceBreakdown type', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('PillarEvidenceBreakdown');
   });
 
   it('advisor page calls getPillarEvidenceBreakdown', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('getPillarEvidenceBreakdown');
   });
 
   it('advisor page has pillar-evidence-breakdown-panel testid', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('pillar-evidence-breakdown-panel');
   });
 
   it('advisor page renders per-pillar testids', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('pillar-ev-');
   });
 
   it('advisor page uses ADVISOR_PILLAR_BREAKDOWN constant', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('ADVISOR_PILLAR_BREAKDOWN');
   });
 });
@@ -565,7 +565,7 @@ describe('B86-B T10 — Red Lines (no forbidden artifacts created)', () => {
   });
 
   it('advisor page does not render individual worker PIB data', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).not.toContain('pib-records');
     expect(src).not.toContain('workerPseudonymId');
     expect(src).not.toContain('individual_pib');
@@ -577,7 +577,7 @@ describe('B86-B T10 — Red Lines (no forbidden artifacts created)', () => {
   });
 
   it('Evidence chain panel in advisor is aggregate-only (source)', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('nessun dato individuale lavoratore');
   });
 });

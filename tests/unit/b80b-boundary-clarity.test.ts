@@ -274,7 +274,7 @@ describe('B80-B — Partner and Advisor pages have DEMO badge', () => {
   });
 
   it('advisor page has DEMO badge', () => {
-    const src = read('app/advisor/page.tsx');
+    const src = read('app/demo/advisor/page.tsx');
     expect(src).toContain('BoundaryBadge');
     expect(src).toContain("mode=\"DEMO\"");
   });

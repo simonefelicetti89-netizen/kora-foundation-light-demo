@@ -46,7 +46,9 @@ const SCENARIO_S2: ScenarioCard = {
   copy: "Activation Rate 52%, Activation Safeguard CLEAR, KORA Index 54, distribuzione più bilanciata e debito di attivazione ridotto.",
 };
 
-interface GTMTrackStep { n: number; label: string; href: string; roleNote?: string }
+// isLive: step links to a live route — not accessible to DEMO_VIEWER (only KORA_ADMIN).
+// Rendered as a disabled span instead of a Link to avoid middleware-as-UX-fallback.
+interface GTMTrackStep { n: number; label: string; href: string; roleNote?: string; isLive?: boolean }
 interface GTMTrack {
   id: string;
   duration: string;
@@ -74,10 +76,10 @@ const GTM_TRACKS: GTMTrack[] = [
     cardStyle: 'border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)]',
     letterStyle: 'text-[rgba(6,3,43,0.30)]',
     steps: [
-      { n: 1, label: 'Demo Guide',              href: '/demo-guide' },
-      { n: 2, label: 'Company Workspace',        href: '/company' },
-      { n: 3, label: 'Activation Debt',          href: '/company/activation' },
-      { n: 4, label: 'Reports & Board Pack',     href: '/company/reports' },
+      { n: 1, label: 'Demo Guide',              href: '/demo/guide' },
+      { n: 2, label: 'Company Workspace',        href: '/company',            isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 3, label: 'Activation Debt',          href: '/company/activation', isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 4, label: 'Reports & Board Pack',     href: '/company/reports',    isLive: true, roleNote: 'KORA_ADMIN' },
     ],
   },
   {
@@ -92,13 +94,13 @@ const GTM_TRACKS: GTMTrack[] = [
     cardStyle: 'border-[rgba(43,92,230,0.15)] bg-[rgba(43,92,230,0.05)]',
     letterStyle: 'text-[rgba(43,92,230,0.60)]',
     steps: [
-      { n: 1, label: 'Demo Guide',              href: '/demo-guide' },
-      { n: 2, label: 'Company Workspace',        href: '/company' },
-      { n: 3, label: 'KORA Index Detail',        href: '/company/kora-index' },
-      { n: 4, label: 'Activation Debt',          href: '/company/activation' },
-      { n: 5, label: 'Budget-to-Human-Impact',  href: '/company/financial' },
-      { n: 6, label: 'Reports & Board Pack',     href: '/company/reports' },
-      { n: 7, label: 'My KORA Worker Layer',     href: '/my-kora',   roleNote: 'passa a WORKER' },
+      { n: 1, label: 'Demo Guide',              href: '/demo/guide' },
+      { n: 2, label: 'Company Workspace',        href: '/company',              isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 3, label: 'KORA Index Detail',        href: '/company/kora-index',   isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 4, label: 'Activation Debt',          href: '/company/activation',   isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 5, label: 'Budget-to-Human-Impact',   href: '/company/financial',    isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 6, label: 'Reports & Board Pack',     href: '/company/reports',      isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 7, label: 'My KORA Worker Layer',     href: '/my-kora',              isLive: true, roleNote: 'KORA_ADMIN + WORKER' },
     ],
   },
   {
@@ -113,19 +115,19 @@ const GTM_TRACKS: GTMTrack[] = [
     cardStyle: 'border-[rgba(107,122,146,0.15)] bg-[rgba(107,122,146,0.05)]',
     letterStyle: 'text-[rgba(107,122,146,0.60)]',
     steps: [
-      { n: 1,  label: 'Demo Guide',              href: '/demo-guide' },
-      { n: 2,  label: 'Company Workspace',        href: '/company' },
-      { n: 3,  label: 'KORA Index Detail',        href: '/company/kora-index' },
-      { n: 4,  label: 'Dati & Evidenze',          href: '/company/data' },
-      { n: 5,  label: 'Activation Debt',          href: '/company/activation' },
-      { n: 6,  label: 'Pillar & Iniziative',      href: '/company/pillars' },
-      { n: 7,  label: 'Budget-to-Human-Impact',  href: '/company/financial' },
-      { n: 8,  label: 'Reports & Board Pack',     href: '/company/reports' },
-      { n: 9,  label: 'My KORA Worker Layer',     href: '/my-kora',         roleNote: 'passa a WORKER' },
-      { n: 10, label: 'Partner Workspace',        href: '/partner',         roleNote: 'passa a PARTNER' },
-      { n: 11, label: 'Advisor Workspace',        href: '/advisor',         roleNote: 'passa a ADVISOR' },
-      { n: 12, label: 'Activation Network',       href: '/admin/network',   roleNote: 'passa a KORA_ADMIN' },
-      { n: 13, label: 'Future Vision',            href: '/future-vision' },
+      { n: 1,  label: 'Demo Guide',              href: '/demo/guide' },
+      { n: 2,  label: 'Company Workspace',        href: '/company',             isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 3,  label: 'KORA Index Detail',        href: '/company/kora-index',  isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 4,  label: 'Dati & Evidenze',          href: '/company/data',        isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 5,  label: 'Activation Debt',          href: '/company/activation',  isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 6,  label: 'Pillar & Iniziative',      href: '/company/pillars',     isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 7,  label: 'Budget-to-Human-Impact',   href: '/company/financial',   isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 8,  label: 'Reports & Board Pack',     href: '/company/reports',     isLive: true, roleNote: 'KORA_ADMIN' },
+      { n: 9,  label: 'My KORA Worker Layer',     href: '/my-kora',             isLive: true, roleNote: 'KORA_ADMIN + WORKER' },
+      { n: 10, label: 'Partner Workspace',        href: '/partner',             isLive: true, roleNote: 'KORA_ADMIN + PARTNER' },
+      { n: 11, label: 'Advisor Workspace',        href: '/demo/advisor',        roleNote: 'area demo' },
+      { n: 12, label: 'Activation Network',       href: '/demo/network',        roleNote: 'area demo' },
+      { n: 13, label: 'Future Vision',            href: '/demo/future-vision' },
     ],
   },
 ];
@@ -299,23 +301,41 @@ export default function GtmPilotConsole() {
               </div>
 
               <div className="space-y-1">
-                {track.steps.map((step) => (
-                  <Link
-                    key={step.n}
-                    href={step.href}
-                    className="flex items-center gap-2.5 rounded-md border border-white/80 bg-[#F8F6F1]/50 px-3 py-2 hover:bg-[#F8F6F1] hover:shadow-sm transition-all"
-                  >
-                    <span className="w-5 h-5 rounded-full bg-[rgba(6,3,43,0.05)] text-[10px] font-bold text-[rgba(6,3,43,0.52)] flex items-center justify-center shrink-0">
-                      {step.n}
-                    </span>
-                    <span className="text-xs font-medium text-[rgba(6,3,43,0.78)] flex-1">{step.label}</span>
-                    {step.roleNote && (
-                      <span className="text-[10px] font-mono text-[rgba(6,3,43,0.40)] shrink-0 rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1 py-0.5">
-                        {step.roleNote}
+                {track.steps.map((step) => {
+                  const inner = (
+                    <>
+                      <span className="w-5 h-5 rounded-full bg-[rgba(6,3,43,0.05)] text-[10px] font-bold text-[rgba(6,3,43,0.52)] flex items-center justify-center shrink-0">
+                        {step.n}
                       </span>
-                    )}
-                  </Link>
-                ))}
+                      <span className={`text-xs font-medium flex-1 ${step.isLive ? 'text-[rgba(6,3,43,0.40)]' : 'text-[rgba(6,3,43,0.78)]'}`}>{step.label}</span>
+                      {step.roleNote && (
+                        <span className={`text-[10px] font-mono shrink-0 rounded border px-1 py-0.5 ${step.isLive ? 'border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.35)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.40)]'}`}>
+                          {step.roleNote}
+                        </span>
+                      )}
+                    </>
+                  );
+                  if (step.isLive) {
+                    return (
+                      <div
+                        key={step.n}
+                        className="flex items-center gap-2.5 rounded-md border border-white/60 bg-[#F8F6F1]/30 px-3 py-2 opacity-55 cursor-default"
+                        title="Richiede accesso KORA_ADMIN — non accessibile a DEMO_VIEWER"
+                      >
+                        {inner}
+                      </div>
+                    );
+                  }
+                  return (
+                    <Link
+                      key={step.n}
+                      href={step.href}
+                      className="flex items-center gap-2.5 rounded-md border border-white/80 bg-[#F8F6F1]/50 px-3 py-2 hover:bg-[#F8F6F1] hover:shadow-sm transition-all"
+                    >
+                      {inner}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           ))}

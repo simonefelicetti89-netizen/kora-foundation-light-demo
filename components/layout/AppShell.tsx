@@ -12,7 +12,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 // Route che non ricevono il chrome AppShell (sidebar + header + banner).
 // /pilot è pubblico come la landing.
 // B126: /cv/share/ added — public share view, no AppShell chrome needed.
-const PUBLIC_ROUTE_PREFIXES = ['/', '/demo-guide', '/pilot', '/login', '/admin/login', '/auth/', '/request-access', '/cv/share/'];
+const PUBLIC_ROUTE_PREFIXES = ['/', '/demo', '/pilot', '/login', '/admin/login', '/auth/', '/request-access', '/cv/share/'];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTE_PREFIXES.some((p) =>

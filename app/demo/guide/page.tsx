@@ -1,21 +1,31 @@
 'use client';
 
-// KORA Foundation Light — Guida Demo
+// app/demo/guide/page.tsx — B129 Fase 2: spostato da /demo-guide
+// Link alle route live (/company/*) sono disabled — non accessibili a DEMO_VIEWER.
+// Le superfici demo (/demo/*) restano cliccabili.
 
 import Link from 'next/link';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
-const EVALUATE_ITEMS = [
-  { label: 'Executive Cockpit',      href: '/company',               shows: 'KORA Index, Confidence Score, Activation Safeguard e priorità direzionali in una vista C-suite.',                         why: 'Punto di ingresso board-ready — mostra come l\'intelligence si traduce in decisione.' },
-  { label: 'KORA Index',             href: '/company/kora-index',    shows: '10 componenti, 4 macroblocks, pipeline 14-stage, explainability e Confidence Score.',                                    why: 'Cuore metodologico — ogni numero è tracciabile, spiegabile e versionato.' },
-  { label: 'Activation Debt',        href: '/company/activation',    shows: 'Maggioranza silenziosa, concentrazione IU, distribuzione per sito e dipartimento, next actions.',                        why: 'Traduce la sotto-attivazione in segnale quantificato — senza esporre individui.' },
-  { label: 'Budget-to-Human-Impact', href: '/company/financial',     shows: 'Governance finanziaria, budget per pillar, costo per IU, BTI macroblock.',                                               why: 'Connette la spesa people al segnale di attivazione — non promette ROI garantito.' },
-  { label: 'Stato Dati & Evidenze',  href: '/company/data',          shows: 'Stato dati & evidenze — elaborazione gestita da KORA Operator. Lettura aggregata post-intake.',                          why: 'Mostra lo stato delle fonti ricevute — non un\'area self-service cliente.' },
-  { label: 'Decision Pack',          href: '/company/reports',       shows: 'Report board-ready con KORA Index, pillar analysis, raccomandazioni e disclaimer espliciti.',                            why: 'Output finale per CEO, HR, ESG e Finance — con limiti metodologici integrati.' },
-  { label: 'KORA Contribution',      href: '/company/contribution',  shows: 'Indicatore companion per il contributo collettivo e territoriale oltre il perimetro aziendale.',                          why: 'Segnala l\'estensione ecosistemica — distinto dal KORA Index e mai aggregato ad esso.' },
-  { label: 'Future Vision',          href: '/future-vision',         shows: 'Roadmap architetturale in 4 fasi: Foundation Light → Pilot → Ecosystem → Worker-Owned.',                                 why: 'Mostra dove KORA va, non solo dove è ora — infrastruttura, non feature dump.' },
+type AccessLevel = 'demo' | 'live';
+
+const EVALUATE_ITEMS: {
+  label: string;
+  href: string;
+  shows: string;
+  why: string;
+  access: AccessLevel;
+}[] = [
+  { label: 'Executive Cockpit',      href: '/company',               access: 'live',  shows: 'KORA Index, Confidence Score, Activation Safeguard e priorità direzionali in una vista C-suite.',                         why: 'Punto di ingresso board-ready — mostra come l\'intelligence si traduce in decisione.' },
+  { label: 'KORA Index',             href: '/company/kora-index',    access: 'live',  shows: '10 componenti, 4 macroblocks, pipeline 14-stage, explainability e Confidence Score.',                                    why: 'Cuore metodologico — ogni numero è tracciabile, spiegabile e versionato.' },
+  { label: 'Activation Debt',        href: '/company/activation',    access: 'live',  shows: 'Maggioranza silenziosa, concentrazione IU, distribuzione per sito e dipartimento, next actions.',                        why: 'Traduce la sotto-attivazione in segnale quantificato — senza esporre individui.' },
+  { label: 'Budget-to-Human-Impact', href: '/company/financial',     access: 'live',  shows: 'Governance finanziaria, budget per pillar, costo per IU, BTI macroblock.',                                               why: 'Connette la spesa people al segnale di attivazione — non promette ROI garantito.' },
+  { label: 'Stato Dati & Evidenze',  href: '/company/data',          access: 'live',  shows: 'Stato dati & evidenze — elaborazione gestita da KORA Operator. Lettura aggregata post-intake.',                          why: 'Mostra lo stato delle fonti ricevute — non un\'area self-service cliente.' },
+  { label: 'Decision Pack',          href: '/company/reports',       access: 'live',  shows: 'Report board-ready con KORA Index, pillar analysis, raccomandazioni e disclaimer espliciti.',                            why: 'Output finale per CEO, HR, ESG e Finance — con limiti metodologici integrati.' },
+  { label: 'KORA Contribution',      href: '/company/contribution',  access: 'live',  shows: 'Indicatore companion per il contributo collettivo e territoriale oltre il perimetro aziendale.',                          why: 'Segnala l\'estensione ecosistemica — distinto dal KORA Index e mai aggregato ad esso.' },
+  { label: 'Future Vision',          href: '/demo/future-vision',    access: 'demo',  shows: 'Roadmap architetturale in 4 fasi: Foundation Light → Pilot → Ecosystem → Worker-Owned.',                                 why: 'Mostra dove KORA va, non solo dove è ora — infrastruttura, non feature dump.' },
 ];
 
 const KORA_IS_NOT = [
@@ -39,15 +49,21 @@ const PRINCIPLES = [
   'I programmi Eligible sono volontari, aggiuntivi rispetto al minimo legale e verificabili con evidenza.',
 ];
 
-const NEXT_ROUTE = [
-  { step: 1, label: 'Executive Cockpit',       href: '/company',               note: 'Vista C-suite — KORA Index, Safeguard, priorità' },
-  { step: 2, label: 'KORA Index Detail',        href: '/company/kora-index',    note: '10 componenti, macroblocks, explainability' },
-  { step: 3, label: 'Activation Debt',          href: '/company/activation',    note: 'Maggioranza silenziosa, concentrazione, siti' },
-  { step: 4, label: 'Budget-to-Human-Impact',   href: '/company/financial',     note: 'BTI, costo per IU, governance finanziaria' },
-  { step: 5, label: 'Stato Dati & Evidenze',    href: '/company/data',          note: 'Stato dati & evidenze — elaborazione KORA' },
-  { step: 6, label: 'Decision Pack',            href: '/company/reports',       note: 'Report board-ready, pillar, raccomandazioni' },
-  { step: 7, label: 'KORA Contribution',        href: '/company/contribution',  note: 'Companion indicator — ecosistema e territorio' },
-  { step: 8, label: 'Future Vision',            href: '/future-vision',         note: 'Roadmap architetturale in 4 fasi' },
+const NEXT_ROUTE: {
+  step: number;
+  label: string;
+  href: string;
+  note: string;
+  access: AccessLevel;
+}[] = [
+  { step: 1, label: 'Executive Cockpit',       href: '/company',               note: 'Vista C-suite — KORA Index, Safeguard, priorità',           access: 'live' },
+  { step: 2, label: 'KORA Index Detail',        href: '/company/kora-index',    note: '10 componenti, macroblocks, explainability',                access: 'live' },
+  { step: 3, label: 'Activation Debt',          href: '/company/activation',    note: 'Maggioranza silenziosa, concentrazione, siti',              access: 'live' },
+  { step: 4, label: 'Budget-to-Human-Impact',   href: '/company/financial',     note: 'BTI, costo per IU, governance finanziaria',                 access: 'live' },
+  { step: 5, label: 'Stato Dati & Evidenze',    href: '/company/data',          note: 'Stato dati & evidenze — elaborazione KORA',                 access: 'live' },
+  { step: 6, label: 'Decision Pack',            href: '/company/reports',       note: 'Report board-ready, pillar, raccomandazioni',               access: 'live' },
+  { step: 7, label: 'KORA Contribution',        href: '/company/contribution',  note: 'Companion indicator — ecosistema e territorio',             access: 'live' },
+  { step: 8, label: 'Future Vision',            href: '/demo/future-vision',    note: 'Roadmap architetturale in 4 fasi',                          access: 'demo' },
 ];
 
 const NEXT_PRIORITIES = [
@@ -60,13 +76,23 @@ const NEXT_PRIORITIES = [
   'Non aggiungere funzionalità — capire quelle esistenti prima di proporne di nuove.',
 ];
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+const LIVE_ACCESS_NOTE = 'Accesso live — richiede KORA_ADMIN';
+
+function LiveOnlyItem({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      {children}
+      <span style={{ fontSize: '9px', fontWeight: 700, color: TOKENS.inkHint, background: TOKENS.inkBorder, borderRadius: 3, padding: '1px 5px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+        {LIVE_ACCESS_NOTE}
+      </span>
+    </div>
+  );
+}
 
 export default function DemoGuidePage() {
   return (
     <div className="space-y-5">
 
-      {/* 1. PageMasthead */}
       <PageMasthead
         eyebrow="KORA Foundation Light™ · Guida operativa"
         title="Come leggere KORA"
@@ -74,7 +100,6 @@ export default function DemoGuidePage() {
         meta="Product Vision Prototype · dati sintetici · KORA Foundation Light"
       />
 
-      {/* Badge chips */}
       <div className="flex flex-wrap gap-2">
         {[
           { label: 'Product Vision Prototype', bg: `${TOKENS.accent}14`,       text: TOKENS.accent               },
@@ -89,7 +114,16 @@ export default function DemoGuidePage() {
         ))}
       </div>
 
-      {/* 2. Come leggere questo prototipo */}
+      {/* Nota accesso */}
+      <div style={{ background: TOKENS.inkBorder, border: TOKENS.cardBorder, borderRadius: 6, padding: '8px 14px' }}>
+        <p style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          <span style={{ fontWeight: 600, color: TOKENS.ink }}>Area dimostrativa — </span>
+          Il Company Workspace e le aree live sono accessibili solo come <span style={{ fontWeight: 600 }}>KORA_ADMIN</span>.
+          DEMO_VIEWER naviga le superfici demo sotto <code style={{ fontSize: 10 }}>/demo/*</code>
+          {' '}(Advisor Workspace, GTM Console, Network, Future Vision).
+        </p>
+      </div>
+
       <SectionLabel>Come leggere questa demo</SectionLabel>
       <div style={{ background: TOKENS.surface, border: `1px solid ${TOKENS.accent}33`, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -111,49 +145,67 @@ export default function DemoGuidePage() {
         </div>
       </div>
 
-      {/* 3. Cosa valutare */}
       <SectionLabel>Percorso consigliato</SectionLabel>
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, overflow: 'hidden', boxShadow: TOKENS.cardShadow }}>
-        {EVALUATE_ITEMS.map((item, i) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            style={{
-              display:     'flex',
-              alignItems:  'flex-start',
-              gap:         16,
-              padding:     '14px 20px',
-              borderBottom: i < EVALUATE_ITEMS.length - 1 ? TOKENS.cardBorder : 'none',
-              borderLeft:  '3px solid transparent',
-              textDecoration: 'none',
-              transition:  'all 140ms ease',
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = TOKENS.accentHover;
-              (e.currentTarget as HTMLElement).style.borderLeftColor = TOKENS.accent;
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = '';
-              (e.currentTarget as HTMLElement).style.borderLeftColor = 'transparent';
-            }}
-          >
-            <div style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: TOKENS.inkBorder, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
-              <span style={{ fontSize: '9px', fontWeight: 700, color: TOKENS.inkHint }}>{i + 1}</span>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink, lineHeight: 1.3 }}>{item.label}</p>
-              <p style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, marginTop: 2, lineHeight: 1.5 }}>{item.shows}</p>
-              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.5, fontStyle: 'italic' }}>{item.why}</p>
-            </div>
-            <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: 600, color: TOKENS.accent, marginTop: 2 }}>→</span>
-          </Link>
-        ))}
+        {EVALUATE_ITEMS.map((item, i) => {
+          const base = {
+            display: 'flex' as const,
+            alignItems: 'flex-start' as const,
+            gap: 16,
+            padding: '14px 20px',
+            borderBottom: i < EVALUATE_ITEMS.length - 1 ? TOKENS.cardBorder : 'none',
+            borderLeft: '3px solid transparent',
+            textDecoration: 'none',
+          };
+          const inner = (
+            <>
+              <div style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: TOKENS.inkBorder, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
+                <span style={{ fontSize: '9px', fontWeight: 700, color: TOKENS.inkHint }}>{i + 1}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <p style={{ fontSize: '13px', fontWeight: 600, color: item.access === 'live' ? TOKENS.inkSecondary : TOKENS.ink, lineHeight: 1.3 }}>{item.label}</p>
+                  {item.access === 'live' && (
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: TOKENS.inkHint, background: TOKENS.inkBorder, borderRadius: 3, padding: '1px 5px' }}>
+                      {LIVE_ACCESS_NOTE}
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: '11.5px', color: TOKENS.inkSecondary, marginTop: 2, lineHeight: 1.5 }}>{item.shows}</p>
+                <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 4, lineHeight: 1.5, fontStyle: 'italic' }}>{item.why}</p>
+              </div>
+              <span style={{ flexShrink: 0, fontSize: '11px', fontWeight: 600, color: item.access === 'live' ? TOKENS.inkHint : TOKENS.accent, marginTop: 2 }}>→</span>
+            </>
+          );
+          if (item.access === 'live') {
+            return (
+              <div key={item.label} style={{ ...base, cursor: 'default', opacity: 0.7 }}>
+                {inner}
+              </div>
+            );
+          }
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              style={base}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = TOKENS.accentHover;
+                (e.currentTarget as HTMLElement).style.borderLeftColor = TOKENS.accent;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = '';
+                (e.currentTarget as HTMLElement).style.borderLeftColor = 'transparent';
+              }}
+            >
+              {inner}
+            </Link>
+          );
+        })}
       </div>
 
-      {/* 4. Cosa KORA non è / è */}
       <SectionLabel>Confini dottrinali — cosa KORA non è</SectionLabel>
       <div className="grid sm:grid-cols-2 gap-4">
-        {/* KORA non è */}
         <div style={{ background: TOKENS.safeguard.cap.bg, border: `1px solid ${TOKENS.safeguard.cap.dot}33`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
           <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.cap.text, marginBottom: 12 }}>
             KORA non è — mai
@@ -167,7 +219,6 @@ export default function DemoGuidePage() {
             ))}
           </ul>
         </div>
-        {/* KORA è */}
         <div style={{ background: TOKENS.safeguard.pass.bg, border: `1px solid ${TOKENS.safeguard.pass.dot}33`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
           <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.pass.text, marginBottom: 12 }}>
             KORA è
@@ -191,7 +242,6 @@ export default function DemoGuidePage() {
         </div>
       </div>
 
-      {/* 5. Principi non negoziabili */}
       <SectionLabel>Principi non negoziabili</SectionLabel>
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, overflow: 'hidden' }}>
         {PRINCIPLES.map((p, i) => (
@@ -204,10 +254,8 @@ export default function DemoGuidePage() {
         ))}
       </div>
 
-      {/* 6. Demo vs Prodotto Reale */}
       <SectionLabel>Demo vs prodotto reale</SectionLabel>
       <div className="grid sm:grid-cols-2 gap-4">
-        {/* Demo Mode */}
         <div style={{ background: TOKENS.safeguard.watch.bg, border: `1px solid ${TOKENS.safeguard.watch.dot}33`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
           <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.safeguard.watch.text, marginBottom: 12 }}>
             Demo Mode — Foundation Light
@@ -227,7 +275,6 @@ export default function DemoGuidePage() {
             ))}
           </ul>
         </div>
-        {/* Direzione prodotto reale */}
         <div style={{ background: `${TOKENS.accent}07`, border: `1px solid ${TOKENS.accent}22`, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
           <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: '11px', letterSpacing: '0.06em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 12 }}>
             Direzione Prodotto Reale
@@ -256,31 +303,46 @@ export default function DemoGuidePage() {
         </p>
       </div>
 
-      {/* 7. Percorso consigliato */}
       <SectionLabel>Percorso consigliato</SectionLabel>
       <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.65, marginBottom: 12 }}>
         Leggere nell&apos;ordine. Ogni schermata costruisce sulla precedente.
+        Le superfici live sono accessibili solo come KORA_ADMIN.
       </p>
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, overflow: 'hidden' }}>
-        {NEXT_ROUTE.map((item, i) => (
-          <Link
-            key={item.step}
-            href={item.href}
-            style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 16px', borderBottom: i < NEXT_ROUTE.length - 1 ? TOKENS.cardBorder : 'none', textDecoration: 'none' }}
-          >
-            <span style={{ width: 24, height: 24, borderRadius: '50%', background: TOKENS.inkBorder, fontSize: '10px', fontWeight: 700, color: TOKENS.inkSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {item.step}
-            </span>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.ink }}>{item.label}</p>
-              <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 2 }}>{item.note}</p>
-            </div>
-            <span style={{ fontSize: '11px', color: TOKENS.inkHint, flexShrink: 0 }}>→</span>
-          </Link>
-        ))}
+        {NEXT_ROUTE.map((item, i) => {
+          const isLive = item.access === 'live';
+          return (
+            <LiveOnlyItem key={item.step}>
+              {isLive ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 16px', borderBottom: i < NEXT_ROUTE.length - 1 ? TOKENS.cardBorder : 'none', opacity: 0.6, flex: 1 }}>
+                  <span style={{ width: 24, height: 24, borderRadius: '50%', background: TOKENS.inkBorder, fontSize: '10px', fontWeight: 700, color: TOKENS.inkSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {item.step}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.inkSecondary }}>{item.label}</p>
+                    <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 2 }}>{item.note}</p>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  href={item.href}
+                  style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '11px 16px', borderBottom: i < NEXT_ROUTE.length - 1 ? TOKENS.cardBorder : 'none', textDecoration: 'none', flex: 1 }}
+                >
+                  <span style={{ width: 24, height: 24, borderRadius: '50%', background: TOKENS.inkBorder, fontSize: '10px', fontWeight: 700, color: TOKENS.inkSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {item.step}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.ink }}>{item.label}</p>
+                    <p style={{ fontSize: '11px', color: TOKENS.inkHint, marginTop: 2 }}>{item.note}</p>
+                  </div>
+                  <span style={{ fontSize: '11px', color: TOKENS.inkHint, flexShrink: 0 }}>→</span>
+                </Link>
+              )}
+            </LiveOnlyItem>
+          );
+        })}
       </div>
 
-      {/* 8. Prossimi passi consigliati */}
       <SectionLabel>Prossimi passi consigliati</SectionLabel>
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.25rem' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -293,7 +355,6 @@ export default function DemoGuidePage() {
         </div>
       </div>
 
-      {/* 9. Boundary box */}
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.125rem' }}>
         <p style={{ fontSize: '12.5px', fontWeight: 600, color: TOKENS.ink, marginBottom: 10 }}>Confini del prototipo</p>
         <ul style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -312,20 +373,19 @@ export default function DemoGuidePage() {
         </ul>
       </div>
 
-      {/* CTAs */}
+      {/* CTA — solo superfici demo cliccabili */}
       <div className="flex flex-wrap items-center gap-3">
-        <Link href="/company" style={{ borderRadius: 6, background: TOKENS.ink, padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none' }}>
-          Executive Cockpit →
+        <Link href="/demo/future-vision" style={{ borderRadius: 6, background: TOKENS.ink, padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none' }}>
+          Future Vision →
         </Link>
         <Link href="/pilot" style={{ borderRadius: 6, border: TOKENS.cardBorder, background: TOKENS.surface, padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
           Foundation Light Pilot
         </Link>
-        <Link href="/future-vision" style={{ fontSize: '12px', color: TOKENS.inkHint, textDecoration: 'underline' }}>
-          Future Vision →
-        </Link>
+        <span style={{ fontSize: '12px', color: TOKENS.inkHint, cursor: 'default' }}>
+          Executive Cockpit → <span style={{ fontSize: '9px', fontWeight: 600, background: TOKENS.inkBorder, borderRadius: 3, padding: '1px 5px', marginLeft: 4 }}>KORA_ADMIN</span>
+        </span>
       </div>
 
-      {/* Footer mono */}
       <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>
         KORA Foundation Light · Product Vision Prototype · synthetic_demo_data: true · v0.1
       </p>

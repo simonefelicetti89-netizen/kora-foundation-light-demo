@@ -34,12 +34,12 @@ const DEMO_SCENARIOS = [
 ] as const;
 
 const DEMO_SURFACES = [
-  { label: 'Executive Cockpit',      href: '/company',            desc: 'KORA Index™, Confidence Score™, Activation Safeguard™ — vista C-suite.' },
-  { label: 'KORA Index · Dettaglio', href: '/company/kora-index', desc: '10 componenti, 4 macroblocks, pipeline 14-stage, explainability.' },
-  { label: 'Activation Debt',        href: '/company/activation', desc: 'Maggioranza silenziosa, concentrazione IU, distribuzione per sito.' },
-  { label: 'Advisor Workspace',      href: '/advisor',            desc: 'Revisione evidenze, raccomandazioni governance, queue priorità.' },
-  { label: 'Future Vision',          href: '/future-vision',      desc: 'Roadmap architetturale — non attiva in Foundation Light.' },
-  { label: 'Demo Guide',             href: '/demo-guide',         desc: 'Percorso guidato per presentare KORA a un nuovo interlocutore.' },
+  { label: 'Demo Guide',             href: '/demo/guide',          desc: 'Percorso guidato per presentare KORA a un nuovo interlocutore.' },
+  { label: 'Advisor Workspace',      href: '/demo/advisor',        desc: 'Revisione evidenze, raccomandazioni governance, queue priorità.' },
+  { label: 'GTM Console',            href: '/demo/gtm',            desc: 'Demo script, pilot package, pipeline commerciale — uso interno KORA.' },
+  { label: 'Activation Network',     href: '/demo/network',        desc: 'Copertura territoriale partner & advisor, protocolli attivi.' },
+  { label: 'Future Vision',          href: '/demo/future-vision',  desc: 'Roadmap architetturale — non attiva in Foundation Light.' },
+  { label: 'KORA Index™ Registry',   href: '/demo/index-registry', desc: 'Registro delle letture KORA Index per aziende pilota e candidate.' },
 ] as const;
 
 export default function DemoHomePage() {

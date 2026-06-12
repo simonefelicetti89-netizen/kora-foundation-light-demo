@@ -107,7 +107,7 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
       { label: 'Report & Board Pack', href: '/company/reports' },
       { label: 'Dati & Evidenze', href: '/company/data' },
       { label: 'Activation Debt', href: '/company/activation' },
-      { label: 'Future Vision', href: '/future-vision' },
+      { label: 'Future Vision', href: '/demo/future-vision' },
     ],
     talkingPoints: [
       "KORA organizza evidenze people/social verificate per pillar IMPACT e LEGACY — utili a reporting CSR/ESG.",
@@ -173,11 +173,11 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
     id: 'advisor',
     roleLabel: 'Advisor',
     koraRole: 'ADVISOR',
-    firstRoute: '/advisor',
+    firstRoute: '/demo/advisor',
     goal: "Capire il ruolo di audit processo, Evidence Protocol Review e Trust Ledger.",
     keyMessage: "L'Advisor non valida ogni azione: audita il processo, monitora periodicamente e gestisce sample check / re-review.",
     keyScreens: [
-      { label: 'Workspace Advisor', href: '/advisor' },
+      { label: 'Workspace Advisor', href: '/demo/advisor' },
       { label: 'Workspace Partner', href: '/partner' },
     ],
     talkingPoints: [
@@ -197,15 +197,15 @@ const STAKEHOLDER_CARDS: StakeholderCard[] = [
     id: 'investor',
     roleLabel: 'Investor / CTO Reviewer',
     koraRole: 'COMPANY_ADMIN',
-    firstRoute: '/demo-guide',
+    firstRoute: '/demo/guide',
     goal: "Valutare architettura, metodologia, privacy, estensibilità e readiness tecnica.",
     keyMessage: "KORA è una piattaforma metodologica, non una dashboard: pipeline, privacy architecture, explainability e confidence sono parte del prodotto.",
     keyScreens: [
-      { label: 'Demo Guide', href: '/demo-guide' },
+      { label: 'Demo Guide', href: '/demo/guide' },
       { label: 'KORA Index Detail', href: '/company/kora-index' },
       { label: 'Dati & Evidenze', href: '/company/data' },
       { label: 'Report & Board Pack', href: '/company/reports' },
-      { label: 'Future Vision', href: '/future-vision' },
+      { label: 'Future Vision', href: '/demo/future-vision' },
     ],
     talkingPoints: [
       "Pipeline 14-stage: Ingestion → Privacy → UEF → NM → BC → AGF → IU → PIB → Aggregation → Safeguard → KORA Index.",

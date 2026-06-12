@@ -89,11 +89,11 @@ describe('B82-B Task 4 — Orphaned routes restored in navigation', () => {
   });
 
   it('Demo · Sintetico includes /admin/index-registry', () => {
-    expect(sidebar).toContain("href: '/admin/index-registry'");
+    expect(sidebar).toContain("href: '/demo/index-registry'");
   });
 
   it('Demo · Sintetico includes /admin/portfolio', () => {
-    expect(sidebar).toContain("href: '/admin/portfolio'");
+    expect(sidebar).toContain("href: '/demo/portfolio'");
   });
 });
 
@@ -101,12 +101,12 @@ describe('B82-B Task 4 — Orphaned routes restored in navigation', () => {
 
 describe('B82-B Task 5 — DEMO admin pages have DEMO BoundaryBadge', () => {
   const demoPages: [string, string][] = [
-    ['app/admin/network/page.tsx', 'network'],
+    ['app/demo/network/page.tsx', 'network'],
     ['app/admin/operator/_components/OperatorConsole.tsx', 'operator'],
-    ['app/admin/ai-onboarding/page.tsx', 'ai-onboarding'],
-    ['app/admin/gtm/page.tsx', 'gtm'],
-    ['app/admin/benchmarks/page.tsx', 'benchmarks'],
-    ['app/admin/index-registry/page.tsx', 'index-registry'],
+    ['app/demo/ai-onboarding/page.tsx', 'ai-onboarding'],
+    ['app/demo/gtm/page.tsx', 'gtm'],
+    ['app/demo/benchmarks/page.tsx', 'benchmarks'],
+    ['app/demo/index-registry/page.tsx', 'index-registry'],
   ];
 
   for (const [filePath, name] of demoPages) {

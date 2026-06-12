@@ -12,7 +12,7 @@ const DEMO_12_MIN: {
   pitch: string;
 }[] = [
   {
-    step: 1, label: 'KORA Foundation Light Experience', href: '/demo-guide', duration: '1 min',
+    step: 1, label: 'KORA Foundation Light Experience', href: '/demo/guide', duration: '1 min',
     objective: 'Storia KORA, percorsi stakeholder, cosa è attivo, come usarla in una call',
     pitch: "Tre parole chiave: misura, spiega, attiva. Il resto viene da sé.",
   },
@@ -52,12 +52,12 @@ const DEMO_12_MIN: {
     pitch: "Il partner abilita azioni verificabili — non gestisce un marketplace.",
   },
   {
-    step: 9, label: 'Advisor Process Audit', href: '/advisor', duration: '1 min',
+    step: 9, label: 'Advisor Process Audit', href: '/demo/advisor', duration: '1 min',
     objective: 'Evidence Protocol Review · Trust Ledger · Boundary Advisor-reviewed ≠ Certified',
     pitch: "L'Advisor audita il processo, non valida ogni azione — Advisor-reviewed ≠ KORA Certified.",
   },
   {
-    step: 10, label: 'Future Vision', href: '/future-vision', duration: '0.5 min',
+    step: 10, label: 'Future Vision', href: '/demo/future-vision', duration: '0.5 min',
     objective: 'Moduli post-pilot · KORA Certified · KORA Link · Value Chain · Advisor Academy',
     pitch: "KORA si estende verso un ecosistema certificato — nessuna funzionalità attiva in Foundation Light.",
   },

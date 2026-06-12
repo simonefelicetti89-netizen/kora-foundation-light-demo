@@ -136,7 +136,7 @@ export default function KoraControlTower() {
       type: 'Advisor Network',
       title: `${pendingAdvisorReviews} revisioni advisor in attesa`,
       detail: 'Review protocollo evidenze e audit processo non ancora completati.',
-      href: '/admin/network',
+      href: '/demo/network',
       action: 'Verifica',
     });
   }
@@ -412,7 +412,7 @@ export default function KoraControlTower() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
 
         {/* KORA Index Registry */}
-        <Panel n="01" title="KORA Index™ Registry" href="/admin/index-registry" hrefLabel="Registro" badgeLabel="DEMO · dati sintetici">
+        <Panel n="01" title="KORA Index™ Registry" href="/demo/index-registry" hrefLabel="Registro" badgeLabel="DEMO · dati sintetici">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 40px 48px', gap: 8, paddingBottom: 6, borderBottom: TOKENS.cardBorder, marginBottom: 6 }}>
               {['Azienda', 'S', 'Index'].map((h, i) => (
@@ -432,7 +432,7 @@ export default function KoraControlTower() {
         </Panel>
 
         {/* Advisor Network */}
-        <Panel n="02" title="Advisor Network" href="/admin/network" hrefLabel="Rete advisor" badgeLabel="DEMO · dati sintetici">
+        <Panel n="02" title="Advisor Network" href="/demo/network" hrefLabel="Rete advisor" badgeLabel="DEMO · dati sintetici">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {advisors.map((a) => (
               <div key={a.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -469,7 +469,7 @@ export default function KoraControlTower() {
         </Panel>
 
         {/* Partner Network */}
-        <Panel n="04" title="Partner Network" href="/admin/network" hrefLabel="Rete partner" badgeLabel="DEMO · dati sintetici">
+        <Panel n="04" title="Partner Network" href="/demo/network" hrefLabel="Rete partner" badgeLabel="DEMO · dati sintetici">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {partners.slice(0, 4).map((p) => (
               <div key={p.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -505,7 +505,7 @@ export default function KoraControlTower() {
         ))}
       </div>
       <div style={{ marginTop: 8, textAlign: 'right' }}>
-        <Link href="/admin/gtm" style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>Pipeline GTM →</Link>
+        <Link href="/demo/gtm" style={{ fontSize: '11px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>Pipeline GTM →</Link>
       </div>
 
       {/* ════════════════════════════════════════════════════════ */}

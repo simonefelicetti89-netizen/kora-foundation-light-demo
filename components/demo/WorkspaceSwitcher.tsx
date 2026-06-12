@@ -37,7 +37,7 @@ const WORKSPACES: WorkspaceCard[] = [
   {
     label: 'Advisor',
     role: 'ADVISOR',
-    route: '/advisor',
+    route: '/demo/advisor',
     description: 'Review queue, evidence review, Confidence Stamp e boundary Advisor-reviewed ≠ Certified.',
     accentClass: 'border-[rgba(217,154,43,0.25)] hover:border-[#D99A2B]',
   },

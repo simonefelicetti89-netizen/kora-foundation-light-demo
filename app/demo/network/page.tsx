@@ -870,10 +870,10 @@ export default function NetworkPage() {
         </h2>
         <div className="grid gap-2 sm:grid-cols-2">
           {[
-            { label: 'Activation Debt — /company/activation', note: 'Switch ruolo Company per visualizzare' },
-            { label: 'Advisor Workspace — /advisor',           note: 'Switch ruolo Advisor per visualizzare' },
-            { label: 'Partner Workspace — /partner',           note: 'Switch ruolo Partner per visualizzare' },
-            { label: 'Future Vision — /future-vision',         note: 'Accessibile da tutti i ruoli' },
+            { label: 'Activation Debt — /company/activation', note: 'Richiede accesso KORA_ADMIN (area live)' },
+            { label: 'Advisor Workspace — /demo/advisor',      note: 'Disponibile nell\'area demo' },
+            { label: 'Partner Workspace — /partner',           note: 'Richiede accesso KORA_ADMIN (area live)' },
+            { label: 'Future Vision — /demo/future-vision',    note: 'Disponibile nell\'area demo' },
           ].map((link) => (
             <div key={link.label} className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-2">
               <p className="text-xs font-medium text-[rgba(6,3,43,0.62)]">{link.label}</p>

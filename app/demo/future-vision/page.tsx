@@ -334,29 +334,35 @@ export default function FutureVision() {
         </ul>
       </div>
 
-      {/* ── CTA ── */}
+      {/* ── CTA — link live disabilitati per DEMO_VIEWER, solo KORA_ADMIN può accedere al workspace company ── */}
       <div className="flex flex-wrap items-center gap-4">
         <Link
-          href="/company"
+          href="/demo/guide"
           className="rounded-xl px-4 py-2 text-xs font-semibold text-white transition-colors"
           style={{ background: TOKENS.ink }}
         >
-          ← Executive Cockpit
+          ← Demo Guide
         </Link>
-        <Link
-          href="/company/kora-index"
-          className="text-xs font-semibold underline underline-offset-2"
-          style={{ color: TOKENS.accent }}
+        <span
+          className="text-xs font-semibold"
+          style={{ color: TOKENS.inkHint, cursor: 'default' }}
+          title="Richiede accesso KORA_ADMIN"
         >
-          <TM>KORA Index</TM> →
-        </Link>
-        <Link
-          href="/company/contribution"
-          className="text-xs font-semibold underline underline-offset-2"
-          style={{ color: TOKENS.inkTertiary }}
+          Executive Cockpit{' '}
+          <span style={{ fontSize: '9px', fontWeight: 700, background: 'rgba(6,3,43,0.07)', borderRadius: 3, padding: '1px 5px' }}>
+            KORA_ADMIN
+          </span>
+        </span>
+        <span
+          className="text-xs font-semibold"
+          style={{ color: TOKENS.inkHint, cursor: 'default' }}
+          title="Richiede accesso KORA_ADMIN"
         >
-          Contribution →
-        </Link>
+          <TM>KORA Index</TM>{' '}
+          <span style={{ fontSize: '9px', fontWeight: 700, background: 'rgba(6,3,43,0.07)', borderRadius: 3, padding: '1px 5px' }}>
+            KORA_ADMIN
+          </span>
+        </span>
       </div>
 
       <p style={{ fontSize: '9.5px', fontFamily: 'monospace', color: TOKENS.inkHint }}>

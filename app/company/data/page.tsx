@@ -548,7 +548,7 @@ export default function DataEvidence() {
               </p>
             </div>
             <Link
-              href="/admin/gtm"
+              href="/demo/gtm"
               className="shrink-0 rounded border border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] px-3 py-1.5 text-xs font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.06)] transition-colors"
             >
               Apri GTM Console →

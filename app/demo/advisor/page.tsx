@@ -1196,7 +1196,7 @@ export default function AdvisorDashboard() {
           </p>
         </div>
         <Link
-          href="/future-vision"
+          href="/demo/future-vision"
           className="shrink-0 rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs font-medium text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.05)] transition-colors"
         >
           Vedi evoluzione Advisor Network →

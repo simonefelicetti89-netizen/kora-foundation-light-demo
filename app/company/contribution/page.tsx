@@ -573,9 +573,6 @@ export default function KoraContribution() {
         <Link href="/company/reports" style={{ borderRadius: 6, border: `1px solid ${TOKENS.accent}55`, background: `${TOKENS.accent}0a`, padding: '7px 14px', fontSize: '12px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
           Decision Pack →
         </Link>
-        <Link href="/future-vision" style={{ fontSize: '12px', color: TOKENS.inkHint, textDecoration: 'underline' }}>
-          Future Vision →
-        </Link>
         <Link href="/company" style={{ fontSize: '12px', color: TOKENS.inkHint, textDecoration: 'underline' }}>
           ← Executive Cockpit
         </Link>

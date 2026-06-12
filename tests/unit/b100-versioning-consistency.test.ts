@@ -155,7 +155,7 @@ describe('B100 — legacy string absence in key files', () => {
     ['lib/constants/kora.ts',                       'constants'],
     ['data/methodology/methodology-config.json',     'methodology config JSON'],
     ['app/api/admin/companies/provision/route.ts',   'provision route'],
-    ['app/advisor/page.tsx',                         'advisor page'],
+    ['app/demo/advisor/page.tsx',                         'advisor page'],
   ];
 
   for (const [filePath, label] of filesToCheck) {

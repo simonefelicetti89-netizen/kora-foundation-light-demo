@@ -14,7 +14,7 @@ import styles from './pilot.module.css';
 
 const PILOT_NAV_LINKS = [
   { label: '← Home',         href: '/'           },
-  { label: 'Esplora la demo', href: '/demo-guide' },
+  { label: 'Esplora la demo', href: '/demo/guide' },
 ];
 
 // ── FAQ item ─────────────────────────────────────────────────────────────────
@@ -153,7 +153,7 @@ export default function PilotPage() {
           </p>
           <div className={`${styles.heroCta} ${styles.reveal} ${styles.revealIn} ${styles.d3}`}>
             <a className={styles.btnPrimary} href="#contatto">Richiedi informazioni →</a>
-            <Link className={styles.btnGhost} href="/demo-guide">Prima esplora la demo</Link>
+            <Link className={styles.btnGhost} href="/demo/guide">Prima esplora la demo</Link>
           </div>
           <div className={`${styles.heroMeta} ${styles.reveal} ${styles.revealIn} ${styles.d4}`}>
             {[
