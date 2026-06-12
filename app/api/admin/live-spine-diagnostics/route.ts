@@ -68,10 +68,13 @@ export async function GET(request: NextRequest) {
 
   const db = getSupabaseServiceClient();
 
-  // ── 2. Fetch all active tenants ───────────────────────────────────────────────
+  // ── 2. Fetch LIVE tenants only ────────────────────────────────────────────────
+  // B131: live spine shows only tenant_kind = 'LIVE'. DEMO/TEST/SANDBOX excluded.
   const { data: tenants, error: tenantErr } = await db
     .schema('analytics').from('tenant')
     .select('id, tenant_code, company_name, is_active')
+    .eq('tenant_kind', 'LIVE')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
   if (tenantErr) {

@@ -14,10 +14,12 @@ import type { TenantSpineState, ScoringReadiness } from '@/app/api/admin/live-sp
 async function fetchSpineData(): Promise<{ tenants: TenantSpineState[]; meta: { total: number; readyCount: number; asOf: string } } | null> {
   const db = getSupabaseServiceClient();
 
-  // Replicate the same logic as the API route — server component reads directly.
+  // B131: LIVE tenants only — mirrors the API route filter.
   const { data: tenants, error: tenantErr } = await db
     .schema('analytics').from('tenant')
     .select('id, tenant_code, company_name, is_active')
+    .eq('tenant_kind', 'LIVE')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false });
 
   if (tenantErr || !tenants) return null;

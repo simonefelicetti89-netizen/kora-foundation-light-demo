@@ -119,6 +119,11 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/demo/benchmarks',     label: 'Benchmark Preview' },
           { href: '/demo/guide',               label: 'Demo Guide' },
           { href: '/demo/company/kora-index', label: 'KORA Index™ Demo' },
+          { href: '/demo/company/status',     label: 'Status Center Demo' },
+          { href: '/demo/company/activation', label: 'Activation Demo' },
+          { href: '/demo/company/pillars',    label: 'Pillar Intelligence Demo' },
+          { href: '/demo/company/reports',    label: 'Decision Pack Demo' },
+          { href: '/demo/company/financial',  label: 'Financial Governance Demo' },
         ],
       },
       {

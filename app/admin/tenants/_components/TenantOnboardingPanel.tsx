@@ -16,6 +16,24 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
+const KINDS = ['LIVE', 'DEMO', 'TEST', 'SANDBOX'] as const;
+type TenantKind = typeof KINDS[number];
+
+function TenantKindBadge({ kind }: { kind?: string }) {
+  if (!kind) return null;
+  const cls: Record<string, string> = {
+    LIVE:    'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+    DEMO:    'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
+    TEST:    'bg-[rgba(199,111,61,0.08)] text-[#C76F3D] border-[rgba(199,111,61,0.22)]',
+    SANDBOX: 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
+  };
+  return (
+    <span className={`rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${cls[kind] ?? cls['SANDBOX']}`}>
+      {kind}
+    </span>
+  );
+}
+
 interface TenantSummary {
   id:                  string;
   tenantCode:          string;
@@ -26,6 +44,7 @@ interface TenantSummary {
   isActive:            boolean;
   methodologyVersionId: string;
   createdAt:           string;
+  tenantKind?:         string;
 }
 
 interface BaselineFormState {
@@ -54,6 +73,7 @@ function statusCls(s: string): string {
 export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
   const [tenants, setTenants]               = useState<TenantSummary[]>([]);
   const [tenantsLoading, setTenantsLoading] = useState(true);
+  const [kind, setKind]                     = useState<TenantKind>('LIVE');
 
   // Per-tenant inline baseline update
   const [expandedBaseline, setExpandedBaseline] = useState<string | null>(null);
@@ -61,9 +81,9 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
   const [baselineStatus, setBaselineStatus]      = useState<Record<string, 'idle'|'loading'|'ok'|'error'>>({});
   const [baselineMsg, setBaselineMsg]            = useState<Record<string, string>>({});
 
-  function loadTenants() {
+  function loadTenants(k: TenantKind = kind) {
     setTenantsLoading(true);
-    fetch('/api/admin/tenants', { credentials: 'include' })
+    fetch(`/api/admin/tenants?kind=${k}`, { credentials: 'include' })
       .then((r) => r.json())
       .then((d: { ok?: boolean; tenants?: TenantSummary[] }) => {
         if (d.ok) setTenants(d.tenants ?? []);
@@ -72,9 +92,9 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
       .finally(() => setTenantsLoading(false));
   }
 
-  useEffect(() => { loadTenants(); }, []);
+  useEffect(() => { loadTenants(kind); }, [kind]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function toggleBaseline(tenantId: string, tenantCode: string) {
+  function toggleBaseline(tenantId: string) {
     if (expandedBaseline === tenantId) {
       setExpandedBaseline(null);
     } else {
@@ -83,7 +103,6 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
       setBaselineStatus((s) => ({ ...s, [tenantId]: 'idle' }));
       setBaselineMsg((m) => ({ ...m, [tenantId]: '' }));
     }
-    void tenantCode; // used in the form label below
   }
 
   async function handleUpdateBaseline(e: React.FormEvent, tenantId: string) {
@@ -123,7 +142,8 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
           <h1 className="text-xl font-bold text-white tracking-tight">Registro Tenant</h1>
           <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
-            Gestione stato, baseline e navigazione per ogni azienda registrata.
+            Live tenant registry — solo aziende ufficiali per default.
+            Tenant demo/test disponibili tramite filtro esplicito KORA_ADMIN.
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">
@@ -160,16 +180,37 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
 
       {/* ── Tenant list ─────────────────────────────────────────────────────── */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">
-            Aziende registrate {!tenantsLoading && `(${tenants.length})`}
-          </p>
-          <button
-            onClick={loadTenants}
-            className="text-[10px] text-[rgba(6,3,43,0.40)] underline hover:text-[rgba(6,3,43,0.78)] transition-colors"
-          >
-            ↻ Aggiorna
-          </button>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">
+              Aziende registrate {!tenantsLoading && `(${tenants.length})`}
+            </p>
+            <button
+              onClick={() => loadTenants(kind)}
+              className="text-[10px] text-[rgba(6,3,43,0.40)] underline hover:text-[rgba(6,3,43,0.78)] transition-colors"
+            >
+              ↻ Aggiorna
+            </button>
+          </div>
+          {/* B131: kind filter — default LIVE */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {KINDS.map((k) => (
+              <button
+                key={k}
+                onClick={() => setKind(k)}
+                className={`rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+                  kind === k
+                    ? 'bg-[#06032B] text-white border-[#06032B]'
+                    : 'bg-white text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.14)] hover:border-[rgba(6,3,43,0.30)]'
+                }`}
+              >
+                {k}
+              </button>
+            ))}
+            <span className="text-[9px] text-[rgba(6,3,43,0.35)] ml-1">
+              default LIVE · solo aziende ufficiali
+            </span>
+          </div>
         </div>
 
         {tenantsLoading && (
@@ -201,6 +242,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                     <p className="text-xs font-mono text-[rgba(6,3,43,0.52)]">{t.tenantCode}</p>
                   </div>
                   <div className="flex flex-wrap gap-1.5 items-center">
+                    {t.tenantKind && <TenantKindBadge kind={t.tenantKind} />}
                     <span className={`rounded border px-2 py-0.5 text-[10px] font-semibold ${statusCls(t.dataReadinessStatus)}`}>
                       {t.dataReadinessStatus}
                     </span>
@@ -259,7 +301,7 @@ export function TenantOnboardingPanel({ userEmail, userRole }: Props) {
                     Live Preview
                   </a>
                   <button
-                    onClick={() => toggleBaseline(t.id, t.tenantCode)}
+                    onClick={() => toggleBaseline(t.id)}
                     className="text-[11px] text-[rgba(43,92,230,0.80)] underline hover:no-underline"
                   >
                     {isBaselineOpen ? 'Chiudi baseline' : 'Aggiorna Baseline'}

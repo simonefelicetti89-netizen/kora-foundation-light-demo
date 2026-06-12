@@ -62,29 +62,22 @@ describe('Live session — demo/live path separation', () => {
     expect(scoringResultContent).toContain("forceEnvironment?: Environment");
   });
 
-  it('company intelligence pages import useCompanySession', async () => {
+  it('company intelligence pages are all live-only — B130 complete', async () => {
     const fs = await import('fs');
-    // B129 Fase 3: /company/kora-index is now live-only (no forceEnvironment ternary — hardcoded 'live').
-    // Other dual-path pages still use the forceEnvironment ternary pattern.
-    const dualPathPages = [
+    // B130: all five pages are now live-only (forceEnvironment='live' hardcoded, no isLive ternary)
+    const liveOnlyPages = [
+      '../../app/company/kora-index/page.tsx',
       '../../app/company/activation/page.tsx',
       '../../app/company/pillars/page.tsx',
-      '../../app/company/financial/page.tsx',
       '../../app/company/reports/page.tsx',
+      '../../app/company/financial/page.tsx',
     ];
-    for (const page of dualPathPages) {
-      const content = fs.readFileSync(
-        new URL(page, import.meta.url).pathname, 'utf-8',
-      );
+    for (const page of liveOnlyPages) {
+      const content = fs.readFileSync(new URL(page, import.meta.url).pathname, 'utf-8');
       expect(content, `${page} should import useCompanySession`).toContain('useCompanySession');
-      expect(content, `${page} should use forceEnvironment`).toContain("forceEnvironment: isLive ? 'live' : undefined");
+      expect(content, `${page} should hardcode forceEnvironment='live'`).toContain("forceEnvironment: 'live'");
+      expect(content, `${page} should not have isLive ternary`).not.toContain('isLive ?');
     }
-    // kora-index is live-only: still imports useCompanySession but hardcodes forceEnvironment='live'
-    const koraIndexContent = fs.readFileSync(
-      new URL('../../app/company/kora-index/page.tsx', import.meta.url).pathname, 'utf-8',
-    );
-    expect(koraIndexContent).toContain('useCompanySession');
-    expect(koraIndexContent).toContain("forceEnvironment: 'live'");
   });
 
   it('live kora-index page is live-only — no dual-path, no Meridiana fallback', async () => {

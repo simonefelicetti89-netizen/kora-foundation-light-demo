@@ -64,8 +64,11 @@ async function fetchTrialData() {
     tenantRes, batchRes, uefRes, kiRes, dpRes,
     workerRes, profileRes, initRes, participationRes, partnerRes,
   ] = await Promise.all([
+    // B131: LIVE tenants only — DEMO/TEST/SANDBOX excluded from trial control.
     db.schema('analytics').from('tenant')
       .select('id, tenant_code, company_name, is_active')
+      .eq('tenant_kind', 'LIVE')
+      .is('deleted_at', null)
       .order('tenant_code'),
 
     db.schema('analytics').from('source_batch')

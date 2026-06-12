@@ -93,10 +93,14 @@ export async function GET(request: NextRequest) {
 
   const db = getSupabaseServiceClient();
 
-  // ── 1. All tenants (active + inactive) ────────────────────────────────────
+  // ── 1. LIVE tenants only (active + suspended — excludes DEMO/TEST/SANDBOX) ──
+  // B131: tenant_kind = 'LIVE' is the canonical filter for the live registry.
+  // Suspended LIVE tenants are still shown so admins can manage them.
   const { data: tenantRows, error: tenantErr } = await db
     .schema('analytics').from('tenant')
     .select('id, tenant_code, company_name, is_active, methodology_version_id, created_at, onboarding_status, data_readiness_status, decision_pack_status')
+    .eq('tenant_kind', 'LIVE')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(200);
 

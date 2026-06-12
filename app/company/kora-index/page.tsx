@@ -494,7 +494,7 @@ export default function KoraIndexDetail() {
           <Explainer {...EXP.cs} compact />
         </div>
         <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          <ActivationSafeguardPanel result={safeguard} explanation={null} />
+          <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
           <ConfidenceBreakdown record={confidence} />
         </div>
 

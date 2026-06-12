@@ -92,10 +92,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const db = getSupabaseServiceClient();
 
-  // ── 1. Active tenants ────────────────────────────────────────────────────────
+  // ── 1. LIVE tenants only ─────────────────────────────────────────────────────
+  // B131: trial readiness is LIVE-only. DEMO/TEST/SANDBOX must not appear here.
   const { data: tenantRows, error: tErr } = await db
     .schema('analytics').from('tenant')
     .select('id, tenant_code, company_name, is_active')
+    .eq('tenant_kind', 'LIVE')
+    .is('deleted_at', null)
     .order('tenant_code');
 
   if (tErr) return NextResponse.json({ error: tErr.message }, { status: 500 });

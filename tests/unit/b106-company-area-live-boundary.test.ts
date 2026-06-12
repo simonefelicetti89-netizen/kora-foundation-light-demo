@@ -26,45 +26,59 @@ function exists(rel: string): boolean {
   return existsSync(resolve(root, rel));
 }
 
-// ── 1. P0 FIX — /company/status: demo feedback gated behind !isLive ──────────
+// ── 1. B130: /company/status is now live-only; demo moved to /demo/company/status ─
 
-describe('B106 P0 — status page: demo feedback never shown to live users', () => {
-  const status = read('app/company/status/page.tsx');
+describe('B130 — status: live page has no demo services, demo page has getDemoFeedback', () => {
+  const livePage  = read('app/company/status/page.tsx');
+  const demoPage  = read('app/demo/company/status/page.tsx');
 
-  it('getDemoFeedback is called inside !isLive branch', () => {
-    // The ternary must gate the call: isLive ? <live notice> : <SubmissionFeedbackPanel>
-    // Verify that getDemoFeedback is NOT in the live branch
-    const lines = status.split('\n');
-    const demoFeedbackLine = lines.findIndex((l) => l.includes('getDemoFeedback'));
-    // The line must be inside an else/!isLive block, not unconditional
-    // We verify by checking that 'isLive ?' appears in the surrounding block
-    const surroundingLines = lines.slice(Math.max(0, demoFeedbackLine - 10), demoFeedbackLine + 5).join('\n');
-    expect(surroundingLines).toContain('isLive ?');
-    // The live branch must NOT call getDemoFeedback
-    const beforeFeedbackLine = lines.slice(0, demoFeedbackLine).join('\n');
-    const afterOpeningTernary = beforeFeedbackLine.split('isLive ?').pop() ?? '';
-    // After 'isLive ?', the first alternative (true branch) must not include getDemoFeedback
-    expect(afterOpeningTernary).not.toContain('getDemoFeedback');
+  it('live page does not call getDemoFeedback', () => {
+    expect(livePage).not.toContain('getDemoFeedback');
   });
 
-  it('SubmissionFeedbackPanel is rendered conditionally (not unconditionally)', () => {
-    const lines = status.split('\n');
-    const panelLine = lines.findIndex((l) => l.includes('<SubmissionFeedbackPanel'));
-    expect(panelLine).toBeGreaterThan(-1);
-    // It must be inside an isLive ternary block (surrounded by isLive conditional)
-    const surroundingLines = lines.slice(Math.max(0, panelLine - 15), panelLine + 3).join('\n');
-    expect(surroundingLines).toContain('isLive ?');
+  it('live page does not import SubmissionFeedbackPanel', () => {
+    expect(livePage).not.toContain('SubmissionFeedbackPanel');
+  });
+
+  it('live page does not import workerProvisioningService', () => {
+    expect(livePage).not.toContain('workerProvisioningService');
+  });
+
+  it('live page does not contain meridiana (case-insensitive)', () => {
+    expect(livePage.toLowerCase()).not.toContain('meridiana');
+  });
+
+  it('live page does not contain isLive ? (dual-path ternary)', () => {
+    expect(livePage).not.toContain('isLive ?');
   });
 
   it('live users see submission count without demo company feedback', () => {
-    // The live branch shows a plain message with submissions.length
-    expect(status).toContain('submissions.length > 0');
-    expect(status).toContain('submissions.length === 0');
+    expect(livePage).toContain('submissions.length > 0');
+    expect(livePage).toContain('submissions.length === 0');
   });
 
-  it('status page uses useCompanySession for isLive detection', () => {
-    expect(status).toContain('useCompanySession');
-    expect(status).toContain('isLive');
+  it('live page imports useCompanySession (still needs session state)', () => {
+    expect(livePage).toContain('useCompanySession');
+  });
+
+  it('demo page has getDemoFeedback (moved here from live page)', () => {
+    expect(demoPage).toContain('getDemoFeedback');
+  });
+
+  it('demo page has workerProvisioningService (demo workforce data)', () => {
+    expect(demoPage).toContain('workerProvisioningService');
+  });
+
+  it('demo page has meridiana-group as fallback', () => {
+    expect(demoPage).toContain("'meridiana-group'");
+  });
+
+  it('demo page does not import useCompanySession', () => {
+    expect(demoPage).not.toContain('useCompanySession');
+  });
+
+  it('demo page does not contain isLive ? ternary', () => {
+    expect(demoPage).not.toContain('isLive ?');
   });
 });
 
@@ -196,23 +210,21 @@ describe('B106 — live API routes tenant isolation', () => {
 
 // ── 6. Dual-path pages — live branch does not confuse synthetic company ────────
 
-describe('B106 — dual-path pages do not show synthetic Meridiana data in live mode', () => {
-  const pages = [
+describe('B106 — all company intelligence pages are now live-only (B130 complete)', () => {
+  // B130: all five pages migrated — no remaining dual-path pages
+
+  const liveOnlyPages = [
     'app/company/activation/page.tsx',
-    'app/company/financial/page.tsx',
     'app/company/pillars/page.tsx',
     'app/company/reports/page.tsx',
+    'app/company/financial/page.tsx',
   ];
 
-  for (const relPath of pages) {
-    it(`${relPath} — live path uses forceEnvironment:'live'`, () => {
+  for (const relPath of liveOnlyPages) {
+    it(`${relPath} — live-only: forceEnvironment hardcoded (no isLive ternary)`, () => {
       const src = read(relPath);
-      expect(src).toContain("forceEnvironment: isLive ? 'live' : undefined");
-    });
-
-    it(`${relPath} — live path shows LIVE badge`, () => {
-      const src = read(relPath);
-      expect(src).toContain("isLive ? 'LIVE' : 'DEMO'");
+      expect(src).toContain("forceEnvironment: 'live'");
+      expect(src).not.toContain('isLive ?');
     });
   }
 });

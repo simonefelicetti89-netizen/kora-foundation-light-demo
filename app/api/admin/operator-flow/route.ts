@@ -112,6 +112,7 @@ export async function POST(request: NextRequest) {
           onboarding_status: 'active', data_readiness_status: 'complete',
           decision_pack_status: 'not_ready',
           methodology_version_id: 'KORA Index v1.0', is_active: true,
+          tenant_kind: 'DEMO',
         }).select('id').single();
       if (tErr || !created) return NextResponse.json({ error: `tenant: ${tErr?.message}` }, { status: 500 });
       tenantId = (created as { id: string }).id;

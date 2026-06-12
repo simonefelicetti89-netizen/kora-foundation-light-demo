@@ -12,12 +12,8 @@ import { CompanySessionProvider, useCompanySession } from './_providers/CompanyS
 const DEMO_DRIVEN_ROUTES = [
   '/company/shared',
   '/company/profile',
-  '/company/activation',
   '/company/contribution',
-  '/company/pillars',
   '/company/onboarding',
-  '/company/financial',
-  '/company/reports',
   '/company/reports/board-pack',
   '/company/data',
   '/company/data/upload',
@@ -27,7 +23,6 @@ const DEMO_DRIVEN_ROUTES = [
   '/company/uef-review',
   '/company/workforce-baseline',
   '/company/setup',
-  '/company/status',
 ];
 
 const VIEWER_BLOCKED_ROUTES = [

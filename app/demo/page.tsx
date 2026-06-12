@@ -36,6 +36,11 @@ const DEMO_SCENARIOS = [
 const DEMO_SURFACES = [
   { label: 'Demo Guide',             href: '/demo/guide',               desc: 'Percorso guidato per presentare KORA a un nuovo interlocutore.' },
   { label: 'KORA Index™ Detail',     href: '/demo/company/kora-index', desc: 'Scomposizione analitica: 10 componenti, 4 macroblocks, explainability, pipeline 14-stage.' },
+  { label: 'Status Center',          href: '/demo/company/status',     desc: 'Stato operativo aziendale: pipeline, checklist onboarding, submission, Worker Space.' },
+  { label: 'Activation Intelligence', href: '/demo/company/activation', desc: 'Activation Debt™, Maggioranza Silenziosa, distribuzione pillar e sede — dati sintetici.' },
+  { label: 'Pillar Intelligence',     href: '/demo/company/pillars',    desc: 'Portfolio programmi, iniziative collettive, distribuzione IU sui 5 pillar KORA — dati sintetici.' },
+  { label: 'Decision Pack',          href: '/demo/company/reports',    desc: 'Report direzionali, version history, period comparison, KORA Contribution — dati sintetici.' },
+  { label: 'Financial Governance',   href: '/demo/company/financial',  desc: 'BTI™ Engine, Activation Debt, budget per pillar, correlazioni KPI, scenari direzionali — dati sintetici.' },
   { label: 'Advisor Workspace',      href: '/demo/advisor',        desc: 'Revisione evidenze, raccomandazioni governance, queue priorità.' },
   { label: 'GTM Console',            href: '/demo/gtm',            desc: 'Demo script, pilot package, pipeline commerciale — uso interno KORA.' },
   { label: 'Activation Network',     href: '/demo/network',        desc: 'Copertura territoriale partner & advisor, protocolli attivi.' },
