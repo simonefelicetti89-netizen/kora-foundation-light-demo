@@ -1,0 +1,183 @@
+// tests/unit/b129-fase3-demo-kora-index-pilot.test.ts
+// B129 Fase 3 STEP PILOTA: eliminazione dual-path da /company/kora-index.
+// Pure fs.readFileSync structural tests — no runtime required.
+//
+// Groups:
+//   1. Demo page exists and is demo-only (4 tests)
+//   2. Live page: no demo imports (7 tests)
+//   3. Live page: no isLive ternary + no meridiana (2 tests)
+//   4. Live page: loading guard precedes any data access (1 test)
+//   5. Company layout: /company/kora-index removed from DEMO_DRIVEN_ROUTES (1 test)
+//   6. Demo guide: no /company/kora-index links (2 tests)
+//   7. Demo reachability: KORA Index accessible from demo surfaces (2 tests)
+//   8. Sidebar: KORA Index™ Demo in admin Demo · Sintetico group (1 test)
+
+import { describe, it, expect } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const ROOT = path.resolve(__dirname, '../..');
+
+function readFile(rel: string): string {
+  return fs.readFileSync(path.join(ROOT, rel), 'utf-8');
+}
+
+function fileExists(rel: string): boolean {
+  return fs.existsSync(path.join(ROOT, rel));
+}
+
+// ── Group 1: Demo page exists and is demo-only ────────────────────────────────
+
+describe('B129 Fase 3 — demo page exists and is demo-only', () => {
+  const DEMO_PAGE = 'app/demo/company/kora-index/page.tsx';
+
+  it('app/demo/company/kora-index/page.tsx exists', () => {
+    expect(fileExists(DEMO_PAGE)).toBe(true);
+  });
+
+  it('demo page does not import useCompanySession', () => {
+    const src = readFile(DEMO_PAGE);
+    expect(src).not.toContain('useCompanySession');
+  });
+
+  it('demo page has no isLive variable or isLive ? ternary (isLive={false} prop is fine)', () => {
+    const src = readFile(DEMO_PAGE);
+    // No dual-path ternary
+    expect(src).not.toContain('isLive ?');
+    // No useCompanySession destructuring (the source of the isLive variable in live pages)
+    expect(src).not.toContain('const { isLive');
+    expect(src).not.toContain('isLive,');
+  });
+
+  it('demo page does not import from @/lib/supabase', () => {
+    const src = readFile(DEMO_PAGE);
+    expect(src).not.toContain('@/lib/supabase');
+  });
+});
+
+// ── Group 2: Live page — no demo service imports ──────────────────────────────
+
+describe('B129 Fase 3 — live page: no demo service imports', () => {
+  const LIVE_PAGE = 'app/company/kora-index/page.tsx';
+
+  it('live page does not import useDemoState', () => {
+    const src = readFile(LIVE_PAGE);
+    expect(src).not.toContain('useDemoState');
+  });
+
+  it('live page does not import explainabilityService', () => {
+    const src = readFile(LIVE_PAGE);
+    expect(src).not.toContain('explainabilityService');
+  });
+
+  it('live page does not import budgetToHumanImpactService', () => {
+    const src = readFile(LIVE_PAGE);
+    expect(src).not.toContain('budgetToHumanImpactService');
+  });
+
+  it('live page does not import ingestionSimulatorService', () => {
+    const src = readFile(LIVE_PAGE);
+    expect(src).not.toContain('ingestionSimulatorService');
+  });
+
+  it('live page does not import accountProvisioningService', () => {
+    const src = readFile(LIVE_PAGE);
+    expect(src).not.toContain('accountProvisioningService');
+  });
+
+  it('live page does not import tenantService', () => {
+    const src = readFile(LIVE_PAGE);
+    expect(src).not.toContain('tenantService');
+  });
+
+  it('live page does not import workforceBaselineService', () => {
+    const src = readFile(LIVE_PAGE);
+    expect(src).not.toContain('workforceBaselineService');
+  });
+});
+
+// ── Group 3: Live page — no dual-path ternaries, no meridiana reference ───────
+
+describe('B129 Fase 3 — live page: no dual-path', () => {
+  const LIVE_PAGE = 'app/company/kora-index/page.tsx';
+
+  it('live page does not contain isLive ? (dual-path ternary)', () => {
+    const src = readFile(LIVE_PAGE);
+    expect(src).not.toContain('isLive ?');
+  });
+
+  it('live page does not contain meridiana (case-insensitive)', () => {
+    const src = readFile(LIVE_PAGE).toLowerCase();
+    expect(src).not.toContain('meridiana');
+  });
+});
+
+// ── Group 4: Live page — loading guard precedes data access ──────────────────
+
+describe('B129 Fase 3 — live page: loading guard is first conditional', () => {
+  it('sessionLoading || loading guard appears before hasKoraData check', () => {
+    const src = readFile('app/company/kora-index/page.tsx');
+    const loadingGuardIdx  = src.indexOf('sessionLoading || loading');
+    const hasKoraDataIdx   = src.indexOf('hasKoraData');
+    // Loading guard must exist
+    expect(loadingGuardIdx).toBeGreaterThan(-1);
+    // Loading guard must appear before any hasKoraData check
+    expect(loadingGuardIdx).toBeLessThan(hasKoraDataIdx);
+  });
+});
+
+// ── Group 5: Company layout — /company/kora-index not in DEMO_DRIVEN_ROUTES ──
+
+describe('B129 Fase 3 — company layout: kora-index removed from DEMO_DRIVEN_ROUTES', () => {
+  it('/company/kora-index is not in DEMO_DRIVEN_ROUTES', () => {
+    const src = readFile('app/company/layout.tsx');
+    // Find the DEMO_DRIVEN_ROUTES block and check kora-index is absent
+    const blockStart = src.indexOf('DEMO_DRIVEN_ROUTES');
+    const blockEnd   = src.indexOf('];', blockStart);
+    const block      = src.slice(blockStart, blockEnd);
+    expect(block).not.toContain('/company/kora-index');
+  });
+});
+
+// ── Group 6: Demo guide — no /company/kora-index links ───────────────────────
+
+describe('B129 Fase 3 — demo guide: no /company/kora-index references', () => {
+  const GUIDE = 'app/demo/guide/page.tsx';
+
+  it('demo guide EVALUATE_ITEMS has no /company/kora-index href', () => {
+    const src = readFile(GUIDE);
+    expect(src).not.toContain("href: '/company/kora-index'");
+  });
+
+  it('demo guide NEXT_ROUTE has no /company/kora-index href', () => {
+    const src = readFile(GUIDE);
+    expect(src).not.toContain("href: '/company/kora-index'");
+  });
+});
+
+// ── Group 7: Demo reachability ────────────────────────────────────────────────
+
+describe('B129 Fase 3 — demo reachability: /demo/company/kora-index is linked', () => {
+  it('app/demo/page.tsx DEMO_SURFACES includes /demo/company/kora-index', () => {
+    const src = readFile('app/demo/page.tsx');
+    expect(src).toContain('/demo/company/kora-index');
+  });
+
+  it('app/demo/guide/page.tsx links to /demo/company/kora-index', () => {
+    const src = readFile('app/demo/guide/page.tsx');
+    expect(src).toContain('/demo/company/kora-index');
+  });
+});
+
+// ── Group 8: Sidebar — KORA Index Demo in admin Demo · Sintetico group ────────
+
+describe('B129 Fase 3 — Sidebar: KORA Index™ Demo in synthetic group', () => {
+  it('Sidebar Demo · Sintetico group contains /demo/company/kora-index', () => {
+    const src = readFile('components/layout/Sidebar.tsx');
+    const syntheticStart = src.indexOf("heading: 'Demo · Sintetico'");
+    // Find next heading after the synthetic group
+    const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
+    const block = src.slice(syntheticStart, nextHeadingIdx);
+    expect(block).toContain('/demo/company/kora-index');
+  });
+});

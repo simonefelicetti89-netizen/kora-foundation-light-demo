@@ -1,10 +1,13 @@
 // app/api/admin/tenants/route.ts
 // Tenant onboarding API — KORA_ADMIN only.
 //
-// GET  /api/admin/tenants            → list all active tenants
-// POST /api/admin/tenants            → create new tenant + workforce baseline
+// GET  /api/admin/tenants            → list LIVE tenants (default)
+// GET  /api/admin/tenants?kind=DEMO  → list DEMO tenants (KORA_ADMIN explicit)
+// GET  /api/admin/tenants?kind=TEST|SANDBOX → other kinds
+// POST /api/admin/tenants            → create new LIVE tenant + workforce baseline
 //
 // B9: enables creating a new company/tenant without operator-flow synthetic fixture.
+// B131: tenant_kind filtering — default LIVE, explicit ?kind= for non-live.
 // Creates: analytics.tenant + personal.workforce_baseline.
 // Does NOT: create workers, worker login, scoring, Decision Pack.
 
@@ -18,17 +21,35 @@ import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
 // tenantCode: uppercase letters, digits, dash, 2–32 chars
 const TENANT_CODE_RE = /^[A-Z0-9-]{2,32}$/;
 
+// B131: tenant classification values
+const VALID_KINDS = ['LIVE', 'DEMO', 'TEST', 'SANDBOX'] as const;
+type TenantKind = typeof VALID_KINDS[number];
+
 // ── GET: list tenants ─────────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest) {
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 
+  // B131: ?kind= filter — default LIVE; invalid value → 400.
+  const rawKind = new URL(request.url).searchParams.get('kind');
+  let kind: TenantKind = 'LIVE';
+  if (rawKind !== null) {
+    const upper = rawKind.toUpperCase();
+    if (!(VALID_KINDS as readonly string[]).includes(upper)) {
+      return NextResponse.json({
+        error: `Valore ?kind non valido: '${rawKind}'. Valori ammessi: ${VALID_KINDS.join(', ')}.`,
+      }, { status: 400 });
+    }
+    kind = upper as TenantKind;
+  }
+
   const db = getSupabaseServiceClient();
   const { data, error } = await db
     .schema('analytics').from('tenant')
-    .select('id, tenant_code, company_name, onboarding_status, data_readiness_status, decision_pack_status, is_active, methodology_version_id, created_at')
-    .eq('is_active', true)
+    .select('id, tenant_code, company_name, onboarding_status, data_readiness_status, decision_pack_status, is_active, methodology_version_id, created_at, tenant_kind')
+    .eq('tenant_kind', kind)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(100);
 
@@ -45,9 +66,10 @@ export async function GET(request: NextRequest) {
     isActive:             t.is_active,
     methodologyVersionId: t.methodology_version_id,
     createdAt:            t.created_at,
+    tenantKind:           t.tenant_kind,
   }));
 
-  return NextResponse.json({ ok: true, tenants, total: tenants.length });
+  return NextResponse.json({ ok: true, tenants, total: tenants.length, kind });
 }
 
 // ── POST: create tenant ───────────────────────────────────────────────────────
@@ -114,6 +136,7 @@ export async function POST(request: NextRequest) {
       methodology_version_id: 'KORA Index v1.0',
       is_active:             true,
       deleted_at:            null,
+      tenant_kind:           'LIVE',
     })
     .select('id')
     .single();

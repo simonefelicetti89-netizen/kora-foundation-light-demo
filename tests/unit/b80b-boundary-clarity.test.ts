@@ -186,16 +186,17 @@ describe('B80-B Task 4 — Admin DEMO pages have DEMO boundary badge', () => {
   });
 });
 
-describe('B80-B Task 4 — Company dual-path pages have boundary badge + banner', () => {
-  const dualPaths = [
+describe('B80-B Task 4 — Company live-only pages have LIVE boundary badge + banner', () => {
+  // B130: kora-index, activation, pillars, reports, and financial are now live-only pages (no isLive ternary)
+  const liveOnlyPaths = [
     'app/company/kora-index/page.tsx',
     'app/company/activation/page.tsx',
-    'app/company/financial/page.tsx',
-    'app/company/reports/page.tsx',
     'app/company/pillars/page.tsx',
+    'app/company/reports/page.tsx',
+    'app/company/financial/page.tsx',
   ];
 
-  for (const filePath of dualPaths) {
+  for (const filePath of liveOnlyPaths) {
     it(`${filePath} imports BoundaryBadge`, () => {
       const src = read(filePath);
       expect(src).toContain('BoundaryBadge');
@@ -206,12 +207,15 @@ describe('B80-B Task 4 — Company dual-path pages have boundary badge + banner'
       expect(src).toContain('BoundaryBanner');
     });
 
-    it(`${filePath} uses isLive for badge mode`, () => {
+    it(`${filePath} has LIVE mode hardcoded (no isLive ternary)`, () => {
       const src = read(filePath);
-      expect(src).toContain('isLive');
+      expect(src).toContain('mode="LIVE"');
+      expect(src).not.toContain('isLive ?');
     });
   }
 });
+
+// B130: All company intelligence pages are now live-only. No remaining dual-path pages.
 
 describe('B80-B Task 4 — Company executive cockpit has DEMO badge', () => {
   it('company page has DEMO badge', () => {
@@ -223,21 +227,38 @@ describe('B80-B Task 4 — Company executive cockpit has DEMO badge', () => {
 
 // ── Task 7: Dual-path comments on company pages ───────────────────────────────
 
-describe('B80-B Task 7 — Dual-path comments on company pages', () => {
-  const dualPaths = [
-    'app/company/kora-index/page.tsx',
-    'app/company/activation/page.tsx',
-    'app/company/financial/page.tsx',
-    'app/company/reports/page.tsx',
-    'app/company/pillars/page.tsx',
-  ];
+describe('B80-B Task 7 — All company intelligence pages are now live-only (no dual-path)', () => {
+  // B130: all five pages migrated — no remaining dual-path comments
 
-  for (const filePath of dualPaths) {
-    it(`${filePath} has B80-B dual-path comment`, () => {
-      const src = read(filePath);
-      expect(src).toContain('B80-B dual-path');
-    });
-  }
+  it('app/company/kora-index/page.tsx is live-only (no B80-B dual-path comment)', () => {
+    const src = read('app/company/kora-index/page.tsx');
+    expect(src).toContain('C-02');
+    expect(src).not.toContain('B80-B dual-path');
+  });
+
+  it('app/company/activation/page.tsx is live-only (no B80-B dual-path comment)', () => {
+    const src = read('app/company/activation/page.tsx');
+    expect(src).toContain('C-08');
+    expect(src).not.toContain('B80-B dual-path');
+  });
+
+  it('app/company/pillars/page.tsx is live-only (no B80-B dual-path comment)', () => {
+    const src = read('app/company/pillars/page.tsx');
+    expect(src).toContain('C-05');
+    expect(src).not.toContain('B80-B dual-path');
+  });
+
+  it('app/company/reports/page.tsx is live-only (no B80-B dual-path comment)', () => {
+    const src = read('app/company/reports/page.tsx');
+    expect(src).toContain('C-09');
+    expect(src).not.toContain('B80-B dual-path');
+  });
+
+  it('app/company/financial/page.tsx is live-only (no B80-B dual-path comment)', () => {
+    const src = read('app/company/financial/page.tsx');
+    expect(src).toContain('C-06');
+    expect(src).not.toContain('B80-B dual-path');
+  });
 });
 
 // ── Worker pages: PREVIEW boundary label ──────────────────────────────────────

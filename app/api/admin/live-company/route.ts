@@ -165,6 +165,7 @@ export async function POST(request: NextRequest) {
       methodology_version_id: 'KORA Index v1.0',
       is_active:              true,
       deleted_at:             null,
+      tenant_kind:            'LIVE',
     })
     .select('id')
     .single();

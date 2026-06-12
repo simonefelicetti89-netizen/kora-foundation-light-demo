@@ -55,10 +55,14 @@ describe('/company/status — contrast fix', () => {
     expect(feedbackPanel).toContain("muted:     'rgba(6,3,43,");
   });
 
-  it('functional green/orange/blue colors are preserved in status page', () => {
+  it('functional green and blue colors are preserved in live status page', () => {
     expect(statusPage).toContain('#22c55e');
     expect(statusPage).toContain('rgba(74,127,224,');
-    expect(statusPage).toContain('#C76F3D');
+  });
+
+  it('SYNTHETIC DEMO orange #C76F3D is in demo status page (B130: moved from live page)', () => {
+    const demoStatusPage = readFile('app/demo/company/status/page.tsx');
+    expect(demoStatusPage).toContain('#C76F3D');
   });
 });
 

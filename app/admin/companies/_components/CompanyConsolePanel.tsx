@@ -235,6 +235,7 @@ export function CompanyConsolePanel({ userEmail }: Props) {
 
       {/* ── Caveat ─────────────────────────────────────────────────────────── */}
       <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2 text-[10.5px] text-[#8A5A00]">
+        Live Company Registry — solo aziende ufficiali (tenant_kind = LIVE). Tenant demo/test non inclusi. ·
         Lifecycle status is pilot-derived from available KORA Admin data. · Confidence Score è esterno al KORA Index. · Foundation Light = pre_empirical_calibration.
       </div>
 

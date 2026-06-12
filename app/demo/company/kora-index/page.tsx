@@ -1,32 +1,32 @@
 'use client';
 
-// C-02: KORA Index™ — scomposizione analitica del punteggio.
-// Live-only: richiede una sessione company autenticata (COMPANY_ADMIN / COMPANY_VIEWER).
-// Senza sessione live → NoDataState. Nessun dato sintetico. Nessun branch demo.
+// B129 Fase 3: Demo-only KORA Index™ — dati sintetici Meridiana / Ferretti.
+// Guarded by app/demo/layout.tsx (requireDemoAccess).
+// Nessuna query Supabase. Nessuna sessione live. Solo dati seed sintetici.
 
-import { useState, useEffect } from 'react';
-
-import { useScoringResult }                       from '@/lib/scoring-result';
-import { useCompanySession }                      from '../_providers/CompanySessionProvider';
+import { useDemoState } from '@/lib/demo-state';
+import { useScoringResult, useDemoScenarioComparison } from '@/lib/scoring-result';
 import { activationSafeguardService }             from '@/services/activation-safeguard/ActivationSafeguardService';
+import { explainabilityService }                  from '@/services/explainability/ExplainabilityService';
+import { budgetToHumanImpactService }             from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
+import { ingestionSimulatorService }              from '@/services/ingestion-simulator/IngestionSimulatorService';
+import { accountProvisioningService }             from '@/services/account/AccountProvisioningService';
+import { tenantService }                          from '@/services/tenant/TenantService';
 import { equityAccessIntelligenceService }        from '@/services/equity-access/EquityAccessIntelligenceService';
 import { evidenceReliabilityIntelligenceService } from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';
 import { lifeDiversityService }                   from '@/services/life-diversity/LifeDiversityService';
 import { careEconomyIntelligenceService }         from '@/services/care-economy/CareEconomyIntelligenceService';
+import { workforceBaselineService }               from '@/services/workforce-baseline/WorkforceBaselineService';
 import { uefReviewService }                       from '@/services/uef-review/UEFReviewService';
-import { generateLiveRecommendations }            from '@/lib/live/live-recommendations';
-import { generateLiveBoardActions }               from '@/lib/live/live-board-actions';
 import { computeExecutiveIntelligence }           from '@/services/executive-intelligence/ExecutiveIntelligenceService';
 import { ExecutiveIntelligencePanel }             from '@/components/executive-intelligence/ExecutiveIntelligencePanel';
-import type { UEFReviewSummary, ImpactUnitComputationSummary } from '@/lib/types';
-import type { LiveEligibilityContext }            from '@/app/api/company/live-eligibility/route';
-import { TOKENS }                                 from '@/lib/design/kora-design-tokens';
 import type { MacroblockScore }                   from '@/lib/types';
+import { TOKENS }                                 from '@/lib/design/kora-design-tokens';
 
 import { HeroDiagnosis, generateDiagnosisSentence } from '@/components/kora-index/HeroDiagnosis';
+import { ScoreDrivers }    from '@/components/kora-index/ScoreDrivers';
 import { BoardActions }    from '@/components/kora-index/BoardActions';
 
-import { PageMasthead }    from '@/components/ui/PageMasthead';
 import { SectionLabel }    from '@/components/ui/SectionLabel';
 import { Explainer }       from '@/components/ui/Explainer';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
@@ -38,15 +38,23 @@ import { ComponentBreakdown }       from '@/components/kora-index/ComponentBreak
 import { ComponentBreakdownChart }  from '@/components/charts/ComponentBreakdownChart';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
 import { ConfidenceBreakdown }      from '@/components/kora-index/ConfidenceBreakdown';
+import { ExplainabilityPanel }      from '@/components/kora-index/ExplainabilityPanel';
 import { EligibilityGatePanel }     from '@/components/kora-index/EligibilityGatePanel';
+import { EconomicReliefPanel }      from '@/components/kora-index/EconomicReliefPanel';
 import { BlockedByDesignPanel }     from '@/components/kora-index/BlockedByDesignPanel';
+import { BudgetToHumanImpactPanel } from '@/components/kora-index/BudgetToHumanImpactPanel';
 import { RecommendationsPanel }     from '@/components/kora-index/RecommendationsPanel';
 import { MethodologyGlossary }      from '@/components/kora-index/MethodologyGlossary';
 import { BoundaryBadge }            from '@/components/ui/BoundaryBadge';
 import { BoundaryBanner }           from '@/components/ui/BoundaryBanner';
+import { PageMasthead }             from '@/components/ui/PageMasthead';
 
 // ── Explainer definitions ─────────────────────────────────────────────────────
 const EXP = {
+  koraIndex: {
+    what: 'Efficacia complessiva nel convertire iniziative people in attivazione verificata, distribuita e significativa.',
+    how:  '0–100. ≥70 = solido; 50–69 = in sviluppo; <50 = intervento necessario. Il punteggio è a livello organizzazione, mai individuale.',
+  },
   cs: {
     what: 'Qualità e completezza delle fonti dati usate nel calcolo del KORA Index™.',
     how:  'Esterno al KORA Index™ (peso = 0). Non misura impatto: segnala affidabilità. Più alto = fonti più solide e verificabili.',
@@ -55,9 +63,29 @@ const EXP = {
     what: 'Gate interpretativo che verifica se i requisiti minimi di attivazione sono soddisfatti.',
     how:  'CLEAR = soglie rispettate. WARNING = sotto i minimi. FLAGGED = intervento urgente. Non è una componente del punteggio.',
   },
+  reach: {
+    what: 'Misura se l\'attivazione raggiunge una quota significativa della popolazione aziendale.',
+    how:  'Basso reach = la maggior parte della workforce non è mai stata attivata nel periodo.',
+  },
+  quality: {
+    what: 'Misura se le azioni generano attivazione profonda, verificata, addizionale e continua.',
+    how:  'Bassa quality = il programma esiste ma l\'attivazione è superficiale o non sostenuta.',
+  },
+  equity: {
+    what: 'Misura se valore e attivazione sono distribuiti tra lavoratori, sedi, reparti e cluster demografici.',
+    how:  'Bassa equity = l\'attivazione è concentrata su un subset privilegiato della workforce.',
+  },
+  bti: {
+    what: 'Misura quanto efficacemente il budget welfare si converte in attivazione umana reale.',
+    how:  'Basso BTI™ = alta quota di budget va in economic relief o compliance, non in attivazione profonda.',
+  },
   eligibility: {
     what: 'Classifica ogni record come Eligible (genera IU), Limited (economic relief, 0 IU) o Blocked (compliance, 0 IU).',
     how:  'Solo i record Eligible contribuiscono al KORA Index™. Blocked e Limited sono tracciati nel BTI™.',
+  },
+  confidence: {
+    what: 'Dettaglio delle fonti che compongono il Confidence Score™: completezza, verifica, qualità.',
+    how:  'CS basso = fonti autodichiarate o incomplete. Non impatta il KORA Index™ ma segnala fragilità dell\'output.',
   },
 } as const;
 
@@ -80,14 +108,16 @@ function Divider({ label }: { label: string }) {
   );
 }
 
-// ── No-data / no-session state ────────────────────────────────────────────────
+// ── No-data state ─────────────────────────────────────────────────────────────
 
-function NoDataState({ companyName }: { companyName?: string | null }) {
+function NoDataState({ tenantId, companyName }: { tenantId: string; companyName?: string | null }) {
+  const tenant = tenantService.getTenant(tenantId);
+  const displayName = companyName ?? tenant?.company_name ?? tenantId;
   return (
     <div className="space-y-5">
       <PageMasthead
         eyebrow="KORA Index™ v3 · Scomposizione analitica"
-        title={companyName ?? 'La tua organizzazione'}
+        title={displayName}
         subline="Il KORA Index™ sarà disponibile al termine della pipeline dati."
       />
       <div style={{
@@ -103,6 +133,21 @@ function NoDataState({ companyName }: { companyName?: string | null }) {
           Completa il data intake e la review delle evidenze per generare il KORA Index™.
           Contatta il tuo referente KORA per procedere.
         </p>
+        {tenant && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(186,117,23,0.15)' }}>
+            {[
+              ['Onboarding',      tenant.onboarding_status.replace(/_/g, ' ')],
+              ['Data readiness',  tenant.data_readiness_status],
+              ['Decision Pack',   tenant.decision_pack_status],
+              ['Prossima azione', tenantService.getNextAction(tenant)],
+            ].map(([l, v]) => (
+              <div key={l as string}>
+                <p style={{ fontSize: '10px', fontWeight: 600, color: '#854F0B' }}>{l}</p>
+                <p style={{ fontSize: '12px', fontWeight: 600, color: '#5C3509', marginTop: 2 }}>{v}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -110,45 +155,21 @@ function NoDataState({ companyName }: { companyName?: string | null }) {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function KoraIndexDetail() {
-  const { isLive, tenantId: liveId, sessionLoading, koraRole, companyName: liveCompanyName } = useCompanySession();
+export default function DemoKoraIndexDetail() {
+  const { activeScenario, activeRole } = useDemoState();
 
-  const COMPANY_ID = liveId ?? '';
+  const demoUser   = accountProvisioningService.getCurrentDemoUser(activeRole);
+  const COMPANY_ID = demoUser.company_id ?? 'meridiana-group';
+  const tenant     = tenantService.getTenant(COMPANY_ID);
 
   const { data: scoring, loading } = useScoringResult({
-    tenantId:         COMPANY_ID,
-    scenarioId:       'S1',
-    forceEnvironment: 'live',
+    tenantId:   COMPANY_ID,
+    scenarioId: activeScenario,
   });
 
-  const [liveCtx, setLiveCtx] = useState<LiveEligibilityContext | null>(null);
+  const { s1: scoringS1, s2: scoringS2 } = useDemoScenarioComparison(COMPANY_ID);
 
-  const reportingPeriodForLive = scoring?.status === 'ok' ? scoring.koraIndex?.reporting_period : undefined;
-  useEffect(() => {
-    let active = true;
-    async function fetchLiveCtx() {
-      if (!isLive || !reportingPeriodForLive) {
-        if (active) setLiveCtx(null);
-        return;
-      }
-      try {
-        const r = await fetch(
-          `/api/company/live-eligibility?period=${encodeURIComponent(reportingPeriodForLive)}`,
-          { credentials: 'include' },
-        );
-        const d = r.ok ? (await r.json() as LiveEligibilityContext) : null;
-        if (active) setLiveCtx(d);
-      } catch {
-        if (active) setLiveCtx(null);
-      }
-    }
-    fetchLiveCtx();
-    return () => { active = false; };
-  }, [isLive, reportingPeriodForLive]);
-
-  // Loading guard — MUST come before any data access.
-  // Covers both the async session check (sessionLoading) and the Supabase scoring fetch (loading).
-  if (sessionLoading || loading) {
+  if (loading) {
     return (
       <div style={{ padding: 48, textAlign: 'center' }}>
         <p style={{ fontSize: '13px', color: 'rgba(6,3,43,0.40)' }}>Caricamento in corso…</p>
@@ -157,128 +178,86 @@ export default function KoraIndexDetail() {
   }
 
   const hasKoraData = scoring?.status === 'ok';
-  if (!hasKoraData) return <NoDataState companyName={liveCompanyName} />;
+  if (!hasKoraData) return <NoDataState tenantId={COMPANY_ID} />;
 
   const output     = scoring!.koraIndex!;
   const aggregate  = scoring!.aggregate;
   const confidence = scoring!.confidence;
 
-  const safeguard = activationSafeguardService.evaluate(
-    aggregate?.activation_rate ?? 0,
-    aggregate?.meaningful_activation_rate ?? 0,
-  );
+  const safeguard = activationSafeguardService.evaluateFromSeed(COMPANY_ID, activeScenario) ??
+    activationSafeguardService.evaluate(
+      aggregate?.activation_rate ?? 0,
+      aggregate?.meaningful_activation_rate ?? 0,
+    );
+
+  const explanation = explainabilityService.getExplanation(COMPANY_ID, activeScenario);
+  const weakCodes   = (explanation?.weak_components ?? []).map((c) => c.code);
 
   const macroblocks: MacroblockScore[] = output.macroblocks ?? [];
+  const s1Mbs: MacroblockScore[] = scoringS1?.koraIndex?.macroblocks ?? [];
 
-  const effectiveRole = koraRole ?? 'COMPANY_VIEWER';
+  const s1BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S1', activeRole);
+  const s2BtiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(COMPANY_ID, 'S2', activeRole);
+  const s1BtiScore  = s1Mbs.find((m) => m.code === 'BTI')?.score;
+  const s2BtiScore  = (scoringS2?.koraIndex?.macroblocks ?? []).find((m) => m.code === 'BTI')?.score;
+
+  const effectiveRole = activeRole;
 
   // ── Equity & Access Intelligence™ ────────────────────────────────────────
-  // department_activation already filtered at N≥10 server-side.
-  const eqValue      = output.components.find((c) => c.code === 'EQ')?.value ?? 0;
-  const equityAccess = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, effectiveRole, undefined);
+  const eqValue       = output.components.find((c) => c.code === 'EQ')?.value ?? 0;
+  const visibleGroups = workforceBaselineService.getVisibleGroups(COMPANY_ID);
+  const equityAccess  = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, effectiveRole, visibleGroups);
 
   // ── Evidence Reliability Intelligence™ ───────────────────────────────────
-  const liveUefSummary: UEFReviewSummary | null = liveCtx ? {
-    total_records:                     liveCtx.uef_review.total,
-    pending_count:                     liveCtx.uef_review.pending_count,
-    approved_for_scoring_count:        liveCtx.uef_review.approved_for_scoring_count,
-    approved_for_bti_governance_count: liveCtx.eligibility.limited,
-    blocked_count:                     liveCtx.eligibility.blocked,
-    needs_more_data_count:             liveCtx.uef_review.needs_more_data_count,
-    rejected_count:                    liveCtx.uef_review.rejected_count,
-    override_count:                    0,
-    kora_ready_for_iu_count:           liveCtx.uef_review.approved_for_scoring_count,
-    kora_ready_for_bti_count:          liveCtx.eligibility.limited,
-    review_completion_rate:            liveCtx.uef_review.review_completion_rate,
-    methodology_version:               'KORA Index v1.0',
-    calibration_status:                'pre_empirical_calibration',
-  } : null;
-
-  const liveIuSummary: ImpactUnitComputationSummary | null = liveCtx ? {
-    total_records:           liveCtx.eligibility.total,
-    computed_records:        liveCtx.uef_review.approved_for_scoring_count,
-    blocked_records:         liveCtx.eligibility.blocked,
-    limited_records:         liveCtx.eligibility.limited,
-    review_required_records: liveCtx.uef_review.pending_count + liveCtx.uef_review.needs_more_data_count,
-    total_impact_units:      0,
-    impact_units_by_pillar:  {},
-    records_without_iu:      liveCtx.eligibility.blocked + liveCtx.eligibility.limited,
-    average_cq:              0,
-    average_ev:              liveCtx.iu_average_ev,
-    average_cf:              0,
-    average_agf:             0,
-    methodology_version:     'KORA Index v1.0',
-    calibration_status:      'pre_empirical_calibration',
-  } : null;
-
-  // Fall back to the mock UEF summary only when liveCtx is absent.
-  const uefSummaryForEvidence = liveUefSummary ?? uefReviewService.getReviewSummary();
-  const evidenceReliability   = evidenceReliabilityIntelligenceService.compute(
-    liveIuSummary, uefSummaryForEvidence, confidence ?? null, effectiveRole,
+  const uefSummary          = uefReviewService.getReviewSummary();
+  const evidenceReliability = evidenceReliabilityIntelligenceService.compute(
+    null, uefSummary, confidence ?? null, effectiveRole,
   );
 
   // ── LIFE Diversity & Care Economy Intelligence™ ───────────────────────────
-  const lifePillarShare = (aggregate?.pillar_distribution?.['LIFE'] as number | undefined) ?? 0;
-  const lifeSummary = liveCtx
-    ? lifeDiversityService.computeFromProgramNames(
-        liveCtx.life_program_names,
-        lifePillarShare,
-        0,
-      )
-    : null;
+  const lifeSummary = s2BtiResult.record
+    ? lifeDiversityService.computeFromBTI(s2BtiResult.record, effectiveRole)
+    : s1BtiResult.record
+      ? lifeDiversityService.computeFromBTI(s1BtiResult.record, effectiveRole)
+      : null;
 
   const careSummary = careEconomyIntelligenceService.compute(lifeSummary, effectiveRole);
 
   // ── Eligibility gate ──────────────────────────────────────────────────────
-  const eligibilityGate = liveCtx
-    ? {
-        eligible_row_count: liveCtx.eligibility.eligible,
-        limited_count:      liveCtx.eligibility.limited,
-        blocked_count:      liveCtx.eligibility.blocked,
-        total_row_count:    liveCtx.eligibility.total,
-        blocked_note:       'Record compliance/HSE esclusi per design — 0 IU per design.',
-        limited_note:       'Benefit monetari: supporto economico verificato, contributo IU nullo.',
-      }
-    : { eligible_row_count: 0, limited_count: 0, blocked_count: 0, total_row_count: 0, blocked_note: 'Caricamento…', limited_note: 'Caricamento…' };
+  const eligibilityGate = ingestionSimulatorService.getEligibilityGateSummary(COMPANY_ID, activeScenario);
+
+  const s1EconRelief = budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S1', activeRole);
+  const s2EconRelief = budgetToHumanImpactService.getEconomicReliefSummary(COMPANY_ID, 'S2', activeRole);
 
   const diagnosisSentence = generateDiagnosisSentence(
     output.kora_index_value,
     output.safeguard_status,
     aggregate?.activation_rate ?? 0,
-    undefined,
+    explanation?.weak_components[0]?.code,
   );
 
   // ── Board Actions ─────────────────────────────────────────────────────────
-  const boardActions = generateLiveBoardActions({
-    macroblocks,
-    safeguardStatus:  output.safeguard_status,
-    confidenceScore:  output.confidence_score,
-    equityAccess,
-    evidenceReliability,
-  });
+  const boardActions = explainabilityService
+    .getNextBestActions(COMPANY_ID, activeScenario)
+    .slice(0, 3)
+    .map((a, i) => ({
+      priority: i + 1,
+      action:   a.action,
+      detail:   a.detail,
+      signal:   undefined as string | undefined,
+      effort:   undefined as string | undefined,
+    }));
 
   // ── Recommendations ───────────────────────────────────────────────────────
   const vrValue  = output.components.find((c) => c.code === 'VR')?.value ?? 0;
   const arValue  = aggregate?.activation_rate ?? 0;
   const marValue = aggregate?.meaningful_activation_rate ?? 0;
+  void vrValue; void arValue; void marValue;
 
-  const btiRecommendations = generateLiveRecommendations({
-    safeguardStatus:         output.safeguard_status,
-    arValue,
-    marValue,
-    vrValue,
-    eqValue,
-    confidenceScore:         output.confidence_score,
-    confidenceGaps:          confidence?.gaps_identified ?? [],
-    eligibleCount:           liveCtx?.eligibility.eligible ?? 0,
-    limitedCount:            liveCtx?.eligibility.limited ?? 0,
-    totalUef:                liveCtx?.eligibility.total ?? 0,
-    equityAccess,
-    evidenceReliability,
-    lifeConcentrationStatus: lifeSummary?.concentrationStatus ?? null,
-  });
+  const btiRecommendations = budgetToHumanImpactService.getRecommendations(COMPANY_ID, activeScenario, activeRole);
 
   // ── Executive Intelligence Layer™ ─────────────────────────────────────────
+  const btiRecord = s2BtiResult.record ?? s1BtiResult.record ?? null;
   const limitedShareRaw = eligibilityGate.total_row_count > 0
     ? eligibilityGate.limited_count / eligibilityGate.total_row_count
     : null;
@@ -293,7 +272,7 @@ export default function KoraIndexDetail() {
     evidenceReliability,
     lifeDiversity:            lifeSummary,
     limitedShare:             limitedShareRaw,
-    economicReliefShare:      null,
+    economicReliefShare:      btiRecord?.economic_relief_share ?? null,
   });
 
   return (
@@ -314,26 +293,26 @@ export default function KoraIndexDetail() {
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <h1 style={{
-            fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-            fontSize:      'clamp(1.75rem, 3vw, 2.25rem)',
-            fontWeight:    400,
-            color:         TOKENS.ink,
+            fontFamily:  'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+            fontSize:    'clamp(1.75rem, 3vw, 2.25rem)',
+            fontWeight:  400,
+            color:       TOKENS.ink,
             letterSpacing: '-0.02em',
-            lineHeight:    1.08,
+            lineHeight:  1.08,
           }}>
-            {liveCompanyName ?? 'La tua organizzazione'}
+            {tenant?.company_name ?? COMPANY_ID}
           </h1>
-          <BoundaryBadge mode="LIVE" variant="light" />
+          <BoundaryBadge mode="DEMO" variant="light" suffix="· Meridiana" />
         </div>
       </div>
 
-      <BoundaryBanner isLive={true} />
+      <BoundaryBanner isLive={false} />
 
       {/* ══ EXECUTIVE INTELLIGENCE LAYER™ ═══════════════════════════════════ */}
 
       <ExecutiveIntelligencePanel
         summary={executiveIntelligence}
-        companyName={liveCompanyName ?? null}
+        companyName={tenant?.company_name ?? null}
         reportingPeriod={output.reporting_period}
       />
 
@@ -349,7 +328,18 @@ export default function KoraIndexDetail() {
         calibrationStatus={output.calibration_status}
       />
 
-      {/* ══ SECTION 2: BOARD ACTIONS ═════════════════════════════════════════ */}
+      {/* ══ SECTION 2: SCORE DRIVERS ═════════════════════════════════════════ */}
+
+      {explanation?.weak_components.length ? (
+        <div style={{ marginTop: 28 }}>
+          <ScoreDrivers
+            weakComponents={explanation.weak_components}
+            macroblockScores={Object.fromEntries(macroblocks.map((m) => [m.code, m.score]))}
+          />
+        </div>
+      ) : null}
+
+      {/* ══ SECTION 3: BOARD ACTIONS ═════════════════════════════════════════ */}
 
       {boardActions.length > 0 && (
         <div style={{ marginTop: 28 }}>
@@ -357,21 +347,96 @@ export default function KoraIndexDetail() {
         </div>
       )}
 
-      {/* ══ SECTION 3: TECHNICAL BREAKDOWN ══════════════════════════════════ */}
+      {/* ══ SECTION 4: SCENARIO COMPARISON (demo) ════════════════════════════ */}
+
+      {(scoringS1 ?? scoringS2) && (
+        <div style={{ marginTop: 20 }}>
+          <div
+            style={{
+              background:   TOKENS.surface,
+              border:       TOKENS.cardBorder,
+              borderRadius: TOKENS.cardRadius,
+              padding:      '20px 24px',
+              boxShadow:    TOKENS.cardShadow,
+            }}
+          >
+            <p style={{
+              fontFamily:    'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+              fontWeight:    600,
+              fontSize:      '10px',
+              letterSpacing: '0.09em',
+              textTransform: 'uppercase',
+              color:         TOKENS.inkHint,
+              marginBottom:  14,
+            }}>
+              Confronto scenari · solo demo
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {[{ id: 'S1', out: scoringS1?.koraIndex }, { id: 'S2', out: scoringS2?.koraIndex }].map(({ id, out }) => {
+                if (!out) return null;
+                const isActive = id === activeScenario;
+                const ss = id === 'S1'
+                  ? { bg: out.safeguard_status === 'CLEAR' ? TOKENS.safeguard.pass.bg : TOKENS.safeguard.watch.bg, text: out.safeguard_status === 'CLEAR' ? TOKENS.safeguard.pass.text : TOKENS.safeguard.watch.text }
+                  : { bg: TOKENS.safeguard.pass.bg, text: TOKENS.safeguard.pass.text };
+                return (
+                  <div
+                    key={id}
+                    style={{
+                      borderRadius: 12,
+                      padding:      '16px',
+                      background:   isActive ? TOKENS.ink : TOKENS.taupe,
+                      border:       isActive ? `1px solid rgba(255,255,255,0.08)` : TOKENS.cardBorder,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 600, fontSize: '11px', color: isActive ? '#FFF' : TOKENS.ink }}>
+                        {id === 'S1' ? 'Stato attuale' : 'Post-intervento'}
+                      </span>
+                      {isActive && (
+                        <span style={{ borderRadius: 999, padding: '2px 8px', background: TOKENS.accentSoft, color: TOKENS.accent, fontSize: '9px', fontWeight: 700 }}>
+                          Attivo
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontWeight: 700, fontSize: '30px', color: isActive ? '#FFF' : TOKENS.ink, letterSpacing: '-0.025em', lineHeight: 1 }}>
+                      {Math.round(out.kora_index_value)}
+                      <span style={{ fontSize: '14px', color: isActive ? 'rgba(255,255,255,0.35)' : TOKENS.inkHint, marginLeft: 4 }}>/100</span>
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                      <span style={{ borderRadius: 999, padding: '3px 10px', background: ss.bg, color: ss.text, fontSize: '10px', fontWeight: 600 }}>
+                        {out.safeguard_status}
+                      </span>
+                      <span style={{ fontSize: '10px', color: isActive ? 'rgba(255,255,255,0.40)' : TOKENS.inkHint }}>
+                        CS {Math.round(out.confidence_score * 100)}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <p style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta)', fontSize: '10.5px', color: TOKENS.inkSecondary, lineHeight: 1.5, marginTop: 12 }}>
+              Confidence Score™ esterno al <TM>KORA Index</TM> v3 — indicatore di affidabilità dati, non componente pesato.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ══ SECTION 5: TECHNICAL BREAKDOWN ══════════════════════════════════ */}
 
       <Divider label="Scomposizione tecnica — macroblocchi e componenti" />
 
       <SectionLabel>4 macroblocchi</SectionLabel>
       <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-4 mt-4">
-        {macroblocks.map((mb) => (
-          <MacroblockCard key={mb.code} macroblock={mb} />
-        ))}
+        {macroblocks.map((mb) => {
+          const prevScore = activeScenario === 'S2' ? s1Mbs.find((m) => m.code === mb.code)?.score : undefined;
+          return <MacroblockCard key={mb.code} macroblock={mb} previousScore={prevScore} />;
+        })}
       </div>
 
       <div className="mt-6" id="componenti">
         <SectionLabel>10 componenti analitici</SectionLabel>
         <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          <ComponentBreakdownChart components={output.components} weakCodes={[]} />
+          <ComponentBreakdownChart components={output.components} weakCodes={weakCodes} />
           <ComponentBreakdown components={output.components} />
         </div>
       </div>
@@ -480,10 +545,24 @@ export default function KoraIndexDetail() {
         </div>
       </div>
 
-      {/* Blocked by design */}
+      {/* Economic relief + blocked */}
       <div className="mt-6">
-        <SectionLabel>Compliance & blocked</SectionLabel>
-        <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
+        <SectionLabel>Economic relief & compliance</SectionLabel>
+        <div className="grid gap-4 lg:grid-cols-2 mt-4">
+          <EconomicReliefPanel s1={s1EconRelief} s2={s2EconRelief} s1BtiScore={s1BtiScore} s2BtiScore={s2BtiScore} />
+          <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
+        </div>
+      </div>
+
+      {/* BTI */}
+      <div className="mt-6">
+        <SectionLabel><TM>Budget-to-Human-Impact</TM></SectionLabel>
+        <div className="mt-4">
+          <BudgetToHumanImpactPanel
+            s1={s1BtiResult.record ?? undefined}
+            s2={s2BtiResult.record ?? undefined}
+          />
+        </div>
       </div>
 
       {/* Safeguard + Confidence */}
@@ -494,7 +573,7 @@ export default function KoraIndexDetail() {
           <Explainer {...EXP.cs} compact />
         </div>
         <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          <ActivationSafeguardPanel result={safeguard} explanation={undefined} />
+          <ActivationSafeguardPanel result={safeguard} explanation={explanation?.safeguard_explanation} />
           <ConfidenceBreakdown record={confidence} />
         </div>
 
@@ -654,12 +733,19 @@ export default function KoraIndexDetail() {
         </div>
       )}
 
-      {/* ══ SECTION 4: EXPLAINABILITY + RECOMMENDATIONS + GLOSSARY ══════════ */}
+      {/* ══ SECTION 6: EXPLAINABILITY + RECOMMENDATIONS + GLOSSARY ══════════ */}
 
-      <Divider label="Raccomandazioni e metodologia" />
+      <Divider label="Spiegabilità, raccomandazioni e metodologia" />
 
       <div className="mt-4">
         <RecommendationsPanel btiRecommendations={btiRecommendations} />
+      </div>
+
+      <div className="mt-6">
+        <SectionLabel>Spiegabilità del punteggio</SectionLabel>
+        <div className="mt-4">
+          <ExplainabilityPanel record={explanation} />
+        </div>
       </div>
 
       <div className="mt-6">

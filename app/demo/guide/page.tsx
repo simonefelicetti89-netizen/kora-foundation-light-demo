@@ -19,7 +19,7 @@ const EVALUATE_ITEMS: {
   access: AccessLevel;
 }[] = [
   { label: 'Executive Cockpit',      href: '/company',               access: 'live',  shows: 'KORA Index, Confidence Score, Activation Safeguard e priorità direzionali in una vista C-suite.',                         why: 'Punto di ingresso board-ready — mostra come l\'intelligence si traduce in decisione.' },
-  { label: 'KORA Index',             href: '/company/kora-index',    access: 'live',  shows: '10 componenti, 4 macroblocks, pipeline 14-stage, explainability e Confidence Score.',                                    why: 'Cuore metodologico — ogni numero è tracciabile, spiegabile e versionato.' },
+  { label: 'KORA Index',             href: '/demo/company/kora-index', access: 'demo',  shows: '10 componenti, 4 macroblocks, pipeline 14-stage, explainability e Confidence Score.',                                    why: 'Cuore metodologico — ogni numero è tracciabile, spiegabile e versionato.' },
   { label: 'Activation Debt',        href: '/company/activation',    access: 'live',  shows: 'Maggioranza silenziosa, concentrazione IU, distribuzione per sito e dipartimento, next actions.',                        why: 'Traduce la sotto-attivazione in segnale quantificato — senza esporre individui.' },
   { label: 'Budget-to-Human-Impact', href: '/company/financial',     access: 'live',  shows: 'Governance finanziaria, budget per pillar, costo per IU, BTI macroblock.',                                               why: 'Connette la spesa people al segnale di attivazione — non promette ROI garantito.' },
   { label: 'Stato Dati & Evidenze',  href: '/company/data',          access: 'live',  shows: 'Stato dati & evidenze — elaborazione gestita da KORA Operator. Lettura aggregata post-intake.',                          why: 'Mostra lo stato delle fonti ricevute — non un\'area self-service cliente.' },
@@ -57,7 +57,7 @@ const NEXT_ROUTE: {
   access: AccessLevel;
 }[] = [
   { step: 1, label: 'Executive Cockpit',       href: '/company',               note: 'Vista C-suite — KORA Index, Safeguard, priorità',           access: 'live' },
-  { step: 2, label: 'KORA Index Detail',        href: '/company/kora-index',    note: '10 componenti, macroblocks, explainability',                access: 'live' },
+  { step: 2, label: 'KORA Index Detail',        href: '/demo/company/kora-index', note: '10 componenti, macroblocks, explainability',                access: 'demo' },
   { step: 3, label: 'Activation Debt',          href: '/company/activation',    note: 'Maggioranza silenziosa, concentrazione, siti',              access: 'live' },
   { step: 4, label: 'Budget-to-Human-Impact',   href: '/company/financial',     note: 'BTI, costo per IU, governance finanziaria',                 access: 'live' },
   { step: 5, label: 'Stato Dati & Evidenze',    href: '/company/data',          note: 'Stato dati & evidenze — elaborazione KORA',                 access: 'live' },
