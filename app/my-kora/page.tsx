@@ -40,6 +40,9 @@ import { workerAchievementService } from '@/services/worker-achievements/WorkerA
 import { STATUS_LABELS as ACHIEVEMENT_STATUS_LABELS } from '@/lib/worker-achievements/types';
 import { computeNextAction } from '@/lib/my-kora/nextActionLogic';
 import { AttributionMatrix } from '@/components/my-kora/AttributionMatrix';
+import { KoraActivationSignature } from '@/components/my-kora/KoraActivationSignature';
+import { KoraStratoMark } from '@/components/brand/KoraStratoMark';
+import { KoraLogo } from '@/components/brand/KoraLogo';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
@@ -162,12 +165,6 @@ export default function MyKoraHome() {
 
   // Top 3 opportunities
   const opportunities = workerOpportunityService.compute(personaId, activeRole as Parameters<typeof workerOpportunityService.compute>[1], activeScenario).slice(0, 3);
-
-  // Strongest pillar for compact PIB display
-  const strongestPillar = preview.pib_light.pillar_breakdown.reduce(
-    (a, b) => (b.score > a.score ? b : a),
-    preview.pib_light.pillar_breakdown[0],
-  );
 
   // Achievement data — worker-private recognition layer
   const achievementStats  = workerAchievementService.getAchievementStats();
@@ -640,15 +637,15 @@ export default function MyKoraHome() {
 
       {/* ─────────────────────── BELOW FOLD: DETAIL SECTIONS ─────────────────── */}
 
-      {/* ── PIB privato — full breakdown ──────────────────────────────────────── */}
+      {/* ── Bilancio personale di attivazione — B140-B ────────────────────────── */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-3" data-testid="pib-section">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            Il tuo PIB privato
+            Bilancio personale di attivazione
           </h2>
           <div className="flex items-center gap-2">
             <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-xs font-mono text-[#C76F3D]">
-              privato-lavoratore
+              privato · solo per te
             </span>
             <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.42)]">
               IU sintetici pre-computati
@@ -656,27 +653,69 @@ export default function MyKoraHome() {
           </div>
         </div>
 
-        <p className="text-xs text-[rgba(6,3,43,0.60)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-          Il Personal Impact Balance (PIB) è la stima della tua attivazione nel tempo — quante iniziative hai
-          partecipato, con quale intensità verificata, distribuite tra i pillar KORA. Non è un voto.
-          Non è una classifica. Non è visibile al tuo datore di lavoro.
+        {/* IU total — quantità assoluta, fuori dall'emblema STRATO */}
+        <p className="text-xs font-mono text-[rgba(6,3,43,0.55)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }} data-testid="period-iu-total">
+          {preview.pib_light.period_iu_total.toFixed(1).replace('.', ',')} Impact Units attivate · periodo {preview.pib_light.period} · privato
+        </p>
+        <p className="text-[11px] text-[rgba(6,3,43,0.42)] leading-relaxed italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+          Le IU misurano il lavoro di attivazione che hai reso visibile, non una prestazione. Non c&apos;è un massimo da raggiungere.
         </p>
 
-        {/* Compact headline metrics */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center rounded border border-[rgba(6,3,43,0.06)] bg-white p-2.5">
-            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)]">{preview.pib_light.overall_index}</p>
-            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">PIB / 100</p>
-          </div>
-          <div className="text-center rounded border border-[rgba(6,3,43,0.06)] bg-white p-2.5">
-            <p className={cn('text-2xl font-bold', PILLAR_TEXT[strongestPillar?.pillar ?? ''] ?? 'text-[rgba(6,3,43,0.90)]')}>
-              {strongestPillar?.pillar ?? '—'}
+        {/* Privacy notice — non-suppressible */}
+        <p className="text-xs text-[rgba(6,3,43,0.60)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+          Questo spazio appartiene a te. KORA misura l&apos;organizzazione, non classifica i lavoratori.
+          Il tuo datore di lavoro non vede queste informazioni.
+        </p>
+
+        {/* Anti-score boundary — non-suppressible */}
+        <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
+          <p className="text-[11px] text-[rgba(6,3,43,0.55)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Non è un voto di performance. Non è una classifica. Non è un indicatore di produttività,
+            loyalty o benessere individuale.
+          </p>
+        </div>
+
+        {/* KORA Activation Signature — STRATO worker */}
+        <div className="space-y-2" data-testid="activation-signature-block">
+          <KoraActivationSignature
+            pillarBreakdown={preview.pib_light.pillar_breakdown}
+            className="w-full"
+          />
+          <p className="text-center text-[10px] text-[rgba(6,3,43,0.38)] italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Composizione del periodo, non una classifica.
+          </p>
+          <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.03)] px-3 py-2" data-testid="activation-profile-block">
+            <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.72)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+              Profilo del periodo: <span className="text-[#C76F3D]">{preview.pib_light.activation_profile}</span>
             </p>
-            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Pillar forte</p>
+            <p className="text-[11px] text-[rgba(6,3,43,0.52)] mt-0.5 leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+              {preview.pib_light.activation_profile_description}
+            </p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.35)] mt-1 italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+              Descrive il mix delle tue esperienze, non te. Cambia a ogni periodo.
+            </p>
+          </div>
+        </div>
+
+        {/* Qualitative activation level */}
+        <div className="rounded border border-[rgba(199,111,61,0.18)] bg-[rgba(199,111,61,0.05)] px-3 py-2.5">
+          <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            {preview.pib_light.activation_level_label}
+          </p>
+          <p className="text-[11px] text-[rgba(6,3,43,0.50)] mt-0.5 leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            {preview.pib_light.activation_level_description}
+          </p>
+        </div>
+
+        {/* Summary counts — qualitative, no numeric score */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center rounded border border-[rgba(6,3,43,0.06)] bg-white p-2.5">
+            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)]">{preview.pib_light.active_pillars}/5</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Pillar presenti</p>
           </div>
           <div className="text-center rounded border border-[rgba(6,3,43,0.06)] bg-white p-2.5">
-            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)]">{preview.pib_light.active_pillars}</p>
-            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Pillar attivi</p>
+            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)]">{preview.pib_light.total_events}</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Esperienze</p>
           </div>
         </div>
 
@@ -689,10 +728,10 @@ export default function MyKoraHome() {
         </div>
 
         <p className="text-xs text-[rgba(6,3,43,0.40)]">
-          {preview.pib_light.active_pillars} pillar attivi · {preview.pib_light.total_events} eventi · {preview.pib_light.period}
+          {preview.pib_light.active_pillars} pillar presenti · {preview.pib_light.total_events} esperienze · {preview.pib_light.period}
         </p>
 
-        {/* Pillar breakdown */}
+        {/* Pillar presence — visual bar only, no numeric score label */}
         <div className="divide-y divide-[rgba(6,3,43,0.05)]">
           {preview.pib_light.pillar_breakdown.map((p) => (
             <div key={p.pillar} className="py-3">
@@ -704,32 +743,49 @@ export default function MyKoraHome() {
                   <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.40)]">
                     Privato
                   </span>
-                  {p.iu_total > 0 && (
-                    <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.38)]">
-                      {p.iu_total.toFixed(2)} IU
-                    </span>
-                  )}
                 </div>
-                <span className="flex items-center gap-1 text-xs font-mono text-[rgba(6,3,43,0.52)] shrink-0">
-                  {p.score}
-                  <span className={cn('text-xs', TREND_COLOR[p.trend])}>{TREND_ICON[p.trend]}</span>
-                  <span className="text-[rgba(6,3,43,0.28)] ml-1">{p.event_count} eventi</span>
+                <span className="flex items-center gap-1 shrink-0">
+                  {p.event_count > 0 ? (
+                    <span className="text-[11px] text-[rgba(6,3,43,0.55)]">
+                      {p.event_count} {p.event_count === 1 ? 'esperienza' : 'esperienze'}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] text-[rgba(6,3,43,0.30)] italic">non ancora presente</span>
+                  )}
+                  <span className={cn('text-xs ml-1', TREND_COLOR[p.trend])}>{TREND_ICON[p.trend]}</span>
                 </span>
               </div>
+              {/* Bar driven by internal p.score — visual indication only, no numeric label */}
               <div className="h-1.5 w-full rounded-full bg-[rgba(6,3,43,0.05)] mb-1">
                 <div
-                  className={cn('h-1.5 rounded-full', PILLAR_COLORS[p.pillar] ?? 'bg-[rgba(6,3,43,0.35)]')}
-                  style={{ width: `${p.score}%` }}
+                  className={cn('h-1.5 rounded-full', p.event_count > 0 ? (PILLAR_COLORS[p.pillar] ?? 'bg-[rgba(6,3,43,0.35)]') : 'bg-transparent')}
+                  style={{ width: p.event_count > 0 ? `${p.score}%` : '0%' }}
                 />
               </div>
             </div>
           ))}
         </div>
 
+        {/* Dynamic CV connection — non-suppressible */}
+        <div className="rounded border border-[rgba(47,125,85,0.18)] bg-[rgba(47,125,85,0.05)] px-3 py-2.5">
+          <p className="text-[11px] font-semibold text-[#2F7D55] mb-0.5" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Puoi scegliere quali esperienze portare nel tuo Dynamic Impact CV.
+          </p>
+          <p className="text-[11px] text-[rgba(6,3,43,0.52)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            L&apos;azienda vede solo aggregati anonimi — mai i tuoi dati individuali.
+          </p>
+          <Link
+            href="/my-kora/dynamic-cv"
+            className="text-[11px] font-semibold text-[#2F7D55] hover:underline mt-1.5 inline-block"
+            style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+          >
+            Scegli cosa portare nel Dynamic Impact CV →
+          </Link>
+        </div>
+
         <p className="text-[11px] text-[rgba(6,3,43,0.40)] border-t border-[rgba(6,3,43,0.05)] pt-2 leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-          Questi valori non vengono mostrati all&apos;azienda. L&apos;azienda vede solo aggregati sopra soglia
-          privacy (≥10 lavoratori). Il PIB è un indicatore personale — non un voto, non una classifica,
-          non un parametro di performance.
+          L&apos;azienda vede solo dati aggregati e anonimi dell&apos;intera organizzazione. Questo bilancio non lascia
+          mai il tuo account, se non per le esperienze che scegli tu.
         </p>
       </div>
 
@@ -909,6 +965,29 @@ export default function MyKoraHome() {
             </p>
           </div>
         </div>
+        {/* KORA Link card visiva — brand concept, FUTURE_VISION */}
+        <div
+          data-testid="kora-link-card"
+          style={{
+            background: '#211F1A',
+            borderRadius: 16,
+            padding: '24px 28px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 16,
+          }}
+        >
+          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: 'rgba(246,244,239,0.50)', textTransform: 'uppercase', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', textAlign: 'center' }}>
+            SU CARD NFC · KORA LINK
+          </p>
+          <KoraStratoMark variant="negative" size="md" className="w-48" />
+          <KoraLogo variant="on-dark" className="h-6 w-auto" />
+          <p style={{ fontSize: 10, color: 'rgba(246,244,239,0.38)', textAlign: 'center', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', lineHeight: 1.5 }}>
+            Strato + logo KORA incisi nell&apos;alluminio. Ogni card unica.
+          </p>
+        </div>
+
         <div className="space-y-1.5">
           {KORA_LINK_STEPS.map((step, i) => {
             const stepNum  = i + 1;

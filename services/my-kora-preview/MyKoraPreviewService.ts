@@ -77,7 +77,7 @@ function enrichTimeline(items: RawTimelineItem[]): TimelineItem[] {
 
 export interface PibLightPreview {
   period: string;
-  overall_index: number;       // 0–100 personal context score
+  overall_index: number;       // 0–100 internal scale — kept for computation only; not rendered as headline UI
   active_pillars: number;
   total_events: number;
   pillar_breakdown: PillarPreview[];
@@ -86,6 +86,12 @@ export interface PibLightPreview {
   disclaimer: string;
   not_employer_visible: true;
   not_performance_score: true;
+  activation_level: 'initial' | 'developing' | 'established' | 'advanced';
+  activation_level_label: string;
+  activation_level_description: string;
+  period_iu_total: number;               // somma iu_total di tutti i pillar, arrotondata a 1 decimale
+  activation_profile: string;            // es. "Growth Builder" — proprietary name, non gerarchia
+  activation_profile_description: string; // descrizione italiana non valutativa del mix
 }
 
 export interface ConsentToggle {
@@ -148,6 +154,54 @@ export interface MyKoraHomePreview {
   timeline: TimelineItem[];
   opportunities: OpportunityItem[];
   synthetic_demo_data: true;
+}
+
+// ── Qualitative activation level — B140-B ────────────────────────────────────
+// Maps overall_index to qualitative phase labels. Not a performance label.
+// Labels describe activation journey phase, not quality, rank, or output.
+function deriveActivationLevel(idx: number): Pick<PibLightPreview, 'activation_level' | 'activation_level_label' | 'activation_level_description'> {
+  if (idx <= 34) return { activation_level: 'initial',     activation_level_label: 'Percorso iniziale',    activation_level_description: 'Stai costruendo il tuo percorso di attivazione.' };
+  if (idx <= 54) return { activation_level: 'developing',  activation_level_label: 'Percorso in sviluppo', activation_level_description: 'Il tuo percorso si sta arricchendo di nuove esperienze.' };
+  if (idx <= 74) return { activation_level: 'established', activation_level_label: 'Percorso consolidato', activation_level_description: 'Hai costruito un percorso di attivazione articolato e verificato.' };
+  return              { activation_level: 'advanced',     activation_level_label: 'Percorso avanzato',    activation_level_description: 'Il tuo percorso di attivazione è ampio e diversificato tra più pillar.' };
+}
+
+// ── Activation profile — B140-B2+C ───────────────────────────────────────────
+// Maps pillar mix to a non-hierarchical archetype label.
+// Profiles describe WHAT was done in the period, not WHO the worker is.
+// All 7 profiles are equally valid — no hierarchy, no ranking between them.
+// LIFE profile: "Life Anchor" — describes mix, avoids health/wellbeing tracking perception.
+
+type ActivationProfileFields = Pick<PibLightPreview, 'activation_profile' | 'activation_profile_description'>;
+
+const PILLAR_PROFILES: Record<string, ActivationProfileFields> = {
+  GROWTH:     { activation_profile: 'Growth Builder',   activation_profile_description: 'Le tue esperienze del periodo sono prevalentemente nel pillar Crescita e Formazione.' },
+  IMPACT:     { activation_profile: 'Impact Catalyst',  activation_profile_description: 'Le tue esperienze del periodo sono prevalentemente nel pillar Impatto Sociale e Territoriale.' },
+  CONNECTION: { activation_profile: 'Community Anchor', activation_profile_description: 'Le tue esperienze del periodo sono prevalentemente nel pillar Connessione e Collaborazione.' },
+  LIFE:       { activation_profile: 'Life Anchor',      activation_profile_description: 'Il tuo percorso include esperienze collegate a equilibrio, cura e qualità della vita.' },
+  LEGACY:     { activation_profile: 'Legacy Keeper',    activation_profile_description: 'Le tue esperienze del periodo sono prevalentemente nel pillar Continuità e Trasferimento.' },
+};
+
+function derivePeriodIuTotal(pillars: PillarPreview[]): number {
+  return Math.round(pillars.reduce((sum, p) => sum + p.iu_total, 0) * 10) / 10;
+}
+
+function deriveActivationProfile(pillars: PillarPreview[]): ActivationProfileFields {
+  const total = pillars.reduce((sum, p) => sum + p.iu_total, 0);
+  if (total === 0) {
+    return { activation_profile: 'Emerging Profile', activation_profile_description: 'Stai muovendo i primi passi nel percorso di attivazione.' };
+  }
+  const dominant    = pillars.reduce((a, b) => (a.iu_total > b.iu_total ? a : b));
+  const dominantPct = (dominant.iu_total / total) * 100;
+  const activeCount = pillars.filter((p) => p.iu_total > 0).length;
+
+  if (dominantPct >= 35) {
+    return PILLAR_PROFILES[dominant.pillar] ?? { activation_profile: 'Emerging Profile', activation_profile_description: 'Stai muovendo i primi passi nel percorso di attivazione.' };
+  }
+  if (activeCount >= 4) {
+    return { activation_profile: 'Balanced Activator', activation_profile_description: 'Il tuo percorso copre più dimensioni KORA — un profilo diversificato.' };
+  }
+  return PILLAR_PROFILES[dominant.pillar] ?? { activation_profile: 'Emerging Profile', activation_profile_description: 'Stai muovendo i primi passi nel percorso di attivazione.' };
 }
 
 // ── Shared derivation note ────────────────────────────────────────────────────
@@ -225,18 +279,23 @@ const PERSONA_A_TIMELINE_S2: RawTimelineItem[] = [
   },
 ];
 
+const PERSONA_A_PILLARS_S1: PillarPreview[] = [
+  { pillar: 'LIFE',       label: 'Life',       score: 52, iu_total: 1.78, trend: 'stable', event_count: 3 },
+  { pillar: 'GROWTH',     label: 'Growth',     score: 37, iu_total: 1.33, trend: 'up',     event_count: 3 },
+  { pillar: 'CONNECTION', label: 'Connection', score: 10, iu_total: 0.28, trend: 'stable', event_count: 2 },
+  { pillar: 'IMPACT',     label: 'Impact',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
+  { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
+];
+
 const PERSONA_A_PIB_S1: PibLightPreview = {
   period: 'Q1–Q2 2025',
   overall_index: 33,
+  ...deriveActivationLevel(33),
   active_pillars: 3,
   total_events: 8,
-  pillar_breakdown: [
-    { pillar: 'LIFE',       label: 'Life',       score: 52, iu_total: 1.78, trend: 'stable', event_count: 3 },
-    { pillar: 'GROWTH',     label: 'Growth',     score: 37, iu_total: 1.33, trend: 'up',     event_count: 3 },
-    { pillar: 'CONNECTION', label: 'Connection', score: 10, iu_total: 0.28, trend: 'stable', event_count: 2 },
-    { pillar: 'IMPACT',     label: 'Impact',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
-    { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
-  ],
+  pillar_breakdown:          PERSONA_A_PILLARS_S1,
+  period_iu_total:           derivePeriodIuTotal(PERSONA_A_PILLARS_S1),
+  ...deriveActivationProfile(PERSONA_A_PILLARS_S1),
   pib_derivation_note: DERIVATION_NOTE,
   pib_derivation_basis: 'synthetic_iu_pre_computed',
   disclaimer: 'Il tuo Personal Impact Balance è informativo e privato. Non valuta le tue performance e non è mai visibile al datore di lavoro.',
@@ -244,18 +303,23 @@ const PERSONA_A_PIB_S1: PibLightPreview = {
   not_performance_score: true,
 };
 
+const PERSONA_A_PILLARS_S2: PillarPreview[] = [
+  { pillar: 'LIFE',       label: 'Life',       score: 68, iu_total: 2.90, trend: 'up',     event_count: 5 },
+  { pillar: 'GROWTH',     label: 'Growth',     score: 62, iu_total: 2.65, trend: 'up',     event_count: 4 },
+  { pillar: 'CONNECTION', label: 'Connection', score: 40, iu_total: 0.59, trend: 'up',     event_count: 4 },
+  { pillar: 'IMPACT',     label: 'Impact',     score: 55, iu_total: 0.97, trend: 'up',     event_count: 2 },
+  { pillar: 'LEGACY',     label: 'Legacy',     score: 30, iu_total: 0.54, trend: 'up',     event_count: 2 },
+];
+
 const PERSONA_A_PIB_S2: PibLightPreview = {
   period: 'Q1–Q4 2025',
   overall_index: 58,
+  ...deriveActivationLevel(58),
   active_pillars: 5,
   total_events: 17,
-  pillar_breakdown: [
-    { pillar: 'LIFE',       label: 'Life',       score: 68, iu_total: 2.90, trend: 'up',     event_count: 5 },
-    { pillar: 'GROWTH',     label: 'Growth',     score: 62, iu_total: 2.65, trend: 'up',     event_count: 4 },
-    { pillar: 'CONNECTION', label: 'Connection', score: 40, iu_total: 0.59, trend: 'up',     event_count: 4 },
-    { pillar: 'IMPACT',     label: 'Impact',     score: 55, iu_total: 0.97, trend: 'up',     event_count: 2 },
-    { pillar: 'LEGACY',     label: 'Legacy',     score: 30, iu_total: 0.54, trend: 'up',     event_count: 2 },
-  ],
+  pillar_breakdown:          PERSONA_A_PILLARS_S2,
+  period_iu_total:           derivePeriodIuTotal(PERSONA_A_PILLARS_S2),
+  ...deriveActivationProfile(PERSONA_A_PILLARS_S2),
   pib_derivation_note: DERIVATION_NOTE,
   pib_derivation_basis: 'synthetic_iu_pre_computed',
   disclaimer: 'Il tuo Personal Impact Balance è informativo e privato. Non valuta le tue performance e non è mai visibile al datore di lavoro.',
@@ -426,18 +490,23 @@ const PERSONA_B_TIMELINE_S2: RawTimelineItem[] = [
   },
 ];
 
+const PERSONA_B_PILLARS_S1: PillarPreview[] = [
+  { pillar: 'LIFE',       label: 'Life',       score: 18, iu_total: 0.38, trend: 'stable', event_count: 1 },
+  { pillar: 'GROWTH',     label: 'Growth',     score: 35, iu_total: 1.63, trend: 'up',     event_count: 2 },
+  { pillar: 'CONNECTION', label: 'Connection', score: 50, iu_total: 2.02, trend: 'up',     event_count: 3 },
+  { pillar: 'IMPACT',     label: 'Impact',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
+  { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
+];
+
 const PERSONA_B_PIB_S1: PibLightPreview = {
   period: 'Q1–Q2 2025',
   overall_index: 28,
+  ...deriveActivationLevel(28),
   active_pillars: 3,
   total_events: 8,
-  pillar_breakdown: [
-    { pillar: 'LIFE',       label: 'Life',       score: 18, iu_total: 0.38, trend: 'stable', event_count: 1 },
-    { pillar: 'GROWTH',     label: 'Growth',     score: 35, iu_total: 1.63, trend: 'up',     event_count: 2 },
-    { pillar: 'CONNECTION', label: 'Connection', score: 50, iu_total: 2.02, trend: 'up',     event_count: 3 },
-    { pillar: 'IMPACT',     label: 'Impact',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
-    { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
-  ],
+  pillar_breakdown:          PERSONA_B_PILLARS_S1,
+  period_iu_total:           derivePeriodIuTotal(PERSONA_B_PILLARS_S1),
+  ...deriveActivationProfile(PERSONA_B_PILLARS_S1),
   pib_derivation_note: DERIVATION_NOTE,
   pib_derivation_basis: 'synthetic_iu_pre_computed',
   disclaimer: 'Il tuo Personal Impact Balance è informativo e privato. Non valuta le tue performance e non è mai visibile al datore di lavoro.',
@@ -445,18 +514,23 @@ const PERSONA_B_PIB_S1: PibLightPreview = {
   not_performance_score: true,
 };
 
+const PERSONA_B_PILLARS_S2: PillarPreview[] = [
+  { pillar: 'LIFE',       label: 'Life',       score: 35, iu_total: 1.10, trend: 'up',     event_count: 3 },
+  { pillar: 'GROWTH',     label: 'Growth',     score: 50, iu_total: 2.45, trend: 'up',     event_count: 4 },
+  { pillar: 'CONNECTION', label: 'Connection', score: 62, iu_total: 2.88, trend: 'up',     event_count: 5 },
+  { pillar: 'IMPACT',     label: 'Impact',     score: 28, iu_total: 0.88, trend: 'up',     event_count: 2 },
+  { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
+];
+
 const PERSONA_B_PIB_S2: PibLightPreview = {
   period: 'Q1–Q4 2025',
   overall_index: 52,
+  ...deriveActivationLevel(52),
   active_pillars: 4,
   total_events: 14,
-  pillar_breakdown: [
-    { pillar: 'LIFE',       label: 'Life',       score: 35, iu_total: 1.10, trend: 'up',     event_count: 3 },
-    { pillar: 'GROWTH',     label: 'Growth',     score: 50, iu_total: 2.45, trend: 'up',     event_count: 4 },
-    { pillar: 'CONNECTION', label: 'Connection', score: 62, iu_total: 2.88, trend: 'up',     event_count: 5 },
-    { pillar: 'IMPACT',     label: 'Impact',     score: 28, iu_total: 0.88, trend: 'up',     event_count: 2 },
-    { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
-  ],
+  pillar_breakdown:          PERSONA_B_PILLARS_S2,
+  period_iu_total:           derivePeriodIuTotal(PERSONA_B_PILLARS_S2),
+  ...deriveActivationProfile(PERSONA_B_PILLARS_S2),
   pib_derivation_note: DERIVATION_NOTE,
   pib_derivation_basis: 'synthetic_iu_pre_computed',
   disclaimer: 'Il tuo Personal Impact Balance è informativo e privato. Non valuta le tue performance e non è mai visibile al datore di lavoro.',
@@ -597,18 +671,23 @@ const PERSONA_C_TIMELINE_S2: RawTimelineItem[] = [
   },
 ];
 
+const PERSONA_C_PILLARS_S1: PillarPreview[] = [
+  { pillar: 'LIFE',       label: 'Life',       score: 28, iu_total: 0.49, trend: 'stable', event_count: 1 },
+  { pillar: 'GROWTH',     label: 'Growth',     score: 72, iu_total: 3.28, trend: 'up',     event_count: 4 },
+  { pillar: 'CONNECTION', label: 'Connection', score: 18, iu_total: 0.38, trend: 'stable', event_count: 1 },
+  { pillar: 'IMPACT',     label: 'Impact',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
+  { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
+];
+
 const PERSONA_C_PIB_S1: PibLightPreview = {
   period: 'Q1–Q2 2025',
   overall_index: 42,
+  ...deriveActivationLevel(42),
   active_pillars: 3,
   total_events: 7,
-  pillar_breakdown: [
-    { pillar: 'LIFE',       label: 'Life',       score: 28, iu_total: 0.49, trend: 'stable', event_count: 1 },
-    { pillar: 'GROWTH',     label: 'Growth',     score: 72, iu_total: 3.28, trend: 'up',     event_count: 4 },
-    { pillar: 'CONNECTION', label: 'Connection', score: 18, iu_total: 0.38, trend: 'stable', event_count: 1 },
-    { pillar: 'IMPACT',     label: 'Impact',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
-    { pillar: 'LEGACY',     label: 'Legacy',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
-  ],
+  pillar_breakdown:          PERSONA_C_PILLARS_S1,
+  period_iu_total:           derivePeriodIuTotal(PERSONA_C_PILLARS_S1),
+  ...deriveActivationProfile(PERSONA_C_PILLARS_S1),
   pib_derivation_note: DERIVATION_NOTE,
   pib_derivation_basis: 'synthetic_iu_pre_computed',
   disclaimer: 'Il tuo Personal Impact Balance è informativo e privato. Non valuta le tue performance e non è mai visibile al datore di lavoro.',
@@ -616,18 +695,23 @@ const PERSONA_C_PIB_S1: PibLightPreview = {
   not_performance_score: true,
 };
 
+const PERSONA_C_PILLARS_S2: PillarPreview[] = [
+  { pillar: 'LIFE',       label: 'Life',       score: 45, iu_total: 1.70, trend: 'up',     event_count: 3 },
+  { pillar: 'GROWTH',     label: 'Growth',     score: 80, iu_total: 4.80, trend: 'up',     event_count: 6 },
+  { pillar: 'CONNECTION', label: 'Connection', score: 32, iu_total: 0.78, trend: 'up',     event_count: 2 },
+  { pillar: 'IMPACT',     label: 'Impact',     score: 42, iu_total: 1.10, trend: 'up',     event_count: 2 },
+  { pillar: 'LEGACY',     label: 'Legacy',     score: 16, iu_total: 0.48, trend: 'up',     event_count: 1 },
+];
+
 const PERSONA_C_PIB_S2: PibLightPreview = {
   period: 'Q1–Q4 2025',
   overall_index: 65,
+  ...deriveActivationLevel(65),
   active_pillars: 5,
   total_events: 14,
-  pillar_breakdown: [
-    { pillar: 'LIFE',       label: 'Life',       score: 45, iu_total: 1.70, trend: 'up',     event_count: 3 },
-    { pillar: 'GROWTH',     label: 'Growth',     score: 80, iu_total: 4.80, trend: 'up',     event_count: 6 },
-    { pillar: 'CONNECTION', label: 'Connection', score: 32, iu_total: 0.78, trend: 'up',     event_count: 2 },
-    { pillar: 'IMPACT',     label: 'Impact',     score: 42, iu_total: 1.10, trend: 'up',     event_count: 2 },
-    { pillar: 'LEGACY',     label: 'Legacy',     score: 16, iu_total: 0.48, trend: 'up',     event_count: 1 },
-  ],
+  pillar_breakdown:          PERSONA_C_PILLARS_S2,
+  period_iu_total:           derivePeriodIuTotal(PERSONA_C_PILLARS_S2),
+  ...deriveActivationProfile(PERSONA_C_PILLARS_S2),
   pib_derivation_note: DERIVATION_NOTE,
   pib_derivation_basis: 'synthetic_iu_pre_computed',
   disclaimer: 'Il tuo Personal Impact Balance è informativo e privato. Non valuta le tue performance e non è mai visibile al datore di lavoro.',
@@ -796,18 +880,23 @@ const PERSONA_D_TIMELINE_S2: RawTimelineItem[] = [
   },
 ];
 
+const PERSONA_D_PILLARS_S1: PillarPreview[] = [
+  { pillar: 'LIFE',       label: 'Life',       score: 35, iu_total: 0.48, trend: 'stable', event_count: 1 },
+  { pillar: 'GROWTH',     label: 'Growth',     score: 50, iu_total: 1.80, trend: 'up',     event_count: 2 },
+  { pillar: 'CONNECTION', label: 'Connection', score: 62, iu_total: 1.61, trend: 'up',     event_count: 2 },
+  { pillar: 'IMPACT',     label: 'Impact',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
+  { pillar: 'LEGACY',     label: 'Legacy',     score: 75, iu_total: 3.14, trend: 'up',     event_count: 3 },
+];
+
 const PERSONA_D_PIB_S1: PibLightPreview = {
   period: 'Q1–Q2 2025',
   overall_index: 55,
+  ...deriveActivationLevel(55),
   active_pillars: 4,
   total_events: 10,
-  pillar_breakdown: [
-    { pillar: 'LIFE',       label: 'Life',       score: 35, iu_total: 0.48, trend: 'stable', event_count: 1 },
-    { pillar: 'GROWTH',     label: 'Growth',     score: 50, iu_total: 1.80, trend: 'up',     event_count: 2 },
-    { pillar: 'CONNECTION', label: 'Connection', score: 62, iu_total: 1.61, trend: 'up',     event_count: 2 },
-    { pillar: 'IMPACT',     label: 'Impact',     score: 0,  iu_total: 0,    trend: 'stable', event_count: 0 },
-    { pillar: 'LEGACY',     label: 'Legacy',     score: 75, iu_total: 3.14, trend: 'up',     event_count: 3 },
-  ],
+  pillar_breakdown:          PERSONA_D_PILLARS_S1,
+  period_iu_total:           derivePeriodIuTotal(PERSONA_D_PILLARS_S1),
+  ...deriveActivationProfile(PERSONA_D_PILLARS_S1),
   pib_derivation_note: DERIVATION_NOTE,
   pib_derivation_basis: 'synthetic_iu_pre_computed',
   disclaimer: 'Il tuo Personal Impact Balance è informativo e privato. Non valuta le tue performance e non è mai visibile al datore di lavoro.',
@@ -815,18 +904,23 @@ const PERSONA_D_PIB_S1: PibLightPreview = {
   not_performance_score: true,
 };
 
+const PERSONA_D_PILLARS_S2: PillarPreview[] = [
+  { pillar: 'LIFE',       label: 'Life',       score: 52, iu_total: 1.40, trend: 'up',     event_count: 3 },
+  { pillar: 'GROWTH',     label: 'Growth',     score: 65, iu_total: 2.80, trend: 'up',     event_count: 4 },
+  { pillar: 'CONNECTION', label: 'Connection', score: 70, iu_total: 2.27, trend: 'up',     event_count: 4 },
+  { pillar: 'IMPACT',     label: 'Impact',     score: 38, iu_total: 0.95, trend: 'up',     event_count: 2 },
+  { pillar: 'LEGACY',     label: 'Legacy',     score: 82, iu_total: 4.34, trend: 'up',     event_count: 5 },
+];
+
 const PERSONA_D_PIB_S2: PibLightPreview = {
   period: 'Q1–Q4 2025',
   overall_index: 72,
+  ...deriveActivationLevel(72),
   active_pillars: 5,
   total_events: 18,
-  pillar_breakdown: [
-    { pillar: 'LIFE',       label: 'Life',       score: 52, iu_total: 1.40, trend: 'up',     event_count: 3 },
-    { pillar: 'GROWTH',     label: 'Growth',     score: 65, iu_total: 2.80, trend: 'up',     event_count: 4 },
-    { pillar: 'CONNECTION', label: 'Connection', score: 70, iu_total: 2.27, trend: 'up',     event_count: 4 },
-    { pillar: 'IMPACT',     label: 'Impact',     score: 38, iu_total: 0.95, trend: 'up',     event_count: 2 },
-    { pillar: 'LEGACY',     label: 'Legacy',     score: 82, iu_total: 4.34, trend: 'up',     event_count: 5 },
-  ],
+  pillar_breakdown:          PERSONA_D_PILLARS_S2,
+  period_iu_total:           derivePeriodIuTotal(PERSONA_D_PILLARS_S2),
+  ...deriveActivationProfile(PERSONA_D_PILLARS_S2),
   pib_derivation_note: DERIVATION_NOTE,
   pib_derivation_basis: 'synthetic_iu_pre_computed',
   disclaimer: 'Il tuo Personal Impact Balance è informativo e privato. Non valuta le tue performance e non è mai visibile al datore di lavoro.',

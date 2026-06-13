@@ -152,8 +152,8 @@ describe('B84-B T7 — PIB explanation near PIB section on /my-kora', () => {
   const home = read('app/my-kora/page.tsx');
 
   it('PIB explanation is near PIB section', () => {
-    // Check the PIB explanation paragraph exists
-    expect(home).toContain('Personal Impact Balance (PIB) è la stima');
+    // B140-B: heading changed to qualitative form
+    expect(home).toContain('Bilancio personale di attivazione');
   });
 
   it('PIB explanation says it is not a vote', () => {
@@ -165,7 +165,8 @@ describe('B84-B T7 — PIB explanation near PIB section on /my-kora', () => {
   });
 
   it('PIB explanation says not visible to employer', () => {
-    expect(home).toContain('Non è visibile al tuo datore di lavoro');
+    // B140-B: copy updated to "Il tuo datore di lavoro non vede queste informazioni"
+    expect(home).toContain('Il tuo datore di lavoro non vede');
   });
 });
 

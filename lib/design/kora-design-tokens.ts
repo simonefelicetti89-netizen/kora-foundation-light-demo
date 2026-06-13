@@ -192,3 +192,13 @@ export const BADGE_TOKENS = {
 
 export type PillarColorKey = keyof typeof PILLAR_COLORS;
 export type KoraColorKey = keyof typeof KORA_COLORS;
+
+// ── Activation Signature tokens — B140-C ─────────────────────────────────────
+// Dedicated token group for KORA Activation Signature and KORA Link card.
+// These values are separate from and do NOT replace:
+//   TERRACOTTA #C76F3D, TOKENS.canvas #EFEBE2, TOKENS.ink/sidebar #06032B
+export const ACTIVATION_SIGNATURE = {
+  cotto:   '#B5512E',  // STRATO band color — monocromo proprietario
+  inkWarm: '#211F1A',  // KORA Link card background — premium warm/materico
+  canvas:  '#F6F4EF',  // light surface for negative variant (STRATO on dark)
+} as const;
