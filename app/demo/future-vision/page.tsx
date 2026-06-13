@@ -13,6 +13,13 @@ interface ClusterModule {
   href?: string;
 }
 
+interface FutureModule {
+  name: string;
+  pillars: string;
+  desc: string;
+  sensitivity?: 'high';
+}
+
 interface Cluster {
   phase: string;
   id: string;
@@ -123,6 +130,45 @@ const PHASE_TIMELINE = [
   { phase: '02', label: 'Pilot Calibration', active: false },
   { phase: '03', label: 'Ecosystem Layer',   active: false },
   { phase: '04', label: 'Worker-Owned',      active: false },
+];
+
+const FUTURE_MODULES: FutureModule[] = [
+  {
+    name: 'AI Transition Readiness',
+    pillars: 'GROWTH · LEGACY',
+    desc: 'Preview metodologica sulla capacità organizzativa di affrontare transizioni AI: upskilling, reskilling, accesso equo alle opportunità e continuità delle competenze. Misura organizzativa aggregata — mai AI replacement score, mai valutazione individuale del lavoratore.',
+  },
+  {
+    name: 'KORA Care',
+    pillars: 'LIFE · CONNECTION',
+    desc: 'Linea esplorativa dedicata a caregiver, genitorialità, carichi di cura e sostenibilità organizzativa della cura. Misurazione solo aggregata, privacy-first, senza dati clinici individuali e senza employer visibility su condizioni personali.',
+  },
+  {
+    name: 'Workforce Resilience',
+    pillars: 'GROWTH · LEGACY',
+    desc: 'Modulo futuro per leggere la capacità organizzativa di assorbire shock, cambiamenti e discontinuità mantenendo continuità di attivazione. Segnali aggregati, non sorveglianza individuale.',
+  },
+  {
+    name: 'Just Transition',
+    pillars: 'IMPACT · GROWTH',
+    desc: 'Modulo futuro per leggere transizioni industriali, tecnologiche e ambientali attraverso equità di accesso alla riqualificazione, continuità occupazionale e supporto alle popolazioni lavorative più esposte. Coerente con letture ESG, senza claim di conformità o assurance.',
+  },
+  {
+    name: 'Supply Chain Activation',
+    pillars: 'CONNECTION · IMPACT',
+    desc: 'Estensione futura del modello KORA alla filiera: attivazione di partner, fornitori e network territoriali tramite evidenze aggregate e standard condivisi. Nessun rating individuale dei lavoratori e nessun ranking punitivo dei fornitori.',
+  },
+  {
+    name: 'Mental Capital',
+    pillars: 'LIFE · GROWTH',
+    desc: 'Linea esplorativa ad alta sensibilità su energia cognitiva, sostenibilità mentale organizzativa e capacità collettiva di mantenere attenzione, apprendimento e continuità. Solo aggregati, opt-in, legal review e validazione metodologica — mai psicometria individuale, mai dato clinico, mai worker scoring.',
+    sensitivity: 'high',
+  },
+  {
+    name: 'KORA Legacy Module',
+    pillars: 'LEGACY',
+    desc: 'Vista futura del pillar LEGACY dedicata a trasferimento di conoscenza, mentoring, continuità delle competenze e passaggi generazionali. Non è un index autonomo: è una lettura evolutiva della capacità organizzativa di lasciare valore nel tempo.',
+  },
 ];
 
 const MODULE_CARD_STYLES: Record<Cluster['status'], string> = {
@@ -289,6 +335,49 @@ export default function FutureVision() {
           </div>
         </section>
       ))}
+
+      {/* ── Future Modules ── */}
+      <section data-testid="future-modules">
+        <p style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em', color: TOKENS.inkHint, marginBottom: 12 }}>
+          Moduli in Esplorazione
+        </p>
+        <div
+          className="rounded-[16px] px-4 py-3 text-xs leading-relaxed mb-4"
+          style={{ background: TOKENS.accentSoft, border: `1px solid rgba(199,111,61,0.20)`, color: TOKENS.inkSecondary }}
+        >
+          <span style={{ fontWeight: 600, color: TOKENS.ink }}>ESPLORAZIONE METODOLOGICA · NON ATTIVI — </span>
+          Questi moduli sono in fase di esplorazione metodologica. Non sono attivi in Foundation Light, non sono contrattualizzabili e non costituiscono impegni di prodotto. Ogni modulo richiede validazione empirica, calibrazione metodologica, legal/privacy review ove necessario e completamento delle fasi precedenti.
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {FUTURE_MODULES.map((mod) => (
+            <div
+              key={mod.name}
+              className="rounded-[14px] p-4 space-y-2"
+              style={{ background: TOKENS.surface, border: TOKENS.cardBorder, boxShadow: TOKENS.cardShadow }}
+            >
+              <div className="flex flex-wrap items-start gap-2 justify-between">
+                <p style={{ fontSize: '13px', fontWeight: 600, color: TOKENS.ink }}>{mod.name}</p>
+                {mod.sensitivity === 'high' && (
+                  <span
+                    className="rounded border px-1.5 py-0.5 text-[9px] font-semibold shrink-0"
+                    style={{ background: 'rgba(217,154,43,0.08)', color: '#8A5A00', border: '1px solid rgba(217,154,43,0.25)' }}
+                  >
+                    Alta sensibilità
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', color: TOKENS.inkHint }}>{mod.pillars}</p>
+              <p style={{ fontSize: '11px', lineHeight: 1.55, color: TOKENS.inkSecondary }}>{mod.desc}</p>
+              <span
+                className="inline-block text-[9px] font-semibold uppercase tracking-wide"
+                style={{ color: TOKENS.inkHint }}
+              >
+                In esplorazione · non attivo
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* ── Dependency Logic ── */}
       <section>
