@@ -361,13 +361,13 @@ export default function DemoCompanyStatusPage() {
                 label: 'Decision Pack',
                 ready: readiness.hasDecisionPack,
                 value: readiness.hasDecisionPack ? 'Pronto per il board' : 'In preparazione',
-                href:  readiness.hasDecisionPack ? '/company/reports' : undefined,
+                href:  readiness.hasDecisionPack ? '/demo/company/reports' : undefined,
               },
               {
                 label: 'Board Pack PDF',
                 ready: readiness.hasDecisionPack,
                 value: readiness.hasDecisionPack ? 'Scaricabile' : 'Non ancora disponibile',
-                href:  readiness.hasDecisionPack ? '/company/reports/board-pack' : undefined,
+                href:  readiness.hasDecisionPack ? '/demo/company/reports' : undefined,
               },
             ].map(({ label, ready, value, href }) => {
               const card = (

@@ -1,4 +1,5 @@
-// app/demo/page.tsx — B129: Demo area home.
+// app/demo/page.tsx — B132-A: Demo area home — struttura narrativa a 4 sezioni.
+// B129: Demo area home originale.
 // Synthetic data only — no getSupabaseServiceClient, no getSupabaseServerClient,
 // no live DB queries. Numbers are canonical demo values from Foundation Light spec:
 //   S1 (Meridiana): KORA Index 34, Safeguard WARNING
@@ -33,39 +34,92 @@ const DEMO_SCENARIOS = [
   },
 ] as const;
 
-const DEMO_SURFACES = [
-  { label: 'Demo Guide',             href: '/demo/guide',               desc: 'Percorso guidato per presentare KORA a un nuovo interlocutore.' },
-  { label: 'KORA Index™ Detail',     href: '/demo/company/kora-index', desc: 'Scomposizione analitica: 10 componenti, 4 macroblocks, explainability, pipeline 14-stage.' },
-  { label: 'Status Center',          href: '/demo/company/status',     desc: 'Stato operativo aziendale: pipeline, checklist onboarding, submission, Worker Space.' },
-  { label: 'Activation Intelligence', href: '/demo/company/activation', desc: 'Activation Debt™, Maggioranza Silenziosa, distribuzione pillar e sede — dati sintetici.' },
-  { label: 'Pillar Intelligence',     href: '/demo/company/pillars',    desc: 'Portfolio programmi, iniziative collettive, distribuzione IU sui 5 pillar KORA — dati sintetici.' },
-  { label: 'Decision Pack',          href: '/demo/company/reports',    desc: 'Report direzionali, version history, period comparison, KORA Contribution — dati sintetici.' },
-  { label: 'Financial Governance',   href: '/demo/company/financial',  desc: 'BTI™ Engine, Activation Debt, budget per pillar, correlazioni KPI, scenari direzionali — dati sintetici.' },
-  { label: 'Advisor Workspace',      href: '/demo/advisor',        desc: 'Revisione evidenze, raccomandazioni governance, queue priorità.' },
-  { label: 'GTM Console',            href: '/demo/gtm',            desc: 'Demo script, pilot package, pipeline commerciale — uso interno KORA.' },
-  { label: 'Activation Network',     href: '/demo/network',        desc: 'Copertura territoriale partner & advisor, protocolli attivi.' },
-  { label: 'Future Vision',          href: '/demo/future-vision',  desc: 'Roadmap architetturale — non attiva in Foundation Light.' },
-  { label: 'KORA Index™ Registry',   href: '/demo/index-registry', desc: 'Registro delle letture KORA Index per aziende pilota e candidate.' },
-] as const;
+interface DemoSurface {
+  label: string;
+  href:  string;
+  desc:  string;
+}
+
+const SECTION_INTELLIGENCE: DemoSurface[] = [
+  { label: 'KORA Index™ Detail',      href: '/demo/company/kora-index', desc: 'Scomposizione analitica: 10 componenti, 4 macroblocks, explainability, pipeline 14-stage.' },
+  { label: 'Activation Intelligence', href: '/demo/company/activation', desc: 'Activation Debt™, Maggioranza Silenziosa, distribuzione pillar e sede.' },
+  { label: 'Pillar Intelligence',     href: '/demo/company/pillars',    desc: 'Portfolio programmi, iniziative collettive, distribuzione IU sui 5 pillar KORA.' },
+  { label: 'Decision Pack',           href: '/demo/company/reports',    desc: 'Report direzionali, version history, period comparison, KORA Contribution.' },
+  { label: 'Financial Governance',    href: '/demo/company/financial',  desc: 'BTI™ Engine, Activation Debt, budget per pillar, correlazioni KPI, scenari direzionali.' },
+  { label: 'Status Center',           href: '/demo/company/status',     desc: 'Stato operativo aziendale: pipeline, checklist onboarding, submission, Worker Space.' },
+];
+
+const SECTION_ECOSYSTEM: DemoSurface[] = [
+  { label: 'Advisor Workspace',     href: '/demo/advisor',        desc: 'Revisione evidenze, raccomandazioni governance, queue priorità.' },
+  { label: 'Activation Network',    href: '/demo/network',        desc: 'Copertura territoriale partner & advisor, protocolli attivi.' },
+  { label: 'Benchmark',             href: '/demo/benchmarks',     desc: 'Posizionamento KORA Index vs cluster sintetici di riferimento.' },
+  { label: 'Company Portfolio',     href: '/demo/portfolio',      desc: 'Vista aggregata aziende demo: KORA Index, Confidence Score, Safeguard.' },
+  { label: 'KORA Index™ Registry',  href: '/demo/index-registry', desc: 'Registro delle letture KORA Index per aziende pilota e candidate.' },
+];
+
+const SECTION_PIPELINE: DemoSurface[] = [
+  { label: 'KORA Classification Engine™', href: '/demo/ai-onboarding', desc: 'Pipeline di ingestione: tassonomia BCM rule-based, nessun LLM esterno su dati HR.' },
+  { label: 'Demo Guide',                  href: '/demo/guide',          desc: 'Percorso guidato per presentare KORA a un nuovo interlocutore.' },
+];
+
+const SECTION_ROADMAP: DemoSurface[] = [
+  { label: 'Future Vision', href: '/demo/future-vision', desc: 'Roadmap architetturale — non attiva in Foundation Light.' },
+];
+
+const INTERNAL_TOOLS: DemoSurface[] = [
+  { label: 'GTM Console', href: '/demo/gtm', desc: 'Demo script, pilot package, pipeline commerciale — uso interno KORA.' },
+];
+
+function SurfaceLink({ surface }: { surface: DemoSurface }) {
+  return (
+    <Link
+      href={surface.href}
+      style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '14px 18px', background: '#FFFFFF',
+        border: '1px solid rgba(6,3,43,0.09)', borderRadius: 12,
+        textDecoration: 'none', gap: 16,
+      }}
+    >
+      <div>
+        <p style={{ fontWeight: 700, fontSize: 14, color: '#211F1A', marginBottom: 3 }}>{surface.label}</p>
+        <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', lineHeight: 1.5 }}>{surface.desc}</p>
+      </div>
+      <span style={{ fontSize: 16, color: 'rgba(6,3,43,0.25)', flexShrink: 0 }}>→</span>
+    </Link>
+  );
+}
+
+function SectionHeading({ label, subtitle }: { label: string; subtitle: string }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <h2 style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', marginBottom: 4 }}>
+        {label}
+      </h2>
+      <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.45)', lineHeight: 1.5 }}>{subtitle}</p>
+    </div>
+  );
+}
 
 export default function DemoHomePage() {
   return (
     <div data-testid="demo-home" style={{ fontFamily: FONT }}>
-      {/* Hero */}
-      <div style={{ marginBottom: 40 }}>
+
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <div style={{ marginBottom: 36 }}>
         <p style={{ fontWeight: 700, fontSize: '10px', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#B5512E', marginBottom: 10 }}>
           KORA Foundation Light · Demo
         </p>
         <h1 style={{ fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#211F1A', marginBottom: 12 }}>
-          Area Dimostrativa
+          Scopri KORA
         </h1>
         <p style={{ fontSize: '14px', color: 'rgba(6,3,43,0.55)', lineHeight: 1.65, maxWidth: '60ch' }}>
-          Dati sintetici · KORA Methodology v0.1 · Pre-empirical calibration.
+          Area Dimostrativa · Dati sintetici · KORA Methodology v0.1 · Pre-empirical calibration.
           Nessun dato aziendale reale. Nessuna calibrazione empirica certificata.
         </p>
       </div>
 
-      {/* Scenarios */}
+      {/* ── Scenari dimostrativi ──────────────────────────────────────────── */}
       <section style={{ marginBottom: 48 }}>
         <h2 style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', marginBottom: 16 }}>
           Scenari dimostrativi
@@ -99,38 +153,88 @@ export default function DemoHomePage() {
                   <p style={{ fontSize: '1.75rem', fontWeight: 800, color: '#211F1A', lineHeight: 1 }}>{s.cs}</p>
                 </div>
               </div>
-              <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', lineHeight: 1.55 }}>{s.description}</p>
+              <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', lineHeight: 1.55, marginBottom: 16 }}>{s.description}</p>
+              <Link
+                href="/demo/company/kora-index"
+                style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: '#B5512E', textDecoration: 'none' }}
+              >
+                Esplora KORA Index™ →
+              </Link>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Demo surfaces */}
-      <section style={{ marginBottom: 40 }}>
-        <h2 style={{ fontWeight: 700, fontSize: '13px', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', marginBottom: 16 }}>
-          Superfici dimostrative disponibili
-        </h2>
+      {/* ── Sezione 1: Intelligence Aziendale ─────────────────────────────── */}
+      <section data-testid="demo-section-intelligence" style={{ marginBottom: 40 }}>
+        <SectionHeading
+          label="Intelligence Aziendale"
+          subtitle="Cosa vede un'azienda pilota KORA — dati sintetici S1/S2."
+        />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {DEMO_SURFACES.map((surface) => (
+          {SECTION_INTELLIGENCE.map((s) => <SurfaceLink key={s.href} surface={s} />)}
+        </div>
+      </section>
+
+      {/* ── Sezione 2: Ecosistema & Advisor ───────────────────────────────── */}
+      <section data-testid="demo-section-ecosystem" style={{ marginBottom: 40 }}>
+        <SectionHeading
+          label="Ecosistema & Advisor"
+          subtitle="Network, benchmark e governance delle evidenze."
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {SECTION_ECOSYSTEM.map((s) => <SurfaceLink key={s.href} surface={s} />)}
+        </div>
+      </section>
+
+      {/* ── Sezione 3: Pipeline & Classificazione ─────────────────────────── */}
+      <section data-testid="demo-section-pipeline" style={{ marginBottom: 40 }}>
+        <SectionHeading
+          label="Pipeline & Classificazione"
+          subtitle="Come funziona la pipeline KORA — dal dato grezzo al KORA Index™."
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {SECTION_PIPELINE.map((s) => <SurfaceLink key={s.href} surface={s} />)}
+        </div>
+      </section>
+
+      {/* ── Sezione 4: Roadmap ────────────────────────────────────────────── */}
+      <section data-testid="demo-section-roadmap" style={{ marginBottom: 48 }}>
+        <SectionHeading
+          label="Roadmap"
+          subtitle="Funzionalità future — non attive in Foundation Light."
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {SECTION_ROADMAP.map((s) => (
             <Link
-              key={surface.href}
-              href={surface.href}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)', borderRadius: 12, textDecoration: 'none', gap: 16 }}
+              key={s.href}
+              href={s.href}
+              style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '14px 18px', background: 'rgba(6,3,43,0.02)',
+                border: '1px solid rgba(6,3,43,0.07)', borderRadius: 12,
+                textDecoration: 'none', gap: 16, opacity: 0.7,
+              }}
             >
               <div>
-                <p style={{ fontWeight: 700, fontSize: 14, color: '#211F1A', marginBottom: 3 }}>{surface.label}</p>
-                <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', lineHeight: 1.5 }}>{surface.desc}</p>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3 }}>
+                  <p style={{ fontWeight: 700, fontSize: 14, color: '#211F1A' }}>{s.label}</p>
+                  <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.40)', padding: '1px 6px', border: '1px solid rgba(6,3,43,0.15)', borderRadius: 4 }}>
+                    INATTIVO
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', lineHeight: 1.5 }}>{s.desc}</p>
               </div>
-              <span style={{ fontSize: 16, color: 'rgba(6,3,43,0.25)', flexShrink: 0 }}>→</span>
+              <span style={{ fontSize: 16, color: 'rgba(6,3,43,0.20)', flexShrink: 0 }}>→</span>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* Disclaimer */}
+      {/* ── Disclaimer ────────────────────────────────────────────────────── */}
       <div
         data-testid="demo-disclaimer"
-        style={{ borderTop: '1px solid rgba(6,3,43,0.08)', paddingTop: 18 }}
+        style={{ borderTop: '1px solid rgba(6,3,43,0.08)', paddingTop: 18, marginBottom: 24 }}
       >
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', lineHeight: 1.65 }}>
           KORA Foundation Light v0.1 · Area Dimostrativa · Dati sintetici ·
@@ -138,6 +242,34 @@ export default function DemoHomePage() {
           KORA misura organizzazioni, mai individui · Nessun dato aziendale reale caricato.
         </p>
       </div>
+
+      {/* ── Uso interno KORA ──────────────────────────────────────────────── */}
+      <div data-testid="demo-internal-tools" style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.30)', marginBottom: 10 }}>
+          Uso interno KORA
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {INTERNAL_TOOLS.map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '10px 14px', background: 'transparent',
+                border: '1px solid rgba(6,3,43,0.07)', borderRadius: 10,
+                textDecoration: 'none', gap: 16,
+              }}
+            >
+              <div>
+                <p style={{ fontWeight: 600, fontSize: 13, color: 'rgba(6,3,43,0.55)', marginBottom: 2 }}>{s.label}</p>
+                <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.38)', lineHeight: 1.5 }}>{s.desc}</p>
+              </div>
+              <span style={{ fontSize: 14, color: 'rgba(6,3,43,0.20)', flexShrink: 0 }}>→</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
     </div>
   );
 }
