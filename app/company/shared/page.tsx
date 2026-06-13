@@ -1,5 +1,5 @@
 'use client';
-// C-10: Spazio Condiviso — locked shell per sessioni live.
+// C-10: KORA Space — locked shell per sessioni live.
 // Nessun dato individuale. Abilitato solo dopo configurazione, policy e moderazione.
 
 import Link from 'next/link';
@@ -10,10 +10,10 @@ export default function KoraSharedView() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 6 }}>
-          Spazio Condiviso
+          KORA Space
         </p>
         <h1 style={{ fontSize: '22px', fontWeight: 700, color: TOKENS.ink, marginBottom: 4 }}>
-          KORA Shared Space
+          KORA Space
         </h1>
         <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
           Spazio condiviso non ancora attivo per questo tenant live. KORA abiliterà lo spazio condiviso solo dopo configurazione, policy di moderazione e dati validati.

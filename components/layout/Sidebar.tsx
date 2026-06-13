@@ -178,7 +178,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Network',
         items: [
-          { href: '/company/shared',   label: 'Spazio Condiviso' },
+          { href: '/company/shared',   label: 'KORA Space' },
           { href: '/company/commons', label: 'KORA Commons' },
         ],
       },
