@@ -52,8 +52,6 @@ const PILLAR_TEXT: Record<string, string> = {
   LEGACY:     'text-[#8A7562]',
 };
 
-const TREND_ICON: Record<string, string> = { up: '↑', stable: '→', down: '↓' };
-const TREND_COLOR: Record<string, string> = { up: 'text-[#2F7D55]', stable: 'text-[rgba(6,3,43,0.42)]', down: 'text-[#9E3B2F]' };
 
 const VERIF_LABEL: Record<string, string> = {
   verified: 'Verificato', partial: 'In verifica', self_declared: 'Autodichiarato',
@@ -162,26 +160,76 @@ export default function PersonalImpactBalancePage() {
           </p>
         </div>
 
-        {/* KORA Activation Signature — STRATO worker */}
-        <div className="space-y-2" data-testid="activation-signature-block">
-          <KoraActivationSignature
-            pillarBreakdown={preview.pib_light.pillar_breakdown}
-            className="w-full"
-          />
-          <p className="text-center text-[10px] text-[rgba(6,3,43,0.38)] italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            Composizione del periodo, non una classifica.
-          </p>
-          <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.03)] px-3 py-2" data-testid="activation-profile-block">
-            <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.72)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              Profilo del periodo: <span className="text-[#C76F3D]">{preview.pib_light.activation_profile}</span>
+        {/* Pillar activation + worker signature — 2-col layout */}
+        {/* Signature is emblem-sized (~176px), not full-width. Bands are proportional to container. */}
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start"
+          data-testid="pillar-signature-grid"
+        >
+          {/* Left: compact 5-pillar activation */}
+          <div className="space-y-2">
+            <p
+              className="text-[10px] font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-widest mb-1"
+              style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+            >
+              Pillar activation
             </p>
-            <p className="text-[11px] text-[rgba(6,3,43,0.52)] mt-0.5 leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              {preview.pib_light.activation_profile_description}
+            {preview.pib_light.pillar_breakdown.map((p) => (
+              <div key={p.pillar} className="flex items-center gap-2">
+                <span
+                  className={cn('text-[11px] font-mono font-semibold shrink-0', PILLAR_TEXT[p.pillar] ?? 'text-[rgba(6,3,43,0.62)]')}
+                  style={{ width: 84 }}
+                >
+                  {p.pillar}
+                </span>
+                <div
+                  className="relative h-1.5 rounded-full bg-[rgba(6,3,43,0.06)] shrink-0"
+                  style={{ width: 120 }}
+                >
+                  <div
+                    className={cn('h-1.5 rounded-full', p.event_count > 0 ? (PILLAR_COLORS[p.pillar] ?? 'bg-[rgba(6,3,43,0.35)]') : 'bg-transparent')}
+                    style={{ width: p.event_count > 0 ? `${p.score}%` : '0%' }}
+                  />
+                </div>
+                <span className="text-[11px] font-mono text-[rgba(6,3,43,0.48)] shrink-0">
+                  {p.iu_total.toFixed(1).replace('.', ',')} IU
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Right: KORA Activation Signature — emblem, not a progress bar */}
+          <div className="flex flex-col items-center gap-2">
+            <p
+              className="text-[10px] font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-widest"
+              style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+            >
+              KORA Activation Signature
             </p>
-            <p className="text-[10px] text-[rgba(6,3,43,0.35)] mt-1 italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              Descrive il mix delle tue esperienze, non te. Cambia a ogni periodo.
+            <KoraActivationSignature
+              pillarBreakdown={preview.pib_light.pillar_breakdown}
+              className="w-44"
+            />
+            <p
+              className="text-[10px] text-[rgba(6,3,43,0.38)] italic text-center"
+              style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+            >
+              Composizione del periodo, non una classifica.
             </p>
           </div>
+        </div>
+
+        {/* Activation profile — standalone below the 2-col grid */}
+        <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.03)] px-3 py-2" data-testid="activation-profile-block">
+          <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.72)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Profilo del periodo: <span className="text-[#C76F3D]">{preview.pib_light.activation_profile}</span>
+          </p>
+          <p className="text-[11px] text-[rgba(6,3,43,0.52)] mt-0.5 leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            {preview.pib_light.activation_profile_description}
+          </p>
+          <p className="text-[10px] text-[rgba(6,3,43,0.35)] mt-1 italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Descrive il mix delle tue esperienze, non te. Cambia a ogni periodo.
+          </p>
         </div>
 
         {/* Qualitative activation level */}
@@ -218,40 +266,6 @@ export default function PersonalImpactBalancePage() {
           {preview.pib_light.active_pillars} pillar presenti · {preview.pib_light.total_events} esperienze · {preview.pib_light.period}
         </p>
 
-        {/* Pillar presence — visual bar only, no numeric score label */}
-        <div className="divide-y divide-[rgba(6,3,43,0.05)]">
-          {preview.pib_light.pillar_breakdown.map((p) => (
-            <div key={p.pillar} className="py-3">
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className={cn('text-xs font-mono font-semibold', PILLAR_TEXT[p.pillar] ?? 'text-[rgba(6,3,43,0.62)]')}>
-                    {p.pillar}
-                  </span>
-                  <span className="rounded border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-1.5 py-0.5 text-[10px] text-[rgba(6,3,43,0.40)]">
-                    Privato
-                  </span>
-                </div>
-                <span className="flex items-center gap-1 shrink-0">
-                  {p.event_count > 0 ? (
-                    <span className="text-[11px] text-[rgba(6,3,43,0.55)]">
-                      {p.event_count} {p.event_count === 1 ? 'esperienza' : 'esperienze'}
-                    </span>
-                  ) : (
-                    <span className="text-[11px] text-[rgba(6,3,43,0.30)] italic">non ancora presente</span>
-                  )}
-                  <span className={cn('text-xs ml-1', TREND_COLOR[p.trend])}>{TREND_ICON[p.trend]}</span>
-                </span>
-              </div>
-              {/* Bar driven by internal p.score — visual indication only, no numeric label */}
-              <div className="h-1.5 w-full rounded-full bg-[rgba(6,3,43,0.05)] mb-1">
-                <div
-                  className={cn('h-1.5 rounded-full', p.event_count > 0 ? (PILLAR_COLORS[p.pillar] ?? 'bg-[rgba(6,3,43,0.35)]') : 'bg-transparent')}
-                  style={{ width: p.event_count > 0 ? `${p.score}%` : '0%' }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
 
         {/* Dynamic CV connection — non-suppressible */}
         <div className="rounded border border-[rgba(47,125,85,0.18)] bg-[rgba(47,125,85,0.05)] px-3 py-2.5">

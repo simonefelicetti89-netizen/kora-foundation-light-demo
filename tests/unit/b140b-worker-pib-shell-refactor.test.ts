@@ -153,7 +153,9 @@ describe('B140-B2+C — service and page extensions', () => {
   });
 
   it('24. PIB dedicated page contains KORA Activation Signature reference', () => {
+    // B141-C: activation-signature-block replaced by pillar-signature-grid (2-col layout).
+    // KoraActivationSignature component is still present, now in the right column.
     expect(pibPageSrc).toContain('KoraActivationSignature');
-    expect(pibPageSrc).toContain('activation-signature-block');
+    expect(pibPageSrc).toContain('pillar-signature-grid');
   });
 });

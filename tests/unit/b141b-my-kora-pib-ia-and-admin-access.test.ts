@@ -210,3 +210,80 @@ describe('B141-B2 — /worker/layout.tsx safe KORA_ADMIN redirect', () => {
     expect(sessionSrc).toContain('Forbidden — WORKER role required');
   });
 });
+
+// ── 27–37: B141-C — PIB visual layout correction ──────────────────────────────
+
+describe('B141-C — PIB page 2-col pillar/signature layout', () => {
+  it('27. PIB page contains data-testid="pillar-signature-grid"', () => {
+    expect(pibPageSrc).toContain('data-testid="pillar-signature-grid"');
+  });
+
+  it('28. PIB page references all 5 pillar codes (as style-map keys and via p.pillar)', () => {
+    // Pillar names appear as unquoted object keys in PILLAR_COLORS/PILLAR_TEXT style maps.
+    // The compact left column renders them via {p.pillar} from pillar_breakdown.map.
+    expect(pibPageSrc).toContain('LIFE:');
+    expect(pibPageSrc).toContain('GROWTH:');
+    expect(pibPageSrc).toContain('CONNECTION:');
+    expect(pibPageSrc).toContain('IMPACT:');
+    expect(pibPageSrc).toContain('LEGACY:');
+    expect(pibPageSrc).toContain('pillar_breakdown.map');
+  });
+
+  it('29. KoraActivationSignature no longer uses className="w-full" in PIB page', () => {
+    // The full-width class was the root cause of the progress-bar appearance.
+    // After B141-C the signature is constrained to ~176px (w-44).
+    expect(pibPageSrc).not.toContain('className="w-full"');
+  });
+
+  it('30. PIB page contains "KORA Activation Signature" as label text', () => {
+    expect(pibPageSrc).toContain('KORA Activation Signature');
+  });
+
+  it('31. PIB page uses a compact class (w-44) on KoraActivationSignature', () => {
+    // Emblem is constrained — not full-width. w-44 = 176px.
+    expect(pibPageSrc).toContain('className="w-44"');
+  });
+
+  it('32. data-testid="activation-profile-block" is still present below the 2-col grid', () => {
+    // Profile block moved out of the old activation-signature-block — still required.
+    expect(pibPageSrc).toContain('data-testid="activation-profile-block"');
+    // And it must appear AFTER the pillar-signature-grid in file order.
+    const gridIdx    = pibPageSrc.indexOf('data-testid="pillar-signature-grid"');
+    const profileIdx = pibPageSrc.indexOf('data-testid="activation-profile-block"');
+    expect(gridIdx).toBeGreaterThan(-1);
+    expect(profileIdx).toBeGreaterThan(gridIdx);
+  });
+
+  it('33. "Composizione del periodo, non una classifica." is still present', () => {
+    expect(pibPageSrc).toContain('Composizione del periodo, non una classifica.');
+  });
+
+  it('34. KORA Link still uses KoraStratoMark (not KoraActivationSignature)', () => {
+    const koraLinkStart   = pibPageSrc.indexOf('data-testid="kora-link-card"');
+    const koraLinkSection = koraLinkStart > -1
+      ? pibPageSrc.substring(koraLinkStart, koraLinkStart + 800)
+      : '';
+    expect(koraLinkSection).toContain('KoraStratoMark');
+    expect(koraLinkSection).not.toContain('KoraActivationSignature');
+  });
+
+  it('35. KORA Link card does not receive pillarBreakdown prop', () => {
+    const koraLinkStart   = pibPageSrc.indexOf('data-testid="kora-link-card"');
+    const koraLinkSection = koraLinkStart > -1
+      ? pibPageSrc.substring(koraLinkStart, koraLinkStart + 800)
+      : '';
+    expect(koraLinkSection).not.toContain('pillarBreakdown');
+  });
+
+  it('36. PIB page contains IU per pillar (iu_total displayed)', () => {
+    // Compact left column must show IU value per pillar.
+    expect(pibPageSrc).toContain('iu_total.toFixed(1)');
+  });
+
+  it('37. PIB page contains no forbidden copy (score, ranking, benchmark, leaderboard, trophy, avatar, personaggio)', () => {
+    const forbidden = ['leaderboard', 'trophy', 'avatar', 'personaggio'];
+    for (const word of forbidden) {
+      expect(pibPageSrc.toLowerCase()).not.toContain(word);
+    }
+  });
+});
