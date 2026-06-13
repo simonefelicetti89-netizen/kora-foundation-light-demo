@@ -9,7 +9,9 @@ import { activationSafeguardService } from '@/services/activation-safeguard/Acti
 import { KoraIndexHero }           from '@/components/kora-index/KoraIndexHero';
 import { ComponentBreakdown }      from '@/components/kora-index/ComponentBreakdown';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
-import { PrivacyBoundaryNote }     from '@/components/reports/PrivacyBoundaryNote';
+import { PrivacyBoundaryNote }          from '@/components/reports/PrivacyBoundaryNote';
+import { NormativeMappingLightSection } from '@/components/reports/NormativeMappingLightSection';
+import { getNormativeMappingLight }     from '@/lib/normative-mapping/normative-mapping-light';
 import { PageMasthead }            from '@/components/ui/PageMasthead';
 import { BoundaryBadge }           from '@/components/ui/BoundaryBadge';
 import { BoundaryBanner }          from '@/components/ui/BoundaryBanner';
@@ -218,6 +220,10 @@ export default function Reports() {
           KORA Contribution live sarà disponibile dopo la prima verifica di iniziative collettive con evidenza partner.
         </div>
       </div>
+
+      {/* ── Normative Mapping Light ───────────────────────────────────────── */}
+      <SectionLabel>Normative Mapping Light</SectionLabel>
+      <NormativeMappingLightSection mapping={getNormativeMappingLight()} />
 
       {/* ── Confini metodologici ───────────────────────────────────────────── */}
       <SectionLabel>Confini metodologici e perimetro informativo</SectionLabel>
