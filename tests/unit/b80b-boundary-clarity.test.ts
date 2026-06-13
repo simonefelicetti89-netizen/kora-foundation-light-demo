@@ -157,6 +157,7 @@ describe('B80-B Task 4 — Admin LIVE pages have LIVE boundary badge', () => {
     'app/admin/company-evidence-archive/_components/CompanyEvidenceArchivePanel.tsx',
     'app/admin/companies/new/_components/CreateLiveCompanyForm.tsx',
     'app/admin/impact-units/_components/ImpactUnitsExplorer.tsx',
+    'app/admin/workers/_components/WorkersAdminClient.tsx',
   ];
 
   for (const filePath of livePaths) {

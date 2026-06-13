@@ -42,6 +42,13 @@ const COMPANY_ALLOWED_PREFIXES = [
 // B113-B: /worker/login is the dedicated worker re-auth endpoint — /company/login removed.
 // B126: /cv/share/ is a public CV share view — workers must be able to access it
 //   (e.g., to preview their own shared link) without being redirected to /worker/workspace.
+//
+// NOTE: /my-kora/ is intentionally absent from this list.
+//   My KORA is PREVIEW-only in Foundation Light: its pages use demo-state role switching,
+//   not a live Supabase JWT. An authenticated WORKER user who navigates to /my-kora/ is
+//   correctly redirected to /worker/workspace by this middleware.
+//   Pilot+: when My KORA is promoted to live, add /my-kora/ here and update
+//   WorkerSessionProvider to detect the live Supabase WORKER session instead of demo-state.
 const WORKER_ALLOWED_PREFIXES = [
   '/worker/',                // worker private space (includes /worker/login)
   '/cv/share/',              // public CV share view — B126 (no auth required)

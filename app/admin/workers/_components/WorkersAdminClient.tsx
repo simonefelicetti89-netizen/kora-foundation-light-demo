@@ -3,6 +3,7 @@
 // Calls /api/admin/workers/provision (POST) and /api/admin/workers/list (GET).
 
 import { useState } from 'react';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 interface WorkerRow {
   workerId:  string;
@@ -95,9 +96,7 @@ export default function WorkersAdminClient({ adminEmail }: { adminEmail: string 
         <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em' }}>
           Provisioning Worker
         </h1>
-        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', background: '#06032B', color: '#fff', borderRadius: 4, padding: '2px 7px' }}>
-          LIVE
-        </span>
+        <BoundaryBadge mode="LIVE" variant="light" />
       </div>
       <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', marginBottom: 32 }}>
         Loggato come <strong>{adminEmail}</strong> · Solo KORA_ADMIN
