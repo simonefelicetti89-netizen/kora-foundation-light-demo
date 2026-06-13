@@ -40,12 +40,12 @@ const CLUSTERS: Cluster[] = [
     purposeColor: 'text-[rgba(6,3,43,0.62)]',
     purpose: 'Misurare e rendere leggibile ciò che accade dopo la spesa.',
     modules: [
-      { name: 'KORA Index',              desc: 'Indice di attivazione organizzativa — 4 macroblocks, 10 componenti.',       href: '/company/kora-index' },
-      { name: 'Eligibility Gate',        desc: 'Classificazione Eligible / Limited / Blocked per ogni evento welfare.',      href: '/company/kora-index' },
-      { name: 'Activation Debt',         desc: 'Budget welfare non convertito in Impact Units.',                             href: '/company/activation' },
-      { name: 'Budget-to-Human-Impact',  desc: 'Connette la spesa al segnale di attivazione verificato.',                   href: '/company/financial'  },
-      { name: 'Decision Pack',           desc: 'Report board-ready con KORA Index, pillars e raccomandazioni.',              href: '/company/reports'    },
-      { name: 'Data Room',               desc: 'Pipeline di ingestion, UEF review e scoring readiness.',                    href: '/company/data'       },
+      { name: 'KORA Index',              desc: 'Indice di attivazione organizzativa — 4 macroblocks, 10 componenti.',       href: '/demo/company/kora-index' },
+      { name: 'Eligibility Gate',        desc: 'Classificazione Eligible / Limited / Blocked per ogni evento welfare.',      href: '/demo/company/kora-index' },
+      { name: 'Activation Debt',         desc: 'Budget welfare non convertito in Impact Units.',                             href: '/demo/company/activation' },
+      { name: 'Budget-to-Human-Impact',  desc: 'Connette la spesa al segnale di attivazione verificato.',                   href: '/demo/company/financial'  },
+      { name: 'Decision Pack',           desc: 'Report board-ready con KORA Index, pillars e raccomandazioni.',              href: '/demo/company/reports'    },
+      { name: 'Data Room',               desc: 'Pipeline di ingestion, UEF review e scoring readiness — non disponibile in area demo.' },
     ],
   },
   {
@@ -277,7 +277,10 @@ export default function FutureVision() {
                       className="inline-block text-[9px] font-semibold mt-0.5 uppercase tracking-wide"
                       style={{ color: TOKENS.inkHint }}
                     >
-                      {cluster.status === 'upcoming' ? 'Prossima fase' : cluster.status === 'roadmap' ? 'Roadmap' : 'Vision'}
+                      {cluster.status === 'active' ? 'Non disponibile in demo'
+                        : cluster.status === 'upcoming' ? 'Prossima fase'
+                        : cluster.status === 'roadmap' ? 'Roadmap'
+                        : 'Vision'}
                     </span>
                   )}
                 </div>

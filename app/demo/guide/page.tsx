@@ -18,13 +18,13 @@ const EVALUATE_ITEMS: {
   why: string;
   access: AccessLevel;
 }[] = [
-  { label: 'Executive Cockpit',      href: '/company',               access: 'live',  shows: 'KORA Index, Confidence Score, Activation Safeguard e priorità direzionali in una vista C-suite.',                         why: 'Punto di ingresso board-ready — mostra come l\'intelligence si traduce in decisione.' },
+  { label: 'Executive Cockpit',      href: '/demo/company/kora-index', access: 'demo',  shows: 'KORA Index, Confidence Score, Activation Safeguard e priorità direzionali in una vista C-suite.',                         why: 'Punto di ingresso board-ready — mostra come l\'intelligence si traduce in decisione.' },
   { label: 'KORA Index',             href: '/demo/company/kora-index', access: 'demo',  shows: '10 componenti, 4 macroblocks, pipeline 14-stage, explainability e Confidence Score.',                                    why: 'Cuore metodologico — ogni numero è tracciabile, spiegabile e versionato.' },
-  { label: 'Activation Debt',        href: '/company/activation',    access: 'live',  shows: 'Maggioranza silenziosa, concentrazione IU, distribuzione per sito e dipartimento, next actions.',                        why: 'Traduce la sotto-attivazione in segnale quantificato — senza esporre individui.' },
-  { label: 'Budget-to-Human-Impact', href: '/company/financial',     access: 'live',  shows: 'Governance finanziaria, budget per pillar, costo per IU, BTI macroblock.',                                               why: 'Connette la spesa people al segnale di attivazione — non promette ROI garantito.' },
-  { label: 'Stato Dati & Evidenze',  href: '/company/data',          access: 'live',  shows: 'Stato dati & evidenze — elaborazione gestita da KORA Operator. Lettura aggregata post-intake.',                          why: 'Mostra lo stato delle fonti ricevute — non un\'area self-service cliente.' },
-  { label: 'Decision Pack',          href: '/company/reports',       access: 'live',  shows: 'Report board-ready con KORA Index, pillar analysis, raccomandazioni e disclaimer espliciti.',                            why: 'Output finale per CEO, HR, ESG e Finance — con limiti metodologici integrati.' },
-  { label: 'KORA Contribution',      href: '/company/contribution',  access: 'live',  shows: 'Indicatore companion per il contributo collettivo e territoriale oltre il perimetro aziendale.',                          why: 'Segnala l\'estensione ecosistemica — distinto dal KORA Index e mai aggregato ad esso.' },
+  { label: 'Activation Debt',        href: '/demo/company/activation', access: 'demo',  shows: 'Maggioranza silenziosa, concentrazione IU, distribuzione per sito e dipartimento, next actions.',                        why: 'Traduce la sotto-attivazione in segnale quantificato — senza esporre individui.' },
+  { label: 'Budget-to-Human-Impact', href: '/demo/company/financial',  access: 'demo',  shows: 'Governance finanziaria, budget per pillar, costo per IU, BTI macroblock.',                                               why: 'Connette la spesa people al segnale di attivazione — non promette ROI garantito.' },
+  { label: 'Stato Dati & Evidenze',  href: '#',                        access: 'live',  shows: 'Dati & Evidenze — elaborazione live, non disponibile in area demo.',                                                      why: 'Mostra lo stato delle fonti ricevute — non un\'area self-service cliente.' },
+  { label: 'Decision Pack',          href: '/demo/company/reports',   access: 'demo',  shows: 'Report board-ready con KORA Index, pillar analysis, raccomandazioni e disclaimer espliciti.',                            why: 'Output finale per CEO, HR, ESG e Finance — con limiti metodologici integrati.' },
+  { label: 'KORA Contribution',      href: '#',                        access: 'live',  shows: 'KORA Contribution™ — modulo live, non disponibile in area demo.',                                                         why: 'Segnala l\'estensione ecosistemica — distinto dal KORA Index e mai aggregato ad esso.' },
   { label: 'Future Vision',          href: '/demo/future-vision',    access: 'demo',  shows: 'Roadmap architetturale in 4 fasi: Foundation Light → Pilot → Ecosystem → Worker-Owned.',                                 why: 'Mostra dove KORA va, non solo dove è ora — infrastruttura, non feature dump.' },
 ];
 
@@ -56,13 +56,13 @@ const NEXT_ROUTE: {
   note: string;
   access: AccessLevel;
 }[] = [
-  { step: 1, label: 'Executive Cockpit',       href: '/company',               note: 'Vista C-suite — KORA Index, Safeguard, priorità',           access: 'live' },
+  { step: 1, label: 'Executive Cockpit',       href: '/demo/company/kora-index', note: 'Vista C-suite — KORA Index, Safeguard, priorità',           access: 'demo' },
   { step: 2, label: 'KORA Index Detail',        href: '/demo/company/kora-index', note: '10 componenti, macroblocks, explainability',                access: 'demo' },
-  { step: 3, label: 'Activation Debt',          href: '/company/activation',    note: 'Maggioranza silenziosa, concentrazione, siti',              access: 'live' },
-  { step: 4, label: 'Budget-to-Human-Impact',   href: '/company/financial',     note: 'BTI, costo per IU, governance finanziaria',                 access: 'live' },
-  { step: 5, label: 'Stato Dati & Evidenze',    href: '/company/data',          note: 'Stato dati & evidenze — elaborazione KORA',                 access: 'live' },
-  { step: 6, label: 'Decision Pack',            href: '/company/reports',       note: 'Report board-ready, pillar, raccomandazioni',               access: 'live' },
-  { step: 7, label: 'KORA Contribution',        href: '/company/contribution',  note: 'Companion indicator — ecosistema e territorio',             access: 'live' },
+  { step: 3, label: 'Activation Debt',          href: '/demo/company/activation', note: 'Maggioranza silenziosa, concentrazione, siti',              access: 'demo' },
+  { step: 4, label: 'Budget-to-Human-Impact',   href: '/demo/company/financial',  note: 'BTI, costo per IU, governance finanziaria',                 access: 'demo' },
+  { step: 5, label: 'Stato Dati & Evidenze',    href: '#',                        note: 'Dati & Evidenze — elaborazione live, non disponibile in demo', access: 'live' },
+  { step: 6, label: 'Decision Pack',            href: '/demo/company/reports',   note: 'Report board-ready, pillar, raccomandazioni',               access: 'demo' },
+  { step: 7, label: 'KORA Contribution',        href: '#',                        note: 'KORA Contribution™ — modulo live, non disponibile in demo', access: 'live' },
   { step: 8, label: 'Future Vision',            href: '/demo/future-vision',    note: 'Roadmap architetturale in 4 fasi',                          access: 'demo' },
 ];
 

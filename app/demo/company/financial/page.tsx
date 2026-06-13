@@ -996,7 +996,7 @@ export default function FinancialGovernanceDemo() {
             Costo per IU, Activation Debt direzionale, correlazione ≠ causalità, nessun ROI garantito.
           </p>
         </div>
-        <Link href="/company/reports" style={{ flexShrink: 0, borderRadius: 6, border: `1px solid ${TOKENS.accent}55`, background: `${TOKENS.accent}0a`, padding: '8px 14px', fontSize: '12px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
+        <Link href="/demo/company/reports" style={{ flexShrink: 0, borderRadius: 6, border: `1px solid ${TOKENS.accent}55`, background: `${TOKENS.accent}0a`, padding: '8px 14px', fontSize: '12px', fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
           Vai a Report & Board Pack →
         </Link>
       </div>
