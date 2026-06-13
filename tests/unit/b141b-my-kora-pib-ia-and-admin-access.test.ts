@@ -328,9 +328,24 @@ describe('B141-D — WorkerActivationSignatureCard premium card', () => {
     expect(koraLinkSection).not.toContain('pillarBreakdown');
   });
 
-  it('44. WorkerActivationSignatureCard uses dark premium background token (inkWarm)', () => {
-    // inkWarm = #211F1A — referenced via ACTIVATION_SIGNATURE token, not hardcoded.
-    expect(cardSrc).toContain('inkWarm');
+  it('44. WorkerActivationSignatureCard uses light premium background token (canvas)', () => {
+    // canvas = #F6F4EF — light seal surface via ACTIVATION_SIGNATURE token, not hardcoded.
+    // B141-E: switched from dark inkWarm to light canvas for visibility and merchandising-readiness.
+    expect(cardSrc).toContain('canvas');
     expect(cardSrc).toContain('ACTIVATION_SIGNATURE');
+  });
+
+  it('45. WorkerActivationSignatureCard has fixed width (240) — not full-width or banner', () => {
+    // B141-E: card is a ~240×240 seal, never a full-width banner.
+    expect(cardSrc).toContain('width:');
+    expect(cardSrc).toContain('240');
+    expect(cardSrc).not.toContain("width: '100%'");
+    expect(cardSrc).not.toContain('w-full');
+  });
+
+  it('46. PIB page uses width-capped grid for pillar-signature-grid (280px right column)', () => {
+    // B141-E: grid right column capped at 280px — card cannot expand to half-page width.
+    expect(pibPageSrc).toContain('sm:grid-cols-[minmax(0,1fr)_280px]');
+    expect(pibPageSrc).toContain('max-w-[260px]');
   });
 });

@@ -147,9 +147,9 @@ export default function PersonalImpactBalancePage() {
         </div>
 
         {/* Pillar activation + worker signature — 2-col layout */}
-        {/* Signature is emblem-sized (~176px), not full-width. Bands are proportional to container. */}
+        {/* Card is seal-sized (240×240), not full-width. Right column is width-capped. */}
         <div
-          className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-start"
+          className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_280px] gap-6 items-start"
           data-testid="pillar-signature-grid"
         >
           {/* Left: compact 5-pillar activation */}
@@ -170,7 +170,7 @@ export default function PersonalImpactBalancePage() {
                 </span>
                 <div
                   className="relative h-1.5 rounded-full bg-[rgba(6,3,43,0.06)] shrink-0"
-                  style={{ width: 120 }}
+                  style={{ width: 148 }}
                 >
                   <div
                     className={cn('h-1.5 rounded-full', p.event_count > 0 ? (PILLAR_COLORS[p.pillar] ?? 'bg-[rgba(6,3,43,0.35)]') : 'bg-transparent')}
@@ -184,12 +184,15 @@ export default function PersonalImpactBalancePage() {
             ))}
           </div>
 
-          {/* Right: premium personal pictogram — dark card, worker-owned */}
+          {/* Right: premium personal seal — light canvas, cotto STRATO, worker-owned */}
           <div className="flex flex-col gap-2">
-            <WorkerActivationSignatureCard
-              pillarBreakdown={preview.pib_light.pillar_breakdown}
-              activationProfile={preview.pib_light.activation_profile}
-            />
+            <div className="flex justify-center sm:justify-end">
+              <WorkerActivationSignatureCard
+                pillarBreakdown={preview.pib_light.pillar_breakdown}
+                activationProfile={preview.pib_light.activation_profile}
+                className="max-w-[260px]"
+              />
+            </div>
             <p
               className="text-[10px] text-[rgba(6,3,43,0.38)] italic text-center"
               style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}

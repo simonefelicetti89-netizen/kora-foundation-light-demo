@@ -53,7 +53,7 @@ export function KoraActivationSignature({ pillarBreakdown, className }: KoraActi
       <div
         style={{
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', gap: 5,
+          alignItems: 'center', gap: 7,
           paddingTop: 6, paddingBottom: 6,
         }}
       >
@@ -74,8 +74,8 @@ export function KoraActivationSignature({ pillarBreakdown, className }: KoraActi
               aria-hidden="true"
               style={{
                 width:        `${pct}%`,
-                height:       10,
-                borderRadius: 2,
+                height:       14,
+                borderRadius: 3,
                 background:   ACTIVATION_SIGNATURE.cotto,
                 opacity:      Math.round(opacity * 100) / 100,
               }}
