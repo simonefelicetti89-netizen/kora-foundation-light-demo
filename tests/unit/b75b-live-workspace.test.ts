@@ -25,13 +25,17 @@ describe('Task 1 — Live company name from analytics.tenant', () => {
   it('CompanySessionProvider exposes companyName in context interface', () => {
     const src = read('app/company/_providers/CompanySessionProvider.tsx');
     expect(src).toContain('companyName: string | null');
-    expect(src).toContain('company_name');
-    // Must fetch from analytics.tenant schema using the session tenantId
-    expect(src).toContain(".schema('analytics')");
-    expect(src).toContain("from('tenant')");
-    expect(src).toContain("select('company_name')");
-    // tenantId used in the query must come from JWT (tid), never from URL
-    expect(src).toContain('.eq(\'id\', tid)');
+  });
+
+  it('B137: company name query moved to server layout (analytics.tenant)', () => {
+    // B137: company_name is now resolved server-side in app/company/layout.tsx,
+    // not in the client provider. This keeps the provider free of async detection.
+    const layout = read('app/company/layout.tsx');
+    expect(layout).toContain('company_name');
+    expect(layout).toContain(".schema('analytics')");
+    expect(layout).toContain("from('tenant')");
+    expect(layout).toContain("select('company_name')");
+    expect(layout).toContain('.eq(\'id\', auth.tenantId)');
   });
 
   it('companyName is never sourced from URL params', () => {

@@ -17,9 +17,7 @@ const NAV_ITEMS = [
 ] as const;
 
 export default function ExecutiveCockpit() {
-  const { isLive, companyName, sessionLoading } = useCompanySession();
-
-  if (sessionLoading) return null;
+  const { isLive, companyName } = useCompanySession();
 
   return (
     <div className="space-y-6 max-w-2xl">

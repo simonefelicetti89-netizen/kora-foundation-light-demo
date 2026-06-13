@@ -244,13 +244,17 @@ describe('B106 + B133 — opportunities and shared are now live shells (no synth
   it('app/company/opportunities/page.tsx — no synthetic_demo_data (B133 converted to live shell)', () => {
     if (!exists('app/company/opportunities/page.tsx')) return;
     expect(read('app/company/opportunities/page.tsx')).not.toContain('synthetic_demo_data');
-    expect(read('app/company/opportunities/page.tsx')).toContain('useCompanySession');
+    // B137: useCompanySession no longer needed in locked shells — guard is in server layout.
+    expect(read('app/company/opportunities/page.tsx')).not.toContain('getCurrentDemoUser');
+    expect(read('app/company/opportunities/page.tsx')).toContain('non ancora attivo');
   });
 
   it('app/company/shared/page.tsx — no synthetic_demo_data (B133 converted to live shell)', () => {
     if (!exists('app/company/shared/page.tsx')) return;
     expect(read('app/company/shared/page.tsx')).not.toContain('synthetic_demo_data');
-    expect(read('app/company/shared/page.tsx')).toContain('useCompanySession');
+    // B137: useCompanySession no longer needed in locked shells — guard is in server layout.
+    expect(read('app/company/shared/page.tsx')).not.toContain('getCurrentDemoUser');
+    expect(read('app/company/shared/page.tsx')).toContain('non ancora attivo');
   });
 });
 

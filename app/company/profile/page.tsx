@@ -7,9 +7,7 @@ import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export default function CompanyProfilePage() {
-  const { isLive, companyName, tenantId, koraRole, sessionLoading } = useCompanySession();
-
-  if (sessionLoading) return null;
+  const { isLive, companyName, tenantId, koraRole } = useCompanySession();
 
   return (
     <div className="space-y-6 max-w-2xl">

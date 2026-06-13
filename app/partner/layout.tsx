@@ -1,44 +1,33 @@
-'use client';
-// Partner layout — portale operativo per il ruolo Partner.
-// B127: Handles both real PARTNER Supabase sessions and demo-state PARTNER role.
-// KORA_ADMIN: review access in demo mode (B45).
+// app/partner/layout.tsx — Server Component.
+// B137: Converted from 'use client' to server-side guard — eliminates blank-flash flicker.
+//
+// Gate: requirePartnerUser() validates the Supabase session and kora_role=PARTNER
+// before any HTML is sent to the client. Unauthorized users are redirected
+// server-side — children never render for unauthenticated or wrong-role requests.
+//
+// KORA_ADMIN admin preview of the partner workspace is available at:
+//   /admin/preview/partner/workspace — not via this layout.
 
-import { useRole } from '@/lib/demo-state';
-import { AccessDeniedState } from '@/components/privacy/AccessDeniedState';
-import { isAdminRole } from '@/lib/permissions';
-import type { KoraRole } from '@/lib/types';
-import { useEffect, useState } from 'react';
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { redirect }                                      from 'next/navigation';
+import { requirePartnerUser, getCurrentKoraUser,
+         isKoraAuthError }                               from '@/lib/auth/kora-session';
 
-export default function PartnerLayout({ children }: { children: React.ReactNode }) {
-  const { activeRole } = useRole();
-  const [realRole, setRealRole] = useState<string | null | undefined>(undefined);
+export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
+  const auth = await requirePartnerUser();
 
-  useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    supabase.auth.getSession().then(({ data }) => {
-      const role = data.session?.user?.app_metadata?.kora_role as string | undefined;
-      setRealRole(role ?? null);
-    });
-  }, []);
-
-  // Real PARTNER session always passes through — no demo-state dependency
-  if (realRole === 'PARTNER') return <>{children}</>;
-
-  // Demo mode: PARTNER or KORA_ADMIN demo roles pass through
-  if (activeRole === 'PARTNER' || isAdminRole(activeRole as KoraRole)) {
-    return <>{children}</>;
+  if (isKoraAuthError(auth)) {
+    // KORA_ADMIN navigating to /partner/* by mistake — send to admin area.
+    const admin = await getCurrentKoraUser();
+    if (admin?.koraRole === 'KORA_ADMIN') {
+      redirect('/admin');
+    }
+    // Unauthenticated (401) or wrong role (403) → unified login with partner hint.
+    redirect('/login?role_hint=partner');
   }
 
-  // Brief loading state — avoids flash of access-denied for real PARTNER sessions
-  if (realRole === undefined) return null;
-
   return (
-    <AccessDeniedState
-      role={activeRole as KoraRole}
-      route="/partner"
-      requiredRole={'PARTNER' as KoraRole}
-      reason="Il workspace partner è riservato al ruolo Partner."
-    />
+    <div style={{ minHeight: '100vh', background: '#fafafa' }}>
+      {children}
+    </div>
   );
 }
