@@ -217,11 +217,11 @@ describe('B80-B Task 4 — Company live-only pages have LIVE boundary badge + ba
 
 // B130: All company intelligence pages are now live-only. No remaining dual-path pages.
 
-describe('B80-B Task 4 — Company executive cockpit has DEMO badge', () => {
-  it('company page has DEMO badge', () => {
+describe('B80-B Task 4 — Company executive cockpit (B133: migrated to live nav hub)', () => {
+  it('company page has no DEMO badge — B133 removed demo cockpit content, page is now live nav hub', () => {
     const src = read('app/company/page.tsx');
-    expect(src).toContain('BoundaryBadge');
-    expect(src).toContain("mode=\"DEMO\"");
+    expect(src).not.toContain("mode=\"DEMO\"");
+    expect(src).toContain('useCompanySession');
   });
 });
 
