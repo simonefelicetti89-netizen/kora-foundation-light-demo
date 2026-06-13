@@ -25,6 +25,8 @@ const tokenSrc     = read('lib/design/kora-design-tokens.ts');
 const pibPageSrc   = read('app/my-kora/personal-impact-balance/page.tsx');
 // pageSrc alias kept for all existing test references.
 const pageSrc      = pibPageSrc;
+// B141-F: pillar breakdown and Composizione copy moved inside WorkerActivationSignatureCard.
+const cardSrc      = read('components/my-kora/WorkerActivationSignatureCard.tsx');
 
 // ── 1–3: STRATO normalization invariant ──────────────────────────────────────
 
@@ -66,8 +68,9 @@ describe('B140-C — IU absolute value outside the emblema', () => {
 // ── 7–9: Mandatory copy strings ───────────────────────────────────────────────
 
 describe('B140-C — Mandatory copy in page', () => {
-  it('7. page contains "Composizione del periodo, non una classifica."', () => {
-    expect(pageSrc).toContain('Composizione del periodo, non una classifica.');
+  it('7. "Composizione del periodo, non una classifica." is present in the card component', () => {
+    // B141-F: copy moved inside WorkerActivationSignatureCard (pillar breakdown footer).
+    expect(cardSrc).toContain('Composizione del periodo, non una classifica.');
   });
 
   it('8. page contains "Profilo del periodo:" label', () => {

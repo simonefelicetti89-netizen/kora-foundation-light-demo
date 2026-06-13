@@ -152,10 +152,10 @@ describe('B140-B2+C — service and page extensions', () => {
     expect(svcSrc).toContain('Life Anchor');
   });
 
-  it('24. PIB dedicated page contains KORA Activation Signature reference', () => {
-    // B141-C: activation-signature-block replaced by pillar-signature-grid (2-col layout).
-    // KoraActivationSignature component is still present, now in the right column.
-    expect(pibPageSrc).toContain('KoraActivationSignature');
-    expect(pibPageSrc).toContain('pillar-signature-grid');
+  it('24. PIB dedicated page uses WorkerActivationSignatureCard (contains STRATO)', () => {
+    // B141-F: 2-col grid replaced by unified personal-impact-signature wrapper.
+    // KoraActivationSignature is inside WorkerActivationSignatureCard, not directly in the page.
+    expect(pibPageSrc).toContain('WorkerActivationSignatureCard');
+    expect(pibPageSrc).toContain('personal-impact-signature');
   });
 });

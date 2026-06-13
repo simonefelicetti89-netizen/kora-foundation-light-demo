@@ -30,11 +30,6 @@ import { cn } from '@/lib/utils';
 
 // ─── Styling maps ─────────────────────────────────────────────────────────────
 
-const PILLAR_COLORS: Record<string, string> = {
-  LIFE: 'bg-[#C76F3D]', GROWTH: 'bg-[#2F7D55]', CONNECTION: 'bg-[#D99767]',
-  IMPACT: 'bg-[#2F7D55]', LEGACY: 'bg-[#8A7562]',
-};
-
 const PILLAR_LIGHT: Record<string, string> = {
   LIFE:       'bg-[#C76F3D]/10 text-[#C76F3D] border-[rgba(199,111,61,0.25)]',
   GROWTH:     'bg-[#2F7D55]/10 text-[#2F7D55] border-[rgba(47,125,85,0.25)]',
@@ -42,15 +37,6 @@ const PILLAR_LIGHT: Record<string, string> = {
   IMPACT:     'bg-[rgba(74,127,224,0.10)] text-[#4A7FE0] border-[rgba(74,127,224,0.25)]',
   LEGACY:     'bg-[#8A7562]/10 text-[#8A7562] border-[rgba(138,117,98,0.25)]',
 };
-
-const PILLAR_TEXT: Record<string, string> = {
-  LIFE:       'text-[#C76F3D]',
-  GROWTH:     'text-[#2F7D55]',
-  CONNECTION: 'text-[#D99767]',
-  IMPACT:     'text-[#4A7FE0]',
-  LEGACY:     'text-[#8A7562]',
-};
-
 
 const VERIF_LABEL: Record<string, string> = {
   verified: 'Verificato', partial: 'In verifica', self_declared: 'Autodichiarato',
@@ -146,60 +132,14 @@ export default function PersonalImpactBalancePage() {
           </p>
         </div>
 
-        {/* Pillar activation + worker signature — 2-col layout */}
-        {/* Card is seal-sized (240×240), not full-width. Right column is width-capped. */}
-        <div
-          className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_280px] gap-6 items-start"
-          data-testid="pillar-signature-grid"
-        >
-          {/* Left: compact 5-pillar activation */}
-          <div className="space-y-2">
-            <p
-              className="text-[10px] font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-widest mb-1"
-              style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
-            >
-              Pillar activation
-            </p>
-            {preview.pib_light.pillar_breakdown.map((p) => (
-              <div key={p.pillar} className="flex items-center gap-2">
-                <span
-                  className={cn('text-[11px] font-mono font-semibold shrink-0', PILLAR_TEXT[p.pillar] ?? 'text-[rgba(6,3,43,0.62)]')}
-                  style={{ width: 84 }}
-                >
-                  {p.pillar}
-                </span>
-                <div
-                  className="relative h-1.5 rounded-full bg-[rgba(6,3,43,0.06)] shrink-0"
-                  style={{ width: 148 }}
-                >
-                  <div
-                    className={cn('h-1.5 rounded-full', p.event_count > 0 ? (PILLAR_COLORS[p.pillar] ?? 'bg-[rgba(6,3,43,0.35)]') : 'bg-transparent')}
-                    style={{ width: p.event_count > 0 ? `${p.score}%` : '0%' }}
-                  />
-                </div>
-                <span className="text-[11px] font-mono text-[rgba(6,3,43,0.48)] shrink-0">
-                  {p.iu_total.toFixed(1).replace('.', ',')} IU
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Right: premium personal seal — light canvas, cotto STRATO, worker-owned */}
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-center sm:justify-end">
-              <WorkerActivationSignatureCard
-                pillarBreakdown={preview.pib_light.pillar_breakdown}
-                activationProfile={preview.pib_light.activation_profile}
-                className="max-w-[260px]"
-              />
-            </div>
-            <p
-              className="text-[10px] text-[rgba(6,3,43,0.38)] italic text-center"
-              style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
-            >
-              Composizione del periodo, non una classifica.
-            </p>
-          </div>
+        {/* Personal Impact Signature — unified object: STRATO + logo + pillar breakdown */}
+        <div className="flex justify-center" data-testid="personal-impact-signature">
+          <WorkerActivationSignatureCard
+            pillarBreakdown={preview.pib_light.pillar_breakdown}
+            activationProfile={preview.pib_light.activation_profile}
+            periodIuTotal={preview.pib_light.period_iu_total}
+            className="w-full max-w-[560px]"
+          />
         </div>
 
         {/* Activation profile — standalone below the 2-col grid */}

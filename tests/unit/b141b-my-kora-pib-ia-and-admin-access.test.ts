@@ -35,6 +35,7 @@ const middlewareSrc = read('middleware.ts');
 const sessionSrc    = read('lib/auth/kora-session.ts');
 const sidebarSrc    = read('components/layout/Sidebar.tsx');
 const workerLayout  = read('app/worker/layout.tsx');
+const cardSrc       = read('components/my-kora/WorkerActivationSignatureCard.tsx');
 
 // ── 1–6: PIB dedicated page ───────────────────────────────────────────────────
 
@@ -214,19 +215,21 @@ describe('B141-B2 — /worker/layout.tsx safe KORA_ADMIN redirect', () => {
 // ── 27–37: B141-C — PIB visual layout correction ──────────────────────────────
 
 describe('B141-C — PIB page 2-col pillar/signature layout', () => {
-  it('27. PIB page contains data-testid="pillar-signature-grid"', () => {
-    expect(pibPageSrc).toContain('data-testid="pillar-signature-grid"');
+  it('27. PIB page contains data-testid="personal-impact-signature" (unified card wrapper)', () => {
+    // B141-F: dispersive 2-col grid replaced by single centered signature object.
+    expect(pibPageSrc).toContain('data-testid="personal-impact-signature"');
   });
 
-  it('28. PIB page references all 5 pillar codes (as style-map keys and via p.pillar)', () => {
-    // Pillar names appear as unquoted object keys in PILLAR_COLORS/PILLAR_TEXT style maps.
-    // The compact left column renders them via {p.pillar} from pillar_breakdown.map.
+  it('28. PIB page references all 5 pillar codes via PILLAR_LIGHT and passes breakdown to card', () => {
+    // Pillar codes appear in PILLAR_LIGHT (used by timeline section) — still present in page.
+    // B141-F: pillar_breakdown.map moved inside WorkerActivationSignatureCard.
+    // Page passes the breakdown via prop: pillarBreakdown={preview.pib_light.pillar_breakdown}.
     expect(pibPageSrc).toContain('LIFE:');
     expect(pibPageSrc).toContain('GROWTH:');
     expect(pibPageSrc).toContain('CONNECTION:');
     expect(pibPageSrc).toContain('IMPACT:');
     expect(pibPageSrc).toContain('LEGACY:');
-    expect(pibPageSrc).toContain('pillar_breakdown.map');
+    expect(pibPageSrc).toContain('pillar_breakdown}');
   });
 
   it('29. KoraActivationSignature no longer uses className="w-full" in PIB page', () => {
@@ -247,18 +250,18 @@ describe('B141-C — PIB page 2-col pillar/signature layout', () => {
     expect(pibPageSrc).not.toContain('className="w-44"');
   });
 
-  it('32. data-testid="activation-profile-block" is still present below the 2-col grid', () => {
-    // Profile block moved out of the old activation-signature-block — still required.
+  it('32. data-testid="activation-profile-block" is still present below the signature object', () => {
     expect(pibPageSrc).toContain('data-testid="activation-profile-block"');
-    // And it must appear AFTER the pillar-signature-grid in file order.
-    const gridIdx    = pibPageSrc.indexOf('data-testid="pillar-signature-grid"');
+    // Profile block must appear AFTER the personal-impact-signature wrapper (B141-F).
+    const sigIdx     = pibPageSrc.indexOf('data-testid="personal-impact-signature"');
     const profileIdx = pibPageSrc.indexOf('data-testid="activation-profile-block"');
-    expect(gridIdx).toBeGreaterThan(-1);
-    expect(profileIdx).toBeGreaterThan(gridIdx);
+    expect(sigIdx).toBeGreaterThan(-1);
+    expect(profileIdx).toBeGreaterThan(sigIdx);
   });
 
-  it('33. "Composizione del periodo, non una classifica." is still present', () => {
-    expect(pibPageSrc).toContain('Composizione del periodo, non una classifica.');
+  it('33. "Composizione del periodo, non una classifica." is present in the card component', () => {
+    // B141-F: copy moved inside WorkerActivationSignatureCard (pillar breakdown footer).
+    expect(cardSrc).toContain('Composizione del periodo, non una classifica.');
   });
 
   it('34. KORA Link still uses KoraStratoMark (not KoraActivationSignature)', () => {
@@ -294,8 +297,6 @@ describe('B141-C — PIB page 2-col pillar/signature layout', () => {
 // ── 38–44: B141-D — WorkerActivationSignatureCard premium personal pictogram ──
 
 describe('B141-D — WorkerActivationSignatureCard premium card', () => {
-  const cardSrc = read('components/my-kora/WorkerActivationSignatureCard.tsx');
-
   it('38. WorkerActivationSignatureCard component file exists', () => {
     expect(cardSrc.length).toBeGreaterThan(0);
   });
@@ -313,9 +314,11 @@ describe('B141-D — WorkerActivationSignatureCard premium card', () => {
     expect(cardSrc).toContain('data-testid="worker-activation-signature-card"');
   });
 
-  it('42. PIB page passes pillarBreakdown to WorkerActivationSignatureCard', () => {
-    // Personal card receives worker pillar data — it is personalised per worker mix.
+  it('42. PIB page passes pillarBreakdown and periodIuTotal to WorkerActivationSignatureCard', () => {
+    // Personal card receives worker pillar data and IU total — personalised per worker.
     expect(pibPageSrc).toContain('pillarBreakdown={preview.pib_light.pillar_breakdown}');
+    // B141-F: periodIuTotal is a new required prop passed from the page.
+    expect(pibPageSrc).toContain('periodIuTotal={preview.pib_light.period_iu_total}');
   });
 
   it('43. KORA Link section does not use KoraActivationSignature', () => {
@@ -330,22 +333,41 @@ describe('B141-D — WorkerActivationSignatureCard premium card', () => {
 
   it('44. WorkerActivationSignatureCard uses light premium background token (canvas)', () => {
     // canvas = #F6F4EF — light seal surface via ACTIVATION_SIGNATURE token, not hardcoded.
-    // B141-E: switched from dark inkWarm to light canvas for visibility and merchandising-readiness.
     expect(cardSrc).toContain('canvas');
     expect(cardSrc).toContain('ACTIVATION_SIGNATURE');
   });
 
-  it('45. WorkerActivationSignatureCard has fixed width (240) — not full-width or banner', () => {
-    // B141-E: card is a ~240×240 seal, never a full-width banner.
-    expect(cardSrc).toContain('width:');
-    expect(cardSrc).toContain('240');
+  it('45. WorkerActivationSignatureCard is a sealed object — not banner or fixed full-width', () => {
+    // B141-F: card uses borderRadius + overflow:hidden. Max-width delegated to page wrapper.
+    expect(cardSrc).toContain('borderRadius');
+    expect(cardSrc).toContain('overflow');
     expect(cardSrc).not.toContain("width: '100%'");
     expect(cardSrc).not.toContain('w-full');
   });
 
-  it('46. PIB page uses width-capped grid for pillar-signature-grid (280px right column)', () => {
-    // B141-E: grid right column capped at 280px — card cannot expand to half-page width.
-    expect(pibPageSrc).toContain('sm:grid-cols-[minmax(0,1fr)_280px]');
-    expect(pibPageSrc).toContain('max-w-[260px]');
+  it('46. PIB page uses centered wrapper with max-width cap for the signature object', () => {
+    // B141-F: dispersive 2-col grid replaced by centered personal-impact-signature wrapper.
+    expect(pibPageSrc).toContain('personal-impact-signature');
+    expect(pibPageSrc).toContain('max-w-[560px]');
+  });
+});
+
+// ── 47–49: B141-F — Unified Personal Impact Signature object ──────────────────
+
+describe('B141-F — WorkerActivationSignatureCard unified signature object', () => {
+  it('47. WorkerActivationSignatureCard contains KoraLogo (real brand logo, on-light)', () => {
+    expect(cardSrc).toContain('KoraLogo');
+    expect(cardSrc).toContain("on-light");
+  });
+
+  it('48. WorkerActivationSignatureCard accepts periodIuTotal and renders Impact Units label', () => {
+    expect(cardSrc).toContain('periodIuTotal');
+    expect(cardSrc).toContain('Impact Units attivate');
+  });
+
+  it('49. WorkerActivationSignatureCard renders pillar breakdown inside the card', () => {
+    // B141-F: pillar rows are INSIDE the card — not in a separate page column.
+    expect(cardSrc).toContain('pillarBreakdown.map');
+    expect(cardSrc).toContain('iu_total.toFixed');
   });
 });
