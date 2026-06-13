@@ -18,16 +18,17 @@ function read(rel: string): string {
   return fs.readFileSync(path.resolve(__dirname, '../..', rel), 'utf-8');
 }
 
-// ── Extract PIB section from page source ──────────────────────────────────────
+// ── Extract PIB section from PIB dedicated page source ───────────────────────
+// B141-B: PIB content moved from app/my-kora/page.tsx to dedicated PIB page.
 
-const pageSrc = read('app/my-kora/page.tsx');
+const pibPageSrc = read('app/my-kora/personal-impact-balance/page.tsx');
 
 // Isolate the pib-section block for targeted checks
-const pibStart = pageSrc.indexOf('data-testid="pib-section"');
-const pibEnd   = pageSrc.indexOf('data-testid="iu-educational-panel"', pibStart);
+const pibStart = pibPageSrc.indexOf('data-testid="pib-section"');
+const pibEnd   = pibPageSrc.indexOf('data-testid="iu-educational-panel"', pibStart);
 const pibSection = pibStart > -1 && pibEnd > -1
-  ? pageSrc.substring(pibStart, pibEnd)
-  : pageSrc;
+  ? pibPageSrc.substring(pibStart, pibEnd)
+  : pibPageSrc;
 
 // ── 1–7: Forbidden strings — must NOT appear in PIB section ──────────────────
 
@@ -134,8 +135,8 @@ describe('B140-B — MyKoraPreviewService activation_level', () => {
 // ── 21–24: B140-B2+C extension ────────────────────────────────────────────────
 
 describe('B140-B2+C — service and page extensions', () => {
-  const svcSrc  = read('services/my-kora-preview/MyKoraPreviewService.ts');
-  const pageSrc2 = read('app/my-kora/page.tsx');
+  const svcSrc = read('services/my-kora-preview/MyKoraPreviewService.ts');
+  // B141-B: PIB content moved to dedicated PIB page (pibPageSrc defined above).
 
   it('21. service source contains period_iu_total field', () => {
     expect(svcSrc).toContain('period_iu_total');
@@ -151,8 +152,8 @@ describe('B140-B2+C — service and page extensions', () => {
     expect(svcSrc).toContain('Life Anchor');
   });
 
-  it('24. pib-section in page.tsx contains KORA Activation Signature reference', () => {
-    expect(pageSrc2).toContain('KoraActivationSignature');
-    expect(pageSrc2).toContain('activation-signature-block');
+  it('24. PIB dedicated page contains KORA Activation Signature reference', () => {
+    expect(pibPageSrc).toContain('KoraActivationSignature');
+    expect(pibPageSrc).toContain('activation-signature-block');
   });
 });

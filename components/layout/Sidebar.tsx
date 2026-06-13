@@ -103,6 +103,16 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         ],
       },
       {
+        heading: 'Worker Preview',
+        groupBadge: 'SYNTHETIC',
+        badgeKey: 'SYNTHETIC',
+        // Worker Foundation Light preview — synthetic data only, no live worker DB.
+        items: [
+          { href: '/my-kora',                           label: 'Worker Preview',           preview: true },
+          { href: '/my-kora/personal-impact-balance',   label: 'Personal Impact Balance',  preview: true },
+        ],
+      },
+      {
         heading: 'Demo · Sintetico',
         groupBadge: 'SYNTHETIC',
         badgeKey: 'SYNTHETIC',
@@ -235,6 +245,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         heading: isAdminPreview ? 'Worker Preview (Admin)' : 'Il tuo spazio',
         items: [
           { href: '/my-kora', label: 'My KORA Home' },
+          { href: '/my-kora/personal-impact-balance', label: 'Personal Impact Balance' },
         ],
       },
       {

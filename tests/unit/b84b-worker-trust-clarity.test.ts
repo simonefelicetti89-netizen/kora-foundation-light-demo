@@ -128,9 +128,10 @@ describe('B84-B T1 + T2 — /my-kora home entry framing', () => {
 });
 
 // ── T6: IU plain-language explanation ────────────────────────────────────────
+// B141-B: IU explanation moved to /my-kora/personal-impact-balance.
 
-describe('B84-B T6 — IU explanation on /my-kora', () => {
-  const home = read('app/my-kora/page.tsx');
+describe('B84-B T6 — IU explanation on /my-kora/personal-impact-balance', () => {
+  const home = read('app/my-kora/personal-impact-balance/page.tsx');
 
   it('IU explanation block exists', () => {
     expect(home).toContain('Cosa sono gli Impact Unit (IU)?');
@@ -147,9 +148,10 @@ describe('B84-B T6 — IU explanation on /my-kora', () => {
 });
 
 // ── T7: PIB plain-language explanation ───────────────────────────────────────
+// B141-B: PIB section moved to /my-kora/personal-impact-balance.
 
-describe('B84-B T7 — PIB explanation near PIB section on /my-kora', () => {
-  const home = read('app/my-kora/page.tsx');
+describe('B84-B T7 — PIB explanation near PIB section on /my-kora/personal-impact-balance', () => {
+  const home = read('app/my-kora/personal-impact-balance/page.tsx');
 
   it('PIB explanation is near PIB section', () => {
     // B140-B: heading changed to qualitative form
@@ -185,9 +187,10 @@ describe('B84-B T4 — Company Snapshot orientation sentence', () => {
 });
 
 // ── T5: KORA Link FUTURE_VISION badge ────────────────────────────────────────
+// B141-B: KORA Link section moved to /my-kora/personal-impact-balance.
 
 describe('B84-B T5 — KORA Link FUTURE_VISION badge', () => {
-  const home = read('app/my-kora/page.tsx');
+  const home = read('app/my-kora/personal-impact-balance/page.tsx');
 
   it('KORA Link has FUTURE_VISION mode badge', () => {
     expect(home).toContain('mode="FUTURE_VISION"');

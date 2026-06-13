@@ -6,11 +6,23 @@
 // This breaks the previous loop where /worker/login was inside this layout:
 //   Before: unauthenticated → /worker/login → layout: redirect /worker/login → loop
 //   After:  unauthenticated → any /worker/* route → layout: redirect /login → no loop
+//
+// B141-B2: KORA_ADMIN is not permitted to see live worker data.
+// Instead of redirecting to /login (confusing for founder), redirect to /my-kora
+// which shows the Foundation Light synthetic worker preview.
+// requireWorkerUser() is NOT modified — WORKER gate is unchanged.
 
 import { redirect } from 'next/navigation';
-import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
+import { getCurrentWorkerUser, getCurrentKoraUser } from '@/lib/auth/kora-session';
 
 export default async function WorkerLayout({ children }: { children: React.ReactNode }) {
+  // KORA_ADMIN attempting /worker/* is redirected to the synthetic worker preview.
+  // Live worker data stays worker-only. getCurrentKoraUser() returns null for all non-admin.
+  const koraAdmin = await getCurrentKoraUser();
+  if (koraAdmin) {
+    redirect('/my-kora');
+  }
+
   const worker = await getCurrentWorkerUser();
   if (!worker) {
     redirect('/login');

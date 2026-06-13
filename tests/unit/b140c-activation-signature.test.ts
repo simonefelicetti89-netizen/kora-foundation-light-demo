@@ -19,8 +19,12 @@ function read(rel: string): string {
 const signatureSrc = read('components/my-kora/KoraActivationSignature.tsx');
 const stratoSrc    = read('components/brand/KoraStratoMark.tsx');
 const svcSrc       = read('services/my-kora-preview/MyKoraPreviewService.ts');
-const pageSrc      = read('app/my-kora/page.tsx');
 const tokenSrc     = read('lib/design/kora-design-tokens.ts');
+// B141-B: PIB content moved from home page to dedicated PIB page.
+// Tests 4–11 use pibPageSrc (new page) for PIB-specific content.
+const pibPageSrc   = read('app/my-kora/personal-impact-balance/page.tsx');
+// pageSrc alias kept for all existing test references.
+const pageSrc      = pibPageSrc;
 
 // ── 1–3: STRATO normalization invariant ──────────────────────────────────────
 

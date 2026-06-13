@@ -412,9 +412,10 @@ describe('B85-B T9 — AttributionMatrix component', () => {
 });
 
 // ── T4: Educational panel ─────────────────────────────────────────────────────
+// B141-B: educational panel moved from /my-kora home to /my-kora/personal-impact-balance.
 
-describe('B85-B T4 — Educational panel on /my-kora', () => {
-  const src = read('app/my-kora/page.tsx');
+describe('B85-B T4 — Educational panel on /my-kora/personal-impact-balance', () => {
+  const src = read('app/my-kora/personal-impact-balance/page.tsx');
 
   it('panel exists with data-testid', () => {
     expect(src).toContain('data-testid="iu-educational-panel"');
@@ -442,9 +443,10 @@ describe('B85-B T4 — Educational panel on /my-kora', () => {
 });
 
 // ── T2: Timeline attribution badges ──────────────────────────────────────────
+// B141-B: timeline moved from /my-kora home to /my-kora/personal-impact-balance.
 
-describe('B85-B T2 — Timeline attribution badges on /my-kora', () => {
-  const src = read('app/my-kora/page.tsx');
+describe('B85-B T2 — Timeline attribution badges on /my-kora/personal-impact-balance', () => {
+  const src = read('app/my-kora/personal-impact-balance/page.tsx');
 
   it('imports WorkerAttributionService', () => {
     expect(src).toContain('workerAttributionService');
@@ -471,10 +473,11 @@ describe('B85-B T2 — Timeline attribution badges on /my-kora', () => {
   });
 });
 
-// ── T5: PIB eligibility on /my-kora timeline ─────────────────────────────────
+// ── T5: PIB eligibility on /my-kora/personal-impact-balance timeline ─────────
+// B141-B: timeline moved from /my-kora home to /my-kora/personal-impact-balance.
 
-describe('B85-B T5 — PIB eligibility on /my-kora timeline', () => {
-  const src = read('app/my-kora/page.tsx');
+describe('B85-B T5 — PIB eligibility on /my-kora/personal-impact-balance timeline', () => {
+  const src = read('app/my-kora/personal-impact-balance/page.tsx');
 
   it('renders PIB eligible badge with data-testid', () => {
     expect(src).toContain('data-testid={`pib-eligible-${item.id}`}');
@@ -502,10 +505,11 @@ describe('B85-B T5 — PIB eligibility on /my-kora timeline', () => {
   });
 });
 
-// ── T6: Dynamic CV eligibility on /my-kora timeline ─────────────────────────
+// ── T6: Dynamic CV eligibility on /my-kora/personal-impact-balance timeline ──
+// B141-B: timeline moved from /my-kora home to /my-kora/personal-impact-balance.
 
-describe('B85-B T6 — Dynamic CV eligibility on /my-kora timeline', () => {
-  const src = read('app/my-kora/page.tsx');
+describe('B85-B T6 — Dynamic CV eligibility on /my-kora/personal-impact-balance timeline', () => {
+  const src = read('app/my-kora/personal-impact-balance/page.tsx');
 
   it('renders Dynamic CV eligible badge with data-testid', () => {
     expect(src).toContain('data-testid={`cv-eligible-attr-${item.id}`}');
@@ -598,9 +602,10 @@ describe('B85-B T8 — worker_pib_allowed Field in classification grid', () => {
 });
 
 // ── T10: Trust copy ───────────────────────────────────────────────────────────
+// B141-B: trust copy moved with IU educational panel to /my-kora/personal-impact-balance.
 
 describe('B85-B T10 — Trust copy in attribution area', () => {
-  const src = read('app/my-kora/page.tsx');
+  const src = read('app/my-kora/personal-impact-balance/page.tsx');
 
   it('shows trust copy statement', () => {
     expect(src).toContain('Non tutte le attività diventano parte del tuo percorso personale.');
