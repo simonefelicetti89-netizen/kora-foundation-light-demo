@@ -16,12 +16,11 @@
 //   KoraStratoMark = brand canonico, nessun dato worker.
 //   KoraActivationSignature = STRATO worker privato, solo in sezione PIB.
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { workerAttributionService } from '@/services/worker-attribution/WorkerAttributionService';
-import { KoraActivationSignature } from '@/components/my-kora/KoraActivationSignature';
+import { WorkerActivationSignatureCard } from '@/components/my-kora/WorkerActivationSignatureCard';
 import { KoraStratoMark } from '@/components/brand/KoraStratoMark';
 import { KoraLogo } from '@/components/brand/KoraLogo';
 import { AttributionMatrix } from '@/components/my-kora/AttributionMatrix';
@@ -60,23 +59,10 @@ const VERIF_COLOR: Record<string, string> = {
   verified: 'text-[#2F7D55]', partial: 'text-[#D99A2B]', self_declared: 'text-[rgba(6,3,43,0.42)]',
 };
 
-// ─── KORA Link stepper steps (FUTURE_VISION) ──────────────────────────────────
-
-const KORA_LINK_STEPS = [
-  { label: 'Azione reale',            desc: 'Partecipi a un evento, corso o iniziativa verificabile.' },
-  { label: 'QR / KORA Link',         desc: 'Scansioni il QR o usi KORA Link — solo simulazione demo.' },
-  { label: 'Evidenza generata',       desc: "Viene generata un'evidenza candidata con metadati di categoria." },
-  { label: 'UEF candidate',          desc: 'Il record diventa un UEF candidate — pipeline di validazione avviata.' },
-  { label: 'Review',                  desc: 'Advisor o partner conferma la categoria e il pillar assegnato.' },
-  { label: 'Impact Units',           desc: 'Se approvato, genera Impact Units calcolati nel tuo spazio privato.' },
-  { label: 'Aggiornamento privato',  desc: 'Il tuo percorso si aggiorna — visibile solo a te.' },
-  { label: 'Aggregazione aziendale', desc: "Contribuisce all'aggregato aziendale solo sopra soglia privacy — in forma anonima." },
-];
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function PersonalImpactBalancePage() {
-  const [koraLinkStep, setKoraLinkStep] = useState(0);
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
   const { activePersona } = usePersona();
@@ -198,17 +184,11 @@ export default function PersonalImpactBalancePage() {
             ))}
           </div>
 
-          {/* Right: KORA Activation Signature — emblem, not a progress bar */}
-          <div className="flex flex-col items-center gap-2">
-            <p
-              className="text-[10px] font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-widest"
-              style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
-            >
-              KORA Activation Signature
-            </p>
-            <KoraActivationSignature
+          {/* Right: premium personal pictogram — dark card, worker-owned */}
+          <div className="flex flex-col gap-2">
+            <WorkerActivationSignatureCard
               pillarBreakdown={preview.pib_light.pillar_breakdown}
-              className="w-44"
+              activationProfile={preview.pib_light.activation_profile}
             />
             <p
               className="text-[10px] text-[rgba(6,3,43,0.38)] italic text-center"
@@ -416,85 +396,44 @@ export default function PersonalImpactBalancePage() {
         </p>
       </div>
 
-      {/* ── KORA Link / QR — FUTURE_VISION ───────────────────────────────────── */}
-      {/* KoraStratoMark = brand canonico con proporzioni fisse. NON usa dati worker.  */}
-      {/* KoraActivationSignature (STRATO worker) è nella sezione PIB sopra — separata. */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-                Future Vision · KORA Link
-              </h2>
-              <BoundaryBadge mode="FUTURE_VISION" variant="light" />
-            </div>
-            <p className="text-xs font-medium text-[rgba(6,3,43,0.60)] mb-1" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              Non disponibile in Foundation Light.
-            </p>
-            <p className="text-xs text-[rgba(6,3,43,0.40)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              KORA Link è una visione futura per portare esperienze scelte dal worker su supporti NFC/QR.
-              La card usa lo Strato canonico KORA, non la tua Activation Signature personale.
+      {/* ── KORA Link — Future Vision, sezione informativa ───────────────────── */}
+      {/* KoraStratoMark = brand canonico con proporzioni fisse. NON usa dati worker. */}
+      {/* KoraActivationSignature worker è nella card personale sopra — separata.   */}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.02)] px-4 py-3 space-y-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.60)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Future Vision · KORA Link
+          </h2>
+          <BoundaryBadge mode="FUTURE_VISION" variant="light" />
+        </div>
+        <p className="text-xs text-[rgba(6,3,43,0.40)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+          KORA Link è una visione futura per portare esperienze scelte dal worker su supporti NFC/QR.
+          Usa lo Strato canonico KORA — non la tua Activation Signature personale.
+        </p>
+
+        {/* Mini-thumbnail canonica — brand only, nessun dato worker */}
+        <div className="flex items-center gap-3">
+          <div
+            data-testid="kora-link-card"
+            style={{
+              background:    '#211F1A',
+              borderRadius:  10,
+              padding:       '10px 14px',
+              display:       'flex',
+              flexDirection: 'column',
+              alignItems:    'center',
+              gap:           8,
+            }}
+          >
+            <KoraStratoMark variant="negative" size="sm" className="w-16" />
+            <p style={{ fontSize: 8, color: 'rgba(246,244,239,0.32)', letterSpacing: '0.06em', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+              Strato canonico KORA · non personalizzato
             </p>
           </div>
-        </div>
-
-        {/* KORA Link card visiva — brand concept, FUTURE_VISION */}
-        {/* Usa KoraStratoMark (geometria di brand fissa) — nessun dato worker. */}
-        <div
-          data-testid="kora-link-card"
-          style={{
-            background: '#211F1A',
-            borderRadius: 16,
-            padding: '24px 28px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 16,
-          }}
-        >
-          <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.18em', color: 'rgba(246,244,239,0.50)', textTransform: 'uppercase', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', textAlign: 'center' }}>
-            SU CARD NFC · KORA LINK
+          <p className="text-[11px] text-[rgba(6,3,43,0.38)] leading-relaxed flex-1" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Non disponibile in Foundation Light. In futuro, KORA Link potrà portare il tuo
+            impatto su supporti fisici NFC/alluminio — scelti e condivisi da te.
           </p>
-          <KoraStratoMark variant="negative" size="md" className="w-48" />
-          <KoraLogo variant="on-dark" className="h-6 w-auto" />
-          <p style={{ fontSize: 10, color: 'rgba(246,244,239,0.38)', textAlign: 'center', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', lineHeight: 1.5 }}>
-            Strato + logo KORA incisi nell&apos;alluminio. Ogni card unica.
-          </p>
-          <p style={{ fontSize: 9, color: 'rgba(246,244,239,0.30)', textAlign: 'center', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', letterSpacing: '0.06em' }}>
-            Strato canonico KORA · non personalizzato
-          </p>
-        </div>
-
-        <div className="space-y-1.5">
-          {KORA_LINK_STEPS.map((step, i) => {
-            const stepNum  = i + 1;
-            const isComplete = koraLinkStep >= stepNum;
-            return (
-              <div key={step.label} className={cn('flex items-start gap-3 rounded-md border p-2.5 transition-colors', isComplete ? 'border-[rgba(47,125,85,0.40)] bg-[rgba(47,125,85,0.10)]' : 'border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)]')}>
-                <span className={cn('shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5', isComplete ? 'bg-[#2F7D55] text-[#06032B]' : 'bg-[rgba(6,3,43,0.12)] text-[rgba(6,3,43,0.52)]')}>
-                  {isComplete ? '✓' : stepNum}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className={cn('text-xs font-semibold', isComplete ? 'text-[#06032B]' : 'text-[rgba(6,3,43,0.62)]')} style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>{step.label}</p>
-                  <p className={cn('text-[10px] leading-snug', isComplete ? 'text-[#06032B]/70' : 'text-[rgba(6,3,43,0.40)]')} style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>{step.desc}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <div className="flex items-center gap-3 pt-1">
-          {koraLinkStep < KORA_LINK_STEPS.length ? (
-            <button onClick={() => setKoraLinkStep((s) => s + 1)} className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-3 py-1.5 text-xs font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.06)] transition-colors" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              {koraLinkStep === 0 ? 'Simula azione — demo' : `Prossimo step (${koraLinkStep + 1}/${KORA_LINK_STEPS.length})`}
-            </button>
-          ) : (
-            <button onClick={() => setKoraLinkStep(0)} className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.52)] hover:bg-[rgba(6,3,43,0.05)] transition-colors" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              Ricomincia simulazione
-            </button>
-          )}
-          <span className="text-[10px] text-[rgba(6,3,43,0.40)] italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            Simulazione locale. Nessun QR/NFC reale, nessuna identità reale, nessuna scrittura su backend.
-          </span>
         </div>
       </div>
 

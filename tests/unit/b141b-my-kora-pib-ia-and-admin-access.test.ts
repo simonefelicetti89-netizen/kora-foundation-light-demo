@@ -235,13 +235,16 @@ describe('B141-C — PIB page 2-col pillar/signature layout', () => {
     expect(pibPageSrc).not.toContain('className="w-full"');
   });
 
-  it('30. PIB page contains "KORA Activation Signature" as label text', () => {
-    expect(pibPageSrc).toContain('KORA Activation Signature');
+  it('30. PIB page contains "KORA Activation Signature" as label text (in WorkerActivationSignatureCard)', () => {
+    // Label lives inside WorkerActivationSignatureCard component source.
+    const cardSrc = read('components/my-kora/WorkerActivationSignatureCard.tsx');
+    expect(cardSrc).toContain('KORA Activation Signature');
   });
 
-  it('31. PIB page uses a compact class (w-44) on KoraActivationSignature', () => {
-    // Emblem is constrained — not full-width. w-44 = 176px.
-    expect(pibPageSrc).toContain('className="w-44"');
+  it('31. PIB page uses WorkerActivationSignatureCard (replaces bare w-44 signature)', () => {
+    // B141-D: bare w-44 removed, replaced by premium dark card component.
+    expect(pibPageSrc).toContain('WorkerActivationSignatureCard');
+    expect(pibPageSrc).not.toContain('className="w-44"');
   });
 
   it('32. data-testid="activation-profile-block" is still present below the 2-col grid', () => {
@@ -285,5 +288,49 @@ describe('B141-C — PIB page 2-col pillar/signature layout', () => {
     for (const word of forbidden) {
       expect(pibPageSrc.toLowerCase()).not.toContain(word);
     }
+  });
+});
+
+// ── 38–44: B141-D — WorkerActivationSignatureCard premium personal pictogram ──
+
+describe('B141-D — WorkerActivationSignatureCard premium card', () => {
+  const cardSrc = read('components/my-kora/WorkerActivationSignatureCard.tsx');
+
+  it('38. WorkerActivationSignatureCard component file exists', () => {
+    expect(cardSrc.length).toBeGreaterThan(0);
+  });
+
+  it('39. WorkerActivationSignatureCard uses KoraActivationSignature (worker personal)', () => {
+    expect(cardSrc).toContain('KoraActivationSignature');
+  });
+
+  it('40. WorkerActivationSignatureCard does NOT use KoraStratoMark', () => {
+    // Card is personalized — brand canonical mark must not be used here.
+    expect(cardSrc).not.toContain('KoraStratoMark');
+  });
+
+  it('41. WorkerActivationSignatureCard has data-testid="worker-activation-signature-card"', () => {
+    expect(cardSrc).toContain('data-testid="worker-activation-signature-card"');
+  });
+
+  it('42. PIB page passes pillarBreakdown to WorkerActivationSignatureCard', () => {
+    // Personal card receives worker pillar data — it is personalised per worker mix.
+    expect(pibPageSrc).toContain('pillarBreakdown={preview.pib_light.pillar_breakdown}');
+  });
+
+  it('43. KORA Link section does not use KoraActivationSignature', () => {
+    // kora-link-card uses only KoraStratoMark canonical brand — no worker data.
+    const koraLinkStart   = pibPageSrc.indexOf('data-testid="kora-link-card"');
+    const koraLinkSection = koraLinkStart > -1
+      ? pibPageSrc.substring(koraLinkStart, koraLinkStart + 600)
+      : '';
+    expect(koraLinkSection).not.toContain('KoraActivationSignature');
+    expect(koraLinkSection).not.toContain('pillarBreakdown');
+  });
+
+  it('44. WorkerActivationSignatureCard uses dark premium background token (inkWarm)', () => {
+    // inkWarm = #211F1A — referenced via ACTIVATION_SIGNATURE token, not hardcoded.
+    expect(cardSrc).toContain('inkWarm');
+    expect(cardSrc).toContain('ACTIVATION_SIGNATURE');
   });
 });
