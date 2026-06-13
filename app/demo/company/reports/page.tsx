@@ -14,7 +14,9 @@ import { DecisionPackHero } from '@/components/reports/DecisionPackHero';
 import { EligibilitySummaryReport } from '@/components/reports/EligibilitySummaryReport';
 import { BudgetImpactReport } from '@/components/reports/BudgetImpactReport';
 import { ActionPlanReport } from '@/components/reports/ActionPlanReport';
-import { PrivacyBoundaryNote } from '@/components/reports/PrivacyBoundaryNote';
+import { PrivacyBoundaryNote }          from '@/components/reports/PrivacyBoundaryNote';
+import { NormativeMappingLightSection } from '@/components/reports/NormativeMappingLightSection';
+import { getNormativeMappingLight }     from '@/lib/normative-mapping/normative-mapping-light';
 import { KoraIndexHero } from '@/components/kora-index/KoraIndexHero';
 import { ComponentBreakdown } from '@/components/kora-index/ComponentBreakdown';
 import { ActivationSafeguardPanel } from '@/components/kora-index/ActivationSafeguardPanel';
@@ -759,6 +761,10 @@ export default function DemoReports() {
           <PrivacyBoundaryNote />
         </div>
       )}
+
+      {/* ── Normative Mapping Light ──────────────────────────────────────────── */}
+      <SectionLabel>Normative Mapping Light</SectionLabel>
+      <NormativeMappingLightSection mapping={getNormativeMappingLight()} />
 
       {/* ── Confini metodologici ─────────────────────────────────────────────── */}
       <SectionLabel>Confini metodologici e perimetro informativo</SectionLabel>

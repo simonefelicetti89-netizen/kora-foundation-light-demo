@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { buildDecisionPackHtml } from '../../lib/decision-pack/html-template';
 import type { PdfData } from '../../lib/decision-pack/pdf-data';
+import { getNormativeMappingLight } from '../../lib/normative-mapping/normative-mapping-light';
 
 // ── B79-B — Decision Pack Professionalization: unit tests ─────────────────────
 //
@@ -154,13 +155,14 @@ function makeFixture(overrides?: Partial<PdfData>): PdfData {
     pillarDistribution: FIXTURE_PILLAR,
     bti:                FIXTURE_BTI,
     enrichment:         FIXTURE_ENRICHMENT,
-    reportingAlignment: null,
-    reportingReadiness: null,
-    iuSummary:          FIXTURE_IU,
-    pibAggregation:     FIXTURE_PIB,
-    auditSummary:       [],
-    executiveBrief:     FIXTURE_BRIEF,
-    contributionSummary: null,
+    reportingAlignment:   null,
+    reportingReadiness:   null,
+    normativeMappingLight: getNormativeMappingLight(),
+    iuSummary:            FIXTURE_IU,
+    pibAggregation:       FIXTURE_PIB,
+    auditSummary:         [],
+    executiveBrief:       FIXTURE_BRIEF,
+    contributionSummary:  null,
     ...overrides,
   };
 }

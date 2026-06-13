@@ -164,7 +164,7 @@ function buildExecutiveBriefPage(data: PdfData): string {
 export function buildDecisionPackHtml(data: PdfData): string {
   const logoWhite = getLogoBase64('white');
   const logoDark  = getLogoBase64('dark');
-  const { meta, koraIndex, pillarDistribution, bti, iuSummary, pibAggregation, enrichment, reportingAlignment, reportingReadiness, components, macroblocks, contributionSummary } = data;
+  const { meta, koraIndex, pillarDistribution, bti, iuSummary, pibAggregation, enrichment, reportingAlignment, reportingReadiness, normativeMappingLight, components, macroblocks, contributionSummary } = data;
 
   const sf       = koraIndex.safeguardStatus;
   const kiVal    = Math.round(koraIndex.value * 10) / 10;
@@ -695,6 +695,25 @@ export function buildDecisionPackHtml(data: PdfData): string {
       padding:8pt 12pt; background:#f8f8fc; border:1px solid #eaebf4;
       border-radius:4pt; font-size:7pt; color:#9899b3; line-height:1.5;
     }
+
+    /* ── NORMATIVE MAPPING LIGHT ───────────────────────────────────────── */
+    .nm-section{ margin-bottom:16pt; padding:12pt 14pt; background:#f9f8ff; border:1px solid #e0dff8; border-radius:6pt; break-inside:avoid; }
+    .nm-header{ font-size:7pt; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:#6156F5; margin-bottom:3pt; }
+    .nm-subtitle{ font-size:7.5pt; color:#9899b3; margin-bottom:8pt; }
+    .nm-disclaimer{ padding:8pt 10pt; background:#fffbeb; border:1px solid #fde68a; border-radius:4pt; font-size:7.5pt; color:#92400e; line-height:1.5; margin-bottom:8pt; }
+    .nm-badge-row{ display:flex; gap:6pt; flex-wrap:wrap; margin-bottom:10pt; }
+    .nm-badge-calib{ font-size:6pt; font-weight:700; background:#ede9ff; color:#6156F5; border-radius:3pt; padding:2pt 6pt; letter-spacing:.06em; }
+    .nm-badge-noclaim{ font-size:6pt; font-weight:600; background:#f0fdf4; color:#166534; border-radius:3pt; padding:2pt 6pt; }
+    .nm-table{ width:100%; border-collapse:collapse; font-size:7.5pt; margin-bottom:8pt; }
+    .nm-table th{ padding:5pt 7pt; background:#f3f2ff; color:#6156F5; font-size:6.5pt; font-weight:700; letter-spacing:.08em; text-transform:uppercase; border-bottom:1px solid #e0dff8; text-align:left; }
+    .nm-table td{ padding:5pt 7pt; border-bottom:1px solid #eaebf4; vertical-align:top; color:#444; }
+    .nm-table tr:last-child td{ border-bottom:none; }
+    .nm-pillar{ display:inline-block; font-size:6pt; font-weight:700; background:#ede9ff; color:#6156F5; border-radius:3pt; padding:1pt 4pt; margin-right:2pt; }
+    .nm-strength{ display:inline-block; font-size:6pt; font-weight:700; border-radius:3pt; padding:2pt 5pt; }
+    .nm-strength-direct{ background:#dcfce7; color:#166534; }
+    .nm-strength-indirect{ background:#fef9c3; color:#854d0e; }
+    .nm-strength-ctx{ background:#fee2e2; color:#991b1b; }
+    .nm-footer{ font-size:6pt; color:#9899b3; letter-spacing:.06em; text-align:right; }
 
     /* ── TABLE OF CONTENTS ─────────────────────────────────────────────── */
     .toc-page{ background:#f8f8fc; }
@@ -2254,6 +2273,70 @@ ${buildExecutiveBriefPage(data)}
       </div>`;
       })() : ''}
     </div>
+    <!-- ─────────────────────────────────────────────────────────────────── -->
+
+    <!-- B138-B: Normative Mapping Light — framework-level board summary ─────── -->
+    ${normativeMappingLight ? (() => {
+      const strengthLabel = (s: string) =>
+        s === 'direct' ? 'Diretto' : s === 'indirect' ? 'Indiretto' : 'Contestuale';
+      const strengthClass = (s: string) =>
+        s === 'direct' ? 'nm-strength-direct' : s === 'indirect' ? 'nm-strength-indirect' : 'nm-strength-ctx';
+
+      const byFramework = new Map<string, { label: string; areas: typeof normativeMappingLight.areas }>();
+      for (const a of normativeMappingLight.areas) {
+        if (!byFramework.has(a.framework)) {
+          byFramework.set(a.framework, { label: a.framework_label, areas: [] });
+        }
+        byFramework.get(a.framework)!.areas.push(a);
+      }
+
+      return `
+    <div class="nm-section">
+      <div class="nm-header">Normative Mapping Light</div>
+      <div class="nm-subtitle">Indicative, non-certificative alignment · Foundation Light</div>
+      <div class="nm-disclaimer">
+        KORA mappa le evidenze di attivazione organizzativa rispetto ad alcuni riferimenti di human capital e sustainability reporting.
+        La mappatura è indicativa e non-certificativa: non costituisce compliance ESG, audit, assurance, reporting legale,
+        certificazione o validazione scientifica. Non sostituisce consulenza legale, ESG, fiscale, HR o assurance.
+      </div>
+      <div class="nm-badge-row">
+        <span class="nm-badge-calib">pre_empirical_calibration</span>
+        <span class="nm-badge-noclaim">non-certificative · non-compliance · non-assurance</span>
+      </div>
+      <table class="nm-table">
+        <thead>
+          <tr>
+            <th>Framework</th>
+            <th>Aree</th>
+            <th>Pillar principali</th>
+            <th>Forza prevalente</th>
+            <th>Uso indicativo</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${Array.from(byFramework.entries()).map(([, fw]) => {
+            const areaCount = fw.areas.length;
+            const allPillars = [...new Set(fw.areas.flatMap(a => a.kora_pillars))].slice(0, 3);
+            const strengthCounts: Record<string, number> = {};
+            for (const a of fw.areas) strengthCounts[a.strength] = (strengthCounts[a.strength] ?? 0) + 1;
+            const prevStrength = Object.entries(strengthCounts).sort((x, y) => y[1] - x[1])[0]?.[0] ?? 'indirect';
+            const allowedUse = fw.areas[0]?.allowed_use?.[0] ?? '';
+            return `
+          <tr>
+            <td><strong>${esc(fw.label)}</strong></td>
+            <td style="text-align:center;">${areaCount}</td>
+            <td>${allPillars.map(p => `<span class="nm-pillar">${esc(p)}</span>`).join(' ')}</td>
+            <td><span class="nm-strength ${strengthClass(prevStrength)}">${esc(strengthLabel(prevStrength))}</span></td>
+            <td style="font-size:6.5pt;color:#666;">${esc(allowedUse.substring(0, 80))}${allowedUse.length > 80 ? '…' : ''}</td>
+          </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      <div class="nm-footer">
+        v${esc(normativeMappingLight.version)} · ${normativeMappingLight.areas.length} aree totali · ${byFramework.size} framework
+      </div>
+    </div>`;
+    })() : ''}
     <!-- ─────────────────────────────────────────────────────────────────── -->
 
     <!-- B79-P0-4: Methodology disclosure — mandatory pilot-grade framing ────── -->

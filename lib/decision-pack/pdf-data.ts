@@ -7,6 +7,7 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/supabase/types';
 import { computeExecutiveIntelligence } from '@/services/executive-intelligence/ExecutiveIntelligenceService';
+import { getNormativeMappingLight, type NormativeMappingLight } from '@/lib/normative-mapping/normative-mapping-light';
 
 export interface PdfComponent {
   code: string;
@@ -173,6 +174,10 @@ export interface PdfData {
     primaryAction:      string;
     confidenceNote:     string;
   } | null;
+  // B138-B: Normative Mapping Light — static framework-level mapping.
+  // Indicative and non-certificative. Populated from the static versioned mapping file.
+  // Does not constitute ESG compliance, audit, assurance, or certification of any kind.
+  normativeMappingLight: NormativeMappingLight;
   // B79-B: KORA Contribution™ companion indicator summary.
   // Not persisted in KORA Foundation Light — always null until Contribution pipeline is live.
   // notKoraIndexComponent: true — companion indicator, never part of KORA Index computation.
@@ -656,6 +661,9 @@ export async function fetchPdfData(
     // B77-B: Executive Intelligence Layer™ — computed from available PdfData signals.
     // Uses simplified inputs (no EquityAccess / LifeDiversity — not in PdfData scope).
     // notKoraIndexComponent: true — synthesis display only.
+    // B138-B: Normative Mapping Light — static versioned mapping.
+    // Pure static assignment — no DB query, always available.
+    normativeMappingLight: getNormativeMappingLight(),
     // B79-B: KORA Contribution™ — not persisted in KORA Foundation Light.
     // Will be populated post-Contribution pipeline implementation.
     contributionSummary: null,
