@@ -110,6 +110,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         items: [
           { href: '/my-kora',                           label: 'Worker Preview',           preview: true },
           { href: '/my-kora/personal-impact-balance',   label: 'Personal Impact Balance',  preview: true },
+          { href: '/my-kora/kora-space',                label: 'KORA Space',               preview: true },
         ],
       },
       {
@@ -261,6 +262,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
             label:   'Opportunità',
             preview: isAdminPreview ? true : undefined,
           },
+          { href: '/my-kora/kora-space', label: 'KORA Space' },
           { href: '/worker/commons',   label: 'KORA Commons' },
           { href: '/my-kora/bookings', label: 'Prenotazioni', comingSoon: true },
           { href: '/my-kora/collective', label: 'Collettivo', comingSoon: true },

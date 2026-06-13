@@ -1,13 +1,16 @@
 'use client';
-// C-10: KORA Space Foundation Light — Company view.
-// B142-A: trasformato da locked shell a Foundation Light demo con dati sintetici.
+// W-KS: KORA Space — Worker preview.
+// B142-A: spazio condiviso per il worker — iniziative, richieste, opportunità.
 //
 // Privacy invariants:
-//   - Nessun dato individuale worker (no nome, email, worker_id, PIB, CV, Signature)
-//   - Segnali aggregati e contenuti supervisionati soltanto
-//   - Nessuna DB query — dati sintetici statici inline
+//   - Nessun dato company individuale (no KORA Index, no KPI aziendali, no scoring)
+//   - Nessuna classifica, nessun ranking, nessun confronto tra lavoratori
+//   - Partecipazione non visibile all'azienda in forma individuale
+//   - Dati sintetici inline — nessun DB query
 
 import Link from 'next/link';
+import { useRole } from '@/lib/demo-state';
+import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
@@ -79,28 +82,40 @@ const PILLAR_COLORS: Record<string, string> = {
   LIFE: '#C76F3D', GROWTH: '#2F7D55', CONNECTION: '#D99767', IMPACT: '#4A7FE0', LEGACY: '#8A7562',
 };
 
-export default function KoraSpaceCompanyPage() {
+export default function WorkerKoraSpacePage() {
+  const { activeRole } = useRole();
+
+  if (!myKoraPreviewService.canAccess(activeRole)) {
+    return (
+      <div
+        data-testid="access-denied"
+        style={{
+          borderRadius: 12, border: '1px solid rgba(158,59,47,0.20)',
+          background: 'rgba(158,59,47,0.06)', padding: '24px', textAlign: 'center',
+        }}
+      >
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#9E3B2F', margin: '0 0 4px' }}>Accesso Limitato</p>
+        <p style={{ fontSize: 12, color: 'rgba(158,59,47,0.90)', margin: 0 }}>
+          KORA Space worker preview è accessibile solo ai lavoratori.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ fontFamily: FONT }} data-testid="kora-space-company">
+    <div style={{ fontFamily: FONT }} data-testid="kora-space-worker">
 
       {/* Breadcrumb */}
       <Link
-        href="/company/workspace"
+        href="/my-kora"
         style={{ fontSize: 11, color: TOKENS.inkHint, textDecoration: 'none', display: 'inline-block', marginBottom: 20 }}
       >
-        ← Workspace
+        ← My KORA
       </Link>
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-          <span style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: TOKENS.inkHint, background: TOKENS.taupe, borderRadius: 4,
-            padding: '2px 8px', border: `1px solid ${TOKENS.inkBorder}`,
-          }}>
-            Foundation Light preview
-          </span>
           <span style={{
             fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
             color: '#B5512E', background: 'rgba(181,81,46,0.08)', borderRadius: 4,
@@ -115,6 +130,13 @@ export default function KoraSpaceCompanyPage() {
           }}>
             dati individuali non visibili all&apos;azienda
           </span>
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: TOKENS.inkHint, background: TOKENS.taupe, borderRadius: 4,
+            padding: '2px 8px', border: `1px solid ${TOKENS.inkBorder}`,
+          }}>
+            Foundation Light preview
+          </span>
         </div>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 6px' }}>
           KORA Space
@@ -124,25 +146,19 @@ export default function KoraSpaceCompanyPage() {
         </p>
       </div>
 
-      {/* Privacy boundary — non-suppressible */}
+      {/* Privacy notice — non-suppressible */}
       <div
-        data-testid="kora-space-privacy-boundary"
+        data-testid="kora-space-worker-privacy"
         style={{
           background: 'rgba(47,125,85,0.06)', border: '1.5px solid rgba(47,125,85,0.22)',
           borderRadius: 12, padding: '14px 18px', marginBottom: 28,
         }}
       >
-        <p style={{ fontSize: 12, color: '#2F7D55', margin: '0 0 6px', fontWeight: 600 }}>
-          KORA Space — Privacy della vista company
-        </p>
-        <ul style={{ fontSize: 12, color: '#2F7D55', margin: 0, paddingLeft: 16, lineHeight: 1.75 }}>
-          <li>KORA Space mostra contenuti e opportunità condivise. Non espone dati individuali dei lavoratori.</li>
-          <li>Le richieste dei lavoratori sono gestite solo in forma aggregata o supervisionata.</li>
-          <li>La partecipazione individuale non è visibile all&apos;azienda in questa vista.</li>
-          <li>KORA misura l&apos;organizzazione, non classifica le persone.</li>
-        </ul>
-        <p style={{ fontSize: 11, color: '#2F7D55', margin: '10px 0 0', opacity: 0.80 }}>
-          Le richieste worker non sono mostrate come dati individuali. KORA Space lavora su segnali aggregati e contenuti supervisionati.
+        <p style={{ fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.75 }}>
+          KORA Space mostra contenuti e opportunità condivise. Non espone dati individuali dei lavoratori.{' '}
+          Le richieste dei lavoratori sono gestite solo in forma aggregata o supervisionata.{' '}
+          La partecipazione individuale non è visibile all&apos;azienda in questa vista.{' '}
+          KORA misura l&apos;organizzazione, non classifica le persone.
         </p>
       </div>
 
@@ -159,9 +175,9 @@ export default function KoraSpaceCompanyPage() {
           return (
             <div
               key={item.id}
-              data-testid={`kora-space-card-${item.id}`}
+              data-testid={`kora-space-worker-card-${item.id}`}
               style={{
-                background: '#FAFAFA', border: '1px solid rgba(6,3,43,0.09)',
+                background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)',
                 borderRadius: 14, padding: '18px 20px',
               }}
             >
@@ -217,17 +233,33 @@ export default function KoraSpaceCompanyPage() {
       {/* Regole dello spazio */}
       <div style={{
         background: TOKENS.surface, border: `1px solid ${TOKENS.inkBorder}`,
-        borderRadius: 12, padding: '16px 20px',
+        borderRadius: 12, padding: '16px 20px', marginBottom: 24,
       }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.ink, margin: '0 0 8px' }}>
           Regole dello spazio
         </p>
         <ul style={{ fontSize: 12, color: TOKENS.inkSecondary, margin: 0, paddingLeft: 16, lineHeight: 1.75 }}>
-          <li>I contenuti sono pubblicati e supervisionati da KORA.</li>
-          <li>Nessun dato individuale worker è visibile in questa sezione.</li>
-          <li>Le iniziative si basano su segnali aggregati, non su profili personali.</li>
-          <li>La partecipazione è sempre volontaria e non tracciata individualmente verso l&apos;azienda.</li>
+          <li>I contenuti sono supervisionati da KORA — nessun contenuto non moderato.</li>
+          <li>La tua partecipazione è volontaria. KORA non misura pressione né compliance.</li>
+          <li>Non c&apos;è ranking, classifica, né confronto tra lavoratori.</li>
+          <li>Le richieste dei lavoratori sono aggregate — nessuna visibilità individuale verso l&apos;azienda.</li>
         </ul>
+      </div>
+
+      {/* Links to other worker spaces */}
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        <Link
+          href="/my-kora/personal-impact-balance"
+          style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
+        >
+          → Personal Impact Balance
+        </Link>
+        <Link
+          href="/my-kora/dynamic-cv"
+          style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
+        >
+          → Dynamic Impact CV
+        </Link>
       </div>
 
       {/* Synthetic disclaimer */}

@@ -94,7 +94,7 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
     routes.push(
       '/my-kora', '/my-kora/privacy', '/my-kora/dynamic-cv',
       '/my-kora/opportunities', '/my-kora/bookings', '/my-kora/collective',
-      '/my-kora/personal-impact-balance',
+      '/my-kora/personal-impact-balance', '/my-kora/kora-space',
     );
   }
   if (role === 'PARTNER') routes.push('/partner');
@@ -124,6 +124,7 @@ const COMPANY_DEMO_ROUTES = [
   '/company/uef-review',
   '/company/scoring',
   '/company/data',
+  '/company/shared',
 ] as const;
 
 export function getDemoNavigationRoutes(role: KoraRole): string[] {
@@ -154,7 +155,7 @@ export function getDemoNavigationRoutes(role: KoraRole): string[] {
     routes.push(
       '/my-kora', '/my-kora/privacy', '/my-kora/dynamic-cv',
       '/my-kora/opportunities', '/my-kora/bookings', '/my-kora/collective',
-      '/my-kora/personal-impact-balance',
+      '/my-kora/personal-impact-balance', '/my-kora/kora-space',
     );
   }
 

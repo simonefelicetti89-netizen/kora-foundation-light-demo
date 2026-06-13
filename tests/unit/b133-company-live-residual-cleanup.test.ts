@@ -15,10 +15,12 @@ function readCompany(relPath: string): string {
   return fs.readFileSync(path.join(COMPANY, relPath), 'utf-8');
 }
 
+// B142-A: shared/page.tsx was promoted from locked shell to Foundation Light demo.
+// It now carries synthetic_demo_data: true and is no longer a live shell.
+// Remove it from CRITICAL_FILES — it is checked separately in B142-A test suite.
 const CRITICAL_FILES = [
   'page.tsx',
   'opportunities/page.tsx',
-  'shared/page.tsx',
   'contribution/page.tsx',
   'profile/page.tsx',
   'onboarding/page.tsx',
@@ -103,8 +105,12 @@ describe('B133 Step 1.5 — locked shell pages have honest copy', () => {
     expect(readCompany('opportunities/page.tsx')).toContain('non ancora attivo');
   });
 
-  it('shared: dichiara spazio non ancora attivo', () => {
-    expect(readCompany('shared/page.tsx')).toContain('non ancora attivo');
+  it('shared: B142-A Foundation Light demo — ha synthetic_demo_data e KORA Space content', () => {
+    // B142-A promoted shared from locked shell to Foundation Light demo.
+    const src = readCompany('shared/page.tsx');
+    expect(src).toContain('synthetic_demo_data: true');
+    expect(src).toContain('KORA Space');
+    expect(src).toContain('kora-space-company');
   });
 
   it('contribution: dichiara modulo non ancora disponibile', () => {
@@ -270,9 +276,11 @@ describe('B133 Step 1.5 — sidebar secondary links puntano a locked shells ones
     expect(readCompany('opportunities/page.tsx')).not.toContain('getCurrentDemoUser');
   });
 
-  it('/company/shared in sidebar — pagina è locked shell (non demo data)', () => {
+  it('/company/shared in sidebar — B142-A Foundation Light demo (ha synthetic_demo_data)', () => {
+    // B142-A: shared is now a Foundation Light demo, not a locked shell.
     expect(sidebar).toContain('/company/shared');
-    expect(readCompany('shared/page.tsx')).toContain('non ancora attivo');
+    expect(readCompany('shared/page.tsx')).toContain('synthetic_demo_data: true');
+    expect(readCompany('shared/page.tsx')).toContain('KORA Space');
     expect(readCompany('shared/page.tsx')).not.toContain('getCurrentDemoUser');
   });
 

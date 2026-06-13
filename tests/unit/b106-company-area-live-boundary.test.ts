@@ -249,12 +249,13 @@ describe('B106 + B133 — opportunities and shared are now live shells (no synth
     expect(read('app/company/opportunities/page.tsx')).toContain('non ancora attivo');
   });
 
-  it('app/company/shared/page.tsx — no synthetic_demo_data (B133 converted to live shell)', () => {
+  it('app/company/shared/page.tsx — B142-A Foundation Light demo (has synthetic_demo_data)', () => {
+    // B142-A promoted shared from locked shell to Foundation Light demo.
+    // It now carries synthetic_demo_data: true and KORA Space content.
     if (!exists('app/company/shared/page.tsx')) return;
-    expect(read('app/company/shared/page.tsx')).not.toContain('synthetic_demo_data');
-    // B137: useCompanySession no longer needed in locked shells — guard is in server layout.
+    expect(read('app/company/shared/page.tsx')).toContain('synthetic_demo_data: true');
+    expect(read('app/company/shared/page.tsx')).toContain('KORA Space');
     expect(read('app/company/shared/page.tsx')).not.toContain('getCurrentDemoUser');
-    expect(read('app/company/shared/page.tsx')).toContain('non ancora attivo');
   });
 });
 
