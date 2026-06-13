@@ -17,6 +17,14 @@ const STRENGTH_LABELS: Record<string, string> = {
   contextual: 'Contestuale',
 };
 
+const FRAMEWORK_USE_LABELS: Record<string, string> = {
+  ESRS_S1:     'base indicativa per la lettura delle condizioni di lavoro',
+  GRI:         'lettura indicativa delle evidenze relative a benefit e occupazione',
+  ISO_30414:   'contesto indicativo per organizzare evidenze su competenze e formazione',
+  UNI_PdR_125: 'contesto indicativo per evidenze su equità e inclusione',
+  SDG:         'riferimento aspirazionale per iniziative salute e benessere',
+};
+
 const STRENGTH_STYLES: Record<string, { background: string; color: string }> = {
   direct:     { background: '#dcfce7', color: '#166534' },
   indirect:   { background: '#fef9c3', color: '#854d0e' },
@@ -70,7 +78,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
             fontSize: '10px', background: '#f0fdf4', color: '#166534',
             borderRadius: 4, padding: '2px 7px', fontWeight: 600,
           }}>
-            non-certificative
+            non-certificativa
           </span>
         </div>
       </div>
@@ -83,7 +91,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
       }}>
         KORA mappa le evidenze di attivazione organizzativa rispetto ad alcuni riferimenti di human capital e sustainability reporting.
         La mappatura è indicativa e non-certificativa: non costituisce compliance ESG, audit, assurance, reporting legale,
-        certificazione o validazione scientifica. Non sostituisce consulenza legale, ESG, fiscale, HR o assurance.
+        certificazione o validazione scientifica. Non sostituisce consulenza legale, ESG, fiscale, HR o attività di assurance/revisione.
       </div>
 
       {/* Framework summary table */}
@@ -113,10 +121,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
               const prevStrength = Object.entries(strengthCounts)
                 .sort((x, y) => y[1] - x[1])[0]?.[0] ?? 'indirect';
               const strengthTk = STRENGTH_STYLES[prevStrength] ?? STRENGTH_STYLES.indirect;
-              const allowedUse = areas[0]?.allowed_use?.[0] ?? '';
-              const truncated = allowedUse.length > 80
-                ? allowedUse.substring(0, 80) + '…'
-                : allowedUse;
+              const usoIndicativo = FRAMEWORK_USE_LABELS[fw] ?? '';
 
               return (
                 <tr key={fw} style={{ borderBottom: `1px solid #eaebf4` }}>
@@ -145,7 +150,7 @@ export function NormativeMappingLightSection({ mapping }: Props) {
                       {STRENGTH_LABELS[prevStrength] ?? prevStrength}
                     </span>
                   </td>
-                  <td style={{ padding: '7px 10px', fontSize: '11px', color: TOKENS.inkSecondary }}>{truncated}</td>
+                  <td style={{ padding: '7px 10px', fontSize: '11px', color: TOKENS.inkSecondary }}>{usoIndicativo}</td>
                 </tr>
               );
             })}

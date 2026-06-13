@@ -121,16 +121,16 @@ describe('B138-C — NormativeMappingLightSection component', () => {
     expect(src).toContain('pre_empirical_calibration');
   });
 
-  it('displays non-certificative label', () => {
-    expect(src).toContain('non-certificative');
+  it('displays non-certificativa badge (Italian form)', () => {
+    expect(src).toContain('non-certificativa');
   });
 
   it('renders "non costituisce compliance ESG" disclaimer text', () => {
     expect(src).toContain('non costituisce compliance ESG');
   });
 
-  it('renders "non-certificativa" Italian disclaimer', () => {
-    expect(src).toContain('non-certificativa');
+  it('renders "attività di assurance/revisione" in disclaimer (B138-D polish)', () => {
+    expect(src).toContain('attività di assurance/revisione');
   });
 
   it('does NOT import synthetic demo seed files', () => {

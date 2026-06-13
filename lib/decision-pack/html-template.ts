@@ -2290,6 +2290,14 @@ ${buildExecutiveBriefPage(data)}
         byFramework.get(a.framework)!.areas.push(a);
       }
 
+      const FW_USE_LABELS: Record<string, string> = {
+        ESRS_S1:     'base indicativa per la lettura delle condizioni di lavoro',
+        GRI:         'lettura indicativa delle evidenze relative a benefit e occupazione',
+        ISO_30414:   'contesto indicativo per organizzare evidenze su competenze e formazione',
+        UNI_PdR_125: 'contesto indicativo per evidenze su equità e inclusione',
+        SDG:         'riferimento aspirazionale per iniziative salute e benessere',
+      };
+
       return `
     <div class="nm-section">
       <div class="nm-header">Normative Mapping Light</div>
@@ -2297,11 +2305,11 @@ ${buildExecutiveBriefPage(data)}
       <div class="nm-disclaimer">
         KORA mappa le evidenze di attivazione organizzativa rispetto ad alcuni riferimenti di human capital e sustainability reporting.
         La mappatura è indicativa e non-certificativa: non costituisce compliance ESG, audit, assurance, reporting legale,
-        certificazione o validazione scientifica. Non sostituisce consulenza legale, ESG, fiscale, HR o assurance.
+        certificazione o validazione scientifica. Non sostituisce consulenza legale, ESG, fiscale, HR o attività di assurance/revisione.
       </div>
       <div class="nm-badge-row">
         <span class="nm-badge-calib">pre_empirical_calibration</span>
-        <span class="nm-badge-noclaim">non-certificative · non-compliance · non-assurance</span>
+        <span class="nm-badge-noclaim">non-certificativa · non-compliance · non-assurance</span>
       </div>
       <table class="nm-table">
         <thead>
@@ -2314,20 +2322,20 @@ ${buildExecutiveBriefPage(data)}
           </tr>
         </thead>
         <tbody>
-          ${Array.from(byFramework.entries()).map(([, fw]) => {
+          ${Array.from(byFramework.entries()).map(([fwKey, fw]) => {
             const areaCount = fw.areas.length;
             const allPillars = [...new Set(fw.areas.flatMap(a => a.kora_pillars))].slice(0, 3);
             const strengthCounts: Record<string, number> = {};
             for (const a of fw.areas) strengthCounts[a.strength] = (strengthCounts[a.strength] ?? 0) + 1;
             const prevStrength = Object.entries(strengthCounts).sort((x, y) => y[1] - x[1])[0]?.[0] ?? 'indirect';
-            const allowedUse = fw.areas[0]?.allowed_use?.[0] ?? '';
+            const usoIt = FW_USE_LABELS[fwKey] ?? '';
             return `
           <tr>
             <td><strong>${esc(fw.label)}</strong></td>
             <td style="text-align:center;">${areaCount}</td>
             <td>${allPillars.map(p => `<span class="nm-pillar">${esc(p)}</span>`).join(' ')}</td>
             <td><span class="nm-strength ${strengthClass(prevStrength)}">${esc(strengthLabel(prevStrength))}</span></td>
-            <td style="font-size:6.5pt;color:#666;">${esc(allowedUse.substring(0, 80))}${allowedUse.length > 80 ? '…' : ''}</td>
+            <td style="font-size:6.5pt;color:#666;">${esc(usoIt)}</td>
           </tr>`;
           }).join('')}
         </tbody>
