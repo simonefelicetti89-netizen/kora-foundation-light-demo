@@ -49,7 +49,8 @@ describe('Live session — demo/live path separation', () => {
     expect(providerContent).toContain('CompanySessionProvider');
     expect(providerContent).toContain('isLive');
     expect(providerContent).toContain('tenantId');
-    expect(providerContent).toContain('kora_tenant_id');
+    // B137: kora_tenant_id read moved to server layout (requireCompanyUser reads it from JWT).
+    // Provider now receives tenantId as a prop — no longer reads from JWT client-side.
   });
 
   it('useScoringResult accepts forceEnvironment parameter', async () => {
@@ -128,10 +129,10 @@ describe('Live session — demo/live path separation', () => {
       'utf-8',
     );
     expect(layout).toContain('CompanySessionProvider');
-    expect(layout).toContain('CompanyLayoutInner');
-    // Demo banner must NOT show for live sessions
-    expect(layout).toContain('!isLive');
-    expect(layout).toContain('showDemoBanner');
+    // B137: CompanyLayoutInner removed — layout is now a server-side guard (no client component).
+    // Demo banner removed — /company/* is live-only post-B130, no demo path here.
+    expect(layout).toContain('requireCompanyUser');
+    expect(layout).not.toContain('showDemoBanner');
   });
 
   it('live mode shows NoDataState for insufficient_data — never Meridiana fallback', async () => {

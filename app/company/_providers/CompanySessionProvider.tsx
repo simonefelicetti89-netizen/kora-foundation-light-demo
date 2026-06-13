@@ -1,109 +1,53 @@
 'use client';
 
 // app/company/_providers/CompanySessionProvider.tsx
-// B59: Client-side Supabase session detection for company intelligence pages.
+// B137: No longer a session detector. Distributes pre-validated session data
+// received from the server layout (app/company/layout.tsx).
 //
-// Detects whether the current browser session belongs to a real
-// COMPANY_ADMIN or COMPANY_VIEWER. When true, intelligence pages use live
-// Supabase data instead of the synthetic Meridiana demo seed.
-//
-// Design invariants:
-//   - Never modifies global demo-state — demo mode is preserved for KORA_ADMIN
-//     and unauthenticated visitors.
-//   - isLive = false during the async session check (loading state).
-//   - LIVE must NEVER fallback to demo seed data (enforced in useScoringResult).
-//   - tenantId is always sourced from app_metadata.kora_tenant_id (server-signed JWT).
-//   - Never reads tenantId from URL params or request body.
+// The session is validated server-side by requireCompanyUser() before this
+// component mounts — no client-side async detection needed.
+// sessionLoading is always false; isLive is always true.
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
 
 export interface CompanySessionCtx {
-  isLive: boolean;                   // true = real Supabase session with company role
-  tenantId: string | null;           // UUID from app_metadata.kora_tenant_id
+  isLive: boolean;
+  tenantId: string | null;
   koraRole: 'COMPANY_ADMIN' | 'COMPANY_VIEWER' | null;
-  companyName: string | null;        // from analytics.tenant — null if lookup fails
-  sessionLoading: boolean;           // true while session is being detected
+  companyName: string | null;
+  sessionLoading: boolean;
 }
 
 const CompanySessionContext = createContext<CompanySessionCtx>({
-  isLive: false,
-  tenantId: null,
-  koraRole: null,
-  companyName: null,
-  sessionLoading: true,
+  isLive:         false,
+  tenantId:       null,
+  koraRole:       null,
+  companyName:    null,
+  sessionLoading: false,
 });
 
 export function useCompanySession(): CompanySessionCtx {
   return useContext(CompanySessionContext);
 }
 
-interface Props { children: React.ReactNode; }
+interface Props {
+  children:    React.ReactNode;
+  tenantId:    string;
+  koraRole:    'COMPANY_ADMIN' | 'COMPANY_VIEWER';
+  companyName: string | null;
+}
 
-export function CompanySessionProvider({ children }: Props) {
-  const [ctx, setCtx] = useState<CompanySessionCtx>({
-    isLive: false,
-    tenantId: null,
-    koraRole: null,
-    companyName: null,
-    sessionLoading: true,
-  });
-
-  useEffect(() => {
-    let active = true;
-
-    async function detectSession() {
-      try {
-        const { getSupabaseBrowserClient } = await import('@/lib/supabase/client');
-        const supabase = getSupabaseBrowserClient();
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session || !active) {
-          if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, companyName: null, sessionLoading: false });
-          return;
-        }
-
-        const appMeta = session.user.app_metadata as Record<string, unknown> | undefined;
-        const role    = appMeta?.kora_role as string | undefined;
-        const tid     = appMeta?.kora_tenant_id as string | undefined;
-        const status  = appMeta?.kora_status as string | undefined;
-
-        const isCompanyRole = role === 'COMPANY_ADMIN' || role === 'COMPANY_VIEWER';
-        const isActive      = status !== 'suspended' && status !== 'disabled';
-
-        if (isCompanyRole && isActive && tid) {
-          // Fetch company name from analytics.tenant — tenantId from session JWT only.
-          let companyName: string | null = null;
-          try {
-            const { data: tenantRow } = await supabase
-              .schema('analytics')
-              .from('tenant')
-              .select('company_name')
-              .eq('id', tid)
-              .maybeSingle();
-            companyName = (tenantRow as { company_name?: string } | null)?.company_name ?? null;
-          } catch { /* fallback: null shown as "La tua organizzazione" */ }
-
-          if (active) setCtx({
-            isLive:        true,
-            tenantId:      tid,
-            koraRole:      role as 'COMPANY_ADMIN' | 'COMPANY_VIEWER',
-            companyName,
-            sessionLoading: false,
-          });
-        } else {
-          if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, companyName: null, sessionLoading: false });
-        }
-      } catch {
-        if (active) setCtx({ isLive: false, tenantId: null, koraRole: null, companyName: null, sessionLoading: false });
-      }
-    }
-
-    detectSession();
-    return () => { active = false; };
-  }, []);
-
+export function CompanySessionProvider({ children, tenantId, koraRole, companyName }: Props) {
   return (
-    <CompanySessionContext.Provider value={ctx}>
+    <CompanySessionContext.Provider
+      value={{
+        isLive: true,    // server guard guarantees a real company session
+        tenantId,
+        koraRole,
+        companyName,
+        sessionLoading: false,   // no async detection — data is ready at mount
+      }}
+    >
       {children}
     </CompanySessionContext.Provider>
   );

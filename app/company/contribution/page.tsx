@@ -3,14 +3,9 @@
 // KORA Contribution non è una componente del KORA Index™ — indicatore companion separato.
 
 import Link from 'next/link';
-import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export default function KoraContribution() {
-  const { sessionLoading } = useCompanySession();
-
-  if (sessionLoading) return null;
-
   return (
     <div className="space-y-6 max-w-2xl">
       <div>

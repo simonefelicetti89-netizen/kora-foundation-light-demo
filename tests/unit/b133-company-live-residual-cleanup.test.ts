@@ -127,12 +127,29 @@ describe('B133 Step 1.5 — locked shell pages have honest copy', () => {
 // 5. useCompanySession presente in tutti i 6 file critici (guard live attivo)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('B133 Step 1.5 — useCompanySession guard present in all 6 critical live pages', () => {
-  for (const relPath of CRITICAL_FILES) {
-    it(relPath, () => {
-      expect(readCompany(relPath)).toContain('useCompanySession');
-    });
-  }
+// B137: the session guard moved to app/company/layout.tsx (server-side requireCompanyUser).
+// Pages no longer need to import useCompanySession just for the guard.
+// Only pages that use session data (companyName, tenantId, koraRole) still import it.
+describe('B137 — server layout is the session guard for /company/* pages', () => {
+  it('company layout uses requireCompanyUser (server-side guard)', () => {
+    const layout = fs.readFileSync(path.join(ROOT, 'app/company/layout.tsx'), 'utf-8');
+    expect(layout).toContain('requireCompanyUser');
+    // Must NOT start with 'use client' (server component)
+    expect(layout.trimStart().startsWith("'use client'")).toBe(false);
+  });
+
+  it('pages that use session data (companyName/tenantId/koraRole) still import useCompanySession', () => {
+    expect(readCompany('page.tsx')).toContain('useCompanySession');
+    expect(readCompany('profile/page.tsx')).toContain('useCompanySession');
+  });
+
+  it('locked-shell pages with no session data no longer import useCompanySession', () => {
+    // Guard is in the layout — these pages have no need for session data.
+    expect(readCompany('opportunities/page.tsx')).not.toContain('useCompanySession');
+    expect(readCompany('shared/page.tsx')).not.toContain('useCompanySession');
+    expect(readCompany('contribution/page.tsx')).not.toContain('useCompanySession');
+    expect(readCompany('onboarding/page.tsx')).not.toContain('useCompanySession');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

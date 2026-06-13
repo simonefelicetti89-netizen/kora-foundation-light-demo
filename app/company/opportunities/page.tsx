@@ -4,14 +4,9 @@
 // Demo experience: opportunità disponibili nell'Activation Intelligence demo.
 
 import Link from 'next/link';
-import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export default function OpportunitiesPage() {
-  const { sessionLoading } = useCompanySession();
-
-  if (sessionLoading) return null;
-
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
