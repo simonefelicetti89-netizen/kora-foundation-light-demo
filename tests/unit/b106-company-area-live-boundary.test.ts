@@ -230,21 +230,28 @@ describe('B106 — all company intelligence pages are now live-only (B130 comple
 });
 
 // ── 7. Pure demo pages — labeled synthetic_demo_data: true ─────────────────────
+// B133: opportunities and shared were converted from demo-labeled pages to live shells.
+// Only uef-review remains as a pure demo page in /company/*.
 
 describe('B106 — pure demo pages are correctly labeled', () => {
-  const demoPages = [
-    { path: 'app/company/uef-review/page.tsx',   label: 'synthetic_demo_data' },
-    { path: 'app/company/opportunities/page.tsx', label: 'synthetic_demo_data' },
-    { path: 'app/company/shared/page.tsx',        label: 'synthetic_demo_data' },
-  ];
+  it('app/company/uef-review/page.tsx — carries demo label', () => {
+    if (!exists('app/company/uef-review/page.tsx')) return;
+    expect(read('app/company/uef-review/page.tsx')).toContain('synthetic_demo_data');
+  });
+});
 
-  for (const { path, label } of demoPages) {
-    it(`${path} — carries demo label`, () => {
-      if (!exists(path)) return; // skip if not yet built
-      const src = read(path);
-      expect(src).toContain(label);
-    });
-  }
+describe('B106 + B133 — opportunities and shared are now live shells (no synthetic_demo_data)', () => {
+  it('app/company/opportunities/page.tsx — no synthetic_demo_data (B133 converted to live shell)', () => {
+    if (!exists('app/company/opportunities/page.tsx')) return;
+    expect(read('app/company/opportunities/page.tsx')).not.toContain('synthetic_demo_data');
+    expect(read('app/company/opportunities/page.tsx')).toContain('useCompanySession');
+  });
+
+  it('app/company/shared/page.tsx — no synthetic_demo_data (B133 converted to live shell)', () => {
+    if (!exists('app/company/shared/page.tsx')) return;
+    expect(read('app/company/shared/page.tsx')).not.toContain('synthetic_demo_data');
+    expect(read('app/company/shared/page.tsx')).toContain('useCompanySession');
+  });
 });
 
 // ── 8. Static / retired pages — no data shown ────────────────────────────────────

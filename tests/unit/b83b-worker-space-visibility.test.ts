@@ -26,35 +26,34 @@ function exists(rel: string) {
 }
 
 // ── Task 1: WorkerSpaceCapabilityService in cockpit ───────────────────────────
+// B133: app/company/page.tsx was converted from demo cockpit to live nav hub.
+// WorkerAdoptionPanel and workerSpaceCapabilityService remain as standalone
+// components/services but are no longer wired into the live cockpit page.
 
-describe('B83-B Task 1 — WorkerSpaceCapabilityService wired into company cockpit', () => {
+describe('B83-B Task 1 — WorkerSpaceCapabilityService (B133: cockpit is now live nav hub)', () => {
   const cockpit = read('app/company/page.tsx');
 
-  it('imports workerSpaceCapabilityService', () => {
-    expect(cockpit).toContain('workerSpaceCapabilityService');
+  it('B133: cockpit no longer imports workerSpaceCapabilityService (demo content removed)', () => {
+    expect(cockpit).not.toContain('workerSpaceCapabilityService');
   });
 
-  it('calls getCapabilityByCompanyId', () => {
-    expect(cockpit).toContain('getCapabilityByCompanyId');
+  it('B133: cockpit no longer calls getCapabilityByCompanyId (demo content removed)', () => {
+    expect(cockpit).not.toContain('getCapabilityByCompanyId');
   });
 
-  it('renders Worker Space section', () => {
-    expect(cockpit).toContain('Worker Space');
+  it('B133: cockpit no longer renders WorkerAdoptionPanel (demo content removed)', () => {
+    expect(cockpit).not.toContain('WorkerAdoptionPanel');
   });
 
-  it('renders WorkerAdoptionPanel', () => {
-    expect(cockpit).toContain('WorkerAdoptionPanel');
+  it('B133: cockpit no longer has scenarioId demo binding', () => {
+    expect(cockpit).not.toContain('scenarioId={activeScenario}');
   });
 
-  it('passes companyId to WorkerAdoptionPanel', () => {
-    expect(cockpit).toContain('companyId={companyId}');
+  it('B133: cockpit uses useCompanySession for live session guard', () => {
+    expect(cockpit).toContain('useCompanySession');
   });
 
-  it('passes scenarioId to WorkerAdoptionPanel', () => {
-    expect(cockpit).toContain('scenarioId={activeScenario}');
-  });
-
-  it('includes worker space link in deep-dive navigation', () => {
+  it('cockpit has /company/workspace as nav item', () => {
     expect(cockpit).toContain('/company/workspace');
   });
 });
@@ -98,8 +97,8 @@ describe('B83-B Task 2 — WorkerAdoptionPanel created', () => {
 });
 
 // B105 update: WorkerAdoptionPanel and FL_COMPANY_ID removed from live workspace.
-// Live workspace no longer uses synthetic demo company ID — tenant comes from session.
-// The demo cockpit (/company/page.tsx) still renders WorkerAdoptionPanel correctly.
+// B133 update: WorkerAdoptionPanel also removed from demo cockpit (company/page.tsx).
+// company/page.tsx is now a live nav hub — WorkerAdoptionPanel exists as standalone component.
 describe('B83-B Task 2 — WorkerAdoptionPanel rendered in workspace', () => {
   const workspace = read('app/company/workspace/_components/CompanyWorkspaceView.tsx');
 
@@ -109,11 +108,10 @@ describe('B83-B Task 2 — WorkerAdoptionPanel rendered in workspace', () => {
     expect(workspace).not.toContain('meridiana-group');
   });
 
-  it('demo cockpit still renders WorkerAdoptionPanel with companyId', () => {
-    // The demo cockpit (/company/page.tsx) keeps WorkerAdoptionPanel for KORA_ADMIN demo review
+  it('B133: cockpit (company/page.tsx) no longer has WorkerAdoptionPanel (demo cockpit removed)', () => {
     const cockpit = read('app/company/page.tsx');
-    expect(cockpit).toContain('WorkerAdoptionPanel');
-    expect(cockpit).toContain('companyId={companyId}');
+    expect(cockpit).not.toContain('WorkerAdoptionPanel');
+    expect(cockpit).not.toContain('companyId={companyId}');
   });
 });
 
@@ -177,14 +175,15 @@ describe('B83-B Task 4 — Profile page cleaned up', () => {
     expect(profile).not.toContain("label: 'PIB privato'");
   });
 
-  it('has a link to Worker Space', () => {
+  it('has a link to /company/workspace', () => {
     expect(profile).toContain('/company/workspace');
-    expect(profile).toContain('Worker Space');
   });
 
-  it('profile still shows summary worker count', () => {
-    expect(profile).toContain('my_kora_enabled_count');
-    expect(profile).toContain('total_workers');
+  it('B133: profile shows live tenant data from session (not synthetic worker counts)', () => {
+    // B133 removed synthetic demo data — profile now shows companyName/tenantId/koraRole from session
+    expect(profile).not.toContain('my_kora_enabled_count');
+    expect(profile).not.toContain('total_workers');
+    expect(profile).toContain('useCompanySession');
   });
 });
 
