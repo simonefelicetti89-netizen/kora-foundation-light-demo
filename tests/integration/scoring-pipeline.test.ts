@@ -189,4 +189,89 @@ describe('KORA Scoring Pipeline — integration', () => {
     expect(eligibilitySummary.eligibleCount).toBeGreaterThanOrEqual(1);
   });
 
+  // ── B146 — Revenue spine coverage ────────────────────────────────────────────
+
+  it('output carries all 10 KORA Index component signals across result fields', () => {
+    const result = runKoraPipeline({
+      tenantId: 'test-tenant-integration',
+      batchId: 'test-batch-001',
+      records: SYNTHETIC_RECORDS,
+      workforcePopulation: 120,
+    });
+
+    // AR, MAR — Activation Reach macroblock
+    expect(typeof result.activation.activationReach).toBe('number');
+    expect(typeof result.activation.meaningfulActivationReach).toBe('number');
+
+    // NI, VR, CO — Activation Quality macroblock
+    expect(typeof result.componentSignals.ni).toBe('number');
+    expect(typeof result.componentSignals.vr).toBe('number');
+    expect(typeof result.componentSignals.co).toBe('number');
+
+    // WB, EQ, PC, PB — Distribution & Equity macroblock
+    // Present in componentDetail when engine has eligible records to compute against.
+    const cd = result.koraIndex.componentDetail;
+    expect(cd).toBeTruthy();
+    if (cd) {
+      expect(typeof cd.wb).toBe('number');
+      expect(typeof cd.eq).toBe('number');
+      expect(typeof cd.pc).toBe('number');
+      expect(typeof cd.pb).toBe('number');
+    }
+
+    // CS — Confidence Score (external to KORA Index per doc 21b)
+    expect(typeof result.confidence.score).toBe('number');
+  });
+
+  it('VR is computed for records with eligible evidence, insufficient_data for empty pipeline', () => {
+    const full = runKoraPipeline({
+      tenantId: 'test-tenant-vr',
+      batchId: 'test-batch-vr-full',
+      records: SYNTHETIC_RECORDS,
+      workforcePopulation: 120,
+    });
+    const empty = runKoraPipeline({
+      tenantId: 'test-tenant-vr',
+      batchId: 'test-batch-vr-empty',
+      records: [],
+      workforcePopulation: 120,
+    });
+
+    // Empty pipeline: no eligible records → VR cannot be computed
+    expect(empty.componentSignals.vrStatus).toBe('insufficient_data');
+
+    // Non-empty pipeline: VR is computed and in valid range [0, 1]
+    expect(full.componentSignals.vrStatus).toBe('computed');
+    expect(full.componentSignals.vr).toBeGreaterThanOrEqual(0);
+    expect(full.componentSignals.vr).toBeLessThanOrEqual(1);
+  });
+
+  it('pipeline output is compatible with Decision Pack persistence contract', () => {
+    const result = runKoraPipeline({
+      tenantId: 'test-tenant-integration',
+      batchId: 'test-batch-001',
+      records: SYNTHETIC_RECORDS,
+      workforcePopulation: 120,
+    });
+
+    // Fields required by analytics.kora_index_result DB schema (workspace route + decision pack)
+    expect(typeof result.koraIndex.value).toBe('number');
+    expect(typeof result.confidence.score).toBe('number');
+    expect(['CLEAR', 'WARNING', 'FLAGGED']).toContain(result.activation.safeguardStatus);
+    expect(typeof result.activation.activationReach).toBe('number');
+    expect(typeof result.activation.meaningfulActivationReach).toBe('number');
+
+    // Macroblock structure required for persistence in kora_index_result.macroblocks JSONB
+    const mb = result.koraIndex.macroblocks;
+    expect(typeof mb.activationReach).toBe('number');
+    expect(typeof mb.activationQuality).toBe('number');
+    expect(typeof mb.distributionEquity).toBe('number');
+    expect(typeof mb.budgetToHumanImpact).toBe('number');
+
+    // Non-suppressible methodology labels required by doc 21b
+    expect(result.koraIndex.calibrationStatus).toBe('pre_empirical_calibration');
+    expect(typeof result.koraIndex.methodologyVersion).toBe('string');
+    expect(result.confidence.externalToIndex).toBe(true);
+  });
+
 });
