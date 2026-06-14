@@ -43,16 +43,17 @@ export function Header() {
   }, []);
 
   // Show demo controls when:
-  // - Session check still pending (undefined) → show to avoid flash-of-hidden-UI in demo
   // - No real session (null) → pure demo mode, all controls visible
   // - Real session with KORA_ADMIN → full operator access
   // Hide demo controls when:
+  // - Session check still pending (undefined) → HIDE (fail-safe toward live — avoids
+  //   DEMO banner flash for real users; getSession() resolves fast from memory for demo)
   // - Real session with COMPANY_ADMIN, WORKER → real user, controls irrelevant
   const realRoleIsCompanyOrWorker =
     realRole === 'COMPANY_ADMIN' ||
     realRole === 'WORKER';
 
-  const showDemoControls = !realRoleIsCompanyOrWorker;
+  const showDemoControls = realRole !== undefined && !realRoleIsCompanyOrWorker;
 
   const showScenarioSwitcher =
     showDemoControls &&
