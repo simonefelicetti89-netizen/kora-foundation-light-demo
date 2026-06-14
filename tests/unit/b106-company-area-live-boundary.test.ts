@@ -181,9 +181,9 @@ describe('B106 — live API routes tenant isolation', () => {
     expect(api).not.toContain('searchParams.get(');
   });
 
-  it('/api/company/workers/aggregate tenantId from session, not URL', () => {
+  it('/api/company/workers/aggregate tenantId from session, not URL (B152-B: in SQL via kora.tenant_id())', () => {
     const api = read('app/api/company/workers/aggregate/route.ts');
-    expect(api).toContain('const { tenantId } = auth;');
+    // B152-B: tenantId enforced in SQL via kora.tenant_id() — not extracted as TS variable.
     expect(api).not.toContain('searchParams.get(');
   });
 

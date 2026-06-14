@@ -1,5 +1,7 @@
 // app/api/company/evidence-archive/route.ts
 // B36 PART 2 — Company evidence archive — COMPANY_ADMIN only (B143: COMPANY_VIEWER rimosso).
+// B152-B: Migrated to getSupabaseServerClient + analytics.v_company_uploaded_record_safe
+//         (company-safe aggregation layer, migration 015).
 //
 // GET /api/company/evidence-archive
 //
@@ -7,21 +9,22 @@
 //
 // Returns safe, read-only evidence metadata:
 //   - batch summaries (no raw payload, no mapping details beyond counts)
-//   - initiative safe names (category-level only)
+//   - initiative safe names (category-level only, via buildSafeName PII guard)
 //   - evidence level, review status, lifecycle status
 //   - attachment presence/status (metadata only — no storagePath, no signedUrl)
 //
 // NEVER returns:
-//   - pseudonym_id, worker names, raw payload, raw_hash
+//   - pseudonym_id, worker names, raw payload, raw_hash (excluded by view [G1])
+//   - initiative_name_raw directly — always passed through buildSafeName first
 //   - storagePath, signedUrl, attachment raw content
-//   - lifecycle mutation actions (archive/restore/remove — not available to company users)
+//   - lifecycle mutation actions (admin only)
 //   - admin-only fields (source_notes, created_by)
 
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { resolveLifecycleStatus, LIFECYCLE_LABELS } from '@/lib/data-intake/attachment-lifecycle';
 
 // ── PII patterns — same guard as admin archive ─────────────────────────────────
@@ -50,9 +53,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const reportingPeriod = (searchParams.get('reportingPeriod') ?? '').trim();
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
-  // ── 1. Tenant info ─────────────────────────────────────────────────────────
+  // ── 1. Tenant info — company_own_tenant_read RLS covers analytics.tenant ──
   const { data: tenantRow } = await db
     .schema('analytics').from('tenant')
     .select('id, tenant_code, company_name, methodology_version_id')
@@ -63,7 +66,7 @@ export async function GET(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const t = tenantRow as any;
 
-  // ── 2. Source batches ──────────────────────────────────────────────────────
+  // ── 2. Source batches — company_own_source_batch_read RLS covers source_batch ──
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let batchQuery: any = db
     .schema('analytics').from('source_batch')
@@ -86,37 +89,35 @@ export async function GET(request: NextRequest) {
       ? (ps['_b31_attachments'] as Record<string, unknown>[]).map(a => {
           const lifecycle = resolveLifecycleStatus(a);
           return {
-            attachmentId:   a['attachmentId'],
-            fileNameSafe:   a['fileNameSafe'],
-            fileType:       a['fileType'],
-            fileSizeBytes:  a['fileSizeBytes'],
-            attachmentType: a['attachmentType'],
-            storageStatus:  a['storageStatus'] ?? 'metadata_only',
+            attachmentId:    a['attachmentId'],
+            fileNameSafe:    a['fileNameSafe'],
+            fileType:        a['fileType'],
+            fileSizeBytes:   a['fileSizeBytes'],
+            attachmentType:  a['attachmentType'],
+            storageStatus:   a['storageStatus'] ?? 'metadata_only',
             lifecycleStatus: lifecycle,
             lifecycleLabel:  LIFECYCLE_LABELS[lifecycle],
-            // Company users cannot open attachments via this endpoint — no canOpen flag
-            // Attachment open is controlled by /api/admin/evidence-attachments/signed-url (admin only)
-            createdAt: a['createdAt'],
+            createdAt:       a['createdAt'],
             // NEVER expose: storagePath, storageBucket, signedUrl
           };
         })
       : [];
 
     return {
-      batchId:        (b.id as string).slice(0, 8) + '…',
-      batchIdFull:    b.id as string,
-      createdAt:      b.created_at as string,
-      sourceType:     b.source_type as string,
-      batchStatus:    b.batch_status as string,
-      rowCount:       b.row_count as number,
-      fileType:       typeof ps['fileType'] === 'string' ? ps['fileType'] : null,
-      hasAttachments: Boolean(ps['_b31']),
+      batchId:         (b.id as string).slice(0, 8) + '…',
+      batchIdFull:     b.id as string,
+      createdAt:       b.created_at as string,
+      sourceType:      b.source_type as string,
+      batchStatus:     b.batch_status as string,
+      rowCount:        b.row_count as number,
+      fileType:        typeof ps['fileType'] === 'string' ? ps['fileType'] : null,
+      hasAttachments:  Boolean(ps['_b31']),
       attachmentCount: attachmentSummary.length,
-      attachments:    attachmentSummary,
+      attachments:     attachmentSummary,
     };
   });
 
-  // ── 3. Uploaded records — safe fields only ─────────────────────────────────
+  // ── 3. Uploaded records via company-safe view ──────────────────────────────
   const batchIds = batches.map(b => b.batchIdFull);
 
   if (batchIds.length === 0) {
@@ -132,10 +133,13 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  const { data: recordRows, error: rErr } = await db
-    .schema('personal').from('uploaded_record')
-    // NEVER select: pseudonym_id, raw_hash, created_by
-    .select('id, batch_id, eligibility_status, primary_pillar, action_family, event_nature, review_status, payload')
+  // v_company_uploaded_record_safe: excludes pseudonym_id, raw_hash by construction [G1].
+  // Tenant isolation: view WHERE tenant_id = kora.tenant_id().
+  // initiative_name_raw: MUST pass through buildSafeName — never returned directly to client.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: recordRows, error: rErr } = await (db.schema('analytics') as any)
+    .from('v_company_uploaded_record_safe')
+    .select('record_id, batch_id, eligibility_status, primary_pillar, action_family, event_nature, review_status, initiative_name_raw, evidence_level, budget_class')
     .in('batch_id', batchIds)
     .limit(300);
 
@@ -150,40 +154,38 @@ export async function GET(request: NextRequest) {
   let approved = 0;
 
   const initiatives = allRecords.map((rec, idx) => {
-    const payload = (rec.payload ?? {}) as Record<string, unknown>;
-    const initiativeName = typeof payload['initiative_name'] === 'string' ? payload['initiative_name'] : undefined;
-    const evidenceLevel  = typeof payload['evidence_level']  === 'string' ? payload['evidence_level']  : undefined;
-    const budgetClass    = typeof payload['budget_class']    === 'string' ? payload['budget_class']    : undefined;
+    // initiative_name_raw: PII guard applied here — never returned raw to the client
+    const initiativeName = typeof rec['initiative_name_raw'] === 'string' ? rec['initiative_name_raw'] : undefined;
+    const evidenceLevel  = typeof rec['evidence_level']     === 'string' ? rec['evidence_level']     : undefined;
+    const budgetClass    = typeof rec['budget_class']       === 'string' ? rec['budget_class']       : undefined;
 
-    const safeName = buildSafeName({ initiativeName, actionFamily: rec.action_family as string | null, idx });
+    const safeName = buildSafeName({ initiativeName, actionFamily: rec['action_family'] as string | null, idx });
 
     if (evidenceLevel) withEvidence++;
-    if (rec.review_status === 'pending_review' || rec.review_status === 'pending') pendingReview++;
-    if (rec.review_status === 'approved' || rec.review_status === 'approved_for_scoring') approved++;
+    if (rec['review_status'] === 'pending_review' || rec['review_status'] === 'pending') pendingReview++;
+    if (rec['review_status'] === 'approved' || rec['review_status'] === 'approved_for_scoring') approved++;
 
     return {
-      // Safe short ID for display — not full UUID for company users
-      id:           (rec.id as string).slice(0, 8) + '…',
-      recordIdFull: rec.id as string,
-      batchIdFull:  rec.batch_id as string,
+      id:           (rec['record_id'] as string).slice(0, 8) + '…',
+      recordIdFull: rec['record_id'] as string,
+      batchIdFull:  rec['batch_id']  as string,
       safeName,
-      pillar:       (rec.primary_pillar as string | null) ?? null,
-      // Category-level only — no raw values, no worker data
-      actionFamily:    (rec.action_family as string | null) ?? null,
+      pillar:          (rec['primary_pillar'] as string | null) ?? null,
+      actionFamily:    (rec['action_family']  as string | null) ?? null,
       evidenceLevel:   evidenceLevel ?? null,
-      budgetClass:     budgetClass ?? null,
-      reviewStatus:    rec.review_status as string,
-      eligibility:     rec.eligibility_status as string,
-      // Note: NO lifecycle actions, NO attachment open for company users
+      budgetClass:     budgetClass   ?? null,
+      reviewStatus:    rec['review_status']      as string,
+      eligibility:     rec['eligibility_status'] as string,
+      // NEVER include: initiative_name_raw, pseudonym_id, raw_hash
     };
   });
 
   return NextResponse.json({
     ok: true,
     tenant: {
-      companyName:       t.company_name as string,
+      companyName:        t.company_name        as string,
       methodologyVersion: t.methodology_version_id as string,
-      calibrationStatus: 'pre_empirical_calibration',
+      calibrationStatus:  'pre_empirical_calibration',
     },
     reportingPeriod: reportingPeriod || 'all',
     batches,

@@ -239,15 +239,19 @@ describe('B104 — company workers aggregate privacy', () => {
     expect(agg).toContain('requireCompanyUser');
   });
 
-  it('reads tenantId from session, never from query params', () => {
-    expect(agg).toContain('const { tenantId } = auth;');
+  it('reads tenantId from session, never from query params (B152-B: tenantId enforced in SQL kora.tenant_id())', () => {
+    // B152-B: tenantId no longer needs to be an explicit variable in the route —
+    // analytics.fn_company_worker_status() reads tenant from kora.tenant_id() (JWT).
+    // What matters: route never reads tenantId from request params.
     expect(agg).not.toContain('searchParams.get(');
+    expect(agg).toContain('requireCompanyUser');  // session validated
+    expect(agg).toContain('getSupabaseServerClient');  // JWT forwarded to DB
   });
 
   it('returns only aggregate counts', () => {
     expect(agg).toContain('aggregate:');
-    expect(agg).toContain('total,');
-    expect(agg).toContain('coveragePct,');
+    expect(agg).toContain('total:');
+    expect(agg).toContain('coveragePct:');
   });
 
   it('never returns individual worker rows or refs in response object', () => {
@@ -261,12 +265,18 @@ describe('B104 — company workers aggregate privacy', () => {
     expect(returnBlock).not.toContain('workers: rows');
   });
 
-  it('selects only status column from worker_identity', () => {
-    expect(agg).toContain(".select('status')");
+  it('usa fn_company_worker_status — nessuna lettura diretta da worker_identity (B152-B)', () => {
+    // B152-B: company route reads from analytics.fn_company_worker_status() SECURITY DEFINER
+    // function instead of querying personal.worker_identity directly.
+    expect(agg).toContain('fn_company_worker_status');
+    expect(agg).not.toContain("from('worker_identity')");
   });
 
-  it('uses service-role client (not user JWT for direct query)', () => {
-    expect(agg).toContain('getSupabaseServiceClient');
+  it('usa getSupabaseServerClient (B152-B: non più service-role client)', () => {
+    // B152-B: company route migrated to server client + company-safe aggregation layer.
+    // Service client no longer needed — tenant isolation in SQL via kora.tenant_id().
+    expect(agg).toContain('getSupabaseServerClient');
+    expect(agg).not.toContain('getSupabaseServiceClient');
   });
 });
 

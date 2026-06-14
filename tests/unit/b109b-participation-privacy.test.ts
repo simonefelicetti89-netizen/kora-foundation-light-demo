@@ -222,13 +222,13 @@ describe('B109-B — company aggregate: zero individual data leakage', () => {
     expect(aggSrc).not.toContain('requireKoraAdmin');
   });
 
-  it('company aggregate participation select contains only initiative_id and status (no worker_id)', () => {
-    // The .select() call on worker_participation must only fetch initiative_id and status
-    const selects = extractSelectArgs(aggSrc);
-    const partSelect = selects.find(s => s.includes('initiative_id'));
-    expect(partSelect, 'participation select must exist').toBeDefined();
-    expect(partSelect).not.toMatch(/\bworker_id\b/);
-    expect(partSelect).not.toMatch(/\bauth_user_id\b/);
+  it('company aggregate usa fn_company_activation_summary (B152-B: no direct participation select)', () => {
+    // B152-B: migrated to analytics.fn_company_activation_summary() RPC.
+    // No .select() on worker_participation exists in the route — suppression and
+    // aggregation moved to SQL (migration 015). Verified by checking for RPC call.
+    expect(aggSrc).toContain('fn_company_activation_summary');
+    expect(aggSrc).not.toContain("from('worker_participation')");
+    expect(aggSrc).not.toContain("from('worker_initiative')");
   });
 
   it('company aggregate code (excl. comments) never accesses display_name', () => {
@@ -252,9 +252,13 @@ describe('B109-B — company aggregate: zero individual data leakage', () => {
     expect(responseSection).toContain('aggregate:');
   });
 
-  it('company aggregate applies SAFE_AGGREGATION_THRESHOLD constant', () => {
-    expect(aggSrc).toContain('const SAFE_AGGREGATION_THRESHOLD = 10');
-    expect(aggSrc).toContain('SAFE_AGGREGATION_THRESHOLD');
+  it('company aggregate suppression è in SQL non in TS (B152-B: safeCount rimosso)', () => {
+    // B152-B: safeCount() TS function removed. Suppression N<10 → NULL enforced in
+    // analytics.fn_company_activation_summary() SQL (migration 015, BETWEEN 1 AND 9 THEN NULL).
+    // The route reads total_engagements_suppressed from the SQL function output.
+    expect(aggSrc).not.toContain('function safeCount');
+    expect(aggSrc).not.toContain('const SAFE_AGGREGATION_THRESHOLD = 10');
+    expect(aggSrc).toContain('total_engagements_suppressed');
   });
 
   it('company aggregate suppressed pillars do NOT use -1 sentinel value', () => {
@@ -280,10 +284,13 @@ describe('B109-B — company aggregate: zero individual data leakage', () => {
     expect(aggSrc).toContain('privacy_note');
   });
 
-  it('company aggregate tenantId is from session, not from request params', () => {
-    expect(aggSrc).toContain('const { tenantId } = auth');
+  it('company aggregate tenantId è dalla sessione, mai da request params (B152-B: in SQL via kora.tenant_id())', () => {
+    // B152-B: tenantId enforced in SQL via kora.tenant_id() — route no longer needs it as variable.
+    // What matters: route uses requireCompanyUser (session) and never reads tenantId from params.
+    expect(aggSrc).toContain('requireCompanyUser');
     expect(aggSrc).not.toContain("searchParams.get('tenantId')");
     expect(aggSrc).not.toContain("searchParams.get('tenant_id')");
+    expect(aggSrc).not.toContain('getSupabaseServiceClient');
   });
 });
 

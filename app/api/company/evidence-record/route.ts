@@ -1,10 +1,12 @@
 // app/api/company/evidence-record/route.ts
 // B36 PART 2 — Company evidence record detail — COMPANY_ADMIN only (B143: COMPANY_VIEWER rimosso).
+// B152-B: Migrated to getSupabaseServerClient + analytics.v_company_uploaded_record_safe
+//         (company-safe aggregation layer, migration 015).
 //
 // GET /api/company/evidence-record?recordId=<uuid>
 //
-// Tenant verification: checks that the record's batch belongs to the session tenant.
-// NEVER allows cross-tenant record access — even if recordId is guessed.
+// Tenant verification: enforced by view WHERE tenant_id = kora.tenant_id().
+// Cross-tenant recordId → view returns no rows → 404. No application-layer cross-tenant check needed.
 //
 // Returns safe metadata for a single evidence record:
 //   - Safe name, pillar, action family, evidence level
@@ -13,7 +15,8 @@
 //   - Contribution category
 //
 // NEVER returns:
-//   - pseudonym_id, raw_hash, created_by, full raw payload
+//   - pseudonym_id, raw_hash, created_by (excluded by view [G1])
+//   - full raw payload
 //   - storagePath, signedUrl, attachment raw content
 //   - Lifecycle mutation actions
 //   - Worker-level data, PII, health data
@@ -22,7 +25,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { resolveLifecycleStatus, LIFECYCLE_LABELS } from '@/lib/data-intake/attachment-lifecycle';
 
 const PII_PATTERNS = [
@@ -44,8 +47,6 @@ export async function GET(request: NextRequest) {
   const authResult = await requireCompanyUser(request);
   if (isKoraAuthError(authResult)) return authResult;
 
-  const { tenantId } = authResult;
-
   const { searchParams } = new URL(request.url);
   const recordId = (searchParams.get('recordId') ?? '').trim();
 
@@ -53,90 +54,76 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'recordId is required.' }, { status: 400 });
   }
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
-  // ── 1. Fetch record — safe fields only (no pseudonym_id, no raw_hash) ──────
-  const { data: recRow, error: rErr } = await db
-    .schema('personal').from('uploaded_record')
-    .select('id, batch_id, eligibility_status, primary_pillar, action_family, event_nature, review_status, payload')
-    .eq('id', recordId)
+  // ── 1. Fetch record via company-safe view ──────────────────────────────────
+  // v_company_uploaded_record_safe excludes pseudonym_id, raw_hash by construction [G1].
+  // Tenant isolation: view WHERE tenant_id = kora.tenant_id() — cross-tenant recordId → null → 404.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: recRow, error: rErr } = await (db.schema('analytics') as any)
+    .from('v_company_uploaded_record_safe')
+    .select('*')
+    .eq('record_id', recordId)
     .maybeSingle();
 
   if (rErr) return NextResponse.json({ error: 'Errore caricamento evidenza.' }, { status: 500 });
   if (!recRow) return NextResponse.json({ error: 'Evidenza non trovata.' }, { status: 404 });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rec = recRow as any;
+  const rec = recRow as Record<string, any>;
 
-  // ── 2. Cross-tenant check — verify batch belongs to session tenant ──────────
-  const { data: batchRow } = await db
-    .schema('analytics').from('source_batch')
-    .select('id, tenant_id, source_type, batch_status')
-    .eq('id', rec.batch_id as string)
-    .maybeSingle();
+  // initiative_name_raw: PII guard applied at application layer (view exposes raw field).
+  // Founder decision B153: assumed programme name, not PII — if violated, revisit view.
+  const safeName = buildSafeName(
+    rec['initiative_name_raw'] as string | null,
+    rec['action_family']      as string | null,
+    0,
+  );
 
-  if (!batchRow) return NextResponse.json({ error: 'Evidenza non trovata.' }, { status: 404 });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const b = batchRow as any;
-
-  if (b.tenant_id !== tenantId) {
-    // Cross-tenant access attempt — 403, no data leaked
-    return NextResponse.json({ error: 'Accesso negato.' }, { status: 403 });
-  }
-
-  // ── 3. Extract safe payload fields ────────────────────────────────────────
-  const payload = (rec.payload ?? {}) as Record<string, unknown>;
-  const initiativeName = typeof payload['initiative_name'] === 'string' ? payload['initiative_name'] : null;
-  const evidenceLevel  = typeof payload['evidence_level']  === 'string' ? payload['evidence_level']  : null;
-  const budgetClass    = typeof payload['budget_class']    === 'string' ? payload['budget_class']    : null;
-
-  const safeName = buildSafeName(initiativeName, rec.action_family as string | null, 0);
-
-  // ── 4. Attachment metadata — safe only, no storagePath, no signedUrl ───────
-  const ps = (b.batch_id ? payload : (b as unknown as Record<string, unknown>)) || {};
-  // Read attachments from payload_sample of the batch (stored in batch payload_sample)
+  // ── 2. Attachment metadata — from source_batch.payload_sample ─────────────
+  // source_batch has company_own_source_batch_read RLS — server client enforces tenant isolation.
   const { data: fullBatchRow } = await db
     .schema('analytics').from('source_batch')
     .select('payload_sample')
-    .eq('id', rec.batch_id as string)
+    .eq('id', rec['batch_id'] as string)
     .maybeSingle();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bps = ((fullBatchRow as any)?.payload_sample ?? {}) as Record<string, unknown>;
-  const rawAttachments = Array.isArray(bps['_b31_attachments']) ? bps['_b31_attachments'] as Record<string, unknown>[] : [];
+  const rawAttachments = Array.isArray(bps['_b31_attachments'])
+    ? bps['_b31_attachments'] as Record<string, unknown>[]
+    : [];
 
   const attachments = rawAttachments.map(a => {
     const lifecycle = resolveLifecycleStatus(a);
     return {
-      attachmentId:   a['attachmentId'],
-      fileNameSafe:   a['fileNameSafe'],
-      fileType:       a['fileType'],
-      fileSizeBytes:  a['fileSizeBytes'],
-      attachmentType: a['attachmentType'],
-      storageStatus:  a['storageStatus'] ?? 'metadata_only',
+      attachmentId:    a['attachmentId'],
+      fileNameSafe:    a['fileNameSafe'],
+      fileType:        a['fileType'],
+      fileSizeBytes:   a['fileSizeBytes'],
+      attachmentType:  a['attachmentType'],
+      storageStatus:   a['storageStatus'] ?? 'metadata_only',
       lifecycleStatus: lifecycle,
       lifecycleLabel:  LIFECYCLE_LABELS[lifecycle],
-      createdAt:      a['createdAt'],
+      createdAt:       a['createdAt'],
       // NEVER expose: storagePath, storageBucket, signedUrl
     };
   });
 
-  void ps;
-
   return NextResponse.json({
     ok: true,
     record: {
-      id:           (rec.id as string).slice(0, 8) + '…',
-      recordIdFull: rec.id as string,
+      id:             (rec['record_id'] as string).slice(0, 8) + '…',
+      recordIdFull:   rec['record_id']         as string,
       safeName,
-      pillar:        (rec.primary_pillar as string | null) ?? null,
-      actionFamily:  (rec.action_family  as string | null) ?? null,
-      eventNature:   (rec.event_nature   as string | null) ?? null,
-      evidenceLevel,
-      budgetClass,
-      reviewStatus:  rec.review_status      as string,
-      eligibility:   rec.eligibility_status as string,
-      batchSourceType: b.source_type as string,
+      pillar:         (rec['primary_pillar']   as string | null) ?? null,
+      actionFamily:   (rec['action_family']    as string | null) ?? null,
+      eventNature:    (rec['event_nature']     as string | null) ?? null,
+      evidenceLevel:  (rec['evidence_level']   as string | null) ?? null,
+      budgetClass:    (rec['budget_class']     as string | null) ?? null,
+      reviewStatus:   rec['review_status']      as string,
+      eligibility:    rec['eligibility_status'] as string,
+      batchSourceType: rec['batch_source_type'] as string,
     },
     attachments,
     readOnly:  true,

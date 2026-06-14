@@ -173,10 +173,12 @@ describe('B109 — API privacy contracts', () => {
     expect(src).toContain('10');
   });
 
-  it('company activation-aggregate never returns individual worker rows', () => {
+  it('company activation-aggregate never returns individual worker rows (B152-B: SQL RPC)', () => {
     const src = readFile('app/api/company/workers/activation-aggregate/route.ts');
-    // Never selects worker_id from participation
-    expect(src).toContain('initiative_id, status');
+    // B152-B: migrated to analytics.fn_company_activation_summary() RPC.
+    // No direct select on worker_participation — SQL function enforces privacy.
+    expect(src).toContain('fn_company_activation_summary');
+    expect(src).not.toContain("from('worker_participation')");
     // Privacy note in response
     expect(src).toContain('privacy_note');
   });

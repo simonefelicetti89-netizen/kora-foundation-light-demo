@@ -2,10 +2,14 @@
 // GET /api/company/live-eligibility?period=<reporting_period>
 //
 // Returns aggregate eligibility counts and intelligence layer context for a
-// live company's UEF + IU records. Used by /company/kora-index to populate:
-//   - EligibilityGatePanel (eligible/limited/blocked counts)
-//   - EvidenceReliabilityIntelligenceService (review stats + average EV)
-//   - LifeDiversityService (LIFE program names for subcategory classification)
+// live company's UEF + IU records.
+// B152-B: Migrated to getSupabaseServerClient + analytics.v_company_uef_eligibility_summary
+//         (company-safe aggregation layer, migration 015).
+//
+// Multi-period safety: v_company_uef_eligibility_summary returns one row per
+// (tenant, reporting_period). When period is absent, the query orders by
+// reporting_period DESC and takes the most recent row — never uses blind
+// .maybeSingle() on a potentially multi-row result.
 //
 // Security:
 //   - COMPANY_ADMIN only (requireCompanyUser) — B143: COMPANY_VIEWER rimosso.
@@ -17,7 +21,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 export type LiveEligibilityContext = {
   eligibility: {
@@ -47,92 +51,78 @@ export async function GET(request: NextRequest) {
   const authResult = await requireCompanyUser(request);
   if (isKoraAuthError(authResult)) return authResult;
 
-  const { tenantId } = authResult;
-  const period = request.nextUrl.searchParams.get('period');
+  const period = new URL(request.url).searchParams.get('period');
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
-  // ── 1. UEF records — aggregate only, no raw payload, no pseudonym IDs ──────
+  // v_company_uef_eligibility_summary — postgres-owned VIEW, bypasses FORCE RLS on analytics.uef_record.
+  // Tenant isolation: kora.tenant_id() in view WHERE clause. One row per (tenant, reporting_period).
+  // With period: exact match. Without period: order desc + limit 1 — avoids blind maybeSingle() on multi-row.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let uefQuery = (db.schema('analytics') as any)
-    .from('uef_record')
-    .select('eligibility, review_status, approved_for_scoring, approved_for_impact_units, raw_name, primary_pillar')
-    .eq('tenant_id', tenantId);
+  let q = (db.schema('analytics') as any)
+    .from('v_company_uef_eligibility_summary')
+    .select('*');
 
-  if (period) uefQuery = uefQuery.eq('reporting_period', period);
+  if (period) {
+    q = q.eq('reporting_period', period);
+  } else {
+    q = q.order('reporting_period', { ascending: false }).limit(1);
+  }
 
-  const { data: uefRows, error: uefErr } = await uefQuery;
+  const { data: row, error } = await q.maybeSingle();
 
-  if (uefErr) {
+  if (error) {
     return NextResponse.json({ error: 'Errore lettura UEF records.' }, { status: 500 });
   }
 
-  type UefRow = {
-    eligibility: string;
-    review_status: string;
-    approved_for_scoring: boolean;
-    approved_for_impact_units: boolean;
-    raw_name: string;
-    primary_pillar: string | null;
-  };
-
-  const rows = (uefRows ?? []) as UefRow[];
-
-  const eligible             = rows.filter((r) => r.eligibility === 'eligible').length;
-  const limited              = rows.filter((r) => r.eligibility === 'limited').length;
-  const blocked              = rows.filter((r) => r.eligibility === 'blocked').length;
-  const pendingReview        = rows.filter((r) => r.review_status === 'pending').length;
-  const approvedForScoring   = rows.filter((r) => r.approved_for_scoring).length;
-  const approvedForIU        = rows.filter((r) => r.approved_for_impact_units).length;
-  const needsMoreData        = rows.filter((r) => r.review_status === 'needs_more_data').length;
-  const rejected             = rows.filter((r) => r.review_status === 'rejected').length;
-  const reviewedCount        = rows.length - pendingReview;
-  const reviewCompletionRate = rows.length > 0 ? reviewedCount / rows.length : 0;
-
-  // LIFE program names: used by LifeDiversityService.computeFromProgramNames().
-  // Only raw_name from LIFE-pillar records — no worker-identifying information.
-  const lifeProgramNames = rows
-    .filter((r) => r.primary_pillar === 'LIFE' && r.raw_name)
-    .map((r) => r.raw_name);
-
-  // ── 2. Impact Unit records — average EV factor only ───────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let iuQuery = (db.schema('analytics') as any)
-    .from('impact_unit')
-    .select('ev')
-    .eq('tenant_id', tenantId);
-
-  if (period) iuQuery = iuQuery.eq('reporting_period', period);
-
-  const { data: iuRows } = await iuQuery;
-  let iuAverageEv = 0;
-  if (iuRows && iuRows.length > 0) {
-    const evValues = (iuRows as Array<{ ev: number }>).map((r) => r.ev);
-    iuAverageEv = evValues.reduce((a, b) => a + b, 0) / evValues.length;
+  if (!row) {
+    const empty: LiveEligibilityContext = {
+      eligibility: {
+        eligible: 0, limited: 0, blocked: 0, total: 0,
+        pending_review: 0, approved_for_scoring: 0,
+        approved_for_impact_units: 0, needs_more_data: 0,
+      },
+      uef_review: {
+        total: 0, pending_count: 0, approved_for_scoring_count: 0,
+        needs_more_data_count: 0, rejected_count: 0, review_completion_rate: 0,
+      },
+      life_program_names: [],
+      iu_average_ev: 0,
+      reporting_period: period,
+    };
+    return NextResponse.json(empty);
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const r = row as Record<string, any>;
+
+  // life_program_names: array_agg returns null if no LIFE records — normalize to string[]
+  const lifeProgramNames: string[] = Array.isArray(r['life_program_names'])
+    ? (r['life_program_names'] as unknown[]).filter((n): n is string => typeof n === 'string')
+    : [];
 
   const result: LiveEligibilityContext = {
     eligibility: {
-      eligible,
-      limited,
-      blocked,
-      total:                   rows.length,
-      pending_review:          pendingReview,
-      approved_for_scoring:    approvedForScoring,
-      approved_for_impact_units: approvedForIU,
-      needs_more_data:         needsMoreData,
+      eligible:                  Number(r['eligible_count']                ?? 0),
+      limited:                   Number(r['limited_count']                 ?? 0),
+      blocked:                   Number(r['blocked_count']                 ?? 0),
+      total:                     Number(r['total_uef_records']             ?? 0),
+      pending_review:            Number(r['pending_review_count']          ?? 0),
+      approved_for_scoring:      Number(r['approved_for_scoring_count']    ?? 0),
+      approved_for_impact_units: Number(r['approved_for_impact_units_count'] ?? 0),
+      needs_more_data:           Number(r['needs_more_data_count']         ?? 0),
     },
     uef_review: {
-      total:                      rows.length,
-      pending_count:              pendingReview,
-      approved_for_scoring_count: approvedForScoring,
-      needs_more_data_count:      needsMoreData,
-      rejected_count:             rejected,
-      review_completion_rate:     reviewCompletionRate,
+      total:                      Number(r['total_uef_records']            ?? 0),
+      pending_count:              Number(r['pending_review_count']         ?? 0),
+      approved_for_scoring_count: Number(r['approved_for_scoring_count']   ?? 0),
+      needs_more_data_count:      Number(r['needs_more_data_count']        ?? 0),
+      rejected_count:             Number(r['rejected_count']               ?? 0),
+      review_completion_rate:     Number(r['review_completion_rate']       ?? 0),
     },
     life_program_names: lifeProgramNames,
-    iu_average_ev:      iuAverageEv,
-    reporting_period:   period,
+    iu_average_ev:      Number(r['iu_average_ev'] ?? 0),
+    reporting_period:   (r['reporting_period'] as string | null) ?? period,
   };
 
   return NextResponse.json(result);

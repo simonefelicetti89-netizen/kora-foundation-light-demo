@@ -359,10 +359,12 @@ describe('B106-B — API company: tenant dalla sessione, mai da client', () => {
     expect(api).not.toContain('searchParams.get(');
   });
 
-  it('/api/company/workers/aggregate usa requireCompanyUser, tenant da sessione', () => {
+  it('/api/company/workers/aggregate usa requireCompanyUser, tenant da sessione (B152-B: kora.tenant_id() in SQL)', () => {
     const api = read('app/api/company/workers/aggregate/route.ts');
+    // B152-B: tenantId enforced in SQL via kora.tenant_id() — not extracted as TS variable.
     expect(api).toContain('requireCompanyUser');
-    expect(api).toContain('const { tenantId } = auth;');
+    expect(api).toContain('getSupabaseServerClient');
+    expect(api).not.toContain('getSupabaseServiceClient');
   });
 
   it('/api/worker/profile usa requireWorkerUser', () => {

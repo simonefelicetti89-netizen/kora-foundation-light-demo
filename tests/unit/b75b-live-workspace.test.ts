@@ -113,12 +113,16 @@ describe('Task 3 — Live eligibility endpoint returns aggregate counts only', (
     expect(src).toContain('isKoraAuthError');
   });
 
-  it('tenantId in live-eligibility is always from session JWT', () => {
+  it('tenantId in live-eligibility is always from session JWT (B152-B: enforced in SQL kora.tenant_id())', () => {
     const src = read('app/api/company/live-eligibility/route.ts');
-    expect(src).toContain('const { tenantId } = authResult');
+    // B152-B: v_company_uef_eligibility_summary view enforces tenant isolation via kora.tenant_id()
+    // from the session JWT. Route no longer needs tenantId as an explicit TS variable.
+    expect(src).toContain('requireCompanyUser');
+    expect(src).toContain('getSupabaseServerClient');
     // Must NOT accept tenantId from query params
     expect(src).not.toContain("searchParams.get('tenantId')");
     expect(src).not.toContain("body.tenantId");
+    expect(src).not.toContain('getSupabaseServiceClient');
   });
 
   it('live-eligibility returns aggregate counts, not raw worker records', () => {
@@ -133,13 +137,17 @@ describe('Task 3 — Live eligibility endpoint returns aggregate counts only', (
     expect(src).not.toContain('worker_name');
   });
 
-  it('live-eligibility exposes only LIFE program raw_name (not worker-identifying)', () => {
+  it('live-eligibility exposes only LIFE program names (B152-B: LIFE filter in SQL view)', () => {
     const src = read('app/api/company/live-eligibility/route.ts');
-    // raw_name is a program/event name, not a worker identifier
+    // B152-B: LIFE filtering moved to v_company_uef_eligibility_summary view (array_agg FILTER LIFE).
+    // Route reads life_program_names from view column — no TS filter needed.
     expect(src).toContain('life_program_names');
-    expect(src).toContain("primary_pillar === 'LIFE'");
-    // The returned payload includes life_program_names but no worker PII
-    expect(src).toContain('life_program_names: lifeProgramNames');
+    expect(src).toContain('v_company_uef_eligibility_summary');
+    // Normalizes null array_agg → empty array
+    expect(src).toContain("r['life_program_names']");
+    // No worker PII exposed
+    expect(src).not.toContain('pseudonym_id');
+    expect(src).not.toContain('worker_id');
   });
 
   it('LiveEligibilityContext type is exported and consumed in kora-index page', () => {

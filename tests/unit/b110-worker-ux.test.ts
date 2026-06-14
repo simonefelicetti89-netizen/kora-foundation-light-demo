@@ -203,12 +203,17 @@ describe('Company aggregate — no PII', () => {
 // ─── 12. Company aggregate does not show worker_id ────────────────────────────
 
 describe('Company aggregate — no worker_id', () => {
-  it('participation select in aggregate route does not include worker_id', () => {
+  it('activation-aggregate usa RPC SQL — nessun select diretto su worker_participation (B152-B)', () => {
+    // B152-B: migrated to analytics.fn_company_activation_summary() RPC.
+    // No .select() on worker_participation exists — SQL function enforces worker_id exclusion.
     const stripped = stripLineComments(aggRoute);
+    expect(stripped).toContain('fn_company_activation_summary');
+    expect(stripped).not.toContain("from('worker_participation')");
+    // Verify no worker_id in any select arg (may be 0 selects total — that's fine)
     const selectArgs = extractSelectArgs(stripped);
-    const partSelect = selectArgs.find(s => s.includes('initiative_id') && s.includes('status'));
-    expect(partSelect).toBeDefined();
-    expect(partSelect).not.toContain('worker_id');
+    for (const s of selectArgs) {
+      expect(s).not.toContain('worker_id');
+    }
   });
 });
 
