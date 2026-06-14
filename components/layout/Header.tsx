@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRole, useEnvironment } from '@/lib/demo-state';
+import { resolveRealRoleFromSession, shouldShowDemoControls } from '@/lib/demo-state/demo-controls-guard';
 import { RoleSwitcher } from '@/components/demo/RoleSwitcher';
 import { ScenarioSwitcher } from '@/components/demo/ScenarioSwitcher';
 import { PersonaSwitcher } from '@/components/demo/PersonaSwitcher';
@@ -31,29 +32,15 @@ export function Header() {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     supabase.auth.getSession().then(({ data }) => {
-      const role = data.session?.user?.app_metadata?.kora_role as string | undefined;
-      setRealRole(role ?? null);
+      setRealRole(resolveRealRoleFromSession(data.session));
     });
-    // Listen for auth state changes (login/logout without page reload)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const role = session?.user?.app_metadata?.kora_role as string | undefined;
-      setRealRole(role ?? null);
+      setRealRole(resolveRealRoleFromSession(session));
     });
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show demo controls when:
-  // - No real session (null) → pure demo mode, all controls visible
-  // - Real session with KORA_ADMIN → full operator access
-  // Hide demo controls when:
-  // - Session check still pending (undefined) → HIDE (fail-safe toward live — avoids
-  //   DEMO banner flash for real users; getSession() resolves fast from memory for demo)
-  // - Real session with COMPANY_ADMIN, WORKER → real user, controls irrelevant
-  const realRoleIsCompanyOrWorker =
-    realRole === 'COMPANY_ADMIN' ||
-    realRole === 'WORKER';
-
-  const showDemoControls = realRole !== undefined && !realRoleIsCompanyOrWorker;
+  const showDemoControls = shouldShowDemoControls(realRole);
 
   const showScenarioSwitcher =
     showDemoControls &&
