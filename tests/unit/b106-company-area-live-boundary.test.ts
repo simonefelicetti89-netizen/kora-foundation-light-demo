@@ -137,18 +137,19 @@ describe('B106 P1 — data page: live users see operator boundary, not Meridiana
     expect(data).toContain('const { isLive');
   });
 
-  it('live branch returns before rendering synthetic demo data', () => {
-    expect(data).toContain('if (isLive)');
-    const liveGuardIndex = data.indexOf('if (isLive)');
-    const liveBlock = data.slice(liveGuardIndex).split('return (')[1]?.split('};')[0] ?? '';
-    expect(liveBlock).toContain('Elaborazione gestita da KORA Operator');
-    expect(liveBlock).toContain('Torna al Workspace');
+  it('live-only page: no demo branch, live content contains operator boundary', () => {
+    // B144: page is fully live-only — demo branch removed. Guard is now if (!isLive).
+    expect(data).not.toContain('getCurrentDemoUser');
+    expect(data.toLowerCase()).not.toContain('meridiana');
+    expect(data).not.toContain('if (isLive)');
+    expect(data).toContain('if (!isLive)');
+    expect(data).toContain('Elaborazione gestita da KORA Operator');
+    expect(data).toContain('Torna al Workspace');
   });
 
-  it('live block does not show synthetic_demo_data badge', () => {
-    const liveGuardIndex = data.indexOf('if (isLive)');
-    const liveBlock = data.slice(liveGuardIndex).split('return (')[1]?.split('};')[0] ?? '';
-    expect(liveBlock).not.toContain('synthetic_demo_data');
+  it('file does not show synthetic_demo_data badge', () => {
+    // B144: demo branch removed entirely — no synthetic_demo_data anywhere in file.
+    expect(data).not.toContain('synthetic_demo_data');
   });
 });
 
