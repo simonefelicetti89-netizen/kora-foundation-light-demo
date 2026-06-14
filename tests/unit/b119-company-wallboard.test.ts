@@ -128,10 +128,11 @@ describe('B119 -- Sidebar navigation', () => {
     expect(allHrefs).toContain('/company/wallboard');
   });
 
-  it('COMPANY_VIEWER sidebar contains KORA Wallboard link', () => {
+  it('COMPANY_VIEWER sidebar removed (B143) — no dedicated nav block', () => {
+    // B143: COMPANY_VIEWER rimosso — buildNavGroups falls through to no company nav for this role.
     const groups = buildNavGroups('COMPANY_VIEWER');
     const allHrefs = groups.flatMap(g => g.items.map(i => i.href));
-    expect(allHrefs).toContain('/company/wallboard');
+    expect(allHrefs).not.toContain('/company/wallboard');
   });
 
   it('WORKER sidebar does NOT contain KORA Wallboard', () => {
@@ -166,10 +167,10 @@ describe('B119 -- Admin preview does not require company login', () => {
 
 // --- 16: COMPANY_VIEWER not reintroduced in provisioning -------------------
 
-describe('B119 -- COMPANY_VIEWER not reintroduced in provisioning UI', () => {
-  it('CompanyUserProvisioningPanel documents COMPANY_VIEWER as soft-deprecated', () => {
+describe('B143 -- COMPANY_VIEWER rimosso del tutto dal provisioning UI', () => {
+  it('CompanyUserProvisioningPanel documenta B143: COMPANY_VIEWER rimosso', () => {
     expect(provisioningPanel).toContain('COMPANY_VIEWER');
-    expect(provisioningPanel).toContain('deprecated');
+    expect(provisioningPanel).toContain('B143');
   });
 
   it('CompanyUserProvisioningPanel does not render COMPANY_VIEWER as active select option', () => {

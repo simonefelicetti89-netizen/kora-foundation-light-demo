@@ -16,7 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
-const LIVE_ROLES = ['KORA_ADMIN', 'COMPANY_ADMIN', 'COMPANY_VIEWER', 'WORKER', 'PARTNER'] as const;
+const LIVE_ROLES = ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER'] as const;
 
 export async function POST(request: NextRequest) {
   const auth = await requireKoraAdmin(request);

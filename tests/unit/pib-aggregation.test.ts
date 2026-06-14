@@ -312,11 +312,6 @@ describe('PIBAggregationService.getWorkerPIBSummary — privacy', () => {
     expect((result as { available: false }).available).toBe(false);
   });
 
-  it('returns available=false for COMPANY_VIEWER role', () => {
-    const result = svc.getWorkerPIBSummary('pseudo-123', 'COMPANY_VIEWER');
-    expect((result as { available: false }).available).toBe(false);
-  });
-
   it('returns available=false for ADVISOR role', () => {
     const result = svc.getWorkerPIBSummary('pseudo-123', 'ADVISOR');
     expect((result as { available: false }).available).toBe(false);

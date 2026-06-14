@@ -209,7 +209,9 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
   const ki = w?.koraIndex ?? null;
   const rr = w?.reportingReadiness ?? null;
   const dp = w?.decisionPack ?? null;
-  const isViewer = userRole === 'COMPANY_VIEWER';
+  // B143: COMPANY_VIEWER rimosso — meccanismo read-only conservato per riuso futuro (ruolo sola-lettura).
+  // isViewer è sempre false; i branch isViewer? restano nel JSX ma non si attivano.
+  const isViewer = false;
 
   return (
     <div className="max-w-3xl mx-auto py-6 px-3 space-y-5">

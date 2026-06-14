@@ -20,7 +20,6 @@ const ALLOWED_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>([
   'KORA_ADMIN',
   'ADVISOR',
   'COMPANY_ADMIN',
-  'COMPANY_VIEWER',
 ]);
 
 // ── Evidence quality level classification ────────────────────────────────────

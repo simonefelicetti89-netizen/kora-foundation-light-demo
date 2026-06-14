@@ -10,7 +10,6 @@
 // What each role sees:
 //   KORA_ADMIN     — email, role badge, admin space description, dashboard link
 //   COMPANY_ADMIN  — email, role badge, company space description, dashboard link
-//   COMPANY_VIEWER — email, role badge, viewer space description, dashboard link
 //   WORKER         — email, role badge, private space description, My KORA link
 
 import { getSupabaseServerClient } from '@/lib/supabase/server';
@@ -38,14 +37,6 @@ const ROLE_INFO: Record<string, { label: string; spaceLabel: string; description
     color:       '#166534',
     bg:          'rgba(22,101,52,0.10)',
     border:      'rgba(22,101,52,0.28)',
-  },
-  COMPANY_VIEWER: {
-    label:       'Company Viewer',
-    spaceLabel:  'Workspace aziendale (sola lettura)',
-    description: 'Accesso in sola lettura al workspace aziendale. Dashboard KORA Index e report aggregati.',
-    color:       'rgba(6,3,43,0.55)',
-    bg:          'rgba(6,3,43,0.06)',
-    border:      'rgba(6,3,43,0.14)',
   },
   WORKER: {
     label:       'Worker',

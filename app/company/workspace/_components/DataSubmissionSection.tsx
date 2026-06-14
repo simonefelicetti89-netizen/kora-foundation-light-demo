@@ -5,7 +5,6 @@
 //         Submission Timeline, File Safety Warning.
 //
 // COMPANY_ADMIN: full wizard flow (create draft → upload → submit).
-// COMPANY_VIEWER: status view only.
 //
 // Backend API (unchanged from B39):
 //   POST /api/company/data-submissions            → create draft

@@ -53,19 +53,9 @@ describe('getAccessibleRoutes — production middleware routes', () => {
     expect(routes).toContain('/company/workspace');
   });
 
-  it('COMPANY_VIEWER has /company/workspace', () => {
-    const routes = getAccessibleRoutes('COMPANY_VIEWER');
-    expect(routes).toContain('/company/workspace');
-  });
-
-  // Production constraint: company roles are restricted to workspace (B36.1 decision)
+  // Production constraint: COMPANY_ADMIN is restricted to workspace (B36.1; B143: COMPANY_VIEWER removed)
   it('COMPANY_ADMIN does NOT have /company/kora-index in production routes', () => {
     const routes = getAccessibleRoutes('COMPANY_ADMIN');
-    expect(routes).not.toContain('/company/kora-index');
-  });
-
-  it('COMPANY_VIEWER does NOT have /company/kora-index in production routes', () => {
-    const routes = getAccessibleRoutes('COMPANY_VIEWER');
     expect(routes).not.toContain('/company/kora-index');
   });
 
@@ -98,7 +88,7 @@ describe('getAccessibleRoutes — production middleware routes', () => {
   });
 
   it('all roles include / and /demo-guide', () => {
-    const roles: KoraRole[] = ['KORA_ADMIN', 'COMPANY_ADMIN', 'COMPANY_VIEWER', 'WORKER', 'ADVISOR', 'PARTNER'];
+    const roles: KoraRole[] = ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'ADVISOR', 'PARTNER'];
     for (const role of roles) {
       const routes = getAccessibleRoutes(role);
       expect(routes).toContain('/');
@@ -107,7 +97,7 @@ describe('getAccessibleRoutes — production middleware routes', () => {
   });
 
   it('no duplicate routes returned', () => {
-    const roles: KoraRole[] = ['KORA_ADMIN', 'COMPANY_ADMIN', 'COMPANY_VIEWER', 'WORKER'];
+    const roles: KoraRole[] = ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER'];
     for (const role of roles) {
       const routes = getAccessibleRoutes(role);
       expect(new Set(routes).size).toBe(routes.length);
@@ -143,25 +133,10 @@ describe('getDemoNavigationRoutes — demo navigation routes', () => {
     expect(routes).toContain('/company/financial');
   });
 
-  it('COMPANY_VIEWER has same company routes as COMPANY_ADMIN in demo', () => {
-    const adminRoutes  = new Set(getDemoNavigationRoutes('COMPANY_ADMIN'));
-    const viewerRoutes = new Set(getDemoNavigationRoutes('COMPANY_VIEWER'));
-    // Every company route accessible to admin should be accessible to viewer in demo
-    const companyAdminRoutes = [...adminRoutes].filter(r => r.startsWith('/company'));
-    for (const r of companyAdminRoutes) {
-      expect(viewerRoutes.has(r)).toBe(true);
-    }
-  });
-
   // Privacy invariant: employer roles NEVER access My KORA — not even in demo
+  // B143: COMPANY_VIEWER removed; COMPANY_ADMIN is the only employer role.
   it('COMPANY_ADMIN does NOT have /my-kora in demo routes', () => {
     const routes = getDemoNavigationRoutes('COMPANY_ADMIN');
-    const hasMyKora = routes.some(r => r.startsWith('/my-kora'));
-    expect(hasMyKora).toBe(false);
-  });
-
-  it('COMPANY_VIEWER does NOT have /my-kora in demo routes', () => {
-    const routes = getDemoNavigationRoutes('COMPANY_VIEWER');
     const hasMyKora = routes.some(r => r.startsWith('/my-kora'));
     expect(hasMyKora).toBe(false);
   });
@@ -194,7 +169,7 @@ describe('getDemoNavigationRoutes — demo navigation routes', () => {
   });
 
   it('no duplicate routes returned', () => {
-    const roles: KoraRole[] = ['KORA_ADMIN', 'COMPANY_ADMIN', 'COMPANY_VIEWER', 'WORKER'];
+    const roles: KoraRole[] = ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER'];
     for (const role of roles) {
       const routes = getDemoNavigationRoutes(role);
       expect(new Set(routes).size).toBe(routes.length);
@@ -205,9 +180,8 @@ describe('getDemoNavigationRoutes — demo navigation routes', () => {
 // ── 3. Role classifier helpers ────────────────────────────────────────────────
 
 describe('Role classifiers', () => {
-  it('isEmployerRole returns true for COMPANY_ADMIN and COMPANY_VIEWER', () => {
+  it('isEmployerRole returns true for COMPANY_ADMIN (B143: COMPANY_VIEWER removed)', () => {
     expect(isEmployerRole('COMPANY_ADMIN')).toBe(true);
-    expect(isEmployerRole('COMPANY_VIEWER')).toBe(true);
   });
 
   it('isEmployerRole returns false for WORKER, ADVISOR, PARTNER, KORA_ADMIN', () => {
@@ -232,24 +206,20 @@ describe('Role classifiers', () => {
 // ── 4. Resource permission guard ──────────────────────────────────────────────
 
 describe('resolvePermission — worker-private resource guard', () => {
-  it('employer roles cannot access pib-records', () => {
-    expect(resolvePermission('COMPANY_ADMIN',  'pib-records')).toBe(false);
-    expect(resolvePermission('COMPANY_VIEWER', 'pib-records')).toBe(false);
+  it('COMPANY_ADMIN cannot access pib-records', () => {
+    expect(resolvePermission('COMPANY_ADMIN', 'pib-records')).toBe(false);
   });
 
-  it('employer roles cannot access dynamic-cv', () => {
-    expect(resolvePermission('COMPANY_ADMIN',  'dynamic-cv')).toBe(false);
-    expect(resolvePermission('COMPANY_VIEWER', 'dynamic-cv')).toBe(false);
+  it('COMPANY_ADMIN cannot access dynamic-cv', () => {
+    expect(resolvePermission('COMPANY_ADMIN', 'dynamic-cv')).toBe(false);
   });
 
-  it('employer roles cannot access my-kora resource', () => {
-    expect(resolvePermission('COMPANY_ADMIN',  'my-kora')).toBe(false);
-    expect(resolvePermission('COMPANY_VIEWER', 'my-kora')).toBe(false);
+  it('COMPANY_ADMIN cannot access my-kora resource', () => {
+    expect(resolvePermission('COMPANY_ADMIN', 'my-kora')).toBe(false);
   });
 
-  it('employer roles cannot access consent-records', () => {
-    expect(resolvePermission('COMPANY_ADMIN',  'consent-records')).toBe(false);
-    expect(resolvePermission('COMPANY_VIEWER', 'consent-records')).toBe(false);
+  it('COMPANY_ADMIN cannot access consent-records', () => {
+    expect(resolvePermission('COMPANY_ADMIN', 'consent-records')).toBe(false);
   });
 
   it('WORKER can access pib-records', () => {
@@ -257,10 +227,9 @@ describe('resolvePermission — worker-private resource guard', () => {
   });
 
   it('uef-review is admin/COMPANY_ADMIN only', () => {
-    expect(resolvePermission('KORA_ADMIN',     'uef-review')).toBe(true);
-    expect(resolvePermission('COMPANY_ADMIN',  'uef-review')).toBe(true);
-    expect(resolvePermission('COMPANY_VIEWER', 'uef-review')).toBe(false);
-    expect(resolvePermission('WORKER',         'uef-review')).toBe(false);
+    expect(resolvePermission('KORA_ADMIN',    'uef-review')).toBe(true);
+    expect(resolvePermission('COMPANY_ADMIN', 'uef-review')).toBe(true);
+    expect(resolvePermission('WORKER',        'uef-review')).toBe(false);
   });
 });
 

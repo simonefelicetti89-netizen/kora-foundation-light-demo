@@ -10,7 +10,6 @@ import type { KoraRole } from '@/lib/types';
 const ROLE_COLORS: Record<string, string> = {
   KORA_ADMIN:     'text-[#C76F3D]',
   COMPANY_ADMIN:  'text-[rgba(6,3,43,0.78)]',
-  COMPANY_VIEWER: 'text-[rgba(6,3,43,0.62)]',
   WORKER:         'text-[#2F7D55]',
   PARTNER:        'text-[#D99767]',   // warm sand — partner color
   ADVISOR:        'text-[#4A7FE0]',   // institutional blue — advisor

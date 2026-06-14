@@ -112,10 +112,6 @@ describe('DynamicCVService.getProfile — Foundation Light population', () => {
     expect(() => service.getProfile('any-worker', 'COMPANY_ADMIN')).toThrow();
   });
 
-  it('throws on COMPANY_VIEWER role — privacy invariant', () => {
-    expect(() => service.getProfile('any-worker', 'COMPANY_VIEWER')).toThrow();
-  });
-
   it('throws on ADVISOR role — privacy invariant', () => {
     expect(() => service.getProfile('any-worker', 'ADVISOR')).toThrow();
   });
@@ -296,10 +292,6 @@ describe('MyKoraPreviewService — privacy access control', () => {
 
   it('COMPANY_ADMIN cannot access My KORA', () => {
     expect(myKoraPreviewService.canAccess('COMPANY_ADMIN')).toBe(false);
-  });
-
-  it('COMPANY_VIEWER cannot access My KORA', () => {
-    expect(myKoraPreviewService.canAccess('COMPANY_VIEWER')).toBe(false);
   });
 
   it('PARTNER cannot access My KORA', () => {
@@ -557,10 +549,6 @@ describe('B73-B: Privacy regression — employer access still blocked after B73-
     expect(() => service.getProfile('any-worker', 'COMPANY_ADMIN')).toThrow();
   });
 
-  it('COMPANY_VIEWER still throws after B73-B changes', () => {
-    expect(() => service.getProfile('any-worker', 'COMPANY_VIEWER')).toThrow();
-  });
-
   it('PARTNER still throws after B73-B changes', () => {
     expect(() => service.getProfile('any-worker', 'PARTNER')).toThrow();
   });
@@ -573,14 +561,9 @@ describe('B73-B: Privacy regression — employer access still blocked after B73-
     expect(myKoraPreviewService.canAccess('COMPANY_ADMIN')).toBe(false);
   });
 
-  it('MyKoraPreviewService still blocks COMPANY_VIEWER', () => {
-    expect(myKoraPreviewService.canAccess('COMPANY_VIEWER')).toBe(false);
-  });
-
   it('enriched timeline is still not returned for employer roles — canAccess prevents it', () => {
     // canAccess is the gate; employer roles never reach getMyKoraHomePreview
     expect(myKoraPreviewService.canAccess('COMPANY_ADMIN')).toBe(false);
-    expect(myKoraPreviewService.canAccess('COMPANY_VIEWER')).toBe(false);
     expect(myKoraPreviewService.canAccess('PARTNER')).toBe(false);
   });
 });

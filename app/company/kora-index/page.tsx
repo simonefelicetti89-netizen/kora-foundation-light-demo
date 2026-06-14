@@ -1,7 +1,7 @@
 'use client';
 
 // C-02: KORA Index™ — scomposizione analitica del punteggio.
-// Live-only: richiede una sessione company autenticata (COMPANY_ADMIN / COMPANY_VIEWER).
+// Live-only: richiede una sessione company autenticata (COMPANY_ADMIN). B143: COMPANY_VIEWER rimosso.
 // Senza sessione live → NoDataState. Nessun dato sintetico. Nessun branch demo.
 
 import { useState, useEffect } from 'react';
@@ -170,12 +170,19 @@ export default function KoraIndexDetail() {
 
   const macroblocks: MacroblockScore[] = output.macroblocks ?? [];
 
-  const effectiveRole = koraRole ?? 'COMPANY_VIEWER';
+  // B143: COMPANY_VIEWER rimosso. Se koraRole è null la sessione è in errore — non assumere alcun ruolo.
+  if (!koraRole) {
+    return (
+      <div className="rounded-lg border border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] px-4 py-6 text-xs text-[#9E3B2F] text-center">
+        Sessione non disponibile. Ricaricare la pagina o effettuare nuovamente il login.
+      </div>
+    );
+  }
 
   // ── Equity & Access Intelligence™ ────────────────────────────────────────
   // department_activation already filtered at N≥10 server-side.
   const eqValue      = output.components.find((c) => c.code === 'EQ')?.value ?? 0;
-  const equityAccess = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, effectiveRole, undefined);
+  const equityAccess = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, koraRole, undefined);
 
   // ── Evidence Reliability Intelligence™ ───────────────────────────────────
   const liveUefSummary: UEFReviewSummary | null = liveCtx ? {
@@ -214,7 +221,7 @@ export default function KoraIndexDetail() {
   // Fall back to the mock UEF summary only when liveCtx is absent.
   const uefSummaryForEvidence = liveUefSummary ?? uefReviewService.getReviewSummary();
   const evidenceReliability   = evidenceReliabilityIntelligenceService.compute(
-    liveIuSummary, uefSummaryForEvidence, confidence ?? null, effectiveRole,
+    liveIuSummary, uefSummaryForEvidence, confidence ?? null, koraRole,
   );
 
   // ── LIFE Diversity & Care Economy Intelligence™ ───────────────────────────
@@ -227,7 +234,7 @@ export default function KoraIndexDetail() {
       )
     : null;
 
-  const careSummary = careEconomyIntelligenceService.compute(lifeSummary, effectiveRole);
+  const careSummary = careEconomyIntelligenceService.compute(lifeSummary, koraRole);
 
   // ── Eligibility gate ──────────────────────────────────────────────────────
   const eligibilityGate = liveCtx

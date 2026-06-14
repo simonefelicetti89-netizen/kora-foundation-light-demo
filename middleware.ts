@@ -135,8 +135,8 @@ export async function middleware(request: NextRequest) {
   // B36.1: Redirect authenticated company users away from demo/admin/future-vision paths.
   // Only applies to users with a real Supabase session — demo-state users (no session)
   // are unaffected and can still access synthetic demo routes.
-  const isRealCompanyUser =
-    sessionKoraRole === 'COMPANY_ADMIN' || sessionKoraRole === 'COMPANY_VIEWER';
+  // B143: COMPANY_VIEWER removed — only COMPANY_ADMIN is a real company user.
+  const isRealCompanyUser = sessionKoraRole === 'COMPANY_ADMIN';
 
   if (isRealCompanyUser) {
     const isAllowed = COMPANY_ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix));

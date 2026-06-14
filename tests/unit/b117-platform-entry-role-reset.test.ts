@@ -159,17 +159,17 @@ describe('Header — demo controls gated on real session role', () => {
     expect(header).toContain('{showDemoControls && <RoleSwitcher />}');
   });
 
-  it('realRoleIsCompanyOrWorker covers COMPANY_ADMIN, COMPANY_VIEWER, WORKER', () => {
+  it('realRoleIsCompanyOrWorker covers COMPANY_ADMIN and WORKER (B143: COMPANY_VIEWER rimosso)', () => {
     expect(header).toContain("realRole === 'COMPANY_ADMIN'");
-    expect(header).toContain("realRole === 'COMPANY_VIEWER'");
     expect(header).toContain("realRole === 'WORKER'");
+    expect(header).not.toContain("realRole === 'COMPANY_VIEWER'");
   });
 });
 
-// ─── 6. COMPANY_VIEWER soft-deprecated in provisioning UI ────────────────────
+// ─── 6. COMPANY_VIEWER rimosso in B143 ───────────────────────────────────────
 
-describe('COMPANY_VIEWER — soft-deprecated from provisioning', () => {
-  it('provisioning panel no longer offers COMPANY_VIEWER role', () => {
+describe('COMPANY_VIEWER — B143 rimosso dal provisioning', () => {
+  it('provisioning panel non offre COMPANY_VIEWER come opzione ruolo', () => {
     // The ROLE_OPTIONS array should not contain COMPANY_VIEWER as a selectable option
     const roleOptions = provisioningPanel.slice(
       provisioningPanel.indexOf('ROLE_OPTIONS'),
@@ -178,7 +178,7 @@ describe('COMPANY_VIEWER — soft-deprecated from provisioning', () => {
     expect(roleOptions).not.toContain("value: 'COMPANY_VIEWER'");
   });
 
-  it('setup wizard no longer offers COMPANY_VIEWER as role option', () => {
+  it('setup wizard non offre COMPANY_VIEWER come opzione ruolo', () => {
     const setupSection = setupWizard.slice(
       setupWizard.indexOf('admin_role'),
       setupWizard.indexOf('admin_role') + 600,

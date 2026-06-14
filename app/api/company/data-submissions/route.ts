@@ -1,6 +1,6 @@
 // app/api/company/data-submissions/route.ts
 // B39 — Company data submission: list + create.
-// COMPANY_ADMIN / COMPANY_VIEWER — tenant from session only.
+// COMPANY_ADMIN only (B143: COMPANY_VIEWER rimosso) — tenant from session only.
 //
 // GET  /api/company/data-submissions  → list own submissions (both roles)
 // POST /api/company/data-submissions  → create draft submission (COMPANY_ADMIN only)

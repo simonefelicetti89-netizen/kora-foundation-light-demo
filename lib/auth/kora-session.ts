@@ -12,10 +12,9 @@
 //   2. Authorization header: Bearer <access_token> (programmatic API clients, testing)
 //
 // Supported roles:
-//   KORA_ADMIN     — platform operator, full admin access
-//   COMPANY_ADMIN  — company-scoped, read/manage own tenant workspace
-//   COMPANY_VIEWER — company-scoped, strictly read-only
-//   WORKER         — worker-scoped, private personal space only
+//   KORA_ADMIN    — platform operator, full admin access
+//   COMPANY_ADMIN — company-scoped, full workspace access (B143: COMPANY_VIEWER removed)
+//   WORKER        — worker-scoped, private personal space only
 
 import { getSupabaseServerClient, getSupabaseServiceClient } from '@/lib/supabase/server';
 import { NextResponse, type NextRequest } from 'next/server';
@@ -35,7 +34,7 @@ export interface KoraUser {
 export interface KoraCompanyUser {
   id: string;
   email: string;
-  koraRole: 'COMPANY_ADMIN' | 'COMPANY_VIEWER';
+  koraRole: 'COMPANY_ADMIN';
   tenantId: string;
   userStatus: 'active' | 'suspended' | 'disabled';
 }
@@ -107,7 +106,7 @@ export async function requireKoraAdmin(request?: NextRequest): Promise<KoraUser 
 //
 // For company workspace APIs. Validates:
 //   - authenticated session exists
-//   - kora_role is COMPANY_ADMIN or COMPANY_VIEWER (from app_metadata)
+//   - kora_role is COMPANY_ADMIN (from app_metadata; B143: COMPANY_VIEWER removed)
 //   - kora_tenant_id is present (from app_metadata)
 //   - kora_status is 'active' (user not suspended/disabled)
 //   - tenant is_active in analytics.tenant (tenant not suspended/archived)
@@ -127,7 +126,7 @@ export async function requireCompanyUser(request?: NextRequest): Promise<KoraCom
   const appMeta = user.app_metadata as Record<string, unknown> | undefined;
   const koraRole = appMeta?.kora_role as string | undefined;
 
-  if (koraRole !== 'COMPANY_ADMIN' && koraRole !== 'COMPANY_VIEWER') {
+  if (koraRole !== 'COMPANY_ADMIN') {
     return NextResponse.json(
       { error: 'Forbidden — company user role required', role_found: koraRole ?? 'none' },
       { status: 403 },
@@ -177,7 +176,7 @@ export async function requireCompanyUser(request?: NextRequest): Promise<KoraCom
   return {
     id: user.id,
     email: user.email ?? '',
-    koraRole: koraRole as 'COMPANY_ADMIN' | 'COMPANY_VIEWER',
+    koraRole: koraRole as 'COMPANY_ADMIN',
     tenantId,
     userStatus: userStatus as 'active' | 'suspended' | 'disabled',
   };
@@ -194,7 +193,7 @@ export async function getTenantFromSession(request?: NextRequest): Promise<strin
   const appMeta = user.app_metadata as Record<string, unknown> | undefined;
   const koraRole = appMeta?.kora_role as string | undefined;
 
-  if (koraRole !== 'COMPANY_ADMIN' && koraRole !== 'COMPANY_VIEWER') return null;
+  if (koraRole !== 'COMPANY_ADMIN') return null;
 
   return (appMeta?.kora_tenant_id as string | undefined) ?? null;
 }
@@ -433,7 +432,7 @@ export function isKoraAdmin(value: KoraUser | KoraCompanyUser | KoraWorkerUser |
 }
 
 export function isCompanyUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser): value is KoraCompanyUser {
-  return value.koraRole === 'COMPANY_ADMIN' || value.koraRole === 'COMPANY_VIEWER';
+  return value.koraRole === 'COMPANY_ADMIN';
 }
 
 export function isWorkerUser(value: KoraUser | KoraCompanyUser | KoraWorkerUser | KoraPartnerUser | KoraDemoUser): value is KoraWorkerUser {

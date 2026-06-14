@@ -407,8 +407,9 @@ import type { KoraCompanyUser, KoraUser } from '../../lib/auth/kora-session';
 const tenantA = '11111111-1111-1111-1111-111111111111';
 const tenantB = '22222222-2222-2222-2222-222222222222';
 
-function makeCompanyUser(tenantId: string, role: 'COMPANY_ADMIN' | 'COMPANY_VIEWER' = 'COMPANY_ADMIN'): KoraCompanyUser {
-  return { id: 'user-1', email: 'u@a.it', koraRole: role, tenantId, userStatus: 'active' };
+// B143: COMPANY_VIEWER removed — makeCompanyUser always creates COMPANY_ADMIN.
+function makeCompanyUser(tenantId: string): KoraCompanyUser {
+  return { id: 'user-1', email: 'u@a.it', koraRole: 'COMPANY_ADMIN', tenantId, userStatus: 'active' };
 }
 
 describe('Tenant isolation — assertTenantAccess (pure logic)', () => {
@@ -435,9 +436,9 @@ describe('Tenant isolation — assertTenantAccess (pure logic)', () => {
     expect(assertTenantAccess(userB, tenantA)).not.toBeNull();
   });
 
-  it('COMPANY_VIEWER is also blocked from cross-tenant (role does not elevate access)', () => {
-    const viewer = makeCompanyUser(tenantA, 'COMPANY_VIEWER');
-    expect(assertTenantAccess(viewer, tenantB)).not.toBeNull();
+  it('cross-tenant is blocked regardless of userStatus (role does not elevate access)', () => {
+    const user = makeCompanyUser(tenantA);
+    expect(assertTenantAccess(user, tenantB)).not.toBeNull();
   });
 
   it('403 response body contains error message', async () => {
@@ -488,18 +489,15 @@ describe('Tenant isolation — session layer (structural)', () => {
 
 describe('Tenant isolation — type guards', () => {
   const adminUser: KoraUser = { id: 'admin-1', email: 'admin@kora.io', koraRole: 'KORA_ADMIN' };
-  const companyAdmin = makeCompanyUser(tenantA, 'COMPANY_ADMIN');
-  const companyViewer = makeCompanyUser(tenantA, 'COMPANY_VIEWER');
+  const companyAdmin = makeCompanyUser(tenantA);
 
   it('isKoraAdmin returns true only for KORA_ADMIN', () => {
     expect(isKoraAdmin(adminUser)).toBe(true);
     expect(isKoraAdmin(companyAdmin)).toBe(false);
-    expect(isKoraAdmin(companyViewer)).toBe(false);
   });
 
-  it('isCompanyUser returns true for COMPANY_ADMIN and COMPANY_VIEWER', () => {
+  it('isCompanyUser returns true for COMPANY_ADMIN (B143: COMPANY_VIEWER removed)', () => {
     expect(isCompanyUser(companyAdmin)).toBe(true);
-    expect(isCompanyUser(companyViewer)).toBe(true);
     expect(isCompanyUser(adminUser)).toBe(false);
   });
 

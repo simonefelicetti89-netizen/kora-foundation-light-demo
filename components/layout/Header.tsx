@@ -47,10 +47,9 @@ export function Header() {
   // - No real session (null) → pure demo mode, all controls visible
   // - Real session with KORA_ADMIN → full operator access
   // Hide demo controls when:
-  // - Real session with COMPANY_ADMIN, COMPANY_VIEWER, WORKER → real user, controls irrelevant
+  // - Real session with COMPANY_ADMIN, WORKER → real user, controls irrelevant
   const realRoleIsCompanyOrWorker =
     realRole === 'COMPANY_ADMIN' ||
-    realRole === 'COMPANY_VIEWER' ||
     realRole === 'WORKER';
 
   const showDemoControls = !realRoleIsCompanyOrWorker;

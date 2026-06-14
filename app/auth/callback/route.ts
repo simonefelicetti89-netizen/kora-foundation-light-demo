@@ -69,8 +69,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/worker/setup-password', origin));
   }
 
-  // COMPANY_ADMIN / COMPANY_VIEWER → company setup-password
-  if (koraRole === 'COMPANY_ADMIN' || koraRole === 'COMPANY_VIEWER') {
+  // COMPANY_ADMIN → company setup-password (B143: COMPANY_VIEWER removed)
+  if (koraRole === 'COMPANY_ADMIN') {
     return NextResponse.redirect(new URL('/company/setup-password', origin));
   }
 

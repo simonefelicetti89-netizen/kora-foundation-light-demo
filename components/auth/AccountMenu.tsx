@@ -15,7 +15,6 @@ const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 const ROLE_BADGE: Record<string, { label: string; bg: string; color: string; border: string }> = {
   KORA_ADMIN:     { label: 'KORA Admin',     bg: 'rgba(97,86,245,0.10)',  color: '#3b30c9', border: 'rgba(97,86,245,0.28)'  },
   COMPANY_ADMIN:  { label: 'Company Admin',  bg: 'rgba(22,101,52,0.10)',  color: '#166534', border: 'rgba(22,101,52,0.28)'  },
-  COMPANY_VIEWER: { label: 'Company Viewer', bg: 'rgba(6,3,43,0.06)',     color: 'rgba(6,3,43,0.55)', border: 'rgba(6,3,43,0.14)' },
   WORKER:         { label: 'Worker',         bg: 'rgba(37,99,235,0.10)',  color: '#1e4a8a', border: 'rgba(37,99,235,0.28)'  },
   PARTNER:        { label: 'Partner',        bg: 'rgba(192,125,42,0.10)', color: '#8A5A00', border: 'rgba(192,125,42,0.28)' },
 };

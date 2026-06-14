@@ -1,5 +1,5 @@
 // app/api/company/workspace/route.ts
-// B36 PART 2 — Company workspace summary — COMPANY_ADMIN / COMPANY_VIEWER only.
+// B36 PART 2 — Company workspace summary — COMPANY_ADMIN only (B143: COMPANY_VIEWER rimosso).
 // B105 FIX: table names corrected (scoring_result→kora_index_result, decision_pack→decision_pack_version).
 //
 // GET /api/company/workspace

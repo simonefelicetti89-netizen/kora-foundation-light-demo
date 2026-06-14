@@ -24,9 +24,7 @@ interface CompanyUser {
   emailConfirmed: boolean;
 }
 
-// B117: COMPANY_VIEWER soft-deprecated — removed from provisioning UI.
-// Existing COMPANY_VIEWER sessions remain valid (auth checks unchanged).
-// New accounts are always COMPANY_ADMIN.
+// B143: COMPANY_VIEWER rimosso — solo COMPANY_ADMIN è supportato.
 const ROLE_OPTIONS = [
   { value: 'COMPANY_ADMIN', label: 'Company Admin — gestione workspace, lettura completa' },
 ];
@@ -137,7 +135,7 @@ export function CompanyUserProvisioningPanel({ userEmail, userRole }: Props) {
           <h1 className="text-xl font-bold text-white tracking-tight">Utenti aziendali</h1>
           <BoundaryBadge mode="LIVE" variant="dark" style={{ marginTop: 6 }} />
           <p className="text-sm text-white/45 mt-0.5">
-            Assegna accesso al workspace aziendale KORA. Ruoli: Company Admin e Company Viewer.
+            Assegna accesso al workspace aziendale KORA. Ruolo: Company Admin.
           </p>
         </div>
         <div className="flex flex-col items-end gap-1.5 mt-1">

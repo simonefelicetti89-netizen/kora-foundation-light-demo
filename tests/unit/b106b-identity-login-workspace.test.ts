@@ -70,9 +70,10 @@ describe('B106-B — kora-session: auth metadata canonici', () => {
 describe('B106-B — middleware: role routing matrix', () => {
   const mw = read('middleware.ts');
 
-  it('COMPANY_ADMIN/VIEWER ridiretti a /company/workspace se fuori allowed paths', () => {
+  it('COMPANY_ADMIN ridiretto a /company/workspace se fuori allowed paths (B143: COMPANY_VIEWER rimosso)', () => {
     expect(mw).toContain('/company/workspace');
-    expect(mw).toContain("sessionKoraRole === 'COMPANY_ADMIN' || sessionKoraRole === 'COMPANY_VIEWER'");
+    // B143: solo COMPANY_ADMIN — COMPANY_VIEWER rimosso
+    expect(mw).toContain("sessionKoraRole === 'COMPANY_ADMIN'");
   });
 
   it('COMPANY_ALLOWED_PREFIXES include /company/login', () => {

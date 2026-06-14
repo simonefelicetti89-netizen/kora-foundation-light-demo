@@ -24,10 +24,9 @@ const INVITE_STATUS: Record<string, { label: string; color: string }> = {
 };
 
 const ROLE_LABEL: Record<string, string> = {
-  COMPANY_ADMIN:  'Company Admin',
-  COMPANY_VIEWER: 'Company Viewer',
-  WORKER:         'Lavoratore',
-  KORA_ADMIN:     'KORA Admin',
+  COMPANY_ADMIN: 'Company Admin',
+  WORKER:        'Lavoratore',
+  KORA_ADMIN:    'KORA Admin',
 };
 
 // ── Main page ─────────────────────────────────────────────────────────────────
@@ -39,7 +38,6 @@ export default function CompanyUsersPage({ params }: { params: { companyId: stri
   const accounts = accountProvisioningService.getAccountsForCompany(companyId);
 
   const companyAdmins  = accounts.filter((u) => u.role === 'COMPANY_ADMIN');
-  const companyViewers = accounts.filter((u) => u.role === 'COMPANY_VIEWER');
   const hasActiveAdmin = companyAdmins.some((u) => u.account_status === 'active_demo');
 
   if (!tenant) {
@@ -94,8 +92,8 @@ export default function CompanyUsersPage({ params }: { params: { companyId: stri
           <p className="text-xl font-bold text-[rgba(6,3,43,0.78)] mt-1">{companyAdmins.length}</p>
         </div>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
-          <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.45)]">Company Viewer</p>
-          <p className="text-xl font-bold text-[rgba(6,3,43,0.78)] mt-1">{companyViewers.length}</p>
+          <p className="text-[9px] font-semibold uppercase tracking-wide text-[rgba(6,3,43,0.45)]">Ruolo unico</p>
+          <p className="text-xl font-bold text-[rgba(6,3,43,0.78)] mt-1">ADMIN</p>
         </div>
       </div>
 
@@ -175,34 +173,6 @@ export default function CompanyUsersPage({ params }: { params: { companyId: stri
         )}
       </section>
 
-      {/* ── Company Viewers ──────────────────────────────────────────────────── */}
-      {companyViewers.length > 0 && (
-        <section className="space-y-3">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">
-            Company Viewer — {companyViewers.length} utente/i
-          </p>
-          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
-            <div className="divide-y divide-[rgba(6,3,43,0.05)]">
-              {companyViewers.map((user) => {
-                const aBdg = ACCOUNT_STATUS[user.account_status] ?? ACCOUNT_STATUS.draft;
-                return (
-                  <div key={user.user_id} className="px-4 py-3">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <div>
-                        <p className="text-xs font-semibold text-[rgba(6,3,43,0.88)]">{user.display_name}</p>
-                        <p className="text-[10px] text-[rgba(6,3,43,0.52)] font-mono">{user.email ?? '—'}</p>
-                      </div>
-                      <span className={`rounded border px-1.5 py-0.5 text-[10px] font-semibold ${aBdg.classes}`}>
-                        {aBdg.label}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* ── CTA: Create new user ─────────────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3 pt-2">

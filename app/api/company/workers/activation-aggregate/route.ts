@@ -12,7 +12,7 @@
 //   - Uses service-role client — company JWT has no direct policy on personal schema
 //   - tenantId always from session app_metadata — never from request params
 //
-// Callable by: COMPANY_ADMIN, COMPANY_VIEWER (own tenant only).
+// Callable by: COMPANY_ADMIN (own tenant only) — B143: COMPANY_VIEWER rimosso.
 
 export const runtime = 'nodejs';
 

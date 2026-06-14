@@ -40,10 +40,9 @@ export function formatCalibrationStatus(status: string): string {
 
 export function formatRole(role: string): string {
   const labels: Record<string, string> = {
-    KORA_ADMIN:     'KORA Admin',
-    COMPANY_ADMIN:  'Company Admin',
-    COMPANY_VIEWER: 'Company Viewer',
-    WORKER:         'Worker',
+    KORA_ADMIN:    'KORA Admin',
+    COMPANY_ADMIN: 'Company Admin',
+    WORKER:        'Worker',
     PARTNER:        'Partner',
     ADVISOR:        'Advisor',
   };

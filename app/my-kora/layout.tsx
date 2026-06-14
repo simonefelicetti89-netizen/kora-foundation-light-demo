@@ -22,7 +22,7 @@ import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 // WORKER roles: full access — their personal space.
 // KORA_ADMIN: allowed to navigate and review demo content (uses synthetic data only).
 //   Admission is based on real Supabase session role, not demo-state.
-// Employer roles (COMPANY_ADMIN, COMPANY_VIEWER): hard-blocked — suppression always visible.
+// Employer roles (COMPANY_ADMIN): hard-blocked — suppression always visible.
 export default function MyKoraLayout({ children }: { children: React.ReactNode }) {
   const { activeRole } = useRole();
 

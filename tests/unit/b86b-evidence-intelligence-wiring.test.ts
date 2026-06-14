@@ -71,10 +71,6 @@ describe('B86-B T1b — DynamicCVService runtime behavior', () => {
     expect(() => dynamicCVService.getProfile('w-001', 'COMPANY_ADMIN')).toThrow();
   });
 
-  it('throws for COMPANY_VIEWER role', () => {
-    expect(() => dynamicCVService.getProfile('w-001', 'COMPANY_VIEWER')).toThrow();
-  });
-
   it('returns a profile for WORKER role', () => {
     const profile = dynamicCVService.getProfile('w-persona-a', 'WORKER');
     expect(profile).not.toBeNull();

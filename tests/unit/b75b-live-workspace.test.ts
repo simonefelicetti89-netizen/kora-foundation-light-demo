@@ -170,7 +170,8 @@ describe('Task 4 & 5 — Live intelligence layers compute on demand', () => {
     // equityAccess uses equityAccessIntelligenceService.compute with aggregate
     expect(src).toContain('equityAccessIntelligenceService.compute(aggregate');
     // B129 Fase 3: live-only page passes visibleGroups=undefined directly (no ternary)
-    expect(src).toContain('equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, effectiveRole, undefined)');
+    // B143: effectiveRole renamed to koraRole (COMPANY_VIEWER removed, null guard added before this call)
+    expect(src).toContain('equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, koraRole, undefined)');
   });
 
   it('liveCtx is fetched from /api/company/live-eligibility once period is known', () => {

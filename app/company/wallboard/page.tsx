@@ -1,7 +1,7 @@
 // app/company/wallboard/page.tsx
 // B119: KORA Wallboard — vista aggregata proiettabile per uso interno aziendale.
 //
-// Accesso: COMPANY_ADMIN, COMPANY_VIEWER (legacy).
+// Accesso: COMPANY_ADMIN (B143: COMPANY_VIEWER rimosso).
 // KORA_ADMIN: non può accedere come company user — mostra messaggio admin esplicito
 //             con link all'anteprima admin disponibile.
 //

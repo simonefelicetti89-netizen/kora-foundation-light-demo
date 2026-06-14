@@ -10,15 +10,14 @@ import accountsData from '@/data/synthetic/user-accounts.json';
 const records = (accountsData as { data: KoraUserAccount[] }).data;
 
 const ADMIN_ROLES: KoraUserRole[] = ['KORA_ADMIN'];
-const COMPANY_ROLES: KoraUserRole[] = ['COMPANY_ADMIN', 'COMPANY_VIEWER'];
+const COMPANY_ROLES: KoraUserRole[] = ['COMPANY_ADMIN'];
 
 const DEFAULT_VISIBLE_SECTIONS: Record<KoraUserRole, string[]> = {
-  KORA_ADMIN:     ['all'],
-  COMPANY_ADMIN:  ['executive-cockpit', 'kora-index', 'reports', 'financial', 'pillars', 'activation', 'contribution', 'profile'],
-  COMPANY_VIEWER: ['executive-cockpit', 'kora-index', 'profile'],
-  WORKER:         ['my-kora', 'pib-private', 'dynamic-cv', 'privacy', 'opportunities'],
-  PARTNER:        ['partner'],
-  ADVISOR:        ['advisor', 'company-readonly'],
+  KORA_ADMIN:    ['all'],
+  COMPANY_ADMIN: ['executive-cockpit', 'kora-index', 'reports', 'financial', 'pillars', 'activation', 'contribution', 'profile'],
+  WORKER:        ['my-kora', 'pib-private', 'dynamic-cv', 'privacy', 'opportunities'],
+  PARTNER:       ['partner'],
+  ADVISOR:       ['advisor', 'company-readonly'],
 };
 
 class AccountProvisioningService {
@@ -49,10 +48,6 @@ class AccountProvisioningService {
 
   getPrimaryCompanyAdmin(companyId: string): KoraUserAccount | null {
     return this.getCompanyAdmins(companyId).find((u) => u.account_status === 'active_demo') ?? null;
-  }
-
-  getCompanyViewers(companyId: string): KoraUserAccount[] {
-    return records.filter((u) => u.company_id === companyId && u.role === 'COMPANY_VIEWER');
   }
 
   createCompanyUserDraft(

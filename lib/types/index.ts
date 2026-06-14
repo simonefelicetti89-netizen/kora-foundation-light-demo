@@ -1520,7 +1520,6 @@ export interface WorkforceBaselineRecord {
 export type ActiveProductRole =
   | 'KORA_ADMIN'
   | 'COMPANY_ADMIN'
-  | 'COMPANY_VIEWER'
   | 'WORKER'
   | 'PARTNER'
   | 'ADVISOR';

@@ -87,7 +87,6 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
   const statusBadge = tenantService.getTenantStatusBadge(tenant.tenant_status);
   const onboardingStatus = tenant.onboarding_status.replace(/_/g, ' ');
   const companyAdmins = accounts.filter((a) => a.role === 'COMPANY_ADMIN');
-  const companyViewers = accounts.filter((a) => a.role === 'COMPANY_VIEWER');
 
   return (
     <div className="space-y-8 max-w-4xl">
@@ -187,7 +186,7 @@ export default function AdminCompanyOnboarding({ params }: { params: { companyId
           <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">
             <p className="text-xs text-[rgba(6,3,43,0.40)]">Accessi Aziendali</p>
             <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{accounts.length}</p>
-            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">{companyAdmins.length} admin · {companyViewers.length} viewer</p>
+            <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">{companyAdmins.length} admin</p>
           </div>
           {/* KORA Index */}
           <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3">

@@ -14,7 +14,6 @@ import type { LifeDiversitySummary, LifeSubcategoryCode } from '@/services/life-
 const ALLOWED_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>([
   'KORA_ADMIN',
   'COMPANY_ADMIN',
-  'COMPANY_VIEWER',
 ]);
 
 export const CARE_SUBCATEGORY_CODES: readonly LifeSubcategoryCode[] = [

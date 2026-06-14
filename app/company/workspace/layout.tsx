@@ -1,6 +1,6 @@
 // app/company/workspace/layout.tsx
 // B36 PART 4 — Server-side layout protection for the company workspace.
-// Requires a real Supabase session with COMPANY_ADMIN or COMPANY_VIEWER role.
+// Requires a real Supabase session with COMPANY_ADMIN role (B143: COMPANY_VIEWER rimosso).
 // KORA_ADMIN cannot access this route — it requires a live company tenant session.
 
 import { requireCompanyUser, getCurrentKoraUser, isKoraAuthError } from '@/lib/auth/kora-session';

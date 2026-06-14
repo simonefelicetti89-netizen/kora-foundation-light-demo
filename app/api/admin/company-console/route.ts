@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
       const meta = user.app_metadata as Record<string, unknown> | undefined;
       const tenantId = meta?.kora_tenant_id as string | undefined;
       const role     = meta?.kora_role as string | undefined;
-      if (tenantId && (role === 'COMPANY_ADMIN' || role === 'COMPANY_VIEWER')) {
+      if (tenantId && role === 'COMPANY_ADMIN') {
         if (!usersByTenant[tenantId]) usersByTenant[tenantId] = { count: 0, adminEmail: null };
         usersByTenant[tenantId].count++;
         if (role === 'COMPANY_ADMIN' && !usersByTenant[tenantId].adminEmail) {

@@ -52,8 +52,8 @@ describe('PrivacyVisibilityService — employer suppression for all individual d
     expect(r.suppressed).toBe(true);
   });
 
-  it('suppresses also for COMPANY_VIEWER role', () => {
-    const r = privacyVisibilityService.isSuppressed('COMPANY_VIEWER', 'pib');
+  it('suppresses pib for COMPANY_ADMIN (only employer role after B143)', () => {
+    const r = privacyVisibilityService.isSuppressed('COMPANY_ADMIN', 'pib');
     expect(r.suppressed).toBe(true);
   });
 
@@ -159,11 +159,6 @@ describe('RolePermissionService — PIB access', () => {
     const r = rolePermissionService.canAccess('COMPANY_ADMIN', 'pib-records');
     expect(r.allowed).toBe(false);
     expect(r.reason).toBeTruthy();
-  });
-
-  it('denies COMPANY_VIEWER access to pib-records', () => {
-    const r = rolePermissionService.canAccess('COMPANY_VIEWER', 'pib-records');
-    expect(r.allowed).toBe(false);
   });
 
   it('denies KORA_ADMIN access to pib-records at service layer', () => {

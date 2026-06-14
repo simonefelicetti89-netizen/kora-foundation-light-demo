@@ -221,9 +221,6 @@ describe('WorkerOpportunityService — opportunity strip (top 3)', () => {
     expect(workerOpportunityService.canAccess('COMPANY_ADMIN')).toBe(false);
   });
 
-  it('canAccess returns false for COMPANY_VIEWER', () => {
-    expect(workerOpportunityService.canAccess('COMPANY_VIEWER')).toBe(false);
-  });
 
   it('compute returns opportunities for WORKER role', () => {
     const opps = workerOpportunityService.compute('persona-elena-m', 'WORKER', 'S1');
@@ -313,9 +310,6 @@ describe('Privacy constraints — employer cannot access worker data', () => {
     expect(myKoraPreviewService.canAccess('COMPANY_ADMIN')).toBe(false);
   });
 
-  it('myKoraPreviewService.canAccess returns false for COMPANY_VIEWER', () => {
-    expect(myKoraPreviewService.canAccess('COMPANY_VIEWER')).toBe(false);
-  });
 
   it('myKoraPreviewService.canAccess returns true for WORKER', () => {
     expect(myKoraPreviewService.canAccess('WORKER')).toBe(true);
@@ -340,10 +334,6 @@ describe('Privacy constraints — employer cannot access worker data', () => {
     expect(opps).toHaveLength(0);
   });
 
-  it('opportunities for COMPANY_VIEWER are empty (privacy boundary)', () => {
-    const opps = workerOpportunityService.compute('persona-elena-m', 'COMPANY_VIEWER', 'S1');
-    expect(opps).toHaveLength(0);
-  });
 });
 
 // ── Dynamic CV card data ───────────────────────────────────────────────────────

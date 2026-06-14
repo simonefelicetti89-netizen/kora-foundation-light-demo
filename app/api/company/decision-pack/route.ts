@@ -1,5 +1,5 @@
 // app/api/company/decision-pack/route.ts
-// Company Decision Pack HTML preview — COMPANY_ADMIN / COMPANY_VIEWER only.
+// Company Decision Pack HTML preview — COMPANY_ADMIN only (B143: COMPANY_VIEWER rimosso).
 //
 // GET /api/company/decision-pack?reportingPeriod=...
 //

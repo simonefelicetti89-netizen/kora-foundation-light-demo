@@ -471,7 +471,7 @@ describe('B96-B Navigation — Founder Tools group in admin sidebar', () => {
   });
 
   it('non-admin roles do not have Founder Tools group', () => {
-    const roles = ['COMPANY_ADMIN', 'COMPANY_VIEWER', 'WORKER', 'PARTNER', 'ADVISOR'];
+    const roles = ['COMPANY_ADMIN', 'WORKER', 'PARTNER', 'ADVISOR']; // B143: COMPANY_VIEWER rimosso
     for (const role of roles) {
       const groups = buildNavGroups(role);
       const founderGroup = groups.find((g) => g.heading === 'Founder Tools');

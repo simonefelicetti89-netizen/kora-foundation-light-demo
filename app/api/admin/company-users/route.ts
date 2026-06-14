@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
-const COMPANY_ROLES = ['COMPANY_ADMIN', 'COMPANY_VIEWER'] as const;
+const COMPANY_ROLES = ['COMPANY_ADMIN'] as const;
 type CompanyRole = (typeof COMPANY_ROLES)[number];
 
 const VALID_STATUSES = ['active', 'suspended', 'disabled'] as const;

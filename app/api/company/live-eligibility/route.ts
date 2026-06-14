@@ -8,7 +8,7 @@
 //   - LifeDiversityService (LIFE program names for subcategory classification)
 //
 // Security:
-//   - COMPANY_ADMIN / COMPANY_VIEWER only (requireCompanyUser).
+//   - COMPANY_ADMIN only (requireCompanyUser) — B143: COMPANY_VIEWER rimosso.
 //   - tenantId ALWAYS from session JWT (app_metadata.kora_tenant_id).
 //   - NEVER accepts tenantId from query params or request body.
 //   - Returns AGGREGATE counts only — no raw records, no pseudonym IDs.

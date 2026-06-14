@@ -14,7 +14,6 @@ import type { BudgetToHumanImpactRecord, KoraRole } from '@/lib/types';
 const ALLOWED_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>([
   'KORA_ADMIN',
   'COMPANY_ADMIN',
-  'COMPANY_VIEWER',
 ]);
 
 // ── LIFE Subcategory Taxonomy v0.1 ─────────────────────────────────────────────

@@ -89,8 +89,6 @@ export default async function AdminPreviewCompanyWallboardPage() {
           </p>
           <ul style={{ margin: '0 0 12px', padding: '0 0 0 18px', fontSize: 12, color: 'rgba(6,3,43,0.60)', lineHeight: 1.8 }}>
             <li>Accesso diretto per COMPANY_ADMIN via <code style={{ fontSize: 11, background: 'rgba(6,3,43,0.05)', padding: '1px 4px', borderRadius: 4 }}>/company/wallboard</code></li>
-            <li>Visibile a COMPANY_VIEWER (legacy) — solo-lettura</li>
-            <li>Non richiede COMPANY_VIEWER come ruolo prodotto</li>
             <li>Dati aggregati, privacy-safe, proiettabili su schermi interni</li>
           </ul>
         </div>

@@ -1105,7 +1105,7 @@ const PRIVACY_SUMMARY_TEMPLATE: Omit<PrivacySummary, 'persona_label'> = {
 class MyKoraPreviewService {
   // Role guard: WORKER = full access (personal space).
   // KORA_ADMIN = allowed to review demo content (synthetic only, no real worker data).
-  // All other roles (COMPANY_ADMIN, COMPANY_VIEWER, PARTNER, ADVISOR): blocked.
+  // All other roles (COMPANY_ADMIN, PARTNER, ADVISOR): blocked. B143: COMPANY_VIEWER rimosso.
   canAccess(role: KoraRole): boolean {
     return isWorkerRole(role) || isAdminRole(role);
   }

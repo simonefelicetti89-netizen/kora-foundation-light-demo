@@ -326,7 +326,7 @@ export class PIBAggregationService {
     role: string,
   ): { available: false; reason: string } | PIBSnapshot {
     // Hard guard: employer roles must never receive individual PIB data.
-    if (role === 'COMPANY_ADMIN' || role === 'COMPANY_VIEWER' || role === 'ADVISOR') {
+    if (role === 'COMPANY_ADMIN' || role === 'ADVISOR') {
       return {
         available: false,
         reason:

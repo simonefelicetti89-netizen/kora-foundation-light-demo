@@ -7,7 +7,7 @@
 //   - Uses service-role client — company JWT cannot read personal.worker_identity (RLS: no policy)
 //   - tenantId is read from session app_metadata ONLY — never from request params
 //
-// Callable by: COMPANY_ADMIN, COMPANY_VIEWER (own tenant only).
+// Callable by: COMPANY_ADMIN (own tenant only) — B143: COMPANY_VIEWER rimosso.
 
 export const runtime = 'nodejs';
 

@@ -148,7 +148,7 @@ async function getCompanyUsers(): Promise<{ data: CompanyUser[] | null; error: s
     const users = (data?.users ?? [])
       .filter((u) => {
         const role = (u.app_metadata as Record<string, unknown>)?.kora_role as string | undefined;
-        return role === 'COMPANY_ADMIN' || role === 'COMPANY_VIEWER';
+        return role === 'COMPANY_ADMIN'; // B143: COMPANY_VIEWER rimosso
       })
       .sort((a, b) => (b.created_at > a.created_at ? 1 : -1))
       .slice(0, 20)
@@ -429,7 +429,7 @@ export default async function ProvisioningDiagnosticsPage() {
         {userResult.error ? (
           <ErrorBox message={userResult.error} />
         ) : !userResult.data || userResult.data.length === 0 ? (
-          <Empty message="Nessun utente con kora_role COMPANY_ADMIN o COMPANY_VIEWER in auth.users." />
+          <Empty message="Nessun utente con kora_role COMPANY_ADMIN in auth.users." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-xs">

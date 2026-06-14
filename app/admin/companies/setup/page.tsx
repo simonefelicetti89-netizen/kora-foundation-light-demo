@@ -567,7 +567,7 @@ export default function EnterpriseOnboardingWizard() {
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Nome admin" value={state.admin_name} onChange={(v) => update('admin_name', v)} placeholder="es. Marco Bianchi" required />
             <Input label="Email admin" value={state.admin_email} onChange={(v) => update('admin_email', v)} placeholder="es. m.bianchi@azienda.it" required />
-            {/* B117: COMPANY_VIEWER removed from provisioning — new accounts are always COMPANY_ADMIN */}
+            {/* B143: COMPANY_VIEWER rimosso — solo COMPANY_ADMIN è supportato */}
             <Select label="Ruolo" value={state.admin_role} onChange={(v) => update('admin_role', v)}
               options={[
                 { value: 'COMPANY_ADMIN', label: 'COMPANY_ADMIN — accesso completo portale aziendale' },

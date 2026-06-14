@@ -138,10 +138,10 @@ describe('Diagnostic page — app/admin/provisioning-diagnostics/page.tsx', () =
     expect(page).toContain('order(');
   });
 
-  it('fetches company auth users via listUsers (COMPANY_ADMIN / COMPANY_VIEWER only)', () => {
+  it('fetches company auth users via listUsers (COMPANY_ADMIN only — B143: COMPANY_VIEWER rimosso)', () => {
     expect(page).toContain('listUsers');
     expect(page).toContain("'COMPANY_ADMIN'");
-    expect(page).toContain("'COMPANY_VIEWER'");
+    expect(page).not.toContain("'COMPANY_VIEWER'");
   });
 
   it('NEVER exposes service role key value in page output', () => {

@@ -224,12 +224,13 @@ describe('B119b -- COMPANY_VIEWER not in provisioning VALID_ROLES', () => {
   });
 });
 
-// --- 16: COMPANY_VIEWER legacy sessions still valid ----------------------
+// --- 16: COMPANY_VIEWER rimosso in B143 ------------------------------------
 
-describe('B119b -- COMPANY_VIEWER legacy sessions remain valid', () => {
-  it('middleware still handles COMPANY_VIEWER as a real company user', () => {
-    // isRealCompanyUser check must still include COMPANY_VIEWER
-    expect(middleware).toContain("sessionKoraRole === 'COMPANY_VIEWER'");
+describe('B143 -- COMPANY_VIEWER rimosso del tutto', () => {
+  it('middleware non contiene più il check sessionKoraRole COMPANY_VIEWER (ruolo rimosso)', () => {
+    // B143: COMPANY_VIEWER non esiste più — solo COMPANY_ADMIN è un ruolo company.
+    expect(middleware).not.toContain("sessionKoraRole === 'COMPANY_VIEWER'");
+    expect(middleware).toContain("sessionKoraRole === 'COMPANY_ADMIN'");
   });
 });
 

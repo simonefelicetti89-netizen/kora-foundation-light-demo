@@ -1,5 +1,5 @@
 // app/api/company/decision-pack/pdf/route.ts
-// Company Decision Pack PDF download — COMPANY_ADMIN / COMPANY_VIEWER only.
+// Company Decision Pack PDF download — COMPANY_ADMIN only (B143: COMPANY_VIEWER rimosso).
 //
 // GET /api/company/decision-pack/pdf?reportingPeriod=...
 //

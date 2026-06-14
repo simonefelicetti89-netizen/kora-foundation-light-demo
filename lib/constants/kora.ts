@@ -10,7 +10,6 @@ export const MACROBLOCK_CODES = ['REACH', 'QUALITY', 'EQUITY', 'BTI'] as const;
 export const KORA_ROLES = [
   'KORA_ADMIN',
   'COMPANY_ADMIN',
-  'COMPANY_VIEWER',
   'WORKER',
   'PARTNER',
   'ADVISOR',
@@ -49,7 +48,6 @@ export const PILLAR_LABELS: Record<string, string> = {
 
 export const EMPLOYER_ROLES = [
   'COMPANY_ADMIN',
-  'COMPANY_VIEWER',
 ] as const;
 
 export const WORKER_ROLES = ['WORKER'] as const;

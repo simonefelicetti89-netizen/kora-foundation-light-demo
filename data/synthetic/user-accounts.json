@@ -75,16 +75,16 @@
       "company_id": "meridiana-group",
       "display_name": "Giulia Ferretti — HR Meridiana",
       "email": "g.ferretti@meridiana-demo.internal",
-      "role": "COMPANY_VIEWER",
+      "role": "COMPANY_ADMIN",
       "access_scope": "company_scoped",
       "account_status": "active_demo",
       "default_route": "/company",
-      "visible_sections": ["executive-cockpit", "kora-index", "profile"],
-      "hidden_sections": ["company-setup", "onboarding-studio", "workforce-baseline-upload", "ai-ingestion", "uef-review", "scoring-run", "financial", "pillars", "activation", "reports"],
+      "visible_sections": ["executive-cockpit", "kora-index", "reports", "financial", "pillars", "activation", "contribution", "profile"],
+      "hidden_sections": ["company-setup", "onboarding-studio", "workforce-baseline-upload", "ai-ingestion", "uef-review", "scoring-run"],
       "invitation_status": "accepted",
       "created_at": "2025-01-21T09:00:00Z",
       "updated_at": "2025-01-22T08:00:00Z",
-      "notes": "Viewer Meridiana — accesso lettura KORA Index ed Executive Cockpit"
+      "notes": "Company Admin Meridiana HR — B143: promosso da COMPANY_VIEWER a COMPANY_ADMIN"
     },
     {
       "user_id": "meridiana-finance-001",
@@ -92,16 +92,16 @@
       "company_id": "meridiana-group",
       "display_name": "Luca Moretti — Finance Meridiana",
       "email": "l.moretti@meridiana-demo.internal",
-      "role": "COMPANY_VIEWER",
+      "role": "COMPANY_ADMIN",
       "access_scope": "company_scoped",
       "account_status": "invited",
       "default_route": "/company",
-      "visible_sections": ["executive-cockpit", "kora-index", "profile"],
-      "hidden_sections": ["company-setup", "onboarding-studio", "workforce-baseline-upload", "ai-ingestion", "uef-review", "scoring-run", "financial", "pillars", "activation", "reports"],
+      "visible_sections": ["executive-cockpit", "kora-index", "reports", "financial", "pillars", "activation", "contribution", "profile"],
+      "hidden_sections": ["company-setup", "onboarding-studio", "workforce-baseline-upload", "ai-ingestion", "uef-review", "scoring-run"],
       "invitation_status": "pending",
       "created_at": "2025-01-21T09:00:00Z",
       "updated_at": "2025-01-22T08:00:00Z",
-      "notes": "Viewer Meridiana (ex-Finance) — invito in attesa"
+      "notes": "Company Admin Meridiana Finance — B143: promosso da COMPANY_VIEWER a COMPANY_ADMIN, invito in attesa"
     },
     {
       "user_id": "meridiana-executive-001",
@@ -109,16 +109,16 @@
       "company_id": "meridiana-group",
       "display_name": "Anna Conti — CEO Meridiana",
       "email": "a.conti@meridiana-demo.internal",
-      "role": "COMPANY_VIEWER",
+      "role": "COMPANY_ADMIN",
       "access_scope": "company_scoped",
       "account_status": "draft",
       "default_route": "/company",
-      "visible_sections": ["executive-cockpit", "kora-index", "profile"],
-      "hidden_sections": ["company-setup", "onboarding-studio", "workforce-baseline-upload", "ai-ingestion", "uef-review", "scoring-run", "financial", "pillars", "activation", "reports"],
+      "visible_sections": ["executive-cockpit", "kora-index", "reports", "financial", "pillars", "activation", "contribution", "profile"],
+      "hidden_sections": ["company-setup", "onboarding-studio", "workforce-baseline-upload", "ai-ingestion", "uef-review", "scoring-run"],
       "invitation_status": "not_sent",
       "created_at": "2025-01-21T09:00:00Z",
       "updated_at": "2025-01-22T08:00:00Z",
-      "notes": "Viewer Meridiana (ex-Executive) — bozza invito"
+      "notes": "Company Admin Meridiana CEO — B143: promosso da COMPANY_VIEWER a COMPANY_ADMIN, bozza invito"
     },
     {
       "user_id": "meridiana-worker-001",
@@ -192,21 +192,21 @@
       "notes": "Company Admin Alba Manufacturing"
     },
     {
-      "user_id": "alba-viewer-001",
+      "user_id": "alba-admin-001",
       "tenant_id": "tenant-alba-001",
       "company_id": "alba-manufacturing",
-      "display_name": "Elena Gallo — Viewer Alba",
+      "display_name": "Elena Gallo — Admin Alba",
       "email": "e.gallo@alba-demo.internal",
-      "role": "COMPANY_VIEWER",
+      "role": "COMPANY_ADMIN",
       "access_scope": "company_scoped",
       "account_status": "invited",
       "default_route": "/company",
-      "visible_sections": ["executive-cockpit", "kora-index", "profile"],
-      "hidden_sections": ["company-setup", "onboarding-studio", "workforce-baseline-upload", "ai-ingestion", "uef-review", "scoring-run", "financial", "pillars", "activation", "reports"],
+      "visible_sections": ["executive-cockpit", "kora-index", "reports", "financial", "pillars", "activation", "contribution", "profile"],
+      "hidden_sections": ["company-setup", "onboarding-studio", "workforce-baseline-upload", "ai-ingestion", "uef-review", "scoring-run"],
       "invitation_status": "pending",
       "created_at": "2025-03-01T09:00:00Z",
       "updated_at": "2025-03-01T09:00:00Z",
-      "notes": "Viewer — invito pendente"
+      "notes": "Company Admin Alba — B143: promosso da alba-viewer-001/COMPANY_VIEWER a alba-admin-001/COMPANY_ADMIN, invito pendente"
     },
     {
       "user_id": "alba-worker-001",

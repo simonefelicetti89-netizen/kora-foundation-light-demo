@@ -1,5 +1,5 @@
 // app/api/company/evidence-record/route.ts
-// B36 PART 2 — Company evidence record detail — read-only — COMPANY_ADMIN / COMPANY_VIEWER only.
+// B36 PART 2 — Company evidence record detail — COMPANY_ADMIN only (B143: COMPANY_VIEWER rimosso).
 //
 // GET /api/company/evidence-record?recordId=<uuid>
 //

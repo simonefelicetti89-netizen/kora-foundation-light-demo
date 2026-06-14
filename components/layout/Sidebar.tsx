@@ -20,7 +20,6 @@ const ENV_LABEL: Record<string, string> = {
 const ROLE_DISPLAY: Record<string, string> = {
   KORA_ADMIN:    'KORA Admin',
   COMPANY_ADMIN: 'Company Admin',
-  COMPANY_VIEWER:'Company Viewer',
   WORKER:        'Lavoratore',
   PARTNER:       'Partner',
   ADVISOR:       'Advisor',
@@ -191,40 +190,6 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         items: [
           { href: '/company/shared',   label: 'KORA Space' },
           { href: '/company/commons', label: 'KORA Commons' },
-        ],
-      },
-      {
-        heading: 'Governance',
-        items: [
-          { href: '/company/profile', label: 'Profilo & Stato' },
-          { href: '/my-kora',         label: 'My KORA Preview' },
-        ],
-      },
-    ];
-  }
-
-  // ── Company Viewer: read-only subset ────────────────────────────────────────
-  if (role === 'COMPANY_VIEWER') {
-    return [
-      {
-        heading: 'Command',
-        items: [
-          { href: '/company',            label: 'Executive Cockpit' },
-          { href: '/company/kora-index', label: 'KORA Index™' },
-          { href: '/company/workspace',  label: 'Worker Space' },
-        ],
-      },
-      {
-        heading: 'Intelligence',
-        items: [
-          { href: '/company/opportunities', label: 'Opportunità' },
-        ],
-      },
-      {
-        heading: 'Report',
-        items: [
-          { href: '/company/reports',   label: 'Decision Pack' },
-          { href: '/company/wallboard', label: 'KORA Wallboard' },
         ],
       },
       {

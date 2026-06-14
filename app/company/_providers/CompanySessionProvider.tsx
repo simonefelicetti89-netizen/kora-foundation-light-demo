@@ -13,7 +13,7 @@ import { createContext, useContext } from 'react';
 export interface CompanySessionCtx {
   isLive: boolean;
   tenantId: string | null;
-  koraRole: 'COMPANY_ADMIN' | 'COMPANY_VIEWER' | null;
+  koraRole: 'COMPANY_ADMIN' | null;
   companyName: string | null;
   sessionLoading: boolean;
 }
@@ -33,7 +33,7 @@ export function useCompanySession(): CompanySessionCtx {
 interface Props {
   children:    React.ReactNode;
   tenantId:    string;
-  koraRole:    'COMPANY_ADMIN' | 'COMPANY_VIEWER';
+  koraRole:    'COMPANY_ADMIN';
   companyName: string | null;
 }
 

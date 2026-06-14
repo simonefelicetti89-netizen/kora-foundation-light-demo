@@ -4,7 +4,7 @@
 //   /demo pages are synth-only (no live DB queries, no tenant association).
 //   If Fase 3 introduces a live-data demo tenant, requireDemoAccess must be
 //   revisited to prevent live data leakage into the /demo surface.
-//   COMPANY_ADMIN, COMPANY_VIEWER, WORKER, PARTNER → 403.
+//   COMPANY_ADMIN, WORKER, PARTNER → 403.
 // Layout: BoundaryBadge mode="DEMO" is rendered in this layout and cannot be
 //   suppressed by any child page.
 

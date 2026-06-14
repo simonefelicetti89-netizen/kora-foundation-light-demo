@@ -13,8 +13,12 @@ export function isAdminRole(role: KoraRole): boolean {
   return (ADMIN_ROLES as readonly string[]).includes(role);
 }
 
+// B143: COMPANY_VIEWER rimosso. isViewerRole() restituisce sempre false.
+// Il meccanismo read-only (isViewer/canWrite) è conservato nei componenti per riuso futuro
+// (un futuro ruolo sola-lettura potrà riattivarlo). Non rimuovere le chiamate a questa funzione.
 export function isViewerRole(role: KoraRole): boolean {
-  return role === 'COMPANY_VIEWER';
+  void role;
+  return false;
 }
 
 // Resources that only a worker may access (never employer roles)
@@ -48,7 +52,7 @@ export function resolvePermission(role: KoraRole, resource: string): boolean {
   if (WORKER_PRIVATE_RESOURCES.has(resource)) return isWorkerRole(role);
   if (ADMIN_ONLY_RESOURCES.has(resource)) return isAdminRole(role) || role === 'COMPANY_ADMIN';
   if (FINANCE_ADMIN_RESOURCES.has(resource)) {
-    return isAdminRole(role) || role === 'COMPANY_ADMIN' || role === 'COMPANY_VIEWER';
+    return isAdminRole(role) || role === 'COMPANY_ADMIN';
   }
   return true;
 }
@@ -59,8 +63,8 @@ export function resolvePermission(role: KoraRole, resource: string): boolean {
 //
 // 1. getAccessibleRoutes() — PRODUCTION middleware helper.
 //    Maps what server-side middleware/RLS allows for authenticated real sessions.
-//    Company roles (COMPANY_ADMIN, COMPANY_VIEWER) are intentionally restricted
-//    to /company/workspace for live server-auth sessions (B36.1 design decision).
+//    COMPANY_ADMIN is restricted to /company/workspace for live server-auth sessions
+//    (B36.1 design decision; B143: COMPANY_VIEWER removed).
 //    All other /company/* screens are DEMO_SYNTHETIC — served via demo-state
 //    and KORA_ADMIN role, not by real company sessions in production.
 //    DO NOT use this function to build demo navigation or sidebar items.
@@ -89,7 +93,6 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
   // Demo-driven /company/* routes are DEMO_SYNTHETIC — accessible via demo-state only.
   // Use getDemoNavigationRoutes() for demo sidebar/navigation decisions.
   if (role === 'COMPANY_ADMIN') routes.push('/company/workspace');
-  if (role === 'COMPANY_VIEWER') routes.push('/company/workspace');
   if (isWorkerRole(role)) {
     routes.push(
       '/my-kora', '/my-kora/privacy', '/my-kora/dynamic-cv',
@@ -99,7 +102,7 @@ export function getAccessibleRoutes(role: KoraRole): string[] {
   }
   if (role === 'PARTNER') routes.push('/partner');
   if (role === 'ADVISOR') routes.push('/advisor');
-  if (!['COMPANY_ADMIN', 'COMPANY_VIEWER'].includes(role)) {
+  if (role !== 'COMPANY_ADMIN') {
     routes.push('/future-vision');
   }
   return [...new Set(routes)];
@@ -145,9 +148,6 @@ export function getDemoNavigationRoutes(role: KoraRole): string[] {
   // Company roles access all company pages in demo (synthetic data only).
   // My KORA is never accessible to employer roles — worker-private space.
   if (role === 'COMPANY_ADMIN') {
-    routes.push(...COMPANY_DEMO_ROUTES);
-  }
-  if (role === 'COMPANY_VIEWER') {
     routes.push(...COMPANY_DEMO_ROUTES);
   }
 

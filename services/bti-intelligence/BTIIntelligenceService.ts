@@ -10,7 +10,6 @@ import type { LifeDiversitySummary } from '@/services/life-diversity/LifeDiversi
 const ALLOWED_ROLES: ReadonlySet<KoraRole> = new Set<KoraRole>([
   'KORA_ADMIN',
   'COMPANY_ADMIN',
-  'COMPANY_VIEWER',
 ]);
 
 export type PillarInvestmentStatus = 'over_concentrated' | 'balanced' | 'under_invested';
