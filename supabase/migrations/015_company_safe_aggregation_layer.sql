@@ -282,7 +282,6 @@ REVOKE SELECT ON analytics.v_company_uploaded_record_safe FROM anon;
 -- OBJECT 4: analytics.v_company_uef_eligibility_summary
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- Per-(tenant, reporting_period) aggregate view of UEF eligibility and review state.
--- Joins analytics.impact_unit for average EV factor.
 -- Returns one row per (tenant_id, reporting_period). Routes filter by period.
 -- No individual UEF records exposed — aggregated by period only.
 --
@@ -295,23 +294,15 @@ REVOKE SELECT ON analytics.v_company_uploaded_record_safe FROM anon;
 -- individual PII. If real data violates this assumption, revisit this view.
 -- This decision is traceable in the schema.
 --
+-- iu_average_ev: analytics.impact_unit does not exist in Foundation Light DB.
+-- Field preserved as NULL::numeric placeholder for schema stability.
+-- When impact_unit is available, reinstate the iu_avg CTE and LEFT JOIN.
+--
 -- Security: view owner = postgres (BYPASSRLS).
 --   analytics.uef_record has no company SELECT policy. The view bypasses this
 --   via postgres ownership and enforces tenant isolation via kora.tenant_id().
---   analytics.impact_unit has company_own_impact_unit_read — doubly covered.
 
 CREATE OR REPLACE VIEW analytics.v_company_uef_eligibility_summary AS
-WITH iu_avg AS (
-  -- Pre-aggregate IU ev factor by (tenant_id, reporting_period).
-  -- Computed separately to avoid JOIN-inflation with the UEF side.
-  SELECT
-    tenant_id,
-    reporting_period,
-    ROUND(AVG(ev)::numeric, 4) AS avg_ev
-  FROM analytics.impact_unit
-  WHERE tenant_id = kora.tenant_id()
-  GROUP BY tenant_id, reporting_period
-)
 SELECT
   ur.tenant_id,
   ur.reporting_period,
@@ -339,14 +330,11 @@ SELECT
   -- Founder decision B153: raw_name exposed as programme name, never individual PII.
   -- If real data violates this assumption, revisit this view.
   array_agg(DISTINCT ur.raw_name) FILTER (WHERE ur.primary_pillar = 'LIFE') AS life_program_names,
-  -- Average EV factor from analytics.impact_unit for same tenant+period
-  iu_avg.avg_ev                                                              AS iu_average_ev
+  -- analytics.impact_unit not present in Foundation Light DB — placeholder for schema stability.
+  NULL::numeric                                                              AS iu_average_ev
 FROM analytics.uef_record ur
-LEFT JOIN iu_avg
-  ON  iu_avg.tenant_id        = ur.tenant_id
-  AND iu_avg.reporting_period = ur.reporting_period
 WHERE ur.tenant_id = kora.tenant_id()   -- [G3] caller's tenant only (kora_tenant_id in JWT)
-GROUP BY ur.tenant_id, ur.reporting_period, iu_avg.avg_ev
+GROUP BY ur.tenant_id, ur.reporting_period
 ;
 
 GRANT SELECT ON analytics.v_company_uef_eligibility_summary TO authenticated;
