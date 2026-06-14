@@ -1,8 +1,15 @@
 # KORA — Next Handoff & Platform State
 
+> **SNAPSHOT PRE-B152 — Consultare `HANDOFF_NEXT.md` (root) per lo stato corrente.**
+> Questo documento riflette lo stato al commit `58a9f0c` (2026-06-13, post B130–B133).
+> Non include: migration 015, company-safe layer (B152/B153), 5 route migrate, smoke test autenticato.
+> Il documento corrente e autorevole è `HANDOFF_NEXT.md`.
+
+---
+
 **Documento:** `docs/NEXT_HANDOFF_PLATFORM_STATE.md`
 **Commit:** `58a9f0c` · **Branch:** `main` · **Data:** 2026-06-13
-**Scope:** Post B130–B133
+**Scope:** Post B130–B133 (snapshot — non aggiornato dopo B152)
 **Status:** Foundation Light v0.1 · Pre-empirical calibration · Not client-ready
 
 > Per l'introduzione al prodotto, la narrativa commerciale e il brief per il team di design, leggere prima `docs/next-handoff-brief.md`. Questo documento è il complemento tecnico e operativo — lo stato della piattaforma, i confini, le lacune, e cosa non toccare.

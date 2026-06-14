@@ -34,21 +34,32 @@ KORA measures organizations. The KORA Index is a company-level output. Individua
 
 The repository includes a live Supabase backend with:
 
-**SQL migrations 001–005** in `supabase/migrations/`:
-- `001_live_v1_foundation.sql` — core tables: tenants, company sessions, UEF batches, company_uef_records
-- `002_grants_and_softdelete.sql` — role grants, soft-delete support
-- `003_claim_functions_app_metadata.sql` — JWT claim helpers for app_metadata roles
-- `004_gate3a_claims_and_grants.sql` — Gate 3a RLS grants
-- `005_impact_unit_trace_layer.sql` — IU trace storage layer
+**SQL migrations 001–015** in `supabase/migrations/`:
+- `001_live_v1_foundation.sql` — core schemas and tables (tenant, source_batch, uef_record, workforce_baseline, uploaded_record)
+- `002_grants_and_softdelete.sql` — FORCE RLS on personal.*, role grants
+- `003_claim_functions_app_metadata.sql` — first version of kora.kora_role() and kora.tenant_id()
+- `004_gate3a_claims_and_grants.sql` — updated claim functions post-Gate 3A
+- `005_impact_unit_trace_layer.sql` — analytics.impact_unit schema (defined in repo; absent in live DB)
+- `006_canonical_tenant_key.sql` — **CANONICAL**: fixes kora.tenant_id() to read kora_tenant_id
+- `007_worker_provisioning.sql` — personal.worker_identity + RLS
+- `008_worker_initiatives.sql` — personal.worker_initiative + personal.worker_participation + RLS
+- `009_worker_onboarding.sql` — onboarding/consent fields on personal.worker_profile_private
+- `010_partner_profile.sql` — network schema + network.partner_profile
+- `011_worker_cv_share.sql` — personal.worker_cv_share (Dynamic CV share tokens)
+- `012_partner_identity.sql` — network.partner_identity (PARTNER auth users)
+- `013_kora_commons.sql` — commons schema + commons.post
+- `014_tenant_classification.sql` — tenant_kind on analytics.tenant
+- `015_company_safe_aggregation_layer.sql` — **CANONICAL**: 4 analytics objects for company-safe data access (B152/B153)
 
 **Row-Level Security (RLS)** is enabled on all production tables.
 
 **Supabase Auth** uses `app_metadata.kora_role` for server-side role enforcement:
 - `KORA_ADMIN` — platform operator (admin workspace, full access)
 - `COMPANY_ADMIN` — company-scoped read/manage (company workspace)
-- `COMPANY_VIEWER` — company-scoped read-only (company workspace)
+- `WORKER` — worker-scoped (worker workspace)
+- `PARTNER` — partner workspace (demo only in Foundation Light)
 
-Tenant isolation: `kora_tenant_id` is read from `app_metadata` only — never trusted from client input. Server-side session validation uses `requireKoraAdmin()` and `requireCompanyUser()` from `lib/auth/kora-session.ts`. Admin workspace has server-side auth guard at layout level (`app/admin/layout.tsx`).
+Tenant isolation: `kora_tenant_id` is read from `app_metadata` only — never trusted from client input. Server-side session validation uses `requireKoraAdmin()`, `requireCompanyUser()`, and `requireWorkerUser()` from `lib/auth/kora-session.ts`.
 
 ---
 
@@ -170,7 +181,7 @@ npm run build                      # Next.js production build
 /lib/supabase         Supabase client initialization (browser + server)
 /services             Mock service layer — mirrors future production service boundaries
 /data/synthetic       Synthetic JSON seed files (demo data only)
-/supabase/migrations  SQL DDL 001–005 (production schema, Gate 2 reference)
+/supabase/migrations  SQL DDL 001–015 (production schema, Gate 2 reference)
 /tests                Vitest unit + integration tests
 /docs                 Canonical architecture documents
 ```
@@ -189,7 +200,10 @@ npm run build                      # Next.js production build
 
 ## Handoff reference
 
-- `docs/kora-scoring-kernel-contract.md` — scoring kernel input/output contract, canonical flow, privacy invariants, what to reuse
+**Start here:** `HANDOFF_NEXT.md` (root) — current platform state, migration status, privacy architecture, technical debt, what to touch and what not to.
+
+Additional canonical documents:
+- `CLAUDE.md` — operating constitution for this codebase (read before any code change)
+- `docs/kora-canonical-product-architecture-v1.md` — master product reference v1.1
 - `docs/10-architecture-v3-layer-specification.md` — 14-stage algorithm specification
 - `docs/26-foundation-light-technical-build-handoff.md` — tech stack, folder structure, build priorities
-- `CLAUDE.md` — operating constitution for this codebase
