@@ -17,10 +17,14 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
-// Paths that authenticated company users are allowed to access.
+// Paths that authenticated COMPANY_ADMIN users are allowed to access.
 // B59: intelligence pages added so real sessions reach live-enabled pages.
-// All other paths still redirect to /company/workspace.
+// B147: added all sidebar-linked pages missing from this list (routing bug fix).
+// Any /company/* path NOT listed here redirects to /company/workspace.
+// Intentionally absent: /company/scoring, /company/ingestion, /company/uef-review
+//   (operator-only tools — COMPANY_ADMIN should not reach them directly).
 const COMPANY_ALLOWED_PREFIXES = [
+  '/company',                // root = Executive Cockpit home — must be listed explicitly
   '/company/workspace',      // live workspace — full server-auth, Supabase-backed
   '/company/kora-index',     // live intelligence — shows real KORA Index when session present
   '/company/activation',     // live intelligence — shows real activation data
@@ -28,6 +32,13 @@ const COMPANY_ALLOWED_PREFIXES = [
   '/company/financial',      // live intelligence — shows real BTI data
   '/company/reports',        // live intelligence — shows real Decision Pack status
   '/company/status',         // live status center — readiness and submission tracking
+  '/company/data',           // Stato Dati — live data quality status
+  '/company/opportunities',  // Opportunità — locked shell (module not yet active)
+  '/company/contribution',   // Contribution — locked shell (companion indicator)
+  '/company/commons',        // KORA Space — real Commons function (migration 013)
+  '/company/profile',        // Profilo & Stato — live tenant metadata
+  '/company/wallboard',      // KORA Wallboard — live display
+  '/company/onboarding',     // Onboarding Room — reached from Status Center / boundary notices
   '/company/login',          // company login page — for re-authentication after session expiry
   '/company/setup-password', // invite flow — set password after accepting KORA invite
   '/auth/',                  // all auth routes (callback, reset-password, forgot-password) — session may be active during recovery flow
