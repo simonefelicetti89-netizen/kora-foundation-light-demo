@@ -120,7 +120,7 @@ describe('B145 — workspace route: application-layer boundary (mocked Supabase)
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (isKoraAuthError as Mock).mockReturnValue(false);
+    (isKoraAuthError as unknown as Mock).mockReturnValue(false);
   });
 
   // ── Test 1: 200 con dati corretti per il tenant autenticato ──────────────────
