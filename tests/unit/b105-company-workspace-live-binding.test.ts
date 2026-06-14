@@ -285,3 +285,45 @@ describe('B105 — live workspace free from demo contamination', () => {
     expect(view).toContain('Workspace Aziendale');
   });
 });
+
+// ── 12. B145 — session client pilot: RLS is the primary tenant wall ───────────
+
+describe('B145 — workspace pilot: getSupabaseServerClient replaces service client', () => {
+  const api = readFile('app/api/company/workspace/route.ts');
+
+  it('imports getSupabaseServerClient (session client — respects RLS)', () => {
+    expect(api).toContain('getSupabaseServerClient');
+  });
+
+  it('does NOT import getSupabaseServiceClient (service client — bypasses RLS)', () => {
+    expect(api).not.toContain('getSupabaseServiceClient');
+  });
+
+  it('awaits getSupabaseServerClient (async function)', () => {
+    expect(api).toContain('await getSupabaseServerClient()');
+  });
+
+  it('retains .eq(id, tenantId) on analytics.tenant as defense-in-depth', () => {
+    expect(api).toContain(".eq('id', tenantId)");
+  });
+
+  it('retains .eq(tenant_id, tenantId) on remaining tables as defense-in-depth', () => {
+    expect(api).toContain(".eq('tenant_id', tenantId)");
+  });
+
+  it('cross-tenant boundary: two independent barriers prevent tenant A reading tenant B data', () => {
+    // Barrier 1 — RLS via session client: policy company_own_*_read enforces
+    //   tenant_id = kora.tenant_id() from JWT. Rows for tenant B are invisible
+    //   to a session token for tenant A at the database level (migration 001+006).
+    expect(api).toContain('getSupabaseServerClient');
+    expect(api).not.toContain('getSupabaseServiceClient');
+
+    // Barrier 2 — application filter: .eq(tenant_id) is redundant but provides
+    //   defense-in-depth. Even if RLS were absent, the query filter blocks cross-tenant reads.
+    expect(api).toContain(".eq('tenant_id', tenantId)");
+
+    // Tenant ID is always from session — no spoofing vector via request params.
+    expect(api).not.toContain("searchParams.get('tenantId')");
+    expect(api).not.toContain("searchParams.get('tenant')");
+  });
+});

@@ -24,7 +24,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   // Tenant from session — never from request
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 
   const { tenantId, koraRole } = authResult;
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   // ── 1. Tenant info ─────────────────────────────────────────────────────────
   const { data: tenantRow, error: tErr } = await db
