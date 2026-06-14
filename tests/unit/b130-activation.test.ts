@@ -95,9 +95,14 @@ describe('B130 Activation — live page: no dual-path', () => {
     expect(src).not.toContain('meridiana');
   });
 
-  it('live page has forceEnvironment: live hardcoded', () => {
+  it('live page has no BoundaryBanner or BoundaryBadge residues (B147 P1: dual-path era removed)', () => {
+    // B147 P1: BoundaryBanner isLive={true} and BoundaryBadge mode="LIVE" were
+    // dual-path-era components signalling live/demo mode. Now the page is live-only
+    // (server layout enforces requireCompanyUser) — these signals are redundant.
     const src = readFile(LIVE_PAGE);
-    expect(src).toContain("forceEnvironment: 'live'");
+    expect(src).not.toContain('BoundaryBanner');
+    expect(src).not.toContain('isLive={true}');
+    expect(src).not.toContain("forceEnvironment: 'live'");
   });
 });
 

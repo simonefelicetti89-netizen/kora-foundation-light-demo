@@ -109,19 +109,13 @@ describe('B130 Pillars — live page: no dual-path', () => {
     expect(src).not.toContain('meridiana');
   });
 
-  it('live page has forceEnvironment: live hardcoded', () => {
+  it('live page has no BoundaryBanner, BoundaryBadge or forceEnvironment residues (B147 P1)', () => {
+    // B147 P1: dual-path-era components removed. Server layout is the only required guard.
     const src = readFile(LIVE_PAGE);
-    expect(src).toContain("forceEnvironment: 'live'");
-  });
-
-  it('live page has BoundaryBadge mode="LIVE" hardcoded', () => {
-    const src = readFile(LIVE_PAGE);
-    expect(src).toContain('mode="LIVE"');
-  });
-
-  it('live page has BoundaryBanner isLive={true} hardcoded', () => {
-    const src = readFile(LIVE_PAGE);
-    expect(src).toContain('isLive={true}');
+    expect(src).not.toContain('BoundaryBanner');
+    expect(src).not.toContain('BoundaryBadge');
+    expect(src).not.toContain('isLive={true}');
+    expect(src).not.toContain("forceEnvironment: 'live'");
   });
 });
 

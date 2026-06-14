@@ -10,8 +10,6 @@ import { activationSafeguardService }   from '@/services/activation-safeguard/Ac
 import { PILLAR_CODES }                 from '@/lib/constants/kora';
 import { PrivacyBoundaryNotice }        from '@/components/privacy/PrivacyBoundaryNotice';
 import { PageMasthead }                 from '@/components/ui/PageMasthead';
-import { BoundaryBadge }                from '@/components/ui/BoundaryBadge';
-import { BoundaryBanner }               from '@/components/ui/BoundaryBanner';
 import { DecisionContext }              from '@/components/ui/DecisionContext';
 import { SectionLabel }                 from '@/components/ui/SectionLabel';
 import { ChartFrame }                   from '@/components/charts/ChartFrame';
@@ -46,9 +44,8 @@ export default function Activation() {
 
   const COMPANY_ID = liveId ?? '';
   const { data: scoring, loading } = useScoringResult({
-    tenantId:         COMPANY_ID,
-    scenarioId:       'S1',
-    forceEnvironment: 'live',
+    tenantId:   COMPANY_ID,
+    scenarioId: 'S1',
   });
 
   // ── Loading guard — MUST precede any data access ──────────────────────────
@@ -84,13 +81,11 @@ export default function Activation() {
   return (
     <div className="space-y-6">
 
-      <BoundaryBadge mode="LIVE" variant="light" style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow="Intelligence operativa · LIVE"
         title="Activation Debt™ & Partecipazione"
         subline={`Aggregato aziendale — gruppi < ${SAFE_AGGREGATION_THRESHOLD} soppressi · nessun PIB individuale · nessun dato lavoratore`}
       />
-      <BoundaryBanner isLive={true} />
       <DecisionContext
         question="Chi non viene raggiunto e dove si accumula l'Activation Debt™ nella forza lavoro?"
         boundary="Soglia privacy N≥10 per segmento · nessun dato individuale · aggregato aziendale"

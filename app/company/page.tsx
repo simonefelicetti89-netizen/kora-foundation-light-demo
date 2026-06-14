@@ -17,21 +17,19 @@ const NAV_ITEMS = [
 ] as const;
 
 export default function ExecutiveCockpit() {
-  const { isLive, companyName } = useCompanySession();
+  const { companyName } = useCompanySession();
 
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
         <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 6 }}>
-          {isLive ? 'Company Workspace · LIVE' : 'Company Workspace'}
+          Company Workspace · LIVE
         </p>
         <h1 style={{ fontSize: '22px', fontWeight: 700, color: TOKENS.ink, marginBottom: 4 }}>
-          {isLive ? (companyName ?? 'Il tuo workspace KORA') : 'Executive Cockpit'}
+          {companyName ?? 'Il tuo workspace KORA'}
         </h1>
         <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
-          {isLive
-            ? 'Sessione live attiva. Seleziona l\'area da esplorare — tutti i dati sono reali.'
-            : 'Seleziona l\'area da esplorare. Per la demo sintetica usa le pagine Demo.'}
+          Sessione live attiva. Seleziona l&apos;area da esplorare — tutti i dati sono reali.
         </p>
       </div>
 
@@ -50,7 +48,7 @@ export default function ExecutiveCockpit() {
       </div>
 
       <p style={{ fontSize: '10px', fontFamily: 'monospace', color: TOKENS.inkHint }}>
-        {isLive ? 'live · nessun dato sintetico' : 'nessun dato sintetico in questa vista'}
+        live · nessun dato sintetico
       </p>
     </div>
   );

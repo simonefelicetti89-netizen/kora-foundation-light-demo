@@ -82,9 +82,9 @@ describe('B130 — status: live page has no demo services, demo page has getDemo
   });
 });
 
-// ── 2. P1 FIX — /company/ingestion: live path shows boundary state ────────────
+// ── 2. B147 P2 — /company/ingestion: live-only boundary notice (demo branch removed) ─
 
-describe('B106 P1 — ingestion page: live users see operator boundary, not Meridiana data', () => {
+describe('B147 P2 — ingestion page: live-only boundary notice, no demo branch', () => {
   const ingestion = read('app/company/ingestion/page.tsx');
 
   it('ingestion page imports useCompanySession', () => {
@@ -92,33 +92,26 @@ describe('B106 P1 — ingestion page: live users see operator boundary, not Meri
     expect(imports).toContain('useCompanySession');
   });
 
-  it('ingestion page uses isLive flag', () => {
-    expect(ingestion).toContain('isLive');
-    expect(ingestion).toContain('const { isLive');
+  it('ingestion page does NOT use isLive flag (demo branch removed — page is live-only)', () => {
+    // B147 P2: demo branch eliminated. No isLive ternary needed — the page always shows
+    // the live boundary notice. The server layout's requireCompanyUser is the only guard.
+    expect(ingestion).not.toContain('isLive');
+    expect(ingestion).not.toContain('if (isLive)');
   });
 
-  it('live branch returns early without demo data', () => {
-    // isLive block must return before the demo data rows render
-    expect(ingestion).toContain('if (isLive)');
-    // Live branch renders OperatorToolBoundary, not the data rows
-    const liveGuardIndex = ingestion.indexOf('if (isLive)');
-    const liveBlock = ingestion.slice(liveGuardIndex).split('return (')[1]?.split('};')[0] ?? '';
-    expect(liveBlock).toContain('OperatorToolBoundary');
-    expect(liveBlock).toContain('Torna al Workspace');
+  it('ingestion page has no DemoFlowBanner (demo branch removed)', () => {
+    expect(ingestion).not.toContain('DemoFlowBanner');
+    expect(ingestion).not.toContain('ingestionPipelineService');
   });
 
-  it('demo flow banner JSX is only rendered in the demo branch (after isLive guard)', () => {
-    // The JSX tag <DemoFlowBanner must appear after the if (isLive) { return ... } block
-    const liveGuardIndex  = ingestion.indexOf('if (isLive)');
-    const demoFlowJsxIndex = ingestion.indexOf('<DemoFlowBanner');
-    expect(demoFlowJsxIndex).toBeGreaterThan(liveGuardIndex);
+  it('ingestion page has no synthetic_demo_data label (live-only page)', () => {
+    expect(ingestion).not.toContain('synthetic_demo_data');
   });
 
-  it('live branch link points to /company/workspace (not /admin)', () => {
-    const liveGuardIndex = ingestion.indexOf('if (isLive)');
-    const liveBlock = ingestion.slice(liveGuardIndex).split('return (')[1]?.split('};')[0] ?? '';
-    expect(liveBlock).toContain('/company/workspace');
-    expect(liveBlock).not.toContain('/admin');
+  it('ingestion renders OperatorToolBoundary and links to /company/workspace', () => {
+    expect(ingestion).toContain('OperatorToolBoundary');
+    expect(ingestion).toContain('/company/workspace');
+    expect(ingestion).not.toContain('/admin');
   });
 });
 
@@ -222,10 +215,13 @@ describe('B106 — all company intelligence pages are now live-only (B130 comple
   ];
 
   for (const relPath of liveOnlyPages) {
-    it(`${relPath} — live-only: forceEnvironment hardcoded (no isLive ternary)`, () => {
+    it(`${relPath} — live-only: no isLive ternary, no BoundaryBanner residue (B147 P1)`, () => {
+      // B147 P1: BoundaryBanner, BoundaryBadge mode="LIVE", and forceEnvironment: 'live'
+      // were dual-path-era signals. Server layout requireCompanyUser is the only guard needed.
       const src = read(relPath);
-      expect(src).toContain("forceEnvironment: 'live'");
       expect(src).not.toContain('isLive ?');
+      expect(src).not.toContain('BoundaryBanner');
+      expect(src).not.toContain('isLive={true}');
     });
   }
 });
@@ -234,14 +230,22 @@ describe('B106 — all company intelligence pages are now live-only (B130 comple
 // B133: opportunities and shared were converted from demo-labeled pages to live shells.
 // Only uef-review remains as a pure demo page in /company/*.
 
-describe('B106 — pure demo pages are correctly labeled', () => {
-  it('app/company/uef-review/page.tsx — carries demo label', () => {
+describe('B106 — uef-review is a locked shell (B147 P2: demo queue removed)', () => {
+  it('app/company/uef-review/page.tsx — locked shell: no synthetic_demo_data, no uefReviewService', () => {
+    // B147 P2: UEF Review transformed from demo queue to a locked boundary shell.
+    // The complex queue UI (uefReviewService, filters, DataLineagePreview) was an admin tool
+    // incorrectly exposed to COMPANY_ADMIN. Now it is a clean boundary notice.
     if (!exists('app/company/uef-review/page.tsx')) return;
-    expect(read('app/company/uef-review/page.tsx')).toContain('synthetic_demo_data');
+    const src = read('app/company/uef-review/page.tsx');
+    expect(src).not.toContain('synthetic_demo_data');
+    expect(src).not.toContain('uefReviewService');
+    expect(src).not.toContain('DataLineagePreview');
+    expect(src).toContain('Torna al Workspace');
+    expect(src).toContain('UEF Review = KORA Admin only');
   });
 });
 
-describe('B106 + B133 — opportunities and shared are now live shells (no synthetic_demo_data)', () => {
+describe('B106 + B133 — opportunities is a live shell (no synthetic_demo_data)', () => {
   it('app/company/opportunities/page.tsx — no synthetic_demo_data (B133 converted to live shell)', () => {
     if (!exists('app/company/opportunities/page.tsx')) return;
     expect(read('app/company/opportunities/page.tsx')).not.toContain('synthetic_demo_data');
@@ -250,13 +254,17 @@ describe('B106 + B133 — opportunities and shared are now live shells (no synth
     expect(read('app/company/opportunities/page.tsx')).toContain('non ancora attivo');
   });
 
-  it('app/company/shared/page.tsx — B142-A Foundation Light demo (has synthetic_demo_data)', () => {
-    // B142-A promoted shared from locked shell to Foundation Light demo.
-    // It now carries synthetic_demo_data: true and KORA Space content.
-    if (!exists('app/company/shared/page.tsx')) return;
-    expect(read('app/company/shared/page.tsx')).toContain('synthetic_demo_data: true');
-    expect(read('app/company/shared/page.tsx')).toContain('KORA Space');
-    expect(read('app/company/shared/page.tsx')).not.toContain('getCurrentDemoUser');
+  it('app/company/shared does NOT exist (B147: vetrina sintetica rimossa)', () => {
+    // B147: /company/shared (KORA_SPACE_ITEMS array hardcoded, synthetic_demo_data: true) smantellata.
+    // La funzione KORA Space sopravvive in /company/commons (dati reali, migration 013).
+    expect(exists('app/company/shared/page.tsx')).toBe(false);
+  });
+
+  it('app/company/commons is the live KORA Space function (has requireCompanyUser)', () => {
+    const src = read('app/company/commons/page.tsx');
+    expect(src).toContain('requireCompanyUser');
+    expect(src).toContain("schema('commons')");
+    expect(src).not.toContain('synthetic_demo_data');
   });
 });
 

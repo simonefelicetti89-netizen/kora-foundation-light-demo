@@ -19,7 +19,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { AdminCommonsModerationPanel } from '@/components/commons/AdminCommonsModerationPanel';
 
-export const metadata = { title: 'KORA Commons — Moderazione · Admin' };
+export const metadata = { title: 'KORA Space — Moderazione · Admin' };
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -71,7 +71,7 @@ export default async function AdminCommonsPage() {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
-          KORA Commons — Moderazione
+          KORA Space — Moderazione
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
           Revisiona, pubblica, rifiuta o archivia i contenuti inviati dalle aziende.
@@ -94,7 +94,7 @@ export default async function AdminCommonsPage() {
       >
         <span style={{ fontSize: 14, lineHeight: 1.2, flexShrink: 0 }}>&#9888;&#65039;</span>
         <p style={{ fontSize: 12, color: '#C76F3D', margin: 0, lineHeight: 1.6 }}>
-          <strong>KORA Commons è moderation-first.</strong>{' '}
+          <strong>KORA Space è moderation-first.</strong>{' '}
           Non pubblicare dati personali, sanitari o valutazioni individuali.
           Questa console non espone dati individuali worker (no PIB, no Dynamic CV, no analytics di lettura).
         </p>
@@ -128,7 +128,7 @@ export default async function AdminCommonsPage() {
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 14, marginTop: 40 }}>
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.6 }}>
-          KORA Commons Moderation Console · B128 · {allPosts.length} post totali ·
+          KORA Space Moderation Console · B128 · {allPosts.length} post totali ·
           Nessun dato individuale worker · Nessun analytics di lettura individuale ·
           Moderation-first: ogni post richiede approvazione prima della pubblicazione.
         </p>

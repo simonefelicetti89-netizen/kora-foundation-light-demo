@@ -98,7 +98,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/admin/impact-units',             label: 'Impact Units™' },
           { href: '/admin/data-lifecycle',           label: 'Data Lifecycle' },
           { href: '/admin/company-evidence-archive', label: 'Evidence Archive' },
-          { href: '/admin/commons',                  label: 'KORA Commons — Moderazione' },
+          { href: '/admin/commons',                  label: 'KORA Space — Moderazione' },
         ],
       },
       {
@@ -164,7 +164,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/company',            label: 'Executive Cockpit' },
           { href: '/company/status',     label: 'Status Center' },
           { href: '/company/kora-index', label: 'KORA Index™' },
-          { href: '/company/workspace',  label: 'Worker Space' },
+          { href: '/company/workspace',  label: 'KORA Workspace' },
         ],
       },
       {
@@ -188,15 +188,13 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Network',
         items: [
-          { href: '/company/shared',   label: 'KORA Space' },
-          { href: '/company/commons', label: 'KORA Commons' },
+          { href: '/company/commons', label: 'KORA Space' },
         ],
       },
       {
         heading: 'Governance',
         items: [
           { href: '/company/profile', label: 'Profilo & Stato' },
-          { href: '/my-kora',         label: 'My KORA Preview' },
         ],
       },
     ];
@@ -228,7 +226,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
             preview: isAdminPreview ? true : undefined,
           },
           { href: '/my-kora/kora-space', label: 'KORA Space' },
-          { href: '/worker/commons',   label: 'KORA Commons' },
+          { href: '/worker/commons',   label: 'KORA Space' },
           { href: '/my-kora/bookings', label: 'Prenotazioni', comingSoon: true },
           { href: '/my-kora/collective', label: 'Collettivo', comingSoon: true },
         ],

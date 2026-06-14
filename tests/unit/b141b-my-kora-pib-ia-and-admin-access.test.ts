@@ -172,8 +172,12 @@ describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
 
   it('21. COMPANY_ADMIN sidebar nav does not contain Personal Impact Balance link', () => {
     const companyNavStart = sidebarSrc.indexOf("role === 'COMPANY_ADMIN'");
+    // End the window at the start of the next section (isWorkerRole), not at a fixed offset
+    // that could spill into the worker nav (which legitimately contains PIB links).
+    const workerNavStart  = sidebarSrc.indexOf('if (isWorkerRole(role');
+    const companyNavEnd   = workerNavStart > companyNavStart ? workerNavStart : companyNavStart + 1500;
     const companyNavSection = companyNavStart > -1
-      ? sidebarSrc.substring(companyNavStart, companyNavStart + 2000)
+      ? sidebarSrc.substring(companyNavStart, companyNavEnd)
       : '';
     expect(companyNavSection).not.toContain('Personal Impact Balance');
   });

@@ -127,7 +127,6 @@ const COMPANY_DEMO_ROUTES = [
   '/company/uef-review',
   '/company/scoring',
   '/company/data',
-  '/company/shared',
 ] as const;
 
 export function getDemoNavigationRoutes(role: KoraRole): string[] {

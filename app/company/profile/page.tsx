@@ -7,25 +7,23 @@ import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 export default function CompanyProfilePage() {
-  const { isLive, companyName, tenantId, koraRole } = useCompanySession();
+  const { companyName, tenantId, koraRole } = useCompanySession();
 
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
         <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.inkHint, marginBottom: 6 }}>
-          Profilo & Stato · {isLive ? 'LIVE' : 'Non configurato'}
+          Profilo & Stato · LIVE
         </p>
         <h1 style={{ fontSize: '22px', fontWeight: 700, color: TOKENS.ink, marginBottom: 4 }}>
-          {isLive ? (companyName ?? 'La tua organizzazione') : 'Profilo azienda'}
+          {companyName ?? 'La tua organizzazione'}
         </h1>
         <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
-          {isLive
-            ? 'Informazioni del tenant live. La configurazione avanzata è gestita da KORA Admin.'
-            : 'Profilo azienda disponibile solo con sessione live attiva. Accedi con le credenziali COMPANY_ADMIN.'}
+          Informazioni del tenant live. La configurazione avanzata è gestita da KORA Admin.
         </p>
       </div>
 
-      {isLive && tenantId && (
+      {tenantId && (
         <div
           className="rounded-[18px] p-5"
           style={{ background: TOKENS.surface, border: TOKENS.cardBorder, boxShadow: TOKENS.cardShadow }}
@@ -64,7 +62,7 @@ export default function CompanyProfilePage() {
       </div>
 
       <p style={{ fontSize: '10px', fontFamily: 'monospace', color: TOKENS.inkHint }}>
-        {isLive ? `live · tenant: ${tenantId}` : 'nessun dato sintetico'}
+        {`live · tenant: ${tenantId ?? '—'}`}
       </p>
     </div>
   );

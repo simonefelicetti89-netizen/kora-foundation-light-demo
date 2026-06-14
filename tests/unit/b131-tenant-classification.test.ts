@@ -159,10 +159,11 @@ describe('B131 — migration: deleted_at stays separate from tenant_kind', () =>
 
 describe('B131 — B129/B130 live pages not touched', () => {
   it('app/company/financial/page.tsx still live-only (no demo services)', () => {
+    // B147 P1: forceEnvironment: 'live' removed (dual-path-era signal). Other invariants hold.
     const src = readFile('app/company/financial/page.tsx');
     expect(src).not.toContain('financialGovernanceService');
     expect(src).not.toContain('meridiana');
-    expect(src).toContain("forceEnvironment: 'live'");
+    expect(src).not.toContain('BoundaryBanner');
   });
 
   it('app/company/kora-index/page.tsx still live-only', () => {

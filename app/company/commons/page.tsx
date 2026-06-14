@@ -18,7 +18,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CommonsCreateForm } from '@/components/commons/CommonsCreateForm';
 
-export const metadata = { title: 'KORA Commons · Company' };
+export const metadata = { title: 'KORA Space · Company' };
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -85,7 +85,7 @@ export default async function CompanyCommonsPage() {
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
-          KORA Commons
+          KORA Space
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
           Spazio moderato per comunicare iniziative e contenuti ai worker del tuo tenant.
@@ -108,7 +108,7 @@ export default async function CompanyCommonsPage() {
       >
         <span style={{ fontSize: 16, lineHeight: 1, flexShrink: 0 }}>&#9432;</span>
         <p style={{ fontSize: 13, color: '#8A5A00', margin: 0, lineHeight: 1.6 }}>
-          <strong>KORA Commons è uno spazio moderato.</strong>{' '}
+          <strong>KORA Space è uno spazio moderato.</strong>{' '}
           I contenuti diventano visibili ai worker solo dopo approvazione KORA.
           Invia i tuoi contenuti a revisione usando il pulsante &quot;Invia a revisione KORA&quot;.
         </p>
@@ -200,7 +200,7 @@ export default async function CompanyCommonsPage() {
       {/* Privacy footer — non-suppressible */}
       <div style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16, marginTop: 40 }}>
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.6 }}>
-          KORA Commons Foundation · B128 · Tenant-scoped · Moderation-first ·
+          KORA Space · B128 · Tenant-scoped · Moderation-first ·
           Nessun dato individuale worker esposto. Nessun analytics di lettura individuale.
           I contenuti pubblicati sono visibili ai worker solo dopo approvazione KORA.
         </p>

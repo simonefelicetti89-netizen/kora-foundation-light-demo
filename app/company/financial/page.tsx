@@ -8,8 +8,6 @@ import { useScoringResult } from '@/lib/scoring-result';
 import { BTI_DOCTRINE } from '@/lib/constants/kora';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { PageMasthead } from '@/components/ui/PageMasthead';
-import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
-import { BoundaryBanner } from '@/components/ui/BoundaryBanner';
 import { ProvenanceFooter } from '@/components/company/cockpit/ProvenanceFooter';
 import { ExplainabilityHint } from '@/components/company/cockpit/ExplainabilityHint';
 import { TM } from '@/components/ui/TM';
@@ -20,9 +18,8 @@ export default function FinancialGovernanceLive() {
   const COMPANY_ID = liveId ?? '';
 
   const { data: scoring, loading } = useScoringResult({
-    tenantId:         COMPANY_ID,
-    scenarioId:       'S1',
-    forceEnvironment: 'live',
+    tenantId:   COMPANY_ID,
+    scenarioId: 'S1',
   });
 
   if (sessionLoading || loading) {
@@ -72,14 +69,12 @@ export default function FinancialGovernanceLive() {
     <div className="space-y-6">
 
       {/* ── Boundary ─────────────────────────────────────────────────────────── */}
-      <BoundaryBadge mode="LIVE" variant="light" style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow={`Governance Finanziaria · LIVE · ${reportingPeriod}`}
         title={<><TM>Budget-to-Human-Impact</TM> Engine</>}
         subline="Rapporto tra budget people, attivazione profonda e opportunità di riallocazione. Non certificativo, non causale."
         meta="La tua organizzazione · dati live"
       />
-      <BoundaryBanner isLive={true} />
 
       {/* ── BTI Score live ───────────────────────────────────────────────────── */}
       {liveBtiScore !== null ? (

@@ -105,12 +105,13 @@ describe('B133 Step 1.5 — locked shell pages have honest copy', () => {
     expect(readCompany('opportunities/page.tsx')).toContain('non ancora attivo');
   });
 
-  it('shared: B142-A Foundation Light demo — ha synthetic_demo_data e KORA Space content', () => {
-    // B142-A promoted shared from locked shell to Foundation Light demo.
-    const src = readCompany('shared/page.tsx');
-    expect(src).toContain('synthetic_demo_data: true');
-    expect(src).toContain('KORA Space');
-    expect(src).toContain('kora-space-company');
+  it('commons: KORA Space funzione reale — ha requireCompanyUser e query DB (B147 rename)', () => {
+    // B147: /company/shared (vetrina sintetica) rimossa. La funzione KORA Space sopravvive
+    // in /company/commons con dati reali (migration 013, commons.post schema).
+    const src = readCompany('commons/page.tsx');
+    expect(src).toContain('requireCompanyUser');
+    expect(src).toContain("schema('commons')");
+    expect(src).not.toContain('synthetic_demo_data');
   });
 
   it('contribution: dichiara modulo non ancora disponibile', () => {
@@ -151,8 +152,8 @@ describe('B137 — server layout is the session guard for /company/* pages', () 
 
   it('locked-shell pages with no session data no longer import useCompanySession', () => {
     // Guard is in the layout — these pages have no need for session data.
+    // B147: /company/shared rimossa — non più nel check.
     expect(readCompany('opportunities/page.tsx')).not.toContain('useCompanySession');
-    expect(readCompany('shared/page.tsx')).not.toContain('useCompanySession');
     expect(readCompany('contribution/page.tsx')).not.toContain('useCompanySession');
     expect(readCompany('onboarding/page.tsx')).not.toContain('useCompanySession');
   });
@@ -218,24 +219,33 @@ describe('B133 Step 1.5 — sidebar core company links presenti', () => {
 // 7. Regress: pagine dual-path (fuori scope B133) ancora hanno isLive guard
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('B133 Step 1.5 — regress: dual-path live pages still have isLive guard', () => {
-  it('data/page.tsx', () => {
+describe('B133 + B147 — regress: live pages boundary state', () => {
+  // data: still uses isLive (if (!isLive) guard pattern)
+  it('data/page.tsx has isLive guard', () => {
     expect(readCompany('data/page.tsx')).toContain('isLive');
   });
-  it('ingestion/page.tsx', () => {
-    expect(readCompany('ingestion/page.tsx')).toContain('isLive');
-  });
-  it('kora-index/page.tsx', () => {
+  // kora-index: still uses isLive (fetch gate: if (!isLive || !reportingPeriodForLive))
+  it('kora-index/page.tsx has isLive fetch gate', () => {
     expect(readCompany('kora-index/page.tsx')).toContain('isLive');
   });
-  it('activation/page.tsx', () => {
-    expect(readCompany('activation/page.tsx')).toContain('isLive');
+  // B147 P2: ingestion converted to live-only — no isLive guard needed.
+  it('ingestion/page.tsx — live-only boundary shell (B147 P2)', () => {
+    expect(readCompany('ingestion/page.tsx')).not.toContain('if (isLive)');
+    expect(readCompany('ingestion/page.tsx')).not.toContain('DemoFlowBanner');
   });
-  it('financial/page.tsx', () => {
-    expect(readCompany('financial/page.tsx')).toContain('isLive');
+  // B147 P1: activation, financial, pillars, reports had BoundaryBanner isLive={true}
+  // as the only source of isLive — removed (dual-path-era signals cleaned up).
+  it('activation/page.tsx — no BoundaryBanner residue (B147 P1)', () => {
+    expect(readCompany('activation/page.tsx')).not.toContain('BoundaryBanner');
+    expect(readCompany('activation/page.tsx')).not.toContain('isLive ?');
   });
-  it('reports/page.tsx', () => {
-    expect(readCompany('reports/page.tsx')).toContain('isLive');
+  it('financial/page.tsx — no BoundaryBanner residue (B147 P1)', () => {
+    expect(readCompany('financial/page.tsx')).not.toContain('BoundaryBanner');
+    expect(readCompany('financial/page.tsx')).not.toContain('isLive ?');
+  });
+  it('reports/page.tsx — no BoundaryBanner residue (B147 P1)', () => {
+    expect(readCompany('reports/page.tsx')).not.toContain('BoundaryBanner');
+    expect(readCompany('reports/page.tsx')).not.toContain('isLive ?');
   });
 });
 
@@ -276,12 +286,12 @@ describe('B133 Step 1.5 — sidebar secondary links puntano a locked shells ones
     expect(readCompany('opportunities/page.tsx')).not.toContain('getCurrentDemoUser');
   });
 
-  it('/company/shared in sidebar — B142-A Foundation Light demo (ha synthetic_demo_data)', () => {
-    // B142-A: shared is now a Foundation Light demo, not a locked shell.
-    expect(sidebar).toContain('/company/shared');
-    expect(readCompany('shared/page.tsx')).toContain('synthetic_demo_data: true');
-    expect(readCompany('shared/page.tsx')).toContain('KORA Space');
-    expect(readCompany('shared/page.tsx')).not.toContain('getCurrentDemoUser');
+  it('/company/commons in sidebar come KORA Space — funzione reale (B147 rename)', () => {
+    // B147: /company/shared smantellata. La sidebar ora ha /company/commons con label KORA Space.
+    expect(sidebar).toContain('/company/commons');
+    expect(sidebar).not.toContain('/company/shared');
+    expect(readCompany('commons/page.tsx')).toContain('requireCompanyUser');
+    expect(readCompany('commons/page.tsx')).not.toContain('synthetic_demo_data');
   });
 
   it('/company/contribution in sidebar — pagina è locked shell (non demo data)', () => {

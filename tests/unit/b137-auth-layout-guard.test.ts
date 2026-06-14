@@ -143,7 +143,7 @@ describe('B137 — Company pages have no sessionLoading return null', () => {
   const pages = [
     'app/company/page.tsx',
     'app/company/opportunities/page.tsx',
-    'app/company/shared/page.tsx',
+    // B147: /company/shared rimossa (vetrina sintetica smantellata)
     'app/company/profile/page.tsx',
     'app/company/contribution/page.tsx',
     'app/company/onboarding/page.tsx',

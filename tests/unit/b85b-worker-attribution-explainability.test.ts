@@ -567,37 +567,33 @@ describe('B85-B T3 — Dynamic CV attribution explainability', () => {
   });
 });
 
-// ── T7 + T8: BCM review worker_pib_allowed visibility ────────────────────────
+// ── T7 + T8: BCM review worker_pib_allowed — ingestion is now a boundary shell ─
+//
+// B147 P2: /company/ingestion was converted from a demo pipeline UI to a live-only
+// boundary notice. The Worker PIB FlagBadge and Field were part of the DetailPanel
+// in the demo branch, which has been removed. The company area should never show
+// the operator-level classification detail — that belongs in /admin/companies/data-intake.
 
-describe('B85-B T7 — worker_pib_allowed FlagBadge in governance flags', () => {
+describe('B85-B T7+T8 — ingestion is a live-only boundary shell (B147 P2)', () => {
   const src = read('app/company/ingestion/page.tsx');
 
-  it('adds Worker PIB consentito FlagBadge', () => {
-    expect(src).toContain('Worker PIB consentito');
+  it('ingestion has no Worker PIB UI (demo DetailPanel removed)', () => {
+    // The Worker PIB flag and Field were in the demo classification DetailPanel,
+    // which is an operator-level tool. Correctly absent from the company boundary notice.
+    expect(src).not.toContain('Worker PIB consentito');
+    expect(src).not.toContain('worker_pib_allowed');
+    expect(src).not.toContain('DetailPanel');
   });
 
-  it('uses c.worker_pib_allowed as FlagBadge value', () => {
-    expect(src).toContain('c.worker_pib_allowed');
+  it('ingestion has no ingestionPipelineService (live-only shell)', () => {
+    expect(src).not.toContain('ingestionPipelineService');
+    expect(src).not.toContain('DemoFlowBanner');
   });
 
-  it('includes explanatory note about Pilot+', () => {
-    expect(src).toContain('Worker PIB consentito indica');
-  });
-});
-
-describe('B85-B T8 — worker_pib_allowed Field in classification grid', () => {
-  const src = read('app/company/ingestion/page.tsx');
-
-  it('renders "Worker PIB" Field label', () => {
-    expect(src).toContain('"Worker PIB"');
-  });
-
-  it('shows "consentito" when allowed', () => {
-    expect(src).toContain("'consentito'");
-  });
-
-  it('shows "non consentito" when not allowed', () => {
-    expect(src).toContain("'non consentito'");
+  it('ingestion renders live boundary with workspace link', () => {
+    expect(src).toContain('KORA Intake Engine™');
+    expect(src).toContain('/company/workspace');
+    expect(src).toContain('useCompanySession');
   });
 });
 

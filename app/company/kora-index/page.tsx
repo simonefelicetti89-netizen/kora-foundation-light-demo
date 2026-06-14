@@ -43,7 +43,6 @@ import { BlockedByDesignPanel }     from '@/components/kora-index/BlockedByDesig
 import { RecommendationsPanel }     from '@/components/kora-index/RecommendationsPanel';
 import { MethodologyGlossary }      from '@/components/kora-index/MethodologyGlossary';
 import { BoundaryBadge }            from '@/components/ui/BoundaryBadge';
-import { BoundaryBanner }           from '@/components/ui/BoundaryBanner';
 
 // ── Explainer definitions ─────────────────────────────────────────────────────
 const EXP = {
@@ -334,7 +333,6 @@ export default function KoraIndexDetail() {
         </div>
       </div>
 
-      <BoundaryBanner isLive={true} />
 
       {/* ══ EXECUTIVE INTELLIGENCE LAYER™ ═══════════════════════════════════ */}
 

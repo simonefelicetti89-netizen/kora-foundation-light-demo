@@ -13,8 +13,6 @@ import { PrivacyBoundaryNote }          from '@/components/reports/PrivacyBounda
 import { NormativeMappingLightSection } from '@/components/reports/NormativeMappingLightSection';
 import { getNormativeMappingLight }     from '@/lib/normative-mapping/normative-mapping-light';
 import { PageMasthead }            from '@/components/ui/PageMasthead';
-import { BoundaryBadge }           from '@/components/ui/BoundaryBadge';
-import { BoundaryBanner }          from '@/components/ui/BoundaryBanner';
 import { DecisionContext }         from '@/components/ui/DecisionContext';
 import { SectionLabel }            from '@/components/ui/SectionLabel';
 import { ProvenanceFooter }        from '@/components/company/cockpit/ProvenanceFooter';
@@ -38,9 +36,8 @@ export default function Reports() {
 
   const COMPANY_ID = liveId ?? '';
   const { data: scoring, loading } = useScoringResult({
-    tenantId:         COMPANY_ID,
-    scenarioId:       'S1',
-    forceEnvironment: 'live',
+    tenantId:   COMPANY_ID,
+    scenarioId: 'S1',
   });
 
   // ── Loading guard — MUST precede any data access ──────────────────────────
@@ -83,13 +80,11 @@ export default function Reports() {
   return (
     <div className="space-y-6">
 
-      <BoundaryBadge mode="LIVE" variant="light" style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow="Decision Pack · LIVE"
         title="Report direzionali"
         subline="Output board-ready per HR, Finance, ESG e board. Evidenze strutturate, attivazione e raccomandazioni in formato decisionale."
       />
-      <BoundaryBanner isLive={true} />
       <DecisionContext
         question="Quali output portare al board, agli advisor ESG e alle funzioni HR e Finance?"
         boundary="KORA Foundation Light · pre_empirical_calibration · non certificativo · dati live"

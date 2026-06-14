@@ -7,8 +7,6 @@ import { useScoringResult }  from '@/lib/scoring-result';
 import { useCompanySession } from '../_providers/CompanySessionProvider';
 import { PILLAR_CODES, PILLAR_LABELS } from '@/lib/constants/kora';
 import { PageMasthead }      from '@/components/ui/PageMasthead';
-import { BoundaryBadge }     from '@/components/ui/BoundaryBadge';
-import { BoundaryBanner }    from '@/components/ui/BoundaryBanner';
 import { DecisionContext }   from '@/components/ui/DecisionContext';
 import { SectionLabel }      from '@/components/ui/SectionLabel';
 import { ChartFrame }        from '@/components/charts/ChartFrame';
@@ -101,9 +99,8 @@ export default function PillarsInitiatives() {
 
   const COMPANY_ID = liveId ?? '';
   const { data: scoring, loading } = useScoringResult({
-    tenantId:         COMPANY_ID,
-    scenarioId:       'S1',
-    forceEnvironment: 'live',
+    tenantId:   COMPANY_ID,
+    scenarioId: 'S1',
   });
 
   // ── Loading guard — MUST precede any data access ──────────────────────────
@@ -134,13 +131,11 @@ export default function PillarsInitiatives() {
 
   return (
     <div className="space-y-5">
-      <BoundaryBadge mode="LIVE" variant="light" style={{ marginBottom: 6 }} />
       <PageMasthead
         eyebrow="Pillar Intelligence · LIVE"
         title="Pillar Intelligence"
         subline={`${aggregate.reporting_period ?? 'Periodo attivo'} · distribuzione aggregata`}
       />
-      <BoundaryBanner isLive={true} />
       <DecisionContext
         question="Come sono distribuiti budget e attivazione tra i 5 pilastri KORA e dove è il gap?"
         boundary="Aggregato aziendale · N≥10 per segmento · nessun dato individuale"

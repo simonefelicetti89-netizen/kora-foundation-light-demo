@@ -187,10 +187,11 @@ describe('B80-B Task 4 — Admin DEMO pages have DEMO boundary badge', () => {
   });
 });
 
-describe('B80-B Task 4 — Company live-only pages have LIVE boundary badge + banner', () => {
-  // B130: kora-index, activation, pillars, reports, and financial are now live-only pages (no isLive ternary)
+describe('B80-B Task 4 — Company live-only pages: no dual-path-era boundary residues (B147 P1)', () => {
+  // B147 P1: BoundaryBanner isLive={true} and BoundaryBadge mode="LIVE" were dual-path-era
+  // signals. Removed from all company live-only pages — server layout is the only auth gate.
+  // kora-index keeps BoundaryBadge (status indicator) but loses BoundaryBanner.
   const liveOnlyPaths = [
-    'app/company/kora-index/page.tsx',
     'app/company/activation/page.tsx',
     'app/company/pillars/page.tsx',
     'app/company/reports/page.tsx',
@@ -198,22 +199,21 @@ describe('B80-B Task 4 — Company live-only pages have LIVE boundary badge + ba
   ];
 
   for (const filePath of liveOnlyPaths) {
-    it(`${filePath} imports BoundaryBadge`, () => {
+    it(`${filePath} has no BoundaryBanner or isLive={true} (B147 P1 cleanup)`, () => {
       const src = read(filePath);
-      expect(src).toContain('BoundaryBadge');
-    });
-
-    it(`${filePath} imports BoundaryBanner`, () => {
-      const src = read(filePath);
-      expect(src).toContain('BoundaryBanner');
-    });
-
-    it(`${filePath} has LIVE mode hardcoded (no isLive ternary)`, () => {
-      const src = read(filePath);
-      expect(src).toContain('mode="LIVE"');
+      expect(src).not.toContain('BoundaryBanner');
+      expect(src).not.toContain('BoundaryBadge');
+      expect(src).not.toContain('isLive={true}');
       expect(src).not.toContain('isLive ?');
     });
   }
+
+  it('kora-index keeps BoundaryBadge (status) but loses BoundaryBanner (B147 P1)', () => {
+    const src = read('app/company/kora-index/page.tsx');
+    expect(src).toContain('BoundaryBadge');
+    expect(src).not.toContain('BoundaryBanner');
+    expect(src).not.toContain('isLive={true}');
+  });
 });
 
 // B130: All company intelligence pages are now live-only. No remaining dual-path pages.
