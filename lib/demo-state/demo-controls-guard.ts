@@ -1,5 +1,6 @@
-// Pure logic for determining whether demo controls should appear in the Header.
-// Extracted so the rule can be unit-tested without React or Supabase.
+// Pure logic for determining whether demo controls / demo banners should appear.
+// Single source of truth for "is this a real user or a demo session?"
+// Used by Header.tsx and SyntheticDataBanner.tsx — keep in sync.
 
 /**
  * Converts a raw Supabase session into the role sentinel used by the Header guard.
@@ -37,4 +38,30 @@ export function resolveRealRoleFromSession(
  */
 export function shouldShowDemoControls(realRole: string | null | undefined): boolean {
   return realRole !== undefined && (realRole === null || realRole === 'KORA_ADMIN');
+}
+
+/**
+ * Resolves which environment label the SyntheticDataBanner should display,
+ * given the real session role and the current demo-state activeEnvironment.
+ *
+ * Returns null when the banner should not render at all (pending state).
+ *
+ * Rules:
+ *   undefined  — session check still pending → null (no banner, fail-safe toward live)
+ *   null       — no session → respect activeEnvironment (pure demo visitor)
+ *   KORA_ADMIN — operator → respect activeEnvironment (they control the switcher)
+ *   any other  — real authenticated user → force 'live' regardless of demo state
+ *
+ * 'live' is forced (not null) so the real user always sees the LIVE banner —
+ * confirming they are in a service-assisted environment, not a demo.
+ */
+export type BannerEnvironment = 'demo' | 'live' | 'future';
+
+export function resolveBannerEnvironment(
+  realRole: string | null | undefined,
+  activeEnvironment: BannerEnvironment,
+): BannerEnvironment | null {
+  if (realRole === undefined) return null;
+  if (shouldShowDemoControls(realRole)) return activeEnvironment;
+  return 'live';
 }

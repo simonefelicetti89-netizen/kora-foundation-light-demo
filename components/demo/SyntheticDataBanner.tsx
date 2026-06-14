@@ -2,8 +2,12 @@
 // SyntheticDataBanner — banner ambiente non-suppressible.
 // Scopo: comunicare l'ambiente attivo (DEMO/LIVE/FUTURE) in modo inequivocabile.
 // Usa var(--env-accent) da globals.css per restare coerente con l'environment switching.
+// B150: mostra 'live' per utenti reali (COMPANY_ADMIN, WORKER) — mai 'demo'.
 
+import { useEffect, useState } from 'react';
 import { useEnvironment } from '@/lib/demo-state';
+import { resolveRealRoleFromSession, resolveBannerEnvironment } from '@/lib/demo-state/demo-controls-guard';
+import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 import type { Environment } from '@/lib/types';
 
 const ENV_BANNER: Record<Environment, { main: string; secondary: string }> = {
@@ -25,7 +29,23 @@ const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
 export function SyntheticDataBanner() {
   const { activeEnvironment } = useEnvironment();
-  const { main, secondary } = ENV_BANNER[activeEnvironment];
+  const [realRole, setRealRole] = useState<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    supabase.auth.getSession().then(({ data }) => {
+      setRealRole(resolveRealRoleFromSession(data.session));
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setRealRole(resolveRealRoleFromSession(session));
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const effectiveEnv = resolveBannerEnvironment(realRole, activeEnvironment as 'demo' | 'live' | 'future');
+  if (effectiveEnv === null) return null;
+
+  const { main, secondary } = ENV_BANNER[effectiveEnv];
 
   return (
     <div
