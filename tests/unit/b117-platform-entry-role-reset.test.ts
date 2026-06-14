@@ -159,10 +159,12 @@ describe('Header — demo controls gated on real session role', () => {
     expect(header).toContain('{showDemoControls && <RoleSwitcher />}');
   });
 
-  it('realRoleIsCompanyOrWorker covers COMPANY_ADMIN and WORKER (B143: COMPANY_VIEWER rimosso)', () => {
-    expect(header).toContain("realRole === 'COMPANY_ADMIN'");
-    expect(header).toContain("realRole === 'WORKER'");
+  it('COMPANY_ADMIN and WORKER exclusion delegated to shouldShowDemoControls (B149, COMPANY_VIEWER rimosso in B143)', () => {
+    // B149 moved the per-role exclusion into demo-controls-guard.shouldShowDemoControls.
+    // Header no longer contains the inline realRoleIsCompanyOrWorker variable.
+    expect(header).toContain('shouldShowDemoControls');
     expect(header).not.toContain("realRole === 'COMPANY_VIEWER'");
+    expect(header).not.toContain('realRoleIsCompanyOrWorker');
   });
 });
 

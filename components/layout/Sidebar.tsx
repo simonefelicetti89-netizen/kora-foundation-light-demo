@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useRole, useEnvironment } from '@/lib/demo-state';
+import { resolveRealRoleFromSession, resolveBannerEnvironment } from '@/lib/demo-state/demo-controls-guard';
+import type { BannerEnvironment } from '@/lib/demo-state/demo-controls-guard';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { KoraLogo } from '@/components/brand/KoraLogo';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
@@ -311,16 +313,18 @@ export function Sidebar() {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     supabase.auth.getSession().then(({ data }) => {
-      setRealRole(data.session?.user?.app_metadata?.kora_role ?? null);
+      setRealRole(resolveRealRoleFromSession(data.session));
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setRealRole(session?.user?.app_metadata?.kora_role ?? null);
+      setRealRole(resolveRealRoleFromSession(session));
     });
     return () => subscription.unsubscribe();
   }, []);
 
   // isAdminPreview: real session is KORA_ADMIN but demo state shows WORKER navigation
   const isAdminPreview = realRole === 'KORA_ADMIN' && isWorkerRole(activeRole as Parameters<typeof isWorkerRole>[0]);
+  // effectiveEnv: null during pending (no badge), 'live' for real users, activeEnvironment for demo/KORA_ADMIN
+  const effectiveEnv = resolveBannerEnvironment(realRole, activeEnvironment as BannerEnvironment);
 
   // Extract companyId from /admin/companies/[companyId]/... but not from /admin/companies/new.
   const companyIdMatch = pathname.match(/^\/admin\/companies\/([^/]+)(?:\/|$)/);
@@ -551,12 +555,14 @@ export function Sidebar() {
             >
               {roleLabel}
             </p>
-            <p
-              className="text-[8.5px] font-semibold uppercase tracking-[0.10em] mt-0.5"
-              style={{ color: 'rgba(199,111,61,0.75)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
-            >
-              {ENV_LABEL[activeEnvironment] ?? 'DEMO'}
-            </p>
+            {effectiveEnv !== null && (
+              <p
+                className="text-[8.5px] font-semibold uppercase tracking-[0.10em] mt-0.5"
+                style={{ color: 'rgba(199,111,61,0.75)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+              >
+                {ENV_LABEL[effectiveEnv]}
+              </p>
+            )}
           </div>
         </div>
       </div>

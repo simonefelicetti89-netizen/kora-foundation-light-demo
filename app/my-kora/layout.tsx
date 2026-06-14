@@ -6,50 +6,56 @@
 // Pilot+: WorkerSessionProvider detects real Supabase worker session automatically.
 //
 // B141-B: Added real Supabase session detection for KORA_ADMIN.
-// When demo-state defaults to COMPANY_ADMIN, a real KORA_ADMIN session was blocked.
-// Fix: mirrors Sidebar.tsx realRole detection — admits KORA_ADMIN from real session
-// regardless of demo-state. No additional data exposure: PIB data is synthetic only.
+// B151-A: Gate now admits real WORKER sessions directly, without requiring the Role Switcher.
+//   Admission priority:
+//   1. realRole === 'WORKER'    — real worker session → always admitted
+//   2. realRole === 'KORA_ADMIN' — admin session → admitted for founder/admin preview
+//   3. realRole === null + demo-state isWorker/isAdmin — pure demo visitor → admitted
+//   4. any other real session (COMPANY_ADMIN, etc.) → hard-blocked
 
 import { useState, useEffect } from 'react';
 import { useRole } from '@/lib/demo-state';
+import { resolveRealRoleFromSession } from '@/lib/demo-state/demo-controls-guard';
 import { PrivacyBoundaryNotice } from '@/components/privacy/PrivacyBoundaryNotice';
 import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { WorkerSessionProvider } from './_providers/WorkerSessionProvider';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
 
-// My KORA is worker-private.
-// WORKER roles: full access — their personal space.
-// KORA_ADMIN: allowed to navigate and review demo content (uses synthetic data only).
-//   Admission is based on real Supabase session role, not demo-state.
-// Employer roles (COMPANY_ADMIN): hard-blocked — suppression always visible.
 export default function MyKoraLayout({ children }: { children: React.ReactNode }) {
   const { activeRole } = useRole();
 
-  // Detect real Supabase session role — same pattern as Sidebar.tsx.
-  // undefined = loading, null = no session, string = role from kora_role app_metadata.
+  // undefined = session check pending, null = no session, string = real kora_role
   const [realRole, setRealRole] = useState<string | null | undefined>(undefined);
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     supabase.auth.getSession().then(({ data }) => {
-      setRealRole(data.session?.user?.app_metadata?.kora_role ?? null);
+      setRealRole(resolveRealRoleFromSession(data.session));
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setRealRole(session?.user?.app_metadata?.kora_role ?? null);
+      setRealRole(resolveRealRoleFromSession(session));
     });
     return () => subscription.unsubscribe();
   }, []);
 
-  const demoPermitted = isWorkerRole(activeRole) || isAdminRole(activeRole);
-  const realAdminPermitted = realRole === 'KORA_ADMIN';
+  // Hold render until session resolves — avoids any flash of access-denied for real workers
+  if (realRole === undefined) return null;
 
-  // Avoid flash of PrivacyBoundaryNotice for KORA_ADMIN while session resolves.
-  // If demo-state alone does not permit and session is still loading, render nothing.
-  if (!demoPermitted && realRole === undefined) return null;
+  // Real authenticated users: WORKER and KORA_ADMIN are admitted
+  const realUserPermitted = realRole === 'WORKER' || realRole === 'KORA_ADMIN';
 
-  if (demoPermitted || realAdminPermitted) {
+  // Pure demo visitors (no session): respect demo-state activeRole
+  const demoVisitorPermitted =
+    realRole === null &&
+    (isWorkerRole(activeRole as Parameters<typeof isWorkerRole>[0]) ||
+     isAdminRole(activeRole as Parameters<typeof isAdminRole>[0]));
+
+  if (realUserPermitted || demoVisitorPermitted) {
     return <WorkerSessionProvider>{children}</WorkerSessionProvider>;
   }
+
+  // Access denied — message differs for real users vs. demo visitors
+  const isRealUser = realRole !== null;
 
   return (
     <div className="p-6" style={{ maxWidth: 600 }}>
@@ -78,8 +84,10 @@ export default function MyKoraLayout({ children }: { children: React.ReactNode }
         marginTop:   12,
         lineHeight:  1.5,
       }}>
-        Ruolo attivo: <strong style={{ color: TOKENS.inkSecondary }}>{activeRole}</strong>
-        {' '}— usa il Role Switcher per passare a WORKER.
+        {isRealUser
+          ? 'Il tuo account non ha accesso a questa area. Contatta il tuo KORA referente.'
+          : <>Ruolo attivo: <strong style={{ color: TOKENS.inkSecondary }}>{activeRole}</strong>{' '}— usa il Role Switcher per passare a WORKER.</>
+        }
       </p>
     </div>
   );

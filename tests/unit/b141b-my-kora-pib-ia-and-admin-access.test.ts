@@ -92,17 +92,18 @@ describe('B141-B — My KORA layout KORA_ADMIN access', () => {
     expect(layoutSrc).toContain("realRole === 'KORA_ADMIN'");
   });
 
-  it('12. layout does not admit COMPANY_ADMIN via isAdminRole check', () => {
-    // COMPANY_ADMIN is not an admin role in isAdminRole() — only KORA_ADMIN is.
-    // Verifying isAdminRole is still gating on the demo-state activeRole.
-    expect(layoutSrc).toContain('isAdminRole(activeRole)');
-    // COMPANY_ADMIN must not be explicitly allowed.
+  it('12. layout does not admit COMPANY_ADMIN — isAdminRole gates demo visitor path only (B151-A)', () => {
+    // B151-A: gate was refactored to separate real user admission from demo visitor admission.
+    // isAdminRole is still used but scoped to the demoVisitorPermitted check (null session only).
+    // COMPANY_ADMIN real session is blocked because realUserPermitted requires WORKER or KORA_ADMIN.
+    expect(layoutSrc).toContain('isAdminRole(activeRole');
     expect(layoutSrc).not.toContain("'COMPANY_ADMIN'");
   });
 
-  it('13. layout uses demoPermitted and realAdminPermitted as separate gates', () => {
-    expect(layoutSrc).toContain('demoPermitted');
-    expect(layoutSrc).toContain('realAdminPermitted');
+  it('13. layout uses realUserPermitted and demoVisitorPermitted as separate gates (B151-A)', () => {
+    // B151-A renamed: demoPermitted → demoVisitorPermitted, realAdminPermitted → realUserPermitted
+    expect(layoutSrc).toContain('realUserPermitted');
+    expect(layoutSrc).toContain('demoVisitorPermitted');
   });
 });
 

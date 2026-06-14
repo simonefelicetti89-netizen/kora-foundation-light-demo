@@ -17,10 +17,11 @@ const HEADER_SRC = fs.readFileSync(path.join(ROOT, 'components/layout/Header.tsx
 // ── Structural checks — Header source code ────────────────────────────────────
 
 describe('B148 — Header showDemoControls logic is fail-safe toward live', () => {
-  it('showDemoControls guards on realRole !== undefined (pending → hide)', () => {
-    // The guard `realRole !== undefined &&` must precede !realRoleIsCompanyOrWorker
-    // so that the loading state is treated as "hide demo" not "show demo".
-    expect(HEADER_SRC).toContain('realRole !== undefined && !realRoleIsCompanyOrWorker');
+  it('showDemoControls delegates to shouldShowDemoControls from demo-controls-guard (B149)', () => {
+    // B149 extracted the guard logic into demo-controls-guard.ts.
+    // Header now calls shouldShowDemoControls(realRole) — the inline pattern is gone.
+    expect(HEADER_SRC).toContain('shouldShowDemoControls(realRole)');
+    expect(HEADER_SRC).toContain('demo-controls-guard');
   });
 
   it('does NOT use the old default that showed demo during pending', () => {
@@ -29,12 +30,16 @@ describe('B148 — Header showDemoControls logic is fail-safe toward live', () =
     expect(HEADER_SRC).not.toMatch(/const showDemoControls\s*=\s*!realRoleIsCompanyOrWorker\s*;/);
   });
 
-  it('COMPANY_ADMIN is explicitly in the realRoleIsCompanyOrWorker exclusion', () => {
-    expect(HEADER_SRC).toContain("realRole === 'COMPANY_ADMIN'");
+  it('COMPANY_ADMIN and WORKER exclusion is enforced via shouldShowDemoControls (demo-controls-guard)', () => {
+    // The per-role logic lives in demo-controls-guard.ts (tested in b149).
+    // Header uses the guard — the old inline realRoleIsCompanyOrWorker is gone.
+    expect(HEADER_SRC).toContain('shouldShowDemoControls');
+    expect(HEADER_SRC).not.toContain('realRoleIsCompanyOrWorker');
   });
 
-  it('WORKER is explicitly in the realRoleIsCompanyOrWorker exclusion', () => {
-    expect(HEADER_SRC).toContain("realRole === 'WORKER'");
+  it('WORKER exclusion is covered by shouldShowDemoControls in demo-controls-guard', () => {
+    expect(HEADER_SRC).toContain('shouldShowDemoControls');
+    expect(HEADER_SRC).not.toContain('realRoleIsCompanyOrWorker');
   });
 
   it('does not contain the old "flash-of-hidden-UI in demo" comment (wrong intent)', () => {
