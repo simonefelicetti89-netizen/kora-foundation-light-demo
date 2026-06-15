@@ -81,7 +81,8 @@ export interface WorkerCVData {
   total_items:    number;
   verified_count: number;
   disclaimer:     string;
-  // non-suppressible while isSynthetic — pages must not offer export when false
-  export_available: false;
+  // false when isSynthetic=true (non-suppressible — pages must block export).
+  // true when isSynthetic=false and all items are verified (live path, B161).
+  export_available: boolean;
   isSynthetic:    boolean;
 }

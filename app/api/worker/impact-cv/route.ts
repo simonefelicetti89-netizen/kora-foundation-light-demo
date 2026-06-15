@@ -25,6 +25,7 @@ import {
   isKoraAuthError,
 } from '@/lib/auth/kora-session';
 import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 const VALID_PERSONAS = ['A', 'B', 'C', 'D'] as const;
 
@@ -32,20 +33,11 @@ export async function GET(request: NextRequest) {
   // ── Path 1: Authenticated WORKER ──────────────────────────────────────────────
   const workerResult = await requireWorkerUser(request);
   if (!isKoraAuthError(workerResult)) {
-    // LIVE SOURCE HOOK (post-Gate-2): sostituire il blocco qui sotto con
-    // record UEF individuali verificati filtrati per pseudonym_id.
-    //
-    //   pseudonymId = derivePseudonymId(workerResult.workerId);
-    //   const cvData = await liveImpactCVAggregator.getCVByPseudonym(
-    //     pseudonymId,
-    //     workerResult.tenantId,
-    //   );
-    //   return NextResponse.json({ ...cvData, isSynthetic: false });
-    //
-    // Vedi docs/worker-pib-activation-guide.md — sezione "Attivazione Dynamic CV reale".
-    //
-    // Stub: returns synthetic data until live pipeline is wired.
-    const cvData = workerPIBService.getCVData('A');
+    // B161: live path — legge da personal.worker_pib (is_exportable=true) via RLS.
+    // Il Supabase client ha la sessione del worker dal JWT cookie.
+    // Nodo A: getCVDataLive restituisce solo righe verified (is_exportable=true).
+    const supabase = await getSupabaseServerClient();
+    const cvData = await workerPIBService.getCVDataLive(supabase);
     return NextResponse.json(cvData);
   }
 

@@ -29,6 +29,7 @@ import {
   isKoraAuthError,
 } from '@/lib/auth/kora-session';
 import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 const VALID_PERSONAS = ['A', 'B', 'C', 'D'] as const;
 const VALID_SCENARIOS = ['S1', 'S2', 'S3', 'S4'] as const;
@@ -37,21 +38,12 @@ export async function GET(request: NextRequest) {
   // ── Path 1: Authenticated WORKER ──────────────────────────────────────────────
   const workerResult = await requireWorkerUser(request);
   if (!isKoraAuthError(workerResult)) {
-    // LIVE SOURCE HOOK (post-Gate-2): sostituire il blocco qui sotto con
-    // l'aggregazione IU reale per pseudonym_id dalla pipeline.
-    //
-    //   pseudonymId = derivePseudonymId(workerResult.workerId);
-    //   const pib   = await livePIBAggregator.getPIBByPseudonym(
-    //     pseudonymId,
-    //     workerResult.tenantId,
-    //     { period: currentPeriod() },
-    //   );
-    //   return NextResponse.json({ ...pib, isSynthetic: false });
-    //
-    // Vedi docs/worker-pib-activation-guide.md — sezione "Attivazione sorgente reale".
-    //
-    // Stub: returns synthetic data until live pipeline is wired.
-    const pib = workerPIBService.getPIB('A', 'S1');
+    // B161: live path — legge da personal.worker_pib via RLS (auth.uid()).
+    // Il Supabase client ha la sessione del worker dal JWT cookie.
+    // workerId (da JWT) NON viene passato come filtro: l'isolamento è garantito dalla RLS.
+    const supabase      = await getSupabaseServerClient();
+    const reportingPeriod = request.nextUrl.searchParams.get('period') ?? undefined;
+    const pib = await workerPIBService.getPIBLive(supabase, reportingPeriod);
     return NextResponse.json(pib);
   }
 

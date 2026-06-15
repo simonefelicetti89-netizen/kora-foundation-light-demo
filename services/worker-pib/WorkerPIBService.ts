@@ -1,25 +1,35 @@
 // services/worker-pib/WorkerPIBService.ts
 //
 // B157 — Worker PIB/CV: binario di consumo.
-// Single source for PIB and Dynamic CV data behind the canonical contract.
+// B161 — aggiunta metodi *Live async per il path WORKER JWT reale.
 //
-// TODAY:  returns synthetic data from MyKoraPreviewService (isSynthetic: true).
-// FUTURE: replace the synthetic source with live aggregation per pseudonym_id
-//         from the IU pipeline. See docs/worker-pib-activation-guide.md.
+// Metodi SINCRONI (preview KORA_ADMIN — invariati):
+//   getPIB(personaId, scenarioId): WorkerPIB    — dati sintetici
+//   getCVData(personaId): WorkerCVData           — dati sintetici
+//
+// Metodi ASYNC (WORKER JWT reale — B161):
+//   getPIBLive(supabase, period?): Promise<WorkerPIB>    — da personal.worker_pib
+//   getCVDataLive(supabase): Promise<WorkerCVData>        — solo is_exportable=true
 //
 // Privacy invariants (non-negotiable):
 //   - not_employer_visible: true — never called from employer-facing code paths.
 //   - not_performance_score: true — PIB is activation measurement, not evaluation.
-//   - export_available: false — while isSynthetic, export must be blocked by the page.
-//
-// Usage:
-//   import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
-//   const pib   = workerPIBService.getPIB(personaId, scenarioId);
-//   const cvData = workerPIBService.getCVData(personaId);
+//   - export_available: false while isSynthetic (sincroni); true nei live (verified only).
 
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import type { ScenarioId } from '@/lib/types';
-import type { WorkerPIB, WorkerCVData, WorkerPillarData, WorkerTimelineEvent, WorkerCVItem } from '@/lib/types/domains/worker-pib';
+import type {
+  WorkerPIB,
+  WorkerCVData,
+  WorkerPillarData,
+  WorkerTimelineEvent,
+  WorkerCVItem,
+} from '@/lib/types/domains/worker-pib';
+import { PILLAR_LABELS } from '@/lib/constants/kora';
+
+// personal.worker_pib non è nel tipo Database generato (mig 016-019 non ancora applicate).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnySupabaseClient = any;
 
 const VALID_SCENARIOS: ScenarioId[] = ['S1', 'S2', 'S3', 'S4'];
 
@@ -29,8 +39,8 @@ function toScenarioId(s: string): ScenarioId {
 
 export class WorkerPIBService {
 
-  // Returns the worker's Personal Impact Balance for the given persona/scenario.
-  //
+  // ── Metodi SINCRONI — preview KORA_ADMIN (non toccare) ───────────────────
+
   // LIVE SOURCE HOOK (post-Gate-2): sostituire la sorgente sintetica con
   // l'aggregazione IU per pseudonym_id dalla pipeline reale.
   // Vedi docs/worker-pib-activation-guide.md — sezione "Attivazione sorgente reale".
@@ -64,29 +74,27 @@ export class WorkerPIBService {
     }));
 
     return {
-      period:                       pib.period,
-      period_iu_total:              pib.period_iu_total,
-      overall_index:                pib.overall_index,
-      active_pillars:               pib.active_pillars,
-      total_events:                 pib.total_events,
-      pillar_breakdown:             pillarBreakdown,
+      period:                         pib.period,
+      period_iu_total:                pib.period_iu_total,
+      overall_index:                  pib.overall_index,
+      active_pillars:                 pib.active_pillars,
+      total_events:                   pib.total_events,
+      pillar_breakdown:               pillarBreakdown,
       timeline,
-      activation_level:             pib.activation_level,
-      activation_level_label:       pib.activation_level_label,
-      activation_level_description: pib.activation_level_description,
-      activation_profile:           pib.activation_profile,
+      activation_level:               pib.activation_level,
+      activation_level_label:         pib.activation_level_label,
+      activation_level_description:   pib.activation_level_description,
+      activation_profile:             pib.activation_profile,
       activation_profile_description: pib.activation_profile_description,
-      pib_derivation_note:          pib.pib_derivation_note,
-      pib_derivation_basis:         'synthetic_iu_pre_computed',
-      disclaimer:                   pib.disclaimer,
-      not_employer_visible:         true,
-      not_performance_score:        true,
-      isSynthetic:                  true,
+      pib_derivation_note:            pib.pib_derivation_note,
+      pib_derivation_basis:           'synthetic_iu_pre_computed',
+      disclaimer:                     pib.disclaimer,
+      not_employer_visible:           true,
+      not_performance_score:          true,
+      isSynthetic:                    true,
     };
   }
 
-  // Returns the worker's IU-based Dynamic CV (distinct from participation-count CV).
-  //
   // LIVE SOURCE HOOK (post-Gate-2): sostituire la sorgente sintetica con
   // record UEF individuali verificati (analytics.uef_record filtrati per pseudonym_id).
   // Vedi docs/worker-pib-activation-guide.md — sezione "Attivazione Dynamic CV reale".
@@ -114,6 +122,214 @@ export class WorkerPIBService {
       disclaimer:       cvPreview.disclaimer,
       export_available: false,
       isSynthetic:      true,
+    };
+  }
+
+  // ── Metodi ASYNC — WORKER JWT reale (B161) ────────────────────────────────
+  //
+  // Il SupabaseClient ricevuto ha la sessione del worker autenticato (cookie).
+  // RLS su personal.worker_pib filtra automaticamente per auth.uid() →
+  // il worker vede SOLO le proprie righe. Il service NON filtra per workerId
+  // esplicito: l'isolamento è garantito dal DB, non dal codice applicativo.
+
+  async getPIBLive(
+    supabase: AnySupabaseClient,
+    reportingPeriod?: string,
+  ): Promise<WorkerPIB> {
+    type PibRow = {
+      pillar:               string;
+      iu_value:             number;
+      source_uef_record_id: string | null;
+      reporting_period:     string;
+    };
+
+    let query = supabase
+      .schema('personal')
+      .from('worker_pib')
+      .select('pillar, iu_value, source_uef_record_id, reporting_period');
+
+    if (reportingPeriod) {
+      query = query.eq('reporting_period', reportingPeriod);
+    }
+
+    const { data, error } = await query as { data: PibRow[] | null; error: unknown };
+
+    if (error || !data || data.length === 0) {
+      return this._emptyLivePIB(reportingPeriod);
+    }
+
+    return this._aggregatePIBRows(data, reportingPeriod);
+  }
+
+  async getCVDataLive(supabase: AnySupabaseClient): Promise<WorkerCVData> {
+    type PibRow = {
+      pillar:               string;
+      iu_value:             number;
+      source_uef_record_id: string | null;
+      reporting_period:     string;
+    };
+    type InitiativeRow = {
+      title:                string;
+      pillar:               string;
+      source_uef_record_id: string | null;
+      start_date:           string | null;
+    };
+
+    // Nodo A: solo righe is_exportable=true (verified, company_sourced d'ufficio)
+    const { data: pibRows, error: pibErr } = await (supabase
+      .schema('personal')
+      .from('worker_pib')
+      .select('pillar, iu_value, source_uef_record_id, reporting_period')
+      .eq('is_exportable', true)) as { data: PibRow[] | null; error: unknown };
+
+    if (pibErr || !pibRows || pibRows.length === 0) {
+      return {
+        items:            [],
+        total_items:      0,
+        verified_count:   0,
+        disclaimer:       'I dati del tuo Dynamic Impact CV™ non sono ancora disponibili.',
+        export_available: true,
+        isSynthetic:      false,
+      };
+    }
+
+    // Recupera titoli/date dalla worker_initiative (join via source_uef_record_id)
+    const uefIds = [...new Set(pibRows.map((r) => r.source_uef_record_id).filter(Boolean))];
+    let initiatives: InitiativeRow[] = [];
+
+    if (uefIds.length > 0) {
+      const { data: initData } = await (supabase
+        .schema('personal')
+        .from('worker_initiative')
+        .select('title, pillar, source_uef_record_id, start_date')
+        .in('source_uef_record_id', uefIds)) as { data: InitiativeRow[] | null; error: unknown };
+      initiatives = initData ?? [];
+    }
+
+    const initiativeByUefId = new Map(initiatives.map((i) => [i.source_uef_record_id, i]));
+
+    const items: WorkerCVItem[] = pibRows.map((row, idx) => {
+      const initiative = row.source_uef_record_id
+        ? initiativeByUefId.get(row.source_uef_record_id)
+        : undefined;
+      const label = PILLAR_LABELS[row.pillar] ?? row.pillar;
+      return {
+        id:                  `live-cv-${idx}`,
+        title:               initiative?.title ?? row.pillar,
+        pillar:              row.pillar,
+        pillar_label:        label,
+        date:                initiative?.start_date ?? row.reporting_period,
+        source_category:     'company_sourced',
+        verification_status: 'verified' as const,
+        shareable:           true,
+        export_label:        `${label} — ${initiative?.title ?? row.reporting_period}`,
+      };
+    });
+
+    return {
+      items,
+      total_items:      items.length,
+      verified_count:   items.length,
+      disclaimer:       'Dynamic Impact CV™ — voci verificate dalla fonte aziendale.',
+      export_available: true,
+      isSynthetic:      false,
+    };
+  }
+
+  // ── Helpers aggregazione ─────────────────────────────────────────────────
+
+  private _emptyLivePIB(reportingPeriod?: string): WorkerPIB {
+    return {
+      period:                         reportingPeriod ?? '—',
+      period_iu_total:                0,
+      overall_index:                  0,
+      active_pillars:                 0,
+      total_events:                   0,
+      pillar_breakdown:               [],
+      timeline:                       [],
+      activation_level:               'initial',
+      activation_level_label:         'Iniziale',
+      activation_level_description:   'Nessun dato di attivazione disponibile per questo periodo.',
+      activation_profile:             '—',
+      activation_profile_description: '',
+      pib_derivation_note:            'PIB calcolato dalla pipeline live KORA.',
+      pib_derivation_basis:           'live_scoring_pipeline',
+      disclaimer:                     'Dati in elaborazione. Il PIB diventa disponibile dopo l\'approvazione delle iniziative aziendali.',
+      not_employer_visible:           true,
+      not_performance_score:          true,
+      isSynthetic:                    false,
+    };
+  }
+
+  private _aggregatePIBRows(
+    rows: Array<{
+      pillar:               string;
+      iu_value:             number;
+      source_uef_record_id: string | null;
+      reporting_period:     string;
+    }>,
+    reportingPeriod?: string,
+  ): WorkerPIB {
+    const byPillar = new Map<string, { iu_total: number; uef_ids: Set<string> }>();
+    for (const row of rows) {
+      const entry = byPillar.get(row.pillar) ?? { iu_total: 0, uef_ids: new Set<string>() };
+      entry.iu_total += row.iu_value;
+      if (row.source_uef_record_id) entry.uef_ids.add(row.source_uef_record_id);
+      byPillar.set(row.pillar, entry);
+    }
+
+    const period_iu_total   = rows.reduce((s, r) => s + r.iu_value, 0);
+    const totalUefIds       = new Set(rows.map((r) => r.source_uef_record_id).filter(Boolean));
+    const overall_index     = Math.min(Math.round(period_iu_total * 10), 100);
+    const activePillars     = [...byPillar.entries()].filter(([, v]) => v.iu_total > 0);
+
+    const pillar_breakdown: WorkerPillarData[] = activePillars.map(([pillar, v]) => ({
+      pillar,
+      label:       PILLAR_LABELS[pillar] ?? pillar,
+      score:       +(v.iu_total / period_iu_total * 100).toFixed(1),
+      iu_total:    +v.iu_total.toFixed(4),
+      // STUB: cross-period trend richiede history, post-pilot
+      trend:       'stable' as const,
+      event_count: v.uef_ids.size,
+    }));
+
+    const activation_level = overall_index >= 75 ? 'advanced'
+      : overall_index >= 50 ? 'established'
+      : overall_index >= 25 ? 'developing'
+      : 'initial';
+
+    const levelLabels = {
+      initial: 'Iniziale', developing: 'In sviluppo',
+      established: 'Consolidato', advanced: 'Avanzato',
+    } as const;
+    const activation_level_label = levelLabels[activation_level];
+
+    const dominantEntry  = [...activePillars].sort((a, b) => b[1].iu_total - a[1].iu_total)[0];
+    const dominantPillar = dominantEntry?.[0];
+    const dominantLabel  = dominantPillar ? (PILLAR_LABELS[dominantPillar] ?? dominantPillar) : '—';
+
+    // Timeline vuota — richiede join a worker_initiative, post-pilot
+    const timeline: WorkerTimelineEvent[] = [];
+
+    return {
+      period:                         rows[0]?.reporting_period ?? reportingPeriod ?? '—',
+      period_iu_total:                +period_iu_total.toFixed(4),
+      overall_index,
+      active_pillars:                 activePillars.length,
+      total_events:                   totalUefIds.size,
+      pillar_breakdown,
+      timeline,
+      activation_level,
+      activation_level_label,
+      activation_level_description:   `Livello ${activation_level_label.toLowerCase()} — ${activePillars.length} pillar attivi nel periodo.`,
+      activation_profile:             dominantLabel,
+      activation_profile_description: `Pillar dominante: ${dominantLabel}.`,
+      pib_derivation_note:            'PIB calcolato dalla pipeline live KORA sulla base degli IU degli eventi verificati.',
+      pib_derivation_basis:           'live_scoring_pipeline',
+      disclaimer:                     'PIB individuale — riservato al lavoratore. Non visibile all\'azienda. Non è un indicatore di performance.',
+      not_employer_visible:           true,
+      not_performance_score:          true,
+      isSynthetic:                    false,
     };
   }
 }

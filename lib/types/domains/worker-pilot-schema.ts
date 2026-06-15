@@ -70,6 +70,9 @@ export interface WorkerInitiativeRow {
   updated_at:            string;
 }
 
+// ── Insert type for personal.worker_pib (without DB-generated fields) ────────
+export type WorkerPIBRowInsert = Omit<WorkerPIBRow, 'id' | 'computed_at'>;
+
 // ── DB row: personal.worker_pib ───────────────────────────────────────────────
 //
 // Per-worker PIB row. WORKER-OWNED. NEVER exposed to company roles.
