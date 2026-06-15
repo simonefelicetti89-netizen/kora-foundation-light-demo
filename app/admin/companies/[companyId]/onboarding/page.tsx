@@ -1,3 +1,4 @@
+// CANONICAL — B154-B: onboarding per-company (path dinamico). Variante list-level: /admin/companies/onboarding (non consolidare ancora).
 // A-01f-onboarding: Company Onboarding — onboarding specifico per company.
 // Scopo: gestire il processo di onboarding per questa specifica company.
 'use client';

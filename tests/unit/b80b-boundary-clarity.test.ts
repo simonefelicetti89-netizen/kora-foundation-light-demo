@@ -111,12 +111,12 @@ describe('B80-B — BoundaryBanner component', () => {
 describe('B80-B Task 2+3 — Admin sidebar LIVE/DEMO groups + non-navigable items', () => {
   const src = read('components/layout/Sidebar.tsx');
 
-  it('has Live Operations group heading', () => {
-    expect(src).toContain('Live Operations');
+  it('has Provisioning group heading', () => {
+    expect(src).toContain('Provisioning');
   });
 
-  it('has Demo · Sintetico group heading (B82-B renamed from Demo Preview)', () => {
-    expect(src).toContain('Demo · Sintetico');
+  it('has Demo & Preview group heading (B154-B renamed from Demo · Sintetico)', () => {
+    expect(src).toContain('Demo & Preview');
   });
 
   it('has Future Vision group heading', () => {

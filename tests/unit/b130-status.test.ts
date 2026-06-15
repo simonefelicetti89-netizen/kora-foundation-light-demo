@@ -9,7 +9,7 @@
 //   4. Live page: loading guard precedes data rendering (1 test)
 //   5. Company layout: /company/status removed from DEMO_DRIVEN_ROUTES (1 test)
 //   6. Demo reachability: Status Center accessible from demo surfaces (2 tests)
-//   7. Sidebar: Status Center Demo in admin Demo · Sintetico group (1 test)
+//   7. Sidebar: Status Center Demo in admin Demo & Preview group (1 test)
 
 import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
@@ -130,9 +130,9 @@ describe('B130 Status — demo reachability: /demo/company/status is linked', ()
     expect(src).toContain('/demo/company/status');
   });
 
-  it('Sidebar Demo · Sintetico group contains /demo/company/status', () => {
+  it('Sidebar Demo & Preview group contains /demo/company/status', () => {
     const src          = readFile('components/layout/Sidebar.tsx');
-    const syntheticStart = src.indexOf("heading: 'Demo · Sintetico'");
+    const syntheticStart = src.indexOf("heading: 'Demo & Preview'");
     const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
     const block          = src.slice(syntheticStart, nextHeadingIdx);
     expect(block).toContain('/demo/company/status');

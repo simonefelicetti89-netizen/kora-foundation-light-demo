@@ -442,39 +442,39 @@ describe('B96-B Hero metrics', () => {
 
 // ── Route/nav presence ────────────────────────────────────────────────────────
 
-describe('B96-B Navigation — Founder Tools group in admin sidebar', () => {
+describe('B96-B Navigation — Founder group in admin sidebar', () => {
 
-  it('admin sidebar includes a Founder Tools group', () => {
+  it('admin sidebar includes a Founder group', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const founderGroup = groups.find((g) => g.heading === 'Founder Tools');
+    const founderGroup = groups.find((g) => g.heading === 'Founder');
     expect(founderGroup).toBeDefined();
   });
 
-  it('Founder Tools group contains Validation Cockpit item', () => {
+  it('Founder group contains Validation Cockpit item', () => {
     const groups       = buildNavGroups('KORA_ADMIN');
-    const founderGroup = groups.find((g) => g.heading === 'Founder Tools');
+    const founderGroup = groups.find((g) => g.heading === 'Founder');
     const cockpit = founderGroup?.items.find((i) => i.label === 'Validation Cockpit');
     expect(cockpit).toBeDefined();
   });
 
   it('Validation Cockpit links to /admin/founder-validation', () => {
     const groups       = buildNavGroups('KORA_ADMIN');
-    const founderGroup = groups.find((g) => g.heading === 'Founder Tools');
+    const founderGroup = groups.find((g) => g.heading === 'Founder');
     const cockpit = founderGroup?.items.find((i) => i.label === 'Validation Cockpit');
     expect(cockpit?.href).toBe('/admin/founder-validation');
   });
 
-  it('Founder Tools has FOUNDER badge key', () => {
+  it('Founder has FOUNDER badge key', () => {
     const groups       = buildNavGroups('KORA_ADMIN');
-    const founderGroup = groups.find((g) => g.heading === 'Founder Tools');
+    const founderGroup = groups.find((g) => g.heading === 'Founder');
     expect(founderGroup?.badgeKey).toBe('FOUNDER');
   });
 
-  it('non-admin roles do not have Founder Tools group', () => {
+  it('non-admin roles do not have Founder group', () => {
     const roles = ['COMPANY_ADMIN', 'WORKER', 'PARTNER', 'ADVISOR']; // B143: COMPANY_VIEWER rimosso
     for (const role of roles) {
       const groups = buildNavGroups(role);
-      const founderGroup = groups.find((g) => g.heading === 'Founder Tools');
+      const founderGroup = groups.find((g) => g.heading === 'Founder');
       expect(founderGroup).toBeUndefined();
     }
   });

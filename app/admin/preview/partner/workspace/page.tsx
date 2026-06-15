@@ -1,4 +1,6 @@
 // app/admin/preview/partner/workspace/page.tsx
+// DEPRECATED — B154-B: route non più nel sidebar. Mantenuta per retrocompatibilità.
+// NON eliminare: referenziata da tests/unit/b127-partner-workspace.test.ts (readFile).
 // B127: KORA_ADMIN synthetic preview of the Partner Workspace.
 //
 // Access: KORA_ADMIN only (requireKoraAdmin enforced).

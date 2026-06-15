@@ -1,4 +1,5 @@
 'use client';
+// DUPLICATO — B154-B: sovrapposto a /admin/data-intake. Conservare, non consolidare ancora.
 // A-01d: Company Data Intake — intake dati per una company specifica.
 // Scopo: gestire il caricamento, la classificazione e la revisione
 //        dei file di dati welfare/HR inviati dall'azienda.

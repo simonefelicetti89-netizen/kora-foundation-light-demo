@@ -351,12 +351,12 @@ describe('sidebar — Pilot Lifecycle link', () => {
     expect(content).toContain('Pilot Lifecycle');
   });
 
-  it('pipeline link is in the Live Operations group (not Demo group)', () => {
+  it('pipeline link is in the Provisioning group (not Demo group)', () => {
     const sidebarPath = join(process.cwd(), 'components', 'layout', 'Sidebar.tsx');
     const content = readFileSync(sidebarPath, 'utf-8');
-    // /admin/pipeline must appear before 'Demo · Sintetico' group heading
+    // /admin/pipeline must appear before 'Demo & Preview' group heading
     const pipelineIdx = content.indexOf('/admin/pipeline');
-    const demoIdx     = content.indexOf('Demo · Sintetico');
+    const demoIdx     = content.indexOf('Demo & Preview');
     expect(pipelineIdx).toBeGreaterThan(0);
     expect(demoIdx).toBeGreaterThan(0);
     expect(pipelineIdx).toBeLessThan(demoIdx);

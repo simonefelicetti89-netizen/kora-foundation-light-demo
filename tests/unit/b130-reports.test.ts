@@ -175,9 +175,9 @@ describe('B130 Reports — demo reachability: /demo/company/reports is linked', 
     expect(src).toContain('/demo/company/reports');
   });
 
-  it('Sidebar Demo · Sintetico group contains /demo/company/reports', () => {
+  it('Sidebar Demo & Preview group contains /demo/company/reports', () => {
     const src            = readFile('components/layout/Sidebar.tsx');
-    const syntheticStart = src.indexOf("heading: 'Demo · Sintetico'");
+    const syntheticStart = src.indexOf("heading: 'Demo & Preview'");
     const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
     const block          = src.slice(syntheticStart, nextHeadingIdx);
     expect(block).toContain('/demo/company/reports');

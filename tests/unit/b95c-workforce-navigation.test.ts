@@ -18,9 +18,9 @@ import {
 
 describe('B95-C Task 1 — Sidebar: Workforce Management entry', () => {
 
-  it('admin sidebar Live Operations group includes Workforce Management item', () => {
+  it('admin sidebar Provisioning group includes Workforce Management item', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     expect(liveOps).toBeDefined();
     const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
     expect(workforceItem).toBeDefined();
@@ -28,14 +28,14 @@ describe('B95-C Task 1 — Sidebar: Workforce Management entry', () => {
 
   it('Workforce Management links to /admin/companies when no company context', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
     expect(workforceItem?.href).toBe('/admin/companies');
   });
 
   it('Workforce Management links directly to company workforce when companyId provided', () => {
     const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
     expect(workforceItem?.href).toBe('/admin/companies/meridiana-group/workforce');
   });
@@ -44,7 +44,7 @@ describe('B95-C Task 1 — Sidebar: Workforce Management entry', () => {
     const testIds = ['meridiana-group', 'alba-manufacturing', 'nova-packaging'];
     for (const id of testIds) {
       const groups = buildNavGroups('KORA_ADMIN', id);
-      const liveOps = groups.find((g) => g.heading === 'Live Operations');
+      const liveOps = groups.find((g) => g.heading === 'Provisioning');
       const wfItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
       expect(wfItem?.href).toContain('/workforce');
       expect(wfItem?.href).toContain(id);
@@ -53,7 +53,7 @@ describe('B95-C Task 1 — Sidebar: Workforce Management entry', () => {
 
   it('Workforce Management shows helper description when no company context', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
     expect(workforceItem?.description).toBeDefined();
     expect(workforceItem?.description).not.toBe('');
@@ -61,7 +61,7 @@ describe('B95-C Task 1 — Sidebar: Workforce Management entry', () => {
 
   it('Workforce Management has no description when direct company link', () => {
     const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
     expect(workforceItem?.description).toBeUndefined();
   });
@@ -79,9 +79,9 @@ describe('B95-C Task 1 — Sidebar: Workforce Management entry', () => {
     }
   });
 
-  it('Pilot Lifecycle appears before Workforce Management in Live Operations', () => {
+  it('Pilot Lifecycle appears before Workforce Management in Provisioning', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     const items = liveOps?.items ?? [];
     const pilotIdx = items.findIndex((i) => i.label === 'Pilot Lifecycle');
     const wfIdx = items.findIndex((i) => i.label === 'Workforce Management');
@@ -98,7 +98,7 @@ describe('B95-C Task 2 — /admin/companies: workforce CTA reachability', () => 
   it('Workforce Management is a navigable route under /admin/companies/[companyId]/workforce', () => {
     const expectedPath = '/admin/companies/meridiana-group/workforce';
     const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     const wfItem = liveOps?.items.find((i) => i.label === 'Workforce Management');
     expect(wfItem?.href).toBe(expectedPath);
   });
@@ -106,7 +106,7 @@ describe('B95-C Task 2 — /admin/companies: workforce CTA reachability', () => 
   it('workforce route pattern is /admin/companies/[companyId]/workforce', () => {
     // Ensures the route structure follows Next.js dynamic segment convention
     const groups = buildNavGroups('KORA_ADMIN', 'test-company');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     const wfItem = liveOps?.items.find((i) => i.label === 'Workforce Management');
     expect(wfItem?.href).toMatch(/^\/admin\/companies\/[^/]+\/workforce$/);
   });
@@ -188,7 +188,7 @@ describe('B95-C Task 5 — Workforce route reachability from admin navigation', 
 
   it('admin sidebar without company context links to /admin/companies for workforce selection', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     const wfItem = liveOps?.items.find((i) => i.label === 'Workforce Management');
     expect(wfItem?.href).toBe('/admin/companies');
   });
@@ -200,15 +200,15 @@ describe('B95-C Task 5 — Workforce route reachability from admin navigation', 
     expect(label.length).toBeGreaterThan(3);
   });
 
-  it('workforce route appears in Live Operations group (not Demo or Future Vision)', () => {
+  it('workforce route appears in Provisioning group (not Demo or Future Vision)', () => {
     const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const liveOps = groups.find((g) => g.heading === 'Live Operations');
+    const liveOps = groups.find((g) => g.heading === 'Provisioning');
     expect(liveOps).toBeDefined();
     const wfItem = liveOps?.items.find((i) => i.href.includes('/workforce'));
     expect(wfItem).toBeDefined();
 
     // Must NOT appear in other groups
-    const otherGroups = groups.filter((g) => g.heading !== 'Live Operations');
+    const otherGroups = groups.filter((g) => g.heading !== 'Provisioning');
     const otherWf = otherGroups.flatMap((g) => g.items).find((i) => i.href.includes('/workforce'));
     expect(otherWf).toBeUndefined();
   });

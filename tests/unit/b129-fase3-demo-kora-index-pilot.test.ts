@@ -10,7 +10,7 @@
 //   5. Company layout: /company/kora-index removed from DEMO_DRIVEN_ROUTES (1 test)
 //   6. Demo guide: no /company/kora-index links (2 tests)
 //   7. Demo reachability: KORA Index accessible from demo surfaces (2 tests)
-//   8. Sidebar: KORA Index™ Demo in admin Demo · Sintetico group (1 test)
+//   8. Sidebar: KORA Index™ Demo in admin Demo & Preview group (1 test)
 
 import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
@@ -169,12 +169,12 @@ describe('B129 Fase 3 — demo reachability: /demo/company/kora-index is linked'
   });
 });
 
-// ── Group 8: Sidebar — KORA Index Demo in admin Demo · Sintetico group ────────
+// ── Group 8: Sidebar — KORA Index Demo in admin Demo & Preview group ────────
 
 describe('B129 Fase 3 — Sidebar: KORA Index™ Demo in synthetic group', () => {
-  it('Sidebar Demo · Sintetico group contains /demo/company/kora-index', () => {
+  it('Sidebar Demo & Preview group contains /demo/company/kora-index', () => {
     const src = readFile('components/layout/Sidebar.tsx');
-    const syntheticStart = src.indexOf("heading: 'Demo · Sintetico'");
+    const syntheticStart = src.indexOf("heading: 'Demo & Preview'");
     // Find next heading after the synthetic group
     const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
     const block = src.slice(syntheticStart, nextHeadingIdx);

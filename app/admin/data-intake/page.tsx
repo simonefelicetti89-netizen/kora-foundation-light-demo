@@ -1,3 +1,4 @@
+// CANONICAL — B154-B: entry point globale Data Intake. Duplicato parziale: /admin/companies/data-intake (non consolidare ancora).
 // A-12: Data Intake Studio — pipeline intake dati KORA.
 // Scopo: gestire l'intero processo di intake: caricamento fonti,
 //        classificazione BCM, match review, approvazione per scoring.

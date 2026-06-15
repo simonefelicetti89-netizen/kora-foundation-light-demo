@@ -1,4 +1,5 @@
 'use client';
+// DUPLICATO — B154-B: sovrapposto a /admin/companies/[companyId]/onboarding. Non consolidare ancora.
 // A-01c: Company Onboarding Studio — revisione readiness onboarding.
 // Scopo: controllare e avanzare l'onboarding di una company assegnata,
 //        verificando ogni step (dati, UEF, scoring, Decision Pack).

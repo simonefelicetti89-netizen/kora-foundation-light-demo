@@ -1,4 +1,5 @@
 'use client';
+// DUPLICATO — B154-B: sovrapposto a /admin/companies/new e /admin/companies/[companyId]/onboarding. Non consolidare ancora.
 // A-01b: Company Setup Wizard — configurazione operativa company.
 // Scopo: guidare KORA Admin nel setup completo di una nuova azienda:
 //        profilo, workforce baseline, data intake, scoring config.

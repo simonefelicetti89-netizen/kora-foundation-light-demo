@@ -153,9 +153,9 @@ describe('B130 Pillars — demo reachability: /demo/company/pillars is linked', 
     expect(src).toContain('/demo/company/pillars');
   });
 
-  it('Sidebar Demo · Sintetico group contains /demo/company/pillars', () => {
+  it('Sidebar Demo & Preview group contains /demo/company/pillars', () => {
     const src            = readFile('components/layout/Sidebar.tsx');
-    const syntheticStart = src.indexOf("heading: 'Demo · Sintetico'");
+    const syntheticStart = src.indexOf("heading: 'Demo & Preview'");
     const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
     const block          = src.slice(syntheticStart, nextHeadingIdx);
     expect(block).toContain('/demo/company/pillars');

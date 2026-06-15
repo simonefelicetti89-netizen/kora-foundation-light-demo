@@ -140,9 +140,9 @@ describe('B130 Activation — demo reachability: /demo/company/activation is lin
     expect(src).toContain('/demo/company/activation');
   });
 
-  it('Sidebar Demo · Sintetico group contains /demo/company/activation', () => {
+  it('Sidebar Demo & Preview group contains /demo/company/activation', () => {
     const src            = readFile('components/layout/Sidebar.tsx');
-    const syntheticStart = src.indexOf("heading: 'Demo · Sintetico'");
+    const syntheticStart = src.indexOf("heading: 'Demo & Preview'");
     const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
     const block          = src.slice(syntheticStart, nextHeadingIdx);
     expect(block).toContain('/demo/company/activation');

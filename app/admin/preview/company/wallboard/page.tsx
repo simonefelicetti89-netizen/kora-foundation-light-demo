@@ -1,4 +1,7 @@
 // app/admin/preview/company/wallboard/page.tsx
+// DEPRECATED — B154-B: route non più nel sidebar. Mantenuta per retrocompatibilità.
+// NON eliminare: referenziata da app/company/wallboard/page.tsx (href) e
+// da tests/unit/b119-company-wallboard.test.ts (readFile — test strutturale).
 // B119 FASE 5: KORA_ADMIN preview entry point per la Company Wallboard.
 //
 // Scopo: KORA_ADMIN può visualizzare la Wallboard aziendale senza bisogno di

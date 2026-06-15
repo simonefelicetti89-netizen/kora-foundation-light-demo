@@ -31,18 +31,18 @@ function read(rel: string) {
 describe('B82-B Task 1 — /admin/companies classified as LIVE', () => {
   const sidebar = read('components/layout/Sidebar.tsx');
 
-  it('Live Operations group contains /admin/companies', () => {
+  it('Provisioning group contains /admin/companies', () => {
     // heading comes before the item
-    const liveIdx = sidebar.indexOf("heading: 'Live Operations'");
+    const liveIdx = sidebar.indexOf("heading: 'Provisioning'");
     const companiesIdx = sidebar.indexOf("href: '/admin/companies'");
     expect(liveIdx).toBeGreaterThan(-1);
     expect(companiesIdx).toBeGreaterThan(-1);
-    // companies href must appear after Live Operations heading
+    // companies href must appear after Provisioning heading
     expect(companiesIdx).toBeGreaterThan(liveIdx);
   });
 
   it('/admin/companies does NOT appear before Demo group', () => {
-    const demoIdx = sidebar.indexOf("heading: 'Demo · Sintetico'");
+    const demoIdx = sidebar.indexOf("heading: 'Demo & Preview'");
     const companiesIdx = sidebar.indexOf("href: '/admin/companies'");
     // companies must be before the demo group heading
     expect(companiesIdx).toBeLessThan(demoIdx);
@@ -66,11 +66,11 @@ describe('B82-B Task 2 — Meridiana sidebar link removed', () => {
 
 // ── Task 3: Demo group renamed ────────────────────────────────────────────────
 
-describe('B82-B Task 3 — Demo group renamed to Demo · Sintetico', () => {
+describe('B82-B Task 3 — Demo group renamed to Demo & Preview', () => {
   const sidebar = read('components/layout/Sidebar.tsx');
 
-  it('has Demo · Sintetico group heading', () => {
-    expect(sidebar).toContain("Demo · Sintetico");
+  it('has Demo & Preview group heading', () => {
+    expect(sidebar).toContain("Demo & Preview");
   });
 
   it('no longer has plain Demo Preview heading', () => {
@@ -83,7 +83,7 @@ describe('B82-B Task 3 — Demo group renamed to Demo · Sintetico', () => {
 describe('B82-B Task 4 — Orphaned routes restored in navigation', () => {
   const sidebar = read('components/layout/Sidebar.tsx');
 
-  it('Live Operations includes /admin/company-live-preview', () => {
+  it('sidebar includes /admin/company-live-preview', () => {
     expect(sidebar).toContain("href: '/admin/company-live-preview'");
     expect(sidebar).toContain('Anteprima Live Cockpit');
   });
