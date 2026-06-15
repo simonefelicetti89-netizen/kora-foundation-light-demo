@@ -30,6 +30,7 @@
 import Link from 'next/link';
 import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
 import { workerOpportunityService } from '@/services/worker-opportunity/WorkerOpportunityService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
@@ -95,36 +96,34 @@ export default function MyKoraHome() {
   }
 
   const personaId = activePersona?.id ?? 'persona-elena-m';
-  const preview   = myKoraPreviewService.getMyKoraHomePreview(personaId, activeScenario);
+  const pib       = workerPIBService.getPIB(personaId, activeScenario);
   const workerCompanyId = accountProvisioningService.getCurrentDemoUser(activeRole).company_id ?? 'meridiana-group';
   const aggregate = scoringSimulatorService.getCompanyAggregate(workerCompanyId, activeScenario);
 
-  if (!preview) return null;
-
   // ── Derived data ────────────────────────────────────────────────────────────
 
-  const cvPreview = myKoraPreviewService.getDynamicCvPreview(personaId);
-  const totalCVItems    = cvPreview.items.length;
-  const shareableCount  = cvPreview.items.filter((i) => i.shareable).length;
+  const cvData          = workerPIBService.getCVData(personaId);
+  const totalCVItems    = cvData.items.length;
+  const shareableCount  = cvData.items.filter((i) => i.shareable).length;
   const privateCVCount  = totalCVItems - shareableCount;
 
-  const verifiedActivities  = preview.timeline.filter((i) => i.verification_status === 'verified');
-  const pendingActivities   = preview.timeline.filter((i) => i.verification_status === 'partial');
-  const privateActivities   = preview.timeline.filter((i) => i.verification_status === 'self_declared');
+  const verifiedActivities  = pib.timeline.filter((i) => i.verification_status === 'verified');
+  const pendingActivities   = pib.timeline.filter((i) => i.verification_status === 'partial');
+  const privateActivities   = pib.timeline.filter((i) => i.verification_status === 'self_declared');
 
   const verifiedCount  = verifiedActivities.length;
   const pendingCount   = pendingActivities.length;
   const privateCount   = privateActivities.length;
 
   // Top 3 recent activities for journey section (simplified view — no IU values)
-  const recentActivities = preview.timeline.slice(0, 3);
+  const recentActivities = pib.timeline.slice(0, 3);
 
   // Next best action — deterministic, no AI
   const nextAction = computeNextAction(
-    preview.pib_light.pillar_breakdown,
+    pib.pillar_breakdown,
     shareableCount,
     verifiedCount,
-    preview.pib_light.overall_index,
+    pib.overall_index,
   );
 
   // Top 3 opportunities
@@ -146,7 +145,7 @@ export default function MyKoraHome() {
         <BoundaryBadge mode="PREVIEW" variant="light" suffix="· dati sintetici" style={{ marginBottom: 10 }} />
         <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#06032B' }}>My KORA</h1>
         <p style={{ fontSize: '13.5px', color: 'rgba(6,3,43,0.52)', marginTop: 4, fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-          Il tuo spazio personale · {preview.persona_label}
+          Il tuo spazio personale · {activePersona?.display_name ?? 'Worker'}
         </p>
       </div>
 
@@ -237,10 +236,10 @@ export default function MyKoraHome() {
                 </div>
               ))}
             </div>
-            {preview.timeline.length > 3 && (
+            {pib.timeline.length > 3 && (
               <div className="px-4 py-2 border-t border-[rgba(6,3,43,0.05)]">
                 <p className="text-xs text-[rgba(6,3,43,0.38)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-                  + {preview.timeline.length - 3} altre attività — visibili nella timeline completa qui sotto.
+                  + {pib.timeline.length - 3} altre attività — visibili nella timeline completa qui sotto.
                 </p>
               </div>
             )}

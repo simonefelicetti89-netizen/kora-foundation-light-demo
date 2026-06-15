@@ -19,6 +19,7 @@
 import Link from 'next/link';
 import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
 import { workerAttributionService } from '@/services/worker-attribution/WorkerAttributionService';
 import { WorkerActivationSignatureCard } from '@/components/my-kora/WorkerActivationSignatureCard';
 import { KoraStratoMark } from '@/components/brand/KoraStratoMark';
@@ -65,9 +66,7 @@ export default function PersonalImpactBalancePage() {
   }
 
   const personaId = activePersona?.id ?? 'persona-elena-m';
-  const preview   = myKoraPreviewService.getMyKoraHomePreview(personaId, activeScenario);
-
-  if (!preview) return null;
+  const pib       = workerPIBService.getPIB(personaId, activeScenario);
 
   return (
     <div className="space-y-6" data-testid="pib-dedicated-page">
@@ -112,7 +111,7 @@ export default function PersonalImpactBalancePage() {
 
         {/* IU total — quantità assoluta, fuori dall'emblema STRATO */}
         <p className="text-xs font-mono text-[rgba(6,3,43,0.55)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }} data-testid="period-iu-total">
-          {preview.pib_light.period_iu_total.toFixed(1).replace('.', ',')} Impact Units attivate · periodo {preview.pib_light.period} · privato
+          {pib.period_iu_total.toFixed(1).replace('.', ',')} Impact Units attivate · periodo {pib.period} · privato
         </p>
         <p className="text-[11px] text-[rgba(6,3,43,0.42)] leading-relaxed italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
           Le IU misurano il lavoro di attivazione che hai reso visibile, non una prestazione. Non c&apos;è un massimo da raggiungere.
@@ -135,9 +134,9 @@ export default function PersonalImpactBalancePage() {
         {/* Personal Impact Signature — unified object: STRATO + logo + pillar breakdown */}
         <div className="flex justify-center" data-testid="personal-impact-signature">
           <WorkerActivationSignatureCard
-            pillarBreakdown={preview.pib_light.pillar_breakdown}
-            activationProfile={preview.pib_light.activation_profile}
-            periodIuTotal={preview.pib_light.period_iu_total}
+            pillarBreakdown={pib.pillar_breakdown}
+            activationProfile={pib.activation_profile}
+            periodIuTotal={pib.period_iu_total}
             className="w-full max-w-[560px]"
           />
         </div>
@@ -145,10 +144,10 @@ export default function PersonalImpactBalancePage() {
         {/* Activation profile — standalone below the 2-col grid */}
         <div className="rounded border border-[rgba(6,3,43,0.06)] bg-[rgba(6,3,43,0.03)] px-3 py-2" data-testid="activation-profile-block">
           <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.72)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            Profilo del periodo: <span className="text-[#C76F3D]">{preview.pib_light.activation_profile}</span>
+            Profilo del periodo: <span className="text-[#C76F3D]">{pib.activation_profile}</span>
           </p>
           <p className="text-[11px] text-[rgba(6,3,43,0.52)] mt-0.5 leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            {preview.pib_light.activation_profile_description}
+            {pib.activation_profile_description}
           </p>
           <p className="text-[10px] text-[rgba(6,3,43,0.35)] mt-1 italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
             Descrive il mix delle tue esperienze, non te. Cambia a ogni periodo.
@@ -158,21 +157,21 @@ export default function PersonalImpactBalancePage() {
         {/* Qualitative activation level */}
         <div className="rounded border border-[rgba(199,111,61,0.18)] bg-[rgba(199,111,61,0.05)] px-3 py-2.5">
           <p className="text-xs font-semibold text-[rgba(6,3,43,0.78)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            {preview.pib_light.activation_level_label}
+            {pib.activation_level_label}
           </p>
           <p className="text-[11px] text-[rgba(6,3,43,0.50)] mt-0.5 leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            {preview.pib_light.activation_level_description}
+            {pib.activation_level_description}
           </p>
         </div>
 
         {/* Summary counts — qualitative, no numeric score */}
         <div className="grid grid-cols-2 gap-3">
           <div className="text-center rounded border border-[rgba(6,3,43,0.06)] bg-white p-2.5">
-            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)]">{preview.pib_light.active_pillars}/5</p>
+            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)]">{pib.active_pillars}/5</p>
             <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Pillar presenti</p>
           </div>
           <div className="text-center rounded border border-[rgba(6,3,43,0.06)] bg-white p-2.5">
-            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)]">{preview.pib_light.total_events}</p>
+            <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)]">{pib.total_events}</p>
             <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Esperienze</p>
           </div>
         </div>
@@ -181,12 +180,12 @@ export default function PersonalImpactBalancePage() {
         <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.06)] px-3 py-2">
           <p className="text-[10px] font-semibold text-[#8A5A00]">Dato sintetico · derivato da IU computati</p>
           <p className="text-[10px] text-[#8A5A00] mt-0.5 leading-relaxed">
-            {preview.pib_light.pib_derivation_note}
+            {pib.pib_derivation_note}
           </p>
         </div>
 
         <p className="text-xs text-[rgba(6,3,43,0.40)]">
-          {preview.pib_light.active_pillars} pillar presenti · {preview.pib_light.total_events} esperienze · {preview.pib_light.period}
+          {pib.active_pillars} pillar presenti · {pib.total_events} esperienze · {pib.period}
         </p>
 
 
@@ -276,7 +275,7 @@ export default function PersonalImpactBalancePage() {
         </p>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
           <div className="divide-y divide-[rgba(6,3,43,0.05)]">
-            {preview.timeline.map((item) => {
+            {pib.timeline.map((item) => {
               const attribution = workerAttributionService.classify({
                 verification_status: item.verification_status,
                 source_type: item.source_type,

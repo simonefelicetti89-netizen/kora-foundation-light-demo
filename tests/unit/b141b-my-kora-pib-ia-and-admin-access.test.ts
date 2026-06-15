@@ -320,10 +320,11 @@ describe('B141-D — WorkerActivationSignatureCard premium card', () => {
   });
 
   it('42. PIB page passes pillarBreakdown and periodIuTotal to WorkerActivationSignatureCard', () => {
+    // B157: data source changed from myKoraPreviewService → workerPIBService (contract swap).
     // Personal card receives worker pillar data and IU total — personalised per worker.
-    expect(pibPageSrc).toContain('pillarBreakdown={preview.pib_light.pillar_breakdown}');
-    // B141-F: periodIuTotal is a new required prop passed from the page.
-    expect(pibPageSrc).toContain('periodIuTotal={preview.pib_light.period_iu_total}');
+    expect(pibPageSrc).toContain('pillarBreakdown={pib.pillar_breakdown}');
+    // B141-F / B157: periodIuTotal passed from the pib contract.
+    expect(pibPageSrc).toContain('periodIuTotal={pib.period_iu_total}');
   });
 
   it('43. KORA Link section does not use KoraActivationSignature', () => {

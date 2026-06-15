@@ -10,7 +10,9 @@
 //          export_readiness becomes true when worker confirms export intent.
 
 import { useRole, usePersona } from '@/lib/demo-state';
-import { myKoraPreviewService, type DynamicCVItem } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
+import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
+import type { WorkerCVItem } from '@/lib/types/domains/worker-pib';
 import { workerAttributionService } from '@/services/worker-attribution/WorkerAttributionService';
 import { workerAchievementService } from '@/services/worker-achievements/WorkerAchievementService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
@@ -67,7 +69,7 @@ const ALL_PILLARS = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as cons
 
 // ── Pillar distribution helper ────────────────────────────────────────────────
 
-function computePillarDistribution(items: DynamicCVItem[]): Array<{ pillar: string; count: number; label: string }> {
+function computePillarDistribution(items: WorkerCVItem[]): Array<{ pillar: string; count: number; label: string }> {
   const LABELS: Record<string, string> = {
     LIFE: 'Life', GROWTH: 'Growth', CONNECTION: 'Connection', IMPACT: 'Impact', LEGACY: 'Legacy',
   };
@@ -80,7 +82,7 @@ function computePillarDistribution(items: DynamicCVItem[]): Array<{ pillar: stri
 
 // ── CV attribution reason — Task 3 B85-B ─────────────────────────────────────
 
-function cvAttributionReason(item: DynamicCVItem, contribution: boolean): string {
+function cvAttributionReason(item: WorkerCVItem, contribution: boolean): string {
   if (item.verification_status === 'verified') {
     if (contribution) return 'Contributo validato';
     return 'Attività verificata';
@@ -93,7 +95,7 @@ function cvAttributionReason(item: DynamicCVItem, contribution: boolean): string
 
 // ── CV item card ──────────────────────────────────────────────────────────────
 
-function CVItemCard({ item, contribution }: { item: DynamicCVItem; contribution: boolean }) {
+function CVItemCard({ item, contribution }: { item: WorkerCVItem; contribution: boolean }) {
   // B85-B Task 3 — derive attribution class for "why it appears" explanation
   const attribution = workerAttributionService.classify({
     verification_status: item.verification_status,
@@ -193,8 +195,8 @@ export default function DynamicCV() {
   }
 
   const personaId = activePersona?.id ?? 'persona-elena-m';
-  const cvPreview = myKoraPreviewService.getDynamicCvPreview(personaId);
-  const pillarDist = computePillarDistribution(cvPreview.items);
+  const cvData    = workerPIBService.getCVData(personaId);
+  const pillarDist = computePillarDistribution(cvData.items);
   const maxCount = Math.max(...pillarDist.map((p) => p.count), 1);
 
   const achStats = workerAchievementService.getAchievementStats();
@@ -213,7 +215,7 @@ export default function DynamicCV() {
             Anteprima · Foundation Light
           </span>
         </div>
-        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">{cvPreview.persona_label}</p>
+        <p className="text-sm text-[rgba(6,3,43,0.52)] mt-1">{activePersona?.display_name ?? 'Profilo Worker'}</p>
       </div>
 
       {/* ── PreviewToLiveNotice — Task 3 */}
@@ -248,16 +250,16 @@ export default function DynamicCV() {
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
           <p className="text-xs text-[rgba(6,3,43,0.40)]">Elementi totali</p>
-          <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{cvPreview.total_items}</p>
+          <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{cvData.total_items}</p>
         </div>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
           <p className="text-xs text-[rgba(6,3,43,0.40)]">Verificati</p>
-          <p className="text-2xl font-bold text-[#2F7D55] mt-1">{cvPreview.verified_count}</p>
+          <p className="text-2xl font-bold text-[#2F7D55] mt-1">{cvData.verified_count}</p>
         </div>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
           <p className="text-xs text-[rgba(6,3,43,0.40)]">Condivisibili</p>
           <p className="text-2xl font-bold text-[#C76F3D] mt-1">
-            {cvPreview.items.filter((i) => i.shareable).length}
+            {cvData.items.filter((i) => i.shareable).length}
           </p>
         </div>
       </div>
@@ -379,7 +381,7 @@ export default function DynamicCV() {
       {/* ── CV Sections — grouped by pillar domain ── */}
       <div className="space-y-5" data-testid="cv-sections">
         {CV_SECTIONS.map((section) => {
-          const sectionItems = cvPreview.items.filter((i) => section.pillars.includes(i.pillar));
+          const sectionItems = cvData.items.filter((i) => section.pillars.includes(i.pillar));
           return (
             <div key={section.key} data-testid={`cv-section-${section.key}`}>
               <div className={cn(
@@ -437,7 +439,7 @@ export default function DynamicCV() {
       {/* ── Disclaimer ── */}
       <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.06)] p-3">
         <p className="text-xs font-semibold text-amber-700 mb-1">Nota metodologica</p>
-        <p className="text-xs text-amber-700 leading-relaxed">{cvPreview.disclaimer}</p>
+        <p className="text-xs text-amber-700 leading-relaxed">{cvData.disclaimer}</p>
       </div>
 
       {/* ── Future Vision: Export & Share ── */}
