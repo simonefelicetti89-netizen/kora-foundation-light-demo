@@ -114,8 +114,11 @@ describe('B133 Step 1.5 — locked shell pages have honest copy', () => {
     expect(src).not.toContain('synthetic_demo_data');
   });
 
-  it('contribution: dichiara modulo non ancora disponibile', () => {
-    expect(readCompany('contribution/page.tsx')).toContain('non ancora disponibile');
+  it('contribution: B166 server component con feature gate production_ready', () => {
+    const src = readCompany('contribution/page.tsx');
+    expect(src).toContain('getContributionLive');
+    expect(src).toContain('contribution-shell');
+    expect(src).not.toContain('getCurrentDemoUser');
   });
 
   it('onboarding: dichiara che è gestito da KORA Admin', () => {
@@ -294,9 +297,9 @@ describe('B133 Step 1.5 — sidebar secondary links puntano a locked shells ones
     expect(readCompany('commons/page.tsx')).not.toContain('synthetic_demo_data');
   });
 
-  it('/company/contribution in sidebar — pagina è locked shell (non demo data)', () => {
+  it('/company/contribution in sidebar — pagina B166 server component (non demo data)', () => {
     expect(sidebar).toContain('/company/contribution');
-    expect(readCompany('contribution/page.tsx')).toContain('non ancora disponibile');
+    expect(readCompany('contribution/page.tsx')).toContain('getContributionLive');
     expect(readCompany('contribution/page.tsx')).not.toContain('getCurrentDemoUser');
   });
 

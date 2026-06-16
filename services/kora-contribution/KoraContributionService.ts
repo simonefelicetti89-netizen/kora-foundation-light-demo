@@ -490,3 +490,87 @@ export class KoraContributionService implements IKoraContributionService {
 }
 
 export const koraContributionService = new KoraContributionService();
+
+// ── B166: getContributionLive — lettura da DB per tenant production_ready ─────
+//
+// Distinto dal path sintetico (seed JSON). Legge da commons.contribution_event.
+// Feature gate: production_ready check su analytics.tenant.
+// Tenant Foundation Light (production_ready=false) → restituisce null.
+// Chiamato da /api/company/contribution/live — usa getSupabaseServerClient (B163).
+// KORA Contribution è companion indicator — NON componente KORA Index (CLAUDE.md §12.7).
+
+import type { LiveContributionSummary } from '@/lib/commons/booking-types';
+
+export async function getContributionLive(params: {
+  db:             any;   // Supabase server client con JWT tenant
+  tenantId:       string;
+  period?:        string;
+}): Promise<LiveContributionSummary | null> {
+  const { db, tenantId, period } = params;
+
+  // Feature gate: solo tenant production_ready
+  const { data: tenant } = await (db as any)
+    .schema('analytics')
+    .from('tenant')
+    .select('id, production_ready')
+    .eq('id', tenantId)
+    .maybeSingle();
+
+  if (!tenant || !(tenant as any).production_ready) {
+    return null; // tenant non Pilot+ — il chiamante mostra la shell sintetica
+  }
+
+  // Fetch contribution_events per questo tenant nel periodo
+  let query = (db as any)
+    .schema('commons')
+    .from('contribution_event')
+    .select('role, contribution_kind, impact_weight, evidence_status, reporting_period')
+    .eq('tenant_id', tenantId);
+
+  if (period) query = query.eq('reporting_period', period);
+
+  const { data: events, error } = await query.limit(500);
+
+  if (error) {
+    console.error('[getContributionLive] fetch error:', error.message);
+    return null;
+  }
+
+  const rows = (events as Array<{
+    role: string;
+    contribution_kind: string;
+    impact_weight: number;
+    evidence_status: string;
+    reporting_period: string;
+  }> | null) ?? [];
+
+  const reportingPeriod = period ?? (rows[0]?.reporting_period ?? '');
+
+  const crossRows   = rows.filter((r) => r.contribution_kind === 'cross_company_participation');
+  const externalRows = rows.filter((r) => r.contribution_kind === 'external_participants_event');
+  const promoterRows = rows.filter((r) => r.role === 'promoter');
+  const originRows   = rows.filter((r) => r.role === 'origin_employer');
+  const verifiedRows = rows.filter((r) => r.evidence_status === 'verified');
+  const selfDeclRows = rows.filter((r) => r.evidence_status === 'self_declared');
+
+  const sum = (arr: typeof rows) => arr.reduce((s, r) => s + (r.impact_weight ?? 0), 0);
+
+  return {
+    tenant_id:                    tenantId,
+    reporting_period:             reportingPeriod,
+    is_kora_index_component:      false,
+    total_events:                 rows.length,
+    cross_company_participations: crossRows.length,
+    external_participant_events:  externalRows.length,
+    promoter_events:              promoterRows.length,
+    origin_employer_events:       originRows.length,
+    total_impact_weight:          +sum(rows).toFixed(4),
+    verified_weight:              +sum(verifiedRows).toFixed(4),
+    self_declared_weight:         +sum(selfDeclRows).toFixed(4),
+    weight_cross_company:         +sum(crossRows).toFixed(4),
+    weight_external_participants: +sum(externalRows).toFixed(4),
+    data_source:                  'live_db',
+    methodology_version_id:       getMethodologyVersion(),
+    calibration_status:           'pre_empirical_calibration',
+  };
+}

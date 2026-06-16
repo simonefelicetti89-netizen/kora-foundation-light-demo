@@ -223,7 +223,7 @@ export default async function WorkerCommonsPage() {
                   </p>
 
                   {/* Meta row */}
-                  <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center', marginBottom: grade === 'cross_company' ? 12 : 0 }}>
                     {initiative.event_start_at && (
                       <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.50)' }}>
                         📅{' '}
@@ -244,6 +244,38 @@ export default async function WorkerCommonsPage() {
                       </span>
                     )}
                   </div>
+
+                  {/* Pulsante Prenota — solo per iniziative cross_company */}
+                  {grade === 'cross_company' && (
+                    <form
+                      data-testid={`worker-booking-form-${initiative.id}`}
+                      action="/api/worker/commons/bookings"
+                      method="POST"
+                      style={{ marginTop: 4 }}
+                    >
+                      <input type="hidden" name="post_id" value={initiative.id} />
+                      <button
+                        data-testid={`worker-book-btn-${initiative.id}`}
+                        type="submit"
+                        style={{
+                          padding:      '8px 18px',
+                          borderRadius: 8,
+                          border:       'none',
+                          background:   '#2F7D55',
+                          color:        '#FFFFFF',
+                          fontSize:     12,
+                          fontWeight:   700,
+                          fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
+                          cursor:       'pointer',
+                        }}
+                      >
+                        Prenota partecipazione
+                      </button>
+                      <p style={{ fontSize: 9, color: 'rgba(6,3,43,0.35)', margin: '4px 0 0', lineHeight: 1.4 }}>
+                        La prenotazione è soggetta ad approvazione KORA. Il tuo nome non è visibile all&apos;organizzatore.
+                      </p>
+                    </form>
+                  )}
                 </article>
               );
             })}

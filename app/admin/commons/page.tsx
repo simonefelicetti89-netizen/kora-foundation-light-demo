@@ -18,6 +18,7 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { AdminCommonsModerationPanel } from '@/components/commons/AdminCommonsModerationPanel';
+import { AdminBookingModerationSection } from '@/components/commons/AdminBookingModerationSection';
 
 export const metadata = { title: 'KORA Space — Moderazione · Admin' };
 
@@ -125,6 +126,9 @@ export default async function AdminCommonsPage() {
         posts={allPosts}
         tenantMap={tenantMap}
       />
+
+      {/* B166 — Sezione Prenotazioni in moderazione */}
+      <AdminBookingModerationSection tenantMap={tenantMap} />
 
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 14, marginTop: 40 }}>
