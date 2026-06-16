@@ -54,8 +54,12 @@ describe('activation-profile API — workerId from session', () => {
     expect(apiRoute).toContain('const { workerId } = auth');
   });
 
-  it('DB query filters by workerId from session (not from params)', () => {
-    expect(apiRoute).toContain("eq('worker_id', workerId)");
+  it('usa getSupabaseServerClient (RLS-respecting) per isolamento — non service client', () => {
+    // B163: isolamento via RLS worker_participation_worker_own_all (mig 008, auth.uid()).
+    // Il filtro esplicito .eq(worker_id) è stato rimosso perché ridondante con la RLS.
+    const stripped = stripLineComments(apiRoute);
+    expect(stripped).toContain('getSupabaseServerClient');
+    expect(stripped).not.toContain('getSupabaseServiceClient');
   });
 });
 
@@ -96,16 +100,24 @@ describe('activation-profile API — no tenant_id from client', () => {
 // ─── 6. Worker A cannot see Worker B's profile ───────────────────────────────
 
 describe('Worker isolation', () => {
-  it('participation select is always filtered by workerId from session', () => {
-    // Only one worker_id filter — the session one
-    const occurrences = (apiRoute.match(/eq\('worker_id',\s*workerId\)/g) ?? []).length;
-    expect(occurrences).toBeGreaterThanOrEqual(1);
+  it('RLS è il muro primario: migration 008 ha worker_participation_worker_own_all su auth.uid()', () => {
+    // B163: l'isolamento non dipende da un filtro esplicito nella route — dipende dalla RLS.
+    // Verifica strutturale che la migration esiste e contiene la policy corretta.
+    const mig = fs.readFileSync(path.join(ROOT, 'supabase/migrations/008_worker_initiatives.sql'), 'utf-8');
+    expect(mig).toContain('worker_participation_worker_own_all');
+    expect(mig).toContain('auth.uid()');
   });
 
   it('no hardcoded worker_id in any DB query', () => {
     const stripped = stripLineComments(apiRoute);
-    // No literal UUID in eq('worker_id', ...) — only the variable workerId
+    // No literal UUID in eq('worker_id', ...) — solo variabili di sessione
     expect(stripped).not.toMatch(/eq\('worker_id',\s*'[0-9a-f-]{36}'\)/);
+  });
+
+  it('nessun worker_id accettato da query params o body', () => {
+    const stripped = stripLineComments(apiRoute);
+    expect(stripped).not.toContain("searchParams.get('worker_id')");
+    expect(stripped).not.toContain('body.worker_id');
   });
 });
 

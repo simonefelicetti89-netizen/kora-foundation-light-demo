@@ -16,7 +16,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -125,22 +125,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // workerId and tenantId from session ONLY — never from request params
   const { workerId, tenantId } = auth;
 
-  const db = getSupabaseServiceClient();
+  // RLS (mig 007): worker_identity_worker_own_select (auth.uid()), worker_profile_worker_own_all (auth.uid()).
+  // RLS (mig 022): analytics_tenant_worker_own_read (id = kora.tenant_id()).
+  const db = await getSupabaseServerClient();
 
   // ── 1. Worker identity + profile ──────────────────────────────────────────
   const [{ data: wiRow }, { data: profRow }, { data: tenantRow }] = await Promise.all([
     db.schema('personal').from('worker_identity')
       .select('status, created_at')
-      .eq('id', workerId)
-      .eq('auth_user_id', auth.id)
+      .eq('id', workerId)          // PK lookup — difesa in profondità anche con RLS
       .maybeSingle(),
     db.schema('personal').from('worker_profile_private')
       .select('display_name, preferred_lang')
-      .eq('worker_id', workerId)
-      .maybeSingle(),
+      .maybeSingle(),              // RLS worker_profile_worker_own_all isola via auth.uid()
     db.schema('analytics').from('tenant')
       .select('company_name')
-      .eq('id', tenantId)
+      .eq('id', tenantId)          // PK lookup — difesa in profondità anche con RLS
       .maybeSingle(),
   ]);
 
@@ -157,6 +157,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   };
 
   // ── 2. Participation history — exclude private_note from CV output ─────────
+  // RLS worker_participation_worker_own_all (mig 008) isola via auth.uid() — nessun filtro worker_id.
   const { data: rows, error } = await db
     .schema('personal')
     .from('worker_participation')
@@ -171,7 +172,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         delivery_mode
       )
     `)
-    .eq('worker_id', workerId)
     .order('updated_at', { ascending: false });
 
   if (error) {

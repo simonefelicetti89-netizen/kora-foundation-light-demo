@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function PATCH(
   request: NextRequest,
@@ -27,8 +27,9 @@ export async function PATCH(
     return NextResponse.json({ ok: false, error: 'ID non valido.' }, { status: 400 });
   }
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
+  // Difesa in profondità: .eq('worker_id', workerId) mantenuto anche con RLS worker_cv_share_worker_own_all (scrittura).
   // Update only rows where worker_id matches session — no other worker's links can be revoked
   const { error, count } = await db
     .schema('personal')

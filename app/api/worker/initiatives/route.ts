@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
 
 export type InitiativeWithStatus = {
@@ -36,9 +36,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { tenantId, workerId } = auth;
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
-  // Fetch published initiatives for this tenant (service-role bypasses RLS for admin use)
+  // RLS worker_initiative_worker_published_select (mig 008): tenant_id = kora.tenant_id() AND status = 'published'.
+  // I filtri espliciti sono mantenuti come business logic leggibile, non come sostituto della RLS.
   const { data: initiatives, error: initErr } = await db
     .schema('personal')
     .from('worker_initiative')
@@ -55,13 +56,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, initiatives: [] });
   }
 
-  // Fetch this worker's own participation rows — keyed by initiative_id
+  // Fetch this worker's own participation rows — keyed by initiative_id.
+  // RLS worker_participation_worker_own_all (mig 008) isola via auth.uid() — nessun filtro worker_id esplicito necessario.
   const initiativeIds = initiatives.map(i => i.id);
   const { data: participations } = await db
     .schema('personal')
     .from('worker_participation')
     .select('initiative_id, status')
-    .eq('worker_id', workerId)
     .in('initiative_id', initiativeIds);
 
   const participationMap = new Map<string, WorkerParticipationRow['status']>(

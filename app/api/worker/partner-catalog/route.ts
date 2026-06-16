@@ -17,7 +17,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 const VALID_PILLARS = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 const VALID_MODES   = ['online', 'onsite', 'hybrid'] as const;
@@ -44,13 +44,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const pillarFilter = request.nextUrl.searchParams.get('pillar');
   const modeFilter   = request.nextUrl.searchParams.get('mode');
 
-  const db = getSupabaseServiceClient();
+  // RLS network_partner_worker_published_select (mig 010): status='published' AND WORKER role.
+  // .eq('status', 'published') mantenuto come difesa in profondità esplicita.
+  const db = await getSupabaseServerClient();
 
   let query = db
     .schema('network')
     .from('partner_profile')
     .select('id, name, description, pillar, category, website_url, city, country, delivery_mode')
-    .eq('status', 'published')   // workers see ONLY published
+    .eq('status', 'published')
     .order('pillar', { ascending: true });
 
   if (pillarFilter && VALID_PILLARS.includes(pillarFilter as Pillar)) {

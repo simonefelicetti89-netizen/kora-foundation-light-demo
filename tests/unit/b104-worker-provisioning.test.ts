@@ -289,9 +289,14 @@ describe('B104 — worker profile API', () => {
     expect(prof).toContain('requireWorkerUser');
   });
 
-  it('reads worker_identity filtered by auth.workerId AND auth.id', () => {
+  it('reads worker_identity via PK lookup (B163: auth_user_id filter rimosso — RLS mig 007 lo fa)', () => {
+    // B163: .eq('auth_user_id', auth.id) rimosso dal GET perché ridondante con
+    // RLS worker_identity_worker_own_select (mig 007, USING auth_user_id = auth.uid()).
+    // Rimane .eq('id', auth.workerId) come PK lookup di difesa in profondità.
     expect(prof).toContain('.eq(\'id\', auth.workerId)');
-    expect(prof).toContain('.eq(\'auth_user_id\', auth.id)');
+    const stripped = prof.replace(/\/\/[^\n]*/g, '');
+    expect(stripped).toContain('getSupabaseServerClient');
+    expect(stripped).not.toContain('getSupabaseServiceClient');
   });
 
   it('includes privacy notice in response', () => {

@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import {
   generateShareToken,
   hashShareToken,
@@ -32,7 +32,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const tokenHash = hashShareToken(rawToken);
   const expiresAt = buildExpiresAt();
 
-  const db = getSupabaseServiceClient();
+  // Difesa in profondità: worker_id e tenant_id mantenuti nel payload anche con RLS (scrittura).
+  const db = await getSupabaseServerClient();
 
   const { error } = await db
     .schema('personal')

@@ -186,7 +186,11 @@ describe('B109 — API privacy contracts', () => {
   it('worker history route reads workerId from session only', () => {
     const src = readFile('app/api/worker/history/route.ts');
     expect(src).toContain('const { workerId } = auth');
-    expect(src).toContain('.eq(\'worker_id\', workerId)');
+    // B163: isolamento via RLS worker_participation_worker_own_all (mig 008).
+    // Il filtro esplicito .eq(worker_id) è stato rimosso — usa getSupabaseServerClient.
+    const stripped = src.replace(/\/\/[^\n]*/g, '');
+    expect(stripped).toContain('getSupabaseServerClient');
+    expect(stripped).not.toContain('getSupabaseServiceClient');
   });
 
   it('worker initiatives route reads tenantId and workerId from session only', () => {

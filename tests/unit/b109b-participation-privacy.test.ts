@@ -175,7 +175,11 @@ describe('B109-B — worker API: session-only workerId/tenantId', () => {
   it('GET history: workerId strictly from session, never from params or body', () => {
     const src = readFile('app/api/worker/history/route.ts');
     expect(src).toContain('const { workerId } = auth');
-    expect(src).toContain(".eq('worker_id', workerId)");
+    // B163: isolamento via RLS worker_participation_worker_own_all (mig 008, auth.uid()).
+    // Filtro esplicito rimosso — usa getSupabaseServerClient.
+    const stripped = src.replace(/\/\/[^\n]*/g, '');
+    expect(stripped).toContain('getSupabaseServerClient');
+    expect(stripped).not.toContain('getSupabaseServiceClient');
     expect(src).not.toContain('searchParams.get(');
     expect(src).not.toContain('body.worker_id');
   });
@@ -186,15 +190,23 @@ describe('B109-B — worker API: session-only workerId/tenantId', () => {
     expect(src).toContain('private_note');
   });
 
-  it('GET history: participation rows filtered by workerId only (no cross-worker exposure)', () => {
+  it('GET history: participation rows isolate via RLS (B163: server client + mig 008)', () => {
     const src = readFile('app/api/worker/history/route.ts');
-    expect(src).toContain(".eq('worker_id', workerId)");
+    // B163: filtro esplicito rimosso; RLS worker_participation_worker_own_all garantisce isolamento.
+    const stripped = src.replace(/\/\/[^\n]*/g, '');
+    expect(stripped).toContain('getSupabaseServerClient');
+    const mig008 = readFile('supabase/migrations/008_worker_initiatives.sql');
+    expect(mig008).toContain('worker_participation_worker_own_all');
   });
 
-  it('GET initiatives: tenantId and workerId from session only', () => {
+  it('GET initiatives: tenantId e workerId dalla sessione (B163: server client + RLS)', () => {
     const src = readFile('app/api/worker/initiatives/route.ts');
     expect(src).toContain('const { tenantId, workerId } = auth');
-    expect(src).toContain(".eq('worker_id', workerId)");
+    // B163: .eq('worker_id', workerId) su worker_participation rimosso (RLS lo fa).
+    // tenant_id e status mantenuti su worker_initiative (business logic).
+    const stripped = src.replace(/\/\/[^\n]*/g, '');
+    expect(stripped).toContain('getSupabaseServerClient');
+    expect(stripped).not.toContain('getSupabaseServiceClient');
     expect(src).toContain(".eq('tenant_id', tenantId)");
   });
 

@@ -11,26 +11,27 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
+import { updateWorkerAuthMetadata } from '@/lib/supabase/auth-admin-update-user';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = await requireWorkerUser(request);
   if (isKoraAuthError(auth)) return auth;
 
-  const db = getSupabaseServiceClient();
+  // RLS isola la riga: worker_identity_worker_own_select usa auth_user_id = auth.uid() (mig 007).
+  const db = await getSupabaseServerClient();
 
   const { data: wiRow, error: wiErr } = await db.schema('personal').from('worker_identity')
     .select('id, worker_ref, status, tenant_id, created_at')
     .eq('id', auth.workerId)
-    .eq('auth_user_id', auth.id)
     .maybeSingle();
 
   if (wiErr) return NextResponse.json({ error: wiErr.message }, { status: 500 });
   if (!wiRow) return NextResponse.json({ error: 'Worker identity non trovata.' }, { status: 404 });
 
+  // RLS worker_profile_worker_own_all (mig 007) isola via auth.uid() subquery.
   const { data: profRow } = await db.schema('personal').from('worker_profile_private')
     .select('display_name, preferred_lang, onboarding_done')
-    .eq('worker_id', auth.workerId)
     .maybeSingle();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,9 +69,12 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const db = getSupabaseServiceClient();
+  // DB ops via server client (RLS-respecting):
+  //   worker_profile_private: worker_profile_worker_own_all (mig 007)
+  //   worker_identity UPDATE: worker_identity_worker_own_update (mig 022)
+  const db = await getSupabaseServerClient();
 
-  // Upsert worker_profile_private
+  // Upsert worker_profile_private — difesa in profondità: worker_id nel payload
   const updates: Record<string, unknown> = {
     worker_id:  auth.workerId,
     updated_at: new Date().toISOString(),
@@ -83,20 +87,28 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // If onboarding completed, update worker_identity status → active
+  // If onboarding completed: update worker_identity + sync auth.admin metadata
   if (body.onboardingDone === true) {
     await db.schema('personal').from('worker_identity')
       .update({ status: 'active', updated_at: new Date().toISOString() })
       .eq('id', auth.workerId);
 
-    await db.auth.admin.updateUserById(auth.id, {
-      app_metadata: {
-        kora_role:      'WORKER',
-        kora_tenant_id: auth.tenantId,
-        kora_worker_id: auth.workerId,
-        kora_status:    'active',
-      },
+    // auth.admin.updateUserById richiede service-role per design Supabase.
+    // Isolato nell'helper — unico punto del codebase con service-client in /api/worker/*.
+    const authResult = await updateWorkerAuthMetadata(auth.id, {
+      kora_role:      'WORKER',
+      kora_tenant_id: auth.tenantId,
+      kora_worker_id: auth.workerId,
+      kora_status:    'active',
     });
+
+    if (!authResult.ok) {
+      return NextResponse.json({
+        ok:      true,
+        warning: 'auth_metadata_sync_failed',
+        detail:  authResult.error,
+      });
+    }
   }
 
   return NextResponse.json({ ok: true });

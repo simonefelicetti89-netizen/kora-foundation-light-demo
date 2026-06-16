@@ -19,7 +19,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 const ALL_PILLARS = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 type PillarCode = typeof ALL_PILLARS[number];
@@ -58,9 +58,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // workerId and tenantId from session only — never from query params or body
   const { workerId } = auth;
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
-  // Fetch all participation rows for this worker, joined with initiative pillar
+  // Fetch all participation rows for this worker, joined with initiative pillar.
+  // RLS worker_participation_worker_own_all (mig 008) isola via auth.uid() — nessun filtro worker_id esplicito necessario.
   const { data: rows, error } = await db
     .schema('personal')
     .from('worker_participation')
@@ -70,8 +71,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       worker_initiative:initiative_id (
         pillar
       )
-    `)
-    .eq('worker_id', workerId);
+    `);
 
   if (error) {
     return NextResponse.json(

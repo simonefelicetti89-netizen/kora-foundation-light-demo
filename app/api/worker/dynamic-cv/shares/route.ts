@@ -11,7 +11,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { buildShareUrl } from '@/lib/worker-cv/share-token';
 
 export type ShareLinkItem = {
@@ -37,14 +37,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { workerId } = auth;
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
-  // Select all fields EXCEPT token_hash — never returned
+  // Select all fields EXCEPT token_hash — never returned.
+  // RLS worker_cv_share_worker_own_all (mig 011) isola via kora_worker_id JWT claim — nessun filtro worker_id esplicito necessario.
   const { data, error } = await db
     .schema('personal')
     .from('worker_cv_share')
     .select('id, status, expires_at, created_at, revoked_at, last_accessed_at, access_count')
-    .eq('worker_id', workerId)
     .order('created_at', { ascending: false });
 
   if (error) {

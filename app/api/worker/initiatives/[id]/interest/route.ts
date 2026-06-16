@@ -16,7 +16,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import type { WorkerParticipationRow } from '@/lib/supabase/types';
 
 // attended is intentionally excluded — workers cannot self-declare attendance.
@@ -69,7 +69,8 @@ export async function POST(
     );
   }
 
-  const db = getSupabaseServiceClient();
+  // Difesa in profondità: tenant_id e status mantenuti come filtri espliciti anche con RLS (scrittura).
+  const db = await getSupabaseServerClient();
 
   // Verify initiative exists, belongs to worker's tenant, and is published
   const { data: initiative } = await db

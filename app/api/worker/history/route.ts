@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
 
 export type ParticipationHistoryItem = {
@@ -33,9 +33,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { workerId } = auth;
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
-  // Fetch participation rows for this worker, joined with initiative title/pillar
+  // Fetch participation rows for this worker, joined with initiative title/pillar.
+  // RLS worker_participation_worker_own_all (mig 008) isola via auth.uid() — nessun filtro worker_id esplicito necessario.
   const { data: rows, error } = await db
     .schema('personal')
     .from('worker_participation')
@@ -51,7 +52,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         status
       )
     `)
-    .eq('worker_id', workerId)
     .order('created_at', { ascending: false });
 
   if (error) {

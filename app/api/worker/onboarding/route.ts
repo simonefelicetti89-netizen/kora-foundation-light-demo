@@ -14,7 +14,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 export const CURRENT_PRIVACY_CONSENT_VERSION = 'B113-v1.0';
 
@@ -28,13 +28,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (isKoraAuthError(auth)) return auth;
 
   const { workerId } = auth;
-  const db = getSupabaseServiceClient();
+  // RLS worker_profile_worker_own_all (mig 007) isola via auth.uid() subquery.
+  const db = await getSupabaseServerClient();
 
   const { data: profRow, error } = await db
     .schema('personal')
     .from('worker_profile_private')
     .select('onboarding_status, onboarding_completed_at, privacy_consent_version, display_name, preferred_lang')
-    .eq('worker_id', workerId)
     .maybeSingle();
 
   if (error) {
@@ -98,9 +98,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     : 'it';
 
   const now = new Date().toISOString();
-  const db = getSupabaseServiceClient();
+  // RLS: worker_profile_worker_own_all (mig 007) per worker_profile_private.
+  //      worker_identity_worker_own_update (mig 022) per worker_identity UPDATE.
+  const db = await getSupabaseServerClient();
 
-  // Check if profile row exists
+  // Check if profile row exists — difesa in profondità: filtro esplicito su worker_id mantenuto per scrittura
   const { data: existing } = await db
     .schema('personal')
     .from('worker_profile_private')
