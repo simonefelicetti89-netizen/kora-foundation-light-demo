@@ -18,34 +18,9 @@ import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import dynamicImport from 'next/dynamic';
 import type { CommonsPostWorkerView, InitiativeOpeningGrade } from '@/lib/commons/types';
 import { OPENING_GRADE_LABELS, OPENING_GRADE_COLORS } from '@/lib/commons/types';
-
-// Leaflet non supporta SSR (usa window) — dynamic import obbligatorio.
-const InitiativesMap = dynamicImport(
-  () => import('@/components/commons/InitiativesMap').then((m) => m.InitiativesMap),
-  {
-    ssr:     false,
-    loading: () => (
-      <div
-        style={{
-          height:       360,
-          borderRadius: 12,
-          background:   'rgba(6,3,43,0.03)',
-          border:       '1px solid rgba(6,3,43,0.08)',
-          display:      'flex',
-          alignItems:   'center',
-          justifyContent: 'center',
-          fontSize:     12,
-          color:        'rgba(6,3,43,0.35)',
-        }}
-      >
-        Caricamento mappa…
-      </div>
-    ),
-  },
-);
+import { InitiativesMapClient } from '@/components/commons/InitiativesMapClient';
 
 export const metadata = { title: 'KORA Commons · Worker' };
 
@@ -161,7 +136,7 @@ export default async function WorkerCommonsPage() {
 
           {/* Mappa — dynamic Leaflet (no SSR) */}
           <div data-testid="worker-commons-map" style={{ marginBottom: 20 }}>
-            <InitiativesMap initiatives={initiatives} height={340} />
+            <InitiativesMapClient initiatives={initiatives} height={340} />
           </div>
 
           {/* Cards iniziative */}

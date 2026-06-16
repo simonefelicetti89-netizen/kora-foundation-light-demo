@@ -439,10 +439,19 @@ describe('B165 — geocoding server-only invariant', () => {
 // ── 13. Leaflet — pattern dynamic import ─────────────────────────────────────
 
 describe('B165 — Leaflet dynamic import (no SSR)', () => {
-  it('worker commons page carica InitiativesMap via dynamic() con ssr: false', () => {
+  it('InitiativesMapClient wrapper contiene dynamic() con ssr: false (Turbopack fix)', () => {
+    // ssr: false non può stare in Server Components (Turbopack error).
+    // Risiede in InitiativesMapClient.tsx (Client Component) — non in page.tsx.
+    const wrapper = read('components/commons/InitiativesMapClient.tsx');
+    expect(wrapper).toContain("ssr:     false");
+    expect(wrapper.trim().startsWith("'use client'")).toBe(true);
+  });
+
+  it('worker commons page usa InitiativesMapClient (wrapper) anziché dynamic diretto', () => {
     const src = read('app/worker/commons/page.tsx');
-    expect(src).toContain("ssr:     false");
-    expect(src).toContain('InitiativesMap');
+    expect(src).toContain('InitiativesMapClient');
+    expect(src).not.toContain("ssr:     false");
+    expect(src).not.toContain("import dynamicImport");
   });
 
   it('InitiativesMap ha use client', () => {
