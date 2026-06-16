@@ -22,9 +22,10 @@ import {
 } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
-const VALID_CATEGORIES = ['announcement', 'initiative_update', 'opportunity', 'event', 'request', 'resource'] as const;
-const VALID_PILLARS    = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY', null] as const;
-const VALID_STATUSES   = ['draft', 'pending_review', 'published', 'archived', 'rejected'] as const;
+const VALID_CATEGORIES    = ['announcement', 'initiative_update', 'opportunity', 'event', 'request', 'resource'] as const;
+const VALID_PILLARS       = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY', null] as const;
+const VALID_STATUSES      = ['draft', 'pending_review', 'published', 'archived', 'rejected'] as const;
+const VALID_OPENING_GRADES = ['company_internal', 'company_extended', 'cross_company'] as const;
 
 type Category = typeof VALID_CATEGORIES[number];
 type Pillar   = Exclude<typeof VALID_PILLARS[number], null>;
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     let query = db
       .schema('commons')
       .from('post')
-      .select('id, tenant_id, author_role, title, body, category, status, pillar, published_at, reviewed_at, created_at, updated_at')
+      .select('id, tenant_id, author_role, title, body, category, status, pillar, published_at, reviewed_at, created_at, updated_at, opening_grade, location_address, location_lat, location_lng, event_start_at, event_end_at, capacity_internal, capacity_cross, external_participants_count, external_participants_evidence, value_chain_supplier_count, contribution_impact_weight')
       .order('created_at', { ascending: false })
       .limit(200);
 
@@ -72,7 +73,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const { data, error } = await db
       .schema('commons')
       .from('post')
-      .select('id, tenant_id, author_role, title, body, category, status, pillar, published_at, reviewed_at, created_at, updated_at')
+      .select('id, tenant_id, author_role, title, body, category, status, pillar, published_at, reviewed_at, created_at, updated_at, opening_grade, location_address, location_lat, location_lng, event_start_at, event_end_at, capacity_internal, capacity_cross, external_participants_count, external_participants_evidence')
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(200);
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const { data, error } = await db
       .schema('commons')
       .from('post')
-      .select('id, tenant_id, author_role, title, body, category, status, pillar, published_at, created_at')
+      .select('id, tenant_id, author_role, title, body, category, status, pillar, published_at, created_at, opening_grade, location_address, location_lat, location_lng, event_start_at, event_end_at, capacity_internal, capacity_cross')
       .eq('tenant_id', tenantId)
       .eq('status', 'published')
       .order('published_at', { ascending: false })
@@ -114,10 +115,25 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: false, error: 'Corpo della richiesta non valido.' }, { status: 400 });
   }
 
-  const title    = sanitizeText(body.title);
-  const bodyText = sanitizeText(body.body);
-  const category = body.category as string;
-  const pillar   = (body.pillar ?? null) as string | null;
+  const title        = sanitizeText(body.title);
+  const bodyText     = sanitizeText(body.body);
+  const category     = body.category as string;
+  const pillar       = (body.pillar ?? null) as string | null;
+  // B165 — campi iniziativa (tutti opzionali)
+  const openingGrade = (body.opening_grade ?? null) as string | null;
+  const locationAddr = typeof body.location_address === 'string' ? body.location_address.trim().slice(0, 300) : null;
+  const eventStartAt = typeof body.event_start_at === 'string' ? body.event_start_at : null;
+  const eventEndAt   = typeof body.event_end_at   === 'string' ? body.event_end_at   : null;
+  const capInternal  = typeof body.capacity_internal === 'number' && body.capacity_internal > 0 ? Math.floor(body.capacity_internal) : null;
+  const capCross     = typeof body.capacity_cross    === 'number' && body.capacity_cross    > 0 ? Math.floor(body.capacity_cross)    : null;
+  const extCount     = typeof body.external_participants_count === 'number' ? Math.max(0, Math.floor(body.external_participants_count)) : 0;
+
+  if (openingGrade !== null && !VALID_OPENING_GRADES.includes(openingGrade as typeof VALID_OPENING_GRADES[number])) {
+    return NextResponse.json({ ok: false, error: `opening_grade non valido. Valori ammessi: ${VALID_OPENING_GRADES.join(', ')}.` }, { status: 400 });
+  }
+  if (openingGrade === 'cross_company' && capCross === null) {
+    return NextResponse.json({ ok: false, error: 'capacity_cross obbligatorio per opening_grade=cross_company.' }, { status: 400 });
+  }
 
   if (!title || title.length < 3 || title.length > 200) {
     return NextResponse.json({ ok: false, error: 'Titolo obbligatorio (3–200 caratteri).' }, { status: 400 });
@@ -148,6 +164,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data, error } = await db
       .schema('commons')
       .from('post')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .insert({
         tenant_id:      tenantId,
         author_user_id: adminAuth.id,
@@ -158,7 +175,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         status:         initialStatus,
         pillar:         pillar || null,
         published_at:   initialStatus === 'published' ? new Date().toISOString() : null,
-      })
+        // B165 (columns added by mig 024 — not in generated types until migration applied)
+        opening_grade:                openingGrade,
+        location_address:             locationAddr,
+        event_start_at:               eventStartAt,
+        event_end_at:                 eventEndAt,
+        capacity_internal:            capInternal,
+        capacity_cross:               capCross,
+        external_participants_count:  extCount,
+      } as any)
       .select('id, tenant_id, status, title, category, created_at')
       .single();
 
@@ -182,6 +207,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data, error } = await db
       .schema('commons')
       .from('post')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .insert({
         tenant_id:      tenantId,
         author_user_id: companyAuth.id,
@@ -191,7 +217,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         category,
         status:         initialStatus,
         pillar:         pillar || null,
-      })
+        // B165 (columns added by mig 024 — not in generated types until migration applied)
+        opening_grade:                openingGrade,
+        location_address:             locationAddr,
+        event_start_at:               eventStartAt,
+        event_end_at:                 eventEndAt,
+        capacity_internal:            capInternal,
+        capacity_cross:               capCross,
+        external_participants_count:  extCount,
+      } as any)
       .select('id, tenant_id, status, title, category, created_at')
       .single();
 

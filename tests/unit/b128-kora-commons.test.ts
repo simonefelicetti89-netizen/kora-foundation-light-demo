@@ -158,15 +158,15 @@ describe('B128 — POST /api/commons/posts: creation guards', () => {
 
 describe('B128 — PATCH /api/commons/posts/[id]: moderation boundaries', () => {
   it('KORA_ADMIN PATCH sets reviewed_by and reviewed_at on moderation action', () => {
-    expect(patchRoute).toContain('updates.reviewed_by = adminAuth.id');
-    expect(patchRoute).toContain('updates.reviewed_at');
+    expect(patchRoute).toContain("updates['reviewed_by'] = adminAuth.id");
+    expect(patchRoute).toContain("updates['reviewed_at']");
   });
 
   it('KORA_ADMIN PATCH sets published_at when status becomes published', () => {
     const publishBlock = patchRoute.slice(
       patchRoute.indexOf("newStatus === 'published'"),
     ).slice(0, 200);
-    expect(publishBlock).toContain('updates.published_at');
+    expect(publishBlock).toContain("updates['published_at']");
   });
 
   it('COMPANY_ADMIN cannot change status to published, archived, or rejected', () => {
@@ -219,7 +219,7 @@ describe('B128 — /worker/commons: WORKER view — read-only, privacy-safe', ()
 
   it('privacy notice states reading is not shown to employer as individual data', () => {
     expect(workerPage).toContain(
-      'La tua lettura non viene mostrata al datore di lavoro come dato individuale'
+      'La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale'
     );
   });
 });

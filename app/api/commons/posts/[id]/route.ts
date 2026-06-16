@@ -19,6 +19,10 @@ import {
   isKoraAuthError,
 } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { geocodeAddress } from '@/lib/commons/geocoding';
+
+const VALID_OPENING_GRADES = ['company_internal', 'company_extended', 'cross_company'] as const;
+type OpeningGrade = typeof VALID_OPENING_GRADES[number];
 
 const VALID_CATEGORIES = ['announcement', 'initiative_update', 'opportunity', 'event', 'request', 'resource'] as const;
 const VALID_PILLARS    = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
@@ -61,36 +65,76 @@ export async function PATCH(
       return NextResponse.json({ ok: false, error: 'Post non trovato.' }, { status: 404 });
     }
 
-    const updates: { status?: string; reviewed_by?: string | null; reviewed_at?: string | null; published_at?: string | null; title?: string; body?: string; category?: string; pillar?: string | null } = {};
+    const updates: Record<string, unknown> = {};
     const newStatus = body.status as string | undefined;
 
     if (newStatus && VALID_STATUSES.includes(newStatus as Status)) {
-      updates.status      = newStatus;
-      updates.reviewed_by = adminAuth.id;
-      updates.reviewed_at = new Date().toISOString();
+      updates['status']      = newStatus;
+      updates['reviewed_by'] = adminAuth.id;
+      updates['reviewed_at'] = new Date().toISOString();
       if (newStatus === 'published') {
-        updates.published_at = new Date().toISOString();
+        updates['published_at'] = new Date().toISOString();
       }
     }
-    if (body.title !== undefined)    { const t = sanitizeText(body.title);    if (t) updates.title = t; }
-    if (body.body  !== undefined)    { const b = sanitizeText(body.body);     if (b) updates.body  = b; }
+    if (body.title !== undefined)    { const t = sanitizeText(body.title);    if (t) updates['title'] = t; }
+    if (body.body  !== undefined)    { const b = sanitizeText(body.body);     if (b) updates['body']  = b; }
     if (body.category !== undefined && VALID_CATEGORIES.includes(body.category as Category)) {
-      updates.category = body.category as string;
+      updates['category'] = body.category as string;
     }
     if ('pillar' in body) {
-      updates.pillar = body.pillar && VALID_PILLARS.includes(body.pillar as Pillar) ? body.pillar as string : null;
+      updates['pillar'] = body.pillar && VALID_PILLARS.includes(body.pillar as Pillar) ? body.pillar as string : null;
+    }
+
+    // B165 — campi iniziativa
+    if ('opening_grade' in body) {
+      const og = body.opening_grade as string | null;
+      updates['opening_grade'] = og && VALID_OPENING_GRADES.includes(og as OpeningGrade) ? og : null;
+    }
+    if ('location_address' in body) {
+      updates['location_address'] = typeof body.location_address === 'string' ? body.location_address.trim().slice(0, 300) : null;
+    }
+    if ('event_start_at' in body)     updates['event_start_at']   = body.event_start_at   ?? null;
+    if ('event_end_at'   in body)     updates['event_end_at']     = body.event_end_at     ?? null;
+    if ('capacity_internal' in body)  updates['capacity_internal'] = typeof body.capacity_internal === 'number' ? Math.max(0, Math.floor(body.capacity_internal)) : null;
+    if ('capacity_cross'    in body)  updates['capacity_cross']    = typeof body.capacity_cross    === 'number' ? Math.max(0, Math.floor(body.capacity_cross))    : null;
+    if ('external_participants_count' in body) {
+      updates['external_participants_count'] = typeof body.external_participants_count === 'number' ? Math.max(0, Math.floor(body.external_participants_count)) : 0;
     }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ ok: false, error: 'Nessun campo valido da aggiornare.' }, { status: 400 });
     }
 
+    // B165 — Geocoding server-side al momento della pubblicazione.
+    // Se il post ha location_address e sta diventando published, geocodifica via Nominatim.
+    // Se il geocoding fallisce, il post NON viene pubblicato (resta in pending_review).
+    // Fair-use: chiamata sincrona su richiesta esplicita admin — non in batch.
+    if (updates['status'] === 'published') {
+      // Leggi l'address: quello aggiornato (se presente nel body) o quello esistente
+      const addressToGeocode = (updates['location_address'] as string | null | undefined)
+        ?? ((existing as any).location_address as string | null ?? null);
+
+      if (addressToGeocode) {
+        const geo = await geocodeAddress(addressToGeocode);
+        if (!geo.ok) {
+          // Geocoding fallito — non pubblicare. Lascia in pending_review con errore esplicito.
+          return NextResponse.json({
+            ok:    false,
+            error: `Pubblicazione bloccata: geocoding fallito per "${addressToGeocode}". ${geo.error} Correggi l'indirizzo e riprova.`,
+          }, { status: 422 });
+        }
+        updates['location_lat'] = geo.result.lat;
+        updates['location_lng'] = geo.result.lng;
+      }
+    }
+
     const { data, error } = await db
       .schema('commons')
       .from('post')
-      .update(updates)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .update(updates as any)
       .eq('id', postId)
-      .select('id, tenant_id, status, title, category, published_at, reviewed_at')
+      .select('id, tenant_id, status, title, category, published_at, reviewed_at, opening_grade, location_address, location_lat, location_lng')
       .single();
 
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
@@ -131,15 +175,33 @@ export async function PATCH(
       return NextResponse.json({ ok: false, error: 'COMPANY_ADMIN non può cambiare status a published, archived o rejected. La pubblicazione richiede approvazione KORA.' }, { status: 403 });
     }
 
-    const updates: { status?: string; title?: string; body?: string; category?: string; pillar?: string | null } = {};
-    if (newStatus && ['draft', 'pending_review'].includes(newStatus)) updates.status = newStatus;
-    if (body.title !== undefined)    { const t = sanitizeText(body.title);    if (t) updates.title = t; }
-    if (body.body  !== undefined)    { const b = sanitizeText(body.body);     if (b) updates.body  = b; }
+    const updates: Record<string, unknown> = {};
+    if (newStatus && ['draft', 'pending_review'].includes(newStatus)) updates['status'] = newStatus;
+    if (body.title !== undefined)    { const t = sanitizeText(body.title);    if (t) updates['title'] = t; }
+    if (body.body  !== undefined)    { const b = sanitizeText(body.body);     if (b) updates['body']  = b; }
     if (body.category !== undefined && VALID_CATEGORIES.includes(body.category as Category)) {
-      updates.category = body.category as string;
+      updates['category'] = body.category as string;
     }
     if ('pillar' in body) {
-      updates.pillar = body.pillar && VALID_PILLARS.includes(body.pillar as Pillar) ? body.pillar as string : null;
+      updates['pillar'] = body.pillar && VALID_PILLARS.includes(body.pillar as Pillar) ? body.pillar as string : null;
+    }
+    // B165 — campi iniziativa modificabili da COMPANY_ADMIN (solo in draft/pending_review)
+    if ('opening_grade' in body) {
+      const og = body.opening_grade as string | null;
+      updates['opening_grade'] = og && VALID_OPENING_GRADES.includes(og as OpeningGrade) ? og : null;
+    }
+    if ('location_address' in body) {
+      updates['location_address'] = typeof body.location_address === 'string' ? body.location_address.trim().slice(0, 300) : null;
+      // Reset geocoordinates quando l'indirizzo cambia (saranno ricalcolate al publish)
+      updates['location_lat'] = null;
+      updates['location_lng'] = null;
+    }
+    if ('event_start_at' in body)     updates['event_start_at']   = body.event_start_at   ?? null;
+    if ('event_end_at'   in body)     updates['event_end_at']     = body.event_end_at     ?? null;
+    if ('capacity_internal' in body)  updates['capacity_internal'] = typeof body.capacity_internal === 'number' ? Math.max(0, Math.floor(body.capacity_internal)) : null;
+    if ('capacity_cross'    in body)  updates['capacity_cross']    = typeof body.capacity_cross    === 'number' ? Math.max(0, Math.floor(body.capacity_cross))    : null;
+    if ('external_participants_count' in body) {
+      updates['external_participants_count'] = typeof body.external_participants_count === 'number' ? Math.max(0, Math.floor(body.external_participants_count)) : 0;
     }
 
     if (Object.keys(updates).length === 0) {
@@ -149,10 +211,11 @@ export async function PATCH(
     const { data, error } = await db
       .schema('commons')
       .from('post')
-      .update(updates)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .update(updates as any)
       .eq('id', postId)
       .eq('tenant_id', tenantId)
-      .select('id, tenant_id, status, title, category')
+      .select('id, tenant_id, status, title, category, opening_grade, location_address')
       .single();
 
     if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });

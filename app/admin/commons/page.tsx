@@ -30,10 +30,11 @@ export default async function AdminCommonsPage() {
   const db = getSupabaseServiceClient();
 
   // Fetch all posts from all tenants (sorted: pending_review first, then by date)
+  // B165: include nuovi campi iniziativa nella selezione per la moderazione
   const { data: posts } = await db
     .schema('commons')
     .from('post')
-    .select('id, tenant_id, author_role, title, body, category, status, pillar, published_at, reviewed_at, created_at, updated_at')
+    .select('id, tenant_id, author_role, title, body, category, status, pillar, published_at, reviewed_at, created_at, updated_at, opening_grade, location_address, location_lat, location_lng, event_start_at, event_end_at, capacity_internal, capacity_cross, external_participants_count, external_participants_evidence, value_chain_supplier_count')
     .order('created_at', { ascending: false })
     .limit(500);
 

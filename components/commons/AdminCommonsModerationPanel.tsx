@@ -38,7 +38,25 @@ interface Post {
   published_at: string | null;
   reviewed_at:  string | null;
   created_at:   string;
+  // B165 — campi iniziativa (nullable — retrocompatibili)
+  opening_grade?:                 string | null;
+  location_address?:              string | null;
+  location_lat?:                  number | null;
+  location_lng?:                  number | null;
+  event_start_at?:                string | null;
+  event_end_at?:                  string | null;
+  capacity_internal?:             number | null;
+  capacity_cross?:                number | null;
+  external_participants_count?:   number | null;
+  external_participants_evidence?: string | null;
+  value_chain_supplier_count?:    number | null;
 }
+
+const OPENING_GRADE_LABELS: Record<string, string> = {
+  company_internal: 'Solo azienda',
+  company_extended: 'Azienda + famiglie',
+  cross_company:    'Aperto',
+};
 
 interface Props {
   posts:     Post[];
@@ -190,10 +208,65 @@ export function AdminCommonsModerationPanel({ posts: initialPosts, tenantMap }: 
                       {post.pillar}
                     </span>
                   )}
+                  {/* B165 — badge grado di apertura */}
+                  {post.opening_grade && (
+                    <span
+                      data-testid={`admin-opening-grade-${post.opening_grade}`}
+                      style={{ fontSize: 10, fontWeight: 600, color: '#3B6EBA', padding: '2px 6px', borderRadius: 4, background: 'rgba(59,110,186,0.08)', border: '1px solid rgba(59,110,186,0.20)' }}
+                    >
+                      {OPENING_GRADE_LABELS[post.opening_grade] ?? post.opening_grade}
+                    </span>
+                  )}
                   <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', marginLeft: 'auto', fontFamily: 'monospace' }}>
                     {tenantLabel}
                   </span>
                 </div>
+
+                {/* B165 — dettagli iniziativa (solo se valorizzati) */}
+                {(post.opening_grade || post.location_address || post.event_start_at) && (
+                  <div
+                    data-testid="admin-initiative-details"
+                    style={{
+                      background:   'rgba(59,110,186,0.04)',
+                      border:       '1px solid rgba(59,110,186,0.12)',
+                      borderRadius: 8,
+                      padding:      '8px 12px',
+                      marginBottom: 8,
+                      display:      'flex',
+                      gap:          14,
+                      flexWrap:     'wrap',
+                      fontSize:     11,
+                      color:        'rgba(6,3,43,0.55)',
+                    }}
+                  >
+                    {post.location_address && (
+                      <span>📍 {post.location_address}
+                        {post.location_lat != null && post.location_lng != null && (
+                          <span style={{ color: '#2F7D55', marginLeft: 4 }}>✓ geocodificato</span>
+                        )}
+                        {post.location_lat == null && post.opening_grade && (
+                          <span style={{ color: '#C07D2A', marginLeft: 4 }}>⚠ non geocodificato</span>
+                        )}
+                      </span>
+                    )}
+                    {post.event_start_at && (
+                      <span>
+                        📅 {new Date(post.event_start_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                    )}
+                    {post.capacity_internal != null && (
+                      <span>Capienza: {post.capacity_internal} interni</span>
+                    )}
+                    {post.capacity_cross != null && (
+                      <span>+ {post.capacity_cross} cross-azienda</span>
+                    )}
+                    {(post.external_participants_count ?? 0) > 0 && (
+                      <span>
+                        {post.external_participants_count} ext. ({post.external_participants_evidence ?? 'self_declared'})
+                      </span>
+                    )}
+                  </div>
+                )}
 
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#06032B', margin: '0 0 6px', lineHeight: 1.3, fontFamily: FONT }}>
                   {post.title}
