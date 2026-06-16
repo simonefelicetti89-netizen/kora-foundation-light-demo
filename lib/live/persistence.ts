@@ -13,6 +13,7 @@
 
 import { getSupabaseServiceClient, type ServiceDb } from '@/lib/supabase/server';
 import type { KoraComputationResult, KoraIndexMacroblocks } from '@/lib/kora-engine/types';
+import { triggerOfficeAttribution } from '@/lib/live/office-attribution';
 import type { Json } from '@/lib/supabase/types';
 import type { KoraIndexComponent, MacroblockScore, MacroblockCode } from '@/lib/types';
 import {
@@ -311,6 +312,16 @@ export async function persistKoraComputationResult(params: {
         .update({ cost_per_impact_unit: cpiu })
         .eq('id', btiResultId);
     }
+
+    // ── 6. Attribuzione d'ufficio — B164 ──────────────────────────────────────
+    // Per ogni uef_record appena persistito, cerca gli attendees nominativi
+    // (personal.uploaded_record_attendee) e attribuisce il PIB d'ufficio.
+    // Fire-and-forget: errori loggati internamente, non propagati.
+    // Idempotente: ON CONFLICT DO NOTHING su U1 (worker_identity_id, source_uef_record_id, pillar).
+    const uefRecordIds = result.iuResults.map((r) => r.record_id);
+    triggerOfficeAttribution({ db, tenantId, uefRecordIds, reportingPeriod }).catch((err) => {
+      console.error('[B164 office-attribution] errore imprevisto nel trigger:', err);
+    });
   }
 
   return { activationResultId, confidenceResultId, btiResultId, koraIndexResultId, iuCount, segmentSuppression };

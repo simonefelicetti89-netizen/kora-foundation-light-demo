@@ -113,6 +113,35 @@ export const SUBMISSION_TEMPLATES: ReadonlyArray<SubmissionTemplate> = [
       'KORA Admin userà le evidenze per aumentare il fattore EV (Evidence Verification) nella formula IU ' +
       'e migliorare il Confidence Score (CS) del KORA Index.',
   },
+  // B164 — Template companion nominativo per iniziative con lista presenze.
+  // File opzionale: caricarlo non è obbligatorio. Il CSV principale (iniziative,
+  // formazione, volontariato) funziona esattamente come prima anche senza questo file.
+  // Se fornito, KORA lo usa esclusivamente per attribuire il PIB individuale d'ufficio.
+  // I nomi vengono pseudonimizzati prima di qualsiasi persistenza — non vengono mai
+  // salvati in chiaro nel sistema.
+  {
+    id:             'attendees',
+    title:          'Lista presenze nominativa',
+    description:    'File companion opzionale con nomi dei partecipanti per attribuzione PIB individuale',
+    fileName:       'attendees.csv',
+    submissionType: 'attendees',
+    recommendedFor: 'Iniziative formative o di sviluppo dove l\'azienda ha l\'attestato nominativo',
+    pillarHint:     'GROWTH · LIFE · CONNECTION',
+    allowedDataNote:
+      'Includi: iniziativa_id (UUID dal sistema KORA), nome, cognome, matricola o email per il matching. ' +
+      'Solo per iniziative dove hai la lista presenze aziendale verificata.',
+    forbiddenFieldsNotice:
+      'I dati nominativi dei partecipanti sono facoltativi e ammessi solo per iniziative formative o di sviluppo ' +
+      'dove l\'azienda ha la lista presenze. Se forniti, KORA li usa esclusivamente per costruire il bilancio ' +
+      'd\'impatto individuale del lavoratore (PIB), che resta privato del lavoratore e mai visibile al datore ' +
+      'di lavoro a livello individuale. Non includere mai: dati sanitari, opinioni politiche o religiose, ' +
+      'dati di donazioni individuali, dati biometrici, o qualsiasi categoria particolare ex art. 9 GDPR.',
+    whatKoraDoesNext:
+      'KORA pseudonimizza immediatamente i nomi prima di qualsiasi persistenza. ' +
+      'I nomi grezzi non vengono mai salvati nel sistema. ' +
+      'Le presenze verificate abilitano l\'attribuzione d\'ufficio delle Impact Units (company_sourced, L3). ' +
+      'I worker non ancora attivi su KORA vengono conservati in stato pending per riconciliazione futura.',
+  },
 ];
 
 // Lookup by submissionType (may match multiple)

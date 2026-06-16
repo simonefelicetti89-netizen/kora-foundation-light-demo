@@ -109,6 +109,21 @@ function scoreMatch(header: string, aliases: string[]): { confidence: number; al
   return null;
 }
 
+// B164 — Rileva se l'array di header appartiene a un file attendees nominativo.
+// Un file attendees ha (iniziativa_id + nome + cognome) — struttura completamente
+// diversa dal CSV iniziative. Deve essere rilevato PRIMA di detectColumnMappings
+// per evitare false mappings sul FIELD_ALIASES standard.
+export function isAttendeesFileByHeaders(headers: string[]): boolean {
+  const normalized = new Set(headers.map((h) => h.toLowerCase().trim()));
+  const NOME_ALIASES    = ['nome', 'first_name', 'firstname', 'name'];
+  const COGNOME_ALIASES = ['cognome', 'last_name', 'lastname', 'surname'];
+  const ID_ALIASES      = ['iniziativa_id', 'uef_record_id', 'initiative_id', 'id_iniziativa'];
+  const hasId      = ID_ALIASES.some((a)      => normalized.has(a));
+  const hasNome    = NOME_ALIASES.some((a)    => normalized.has(a));
+  const hasCognome = COGNOME_ALIASES.some((a) => normalized.has(a));
+  return hasId && hasNome && hasCognome;
+}
+
 // Each target field is mapped at most once (first-wins per field across headers).
 // Headers that produce no match with confidence ≥ 0.50 are silently skipped.
 export function detectColumnMappings(headers: string[]): ColumnMapping[] {

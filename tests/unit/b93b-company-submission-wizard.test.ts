@@ -101,11 +101,11 @@ describe('template files — public/templates/', () => {
 // ── TEMPLATE CONFIG ───────────────────────────────────────────────────────────
 
 describe('SUBMISSION_TEMPLATES config', () => {
-  it('has exactly 6 templates', () => {
-    expect(SUBMISSION_TEMPLATES).toHaveLength(6);
+  it('has exactly 7 templates (B164: + attendees)', () => {
+    expect(SUBMISSION_TEMPLATES).toHaveLength(7);
   });
 
-  const EXPECTED_IDS = ['iniziative', 'formazione', 'volontariato', 'mentoring', 'budget', 'evidenze'];
+  const EXPECTED_IDS = ['iniziative', 'formazione', 'volontariato', 'mentoring', 'budget', 'evidenze', 'attendees'];
 
   it('has all expected template IDs', () => {
     const ids = SUBMISSION_TEMPLATES.map((t) => t.id);
