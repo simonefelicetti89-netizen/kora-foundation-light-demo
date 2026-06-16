@@ -1,8 +1,10 @@
 // services/worker-space/WorkerSpaceCapabilityService.ts
 // B81-B: Determines what the worker space can do for a given tenant.
+// B162: Pilot+ branch implemented — production_ready=true → PILOT_READY capability.
 //
 // KORA Foundation Light: rule-based, no DB query, no Gate 2 dependency.
-// Pilot+: can be backed by a Supabase query on tenant.worker_space_status.
+// Pilot+: production_ready=true (set via /api/admin/tenants/[id]/promote-to-pilot).
+//         Per-worker UEF records and mig 016-019 must be applied before promotion.
 //
 // Design: service is the single source of truth for "is the worker layer
 // active for this tenant, and in what capacity?" Company portal, admin screens,
@@ -12,23 +14,17 @@ import type { WorkerSpaceCapability, WorkerSpaceStatus } from '@/lib/worker-iden
 import type { KoraTenant } from '@/lib/types';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 
-// Foundation Light: capabilities are derived from roster state, not a DB flag.
-// KoraTenant.production_ready is always false — no tenant is Pilot-ready yet.
-
 class WorkerSpaceCapabilityService {
 
   // getCapability: determine worker space capability for a given tenant.
   // Accepts a KoraTenant object (already loaded by the caller).
   getCapability(tenant: KoraTenant): WorkerSpaceCapability {
-    // Foundation Light: production_ready is always false.
-    // No tenant can be PILOT_READY until Gate 2 + Gate 3 close.
     if (!tenant.production_ready) {
+      // Foundation Light path — unchanged behaviour for all existing tenants.
       return this._previewCapability(tenant);
     }
-
-    // Pilot+ path: evaluate actual worker space enablement.
-    // This branch is unreachable in Foundation Light (production_ready is typed as false).
-    return this._previewCapability(tenant);
+    // Pilot+ path: tenant was explicitly promoted via /api/admin/tenants/[id]/promote-to-pilot.
+    return this._pilotCapability(tenant);
   }
 
   // getCapabilityById: convenience wrapper — resolves KoraTenant from companyId.
@@ -61,6 +57,28 @@ class WorkerSpaceCapabilityService {
   }
 
   // ── Private builders ──────────────────────────────────────────────────────
+
+  private _pilotCapability(tenant: KoraTenant): WorkerSpaceCapability {
+    const roster        = workerProvisioningService.getWorkersForCompany(tenant.company_id);
+    const myKoraEnabled = roster.filter((w) => w.my_kora_enabled).length;
+    const total         = roster.length;
+    const pibSupported  = myKoraEnabled > 0;
+
+    return {
+      status:               'PILOT_READY',
+      enabled:              true,
+      mode:                 'pilot_ready',
+      workerCountSupported: true,
+      dynamicCvSupported:   true,
+      pibSupported,
+      collectiveSupported:  true,
+      note:
+        `Pilot+ attivo — ${myKoraEnabled}/${total} lavoratori con My KORA abilitata. ` +
+        (pibSupported
+          ? 'PIB individuale disponibile.'
+          : 'PIB individuale non disponibile: nessun lavoratore con My KORA abilitata nel roster.'),
+    };
+  }
 
   private _previewCapability(tenant: KoraTenant): WorkerSpaceCapability {
     const roster = workerProvisioningService.getWorkersForCompany(tenant.company_id);

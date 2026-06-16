@@ -1606,7 +1606,9 @@ export interface KoraTenant {
   updated_at: string;
   archived_at?: string;
   deleted_demo_at?: string;
-  production_ready: false;
+  production_ready:    boolean;
+  production_ready_at?: string | null;
+  production_ready_by?: string | null;
   synthetic_demo_data: true;
 }
 
