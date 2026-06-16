@@ -1,8 +1,15 @@
 // app/company/contribution/page.tsx
-// B166: KORA Contribution — pagina company.
-// Tenant production_ready: dato REALE da commons.contribution_event via getContributionLive().
-// Tenant Foundation Light: shell sintetica (zero dato reale, disclaimer metodologico).
-// KORA Contribution è companion indicator — NON componente KORA Index (CLAUDE.md §12.7).
+// B167: KORA Contribution — dashboard reale per tenant Pilot+, shell per Foundation Light.
+//
+// Feature gate via getContributionPromoterView / getContributionOriginEmployerView (B163 pattern).
+// Se production_ready=false → shell esistente (zero regressione).
+// Se production_ready=true  → dashboard con DUE sezioni parallele (promoter + origin_employer).
+//
+// DOTTRINA:
+//   - NESSUN punteggio aggregato unico (fuori dottrina).
+//   - Le due sezioni hanno peso visivo equivalente — nessuna gerarchia.
+//   - "Non è componente del KORA Index" dichiarato testualmente (CLAUDE.md §12.7).
+//   - Anonimato: sezione origin_employer mostra solo aggregati, mai legame worker↔iniziativa.
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,148 +18,303 @@ import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getContributionLive } from '@/services/kora-contribution/KoraContributionService';
+import {
+  getContributionPromoterView,
+  getContributionOriginEmployerView,
+} from '@/services/kora-contribution/KoraContributionService';
 import { getMethodologyVersion } from '@/lib/methodology-config/v0.1';
-import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
+import type { ContributionPillarBreakdown } from '@/lib/commons/contribution-views';
 
 export const metadata = { title: 'KORA Contribution™ · Company' };
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
+const PILLAR_LABELS: Record<string, string> = {
+  LIFE:       'Benessere',
+  GROWTH:     'Crescita',
+  CONNECTION: 'Connessione',
+  IMPACT:     'Impatto',
+  LEGACY:     'Eredità',
+};
+
+// ── Componente grafico pillar (barre orizzontali, no librerie esterne) ────────
+function PillarBar({ breakdown }: { breakdown: ContributionPillarBreakdown[] }) {
+  if (breakdown.length === 0) {
+    return (
+      <p style={{ fontSize: 11, color: TOKENS.inkHint, fontFamily: FONT, margin: 0 }}>
+        Nessun dato pillar disponibile.
+      </p>
+    );
+  }
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      {breakdown.map((row) => {
+        const color = PILLAR_COLORS[row.pillar as keyof typeof PILLAR_COLORS] ?? TOKENS.accent;
+        const label = PILLAR_LABELS[row.pillar] ?? row.pillar;
+        return (
+          <div key={row.pillar} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 10, color: TOKENS.inkSecondary, fontFamily: FONT, width: 72, flexShrink: 0 }}>
+              {label}
+            </span>
+            <div style={{ flex: 1, background: TOKENS.taupe, borderRadius: 4, height: 6, overflow: 'hidden' }}>
+              <div style={{ width: `${Math.min(row.share_pct, 100)}%`, background: color, height: '100%', borderRadius: 4 }} />
+            </div>
+            <span style={{ fontSize: 10, color: TOKENS.inkTertiary, fontFamily: 'monospace', width: 36, textAlign: 'right' }}>
+              {row.share_pct.toFixed(0)}%
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Card metrica singola ──────────────────────────────────────────────────────
+function MetricCard({ value, label, color }: { value: number | string; label: string; color?: string }) {
+  return (
+    <div style={{
+      background:   TOKENS.surface,
+      border:       `1px solid ${TOKENS.inkBorder}`,
+      borderRadius: 12,
+      padding:      '16px 14px',
+      textAlign:    'center',
+      flex:         1,
+      minWidth:     100,
+    }}>
+      <p style={{ fontSize: 28, fontWeight: 800, color: color ?? TOKENS.ink, margin: '0 0 4px', lineHeight: 1, fontFamily: FONT }}>
+        {value}
+      </p>
+      <p style={{ fontSize: 10, color: TOKENS.inkHint, margin: 0, lineHeight: 1.4, fontFamily: FONT }}>
+        {label}
+      </p>
+    </div>
+  );
+}
+
+// ── Riquadro narrativa ────────────────────────────────────────────────────────
+function NarrativeBlock({ sentences }: { sentences: string[] }) {
+  return (
+    <div style={{ padding: '12px 16px', background: TOKENS.canvas, borderRadius: 10, border: `1px solid ${TOKENS.inkBorder}` }}>
+      {sentences.map((s, i) => (
+        <p key={i} style={{ fontSize: 12, color: TOKENS.inkSecondary, margin: i === 0 ? 0 : '6px 0 0', lineHeight: 1.65, fontFamily: FONT }}>
+          {s}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+// ── Sezione parallela (promoter o origin_employer) ────────────────────────────
+function ContributionSection({
+  title,
+  subtitle,
+  accentColor,
+  metrics,
+  narrative,
+  pillarBreakdown,
+  testId,
+}: {
+  title:          string;
+  subtitle:       string;
+  accentColor:    string;
+  metrics:        { value: number | string; label: string; color?: string }[];
+  narrative:      string[];
+  pillarBreakdown: ContributionPillarBreakdown[];
+  testId:         string;
+}) {
+  return (
+    <section
+      data-testid={testId}
+      style={{
+        background:   TOKENS.surface,
+        border:       `1.5px solid ${TOKENS.inkBorderStrong}`,
+        borderRadius: 16,
+        padding:      '24px 22px',
+        flex:         1,
+      }}
+    >
+      {/* Intestazione sezione */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <div style={{ width: 3, height: 18, background: accentColor, borderRadius: 2 }} />
+          <h2 style={{ fontSize: '0.95rem', fontWeight: 700, color: TOKENS.ink, margin: 0, fontFamily: FONT }}>
+            {title}
+          </h2>
+        </div>
+        <p style={{ fontSize: 11, color: TOKENS.inkHint, margin: '0 0 0 11px', fontFamily: FONT, lineHeight: 1.5 }}>
+          {subtitle}
+        </p>
+      </div>
+
+      {/* Metriche */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+        {metrics.map((m) => (
+          <MetricCard key={m.label} value={m.value} label={m.label} color={m.color} />
+        ))}
+      </div>
+
+      {/* Narrativa */}
+      <div style={{ marginBottom: 16 }}>
+        <NarrativeBlock sentences={narrative} />
+      </div>
+
+      {/* Pillar breakdown */}
+      <div>
+        <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontFamily: FONT }}>
+          Distribuzione per pillar
+        </p>
+        <PillarBar breakdown={pillarBreakdown} />
+      </div>
+    </section>
+  );
+}
+
+// ── Pagina principale ─────────────────────────────────────────────────────────
+
 export default async function KoraContributionPage() {
   const auth = await requireCompanyUser();
   if (isKoraAuthError(auth)) redirect('/company/login');
 
-  const db      = await getSupabaseServerClient();
-  const summary = await getContributionLive({ db, tenantId: auth.tenantId });
+  const db = await getSupabaseServerClient();
+
+  // Carica entrambe le view in parallelo (stesso feature gate internamente)
+  const [promoterView, originView] = await Promise.all([
+    getContributionPromoterView({ db, tenantId: auth.tenantId }),
+    getContributionOriginEmployerView({ db, tenantId: auth.tenantId }),
+  ]);
+
+  const isPilot = promoterView !== null;
 
   return (
     <div
       data-testid="company-contribution-page"
-      style={{ maxWidth: 760, margin: '0 auto', padding: '40px 24px 80px', fontFamily: FONT }}
+      style={{ maxWidth: 860, margin: '0 auto', padding: '40px 24px 80px', fontFamily: FONT }}
     >
-      {/* Header */}
-      <div style={{ marginBottom: 28 }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 6px' }}>
+      {/* ── Header ───────────────────────────────────────────────────────── */}
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.inkMeta, margin: '0 0 6px' }}>
           Indicatore Companion · Non componente KORA Index
         </p>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 6px', fontFamily: FONT }}>
           KORA Contribution™
         </h1>
-        <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 13, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.6 }}>
           Misura il contributo collettivo e territoriale della tua organizzazione — oltre il perimetro aziendale.
         </p>
       </div>
 
-      {/* Disclaimer metodologico — non sopprimibile */}
+      {/* ── Disclaimer metodologico (non sopprimibile) ──────────────────── */}
       <div
         data-testid="contribution-methodology-notice"
         style={{
-          background:   'rgba(6,3,43,0.04)',
-          border:       '1px solid rgba(6,3,43,0.10)',
-          borderRadius: 12,
-          padding:      '12px 16px',
+          background:   TOKENS.taupe,
+          border:       `1px solid ${TOKENS.inkBorderStrong}`,
+          borderRadius: 10,
+          padding:      '10px 14px',
           marginBottom: 28,
           fontSize:     11,
-          color:        'rgba(6,3,43,0.55)',
+          color:        TOKENS.inkSecondary,
           lineHeight:   1.6,
         }}
       >
         <strong>Nota metodologica.</strong> KORA Contribution™ è un indicatore companion — non è una componente del KORA Index™ e non influenza il punteggio organizzativo.
-        Misura l&apos;impatto collettivo e territoriale. Calibrazione: pre-empirica v0.1.
-        Versione metodologia: {getMethodologyVersion()}.
+        Calibrazione: pre-empirica v0.1. Versione metodologia: {getMethodologyVersion()}.
       </div>
 
-      {summary ? (
-        /* ── Dato REALE (tenant Pilot+) ──────────────────────────────────── */
+      {isPilot ? (
+        /* ── DASHBOARD (tenant Pilot+) ───────────────────────────────────── */
         <div data-testid="contribution-live-data">
+
+          {/* Badge periodo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 4, background: 'rgba(47,125,85,0.10)', color: '#2F7D55', letterSpacing: '0.04em' }}>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 4, background: 'rgba(47,125,85,0.10)', color: TOKENS.success, letterSpacing: '0.04em' }}>
               DATI REALI
             </span>
-            <span style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)' }}>
-              {summary.reporting_period} · {summary.data_source}
+            <span style={{ fontSize: 10, color: TOKENS.inkHint }}>
+              {promoterView!.reporting_period} · {promoterView!.data_source}
             </span>
           </div>
 
-          {/* Metriche principali */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
-            {[
-              { label: 'Partecipazioni cross-azienda', value: summary.cross_company_participations, color: '#3B6EBA' },
-              { label: 'Promotore di iniziative',      value: summary.promoter_events,              color: '#2F7D55' },
-              { label: 'Azienda di provenienza',       value: summary.origin_employer_events,       color: '#7C3D8F' },
-            ].map(({ label, value, color }) => (
-              <div key={label} style={{ background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)', borderRadius: 12, padding: '16px 14px', textAlign: 'center' }}>
-                <p style={{ fontSize: 24, fontWeight: 800, color, margin: '0 0 4px', lineHeight: 1 }}>{value}</p>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.45)', margin: 0, lineHeight: 1.4 }}>{label}</p>
-              </div>
-            ))}
+          {/* ── Le due sezioni parallele ────────────────────────────────── */}
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+
+            {/* Sezione A — Promoter */}
+            <ContributionSection
+              testId="contribution-section-promoter"
+              title="Le tue iniziative aperte all'ecosistema"
+              subtitle="Iniziative cross-azienda che hai promosso e partecipazioni ricevute"
+              accentColor={TOKENS.accent}
+              metrics={[
+                { value: promoterView!.distinct_initiatives,    label: 'iniziative promosse',       color: TOKENS.accent   },
+                { value: promoterView!.participations_received, label: 'partecipazioni ricevute',   color: '#3B6EBA'       },
+                { value: promoterView!.external_outreach_events, label: 'eventi con esterni',       color: TOKENS.inkHint  },
+              ]}
+              narrative={promoterView!.narrative}
+              pillarBreakdown={promoterView!.pillar_breakdown}
+            />
+
+            {/* Sezione B — Origin employer */}
+            <ContributionSection
+              testId="contribution-section-origin"
+              title="I tuoi lavoratori nell'ecosistema"
+              subtitle="Partecipazioni dei tuoi lavoratori a iniziative di altre organizzazioni"
+              accentColor="#3B6EBA"
+              metrics={[
+                { value: originView!.participations_sent,    label: 'partecipazioni effettuate', color: '#3B6EBA'     },
+                { value: originView!.distinct_initiatives,   label: 'iniziative raggiunte',      color: TOKENS.accent },
+                { value: originView!.distinct_promoters,     label: 'organizzazioni coinvolte',  color: TOKENS.inkHint },
+              ]}
+              narrative={originView!.narrative}
+              pillarBreakdown={originView!.pillar_breakdown}
+            />
           </div>
 
-          {/* Peso impatto */}
-          <div style={{ background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)', borderRadius: 14, padding: '20px 24px', marginBottom: 20 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: '#06032B', margin: '0 0 14px' }}>Peso impatto Contribution</p>
-            <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-              <div>
-                <p style={{ fontSize: 20, fontWeight: 800, color: '#06032B', margin: '0 0 2px' }}>{summary.total_impact_weight.toFixed(2)}</p>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>Totale</p>
-              </div>
-              <div>
-                <p style={{ fontSize: 20, fontWeight: 800, color: '#2F7D55', margin: '0 0 2px' }}>{summary.verified_weight.toFixed(2)}</p>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>Verified</p>
-              </div>
-              <div>
-                <p style={{ fontSize: 20, fontWeight: 800, color: '#C07D2A', margin: '0 0 2px' }}>{summary.self_declared_weight.toFixed(2)}</p>
-                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>Self-declared</p>
-              </div>
-            </div>
+          {/* ── Footer metodologico ─────────────────────────────────────── */}
+          <div style={{ marginTop: 24, padding: '12px 16px', background: TOKENS.canvas, borderRadius: 10, border: `1px solid ${TOKENS.inkBorder}` }}>
+            <p style={{ fontSize: 10, color: TOKENS.inkMeta, margin: 0, lineHeight: 1.65, fontFamily: FONT }}>
+              <strong>Qualità dell&apos;evidenza.</strong> I dati <em>verified</em> derivano da prenotazioni confermate (attended).
+              I dati <em>self-declared</em> provengono da dichiarazioni del promotore (peso ridotto per formula). Entrambi contribuiscono all&apos;indicatore Contribution con peso proporzionale all&apos;evidenza.
+              KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
+              Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
+            </p>
           </div>
 
-          {/* Partecipanti esterni */}
-          {summary.external_participant_events > 0 && (
-            <div style={{ background: 'rgba(192,125,42,0.05)', border: '1px solid rgba(192,125,42,0.20)', borderRadius: 12, padding: '14px 18px', marginBottom: 20 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#8A5A00', margin: '0 0 4px' }}>
-                Partecipanti esterni (familiari / comunità)
-              </p>
-              <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: 0 }}>
-                {summary.external_participant_events} evento/i con partecipanti esterni dichiarati · peso {summary.weight_external_participants.toFixed(2)}
-              </p>
-            </div>
-          )}
-
-          {/* CSR Disclaimer */}
-          <div style={{ background: 'rgba(6,3,43,0.03)', borderRadius: 10, padding: '12px 16px', fontSize: 10, color: 'rgba(6,3,43,0.40)', lineHeight: 1.6 }}>
-            KORA supporta la rendicontazione CSR/ESG fornendo evidenze people strutturate, verificate e spiegabili.
-            Non garantisce conformità normativa e non sostituisce consulenza ESG, legale, fiscale, assurance o reporting obbligatorio.
-          </div>
         </div>
       ) : (
-        /* ── Shell sintetica (tenant Foundation Light) ───────────────────── */
+        /* ── SHELL (tenant Foundation Light) ─────────────────────────── */
         <div data-testid="contribution-shell">
           <div
-            className="rounded-[16px] px-5 py-4"
-            style={{ background: TOKENS.taupe, border: `1px solid ${TOKENS.inkBorderStrong}`, marginBottom: 20 }}
+            style={{
+              background:   TOKENS.taupe,
+              border:       `1px solid ${TOKENS.inkBorderStrong}`,
+              borderRadius: 16,
+              padding:      '20px 22px',
+              marginBottom: 20,
+            }}
           >
-            <p style={{ fontSize: '11px', fontWeight: 700, color: TOKENS.ink, marginBottom: 8 }}>Note metodologiche</p>
-            <ul className="space-y-1.5 pl-3" style={{ fontSize: '11px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
-              <li className="list-disc">KORA Contribution™ è un indicatore companion — non è una componente del KORA Index™.</li>
-              <li className="list-disc">Misura il contributo collettivo e territoriale oltre il perimetro aziendale.</li>
-              <li className="list-disc">Richiede iniziative collettive verificate, partecipazioni cross-azienda e dati aggregati sufficienti.</li>
-              <li className="list-disc">Disponibile per tenant Pilot+ (production_ready = true). Contatta KORA per l&apos;attivazione.</li>
+            <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, marginBottom: 8, fontFamily: FONT }}>
+              Note metodologiche
+            </p>
+            <ul style={{ fontSize: 11, color: TOKENS.inkSecondary, lineHeight: 1.55, margin: 0, paddingLeft: 18 }}>
+              <li style={{ marginBottom: 5 }}>KORA Contribution™ è un indicatore companion — non è una componente del KORA Index™.</li>
+              <li style={{ marginBottom: 5 }}>Misura il contributo collettivo e territoriale oltre il perimetro aziendale.</li>
+              <li style={{ marginBottom: 5 }}>Richiede iniziative collettive verificate, partecipazioni cross-azienda e dati aggregati sufficienti.</li>
+              <li>Disponibile per tenant Pilot+ (production_ready = true). Contatta KORA per l&apos;attivazione.</li>
             </ul>
           </div>
 
-          <div className="flex gap-3 flex-wrap">
-            <Link href="/company/status" style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.accent }}>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            <Link href="/company/status" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent }}>
               Consulta Status Center →
             </Link>
-            <Link href="/company/workspace" style={{ fontSize: '12px', fontWeight: 600, color: TOKENS.inkSecondary }}>
+            <Link href="/company/workspace" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary }}>
               ← Workspace
             </Link>
           </div>
 
-          <p style={{ fontSize: '10px', fontFamily: 'monospace', color: TOKENS.inkHint, marginTop: 16 }}>
-            modulo non attivo per questo tenant · dati live disponibili per tenant Pilot+
+          <p style={{ fontSize: 10, fontFamily: 'monospace', color: TOKENS.inkHint, marginTop: 16 }}>
+            modulo non ancora disponibile per questo tenant · dati live disponibili per tenant Pilot+
           </p>
         </div>
       )}

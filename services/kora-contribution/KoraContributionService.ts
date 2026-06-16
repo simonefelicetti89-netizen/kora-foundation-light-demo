@@ -491,15 +491,16 @@ export class KoraContributionService implements IKoraContributionService {
 
 export const koraContributionService = new KoraContributionService();
 
-// ── B166: getContributionLive — lettura da DB per tenant production_ready ─────
+// ── B166/B167: funzioni live da DB per tenant production_ready ────────────────
 //
-// Distinto dal path sintetico (seed JSON). Legge da commons.contribution_event.
-// Feature gate: production_ready check su analytics.tenant.
-// Tenant Foundation Light (production_ready=false) → restituisce null.
-// Chiamato da /api/company/contribution/live — usa getSupabaseServerClient (B163).
+// Tutte le funzioni sono gated su analytics.tenant.production_ready.
+// Tenant Foundation Light → restituisce null (il chiamante mostra la shell).
+// Pattern B163: usano getSupabaseServerClient, mai service-client.
 // KORA Contribution è companion indicator — NON componente KORA Index (CLAUDE.md §12.7).
 
 import type { LiveContributionSummary } from '@/lib/commons/booking-types';
+import type { ContributionPromoterView, ContributionOriginEmployerView } from '@/lib/commons/contribution-views';
+import { buildPromoterNarrative, buildOriginEmployerNarrative } from '@/lib/commons/contribution-narrative';
 
 export async function getContributionLive(params: {
   db:             any;   // Supabase server client con JWT tenant
@@ -573,4 +574,235 @@ export async function getContributionLive(params: {
     methodology_version_id:       getMethodologyVersion(),
     calibration_status:           'pre_empirical_calibration',
   };
+}
+
+// ── B167: getContributionPromoterView ─────────────────────────────────────────
+// Sezione "Le tue iniziative aperte all'ecosistema" — role='promoter'.
+// Aggrega contribution_event del tenant in role=promoter.
+// Join a commons.post per il pillar (necessario per pillar_breakdown).
+// Anonimato: nessun legame worker↔iniziativa — solo aggregati per pillar/tipo.
+
+export async function getContributionPromoterView(params: {
+  db:       any;
+  tenantId: string;
+  period?:  string;
+}): Promise<ContributionPromoterView | null> {
+  const { db, tenantId, period } = params;
+
+  // Feature gate (riusa stesso check di getContributionLive)
+  const { data: tenant } = await (db as any)
+    .schema('analytics')
+    .from('tenant')
+    .select('id, production_ready')
+    .eq('id', tenantId)
+    .maybeSingle();
+
+  if (!tenant || !(tenant as any).production_ready) return null;
+
+  // Legge contribution_event per role=promoter di questo tenant
+  let evQuery = (db as any)
+    .schema('commons')
+    .from('contribution_event')
+    .select('source_post_id, contribution_kind, impact_weight, evidence_status, reporting_period')
+    .eq('tenant_id', tenantId)
+    .eq('role', 'promoter');
+
+  if (period) evQuery = evQuery.eq('reporting_period', period);
+
+  const { data: events, error: evErr } = await evQuery.limit(500);
+  if (evErr) {
+    console.error('[getContributionPromoterView] events fetch error:', evErr.message);
+    return null;
+  }
+
+  const rows = (events as Array<{
+    source_post_id: string;
+    contribution_kind: string;
+    impact_weight: number;
+    evidence_status: string;
+    reporting_period: string;
+  }> | null) ?? [];
+
+  if (rows.length === 0) {
+    const empty: ContributionPromoterView = {
+      tenant_id:               tenantId,
+      reporting_period:        period ?? '',
+      distinct_initiatives:    0,
+      participations_received: 0,
+      external_outreach_events: 0,
+      verified_weight:         0,
+      self_declared_weight:    0,
+      pillar_breakdown:        [],
+      narrative:               buildPromoterNarrative({ distinct_initiatives: 0, participations_received: 0, external_outreach_events: 0, pillar_breakdown: [] }),
+      data_source:             'live_db',
+      methodology_version_id:  getMethodologyVersion(),
+      calibration_status:      'pre_empirical_calibration',
+    };
+    return empty;
+  }
+
+  const reportingPeriod = period ?? (rows[0]?.reporting_period ?? '');
+  const crossRows        = rows.filter((r) => r.contribution_kind === 'cross_company_participation');
+  const externalRows     = rows.filter((r) => r.contribution_kind === 'external_participants_event');
+  const verifiedRows     = rows.filter((r) => r.evidence_status === 'verified');
+  const selfDeclRows     = rows.filter((r) => r.evidence_status === 'self_declared');
+
+  const distinctPostIds = [...new Set(rows.map((r) => r.source_post_id))];
+
+  // Fetch pillar per le post distinte (per pillar_breakdown)
+  const { data: posts } = await (db as any)
+    .schema('commons')
+    .from('post')
+    .select('id, pillar')
+    .in('id', distinctPostIds);
+
+  const postPillarMap: Record<string, string | null> = {};
+  for (const p of (posts as Array<{ id: string; pillar: string | null }> | null) ?? []) {
+    postPillarMap[p.id] = p.pillar;
+  }
+
+  // Pillar breakdown: aggregate weight per pillar
+  const pillarWeights: Record<string, { count: number; weight: number }> = {};
+  for (const row of rows) {
+    const pillar = postPillarMap[row.source_post_id] ?? 'UNKNOWN';
+    if (!pillarWeights[pillar]) pillarWeights[pillar] = { count: 0, weight: 0 };
+    pillarWeights[pillar].count  += 1;
+    pillarWeights[pillar].weight += row.impact_weight ?? 0;
+  }
+  const totalWeight = rows.reduce((s, r) => s + (r.impact_weight ?? 0), 0);
+  const pillar_breakdown = Object.entries(pillarWeights).map(([pillar, { count, weight }]) => ({
+    pillar,
+    count,
+    weight: +weight.toFixed(4),
+    share_pct: totalWeight > 0 ? +((weight / totalWeight) * 100).toFixed(1) : 0,
+  })).sort((a, b) => b.weight - a.weight);
+
+  const view: ContributionPromoterView = {
+    tenant_id:               tenantId,
+    reporting_period:        reportingPeriod,
+    distinct_initiatives:    distinctPostIds.length,
+    participations_received: crossRows.length,
+    external_outreach_events: externalRows.length,
+    verified_weight:         +verifiedRows.reduce((s, r) => s + (r.impact_weight ?? 0), 0).toFixed(4),
+    self_declared_weight:    +selfDeclRows.reduce((s, r) => s + (r.impact_weight ?? 0), 0).toFixed(4),
+    pillar_breakdown,
+    narrative:               [],
+    data_source:             'live_db',
+    methodology_version_id:  getMethodologyVersion(),
+    calibration_status:      'pre_empirical_calibration',
+  };
+  view.narrative = buildPromoterNarrative(view);
+  return view;
+}
+
+// ── B167: getContributionOriginEmployerView ───────────────────────────────────
+// Sezione "I tuoi lavoratori nell'ecosistema" — role='origin_employer'.
+// Aggrega contribution_event del tenant in role=origin_employer.
+// Anonimato totale: nessun source_booking_id esposto, nessun legame worker↔iniziativa.
+// Solo: count partecipazioni, count post distinte, count tenant promotori distinti.
+
+export async function getContributionOriginEmployerView(params: {
+  db:       any;
+  tenantId: string;
+  period?:  string;
+}): Promise<ContributionOriginEmployerView | null> {
+  const { db, tenantId, period } = params;
+
+  const { data: tenant } = await (db as any)
+    .schema('analytics')
+    .from('tenant')
+    .select('id, production_ready')
+    .eq('id', tenantId)
+    .maybeSingle();
+
+  if (!tenant || !(tenant as any).production_ready) return null;
+
+  // Legge contribution_event per role=origin_employer — NO source_booking_id nella select
+  let evQuery = (db as any)
+    .schema('commons')
+    .from('contribution_event')
+    .select('source_post_id, impact_weight, evidence_status, reporting_period')
+    .eq('tenant_id', tenantId)
+    .eq('role', 'origin_employer');
+
+  if (period) evQuery = evQuery.eq('reporting_period', period);
+
+  const { data: events, error: evErr } = await evQuery.limit(500);
+  if (evErr) {
+    console.error('[getContributionOriginEmployerView] events fetch error:', evErr.message);
+    return null;
+  }
+
+  const rows = (events as Array<{
+    source_post_id: string;
+    impact_weight: number;
+    evidence_status: string;
+    reporting_period: string;
+  }> | null) ?? [];
+
+  if (rows.length === 0) {
+    const empty: ContributionOriginEmployerView = {
+      tenant_id:            tenantId,
+      reporting_period:     period ?? '',
+      participations_sent:  0,
+      distinct_initiatives: 0,
+      distinct_promoters:   0,
+      total_weight:         0,
+      pillar_breakdown:     [],
+      narrative:            buildOriginEmployerNarrative({ participations_sent: 0, distinct_initiatives: 0, distinct_promoters: 0, pillar_breakdown: [] }),
+      data_source:          'live_db',
+      methodology_version_id: getMethodologyVersion(),
+      calibration_status:   'pre_empirical_calibration',
+    };
+    return empty;
+  }
+
+  const reportingPeriod  = period ?? (rows[0]?.reporting_period ?? '');
+  const distinctPostIds  = [...new Set(rows.map((r) => r.source_post_id))];
+
+  // Fetch post distinte per pillar e tenant_id (promotore)
+  const { data: posts } = await (db as any)
+    .schema('commons')
+    .from('post')
+    .select('id, pillar, tenant_id')
+    .in('id', distinctPostIds);
+
+  const postMap: Record<string, { pillar: string | null; tenant_id: string }> = {};
+  for (const p of (posts as Array<{ id: string; pillar: string | null; tenant_id: string }> | null) ?? []) {
+    postMap[p.id] = { pillar: p.pillar, tenant_id: p.tenant_id };
+  }
+
+  const distinctPromoters = new Set(Object.values(postMap).map((p) => p.tenant_id));
+
+  // Pillar breakdown aggregato per le post frequentate
+  const pillarWeights: Record<string, { count: number; weight: number }> = {};
+  for (const row of rows) {
+    const pillar = postMap[row.source_post_id]?.pillar ?? 'UNKNOWN';
+    if (!pillarWeights[pillar]) pillarWeights[pillar] = { count: 0, weight: 0 };
+    pillarWeights[pillar].count  += 1;
+    pillarWeights[pillar].weight += row.impact_weight ?? 0;
+  }
+  const totalWeight = rows.reduce((s, r) => s + (r.impact_weight ?? 0), 0);
+  const pillar_breakdown = Object.entries(pillarWeights).map(([pillar, { count, weight }]) => ({
+    pillar,
+    count,
+    weight: +weight.toFixed(4),
+    share_pct: totalWeight > 0 ? +((weight / totalWeight) * 100).toFixed(1) : 0,
+  })).sort((a, b) => b.weight - a.weight);
+
+  const view: ContributionOriginEmployerView = {
+    tenant_id:            tenantId,
+    reporting_period:     reportingPeriod,
+    participations_sent:  rows.length,
+    distinct_initiatives: distinctPostIds.length,
+    distinct_promoters:   distinctPromoters.size,
+    total_weight:         +totalWeight.toFixed(4),
+    pillar_breakdown,
+    narrative:            [],
+    data_source:          'live_db',
+    methodology_version_id: getMethodologyVersion(),
+    calibration_status:   'pre_empirical_calibration',
+  };
+  view.narrative = buildOriginEmployerNarrative(view);
+  return view;
 }
