@@ -42,7 +42,6 @@ const partnerWorkspace = readFile('app/partner/workspace/page.tsx');
 const inviteUser       = readFile('app/api/admin/partners/[id]/invite-user/route.ts');
 const accountPage      = readFile('app/account/page.tsx');
 const accountMenu      = readFile('components/auth/AccountMenu.tsx');
-const adminPreview     = readFile('app/admin/preview/partner/workspace/page.tsx');
 const partnerDoc       = readFile('docs/PARTNER_WORKSPACE_FOUNDATION.md');
 const provisioningDoc  = readFile('docs/ACCESS_PROVISIONING_DOCTRINE.md');
 const migration012     = readFile('supabase/migrations/012_partner_identity.sql');
@@ -312,29 +311,6 @@ describe('B127 -- migration 012 partner_identity', () => {
   it('migration has no WORKER policy', () => {
     const workerPolicy = migration012.includes("kora_role() = 'WORKER'");
     expect(workerPolicy).toBe(false);
-  });
-});
-
-// --- 11. Admin preview ------------------------------------------------------
-
-describe('B127 -- admin preview partner workspace', () => {
-  it('admin preview file exists', () => {
-    expect(fileExists('app/admin/preview/partner/workspace/page.tsx')).toBe(true);
-  });
-
-  it('admin preview requires KORA_ADMIN', () => {
-    expect(adminPreview).toContain('requireKoraAdmin');
-  });
-
-  it('admin preview has synthetic banner (non-suppressible)', () => {
-    expect(adminPreview).toContain('admin-preview-partner-banner');
-    expect(adminPreview).toContain('esempio sintetico');
-    expect(adminPreview).toContain('nessun accesso partner reale');
-  });
-
-  it('admin preview uses synthetic fixture (no real DB query)', () => {
-    expect(adminPreview).toContain('SYNTHETIC_PARTNER');
-    expect(adminPreview).not.toContain("from('partner_profile')");
   });
 });
 

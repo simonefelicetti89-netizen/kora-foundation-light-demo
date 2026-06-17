@@ -243,7 +243,7 @@ export default function AdminDataIntakePage({ params }: { params: { companyId: s
             Prima di caricare dati programmi, definire il budget people/welfare e il perimetro fiscale.
             KORA non parte dal catalogo: parte dal budget e dall&apos;obiettivo di attivazione.
           </p>
-          <Link href="/admin/companies/setup" className="text-xs font-semibold text-[#C76F3D] hover:underline">
+          <Link href="/admin/companies/new" className="text-xs font-semibold text-[#C76F3D] hover:underline">
             → Enterprise Onboarding (Passo 3: Budget & Fiscale)
           </Link>
         </section>

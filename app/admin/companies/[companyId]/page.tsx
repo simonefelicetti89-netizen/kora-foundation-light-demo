@@ -633,7 +633,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           </div>
         )}
         <div className="flex gap-3">
-          <Link href="/admin/companies/setup"
+          <Link href="/admin/companies/new"
             className="rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-3 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.78)] hover:bg-[rgba(6,3,43,0.03)] transition-colors">
             + Crea admin aziendale
           </Link>

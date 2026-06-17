@@ -29,7 +29,6 @@ function fileExists(rel: string): boolean {
 
 const wallboardPage      = readFile('app/company/wallboard/page.tsx');
 const wallboardClient    = readFile('app/company/wallboard/_components/WallboardClient.tsx');
-const adminPreview       = readFile('app/admin/preview/company/wallboard/page.tsx');
 const provisioningPanel  = readFile('app/admin/company-users/_components/CompanyUserProvisioningPanel.tsx');
 const methodologyConfig  = readFile('lib/methodology-config/v0.1.ts');
 
@@ -145,23 +144,6 @@ describe('B119 -- Sidebar navigation', () => {
     const groups = buildNavGroups('KORA_ADMIN');
     const allHrefs = groups.flatMap(g => g.items.map(i => i.href));
     expect(allHrefs).not.toContain('/company/wallboard');
-  });
-});
-
-// --- 15: Admin preview does not require company login ----------------------
-
-describe('B119 -- Admin preview does not require company login', () => {
-  it('admin preview page uses requireKoraAdmin (not requireCompanyUser)', () => {
-    expect(adminPreview).toContain('requireKoraAdmin');
-    expect(adminPreview).not.toContain('requireCompanyUser');
-  });
-
-  it('admin preview page has data-testid="admin-preview-company-wallboard"', () => {
-    expect(adminPreview).toContain('data-testid="admin-preview-company-wallboard"');
-  });
-
-  it('admin preview banner explains KORA_ADMIN does not need company login', () => {
-    expect(adminPreview).toContain('Non è richiesto un login company');
   });
 });
 

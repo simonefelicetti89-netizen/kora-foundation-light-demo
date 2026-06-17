@@ -183,7 +183,7 @@ export default function CompanyUsersPage({ params }: { params: { companyId: stri
           + Crea utente aziendale
         </Link>
         <Link
-          href="/admin/companies/setup"
+          href="/admin/companies/new"
           className="rounded border border-[rgba(6,3,43,0.12)] px-4 py-2 text-xs font-medium text-[rgba(6,3,43,0.62)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
         >
           Setup guidato →

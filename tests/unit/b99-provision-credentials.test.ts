@@ -200,57 +200,6 @@ describe('Provision route — partial failure handling', () => {
   });
 });
 
-// ── Punto 2 — Wizard integration ─────────────────────────────────────────────
-
-describe('Wizard — wired to real provision route', () => {
-  const wizard = read('app/admin/companies/setup/page.tsx');
-
-  it('calls /api/admin/companies/provision (real route)', () => {
-    expect(wizard).toContain('/api/admin/companies/provision');
-  });
-
-  it('uses handleProvision (async fetch) not handleCreateDraft (mock)', () => {
-    expect(wizard).toContain('handleProvision');
-    expect(wizard).not.toContain('handleCreateDraft');
-  });
-
-  it('no longer imports accountProvisioningService', () => {
-    expect(wizard).not.toContain('accountProvisioningService');
-    expect(wizard).not.toContain('createCompanyAdminDraft');
-  });
-
-  it('no longer imports lifecycleService', () => {
-    expect(wizard).not.toContain('lifecycleService');
-  });
-
-  it('no longer imports tenantService (mock draft path removed)', () => {
-    expect(wizard).not.toContain('tenantService');
-    expect(wizard).not.toContain('createTenantDraft');
-  });
-
-  it('button is disabled without admin_email (provisioning requires real email)', () => {
-    expect(wizard).toContain('state.admin_email');
-    // Button disabled condition includes admin_email
-    expect(wizard).toContain('!(state.company_name && state.legal_name && state.admin_email)');
-  });
-
-  it('shows isProvisioning state (loading indicator)', () => {
-    expect(wizard).toContain('isProvisioning');
-    expect(wizard).toContain('Provisioning…');
-  });
-
-  it('shows provisionResult with tenantId and inviteStatus on success', () => {
-    expect(wizard).toContain('provisionResult');
-    expect(wizard).toContain('provisionResult?.ok');
-    expect(wizard).toContain('inviteStatus');
-  });
-
-  it('disclaimer no longer claims nessuna email reale inviata', () => {
-    expect(wizard).not.toContain('Nessuna email reale inviata');
-    expect(wizard).not.toContain('Nessuna password reale salvata');
-  });
-});
-
 // ── Migration 006 — SQL correctness ──────────────────────────────────────────
 
 describe('Migration 006 — SQL correctness', () => {

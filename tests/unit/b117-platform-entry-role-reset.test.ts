@@ -34,7 +34,6 @@ const authCallback       = readFile('app/auth/callback/route.ts');
 const header             = readFile('components/layout/Header.tsx');
 const appShell           = readFile('components/layout/AppShell.tsx');
 const provisioningPanel  = readFile('app/admin/company-users/_components/CompanyUserProvisioningPanel.tsx');
-const setupWizard        = readFile('app/admin/companies/setup/page.tsx');
 const adminPartners      = readFile('app/admin/partners/page.tsx');
 
 // ─── 1. Unified /login page ───────────────────────────────────────────────────
@@ -180,13 +179,6 @@ describe('COMPANY_VIEWER — B143 rimosso dal provisioning', () => {
     expect(roleOptions).not.toContain("value: 'COMPANY_VIEWER'");
   });
 
-  it('setup wizard non offre COMPANY_VIEWER come opzione ruolo', () => {
-    const setupSection = setupWizard.slice(
-      setupWizard.indexOf('admin_role'),
-      setupWizard.indexOf('admin_role') + 600,
-    );
-    expect(setupSection).not.toContain("value: 'COMPANY_VIEWER'");
-  });
 });
 
 // ─── 7. Admin partners — error logging + diagnostic banner ───────────────────

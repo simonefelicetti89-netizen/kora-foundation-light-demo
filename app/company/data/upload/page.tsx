@@ -694,7 +694,7 @@ export default function UploadPage() {
         {/* ── Section 1: Header ─────────────────────────────────────────────── */}
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-[rgba(6,3,43,0.52)]">
-            <Link href="/admin/companies/data-intake" className="hover:text-[rgba(6,3,43,0.78)] transition-colors">
+            <Link href="/admin/data-intake" className="hover:text-[rgba(6,3,43,0.78)] transition-colors">
               Data Intake
             </Link>
             <span>/</span>

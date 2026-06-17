@@ -9,7 +9,7 @@ const PIPELINE_STEPS = [
     num: 1,
     label: 'Data Intake Studio',
     sublabel: 'KORA Operator gestisce intake',
-    href: '/admin/companies/data-intake',
+    href: '/admin/data-intake',
   },
   {
     num: 2,
