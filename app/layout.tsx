@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, Instrument_Serif, Playfair_Display } from 'next/font/google';
+import { Plus_Jakarta_Sans, Instrument_Serif, Playfair_Display, Hanken_Grotesk } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
 
@@ -17,6 +17,14 @@ const playfairDisplay = Playfair_Display({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
   style: ['normal', 'italic'],
+  display: 'swap',
+});
+
+// Hanken Grotesk — banner privilegiato KORA service team (PrivilegedAccessBanner)
+const hankenGrotesk = Hanken_Grotesk({
+  variable: '--font-hanken',
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
   display: 'swap',
 });
 
@@ -38,7 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="it"
-      className={`${jakartaSans.variable} ${instrumentSerif.variable} ${playfairDisplay.variable} h-full antialiased`}
+      className={`${jakartaSans.variable} ${instrumentSerif.variable} ${playfairDisplay.variable} ${hankenGrotesk.variable} h-full antialiased`}
     >
       <body className="h-full">
         <AppShell>{children}</AppShell>
