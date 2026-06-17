@@ -194,14 +194,16 @@ describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
 
 // ── 23–26: B141-B2 — /worker/* safe redirect for KORA_ADMIN ──────────────────
 
-describe('B141-B2 — /worker/layout.tsx safe KORA_ADMIN redirect', () => {
+describe('B141-B2 — /worker/layout.tsx KORA_ADMIN hard block (B168-P3)', () => {
   it('23. worker layout imports getCurrentKoraUser for admin detection', () => {
     expect(workerLayout).toContain('getCurrentKoraUser');
   });
 
-  it('24. worker layout redirects KORA_ADMIN to /my-kora (not /login)', () => {
-    // KORA_ADMIN is redirected to the synthetic worker preview, not the login page.
-    expect(workerLayout).toContain("redirect('/my-kora')");
+  it('24. worker layout hard-blocks KORA_ADMIN with explicit error (not redirect to /my-kora)', () => {
+    // B168-P3: KORA_ADMIN gets an explicit access-denied UI — not a redirect.
+    // Worker individual data is not accessible to KORA service team by design.
+    expect(workerLayout).toContain('Worker individual data is not accessible to KORA service team by design');
+    expect(workerLayout).not.toContain("redirect('/my-kora')");
   });
 
   it('25. worker layout still calls getCurrentWorkerUser (WORKER gate unchanged)', () => {

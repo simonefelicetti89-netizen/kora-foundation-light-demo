@@ -165,9 +165,11 @@ describe('B105 — workspace layout server auth gate', () => {
     expect(layout).toContain('requireCompanyUser');
   });
 
-  it('blocks KORA_ADMIN from workspace (requires company session)', () => {
+  it('ammette KORA_ADMIN nel workspace con passthrough (B168-P3: root layout gestisce auth+banner)', () => {
+    // B168-P3: il sub-layout workspace ammette KORA_ADMIN con passthrough.
+    // L'autenticazione + banner è nel root layout app/company/layout.tsx.
     expect(layout).toContain('KORA_ADMIN');
-    expect(layout).toContain('Questo workspace richiede una sessione azienda');
+    expect(layout).not.toContain('Questo workspace richiede una sessione azienda');
   });
 
   it('shows error for unauthenticated (401)', () => {

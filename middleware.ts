@@ -8,14 +8,17 @@
 //      company tenants never reach synthetic demo pages.
 //   3. B104: Redirect authenticated WORKER users to /worker/workspace if they attempt
 //      to access admin or company paths. Workers are confined to /worker/* only.
+//   4. B168-P3: KORA_ADMIN is blocked from /worker/* paths (defense in depth layer 1).
+//      Worker-individual data is off-limits regardless of environment.
 //
 // Route-level fine-grained auth is in lib/auth/kora-session.ts.
-// KORA_ADMIN routes have their own requireKoraAdmin() checks — not blocked here.
+// Access matrix: lib/auth/access-matrix.ts — canAccess() is the authoritative source.
 //
 // ROBUSTNESS: never throws — safe for Vercel deploys without env vars configured.
 
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
+import { canAccess } from '@/lib/auth/access-matrix';
 
 // Paths that authenticated COMPANY_ADMIN users are allowed to access.
 // B59: intelligence pages added so real sessions reach live-enabled pages.
@@ -141,6 +144,23 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (pathname === '/') {
     return supabaseResponse;
+  }
+
+  // B168-P3: Block KORA_ADMIN from worker-individual paths — defense in depth layer 1.
+  // canAccess() returns DENY for KORA_ADMIN on worker-individual in ALL environments.
+  // This is the middleware layer; worker layout and RLS provide layers 2 and 3.
+  const isKoraAdmin = sessionKoraRole === 'KORA_ADMIN';
+  if (isKoraAdmin) {
+    const workerIndividualPrefixes = ['/worker/'];
+    const isWorkerPath = workerIndividualPrefixes.some((p) => pathname.startsWith(p));
+    if (isWorkerPath) {
+      const decision = canAccess('KORA_ADMIN', 'worker_individual_pib', 'live');
+      if (!decision.allowed) {
+        const url = new URL('/admin', request.url);
+        url.searchParams.set('blocked', 'worker_individual_access_denied');
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
   // B36.1: Redirect authenticated company users away from demo/admin/future-vision paths.

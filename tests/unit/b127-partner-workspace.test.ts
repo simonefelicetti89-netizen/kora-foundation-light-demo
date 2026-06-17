@@ -103,19 +103,26 @@ describe('B127 -- middleware PARTNER route protection', () => {
   });
 
   it('middleware blocks PARTNER from /admin', () => {
-    const partnerSection = middleware.slice(middleware.indexOf('PARTNER_ALLOWED_PREFIXES'));
+    // Scoped to the PARTNER_ALLOWED_PREFIXES array only (not the entire rest of the file).
+    const start = middleware.indexOf('PARTNER_ALLOWED_PREFIXES = [');
+    const end   = middleware.indexOf('];', start);
+    const partnerArray = middleware.slice(start, end + 2);
     // /admin is NOT in PARTNER_ALLOWED_PREFIXES
-    expect(partnerSection).not.toContain("'/admin'");
+    expect(partnerArray).not.toContain("'/admin'");
   });
 
   it('middleware blocks PARTNER from /company', () => {
-    const partnerSection = middleware.slice(middleware.indexOf('PARTNER_ALLOWED_PREFIXES'));
-    expect(partnerSection).not.toContain("'/company'");
+    const start = middleware.indexOf('PARTNER_ALLOWED_PREFIXES = [');
+    const end   = middleware.indexOf('];', start);
+    const partnerArray = middleware.slice(start, end + 2);
+    expect(partnerArray).not.toContain("'/company'");
   });
 
   it('middleware blocks PARTNER from /worker', () => {
-    const partnerSection = middleware.slice(middleware.indexOf('PARTNER_ALLOWED_PREFIXES'));
-    expect(partnerSection).not.toContain("'/worker'");
+    const start = middleware.indexOf('PARTNER_ALLOWED_PREFIXES = [');
+    const end   = middleware.indexOf('];', start);
+    const partnerArray = middleware.slice(start, end + 2);
+    expect(partnerArray).not.toContain("'/worker'");
   });
 
   it('middleware redirects PARTNER to /partner/workspace when blocked', () => {

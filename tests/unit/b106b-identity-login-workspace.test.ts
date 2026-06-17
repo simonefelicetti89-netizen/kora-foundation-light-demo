@@ -115,8 +115,11 @@ describe('B106-B — middleware: role routing matrix', () => {
     expect(section).not.toContain("'/company/'");
   });
 
-  it('middleware non restringe KORA_ADMIN (gestito da admin layout)', () => {
-    expect(mw).not.toContain("sessionKoraRole === 'KORA_ADMIN'");
+  it('middleware blocca KORA_ADMIN da /worker/* (B168-P3 defense in depth layer 1)', () => {
+    // B168-P3: middleware ora include un blocco esplicito KORA_ADMIN per percorsi worker-individual.
+    expect(mw).toContain("sessionKoraRole === 'KORA_ADMIN'");
+    // Il blocco usa canAccess() — non check hardcoded inline.
+    expect(mw).toContain('canAccess');
   });
 });
 
@@ -221,9 +224,12 @@ describe('B106-B — /company/workspace: workspace dedicato tenant-bound', () =>
     expect(layout).toContain('requireCompanyUser');
   });
 
-  it('workspace layout mostra errore specifico per KORA_ADMIN', () => {
+  it('workspace layout ammette KORA_ADMIN (B168-P3: passthrough, non blocco)', () => {
+    // B168-P3: il workspace layout passa KORA_ADMIN al figlio — root layout ha già fatto auth+banner.
+    // Il blocco di KORA_ADMIN sulla sessione company non si traduce più in un muro UI.
     expect(layout).toContain('KORA_ADMIN');
-    expect(layout).toContain('Questo workspace richiede una sessione azienda');
+    // Passthrough: il layout ritorna <>{children}</> per KORA_ADMIN.
+    expect(layout).not.toContain('Questo workspace richiede una sessione azienda');
   });
 
   it('workspace layout link Accedi → /company/login (non /admin/login)', () => {

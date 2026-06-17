@@ -13,9 +13,11 @@ import { createContext, useContext } from 'react';
 export interface CompanySessionCtx {
   isLive: boolean;
   tenantId: string | null;
-  koraRole: 'COMPANY_ADMIN' | null;
+  koraRole: 'COMPANY_ADMIN' | 'KORA_ADMIN' | null;
   companyName: string | null;
   sessionLoading: boolean;
+  // Presente solo quando KORA_ADMIN accede con accesso privilegiato — per banner Phase 5.
+  adminServiceAccess?: boolean;
 }
 
 const CompanySessionContext = createContext<CompanySessionCtx>({
@@ -31,21 +33,23 @@ export function useCompanySession(): CompanySessionCtx {
 }
 
 interface Props {
-  children:    React.ReactNode;
-  tenantId:    string;
-  koraRole:    'COMPANY_ADMIN';
-  companyName: string | null;
+  children:           React.ReactNode;
+  tenantId:           string;
+  koraRole:           'COMPANY_ADMIN' | 'KORA_ADMIN';
+  companyName:        string | null;
+  adminServiceAccess?: boolean;
 }
 
-export function CompanySessionProvider({ children, tenantId, koraRole, companyName }: Props) {
+export function CompanySessionProvider({ children, tenantId, koraRole, companyName, adminServiceAccess }: Props) {
   return (
     <CompanySessionContext.Provider
       value={{
-        isLive: true,    // server guard guarantees a real company session
+        isLive: true,
         tenantId,
         koraRole,
         companyName,
-        sessionLoading: false,   // no async detection — data is ready at mount
+        sessionLoading: false,
+        adminServiceAccess,
       }}
     >
       {children}
