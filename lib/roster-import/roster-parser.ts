@@ -1,7 +1,7 @@
 // lib/roster-import/roster-parser.ts
 // Browser-safe CSV/XLSX roster parser — B91-B.
 //
-// Uses PapaParse and XLSX directly (both are browser-compatible).
+// Uses PapaParse and read-excel-file (replaces xlsx v0.18.5 — CVE-2023-30533, CVE-2024-22363).
 // Does NOT import server-side data-intake parsers (csv-parser.ts, excel-parser.ts).
 //
 // Domain boundary:
@@ -10,7 +10,8 @@
 // These paths never share validation logic, routing logic, or destination tables.
 
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
+import { readSheet } from 'read-excel-file/browser';
+import type { Row, CellValue } from 'read-excel-file/browser';
 import type { RosterParseResult, RosterColumnInfo, RosterRawRow } from './types';
 
 // ── Canonical header aliases ──────────────────────────────────────────────────
@@ -142,6 +143,17 @@ function forbiddenError(header: string): string {
   );
 }
 
+// ── Cell value → string ───────────────────────────────────────────────────────
+
+function cellToString(value: CellValue | null | undefined): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'string') return value.trim();
+  if (value instanceof Date) return value.toISOString().split('T')[0];
+  return String(value).trim();
+}
+
 // ── CSV path ──────────────────────────────────────────────────────────────────
 
 function parseCsvText(text: string, fileName: string): RosterParseResult {
@@ -226,14 +238,15 @@ function parseCsvText(text: string, fileName: string): RosterParseResult {
   };
 }
 
-// ── XLSX path ─────────────────────────────────────────────────────────────────
+// ── XLSX path — read-excel-file ───────────────────────────────────────────────
 
-function parseXlsxBuffer(buffer: ArrayBuffer, fileName: string): RosterParseResult {
+async function parseXlsxFile(file: File, fileName: string): Promise<RosterParseResult> {
   const blockingErrors: string[] = [];
 
-  let workbook: XLSX.WorkBook;
+  let rows: Row[];
   try {
-    workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' });
+    // readSheet reads the first sheet and returns SheetData (Row[])
+    rows = await readSheet(file);
   } catch {
     return {
       fileName, rawRows: [], originalHeaders: [], columns: [],
@@ -243,60 +256,42 @@ function parseXlsxBuffer(buffer: ArrayBuffer, fileName: string): RosterParseResu
     };
   }
 
-  const sheetName = workbook.SheetNames[0];
-  if (!sheetName) {
+  if (rows.length === 0) {
     return {
       fileName, rawRows: [], originalHeaders: [], columns: [],
       forbiddenHeaders: [], hasBlockingError: true,
-      blockingErrors: ['Nessun foglio trovato nel file Excel.'],
+      blockingErrors: ['Nessuna riga trovata nel file Excel.'],
       parserWarnings: [], totalRawRows: 0,
     };
   }
 
-  const sheet = workbook.Sheets[sheetName];
-  if (!sheet) {
-    return {
-      fileName, rawRows: [], originalHeaders: [], columns: [],
-      forbiddenHeaders: [], hasBlockingError: true,
-      blockingErrors: [`Foglio "${sheetName}" vuoto o non leggibile.`],
-      parserWarnings: [], totalRawRows: 0,
-    };
-  }
-
-  // sheet_to_json with raw:false stringifies dates; defval fills empty cells
-  const rawData = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
-    raw:    false,
-    defval: '',
-  });
-
-  if (rawData.length === 0) {
-    return {
-      fileName, rawRows: [], originalHeaders: [], columns: [],
-      forbiddenHeaders: [], hasBlockingError: true,
-      blockingErrors: ['Nessuna riga dati trovata nel file.'],
-      parserWarnings: [], totalRawRows: 0,
-    };
-  }
-
-  // Extract original headers from first row
-  const originalHeaders = Object.keys(rawData[0] ?? {});
+  // First row = headers
+  const headerRow = rows[0];
+  const originalHeaders = headerRow.map((h: CellValue | null) => String(h ?? ''));
   const { columns, forbidden, hasBlocking } = buildColumns(originalHeaders);
   if (hasBlocking) {
     for (const f of forbidden) blockingErrors.push(forbiddenError(f));
   }
 
+  const dataRows = rows.slice(1);
+  if (dataRows.length === 0) {
+    blockingErrors.push('Nessuna riga dati trovata nel file.');
+  }
+
   // Remap rows using normalized canonical names
-  const rawRows: RosterRawRow[] = rawData.map((row) => {
-    const out: RosterRawRow = {};
-    for (const h of originalHeaders) {
-      const norm = normalizeHeader(h);
-      const canonical = HEADER_ALIASES[norm];
-      if (canonical) {
-        out[canonical] = String(row[h] ?? '').trim();
-      }
-    }
-    return out;
-  });
+  const rawRows: RosterRawRow[] = dataRows
+    .filter((row: Row) => row.some((cell: CellValue | null) => cell !== null && cell !== undefined && String(cell).trim() !== ''))
+    .map((row: Row) => {
+      const out: RosterRawRow = {};
+      originalHeaders.forEach((h: string, i: number) => {
+        const norm = normalizeHeader(h);
+        const canonical = HEADER_ALIASES[norm];
+        if (canonical) {
+          out[canonical] = cellToString(row[i]);
+        }
+      });
+      return out;
+    });
 
   return {
     fileName,
@@ -307,7 +302,7 @@ function parseXlsxBuffer(buffer: ArrayBuffer, fileName: string): RosterParseResu
     hasBlockingError: blockingErrors.length > 0,
     blockingErrors,
     parserWarnings: [],
-    totalRawRows: rawData.length,
+    totalRawRows: dataRows.length,
   };
 }
 
@@ -338,8 +333,7 @@ export async function parseRosterFile(file: File): Promise<RosterParseResult> {
   }
 
   if (isXlsx) {
-    const buffer = await file.arrayBuffer();
-    return parseXlsxBuffer(buffer, file.name);
+    return parseXlsxFile(file, file.name);
   }
 
   const text = await file.text();

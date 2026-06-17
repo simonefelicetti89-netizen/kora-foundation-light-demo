@@ -8,11 +8,17 @@
 //
 // Do not remove either layer. Both are required for correct admin access control.
 
+import type { Metadata } from 'next';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { AdminDemoGuard } from './_components/AdminDemoGuard';
 import { SessionBar } from '@/components/auth/SessionBar';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true,
+            googleBot: { index: false, follow: false, noimageindex: true } },
+};
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Layer 1: server-side Supabase auth — blocks anonymous and non-KORA_ADMIN users

@@ -1,16 +1,15 @@
 // lib/upload/file-parser.ts
 // Client-side Excel/CSV parser for KORA Foundation Light Pilot uploads.
 //
-// SECURITY NOTE: xlsx package has known Prototype Pollution / ReDoS advisories.
-// This function is BROWSER-ONLY and parses company-supplied files in memory.
-// Data never leaves the browser. No server calls. No persistence.
-// Acceptable risk for a controlled guided-pilot context with known file sources.
+// Uses read-excel-file (replaces xlsx v0.18.5 — CVE-2023-30533, CVE-2024-22363).
+// Parser is BROWSER-ONLY. Data never leaves the browser. No server calls. No persistence.
 //
 // DOCTRINE: Uploaded data must never mix with synthetic seed data.
 // This module produces ParsedUploadResult — a pure in-memory object.
 // The caller is responsible for keeping it separate from demo state.
 
-import * as XLSX from 'xlsx';
+import { readSheet } from 'read-excel-file/browser';
+import type { Row, CellValue } from 'read-excel-file/browser';
 import Papa from 'papaparse';
 
 import type {
@@ -49,6 +48,17 @@ function isRowEmpty(record: Record<string, unknown>): boolean {
   return Object.values(record).every(
     (v) => v === null || v === undefined || String(v).trim() === '',
   );
+}
+
+// ── Cell value → string (read-excel-file returns typed values) ────────────────
+
+function cellToString(value: CellValue | null | undefined): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'string') return value.trim();
+  if (value instanceof Date) return value.toISOString().split('T')[0];
+  return String(value).trim();
 }
 
 // Parse Italian / US / mixed numeric formats without crashing.
@@ -225,7 +235,7 @@ async function parseCsv(
   return { headers, rows };
 }
 
-// ── XLSX / XLS parsing ─────────────────────────────────────────────────────────
+// ── XLSX / XLS parsing — read-excel-file ──────────────────────────────────────
 
 async function parseXlsx(
   file: File,
@@ -233,56 +243,40 @@ async function parseXlsx(
   issues: UploadValidationIssue[],
   warnings: string[],
 ): Promise<{ headers: string[]; rows: RawUploadedRecord[]; availableSheets: string[] }> {
-  const buffer = await file.arrayBuffer();
+  const availableSheets: string[] = [];
 
-  let workbook: XLSX.WorkBook;
+  let xlsxRows: Row[];
   try {
-    workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+    xlsxRows = await readSheet(file);
   } catch {
     issues.push(makeIssue('xlsx-corrupt', 'error', 'file', 'Il file non può essere letto. Potrebbe essere corrotto o in un formato non supportato.', 'Verificare il file e ricaricare.'));
-    return { headers: [], rows: [], availableSheets: [] };
+    return { headers: [], rows: [], availableSheets };
   }
 
-  const availableSheets = workbook.SheetNames;
-  if (availableSheets.length === 0) {
-    issues.push(makeIssue('xlsx-no-sheets', 'error', 'file', 'Il file Excel non contiene fogli.', 'Verificare il file.'));
-    return { headers: [], rows: [], availableSheets: [] };
-  }
-
-  if (availableSheets.length > 1) {
-    warnings.push(`Il file contiene ${availableSheets.length} fogli: ${availableSheets.join(', ')}. Analizzato il primo foglio: "${availableSheets[0]}".`);
-  }
-
-  const sheetName = availableSheets[0];
-  const worksheet = workbook.Sheets[sheetName];
-
-  // Get headers from first row
-  const rawArray = XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1, defval: null });
-
-  if (rawArray.length === 0) {
+  if (xlsxRows.length === 0) {
     issues.push(makeIssue('xlsx-empty', 'error', 'file', 'Il foglio Excel è vuoto.', 'Verificare il file.'));
     return { headers: [], rows: [], availableSheets };
   }
 
-  const headerRow = rawArray[0];
-  if (!Array.isArray(headerRow)) {
-    issues.push(makeIssue('xlsx-no-headers', 'error', 'headers', 'Nessuna riga di intestazione rilevata.', 'Il file deve avere una riga di intestazione nella prima riga.'));
-    return { headers: [], rows: [], availableSheets };
-  }
-
-  const headers = headerRow
-    .map((h) => normalizeHeader(String(h ?? '')))
-    .filter((h) => h !== '');
+  const headerRow = xlsxRows[0];
+  const originalHeaders = headerRow.map(h => cellToString(h));
+  const headers = originalHeaders.map(normalizeHeader).filter((h) => h !== '');
 
   if (headers.length === 0) {
     issues.push(makeIssue('xlsx-empty-headers', 'error', 'headers', 'Le intestazioni sono vuote.', 'Verificare la prima riga del file.'));
     return { headers: [], rows: [], availableSheets };
   }
 
-  // Parse body with header mapping
-  const records = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, {
-    defval: null,
-    raw: false,  // Return formatted strings; we handle numeric coercion ourselves
+  const dataRows = xlsxRows.slice(1);
+
+  // Convert rows to objects keyed by normalized header
+  const records: Record<string, unknown>[] = dataRows.map((row: Row) => {
+    const out: Record<string, unknown> = {};
+    originalHeaders.forEach((h: string, i: number) => {
+      const norm = normalizeHeader(h);
+      if (norm !== '') out[norm] = cellToString((row[i] as CellValue) ?? null);
+    });
+    return out;
   });
 
   if (hasAmbiguousNumericValues(records)) {
@@ -292,16 +286,7 @@ async function parseXlsx(
     );
   }
 
-  // Re-key records using our normalized headers
-  const normalizedRecords: Record<string, unknown>[] = records.map((record) => {
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(record)) {
-      out[normalizeHeader(k)] = v;
-    }
-    return out;
-  });
-
-  const rows = toRows(normalizedRecords, headers, batchId, sheetName);
+  const rows = toRows(records, headers, batchId, 'Sheet1');
   return { headers, rows, availableSheets };
 }
 

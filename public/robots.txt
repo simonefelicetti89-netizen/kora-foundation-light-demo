@@ -1,0 +1,20 @@
+User-agent: *
+Disallow: /demo/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /worker/
+Disallow: /my-kora/
+Disallow: /company/
+Disallow: /partner/
+Disallow: /commons/
+Disallow: /pilot/
+Disallow: /request-access
+Disallow: /login
+Disallow: /auth/
+Disallow: /account/
+Disallow: /cv/
+
+Allow: /
+Allow: /landing
+
+Sitemap: https://kora.io/sitemap.xml

@@ -8,9 +8,15 @@
 // KORA_ADMIN admin preview of the partner workspace is available at:
 //   /admin/preview/partner/workspace — not via this layout.
 
+import type { Metadata }                                 from 'next';
 import { redirect }                                      from 'next/navigation';
 import { requirePartnerUser, getCurrentKoraUser,
          isKoraAuthError }                               from '@/lib/auth/kora-session';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true,
+            googleBot: { index: false, follow: false, noimageindex: true } },
+};
 
 export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
   const auth = await requirePartnerUser();

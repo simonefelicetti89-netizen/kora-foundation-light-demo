@@ -11,8 +11,14 @@
 // Worker individual data is not accessible to the KORA service team by design.
 // Middleware (layer 1) already blocked this path; this is layer 2 of defense in depth.
 
+import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getCurrentWorkerUser, getCurrentKoraUser } from '@/lib/auth/kora-session';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true,
+            googleBot: { index: false, follow: false, noimageindex: true } },
+};
 
 export default async function WorkerLayout({ children }: { children: React.ReactNode }) {
   // B168-P3: Hard block for KORA_ADMIN — explicit error, not a redirect.

@@ -8,9 +8,15 @@
 // Layout: BoundaryBadge mode="DEMO" is rendered in this layout and cannot be
 //   suppressed by any child page.
 
+import type { Metadata } from 'next';
 import { requireDemoAccess, isKoraAuthError } from '@/lib/auth/kora-session';
 import { redirect } from 'next/navigation';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true,
+            googleBot: { index: false, follow: false, noimageindex: true } },
+};
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 

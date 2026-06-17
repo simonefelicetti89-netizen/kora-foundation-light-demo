@@ -1,7 +1,7 @@
 // lib/data-intake/excel-parser.ts
 // B26: Excel / XLSX parser helper — server-side only.
 //
-// Uses the `xlsx` package (already installed, v0.18.x) to read .xlsx workbooks.
+// Uses exceljs (replaces xlsx v0.18.5 — CVE-2023-30533, CVE-2024-22363).
 // Returns normalised rows compatible with the KORA Data Intake pipeline.
 //
 // Design:
@@ -11,11 +11,8 @@
 //   - Cell values always stringified — no type coercion.
 //   - Empty rows skipped. Unnamed columns ignored. BOM stripped.
 //   - .xls legacy files are NOT supported in B26.
-//
-// Security note: xlsx 0.18.x has known CVEs for crafted binary files.
-// Admin-only upload path; real-data gate requires Gate 3B confirmation.
 
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { suggestColumnMapping } from './column-mapping';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -62,15 +59,44 @@ function normalizeHeader(raw: string): string {
   return raw.trim().toLowerCase().replace(/[\s\-]+/g, '_').replace(/[^a-z0-9_]/g, '');
 }
 
-// ── Cell → string ─────────────────────────────────────────────────────────────
+// ── ExcelJS cell → string ─────────────────────────────────────────────────────
 
-function cellToString(cell: unknown): string {
-  if (cell === null || cell === undefined) return '';
-  if (typeof cell === 'boolean') return cell ? 'true' : 'false';
-  if (typeof cell === 'number') return String(cell);
-  if (typeof cell === 'string') return cell.trim();
-  // Date or other object
-  return String(cell).trim();
+function cellValueToString(value: ExcelJS.CellValue): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'string') return value.trim();
+  if (value instanceof Date) return value.toISOString().split('T')[0];
+  if (typeof value === 'object') {
+    // Rich text
+    if ('richText' in value) {
+      return (value as ExcelJS.CellRichTextValue).richText.map(r => r.text).join('').trim();
+    }
+    // Formula result
+    if ('result' in value) {
+      return cellValueToString((value as ExcelJS.CellFormulaValue).result as ExcelJS.CellValue);
+    }
+    // Error value (#REF!, etc.)
+    if ('error' in value) return '';
+  }
+  return String(value).trim();
+}
+
+// ── Worksheet → string[][] ────────────────────────────────────────────────────
+
+function worksheetToArrays(ws: ExcelJS.Worksheet): string[][] {
+  const result: string[][] = [];
+  const maxCol = ws.columnCount;
+
+  ws.eachRow({ includeEmpty: true }, (row) => {
+    const cells: string[] = [];
+    for (let c = 1; c <= maxCol; c++) {
+      cells.push(cellValueToString(row.getCell(c).value) || '');
+    }
+    result.push(cells);
+  });
+
+  return result;
 }
 
 // ── B65-B1: Pre-header row detection ─────────────────────────────────────────
@@ -78,9 +104,9 @@ function cellToString(cell: unknown): string {
 const PRE_HEADER_MAX_SCAN = 5;
 const PRE_HEADER_MIN_MATCH = 2;
 
-function detectExcelPreHeaderRows(rawRows: unknown[][]): number {
+function detectExcelPreHeaderRows(rawRows: string[][]): number {
   for (let i = 0; i < Math.min(rawRows.length, PRE_HEADER_MAX_SCAN); i++) {
-    const row = (rawRows[i] as unknown[]) ?? [];
+    const row = rawRows[i] ?? [];
     const cells = row.map(c => String(c ?? '').trim()).filter(Boolean);
     if (cells.length === 0) continue;
     const suggestions = suggestColumnMapping(cells);
@@ -93,14 +119,14 @@ function detectExcelPreHeaderRows(rawRows: unknown[][]): number {
 // ── Sheet parser ──────────────────────────────────────────────────────────────
 
 function parseWorksheetToRows(
-  ws: XLSX.WorkSheet,
+  raw: string[][],
   sheetName: string,
   maxRows?: number,
 ): ParsedExcelSheet {
   const warnings: ExcelParseWarning[] = [];
   const errors: ExcelParseError[] = [];
 
-  if (!ws || !ws['!ref']) {
+  if (!raw || raw.length === 0) {
     return {
       sheetName, headers: [], rows: [],
       warnings,
@@ -109,21 +135,13 @@ function parseWorksheetToRows(
     };
   }
 
-  // sheet_to_json with header:1 returns array of arrays (raw)
-  const raw = XLSX.utils.sheet_to_json<unknown[]>(ws, {
-    header: 1,
-    defval: '',
-    raw: false,     // stringify everything — no formula objects
-    blankrows: true,
-  });
-
   if (raw.length === 0) {
     errors.push({ code: 'EMPTY_SHEET', message: `Sheet "${sheetName}" has no content.` });
     return { sheetName, headers: [], rows: [], warnings, errors, skippedPreHeaderRows: 0 };
   }
 
   // B65-B1: Detect and skip pre-header rows (title/metadata rows before column headers)
-  const headerRowIndex = detectExcelPreHeaderRows(raw as unknown[][]);
+  const headerRowIndex = detectExcelPreHeaderRows(raw);
   if (headerRowIndex > 0) {
     warnings.push({
       code: 'PRE_HEADER_ROWS_SKIPPED',
@@ -132,7 +150,7 @@ function parseWorksheetToRows(
   }
 
   // Header row at headerRowIndex (was always row[0])
-  const rawHeaders: string[] = ((raw[headerRowIndex] as unknown[]) ?? []).map(h => String(h ?? ''));
+  const rawHeaders: string[] = (raw[headerRowIndex] ?? []).map(h => String(h ?? ''));
   const normalHeaders = rawHeaders.map(normalizeHeader);
 
   if (normalHeaders.every(h => h === '')) {
@@ -172,17 +190,17 @@ function parseWorksheetToRows(
   const limit = maxRows !== undefined ? Math.min(raw.length, dataStartIndex + maxRows) : raw.length;
 
   for (let i = dataStartIndex; i < limit; i++) {
-    const rawRow = (raw[i] as unknown[]) ?? [];
+    const rawRow = raw[i] ?? [];
 
     // Skip completely empty rows
-    const allEmpty = rawRow.every(cell => cellToString(cell) === '');
+    const allEmpty = rawRow.every(cell => String(cell ?? '').trim() === '');
     if (allEmpty) continue;
 
     const row: Record<string, string> = {};
     for (let j = 0; j < normalHeaders.length; j++) {
       const h = normalHeaders[j];
       if (h === '') continue;
-      row[h] = cellToString(rawRow[j]);
+      row[h] = String(rawRow[j] ?? '').trim();
     }
     rows.push(row);
   }
@@ -203,15 +221,19 @@ function parseWorksheetToRows(
  * Read a workbook buffer and return metadata for all sheets (no full row data).
  * Used by upload-preview route when no sheet is selected yet.
  */
-export function parseExcelWorkbookMeta(buf: Buffer): ExcelWorkbookMeta {
-  const workbook = XLSX.read(buf, { type: 'buffer', cellDates: false, cellNF: false });
-  const sheetNames = workbook.SheetNames;
+export async function parseExcelWorkbookMeta(buf: Uint8Array): Promise<ExcelWorkbookMeta> {
+  const wb = new ExcelJS.Workbook();
+  // ExcelJS types use legacy non-generic Buffer; Buffer extends Uint8Array so this cast is safe at runtime.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await wb.xlsx.load(buf as any);
 
-  const sheets: ExcelSheetSummary[] = sheetNames.map(sheetName => {
-    const ws = workbook.Sheets[sheetName];
-    const parsed = parseWorksheetToRows(ws, sheetName, 5); // limit to 5 rows for meta preview
+  const sheetNames = wb.worksheets.map(ws => ws.name);
+
+  const sheets: ExcelSheetSummary[] = wb.worksheets.map(ws => {
+    const raw = worksheetToArrays(ws);
+    const parsed = parseWorksheetToRows(raw, ws.name, 5);
     return {
-      sheetName,
+      sheetName: ws.name,
       rowCount: parsed.errors.length > 0 ? 0 : parsed.rows.length,
       headers: parsed.headers,
       warnings: parsed.warnings,
@@ -227,29 +249,35 @@ export function parseExcelWorkbookMeta(buf: Buffer): ExcelWorkbookMeta {
  * Parse a single named sheet from a workbook buffer — full row extraction.
  * Used by upload-preview route (with selectedSheetName) and accept route.
  */
-export function parseExcelSheet(buf: Buffer, sheetName: string, maxRows?: number): ParsedExcelSheet {
-  const workbook = XLSX.read(buf, { type: 'buffer', cellDates: false, cellNF: false });
+export async function parseExcelSheet(buf: Uint8Array, sheetName: string, maxRows?: number): Promise<ParsedExcelSheet> {
+  const wb = new ExcelJS.Workbook();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await wb.xlsx.load(buf as any);
 
-  if (!workbook.SheetNames.includes(sheetName)) {
+  const ws = wb.getWorksheet(sheetName);
+  if (!ws) {
+    const available = wb.worksheets.map(w => `"${w.name}"`).join(', ');
     return {
       sheetName, headers: [], rows: [],
       warnings: [],
       errors: [{
         code: 'SHEET_NOT_FOUND',
-        message: `Sheet "${sheetName}" not found. Available: ${workbook.SheetNames.map(s => `"${s}"`).join(', ')}.`,
+        message: `Sheet "${sheetName}" not found. Available: ${available}.`,
       }],
       skippedPreHeaderRows: 0,
     };
   }
 
-  const ws = workbook.Sheets[sheetName];
-  return parseWorksheetToRows(ws, sheetName, maxRows);
+  const raw = worksheetToArrays(ws);
+  return parseWorksheetToRows(raw, sheetName, maxRows);
 }
 
 /**
  * Return list of sheet names in a workbook.
  */
-export function getExcelSheetNames(buf: Buffer): string[] {
-  const workbook = XLSX.read(buf, { type: 'buffer', cellDates: false, cellNF: false });
-  return workbook.SheetNames;
+export async function getExcelSheetNames(buf: Uint8Array): Promise<string[]> {
+  const wb = new ExcelJS.Workbook();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await wb.xlsx.load(buf as any);
+  return wb.worksheets.map(ws => ws.name);
 }

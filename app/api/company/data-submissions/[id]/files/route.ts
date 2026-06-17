@@ -183,7 +183,7 @@ export async function POST(
         rowCount = rows.length;
       } else {
         // XLSX — use first sheet
-        const parsed = parseExcelSheet(fileBuffer, '', MAX_ROWS);
+        const parsed = await parseExcelSheet(fileBuffer, '', MAX_ROWS);
         rows    = parsed.rows;
         headers = parsed.headers;
         rowCount = rows.length;

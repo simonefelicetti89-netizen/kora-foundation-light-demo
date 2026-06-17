@@ -12,10 +12,16 @@
 // Post-B130: /company/* is live-only. No demo paths exist here anymore.
 // Demo experience lives at /demo/company/* — this layout has no demo-state logic.
 
+import type { Metadata }                                    from 'next';
 import { redirect }                                         from 'next/navigation';
 import { cookies }                                          from 'next/headers';
 import { requireCompanyUser, getCurrentKoraUser,
          isKoraAuthError }                                  from '@/lib/auth/kora-session';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true,
+            googleBot: { index: false, follow: false, noimageindex: true } },
+};
 import { canAccess }                                        from '@/lib/auth/access-matrix';
 import { logServiceAccess }                                 from '@/lib/audit/log-access';
 import { getSupabaseServiceClient }                         from '@/lib/supabase/server';

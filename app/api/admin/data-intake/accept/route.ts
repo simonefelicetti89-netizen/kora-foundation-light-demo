@@ -224,7 +224,7 @@ async function parseAndValidateOneFile(params: {
     headers = parsed.headers; originalRows = parsed.rows; parseWarnings = flattenCsvWarnings(parsed);
     fileSkippedPreHeaderRows = parsed.skippedPreHeaderRows;
   } else {
-    const parsed = parseExcelSheet(buf, selectedSheetName!, maxRows);
+    const parsed = await parseExcelSheet(buf, selectedSheetName!, maxRows);
     if (parsed.errors.length > 0) return { ok: false, error: `File ${file.name}: ${parsed.errors[0].message}`, status: 400 };
     headers = parsed.headers; originalRows = parsed.rows; parseWarnings = parsed.warnings.map(w => w.message);
     fileSkippedPreHeaderRows = parsed.skippedPreHeaderRows;
@@ -396,7 +396,7 @@ export async function POST(request: NextRequest) {
   let skippedPreHeaderRows = 0;
 
   if (isXlsx) {
-    const parsed = parseExcelSheet(buf, selectedSheetName!, MAX_ROWS);
+    const parsed = await parseExcelSheet(buf, selectedSheetName!, MAX_ROWS);
     if (parsed.errors.length > 0) {
       return NextResponse.json({
         error: `XLSX sheet error: ${parsed.errors[0].message}`,

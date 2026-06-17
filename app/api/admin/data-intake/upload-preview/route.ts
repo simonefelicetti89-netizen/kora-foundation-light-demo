@@ -204,7 +204,7 @@ async function processOneFile(params: {
   } else {
     // XLSX: if no sheet selected, need sheet list — caller handles this
     if (!selectedSheetName) {
-      const meta = parseExcelWorkbookMeta(buf);
+      const meta = await parseExcelWorkbookMeta(buf);
       return {
         ok: false, httpStatus: 200,
         body: {
@@ -216,7 +216,7 @@ async function processOneFile(params: {
         },
       };
     }
-    const parsed = parseExcelSheet(buf, selectedSheetName, maxRows);
+    const parsed = await parseExcelSheet(buf, selectedSheetName, maxRows);
     if (parsed.errors.length > 0) {
       return { ok: false, httpStatus: 400, body: { error: `File ${file.name} sheet "${selectedSheetName}": ${parsed.errors[0].message}`, fileIndex } };
     }
@@ -756,7 +756,7 @@ export async function POST(request: NextRequest) {
 
   // Phase A: No sheet selected → return workbook sheet list + sample
   if (!selectedSheetName) {
-    const meta = parseExcelWorkbookMeta(buf);
+    const meta = await parseExcelWorkbookMeta(buf);
 
     // PII scan on all sheet headers for early rejection
     for (const sheet of meta.sheets) {
@@ -793,7 +793,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Phase B: Sheet selected → parse, mapping, PII check, eligibility preview
-  const parsed = parseExcelSheet(buf, selectedSheetName, MAX_ROWS);
+  const parsed = await parseExcelSheet(buf, selectedSheetName, MAX_ROWS);
 
   if (parsed.errors.length > 0) {
     return NextResponse.json({

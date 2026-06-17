@@ -289,7 +289,7 @@ export async function parseAttachmentMetadata(params: {
 
   // ── XLSX ───────────────────────────────────────────────────────────────────
   if (fileType === 'xlsx') {
-    const meta = parseExcelWorkbookMeta(buf);
+    const meta = await parseExcelWorkbookMeta(buf);
     const allHeaders: string[] = meta.sheets.flatMap(s => s.headers);
     const safeSheetNames = meta.sheets.map(s => sanitizeSheetName(s.sheetName));
 

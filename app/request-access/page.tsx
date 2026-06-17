@@ -13,6 +13,8 @@ import Image from 'next/image';
 export const metadata = {
   title: 'Richiedi accesso · KORA',
   description: 'Richiedi accesso alla piattaforma KORA. La richiesta non crea un account.',
+  robots: { index: false, follow: false, nocache: true,
+            googleBot: { index: false, follow: false, noimageindex: true } },
 };
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
