@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { detectPiiInPayload } from '@/lib/privacy/pii-guard';
 import { randomUUID } from 'crypto';
 
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
   const auth = await requireCompanyUser(request);
   if (isKoraAuthError(auth)) return auth;
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
   const { data, error } = await db
     .schema('analytics').from('source_batch')
     .select('id, batch_status, source_name, reporting_period, row_count, created_at, updated_at, payload_sample')
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
   const submissionId = randomUUID();
 
   const csBlock = {

@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { fetchPdfData } from '@/lib/decision-pack/pdf-data';
 import { buildDecisionPackHtml } from '@/lib/decision-pack/html-template';
 
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const { tenantId } = authResult;
 
   // Resolve tenant_code from session tenantId (never from URL params)
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
   const { data: tenantRow, error: tenantErr } = await db
     .schema('analytics').from('tenant')
     .select('id, tenant_code, is_active')

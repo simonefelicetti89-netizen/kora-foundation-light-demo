@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { COMPANY_SUBMISSION_SOURCE_TYPE } from '../route';
 
 export async function GET(
@@ -21,7 +21,7 @@ export async function GET(
   const auth = await requireCompanyUser(request);
   if (isKoraAuthError(auth)) return auth;
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   const { data: subRow, error } = await db
     .schema('analytics').from('source_batch')

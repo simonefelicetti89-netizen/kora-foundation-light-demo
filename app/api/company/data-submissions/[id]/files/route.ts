@@ -13,12 +13,12 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
+import { uploadToAttachmentBucket } from '@/lib/supabase/storage-service-key';
 import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guard';
 import { parseCsvContent } from '@/lib/data-intake/csv-parser';
 import { parseExcelSheet } from '@/lib/data-intake/excel-parser';
 import {
-  ATTACHMENT_BUCKET,
   isBinaryStorable, getAttachmentContentType,
 } from '@/lib/data-intake/evidence-attachment-storage';
 import { randomUUID } from 'crypto';
@@ -98,7 +98,7 @@ export async function POST(
     return NextResponse.json({ error: 'Company Viewer non può caricare file.' }, { status: 403 });
   }
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   // Verify submission belongs to this tenant and is in draft state
   const { data: subRow, error: subErr } = await db
@@ -256,31 +256,22 @@ export async function POST(
   let storageWarning: string | undefined;
 
   if (isBinaryStorable({ fileType: fileExt, parserStatus: 'metadata_only' })) {
-    try {
-      const storagePath = buildSubmissionFilePath({
-        tenantId:     auth.tenantId,
-        submissionId,
-        fileId,
-        fileNameSafe,
-      });
-      const contentType = getAttachmentContentType(fileExt);
+    const storagePath = buildSubmissionFilePath({
+      tenantId:     auth.tenantId,
+      submissionId,
+      fileId,
+      fileNameSafe,
+    });
+    const contentType = getAttachmentContentType(fileExt);
 
-      const { error: storeErr } = await db.storage
-        .from(ATTACHMENT_BUCKET)
-        .upload(storagePath, fileBuffer, { contentType, upsert: false });
-
-      if (storeErr) {
-        const msg = storeErr.message ?? '';
-        if (msg.toLowerCase().includes('bucket') || msg.toLowerCase().includes('not found')) {
-          storageWarning = 'storage_not_configured';
-        } else {
-          storageWarning = `storage_error: ${msg}`;
-        }
-      } else {
-        storageStatus = 'stored_private';
-      }
-    } catch (e) {
-      storageWarning = (e as Error).message;
+    // Storage upload usa service-role isolato (bucket privato by design Supabase).
+    // La route usa getSupabaseServerClient per tutte le operazioni DB — solo l'upload
+    // passa per uploadToAttachmentBucket (lib/supabase/storage-service-key.ts).
+    const uploadResult = await uploadToAttachmentBucket(storagePath, fileBuffer, contentType);
+    if (!uploadResult.ok) {
+      storageWarning = uploadResult.error;
+    } else {
+      storageStatus = 'stored_private';
     }
   }
 

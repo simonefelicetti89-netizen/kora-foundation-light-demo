@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { COMPANY_SUBMISSION_SOURCE_TYPE } from '../../route';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,7 +34,7 @@ export async function POST(
     return NextResponse.json({ error: 'Company Viewer non può inviare submission.' }, { status: 403 });
   }
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   const { data: subRow, error: subErr } = await db
     .schema('analytics').from('source_batch')
