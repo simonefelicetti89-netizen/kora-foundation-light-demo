@@ -167,6 +167,50 @@ Tutti gli altri statement in 027 e 028 sono idempotenti.
 
 ---
 
+---
+
+## RISOLUZIONE BLOCCHI (B168.6 P4.0 sprint)
+
+### Decisione Blocco 2: A — Intenzionale
+
+`analytics.impact_unit` policy drops sono intenzionali (IU per-worker-event,
+granularità individuale). Accesso KORA_ADMIN mantenuto via service-role scoped.
+Dettaglio: `docs/sprint-B168-6/phase4-0-decision.md`
+
+### Correzione analisi statica pre-read
+
+Entrambe le route identificate come "bloccate" usavano già `getSupabaseServiceClient()`
+(service-role, bypassa RLS). 027 applicato non avrebbe rotto nulla funzionalmente.
+Il valore del sprint P4.0 è nella scoped service-key + whitelist assertion, non nel fix emergenziale.
+
+### Service-key paths creati
+
+| File | Scope | Commit |
+|---|---|---|
+| `lib/supabase/worker-provisioning-service-key.ts` | INSERT su `personal.worker_identity` con whitelist `ALLOWED_IDENTITY_INSERT_FIELDS` | P4.0.1 |
+| `lib/supabase/impact-unit-service-key.ts` | SELECT su `analytics.impact_unit` con whitelist `ALLOWED_IU_SELECT_COLUMNS` | P4.0.2 |
+
+### Route aggiornate
+
+- `app/api/admin/workers/provision/route.ts` → usa `insertWorkerIdentity()` per step 3
+- `app/api/admin/impact-units/route.ts` → usa `queryImpactUnits()` e `queryImpactUnitPeriods()`
+
+### Idempotency guards aggiunti
+
+- 027: già idempotente (tutti DROP POLICY IF EXISTS) + header IDEMPOTENT aggiunto
+- 028: `CREATE POLICY "audit_reader_select"` wrappata in `DO $$ IF NOT EXISTS ... END $$` + header IDEMPOTENT
+
+### Test coverage
+
+`tests/unit/b168-6-service-key-guards.test.ts` — 29 test:
+- assertProvisioningInsertPayload: whitelist + reject PII fields
+- assertProvisioningUpdatePayload: whitelist
+- assertIUSelectColumns: whitelist + reject identity columns
+- Route wiring checks
+- Migration idempotency structure checks
+
+---
+
 ## Checklist pre-esecuzione
 
 - [ ] Conferma Gate 2 decision documentata sopra

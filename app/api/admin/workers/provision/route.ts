@@ -16,6 +16,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { insertWorkerIdentity } from '@/lib/supabase/worker-provisioning-service-key';
 
 interface ProvisionBody {
   tenantCode: string;
@@ -85,23 +86,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const authUserId = inviteData.user.id;
 
-  // ── 3. Insert personal.worker_identity ──────────────────────────────────────
-  const { data: wiRow, error: wiErr } = await db.schema('personal').from('worker_identity')
-    .insert({
-      tenant_id:    tenantId,
-      auth_user_id: authUserId,
-      worker_ref:   workerRef,
-      status:       'invited',
-    })
-    .select('id')
-    .single();
+  // ── 3. Insert personal.worker_identity (scoped service-role, field whitelist) ─
+  const { data: wiRow, error: wiErr } = await insertWorkerIdentity({
+    tenant_id:    tenantId,
+    auth_user_id: authUserId,
+    worker_ref:   workerRef,
+    status:       'invited',
+  });
 
-  if (wiErr) {
-    return NextResponse.json({ error: `worker_identity insert: ${wiErr.message}` }, { status: 500 });
+  if (wiErr || !wiRow) {
+    return NextResponse.json({ error: `worker_identity insert: ${wiErr ?? 'no data returned'}` }, { status: 500 });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const workerId = (wiRow as any).id as string;
+  const workerId = wiRow.id;
 
   // ── 4. Update app_metadata with kora_worker_id ───────────────────────────────
   const { error: metaErr } = await db.auth.admin.updateUserById(authUserId, {

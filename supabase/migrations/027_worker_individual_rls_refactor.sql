@@ -14,6 +14,9 @@
 -- Gate 2 OPEN — SCRITTO, NON APPLICATO.
 -- NON applicare a nessun DB (production o staging) prima della chiusura di Gate 2 (CTO review).
 -- Applicare SOLO dopo: conferma Gate 2 + verifica provisioning service-role isolato.
+--
+-- IDEMPOTENT: this migration can be applied multiple times safely.
+-- All statements use DROP POLICY IF EXISTS (B168.6 P4.0.4 verified).
 
 BEGIN;
 

@@ -16,6 +16,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { queryImpactUnits, queryImpactUnitPeriods } from '@/lib/supabase/impact-unit-service-key';
 import type { ImpactUnitFactorTrace } from '@/lib/types';
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -105,15 +106,12 @@ export async function GET(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tenant = tenantRow as any;
 
-  // ── Available periods for this tenant ─────────────────────────────────────
-  const { data: periodsData } = await db
-    .schema('analytics').from('impact_unit')
-    .select('reporting_period')
-    .eq('tenant_id', tenantId)
-    .order('reporting_period', { ascending: false });
-
-  const allPeriods = (periodsData ?? []).map((r: { reporting_period: string }) => r.reporting_period);
-  const availablePeriods = [...new Set(allPeriods)] as string[];
+  // ── Available periods (scoped service-key) ────────────────────────────────
+  const { data: allPeriods, error: periodsError } = await queryImpactUnitPeriods({ tenantId });
+  if (periodsError) {
+    return NextResponse.json({ error: periodsError }, { status: 500 });
+  }
+  const availablePeriods = [...new Set(allPeriods ?? [])] as string[];
 
   // ── Resolve period ────────────────────────────────────────────────────────
   const period = reportingPeriodParam || availablePeriods[0] || '';
@@ -129,23 +127,25 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  // ── Fetch impact_unit rows ────────────────────────────────────────────────
-  const { data: iuData, error: iuError } = await db
-    .schema('analytics').from('impact_unit')
-    .select([
-      'id', 'uef_record_id', 'source_batch_id', 'reporting_period',
-      'nm', 'bc', 'cq', 'ev', 'cf', 'agf',
-      'impact_units_total',
-      'life_iu', 'growth_iu', 'connection_iu', 'impact_iu', 'legacy_iu',
-      'computed', 'exclusion_reason', 'factor_trace',
-      'methodology_version', 'calibration_status', 'created_at',
-    ].join(', '))
-    .eq('tenant_id', tenantId)
-    .eq('reporting_period', period)
-    .order('impact_units_total', { ascending: false });
+  // ── Fetch impact_unit rows (scoped service-key, column whitelist) ─────────
+  const IU_COLUMNS = [
+    'id', 'uef_record_id', 'source_batch_id', 'reporting_period',
+    'nm', 'bc', 'cq', 'ev', 'cf', 'agf',
+    'impact_units_total',
+    'life_iu', 'growth_iu', 'connection_iu', 'impact_iu', 'legacy_iu',
+    'computed', 'exclusion_reason', 'factor_trace',
+    'methodology_version', 'calibration_status', 'created_at',
+  ];
+
+  const { data: iuData, error: iuError } = await queryImpactUnits({
+    tenantId,
+    reportingPeriod: period,
+    columns: IU_COLUMNS,
+    orderBy: { column: 'impact_units_total', ascending: false },
+  });
 
   if (iuError) {
-    return NextResponse.json({ error: iuError.message }, { status: 500 });
+    return NextResponse.json({ error: iuError }, { status: 500 });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

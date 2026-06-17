@@ -215,8 +215,11 @@ describe('B104 — provision API route contracts', () => {
     expect(provision).toContain('kora_worker_id: workerId');
   });
 
-  it('inserts into personal.worker_identity', () => {
-    expect(provision).toContain("from('worker_identity')");
+  it('inserts into personal.worker_identity via scoped service-key (B168.6)', () => {
+    // Post-B168.6: direct from('worker_identity') replaced by insertWorkerIdentity()
+    // from worker-provisioning-service-key (field whitelist enforced at that layer).
+    expect(provision).toContain('insertWorkerIdentity(');
+    expect(provision).toContain("from '@/lib/supabase/worker-provisioning-service-key'");
   });
 
   it('returns workerId in response', () => {

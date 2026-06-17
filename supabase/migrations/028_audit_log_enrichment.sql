@@ -14,6 +14,10 @@
 --
 -- Gate 2 OPEN — SCRITTO, NON APPLICATO.
 -- NON applicare a nessun DB prima della chiusura di Gate 2 (CTO review).
+--
+-- IDEMPOTENT: this migration can be applied multiple times safely.
+-- ADD COLUMN IF NOT EXISTS, CREATE INDEX IF NOT EXISTS, CREATE ROLE via DO $$,
+-- CREATE POLICY via DO $$ guard (B168.6 P4.0.4).
 
 BEGIN;
 
@@ -51,8 +55,18 @@ END $$;
 -- Policy SELECT per audit_reader — complementare a kora_admin_read_audit.
 -- Quando audit_reader è assegnato agli operatori che necessitano di audit access,
 -- la policy kora_admin_read_audit può essere rimossa per il principio PoLP.
-CREATE POLICY "audit_reader_select" ON audit.audit_log
-  FOR SELECT
-  USING (pg_has_role(current_user, 'audit_reader', 'USAGE'));
+-- B168.6 P4.0.4: DO $$ guard per idempotenza (CREATE POLICY non supporta IF NOT EXISTS).
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'audit'
+      AND tablename  = 'audit_log'
+      AND policyname = 'audit_reader_select'
+  ) THEN
+    CREATE POLICY "audit_reader_select" ON audit.audit_log
+      FOR SELECT
+      USING (pg_has_role(current_user, 'audit_reader', 'USAGE'));
+  END IF;
+END $$;
 
 COMMIT;
