@@ -4,6 +4,7 @@
 // Nota: tutti i benchmark sono sintetici — nessun benchmark empirico disponibile
 //        prima della calibrazione Delphi post-pilot.
 
+import { DemoAccessBanner } from '@/components/demo/DemoAccessBanner';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 import { TOKENS, CHART_COLORS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
@@ -15,6 +16,7 @@ export default function BenchmarksPage() {
 
   return (
     <div style={{ maxWidth: 800 }}>
+      <DemoAccessBanner />
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>

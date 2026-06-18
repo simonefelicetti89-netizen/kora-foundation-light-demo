@@ -8,6 +8,7 @@
 export const dynamic = 'force-static';
 
 import Link from 'next/link';
+import { DemoAccessBanner } from '@/components/demo/DemoAccessBanner';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -104,6 +105,7 @@ function SectionHeading({ label, subtitle }: { label: string; subtitle: string }
 export default function DemoHomePage() {
   return (
     <div data-testid="demo-home" style={{ fontFamily: FONT }}>
+      <DemoAccessBanner />
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <div style={{ marginBottom: 36 }}>

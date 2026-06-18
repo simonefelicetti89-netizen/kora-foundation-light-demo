@@ -2,6 +2,7 @@
 // Static mockup. No backend logic. Not active in Foundation Light.
 
 import Link from 'next/link';
+import { DemoAccessBanner } from '@/components/demo/DemoAccessBanner';
 import { cn } from '@/lib/utils';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { TM } from '@/components/ui/TM';
@@ -202,6 +203,7 @@ const MODULE_DESC_STYLES: Record<Cluster['status'], string> = {
 export default function FutureVision() {
   return (
     <div className="space-y-10 max-w-3xl">
+      <DemoAccessBanner />
 
       {/* ── Hero ── */}
       <div>

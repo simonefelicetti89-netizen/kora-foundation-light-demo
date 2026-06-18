@@ -2,6 +2,7 @@
 // Scopo: visualizzare scenari dimostrativi S1/S2 per la validazione
 //        commerciale e preparare presentazioni a investor/pilot prospect.
 import Link from 'next/link';
+import { DemoAccessBanner } from '@/components/demo/DemoAccessBanner';
 import { adminPreviewService } from '@/services/admin-preview/AdminPreviewService';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
@@ -193,6 +194,7 @@ export default function GtmPilotConsole() {
 
   return (
     <div className="space-y-8 max-w-3xl">
+      <DemoAccessBanner />
 
       {/* ── Header ── */}
       <div>
