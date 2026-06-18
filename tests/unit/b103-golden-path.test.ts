@@ -272,7 +272,7 @@ describe('B103 — Golden Path Runbook', () => {
 
 describe('B103 — micro-hints in UI', () => {
   it('live-spine-diagnostics page mentions Golden Path Runbook', () => {
-    const src = readFile('app/admin/live-spine-diagnostics/page.tsx');
+    const src = readFile('app/admin/platform/diagnostics/live-spine/page.tsx');
     expect(src).toContain('GOLDEN_PATH_RUNBOOK');
     expect(src).toContain('kora_golden_path_upload.csv');
   });

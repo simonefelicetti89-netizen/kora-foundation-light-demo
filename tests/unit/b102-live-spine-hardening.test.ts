@@ -97,16 +97,16 @@ describe('B102 — live-spine-diagnostics API route', () => {
 
 // ── 2. Live Spine Diagnostics page ───────────────────────────────────────────
 
-describe('B102 — live-spine-diagnostics page', () => {
+describe('B102 — live-spine-diagnostics page (B169 FASE 5: /admin/platform/diagnostics/live-spine)', () => {
   it('exists as a server component with auth redirect', () => {
-    const src = readSrc('app/admin/live-spine-diagnostics/page.tsx');
+    const src = readSrc('app/admin/platform/diagnostics/live-spine/page.tsx');
     expect(src).toContain("import { redirect } from 'next/navigation'");
     expect(src).toContain("kora_role !== 'KORA_ADMIN'");
     expect(src).toContain("redirect('/admin/login')");
   });
 
   it('shows ReadinessBadge with all four states', () => {
-    const src = readSrc('app/admin/live-spine-diagnostics/page.tsx');
+    const src = readSrc('app/admin/platform/diagnostics/live-spine/page.tsx');
     expect(src).toContain('READY');
     expect(src).toContain('NEEDS_REVIEW');
     expect(src).toContain('NO_DATA');
@@ -114,26 +114,26 @@ describe('B102 — live-spine-diagnostics page', () => {
   });
 
   it('shows Decision Pack links with tenantCode from data (not hardcoded)', () => {
-    const src = readSrc('app/admin/live-spine-diagnostics/page.tsx');
+    const src = readSrc('app/admin/platform/diagnostics/live-spine/page.tsx');
     // Links must use t.tenantCode — not a hardcoded OP-001
     expect(src).toContain('tenantCode=${t.tenantCode}');
     expect(src).not.toMatch(/tenantCode=OP-001/);
   });
 
   it('includes Data Intake and UEF Review quick links', () => {
-    const src = readSrc('app/admin/live-spine-diagnostics/page.tsx');
+    const src = readSrc('app/admin/platform/diagnostics/live-spine/page.tsx');
     expect(src).toContain('/admin/data-intake');
     expect(src).toContain('/admin/uef-review');
   });
 
   it('labels OP-001 as demo sintetico', () => {
-    const src = readSrc('app/admin/live-spine-diagnostics/page.tsx');
+    const src = readSrc('app/admin/platform/diagnostics/live-spine/page.tsx');
     expect(src).toContain('DEMO SINTETICO');
     expect(src).toContain("tenantCode === 'OP-001'");
   });
 
   it('displays a note that data is real-time from Supabase', () => {
-    const src = readSrc('app/admin/live-spine-diagnostics/page.tsx');
+    const src = readSrc('app/admin/platform/diagnostics/live-spine/page.tsx');
     expect(src).toContain('dati sono in tempo reale da Supabase');
   });
 });

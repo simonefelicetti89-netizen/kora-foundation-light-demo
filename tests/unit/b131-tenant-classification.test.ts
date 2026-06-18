@@ -499,7 +499,7 @@ describe('B131 Step 4 — trial-control-center: LIVE filter in direct DB fetch',
 });
 
 describe('B131 Step 4 — live-spine-diagnostics page: LIVE filter in direct DB fetch', () => {
-  const src = readFile('app/admin/live-spine-diagnostics/page.tsx');
+  const src = readFile('app/admin/platform/diagnostics/live-spine/page.tsx');
 
   it('tenant fetch filters by tenant_kind LIVE', () => {
     expect(src).toContain(".eq('tenant_kind', 'LIVE')");

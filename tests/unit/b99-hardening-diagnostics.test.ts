@@ -88,8 +88,8 @@ describe('Diagnostic API — app/api/admin/diagnostics/route.ts', () => {
 
 // ── Diagnostic page ───────────────────────────────────────────────────────────
 
-describe('Diagnostic page — app/admin/provisioning-diagnostics/page.tsx', () => {
-  const page = read('app/admin/provisioning-diagnostics/page.tsx');
+describe('Diagnostic page — app/admin/platform/diagnostics/provisioning/page.tsx (B169 FASE 5)', () => {
+  const page = read('app/admin/platform/diagnostics/provisioning/page.tsx');
 
   it('redirects to /admin/login if not KORA_ADMIN', () => {
     expect(page).toContain("redirect('/admin/login')");
@@ -152,7 +152,8 @@ describe('Diagnostic page — app/admin/provisioning-diagnostics/page.tsx', () =
 
   it('imports DryCheckButton client component', () => {
     expect(page).toContain('DryCheckButton');
-    expect(page).toContain('./_dry-check-button');
+    // B169 FASE 5: consolidated page uses absolute import (original _dry-check-button stays at old path)
+    expect(page).toContain('provisioning-diagnostics/_dry-check-button');
   });
 
   it('is runtime nodejs', () => {
