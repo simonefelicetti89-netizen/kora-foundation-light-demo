@@ -1,16 +1,19 @@
-// A-07: Company Workspace Admin — vista workspace autenticata company.
-// Scopo: consentire a KORA Admin di visualizzare il workspace
-//        di una company specifica per revisione operativa.
-// app/admin/company-workspace/page.tsx
-// B14 — Spazio azienda: pilot flow orchestration — KORA_ADMIN only.
+// A-07: Company Workspace Admin — REDIRECT (B168.5 Phase 2.3)
+// Inbound links con ?tenantCode= vengono reindirizzati al drill-in Gen 3.
+// Backward-compatible: link senza tenantCode → companies list con ?from=workspace.
 
-import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { CompanyWorkspacePanel } from './_components/CompanyWorkspacePanel';
 import { redirect } from 'next/navigation';
+import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 
-export default async function CompanyWorkspacePage() {
+export default async function CompanyWorkspacePage({
+  searchParams,
+}: {
+  searchParams: { tenantCode?: string; reportingPeriod?: string };
+}) {
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');
 
-  return <CompanyWorkspacePanel userEmail={auth.email} userRole={auth.koraRole} />;
+  const tc = searchParams?.tenantCode;
+  if (tc) redirect(`/admin/companies/${encodeURIComponent(tc)}/workspace`);
+  redirect('/admin/companies?from=workspace');
 }

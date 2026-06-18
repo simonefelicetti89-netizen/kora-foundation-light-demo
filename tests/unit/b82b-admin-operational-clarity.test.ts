@@ -83,8 +83,8 @@ describe('B82-B Task 3 — Demo group renamed to Demo & Preview', () => {
 describe('B82-B Task 4 — Orphaned routes restored in navigation', () => {
   const sidebar = read('components/layout/Sidebar.tsx');
 
-  it('sidebar includes /admin/company-live-preview', () => {
-    expect(sidebar).toContain("href: '/admin/company-live-preview'");
+  it('sidebar Anteprima Live Cockpit links to companies (B168.5 Gen 3 consolidation)', () => {
+    expect(sidebar).toContain("href: '/admin/companies?from=preview'");
     expect(sidebar).toContain('Anteprima Live Cockpit');
   });
 

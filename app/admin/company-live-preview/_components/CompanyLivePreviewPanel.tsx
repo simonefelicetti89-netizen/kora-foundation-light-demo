@@ -140,13 +140,16 @@ function EmptyState({ msg }: { msg: string }) {
 
 // ── Main Panel ────────────────────────────────────────────────────────────────
 
-export function CompanyLivePreviewPanel() {
+interface Props { initialTenantCode?: string; }
+
+export function CompanyLivePreviewPanel({ initialTenantCode }: Props = {}) {
   const [tenants,    setTenants]    = useState<TenantOption[]>([]);
-  const [tenantCode, setTenantCode] = useState('');
+  const [tenantCode, setTenantCode] = useState(initialTenantCode ?? '');
   const [period,     setPeriod]     = useState('2026-Q1');
   const [data,       setData]       = useState<LivePreviewData | null>(null);
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState<string | null>(null);
+  const showSelector                = !initialTenantCode;
 
   // Fetch tenant list
   useEffect(() => {
@@ -218,8 +221,8 @@ export function CompanyLivePreviewPanel() {
         </div>
       </div>
 
-      {/* ── Selector bar ─────────────────────────────────────────────────── */}
-      <div className="border-b border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-8 py-3">
+      {/* ── Selector bar — hidden when initialTenantCode provided (drill-in context) ── */}
+      {showSelector && <div className="border-b border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-8 py-3">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-[rgba(6,3,43,0.40)]">Azienda</label>
@@ -253,10 +256,10 @@ export function CompanyLivePreviewPanel() {
             <span className="text-[12px] text-red-500">{error}</span>
           )}
         </div>
-      </div>
+      </div>}
 
-      {/* ── No selection state ────────────────────────────────────────────── */}
-      {!tenantCode && (
+      {/* ── No selection state — only in standalone mode ─────────────────── */}
+      {showSelector && !tenantCode && (
         <div className="flex h-64 items-center justify-center">
           <p className="text-[rgba(6,3,43,0.40)] text-sm">Seleziona un&apos;azienda per visualizzare la live preview.</p>
         </div>

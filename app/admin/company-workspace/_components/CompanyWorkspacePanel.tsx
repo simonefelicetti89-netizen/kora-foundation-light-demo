@@ -118,15 +118,16 @@ function StepCard({ number, title, status, children, cta }: StepCardProps) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-interface Props { userEmail: string; userRole: string; }
+interface Props { userEmail: string; userRole: string; initialTenantCode?: string; }
 
-export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
+export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }: Props) {
   const [tenants, setTenants]           = useState<TenantOption[]>([]);
-  const [tenantCode, setTenantCode]     = useState('');
+  const [tenantCode, setTenantCode]     = useState(initialTenantCode ?? '');
   const [period, setPeriod]             = useState('2026-Q1');
   const [workspace, setWorkspace]       = useState<WorkspaceData | null>(null);
   const [loading, setLoading]           = useState(false);
   const isOp001                         = tenantCode === 'OP-001';
+  const showSelector                    = !initialTenantCode;
 
   // Decision Pack promotion state (P4)
   const [dpPromoStatus, setDpPromoStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
@@ -238,8 +239,8 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
         </div>
       </div>
 
-      {/* Selector */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-end gap-4">
+      {/* Selector — hidden when initialTenantCode is provided (drill-in context) */}
+      {showSelector && <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-end gap-4">
         <div>
           <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Azienda</p>
           <select value={tenantCode} onChange={e => setTenantCode(e.target.value)}
@@ -264,7 +265,7 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
           className="text-[10px] text-[#C76F3D] underline underline-offset-2 hover:text-[#4a41d4] pb-1">
           + Crea azienda
         </a>
-      </div>
+      </div>}
 
       {/* OP-001 synthetic warning */}
       {isOp001 && (
@@ -273,8 +274,8 @@ export function CompanyWorkspacePanel({ userEmail, userRole }: Props) {
         </div>
       )}
 
-      {/* Empty state */}
-      {!tenantCode && (
+      {/* Empty state — only in standalone mode (selector visible) */}
+      {showSelector && !tenantCode && (
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-5 py-10 text-center text-sm text-[rgba(6,3,43,0.40)]">
           Seleziona un&apos;azienda per iniziare.
         </div>

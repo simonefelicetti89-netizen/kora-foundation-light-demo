@@ -1,16 +1,19 @@
-// A-08: Company Live Preview — anteprima live del cockpit company.
-// Scopo: mostrare a KORA Admin come appare il cockpit di una company
-//        prima di consegnarlo. Read-only, nessuna azione.
-// app/admin/company-live-preview/page.tsx
-// B20 — Company Live Preview. KORA_ADMIN only.
+// A-08: Company Live Preview — REDIRECT (B168.5 Phase 2.3)
+// Inbound links con ?tenantCode= vengono reindirizzati al drill-in Gen 3.
+// Backward-compatible: link senza tenantCode → companies list con ?from=preview.
 
-import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { CompanyLivePreviewPanel } from './_components/CompanyLivePreviewPanel';
 import { redirect } from 'next/navigation';
+import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 
-export default async function CompanyLivePreviewPage() {
+export default async function CompanyLivePreviewPage({
+  searchParams,
+}: {
+  searchParams: { tenantCode?: string; reportingPeriod?: string };
+}) {
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');
 
-  return <CompanyLivePreviewPanel />;
+  const tc = searchParams?.tenantCode;
+  if (tc) redirect(`/admin/companies/${encodeURIComponent(tc)}/preview`);
+  redirect('/admin/companies?from=preview');
 }

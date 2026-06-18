@@ -1,24 +1,19 @@
-// A-11: Evidence Archive — archivio evidenze per company.
-// Scopo: visualizzare e gestire i record evidenza (batch, iniziative,
-//        livelli L0–L4, lifecycle allegati) per una company specifica.
-// app/admin/company-evidence-archive/page.tsx
-// B29: Company Evidence Archive — read-only evidence lineage page.
+// A-11: Evidence Archive — REDIRECT (B168.5 Phase 2.3)
+// Inbound links con ?tenantCode= vengono reindirizzati al drill-in Gen 3.
+// Backward-compatible: link senza tenantCode → companies list con ?from=evidence.
 
-import { Suspense } from 'react';
-import { CompanyEvidenceArchivePanel } from './_components/CompanyEvidenceArchivePanel';
+import { redirect } from 'next/navigation';
+import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 
-export const metadata = {
-  title: 'Evidence Archive — KORA Admin',
-};
+export default async function CompanyEvidenceArchivePage({
+  searchParams,
+}: {
+  searchParams: { tenantCode?: string; reportingPeriod?: string };
+}) {
+  const auth = await requireKoraAdmin();
+  if (isKoraAuthError(auth)) redirect('/admin/login');
 
-export default function CompanyEvidenceArchivePage() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen text-sm text-[rgba(6,3,43,0.52)]">
-        Caricamento Evidence Archive…
-      </div>
-    }>
-      <CompanyEvidenceArchivePanel />
-    </Suspense>
-  );
+  const tc = searchParams?.tenantCode;
+  if (tc) redirect(`/admin/companies/${encodeURIComponent(tc)}/evidence`);
+  redirect('/admin/companies?from=evidence');
 }

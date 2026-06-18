@@ -170,7 +170,9 @@ function ReviewPanel({ sub, onDone }: { sub: Submission; onDone: () => void }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
+interface QueueProps { userEmail: string; initialTenantCode?: string; }
+
+export function AdminSubmissionQueue({ userEmail, initialTenantCode }: QueueProps) {
   const [data,    setData]    = useState<QueueData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState<string | null>(null);
@@ -190,9 +192,12 @@ export function AdminSubmissionQueue({ userEmail }: { userEmail: string }) {
 
   const filtered = useMemo(() => {
     if (!data) return [];
-    if (statusFilter === 'all') return data.submissions;
-    return data.submissions.filter(s => s.status === statusFilter);
-  }, [data, statusFilter]);
+    const byTenant = initialTenantCode
+      ? data.submissions.filter(s => s.tenantCode === initialTenantCode)
+      : data.submissions;
+    if (statusFilter === 'all') return byTenant;
+    return byTenant.filter(s => s.status === statusFilter);
+  }, [data, statusFilter, initialTenantCode]);
 
   return (
     <div className="max-w-4xl mx-auto py-6 px-3 space-y-5">

@@ -1,20 +1,19 @@
-// A-09: Submission Queue — coda submission file aziendali.
-// Scopo: gestire i file inviati dalle aziende (intake iniziale),
-//        classificarli e avviarli nella pipeline Data Intake.
-// app/admin/company-submissions/page.tsx
-// B39 — Company submission review queue. KORA_ADMIN only.
+// A-09: Company Submissions — REDIRECT (B168.5 Phase 2.3)
+// Inbound links vengono reindirizzati al drill-in Gen 3 o alla companies list.
+// Backward-compatible: link senza tenantCode → companies list con ?from=submissions.
 
-import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { AdminSubmissionQueue } from './_components/AdminSubmissionQueue';
 import { redirect } from 'next/navigation';
+import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 
-export const metadata = {
-  title: 'Company Submissions — KORA Admin',
-};
-
-export default async function CompanySubmissionsPage() {
+export default async function CompanySubmissionsPage({
+  searchParams,
+}: {
+  searchParams: { tenantCode?: string };
+}) {
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');
 
-  return <AdminSubmissionQueue userEmail={auth.email} />;
+  const tc = searchParams?.tenantCode;
+  if (tc) redirect(`/admin/companies/${encodeURIComponent(tc)}/submissions`);
+  redirect('/admin/companies?from=submissions');
 }

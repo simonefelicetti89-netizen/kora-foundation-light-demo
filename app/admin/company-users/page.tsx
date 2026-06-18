@@ -1,29 +1,20 @@
-// A-10: Company Users — provisioning utenti aziendali.
-// Scopo: gestire l'accesso degli utenti company (admin/viewer)
-//        al workspace KORA della loro azienda.
-// app/admin/company-users/page.tsx
-// B36 PART 3 — Company user provisioning — KORA_ADMIN only.
+// A-10: Company Users — REDIRECT (B168.5 Phase 2.3)
+// company-users usa tenantId (UUID) internamente, non tenantCode.
+// Se il link include ?tenantCode= (raro), redirect al drill-in specifico.
+// Altrimenti → companies list con ?from=users.
 
+import { redirect } from 'next/navigation';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { CompanyUserProvisioningPanel } from './_components/CompanyUserProvisioningPanel';
-import Link from 'next/link';
 
-export default async function CompanyUsersPage() {
+export default async function CompanyUsersPage({
+  searchParams,
+}: {
+  searchParams: { tenantCode?: string; tenantId?: string };
+}) {
   const auth = await requireKoraAdmin();
+  if (isKoraAuthError(auth)) redirect('/admin/login');
 
-  if (isKoraAuthError(auth)) {
-    return (
-      <div className="max-w-md mx-auto mt-16 p-8 border border-[rgba(6,3,43,0.08)] rounded-xl bg-[#F8F6F1] shadow-sm text-center space-y-4">
-        <h1 className="text-lg font-semibold text-[rgba(6,3,43,0.90)]">
-          {auth.status === 403 ? 'Accesso non autorizzato' : 'Sessione non trovata'}
-        </h1>
-        <Link href="/admin/login"
-          className="inline-block mt-2 bg-[#06032B] text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-[rgba(6,3,43,0.88)] transition-colors">
-          Vai al login
-        </Link>
-      </div>
-    );
-  }
-
-  return <CompanyUserProvisioningPanel userEmail={auth.email} userRole={auth.koraRole} />;
+  const tc = searchParams?.tenantCode;
+  if (tc) redirect(`/admin/companies/${encodeURIComponent(tc)}/users`);
+  redirect('/admin/companies?from=users');
 }

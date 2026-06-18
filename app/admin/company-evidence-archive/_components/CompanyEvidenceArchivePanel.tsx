@@ -192,11 +192,14 @@ function StatCard({ label, value, sub, color = '#06032B', highlight = false }: {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export function CompanyEvidenceArchivePanel() {
+interface Props { initialTenantCode?: string; }
+
+export function CompanyEvidenceArchivePanel({ initialTenantCode }: Props = {}) {
   const searchParams = useSearchParams();
+  const showSelector = !initialTenantCode;
 
   const [tenantList, setTenantList] = useState<TenantOption[]>([]);
-  const [TENANT, setTENANT] = useState(searchParams?.get('tenantCode') ?? '');
+  const [TENANT, setTENANT] = useState(initialTenantCode ?? searchParams?.get('tenantCode') ?? '');
   const [PERIOD, setPERIOD] = useState(searchParams?.get('reportingPeriod') ?? '2026-Q1');
   const [data, setData]     = useState<ArchiveData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -298,8 +301,8 @@ export function CompanyEvidenceArchivePanel() {
         </div>
       </div>
 
-      {/* ── Selector ── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-end gap-4">
+      {/* ── Selector — hidden when initialTenantCode provided (drill-in context) ── */}
+      {showSelector && <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3 flex flex-wrap items-end gap-4">
         <div>
           <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-1">Azienda</p>
           {tenantList.length > 0 ? (
@@ -325,7 +328,7 @@ export function CompanyEvidenceArchivePanel() {
           className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
           {loading ? '⏳ Caricamento…' : '↻ Carica archivio'}
         </button>
-      </div>
+      </div>}
 
       {error && (
         <div className="rounded-lg border border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] px-4 py-3 text-sm text-[#9E3B2F]">⚠ {error}</div>

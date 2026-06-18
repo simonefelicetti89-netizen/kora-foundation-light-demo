@@ -98,10 +98,10 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         groupBadge: 'LIVE',
         badgeKey: 'LIVE',
         items: [
-          { href: '/admin/company-submissions',      label: 'Submission Queue' },
+          { href: '/admin/companies?from=submissions', label: 'Submission Queue' },
           { href: '/admin/data-intake',              label: 'Data Intake' },
           { href: '/admin/uef-review',               label: 'UEF™ Review & Scoring' },
-          { href: '/admin/company-evidence-archive', label: 'Evidence Archive' },
+          { href: '/admin/companies?from=evidence',  label: 'Evidence Archive' },
         ],
       },
       {
@@ -148,7 +148,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         badgeKey: 'SYNTHETIC',
         // All routes in this group use synthetic/demo data — no live Supabase queries.
         items: [
-          { href: '/admin/company-live-preview',     label: 'Anteprima Live Cockpit' },
+          { href: '/admin/companies?from=preview',    label: 'Anteprima Live Cockpit' },
           { href: '/commons',                        label: 'KORA Commons Network', preview: true },
           { href: '/admin/demo/acme-001',            label: 'Guided Demo — ACME-001' },
           { href: '/demo/index-registry',            label: 'Registro KORA Index' },
