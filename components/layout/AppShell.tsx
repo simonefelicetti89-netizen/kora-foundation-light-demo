@@ -55,9 +55,15 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  initialRole,
+}: {
+  children: React.ReactNode;
+  initialRole?: import('@/lib/types').KoraRole | null;
+}) {
   return (
-    <DemoStateProvider>
+    <DemoStateProvider initialRole={initialRole}>
       <AppShellContent>{children}</AppShellContent>
     </DemoStateProvider>
   );

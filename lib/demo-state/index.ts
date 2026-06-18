@@ -16,8 +16,14 @@ interface DemoState {
 
 const DemoStateContext = createContext<DemoState | null>(null);
 
-export function DemoStateProvider({ children }: { children: React.ReactNode }) {
-  const [activeRole, setActiveRole] = useState<KoraRole>('COMPANY_ADMIN');
+export function DemoStateProvider({
+  children,
+  initialRole,
+}: {
+  children: React.ReactNode;
+  initialRole?: KoraRole | null;
+}) {
+  const [activeRole, setActiveRole] = useState<KoraRole>(initialRole ?? 'COMPANY_ADMIN');
   const [activeScenario, setActiveScenario] = useState<ScenarioId>('S1');
   const [activePersona, setActivePersona] = useState<WorkerPersona | null>(null);
   const [activeEnvironment, setActiveEnvironment] = useState<Environment>('demo');

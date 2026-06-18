@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Instrument_Serif, Playfair_Display, Hanken_Grotesk } from 'next/font/google';
 import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
+import { getCurrentKoraUser } from '@/lib/auth/kora-session';
+import type { KoraRole } from '@/lib/types';
 
 // Plus Jakarta Sans — primary UI font (closest to General Sans available via Google Fonts)
 const jakartaSans = Plus_Jakarta_Sans({
@@ -42,14 +44,22 @@ export const metadata: Metadata = {
   description: 'KORA Foundation Light — Synthetic Demo Data — Pre-Empirical Calibration',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  let initialRole: KoraRole | null = null;
+  try {
+    const currentUser = await getCurrentKoraUser();
+    initialRole = (currentUser?.koraRole as KoraRole) ?? null;
+  } catch {
+    initialRole = null;
+  }
+
   return (
     <html
       lang="it"
       className={`${jakartaSans.variable} ${instrumentSerif.variable} ${playfairDisplay.variable} ${hankenGrotesk.variable} h-full antialiased`}
     >
       <body className="h-full">
-        <AppShell>{children}</AppShell>
+        <AppShell initialRole={initialRole}>{children}</AppShell>
       </body>
     </html>
   );
