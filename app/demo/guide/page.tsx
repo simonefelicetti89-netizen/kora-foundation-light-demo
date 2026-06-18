@@ -5,6 +5,7 @@
 // Le superfici demo (/demo/*) restano cliccabili.
 
 import Link from 'next/link';
+import { DemoAccessBanner } from '@/components/demo/DemoAccessBanner';
 import { PageMasthead } from '@/components/ui/PageMasthead';
 import { SectionLabel } from '@/components/ui/SectionLabel';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
@@ -92,6 +93,7 @@ function LiveOnlyItem({ children }: { children: React.ReactNode }) {
 export default function DemoGuidePage() {
   return (
     <div className="space-y-5">
+      <DemoAccessBanner />
 
       <PageMasthead
         eyebrow="KORA Foundation Light™ · Guida operativa"
@@ -373,7 +375,27 @@ export default function DemoGuidePage() {
         </ul>
       </div>
 
-      {/* CTA — solo superfici demo cliccabili */}
+      {/* CTA funnel — metodologia gated (B168.5-P3) */}
+      {/* Un anonimo che clicca viene reindirizzato a /request-access?next=... dal guard server-side */}
+      <div style={{ background: `${TOKENS.accent}08`, border: `1px solid ${TOKENS.accent}28`, borderRadius: 10, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: TOKENS.ink, marginBottom: 4 }}>
+            Dettaglio metodologico
+          </p>
+          <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
+            KORA Index 10-componenti, explainability pipeline e Activation Safeguard — disponibile con accesso demo.
+          </p>
+        </div>
+        <Link
+          href="/demo/company/kora-index"
+          data-testid="guide-cta-kora-index"
+          style={{ flexShrink: 0, borderRadius: 8, background: TOKENS.accent, padding: '9px 18px', fontSize: '12px', fontWeight: 700, color: '#FFFFFF', textDecoration: 'none', whiteSpace: 'nowrap' }}
+        >
+          Vedi il dettaglio metodologico →
+        </Link>
+      </div>
+
+      {/* CTA — superfici demo cliccabili */}
       <div className="flex flex-wrap items-center gap-3">
         <Link href="/demo/future-vision" style={{ borderRadius: 6, background: TOKENS.ink, padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: '#FFFFFF', textDecoration: 'none' }}>
           Future Vision →
@@ -381,9 +403,6 @@ export default function DemoGuidePage() {
         <Link href="/pilot" style={{ borderRadius: 6, border: TOKENS.cardBorder, background: TOKENS.surface, padding: '8px 16px', fontSize: '12px', fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
           Foundation Light Pilot
         </Link>
-        <span style={{ fontSize: '12px', color: TOKENS.inkHint, cursor: 'default' }}>
-          Executive Cockpit → <span style={{ fontSize: '9px', fontWeight: 600, background: TOKENS.inkBorder, borderRadius: 3, padding: '1px 5px', marginLeft: 4 }}>KORA_ADMIN</span>
-        </span>
       </div>
 
       <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkHint }}>
