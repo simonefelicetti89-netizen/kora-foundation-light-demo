@@ -1,11 +1,43 @@
 # KORA Foundation Light — Handoff per Next
 
-**Commit di riferimento:** `599a747` · **Branch:** `main` · **Data:** 2026-06-14
+**Commit di riferimento:** `043f697` · **Branch:** `main` · **Data:** 2026-06-18
 **Stato:** Foundation Light v0.1 · Pre-empirical calibration · Non client-ready
 
 > Questo è il documento principale da leggere prima di toccare il repo.
 > Per il contesto prodotto e la narrativa commerciale: `docs/kora-canonical-product-architecture-v1.md`
 > Per la spec algoritmo e formula IU: `docs/10-architecture-v3-layer-specification.md`
+
+---
+
+## 0. Defense-in-depth worker individual data (B168.6)
+
+**Commit:** `043f697` · **Data attivazione production:** _[da completare dopo Phase 4 execution]_
+
+KORA implementa una difesa a 3 layer per garantire che KORA_ADMIN non possa accedere ai dati individuali worker:
+
+| Layer | Implementazione | Status |
+|---|---|---|
+| Layer 1 — Middleware | `middleware.ts`: intercetta `/worker/:path*` e blocca KORA_ADMIN con redirect/error | ✅ Attivo |
+| Layer 2 — Server layout | `app/worker/layout.tsx`: hard error esplicito "Worker individual data is not accessible to KORA service team by design" con audit log | ✅ Attivo |
+| Layer 3 — RLS database | Migration 027: rimozione policy `kora_admin_*` su `personal.*` e `analytics.impact_unit` | ⏳ Da applicare (Phase 4) |
+
+Garanzia citabile in DPIA, contratti, fundraising **solo dopo Phase 4 execution confermata**.
+
+### Service-role scoping pattern (ADR-002)
+
+Il service-role client non è mai usato direttamente nelle route operative. Pattern: un modulo scoped per ogni use case, con whitelist esplicita dei campi + assertion runtime. Vedere `docs/decisions/ADR-002-service-role-scoping.md`.
+
+Moduli attivi:
+- `lib/supabase/storage-service-key.ts` — upload file su bucket privato
+- `lib/supabase/worker-provisioning-service-key.ts` — INSERT `personal.worker_identity` con `ALLOWED_IDENTITY_INSERT_FIELDS`
+- `lib/supabase/impact-unit-service-key.ts` — SELECT `analytics.impact_unit` con `ALLOWED_IU_SELECT_COLUMNS`
+
+### Security headers e IP protection (B168.6 Phase 1-3)
+
+- `public/robots.txt`: Disallow all di default, Allow / e /landing
+- noindex metadata su tutti i layout workspace
+- CSP, HSTS, X-Frame-Options: DENY in `next.config.ts`
+- `xlsx` v0.18.5 rimosso (CVE-2023-30533, CVE-2024-22363): sostituito con `exceljs` (server) e `read-excel-file/browser` (client)
 
 ---
 
@@ -35,7 +67,7 @@ Il dato individuale (PIB, IU, Dynamic CV, Activation Signature) è worker-owned/
 | Partner workspace (`/partner/*`) | Demo — nessun auth live, mock service layer |
 | Advisor workspace (`/advisor/*`) | Demo — nessun auth live, mock service layer |
 | Future Vision (`/future-vision/*`) | Mockup statico — labeled "Non attivo in Foundation Light", nessuna logica |
-| Test suite | 4484 test passanti (109 file, Vitest) |
+| Test suite | 5105 test passanti (122 file, Vitest) |
 | TypeScript | Strict, 0 errori |
 
 ---
@@ -122,7 +154,7 @@ Smoke test autenticato superato (B152-D) con sessione `COMPANY_ADMIN` reale, ten
 
 ## 7. DB e migrazioni — stato reale
 
-15 migrazioni in `supabase/migrations/`, tutte presenti nel repo. Stato nel DB live:
+17 migrazioni in `supabase/migrations/`, tutte presenti nel repo. Stato nel DB live:
 
 | Migration | Cosa fa | Stato DB live |
 |-----------|---------|--------------|
@@ -141,6 +173,9 @@ Smoke test autenticato superato (B152-D) con sessione `COMPANY_ADMIN` reale, ten
 | 013 | Schema `commons` + `commons.post` | Applicata |
 | 014 | `tenant_kind` su `analytics.tenant` | Applicata |
 | **015** | **Company-safe aggregation layer — 4 oggetti analytics** | Applicata (patchata B152-C: `iu_average_ev = NULL::numeric` perché `analytics.impact_unit` assente nel DB live) — **CANONICO** |
+| 016–019 | Worker Grado 1 — schema layer (personal.worker_pib, pib_line_item, pib_pillar_summary, worker_profile_private) | **Scritta, NON applicata** — Gate 2 OPEN |
+| **027** | **Privacy Guard: rimozione policy kora_admin su personal.* e analytics.impact_unit** | **Scritta, IDEMPOTENTE — da applicare in Phase 4** |
+| **028** | **Audit log enrichment: colonne environment/ip_hash/user_agent_hash + ruolo audit_reader** | **Scritta, IDEMPOTENTE — da applicare in Phase 4** |
 
 **Nota migration 005 vs 015:** `analytics.impact_unit` è definita in migration 005 ma assente nel DB live. La migration 015 originalmente dipendeva da essa per `iu_average_ev`; la patch B152-C (commit `599a747`) ha rimosso quella dipendenza restituendo `NULL::numeric` come placeholder. Quando `analytics.impact_unit` sarà presente, ripristinare il CTE `iu_avg` nella view.
 
@@ -235,7 +270,7 @@ services/worker-pillar-adoption/    — WorkerPillarAdoptionService (futuro)
 cp .env.local.example .env.local   # richiede NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
 npm install
 npm run dev                         # dev server su http://localhost:3000
-npm test                            # 4484 test — devono passare tutti prima di qualsiasi commit
+npm test                            # 5105 test — devono passare tutti prima di qualsiasi commit
 npx tsc --noEmit                    # TypeScript check — deve essere pulito
 npm run build                       # build production
 ```
@@ -265,11 +300,12 @@ Tutti gli altri documenti in `docs/` sono storici — utili per contesto, non pe
 
 | Commit | Descrizione |
 |--------|-------------|
+| `043f697` | B168.6 P4.0: service-role scoped + idempotency guards (precondizioni Phase 4) |
+| `56fba97` | B168.6 Phase 1-3: robots.txt + security headers + xlsx CVE upgrade |
+| `ae31e5e` | B168.5 Phase 1: rimozione 5 route DUPLICATO, test aggiornati |
 | `599a747` | B152-C: patch migration 015 — rimuove dipendenza `analytics.impact_unit` |
 | `957daab` | B152-B: migra 5 route company al company-safe layer |
 | `741a1e6` | B153: crea migration 015 — company-safe aggregation layer |
-| `7eb5634` | B151-A: fix sidebar environment leak, my-kora real worker gate |
-| `b7af83b` | B150: SyntheticDataBanner — mai 'DEMO' per utenti reali |
 
 ---
 

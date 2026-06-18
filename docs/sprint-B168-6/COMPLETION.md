@@ -21,16 +21,30 @@
 - read-excel-file/browser per client-side (roster-parser.ts, file-parser.ts)
 - Tutti i caller aggiornati con await
 
-## Phase 4 — Migrazioni 027 + 028
+## Phase 4.0 — Precondizioni (service-role scoped + idempotency) ✓
 
+- Commit: `043f697`
+- `lib/supabase/worker-provisioning-service-key.ts`: ALLOWED_IDENTITY_INSERT_FIELDS whitelist
+- `lib/supabase/impact-unit-service-key.ts`: ALLOWED_IU_SELECT_COLUMNS whitelist (Decisione A)
+- 028 CREATE POLICY wrappata in DO $$ IF NOT EXISTS
+- 5105/5105 test verdi
+
+## Phase 4 — Applicazione 027 + 028 in produzione
+
+- Ambiente target: ___ [da completare]
 - Backup timestamp: ___
 - Migration 027 applicata: ___
 - Migration 028 applicata: ___
 - Smoke test: vedere phase4-smoke-evidence.md
 - audit_reader grants verificati: [ ] sì  [ ] pending
+- Expected gap documentato: ip_hash/user_agent_hash NULL → B168.7
 - Commit P4.3: ___
 - Commit P4.4: ___
 - Commit P4.5: ___
+
+### ADR creato
+
+`docs/decisions/ADR-002-service-role-scoping.md` — pattern service-role scoped con whitelist assertion.
 
 ## Defense-in-Depth Status
 
@@ -42,3 +56,5 @@
 
 Con Phase 4 completa: worker individual data è zero-access per KORA_ADMIN
 a tutti e 3 i livelli (middleware + layout + RLS).
+
+Garanzia citabile in DPIA, contratti, fundraising dopo Phase 4 execution confermata.
