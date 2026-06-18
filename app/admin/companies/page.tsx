@@ -26,13 +26,14 @@ export const metadata = {
 export default async function CompanyConsolePage({
   searchParams,
 }: {
-  searchParams: { from?: string };
+  searchParams: Promise<{ from?: string }>;
 }) {
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');
 
-  const fromSection = searchParams?.from && FROM_LABELS[searchParams.from]
-    ? FROM_LABELS[searchParams.from]
+  const sp = await searchParams;
+  const fromSection = sp?.from && FROM_LABELS[sp.from]
+    ? FROM_LABELS[sp.from]
     : null;
 
   return (
