@@ -7,8 +7,8 @@ import { AdminSubmissionQueue } from '@/app/admin/company-submissions/_component
 import { redirect, notFound } from 'next/navigation';
 import { tenantService } from '@/services/tenant/TenantService';
 
-export default async function CompanySubmissionsDrillInPage({ params }: { params: { companyId: string } }) {
-  const { companyId } = params;
+export default async function CompanySubmissionsDrillInPage({ params }: { params: Promise<{ companyId: string }> }) {
+  const { companyId } = await params;
 
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');

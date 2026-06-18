@@ -8,7 +8,7 @@
 // - No PIB, no Dynamic CV, no individual activation data shown
 // - Session workers (created in modal) are managed in React state — no DB write, no email, no auth
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, use } from 'react';
 import Link from 'next/link';
 import { tenantService } from '@/services/tenant/TenantService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
@@ -110,8 +110,8 @@ const EMPTY_FORM: NewWorkerForm = {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function WorkforceCommandCenter({ params }: { params: { companyId: string } }) {
-  const { companyId } = params;
+export default function WorkforceCommandCenter({ params }: { params: Promise<{ companyId: string }> }) {
+  const { companyId } = use(params);
 
   // All hooks must come before any conditional returns (React rules)
   const [sessionWorkers, setSessionWorkers] = useState<WorkerRosterRecord[]>([]);

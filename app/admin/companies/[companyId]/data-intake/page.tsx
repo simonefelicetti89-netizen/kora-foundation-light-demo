@@ -2,7 +2,7 @@
 // Scopo: gestire il processo di data-intake per questa specifica company.
 'use client';
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -69,8 +69,8 @@ const INTAKE_STATUS_COLORS: Record<string, string> = {
 };
 
 // A-20: KORA Admin — Tenant-Scoped Data Intake & Fiscal Perimeter
-export default function AdminDataIntakePage({ params }: { params: { companyId: string } }) {
-  const { companyId } = params;
+export default function AdminDataIntakePage({ params }: { params: Promise<{ companyId: string }> }) {
+  const { companyId } = use(params);
   const [activeFilter, setActiveFilter] = useState<RowFilter>('all');
 
   const tenant       = tenantService.getTenant(companyId);

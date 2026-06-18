@@ -3,6 +3,7 @@
 // Company User Management — KORA Admin understands whether the company has login credentials.
 // No real email. No real auth changes. No worker PIB.
 
+import { use } from 'react';
 import Link from 'next/link';
 import { tenantService } from '@/services/tenant/TenantService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
@@ -31,8 +32,8 @@ const ROLE_LABEL: Record<string, string> = {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
-export default function CompanyUsersPage({ params }: { params: { companyId: string } }) {
-  const { companyId } = params;
+export default function CompanyUsersPage({ params }: { params: Promise<{ companyId: string }> }) {
+  const { companyId } = use(params);
 
   const tenant   = tenantService.getTenant(companyId);
   const accounts = accountProvisioningService.getAccountsForCompany(companyId);

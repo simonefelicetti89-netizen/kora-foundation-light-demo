@@ -3,6 +3,7 @@
 // Scopo: gestire il processo di onboarding per questa specifica company.
 'use client';
 
+import { use } from 'react';
 import Link from 'next/link';
 import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import { tenantService } from '@/services/tenant/TenantService';
@@ -54,8 +55,8 @@ function ReadinessRow({ check }: { check: OnboardingReadinessCheck }) {
 }
 
 // A-18: KORA Admin — Per-Company Operational Onboarding
-export default function AdminCompanyOnboarding({ params }: { params: { companyId: string } }) {
-  const { companyId } = params;
+export default function AdminCompanyOnboarding({ params }: { params: Promise<{ companyId: string }> }) {
+  const { companyId } = use(params);
 
   const tenant      = tenantService.getTenant(companyId);
   const readiness   = tenant ? tenantService.getTenantReadiness(companyId) : null;

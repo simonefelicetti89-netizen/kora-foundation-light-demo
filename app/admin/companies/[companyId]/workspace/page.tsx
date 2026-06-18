@@ -7,8 +7,8 @@ import { CompanyWorkspacePanel } from '@/app/admin/company-workspace/_components
 import { redirect, notFound } from 'next/navigation';
 import { tenantService } from '@/services/tenant/TenantService';
 
-export default async function CompanyWorkspaceDrillInPage({ params }: { params: { companyId: string } }) {
-  const { companyId } = params;
+export default async function CompanyWorkspaceDrillInPage({ params }: { params: Promise<{ companyId: string }> }) {
+  const { companyId } = await params;
 
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');

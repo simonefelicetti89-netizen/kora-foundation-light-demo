@@ -7,8 +7,8 @@ import { CompanyLivePreviewPanel } from '@/app/admin/company-live-preview/_compo
 import { redirect, notFound } from 'next/navigation';
 import { tenantService } from '@/services/tenant/TenantService';
 
-export default async function CompanyPreviewDrillInPage({ params }: { params: { companyId: string } }) {
-  const { companyId } = params;
+export default async function CompanyPreviewDrillInPage({ params }: { params: Promise<{ companyId: string }> }) {
+  const { companyId } = await params;
 
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');

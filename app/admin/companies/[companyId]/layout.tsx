@@ -12,9 +12,9 @@ export default async function CompanyDrillInLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: { companyId: string };
+  params: Promise<{ companyId: string }>;
 }) {
-  const { companyId } = params;
+  const { companyId } = await params;
 
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');
