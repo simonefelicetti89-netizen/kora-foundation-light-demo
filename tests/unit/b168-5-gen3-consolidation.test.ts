@@ -201,19 +201,25 @@ describe('B168.5 Phase 2.1 — Gen 1 components accept initialTenantCode prop', 
 
 // ── Sidebar updated ───────────────────────────────────────────────────────────
 
-describe('B168.5 Phase 2.3 — Sidebar links point to companies list', () => {
-  const sidebar = read("components/layout/Sidebar.tsx");
+// B169 FASE 3: sidebar links restructured. Gen 1 ?from= query-param sidebar links replaced.
+// - Evidence Archive: no longer a sidebar item (drill-in via CompanyTabNav Evidence tab)
+// - Submission Queue: now at /admin/data-intake (Operations group)
+// - Anteprima Live Cockpit: removed as RIDONDANTE (B169 FASE 4)
+describe('B168.5 Phase 2.3 — Sidebar links restructured (B169 FASE 3+4)', () => {
+  const sidebar     = read("components/layout/Sidebar.tsx");
+  const adminNavGroups = read("lib/navigation/admin-nav-groups.ts");
 
-  it('Evidence Archive sidebar link uses ?from=evidence', () => {
-    expect(sidebar).toContain("href: '/admin/companies?from=evidence'");
+  it('Evidence Archive ?from=evidence link no longer in sidebar (replaced by CompanyTabNav Evidence tab)', () => {
+    expect(adminNavGroups).not.toContain("?from=evidence");
   });
 
-  it('Submission Queue sidebar link uses ?from=submissions', () => {
-    expect(sidebar).toContain("href: '/admin/companies?from=submissions'");
+  it('Submission Queue is now at /admin/data-intake (Operations group)', () => {
+    expect(adminNavGroups).toContain("href: '/admin/data-intake'");
+    expect(adminNavGroups).not.toContain("?from=submissions");
   });
 
-  it('Anteprima Live Cockpit sidebar link uses ?from=preview', () => {
-    expect(sidebar).toContain("href: '/admin/companies?from=preview'");
+  it('Anteprima Live Cockpit ?from=preview link removed (RIDONDANTE — B169 FASE 4)', () => {
+    expect(adminNavGroups).not.toContain("?from=preview");
   });
 
   it('Gen 1 flat routes no longer in sidebar', () => {

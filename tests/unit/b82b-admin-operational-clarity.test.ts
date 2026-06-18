@@ -26,25 +26,25 @@ function read(rel: string) {
   return fs.readFileSync(path.resolve(__dirname, '../..', rel), 'utf-8');
 }
 
-// ── Task 1: /admin/companies in Live Operations ───────────────────────────────
+// ── Task 1: /admin/companies in Companies group ───────────────────────────────
+// B169 FASE 3: admin group data moved from Sidebar.tsx to lib/navigation/admin-nav-groups.ts.
 
 describe('B82-B Task 1 — /admin/companies classified as LIVE', () => {
-  const sidebar = read('components/layout/Sidebar.tsx');
+  const adminNavGroups = read('lib/navigation/admin-nav-groups.ts');
 
-  it('Provisioning group contains /admin/companies', () => {
-    // heading comes before the item
-    const liveIdx = sidebar.indexOf("heading: 'Provisioning'");
-    const companiesIdx = sidebar.indexOf("href: '/admin/companies'");
-    expect(liveIdx).toBeGreaterThan(-1);
-    expect(companiesIdx).toBeGreaterThan(-1);
-    // companies href must appear after Provisioning heading
-    expect(companiesIdx).toBeGreaterThan(liveIdx);
+  it('Companies group contains /admin/companies', () => {
+    const companiesGroupIdx = adminNavGroups.indexOf("label: 'Companies'");
+    const companiesHrefIdx  = adminNavGroups.indexOf("href: '/admin/companies'");
+    expect(companiesGroupIdx).toBeGreaterThan(-1);
+    expect(companiesHrefIdx).toBeGreaterThan(-1);
+    expect(companiesHrefIdx).toBeGreaterThan(companiesGroupIdx);
   });
 
-  it('/admin/companies does NOT appear before Demo group', () => {
-    const demoIdx = sidebar.indexOf("heading: 'Demo & Preview'");
-    const companiesIdx = sidebar.indexOf("href: '/admin/companies'");
-    // companies must be before the demo group heading
+  it('/admin/companies does NOT appear before Demo Lab group', () => {
+    const demoIdx      = adminNavGroups.indexOf("'Demo Lab'");
+    const companiesIdx = adminNavGroups.indexOf("href: '/admin/companies'");
+    expect(companiesIdx).toBeGreaterThan(-1);
+    expect(demoIdx).toBeGreaterThan(-1);
     expect(companiesIdx).toBeLessThan(demoIdx);
   });
 });
@@ -65,35 +65,39 @@ describe('B82-B Task 2 — Meridiana sidebar link removed', () => {
 });
 
 // ── Task 3: Demo group renamed ────────────────────────────────────────────────
+// B169 FASE 3: renamed from "Demo & Preview" to "Demo Lab" with SYNTHETIC environmentTag.
 
-describe('B82-B Task 3 — Demo group renamed to Demo & Preview', () => {
-  const sidebar = read('components/layout/Sidebar.tsx');
+describe('B82-B Task 3 — Demo group renamed to Demo Lab (B169 FASE 3)', () => {
+  const adminNavGroups = read('lib/navigation/admin-nav-groups.ts');
 
-  it('has Demo & Preview group heading', () => {
-    expect(sidebar).toContain("Demo & Preview");
+  it('admin-nav-groups has Demo Lab group label', () => {
+    expect(adminNavGroups).toContain("'Demo Lab'");
   });
 
-  it('no longer has plain Demo Preview heading', () => {
-    expect(sidebar).not.toContain("heading: 'Demo Preview'");
+  it('admin-nav-groups no longer has Demo & Preview or Demo Preview labels', () => {
+    expect(adminNavGroups).not.toContain("Demo & Preview");
+    expect(adminNavGroups).not.toContain("Demo Preview");
   });
 });
 
-// ── Task 4: Orphaned routes restored ─────────────────────────────────────────
+// ── Task 4: Demo Lab routes ───────────────────────────────────────────────────
+// B169 FASE 4: Anteprima Live Cockpit redirect removed (RIDONDANTE).
+// index-registry and portfolio kept — unique content not accessible via VISTA+nav.
 
-describe('B82-B Task 4 — Orphaned routes restored in navigation', () => {
-  const sidebar = read('components/layout/Sidebar.tsx');
+describe('B82-B Task 4 — Demo Lab routes in navigation (B169 FASE 4)', () => {
+  const adminNavGroups = read('lib/navigation/admin-nav-groups.ts');
 
-  it('sidebar Anteprima Live Cockpit links to companies (B168.5 Gen 3 consolidation)', () => {
-    expect(sidebar).toContain("href: '/admin/companies?from=preview'");
-    expect(sidebar).toContain('Anteprima Live Cockpit');
+  it('Anteprima Live Cockpit redirect removed from sidebar (RIDONDANTE — B169 FASE 4)', () => {
+    expect(adminNavGroups).not.toContain("href: '/admin/companies?from=preview'");
+    expect(adminNavGroups).not.toContain('Anteprima Live Cockpit');
   });
 
-  it('Demo · Sintetico includes /admin/index-registry', () => {
-    expect(sidebar).toContain("href: '/demo/index-registry'");
+  it('Demo Lab includes /demo/index-registry', () => {
+    expect(adminNavGroups).toContain("href: '/demo/index-registry'");
   });
 
-  it('Demo · Sintetico includes /admin/portfolio', () => {
-    expect(sidebar).toContain("href: '/demo/portfolio'");
+  it('Demo Lab includes /demo/portfolio', () => {
+    expect(adminNavGroups).toContain("href: '/demo/portfolio'");
   });
 });
 

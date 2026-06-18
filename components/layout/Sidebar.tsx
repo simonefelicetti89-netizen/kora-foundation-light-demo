@@ -12,6 +12,7 @@ import { isWorkerRole, isAdminRole } from '@/lib/permissions';
 import { KoraLogo } from '@/components/brand/KoraLogo';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { ADMIN_NAV_GROUPS } from '@/lib/navigation/admin-nav-groups';
 
 const ENV_LABEL: Record<string, string> = {
   demo:   'DEMO',
@@ -62,128 +63,20 @@ interface NavGroup {
 // activeCompanyId: extracted from pathname when on /admin/companies/[id]/... routes.
 // isAdminPreview: true when a real KORA_ADMIN is using demo-state WORKER role —
 //   routes to /admin/preview/worker/* instead of live /worker/* routes.
+// B169 FASE 3: buildNavGroups for KORA_ADMIN now derives from ADMIN_NAV_GROUPS
+// (lib/navigation/admin-nav-groups.ts). Non-admin groups unchanged.
+// activeCompanyId parameter retained for signature compat but unused for admin
+// (company-specific nav is now in CompanyTabNav drill-in — B169 FASE 2).
 export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPreview = false): NavGroup[] {
+  void activeCompanyId; // unused for admin since B169
 
-  // ── KORA Admin: Control Tower — B61-B restructured ─────────────────────────
-  // Group 1: Onboarding Pilot — canonical live onboarding entry points.
-  // Group 2: Scoring Pipeline — intake → UEF → scoring → lifecycle.
-  // Group 3: Delivery & Preview — workspace, preview, submissions.
-  // Group 4: Demo Lab — all synthetic/demo flows clearly separated.
-  // Group 5: Visione — roadmap only.
-  // B80-B: Admin sidebar split into LIVE OPERATIONS / DEMO PREVIEW / FUTURE VISION.
-  // Live routes (backed by real Supabase) are strictly separated from demo preview routes.
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
-    const workforceHref = activeCompanyId
-      ? `/admin/companies/${activeCompanyId}/workforce`
-      : '/admin/companies';
-    const workforceDescription = activeCompanyId
-      ? undefined
-      : 'Seleziona un\'azienda →';
-    return [
-      {
-        heading: 'Provisioning',
-        groupBadge: 'LIVE',
-        badgeKey: 'LIVE',
-        items: [
-          { href: '/admin/pipeline',                 label: 'Pilot Lifecycle' },
-          { href: '/admin/companies',                label: 'Company Console' },
-          { href: '/admin/companies/new',            label: 'Crea Azienda' },
-          { href: '/admin/tenants',                  label: 'Registro Tenant' },
-          { href: workforceHref,                     label: 'Workforce Management', description: workforceDescription },
-          { href: '/admin/workers',                  label: 'Worker Provisioning' },
-        ],
-      },
-      {
-        heading: 'Intake & Review',
-        groupBadge: 'LIVE',
-        badgeKey: 'LIVE',
-        items: [
-          { href: '/admin/companies?from=submissions', label: 'Submission Queue' },
-          { href: '/admin/data-intake',              label: 'Data Intake' },
-          { href: '/admin/uef-review',               label: 'UEF™ Review & Scoring' },
-          { href: '/admin/companies?from=evidence',  label: 'Evidence Archive' },
-        ],
-      },
-      {
-        heading: 'Scoring & Output',
-        groupBadge: 'LIVE',
-        badgeKey: 'LIVE',
-        items: [
-          { href: '/admin/impact-units',             label: 'Impact Units™' },
-          { href: '/admin/data-lifecycle',           label: 'Data Lifecycle' },
-        ],
-      },
-      {
-        heading: 'Monitoraggio',
-        groupBadge: 'LIVE',
-        badgeKey: 'LIVE',
-        items: [
-          { href: '/admin/trial-control-center',     label: 'Trial Control Center', description: 'Demo end-to-end & readiness' },
-        ],
-      },
-      {
-        heading: 'Contenuti',
-        groupBadge: 'LIVE',
-        badgeKey: 'LIVE',
-        items: [
-          { href: '/admin/commons',                  label: 'KORA Space — Moderazione' },
-          { href: '/admin/worker-initiatives',       label: 'Worker Initiatives' },
-          { href: '/admin/partners',                 label: 'Partner Map' },
-        ],
-      },
-      {
-        heading: 'Worker Preview',
-        groupBadge: 'SYNTHETIC',
-        badgeKey: 'SYNTHETIC',
-        // Worker Foundation Light preview — synthetic data only, no live worker DB.
-        items: [
-          { href: '/my-kora',                           label: 'Worker Preview',           preview: true },
-          { href: '/my-kora/personal-impact-balance',   label: 'Personal Impact Balance',  preview: true },
-          { href: '/my-kora/kora-space',                label: 'KORA Space',               preview: true },
-        ],
-      },
-      {
-        heading: 'Demo & Preview',
-        groupBadge: 'SYNTHETIC',
-        badgeKey: 'SYNTHETIC',
-        // All routes in this group use synthetic/demo data — no live Supabase queries.
-        items: [
-          { href: '/admin/companies?from=preview',    label: 'Anteprima Live Cockpit' },
-          { href: '/commons',                        label: 'KORA Commons Network', preview: true },
-          { href: '/admin/demo/acme-001',            label: 'Guided Demo — ACME-001' },
-          { href: '/demo/index-registry',            label: 'Registro KORA Index' },
-          { href: '/demo/portfolio',                 label: 'Portfolio Aziende' },
-          { href: '/demo/network',                   label: 'Rete Advisor & Partner' },
-          { href: '/admin/operator',                 label: 'Demo Scoring (Synthetic)' },
-          { href: '/demo/ai-onboarding',             label: 'Anteprima Classificazione' },
-          { href: '/demo/gtm',                       label: 'GTM Preview' },
-          { href: '/demo/benchmarks',                label: 'Benchmark Preview' },
-          { href: '/demo/guide',                     label: 'Demo Guide' },
-          { href: '/demo/company/kora-index',        label: 'KORA Index™ Demo' },
-          { href: '/demo/company/status',            label: 'Status Center Demo' },
-          { href: '/demo/company/activation',        label: 'Activation Demo' },
-          { href: '/demo/company/pillars',           label: 'Pillar Intelligence Demo' },
-          { href: '/demo/company/reports',           label: 'Decision Pack Demo' },
-          { href: '/demo/company/financial',         label: 'Financial Governance Demo' },
-        ],
-      },
-      {
-        heading: 'Founder',
-        groupBadge: 'FOUNDER',
-        badgeKey: 'FOUNDER',
-        items: [
-          { href: '/admin/founder-validation',       label: 'Validation Cockpit' },
-        ],
-      },
-      {
-        heading: 'Future Vision',
-        groupBadge: 'ROADMAP',
-        badgeKey: 'ROADMAP',
-        items: [
-          { href: '/demo/future-vision',             label: 'Future Vision', inactive: true },
-        ],
-      },
-    ];
+    return ADMIN_NAV_GROUPS.map((group) => ({
+      heading:    group.label,
+      groupBadge: group.environmentTag,
+      badgeKey:   group.environmentTag,
+      items:      group.items as NavItem[],
+    }));
   }
 
   // ── Company Admin: intelligence architecture ─────────────────────────────────
@@ -359,8 +252,27 @@ export function Sidebar() {
   const companyIdMatch = pathname.match(/^\/admin\/companies\/([^/]+)(?:\/|$)/);
   const activeCompanyId = companyIdMatch?.[1] !== 'new' ? companyIdMatch?.[1] : undefined;
 
-  const groups = buildNavGroups(activeRole, activeCompanyId, isAdminPreview);
+  const isAdmin = isAdminRole(activeRole as Parameters<typeof isAdminRole>[0]);
+  const groups  = buildNavGroups(activeRole, activeCompanyId, isAdminPreview);
   const roleLabel = ROLE_DISPLAY[activeRole] ?? activeRole;
+
+  // Collapsible groups — admin only. Expand the group containing the active path; collapse others.
+  // Non-admin: all groups always expanded (no state needed).
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
+    if (!isAdmin) return {};
+    const init: Record<string, boolean> = {};
+    for (const group of ADMIN_NAV_GROUPS) {
+      init[group.id] = group.items.some(
+        (item) => pathname === item.href ||
+          (item.href !== '/admin/companies' && pathname.startsWith(item.href + '/')),
+      );
+    }
+    return init;
+  });
+
+  function toggleGroup(id: string) {
+    setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
 
   return (
     <aside
@@ -391,36 +303,77 @@ export function Sidebar() {
         className="flex-1 overflow-y-auto py-4 px-2"
         aria-label="Navigazione principale"
       >
-        {groups.map((group) => (
-          <div key={group.heading} className="mb-5">
-            {/* Section heading + badge */}
-            <div className="flex items-center gap-1.5 px-3 pb-1.5">
-              <p
-                className="text-[9px] font-bold uppercase tracking-[0.20em]"
-                style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
-              >
-                {group.heading}
-              </p>
-              {group.groupBadge && group.badgeKey && (
-                <span
-                  style={{
-                    borderRadius: 4,
-                    padding:      '1px 5px',
-                    fontSize:     '7.5px',
-                    fontWeight:   700,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
-                    ...BADGE[group.badgeKey],
-                  }}
-                >
-                  {group.groupBadge}
-                </span>
-              )}
-            </div>
+        {groups.map((group, groupIdx) => {
+          // For admin: use group id from ADMIN_NAV_GROUPS for collapse state.
+          const adminGroup = isAdmin ? ADMIN_NAV_GROUPS[groupIdx] : null;
+          const groupId    = adminGroup?.id ?? group.heading;
+          const isExpanded = isAdmin ? (expandedGroups[groupId] ?? false) : true;
 
-            {/* Nav items */}
-            {group.items.map((item) => {
+          return (
+          <div key={group.heading} className="mb-5">
+            {/* Section heading + badge — clickable for admin (toggle collapse) */}
+            {isAdmin ? (
+              <button
+                type="button"
+                onClick={() => toggleGroup(groupId)}
+                className="w-full flex items-center gap-1.5 px-3 pb-1.5 text-left hover:opacity-75 transition-opacity"
+                aria-expanded={isExpanded}
+              >
+                <p
+                  className="text-[9px] font-bold uppercase tracking-[0.20em] flex-1"
+                  style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+                >
+                  {group.heading}
+                </p>
+                {group.groupBadge && group.badgeKey && (
+                  <span
+                    style={{
+                      borderRadius: 4,
+                      padding:      '1px 5px',
+                      fontSize:     '7.5px',
+                      fontWeight:   700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                      ...BADGE[group.badgeKey],
+                    }}
+                  >
+                    {group.groupBadge}
+                  </span>
+                )}
+                <span style={{ color: 'rgba(255,255,255,0.20)', fontSize: '8px', marginLeft: 2 }}>
+                  {isExpanded ? '▾' : '▸'}
+                </span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 pb-1.5">
+                <p
+                  className="text-[9px] font-bold uppercase tracking-[0.20em]"
+                  style={{ color: 'rgba(255,255,255,0.25)', fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}
+                >
+                  {group.heading}
+                </p>
+                {group.groupBadge && group.badgeKey && (
+                  <span
+                    style={{
+                      borderRadius: 4,
+                      padding:      '1px 5px',
+                      fontSize:     '7.5px',
+                      fontWeight:   700,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
+                      ...BADGE[group.badgeKey],
+                    }}
+                  >
+                    {group.groupBadge}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Nav items — hidden when group is collapsed (admin only) */}
+            {isExpanded && group.items.map((item) => {
               const isActive =
                 pathname === item.href ||
                 (item.href !== '/company' && pathname.startsWith(item.href)) ||
@@ -552,7 +505,8 @@ export function Sidebar() {
               );
             })}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Footer — role + environment */}

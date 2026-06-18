@@ -14,101 +14,89 @@ import {
   LIFECYCLE_STEPS,
 } from '../../lib/admin-lifecycle/lifecycle-rules';
 
-// ── Task 1: Sidebar includes Workforce Management ─────────────────────────────
+// ── Task 1: Sidebar — Workforce navigation post-B169 ─────────────────────────
+// B169 FASE 2: Workforce Management moved from sidebar to CompanyTabNav.
+// Path: sidebar Companies group → /admin/companies → company drill-in → Workforce tab.
 
-describe('B95-C Task 1 — Sidebar: Workforce Management entry', () => {
+describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', () => {
 
-  it('admin sidebar Provisioning group includes Workforce Management item', () => {
+  it('admin sidebar has NO standalone Workforce Management item (moved to CompanyTabNav)', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    expect(liveOps).toBeDefined();
-    const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
-    expect(workforceItem).toBeDefined();
+    const allItems = groups.flatMap((g) => g.items);
+    expect(allItems.find((i) => i.label === 'Workforce Management')).toBeUndefined();
   });
 
-  it('Workforce Management links to /admin/companies when no company context', () => {
+  it('admin sidebar Companies group exists and contains /admin/companies', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
-    expect(workforceItem?.href).toBe('/admin/companies');
+    const companiesGroup = groups.find((g) => g.heading === 'Companies');
+    expect(companiesGroup).toBeDefined();
+    expect(companiesGroup?.items.find((i) => i.href === '/admin/companies')).toBeDefined();
   });
 
-  it('Workforce Management links directly to company workforce when companyId provided', () => {
-    const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
-    expect(workforceItem?.href).toBe('/admin/companies/meridiana-group/workforce');
-  });
-
-  it('Workforce Management link with companyId contains /workforce', () => {
-    const testIds = ['meridiana-group', 'alba-manufacturing', 'nova-packaging'];
-    for (const id of testIds) {
-      const groups = buildNavGroups('KORA_ADMIN', id);
-      const liveOps = groups.find((g) => g.heading === 'Provisioning');
-      const wfItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
-      expect(wfItem?.href).toContain('/workforce');
-      expect(wfItem?.href).toContain(id);
-    }
-  });
-
-  it('Workforce Management shows helper description when no company context', () => {
+  it('admin sidebar Operations group contains Worker Provisioning at /admin/workers', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
-    expect(workforceItem?.description).toBeDefined();
-    expect(workforceItem?.description).not.toBe('');
+    const opsGroup = groups.find((g) => g.heading === 'Operations');
+    expect(opsGroup).toBeDefined();
+    expect(opsGroup?.items.find((i) => i.href === '/admin/workers')).toBeDefined();
   });
 
-  it('Workforce Management has no description when direct company link', () => {
-    const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    const workforceItem = liveOps?.items.find((item) => item.label === 'Workforce Management');
-    expect(workforceItem?.description).toBeUndefined();
+  it('CompanyTabNav has Workforce tab with slug workforce', () => {
+    /* eslint-disable @typescript-eslint/no-var-requires */
+    const src = require('fs').readFileSync(
+      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
+      'utf-8',
+    );
+    expect(src).toContain("slug: 'workforce'");
+    expect(src).toContain("label: 'Workforce'");
   });
 
   it('non-admin roles do not have Workforce Management in sidebar', () => {
-    const companyGroups  = buildNavGroups('COMPANY_ADMIN');
-    const workerGroups   = buildNavGroups('WORKER');
-    const partnerGroups  = buildNavGroups('PARTNER');
-    const advisorGroups  = buildNavGroups('ADVISOR');
-
-    for (const groups of [companyGroups, workerGroups, partnerGroups, advisorGroups]) {
-      const allItems = groups.flatMap((g) => g.items);
-      const wfItem = allItems.find((item) => item.label === 'Workforce Management');
-      expect(wfItem).toBeUndefined();
+    for (const role of ['COMPANY_ADMIN', 'WORKER', 'PARTNER', 'ADVISOR']) {
+      const allItems = buildNavGroups(role).flatMap((g) => g.items);
+      expect(allItems.find((i) => i.label === 'Workforce Management')).toBeUndefined();
     }
   });
 
-  it('Pilot Lifecycle appears before Workforce Management in Provisioning', () => {
+  it('buildNavGroups with companyId does NOT add workforce link to sidebar (B169 — moved to tab nav)', () => {
+    const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
+    const allItems = groups.flatMap((g) => g.items);
+    expect(allItems.filter((i) => i.href.includes('/workforce')).length).toBe(0);
+  });
+
+  it('Pilot Lifecycle group appears before Operations group in admin sidebar', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    const items = liveOps?.items ?? [];
-    const pilotIdx = items.findIndex((i) => i.label === 'Pilot Lifecycle');
-    const wfIdx = items.findIndex((i) => i.label === 'Workforce Management');
+    const pilotIdx = groups.findIndex((g) => g.heading === 'Pilot Lifecycle');
+    const opsIdx   = groups.findIndex((g) => g.heading === 'Operations');
     expect(pilotIdx).toBeGreaterThanOrEqual(0);
-    expect(wfIdx).toBeGreaterThanOrEqual(0);
-    expect(pilotIdx).toBeLessThan(wfIdx);
+    expect(opsIdx).toBeGreaterThanOrEqual(0);
+    expect(pilotIdx).toBeLessThan(opsIdx);
   });
 });
 
-// ── Task 2: /admin/companies exposes Gestisci workforce CTA ──────────────────
+// ── Task 2: Workforce accessible via CompanyTabNav drill-in ──────────────────
+// B169 FASE 2: CompanyTabNav at /admin/companies/[companyId] renders Workforce tab.
 
-describe('B95-C Task 2 — /admin/companies: workforce CTA reachability', () => {
+describe('B95-C Task 2 — Workforce via CompanyTabNav drill-in (B169)', () => {
 
-  it('Workforce Management is a navigable route under /admin/companies/[companyId]/workforce', () => {
-    const expectedPath = '/admin/companies/meridiana-group/workforce';
-    const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    const wfItem = liveOps?.items.find((i) => i.label === 'Workforce Management');
-    expect(wfItem?.href).toBe(expectedPath);
+  it('workforce route /admin/companies/[companyId]/workforce is a tab in CompanyTabNav', () => {
+    /* eslint-disable @typescript-eslint/no-var-requires */
+    const src = require('fs').readFileSync(
+      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
+      'utf-8',
+    );
+    expect(src).toContain("slug: 'workforce'");
+    expect(src).toContain('/admin/companies/');
   });
 
-  it('workforce route pattern is /admin/companies/[companyId]/workforce', () => {
-    // Ensures the route structure follows Next.js dynamic segment convention
-    const groups = buildNavGroups('KORA_ADMIN', 'test-company');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    const wfItem = liveOps?.items.find((i) => i.label === 'Workforce Management');
-    expect(wfItem?.href).toMatch(/^\/admin\/companies\/[^/]+\/workforce$/);
+  it('workforce route pattern is /admin/companies/[companyId]/workforce (slug-based tab)', () => {
+    /* eslint-disable @typescript-eslint/no-var-requires */
+    const src = require('fs').readFileSync(
+      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
+      'utf-8',
+    );
+    // CompanyTabNav builds href via: `/admin/companies/${companyId}/${slug}` with slug 'workforce'
+    expect(src).toContain('/admin/companies/');
+    expect(src).toContain("slug: 'workforce'");
   });
 });
 
@@ -176,21 +164,21 @@ describe('B95-C Task 4 — Admin quickstart: Step 3 imports workforce', () => {
 });
 
 // ── Task 5: Workforce route reachable from main admin navigation ──────────────
+// B169 FASE 2: workforce is now in CompanyTabNav, reached via Companies group sidebar item.
 
 describe('B95-C Task 5 — Workforce route reachability from admin navigation', () => {
 
-  it('admin sidebar contains an item linking to workforce when company context present', () => {
-    const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const allItems = groups.flatMap((g) => g.items);
-    const workforceLinks = allItems.filter((item) => item.href.includes('/workforce'));
-    expect(workforceLinks.length).toBeGreaterThan(0);
+  it('admin sidebar Companies group provides path to company drill-in (workforce gateway)', () => {
+    const groups = buildNavGroups('KORA_ADMIN');
+    const companiesGroup = groups.find((g) => g.heading === 'Companies');
+    expect(companiesGroup).toBeDefined();
+    expect(companiesGroup?.items.find((i) => i.href === '/admin/companies')).toBeDefined();
   });
 
-  it('admin sidebar without company context links to /admin/companies for workforce selection', () => {
-    const groups = buildNavGroups('KORA_ADMIN');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    const wfItem = liveOps?.items.find((i) => i.label === 'Workforce Management');
-    expect(wfItem?.href).toBe('/admin/companies');
+  it('admin sidebar has no /workforce items (moved to CompanyTabNav — B169 FASE 2)', () => {
+    const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
+    const allItems = groups.flatMap((g) => g.items);
+    expect(allItems.filter((i) => i.href.includes('/workforce')).length).toBe(0);
   });
 
   it('quickstart step pointing to /admin/companies is labeled to suggest workforce action', () => {
@@ -200,17 +188,12 @@ describe('B95-C Task 5 — Workforce route reachability from admin navigation', 
     expect(label.length).toBeGreaterThan(3);
   });
 
-  it('workforce route appears in Provisioning group (not Demo or Future Vision)', () => {
-    const groups = buildNavGroups('KORA_ADMIN', 'meridiana-group');
-    const liveOps = groups.find((g) => g.heading === 'Provisioning');
-    expect(liveOps).toBeDefined();
-    const wfItem = liveOps?.items.find((i) => i.href.includes('/workforce'));
-    expect(wfItem).toBeDefined();
-
-    // Must NOT appear in other groups
-    const otherGroups = groups.filter((g) => g.heading !== 'Provisioning');
-    const otherWf = otherGroups.flatMap((g) => g.items).find((i) => i.href.includes('/workforce'));
-    expect(otherWf).toBeUndefined();
+  it('workforce tab is NOT in Demo Lab or Platform sidebar groups', () => {
+    const groups = buildNavGroups('KORA_ADMIN');
+    const demoGroup     = groups.find((g) => g.heading === 'Demo Lab');
+    const platformGroup = groups.find((g) => g.heading === 'Platform');
+    expect(demoGroup?.items.find((i) => i.href.includes('/workforce'))).toBeUndefined();
+    expect(platformGroup?.items.find((i) => i.href.includes('/workforce'))).toBeUndefined();
   });
 });
 

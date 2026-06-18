@@ -337,26 +337,27 @@ describe('deriveAllStepStatuses', () => {
 });
 
 // ── Sidebar link ──────────────────────────────────────────────────────────────
+// B169 FASE 3: admin nav data moved from Sidebar.tsx to lib/navigation/admin-nav-groups.ts.
 
 describe('sidebar — Pilot Lifecycle link', () => {
-  it('sidebar contains /admin/pipeline route', () => {
-    const sidebarPath = join(process.cwd(), 'components', 'layout', 'Sidebar.tsx');
-    const content = readFileSync(sidebarPath, 'utf-8');
+  it('admin-nav-groups contains /admin/pipeline route', () => {
+    const navPath = join(process.cwd(), 'lib', 'navigation', 'admin-nav-groups.ts');
+    const content = readFileSync(navPath, 'utf-8');
     expect(content).toContain('/admin/pipeline');
   });
 
-  it('sidebar labels it Pilot Lifecycle', () => {
-    const sidebarPath = join(process.cwd(), 'components', 'layout', 'Sidebar.tsx');
-    const content = readFileSync(sidebarPath, 'utf-8');
+  it('admin-nav-groups labels it Pilot Lifecycle', () => {
+    const navPath = join(process.cwd(), 'lib', 'navigation', 'admin-nav-groups.ts');
+    const content = readFileSync(navPath, 'utf-8');
     expect(content).toContain('Pilot Lifecycle');
   });
 
-  it('pipeline link is in the Provisioning group (not Demo group)', () => {
-    const sidebarPath = join(process.cwd(), 'components', 'layout', 'Sidebar.tsx');
-    const content = readFileSync(sidebarPath, 'utf-8');
-    // /admin/pipeline must appear before 'Demo & Preview' group heading
+  it('pipeline link is in Pilot Lifecycle group, before Demo Lab (B169 FASE 3)', () => {
+    const navPath = join(process.cwd(), 'lib', 'navigation', 'admin-nav-groups.ts');
+    const content = readFileSync(navPath, 'utf-8');
+    // /admin/pipeline must appear before the 'Demo Lab' group
     const pipelineIdx = content.indexOf('/admin/pipeline');
-    const demoIdx     = content.indexOf('Demo & Preview');
+    const demoIdx     = content.indexOf("'Demo Lab'");
     expect(pipelineIdx).toBeGreaterThan(0);
     expect(demoIdx).toBeGreaterThan(0);
     expect(pipelineIdx).toBeLessThan(demoIdx);

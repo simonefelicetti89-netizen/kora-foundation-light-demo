@@ -130,11 +130,8 @@ describe('B130 Status — demo reachability: /demo/company/status is linked', ()
     expect(src).toContain('/demo/company/status');
   });
 
-  it('Sidebar Demo & Preview group contains /demo/company/status', () => {
-    const src          = readFile('components/layout/Sidebar.tsx');
-    const syntheticStart = src.indexOf("heading: 'Demo & Preview'");
-    const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
-    const block          = src.slice(syntheticStart, nextHeadingIdx);
-    expect(block).toContain('/demo/company/status');
+  it('Demo Lab (admin-nav-groups) does NOT contain /demo/company/status (RIDONDANTE — removed B169 FASE 4)', () => {
+    const navGroupsSrc = readFile('lib/navigation/admin-nav-groups.ts');
+    expect(navGroupsSrc).not.toContain('/demo/company/status');
   });
 });

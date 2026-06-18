@@ -172,12 +172,8 @@ describe('B129 Fase 3 — demo reachability: /demo/company/kora-index is linked'
 // ── Group 8: Sidebar — KORA Index Demo in admin Demo & Preview group ────────
 
 describe('B129 Fase 3 — Sidebar: KORA Index™ Demo in synthetic group', () => {
-  it('Sidebar Demo & Preview group contains /demo/company/kora-index', () => {
-    const src = readFile('components/layout/Sidebar.tsx');
-    const syntheticStart = src.indexOf("heading: 'Demo & Preview'");
-    // Find next heading after the synthetic group
-    const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
-    const block = src.slice(syntheticStart, nextHeadingIdx);
-    expect(block).toContain('/demo/company/kora-index');
+  it('Demo Lab (admin-nav-groups) does NOT contain /demo/company/kora-index (RIDONDANTE — removed B169 FASE 4)', () => {
+    const navGroupsSrc = readFile('lib/navigation/admin-nav-groups.ts');
+    expect(navGroupsSrc).not.toContain('/demo/company/kora-index');
   });
 });

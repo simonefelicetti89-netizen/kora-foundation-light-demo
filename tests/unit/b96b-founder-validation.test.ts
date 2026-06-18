@@ -442,32 +442,36 @@ describe('B96-B Hero metrics', () => {
 
 // ── Route/nav presence ────────────────────────────────────────────────────────
 
+// B169 FASE 3: 'Founder' group merged into 'Pilot Lifecycle'.
+// /admin/founder-validation is now in Pilot Lifecycle group.
 describe('B96-B Navigation — Founder group in admin sidebar', () => {
 
-  it('admin sidebar includes a Founder group', () => {
+  it('admin sidebar Pilot Lifecycle group contains Founder Validation link (B169 — merged from Founder group)', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const founderGroup = groups.find((g) => g.heading === 'Founder');
-    expect(founderGroup).toBeDefined();
+    const pilotGroup = groups.find((g) => g.heading === 'Pilot Lifecycle');
+    expect(pilotGroup).toBeDefined();
+    const founderItem = pilotGroup?.items.find((i) => i.href === '/admin/founder-validation');
+    expect(founderItem).toBeDefined();
   });
 
-  it('Founder group contains Validation Cockpit item', () => {
-    const groups       = buildNavGroups('KORA_ADMIN');
-    const founderGroup = groups.find((g) => g.heading === 'Founder');
-    const cockpit = founderGroup?.items.find((i) => i.label === 'Validation Cockpit');
-    expect(cockpit).toBeDefined();
+  it('Founder Validation item has correct label in Pilot Lifecycle group', () => {
+    const groups     = buildNavGroups('KORA_ADMIN');
+    const pilotGroup = groups.find((g) => g.heading === 'Pilot Lifecycle');
+    const item       = pilotGroup?.items.find((i) => i.href === '/admin/founder-validation');
+    expect(item?.label).toBeTruthy();
   });
 
-  it('Validation Cockpit links to /admin/founder-validation', () => {
-    const groups       = buildNavGroups('KORA_ADMIN');
-    const founderGroup = groups.find((g) => g.heading === 'Founder');
-    const cockpit = founderGroup?.items.find((i) => i.label === 'Validation Cockpit');
-    expect(cockpit?.href).toBe('/admin/founder-validation');
+  it('Founder Validation links to /admin/founder-validation', () => {
+    const groups    = buildNavGroups('KORA_ADMIN');
+    const allItems  = groups.flatMap((g) => g.items);
+    const founderItem = allItems.find((i) => i.href === '/admin/founder-validation');
+    expect(founderItem?.href).toBe('/admin/founder-validation');
   });
 
-  it('Founder has FOUNDER badge key', () => {
+  it('admin sidebar has no standalone Founder group (merged into Pilot Lifecycle — B169)', () => {
     const groups       = buildNavGroups('KORA_ADMIN');
     const founderGroup = groups.find((g) => g.heading === 'Founder');
-    expect(founderGroup?.badgeKey).toBe('FOUNDER');
+    expect(founderGroup).toBeUndefined();
   });
 
   it('non-admin roles do not have Founder group', () => {

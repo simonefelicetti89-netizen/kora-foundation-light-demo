@@ -119,13 +119,15 @@ describe('Sidebar — KORA Commons nav item', () => {
     expect(commons?.comingSoon).toBeUndefined();
   });
 
-  it('KORA_ADMIN nav has KORA Commons with preview flag', () => {
+  it('KORA_ADMIN nav has KORA Commons in Demo Lab group (B169 — SYNTHETIC group badge replaces preview flag)', () => {
     const groups = buildNavGroups('KORA_ADMIN');
-    const allItems = groups.flatMap((g) => g.items);
-    const commons = allItems.find((i) => i.href === '/commons');
+    const demoLabGroup = groups.find((g) => g.heading === 'Demo Lab');
+    expect(demoLabGroup).toBeDefined();
+    const commons = demoLabGroup?.items.find((i) => i.href === '/commons');
     expect(commons).toBeDefined();
-    expect(commons?.preview).toBe(true);
     expect(commons?.comingSoon).toBeUndefined();
+    // preview flag replaced by group-level SYNTHETIC badge in B169 FASE 3
+    expect(demoLabGroup?.groupBadge).toBe('SYNTHETIC');
   });
 
   it('WORKER Prenotazioni and Collettivo remain comingSoon (correctly disabled)', () => {

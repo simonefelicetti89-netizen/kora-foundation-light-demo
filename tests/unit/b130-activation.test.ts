@@ -140,11 +140,8 @@ describe('B130 Activation — demo reachability: /demo/company/activation is lin
     expect(src).toContain('/demo/company/activation');
   });
 
-  it('Sidebar Demo & Preview group contains /demo/company/activation', () => {
-    const src            = readFile('components/layout/Sidebar.tsx');
-    const syntheticStart = src.indexOf("heading: 'Demo & Preview'");
-    const nextHeadingIdx = src.indexOf("heading:", syntheticStart + 1);
-    const block          = src.slice(syntheticStart, nextHeadingIdx);
-    expect(block).toContain('/demo/company/activation');
+  it('Demo Lab (admin-nav-groups) does NOT contain /demo/company/activation (RIDONDANTE — removed B169 FASE 4)', () => {
+    const navGroupsSrc = readFile('lib/navigation/admin-nav-groups.ts');
+    expect(navGroupsSrc).not.toContain('/demo/company/activation');
   });
 });
