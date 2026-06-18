@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-06-15T17:47:00Z",
+  "tenantId": "a2b802c9-d2d0-4c99-b8d6-c942afc90c7d",
+  "tenantName": "[SYNTHETIC TEST] Tenant TEST-A",
+  "account": "company-admin-a@example.test",
+  "role": "COMPANY_ADMIN",
+  "baseUrl": "http://localhost:3000",
+  "serverMode": "next start (production build a22eee0)",
+  "methodology": "GET page with Supabase SSR auth cookie; no redirect follow for status detection; redirect follow for HTML content",
+  "notes": [
+    "DEMO pattern false positives excluded: 'Foundation Light' (product name in <title>/<meta>), 'SYNTHETIC' (appears in tenant name '[SYNTHETIC TEST] Tenant TEST-A')",
+    "Auth guard confirmed: all pages 307→/login?role_hint=company when no session cookie present",
+    "API routes tested separately with same auth cookie",
+    "Tenant TEST-A has no data seeded (all API routes return empty state with 0 counts) — not a bug, expected for this test tenant"
+  ],
+  "results": [
+    { "page": "/company",             "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 28158, "demoFlag": false, "appError": false, "note": "Renders company shell, COMPANY_ADMIN role wired, KORA Index present in nav" },
+    { "page": "/company/workspace",   "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 32761, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/status",      "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 54215, "demoFlag": false, "appError": false, "note": "Largest page (54KB vs ~26KB avg) — preloads more SSR content, worth investigating if status data loads server-side" },
+    { "page": "/company/kora-index",  "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 26287, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/activation",  "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 26007, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/pillars",     "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 25722, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/financial",   "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 26517, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/contribution","authStatus": 200, "guardStatus": "307→/login", "htmlSize": 27021, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/opportunities","authStatus":200, "guardStatus": "307→/login", "htmlSize": 26938, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/data",        "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 26659, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/reports",     "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 25935, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/wallboard",   "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 26453, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/commons",     "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 33370, "demoFlag": false, "appError": false, "note": "" },
+    { "page": "/company/profile",     "authStatus": 200, "guardStatus": "307→/login", "htmlSize": 27494, "demoFlag": false, "appError": false, "note": "" }
+  ],
+  "apiRoutes": [
+    { "route": "/api/company/workers/aggregate",          "status": 200, "note": "empty state (tenant senza worker in DB)" },
+    { "route": "/api/company/workers/activation-aggregate","status": 200, "note": "empty state, privacy_note presente nel response" },
+    { "route": "/api/company/live-eligibility",           "status": 200, "note": "empty state (0 UEF records nel tenant)" },
+    { "route": "/api/company/evidence-archive",           "status": 200, "note": "empty state, companyName corretto da DB ([SYNTHETIC TEST] Tenant TEST-A)" }
+  ]
+}
