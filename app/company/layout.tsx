@@ -14,7 +14,7 @@
 
 import type { Metadata }                                    from 'next';
 import { redirect }                                         from 'next/navigation';
-import { cookies }                                          from 'next/headers';
+import { cookies, headers }                                  from 'next/headers';
 import { requireCompanyUser, getCurrentKoraUser,
          isKoraAuthError }                                  from '@/lib/auth/kora-session';
 
@@ -86,6 +86,9 @@ export default async function CompanyLayout({ children }: { children: React.Reac
     }
 
     // Fire-and-forget audit log — non-blocking (fail open).
+    const h = await headers();
+    const ip = h.get('x-forwarded-for')?.split(',')[0]?.trim() ?? h.get('x-real-ip') ?? undefined;
+    const ua = h.get('user-agent') ?? undefined;
     void logServiceAccess({
       actorId:     admin.id,
       actorRole:   'KORA_ADMIN',
@@ -93,6 +96,8 @@ export default async function CompanyLayout({ children }: { children: React.Reac
       tenantId:    serviceTenantId,
       environment: env,
       action:      'service_access',
+      ipAddress:   ip,
+      userAgent:   ua,
     });
 
     let companyName: string | null = null;
