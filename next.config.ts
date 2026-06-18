@@ -1,4 +1,5 @@
-import type { NextConfig } from "next";
+import type { NextConfig }      from "next";
+import { withSentryConfig }     from "@sentry/nextjs";
 
 const CSP = [
   "default-src 'self'",
@@ -6,7 +7,8 @@ const CSP = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
   "img-src 'self' data: blob: https://*.supabase.co",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  // *.sentry.io required for Sentry error reporting in production.
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -73,4 +75,15 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org:     process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent:  true,
+  sourcemaps: {
+    // Skip source map upload if SENTRY_AUTH_TOKEN is not set (local dev, CI without secrets).
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+  // Disable auto-instrumentation of API routes — we instrument errors via error.tsx only.
+  autoInstrumentServerFunctions: false,
+  autoInstrumentMiddleware:      false,
+});
