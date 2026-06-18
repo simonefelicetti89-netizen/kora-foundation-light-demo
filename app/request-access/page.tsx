@@ -1,5 +1,6 @@
 // app/request-access/page.tsx
 // B119: Pagina pubblica "Richiedi accesso" — informativa, non crea account.
+// B168.5-P3: supporto parametro ?next= per contextualizzare la richiesta.
 //
 // REGOLA ASSOLUTA: questa pagina NON crea utenti Supabase.
 // Nessuna chiamata a Supabase Auth. La richiesta viene inviata
@@ -22,12 +23,20 @@ const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 // Destinatario richieste di accesso — gestito da KORA_ADMIN
 const CONTACT_EMAIL = 'accesso@kora.io';
 
-export default function RequestAccessPage() {
+export default async function RequestAccessPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const sp = await searchParams;
+  const requestedPath = sp.next ?? null;
+
   const subject = encodeURIComponent('Richiesta accesso KORA');
-  const body = encodeURIComponent(
-    'Nome: \nEmail: \nAzienda: \nRuolo richiesto (Company / Worker): \n\nMessaggio:\n',
-  );
-  const mailtoHref = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
+  const bodyBase = 'Nome: \nEmail: \nAzienda: \nRuolo richiesto (Company / Worker): \n\nMessaggio:\n';
+  const bodyWithContext = requestedPath
+    ? `${bodyBase}\nPagina di interesse: ${requestedPath}\n`
+    : bodyBase;
+  const mailtoHref = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${encodeURIComponent(bodyWithContext)}`;
 
   return (
     <div
@@ -103,6 +112,37 @@ export default function RequestAccessPage() {
             Puoi inviare una richiesta: se approvata, riceverai un invito via email.
           </p>
         </div>
+
+        {/* Context: pagina richiesta (B168.5-P3) */}
+        {requestedPath && (
+          <div
+            data-testid="request-access-context-path"
+            style={{
+              background:   'rgba(6,3,43,0.04)',
+              border:       '1px solid rgba(6,3,43,0.10)',
+              borderRadius: 10,
+              padding:      '10px 14px',
+              marginBottom: 16,
+            }}
+          >
+            <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.64)', margin: 0, lineHeight: 1.6 }}>
+              Stai richiedendo accesso per visualizzare:{' '}
+              <code
+                style={{
+                  fontFamily:  'monospace',
+                  fontSize:    11,
+                  background:  'rgba(6,3,43,0.06)',
+                  borderRadius: 4,
+                  padding:     '1px 5px',
+                  color:       '#06032B',
+                }}
+              >
+                {requestedPath}
+              </code>
+              . Ti contatteremo entro 24h.
+            </p>
+          </div>
+        )}
 
         {/* No-account notice — non-suppressible */}
         <div
