@@ -214,6 +214,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // B168.5-P3: pass pathname to server components so demo guard layouts
+  // can build the ?next= redirect URL without needing usePathname (client-only).
+  supabaseResponse.headers.set('x-pathname', pathname);
   return supabaseResponse;
 }
 

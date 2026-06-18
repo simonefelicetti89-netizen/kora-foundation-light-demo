@@ -133,26 +133,28 @@ describe('B129 — middleware: DEMO_VIEWER confinement', () => {
   });
 });
 
-// ── Group 4: demo/layout.tsx — auth guard and DEMO badge (4 tests) ───────────
+// ── Group 4: demo/layout.tsx — B168.5-P3: layout neutro, guard per-sub-route ──
 
-describe('B129 — demo/layout: guard and boundary marker', () => {
-  it('imports requireDemoAccess from kora-session', () => {
-    expect(demoLayout).toContain('requireDemoAccess');
-    expect(demoLayout).toContain('kora-session');
+describe('B129 — demo/layout: boundary marker (B168.5-P3 ristrutturato)', () => {
+  it('NON importa requireDemoAccess (guard spostato a sub-layout — B168.5-P3)', () => {
+    // Guard is now in /demo/company/layout.tsx and per-route standalone layouts
+    expect(demoLayout).not.toContain("import { requireDemoAccess");
+    expect(demoLayout).not.toContain('await requireDemoAccess()');
   });
 
-  it('renders data-testid="demo-boundary-marker"', () => {
+  it('mantiene data-testid="demo-boundary-marker"', () => {
     expect(demoLayout).toContain('demo-boundary-marker');
   });
 
-  it('renders BoundaryBadge with mode="DEMO"', () => {
-    expect(demoLayout).toContain('BoundaryBadge');
-    expect(demoLayout).toContain('mode="DEMO"');
+  it('mantiene robots noindex per tutto /demo/*', () => {
+    expect(demoLayout).toContain('index: false');
+    expect(demoLayout).toContain('nocache: true');
   });
 
-  it('has comment about KORA_ADMIN admission and Fase 3 review requirement', () => {
-    expect(demoLayout).toContain('Fase 3');
-    expect(demoLayout).toContain('KORA_ADMIN');
+  it('il guard per-sub-route esiste in demo/company/layout.tsx (B168.5-P3)', () => {
+    const companyLayout = readFile('app/demo/company/layout.tsx');
+    expect(companyLayout).toContain('requireDemoGate');
+    expect(companyLayout).toContain('await requireDemoGate()');
   });
 });
 
