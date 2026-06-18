@@ -60,9 +60,10 @@ describe('/company/status — contrast fix', () => {
     expect(statusPage).toContain('rgba(74,127,224,');
   });
 
-  it('SYNTHETIC DEMO orange #C76F3D is in demo status page (B130: moved from live page)', () => {
-    const demoStatusPage = readFile('app/demo/company/status/page.tsx');
-    expect(demoStatusPage).toContain('#C76F3D');
+  it('B171 — app/demo/company/status/page.tsx rimossa (RIDONDANTE, #C76F3D con essa)', () => {
+    const { existsSync } = require('fs');
+    const { join } = require('path');
+    expect(existsSync(join(process.cwd(), 'app/demo/company/status/page.tsx'))).toBe(false);
   });
 });
 

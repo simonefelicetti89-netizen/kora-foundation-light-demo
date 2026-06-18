@@ -18,57 +18,13 @@ function fileExists(rel: string): boolean {
 
 // ── Group 1: Demo page exists and is demo-only ────────────────────────────────
 
-describe('B130 Financial — demo page exists and is demo-only', () => {
-  const DEMO_PAGE = 'app/demo/company/financial/page.tsx';
-
-  it('app/demo/company/financial/page.tsx exists', () => {
-    expect(fileExists(DEMO_PAGE)).toBe(true);
+describe('B171 — demo/company/financial rimossa (RIDONDANTE)', () => {
+  it('app/demo/company/financial/page.tsx non esiste più (B171)', () => {
+    expect(fileExists('app/demo/company/financial/page.tsx')).toBe(false);
   });
 
-  it('demo page does not import useCompanySession', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('useCompanySession');
-  });
-
-  it('demo page has no isLive ? ternary', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('isLive ?');
-    expect(src).not.toContain('const { isLive');
-  });
-
-  it('demo page has financialGovernanceService', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('financialGovernanceService');
-  });
-
-  it('demo page has budgetToHumanImpactService', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('budgetToHumanImpactService');
-  });
-
-  it('demo page has btiIntelligenceService', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('btiIntelligenceService');
-  });
-
-  it('demo page has careEconomyIntelligenceService', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('careEconomyIntelligenceService');
-  });
-
-  it('demo page has accountProvisioningService', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('accountProvisioningService');
-  });
-
-  it('demo page has meridiana-group as fallback', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain("'meridiana-group'");
-  });
-
-  it('demo page shows synthetic_demo_data label', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('synthetic_demo_data');
+  it('la rotta canonica /company/financial esiste ancora', () => {
+    expect(fileExists('app/company/financial/page.tsx')).toBe(true);
   });
 });
 
@@ -182,13 +138,13 @@ describe('B130 Financial — company layout: financial removed from DEMO_DRIVEN_
 
 // ── Group 6: Demo reachability ─────────────────────────────────────────────────
 
-describe('B130 Financial — demo reachability: /demo/company/financial is linked', () => {
-  it('app/demo/page.tsx DEMO_SURFACES includes /demo/company/financial', () => {
+describe('B171 — demo reachability: Financial accessibile via /company/financial', () => {
+  it('app/demo/page.tsx intelligence section include /company/financial (canonical)', () => {
     const src = readFile('app/demo/page.tsx');
-    expect(src).toContain('/demo/company/financial');
+    expect(src).toContain('/company/financial');
   });
 
-  it('Demo Lab (admin-nav-groups) does NOT contain /demo/company/financial (RIDONDANTE — removed B169 FASE 4)', () => {
+  it('Demo Lab (admin-nav-groups) non contiene /demo/company/financial', () => {
     const navGroupsSrc = readFile('lib/navigation/admin-nav-groups.ts');
     expect(navGroupsSrc).not.toContain('/demo/company/financial');
   });

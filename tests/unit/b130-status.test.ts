@@ -27,28 +27,13 @@ function fileExists(rel: string): boolean {
 
 // ── Group 1: Demo page exists and is demo-only ────────────────────────────────
 
-describe('B130 Status — demo page exists and is demo-only', () => {
-  const DEMO_PAGE = 'app/demo/company/status/page.tsx';
-
-  it('app/demo/company/status/page.tsx exists', () => {
-    expect(fileExists(DEMO_PAGE)).toBe(true);
+describe('B171 — demo/company/status rimossa (RIDONDANTE)', () => {
+  it('app/demo/company/status/page.tsx non esiste più (B171)', () => {
+    expect(fileExists('app/demo/company/status/page.tsx')).toBe(false);
   });
 
-  it('demo page does not import useCompanySession', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('useCompanySession');
-  });
-
-  it('demo page has no isLive ? ternary', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('isLive ?');
-    expect(src).not.toContain('const { isLive');
-    expect(src).not.toContain('isLive,');
-  });
-
-  it('demo page does not import from @/lib/supabase', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('@/lib/supabase');
+  it('la rotta canonica /company/status esiste ancora', () => {
+    expect(fileExists('app/company/status/page.tsx')).toBe(true);
   });
 });
 
@@ -124,13 +109,13 @@ describe('B130 Status — company layout: status removed from DEMO_DRIVEN_ROUTES
 
 // ── Group 6: Demo reachability ─────────────────────────────────────────────────
 
-describe('B130 Status — demo reachability: /demo/company/status is linked', () => {
-  it('app/demo/page.tsx DEMO_SURFACES includes /demo/company/status', () => {
+describe('B171 — demo reachability: Status accessibile via /company/status', () => {
+  it('app/demo/page.tsx intelligence section include /company/status (canonical)', () => {
     const src = readFile('app/demo/page.tsx');
-    expect(src).toContain('/demo/company/status');
+    expect(src).toContain('/company/status');
   });
 
-  it('Demo Lab (admin-nav-groups) does NOT contain /demo/company/status (RIDONDANTE — removed B169 FASE 4)', () => {
+  it('Demo Lab (admin-nav-groups) non contiene /demo/company/status', () => {
     const navGroupsSrc = readFile('lib/navigation/admin-nav-groups.ts');
     expect(navGroupsSrc).not.toContain('/demo/company/status');
   });

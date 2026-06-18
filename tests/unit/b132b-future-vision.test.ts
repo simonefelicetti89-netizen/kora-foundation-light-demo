@@ -125,13 +125,13 @@ describe('B132-B — AI Transition Readiness: esclusione AI replacement score', 
 // Boundary invarianti: nessun href verso route live
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('B132-B — boundary: nessun href verso route live', () => {
-  it('non contiene href verso /company/ (live)', () => {
-    // /demo/company/* è permesso — il test esclude solo /company/ senza /demo/
-    const matches = src.match(/href[=:\s]*['"][^'"]*['"]]/g) ?? [];
-    // uso regex più precisa
-    expect(src).not.toMatch(/href[=:\s]*['"]\/company\//);
-    expect(src).not.toMatch(/href[=:\s]*['"]\/company['"]/);
+describe('B132-B — boundary: nessun href verso route riservate', () => {
+  it('Phase 01 usa /company/* canonical (B171: demo copies removed)', () => {
+    // B171: /demo/company/* RIDONDANTE rimossi. future-vision ora usa rotte canoniche.
+    expect(src).toContain('/company/kora-index');
+    expect(src).toContain('/company/activation');
+    expect(src).toContain('/company/financial');
+    expect(src).toContain('/company/reports');
   });
 
   it('non contiene href verso /admin/', () => {
@@ -150,14 +150,7 @@ describe('B132-B — boundary: nessun href verso route live', () => {
     expect(src).not.toMatch(/href[=:\s]*['"]\/api\//);
   });
 
-  it('Phase 01 demo hrefs intatti (regress B132-A)', () => {
-    expect(src).toContain('/demo/company/kora-index');
-    expect(src).toContain('/demo/company/activation');
-    expect(src).toContain('/demo/company/financial');
-    expect(src).toContain('/demo/company/reports');
-  });
-
-  it('CTA Demo Guide intatta (regress B132-A)', () => {
+  it('CTA Demo Guide intatta', () => {
     expect(src).toContain('href="/demo/guide"');
   });
 });

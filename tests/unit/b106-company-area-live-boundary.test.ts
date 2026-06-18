@@ -26,11 +26,10 @@ function exists(rel: string): boolean {
   return existsSync(resolve(root, rel));
 }
 
-// ── 1. B130: /company/status is now live-only; demo moved to /demo/company/status ─
+// ── 1. B130: /company/status is live-only; B171: demo/company/status rimossa ─
 
-describe('B130 — status: live page has no demo services, demo page has getDemoFeedback', () => {
-  const livePage  = read('app/company/status/page.tsx');
-  const demoPage  = read('app/demo/company/status/page.tsx');
+describe('B130 — status: live page has no demo services (B171: demo page rimossa)', () => {
+  const livePage = read('app/company/status/page.tsx');
 
   it('live page does not call getDemoFeedback', () => {
     expect(livePage).not.toContain('getDemoFeedback');
@@ -61,24 +60,8 @@ describe('B130 — status: live page has no demo services, demo page has getDemo
     expect(livePage).toContain('useCompanySession');
   });
 
-  it('demo page has getDemoFeedback (moved here from live page)', () => {
-    expect(demoPage).toContain('getDemoFeedback');
-  });
-
-  it('demo page has workerProvisioningService (demo workforce data)', () => {
-    expect(demoPage).toContain('workerProvisioningService');
-  });
-
-  it('demo page has meridiana-group as fallback', () => {
-    expect(demoPage).toContain("'meridiana-group'");
-  });
-
-  it('demo page does not import useCompanySession', () => {
-    expect(demoPage).not.toContain('useCompanySession');
-  });
-
-  it('demo page does not contain isLive ? ternary', () => {
-    expect(demoPage).not.toContain('isLive ?');
+  it('B171 — app/demo/company/status/page.tsx rimossa (RIDONDANTE)', () => {
+    expect(exists('app/demo/company/status/page.tsx')).toBe(false);
   });
 });
 
@@ -157,11 +140,9 @@ describe('B106 P2 — kora-index: no meridiana-group hardcoded in live branch', 
     expect(koraIndex).not.toContain("liveId ?? 'meridiana-group'");
   });
 
-  it('demo branch still has meridiana-group as fallback (correct)', () => {
-    // B129 Fase 3: meridiana-group fallback now lives exclusively in the demo page.
-    const demoPage = read('app/demo/company/kora-index/page.tsx');
-    expect(demoPage).toContain("'meridiana-group'");
-    // Live page must not contain it
+  it('B171 — app/demo/company/kora-index rimossa; live page must not contain meridiana-group', () => {
+    // B171: demo/company/kora-index deleted. Live page must never have the hardcoded fallback.
+    expect(exists('app/demo/company/kora-index/page.tsx')).toBe(false);
     expect(koraIndex).not.toContain("'meridiana-group'");
   });
 });

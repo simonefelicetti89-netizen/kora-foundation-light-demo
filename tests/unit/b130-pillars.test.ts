@@ -18,40 +18,13 @@ function fileExists(rel: string): boolean {
 
 // ── Group 1: Demo page exists and is demo-only ────────────────────────────────
 
-describe('B130 Pillars — demo page exists and is demo-only', () => {
-  const DEMO_PAGE = 'app/demo/company/pillars/page.tsx';
-
-  it('app/demo/company/pillars/page.tsx exists', () => {
-    expect(fileExists(DEMO_PAGE)).toBe(true);
+describe('B171 — demo/company/pillars rimossa (RIDONDANTE)', () => {
+  it('app/demo/company/pillars/page.tsx non esiste più (B171)', () => {
+    expect(fileExists('app/demo/company/pillars/page.tsx')).toBe(false);
   });
 
-  it('demo page does not import useCompanySession', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('useCompanySession');
-  });
-
-  it('demo page has no isLive ? ternary', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('isLive ?');
-    expect(src).not.toContain('const { isLive');
-    expect(src).not.toContain('isLive,');
-  });
-
-  it('demo page has demo-only services (demoDataService, koraContributionService, accountProvisioningService)', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('demoDataService');
-    expect(src).toContain('koraContributionService');
-    expect(src).toContain('accountProvisioningService');
-  });
-
-  it('demo page has meridiana-group as fallback', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain("'meridiana-group'");
-  });
-
-  it('demo page shows synthetic_demo_data label', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('synthetic_demo_data');
+  it('la rotta canonica /company/pillars esiste ancora', () => {
+    expect(fileExists('app/company/pillars/page.tsx')).toBe(true);
   });
 });
 
@@ -147,13 +120,13 @@ describe('B130 Pillars — company layout: pillars removed from DEMO_DRIVEN_ROUT
 
 // ── Group 6: Demo reachability ─────────────────────────────────────────────────
 
-describe('B130 Pillars — demo reachability: /demo/company/pillars is linked', () => {
-  it('app/demo/page.tsx DEMO_SURFACES includes /demo/company/pillars', () => {
+describe('B171 — demo reachability: Pillars accessibile via /company/pillars', () => {
+  it('app/demo/page.tsx intelligence section include /company/pillars (canonical)', () => {
     const src = readFile('app/demo/page.tsx');
-    expect(src).toContain('/demo/company/pillars');
+    expect(src).toContain('/company/pillars');
   });
 
-  it('Demo Lab (admin-nav-groups) does NOT contain /demo/company/pillars (RIDONDANTE — removed B169 FASE 4)', () => {
+  it('Demo Lab (admin-nav-groups) non contiene /demo/company/pillars', () => {
     const navGroupsSrc = readFile('lib/navigation/admin-nav-groups.ts');
     expect(navGroupsSrc).not.toContain('/demo/company/pillars');
   });

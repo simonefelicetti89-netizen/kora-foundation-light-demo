@@ -171,22 +171,23 @@ describe('B138-C — company/reports live page integration', () => {
   });
 });
 
-// ── 6. UI demo page imports the component ─────────────────────────────────────
+// ── 6. Canonical /company/reports page imports the component (B171: demo/company/reports rimossa) ─
 
-describe('B138-C — demo/company/reports page integration', () => {
-  const src = read('app/demo/company/reports/page.tsx');
+describe('B138-C — /company/reports page integration (B171: demo page rimossa)', () => {
+  it('B171 — app/demo/company/reports/page.tsx rimossa (RIDONDANTE)', () => {
+    const fs = require('fs');
+    const path = require('path');
+    expect(fs.existsSync(path.resolve(__dirname, '../..', 'app/demo/company/reports/page.tsx'))).toBe(false);
+  });
 
-  it('imports NormativeMappingLightSection', () => {
+  it('canonical /company/reports page imports NormativeMappingLightSection', () => {
+    const src = read('app/company/reports/page.tsx');
     expect(src).toContain('NormativeMappingLightSection');
   });
 
-  it('imports getNormativeMappingLight', () => {
+  it('canonical /company/reports page imports getNormativeMappingLight', () => {
+    const src = read('app/company/reports/page.tsx');
     expect(src).toContain('getNormativeMappingLight');
-  });
-
-  it('renders NormativeMappingLightSection with mapping prop', () => {
-    expect(src).toContain('<NormativeMappingLightSection');
-    expect(src).toContain('mapping={getNormativeMappingLight()}');
   });
 });
 

@@ -10,7 +10,7 @@
 // Worker-individual data remains absolutely blocked (see app/worker/layout.tsx).
 //
 // Post-B130: /company/* is live-only. No demo paths exist here anymore.
-// Demo experience lives at /demo/company/* — this layout has no demo-state logic.
+// Demo experience: use VISTA role switcher → /company/* (same routes, no separate demo copy).
 
 import type { Metadata }                                    from 'next';
 import { redirect }                                         from 'next/navigation';

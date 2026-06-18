@@ -3,7 +3,7 @@
 // Componente sorgente: CompanyLivePreviewPanel (Gen 1 live — dati Supabase reali).
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { CompanyLivePreviewPanel } from '@/app/admin/company-live-preview/_components/CompanyLivePreviewPanel';
+import { CompanyLivePreviewPanel } from '@/components/admin/CompanyLivePreviewPanel';
 import { redirect, notFound } from 'next/navigation';
 import { tenantService } from '@/services/tenant/TenantService';
 

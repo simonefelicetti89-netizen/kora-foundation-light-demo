@@ -130,7 +130,7 @@ describe('B82-B Task 5 — DEMO admin pages have DEMO BoundaryBadge', () => {
 
 describe('B82-B Task 6 — LIVE admin pages have LIVE BoundaryBadge', () => {
   const livePages: [string, string][] = [
-    ['app/admin/company-live-preview/_components/CompanyLivePreviewPanel.tsx', 'company-live-preview'],
+    ['components/admin/CompanyLivePreviewPanel.tsx', 'company-live-preview'],
     ['app/admin/companies/_components/CompanyConsolePanel.tsx', 'company-console'],
   ];
 

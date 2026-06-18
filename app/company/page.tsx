@@ -1,6 +1,6 @@
 'use client';
 // C-01: Executive Cockpit — hub di navigazione live per COMPANY_ADMIN.
-// Demo experience: /demo/company/kora-index
+// Demo experience: /company/kora-index (via VISTA role switcher)
 
 import Link from 'next/link';
 import { useCompanySession } from './_providers/CompanySessionProvider';

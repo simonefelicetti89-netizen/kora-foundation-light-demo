@@ -87,70 +87,37 @@ describe('B168.5 Phase 2.2 — Drill-in pages wire initialTenantCode', () => {
   });
 });
 
-// ── Gen 1 standalone pages are redirects ──────────────────────────────────────
+// ── Gen 1 standalone pages removed (B171 cleanup) ────────────────────────────
 
-describe('B168.5 Phase 2.3 — Gen 1 pages converted to redirects', () => {
+describe('B171 — Gen 1 standalone pages removed, components in components/admin/', () => {
+  const gen1Folders = [
+    'app/admin/company-workspace',
+    'app/admin/company-live-preview',
+    'app/admin/company-evidence-archive',
+    'app/admin/company-submissions',
+    'app/admin/company-users',
+  ];
 
-  it('company-workspace page uses redirect, not panel render', () => {
-    const src = read("app/admin/company-workspace/page.tsx");
-    expect(src).toContain('redirect(');
-    expect(src).not.toContain('<CompanyWorkspacePanel');
+  for (const folder of gen1Folders) {
+    it(`${folder}/ directory no longer exists (B171 cleanup)`, () => {
+      expect(exists(`${folder}/page.tsx`)).toBe(false);
+    });
+  }
+
+  it('CompanyWorkspacePanel lives in components/admin/', () => {
+    expect(exists('components/admin/CompanyWorkspacePanel.tsx')).toBe(true);
   });
 
-  it('company-workspace redirects to drill-in when tenantCode present', () => {
-    const src = read("app/admin/company-workspace/page.tsx");
-    expect(src).toContain('/admin/companies/');
-    expect(src).toContain('/workspace');
-    expect(src).toContain('tenantCode');
+  it('CompanyLivePreviewPanel lives in components/admin/', () => {
+    expect(exists('components/admin/CompanyLivePreviewPanel.tsx')).toBe(true);
   });
 
-  it('company-workspace redirects to ?from=workspace when no tenantCode', () => {
-    const src = read("app/admin/company-workspace/page.tsx");
-    expect(src).toContain('?from=workspace');
+  it('CompanyEvidenceArchivePanel lives in components/admin/', () => {
+    expect(exists('components/admin/CompanyEvidenceArchivePanel.tsx')).toBe(true);
   });
 
-  it('company-live-preview page uses redirect, not panel render', () => {
-    const src = read("app/admin/company-live-preview/page.tsx");
-    expect(src).toContain('redirect(');
-    expect(src).not.toContain('<CompanyLivePreviewPanel');
-  });
-
-  it('company-live-preview redirects to ?from=preview when no tenantCode', () => {
-    const src = read("app/admin/company-live-preview/page.tsx");
-    expect(src).toContain('?from=preview');
-  });
-
-  it('company-evidence-archive page uses redirect, not panel render', () => {
-    const src = read("app/admin/company-evidence-archive/page.tsx");
-    expect(src).toContain('redirect(');
-    expect(src).not.toContain('<CompanyEvidenceArchivePanel');
-  });
-
-  it('company-evidence-archive redirects to ?from=evidence when no tenantCode', () => {
-    const src = read("app/admin/company-evidence-archive/page.tsx");
-    expect(src).toContain('?from=evidence');
-  });
-
-  it('company-submissions page uses redirect, not panel render', () => {
-    const src = read("app/admin/company-submissions/page.tsx");
-    expect(src).toContain('redirect(');
-    expect(src).not.toContain('<AdminSubmissionQueue');
-  });
-
-  it('company-submissions redirects to ?from=submissions when no tenantCode', () => {
-    const src = read("app/admin/company-submissions/page.tsx");
-    expect(src).toContain('?from=submissions');
-  });
-
-  it('company-users page uses redirect, not panel render', () => {
-    const src = read("app/admin/company-users/page.tsx");
-    expect(src).toContain('redirect(');
-    expect(src).not.toContain('<CompanyUserProvisioningPanel');
-  });
-
-  it('company-users redirects to ?from=users when no tenantCode', () => {
-    const src = read("app/admin/company-users/page.tsx");
-    expect(src).toContain('?from=users');
+  it('AdminSubmissionQueue lives in components/admin/', () => {
+    expect(exists('components/admin/AdminSubmissionQueue.tsx')).toBe(true);
   });
 });
 
@@ -159,42 +126,42 @@ describe('B168.5 Phase 2.3 — Gen 1 pages converted to redirects', () => {
 describe('B168.5 Phase 2.1 — Gen 1 components accept initialTenantCode prop', () => {
 
   it('CompanyWorkspacePanel Props includes initialTenantCode', () => {
-    const src = read("app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx");
+    const src = read("components/admin/CompanyWorkspacePanel.tsx");
     expect(src).toContain('initialTenantCode?: string');
     expect(src).toContain('showSelector');
   });
 
   it('CompanyWorkspacePanel pre-seeds tenantCode from prop', () => {
-    const src = read("app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx");
+    const src = read("components/admin/CompanyWorkspacePanel.tsx");
     expect(src).toContain('useState(initialTenantCode ?? \'\')');
   });
 
   it('CompanyWorkspacePanel hides selector when prop present', () => {
-    const src = read("app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx");
+    const src = read("components/admin/CompanyWorkspacePanel.tsx");
     expect(src).toContain('showSelector &&');
   });
 
   it('CompanyLivePreviewPanel accepts initialTenantCode prop', () => {
-    const src = read("app/admin/company-live-preview/_components/CompanyLivePreviewPanel.tsx");
+    const src = read("components/admin/CompanyLivePreviewPanel.tsx");
     expect(src).toContain('initialTenantCode?: string');
     expect(src).toContain('showSelector');
     expect(src).toContain('useState(initialTenantCode ?? \'\')');
   });
 
   it('CompanyEvidenceArchivePanel accepts initialTenantCode prop with searchParams fallback', () => {
-    const src = read("app/admin/company-evidence-archive/_components/CompanyEvidenceArchivePanel.tsx");
+    const src = read("components/admin/CompanyEvidenceArchivePanel.tsx");
     expect(src).toContain('initialTenantCode?: string');
     expect(src).toContain('initialTenantCode ?? searchParams');
   });
 
   it('AdminSubmissionQueue accepts initialTenantCode prop', () => {
-    const src = read("app/admin/company-submissions/_components/AdminSubmissionQueue.tsx");
+    const src = read("components/admin/AdminSubmissionQueue.tsx");
     expect(src).toContain('initialTenantCode?: string');
     expect(src).toContain('initialTenantCode');
   });
 
   it('AdminSubmissionQueue filters by tenantCode when prop present', () => {
-    const src = read("app/admin/company-submissions/_components/AdminSubmissionQueue.tsx");
+    const src = read("components/admin/AdminSubmissionQueue.tsx");
     expect(src).toContain('s.tenantCode === initialTenantCode');
   });
 });

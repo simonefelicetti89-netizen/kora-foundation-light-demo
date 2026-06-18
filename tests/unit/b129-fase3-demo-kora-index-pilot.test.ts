@@ -26,32 +26,15 @@ function fileExists(rel: string): boolean {
   return fs.existsSync(path.join(ROOT, rel));
 }
 
-// ── Group 1: Demo page exists and is demo-only ────────────────────────────────
+// ── Group 1: Demo page RIMOSSA (B171 cleanup) ────────────────────────────────
 
-describe('B129 Fase 3 — demo page exists and is demo-only', () => {
-  const DEMO_PAGE = 'app/demo/company/kora-index/page.tsx';
-
-  it('app/demo/company/kora-index/page.tsx exists', () => {
-    expect(fileExists(DEMO_PAGE)).toBe(true);
+describe('B171 — demo/company/kora-index rimossa (RIDONDANTE)', () => {
+  it('app/demo/company/kora-index/page.tsx non esiste più (B171)', () => {
+    expect(fileExists('app/demo/company/kora-index/page.tsx')).toBe(false);
   });
 
-  it('demo page does not import useCompanySession', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('useCompanySession');
-  });
-
-  it('demo page has no isLive variable or isLive ? ternary (isLive={false} prop is fine)', () => {
-    const src = readFile(DEMO_PAGE);
-    // No dual-path ternary
-    expect(src).not.toContain('isLive ?');
-    // No useCompanySession destructuring (the source of the isLive variable in live pages)
-    expect(src).not.toContain('const { isLive');
-    expect(src).not.toContain('isLive,');
-  });
-
-  it('demo page does not import from @/lib/supabase', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('@/lib/supabase');
+  it('la rotta canonica /company/kora-index esiste ancora', () => {
+    expect(fileExists('app/company/kora-index/page.tsx')).toBe(true);
   });
 });
 
@@ -139,33 +122,33 @@ describe('B129 Fase 3 — company layout: kora-index removed from DEMO_DRIVEN_RO
   });
 });
 
-// ── Group 6: Demo guide — no /company/kora-index links ───────────────────────
+// ── Group 6: Demo guide — usa /company/kora-index canonical (B171) ───────────
 
-describe('B129 Fase 3 — demo guide: no /company/kora-index references', () => {
+describe('B171 — demo guide: usa /company/kora-index canonical', () => {
   const GUIDE = 'app/demo/guide/page.tsx';
 
-  it('demo guide EVALUATE_ITEMS has no /company/kora-index href', () => {
+  it('demo guide punta a /company/kora-index (canonical, B171)', () => {
     const src = readFile(GUIDE);
-    expect(src).not.toContain("href: '/company/kora-index'");
+    expect(src).toContain("'/company/kora-index'");
   });
 
-  it('demo guide NEXT_ROUTE has no /company/kora-index href', () => {
+  it('demo guide non punta più a /demo/company/kora-index (RIDONDANTE rimossa)', () => {
     const src = readFile(GUIDE);
-    expect(src).not.toContain("href: '/company/kora-index'");
+    expect(src).not.toContain('/demo/company/kora-index');
   });
 });
 
-// ── Group 7: Demo reachability ────────────────────────────────────────────────
+// ── Group 7: Demo reachability — via /company/* (B171) ───────────────────────
 
-describe('B129 Fase 3 — demo reachability: /demo/company/kora-index is linked', () => {
-  it('app/demo/page.tsx DEMO_SURFACES includes /demo/company/kora-index', () => {
+describe('B171 — demo reachability: KORA Index accessibile via /company/kora-index', () => {
+  it('app/demo/page.tsx intelligence section include /company/kora-index', () => {
     const src = readFile('app/demo/page.tsx');
-    expect(src).toContain('/demo/company/kora-index');
+    expect(src).toContain('/company/kora-index');
   });
 
-  it('app/demo/guide/page.tsx links to /demo/company/kora-index', () => {
+  it('app/demo/guide/page.tsx punta a /company/kora-index (canonical)', () => {
     const src = readFile('app/demo/guide/page.tsx');
-    expect(src).toContain('/demo/company/kora-index');
+    expect(src).toContain('/company/kora-index');
   });
 });
 

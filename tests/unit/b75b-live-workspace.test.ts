@@ -60,7 +60,7 @@ describe('Task 1 — Live company name from analytics.tenant', () => {
 describe('Task 2 — Workforce Baseline UI form', () => {
 
   it('CompanyWorkspacePanel contains baseline form fields', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain('baselineWorkers');
     expect(src).toContain('baselinePeriod');
     expect(src).toContain('baselineError');
@@ -69,19 +69,19 @@ describe('Task 2 — Workforce Baseline UI form', () => {
   });
 
   it('baseline form only renders when workforce baseline is missing', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain('!w.workforce.exists');
     expect(src).toContain('Imposta Baseline Forza Lavoro');
   });
 
   it('baseline form has min=10 on worker count input', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain('min={10}');
     expect(src).toContain('Il numero di lavoratori deve essere un intero ≥ 10.');
   });
 
   it('baseline form POSTs to /api/admin/workforce-baseline with tenantId from workspace', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain("'/api/admin/workforce-baseline'");
     expect(src).toContain("method: 'POST'");
     expect(src).toContain('w.tenant.id');
@@ -258,9 +258,11 @@ describe('Task 5 & 6 — Live recommendations and board actions', () => {
     // B129 Fase 3: live-only page uses live generators exclusively
     expect(src).toContain('generateLiveRecommendations');
     expect(src).toContain('generateLiveBoardActions');
-    // Demo path (budgetToHumanImpactService) now in demo page only
-    const demoSrc = read('app/demo/company/kora-index/page.tsx');
-    expect(demoSrc).toContain('budgetToHumanImpactService.getRecommendations');
+  });
+
+  it('B171 — app/demo/company/kora-index rimossa (RIDONDANTE)', () => {
+    // B171: demo/company/kora-index deleted. Live page is the canonical surface.
+    expect(fs.existsSync(path.resolve(__dirname, '../..', 'app/demo/company/kora-index/page.tsx'))).toBe(false);
   });
 
 });

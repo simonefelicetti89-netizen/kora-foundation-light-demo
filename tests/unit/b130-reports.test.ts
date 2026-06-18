@@ -18,47 +18,13 @@ function fileExists(rel: string): boolean {
 
 // ── Group 1: Demo page exists and is demo-only ────────────────────────────────
 
-describe('B130 Reports — demo page exists and is demo-only', () => {
-  const DEMO_PAGE = 'app/demo/company/reports/page.tsx';
-
-  it('app/demo/company/reports/page.tsx exists', () => {
-    expect(fileExists(DEMO_PAGE)).toBe(true);
+describe('B171 — demo/company/reports rimossa (RIDONDANTE)', () => {
+  it('app/demo/company/reports/page.tsx non esiste più (B171)', () => {
+    expect(fileExists('app/demo/company/reports/page.tsx')).toBe(false);
   });
 
-  it('demo page does not import useCompanySession', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('useCompanySession');
-  });
-
-  it('demo page has no isLive ? ternary', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('isLive ?');
-    expect(src).not.toContain('const { isLive');
-  });
-
-  it('demo page has reportGeneratorService', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('reportGeneratorService');
-  });
-
-  it('demo page has reportFactoryService', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('reportFactoryService');
-  });
-
-  it('demo page has koraContributionService', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('koraContributionService');
-  });
-
-  it('demo page has meridiana-group as fallback', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain("'meridiana-group'");
-  });
-
-  it('demo page shows synthetic_demo_data label', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('synthetic_demo_data');
+  it('la rotta canonica /company/reports esiste ancora', () => {
+    expect(fileExists('app/company/reports/page.tsx')).toBe(true);
   });
 });
 
@@ -169,13 +135,13 @@ describe('B130 Reports — company layout: reports removed from DEMO_DRIVEN_ROUT
 
 // ── Group 6: Demo reachability ─────────────────────────────────────────────────
 
-describe('B130 Reports — demo reachability: /demo/company/reports is linked', () => {
-  it('app/demo/page.tsx DEMO_SURFACES includes /demo/company/reports', () => {
+describe('B171 — demo reachability: Reports accessibile via /company/reports', () => {
+  it('app/demo/page.tsx intelligence section include /company/reports (canonical)', () => {
     const src = readFile('app/demo/page.tsx');
-    expect(src).toContain('/demo/company/reports');
+    expect(src).toContain('/company/reports');
   });
 
-  it('Demo Lab (admin-nav-groups) does NOT contain /demo/company/reports (RIDONDANTE — removed B169 FASE 4)', () => {
+  it('Demo Lab (admin-nav-groups) non contiene /demo/company/reports', () => {
     const navGroupsSrc = readFile('lib/navigation/admin-nav-groups.ts');
     expect(navGroupsSrc).not.toContain('/demo/company/reports');
   });

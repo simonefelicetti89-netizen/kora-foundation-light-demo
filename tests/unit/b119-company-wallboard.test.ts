@@ -29,7 +29,6 @@ function fileExists(rel: string): boolean {
 
 const wallboardPage      = readFile('app/company/wallboard/page.tsx');
 const wallboardClient    = readFile('app/company/wallboard/_components/WallboardClient.tsx');
-const provisioningPanel  = readFile('app/admin/company-users/_components/CompanyUserProvisioningPanel.tsx');
 const methodologyConfig  = readFile('lib/methodology-config/v0.1.ts');
 
 // --- 1-3: Route structure and auth ----------------------------------------
@@ -149,15 +148,13 @@ describe('B119 -- Sidebar navigation', () => {
 
 // --- 16: COMPANY_VIEWER not reintroduced in provisioning -------------------
 
-describe('B143 -- COMPANY_VIEWER rimosso del tutto dal provisioning UI', () => {
-  it('CompanyUserProvisioningPanel documenta B143: COMPANY_VIEWER rimosso', () => {
-    expect(provisioningPanel).toContain('COMPANY_VIEWER');
-    expect(provisioningPanel).toContain('B143');
+describe('B143 -- COMPANY_VIEWER rimosso, B171 -- CompanyUserProvisioningPanel eliminato', () => {
+  it('B171 — app/admin/company-users/_components/CompanyUserProvisioningPanel.tsx rimosso', () => {
+    // B171: company-users Gen 1 folder deleted (0 external uses).
+    expect(fileExists('app/admin/company-users/_components/CompanyUserProvisioningPanel.tsx')).toBe(false);
   });
 
-  it('CompanyUserProvisioningPanel does not render COMPANY_VIEWER as active select option', () => {
-    // value="COMPANY_VIEWER" must not appear as an active form option.
-    // If it appears at all it must be inside a comment block.
+  it('wallboard page does not render COMPANY_VIEWER as active select option', () => {
     const activeOptionIdx = wallboardPage.indexOf('value="COMPANY_VIEWER"');
     expect(activeOptionIdx).toBe(-1);
   });

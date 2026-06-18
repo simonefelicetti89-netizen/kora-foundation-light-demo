@@ -33,7 +33,6 @@ const companyLoginPage   = readFile('app/company/login/page.tsx');
 const authCallback       = readFile('app/auth/callback/route.ts');
 const header             = readFile('components/layout/Header.tsx');
 const appShell           = readFile('components/layout/AppShell.tsx');
-const provisioningPanel  = readFile('app/admin/company-users/_components/CompanyUserProvisioningPanel.tsx');
 const adminPartners      = readFile('app/admin/partners/page.tsx');
 
 // ─── 1. Unified /login page ───────────────────────────────────────────────────
@@ -169,16 +168,11 @@ describe('Header — demo controls gated on real session role', () => {
 
 // ─── 6. COMPANY_VIEWER rimosso in B143 ───────────────────────────────────────
 
-describe('COMPANY_VIEWER — B143 rimosso dal provisioning', () => {
-  it('provisioning panel non offre COMPANY_VIEWER come opzione ruolo', () => {
-    // The ROLE_OPTIONS array should not contain COMPANY_VIEWER as a selectable option
-    const roleOptions = provisioningPanel.slice(
-      provisioningPanel.indexOf('ROLE_OPTIONS'),
-      provisioningPanel.indexOf('ROLE_OPTIONS') + 400,
-    );
-    expect(roleOptions).not.toContain("value: 'COMPANY_VIEWER'");
+describe('COMPANY_VIEWER — B143 rimosso, B171 — CompanyUserProvisioningPanel eliminato', () => {
+  it('B171 — app/admin/company-users/_components/CompanyUserProvisioningPanel.tsx rimosso', () => {
+    // B171: company-users Gen 1 folder deleted entirely (0 external uses, replaced by Gen 3 drill-in).
+    expect(fileExists('app/admin/company-users/_components/CompanyUserProvisioningPanel.tsx')).toBe(false);
   });
-
 });
 
 // ─── 7. Admin partners — error logging + diagnostic banner ───────────────────

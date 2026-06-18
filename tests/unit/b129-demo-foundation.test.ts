@@ -151,10 +151,12 @@ describe('B129 — demo/layout: boundary marker (B168.5-P3 ristrutturato)', () =
     expect(demoLayout).toContain('nocache: true');
   });
 
-  it('il guard per-sub-route esiste in demo/company/layout.tsx (B168.5-P3)', () => {
-    const companyLayout = readFile('app/demo/company/layout.tsx');
-    expect(companyLayout).toContain('requireDemoGate');
-    expect(companyLayout).toContain('await requireDemoGate()');
+  it('demo/company/ directory rimossa (B171: RIDONDANTE pages deleted)', () => {
+    // B171: /demo/company/* rimossi. Il gate per-sub-route era in demo/company/layout.tsx
+    // ma la directory è stata eliminata con le 6 route RIDONDANTE.
+    const fs2 = require('fs');
+    const path2 = require('path');
+    expect(fs2.existsSync(path2.resolve(process.cwd(), 'app/demo/company/layout.tsx'))).toBe(false);
   });
 });
 

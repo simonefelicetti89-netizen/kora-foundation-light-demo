@@ -16,36 +16,15 @@ function fileExists(rel: string): boolean {
   return fs.existsSync(path.join(ROOT, rel));
 }
 
-// ── Group 1: Demo page exists and is demo-only ────────────────────────────────
+// ── Group 1: Demo page RIMOSSA (B171 cleanup) ────────────────────────────────
 
-describe('B130 Activation — demo page exists and is demo-only', () => {
-  const DEMO_PAGE = 'app/demo/company/activation/page.tsx';
-
-  it('app/demo/company/activation/page.tsx exists', () => {
-    expect(fileExists(DEMO_PAGE)).toBe(true);
+describe('B171 — demo/company/activation rimossa (RIDONDANTE)', () => {
+  it('app/demo/company/activation/page.tsx non esiste più (B171)', () => {
+    expect(fileExists('app/demo/company/activation/page.tsx')).toBe(false);
   });
 
-  it('demo page does not import useCompanySession', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('useCompanySession');
-  });
-
-  it('demo page has no isLive ? ternary', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).not.toContain('isLive ?');
-    expect(src).not.toContain('const { isLive');
-    expect(src).not.toContain('isLive,');
-  });
-
-  it('demo page has demo-only services (explainabilityService, accountProvisioningService)', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain('explainabilityService');
-    expect(src).toContain('accountProvisioningService');
-  });
-
-  it('demo page has meridiana-group as fallback', () => {
-    const src = readFile(DEMO_PAGE);
-    expect(src).toContain("'meridiana-group'");
+  it('la rotta canonica /company/activation esiste ancora', () => {
+    expect(fileExists('app/company/activation/page.tsx')).toBe(true);
   });
 });
 
@@ -134,13 +113,13 @@ describe('B130 Activation — company layout: activation removed from DEMO_DRIVE
 
 // ── Group 6: Demo reachability ─────────────────────────────────────────────────
 
-describe('B130 Activation — demo reachability: /demo/company/activation is linked', () => {
-  it('app/demo/page.tsx DEMO_SURFACES includes /demo/company/activation', () => {
+describe('B171 — demo reachability: Activation accessibile via /company/activation', () => {
+  it('app/demo/page.tsx intelligence section include /company/activation (canonical)', () => {
     const src = readFile('app/demo/page.tsx');
-    expect(src).toContain('/demo/company/activation');
+    expect(src).toContain('/company/activation');
   });
 
-  it('Demo Lab (admin-nav-groups) does NOT contain /demo/company/activation (RIDONDANTE — removed B169 FASE 4)', () => {
+  it('Demo Lab (admin-nav-groups) non contiene /demo/company/activation', () => {
     const navGroupsSrc = readFile('lib/navigation/admin-nav-groups.ts');
     expect(navGroupsSrc).not.toContain('/demo/company/activation');
   });

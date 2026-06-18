@@ -268,10 +268,12 @@ describe('B133 Step 1.5 — regress: B132 demo pages not touched', () => {
     expect(fs.readFileSync(DEMO_HUB, 'utf-8')).toContain("export const dynamic = 'force-static'");
   });
 
-  it('demo/page.tsx nessun href verso /company/ (live)', () => {
+  it('demo/page.tsx usa /company/* canonical per intelligence section (B171)', () => {
+    // B171: /demo/company/* RIDONDANTE rimossi. Intelligence section usa route canoniche.
     const src = fs.readFileSync(DEMO_HUB, 'utf-8');
-    expect(src).not.toMatch(/href[=:\s]*['"]\/company\//);
-    expect(src).not.toMatch(/href[=:\s]*['"]\/company['"]/);
+    expect(src).toContain('/company/kora-index');
+    expect(src).not.toMatch(/href[=:\s]*['"]\/admin\//);
+    expect(src).not.toMatch(/href[=:\s]*['"]\/worker\//);
   });
 });
 

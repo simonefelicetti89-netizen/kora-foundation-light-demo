@@ -3,7 +3,7 @@
 // Componente sorgente: CompanyWorkspacePanel (Gen 1 live — dati Supabase reali).
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { CompanyWorkspacePanel } from '@/app/admin/company-workspace/_components/CompanyWorkspacePanel';
+import { CompanyWorkspacePanel } from '@/components/admin/CompanyWorkspacePanel';
 import { redirect, notFound } from 'next/navigation';
 import { tenantService } from '@/services/tenant/TenantService';
 

@@ -123,39 +123,39 @@ describe('P3 — DataIntakeStudio operator-flow synthetic-only note', () => {
 describe('P4 — CompanyWorkspacePanel Decision Pack promotion buttons', () => {
 
   it('has dpPromoStatus and dpPromoError state', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain('dpPromoStatus');
     expect(src).toContain('dpPromoError');
   });
 
   it('handleDpPromotion POSTs to /api/admin/decision-pack/status', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain("'/api/admin/decision-pack/status'");
     expect(src).toContain("method: 'POST'");
     expect(src).toContain('handleDpPromotion');
   });
 
   it('promotion handler accepts nextStatus: ready or exported', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain("nextStatus: 'ready' | 'exported'");
     expect(src).toContain("handleDpPromotion('ready')");
     expect(src).toContain("handleDpPromotion('exported')");
   });
 
   it('draft DP shows "Marca come Pronto" button', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain('Marca come Pronto');
     expect(src).toContain("status === 'draft'");
   });
 
   it('ready DP shows "Segna come Esportato" button', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain('Segna come Esportato');
     expect(src).toContain("status === 'ready'");
   });
 
   it('promotion calls loadWorkspace() on success to refresh state', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     // After successful promotion, loadWorkspace() must be called
     expect(src).toContain('setDpPromoStatus');
     expect(src).toContain("setDpPromoStatus('done')");
@@ -198,19 +198,20 @@ describe('P5 — UefReviewQueue scoring-readiness indicator', () => {
 
 });
 
-// ── P6: /admin/company-live-preview page exists ───────────────────────────────
+// ── P6: company-live-preview moved to Gen 3 drill-in (B171 cleanup) ──────────
 
-describe('P6 — /admin/company-live-preview page is alive (no dead link)', () => {
+describe('P6 — company-live-preview promoted to Gen 3 drill-in (B171)', () => {
 
-  it('company-live-preview page file exists', () => {
+  it('CompanyLivePreviewPanel component moved to components/admin/', () => {
     expect(
-      fs.existsSync(path.resolve(__dirname, '../../app/admin/company-live-preview/page.tsx'))
+      fs.existsSync(path.resolve(process.cwd(), 'components/admin/CompanyLivePreviewPanel.tsx'))
     ).toBe(true);
   });
 
-  it('TenantOnboardingPanel links to /admin/company-live-preview', () => {
-    const src = read('app/admin/tenants/_components/TenantOnboardingPanel.tsx');
-    expect(src).toContain('/admin/company-live-preview');
+  it('Gen 3 drill-in page exists at /admin/companies/[companyId]/preview/', () => {
+    expect(
+      fs.existsSync(path.resolve(process.cwd(), 'app/admin/companies/[companyId]/preview/page.tsx'))
+    ).toBe(true);
   });
 
 });
@@ -220,7 +221,7 @@ describe('P6 — /admin/company-live-preview page is alive (no dead link)', () =
 describe('P7 — Pilot complete signal in workspace and console', () => {
 
   it('CompanyWorkspacePanel shows pilot-complete banner when scoring done + DP exported', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain('Pilota completato — il workspace aziendale è attivo');
     expect(src).toContain("w.scoring?.hasResult && w.decisionPack?.status === 'exported'");
   });
@@ -273,7 +274,7 @@ describe('B76-B architectural invariants', () => {
   });
 
   it('CompanyWorkspacePanel DP promotion does not modify scoring outputs', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     // The promotion only changes DP status, not scoring
     const promoFn = src.slice(
       src.indexOf('async function handleDpPromotion'),

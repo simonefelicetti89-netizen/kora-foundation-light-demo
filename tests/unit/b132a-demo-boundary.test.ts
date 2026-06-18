@@ -51,14 +51,12 @@ describe('B132-A Step 1 — demo hub structure (app/demo/page.tsx)', () => {
     expect(matches.length).toBe(1);
   });
 
-  it('scenario cards have CTA linking to /demo/company/kora-index', () => {
-    expect(src).toContain('/demo/company/kora-index');
+  it('scenario cards have CTA linking to /company/kora-index (B171: canonical route)', () => {
+    expect(src).toContain('/company/kora-index');
   });
 
-  it('has no href to /company/* live routes', () => {
-    // Must not contain href="  /company/ or href: '/company
-    expect(src).not.toMatch(/href[=:]\s*['"]\/company\//);
-    expect(src).not.toMatch(/href[=:]\s*['"]\/company['"]/);
+  it('has no href to /admin/* routes', () => {
+    expect(src).not.toMatch(/href[=:]\s*['"]\/admin\//);
   });
 
   it('has no href to /admin/* routes', () => {
@@ -99,20 +97,14 @@ describe('B132-A Step 1 — demo hub structure (app/demo/page.tsx)', () => {
     expect(src).toContain('/demo/future-vision');
   });
 
-  it('all demo surface hrefs point to /demo/* only', () => {
-    // Extract all href values in the file
-    const hrefPattern = /href=["']([^"']+)["']/g;
-    let match: RegExpExecArray | null;
-    const hrefs: string[] = [];
-    while ((match = hrefPattern.exec(src)) !== null) {
-      hrefs.push(match[1]);
-    }
-    const nonDemo = hrefs.filter(h =>
-      !h.startsWith('/demo/') &&
-      !h.startsWith('#') &&
-      h !== '/demo'
-    );
-    expect(nonDemo).toEqual([]);
+  it('intelligence section hrefs point to /company/* canonical routes (B171)', () => {
+    // B171: /demo/company/* RIDONDANTE routes removed. Intelligence section now uses /company/*.
+    expect(src).toContain('/company/kora-index');
+    expect(src).toContain('/company/activation');
+    expect(src).toContain('/company/pillars');
+    expect(src).toContain('/company/reports');
+    expect(src).toContain('/company/financial');
+    expect(src).toContain('/company/status');
   });
 });
 
@@ -120,73 +112,50 @@ describe('B132-A Step 1 — demo hub structure (app/demo/page.tsx)', () => {
 // Step 2 — guide / future-vision / gtm no live hrefs  (added after Step 2)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('B132-A Step 2 — guide: no live /company/* hrefs', () => {
+describe('B132-A Step 2 — guide: uses /company/* canonical routes (B171)', () => {
   let src: string;
   beforeAll(() => { src = read('guide/page.tsx'); });
 
-  it('does not contain href to /company (live Executive Cockpit)', () => {
-    expect(src).not.toMatch(/href[:\s=]*['"]\/company['"]/);
+  it('guide links to canonical /company/kora-index (B171: demo copy removed)', () => {
+    expect(src).toContain('/company/kora-index');
   });
 
-  it('does not contain href to /company/kora-index (live)', () => {
-    expect(src).not.toContain("href: '/company/kora-index'");
-    expect(src).not.toContain('href="/company/kora-index"');
+  it('guide links to canonical /company/activation', () => {
+    expect(src).toContain('/company/activation');
   });
 
-  it('does not contain href to /company/activation (live)', () => {
-    expect(src).not.toContain("href: '/company/activation'");
-    expect(src).not.toContain('href="/company/activation"');
+  it('guide links to canonical /company/financial', () => {
+    expect(src).toContain('/company/financial');
   });
 
-  it('does not contain href to /company/financial (live)', () => {
-    expect(src).not.toContain("href: '/company/financial'");
-    expect(src).not.toContain('href="/company/financial"');
+  it('guide links to canonical /company/reports', () => {
+    expect(src).toContain('/company/reports');
   });
 
-  it('does not contain href to /company/reports (live)', () => {
-    expect(src).not.toContain("href: '/company/reports'");
-    expect(src).not.toContain('href="/company/reports"');
-  });
-
-  it('does not contain href to /company/data (live — no demo equivalent)', () => {
+  it('does not contain href to /company/data (no demo equivalent)', () => {
     expect(src).not.toContain("href: '/company/data'");
     expect(src).not.toContain('href="/company/data"');
   });
 
-  it('does not contain href to /company/contribution (live — no demo equivalent)', () => {
+  it('does not contain href to /company/contribution (no demo equivalent)', () => {
     expect(src).not.toContain("href: '/company/contribution'");
     expect(src).not.toContain('href="/company/contribution"');
   });
 
-  it('routes without demo equivalent use locked text (no href)', () => {
-    // /company/data and /company/contribution must be locked — check presence of locked label
-    expect(src).toMatch(/Stato Dati|Dati & Evidenze|dati.*live|non disponibile/i);
-    expect(src).toMatch(/KORA Contribution|Contribution.*live|non disponibile/i);
+  it('has no href to /admin/* routes', () => {
+    expect(src).not.toMatch(/href[=:]\s*['"]\/admin\//);
   });
 });
 
-describe('B132-A Step 2 — future-vision: no live /company/* hrefs', () => {
+describe('B132-A Step 2 — future-vision: Phase 01 uses /company/* canonical routes (B171)', () => {
   let src: string;
   beforeAll(() => { src = read('future-vision/page.tsx'); });
 
-  it('does not contain href to /company/kora-index', () => {
-    expect(src).not.toContain("href: '/company/kora-index'");
-    expect(src).not.toContain('href="/company/kora-index"');
-  });
-
-  it('does not contain href to /company/activation', () => {
-    expect(src).not.toContain("href: '/company/activation'");
-    expect(src).not.toContain('href="/company/activation"');
-  });
-
-  it('does not contain href to /company/financial', () => {
-    expect(src).not.toContain("href: '/company/financial'");
-    expect(src).not.toContain('href="/company/financial"');
-  });
-
-  it('does not contain href to /company/reports', () => {
-    expect(src).not.toContain("href: '/company/reports'");
-    expect(src).not.toContain('href="/company/reports"');
+  it('Phase 01 modules use /company/* canonical hrefs (B171: demo copies removed)', () => {
+    expect(src).toContain('/company/kora-index');
+    expect(src).toContain('/company/activation');
+    expect(src).toContain('/company/financial');
+    expect(src).toContain('/company/reports');
   });
 
   it('does not contain href to /company/data', () => {
@@ -194,62 +163,39 @@ describe('B132-A Step 2 — future-vision: no live /company/* hrefs', () => {
     expect(src).not.toContain('href="/company/data"');
   });
 
-  it('Phase 01 modules use /demo/company/* hrefs', () => {
-    expect(src).toContain('/demo/company/kora-index');
-    expect(src).toContain('/demo/company/activation');
-    expect(src).toContain('/demo/company/financial');
-    expect(src).toContain('/demo/company/reports');
+  it('has no href to /admin/* routes', () => {
+    expect(src).not.toMatch(/href[=:]\s*['"]\/admin\//);
   });
 });
 
-describe('B132-A Step 2 — gtm: no live /company/* or /partner hrefs', () => {
+describe('B132-A Step 2 — gtm: uses canonical /company/* routes (B171)', () => {
   let src: string;
   beforeAll(() => { src = read('gtm/page.tsx'); });
 
-  it('does not contain isLive-tagged href to /company', () => {
-    expect(src).not.toMatch(/href[:\s=]*['"]\/company['"]/);
-    expect(src).not.toMatch(/href[:\s=]*['"]\/company\//);
+  it('GTM links use /company/* canonical routes (B171: demo copies removed)', () => {
+    expect(src).toContain('/company/kora-index');
   });
 
   it('does not contain href to /partner (live — no demo equivalent)', () => {
     expect(src).not.toContain("href: '/partner'");
     expect(src).not.toContain('href="/partner"');
   });
-});
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Step 3 — financial / status cross-link to live reports (added after Step 3)
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('B132-A Step 3 — demo/company/financial: no cross-link to live /company/reports', () => {
-  let src: string;
-  beforeAll(() => { src = read('company/financial/page.tsx'); });
-
-  it('does not contain href="/company/reports" (live cross-link)', () => {
-    expect(src).not.toContain('href="/company/reports"');
-    expect(src).not.toContain("href='/company/reports'");
-  });
-
-  it('cross-link to reports uses /demo/company/reports', () => {
-    expect(src).toContain('/demo/company/reports');
+  it('has no href to /admin/* routes', () => {
+    expect(src).not.toMatch(/href[:\s=]*['"]\/admin\//);
   });
 });
 
-describe('B132-A Step 3 — demo/company/status: no cross-link to live /company/reports', () => {
-  let src: string;
-  beforeAll(() => { src = read('company/status/page.tsx'); });
+// ─────────────────────────────────────────────────────────────────────────────
+// Step 3 — demo/company/* pages removed by B171 (no longer exist to test)
+// ─────────────────────────────────────────────────────────────────────────────
 
-  it('does not contain href to /company/reports (live)', () => {
-    expect(src).not.toContain("href:  '/company/reports'");
-    expect(src).not.toContain("href: '/company/reports'");
-    expect(src).not.toContain('href="/company/reports"');
-  });
+describe('B171 — demo/company/* RIDONDANTE pages removed', () => {
+  const fs2 = require('fs');
+  const path2 = require('path');
+  const demoCompanyRoot = path2.resolve(process.cwd(), 'app/demo/company');
 
-  it('does not contain href to /company/reports/board-pack (live)', () => {
-    expect(src).not.toContain('/company/reports/board-pack');
-  });
-
-  it('cross-link to reports uses /demo/company/reports', () => {
-    expect(src).toContain('/demo/company/reports');
+  it('app/demo/company/ directory no longer exists (B171 cleanup)', () => {
+    expect(fs2.existsSync(demoCompanyRoot)).toBe(false);
   });
 });

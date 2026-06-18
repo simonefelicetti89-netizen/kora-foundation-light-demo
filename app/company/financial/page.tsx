@@ -152,7 +152,7 @@ export default function FinancialGovernanceLive() {
             Vai al KORA Index →
           </Link>
           <Link
-            href="/demo/company/financial"
+            href="/demo/guide"
             style={{
               borderRadius:   6,
               border:         `1px solid rgba(6,3,43,0.14)`,
@@ -164,7 +164,7 @@ export default function FinancialGovernanceLive() {
               textDecoration: 'none',
             }}
           >
-            Esplora struttura BTI™ in demo →
+            Demo Guide →
           </Link>
         </div>
       </div>

@@ -42,12 +42,12 @@ interface DemoSurface {
 }
 
 const SECTION_INTELLIGENCE: DemoSurface[] = [
-  { label: 'KORA Index™ Detail',      href: '/demo/company/kora-index', desc: 'Scomposizione analitica: 10 componenti, 4 macroblocks, explainability, pipeline 14-stage.' },
-  { label: 'Activation Intelligence', href: '/demo/company/activation', desc: 'Activation Debt™, Maggioranza Silenziosa, distribuzione pillar e sede.' },
-  { label: 'Pillar Intelligence',     href: '/demo/company/pillars',    desc: 'Portfolio programmi, iniziative collettive, distribuzione IU sui 5 pillar KORA.' },
-  { label: 'Decision Pack',           href: '/demo/company/reports',    desc: 'Report direzionali, version history, period comparison, KORA Contribution.' },
-  { label: 'Financial Governance',    href: '/demo/company/financial',  desc: 'BTI™ Engine, Activation Debt, budget per pillar, correlazioni KPI, scenari direzionali.' },
-  { label: 'Status Center',           href: '/demo/company/status',     desc: 'Stato operativo aziendale: pipeline, checklist onboarding, submission, Worker Space.' },
+  { label: 'KORA Index™ Detail',      href: '/company/kora-index', desc: 'Scomposizione analitica: 10 componenti, 4 macroblocks, explainability, pipeline 14-stage.' },
+  { label: 'Activation Intelligence', href: '/company/activation', desc: 'Activation Debt™, Maggioranza Silenziosa, distribuzione pillar e sede.' },
+  { label: 'Pillar Intelligence',     href: '/company/pillars',    desc: 'Portfolio programmi, iniziative collettive, distribuzione IU sui 5 pillar KORA.' },
+  { label: 'Decision Pack',           href: '/company/reports',    desc: 'Report direzionali, version history, period comparison, KORA Contribution.' },
+  { label: 'Financial Governance',    href: '/company/financial',  desc: 'BTI™ Engine, Activation Debt, budget per pillar, correlazioni KPI, scenari direzionali.' },
+  { label: 'Status Center',           href: '/company/status',     desc: 'Stato operativo aziendale: pipeline, checklist onboarding, submission, Worker Space.' },
 ];
 
 const SECTION_ECOSYSTEM: DemoSurface[] = [
@@ -157,7 +157,7 @@ export default function DemoHomePage() {
               </div>
               <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', lineHeight: 1.55, marginBottom: 16 }}>{s.description}</p>
               <Link
-                href="/demo/company/kora-index"
+                href="/company/kora-index"
                 style={{ display: 'inline-block', fontSize: 12, fontWeight: 700, color: '#B5512E', textDecoration: 'none' }}
               >
                 Esplora KORA Index™ →

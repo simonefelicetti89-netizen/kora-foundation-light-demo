@@ -144,19 +144,13 @@ describe('Live session — demo/live path separation', () => {
       'utf-8',
     );
     // B129 Fase 3: live-only page — NoDataState is returned when !hasKoraData.
-    // Meridiana fallback lives exclusively in the demo page (/demo/company/kora-index).
+    // B171: demo/company/kora-index rimossa — meridiana fallback non esiste più.
     expect(koraIndex).toContain('hasKoraData');
     expect(koraIndex).toContain('NoDataState');
-    // Meridiana must NOT appear in the live page (it belongs to the demo page only)
+    // Meridiana must NOT appear in the live page
     expect(koraIndex.toLowerCase()).not.toContain('meridiana');
     // COMPANY_ID is liveId ?? '' — no demo fallback
     expect(koraIndex).toContain("liveId ?? ''");
-    // Demo page has the Meridiana fallback
-    const demoKoraIndex = fs.readFileSync(
-      new URL('../../app/demo/company/kora-index/page.tsx', import.meta.url).pathname,
-      'utf-8',
-    );
-    expect(demoKoraIndex).toContain("'meridiana-group'");
   });
 
 });

@@ -321,12 +321,12 @@ describe('P0-3 — PDF delivery strategy module', () => {
   });
 
   it('CompanyWorkspacePanel uses getPdfLinkConfig (not raw pdfUrl)', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     expect(src).toContain('getPdfLinkConfig');
   });
 
   it('CompanyWorkspacePanel no longer has bare <a href={w.decisionPack.pdfUrl}>PDF</a>', () => {
-    const src = read('app/admin/company-workspace/_components/CompanyWorkspacePanel.tsx');
+    const src = read('components/admin/CompanyWorkspacePanel.tsx');
     // The old raw link: href={w.decisionPack.pdfUrl} with text "PDF" directly inside
     expect(src).not.toContain('>PDF</a>');
   });

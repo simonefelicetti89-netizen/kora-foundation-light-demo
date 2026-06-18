@@ -3,7 +3,7 @@
 // Componente sorgente: AdminSubmissionQueue (Gen 1 live — dati Supabase reali).
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { AdminSubmissionQueue } from '@/app/admin/company-submissions/_components/AdminSubmissionQueue';
+import { AdminSubmissionQueue } from '@/components/admin/AdminSubmissionQueue';
 import { redirect, notFound } from 'next/navigation';
 import { tenantService } from '@/services/tenant/TenantService';
 

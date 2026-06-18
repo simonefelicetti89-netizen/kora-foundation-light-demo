@@ -70,22 +70,20 @@ describe('app/demo/layout.tsx — NON gata più tutte le route', () => {
   });
 });
 
-// ── Layout /demo/company — gata tutte le 6 company ────────────────────────────
+// ── Layout /demo/company — rimosso con B171 ────────────────────────────────────
 
-describe('app/demo/company/layout.tsx — gate per 6 company pages', () => {
-  it('esiste', () => {
-    expect(exists('app/demo/company/layout.tsx')).toBe(true);
+describe('app/demo/company/ — rimosso da B171 (route RIDONDANTI cancellate)', () => {
+  it('app/demo/company/ directory non esiste più (B171 cleanup)', () => {
+    expect(exists('app/demo/company/layout.tsx')).toBe(false);
+    expect(exists('app/demo/company/kora-index/page.tsx')).toBe(false);
   });
 
-  it('importa requireDemoGate', () => {
-    const src = read('app/demo/company/layout.tsx');
-    expect(src).toContain('requireDemoGate');
-  });
-
-  it('chiama await requireDemoGate() (server-side, non bypassabile)', () => {
-    const src = read('app/demo/company/layout.tsx');
-    expect(src).toContain('await requireDemoGate()');
-    expect(src).not.toContain("'use client'");
+  it('5 layout standalone gated ancora presenti (non RIDONDANTI — protetti)', () => {
+    expect(exists('app/demo/index-registry/layout.tsx')).toBe(true);
+    expect(exists('app/demo/portfolio/layout.tsx')).toBe(true);
+    expect(exists('app/demo/network/layout.tsx')).toBe(true);
+    expect(exists('app/demo/advisor/layout.tsx')).toBe(true);
+    expect(exists('app/demo/ai-onboarding/layout.tsx')).toBe(true);
   });
 });
 
@@ -206,12 +204,12 @@ describe('DemoAccessBanner — componente client dismissibile', () => {
 
 // ── CTA in /demo/guide ────────────────────────────────────────────────────────
 
-describe('/demo/guide — CTA verso route gated (B168.5-P3)', () => {
+describe('/demo/guide — CTA verso KORA Index (B171: route canonical)', () => {
   const src = read('app/demo/guide/page.tsx');
 
-  it('ha CTA verso /demo/company/kora-index con data-testid', () => {
+  it('ha CTA verso /company/kora-index con data-testid (B171: canonical route)', () => {
     expect(src).toContain('data-testid="guide-cta-kora-index"');
-    expect(src).toContain('/demo/company/kora-index');
+    expect(src).toContain('/company/kora-index');
   });
 
   it('il CTA ha testo che invita al dettaglio metodologico', () => {
@@ -240,16 +238,10 @@ describe('Coerenza B169/B168.5-P3: sidebar admin verso route gated', () => {
   });
 });
 
-// ── 11 route gated — pagine gated mantengono il file page.tsx ─────────────────
+// ── 5 route gated rimaste (B171: 6 demo/company/* RIDONDANTI rimosse) ────────
 
-describe('11 route gated — page.tsx ancora presenti', () => {
+describe('5 route gated ancora presenti (non RIDONDANTI)', () => {
   const GATED_PAGES = [
-    'app/demo/company/kora-index/page.tsx',
-    'app/demo/company/financial/page.tsx',
-    'app/demo/company/pillars/page.tsx',
-    'app/demo/company/status/page.tsx',
-    'app/demo/company/activation/page.tsx',
-    'app/demo/company/reports/page.tsx',
     'app/demo/index-registry/page.tsx',
     'app/demo/portfolio/page.tsx',
     'app/demo/network/page.tsx',
@@ -257,9 +249,23 @@ describe('11 route gated — page.tsx ancora presenti', () => {
     'app/demo/ai-onboarding/page.tsx',
   ];
 
-  it('tutte le 11 page.tsx esistono ancora', () => {
+  it('tutte le 5 page.tsx gated ancora presenti', () => {
     for (const page of GATED_PAGES) {
       expect(exists(page), `${page} deve esistere`).toBe(true);
+    }
+  });
+
+  it('le 6 /demo/company/* RIDONDANTI non esistono più (B171)', () => {
+    const ridondanti = [
+      'app/demo/company/kora-index/page.tsx',
+      'app/demo/company/financial/page.tsx',
+      'app/demo/company/pillars/page.tsx',
+      'app/demo/company/status/page.tsx',
+      'app/demo/company/activation/page.tsx',
+      'app/demo/company/reports/page.tsx',
+    ];
+    for (const page of ridondanti) {
+      expect(exists(page), `${page} deve essere stato rimosso`).toBe(false);
     }
   });
 });

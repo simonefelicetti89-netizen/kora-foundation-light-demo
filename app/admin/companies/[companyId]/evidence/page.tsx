@@ -3,7 +3,7 @@
 // Componente sorgente: CompanyEvidenceArchivePanel (Gen 1 live — dati Supabase reali).
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
-import { CompanyEvidenceArchivePanel } from '@/app/admin/company-evidence-archive/_components/CompanyEvidenceArchivePanel';
+import { CompanyEvidenceArchivePanel } from '@/components/admin/CompanyEvidenceArchivePanel';
 import { redirect, notFound } from 'next/navigation';
 import { tenantService } from '@/services/tenant/TenantService';
 
