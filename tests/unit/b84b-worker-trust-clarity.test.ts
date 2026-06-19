@@ -384,7 +384,8 @@ describe('B84-B invariants — no forbidden changes', () => {
 
   it('methodology config unchanged — 10 KORA Index components', () => {
     const src = read('lib/constants/kora.ts');
-    expect(src).toContain("KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'NI', 'WB', 'PC', 'PB', 'EQ', 'VR', 'CO', 'CS']");
+    // Sprint 1 v2.0: NI→EVQ, VR→INT, CO→CONT, WB→EQW, EQ→EQS
+    expect(src).toContain("KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'EVQ', 'INT', 'CONT', 'EQW', 'EQS', 'PC', 'PB', 'CS']");
   });
 
   it('no SQL or Prisma added', () => {

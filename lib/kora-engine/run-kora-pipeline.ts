@@ -1,15 +1,17 @@
 // lib/kora-engine/run-kora-pipeline.ts
-// KORA Computation Pipeline v1.0 — Foundation Light Pilot.
+// KORA Computation Pipeline v2.0 — Foundation Light Pilot. Sprint 1 IU-centric.
 //
 // Orchestrates the full pipeline:
 //   records → Eligibility → Pillar → Care Economy → Budget Evidence
-//   → Component Signals (NI, VR, CO) → BTI → Activation → KORA Index
-//   → Confidence → Explainability
+//   → Component Signals (NI, VR, CO) → BTI → Activation → PIB Aggregation
+//   → KORA Index → Confidence → Explainability
 //
-// v1.0 changes:
-//   Step 7 — computeComponentSignals() added between budget evidence and BTI.
-//   QUALITY now uses NI×40% + VR×40% + CO×20% (MAR removed — no double-counting).
-//   EQUITY now uses WB×20% + PC×25% + PB×30% + EQ×25%.
+// v2.0 Sprint 1 changes:
+//   Step 12: pillarDistribution now sums IU per pillar (not event counts) — B-IU1.
+//   iuResults passed to computeKoraIndex (for INT/EQW) and computeConfidence (for VR indep.).
+//   QUALITY = EVQ×34% + INT×33% + CONT×33% — B-QU1.
+//   EQUITY = EQW×30% + EQS×20% + PC×25% + PB×25% — B-EQ1.
+//   No weight redistribution: insufficient_data contributes 0 (tetto, non gonfiaggio).
 //
 // Design constraints:
 //   - Never throws — returns insufficient_data on any unhandled error.
@@ -48,7 +50,7 @@ import { computeReachSemantics } from './reach-semantics';
 import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 import { pibAggregationService } from '@/services/pib-aggregation/PIBAggregationService';
 
-const PIPELINE_SOURCE = 'KoraPipeline_v1.0';
+const PIPELINE_SOURCE = 'KoraPipeline_v2.0';
 
 // ── Insufficient data result ──────────────────────────────────────────────────
 
@@ -190,8 +192,12 @@ export function runKoraPipeline(params: {
         uef_record_id:             String(raw['b6_uef_record_id'] ?? fallbackId),
         eligibility:               elig.status as (EligibilityClass | 'review_required'),
         review_required:           elig.reviewRequired,
-        approved_for_impact_units: Boolean(raw['b6_approved_for_iu']),
-        action_family:             (String(raw['categoria'] ?? 'blocked_compliance')) as ActionFamily,
+        // Default to true for eligible records when the governance flag is absent (CSV/demo path).
+        // Explicit false ('false'|false) always wins. Flag is set by UEF review in Pilot+.
+        approved_for_impact_units: raw['b6_approved_for_iu'] !== undefined
+          ? (raw['b6_approved_for_iu'] === true || raw['b6_approved_for_iu'] === 'true' || raw['b6_approved_for_iu'] === '1')
+          : elig.status === 'eligible',
+        action_family:             (String(raw['categoria'] ?? raw['category'] ?? raw['tipo'] ?? raw['type'] ?? 'blocked_compliance')) as ActionFamily,
         event_nature:              String(raw['tipo'] ?? ''),
         primary_pillar:            pm.primaryPillar,
         pillar_distribution:       {},
@@ -259,13 +265,16 @@ export function runKoraPipeline(params: {
       totalCount:          eligibilityResults.length,
     };
 
-    // Step 12: Pillar Distribution — count by primary pillar
+    // Step 12: Pillar Distribution — IU-weighted sums per pillar (B-IU1).
+    // Replaces event-count accumulation: each computed IU record contributes
+    // its impact_units_total to its primary pillar bucket.
+    // PB (Pillar Balance) in the equity engine now measures IU shares, not event shares.
     const pillarDistribution: Record<Pillar, number> = {
       LIFE: 0, GROWTH: 0, CONNECTION: 0, IMPACT: 0, LEGACY: 0,
     };
-    for (const pm of pillarMappings) {
-      if (pm.primaryPillar !== null) {
-        pillarDistribution[pm.primaryPillar]++;
+    for (const iu of iuResults) {
+      if (iu.computed && iu.primary_pillar !== null) {
+        pillarDistribution[iu.primary_pillar as Pillar] += iu.impact_units_total;
       }
     }
 
@@ -274,18 +283,20 @@ export function runKoraPipeline(params: {
       (workforcePopulation !== undefined && workforcePopulation > 0) ||
       activation.activationReach > 0;
 
-    // Step 13: Confidence Score — canonical Stage 14 (CS fed into confidenceExternal, external to KORA Index)
+    // Step 13: Confidence Score — CS external to KORA Index (doc 21b).
+    // v2.0 B-CS1: iuResults passed so verificationConfidence uses verified IU ratio.
     const confidence = computeConfidence({
       bti,
       activation,
       eligibilitySummary,
       totalRecords: records.length,
       workforceKnown,
+      iuResults,
     });
 
-    // Step 14: KORA Index — canonical Stage 14, four macroblock aggregate + CS external link
-    // v1.0: componentSignals passed in for NI/VR/CO in QUALITY macroblock.
-    // WB and EQ are computed inside computeKoraIndex from the activation result.
+    // Step 14: KORA Index — four macroblock aggregate + CS external link.
+    // v2.0: iuResults passed for INT (IU per active worker) in QUALITY macroblock.
+    // pillarDistribution is now IU-weighted (Step 12), so PB uses IU shares.
     const koraIndex = computeKoraIndex({
       bti,
       activation,
@@ -293,6 +304,7 @@ export function runKoraPipeline(params: {
       pillarDistribution,
       confidenceScore: confidence.score,
       componentSignals,
+      iuResults,
     });
 
     // Step 15: Explainability Trace — 9-stage aggregate trace, no identity values

@@ -180,7 +180,8 @@ export default function KoraIndexDetail() {
 
   // ── Equity & Access Intelligence™ ────────────────────────────────────────
   // department_activation already filtered at N≥10 server-side.
-  const eqValue      = output.components.find((c) => c.code === 'EQ')?.value ?? 0;
+  // Sprint 1: EQ→EQS (Equity Segments). Use EQW when available (Pilot+), else EQS.
+  const eqValue      = output.components.find((c) => c.code === 'EQS' || c.code === 'EQW')?.value ?? 0;
   const equityAccess = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, koraRole, undefined);
 
   // ── Evidence Reliability Intelligence™ ───────────────────────────────────
@@ -264,7 +265,8 @@ export default function KoraIndexDetail() {
   });
 
   // ── Recommendations ───────────────────────────────────────────────────────
-  const vrValue  = output.components.find((c) => c.code === 'VR')?.value ?? 0;
+  // Sprint 1: VR→EVQ (Evidence Quality proxy for recommendation logic)
+  const vrValue  = output.components.find((c) => c.code === 'EVQ')?.value ?? 0;
   const arValue  = aggregate?.activation_rate ?? 0;
   const marValue = aggregate?.meaningful_activation_rate ?? 0;
 

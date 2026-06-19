@@ -1,21 +1,21 @@
 // lib/kora-engine/confidence-engine.ts
-// Confidence Engine v0.1 — Foundation Light Pilot.
+// Confidence Engine v2.0 — Foundation Light Pilot. Sprint 1 B-CS1.
 //
 // Computes the Confidence Score (CS) — a reliability indicator external to the KORA Index.
 // CS is never aggregated into the KORA Index value (weight=0, doc 21b).
-// It is always displayed alongside the KORA Index for methodological transparency.
 //
 // Sub-score weights (internal to confidence computation — not KORA Index macroblock weights):
 //   budgetEvidence   30%
 //   dataCompleteness 25%
 //   mapping          20%
-//   verification     15%
+//   verification     15%  ← B-CS1: now = verified IU ratio (≥L2 EV), NOT budgetEvidenceQuality
 //   review           10%
 //
 // Design constraints:
 //   - Deterministic. No Math.random. No external calls.
 //   - externalToIndex is permanently true.
 //   - reviewConfidence capped at 0.50 without human Advisor review.
+//   - verification is INDEPENDENT of budgetEvidence (different information source).
 
 import type {
   BTIResult,
@@ -24,8 +24,9 @@ import type {
   ConfidenceResult,
   ReachMethod,
 } from './types';
+import type { ImpactUnitComputationResult } from '@/lib/types';
 
-const ENGINE_SOURCE = 'ConfidenceEngine_v0.1';
+const ENGINE_SOURCE = 'ConfidenceEngine_v2.0';
 
 const W_BUDGET_EVIDENCE   = 0.30;
 const W_DATA_COMPLETENESS = 0.25;
@@ -41,6 +42,7 @@ export function computeConfidence(params: {
   workforceKnown: boolean;
   reachMethod?: ReachMethod;
   hasHumanReview?: boolean;
+  iuResults?: ImpactUnitComputationResult[];
 }): ConfidenceResult {
   const {
     bti,
@@ -50,6 +52,7 @@ export function computeConfidence(params: {
     workforceKnown,
     reachMethod,
     hasHumanReview = false,
+    iuResults,
   } = params;
 
   const warnings: string[] = [];
@@ -117,11 +120,25 @@ export function computeConfidence(params: {
   // review_required records reduce mapping confidence.
   const mappingConfidence = Math.min(1, Math.max(0.20, 1 - reviewRatio * 0.80));
 
-  // ── Sub-score 4: Verification Confidence (15%) ────────────────────────────
-  // Evidence verification quality — mirrors budget evidence quality in v0.1.
-  const verificationConfidence = bti.totalBudget > 0
-    ? Math.min(1, bti.budgetEvidenceQuality)
-    : 0.10;
+  // ── Sub-score 4: Verification Confidence (15%) — B-CS1 ────────────────────
+  // Verified IU ratio: share of total computed IU backed by ≥L2 evidence (EV ≥ 0.75).
+  // Independent of budgetEvidenceQuality (different information source).
+  // Baseline 0.10 when IU data is not available.
+  let verificationConfidence = 0.10;
+  if (iuResults && iuResults.length > 0) {
+    const totalIU = iuResults.reduce((s, r) => s + (r.computed ? r.impact_units_total : 0), 0);
+    if (totalIU > 0) {
+      const verifiedIU = iuResults
+        .filter(r => r.computed && r.evidence_verification_ev >= 0.75)
+        .reduce((s, r) => s + r.impact_units_total, 0);
+      verificationConfidence = Math.min(1, Math.max(0, verifiedIU / totalIU));
+    }
+  } else if (bti.totalBudget === 0) {
+    warnings.push(
+      'Verification Confidence = 0.10: IU non disponibili. ' +
+      'Caricare dati con livello evidenza ≥ L2 per aumentare questo sub-score.',
+    );
+  }
 
   // ── Sub-score 5: Review Confidence (10%) ──────────────────────────────────
   // Foundation Light: no human Advisor review → max 0.50.
@@ -152,8 +169,8 @@ export function computeConfidence(params: {
   }
 
   warnings.push(
-    `Fonte: ${ENGINE_SOURCE} | KORA-METHOD-v0.1.0 | ` +
-    'CS è ESTERNO al KORA Index v1.0 — peso=0 nel calcolo, ' +
+    `Fonte: ${ENGINE_SOURCE} | KORA-METHOD-v2.0 | ` +
+    'CS è ESTERNO al KORA Index v2.0 — peso=0 nel calcolo, ' +
     'mostrato a fianco per trasparenza metodologica (doc 21b).',
   );
 

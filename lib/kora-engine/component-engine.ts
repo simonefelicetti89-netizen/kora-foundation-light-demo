@@ -1,23 +1,23 @@
 // lib/kora-engine/component-engine.ts
-// KORA Methodology v1.0 — Component Engine.
+// KORA Methodology v2.0 — Component Engine (Sprint 1 IU-centric).
 //
-// Computes NI, VR, CO from approved-UEF-sourced records that have already
-// passed through the eligibility gate in runKoraPipeline.
-//
-// WB and EQ are computed separately inside computeKoraIndex (they require
-// the ActivationResult which is not available until after the activation engine runs).
+// Computes:
+//   - NI, VR, CO: internal signals for EVQ and CONT (computeComponentSignals)
+//   - EQW: Gini-based equity on per-worker IU — Pilot+ path (computeEQw)
+//   - EQS: CoV of dept activation rates — requires headcount per dept (computeEQs)
+//   - WB, EQ: @deprecated — kept for backward compat, not used by v2.0 index
 //
 // Design invariants:
 //   - Deterministic. No Math.random. No external calls.
 //   - Only ELIGIBLE records contribute to NI, VR, CO.
 //   - status = 'insufficient_data' when no eligible records with usable signals.
-//   - NEVER substitutes placeholder values (0.5, 0.0) for missing data.
+//   - NEVER substitutes placeholder values. No renormalization.
 //   - All values are 0–1 (normalized). Persistence layer converts to 0–100 for display.
 
 import type { RawUploadedRecord, NormalizedUEFRecord, EligibilityResult, ComponentSignals, ComponentStatus } from './types';
 import { isRawUploadedRecord } from './pillar-mapping';
 
-const ENGINE_SOURCE = 'ComponentEngine_v1.0';
+const ENGINE_SOURCE = 'ComponentEngine_v2.0';
 
 // ── Evidence level weight table ───────────────────────────────────────────────
 // Maps the short evidence level codes stored in UEF record payloads to weights.
@@ -299,10 +299,49 @@ export function computeEQ(
   return { eq: 0, eqStatus: 'insufficient_data', eqSource: 'no_segment_data' };
 }
 
+// ── EQW — Equity Workers (Sprint 1 v2.0) ─────────────────────────────────────
+// (1 − Gini) × 100 on IU per worker, ENTIRE workforce including 0-IU workers.
+// Foundation Light: always insufficient_data — per-worker IU requires Pilot+
+// individual UEF records. Path enabled when perWorkerIU array is provided.
+// No flag: data-presence check only.
+
+export function computeEQw(
+  perWorkerIU: number[] | null,
+): { eqw: number; eqwStatus: ComponentStatus; eqwSource: string } {
+  if (!perWorkerIU || perWorkerIU.length === 0) {
+    return { eqw: 0, eqwStatus: 'insufficient_data', eqwSource: 'no_per_worker_iu' };
+  }
+  const g = gini(perWorkerIU);
+  const eqw = Math.min(1, Math.max(0, Math.round((1 - g) * 1000) / 1000));
+  return { eqw, eqwStatus: 'computed', eqwSource: 'gini_per_worker_iu' };
+}
+
+// ── EQS — Equity Segments (Sprint 1 v2.0) ────────────────────────────────────
+// (1 − CoV) × 100 on ACTIVATION RATES per segment (participants / headcount).
+// Requires per-dept headcount. Falls back to insufficient_data when absent.
+// deptRates: { [dept]: { participants: number; headcount: number } }
+// NON usare conteggi grezzi come fallback — insufficient_data è il risultato corretto.
+
+export function computeEQs(
+  deptRates: Record<string, { participants: number; headcount: number }> | null,
+): { eqs: number; eqsStatus: ComponentStatus; eqsSource: string } {
+  if (!deptRates) {
+    return { eqs: 0, eqsStatus: 'insufficient_data', eqsSource: 'no_headcount' };
+  }
+  const rates = Object.values(deptRates)
+    .filter(d => d.headcount > 0)
+    .map(d => Math.min(1, d.participants / d.headcount));
+
+  if (rates.length < 2) {
+    return { eqs: 0, eqsStatus: 'insufficient_data', eqsSource: 'insufficient_segments' };
+  }
+  const eqs = oneMinusCoV(rates);
+  return { eqs, eqsStatus: 'computed', eqsSource: 'dept_activation_rate_cov' };
+}
+
 // ── Coefficient of Variation helper ──────────────────────────────────────────
 // Returns 1 − CoV, clamped to [0, 1].
-// 1 = perfectly balanced (CoV = 0).
-// 0 = maximum imbalance (CoV ≥ 1).
+// 1 = perfectly balanced (CoV = 0). 0 = maximum imbalance (CoV ≥ 1).
 
 function oneMinusCoV(values: number[]): number {
   if (values.length < 2) return 0;
@@ -311,6 +350,23 @@ function oneMinusCoV(values: number[]): number {
   const variance = values.reduce((a, v) => a + (v - mean) ** 2, 0) / values.length;
   const cov = Math.sqrt(variance) / mean;
   return Math.min(1, Math.max(0, Math.round((1 - cov) * 1000) / 1000));
+}
+
+// ── Gini coefficient ──────────────────────────────────────────────────────────
+// Standard definition: 0 = perfect equality, 1 = maximum inequality.
+// Includes zeros (workers with 0 IU). All values must be ≥ 0.
+
+function gini(values: number[]): number {
+  if (values.length === 0) return 0;
+  const sorted = [...values].sort((a, b) => a - b);
+  const n = sorted.length;
+  const sum = sorted.reduce((s, v) => s + v, 0);
+  if (sum === 0) return 0;
+  let numerator = 0;
+  for (let i = 0; i < n; i++) {
+    numerator += (2 * (i + 1) - n - 1) * sorted[i];
+  }
+  return Math.max(0, Math.min(1, numerator / (n * sum)));
 }
 
 export { ENGINE_SOURCE as COMPONENT_ENGINE_VERSION };

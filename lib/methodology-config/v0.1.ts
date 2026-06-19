@@ -41,7 +41,17 @@ export function getKoraIndexV3Config(): MethodologyConfig['kora_index_v3'] {
 }
 
 /**
- * Returns the four macroblock weights for KORA Index v1.0.
+ * Returns the INT normalization target (IU per active worker) — Sprint 1 B-QU1.
+ * INT = min(1, totalIU / (activeWorkers × target)).
+ * Falls back to 1.0 when not set in config.
+ */
+export function getIntTarget(): number {
+  const target = (config.kora_index_v3 as Record<string, unknown>)?.int_target_iu_per_active_worker;
+  return typeof target === 'number' && target > 0 ? target : 1.0;
+}
+
+/**
+ * Returns the four macroblock weights for KORA Index v2.0.
  * REACH 0.25 · QUALITY 0.30 · EQUITY 0.25 · BTI 0.20
  * Falls back to canonical constants if config is not yet populated.
  */

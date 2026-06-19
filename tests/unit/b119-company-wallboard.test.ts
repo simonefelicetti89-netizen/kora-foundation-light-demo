@@ -261,7 +261,8 @@ describe('B119 -- Scoring not modified', () => {
 
   it('KORA Index still has exactly 10 components', () => {
     const koraConstants = readFile('lib/constants/kora.ts');
-    expect(koraConstants).toContain("KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'NI', 'WB', 'PC', 'PB', 'EQ', 'VR', 'CO', 'CS']");
+    // Sprint 1 v2.0: NI→EVQ, VR→INT, CO→CONT, WB→EQW, EQ→EQS
+    expect(koraConstants).toContain("KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'EVQ', 'INT', 'CONT', 'EQW', 'EQS', 'PC', 'PB', 'CS']");
   });
 
   it('WallboardClient does not reference scoring formula internals', () => {

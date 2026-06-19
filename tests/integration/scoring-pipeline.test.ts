@@ -208,13 +208,12 @@ describe('KORA Scoring Pipeline — integration', () => {
     expect(typeof result.componentSignals.vr).toBe('number');
     expect(typeof result.componentSignals.co).toBe('number');
 
-    // WB, EQ, PC, PB — Distribution & Equity macroblock
-    // Present in componentDetail when engine has eligible records to compute against.
+    // EQW, EQS, PC, PB — Distribution & Equity macroblock (Sprint 1 v2.0 names)
     const cd = result.koraIndex.componentDetail;
     expect(cd).toBeTruthy();
     if (cd) {
-      expect(typeof cd.wb).toBe('number');
-      expect(typeof cd.eq).toBe('number');
+      expect(typeof cd.eqw).toBe('number');
+      expect(typeof cd.eqs).toBe('number');
       expect(typeof cd.pc).toBe('number');
       expect(typeof cd.pb).toBe('number');
     }

@@ -571,7 +571,8 @@ describe('B81-B Verification — no scoring, methodology, auth, or DB changes', 
   it('no new KORA Index components added (10-component structure fixed)', () => {
     // Component codes are canonical in lib/constants/kora.ts
     const src = read('lib/constants/kora.ts');
-    const hasCanonical10 = ['AR', 'MAR', 'NI', 'WB', 'PC', 'PB', 'EQ', 'VR', 'CO', 'CS']
+    // Sprint 1 v2.0 component codes: NI→EVQ, VR→INT, CO→CONT, WB→EQW, EQ→EQS
+    const hasCanonical10 = ['AR', 'MAR', 'EVQ', 'INT', 'CONT', 'EQW', 'EQS', 'PC', 'PB', 'CS']
       .every((code) => src.includes(`'${code}'`));
     expect(hasCanonical10).toBe(true);
   });
