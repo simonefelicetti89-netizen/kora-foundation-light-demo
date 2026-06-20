@@ -119,10 +119,13 @@ export function getNMFunctionsConfig() {
 }
 
 export function getMCConfig() {
+  // seed, n_iter, macroblock_perturbation_pts: provvisori, da rivedere post-calibrazione empirica.
   return config.mc ?? { seed: 42, n_iter: 200, macroblock_perturbation_pts: 5.0 };
 }
 
 export function getShrinkageConfig() {
+  // k = forza shrinkage, provvisorio — aumentare con dati storici reali.
+  // default_prior = prior cross-settore provvisorio, da calibrare (Delphi/AHP).
   return config.shrinkage ?? { k: 10, default_prior: 40.0 };
 }
 
