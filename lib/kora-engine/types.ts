@@ -323,20 +323,18 @@ export interface KoraIndexMacroblocks {
 }
 
 // Extended component detail — produced by computeKoraIndex and used by persistence.
-// Contains WB and EQ values (computed inside computeKoraIndex) alongside
-// the NI/VR/CO signals passed in from the pipeline.
+// Sprint 1 (v2.0): IU-centric rename. EVQ/INT/CONT replace NI/VR/CO. EQW/EQS replace WB/EQ.
+// Weights are canonical (config-sourced), never redistributed: missing slot = 0, cap applied.
 export interface ComponentDetail {
-  ni: number; niStatus: ComponentStatus;
-  vr: number; vrStatus: ComponentStatus;
-  co: number; coStatus: ComponentStatus;
-  wb: number; wbStatus: ComponentStatus;
-  eq: number; eqStatus: ComponentStatus;
-  pc: number; pcStatus: ComponentStatus;
-  pb: number; pbStatus: ComponentStatus;
-  // Effective macroblock weights after dynamic rebalancing (may differ when
-  // some components are insufficient_data)
-  qualityWeightsUsed: { ni: number; vr: number; co: number };
-  equityWeightsUsed:  { wb: number; pc: number; pb: number; eq: number };
+  evq: number; evqStatus: ComponentStatus;   // Evidence Quality (was NI)
+  int: number; intStatus: ComponentStatus;   // Impact Intensity — IU per active worker
+  cont: number; contStatus: ComponentStatus; // Continuity (was CO)
+  eqw: number; eqwStatus: ComponentStatus;   // Equity Workers — Gini on IU per worker (Pilot+)
+  eqs: number; eqsStatus: ComponentStatus;   // Equity Segments — CoV of dept activation rates
+  pc: number; pcStatus: ComponentStatus;     // Pillar Coverage
+  pb: number; pbStatus: ComponentStatus;     // Pillar Balance — HHI on IU shares
+  qualityWeightsUsed: { evq: number; int: number; cont: number };
+  equityWeightsUsed:  { eqw: number; eqs: number; pc: number; pb: number };
 }
 
 export interface KoraIndexResult {

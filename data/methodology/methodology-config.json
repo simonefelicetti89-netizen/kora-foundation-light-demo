@@ -1,19 +1,23 @@
 {
-  "version": "KORA Index v1.0",
+  "version": "KORA Index v2.0",
+  "algorithm_version": "KORA-METHOD-v2.0",
   "calibration_status": "pre_empirical_calibration",
 
-  "methodology_note": "KORA Index v1.0 uses a theory-aligned v0.1 pre-empirical calibration. Previous equal weights were provisional scaffolding and are no longer canonical. Confidence Score is external to the KORA Index. Activation Safeguard is an interpretation gate, not a weighted component.",
+  "methodology_note": "KORA Index v2.0 — Sprint 1 IU-centric refactor. pillarDistribution ora IU-weighted. QUALITY = EVQ×34% + INT×33% + CONT×33%. EQUITY = EQW×30% + EQS×20% + PC×25% + PB×25%. Componenti insufficient_data contribuiscono 0 senza redistribuzione (tetto, non gonfiaggio). Pre-calibrazione empirica.",
 
   "kora_index_v3": {
     "cs_external": true,
-    "cs_note": "Confidence Score (CS) is external to the KORA Index v1.0 computation. Weight = 0 in the KORA Index. CS is displayed in the 10-component breakdown as an external reliability indicator only — it does not influence the KORA Index value.",
-    "activation_safeguard_note": "Activation Safeguard (CLEAR / WARNING / FLAGGED) is an interpretation gate applied after KORA Index computation. It is not a weighted component and does not modify the KORA Index value.",
-    "note": "KORA Index v1.0 uses a theory-aligned v0.1 pre-empirical calibration. Weights are subject to expert validation and empirical calibration post-pilot.",
+    "cs_note": "Confidence Score (CS) è esterno al KORA Index v2.0. Peso = 0. Mostrato a fianco per trasparenza metodologica (doc 21b).",
+    "activation_safeguard_note": "Activation Safeguard (CLEAR / WARNING / FLAGGED) è un gate interpretativo post-calcolo. Non è un componente pesato.",
+    "note": "KORA Index v2.0 — IU-centric, no redistribuzione pesi, Foundation Light pre-empirical calibration.",
+
+    "int_target_iu_per_active_worker": 1.0,
+
     "macroblocks": {
       "REACH": {
         "label": "Activation Reach",
         "weight": 0.25,
-        "description": "Measures whether the company reaches a meaningful share of the workforce. Low reach means most workers are untouched by any verified activation program.",
+        "description": "Misura la quota di forza lavoro raggiunta da almeno un programma di attivazione verificato.",
         "components": {
           "AR": 0.50,
           "MAR": 0.50
@@ -22,28 +26,28 @@
       "QUALITY": {
         "label": "Activation Quality",
         "weight": 0.30,
-        "description": "Measures whether actions generate deep, verified and additional human activation. Quality distinguishes genuine human impact from surface-level or mandatory compliance events.",
+        "description": "Misura la qualità dell'attivazione: solidità delle fonti (EVQ), intensità IU per lavoratore attivo (INT), continuità strutturale (CONT). Tre costrutti distinti senza collinearità.",
         "components": {
-          "NI": 0.333,
-          "VR": 0.333,
-          "CO": 0.334
+          "EVQ":  0.34,
+          "INT":  0.33,
+          "CONT": 0.33
         }
       },
       "EQUITY": {
         "label": "Distribution & Equity",
         "weight": 0.25,
-        "description": "Measures whether activation and value are distributed across workers, sites, departments and clusters. High concentration among few workers or sites reduces equity.",
+        "description": "Misura la distribuzione dell'attivazione tra lavoratori (EQW), tra reparti/sedi per tasso (EQS), copertura pillar (PC) e bilanciamento IU tra pillar (PB).",
         "components": {
-          "WB": 0.25,
-          "PC": 0.25,
-          "PB": 0.25,
-          "EQ": 0.25
+          "EQW": 0.30,
+          "EQS": 0.20,
+          "PC":  0.25,
+          "PB":  0.25
         }
       },
       "BTI": {
         "label": "Budget-to-Human-Impact",
         "weight": 0.20,
-        "description": "Measures how effectively people/welfare budget becomes real human value. Computed by the BudgetToHumanImpactEngine from spend classification, activation debt and efficiency metrics — not from KORA Index component values.",
+        "description": "Misura l'efficienza del budget people/welfare in impatto umano reale. Calcolato dal BudgetToHumanImpactEngine.",
         "bti_engine": true,
         "components": {}
       }

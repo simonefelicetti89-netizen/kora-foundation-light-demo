@@ -45,41 +45,40 @@ function buildComponentArray(
   const arValue  = activation.activationReach;           // 0–1
   const marValue = activation.meaningfulActivationReach; // 0–1
 
-  // v1.0 components from ComponentDetail (computed by component engine + index engine)
-  // When status = insufficient_data, value = 0 and the component notes why.
-  const niValue  = d?.niStatus  === 'computed' ? d.ni  : 0;  // 0–1
-  const vrValue  = d?.vrStatus  === 'computed' ? d.vr  : 0;  // 0–1
-  const coValue  = d?.coStatus  === 'computed' ? d.co  : 0;  // 0–1
-  const wbValue  = d?.wbStatus  === 'computed' ? d.wb  : 0;  // 0–1
-  const eqValue  = d?.eqStatus  === 'computed' ? d.eq  : 0;  // 0–1
-  const pcValue  = d?.pcStatus  === 'computed' ? d.pc / 100 : 0;  // convert 0–100 → 0–1
-  const pbValue  = d?.pbStatus  === 'computed' ? d.pb / 100 : 0;  // convert 0–100 → 0–1
+  // v2.0 components from ComponentDetail (Sprint 1 IU-centric rename)
+  // When status = insufficient_data, value = 0 — no placeholder, no redistribution.
+  const evqValue  = d?.evqStatus  === 'computed' ? d.evq  : 0;  // 0–1
+  const intValue  = d?.intStatus  === 'computed' ? d.int  : 0;  // 0–1
+  const contValue = d?.contStatus === 'computed' ? d.cont : 0;  // 0–1
+  const eqwValue  = d?.eqwStatus  === 'computed' ? d.eqw  : 0;  // 0–1
+  const eqsValue  = d?.eqsStatus  === 'computed' ? d.eqs  : 0;  // 0–1
+  const pcValue   = d?.pcStatus   === 'computed' ? d.pc / 100 : 0;  // 0–100 → 0–1
+  const pbValue   = d?.pbStatus   === 'computed' ? d.pb / 100 : 0;  // 0–100 → 0–1
 
   // CS = Data Reliability Index — external to KORA Index, weight always 0.
-  // Stored as 0–1 in DB (confidence engine returns 0–100; divide by 100).
   const csValue = confidence.score / 100;
 
   const w = weights;
 
   return [
-    { code: 'AR',  label: COMPONENT_LABELS['AR'],  value: arValue,  weight: w['AR']  ?? 0, macroblock: 'REACH'  as MacroblockCode },
-    { code: 'MAR', label: COMPONENT_LABELS['MAR'], value: marValue, weight: w['MAR'] ?? 0, macroblock: 'REACH'  as MacroblockCode },
-    { code: 'NI',  label: COMPONENT_LABELS['NI'],  value: niValue,  weight: w['NI']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
-    { code: 'VR',  label: COMPONENT_LABELS['VR'],  value: vrValue,  weight: w['VR']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
-    { code: 'CO',  label: COMPONENT_LABELS['CO'],  value: coValue,  weight: w['CO']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
-    { code: 'WB',  label: COMPONENT_LABELS['WB'],  value: wbValue,  weight: w['WB']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
-    { code: 'PC',  label: COMPONENT_LABELS['PC'],  value: pcValue,  weight: w['PC']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
-    { code: 'PB',  label: COMPONENT_LABELS['PB'],  value: pbValue,  weight: w['PB']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
-    { code: 'EQ',  label: COMPONENT_LABELS['EQ'],  value: eqValue,  weight: w['EQ']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
-    { code: 'CS',  label: COMPONENT_LABELS['CS'],  value: csValue,  weight: 0, external: true },
+    { code: 'AR',   label: COMPONENT_LABELS['AR'],   value: arValue,   weight: w['AR']   ?? 0, macroblock: 'REACH'   as MacroblockCode },
+    { code: 'MAR',  label: COMPONENT_LABELS['MAR'],  value: marValue,  weight: w['MAR']  ?? 0, macroblock: 'REACH'   as MacroblockCode },
+    { code: 'EVQ',  label: COMPONENT_LABELS['EVQ'],  value: evqValue,  weight: w['EVQ']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'INT',  label: COMPONENT_LABELS['INT'],  value: intValue,  weight: w['INT']  ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'CONT', label: COMPONENT_LABELS['CONT'], value: contValue, weight: w['CONT'] ?? 0, macroblock: 'QUALITY' as MacroblockCode },
+    { code: 'EQW',  label: COMPONENT_LABELS['EQW'],  value: eqwValue,  weight: w['EQW']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'EQS',  label: COMPONENT_LABELS['EQS'],  value: eqsValue,  weight: w['EQS']  ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'PC',   label: COMPONENT_LABELS['PC'],   value: pcValue,   weight: w['PC']   ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'PB',   label: COMPONENT_LABELS['PB'],   value: pbValue,   weight: w['PB']   ?? 0, macroblock: 'EQUITY'  as MacroblockCode },
+    { code: 'CS',   label: COMPONENT_LABELS['CS'],   value: csValue,   weight: 0, external: true },
   ] as KoraIndexComponent[];
 }
 
 function buildMacroblockArray(mb: KoraIndexMacroblocks): MacroblockScore[] {
   return [
     { code: 'REACH'   as MacroblockCode, label: MACROBLOCK_LABELS['REACH'],   weight: 0.25, score: mb.activationReach,      component_codes: ['AR', 'MAR'] },
-    { code: 'QUALITY' as MacroblockCode, label: MACROBLOCK_LABELS['QUALITY'],  weight: 0.30, score: mb.activationQuality,    component_codes: ['NI', 'VR', 'CO'] },
-    { code: 'EQUITY'  as MacroblockCode, label: MACROBLOCK_LABELS['EQUITY'],   weight: 0.25, score: mb.distributionEquity,   component_codes: ['WB', 'PC', 'PB', 'EQ'] },
+    { code: 'QUALITY' as MacroblockCode, label: MACROBLOCK_LABELS['QUALITY'],  weight: 0.30, score: mb.activationQuality,    component_codes: ['EVQ', 'INT', 'CONT'] },
+    { code: 'EQUITY'  as MacroblockCode, label: MACROBLOCK_LABELS['EQUITY'],   weight: 0.25, score: mb.distributionEquity,   component_codes: ['EQW', 'EQS', 'PC', 'PB'] },
     { code: 'BTI'     as MacroblockCode, label: MACROBLOCK_LABELS['BTI'],      weight: 0.20, score: mb.budgetToHumanImpact,  component_codes: [] },
   ];
 }

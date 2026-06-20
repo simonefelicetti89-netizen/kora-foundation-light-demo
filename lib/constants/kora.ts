@@ -1,6 +1,7 @@
 export const PILLAR_CODES = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 
-export const KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'NI', 'WB', 'PC', 'PB', 'EQ', 'VR', 'CO', 'CS'] as const;
+// Sprint 1 — IU-centric: NI→EVQ, VR→INT, CO→CONT, WB→EQW, EQ→EQS
+export const KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'EVQ', 'INT', 'CONT', 'EQW', 'EQS', 'PC', 'PB', 'CS'] as const;
 
 // KORA Index v1.0 macroblock codes
 export const MACROBLOCK_CODES = ['REACH', 'QUALITY', 'EQUITY', 'BTI'] as const;
@@ -26,16 +27,16 @@ export const SAFE_AGGREGATION_THRESHOLD = 10;
 export const CALIBRATION_STATUS = 'pre_empirical_calibration' as const;
 
 export const COMPONENT_LABELS: Record<string, string> = {
-  AR: 'Activation Rate',
-  MAR: 'Meaningful Activation Rate',
-  NI: 'Normalized Intensity',
-  WB: 'Worker Balance',
-  PC: 'Pillar Coverage',
-  PB: 'Pillar Balance',
-  EQ: 'Equity',
-  VR: 'Verification Rate',
-  CO: 'Continuity',
-  CS: 'Confidence Score',
+  AR:   'Activation Rate',
+  MAR:  'Meaningful Activation Rate',
+  EVQ:  'Evidence Quality',
+  INT:  'Impact Intensity',
+  CONT: 'Continuity',
+  EQW:  'Equity (Workers)',
+  EQS:  'Equity (Segments)',
+  PC:   'Pillar Coverage',
+  PB:   'Pillar Balance',
+  CS:   'Confidence Score',
 };
 
 export const PILLAR_LABELS: Record<string, string> = {
@@ -60,14 +61,14 @@ export const ADMIN_ROLES = ['KORA_ADMIN'] as const;
 // Calibration status:  pre_empirical_calibration (non è una versione prodotto)
 
 export const PRODUCT_VERSION              = 'KORA Foundation Light' as const;
-export const KORA_INDEX_VERSION           = 'KORA Index v1.0' as const;
-export const METHODOLOGY_VERSION          = 'KORA Index v1.0' as const;
+export const KORA_INDEX_VERSION           = 'KORA Index v2.0' as const;
+export const METHODOLOGY_VERSION          = 'KORA Index v2.0' as const;
 export const METHODOLOGY_CALIBRATION_VERSION = 'pre_empirical_calibration' as const;
 
-// ── KORA Index v1.0 — Macroblock structure ───────────────────────────────────────
-// KORA Index v1.0 = 25% Activation Reach + 30% Activation Quality
-//               + 25% Distribution & Equity + 20% Budget-to-Human-Impact
+// ── KORA Index v2.0 — Macroblock structure ───────────────────────────────────────
+// Sprint 1: IU-centric. QUALITY = EVQ+INT+CONT. EQUITY = EQW+EQS+PC+PB.
 // CS (Confidence Score) is EXTERNAL — weight = 0, shown as reliability indicator only.
+// Componenti insufficient_data contribuiscono 0, nessuna redistribuzione pesi.
 
 export const MACROBLOCK_LABELS: Record<string, string> = {
   REACH:   'Activation Reach',
@@ -84,34 +85,34 @@ export const MACROBLOCK_WEIGHTS: Record<string, number> = {
 };
 
 // Operational components that feed each macroblock.
-// CS feeds no macroblock — it is external (weight = 0 in KORA Index v1.0).
+// CS feeds no macroblock — it is external (weight = 0 in KORA Index v2.0).
 // BTI score comes from the BudgetToHumanImpactEngine, not from component values.
 export const MACROBLOCK_COMPONENTS: Record<string, string[]> = {
   REACH:   ['AR', 'MAR'],
-  QUALITY: ['NI', 'VR', 'CO'],
-  EQUITY:  ['WB', 'PC', 'PB', 'EQ'],
+  QUALITY: ['EVQ', 'INT', 'CONT'],
+  EQUITY:  ['EQW', 'EQS', 'PC', 'PB'],
   BTI:     [],
 };
 
 // Reverse lookup: which macroblock each component belongs to.
 // CS maps to 'external' — not a macroblock code.
 export const COMPONENT_MACROBLOCK: Record<string, string> = {
-  AR:  'REACH',
-  MAR: 'REACH',
-  NI:  'QUALITY',
-  VR:  'QUALITY',
-  CO:  'QUALITY',
-  WB:  'EQUITY',
-  PC:  'EQUITY',
-  PB:  'EQUITY',
-  EQ:  'EQUITY',
-  CS:  'external',
+  AR:   'REACH',
+  MAR:  'REACH',
+  EVQ:  'QUALITY',
+  INT:  'QUALITY',
+  CONT: 'QUALITY',
+  EQW:  'EQUITY',
+  EQS:  'EQUITY',
+  PC:   'EQUITY',
+  PB:   'EQUITY',
+  CS:   'external',
 };
 
-// true for components excluded from KORA Index v1.0 computation
+// true for components excluded from KORA Index v2.0 computation
 export const COMPONENT_EXTERNAL: Record<string, boolean> = {
-  AR: false, MAR: false, NI: false, WB: false, PC: false,
-  PB: false, EQ: false,  VR: false, CO: false, CS: true,
+  AR: false, MAR: false, EVQ: false, INT: false, CONT: false,
+  EQW: false, EQS: false, PC: false, PB: false, CS: true,
 };
 
 // ── Eligibility Gate ────────────────────────────────────────────────────────────

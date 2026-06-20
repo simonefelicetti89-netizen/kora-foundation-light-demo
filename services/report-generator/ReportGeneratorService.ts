@@ -654,8 +654,9 @@ function sectionWorkforceActivation(
   const ar2 = s2Comps.find((c) => c.code === 'AR')?.value ?? 0;
   const mar1 = s1Comps.find((c) => c.code === 'MAR')?.value ?? 0;
   const mar2 = s2Comps.find((c) => c.code === 'MAR')?.value ?? 0;
-  const ni1 = s1Comps.find((c) => c.code === 'NI')?.value ?? 0;
-  const ni2 = s2Comps.find((c) => c.code === 'NI')?.value ?? 0;
+  // Sprint 1: NI→EVQ (Evidence Quality). Report label preserved for readability.
+  const ni1 = s1Comps.find((c) => c.code === 'EVQ')?.value ?? 0;
+  const ni2 = s2Comps.find((c) => c.code === 'EVQ')?.value ?? 0;
 
   return {
     code:     'workforce_activation',

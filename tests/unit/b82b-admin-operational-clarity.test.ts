@@ -296,17 +296,18 @@ describe('B82-B invariants — no forbidden changes', () => {
 
   it('KORA Index still has 10 components — no additions', () => {
     const src = read('lib/constants/kora.ts');
+    // Sprint 1 v2.0 component codes: NI→EVQ, VR→INT, CO→CONT, WB→EQW, EQ→EQS
     expect(src).toContain('AR');
     expect(src).toContain('MAR');
-    expect(src).toContain('NI');
-    expect(src).toContain('WB');
+    expect(src).toContain('EVQ');
+    expect(src).toContain('EQW');
     expect(src).toContain('PC');
     expect(src).toContain('PB');
-    expect(src).toContain('EQ');
-    expect(src).toContain('VR');
-    expect(src).toContain('CO');
+    expect(src).toContain('EQS');
+    expect(src).toContain('INT');
+    expect(src).toContain('CONT');
     expect(src).toContain('CS');
     // still exactly 10 items in the canonical array
-    expect(src).toContain("KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'NI', 'WB', 'PC', 'PB', 'EQ', 'VR', 'CO', 'CS']");
+    expect(src).toContain("KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'EVQ', 'INT', 'CONT', 'EQW', 'EQS', 'PC', 'PB', 'CS']");
   });
 });

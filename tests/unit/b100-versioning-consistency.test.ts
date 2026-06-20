@@ -3,7 +3,7 @@
  *
  * Canonical rules:
  *   Product version:     KORA Foundation Light
- *   Methodology version: KORA Index v1.0
+ *   Methodology version: KORA Index v2.0 (Sprint 1 IU-centric)
  *   Calibration status:  pre_empirical_calibration
  *
  * Forbidden in UI-visible strings:
@@ -48,12 +48,12 @@ describe('B100 — lib/constants/kora.ts canonical version exports', () => {
     expect(PRODUCT_VERSION).toBe('KORA Foundation Light');
   });
 
-  it('KORA_INDEX_VERSION is KORA Index v1.0', () => {
-    expect(KORA_INDEX_VERSION).toBe('KORA Index v1.0');
+  it('KORA_INDEX_VERSION is KORA Index v2.0', () => {
+    expect(KORA_INDEX_VERSION).toBe('KORA Index v2.0');
   });
 
-  it('METHODOLOGY_VERSION is KORA Index v1.0', () => {
-    expect(METHODOLOGY_VERSION).toBe('KORA Index v1.0');
+  it('METHODOLOGY_VERSION is KORA Index v2.0', () => {
+    expect(METHODOLOGY_VERSION).toBe('KORA Index v2.0');
   });
 
   it('METHODOLOGY_CALIBRATION_VERSION is pre_empirical_calibration', () => {
@@ -83,8 +83,8 @@ describe('B100 — lib/constants/kora.ts canonical version exports', () => {
 // ── 2. lib/methodology-config/v0.1.ts — config loader ────────────────────────
 
 describe('B100 — methodology-config getVersion() returns canonical string', () => {
-  it('getMethodologyVersion() returns KORA Index v1.0', () => {
-    expect(getMethodologyVersion()).toBe('KORA Index v1.0');
+  it('getMethodologyVersion() returns KORA Index v2.0', () => {
+    expect(getMethodologyVersion()).toBe('KORA Index v2.0');
   });
 
   it('getCalibrationStatus() returns pre_empirical_calibration', () => {
@@ -111,8 +111,8 @@ describe('B100 — methodology-config getVersion() returns canonical string', ()
 describe('B100 — methodology-config.json version field', () => {
   const config = readJson('data/methodology/methodology-config.json') as Record<string, unknown>;
 
-  it('config.version is KORA Index v1.0', () => {
-    expect(config['version']).toBe('KORA Index v1.0');
+  it('config.version is KORA Index v2.0', () => {
+    expect(config['version']).toBe('KORA Index v2.0');
   });
 
   it('config.calibration_status is pre_empirical_calibration', () => {
@@ -136,9 +136,9 @@ describe('B100 — methodology-config.json version field', () => {
 // ── 4. Provision route — methodology_version_id ───────────────────────────────
 
 describe('B100 — provision route methodology_version_id', () => {
-  it('uses KORA Index v1.0, not KORA Methodology v0.1', () => {
+  it('uses KORA Index v2.0, not KORA Methodology v0.1', () => {
     const src = readSrc('app/api/admin/companies/provision/route.ts');
-    expect(src).toContain("'KORA Index v1.0'");
+    expect(src).toContain("'KORA Index v2.0'");
     expect(src).not.toContain('KORA Methodology v0.1');
   });
 
@@ -186,8 +186,8 @@ describe('B100 — legacy string absence in key files', () => {
 describe('B100 — html-template version labels', () => {
   const html = readSrc('lib/decision-pack/html-template.ts');
 
-  it('contains KORA Index v1.0 (canonical methodology version)', () => {
-    expect(html).toContain('KORA Index v1.0');
+  it('contains KORA Index v2.0 (canonical methodology version)', () => {
+    expect(html).toContain('KORA Index v2.0');
   });
 
   it('contains pre_empirical_calibration (calibration status preserved)', () => {
