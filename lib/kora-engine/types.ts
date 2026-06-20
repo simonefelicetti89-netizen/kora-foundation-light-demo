@@ -337,8 +337,21 @@ export interface ComponentDetail {
   equityWeightsUsed:  { eqw: number; eqs: number; pc: number; pb: number };
 }
 
+// Sprint 2 B-MC1: uncertainty envelope from Monte Carlo + Bayesian shrinkage.
+// Added alongside value — never replaces it.
+export interface KoraIndexUncertainty {
+  shrunkValue:     number;  // θ̂ = w×value + (1−w)×prior
+  shrinkageWeight: number;  // w = n/(n+k)
+  prior:           number;  // sector default prior from config
+  p10:             number;  // Monte Carlo 10th percentile
+  p90:             number;  // Monte Carlo 90th percentile
+  median:          number;  // Monte Carlo median
+  n_iter:          number;
+  seed:            number;
+}
+
 export interface KoraIndexResult {
-  value: number;                  // 0–100
+  value: number;                  // 0–100 — deterministic point estimate (unchanged)
   macroblocks: KoraIndexMacroblocks;
   weights: Record<string, number>;
   methodologyVersion: string;
@@ -346,6 +359,7 @@ export interface KoraIndexResult {
   productionReady: false;
   confidenceExternal: number;    // 0–100 — shown alongside, never aggregated into value
   componentDetail?: ComponentDetail; // v1.0: per-component values for persistence
+  uncertainty?: KoraIndexUncertainty; // Sprint 2 B-MC1: interval + shrinkage (additive)
   warnings: string[];
 }
 
