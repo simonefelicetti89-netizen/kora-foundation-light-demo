@@ -777,6 +777,7 @@ export interface UEFAuditEvent {
 
 export interface MethodologyConfig {
   version: string;
+  algorithm_version?: string;
   calibration_status: CalibrationStatus;
   // Legacy equal weights — removed. Not canonical for KORA Index v1.0.
   weights?: Record<string, number>;
@@ -785,6 +786,31 @@ export interface MethodologyConfig {
     macroblocks: Partial<Record<MacroblockCode, MacroblockConfig>>;
     cs_external: true;
     note: string;
+    int_target_iu_per_active_worker?: number;
+  };
+  nm_functions?: {
+    reference_date:               string;
+    recency_lambda_single:        number;
+    recency_lambda_recurring:     number;
+    recency_floor:                number;
+    saturation_decay:             number;
+    saturation_floor_default:     number;
+    saturation_floor_therapeutic: number;
+  };
+  mc?: {
+    seed:                        number;
+    n_iter:                      number;
+    macroblock_perturbation_pts: number;
+  };
+  shrinkage?: {
+    k:             number;
+    default_prior: number;
+  };
+  pib?: {
+    max_multiplier:            number;
+    diversity_step_per_pillar: number;
+    prs_threshold_theta:       number;
+    pillar_targets_default:    Record<string, number>;
   };
   safeguard_thresholds: {
     CLEAR: { AR: number; MAR: number };
@@ -809,7 +835,6 @@ export interface MethodologyConfig {
     shrinkage_k: number;
     shrinkage_prior: number;
   };
-  algorithm_version?: string;
 }
 
 // ── Dynamic Scoring Preview (Block 3) ───────────────────────────────────────────

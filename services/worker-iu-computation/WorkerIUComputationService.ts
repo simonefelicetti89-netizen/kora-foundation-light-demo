@@ -23,6 +23,7 @@ import type {
   WorkerIUComputationParams,
   PIBRedistributionValidation,
 } from '@/lib/types/domains/worker-pib-live';
+import { getPIBConfig } from '@/lib/methodology-config/v0.1';
 
 // ── Costanti ─────────────────────────────────────────────────────────────────
 
@@ -139,6 +140,61 @@ export function validateRedistribution(
   }
 
   return { valid: true };
+}
+
+// ── Sprint 2 B-PIB1 — PIB Multiplier M(w) ────────────────────────────────────
+// M(w) = min(max_multiplier, 1.0 × DF)
+// DF = 1 + n_qualifying × diversity_step_per_pillar
+// n_qualifying = count of pillars where PRS(w,p) = worker_iu_in_p / T_p ≥ θ
+// Micro-activations below θ (e.g. token IMPACT row) do NOT inflate DF.
+// Cap: M(w) ≤ 1.25 (from config).
+// Applied per-worker after all base PIB rows are accumulated.
+
+export function computePIBMultiplier(
+  rows: WorkerPIBRowInsert[],
+  sectorTargets?: Record<string, number>,
+): { multiplier: number; n_qualifying: number; df: number } {
+  const cfg = getPIBConfig();
+  const targets = sectorTargets ?? cfg.pillar_targets_default;
+  const theta = cfg.prs_threshold_theta;
+
+  // Sum IU per pillar across all rows
+  const pillarIU: Record<string, number> = {};
+  for (const row of rows) {
+    pillarIU[row.pillar] = (pillarIU[row.pillar] ?? 0) + row.iu_value;
+  }
+
+  let n_qualifying = 0;
+  for (const [pillar, target] of Object.entries(targets)) {
+    if (target <= 0) continue;
+    const workerIU = pillarIU[pillar] ?? 0;
+    const prs = workerIU / target; // PRS(w,p) — ratio vs pillar target
+    if (prs >= theta) n_qualifying++;
+  }
+
+  const df = 1 + n_qualifying * cfg.diversity_step_per_pillar;
+  const multiplier = Math.min(cfg.max_multiplier, df);
+  return { multiplier, n_qualifying, df };
+}
+
+// applyPIBMultiplier: applies M(w) to all accumulated base PIB rows for a worker.
+// Call AFTER computeBaseWorkerPIBRows has been called for all UEF records of this worker.
+// The multiplier rewards multi-pillar engagement without exceeding the 1.25 cap.
+export function applyPIBMultiplier(
+  baseRows: WorkerPIBRowInsert[],
+  sectorTargets?: Record<string, number>,
+): { rows: WorkerPIBRowInsert[]; multiplier: number; n_qualifying: number } {
+  if (baseRows.length === 0) return { rows: [], multiplier: 1.0, n_qualifying: 0 };
+
+  const { multiplier, n_qualifying } = computePIBMultiplier(baseRows, sectorTargets);
+
+  if (multiplier === 1.0) return { rows: baseRows, multiplier: 1.0, n_qualifying };
+
+  const scaled = baseRows.map(row => ({
+    ...row,
+    iu_value: +(row.iu_value * multiplier).toFixed(4),
+  }));
+  return { rows: scaled, multiplier, n_qualifying };
 }
 
 // ── Livello Ridistribuzione — opzionale, worker-owned ────────────────────────

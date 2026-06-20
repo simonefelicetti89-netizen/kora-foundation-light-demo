@@ -33,6 +33,7 @@ import type {
 } from './types';
 import type { ImpactUnitComputationResult } from '@/lib/types';
 import { getMacroblockWeights, getMethodologyVersion, getIntTarget, getQualityComponentWeights, getEquityComponentWeights } from '@/lib/methodology-config/v0.1';
+import { computeMCInterval } from './monte-carlo-engine';
 import { computeEquityScore } from './equity-engine';
 import { computeEQw, computeEQs } from './component-engine';
 
@@ -230,6 +231,8 @@ export function computeKoraIndex(params: {
    *  Values: 'no_group_equity_inputs' | 'no_workforce_denominators' |
    *          'no_unique_active_workers_by_group' */
   eqsUnavailableSource?: string;
+  // Sprint 2 B-MC1: pass computed_records for shrinkage weight calculation.
+  computed_records?: number;
 }): KoraIndexResult {
   const {
     bti, activation, eligibilitySummary,
@@ -237,6 +240,7 @@ export function computeKoraIndex(params: {
     componentSignals, iuResults,
     deptRates = null,
     eqsUnavailableSource,
+    computed_records,
   } = params;
   const warnings: string[] = [];
   const weights = getMacroblockWeights();
@@ -349,6 +353,20 @@ export function computeKoraIndex(params: {
     equityWeightsUsed:  equityResult.weightsUsed,
   };
 
+  // Sprint 2 B-MC1: compute uncertainty interval + Bayesian shrinkage.
+  const n_computed = computed_records
+    ?? (iuResults ? iuResults.filter(r => r.computed).length : 0);
+  const uncertainty = computeMCInterval({
+    macroblocks,
+    weights: {
+      REACH:   weights.REACH,
+      QUALITY: weights.QUALITY,
+      EQUITY:  weights.EQUITY,
+      BTI:     weights.BTI,
+    },
+    computed_records: n_computed,
+  });
+
   return {
     value,
     macroblocks,
@@ -363,6 +381,7 @@ export function computeKoraIndex(params: {
     productionReady:    false,
     confidenceExternal: round2(confidenceScore),
     componentDetail,
+    uncertainty,
     warnings,
   };
 }

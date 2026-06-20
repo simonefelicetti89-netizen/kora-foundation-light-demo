@@ -104,6 +104,37 @@ export function getComponentEffectiveWeight(code: string): number {
   return 0;
 }
 
+// ── Sprint 2 — config getters for NM functions, MC, shrinkage, PIB ──────────────
+
+export function getNMFunctionsConfig() {
+  return config.nm_functions ?? {
+    reference_date:               '2026-06-30',
+    recency_lambda_single:        0.023,
+    recency_lambda_recurring:     0.008,
+    recency_floor:                0.60,
+    saturation_decay:             0.20,
+    saturation_floor_default:     0.60,
+    saturation_floor_therapeutic: 0.80,
+  };
+}
+
+export function getShrinkageConfig() {
+  // k = forza shrinkage, provvisorio — aumentare con dati storici reali.
+  // default_prior = prior cross-settore provvisorio, da calibrare (Delphi/AHP).
+  return config.shrinkage ?? { k: 10, default_prior: 40.0 };
+}
+
+export function getPIBConfig() {
+  return config.pib ?? {
+    max_multiplier:            1.25,
+    diversity_step_per_pillar: 0.05,
+    prs_threshold_theta:       0.30,
+    pillar_targets_default: {
+      LIFE: 0.80, GROWTH: 1.00, CONNECTION: 0.60, IMPACT: 0.40, LEGACY: 0.40,
+    },
+  };
+}
+
 /**
  * Returns the effective weight for every component in KORA Index v1.0.
  * CS = 0. BTI macroblock components = per-component weight.

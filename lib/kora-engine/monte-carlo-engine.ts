@@ -14,12 +14,16 @@
 //   - Converges to koraIndex.value (raw) as n grows.
 //
 // PRNG: Mulberry32 — seeded 32-bit PRNG, no Math.random, fully deterministic.
-// All parameters come from getMCConfig() (methodology-config.json).
+// All parameters come from getMCConfig() / getShrinkageConfig() (methodology-config.json).
 
 import type { MCConfig } from '@/lib/methodology-config/v0.1';
+import { getShrinkageConfig, getMCConfig } from '@/lib/methodology-config/v0.1';
 import type { MonteCarloResult } from './types';
+import type { KoraIndexMacroblocks, KoraIndexUncertainty } from './types';
 
 export type { MCConfig };
+
+// ── Shared types ─────────────────────────────────────────────────────────────
 
 export interface MCMacroblocks {
   reach: number;    // REACH macroblock score 0–100
@@ -28,6 +32,8 @@ export interface MCMacroblocks {
   bti: number;      // BTI macroblock score 0–100
   weights: { REACH: number; QUALITY: number; EQUITY: number; BTI: number };
 }
+
+// ── Shared helpers ────────────────────────────────────────────────────────────
 
 // Mulberry32 PRNG — deterministic seeded sequence.
 function mulberry32(seed: number): () => number {
@@ -56,6 +62,12 @@ function clamp(v: number, lo: number, hi: number): number {
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+// ── computeMonteCarlo — pipeline-level MC (called by run-kora-pipeline.ts) ───
+//
+// Uses MCMacroblocks (reach/quality/equity/bti + weights) and MCConfig.
+// Returns MonteCarloResult with reliabilityAdjustedIndex.
+// reliabilityAdjustedIndex is NOT the official KORA Index.
 
 /**
  * Runs n_iter Monte Carlo simulations by perturbing macroblock scores and
@@ -122,6 +134,71 @@ export function computeMonteCarlo(params: {
     p90:                     round2(percentile(samples, 90)),
     reliabilityAdjustedIndex,
     n_iterations:            n_iter,
+    seed,
+  };
+}
+
+// ── computeMCInterval — index-level MC (called by kora-index-engine.ts) ──────
+//
+// Uses KoraIndexMacroblocks (activationReach/activationQuality/distributionEquity/budgetToHumanImpact)
+// and fixed perturbation range (not shrinkage-scaled).
+// Returns KoraIndexUncertainty with shrunkValue.
+
+export function computeMCInterval(params: {
+  macroblocks: KoraIndexMacroblocks;
+  weights: Record<string, number>;
+  computed_records: number;
+}): KoraIndexUncertainty {
+  const shrinkCfg = getShrinkageConfig();
+  const mcCfg     = getMCConfig();
+  const { macroblocks, weights, computed_records } = params;
+
+  const range  = mcCfg.macroblock_perturbation_pts;
+  const seed   = mcCfg.seed;
+  const n_iter = mcCfg.n_iter;
+
+  const W_REACH   = weights['REACH']   ?? 0.25;
+  const W_QUALITY = weights['QUALITY'] ?? 0.30;
+  const W_EQUITY  = weights['EQUITY']  ?? 0.25;
+  const W_BTI     = weights['BTI']     ?? 0.20;
+
+  const rng = mulberry32(seed);
+  const samples: number[] = [];
+
+  for (let i = 0; i < n_iter; i++) {
+    const dR = (rng() * 2 - 1) * range;
+    const dQ = (rng() * 2 - 1) * range;
+    const dE = (rng() * 2 - 1) * range;
+    const dB = (rng() * 2 - 1) * range;
+
+    const perturbed =
+      clamp(macroblocks.activationReach     + dR, 0, 100) * W_REACH   +
+      clamp(macroblocks.activationQuality   + dQ, 0, 100) * W_QUALITY +
+      clamp(macroblocks.distributionEquity  + dE, 0, 100) * W_EQUITY  +
+      clamp(macroblocks.budgetToHumanImpact + dB, 0, 100) * W_BTI;
+
+    samples.push(clamp(perturbed, 0, 100));
+  }
+
+  samples.sort((a, b) => a - b);
+
+  const p10    = round2(samples[Math.floor(n_iter * 0.10)]!);
+  const median = round2(samples[Math.floor(n_iter * 0.50)]!);
+  const p90    = round2(samples[Math.floor(n_iter * 0.90)]!);
+
+  const { k, default_prior } = shrinkCfg;
+  const n = Math.max(0, computed_records);
+  const w = n / (n + k);
+  const shrunkValue = round2(w * median + (1 - w) * default_prior);
+
+  return {
+    shrunkValue,
+    shrinkageWeight: round2(w),
+    prior:           default_prior,
+    p10,
+    p90,
+    median,
+    n_iter,
     seed,
   };
 }
