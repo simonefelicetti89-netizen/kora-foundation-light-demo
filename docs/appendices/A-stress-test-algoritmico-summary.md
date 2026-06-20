@@ -2,8 +2,10 @@
 
 **Document:** Appendix A  
 **Source:** KORA_StressTest_Algoritmico_v1.md.pdf (internal technical document)  
-**Status:** Canonical Appendix — Approved  
+**Status:** Canonical Appendix — Approvato  
 **Version:** 1.0  
+
+> **⚠️ NUMERI PRE-SPRINT1** — I valori di stress test in questo documento (baseline 68.6, scenario C 59.3, ecc.) sono stati prodotti dal motore pre-Sprint1 con rebalance attivo. In Foundation Light v2.0 (Sprint 1+2) la scala è strutturalmente più bassa: tetto FL ≈ 62 con EQW/EQS insufficient_data. I pattern qualitativi degli stress test (concentrazione pillar, effetto LEGACY, ecc.) restano validi come analisi di sensitività. I numeri assoluti non sono più canonici.
 **Date:** 2026-05-17  
 **Notation standard:** Architecture v3 canonical naming throughout
 

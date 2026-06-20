@@ -791,6 +791,17 @@ export interface MethodologyConfig {
     WARNING: { AR_min: number; AR_max: number; MAR_min: number; MAR_max: number };
     FLAGGED: { AR_max: number; MAR_max: number };
   };
+  score_bands?: {
+    _note?: string;
+    bands: Array<{ min: number; max: number; key: string; labelIt: string; labelEn: string }>;
+  };
+  macroblock_status_thresholds?: {
+    _note?: string;
+    buono:    { min: number; label: string; bg: string; color: string };
+    sviluppo: { min: number; label: string; bg: string; color: string };
+    critico:  { min: number; label: string; bg: string; color: string };
+  };
+  algorithm_version?: string;
 }
 
 // ── Dynamic Scoring Preview (Block 3) ───────────────────────────────────────────

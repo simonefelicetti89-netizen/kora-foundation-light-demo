@@ -13,15 +13,19 @@ Questa cartella contiene **tre file CSV di calibrazione** per testare e dimostra
 
 ## I tre dataset
 
-| File | Scenario | KORA Index verificato | Score band | workforcePopulation |
+| File | Scenario | KORA Index v2.0 — Foundation Light | Score band (v2.0) | workforcePopulation |
 |---|---|---|---|---|
-| `kora_weak_company_upload.csv` | Azienda debole | **35–50** (engine: 42.4) | Early Activation | 100 |
-| `kora_average_company_upload.csv` | Azienda media | **52–65** (engine: 59.3) | Solid Foundation | 150 |
-| `kora_golden_path_upload.csv` | Golden path | **65–75** (engine: 69.1) | Advanced Activation | 300 |
+| `kora_weak_company_upload.csv` | Azienda debole | **30.73** — CS 69, Safeguard FLAGGED | Attivazione debole (0–30) | 100 |
+| `kora_average_company_upload.csv` | Azienda media | **43.42** — CS 73, Safeguard CLEAR | Attivazione iniziale (30–45) | 150 |
+| `kora_golden_path_upload.csv` | Golden path | **52.53** — CS 76, Safeguard CLEAR | In sviluppo (45–60) | 300 |
+
+**Regime: Foundation Light v2.0** — dati per-programma. EQW (equità inter-worker) e EQS (equità per dipartimento) sono `insufficient_data` perché richiedono dati per-lavoratore (Pilot+). EQUITY plafonata strutturalmente. NM (sforzo/attualità/ripetizione) gira neutro: i CSV non hanno le colonne `hours`, `event_date`, `b6_repetition_count` (voce P1 BACKLOG — attivare in intake per sbloccare NM).
+
+**Potenziale stimato in Pilot+** (dati per-lavoratore, EQW+EQS attivi): WEAK ≈ 38, AVERAGE ≈ 51, GOLDEN ≈ 60 — stime provvisorie, da validare sui pilota.
 
 > **Disclaimer**: i punteggi sono verificati con il motore reale (`runKoraPipeline`) in fase **pre_empirical_calibration**. Non rappresentano benchmark empirici validati né standard di settore. I pesi e le soglie sono provvisori (v0.1) e soggetti a revisione dopo la calibrazione empirica (Delphi Study).
 
-> **Nota su EQUITY**: i CSV non contengono colonne dipartimento o sede. WB e EQ risultano sempre `insufficient_data` → i loro pesi (20%+25%) si redistribuiscono a PC e PB, che risultano elevati quando i pillar sono ben distribuiti. Questo sistema aticamente alza EQUITY e, di conseguenza, il KORA Index finale rispetto a stime naive. È un comportamento atteso del motore, non un errore di calibrazione.
+> **Nota su EQUITY**: i CSV non contengono colonne dipartimento o sede. EQW e EQS risultano sempre `insufficient_data` → contribuiscono 0 (tetto, non redistribuzione). PC e PB calcolati sull'IU distribution reale. Comportamento atteso del motore v2.0 (Sprint 1 IU-centric, rebalance rimosso).
 
 ---
 
@@ -40,16 +44,16 @@ Questa cartella contiene **tre file CSV di calibrazione** per testare e dimostra
 - **Partecipanti max eligible**: 6 per singola iniziativa
 - **Activation Safeguard effettivo**: FLAGGED (MAR < 0.15) ✓
 
-### Macroblock verificati (engine, workforce=100)
+### Macroblock verificati (motore v2.0 — Foundation Light, workforce=100)
 
-| Macroblock | Valore effettivo | Note |
+| Macroblock | Valore v2.0 | Note |
 |---|---|---|
-| REACH | 38.0 | MAR≈0.13 (FLAGGED), AR alto per limited con molti pax |
-| QUALITY | 20.0 | Tutto L1 → NI=50, VR=0, CO=0 (strutturale CSV English headers) |
-| EQUITY | 71.6 | WB/EQ rebalancing → pesi redistribuiti a PC(40) e PB — più alto del previsto |
-| BTI | 45.0 | Blocked L3 (antincendio, sorveglianza) creano buon complianceClarity signal |
-| **KORA Index** | **42.41** | Band: **Early Activation** |
-| Confidence Score | 80.0 | CS esterno al KORA Index |
+| REACH | 38.0 | MAR sotto soglia CLEAR → Safeguard FLAGGED |
+| QUALITY | 18.5 | IU-centric (EVQ/INT/CONT) — fonte dati per-programma, INT basso |
+| EQUITY | 26.8 | EQW=0 (insuff.) + EQS=0 (insuff.) + PC=40 + PB=67 — tetto strutturale FL |
+| BTI | 45.0 | Blocked compliance generano buon complianceClarity signal |
+| **KORA Index** | **30.73** | Band: **Attivazione debole** (0–30) · MC [28.9–30.9–32.8] |
+| Confidence Score | 69 | CS esterno al KORA Index |
 
 ---
 
@@ -70,16 +74,16 @@ Questa cartella contiene **tre file CSV di calibrazione** per testare e dimostra
 
 > I 2 record review_required non contribuiscono allo scoring automatico. Il punteggio è calcolato sugli 11 record eligible + 2 limited.
 
-### Macroblock verificati (engine, workforce=150)
+### Macroblock verificati (motore v2.0 — Foundation Light, workforce=150)
 
-| Macroblock | Valore effettivo | Note |
+| Macroblock | Valore v2.0 | Note |
 |---|---|---|
-| REACH | 54.1 | MAR≈0.48, AR≈0.63 — Safeguard CLEAR |
-| QUALITY | 41.2 | NI≈68, VR≈45 (2 L3 + 2 L2), CO=0 |
-| EQUITY | 88.2 | WB/EQ rebalancing → PC=60 + PB≈85 amplificati — più alto del previsto |
-| BTI | 57.0 | 2 eligible L3 full_weight, mix L1/L2, relief ratio moderato |
-| **KORA Index** | **59.34** | Band: **Solid Foundation** |
-| Confidence Score | 79.0 | CS esterno al KORA Index |
+| REACH | 54.1 | AR≈0.63, MAR≈0.48 — Safeguard CLEAR |
+| QUALITY | 25.6 | IU-centric — INT basso (11 eligible su 150 workforce), CO=0 (mono-periodo) |
+| EQUITY | 43.3 | EQW=0 (insuff.) + EQS=0 (insuff.) + PC=80 + PB=93 |
+| BTI | 57.0 | Mix L1/L2/L3, relief ratio moderato |
+| **KORA Index** | **43.42** | Band: **Attivazione iniziale** (30–45) · MC [41.6–43.6–45.5] |
+| Confidence Score | 73 | CS esterno al KORA Index |
 
 ---
 
@@ -98,16 +102,16 @@ Questa cartella contiene **tre file CSV di calibrazione** per testare e dimostra
 - **Activation Safeguard effettivo**: CLEAR ✓
 - **Smart Working Policy** (200 pax, amount=0): domina bounded_estimate → AR≈MAR≈0.78 → REACH≈78.
 
-### Macroblock verificati (engine, workforce=300)
+### Macroblock verificati (motore v2.0 — Foundation Light, workforce=300)
 
-| Macroblock | Valore effettivo | Note |
+| Macroblock | Valore v2.0 | Note |
 |---|---|---|
-| REACH | 78.3 | Smart Working Policy (200 pax) satura lb del bounded_estimate |
-| QUALITY | 35.4 | Mix L1/L2, VR moderato, CO=0 (strutturale CSV English headers) |
-| EQUITY | 99.5 | 5 pillar → PC=100, PB≈99 — WB/EQ rebalancing amplifica al massimo |
+| REACH | 78.3 | Smart Working Policy (200 pax) domina il bounded_estimate |
+| QUALITY | 21.5 | IU-centric — INT molto basso (18 eligible su 300 workforce), CO=0 (mono-periodo) |
+| EQUITY | 50.0 | EQW=0 (insuff.) + EQS=0 (insuff.) + PC=100 + PB=100 — tetto FL = 50 |
 | BTI | 70.0 | 2 L3 eligible (Provider export/Invoice), 1 limited, 1 blocked |
-| **KORA Index** | **69.08** | Band: **Advanced Activation** |
-| Confidence Score | 83.0 | CS esterno al KORA Index |
+| **KORA Index** | **52.53** | Band: **In sviluppo** (45–60) · MC [50.7–52.7–54.6] |
+| Confidence Score | 76 | CS esterno al KORA Index |
 
 ### Nota sulla discrepanza README originale
 
@@ -115,19 +119,21 @@ Il README originale indicava "16 eligible, 2 review_required". B107+B108-B confe
 
 ---
 
-## Bande di interpretazione del KORA Index
+## Bande di interpretazione del KORA Index (v2.0)
 
-Questi range sono orientativi e non sostituiscono l'analisi contestuale del Confidence Score e dell'Activation Safeguard.
+Soglie definite in `data/methodology/methodology-config.json["score_bands"]` — fonte canonica unica.
+Orientative e non sostitutive dell'analisi contestuale di CS e Activation Safeguard.
+Pre_empirical_calibration — soglie provvisorie, da calibrare post-Delphi Study.
 
-| KORA Index | Banda | Significato |
+| KORA Index | Banda | Regime FL — nota strutturale |
 |---|---|---|
-| < 35 | **Weak Activation** | Attivazione debole — pochi programmi eligible, evidence prevalentemente L1, copertura pillar ridotta |
-| 35–50 | **Early Activation** | Attivazione iniziale — base presente ma limitata per pillar coverage, evidence quality, o reach |
-| 50–65 | **Solid Foundation** | Fondamenta solide — attivazione significativa su più pillar con evidence documentata |
-| 65–75 | **Advanced Activation** | Attivazione avanzata — alta copertura, multi-pillar, evidence verificata, BTI equilibrato |
-| > 75 | **Leading Maturity** | Maturità leader — attivazione profonda su tutti i pillar, evidence verificata, BTI ottimale |
+| 0–30 | **Attivazione debole** | EQW/EQS assenti → EQUITY strutturalmente bassa |
+| 30–45 | **Attivazione iniziale** | Tetto FL ≈ 62 (EQW+EQS insufficient_data). Pilot+ sposta +8–12 pts |
+| 45–60 | **In sviluppo** | QUALITY bassa se INT < 0.3 (pochi worker attivi su forza lavoro grande) |
+| 60–75 | **Solida** | Raggiungibile in FL con forza lavoro piccola o alta activation density |
+| 75–100 | **Matura / leader** | Praticabile solo in Pilot+ con EQW+EQS attivi |
 
-> Leggere sempre insieme a: Confidence Score (CS), Activation Safeguard (CLEAR/WARNING/FLAGGED), e `calibration_status = pre_empirical_calibration`.
+> Leggere sempre insieme a: Confidence Score (CS), Activation Safeguard (CLEAR/WARNING/FLAGGED), regime (Foundation Light / Pilot+), e `calibration_status = pre_empirical_calibration`.
 
 ---
 

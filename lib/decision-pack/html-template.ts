@@ -21,6 +21,7 @@ import {
   type ActivationOpportunity,
   type OpportunityPriority,
 } from '@/services/activation-opportunity/ActivationOpportunityService';
+import { getMacroblockStatusForScore } from '@/lib/methodology-config/v0.1';
 
 function getLogoBase64(variant: 'white' | 'dark'): string {
   const file = variant === 'white' ? 'logo-white.png' : 'logo-dark.png';
@@ -1182,7 +1183,7 @@ ${buildExecutiveBriefPage(data)}
         EQUITY:  { desc: "Misura la distribuzione dell'attivazione sui 5 pillar KORA. Combina Pillar Coverage (PC — quanti pillar attivi) e Pillar Balance (PB — quanto equilibrata la distribuzione).", cardClass: 'mb-card-equity',  color: '#6156F5' },
         BTI:     { desc: "Misura l'efficienza del budget people. Budget-to-Human-Impact: quota di welfare convertita in attivazione profonda vs economic relief vs compliance blocked.", cardClass: 'mb-card-bti',    color: '#d97706' },
       };
-      const statusForScore = (score: number) => score >= 70 ? { label: 'Buono', bg: '#dcfce7', color: '#166534' } : score >= 50 ? { label: 'In sviluppo', bg: '#fffbeb', color: '#92400e' } : { label: 'Critico', bg: '#fee2e2', color: '#991b1b' };
+      const statusForScore = getMacroblockStatusForScore;
       return `
     <div class="mb-grid">
       ${macroblocks.map(mb => {

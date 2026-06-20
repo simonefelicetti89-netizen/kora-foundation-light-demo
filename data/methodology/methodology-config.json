@@ -58,5 +58,23 @@
     "CLEAR":   { "AR": 0.40, "MAR": 0.30 },
     "WARNING": { "AR_min": 0.20, "AR_max": 0.40, "MAR_min": 0.15, "MAR_max": 0.30 },
     "FLAGGED": { "AR_max": 0.20, "MAR_max": 0.15 }
+  },
+
+  "score_bands": {
+    "_note": "Bande orientative pre_empirical_calibration. Soglie provvisorie da calibrare post-Delphi Study. Unica fonte di verità — lib/constants/kora.ts le legge da qui.",
+    "bands": [
+      { "min":  0, "max":  30, "key": "weak",       "labelIt": "Attivazione debole",   "labelEn": "Weak Activation"   },
+      { "min": 30, "max":  45, "key": "early",      "labelIt": "Attivazione iniziale", "labelEn": "Early Activation"  },
+      { "min": 45, "max":  60, "key": "developing", "labelIt": "In sviluppo",          "labelEn": "Developing"        },
+      { "min": 60, "max":  75, "key": "solid",      "labelIt": "Solida",               "labelEn": "Solid"             },
+      { "min": 75, "max": 101, "key": "leading",    "labelIt": "Matura / leader",      "labelEn": "Leading Maturity"  }
+    ]
+  },
+
+  "macroblock_status_thresholds": {
+    "_note": "Soglie di stato per singolo macroblocco (0–100) nel Decision Pack PDF. Scala separata dalle score_bands (quelle sono per il KORA Index totale). Provvisorie, da calibrare post-Delphi.",
+    "buono":     { "min": 70, "label": "Buono",       "bg": "#dcfce7", "color": "#166534" },
+    "sviluppo":  { "min": 50, "label": "In sviluppo", "bg": "#fffbeb", "color": "#92400e" },
+    "critico":   { "min":  0, "label": "Critico",     "bg": "#fee2e2", "color": "#991b1b" }
   }
 }

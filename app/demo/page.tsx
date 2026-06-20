@@ -1,29 +1,42 @@
 // app/demo/page.tsx — B132-A: Demo area home — struttura narrativa a 4 sezioni.
 // B129: Demo area home originale.
 // Synthetic data only — no getSupabaseServiceClient, no getSupabaseServerClient,
-// no live DB queries. Numbers are canonical demo values from Foundation Light spec:
-//   S1 (Meridiana): KORA Index 34, Safeguard WARNING
-//   S2 (Ferretti):  KORA Index 54, Safeguard CLEAR
+// no live DB queries. Numbers are canonical demo values from Foundation Light v2.0.
+//   S1 (Meridiana): letti da data/synthetic/kora-index-outputs.json[0]
+//   S2 (Ferretti):  nessuna voce seed — STOP-AND-REPORT: seed S2 Ferretti non ancora creato.
+//                   Valore conservato temporaneamente; creare voce seed prima del merge.
 
 export const dynamic = 'force-static';
 
 import Link from 'next/link';
 import { DemoAccessBanner } from '@/components/demo/DemoAccessBanner';
+import koraOutputsRaw from '@/data/synthetic/kora-index-outputs.json';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
+
+const _outputs = (koraOutputsRaw as { data: Array<Record<string, unknown>> }).data;
+const _s1 = _outputs[0]!;
+
+function _safeguardStyle(status: string) {
+  if (status === 'CLEAR')   return { background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' };
+  if (status === 'WARNING') return { background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d' };
+  return { background: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5' };
+}
 
 const DEMO_SCENARIOS = [
   {
     id:         'S1',
     company:    'Meridiana Group S.r.l.',
     sector:     'Manifattura · 250 lavoratori',
-    koraIndex:  34,
-    safeguard:  'WARNING',
-    cs:         '62%',
+    koraIndex:  _s1['kora_index_value'] as number,
+    safeguard:  _s1['safeguard_status'] as string,
+    cs:         `${Math.round((_s1['confidence_score'] as number) * 100)}%`,
     description: 'Attivazione concentrata in pochi reparti. Maggioranza silenziosa evidente. Activation Debt significativo.',
-    safeguardStyle: { background: '#fffbeb', color: '#92400e', border: '1px solid #fcd34d' },
+    safeguardStyle: _safeguardStyle(_s1['safeguard_status'] as string),
   },
   {
+    // TODO(sprint3-seed): S2 Ferretti non ha ancora voce in kora-index-outputs.json.
+    // Creare seed S2 prima di rimuovere questi valori temporanei.
     id:         'S2',
     company:    'Ferretti Holding S.p.A.',
     sector:     'Logistica · 180 lavoratori',
@@ -31,9 +44,9 @@ const DEMO_SCENARIOS = [
     safeguard:  'CLEAR',
     cs:         '74%',
     description: 'Distribuzione bilanciata. Continuità cross-pillar. Budget-to-Human-Impact positivo.',
-    safeguardStyle: { background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' },
+    safeguardStyle: _safeguardStyle('CLEAR'),
   },
-] as const;
+] as unknown as Array<{ id: string; company: string; sector: string; koraIndex: number; safeguard: string; cs: string; description: string; safeguardStyle: Record<string, string> }>;
 
 interface DemoSurface {
   label: string;

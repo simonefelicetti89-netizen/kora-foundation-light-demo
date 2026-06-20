@@ -247,25 +247,30 @@ export const BTI_DOCTRINE = {
 } as const;
 
 // ── B108: Score interpretation bands ─────────────────────────────────────────────
-// Orientative bands for KORA Index v1.0 output interpretation.
-// pre_empirical_calibration — boundaries are provisional and will be revised after Delphi Study.
-// Never present these as validated industry benchmarks.
+// Score bands — leggono da methodology-config.json (import diretto per evitare dipendenza ciclica
+// con lib/methodology-config/v0.1.ts che importa già da questo file).
+// Unica fonte di verità: data/methodology/methodology-config.json["score_bands"].
+// NON modificare i valori qui — aggiornare il JSON.
+// pre_empirical_calibration — soglie provvisorie, da calibrare post-Delphi Study.
 
-export const SCORE_BANDS = [
-  { min:  0, max: 35, key: 'weak',     label: 'Weak Activation',     labelIt: 'Attivazione Debole' },
-  { min: 35, max: 50, key: 'early',    label: 'Early Activation',    labelIt: 'Attivazione Iniziale' },
-  { min: 50, max: 65, key: 'solid',    label: 'Solid Foundation',    labelIt: 'Fondamenta Solide' },
-  { min: 65, max: 75, key: 'advanced', label: 'Advanced Activation', labelIt: 'Attivazione Avanzata' },
-  { min: 75, max: 101, key: 'leading', label: 'Leading Maturity',    labelIt: 'Maturità Leader' },
-] as const;
+import rawConfig from '@/data/methodology/methodology-config.json';
 
-export type ScoreBand = typeof SCORE_BANDS[number];
+export interface ScoreBand {
+  min: number; max: number; key: string; labelIt: string; labelEn: string;
+}
+
+const _rawBands = (rawConfig as unknown as { score_bands?: { bands: ScoreBand[] } }).score_bands?.bands;
+
+export const SCORE_BANDS: ScoreBand[] = _rawBands ?? [
+  { min:  0, max:  30, key: 'weak',       labelIt: 'Attivazione debole',   labelEn: 'Weak Activation'  },
+  { min: 30, max:  45, key: 'early',      labelIt: 'Attivazione iniziale', labelEn: 'Early Activation' },
+  { min: 45, max:  60, key: 'developing', labelIt: 'In sviluppo',          labelEn: 'Developing'       },
+  { min: 60, max:  75, key: 'solid',      labelIt: 'Solida',               labelEn: 'Solid'            },
+  { min: 75, max: 101, key: 'leading',    labelIt: 'Matura / leader',      labelEn: 'Leading Maturity' },
+];
 
 export function getScoreBand(score: number): ScoreBand {
-  return (
-    SCORE_BANDS.find(b => score >= b.min && score < b.max)
-    ?? SCORE_BANDS[SCORE_BANDS.length - 1]
-  );
+  return SCORE_BANDS.find(b => score >= b.min && score < b.max) ?? SCORE_BANDS[SCORE_BANDS.length - 1]!;
 }
 
 export const SCORE_BAND_DISCLAIMER =

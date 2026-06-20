@@ -2,6 +2,8 @@
 **Auditor:** Claude Code (claude-sonnet-4-6) | **Date:** 2026-05-25 | **Mode:** Read-only
 **Branch:** main | **Build:** Foundation Light v0.1 | **Status:** Pre-empirical calibration
 
+> **⚠️ DOCUMENTO STORICO — PRE-SPRINT1** — I numeri in questo audit (Index 34 per S1, 54 per S2, CS 60%, benchmark 47/62/68) si riferiscono al motore pre-Sprint1. Non sono più canonici. Valori correnti v2.0 Foundation Light: S1≈34 (scenario), fixture CSV: WEAK=30.73, AVERAGE=43.42, GOLDEN=52.53. Benchmark sintetici da aggiornare. Le osservazioni qualitative e strategiche restano valide.
+
 ---
 
 ## EXECUTIVE SUMMARY

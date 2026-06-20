@@ -129,3 +129,32 @@ export function getAllComponentEffectiveWeights(): Record<string, number> {
 
   return result;
 }
+
+// ── Sprint 3 — score bands (ri-esportati da kora.ts) + macroblock status ─────
+// SCORE_BANDS e getScoreBand vivono in lib/constants/kora.ts (leggono rawConfig direttamente).
+// v0.1.ts li ri-esporta per uniformità dell'API config — nessun valore duplicato.
+
+export { SCORE_BANDS, getScoreBand } from '@/lib/constants/kora';
+export type { ScoreBand } from '@/lib/constants/kora';
+
+export interface MacroblockStatusEntry {
+  min: number; label: string; bg: string; color: string;
+}
+
+// statusForMacroblockScore — scala di stato per singolo macroblocco (0–100) nel Decision Pack PDF.
+// Scala SEPARATA da score_bands (quelle sono per il KORA Index totale).
+// Provvisorie, da calibrare post-Delphi.
+export function getMacroblockStatusThresholds(): { buono: MacroblockStatusEntry; sviluppo: MacroblockStatusEntry; critico: MacroblockStatusEntry } {
+  return config.macroblock_status_thresholds ?? {
+    buono:    { min: 70, label: 'Buono',       bg: '#dcfce7', color: '#166534' },
+    sviluppo: { min: 50, label: 'In sviluppo', bg: '#fffbeb', color: '#92400e' },
+    critico:  { min:  0, label: 'Critico',     bg: '#fee2e2', color: '#991b1b' },
+  };
+}
+
+export function getMacroblockStatusForScore(score: number): MacroblockStatusEntry {
+  const t = getMacroblockStatusThresholds();
+  if (score >= t.buono.min)    return t.buono;
+  if (score >= t.sviluppo.min) return t.sviluppo;
+  return t.critico;
+}
