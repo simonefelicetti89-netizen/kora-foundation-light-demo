@@ -192,11 +192,7 @@ export function runKoraPipeline(params: {
         uef_record_id:             String(raw['b6_uef_record_id'] ?? fallbackId),
         eligibility:               elig.status as (EligibilityClass | 'review_required'),
         review_required:           elig.reviewRequired,
-        // Default to true for eligible records when the governance flag is absent (CSV/demo path).
-        // Explicit false ('false'|false) always wins. Flag is set by UEF review in Pilot+.
-        approved_for_impact_units: raw['b6_approved_for_iu'] !== undefined
-          ? (raw['b6_approved_for_iu'] === true || raw['b6_approved_for_iu'] === 'true' || raw['b6_approved_for_iu'] === '1')
-          : elig.status === 'eligible',
+        approved_for_impact_units: Boolean(raw['b6_approved_for_iu']),
         action_family:             (String(raw['categoria'] ?? raw['category'] ?? raw['tipo'] ?? raw['type'] ?? 'blocked_compliance')) as ActionFamily,
         event_nature:              String(raw['tipo'] ?? ''),
         primary_pillar:            pm.primaryPillar,

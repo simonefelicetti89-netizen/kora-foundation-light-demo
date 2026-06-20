@@ -1,9 +1,12 @@
 /**
- * B108-B — Calibration Fixture Score Smoke Test
+ * B108-B — Integration Smoke Test (score range sanity check)
  *
- * Smoke test metodologico sui tre CSV di calibrazione.
- * Esegue il motore reale (runKoraPipeline) su ciascun fixture
- * e verifica che il KORA Index prodotto sia coerente con le bande dichiarate.
+ * Verifica che il motore reale produca score ordinati e nell'intorno atteso
+ * per i tre CSV di fixture (weak / average / golden path).
+ *
+ * NOTA: Le bande di score sono osservazionali (output v2.0 misurato), NON formula-derivate.
+ * Per asserzioni formula-derivate end-to-end usare fixture minimale con IU calcolabili a mano.
+ * Vedere backlog: "b108b: sostituire bande osservazionali con fixture minimale formula-derivata".
  *
  * Vincoli rispettati:
  *   - Nessuna modifica ad algoritmo, formule, pesi, scoring
@@ -138,7 +141,7 @@ describe('B108-B — weak fixture (workforce=100)', () => {
     expect(weakResult.activation.safeguardStatus).toBe('FLAGGED');
   });
 
-  it('KORA Index is in verified range (Sprint 1 v2.0 calibrated)', () => {
+  it('KORA Index in expected range v2.0 (observational bounds, not formula-derived)', () => {
     const score = weakResult.koraIndex.value;
     // Sprint 1 v2.0 (IU-centric, no EQUITY redistribution): actual output ~31.
     // Range widened to avoid brittleness across minor formula tuning.
@@ -178,7 +181,7 @@ describe('B108-B — average fixture (workforce=150)', () => {
     expect(averageResult.scoringMode).not.toBe('insufficient_data');
   });
 
-  it('KORA Index is in verified range (Sprint 1 v2.0 calibrated)', () => {
+  it('KORA Index in expected range v2.0 (observational bounds, not formula-derived)', () => {
     const score = averageResult.koraIndex.value;
     // Sprint 1 v2.0 (IU-centric, no EQUITY redistribution): actual output ~43.
     // Range widened to avoid brittleness across minor formula tuning.
@@ -222,7 +225,7 @@ describe('B108-B — golden fixture (workforce=300)', () => {
     expect(goldenResult.scoringMode).not.toBe('insufficient_data');
   });
 
-  it('KORA Index is in verified range (Sprint 1 v2.0 calibrated)', () => {
+  it('KORA Index in expected range v2.0 (observational bounds, not formula-derived)', () => {
     const score = goldenResult.koraIndex.value;
     // Sprint 1 v2.0 (IU-centric, no EQUITY redistribution): actual output ~52.
     // Range widened to avoid brittleness across minor formula tuning.
