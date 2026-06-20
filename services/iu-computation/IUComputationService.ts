@@ -29,12 +29,19 @@ const BC_BY_FAMILY: Record<ActionFamily, number> = {
 };
 
 // EV by evidence_type from ingestion seed field.
-// Maps source-level evidence codes to evidence verification weights.
+// Maps source-level evidence codes to evidence verification weights (IU formula EV factor).
 // L-code entries (L0–L4) handle the live pipeline path (from uef_record.payload.evidence_level).
 // Long-form codes handle the ingestion pipeline demo path (from NormalizedIngestionRow.evidence_type).
+//
+// IU EV SCALE (this table) vs COMPONENT SIGNAL SCALE (component-engine.ts EVIDENCE_WEIGHTS):
+//   These are two independent scales with different semantic purposes and MUST NOT be merged.
+//   IU EV: multiplied into the IU formula — NM × BC × CQ × EV × CF × AGF.
+//   Component NI/VR: diagnostic signals for Activation Quality (EVQ) and verificationConfidence.
+//   They share the same L-code vocabulary but assign different weights to L0/L1 by design.
+//   Do not align them mechanically — calibration post-Delphi Study governs any future changes.
 const EV_BY_EVIDENCE_TYPE: Record<string, number> = {
-  // ── Live pipeline L-codes ─────────────────────────────────────────────────────
-  'L0': 0.50,  // L0_NO_EVIDENCE — fallback, low confidence
+  // ── Live pipeline L-codes (canonical IU EV scale) ─────────────────────────────
+  'L0': 0.25,  // L0_NO_EVIDENCE — canonical IU EV; no evidence → lowest weight
   'L1': 0.60,  // L1_SELF_DECLARED — low verification
   'L2': 0.75,  // L2_INTERNAL_DOCUMENT — moderate verification
   'L3': 0.90,  // L3_THIRD_PARTY_DOCUMENT — high verification

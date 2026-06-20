@@ -76,5 +76,14 @@
     "buono":     { "min": 70, "label": "Buono",       "bg": "#dcfce7", "color": "#166534" },
     "sviluppo":  { "min": 50, "label": "In sviluppo", "bg": "#fffbeb", "color": "#92400e" },
     "critico":   { "min":  0, "label": "Critico",     "bg": "#fee2e2", "color": "#991b1b" }
+  },
+
+  "monte_carlo": {
+    "_note": "Parametri Monte Carlo per quantificazione incertezza KORA Index. Unica fonte di verità — mai hardcoded nel codice.",
+    "seed": 42,
+    "n_iter": 1000,
+    "macroblock_perturbation_pts": 5,
+    "shrinkage_k": 10,
+    "shrinkage_prior": 40.0
   }
 }

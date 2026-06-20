@@ -242,14 +242,14 @@ describe('B-EQ1 — EQUITY macroblock in Foundation Light', () => {
     expect(s1).toBe('insufficient_data');
     expect(v1).toBe(0);
 
-    const { eqsStatus: s2, eqs: v2 } = computeEQs({ 'solo': { participants: 10, headcount: 20 } });
+    const { eqsStatus: s2, eqs: v2 } = computeEQs({ 'solo': { activeUniqueWorkers: 10, headcount: 20 } });
     expect(s2).toBe('insufficient_data');
     expect(v2).toBe(0);
 
     // Equal rates: CoV=0 → EQS = (1 - 0) = 1.0
     const { eqsStatus: s3, eqs: v3 } = computeEQs({
-      'dept-a': { participants: 10, headcount: 20 }, // 50%
-      'dept-b': { participants: 5,  headcount: 10 }, // 50%
+      'dept-a': { activeUniqueWorkers: 10, headcount: 20 }, // 50%
+      'dept-b': { activeUniqueWorkers: 5,  headcount: 10 }, // 50%
     });
     expect(s3).toBe('computed');
     expect(v3).toBeCloseTo(1.0, 2);
@@ -258,8 +258,8 @@ describe('B-EQ1 — EQUITY macroblock in Foundation Light', () => {
   it('computeEQs: segment with headcount=0 is excluded — 1 valid segment → insufficient_data', () => {
     // dept-missing has headcount=0 → excluded; only 1 valid segment remains → insufficient_data
     const { eqsStatus, eqs } = computeEQs({
-      'dept-valid':   { participants: 10, headcount: 20 },
-      'dept-missing': { participants: 5,  headcount: 0  },
+      'dept-valid':   { activeUniqueWorkers: 10, headcount: 20 },
+      'dept-missing': { activeUniqueWorkers: 5,  headcount: 0  },
     });
     expect(eqsStatus).toBe('insufficient_data');
     expect(eqs).toBe(0);

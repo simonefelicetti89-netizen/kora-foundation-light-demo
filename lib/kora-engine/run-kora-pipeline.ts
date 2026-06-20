@@ -33,7 +33,9 @@ import type {
   ScoringMode,
   Pillar,
   CompanyPIBAggregation,
+  RegimeType,
 } from './types';
+import type { WorkforceAggregateGroup } from '@/lib/types';
 import { classifyEligibilityBatch } from './eligibility-gate';
 import { mapPillarBatch } from './pillar-mapping';
 import type { ActionFamily, EligibilityClass } from '@/lib/types';
@@ -47,10 +49,47 @@ import { computeKoraIndex } from './kora-index-engine';
 import { computeConfidence } from './confidence-engine';
 import { buildExplainabilityTrace } from './explainability';
 import { computeReachSemantics } from './reach-semantics';
-import { getMacroblockWeights } from '@/lib/methodology-config/v0.1';
+import { getMacroblockWeights, getMCConfig } from '@/lib/methodology-config/v0.1';
 import { pibAggregationService } from '@/services/pib-aggregation/PIBAggregationService';
+import { computeMonteCarlo } from './monte-carlo-engine';
 
 const PIPELINE_SOURCE = 'KoraPipeline_v2.0';
+
+// ── Dept rate map builder ──────────────────────────────────────────────────────
+// Combines explicit unique active worker counts with workforce group headcounts to
+// produce the deptRates input required by computeEQs.
+// uniqueActiveWorkersByDept: deduplicated count of workers with ≥1 approved IU per dept.
+// NOT activation.departmentGaps (raw participation sums across program records).
+// Returns null if no department groups with valid headcounts match the input keys.
+
+function norm(s: string): string {
+  return s.toLowerCase().trim().replace(/[-_]/g, ' ');
+}
+
+function buildDeptRates(
+  uniqueActiveWorkersByDept: Record<string, number>,
+  workforceGroups: WorkforceAggregateGroup[],
+): Record<string, { activeUniqueWorkers: number; headcount: number }> | null {
+  const deptGroups = workforceGroups.filter(
+    g => g.dimension_type === 'department' && g.employee_count > 0 && g.privacy_threshold_met,
+  );
+  if (deptGroups.length === 0) return null;
+
+  const headcountByLabel = new Map<string, number>(
+    deptGroups.map(g => [norm(g.dimension_label), g.employee_count]),
+  );
+
+  const result: Record<string, { activeUniqueWorkers: number; headcount: number }> = {};
+  for (const [deptKey, activeUniqueWorkers] of Object.entries(uniqueActiveWorkersByDept)) {
+    if (activeUniqueWorkers <= 0) continue;
+    const headcount = headcountByLabel.get(norm(deptKey));
+    if (headcount && headcount > 0) {
+      result[deptKey] = { activeUniqueWorkers, headcount };
+    }
+  }
+
+  return Object.keys(result).length > 0 ? result : null;
+}
 
 // ── Insufficient data result ──────────────────────────────────────────────────
 
@@ -124,6 +163,7 @@ function buildInsufficientDataResult(
     tenantId,
     batchId,
     scoringMode: 'insufficient_data',
+    regime: 'fl_base' as RegimeType, // insufficient_data always fl_base (no components computed)
     eligibilitySummary: { eligibleCount: 0, limitedCount: 0, blockedCount: 0, reviewRequiredCount: 0, totalCount: 0 },
     pillarDistribution: { LIFE: 0, GROWTH: 0, CONNECTION: 0, IMPACT: 0, LEGACY: 0 },
     bti: zeroBTI,
@@ -146,6 +186,15 @@ export function runKoraPipeline(params: {
   records: Array<RawUploadedRecord | NormalizedUEFRecord>;
   workforcePopulation?: number;
   scoringMode?: ScoringMode;
+  /** Workforce baseline aggregate groups — used to build per-dept headcount denominators
+   *  for EQS (Foundation Light enriched path). department groups must have employee_count > 0
+   *  and privacy_threshold_met = true to be used. */
+  workforceGroups?: WorkforceAggregateGroup[];
+  /** Explicit unique active workers per department — required for EQS (Foundation Light enriched path).
+   *  Keys must match workforceGroups dimension_label values (case/separator-insensitive).
+   *  Must be a deduplicated count of workers with ≥1 approved IU in the period per department.
+   *  Must NOT be activation.departmentGaps (raw participation sums across program records). */
+  uniqueActiveWorkersByDept?: Record<string, number>;
 }): KoraComputationResult {
   const {
     tenantId,
@@ -153,6 +202,8 @@ export function runKoraPipeline(params: {
     records,
     workforcePopulation,
     scoringMode: forcedMode,
+    workforceGroups,
+    uniqueActiveWorkersByDept,
   } = params;
 
   try {
@@ -234,6 +285,32 @@ export function runKoraPipeline(params: {
       workforcePopulation,
     });
 
+    // Step 9b: Build dept activation rates for EQS (Foundation Light enriched path).
+    // Requires BOTH uniqueActiveWorkersByDept (explicit deduplicated numerators) AND
+    // workforceGroups (denominators). activation.departmentGaps is raw participation sums
+    // and must NOT be used as the numerator — it violates the canonical formula
+    // activation_rate_g = active_unique_workers_g / workforce_g.
+    // The reason for unavailability is determined here where both inputs are visible,
+    // and threaded through to componentDetail.eqsSource for precise audit attribution.
+    const hasWorkforceGroups = !!workforceGroups && workforceGroups.length > 0;
+    const hasUniqueActiveWorkers = !!uniqueActiveWorkersByDept;
+
+    let deptRates: Record<string, { activeUniqueWorkers: number; headcount: number }> | null = null;
+    let eqsUnavailableSource: string | undefined;
+
+    if (hasUniqueActiveWorkers && hasWorkforceGroups) {
+      deptRates = buildDeptRates(uniqueActiveWorkersByDept!, workforceGroups!);
+      // deptRates=null here means no dept label overlap — computeEQs handles its own source
+    } else if (!hasUniqueActiveWorkers && !hasWorkforceGroups) {
+      eqsUnavailableSource = 'no_group_equity_inputs';
+    } else if (!hasWorkforceGroups) {
+      eqsUnavailableSource = 'no_workforce_denominators';
+    } else {
+      eqsUnavailableSource = 'no_unique_active_workers_by_group';
+    }
+
+    const eqsAvailable = deptRates !== null;
+
     // Step 10: PIB Aggregation — canonical Stage 11 (AG-01 compliance).
     // Mandatory intermediate layer between IU (Stage 10) and KORA Index (Stage 14).
     // Placed after activation engine (Step 7) to reuse the activation result's
@@ -281,6 +358,7 @@ export function runKoraPipeline(params: {
 
     // Step 13: Confidence Score — CS external to KORA Index (doc 21b).
     // v2.0 B-CS1: iuResults passed so verificationConfidence uses verified IU ratio.
+    // eqsAvailable / eqwAvailable: passed for targeted equity-data confidence penalties.
     const confidence = computeConfidence({
       bti,
       activation,
@@ -288,11 +366,15 @@ export function runKoraPipeline(params: {
       totalRecords: records.length,
       workforceKnown,
       iuResults,
+      eqsAvailable,
+      eqwAvailable: false, // always false in Foundation Light — Pilot+ path only
     });
 
     // Step 14: KORA Index — four macroblock aggregate + CS external link.
     // v2.0: iuResults passed for INT (IU per active worker) in QUALITY macroblock.
     // pillarDistribution is now IU-weighted (Step 12), so PB uses IU shares.
+    // deptRates: per-dept activation rates for EQS — null in FL base, populated in FL enriched.
+    // eqsUnavailableSource: precise reason for EQS=insufficient_data, set in Step 9b.
     const koraIndex = computeKoraIndex({
       bti,
       activation,
@@ -301,6 +383,8 @@ export function runKoraPipeline(params: {
       confidenceScore: confidence.score,
       componentSignals,
       iuResults,
+      deptRates,
+      eqsUnavailableSource,
     });
 
     // Step 15: Explainability Trace — 9-stage aggregate trace, no identity values
@@ -332,6 +416,39 @@ export function runKoraPipeline(params: {
       meaningfulActivationRate: activation.meaningfulActivationReach,
     });
 
+    // Step 17: Monte Carlo credibility interval — B-MC1.
+    // Perturbs macroblock scores n_iter times with scaled noise to produce [p10, median, p90].
+    // Only computed when scoringMode='computed' (not for seeded_demo or insufficient_data).
+    // Parameters from methodology-config.json — never hardcoded.
+    const mcConfig = getMCConfig();
+    const monteCarlo = scoringMode === 'computed'
+      ? computeMonteCarlo({
+          macroblocks: {
+            reach:   koraIndex.macroblocks.activationReach,
+            quality: koraIndex.macroblocks.activationQuality,
+            equity:  koraIndex.macroblocks.distributionEquity,
+            bti:     koraIndex.macroblocks.budgetToHumanImpact,
+            weights: {
+              REACH:   koraIndex.weights['REACH']   ?? 0.25,
+              QUALITY: koraIndex.weights['QUALITY'] ?? 0.30,
+              EQUITY:  koraIndex.weights['EQUITY']  ?? 0.25,
+              BTI:     koraIndex.weights['BTI']     ?? 0.20,
+            },
+          },
+          eligibleCount: eligibilitySummary.eligibleCount,
+          config: mcConfig,
+        })
+      : undefined;
+
+    // Step 18: Regime classification — derived from componentDetail.eqwStatus / eqsStatus only.
+    // NEVER from record counts, eligible counts, or workforceGroups presence alone.
+    // canonical rule: pilot_plus > fl_enriched > fl_base.
+    const cd = koraIndex.componentDetail;
+    const regime: RegimeType =
+      cd?.eqwStatus === 'computed' && cd?.eqsStatus === 'computed' ? 'pilot_plus'
+      : cd?.eqsStatus === 'computed'                                ? 'fl_enriched'
+      :                                                               'fl_base';
+
     // Top-level pipeline warnings: only non-verbose signals not already in sub-engines
     const pipelineWarnings: string[] = [];
     if (activation.safeguardStatus === 'FLAGGED') {
@@ -350,6 +467,7 @@ export function runKoraPipeline(params: {
       tenantId,
       batchId,
       scoringMode,
+      regime,
       eligibilitySummary,
       pillarDistribution,
       bti,
@@ -362,6 +480,7 @@ export function runKoraPipeline(params: {
       iuSummary,
       iuResults,
       pibAggregation,
+      monteCarlo,
       warnings: pipelineWarnings,
       createdAt: new Date().toISOString(),
     };

@@ -117,7 +117,7 @@ describe('IUComputationService — EV L-code mappings', () => {
   beforeEach(() => { svc = new IUComputationService(); });
 
   it.each([
-    ['L0', 0.50],
+    ['L0', 0.25],  // canonical IU EV L0 = 0.25 (Sprint 3 alignment)
     ['L1', 0.60],
     ['L2', 0.75],
     ['L3', 0.90],

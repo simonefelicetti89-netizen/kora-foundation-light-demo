@@ -330,7 +330,7 @@ export interface ComponentDetail {
   int: number; intStatus: ComponentStatus;   // Impact Intensity — IU per active worker
   cont: number; contStatus: ComponentStatus; // Continuity (was CO)
   eqw: number; eqwStatus: ComponentStatus;   // Equity Workers — Gini on IU per worker (Pilot+)
-  eqs: number; eqsStatus: ComponentStatus;   // Equity Segments — CoV of dept activation rates
+  eqs: number; eqsStatus: ComponentStatus; eqsSource: string;  // Equity Segments — CoV of dept activation rates
   pc: number; pcStatus: ComponentStatus;     // Pillar Coverage
   pb: number; pbStatus: ComponentStatus;     // Pillar Balance — HHI on IU shares
   qualityWeightsUsed: { evq: number; int: number; cont: number };
@@ -474,10 +474,48 @@ export interface CompanyPIBAggregation {
   warnings: string[];
 }
 
+// ── Monte Carlo credibility interval — Sprint 2 B-MC1 ────────────────────────
+//
+// Produced by computeMonteCarlo (lib/kora-engine/monte-carlo-engine.ts).
+// Quantifies epistemic uncertainty on the KORA Index via macroblock perturbation.
+//
+// Official KORA Index: koraIndex.value (raw weighted macroblock sum).
+// p10/median/p90: credibility interval around the raw index.
+// reliabilityAdjustedIndex: separate Bayesian shrinkage estimate θ̂ = w·θ_raw + (1-w)·θ_prior.
+//   NOT the official KORA Index — a data-reliability indicator that converges to the
+//   raw index as the number of eligible records grows. Displayed alongside but never
+//   substituted for koraIndex.value.
+// All parameters sourced from methodology-config.json — never hardcoded.
+export interface MonteCarloResult {
+  p10: number;                     // 10th percentile of simulated raw KORA Index
+  median: number;                  // 50th percentile (median) — should match koraIndex.value closely
+  p90: number;                     // 90th percentile of simulated raw KORA Index
+  reliabilityAdjustedIndex: number; // Bayesian shrinkage: θ̂ = w·θ_raw + (1-w)·prior — NOT the official KORA Index
+  n_iterations: number;            // number of MC iterations run
+  seed: number;                    // seed used (reproducibility)
+}
+
+// ── Regime type ───────────────────────────────────────────────────────────────
+//
+// Derived from componentDetail.eqwStatus and componentDetail.eqsStatus — never
+// from record counts or other proxies.
+//
+// fl_base:     EQW insufficient_data AND EQS insufficient_data.
+//              EQUITY max = PC×0.25 + PB×0.25 = 50.
+// fl_enriched: EQS computed (workforceGroups + uniqueActiveWorkersByDept provided),
+//              EQW still insufficient_data. EQUITY max = EQS×0.20 + PC×0.25 + PB×0.25 = 70.
+// pilot_plus:  EQW computed (perWorkerIU available) AND EQS computed.
+//              EQUITY can reach 100.
+export type RegimeType = 'fl_base' | 'fl_enriched' | 'pilot_plus';
+
 export interface KoraComputationResult {
   tenantId: string;
   batchId: string;
   scoringMode: ScoringMode;
+  // Regime derived from componentDetail.eqwStatus / eqsStatus — authoritative source.
+  // fl_base when no group-equity inputs supplied; fl_enriched when EQS computed;
+  // pilot_plus when both EQW and EQS computed.
+  regime: RegimeType;
   eligibilitySummary: EligibilitySummary;
   pillarDistribution: Record<Pillar, number>;
   bti: BTIResult;
@@ -496,6 +534,8 @@ export interface KoraComputationResult {
   // Mandatory intermediate layer between IU and KORA Index.
   // estimationBasis='aggregate_estimate' in KORA Foundation Light (program-level UEF records).
   pibAggregation?: CompanyPIBAggregation;
+  // B-MC1: Monte Carlo credibility interval — present on scoringMode='computed' only.
+  monteCarlo?: MonteCarloResult;
   warnings: string[];
   createdAt: string;
 }

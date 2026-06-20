@@ -801,6 +801,14 @@ export interface MethodologyConfig {
     sviluppo: { min: number; label: string; bg: string; color: string };
     critico:  { min: number; label: string; bg: string; color: string };
   };
+  monte_carlo?: {
+    _note?: string;
+    seed: number;
+    n_iter: number;
+    macroblock_perturbation_pts: number;
+    shrinkage_k: number;
+    shrinkage_prior: number;
+  };
   algorithm_version?: string;
 }
 

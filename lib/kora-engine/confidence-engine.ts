@@ -43,6 +43,10 @@ export function computeConfidence(params: {
   reachMethod?: ReachMethod;
   hasHumanReview?: boolean;
   iuResults?: ImpactUnitComputationResult[];
+  /** EQS computed from real group activation rates (Foundation Light enriched+). */
+  eqsAvailable?: boolean;
+  /** EQW computed from per-worker IU distribution (Pilot+ only). */
+  eqwAvailable?: boolean;
 }): ConfidenceResult {
   const {
     bti,
@@ -53,6 +57,8 @@ export function computeConfidence(params: {
     reachMethod,
     hasHumanReview = false,
     iuResults,
+    eqsAvailable = false,
+    eqwAvailable = false,
   } = params;
 
   const warnings: string[] = [];
@@ -99,6 +105,30 @@ export function computeConfidence(params: {
   } else if (reachMethod === 'none') {
     dataCompleteness -= 0.20;
     warnings.push('Data Completeness penalizzata: reach non stimabile (method=none) (−20%).');
+  }
+
+  // EQS unavailable: workforce denominators by dept/site not provided → −0.08
+  // Applied only when workforceKnown is true (company has some baseline) but EQS is still
+  // missing, signalling an incomplete equity picture despite partial data availability.
+  // When workforceKnown is false, the −0.40 penalty already captures this broader gap.
+  if (!eqsAvailable && workforceKnown) {
+    dataCompleteness -= 0.08;
+    warnings.push(
+      'Data Completeness penalizzata: EQ_s non calcolabile — ' +
+      'organico per reparto/sede non fornito (−8%). ' +
+      'Includere workforce denominators per abilitare Equity Segments.',
+    );
+  }
+
+  // EQW unavailable: per-worker IU records not available (always true in Foundation Light) → −0.05
+  // Minor: EQW requires Pilot+ — penalise lightly to signal the data gap.
+  if (!eqwAvailable) {
+    dataCompleteness -= 0.05;
+    warnings.push(
+      'Data Completeness penalizzata: EQ_w non calcolabile — ' +
+      'dati IU per-lavoratore non disponibili (−5%). ' +
+      'Disponibile in Pilot+ con worker-level UEF records.',
+    );
   }
 
   // Individual-sensitive signal detected → slight additional penalty

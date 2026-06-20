@@ -158,3 +158,51 @@ export function getMacroblockStatusForScore(score: number): MacroblockStatusEntr
   if (score >= t.sviluppo.min) return t.sviluppo;
   return t.critico;
 }
+
+// ── Within-macroblock component weight accessors ──────────────────────────────
+// These read the sub-component weights from methodology-config.json.
+// They are the single source of truth for QUALITY and EQUITY internal weights —
+// engines must NEVER hardcode these values.
+
+/** Returns within-QUALITY-macroblock component weights from config. */
+export function getQualityComponentWeights(): { evq: number; int: number; cont: number } {
+  const comp = getMacroblockConfig('QUALITY')?.components ?? {};
+  return {
+    evq:  comp['EVQ']  ?? 0.34,
+    int:  comp['INT']  ?? 0.33,
+    cont: comp['CONT'] ?? 0.33,
+  };
+}
+
+/** Returns within-EQUITY-macroblock component weights from config. */
+export function getEquityComponentWeights(): { eqw: number; eqs: number; pc: number; pb: number } {
+  const comp = getMacroblockConfig('EQUITY')?.components ?? {};
+  return {
+    eqw: comp['EQW'] ?? 0.30,
+    eqs: comp['EQS'] ?? 0.20,
+    pc:  comp['PC']  ?? 0.25,
+    pb:  comp['PB']  ?? 0.25,
+  };
+}
+
+// ── Monte Carlo config accessor ───────────────────────────────────────────────
+
+export interface MCConfig {
+  seed: number;
+  n_iter: number;
+  macroblock_perturbation_pts: number;
+  shrinkage_k: number;
+  shrinkage_prior: number;
+}
+
+/** Returns Monte Carlo parameters from methodology-config.json. Falls back to safe defaults. */
+export function getMCConfig(): MCConfig {
+  const mc = config.monte_carlo;
+  return {
+    seed:                       mc?.seed                       ?? 42,
+    n_iter:                     mc?.n_iter                     ?? 1000,
+    macroblock_perturbation_pts: mc?.macroblock_perturbation_pts ?? 5,
+    shrinkage_k:                mc?.shrinkage_k                ?? 10,
+    shrinkage_prior:            mc?.shrinkage_prior             ?? 40.0,
+  };
+}
