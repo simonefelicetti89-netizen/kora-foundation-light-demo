@@ -1,24 +1,19 @@
-// app/api/worker/pib/route.ts — Worker PIB route-ponte.
+// app/api/worker/pib/route.ts — Worker PIB live route.
 //
-// B157 — binario di consumo.
-// Dual-path: today synthetic, tomorrow live. Swapping the LIVE SOURCE HOOK
-// is the only change needed when real IU records are available.
+// B157/B161 — binario di consumo.
 //
 // Auth paths:
-//   WORKER JWT       → LIVE SOURCE HOOK (stub: returns synthetic while pipeline data
-//                      is not yet available per-worker — post-Gate-2)
-//   KORA_ADMIN JWT   → PREVIEW path: accepts ?persona=A&scenario=S1
+//   WORKER JWT     → live DB path (personal.worker_pib via getSupabaseServerClient).
+//                    Il client ha la sessione del worker dal JWT cookie — rispetta RLS.
+//                    La policy "worker_pib_worker_own_all" isola le righe per auth.uid().
+//                    workerId/tenantId NON vengono da query params: l'isolamento è DB-level.
+//   KORA_ADMIN JWT → preview sintetico (persona+scenario da query params), separato dal live.
 //
-// Privacy invariants (absolute):
-//   - workerId/tenantId ALWAYS from JWT app_metadata, never from query params.
-//   - not_employer_visible: true enforced at contract level.
-//   - not_performance_score: true enforced at contract level.
-//   - isSynthetic: true in all Foundation Light responses.
-//
-// RLS DEBT: routes using getSupabaseServiceClient bypass RLS.
-// When activating the LIVE path, replace service client with server client
-// and confirm RLS policies cover analytics.uef_record per pseudonym_id.
-// See docs/worker-pib-activation-guide.md — sezione "RLS e sicurezza".
+// Privacy invariants (assoluti):
+//   - workerId/tenantId sempre da JWT app_metadata, mai da query/body.
+//   - not_employer_visible: true al livello del contratto di risposta.
+//   - not_performance_score: true al livello del contratto di risposta.
+//   - COMPANY_ADMIN: 401 — nessun accesso a PIB individuale.
 
 export const runtime = 'nodejs';
 
@@ -38,9 +33,9 @@ export async function GET(request: NextRequest) {
   // ── Path 1: Authenticated WORKER ──────────────────────────────────────────────
   const workerResult = await requireWorkerUser(request);
   if (!isKoraAuthError(workerResult)) {
-    // B161: live path — legge da personal.worker_pib via RLS (auth.uid()).
-    // Il Supabase client ha la sessione del worker dal JWT cookie.
-    // workerId (da JWT) NON viene passato come filtro: l'isolamento è garantito dalla RLS.
+    // Live path: getSupabaseServerClient usa anon key + cookie session — rispetta RLS.
+    // La policy "worker_pib_worker_own_all" filtra per auth.uid() → worker_identity_id.
+    // workerId NON viene passato come parametro: isolamento garantito dal DB, non dal codice.
     const supabase      = await getSupabaseServerClient();
     const reportingPeriod = request.nextUrl.searchParams.get('period') ?? undefined;
     const pib = await workerPIBService.getPIBLive(supabase, reportingPeriod);
