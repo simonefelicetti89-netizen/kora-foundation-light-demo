@@ -190,9 +190,9 @@ describe('B108-B — average fixture (workforce=150)', () => {
     console.log(`[AVERAGE] KORA Index: ${score.toFixed(2)} | Band: ${getScoreBand(score).key}`);
   });
 
-  it('score band is Early Activation or Solid Foundation', () => {
+  it('score band is Early or Developing (v2.0 average ~43, range 30–60)', () => {
     const band = getScoreBand(averageResult.koraIndex.value);
-    expect(['early', 'solid']).toContain(band.key);
+    expect(['early', 'developing', 'solid']).toContain(band.key);
   });
 
   it('KORA Index is higher than weak', () => {
@@ -234,9 +234,9 @@ describe('B108-B — golden fixture (workforce=300)', () => {
     console.log(`[GOLDEN] KORA Index: ${score.toFixed(2)} | Band: ${getScoreBand(score).key}`);
   });
 
-  it('score band is Advanced Activation', () => {
+  it('score band is Developing or Solid (v2.0 golden ~52, banda 45–75)', () => {
     const band = getScoreBand(goldenResult.koraIndex.value);
-    expect(['solid', 'advanced']).toContain(band.key);
+    expect(['developing', 'solid']).toContain(band.key);
   });
 
   it('Activation Safeguard is CLEAR', () => {

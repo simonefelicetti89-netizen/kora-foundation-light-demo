@@ -6,15 +6,15 @@
 //   PB (Pillar Balance)  — how evenly activation is distributed across covered pillars
 //   EQUITY = PC × 0.60 + PB × 0.40
 //
-// Input: pillarDistribution (count of events per pillar from non-blocked records).
-// Blocked records have null primaryPillar → already excluded by the pipeline.
-// Limited (economic relief) records map to LIFE → correctly inflate LIFE concentration
-//   for companies that over-rely on vouchers.
+// Input: pillarDistribution — IU sums per pillar (after Sprint 1 B-IU1).
+//   Prior to Sprint 1 this was an event count. Since Sprint 1, run-kora-pipeline
+//   passes IU-weighted sums: each eligible record contributes its impact_units_total
+//   to its primary_pillar bucket. Blocked/limited records contribute 0 IU → excluded.
 //
 // Design invariants:
-//   - No PII. No individual worker data. Aggregate pillar counts only.
+//   - No PII. No individual worker data. Aggregate pillar IU sums only.
 //   - Deterministic. No Math.random. No external calls.
-//   - Falls back to 50 (insufficient_data) when pillarDistribution is null/empty.
+//   - Falls back to insufficient_data when pillarDistribution is null or all-zero IU.
 //   - Score ceiling: uniform 5-pillar → EQUITY ≈ 100. Single-pillar → ≈ 12.
 //   - 90+ requires multi-pillar coverage AND good balance.
 
@@ -24,20 +24,28 @@ const PILLAR_CODES: readonly Pillar[] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT
 const TOTAL_PILLARS = 5;
 
 // A pillar is "covered" (contributes to PC) if it meets either threshold.
-// MIN_COUNT prevents single-event pillars in large batches from inflating PC.
-// MIN_SHARE ensures small companies with few total events still credit real coverage.
+// After Sprint 1 B-IU1, counts represent IU sums (not event counts).
+// MIN_COVERED_COUNT: minimum IU mass for a pillar to count as covered.
+// MIN_COVERED_SHARE: minimum share of total IU — handles small datasets with few records.
 const MIN_COVERED_COUNT = 2;
-const MIN_COVERED_SHARE = 0.05;  // 5% of total pillar events
+const MIN_COVERED_SHARE = 0.05;  // 5% of total IU
 
 export interface EquityScoreResult {
-  equityScore:          number;   // 0–100 — main output
-  pillarCoverageScore:  number;   // 0–100 — PC component (60% weight)
-  pillarBalanceScore:   number;   // 0–100 — PB component (40% weight)
+  /**
+   * @deprecated Diagnostic field — NOT used in the KORA Index.
+   * Computed as PC×0.60 + PB×0.40 (equity-engine internal formula).
+   * The KORA Index EQUITY macroblock uses the full formula:
+   *   EQW×0.30 + EQS×0.20 + PC×0.25 + PB×0.25 (kora-index-engine.ts).
+   * Use pillarCoverageScore and pillarBalanceScore individually instead.
+   */
+  equityScore:          number;   // 0–100 — legacy diagnostic, not used in KORA Index
+  pillarCoverageScore:  number;   // 0–100 — PC component (25% weight in KORA Index EQUITY)
+  pillarBalanceScore:   number;   // 0–100 — PB component (25% weight in KORA Index EQUITY)
   coveredPillars:       number;   // number of meaningfully covered pillars (0–5)
   coveredPillarCodes:   string[]; // which pillar codes are covered
   dominantPillar:       string;   // most represented pillar code
   dominantShare:        number;   // 0–1, share of dominant pillar in total events
-  totalPillarEvents:    number;   // total event count feeding this computation
+  totalPillarEvents:    number;   // total IU sum across all pillars (Sprint 1 B-IU1: IU sums, not event counts)
   reasonCodes:          string[];
   isInsufficientData:   boolean;
 }
@@ -56,10 +64,11 @@ const INSUFFICIENT: EquityScoreResult = {
 };
 
 /**
- * Compute EQUITY score from pillar event distribution.
+ * Compute EQUITY score from pillar IU distribution (Sprint 1 B-IU1+).
  *
- * Input comes from run-kora-pipeline Step 9 — counts of events per pillar,
- * including eligible and limited records (blocked → null pillar → excluded).
+ * Input comes from run-kora-pipeline Step 12 — IU sums per pillar from eligible records.
+ * Blocked and limited records contribute 0 IU → their primary_pillar is null → excluded.
+ * Returns INSUFFICIENT when pillarDistribution is null or all IU sums are zero.
  *
  * PC = covered/5 × 100
  * HHI = Σ(share_i²) over covered pillars
@@ -76,14 +85,14 @@ export function computeEquityScore(
     count: (pillarDistribution as Record<string, number>)[p] ?? 0,
   }));
 
-  const totalEvents = counts.reduce((s, c) => s + c.count, 0);
-  if (totalEvents === 0) return INSUFFICIENT;
+  const totalIU = counts.reduce((s, c) => s + c.count, 0);
+  if (totalIU === 0) return INSUFFICIENT;
 
   // ── Pillar Coverage ───────────────────────────────────────────────────────
-  // A pillar is covered if count ≥ MIN_COVERED_COUNT OR share ≥ MIN_COVERED_SHARE.
+  // A pillar is covered if IU ≥ MIN_COVERED_COUNT OR IU share ≥ MIN_COVERED_SHARE.
   const covered = counts.filter(c =>
     c.count >= MIN_COVERED_COUNT ||
-    (totalEvents > 0 && c.count / totalEvents >= MIN_COVERED_SHARE),
+    (totalIU > 0 && c.count / totalIU >= MIN_COVERED_SHARE),
   );
   const coveredTotal = covered.reduce((s, c) => s + c.count, 0);
 
@@ -110,7 +119,7 @@ export function computeEquityScore(
   // ── Dominant pillar ───────────────────────────────────────────────────────
   const sorted = [...counts].sort((a, b) => b.count - a.count);
   const dominant      = sorted[0];
-  const dominantShare = dominant.count / totalEvents;
+  const dominantShare = dominant.count / totalIU;
 
   // ── Reason codes ──────────────────────────────────────────────────────────
   const reasonCodes: string[] = [
@@ -133,7 +142,7 @@ export function computeEquityScore(
     coveredPillarCodes:   covered.map(c => c.code),
     dominantPillar:       dominant.code,
     dominantShare,
-    totalPillarEvents:    totalEvents,
+    totalPillarEvents:    totalIU,
     reasonCodes,
     isInsufficientData:   false,
   };

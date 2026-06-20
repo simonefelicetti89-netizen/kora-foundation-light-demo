@@ -7,6 +7,28 @@ import { adminPreviewService } from '@/services/admin-preview/AdminPreviewServic
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 // ─── Static GTM data ──────────────────────────────────────────────────────────
+// Numeri da seed canonici (data/synthetic/kora-index-outputs.json).
+// S2 (Meridiana post-intervento) = kora-index-outputs.json[1].
+// TODO(sprint3-seed): S2 Ferretti non ha voce seed — questa pagina usa Meridiana S2
+// come proxy di "post-intervento" finché il seed S2 Ferretti non viene creato.
+
+import koraOutputsRaw from '@/data/synthetic/kora-index-outputs.json';
+
+const _outputs = (koraOutputsRaw as { data: Array<Record<string, unknown>> }).data;
+const _s1 = _outputs[0]!;
+const _s2 = _outputs[1]!;
+
+function _cs(r: Record<string, unknown>): string { return `${Math.round((r['confidence_score'] as number) * 100)}%`; }
+function _ar(r: Record<string, unknown>): string {
+  const comps = r['components'] as Array<{ code: string; value: number }> | undefined;
+  const ar = comps?.find(c => c.code === 'AR')?.value ?? 0;
+  return `${Math.round(ar * 100)}%`;
+}
+function _mar(r: Record<string, unknown>): string {
+  const comps = r['components'] as Array<{ code: string; value: number }> | undefined;
+  const mar = comps?.find(c => c.code === 'MAR')?.value ?? 0;
+  return `${Math.round(mar * 100)}%`;
+}
 
 interface ScenarioCard {
   label: string;
@@ -19,32 +41,32 @@ interface ScenarioCard {
 
 const SCENARIO_S1: ScenarioCard = {
   label: 'S1 — Stato attuale',
-  safeguard: 'WARNING',
+  safeguard: _s1['safeguard_status'] as string,
   safeguardStyle: 'border-[rgba(217,154,43,0.30)] bg-[rgba(217,154,43,0.10)] text-[#8A5A00]',
   cardStyle: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)]',
   metrics: [
-    ['KORA Index',      '34'],
-    ['Confidence Score','60%'],
-    ['Activation Rate', '38%'],
-    ['MAR',             '22%'],
+    ['KORA Index',      String(_s1['kora_index_value'])],
+    ['Confidence Score', _cs(_s1)],
+    ['Activation Rate',  _ar(_s1)],
+    ['MAR',              _mar(_s1)],
     ['Activation Debt', '€45k'],
   ],
-  copy: "Activation Rate 38%, Activation Safeguard WARNING, KORA Index 34, Activation Debt €45k. Il valore people è concentrato su pochi gruppi e il bottom 50% resta poco attivato.",
+  copy: `Activation Rate ${_ar(_s1)}, Activation Safeguard ${_s1['safeguard_status']}, KORA Index ${_s1['kora_index_value']} — Foundation Light. Il valore people è concentrato su pochi gruppi e il bottom 50% resta poco attivato.`,
 };
 
 const SCENARIO_S2: ScenarioCard = {
   label: 'S2 — Post-intervento',
-  safeguard: 'CLEAR',
+  safeguard: _s2['safeguard_status'] as string,
   safeguardStyle: 'border-[rgba(47,125,85,0.28)] bg-[rgba(47,125,85,0.10)] text-[#2F7D55]',
   cardStyle: 'border-[rgba(47,125,85,0.20)] bg-[rgba(47,125,85,0.06)]',
   metrics: [
-    ['KORA Index',      '54'],
-    ['Confidence Score','72%'],
-    ['Activation Rate', '52%'],
-    ['MAR',             '38%'],
+    ['KORA Index',      String(_s2['kora_index_value'])],
+    ['Confidence Score', _cs(_s2)],
+    ['Activation Rate',  _ar(_s2)],
+    ['MAR',              _mar(_s2)],
     ['Activation Debt', 'ridotto'],
   ],
-  copy: "Activation Rate 52%, Activation Safeguard CLEAR, KORA Index 54, distribuzione più bilanciata e debito di attivazione ridotto.",
+  copy: `Activation Rate ${_ar(_s2)}, Activation Safeguard ${_s2['safeguard_status']}, KORA Index ${_s2['kora_index_value']} — Foundation Light. Distribuzione più bilanciata e debito di attivazione ridotto.`,
 };
 
 // isLive: step links to a live route — not accessible to DEMO_VIEWER (only KORA_ADMIN).

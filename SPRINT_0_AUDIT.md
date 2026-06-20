@@ -2,6 +2,8 @@
 **KORA Foundation Light v0.1 — Pre-Build Integrity Report**
 **Date:** 2026-05-25 | **Auditor:** Claude Code (claude-sonnet-4-6) | **Mode:** Read-only
 
+> **⚠️ DOCUMENTO STORICO — PRE-SPRINT1** — I numeri riportati in questo audit (Index 34/54, range doc25 42-52/60-68, CO/VR storici) si riferiscono al motore pre-Sprint1 con rebalance attivo. Non sono più canonici. I valori correnti sono quelli del motore v2.0 (Sprint 1+2): WEAK=30.73, AVERAGE=43.42, GOLDEN=52.53. Vedere `data/golden-path/README.md` e `KORA_DOCTRINE.md` per i valori aggiornati.
+
 ---
 
 ## EXECUTIVE SUMMARY

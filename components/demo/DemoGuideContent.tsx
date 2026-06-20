@@ -2,6 +2,21 @@ import Link from 'next/link';
 import { PipelineConnectorBanner } from '@/components/demo/PipelineConnectorBanner';
 import { WorkspaceSwitcher } from '@/components/demo/WorkspaceSwitcher';
 import { StakeholderPaths } from '@/components/demo/StakeholderPaths';
+import koraOutputsRaw from '@/data/synthetic/kora-index-outputs.json';
+
+// Numeri canonici da seed sintetici — NON hardcodare qui.
+const _outputs = (koraOutputsRaw as { data: Array<Record<string, unknown>> }).data;
+const _s1 = _outputs[0]!;
+const _s2 = _outputs[1]!;
+function _csStr(r: Record<string, unknown>) { return `${Math.round((r['confidence_score'] as number) * 100)}%`; }
+function _arStr(r: Record<string, unknown>) {
+  const c = r['components'] as Array<{ code: string; value: number }> | undefined;
+  return `${Math.round((c?.find(x => x.code === 'AR')?.value ?? 0) * 100)}%`;
+}
+function _marStr(r: Record<string, unknown>) {
+  const c = r['components'] as Array<{ code: string; value: number }> | undefined;
+  return `${Math.round((c?.find(x => x.code === 'MAR')?.value ?? 0) * 100)}%`;
+}
 
 const DEMO_12_MIN: {
   step: number;
@@ -488,7 +503,7 @@ export function DemoGuideContent() {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
-              {[['KORA Index', '34'], ['Confidence', '60%'], ['Attivazione', '38%'], ['Significativa', '22%']].map(([l, v]) => (
+              {([['KORA Index', String(_s1['kora_index_value'])], ['Confidence', _csStr(_s1)], ['Attivazione', _arStr(_s1)], ['Significativa', _marStr(_s1)]] as [string,string][]).map(([l, v]) => (
                 <div key={l} className="text-xs">
                   <span className="text-[rgba(6,3,43,0.52)]">{l}</span>
                   <span className="font-bold text-[rgba(6,3,43,0.90)] ml-1.5">{v}</span>
@@ -509,7 +524,7 @@ export function DemoGuideContent() {
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-3">
-              {[['KORA Index', '54'], ['Confidence', '72%'], ['Attivazione', '52%'], ['Significativa', '38%']].map(([l, v]) => (
+              {([['KORA Index', String(_s2['kora_index_value'])], ['Confidence', _csStr(_s2)], ['Attivazione', _arStr(_s2)], ['Significativa', _marStr(_s2)]] as [string,string][]).map(([l, v]) => (
                 <div key={l} className="text-xs">
                   <span className="text-[rgba(6,3,43,0.52)]">{l}</span>
                   <span className="font-bold text-[rgba(6,3,43,0.90)] ml-1.5">{v}</span>

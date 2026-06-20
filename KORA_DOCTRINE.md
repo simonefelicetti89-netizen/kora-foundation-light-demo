@@ -253,12 +253,16 @@ The TypeScript contract for this doctrine is in:
 **Important:** Department "Operations" and Site "Plant Bergamo" largely coincide (both ~90 workers, both with low AR). They are NOT the same dimension but they describe the same operational reality. Disambiguate in copy when needed.
 
 #### Scenario S1 — Baseline (default scenario)
+
+> **Regime: Foundation Light v2.0** — dati per-programma. EQW + EQS = insufficient_data (equità tra persone non ancora misurabile senza dati per-lavoratore). EQUITY plafonata strutturalmente ≤ 50. NM (sforzo/attualità/ripetizione) gira neutro finché l'intake non porta hours/event_date/repetition_count (voce P1 BACKLOG).
+> Potenziale stimato in Pilot+ (dati per-lavoratore): ~38/100 — stima provvisoria, da validare sui pilota.
+
 ```yaml
-kora_index: 34          # /100
+kora_index: 34          # /100 — Foundation Light v2.0 (motore Sprint 1+2)
 confidence_score: 60    # %, EXTERNAL, weight 0
 activation_safeguard: WARNING
 
-# Components (analytical, fed into macroblocks):
+# Components (scenario narrative — input al motore):
 AR:  38  # Activation Rate
 MAR: 22  # Meaningful Activation Rate
 NI:  41  # Normalized Intensity
@@ -269,10 +273,10 @@ PC:  60  # Pillar Coverage
 PB:  34  # Pillar Balance
 EQ:  38  # Equity
 
-# Macroblocks (computed):
-reach:   30  # Activation Reach
-quality: 37  # Activation Quality
-equity:  40  # Distribution & Equity
+# Macroblocks (v2.0 — IU-centric, EQW/EQS insufficient_data):
+reach:   30  # Activation Reach   — AR×50% + MAR×50%
+quality: 37  # Activation Quality — EVQ/INT/CONT (IU-centric, fonte dati per-programma)
+equity:  40  # Distribution & Equity — EQW=0(insuff.), EQS=0(insuff.), PC+PB attivi
 bti:     28  # Budget-to-Human-Impact
 
 # Worker concentration:
@@ -301,8 +305,12 @@ blocked_records:   318
 ```
 
 #### Scenario S2 — Improved (labeled explicitly)
+
+> **Regime: Foundation Light v2.0** — stesso regime S1. EQW + EQS ancora insufficient_data.
+> Potenziale stimato in Pilot+: ~51/100 — stima provvisoria, da validare sui pilota.
+
 ```yaml
-kora_index: 54          # /100
+kora_index: 54          # /100 — Foundation Light v2.0
 confidence_score: 72    # %
 activation_safeguard: CLEAR
 
@@ -310,7 +318,7 @@ AR:  52
 MAR: 38
 NI:  57
 
-# Macroblocks:
+# Macroblocks (v2.0):
 reach:   45
 quality: 54
 equity:  60

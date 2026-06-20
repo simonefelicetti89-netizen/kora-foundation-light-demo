@@ -19,10 +19,12 @@ import { isRawUploadedRecord } from './pillar-mapping';
 
 const ENGINE_SOURCE = 'ComponentEngine_v2.0';
 
-// ── Evidence level weight table ───────────────────────────────────────────────
-// Maps the short evidence level codes stored in UEF record payloads to weights.
+// ── Evidence level weight table — COMPONENT SIGNAL SCALE ────────────────────
+// Used ONLY for NI (evidence-weighted diagnostic) and VR (verification rate).
+// NOT used in the IU formula — the IU EV factor has its own separate scale in
+// IUComputationService.ts (EV_BY_EVIDENCE_TYPE). The two scales share L-code
+// vocabulary but assign different weights to L0/L1 by design. Do not merge them.
 // L4_VERIFIED_EVIDENCE is treated as L3 weight (same tier for v0.1).
-// Evidence levels follow the BTI engine's tier definitions.
 
 const EVIDENCE_WEIGHTS: Record<string, number> = {
   L0: 0.25, L0_NO_EVIDENCE: 0.25,
@@ -317,20 +319,28 @@ export function computeEQw(
 }
 
 // ── EQS — Equity Segments (Sprint 1 v2.0) ────────────────────────────────────
-// (1 − CoV) × 100 on ACTIVATION RATES per segment (participants / headcount).
-// Requires per-dept headcount. Falls back to insufficient_data when absent.
-// deptRates: { [dept]: { participants: number; headcount: number } }
+// (1 − CoV) × 100 on ACTIVATION RATES per segment.
+// Canonical formula: activation_rate_g = activeUniqueWorkers_g / headcount_g
+//
+// deptRates: { [dept]: { activeUniqueWorkers: number; headcount: number } }
+//   activeUniqueWorkers: confirmed unique active workers in this group — NOT a raw participation
+//   sum across program records. Providing a participation sum here violates the formula and
+//   introduces cross-department bias.
+//
+// Returns insufficient_data when:
+//   - deptRates is null (no numerator available)
+//   - fewer than 2 segments with headcount > 0
 // NON usare conteggi grezzi come fallback — insufficient_data è il risultato corretto.
 
 export function computeEQs(
-  deptRates: Record<string, { participants: number; headcount: number }> | null,
+  deptRates: Record<string, { activeUniqueWorkers: number; headcount: number }> | null,
 ): { eqs: number; eqsStatus: ComponentStatus; eqsSource: string } {
   if (!deptRates) {
     return { eqs: 0, eqsStatus: 'insufficient_data', eqsSource: 'no_headcount' };
   }
   const rates = Object.values(deptRates)
     .filter(d => d.headcount > 0)
-    .map(d => Math.min(1, d.participants / d.headcount));
+    .map(d => Math.min(1, d.activeUniqueWorkers / d.headcount));
 
   if (rates.length < 2) {
     return { eqs: 0, eqsStatus: 'insufficient_data', eqsSource: 'insufficient_segments' };

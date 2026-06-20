@@ -15,6 +15,8 @@ import { RecoveryHashHandler } from '@/components/auth/RecoveryHashHandler';
 import { PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 import { PACKAGES } from '@/lib/landing/packages';
 import styles from './landing.module.css';
+import koraOutputsRaw   from '@/data/synthetic/kora-index-outputs.json';
+import koraAggregatesRaw from '@/data/synthetic/company-aggregates.json';
 
 const LANDING_NAV_LINKS = [
   { label: 'Il problema',       href: '#problema' },
@@ -23,27 +25,46 @@ const LANDING_NAV_LINKS = [
   { label: 'Foundation Light',  href: '#pilot'    },
 ];
 
-// ── Numeri canonici — single source of truth (scenario S1, Meridiana Group) ──
-// Fonte: lib/scoring-result + data/synthetic/kora-index-outputs.json
-// Se/quando demo-tenants.ts esisterà, importare da lì.
+// ── Numeri canonici — letti dai seed sintetici (fonte canonica unica) ──────
+// Scenario S1 · Meridiana Group — Foundation Light v2.0.
+// Per aggiornare i numeri: rigenera data/synthetic/kora-index-outputs.json
+// e data/synthetic/company-aggregates.json. NON modificare qui.
+
+const _s1Idx = (koraOutputsRaw  as { data: Array<Record<string, unknown>> }).data[0]!;
+const _s1Agg = (koraAggregatesRaw as { data: Array<Record<string, unknown>> }).data[0]!;
+
+function _mbScore(code: string): number {
+  const mbs = _s1Idx['macroblocks'] as Array<{ code: string; score: number; weight: number }> | undefined;
+  return mbs?.find(m => m.code === code)?.score ?? 0;
+}
+function _mbWeight(code: string): number {
+  const mbs = _s1Idx['macroblocks'] as Array<{ code: string; score: number; weight: number }> | undefined;
+  return Math.round((mbs?.find(m => m.code === code)?.weight ?? 0) * 100);
+}
+function _pillarShare(code: string): number {
+  const pd = _s1Agg['pillar_distribution'] as Record<string, number> | undefined;
+  return Math.round((pd?.[code] ?? 0) * 100);
+}
+
 const CANONICAL = {
-  koraIndex:   34,     // KORA Index v1.0 · S1
-  confidence:  60,     // Confidence Score (esterno · peso = 0)
-  safeguard:   'WARNING',
+  koraIndex:  _s1Idx['kora_index_value'] as number,
+  confidence: Math.round((_s1Idx['confidence_score'] as number) * 100),
+  safeguard:  _s1Idx['safeguard_status'] as string,
+  regime:     'Foundation Light',
   macroblocks: {
-    reach:   { label: 'Activation Reach',      weight: 25, score: 30 },
-    quality: { label: 'Activation Quality',    weight: 30, score: 37 },
-    equity:  { label: 'Distribution & Equity', weight: 25, score: 40 },
-    bti:     { label: 'Budget-to-Human-Impact', weight: 20, score: 28 },
+    reach:   { label: 'Activation Reach',       weight: _mbWeight('REACH'),   score: _mbScore('REACH')   },
+    quality: { label: 'Activation Quality',     weight: _mbWeight('QUALITY'), score: _mbScore('QUALITY') },
+    equity:  { label: 'Distribution & Equity',  weight: _mbWeight('EQUITY'),  score: _mbScore('EQUITY')  },
+    bti:     { label: 'Budget-to-Human-Impact', weight: _mbWeight('BTI'),     score: _mbScore('BTI')     },
   },
   pillars: [
-    { code: 'LIFE',       share: 44, desc: 'Salute, prevenzione, supporto psicologico, benessere, nutrizione.' },
-    { code: 'GROWTH',     share: 27, desc: 'Formazione, competenze, sviluppo professionale, upskilling digitale.' },
-    { code: 'CONNECTION', share: 12, desc: 'Mentoring, peer support, community interne, coesione di team.' },
-    { code: 'IMPACT',     share: 11, desc: 'Volontariato, progetti sociali, iniziative ambientali, territorio.' },
-    { code: 'LEGACY',     share:  6, desc: 'Trasferimento di conoscenza, mentoring senior-junior, futuro, pensione.' },
+    { code: 'LIFE',       share: _pillarShare('LIFE'),       desc: 'Salute, prevenzione, supporto psicologico, benessere, nutrizione.' },
+    { code: 'GROWTH',     share: _pillarShare('GROWTH'),     desc: 'Formazione, competenze, sviluppo professionale, upskilling digitale.' },
+    { code: 'CONNECTION', share: _pillarShare('CONNECTION'), desc: 'Mentoring, peer support, community interne, coesione di team.' },
+    { code: 'IMPACT',     share: _pillarShare('IMPACT'),     desc: 'Volontariato, progetti sociali, iniziative ambientali, territorio.' },
+    { code: 'LEGACY',     share: _pillarShare('LEGACY'),     desc: 'Trasferimento di conoscenza, mentoring senior-junior, futuro, pensione.' },
   ],
-} as const;
+};
 
 // ── NOTA PILLAR COLOR DISCREPANCY ────────────────────────────────────────────
 // L'HTML di riferimento usa: LIFE=#4A7FE0 (blu), GROWTH=#C76F3D (terra),

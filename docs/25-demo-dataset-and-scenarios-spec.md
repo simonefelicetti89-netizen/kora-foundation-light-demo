@@ -97,8 +97,8 @@ The synthetic dataset must support six parallel narratives simultaneously. Each 
 | reporting_period | Q1–Q4 2025 (Scenario 1: Q1–Q3 as baseline; Scenario 2: Q1–Q4 improved) |
 | welfare_budget_EUR | ~280,000 |
 | KORA_status | Foundation Light (Access → Foundation Light upgrade path) |
-| expected_KORA_Index | Scenario 1: 42–52 · Scenario 2: 60–68 |
-| expected_confidence | Scenario 1: 55–65% · Scenario 2: 72–82% |
+| expected_KORA_Index | **Foundation Light v2.0**: S1 ≈ 34 (scenario), S2 ≈ 54 (scenario) — regime FL, EQW/EQS insufficient_data. CSV fixture: WEAK=30.73, AVERAGE=43.42. Pilot+ stimato: S1≈38, S2≈51 (stima provvisoria). Valori pre-Sprint1 42–52/60–68 non più canonici. |
+| expected_confidence | Scenario 1: 60% · Scenario 2: 72% (Foundation Light v2.0) |
 | expected_KORA_contribution | Scenario 1: Low (0.12–0.22) · Scenario 2: Moderate (0.38–0.52) |
 | main_warning | Participation concentration — top 12% generating 64% of IU. Operations under-activated. CONNECTION and LEGACY pillars underdeveloped. Low VR. Low CO. |
 | activation_safeguard | Scenario 1: WARNING (AR=0.38, MAR=0.22) · Scenario 2: CLEAR (AR=0.52, MAR=0.38) |

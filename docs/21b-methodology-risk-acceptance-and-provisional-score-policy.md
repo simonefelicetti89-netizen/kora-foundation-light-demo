@@ -5,6 +5,8 @@
 *Status: Founder-Approved — v1.0*
 *Date: 2026-05-17*
 
+> **Nota Sprint 3 v2.0**: il baseline di stress test citato nel documento (AR=90%, MAR=60%, KORA Index=68.6) è un riferimento di calibrazione delle soglie Safeguard, prodotto dal motore pre-Sprint1. I valori assoluti non sono più canonici per Foundation Light v2.0 (scala strutturalmente più bassa con EQW/EQS insufficient_data). Le soglie Safeguard (CLEAR/WARNING/FLAGGED) e la logica qualitativa restano invariate e valide.
+
 ---
 
 ## 1. Purpose

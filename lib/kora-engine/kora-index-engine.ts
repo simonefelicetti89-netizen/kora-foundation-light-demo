@@ -32,7 +32,7 @@ import type {
   Pillar,
 } from './types';
 import type { ImpactUnitComputationResult } from '@/lib/types';
-import { getMacroblockWeights, getMethodologyVersion, getIntTarget } from '@/lib/methodology-config/v0.1';
+import { getMacroblockWeights, getMethodologyVersion, getIntTarget, getQualityComponentWeights, getEquityComponentWeights } from '@/lib/methodology-config/v0.1';
 import { computeEquityScore } from './equity-engine';
 import { computeEQw, computeEQs } from './component-engine';
 
@@ -49,6 +49,8 @@ function computeQuality(
   totalIU: number,
   activeWorkers: number,
   intTarget: number,
+  // Weights come from methodology-config — single source of truth, never hardcoded here.
+  weights: { evq: number; int: number; cont: number },
 ): {
   score: number;
   evqVal: number; evqStatus: ComponentStatus;
@@ -58,7 +60,7 @@ function computeQuality(
   warnings: string[];
 } {
   const warnings: string[] = [];
-  const W_EVQ = 0.34, W_INT = 0.33, W_CONT = 0.33;
+  const W_EVQ = weights.evq, W_INT = weights.int, W_CONT = weights.cont;
 
   // EVQ: participant-weighted average evidence strength (0–1 from componentSignals.ni)
   const evqAvail = signals?.niStatus === 'computed';
@@ -96,7 +98,7 @@ function computeQuality(
     evqVal, evqStatus: evqAvail ? 'computed' : 'insufficient_data',
     intVal, intStatus,
     contVal, contStatus: contAvail ? 'computed' : 'insufficient_data',
-    weightsUsed: { evq: W_EVQ, int: W_INT, cont: W_CONT },
+    weightsUsed: weights,
     warnings,
   };
 }
@@ -112,17 +114,23 @@ function computeEquityMacroblock(
   activation: ActivationResult,
   pillarDistribution: Record<Pillar, number> | undefined,
   perWorkerIU: number[] | null,
+  deptRates: Record<string, { activeUniqueWorkers: number; headcount: number }> | null,
+  // Weights come from methodology-config — single source of truth, never hardcoded here.
+  weights: { eqw: number; eqs: number; pc: number; pb: number },
+  eqsSourceHint?: string,
 ): {
   score: number;
   eqwVal: number; eqwStatus: ComponentStatus;
-  eqsVal: number; eqsStatus: ComponentStatus;
+  eqsVal: number; eqsStatus: ComponentStatus; eqsSource: string;
   pcVal: number;  pcStatus: ComponentStatus;
   pbVal: number;  pbStatus: ComponentStatus;
   weightsUsed: { eqw: number; eqs: number; pc: number; pb: number };
   warnings: string[];
+  auditNotes: string[];
 } {
   const warnings: string[] = [];
-  const W_EQW = 0.30, W_EQS = 0.20, W_PC = 0.25, W_PB = 0.25;
+  const auditNotes: string[] = [];
+  const W_EQW = weights.eqw, W_EQS = weights.eqs, W_PC = weights.pc, W_PB = weights.pb;
 
   // PC and PB from IU-weighted pillarDistribution
   const equityResult = computeEquityScore(pillarDistribution ?? null);
@@ -143,18 +151,43 @@ function computeEquityMacroblock(
       'EQUITY: EQW (Equity Workers) insufficient_data — record IU per-lavoratore non disponibili. ' +
       'Disponibile in Pilot+ con My KORA participation confirmation.',
     );
+    auditNotes.push(
+      'EQ_w unavailable: worker-level IU distribution not available. No weight redistribution applied.',
+    );
   }
 
-  // EQS: CoV of dept activation rates
-  // Foundation Light: departmentGaps stores participant COUNTS, not rates.
-  // Per-dept headcount not in current model → EQS = insufficient_data.
-  // When headcount per dept is provided in intake, pass deptRates here.
-  const { eqs, eqsStatus } = computeEQs(null);
+  // EQS: CoV of dept activation rates using workforce denominators.
+  // deptRates = { [dept]: { activeUniqueWorkers, headcount } } — built by pipeline from
+  // uniqueActiveWorkersByDept (explicit unique active workers) + workforce baseline headcounts.
+  // NON usare conteggi grezzi come fallback: se deptRates è null, EQS = insufficient_data.
+  const { eqs, eqsStatus, eqsSource: eqsSourceFromEngine } = computeEQs(deptRates);
+  // If the pipeline determined a precise reason for unavailability, use it; otherwise
+  // fall back to what computeEQs could determine from its inputs alone.
+  const eqsSource = (eqsStatus === 'insufficient_data' && eqsSourceHint)
+    ? eqsSourceHint
+    : eqsSourceFromEngine;
   const eqsVal = eqs * 100;
   if (eqsStatus === 'insufficient_data') {
     warnings.push(
       'EQUITY: EQS (Equity Segments) insufficient_data — organico per reparto non disponibile. ' +
       'Includere headcount per reparto nel file di intake per abilitare questo componente.',
+    );
+    if (deptRates === null) {
+      auditNotes.push(
+        'EQ_s unavailable: active unique workers by department/site are missing. ' +
+        'Raw participant counts were not used because they measure total program participations ' +
+        'per segment, not unique active workers per segment. ' +
+        'The canonical formula requires active_unique_workers_g / workforce_g.',
+      );
+    } else {
+      auditNotes.push(
+        'EQ_s unavailable: workforce denominators provided but fewer than 2 segments met threshold. ' +
+        'No weight redistribution applied.',
+      );
+    }
+  } else {
+    auditNotes.push(
+      'EQ_s computed from group activation rates using workforce denominators.',
     );
   }
 
@@ -169,15 +202,16 @@ function computeEquityMacroblock(
   return {
     score,
     eqwVal, eqwStatus,
-    eqsVal, eqsStatus,
+    eqsVal, eqsStatus, eqsSource,
     pcVal,  pcStatus,
     pbVal,  pbStatus,
     weightsUsed: { eqw: W_EQW, eqs: W_EQS, pc: W_PC, pb: W_PB },
     warnings,
+    auditNotes,
   };
 }
 
-// ── Main engine ───────────────────────────────────────────────────────────────
+// ── Main engine ──────────────────────────────────────────────────────────────
 
 export function computeKoraIndex(params: {
   bti: BTIResult;
@@ -187,14 +221,28 @@ export function computeKoraIndex(params: {
   confidenceScore?: number;
   componentSignals?: ComponentSignals;
   iuResults?: ImpactUnitComputationResult[];
+  /** Per-dept unique active worker counts and headcounts for EQS.
+   *  null = no unique active worker counts → EQS = insufficient_data.
+   *  Must NOT be built from activation.departmentGaps (raw participation sums). */
+  deptRates?: Record<string, { activeUniqueWorkers: number; headcount: number }> | null;
+  /** Precise reason for EQS unavailability, determined by the pipeline where both inputs are
+   *  visible. If set, overrides the default source returned by computeEQs for null deptRates.
+   *  Values: 'no_group_equity_inputs' | 'no_workforce_denominators' |
+   *          'no_unique_active_workers_by_group' */
+  eqsUnavailableSource?: string;
 }): KoraIndexResult {
   const {
     bti, activation, eligibilitySummary,
     pillarDistribution, confidenceScore = 0,
     componentSignals, iuResults,
+    deptRates = null,
+    eqsUnavailableSource,
   } = params;
   const warnings: string[] = [];
   const weights = getMacroblockWeights();
+  // Within-macroblock component weights — read from config, single source of truth.
+  const qualityWeights = getQualityComponentWeights();
+  const equityWeights  = getEquityComponentWeights();
 
   // Precompute IU totals from iuResults (only computed records)
   const totalIU = iuResults
@@ -223,14 +271,16 @@ export function computeKoraIndex(params: {
     totalIU,
     activation.activeWorkers,
     intTarget,
+    qualityWeights,
   );
   const activationQuality = qualityResult.score;
   warnings.push(...qualityResult.warnings);
 
   // ── Macroblock 3: Distribution & Equity (EQUITY, 25%) — v2.0 B-EQ1 ────────
-  const equityResult = computeEquityMacroblock(activation, pillarDistribution, perWorkerIU);
+  const equityResult = computeEquityMacroblock(activation, pillarDistribution, perWorkerIU, deptRates, equityWeights, eqsUnavailableSource);
   const distributionEquity = equityResult.score;
   warnings.push(...equityResult.warnings);
+  warnings.push(...equityResult.auditNotes.map(n => `[AUDIT] ${n}`));
 
   // ── Macroblock 4: Budget-to-Human-Impact (BTI, 20%) ───────────────────────
   const budgetToHumanImpact = bti.btiScore;
@@ -290,6 +340,7 @@ export function computeKoraIndex(params: {
     eqwStatus: equityResult.eqwStatus,
     eqs:       equityResult.eqsVal   / 100,  // store as 0–1
     eqsStatus: equityResult.eqsStatus,
+    eqsSource: equityResult.eqsSource,
     pc:        equityResult.pcVal,            // store as 0–100
     pcStatus:  equityResult.pcStatus,
     pb:        equityResult.pbVal,            // store as 0–100

@@ -342,37 +342,40 @@ Dopo il Golden Path completato, il tenant `ACME-TST` deve mostrare:
 
 ## Interpretare il punteggio Golden Path
 
-### Bande di interpretazione del KORA Index
+### Bande di interpretazione del KORA Index (v2.0)
 
-Dopo lo scoring, il Decision Pack riporta un valore numerico del KORA Index. Queste bande orientative aiutano a contestualizzarlo:
+Soglie definite in `data/methodology/methodology-config.json["score_bands"]` (fonte canonica).
+Orientative e non sostitutive dell'analisi contestuale di CS + Safeguard + regime.
 
-| KORA Index | Banda | Descrizione sintetica |
+| KORA Index | Banda | Note regime Foundation Light |
 |---|---|---|
-| < 35 | **Weak Activation** | Attivazione debole — pochi programmi eligible, evidence L1, copertura pillar ridotta |
-| 35–50 | **Early Activation** | Attivazione iniziale — base presente ma limitata per coverage, evidence quality o reach |
-| 50–65 | **Solid Foundation** | Fondamenta solide — attivazione significativa su più pillar con evidence documentata |
-| 65–75 | **Advanced Activation** | Attivazione avanzata — alta copertura, multi-pillar, evidence verificata, BTI equilibrato |
-| > 75 | **Leading Maturity** | Maturità leader — attivazione profonda su tutti i pillar, evidence verificata, BTI ottimale |
+| 0–30 | **Attivazione debole** | Bassa activation density o Safeguard FLAGGED |
+| 30–45 | **Attivazione iniziale** | EQW/EQS assenti → tetto FL ≈ 62. Tipico per aziende medie con dati per-programma |
+| 45–60 | **In sviluppo** | QUALITY dipende da INT: bassa se pochi worker attivi su forza lavoro grande |
+| 60–75 | **Solida** | Raggiungibile in FL con alta activation density o forza lavoro piccola |
+| 75–100 | **Matura / leader** | Praticabile in Pilot+ con EQW+EQS attivi. Non accessibile in FL strutturalmente |
 
 > **Disclaimer**: le bande sono stime tecniche in fase `pre_empirical_calibration`. Le soglie sono provvisorie e soggette a revisione dopo la calibrazione empirica (Delphi Study). Non rappresentano benchmark di settore validati.
 
 ### Cosa leggere sempre insieme al KORA Index
 
-- **Confidence Score (CS)**: affidabilità del dato. Un KORA Index 68 con CS 40% è molto meno solido di un 65 con CS 85%.
+- **Confidence Score (CS)**: affidabilità del dato. Un KORA Index 60 con CS 40% è molto meno solido di un 55 con CS 80%.
 - **Activation Safeguard**: CLEAR / WARNING / FLAGGED. Un punteggio alto con Safeguard FLAGGED segnala un'anomalia strutturale (AR o MAR sotto soglia).
+- **Regime (Foundation Light / Pilot+)**: in FL il KORA Index non può superare strutturalmente ≈62. Ogni numero va etichettato con il regime.
 - **`calibration_status = pre_empirical_calibration`**: label non sopprimibile — il punteggio è diagnostico, non certificato.
+- **NM**: sforzo/attualità/ripetizione girando neutro (=1.0) finché l'intake non porta `hours`, `event_date`, `b6_repetition_count` (voce P1 BACKLOG).
 
-### Dataset di calibrazione disponibili
+### Dataset di calibrazione disponibili (motore v2.0 — Foundation Light)
 
-I range sono **verificati con il motore reale** (B108-B smoke test). Non sono target dichiarati, ma risultati riproducibili.
+Output deterministici verificati da `runKoraPipeline` (b108b-score-smoke-test). Non sono target dichiarati.
 
-| File | Scenario | KORA Index verificato | Score band | workforcePopulation |
-|---|---|---|---|---|
-| `kora_weak_company_upload.csv` | Azienda debole | **35–50** (engine: 42.4) | Early Activation | 100 |
-| `kora_average_company_upload.csv` | Azienda media | **52–65** (engine: 59.3) | Solid Foundation | 150 |
-| `kora_golden_path_upload.csv` | Golden path | **65–75** (engine: 69.1) | Advanced Activation | 300 |
+| File | Scenario | KORA Index v2.0 | Banda | CS | Safeguard |
+|---|---|---|---|---|---|
+| `kora_weak_company_upload.csv` | Azienda debole | **30.73** | Attivazione debole | 69 | FLAGGED |
+| `kora_average_company_upload.csv` | Azienda media | **43.42** | Attivazione iniziale | 73 | CLEAR |
+| `kora_golden_path_upload.csv` | Golden path | **52.53** | In sviluppo | 76 | CLEAR |
 
-> Nota: EQUITY è sistematicamente più alto del previsto nei CSV senza colonne dipartimento/sede. WB e EQ risultano `insufficient_data` → redistribuiscono pesi a PC e PB, che sono alti quando i pillar sono ben distribuiti. Questo alza tutti e tre i punteggi rispetto a stime iniziali. È comportamento atteso del motore.
+> Nota strutturale v2.0: EQW e EQS = `insufficient_data` nei CSV senza dati per-lavoratore → contribuiscono 0 (tetto, non redistribuzione). Il rebalance dei pesi è stato rimosso in Sprint 1 IU-centric. EQUITY non viene gonfiata artificialmente.
 
 Vedi `data/golden-path/README.md` per struttura, eligibility attesa e note metodologiche per ciascun dataset.
 

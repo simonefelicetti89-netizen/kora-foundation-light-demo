@@ -189,53 +189,60 @@ describe('B108 — SCORE_BANDS constant structure', () => {
   });
 });
 
+// Bande v2.0 (da methodology-config.json — fonte canonica):
+// 0–30 weak · 30–45 early · 45–60 developing · 60–75 solid · 75–101 leading
+
 describe('B108 — getScoreBand()', () => {
-  it('score 20 → Weak Activation', () => {
+  it('score 20 → weak (0–30)', () => {
     expect(getScoreBand(20).key).toBe('weak');
   });
 
-  it('score 42 → Early Activation', () => {
+  it('score 29 → weak (sotto soglia 30)', () => {
+    expect(getScoreBand(29).key).toBe('weak');
+  });
+
+  it('score 42 → early (30–45)', () => {
     expect(getScoreBand(42).key).toBe('early');
   });
 
-  it('score 57 → Solid Foundation', () => {
-    expect(getScoreBand(57).key).toBe('solid');
+  it('score 57 → developing (45–60)', () => {
+    expect(getScoreBand(57).key).toBe('developing');
   });
 
-  it('score 68 → Advanced Activation', () => {
-    expect(getScoreBand(68).key).toBe('advanced');
+  it('score 68 → solid (60–75)', () => {
+    expect(getScoreBand(68).key).toBe('solid');
   });
 
-  it('score 80 → Leading Maturity', () => {
+  it('score 80 → leading (75–100)', () => {
     expect(getScoreBand(80).key).toBe('leading');
   });
 
-  it('score 0 → Weak Activation', () => {
+  it('score 0 → weak', () => {
     expect(getScoreBand(0).key).toBe('weak');
   });
 
-  it('score 100 → Leading Maturity', () => {
+  it('score 100 → leading', () => {
     expect(getScoreBand(100).key).toBe('leading');
   });
 
-  it('boundary 35 → Early Activation (inclusive)', () => {
-    expect(getScoreBand(35).key).toBe('early');
+  it('boundary 30 → early (primo punto early, incluso)', () => {
+    expect(getScoreBand(30).key).toBe('early');
   });
 
-  it('boundary 50 → Solid Foundation (inclusive)', () => {
-    expect(getScoreBand(50).key).toBe('solid');
+  it('boundary 45 → developing (primo punto developing, incluso)', () => {
+    expect(getScoreBand(45).key).toBe('developing');
   });
 
-  it('boundary 65 → Advanced Activation (inclusive)', () => {
-    expect(getScoreBand(65).key).toBe('advanced');
+  it('boundary 60 → solid (primo punto solid, incluso)', () => {
+    expect(getScoreBand(60).key).toBe('solid');
   });
 
-  it('boundary 75 → Leading Maturity (inclusive)', () => {
+  it('boundary 75 → leading (primo punto leading, incluso)', () => {
     expect(getScoreBand(75).key).toBe('leading');
   });
 
   it('returns Italian label for each band', () => {
-    const bands = [0, 40, 55, 70, 80].map(s => getScoreBand(s));
+    const bands = [10, 35, 52, 67, 80].map(s => getScoreBand(s));
     bands.forEach(b => {
       expect(typeof b.labelIt).toBe('string');
       expect(b.labelIt.length).toBeGreaterThan(3);

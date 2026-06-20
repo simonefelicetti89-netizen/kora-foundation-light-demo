@@ -180,7 +180,7 @@ describe('Methodology v2.0 — EQS (CoV on activation rates, computeEQs)', () =>
   });
 
   it('EQS = insufficient_data with only 1 segment (CoV requires ≥2)', () => {
-    const { eqs, eqsStatus } = computeEQs({ 'dept-solo': { participants: 10, headcount: 20 } });
+    const { eqs, eqsStatus } = computeEQs({ 'dept-solo': { activeUniqueWorkers: 10, headcount: 20 } });
     expect(eqsStatus).toBe('insufficient_data');
     expect(eqs).toBe(0);
   });
@@ -188,9 +188,9 @@ describe('Methodology v2.0 — EQS (CoV on activation rates, computeEQs)', () =>
   it('EQS = 1.0 for perfectly equal activation rates across segments', () => {
     // CoV = 0 when all rates are identical → EQS = (1 - 0) = 1.0 (0-1 scale)
     const { eqs, eqsStatus } = computeEQs({
-      'dept-a': { participants: 10, headcount: 20 }, // rate = 0.50
-      'dept-b': { participants: 15, headcount: 30 }, // rate = 0.50
-      'dept-c': { participants: 5,  headcount: 10 }, // rate = 0.50
+      'dept-a': { activeUniqueWorkers: 10, headcount: 20 }, // rate = 0.50
+      'dept-b': { activeUniqueWorkers: 15, headcount: 30 }, // rate = 0.50
+      'dept-c': { activeUniqueWorkers: 5,  headcount: 10 }, // rate = 0.50
     });
     expect(eqsStatus).toBe('computed');
     expect(eqs).toBeCloseTo(1.0, 2);
@@ -198,12 +198,12 @@ describe('Methodology v2.0 — EQS (CoV on activation rates, computeEQs)', () =>
 
   it('EQS is lower for unequal activation rates', () => {
     const { eqs: eqsEqual } = computeEQs({
-      'dept-a': { participants: 10, headcount: 20 }, // 50%
-      'dept-b': { participants: 10, headcount: 20 }, // 50%
+      'dept-a': { activeUniqueWorkers: 10, headcount: 20 }, // 50%
+      'dept-b': { activeUniqueWorkers: 10, headcount: 20 }, // 50%
     });
     const { eqs: eqsUnequal } = computeEQs({
-      'dept-a': { participants: 18, headcount: 20 }, // 90%
-      'dept-b': { participants: 2,  headcount: 20 }, // 10%
+      'dept-a': { activeUniqueWorkers: 18, headcount: 20 }, // 90%
+      'dept-b': { activeUniqueWorkers: 2,  headcount: 20 }, // 10%
     });
     expect(eqsEqual).toBeGreaterThan(eqsUnequal);
   });
@@ -211,8 +211,8 @@ describe('Methodology v2.0 — EQS (CoV on activation rates, computeEQs)', () =>
   it('EQS excludes segments without headcount (headcount = 0)', () => {
     // Segment with headcount = 0 must be excluded, not treated as rate = 0
     const { eqs, eqsStatus } = computeEQs({
-      'dept-valid':   { participants: 10, headcount: 20 }, // valid
-      'dept-no-head': { participants: 5,  headcount: 0  }, // excluded
+      'dept-valid':   { activeUniqueWorkers: 10, headcount: 20 }, // valid
+      'dept-no-head': { activeUniqueWorkers: 5,  headcount: 0  }, // excluded
     });
     // Only 1 valid segment after exclusion → insufficient_data
     expect(eqsStatus).toBe('insufficient_data');

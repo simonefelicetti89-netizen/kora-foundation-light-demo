@@ -317,7 +317,7 @@ safeguard-engine.ts    calculateSafeguard(AR, MAR): "CLEAR"|"WARNING"|"FLAGGED"
 kora-index-engine.ts   calculateKoraIndex(inputs): KoraIndexResult
                        macroblocchi: REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20%
                        Confidence escluso (peso 0). Safeguard escluso (gate).
-Verifica engine (acceptance): dato il seed Meridiana, l'engine deve produrre S1 = Index 34, Safeguard WARNING, macroblocchi 30/37/40/28. Se non torna, l'engine è sbagliato (i numeri canonici vincono).
+Verifica engine (acceptance Sprint 3 — v2.0): dato il seed Meridiana (S1), il motore v2.0 Foundation Light produce Index ≈34, Safeguard WARNING, macroblocchi REACH≈30/QUALITY≈37/EQUITY≈40/BTI≈28 (dati per-scenario). I valori del motore reale sui CSV fixture sono: WEAK=30.73, AVERAGE=43.42, GOLDEN=52.53 (vedi data/golden-path/README.md). I numeri canonici da engine v2.0 vincono — non i vecchi 34/54 pre-Sprint1.
 
 PARTE V — ROADMAP DI IMPLEMENTAZIONE ESEGUIBILE
 Otto fasi. Ogni fase: obiettivo unico, file principali, criteri di accettazione (definizione di "done"). Non si passa alla fase successiva finché i criteri non sono soddisfatti. ChatGPT genera 1 o più prompt atomici per fase.
@@ -342,7 +342,7 @@ Obiettivo: nav che cambia per ambiente+ruolo; mai 30 voci; role switcher esplici
 Done quando: ogni combinazione ambiente+ruolo mostra 5-9 voci pertinenti; impossibile vedere voci di un altro ruolo.
 FASE 5 — Engine skeleton (numeri computati)
 Obiettivo: lib/kora-engine/* deriva i numeri demo dai seed (eligibility, safeguard, index aggregator come minimo). I numeri restano canonici ma diventano computati.
-Done quando: l'engine produce S1 Meridiana = 34/WARNING/30-37-40-28 dai dati grezzi del seed; calculationTrace visibile.
+Done quando: l'engine produce i valori canonici v2.0 dai dati grezzi del seed; calculationTrace visibile (vedi data/golden-path/README.md per i valori di riferimento).
 FASE 6 — Data Lineage
 Obiettivo: vista del filo del dato (7 step), cliccabile bidirezionale, in Operator (completo) e Company (semplificato).
 Done quando: da un record si arriva al contributo nell'Index e viceversa.
