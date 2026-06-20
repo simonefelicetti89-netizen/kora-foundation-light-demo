@@ -198,8 +198,13 @@ export function runKoraPipeline(params: {
         primary_pillar:            pm.primaryPillar,
         pillar_distribution:       {},
         missing_fields:            Array.isArray(raw['b6_missing_fields']) ? raw['b6_missing_fields'] as string[] : [],
-        evidence_type:             String(raw['b6_evidence_level'] ?? 'L0'),
+        evidence_type:             String(raw['b6_evidence_level'] ?? raw['evidence_level'] ?? 'L0'),
         site_or_cluster:           raw['site'] ? String(raw['site']) : null,
+        // Sprint 2 B-SM1 — NM continuous functions (all optional, neutral fallback when absent)
+        duration_hours:      raw['hours'] !== undefined && raw['hours'] !== '' ? Number(raw['hours']) : undefined,
+        event_date:          raw['event_date'] ? String(raw['event_date']) : undefined,
+        b6_repetition_count: raw['b6_repetition_count'] !== undefined ? Number(raw['b6_repetition_count']) : undefined,
+        is_recurring:        raw['b6_is_recurring'] === true || raw['b6_is_recurring'] === 'true',
       };
     });
 
@@ -301,6 +306,7 @@ export function runKoraPipeline(params: {
       confidenceScore: confidence.score,
       componentSignals,
       iuResults,
+      computed_records: eligibilitySummary.eligibleCount,
     });
 
     // Step 15: Explainability Trace — 9-stage aggregate trace, no identity values

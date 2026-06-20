@@ -9,7 +9,7 @@ import type {
   ImpactUnitFactorTrace,
 } from '@/lib/types';
 import type { PipelineAnalyzedRow } from '@/services/ingestion-pipeline/IngestionPipelineService';
-import { getMethodologyVersion, getCalibrationStatus } from '@/lib/methodology-config/v0.1';
+import { getMethodologyVersion, getCalibrationStatus, getNMFunctionsConfig } from '@/lib/methodology-config/v0.1';
 
 // ── Foundation Light factor defaults — BC by action family ──────────────────────
 // Conservative pre-empirical values. Requires Delphi Study calibration post-pilot.
@@ -67,6 +67,49 @@ const EV_BY_EVIDENCE_TYPE: Record<string, number> = {
 
 type FactorResult = { value: number; reason: string; data_source: string; foundation_light_stub: boolean };
 
+// ── Sprint 2 B-SM1 — Continuous NM sub-functions ─────────────────────────────
+// All functions return 1.0 (neutral) when the required input is absent.
+// "dato mancante = neutro, mai penalizzante né gonfiante"
+
+// effort(d_min) = 0.40 + 1.10 × d/(d+90), d in minutes.
+// Range: [0.40, 1.50). Fallback (no duration) = 1.0 (neutral).
+export function computeEffort(duration_hours?: number): number {
+  if (duration_hours === undefined || duration_hours === null || isNaN(duration_hours)) return 1.0;
+  const d = Math.max(0, duration_hours * 60); // convert to minutes
+  if (d === 0) return 1.0; // 0-hour events: neutral (not punished)
+  return 0.40 + 1.10 * (d / (d + 90));
+}
+
+// recency(Δt_days) = max(floor, exp(−λ × Δt)).
+// λ_single = 0.023 events; λ_recurring = 0.008 recurring programs.
+// Fallback (no event_date) = 1.0 (neutral).
+export function computeRecency(event_date?: string, is_recurring = false): number {
+  if (!event_date) return 1.0;
+  const cfg = getNMFunctionsConfig();
+  const ref = new Date(cfg.reference_date);
+  const evt = new Date(event_date);
+  if (isNaN(evt.getTime()) || isNaN(ref.getTime())) return 1.0;
+  const delta_days = Math.max(0, (ref.getTime() - evt.getTime()) / 86_400_000);
+  const lambda = is_recurring ? cfg.recency_lambda_recurring : cfg.recency_lambda_single;
+  return Math.max(cfg.recency_floor, Math.exp(-lambda * delta_days));
+}
+
+// saturation(n) = max(floor, 1/(1 + decay × n)).
+// n = repetition_count (0 = first time → no saturation).
+// therapeutic events (health_and_wellbeing) use higher floor.
+// Fallback (n undefined) = 1.0 (neutral).
+export function computeSaturation(
+  repetition_count?: number,
+  is_therapeutic = false,
+): number {
+  if (repetition_count === undefined || repetition_count === null || isNaN(repetition_count)) return 1.0;
+  const n = Math.max(0, Math.floor(repetition_count));
+  if (n === 0) return 1.0; // first occurrence → no saturation
+  const cfg = getNMFunctionsConfig();
+  const floor = is_therapeutic ? cfg.saturation_floor_therapeutic : cfg.saturation_floor_default;
+  return Math.max(floor, 1 / (1 + cfg.saturation_decay * n));
+}
+
 // ── Factor derivation functions ─────────────────────────────────────────────────
 
 function deriveAGF(params: {
@@ -115,17 +158,33 @@ function deriveAGF(params: {
   };
 }
 
-function deriveNM(): FactorResult {
-  // TODO: future NM must normalize duration, intensity, beneficiary count
-  // against reference baselines per action family (post Delphi Study).
-  // For structural policies: NM = f(coverage_rate × policy_depth × accessibility × duration_months)
-  // — requires post-Delphi calibration. Foundation Light uses proxy stub = 1.0 for all families.
-  return {
-    value: 1.0,
-    reason: 'Foundation Light stub: NM = 1.0 (intensità standard, nessuna normalizzazione avanzata attiva). Per policy strutturali: NM richiede calibrazione post-Delphi su coverage × depth × accessibility × duration.',
-    data_source: 'foundation_light_default',
-    foundation_light_stub: true,
-  };
+function deriveNM(params?: {
+  duration_hours?: number;
+  event_date?: string;
+  repetition_count?: number;
+  is_recurring?: boolean;
+  is_therapeutic?: boolean;
+}): FactorResult {
+  // Sprint 2 B-SM1: NM = effort × recency × saturation.
+  // Each factor is 1.0 (neutral) when its input is absent.
+  // "dato mancante = neutro, mai penalizzante né gonfiante"
+  const effort     = computeEffort(params?.duration_hours);
+  const recency    = computeRecency(params?.event_date, params?.is_recurring);
+  const saturation = computeSaturation(params?.repetition_count, params?.is_therapeutic);
+
+  const value = Math.min(1.50, effort * recency * saturation);
+
+  const parts: string[] = [];
+  if (params?.duration_hours !== undefined)   parts.push(`effort=${effort.toFixed(3)} (${params.duration_hours}h)`);
+  if (params?.event_date)                     parts.push(`recency=${recency.toFixed(3)} (Δt from ${params.event_date})`);
+  if (params?.repetition_count !== undefined) parts.push(`saturation=${saturation.toFixed(3)} (n=${params.repetition_count})`);
+
+  const allFallback = parts.length === 0;
+  const reason = allFallback
+    ? 'NM = 1.0 — nessun dato su durata/data/ripetizioni (neutro per dato mancante).'
+    : `NM = effort×recency×saturation = ${value.toFixed(3)}. ${parts.join('; ')}.`;
+
+  return { value, reason, data_source: allFallback ? 'foundation_light_default' : 'nm_functions_v3', foundation_light_stub: allFallback };
 }
 
 function deriveBC(actionFamily: ActionFamily): FactorResult {
@@ -263,6 +322,11 @@ interface IUExtractedParams {
   missing_fields:           string[];
   evidence_type:            string;
   site_or_cluster:          string | null;
+  // Sprint 2 B-SM1 — NM continuous functions inputs (all optional — fallback = neutral 1.0)
+  duration_hours?:          number;
+  event_date?:              string;
+  b6_repetition_count?:     number;
+  is_recurring?:            boolean;
 }
 
 // ── IULiveInput — input contract for the live pipeline (UEF approved batch path) ─
@@ -281,6 +345,11 @@ export interface IULiveInput {
   missing_fields:            string[];
   evidence_type:             string;  // L0/L1/L2/L3/L4 from live pipeline
   site_or_cluster:           string | null;
+  // Sprint 2 B-SM1 — NM continuous functions inputs (all optional — fallback = neutral 1.0)
+  duration_hours?:           number;
+  event_date?:               string;
+  b6_repetition_count?:      number;
+  is_recurring?:             boolean;
 }
 
 // ── Service interface ────────────────────────────────────────────────────────────
@@ -318,7 +387,14 @@ export class IUComputationService implements IIUComputationService {
       approved_for_impact_units: p.approved_for_impact_units,
       blocked_reason:           p.blocked_reason,
     });
-    const nmResult  = deriveNM();
+    const is_therapeutic = p.action_family === 'health_and_wellbeing';
+    const nmResult = deriveNM({
+      duration_hours:   p.duration_hours,
+      event_date:       p.event_date,
+      repetition_count: p.b6_repetition_count,
+      is_recurring:     p.is_recurring,
+      is_therapeutic,
+    });
     const bcResult  = deriveBC(p.action_family);
     const cqResult  = deriveCQ(p.missing_fields);
     const evResult  = deriveEV(p.evidence_type);
@@ -444,6 +520,10 @@ export class IUComputationService implements IIUComputationService {
       missing_fields:           input.missing_fields,
       evidence_type:            input.evidence_type,
       site_or_cluster:          input.site_or_cluster,
+      duration_hours:           input.duration_hours,
+      event_date:               input.event_date,
+      b6_repetition_count:      input.b6_repetition_count,
+      is_recurring:             input.is_recurring,
     });
   }
 

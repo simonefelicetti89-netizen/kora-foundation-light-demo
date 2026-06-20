@@ -17,3 +17,19 @@ Ticket post-merge per sprint futuri. Ordinati per priorità (P1 = bloccante pros
 **Stima:** ~4h.
 
 ---
+
+## P2 — Riconciliare le due scale EV (EVIDENCE_WEIGHTS vs EV_BY_EVIDENCE_TYPE)
+
+**Contesto:** Esistono due tabelle di pesi evidence separate con valori diversi:
+- `component-engine.ts` `EVIDENCE_WEIGHTS` (usato per segnale EVQ/NI): L0=0.25, L1=0.50, L2=0.75, L3/L4=1.00
+- `IUComputationService.ts` `EV_BY_EVIDENCE_TYPE` (usato nel fattore EV della formula IU): L0=0.50, L1=0.60, L2=0.75, L3=0.90, L4=1.00
+
+**Decisione Sprint 2:** Non modificare `EV_BY_EVIDENCE_TYPE` — cambierebbe tutti i valori IU ed è una decisione di CALIBRAZIONE, non di robustezza.
+
+**Obiettivo:** Dopo la calibrazione empirica BCM (Delphi Study), riconciliare le due tabelle in un'unica fonte di verità in `lib/methodology-config/v0.1.ts`.
+
+**Prerequisiti:** Delphi Study completato. Gate 2 chiuso.
+
+**Stima:** ~2h tecnica + sessione decisionale calibrazione.
+
+---
