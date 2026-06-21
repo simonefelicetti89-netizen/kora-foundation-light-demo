@@ -48,23 +48,40 @@ CREATE INDEX IF NOT EXISTS idx_worker_cv_share_expires_at
 ALTER TABLE personal.worker_cv_share ENABLE ROW LEVEL SECURITY;
 ALTER TABLE personal.worker_cv_share FORCE ROW LEVEL SECURITY;
 
+-- Canonical claim helpers (mig 004):
+--   kora.kora_role()  — role checks; replaces raw (auth.jwt() -> 'app_metadata' ->> 'kora_role')
+--   kora.tenant_id()  — tenant scoping; not used in this table (no tenant_id column here)
+--
+-- Worker-identity scoping (kora_worker_id):
+--   worker_id = (auth.jwt() -> 'app_metadata' ->> 'kora_worker_id')::uuid is intentionally retained.
+--   kora_worker_id is set at provisioning time by /api/admin/workers/provision via auth-admin-update-user.
+--   No canonical helper kora.worker_id() exists today — mig 004/006 define kora_role and tenant_id only.
+--
+--   ★ GATE 2 CTO DESIGN QUESTION:
+--   Should KORA introduce a canonical kora.worker_id() helper for worker-scoped identity policies,
+--   or is a direct (auth.jwt() -> 'app_metadata' ->> 'kora_worker_id')::uuid read acceptable
+--   where worker identity itself is the primary access key?
+--   This is the only migration that reads kora_worker_id. Decision impacts future personal-schema tables.
+
 -- KORA_ADMIN: read-only access for diagnostics (no create/update via UI).
 -- KORA_ADMIN does NOT have a UI path to generate share links for real workers.
 CREATE POLICY "worker_cv_share_kora_admin_read" ON personal.worker_cv_share
   FOR SELECT
   USING (
-    (auth.jwt() -> 'app_metadata' ->> 'kora_role') = 'KORA_ADMIN'
+    kora.kora_role() = 'KORA_ADMIN'
   );
 
 -- WORKER: full access to own rows only (own worker_id).
 CREATE POLICY "worker_cv_share_worker_own_all" ON personal.worker_cv_share
   FOR ALL
   USING (
-    (auth.jwt() -> 'app_metadata' ->> 'kora_role') = 'WORKER'
+    kora.kora_role() = 'WORKER'
+    -- kora_worker_id: raw read intentionally retained — no canonical helper exists (see note above).
     AND worker_id = (auth.jwt() -> 'app_metadata' ->> 'kora_worker_id')::uuid
   )
   WITH CHECK (
-    (auth.jwt() -> 'app_metadata' ->> 'kora_role') = 'WORKER'
+    kora.kora_role() = 'WORKER'
+    -- kora_worker_id: raw read intentionally retained — no canonical helper exists (see note above).
     AND worker_id = (auth.jwt() -> 'app_metadata' ->> 'kora_worker_id')::uuid
   );
 

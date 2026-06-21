@@ -1,145 +1,76 @@
-# Test Routes — Removal Before Production
+# Test Routes — Historical Record and Pre-Production Checklist
 
-This document tracks all `/api/test/*` routes that exist for development and validation purposes only. These routes must be removed or isolated before any production deployment or live data onboarding.
+**Status as of 2026-06-21:** All `/api/test/*` routes have been **removed from `main`**.
 
-## Routes Inventory
+`find app/api -type d -name "test"` and `find app/api -path "*/test*" -name "route.ts"` both return
+zero results. No `pages/api` directory exists. No `KORA_ENABLE_TEST_ROUTES`, `x-kora-test-secret`,
+or `lib/auth/test-route-guard.ts` references remain in the codebase.
 
-### 1. `POST /api/test/seed-test-tenant`
-
-**Purpose:** Seeds the synthetic TEST-001 tenant end-to-end: creates tenant → workforce baseline → source batch → uploaded records → UEF classification → runKoraPipeline → persists results → audit log.
-
-**Why it exists:** Full round-trip validation of the KORA pipeline against the live Supabase schema without a real operator UI. Used for Phase 2B and Phase 2C validation.
-
-**Protection:** `NODE_ENV === 'production' → 404`, `x-kora-test-secret` header.
-
-**Uses:** service_role (server-side only).
-
-**Remove when:** The operator flow (`/api/admin/operator-flow`) is the canonical path for all tenant pipeline runs. This route becomes redundant once the operator UI is operational and tested.
+This document is retained as:
+1. **Historical context** — what the routes did and why they existed;
+2. **Pre-staging checklist** — what must be done before staging provisioning;
+3. **Pre-production checklist** — what must be done before any real data enters the system.
 
 ---
 
-### 2. `GET /api/test/read-test-tenant`
+## Historical Context — Routes That Existed and Were Removed
 
-**Purpose:** Reads back the current `kora_index_result` for TEST-001 and validates that the mapper returns `status: ok`.
+These 6 routes existed during Phase 2B / Phase 2C validation. All have been removed from `main`.
 
-**Why it exists:** Verifies that persisted results can be correctly read and mapped to `ScoringResult`. Used for Phase 2B validation.
+| Route | Purpose | Why removed | Replaced by |
+|---|---|---|---|
+| `POST /api/test/seed-test-tenant` | Seeded TEST-001 tenant end-to-end via service_role | Operator UI (`/api/admin/operator-flow`) is the canonical path | `POST /api/admin/operator-flow` |
+| `GET /api/test/read-test-tenant` | Read back kora_index_result for TEST-001 | `useScoringResult()` live hook covers this path | `GET /api/admin/operator-flow` + `useScoringResult()` |
+| `GET /api/test/privacy-threshold` | HTTP-accessible N≥10 group threshold test (5 deterministic cases) | Vitest test suite covers privacy threshold — `tests/unit/privacy-boundary.test.ts` | `npx vitest run` |
+| `POST /api/test/setup-auth-users` | Created synthetic Supabase Auth users with `kora_role`/`tenant_id` in app_metadata | Operator onboarding UI handles user creation | Operator onboarding UI + Supabase Auth admin panel |
+| `GET /api/test/auth-isolation` | Validated RLS tenant isolation by signing in as each synthetic user | No staging DB exists yet; will be replaced by CI integration tests | CI integration tests against staging environment |
+| `GET /api/test/auth-access-check` | Validated KORA_ADMIN → 200 / COMPANY_ADMIN → 403 / no session → 401 on operator API | Same as above | CI integration tests for operator API access control |
 
-**Protection:** `NODE_ENV === 'production' → 404`, `x-kora-test-secret` header.
-
-**Uses:** service_role (server-side only).
-
-**Remove when:** `useScoringResult()` live path is fully wired and tested in the browser. The operator-flow GET endpoint provides equivalent server-side verification.
-
----
-
-### 3. `GET /api/test/privacy-threshold`
-
-**Purpose:** Runs 5 deterministic test cases for `lib/privacy/group-threshold.ts` via HTTP. Reports PASS/FAIL per case.
-
-**Why it exists:** Provides a runtime-accessible N≥10 privacy enforcement validation without a test framework. Complemented by `scripts/test-privacy-threshold.ts` (terminal runner).
-
-**Protection:** `NODE_ENV === 'production' → 404`, `x-kora-test-secret` header.
-
-**Uses:** No DB access — pure function tests only.
-
-**Remove when:** A proper test framework (vitest, jest) is added to the project and the privacy tests are migrated. The script `scripts/test-privacy-threshold.ts` is the preferred long-term runner.
+All routes used a triple-gate guard (`NODE_ENV === 'production' → 404`; `KORA_ENABLE_TEST_ROUTES !== 'true' → 404`; missing `x-kora-test-secret` → 401). This guard code has been removed along with the routes.
 
 ---
 
-### 4. `POST /api/test/setup-auth-users`
+## Security Posture: Remaining Non-Session Auth Path
 
-**Purpose:** Creates synthetic Supabase Auth users (`company-admin-a@example.test`, `company-admin-b@example.test`, `company-viewer-a@example.test`, `kora-admin@example.test`) with `kora_role` and `tenant_id` in `app_metadata`. Also creates TEST-A and TEST-B tenants.
-
-**Why it exists:** Gate 3A validation — bootstraps fake auth state for RLS isolation testing. Cannot be done via the normal UI since there is no auth UI yet.
-
-**Protection:** `NODE_ENV === 'production' → 404`, `x-kora-test-secret` header.
-
-**Uses:** service_role + Supabase Admin API (server-side only).
-
-**Remove when:** Operator onboarding UI exists and creates real tenant+user records via the proper flow. Test users should be deleted from the Supabase project before any production data is onboarded.
-
----
-
-### 5. `GET /api/test/auth-isolation`
-
-**Purpose:** Validates Gate 3A RLS tenant isolation by signing in as each synthetic user and asserting cross-tenant data visibility rules. Reports PASS/FAIL per assertion.
-
-**Why it exists:** Automated end-to-end proof that the RLS model correctly enforces tenant isolation under real Supabase Auth JWT conditions.
-
-**Protection:** `NODE_ENV === 'production' → 404`, `x-kora-test-secret` header.
-
-**Uses:** Supabase Auth sign-in (anon key) + service_role for setup queries.
-
-**Remove when:** A proper integration test suite covers the RLS model. This route should never run against real tenant data.
-
----
-
-### 6. `GET /api/test/auth-access-check`
-
-**Purpose:** Validates session-based access control for `/api/admin/operator-flow`: KORA_ADMIN → 200, COMPANY_ADMIN → 403, no session → 401. Added after Auth UI minima (Gate 3A+).
-
-**Why it exists:** Automated proof that the operator API enforces session-based auth and rejects non-KORA_ADMIN users.
-
-**Protection:** `NODE_ENV === 'production' → 404`, `x-kora-test-secret` header.
-
-**Uses:** Supabase Auth sign-in (anon key). No direct service_role for auth — validates via session tokens.
-
-**Remove when:** A CI integration test suite covers the operator API access control.
-
----
-
-## Security Posture: Non-Session Auth Paths
-
-### `/api/admin/operator-flow` — current status
+### `/api/admin/operator-flow`
 
 | Auth path | Dev | Production |
 |---|---|---|
 | KORA_ADMIN session (cookie or Bearer token) | ✅ Allowed | ✅ Allowed |
-| `x-kora-operator-secret` header fallback | ⚠️ Allowed (DEPRECATED, warns in log) | 🚫 Blocked (`NODE_ENV === 'production'`) |
+| `x-kora-operator-secret` header fallback | ⚠️ Allowed (DEPRECATED — warns in log) | 🚫 Blocked (`NODE_ENV === 'production'`) |
 | No auth | ❌ 401 | ❌ 401 |
-| Company/wrong role | ❌ 403 | ❌ 403 |
+| Company / wrong role | ❌ 403 | ❌ 403 |
 
-The deprecated secret fallback is blocked at the code level in production — `checkAuth()` returns the 401/403 from `requireKoraAdmin()` directly without checking the header. See `docs/technical-backlog.md` TODO-002 for removal plan.
+The deprecated secret fallback must be removed before staging. See `docs/technical-backlog.md` TODO-002.
 
-### `/api/test/*` — current status (triple-gate)
+### `/api/auth/logout`
 
-All 7 routes use `lib/auth/test-route-guard.ts` (centralised):
-- Gate 1: Return `404` in `NODE_ENV === 'production'` (unconditional)
-- Gate 2: Return `404` if `KORA_ENABLE_TEST_ROUTES !== 'true'` (even in dev/staging)
-- Gate 3: Return `401` if `x-kora-test-secret` header is missing or wrong
-- Use `service_role` server-side only
-- Never expose `SUPABASE_SERVICE_ROLE_KEY` to the browser
-
-Set `KORA_ENABLE_TEST_ROUTES=true` in `.env.local` for local dev only.
-**Do NOT set this in Vercel Production or Preview environments.**
-
-### `/api/auth/logout` — current status
-
-Safe for production: calls `signOut()` on the user's own session, redirects to `/admin/login`. No secret required, no service_role.
+Safe for production: calls `signOut()` on the user's own session, redirects to `/admin/login`.
 
 ---
 
-## What Replaces These Routes in Production
+## Pre-Staging Checklist
 
-| Test route | Replaced by |
-|---|---|
-| `seed-test-tenant` | `POST /api/admin/operator-flow` (live operator pipeline) |
-| `read-test-tenant` | `GET /api/admin/operator-flow` + `useScoringResult()` live hook |
-| `privacy-threshold` | `scripts/test-privacy-threshold.ts` + CI test suite |
-| `setup-auth-users` | Operator onboarding UI + Supabase Auth admin panel |
-| `auth-isolation` | CI integration tests against staging environment |
-| `auth-access-check` | CI integration tests for operator API access control |
+Before a staging Supabase project is provisioned and migrations are applied:
+
+- [x] **Remove all `/api/test/*` routes from `main`.** Done — confirmed absent as of 2026-06-21.
+- [ ] **Remove `x-kora-operator-secret` fallback from `/api/admin/operator-flow`.** See TODO-002. Risk: if staging env is misconfigured with this secret, the fallback path could be exploited.
+- [ ] **Gate 2 (CTO review) formally closed.** No migration applies to staging until Gate 2 sign-off.
+- [ ] **Confirm `KORA_ENABLE_TEST_ROUTES` is not set in any staging env.** Not applicable (routes are removed), but verify no residual environment variable leaks.
+- [ ] **Confirm `KORA_TEST_SEED_SECRET`, `KORA_TEST_USER_PASSWORD`, `KORA_OPERATOR_SECRET` not set in staging Vercel/env.** These secrets were used by the removed routes. They must not appear in staging environment configuration.
+
+---
 
 ## Pre-Production Checklist
 
 Before any real company or worker data enters the system:
 
-- [ ] Delete synthetic test users from Supabase Auth (`*@example.test`)
-- [ ] Delete synthetic test tenants (`TEST-001`, `TEST-A`, `TEST-B`, `OP-*`)
-- [ ] Remove or disable all `/api/test/*` routes
-- [ ] Remove `x-kora-operator-secret` fallback from `/api/admin/operator-flow` (see TODO-002)
-- [ ] Verify `NODE_ENV === 'production'` is correctly set in the deployment environment
-- [ ] Confirm `KORA_TEST_SEED_SECRET`, `KORA_TEST_USER_PASSWORD`, `KORA_OPERATOR_SECRET` not set in production env
-- [ ] Verify `SUPABASE_SERVICE_ROLE_KEY` is NOT exposed in any client-side bundle
-- [ ] Run Gate 3A auth-isolation equivalent against staging before prod deploy
-- [ ] Confirm `/api/admin/operator-flow` 200/403/401 behavior on staging with real KORA_ADMIN session
+- [x] **Remove all `/api/test/*` routes.** Done.
+- [ ] **Delete synthetic test users from Supabase Auth (`*@example.test`).** Applies once staging is provisioned. Test users created by the old `setup-auth-users` route must be removed from any Supabase project before real tenant data is onboarded.
+- [ ] **Delete synthetic test tenants (`TEST-001`, `TEST-A`, `TEST-B`, `OP-*`).** Same as above.
+- [ ] **Remove `x-kora-operator-secret` fallback from `/api/admin/operator-flow` (TODO-002).** Must be done before staging provisioning.
+- [ ] **Verify `NODE_ENV === 'production'` is correctly set in the deployment environment.**
+- [ ] **Verify `SUPABASE_SERVICE_ROLE_KEY` is NOT exposed in any client-side bundle.**
+- [ ] **Run RLS integration test equivalent against staging before prod deploy.** The logic of `auth-isolation` (cross-tenant blocking, role separation) must be re-validated against the deployed schema. Format: CI integration test suite, not an HTTP route.
+- [ ] **Confirm `/api/admin/operator-flow` 200/403/401 behavior on staging with real KORA_ADMIN session.**
+- [ ] **Gate 3 (Legal/DPO) formally closed.** Required before any real worker-level data.
