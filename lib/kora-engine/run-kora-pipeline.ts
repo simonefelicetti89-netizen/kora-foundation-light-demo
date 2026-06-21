@@ -422,10 +422,16 @@ export function runKoraPipeline(params: {
       meaningfulActivationRate: activation.meaningfulActivationReach,
     });
 
-    // Step 17: Monte Carlo credibility interval — B-MC1.
+    // Step 17: Monte Carlo credibility interval — B-MC1 (diagnostic only).
     // Perturbs macroblock scores n_iter times with scaled noise to produce [p10, median, p90].
     // Only computed when scoringMode='computed' (not for seeded_demo or insufficient_data).
     // Parameters from methodology-config.json — never hardcoded.
+    //
+    // Official KORA Index = koraIndex.value (raw weighted macroblock sum from kora-index-engine.ts).
+    // monteCarlo.reliabilityAdjustedIndex is a diagnostic data-reliability indicator — NOT the official KORA Index.
+    // koraIndex.uncertainty.shrunkValue is an internal diagnostic — NOT the official KORA Index.
+    // If monteCarlo is exposed in future company UI, it must be labelled as a diagnostic
+    // credibility interval only — never as the official KORA Index or its replacement.
     const mcConfig = getMCConfig();
     const monteCarlo = scoringMode === 'computed'
       ? computeMonteCarlo({

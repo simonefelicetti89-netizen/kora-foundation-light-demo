@@ -70,13 +70,18 @@ function round2(n: number): number {
 // reliabilityAdjustedIndex is NOT the official KORA Index.
 
 /**
- * Runs n_iter Monte Carlo simulations by perturbing macroblock scores and
- * returns the [p10, median, p90] credibility interval plus the Bayesian
- * shrinkage point estimate.
+ * Pipeline-level Monte Carlo credibility/sensitivity diagnostic.
+ * Runs n_iter simulations by perturbing macroblock scores and returns the
+ * [p10, median, p90] credibility interval around the raw KORA Index.
  *
  * @param macroblocks  Base macroblock scores (0–100) and their weights.
  * @param eligibleCount  Number of eligible records — determines shrinkage weight w and perturbation scale.
  * @param config  MC parameters from getMCConfig().
+ * @returns Credibility interval (p10, median, p90) plus diagnostic reliabilityAdjustedIndex.
+ *   reliabilityAdjustedIndex is a diagnostic data-reliability indicator — NOT the official KORA Index.
+ *   Official KORA Index = koraIndex.value (raw weighted macroblock sum from kora-index-engine.ts).
+ *   If reliabilityAdjustedIndex is exposed in future company UI, it must be explicitly labelled
+ *   as a diagnostic/non-official indicator, never as the KORA Index score.
  */
 export function computeMonteCarlo(params: {
   macroblocks: MCMacroblocks;
@@ -140,10 +145,23 @@ export function computeMonteCarlo(params: {
 
 // ── computeMCInterval — index-level MC (called by kora-index-engine.ts) ──────
 //
+// Internal uncertainty helper producing koraIndex.uncertainty.
 // Uses KoraIndexMacroblocks (activationReach/activationQuality/distributionEquity/budgetToHumanImpact)
 // and fixed perturbation range (not shrinkage-scaled).
 // Returns KoraIndexUncertainty with shrunkValue.
+// shrunkValue is an internal diagnostic: Bayesian shrinkage of the MC median toward the prior.
+// shrunkValue must NOT be displayed as the KORA Index.
+// Future UI must not show shrunkValue unless explicitly labelled internal/admin-only.
 
+/**
+ * Internal lower-level uncertainty helper for koraIndex.uncertainty (called by kora-index-engine.ts).
+ * Computes p10/median/p90 from macroblock perturbations, then derives shrunkValue via Bayesian shrinkage.
+ *
+ * shrunkValue = w×median + (1-w)×prior — an internal diagnostic estimate.
+ * shrunkValue is NOT the official KORA Index and must never be displayed as one.
+ * Future UI should not show shrunkValue unless explicitly labelled internal/admin-only.
+ * Official KORA Index = koraIndex.value (raw weighted macroblock sum in kora-index-engine.ts).
+ */
 export function computeMCInterval(params: {
   macroblocks: KoraIndexMacroblocks;
   weights: Record<string, number>;

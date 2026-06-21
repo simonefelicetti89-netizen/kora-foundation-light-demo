@@ -367,6 +367,11 @@ export function computeKoraIndex(params: {
     computed_records: n_computed,
   });
 
+  // Official KORA Index = value (raw weighted macroblock sum computed above).
+  // uncertainty.shrunkValue is an internal diagnostic — NOT the official KORA Index.
+  // monteCarlo.reliabilityAdjustedIndex (computed by run-kora-pipeline.ts) is also diagnostic.
+  // Neither shrunkValue nor reliabilityAdjustedIndex replaces value.
+  // CS (confidenceExternal) is external to the index per doc 21b — weight = 0.
   return {
     value,
     macroblocks,

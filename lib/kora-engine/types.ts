@@ -339,7 +339,13 @@ export interface ComponentDetail {
 
 // Sprint 2 B-MC1: uncertainty envelope from Monte Carlo + Bayesian shrinkage.
 // Added alongside value — never replaces it.
+// Official KORA Index = koraIndex.value (raw weighted macroblock sum). shrunkValue is internal
+// diagnostic — NOT the official KORA Index. See computeMCInterval in monte-carlo-engine.ts.
 export interface KoraIndexUncertainty {
+  // Internal diagnostic shrinkage value for uncertainty analysis.
+  // shrunkValue is NOT the official KORA Index and must not be displayed as such.
+  // The official KORA Index is always the raw koraIndex.value.
+  // Company-facing UI must not expose shrunkValue unless explicitly labelled as internal/admin-only diagnostic information.
   shrunkValue:     number;  // θ̂ = w×value + (1−w)×prior
   shrinkageWeight: number;  // w = n/(n+k)
   prior:           number;  // sector default prior from config
