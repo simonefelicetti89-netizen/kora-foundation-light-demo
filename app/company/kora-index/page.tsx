@@ -42,7 +42,8 @@ import { EligibilityGatePanel }     from '@/components/kora-index/EligibilityGat
 import { BlockedByDesignPanel }     from '@/components/kora-index/BlockedByDesignPanel';
 import { RecommendationsPanel }     from '@/components/kora-index/RecommendationsPanel';
 import { MethodologyGlossary }      from '@/components/kora-index/MethodologyGlossary';
-import { BoundaryBadge }            from '@/components/ui/BoundaryBadge';
+import { BoundaryBadge }                    from '@/components/ui/BoundaryBadge';
+import { InitiativeExplainabilityPanel }    from '@/components/company/InitiativeExplainabilityPanel';
 
 // ── Explainer definitions ─────────────────────────────────────────────────────
 const EXP = {
@@ -491,6 +492,12 @@ export default function KoraIndexDetail() {
       <div className="mt-6">
         <SectionLabel>Compliance & blocked</SectionLabel>
         <BlockedByDesignPanel blockedCount={eligibilityGate.blocked_count} blockedNote={eligibilityGate.blocked_note} />
+      </div>
+
+      {/* Initiative explainability — per-initiative eligibility and KORA Index contribution */}
+      <div className="mt-6">
+        <SectionLabel>Perché le iniziative hanno inciso</SectionLabel>
+        <InitiativeExplainabilityPanel period={reportingPeriodForLive} />
       </div>
 
       {/* Safeguard + Confidence */}
