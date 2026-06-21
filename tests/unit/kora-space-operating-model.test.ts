@@ -120,10 +120,10 @@ describe('KORA Space — booking action and status', () => {
     expect(spaceSrc).toMatch(/preview|non attivo|coming soon/i);
   });
 
-  test('14. Booking status vocabulary exists', () => {
+  test('14. Booking status vocabulary uses canonical Italian labels', () => {
     expect(bookingsSrc).toContain('Richiesta inviata');
-    expect(bookingsSrc).toContain('Confermata');
-    expect(bookingsSrc).toContain('Partecipazione registrata');
+    expect(bookingsSrc).toContain('Partecipazione confermata');
+    expect(bookingsSrc).toContain('Partecipazione completata');
   });
 
   test('15. No fake booking is created in the bookings page', () => {

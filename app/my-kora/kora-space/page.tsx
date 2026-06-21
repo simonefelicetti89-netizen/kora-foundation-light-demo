@@ -314,20 +314,53 @@ export default function WorkerKoraSpacePage() {
                 <Link
                   href="/worker/commons"
                   style={{
-                    fontSize: 11, fontWeight: 600, color: TOKENS.accent,
+                    fontSize: 11, fontWeight: 600,
+                    color: item.opening_grade === 'cross_company' ? '#2F7D55' : TOKENS.accent,
                     textDecoration: 'none', display: 'inline-block',
+                    padding: item.opening_grade === 'cross_company' ? '6px 14px' : undefined,
+                    background: item.opening_grade === 'cross_company' ? 'rgba(47,125,85,0.09)' : undefined,
+                    borderRadius: item.opening_grade === 'cross_company' ? 7 : undefined,
+                    border: item.opening_grade === 'cross_company' ? '1px solid rgba(47,125,85,0.22)' : undefined,
                   }}
                 >
-                  Scopri su KORA Commons →
+                  {item.opening_grade === 'cross_company'
+                    ? 'Richiedi partecipazione su KORA Commons →'
+                    : 'Scopri su KORA Commons →'}
                 </Link>
+                {item.opening_grade === 'cross_company' && (
+                  <p style={{ fontSize: 9, color: TOKENS.inkHint, margin: '4px 0 0', lineHeight: 1.5 }}>
+                    La prenotazione è soggetta ad approvazione KORA. Il tuo nome non è visibile all&apos;organizzatore.
+                  </p>
+                )}
               </div>
             );
           })}
         </div>
+        {/* Booking lifecycle — non-suppressible */}
+        <div
+          data-testid="space-booking-lifecycle"
+          style={{
+            background: 'rgba(47,125,85,0.04)', border: '1px solid rgba(47,125,85,0.14)',
+            borderRadius: 10, padding: '12px 16px', marginBottom: 20,
+          }}
+        >
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#2F5A42', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Come funziona la partecipazione
+          </p>
+          <ol style={{ fontSize: 11, color: '#2F5A42', margin: 0, paddingLeft: 16, lineHeight: 1.9 }}>
+            <li>Richiedi partecipazione su KORA Commons</li>
+            <li>KORA esamina la richiesta</li>
+            <li>Ricevi conferma (partecipazione confermata)</li>
+            <li>Partecipazione registrata dopo l&apos;evento</li>
+            <li>Traccia privata nel tuo percorso personale (solo tua)</li>
+            <li>Segnale aggregato per l&apos;ecosistema — il datore di lavoro non vede il tuo percorso individuale</li>
+          </ol>
+        </div>
+
         <TimelineConnectionNote />
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <Link href="/worker/commons" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
-            → KORA Commons (feed completo)
+            → KORA Commons (feed completo e prenotazioni)
           </Link>
           <Link href="/my-kora/personal-impact-balance" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
             → Personal Impact Balance

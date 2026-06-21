@@ -20,12 +20,26 @@ interface BookingRecord {
   attended_at?:  string | null;
 }
 
+interface InitiativeSummary {
+  id:              string;
+  title:           string;
+  pillar?:         string;
+  event_start_at?: string | null;
+}
+
 const BOOKING_STATUS_COPY: Record<string, { label: string; color: string }> = {
-  requested:  { label: 'Richiesta inviata',         color: '#8A5A00' },
-  confirmed:  { label: 'Confermata',                 color: '#3B6EBA' },
-  attended:   { label: 'Partecipazione registrata',  color: '#2F7D55' },
-  cancelled:  { label: 'Annullata',                  color: '#9E3B2F' },
+  pending:   { label: 'Richiesta inviata',          color: '#8A5A00'           },
+  requested: { label: 'Richiesta inviata',          color: '#8A5A00'           },
+  approved:  { label: 'Partecipazione confermata',  color: '#2F7D55'           },
+  confirmed: { label: 'Partecipazione confermata',  color: '#2F7D55'           },
+  rejected:  { label: 'Richiesta non approvata',    color: '#9E3B2F'           },
+  attended:  { label: 'Partecipazione completata',  color: '#3B6EBA'           },
+  cancelled: { label: 'Annullata',                  color: 'rgba(6,3,43,0.45)' },
 };
+
+function statusMeta(status: string): { label: string; color: string } {
+  return BOOKING_STATUS_COPY[status] ?? { label: 'Stato in verifica', color: 'rgba(6,3,43,0.40)' };
+}
 
 function PrivacyNotice() {
   return (
@@ -48,6 +62,7 @@ function PrivacyNotice() {
 export default function Bookings() {
   const [mode, setMode] = useState<BookingsMode>('checking');
   const [liveBookings, setLiveBookings] = useState<BookingRecord[]>([]);
+  const [initiativesMap, setInitiativesMap] = useState<Record<string, InitiativeSummary>>({});
 
   useEffect(() => {
     fetch('/api/worker/pib')
@@ -56,15 +71,20 @@ export default function Bookings() {
         if (data?.isSynthetic !== false) {
           setMode('demo');
         } else {
-          // Real authenticated worker — try to fetch actual bookings
-          fetch('/api/worker/commons/bookings')
-            .then((r) => r.ok ? r.json() : null)
-            .then((bdata) => {
-              const bookings: BookingRecord[] = bdata?.bookings ?? [];
-              setLiveBookings(bookings);
-              setMode(bookings.length > 0 ? 'live' : 'empty');
-            })
-            .catch(() => setMode('empty'));
+          // Fetch bookings and initiative enrichment in parallel
+          Promise.all([
+            fetch('/api/worker/commons/bookings').then((r) => r.ok ? r.json() : null),
+            fetch('/api/commons/initiatives').then((r) => r.ok ? r.json() : null).catch(() => null),
+          ]).then(([bdata, idata]) => {
+            const bookings: BookingRecord[] = bdata?.bookings ?? [];
+            // Build a post_id → initiative lookup map for enriching booking cards
+            const iMap: Record<string, InitiativeSummary> = {};
+            const initiatives: InitiativeSummary[] = idata?.initiatives ?? [];
+            for (const i of initiatives) iMap[i.id] = i;
+            setInitiativesMap(iMap);
+            setLiveBookings(bookings);
+            setMode(bookings.length > 0 ? 'live' : 'empty');
+          }).catch(() => setMode('empty'));
         }
       })
       .catch(() => setMode('demo'));
@@ -108,7 +128,13 @@ export default function Bookings() {
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {liveBookings.map((booking) => {
-              const statusMeta = BOOKING_STATUS_COPY[booking.status] ?? { label: booking.status, color: TOKENS.inkHint };
+              const sm        = statusMeta(booking.status);
+              const initiative = initiativesMap[booking.post_id];
+              const title     = initiative?.title ?? `Iniziativa #${booking.post_id.slice(0, 8)}`;
+              const pillar    = initiative?.pillar;
+              const eventDate = initiative?.event_start_at
+                ? new Date(initiative.event_start_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })
+                : null;
               return (
                 <div
                   key={booking.id}
@@ -118,24 +144,47 @@ export default function Bookings() {
                     borderRadius: 12, padding: '14px 16px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                  {/* Status badge + request date */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
                     <span style={{
                       fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                      background: `${statusMeta.color}14`, color: statusMeta.color,
-                      border: `1px solid ${statusMeta.color}33`,
+                      background: `${sm.color}14`, color: sm.color, border: `1px solid ${sm.color}33`,
                     }}>
-                      {statusMeta.label}
+                      {sm.label}
                     </span>
-                    <span style={{ fontSize: 10, color: TOKENS.inkHint }}>
+                    {pillar && (
+                      <span style={{ fontSize: 9, fontWeight: 600, padding: '2px 8px', borderRadius: 4, background: 'rgba(6,3,43,0.05)', color: 'rgba(6,3,43,0.55)' }}>
+                        {pillar}
+                      </span>
+                    )}
+                    <span style={{ fontSize: 10, color: TOKENS.inkHint, marginLeft: 'auto' }}>
                       {new Date(booking.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                   </div>
-                  <p style={{ fontSize: 11, fontFamily: 'monospace', color: TOKENS.inkMeta, margin: 0 }}>
-                    post: {booking.post_id.slice(0, 8)}…
+
+                  {/* Initiative title */}
+                  <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.ink, margin: '0 0 4px', lineHeight: 1.3 }}>
+                    {title}
                   </p>
+
+                  {/* Event date if available */}
+                  {eventDate && (
+                    <p style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '0 0 4px' }}>
+                      Data evento: {eventDate}
+                    </p>
+                  )}
+
+                  {/* Attendance confirmation */}
                   {booking.attended_at && (
-                    <p style={{ fontSize: 10, color: TOKENS.inkHint, margin: '4px 0 0', fontFamily: 'monospace' }}>
-                      attended: {new Date(booking.attended_at).toLocaleDateString('it-IT')}
+                    <p style={{ fontSize: 10, color: '#2F7D55', margin: '4px 0 0' }}>
+                      Partecipazione confermata il {new Date(booking.attended_at).toLocaleDateString('it-IT')}
+                    </p>
+                  )}
+
+                  {/* Fallback note when enrichment not available */}
+                  {!initiative && (
+                    <p style={{ fontSize: 9, fontFamily: 'monospace', color: TOKENS.inkMeta, margin: '4px 0 0' }}>
+                      ref: {booking.post_id.slice(0, 16)}…
                     </p>
                   )}
                 </div>
@@ -145,22 +194,31 @@ export default function Bookings() {
         </div>
       )}
 
-      {/* Status vocabulary */}
+      {/* Status vocabulary — canonical labels only (no duplicates) */}
       <div style={{ borderRadius: TOKENS.cardRadius, border: TOKENS.cardBorder, background: TOKENS.surface, padding: '14px 18px', marginBottom: 16 }}>
         <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Stati prenotazione
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {Object.entries(BOOKING_STATUS_COPY).map(([key, { label, color }]) => (
-            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{
-                fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                background: `${color}14`, color, border: `1px solid ${color}33`,
-              }}>
-                {label}
-              </span>
-            </div>
-          ))}
+          {([
+            ['pending',   'Richiesta inviata'],
+            ['approved',  'Partecipazione confermata'],
+            ['rejected',  'Richiesta non approvata'],
+            ['attended',  'Partecipazione completata'],
+            ['cancelled', 'Annullata'],
+          ] as const).map(([key, label]) => {
+            const { color } = statusMeta(key);
+            return (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                  background: `${color}14`, color, border: `1px solid ${color}33`,
+                }}>
+                  {label}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
