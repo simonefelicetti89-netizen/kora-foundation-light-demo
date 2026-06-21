@@ -10,6 +10,10 @@
 --
 -- Fonte di autorità: CLAUDE.md §9 (Gate 2), doc 12 (Technical Data Model).
 
+-- Canonical claim helpers (migrations 004 and 006):
+--   kora.kora_role()  — reads kora_role from app_metadata with fallback (never raw auth.jwt())
+--   kora.tenant_id()  — reads kora_tenant_id from app_metadata (canonical key, mig 006)
+
 -- ── GAP-1: analytics.source_batch INSERT ─────────────────────────────────────
 -- Permette a COMPANY_ADMIN di creare nuove submission (source_type='company_submission').
 -- Limitato al proprio tenant (kora.tenant_id() da JWT, mig 006).
@@ -21,7 +25,7 @@ CREATE POLICY analytics_source_batch_company_insert
   FOR INSERT
   TO authenticated
   WITH CHECK (
-    auth.jwt() ->> 'kora_role' IN ('COMPANY_ADMIN')
+    kora.kora_role() = 'COMPANY_ADMIN'
     AND tenant_id = kora.tenant_id()
     AND source_type = 'company_submission'
   );
@@ -44,7 +48,7 @@ CREATE POLICY analytics_source_batch_company_update
   FOR UPDATE
   TO authenticated
   USING (
-    auth.jwt() ->> 'kora_role' IN ('COMPANY_ADMIN')
+    kora.kora_role() = 'COMPANY_ADMIN'
     AND tenant_id = kora.tenant_id()
     AND source_type = 'company_submission'
     AND batch_status IN ('submission_draft', 'submission_pending')
@@ -71,7 +75,7 @@ CREATE POLICY audit_log_company_insert
   FOR INSERT
   TO authenticated
   WITH CHECK (
-    auth.jwt() ->> 'kora_role' IN ('COMPANY_ADMIN')
+    kora.kora_role() = 'COMPANY_ADMIN'
     AND tenant_id = kora.tenant_id()
     AND actor_id = auth.uid()
   );

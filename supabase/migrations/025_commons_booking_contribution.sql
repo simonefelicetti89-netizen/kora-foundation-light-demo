@@ -113,10 +113,10 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = commons, personal, public AS
 DECLARE
   v_post_tenant_id uuid;
   v_caller_role    text;
-  v_caller_tenant  text;
+  v_caller_tenant  uuid;  -- canonical helper returns uuid directly (kora.tenant_id(), mig 006)
 BEGIN
   v_caller_role   := kora.kora_role();
-  v_caller_tenant := auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id';
+  v_caller_tenant := kora.tenant_id();
 
   -- Solo KORA_ADMIN e COMPANY_ADMIN possono accedere
   IF v_caller_role NOT IN ('KORA_ADMIN', 'COMPANY_ADMIN') THEN
@@ -132,7 +132,7 @@ BEGIN
   END IF;
 
   -- COMPANY_ADMIN: solo del tenant della propria iniziativa
-  IF v_caller_role = 'COMPANY_ADMIN' AND v_caller_tenant::uuid <> v_post_tenant_id THEN
+  IF v_caller_role = 'COMPANY_ADMIN' AND v_caller_tenant <> v_post_tenant_id THEN
     RAISE EXCEPTION 'booking_aggregate_for_promoter: accesso negato — tenant non corrisponde';
   END IF;
 
@@ -218,12 +218,13 @@ CREATE POLICY "contribution_event_kora_admin_all"
   USING (kora.kora_role() = 'KORA_ADMIN');
 
 -- COMPANY_ADMIN: solo del proprio tenant (vedono il proprio Contribution, non quello degli altri)
+-- kora.tenant_id() = canonical helper (mig 006): reads app_metadata.kora_tenant_id
 DROP POLICY IF EXISTS "contribution_event_company_own_select" ON commons.contribution_event;
 CREATE POLICY "contribution_event_company_own_select"
   ON commons.contribution_event FOR SELECT
   USING (
     kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
-    AND tenant_id = (auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid
+    AND tenant_id = kora.tenant_id()
   );
 
 -- WORKER: nessuna policy — i worker non vedono il Contribution aziendale

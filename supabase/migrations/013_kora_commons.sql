@@ -73,6 +73,11 @@ CREATE INDEX IF NOT EXISTS idx_commons_post_created_at
   ON commons.post (created_at DESC);
 
 -- ── 4. Row Level Security ─────────────────────────────────────────────────────
+-- All policies use canonical claim helpers (migrations 004 and 006):
+--   kora.kora_role()  — reads app_metadata.kora_role with app_metadata fallback
+--   kora.tenant_id()  — reads app_metadata.kora_tenant_id (canonical key, mig 006)
+-- Never use raw auth.jwt() tenant reads — they bypass the canonical fallback
+-- chain and do not benefit from future claim-key changes.
 
 ALTER TABLE commons.post ENABLE ROW LEVEL SECURITY;
 ALTER TABLE commons.post FORCE ROW LEVEL SECURITY;
@@ -95,7 +100,7 @@ CREATE POLICY "commons_post_company_admin_select"
   FOR SELECT
   USING (
     kora.kora_role() = 'COMPANY_ADMIN'
-    AND tenant_id = (auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid
+    AND tenant_id = kora.tenant_id()
   );
 
 -- COMPANY_ADMIN: INSERT solo nel proprio tenant, status draft o pending_review
@@ -104,7 +109,7 @@ CREATE POLICY "commons_post_company_admin_insert"
   FOR INSERT
   WITH CHECK (
     kora.kora_role() = 'COMPANY_ADMIN'
-    AND tenant_id = (auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid
+    AND tenant_id = kora.tenant_id()
     AND status IN ('draft', 'pending_review')
     AND author_role = 'COMPANY_ADMIN'
   );
@@ -115,11 +120,11 @@ CREATE POLICY "commons_post_company_admin_update"
   FOR UPDATE
   USING (
     kora.kora_role() = 'COMPANY_ADMIN'
-    AND tenant_id = (auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid
+    AND tenant_id = kora.tenant_id()
     AND status IN ('draft', 'pending_review')
   )
   WITH CHECK (
-    tenant_id = (auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid
+    tenant_id = kora.tenant_id()
     AND status IN ('draft', 'pending_review')
     AND author_role = 'COMPANY_ADMIN'
   );
@@ -130,7 +135,7 @@ CREATE POLICY "commons_post_worker_published_select"
   FOR SELECT
   USING (
     kora.kora_role() = 'WORKER'
-    AND tenant_id = (auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid
+    AND tenant_id = kora.tenant_id()
     AND status = 'published'
   );
 

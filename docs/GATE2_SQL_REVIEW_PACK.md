@@ -84,7 +84,7 @@ worker data processing.
 
 **Inconsistencies requiring CTO attention:**
 - ~~Migration 005 uses `auth.jwt() ->> 'role'` instead of `kora.kora_role()`.~~ **Fixed 2026-06-21** — migration 005 now uses `kora.kora_role()` and `kora.tenant_id()` throughout. `COMPANY_USER` removed; `COMPANY_ADMIN`/`COMPANY_VIEWER` used.
-- Migrations 013, 025, 026 use `auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id'` directly instead of `kora.tenant_id()`. These policies do not benefit from future canonical key updates. (Not in scope for P0 cleanup — CTO decision required.)
+- ~~Migrations 013, 025, 026 use direct `auth.jwt()` reads instead of canonical helpers.~~ **Fixed 2026-06-21** — all direct JWT tenant/role reads replaced with `kora.tenant_id()` and `kora.kora_role()`. See §10 Tenant Claim Consistency Update.
 
 ### 3.2 SECURITY DEFINER functions
 
@@ -146,7 +146,7 @@ company users and personal.* or analytics.uef_record data.
 
 - [ ] **Claim functions read the correct JWT fields.** `kora.kora_role()` and `kora.tenant_id()` both read from `app_metadata` as the canonical path. Verify this is what Supabase JWT delivers after `setSession`/`signInWithPassword` for a provisioned user.
 - [x] **Migration 005 role inconsistency resolved.** ~~`auth.jwt() ->> 'role' = 'COMPANY_USER'`~~ **Fixed 2026-06-21** — policies now use `kora.kora_role()` and `kora.tenant_id()`; roles are `'COMPANY_ADMIN'`, `'COMPANY_VIEWER'`, `'KORA_ADMIN'`. See §9 P0 cleanup update.
-- [ ] **Migrations 013 / 025 / 026 tenant isolation inconsistency resolved.** Direct `auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id'` reads must be replaced with `kora.tenant_id()` for consistency and maintainability.
+- [x] **Migrations 013 / 025 / 026 tenant isolation inconsistency resolved.** ~~Direct `auth.jwt()` reads.~~ **Fixed 2026-06-21** — all 12 non-canonical JWT reads replaced with `kora.kora_role()` / `kora.tenant_id()`. See §10.
 - [ ] **SECURITY DEFINER functions cannot be called by unauthorized roles.** Verify that `fn_company_worker_status()` and `fn_company_activation_summary()` cannot be invoked by `anon` (REVOKE confirmed in 015) or WORKER (no explicit REVOKE — verify RLS context prevents this).
 - [ ] **N≥10 suppression in `fn_company_activation_summary` is correct.** Boundary test: count = 0 → 0 (not suppressed), count = 1..9 → NULL, count ≥ 10 → actual count.
 - [ ] **`v_company_uploaded_record_safe` excludes all worker identifiers by construction.** Confirm pseudonym_id and raw_hash are absent from the SELECT list and cannot be accessed by any COMPANY_* role directly or via JOIN.
@@ -222,7 +222,7 @@ company users and personal.* or analytics.uef_record data.
 
 7. **`v_company_uef_eligibility_summary` and `analytics.impact_unit`.** The view has a placeholder `NULL::numeric AS iu_average_ev` because impact_unit is "not present in Foundation Light DB." Once migration 005 is applied, this view should be updated. Who owns this update?
 
-8. **Migrations 013 / 025 / 026 use direct `auth.jwt()` reads.** Should these be refactored to use `kora.kora_role()` and `kora.tenant_id()` before application? Or accepted as-is with a documented rationale?
+8. ~~**Migrations 013 / 025 / 026 use direct `auth.jwt()` reads.**~~ **Resolved 2026-06-21** — all 12 instances replaced with `kora.kora_role()` / `kora.tenant_id()`. No direct JWT reads remain in executable SQL across the migration set.
 
 9. **`audit_reader` role lifecycle.** Migration 028 creates the `audit_reader` role but does not document how it is granted to specific DB users, who can revoke it, and how it integrates with the Supabase dashboard access model.
 
@@ -240,7 +240,7 @@ company users and personal.* or analytics.uef_record data.
 
 2. ~~**Resolve migration 005 role inconsistency.**~~ **DONE 2026-06-21** — policies use `kora.kora_role()` / `kora.tenant_id()` / `COMPANY_ADMIN` / `COMPANY_VIEWER`.
 
-3. **Resolve migrations 013/025/026 tenant isolation inconsistency** (CTO decision: refactor to `kora.tenant_id()` or document rationale for keeping direct JWT reads).
+3. ~~**Resolve migrations 013/025/026 tenant isolation inconsistency.**~~ **DONE 2026-06-21** — all direct JWT reads replaced with canonical helpers. See §10.
 
 4. ~~**Confirm `kora.set_updated_at()` existence or fix migration 025.**~~ **DONE 2026-06-21** — trigger corrected to `set_updated_at()` (public schema).
 
@@ -341,4 +341,56 @@ FOR EACH ROW EXECUTE FUNCTION set_updated_at();         -- public schema, define
 
 ---
 
-*This document reflects the state of `supabase/migrations/` as of 2026-06-21 (updated after P0 cleanup). No migrations have been applied to any database. This document does not constitute CTO or legal approval. Gate 2 and Gate 3 sign-off must be obtained separately.*
+---
+
+## 10. Tenant Claim Consistency Update — 2026-06-21
+
+**Date:** 2026-06-21  
+**Commit:** `fix: align SQL tenant claim usage`  
+**Scope:** migration SQL only — no migrations applied, no DB touched, no engine/formula/output changes
+
+### Files reviewed
+
+| File | Direct JWT reads found | Action |
+|------|----------------------|--------|
+| `supabase/migrations/013_kora_commons.sql` | 5 (tenant reads in RLS policies) | All replaced |
+| `supabase/migrations/025_commons_booking_contribution.sql` | 2 (1 in SECURITY DEFINER fn, 1 in RLS policy) | All replaced |
+| `supabase/migrations/026_company_route_rls_gaps.sql` | 3 (role reads — `auth.jwt() ->> 'kora_role'`) | All replaced |
+| `supabase/migrations/003_claim_functions_app_metadata.sql` | Defines canonical helpers (reviewed, no change needed) | — |
+| `supabase/migrations/004_gate3a_claims_and_grants.sql` | Current `kora.kora_role()` + `kora.tenant_id()` definitions | — |
+| `supabase/migrations/006_canonical_tenant_key.sql` | Canonical `kora.tenant_id()` — reads `kora_tenant_id` | — |
+
+### Direct JWT reads replaced
+
+| Migration | Object | Before | After | Notes |
+|-----------|--------|--------|-------|-------|
+| 013 | `commons_post_company_admin_select` USING | `(auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid` | `kora.tenant_id()` | RLS policy |
+| 013 | `commons_post_company_admin_insert` WITH CHECK | same | `kora.tenant_id()` | RLS policy |
+| 013 | `commons_post_company_admin_update` USING | same | `kora.tenant_id()` | RLS policy |
+| 013 | `commons_post_company_admin_update` WITH CHECK | same | `kora.tenant_id()` | RLS policy |
+| 013 | `commons_post_worker_published_select` USING | same | `kora.tenant_id()` | RLS policy |
+| 025 | `booking_aggregate_for_promoter()` DECLARE | `v_caller_tenant text` | `v_caller_tenant uuid` | Type change — helper returns uuid |
+| 025 | `booking_aggregate_for_promoter()` body | `auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id'` | `kora.tenant_id()` | SECURITY DEFINER fn; helper works via current_setting() |
+| 025 | `booking_aggregate_for_promoter()` comparison | `v_caller_tenant::uuid <> ...` | `v_caller_tenant <> ...` | Cast removed — variable is now uuid |
+| 025 | `contribution_event_company_own_select` USING | `(auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid` | `kora.tenant_id()` | RLS policy |
+| 026 | `analytics_source_batch_company_insert` WITH CHECK | `auth.jwt() ->> 'kora_role' IN ('COMPANY_ADMIN')` | `kora.kora_role() = 'COMPANY_ADMIN'` | Role read — not tenant, same canonical issue |
+| 026 | `analytics_source_batch_company_update` USING | same | `kora.kora_role() = 'COMPANY_ADMIN'` | Role read |
+| 026 | `audit_log_company_insert` WITH CHECK | same | `kora.kora_role() = 'COMPANY_ADMIN'` | Role read |
+
+### Direct JWT reads intentionally retained
+
+None. Zero remaining direct `auth.jwt()` reads in executable SQL across migrations 013, 025, 026.
+
+### Canonical pattern — full migration audit status
+
+After this update and the P0 cleanup (§9), all 28 migrations use either `kora.kora_role()` / `kora.tenant_id()` or no claim reads at all in their executable SQL. The only `auth.jwt()` references remaining in the migration set are:
+- Inside comments (explanatory text — expected)
+- `auth.uid()` (Supabase auth user UUID — not a claim helper, correct as-is)
+
+### CTO decisions still required
+
+None from the tenant-claim consistency audit. All prior CTO decisions remain as documented in §4.
+
+---
+
+*This document reflects the state of `supabase/migrations/` as of 2026-06-21 (updated after P0 cleanup + tenant claim consistency). No migrations have been applied to any database. This document does not constitute CTO or legal approval. Gate 2 and Gate 3 sign-off must be obtained separately.*

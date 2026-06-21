@@ -362,11 +362,12 @@ describe('B165 — boundary RLS cross-tenant', () => {
   const sql = read('supabase/migrations/024_commons_initiative_fields.sql');
 
   it('policy worker_published_select originale (mig 013) limita per tenant', () => {
-    // La policy mig 013 filtra per tenant → company_internal/extended non cross-tenant
-    // Verifica che mig 013 esista e il commento lo confermi
+    // La policy mig 013 filtra per tenant → company_internal/extended non cross-tenant.
+    // Verifica che mig 013 usi il canonical helper kora.tenant_id() (aggiornato da
+    // (auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid — stesso semantics).
     const src013 = read('supabase/migrations/013_kora_commons.sql');
     expect(src013).toContain('commons_post_worker_published_select');
-    expect(src013).toContain("kora_tenant_id')::uuid");
+    expect(src013).toContain('kora.tenant_id()');
   });
 
   it('policy cross_company NON filtra per tenant (cross-tenant intenzionale)', () => {

@@ -164,7 +164,9 @@ describe('B166 — RLS booking anonimato', () => {
   it('contribution_event: COMPANY_ADMIN vede SOLO il proprio tenant', () => {
     expect(sql).toContain('contribution_event_company_own_select');
     expect(sql).toContain("kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')");
-    expect(sql).toContain("'kora_tenant_id')::uuid");
+    // Canonical helper (auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id')::uuid
+    // replaced with kora.tenant_id() — same semantics, canonical pattern.
+    expect(sql).toContain('kora.tenant_id()');
   });
 
   it('funzione aggregate valida ruolo prima di restituire dati', () => {
