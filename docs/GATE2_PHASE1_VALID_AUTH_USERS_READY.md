@@ -1,10 +1,10 @@
 # Gate 2 — Phase 1 Valid Auth Users Ready
 
-**Status:** Auth metadata set — worker identity linked — smoke tests ready  
+**Status:** Auth metadata set — worker identity linked — passwords reset — smoke tests ready  
 **Staging project:** `haqflkurpmeaxpikozjl` (dedicated staging only)  
 **Production:** NOT touched  
 **Date:** 2026-06-22  
-**HEAD at sprint:** `ce24607`
+**HEAD at sprint:** `cd77fd9`
 
 > **Migration 027 NOT applied.**  
 > **Migration 029 NOT applied.** Emergency safety net only.  
@@ -106,10 +106,37 @@ Zero non-STAGE-001 rows affected. PIB, bookings, contribution events unchanged.
 ## 5. Password Handling
 
 **Passwords are NOT committed to this repository.**  
-**Passwords are NOT printed in any sprint output.**
+**Passwords are NOT printed in any sprint output, log, or terminal.**
 
-Passwords were set by the user via Supabase Dashboard at creation time and are
-stored outside the repository. They must not appear in any file, commit, or log.
+### Reset method
+
+Passwords for all four synthetic staging users were updated via the **Supabase
+Auth Admin API** (`PUT /auth/v1/admin/users/{user_id}` — `password` field only).
+
+- Method: Auth Admin API — no direct `INSERT` or `UPDATE` into `auth.users`
+- Script: `.tmp/reset-staging-passwords.mjs` — gitignored, never committed
+- Env source: `.env.staging.local` + `.env.staging.passwords.local` — both gitignored
+- Passwords: read from local env file — never printed, never logged, never committed
+- No users created or deleted
+- No metadata altered (`raw_app_meta_data`, `raw_user_meta_data` unchanged)
+- No `auth.identities` rows altered
+- `worker_identity` links unchanged
+
+### Sign-in verification
+
+After reset, all four users passed a programmatic sign-in test
+(`POST /auth/v1/token?grant_type=password`). Access tokens were not printed or stored.
+Only success/failure per email was logged.
+
+| User | Password reset | Sign-in result |
+|---|---|---|
+| `company-admin@staging.kora.internal` | ✓ Auth Admin API | sign-in OK |
+| `worker-a@staging.kora.internal` | ✓ Auth Admin API | sign-in OK |
+| `worker-b@staging.kora.internal` | ✓ Auth Admin API | sign-in OK |
+| `worker-c@staging.kora.internal` | ✓ Auth Admin API | sign-in OK |
+
+Passwords are stored outside the repository in `.env.staging.passwords.local` (gitignored).
+Passwords must not appear in any file, commit, or log.
 
 ---
 
@@ -150,7 +177,7 @@ Pre-smoke checklist:
 - [x] Workers have `kora_worker_ref`
 - [x] W-STAGE-A/B/C linked to real auth UUIDs in `personal.worker_identity`
 - [x] STAGE-001 seed data intact (tenant, workers, bookings, PIB)
-- [ ] Passwords set and stored outside repo (done at Dashboard creation)
+- [x] Passwords reset via Auth Admin API — not committed, not printed
 - [ ] Staging app URL accessible (confirm staging deploy, not production)
 - [ ] App reads JWT `app_metadata.kora_role` and `app_metadata.kora_tenant_id` from `raw_app_meta_data`
 
@@ -163,7 +190,7 @@ Priority tests:
 
 ---
 
-**Document version:** v1.0  
+**Document version:** v1.1  
 **Prepared:** 2026-06-22  
 **Gate status:** Gate 2 OPEN · Gate 3 OPEN  
 **Applies to staging:** `haqflkurpmeaxpikozjl` only  
