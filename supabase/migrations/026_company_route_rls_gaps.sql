@@ -77,5 +77,5 @@ CREATE POLICY audit_log_company_insert
   WITH CHECK (
     kora.kora_role() = 'COMPANY_ADMIN'
     AND tenant_id = kora.tenant_id()
-    AND actor_id = auth.uid()
+    AND actor_id = auth.uid()::text
   );
