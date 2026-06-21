@@ -329,9 +329,9 @@ describe('B167 — pagina dashboard struttura', () => {
     expect(src).toContain('company-contribution-page');
   });
 
-  it('ha data-testid contribution-live-data (Pilot+) e contribution-shell (Foundation Light)', () => {
+  it('ha data-testid contribution-live-data (Pilot+) e contribution-foundation-light-preview (FL)', () => {
     expect(src).toContain('contribution-live-data');
-    expect(src).toContain('contribution-shell');
+    expect(src).toContain('contribution-foundation-light-preview');
   });
 
   it('ha le due sezioni parallele con data-testid distinti', () => {
@@ -345,7 +345,7 @@ describe('B167 — pagina dashboard struttura', () => {
 
   it('ha contribution-methodology-notice (non sopprimibile)', () => {
     expect(src).toContain('contribution-methodology-notice');
-    expect(src).toContain('pre-empirica');
+    expect(src).toContain('non calibrata empiricamente');
   });
 
   it('NON mostra punteggio aggregato nella pagina', () => {
@@ -366,12 +366,13 @@ describe('B167 — pagina dashboard struttura', () => {
     expect(src).toContain('getContributionOriginEmployerView');
   });
 
-  it('shell Foundation Light: testo "non ancora disponibile"', () => {
-    expect(src).toContain('non ancora disponibile');
+  it('shell Foundation Light: anteprima metodologica (PRE-PILOT PREVIEW)', () => {
+    expect(src).toContain('PRE-PILOT PREVIEW');
+    expect(src).toContain('anteprima metodologica');
   });
 
-  it('shell Foundation Light: ha link a Status Center', () => {
-    expect(src).toContain('/company/status');
+  it('shell Foundation Light: ha link a KORA Space (commons)', () => {
+    expect(src).toContain('/company/commons');
   });
 
   it('footer con nota qualità evidenza (verified vs self-declared)', () => {

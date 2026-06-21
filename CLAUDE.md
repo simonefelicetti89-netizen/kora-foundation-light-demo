@@ -93,20 +93,21 @@ Pillar codes used in code: `LIFE`, `GROWTH`, `CONNECTION`, `IMPACT`, `LEGACY`
 
 The KORA Index v3 has exactly these 10 components. Do not add, remove, merge, or rename any.
 
-| Code | Name | Meaning |
-|---|---|---|
-| `AR` | Activation Rate | Share of workforce with at least one approved IU in the period |
-| `MAR` | Meaningful Activation Rate | Share with IU above materiality threshold |
-| `NI` | Normalized Intensity | Average IU magnitude per active worker |
-| `WB` | Worker Balance | Distribution evenness of IU across active workers |
-| `PC` | Pillar Coverage | Number of pillars with meaningful presence |
-| `PB` | Pillar Balance | Evenness of IU distribution across covered pillars |
-| `EQ` | Equity | Equità distributiva dell'attivazione tra segmenti della workforce (dipartimenti, fasce di seniority, tipi di contratto, siti) aggregati sopra soglia privacy. Alta Equity significa che l'attivazione non è sistematicamente concentrata in segmenti privilegiati o già ad alta partecipazione. |
-| `VR` | Verification Rate | Share of IU backed by verified or partially verified evidence |
-| `CO` | Continuity | Share of workers with cross-period sustained engagement |
-| `CS` | Confidence Score | Data completeness, source quality, verification weight — always shown with KORA Index |
+| Code | Name | Meaning | Macroblock |
+|---|---|---|---|
+| `AR` | Activation Rate | Share of workforce with at least one approved IU in the period | REACH (25%) |
+| `MAR` | Meaningful Activation Rate | Share with IU above materiality threshold | REACH (25%) |
+| `EVQ` | Evidence Quality | Solidità e verificabilità delle fonti evidenza per IU approvate | QUALITY (30%) |
+| `INT` | Normalized Intensity | IU totali per lavoratore attivo normalizzati sul target di configurazione | QUALITY (30%) |
+| `CONT` | Continuity | Share of workers with cross-period sustained engagement | QUALITY (30%) |
+| `EQW` | Equity Workers | Distribuzione IU tra lavoratori attivi (Gini-based) — insufficient_data in Foundation Light base | EQUITY (25%) |
+| `EQS` | Equity Segments | Equità del tasso di attivazione tra dipartimenti/sedi (N≥10) — richiede headcount per reparto | EQUITY (25%) |
+| `PC` | Pillar Coverage | Number of pillars with meaningful presence | EQUITY (25%) |
+| `PB` | Pillar Balance | Evenness of IU distribution across covered pillars | EQUITY (25%) |
+| `BTI` | Budget-to-Human-Impact | Efficienza del budget people/welfare in impatto umano reale — calcolato dal BTI Engine | BTI (20%) |
+| `CS` | Confidence Score | Data completeness, source quality, verification weight — **external to KORA Index (weight=0)**, always shown alongside | — |
 
-**EQ must never be redefined as Evidence Quality or Event Quality.** Evidence quality is handled by VR (Verification Rate), CS (Confidence Score), EV (correction factor in the IU formula), Evidence Debt, and Trust Ledger. For methodology component definitions, `docs/10-architecture-v3-layer-specification.md` governs — this file defers to doc 10 on all component definitions.
+**EQW and EQS are distinct components.** EQW measures worker-level IU distribution equity; EQS measures segment-level (department/site) activation rate equity. Neither should be called "EQ" generically. Evidence quality is handled separately by EVQ (within QUALITY), CS, and EV (IU formula correction factor). For full methodology definitions, `docs/10-architecture-v3-layer-specification.md` governs.
 
 **KORA Contribution** is a companion indicator measuring collective and ecosystem engagement. It is NOT a KORA Index component. Display it separately — never merge it into the KORA Index computation.
 
@@ -114,9 +115,9 @@ The KORA Index v3 has exactly these 10 components. Do not add, remove, merge, or
 
 KORA Index v3 macroblock weights — v0.1 pre-empirical calibration:
 - Activation Reach — 25% (AR 12.5%, MAR 12.5%)
-- Activation Quality — 30% (NI ~10%, VR ~10%, CO ~10%)
-- Distribution & Equity — 25% (WB 6.25%, PC 6.25%, PB 6.25%, EQ 6.25%)
-- Budget-to-Human-Impact — 20% (BudgetToHumanImpactEngine — not from component values)
+- Activation Quality — 30% (EVQ ~10%, INT ~10%, CONT ~10%)
+- Distribution & Equity — 25% (EQW ~7.5%, EQS ~5%, PC ~6.25%, PB ~6.25%)
+- Budget-to-Human-Impact — 20% (BTI Engine — not from individual component values)
 
 **Confidence Score (CS) is external to KORA Index v3.** CS weight = 0. CS is displayed alongside the KORA Index as an external reliability indicator but does not influence the KORA Index value.
 

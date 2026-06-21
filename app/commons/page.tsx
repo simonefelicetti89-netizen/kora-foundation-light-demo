@@ -284,10 +284,10 @@ function NetworkStats() {
           textTransform: 'uppercase',
           border:       '1px solid rgba(74,127,224,0.35)',
         }}>
-          NETWORK PREVIEW
+          Rete pilota dimostrativa
         </span>
         <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
-          Dati sintetici — rete simulata
+          Dati sintetici pre-launch · La rete live cresce con le organizzazioni pilota
         </span>
       </div>
       {[
@@ -344,32 +344,38 @@ export default function CommonsPage() {
   return (
     <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 0 80px 0', fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
 
-      {/* PREVIEW banner */}
-      <div style={{
-        background:   'rgba(74,127,224,0.08)',
-        border:       '1px solid rgba(74,127,224,0.20)',
-        borderRadius: 10,
-        padding:      '8px 16px',
-        marginBottom: 24,
-        display:      'flex',
-        alignItems:   'center',
-        gap:          10,
-      }}>
+      {/* Pilot preview banner */}
+      <div
+        data-testid="commons-pilot-preview-banner"
+        style={{
+          background:   'rgba(74,127,224,0.06)',
+          border:       '1px solid rgba(74,127,224,0.18)',
+          borderRadius: 10,
+          padding:      '10px 16px',
+          marginBottom: 24,
+          display:      'flex',
+          alignItems:   'center',
+          gap:          10,
+        }}
+      >
         <span style={{
           fontSize:      9,
           fontWeight:    700,
-          padding:       '2px 7px',
+          padding:       '2px 8px',
           borderRadius:  4,
-          background:    'rgba(74,127,224,0.20)',
-          color:         'rgba(74,127,224,0.90)',
+          background:    'rgba(74,127,224,0.15)',
+          color:         '#3B6EBA',
           textTransform: 'uppercase',
           letterSpacing: '0.10em',
-          border:        '1px solid rgba(74,127,224,0.30)',
+          border:        '1px solid rgba(74,127,224,0.25)',
+          flexShrink:    0,
         }}>
-          COMMONS PREVIEW
+          KORA Space · Pilot Preview
         </span>
-        <span style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)' }}>
-          Foundation Light — dati sintetici · Nessuna attivazione reale · Nessun dato live
+        <span style={{ fontSize: 11, color: 'rgba(6,3,43,0.55)', lineHeight: 1.5 }}>
+          Questa è una rete dimostrativa pre-launch con dati sintetici. Il layer live si attiverà
+          quando le prime organizzazioni pilota pubblicheranno iniziative reali.
+          KORA Space e KORA Commons aziendali (nella sidebar) usano già dati reali per il tuo tenant.
         </span>
       </div>
 
@@ -444,7 +450,7 @@ export default function CommonsPage() {
                 Alto potenziale di attivazione · Aperte o in arrivo
               </p>
             </div>
-            <Link href="/commons/publish" style={{
+            <Link href="/company/commons" style={{
               fontSize:     12,
               fontWeight:   700,
               padding:      '8px 16px',
@@ -454,7 +460,7 @@ export default function CommonsPage() {
               textDecoration: 'none',
               fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
             }}>
-              + Pubblica iniziativa
+              + Pubblica in KORA Space
             </Link>
           </div>
           <div style={{
@@ -671,39 +677,54 @@ export default function CommonsPage() {
         )}
       </section>
 
-      {/* Publish CTA */}
-      <div style={{
-        marginTop:    44,
-        padding:      '28px 32px',
-        background:   '#06032B',
-        borderRadius: 16,
-        display:      'flex',
-        alignItems:   'center',
-        justifyContent: 'space-between',
-        gap:          20,
-        flexWrap:     'wrap',
-      }}>
-        <div>
-          <h3 style={{ fontWeight: 800, fontSize: 17, color: '#FFFFFF', margin: 0 }}>
-            Hai un&apos;iniziativa da condividere?
+      {/* Next activation layer panel */}
+      <div
+        data-testid="commons-next-activation-layer"
+        style={{
+          marginTop:    44,
+          padding:      '28px 32px',
+          background:   '#06032B',
+          borderRadius: 16,
+          display:      'flex',
+          alignItems:   'flex-start',
+          justifyContent: 'space-between',
+          gap:          24,
+          flexWrap:     'wrap',
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 9, fontWeight: 700, color: 'rgba(199,111,61,0.90)', textTransform: 'uppercase', letterSpacing: '0.10em', margin: '0 0 8px' }}>
+            Prossimo layer di attivazione
+          </p>
+          <h3 style={{ fontWeight: 800, fontSize: 17, color: '#FFFFFF', margin: '0 0 8px', lineHeight: 1.25 }}>
+            Vuoi portare la tua organizzazione nella rete?
           </h3>
-          <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.50)', marginTop: 5 }}>
-            Pubblica un&apos;opportunità di attivazione per la rete KORA. PREVIEW — nessuna persistenza in Foundation Light.
+          <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.50)', margin: 0, lineHeight: 1.6 }}>
+            Le organizzazioni pilota potranno pubblicare iniziative reali, ricevere partecipazioni cross-azienda
+            e generare eventi di contribuzione che alimentano KORA Contribution™.
+            La pubblicazione in questa fase pre-launch è disponibile per aziende pilota via KORA Space (sidebar → KORA Space).
           </p>
         </div>
-        <Link href="/commons/publish" style={{
-          fontSize:     13,
-          fontWeight:   700,
-          padding:      '10px 22px',
-          borderRadius: 10,
-          background:   '#C76F3D',
-          color:        '#FFFFFF',
-          textDecoration: 'none',
-          fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
-          whiteSpace:   'nowrap',
-        }}>
-          Pubblica iniziativa →
-        </Link>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0 }}>
+          <Link href="/company/commons" style={{
+            fontSize:     13,
+            fontWeight:   700,
+            padding:      '10px 22px',
+            borderRadius: 10,
+            background:   '#C76F3D',
+            color:        '#FFFFFF',
+            textDecoration: 'none',
+            fontFamily:   'Plus Jakarta Sans, system-ui, sans-serif',
+            whiteSpace:   'nowrap',
+            textAlign:    'center',
+            display:      'block',
+          }}>
+            Vai a KORA Space →
+          </Link>
+          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.30)', textAlign: 'center', margin: 0 }}>
+            La pubblicazione richiede approvazione KORA
+          </p>
+        </div>
       </div>
     </div>
   );

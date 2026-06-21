@@ -453,7 +453,7 @@ describe('B166 — KORA Contribution companion indicator', () => {
   it('company contribution page ha disclaimer metodologico non sopprimibile', () => {
     const src = read('app/company/contribution/page.tsx');
     expect(src).toContain('contribution-methodology-notice');
-    expect(src).toContain('pre-empirica');
+    expect(src).toContain('non calibrata empiricamente');
   });
 
   it('KoraContributionService ha commento CLAUDE.md §12.7', () => {
@@ -478,9 +478,9 @@ describe('B166 — feature gate getContributionLive', () => {
     expect(src).toContain('production_ready');
   });
 
-  it('company contribution page: tenant non Pilot+ mostra shell sintetica', () => {
+  it('company contribution page: tenant non Pilot+ mostra FL preview (non shell vuota)', () => {
     const src = read('app/company/contribution/page.tsx');
-    expect(src).toContain('contribution-shell');
+    expect(src).toContain('contribution-foundation-light-preview');
     expect(src).toContain('contribution-live-data');
   });
 });

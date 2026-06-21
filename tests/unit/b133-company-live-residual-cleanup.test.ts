@@ -117,7 +117,7 @@ describe('B133 Step 1.5 — locked shell pages have honest copy', () => {
   it('contribution: B167 dashboard server component con feature gate production_ready', () => {
     const src = readCompany('contribution/page.tsx');
     expect(src).toContain('getContributionPromoterView');
-    expect(src).toContain('contribution-shell');
+    expect(src).toContain('contribution-foundation-light-preview');
     expect(src).not.toContain('getCurrentDemoUser');
   });
 

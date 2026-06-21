@@ -21,8 +21,10 @@ import Link from 'next/link';
 import {
   getContributionPromoterView,
   getContributionOriginEmployerView,
+  koraContributionService,
 } from '@/services/kora-contribution/KoraContributionService';
-import { getMethodologyVersion } from '@/lib/methodology-config/v0.1';
+import type { ContributionSummary } from '@/services/kora-contribution/KoraContributionService';
+import { getCalibrationStatus } from '@/lib/methodology-config/v0.1';
 import { TOKENS, PILLAR_COLORS } from '@/lib/design/kora-design-tokens';
 import type { ContributionPillarBreakdown } from '@/lib/commons/contribution-views';
 
@@ -186,6 +188,12 @@ export default async function KoraContributionPage() {
 
   const isPilot = promoterView !== null;
 
+  // Foundation Light preview: seed-derived summary for methodology demonstration.
+  // Called only when production_ready=false. Uses synthetic initiative data (scenario S1).
+  const flPreview: ContributionSummary | null = isPilot
+    ? null
+    : koraContributionService.getSummaryV2(auth.tenantId, 'S1');
+
   return (
     <div
       data-testid="company-contribution-page"
@@ -218,8 +226,8 @@ export default async function KoraContributionPage() {
           lineHeight:   1.6,
         }}
       >
-        <strong>Nota metodologica.</strong> KORA Contribution™ è un indicatore companion — non è una componente del KORA Index™ e non influenza il punteggio organizzativo.
-        Calibrazione: pre-empirica v0.1. Versione metodologia: {getMethodologyVersion()}.
+        <strong>Nota metodologica.</strong> KORA Contribution™ è un indicatore companion — non è una componente del KORA Index™ v3 e non influenza il punteggio organizzativo.
+        Calibrazione: {getCalibrationStatus().replace(/_/g, ' ')} · Formula provvisoria non calibrata empiricamente.
       </div>
 
       {isPilot ? (
@@ -282,31 +290,139 @@ export default async function KoraContributionPage() {
 
         </div>
       ) : (
-        /* ── SHELL (tenant Foundation Light) ─────────────────────────── */
-        <div data-testid="contribution-shell">
-          <div
-            style={{
-              background:   TOKENS.taupe,
-              border:       `1px solid ${TOKENS.inkBorderStrong}`,
-              borderRadius: 16,
-              padding:      '20px 22px',
-              marginBottom: 20,
-            }}
-          >
-            <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, marginBottom: 8, fontFamily: FONT }}>
-              Note metodologiche
-            </p>
-            <ul style={{ fontSize: 11, color: TOKENS.inkSecondary, lineHeight: 1.55, margin: 0, paddingLeft: 18 }}>
-              <li style={{ marginBottom: 5 }}>KORA Contribution™ è un indicatore companion — non è una componente del KORA Index™.</li>
-              <li style={{ marginBottom: 5 }}>Misura il contributo collettivo e territoriale oltre il perimetro aziendale.</li>
-              <li style={{ marginBottom: 5 }}>Richiede iniziative collettive verificate, partecipazioni cross-azienda e dati aggregati sufficienti.</li>
-              <li>Disponibile per tenant Pilot+ (production_ready = true). Contatta KORA per l&apos;attivazione.</li>
-            </ul>
+        /* ── PRE-PILOT PREVIEW (tenant Foundation Light) ─────────────── */
+        <div data-testid="contribution-foundation-light-preview">
+
+          {/* Preview badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <span style={{
+              fontSize:     10,
+              fontWeight:   700,
+              padding:      '3px 8px',
+              borderRadius: 4,
+              background:   'rgba(74,127,224,0.12)',
+              color:        '#3B6EBA',
+              letterSpacing: '0.04em',
+              border:       '1px solid rgba(74,127,224,0.25)',
+            }}>
+              PRE-PILOT PREVIEW
+            </span>
+            <span style={{ fontSize: 10, color: TOKENS.inkHint }}>
+              Anteprima metodologica · Dati sintetici dimostrativi · Non live
+            </span>
           </div>
 
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            <Link href="/company/status" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent }}>
-              Consulta Status Center →
+          <div
+            data-testid="contribution-fl-preview-banner"
+            style={{
+              background:   'rgba(74,127,224,0.06)',
+              border:       '1px solid rgba(74,127,224,0.18)',
+              borderRadius: 12,
+              padding:      '12px 16px',
+              marginBottom: 24,
+              fontSize:     11,
+              color:        '#3B5A8A',
+              lineHeight:   1.6,
+            }}
+          >
+            Questa è un&apos;anteprima metodologica calcolata su iniziative collettive sintetiche.
+            I valori illustrano come sarà visualizzato KORA Contribution™ quando gli eventi di contribuzione
+            reali saranno disponibili (fase Pilot+). <strong>Non rappresentano dati reali della tua organizzazione.</strong>
+          </div>
+
+          {flPreview && (
+            <>
+              {/* Score & level */}
+              <div style={{
+                background:   TOKENS.surface,
+                border:       `1.5px solid ${TOKENS.inkBorderStrong}`,
+                borderRadius: 16,
+                padding:      '24px 22px',
+                marginBottom: 20,
+              }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px', fontFamily: FONT }}>
+                  Punteggio indicatore (simulato)
+                </p>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
+                  <MetricCard
+                    value={flPreview.contributionScore}
+                    label="Contribution Score (0–100)"
+                    color={flPreview.contributionScore >= 66 ? TOKENS.success : flPreview.contributionScore >= 36 ? '#D99A2B' : TOKENS.inkHint}
+                  />
+                  <MetricCard
+                    value={{ minimal: 'Minimo', emerging: 'Emergente', active: 'Attivo', advanced: 'Avanzato' }[flPreview.contributionLevel]}
+                    label="Livello"
+                    color={flPreview.contributionScore >= 36 ? TOKENS.success : TOKENS.inkHint}
+                  />
+                  <MetricCard value={flPreview.initiativesCount} label="Iniziative collettive" />
+                  <MetricCard value={flPreview.ecosystemPartners} label="Partner ecosistema" />
+                </div>
+
+                {/* Evidence distribution */}
+                <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontFamily: FONT }}>
+                  Distribuzione evidenze
+                </p>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+                  {[
+                    { label: 'Verificato', count: flPreview.evidenceDistribution.verified,      color: TOKENS.success },
+                    { label: 'In verifica', count: flPreview.evidenceDistribution.partial,      color: '#D99A2B'      },
+                    { label: 'Autodichiarato', count: flPreview.evidenceDistribution.self_declared, color: TOKENS.inkHint },
+                  ].map(({ label, count, color }) => (
+                    <div key={label} style={{
+                      borderRadius: 8, padding: '8px 14px', border: `1px solid ${TOKENS.inkBorder}`,
+                      background: TOKENS.canvas, textAlign: 'center', minWidth: 80,
+                    }}>
+                      <p style={{ fontSize: 18, fontWeight: 700, color, margin: '0 0 2px', lineHeight: 1 }}>{count}</p>
+                      <p style={{ fontSize: 10, color: TOKENS.inkHint, margin: 0 }}>{label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Contribution families */}
+                {flPreview.contributionFamilies.length > 0 && (
+                  <>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontFamily: FONT }}>
+                      Famiglie di contribuzione attive
+                    </p>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {flPreview.contributionFamilies.map((f) => (
+                        <span key={f} style={{
+                          fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 6,
+                          background: 'rgba(47,125,85,0.08)', color: TOKENS.success,
+                          border: '1px solid rgba(47,125,85,0.20)',
+                        }}>
+                          {f.replace(/_/g, ' ')}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Next steps notice */}
+              <div style={{
+                background:   TOKENS.canvas,
+                border:       `1px solid ${TOKENS.inkBorder}`,
+                borderRadius: 12,
+                padding:      '14px 18px',
+                marginBottom: 20,
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 8px', fontFamily: FONT }}>
+                  Prossimi passi per attivare KORA Contribution™
+                </p>
+                <ol style={{ fontSize: 11, color: TOKENS.inkSecondary, lineHeight: 1.65, margin: 0, paddingLeft: 18 }}>
+                  <li style={{ marginBottom: 4 }}>Pubblica iniziative in KORA Space e ricevi partecipazioni cross-azienda.</li>
+                  <li style={{ marginBottom: 4 }}>Le partecipazioni confermate generano eventi di contribuzione (<code style={{ fontSize: 10 }}>contribution_event</code>).</li>
+                  <li style={{ marginBottom: 4 }}>Raggiungi soglia Pilot+ (contatta KORA per attivazione).</li>
+                  <li>Il dashboard live si attiva con dati reali al posto di questa anteprima.</li>
+                </ol>
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 12 }}>
+            <Link href="/company/commons" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent }}>
+              Vai a KORA Space →
             </Link>
             <Link href="/company/workspace" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary }}>
               ← Workspace
@@ -314,7 +430,8 @@ export default async function KoraContributionPage() {
           </div>
 
           <p style={{ fontSize: 10, fontFamily: 'monospace', color: TOKENS.inkHint, marginTop: 16 }}>
-            modulo non ancora disponibile per questo tenant · dati live disponibili per tenant Pilot+
+            contribution_event live attivi per tenant Pilot+ (production_ready = true) ·
+            companion indicator · not_kora_index_component
           </p>
         </div>
       )}

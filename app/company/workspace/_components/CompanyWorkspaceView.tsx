@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { DataSubmissionSection } from './DataSubmissionSection';
+import type { KoraIndexHistoryResponse } from '@/app/api/company/kora-index/history/route';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -171,6 +172,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
   const [workspace, setWorkspace]   = useState<WorkspaceData | null>(null);
   const [archive, setArchive]       = useState<ArchiveData | null>(null);
   const [aggData, setAggData]       = useState<WorkerInitiativeAggregateData | null>(null);
+  const [history, setHistory]       = useState<KoraIndexHistoryResponse | null>(null);
   const [wsLoading, setWsLoading]   = useState(true);
   const [archLoading, setArchLoading] = useState(true);
   const [aggLoading, setAggLoading] = useState(true);
@@ -203,6 +205,14 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
       })
       .catch(() => { /* non-critical — silently skip */ })
       .finally(() => setAggLoading(false));
+
+    // P0-2: KORA Index period history (non-critical — silently skip on error)
+    fetch('/api/company/kora-index/history', { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then((d: KoraIndexHistoryResponse | null) => {
+        if (d?.ok) setHistory(d);
+      })
+      .catch(() => { /* non-critical */ });
   }, []);
 
   const w = workspace;
@@ -308,8 +318,8 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
               <div className="grid grid-cols-2 gap-2 text-[10.5px]">
                 {[
                   { label: 'Activation Reach (25%)', note: 'AR + MAR' },
-                  { label: 'Activation Quality (30%)', note: 'NI + VR + CO' },
-                  { label: 'Distribution & Equity (25%)', note: 'WB + PC + PB + EQ' },
+                  { label: 'Activation Quality (30%)', note: 'EVQ + INT + CONT' },
+                  { label: 'Distribution & Equity (25%)', note: 'EQW + EQS + PC + PB' },
                   { label: 'Budget-to-Human-Impact (20%)', note: 'BTI Engine' },
                 ].map(({ label, note }) => (
                   <div key={label} className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
@@ -328,6 +338,88 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
             <div className="text-xs text-[rgba(6,3,43,0.52)] py-4 text-center space-y-1">
               <p className="font-semibold text-[rgba(6,3,43,0.78)]">KORA Index non ancora disponibile</p>
               <p>La pipeline dati non è ancora stata completata per questa azienda.</p>
+            </div>
+          )}
+        </Section>
+      )}
+
+      {/* ── KORA Index Storico (P0-2: period history) ───────────────────────────── */}
+      {w && (
+        <Section title="Storico KORA Index" id="kora-index-history">
+          {history === null ? (
+            <div className="text-xs text-[rgba(6,3,43,0.40)] py-2 text-center">
+              Caricamento storico…
+            </div>
+          ) : history.period_count === 0 ? (
+            <div data-testid="kora-history-no-data" className="text-xs text-[rgba(6,3,43,0.52)] py-2 space-y-1">
+              <p className="font-semibold text-[rgba(6,3,43,0.72)]">Nessuno storico di punteggio ancora disponibile</p>
+              <p>Il primo KORA Index sarà registrato al termine del prossimo scoring run.</p>
+            </div>
+          ) : history.period_count === 1 ? (
+            <div data-testid="kora-history-first-period" className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-center">
+                  <p className="text-[9px] text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-0.5">{history.periods[0].reporting_period}</p>
+                  <p className="text-xl font-bold text-[#06032B]">{history.periods[0].kora_index_value}</p>
+                  <p className="text-[9px] text-[rgba(6,3,43,0.35)]">/100</p>
+                </div>
+                <p className="text-xs text-[rgba(6,3,43,0.55)] leading-relaxed">
+                  Primo periodo misurato. Il trend comparativo apparirà dopo il prossimo scoring run.
+                </p>
+              </div>
+              <p className="text-[9px] text-[rgba(6,3,43,0.35)] font-mono pt-1">
+                KORA Index v3 · pre_empirical_calibration · Dati aggregati
+              </p>
+            </div>
+          ) : (
+            <div data-testid="kora-history-trend" className="space-y-3">
+              <div className="overflow-x-auto">
+                <table className="w-full text-[10.5px]">
+                  <thead>
+                    <tr className="text-left border-b border-[rgba(6,3,43,0.07)]">
+                      <th className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Periodo</th>
+                      <th className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">KORA Index</th>
+                      <th className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Δ vs precedente</th>
+                      <th className="pb-1.5 pr-4 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">Safeguard</th>
+                      <th className="pb-1.5 font-semibold text-[rgba(6,3,43,0.45)] uppercase tracking-wide text-[9px]">CS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {history.periods.map((p) => (
+                      <tr key={p.reporting_period} className={`border-b border-[rgba(6,3,43,0.04)] ${p.is_current ? 'bg-[rgba(47,125,85,0.04)]' : ''}`}>
+                        <td className="py-1.5 pr-4 text-[rgba(6,3,43,0.70)] font-mono">
+                          {p.reporting_period}
+                          {p.is_current && <span className="ml-1.5 text-[8px] font-semibold text-[#2F7D55] uppercase tracking-wide">corrente</span>}
+                        </td>
+                        <td className="py-1.5 pr-4 font-bold text-[#06032B]">{p.kora_index_value}</td>
+                        <td className="py-1.5 pr-4">
+                          {p.delta === null ? (
+                            <span className="text-[rgba(6,3,43,0.35)]">—</span>
+                          ) : (
+                            <span className={p.delta >= 0 ? 'text-[#2F7D55] font-semibold' : 'text-[#9E3B2F] font-semibold'}>
+                              {p.delta >= 0 ? '+' : ''}{p.delta}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-1.5 pr-4">
+                          {p.safeguard_status ? (
+                            <Badge
+                              label={p.safeguard_status}
+                              cls={SAFEGUARD_CLS[p.safeguard_status] ?? 'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]'}
+                            />
+                          ) : <span className="text-[rgba(6,3,43,0.35)]">—</span>}
+                        </td>
+                        <td className="py-1.5 text-[rgba(6,3,43,0.55)]">
+                          {p.confidence_score !== null ? `${p.confidence_score}%` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[9px] text-[rgba(6,3,43,0.35)] font-mono">
+                KORA Index v3 · pre_empirical_calibration · Dati aggregati · Nessun dato individuale
+              </p>
             </div>
           )}
         </Section>
