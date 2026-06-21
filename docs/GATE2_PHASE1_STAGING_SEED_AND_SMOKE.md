@@ -274,8 +274,171 @@ Migration 027 MUST NOT be applied until ALL of the following are true:
 
 ---
 
-**Document version:** v1.0  
-**Prepared:** 2026-06-21  
+---
+
+## 6. UI Smoke Test Results
+
+**Executed:** 2026-06-22  
+**HEAD at smoke:** `2271ee6`  
+**Auth users used:** four synthetic `@staging.kora.internal` accounts (Dashboard-created)  
+**Passwords:** NOT documented — NOT committed — stored outside repository  
+**Method:** DB-level RLS simulation via JWT claim injection; UI login tests pending manual execution
+
+---
+
+### 6.1 Auth Readiness (Pre-smoke verification)
+
+| Check | Result |
+|---|---|
+| `auth.users` count (`@staging.kora.internal`) | 4 ✓ |
+| `auth.identities` count | 4 ✓ |
+| Ghost users | 0 ✓ |
+| Non-staging users | 0 ✓ |
+| `kora_role` set on all users | ✓ |
+| `kora_tenant_id` set on all users | ✓ |
+| `kora_worker_ref` set on workers | ✓ |
+| `environment = staging` on all | ✓ |
+| `synthetic = true` on all | ✓ |
+| W-STAGE-A/B/C `auth_user_id` linked | ✓ (link_valid=true) |
+
+---
+
+### 6.2 Company RLS Negative Tests — DB Level (C-11, C-12)
+
+Tests run by simulating COMPANY_ADMIN JWT claims via `SET LOCAL ROLE authenticated` +
+`set_config('request.jwt.claims', ...)` in a read-only transaction. No UI login used.
+
+| Test | Description | Expected | Result | Verdict |
+|---|---|---|---|---|
+| **C-11** | `COMPANY_ADMIN` reads `personal.worker_identity` | 0 rows | `company_sees_worker_identity = 0` | **PASS** |
+| **C-12** | `COMPANY_ADMIN` reads `personal.worker_pib` | 0 rows | `company_sees_worker_pib = 0` | **PASS** |
+| C-13 | `COMPANY_ADMIN` reads `personal.worker_profile_private` | 0 rows | `company_sees_profile_private = 0` | **PASS** |
+| C-14 | `COMPANY_ADMIN` reads `personal.workforce_baseline` | 1 row (aggregate safe) | `company_sees_baseline = 1` | **PASS** |
+
+COMPANY_ADMIN has no policy on `personal.worker_identity`, `personal.worker_pib`, or
+`personal.worker_profile_private`. FORCE RLS blocks access entirely. Only
+`personal.workforce_baseline` is accessible (own-tenant aggregate, not individual data).
+
+---
+
+### 6.3 Worker RLS Tests — DB Level (W-04 and variants)
+
+| Test | Description | Expected | Result | Verdict |
+|---|---|---|---|---|
+| **W-04a** | Worker A reads own `worker_identity` | 1 row | `worker_a_sees_own_identity = 1` | **PASS** |
+| **W-04b** | Worker A reads own `worker_pib` | 1 row (LIFE pillar) | `worker_a_sees_own_pib = 1` | **PASS** |
+| **W-04c** | Worker A total `worker_pib` visible (cross-worker blocked) | 1 row (own only) | `total_pib_visible = 1` | **PASS** |
+| W-04d | Worker B reads own `worker_identity` | 1 row | `worker_b_sees_own_identity = 1` | **PASS** |
+| W-04e | Worker B total `worker_pib` visible (cross-worker blocked) | 1 row (own only) | `worker_b_total_pib_visible = 1` | **PASS** |
+| W-04f | Worker C reads own `worker_identity` | 1 row | `worker_c_own_identity = 1` | **PASS** |
+| W-04g | Worker C total `worker_pib` visible | 1 row (CONNECTION) | `worker_c_total_pib = 1` | **PASS** |
+
+Each worker session sees exactly 1 PIB row (own pillar only). No cross-worker data visible.
+Cross-worker blocking confirmed: total PIB visible per worker session = 1, not 3.
+
+---
+
+### 6.4 Privacy/Security Tests — DB Level (S-01 to S-05)
+
+| Test | Description | Expected | Result | Verdict |
+|---|---|---|---|---|
+| **S-01** | `anon` reads `personal.worker_identity` | 0 rows or error | `ERROR 42501: permission denied for schema personal` | **PASS** |
+| **S-02** | `anon` reads `personal.worker_pib` | 0 rows or error | `ERROR 42501: permission denied for schema personal` | **PASS** |
+| **S-03** | `anon` reads `personal.worker_profile_private` | 0 rows or error | `ERROR 42501: permission denied for schema personal` | **PASS** |
+| S-04 | Worker C reads own `worker_identity` | 1 (own only) | `worker_c_own_identity = 1` | **PASS** |
+| S-05 | Worker C total `worker_pib` (cross-worker block) | 1 (own only) | `worker_c_total_pib = 1` | **PASS** |
+
+`anon` blocked at schema level (`42501: permission denied for schema personal`) — stronger
+than RLS: no schema usage privilege at all. Zero anon grants on `personal.*` confirmed.
+
+---
+
+### 6.5 Company UI Route Smoke — REQUIRES MANUAL BROWSER EXECUTION
+
+No staging app URL is available in the repository. Passwords are stored outside the repo
+and cannot be used by automated tooling. The following routes must be tested manually by
+logging in as `company-admin@staging.kora.internal`.
+
+| Route | Expected | Status |
+|---|---|---|
+| `/company/login` | Login form renders, redirects on success | MANUAL PENDING |
+| Company redirect after login | Lands on `/company/workspace` or equivalent | MANUAL PENDING |
+| `/company/workspace` | STAGE-001 workspace loads, no individual PIB visible | MANUAL PENDING |
+| `/company/kora-index` | KORA Index renders with all 10 components, CS, methodology_version_id, calibration_status | MANUAL PENDING |
+| `/company/activation` | Activation rate shown (aggregate only) | MANUAL PENDING |
+| `/company/pillars` | Pillar distribution shown (company level, not per-worker) | MANUAL PENDING |
+| `/company/financial` | Financial governance view | MANUAL PENDING |
+| `/company/reports` | Report export options render | MANUAL PENDING |
+| `/company/commons` | KORA Space view (aggregate bookings only) | MANUAL PENDING |
+| Booking aggregate | No individual PIB or personal data in any company view | MANUAL PENDING |
+
+---
+
+### 6.6 Worker UI Route Smoke — REQUIRES MANUAL BROWSER EXECUTION
+
+Must be tested manually. Log in as each worker separately.
+
+| Worker | Route | Expected | Status |
+|---|---|---|---|
+| Worker A | `/worker/login` or `/login` | Login success | MANUAL PENDING |
+| Worker A | `/my-kora` or `/worker/workspace` | Own workspace loads | MANUAL PENDING |
+| Worker A | `/my-kora/bookings` | 1 attended booking visible | MANUAL PENDING |
+| Worker A | `/my-kora/personal-impact-balance` | Own PIB (LIFE/12.5) | MANUAL PENDING |
+| Worker A | `/my-kora/dynamic-cv` | Own Dynamic Impact CV | MANUAL PENDING |
+| Worker A | `/my-kora/kora-space` | KORA Space worker view | MANUAL PENDING |
+| Worker B | `/my-kora/bookings` | 1 approved booking visible | MANUAL PENDING |
+| Worker B | `/my-kora/personal-impact-balance` | Own PIB (GROWTH/8.0) | MANUAL PENDING |
+| Worker C | `/my-kora/bookings` | 0 bookings | MANUAL PENDING |
+| Worker C | `/my-kora/personal-impact-balance` | Own PIB (CONNECTION/3.2) | MANUAL PENDING |
+| Any worker | Cannot see another worker's `/my-kora` content | 403 or redirect | MANUAL PENDING |
+
+---
+
+### 6.7 Admin Smoke
+
+No KORA_ADMIN synthetic account exists on staging. Admin UI smoke is **PENDING** — do not
+create a KORA_ADMIN account in this sprint.
+
+| Item | Status |
+|---|---|
+| KORA_ADMIN synthetic account | NOT CREATED — pending separate sprint |
+| Admin route smoke (`/admin/*`) | PENDING |
+
+---
+
+### 6.8 Blockers
+
+None blocking Gate 2 readiness. All DB-level RLS tests passed.
+
+UI route tests (§6.5, §6.6, §6.7) require manual browser execution with passwords stored
+outside the repository. These are operational smoke tests — they validate UX flows, not
+security contracts. Security contracts are validated by DB-level RLS tests (§6.2–§6.4).
+
+---
+
+### 6.9 Final Smoke Verdict
+
+| Layer | Result |
+|---|---|
+| Auth readiness | **PASS** — 4 valid users, 4 identities, correct metadata |
+| Company RLS (C-11, C-12) | **PASS** — company blocked from all personal.* individual data |
+| Worker own-access (W-04) | **PASS** — each worker sees only own data |
+| Cross-worker block | **PASS** — no worker can see another's PIB or identity |
+| anon block (S-01–S-03) | **PASS** — schema-level permission denied |
+| Migration 027 | **NOT applied** — confirmed |
+| Migration 029 | **NOT applied** — confirmed |
+| No schema/RLS/grant/policy changes | **PASS** |
+| Production | **NOT touched** |
+| UI route smoke | **MANUAL PENDING** — requires browser + passwords outside repo |
+
+**Overall verdict: PARTIAL PASS.**  
+DB/JWT/RLS security baseline: ALL PASS — no P0 issues found.  
+Browser/UI route smoke: MANUAL PENDING — no staging app URL in repository; passwords stored outside repo.
+
+---
+
+**Document version:** v1.1  
+**Prepared:** 2026-06-22  
 **Gate status:** Gate 2 OPEN · Gate 3 OPEN  
 **Applies to staging:** `haqflkurpmeaxpikozjl` only  
 **Production:** NOT touched
