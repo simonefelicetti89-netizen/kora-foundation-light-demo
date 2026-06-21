@@ -6,8 +6,9 @@
 //   - Nessun dato company individuale (no KORA Index, no KPI aziendali, no scoring)
 //   - Nessuna classifica, nessun ranking, nessun confronto tra lavoratori
 //   - Partecipazione non visibile all'azienda in forma individuale
-//   - Dati sintetici inline — nessun DB query
+//   - Four-state detection: checking / live / empty / demo (same pattern as PIB and collective)
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRole } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
@@ -16,6 +17,19 @@ import { TOKENS } from '@/lib/design/kora-design-tokens';
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
 type SpaceItemType = 'initiative' | 'request' | 'opportunity' | 'kora_recommendation';
+type SpaceMode = 'checking' | 'live' | 'empty' | 'demo';
+
+interface LiveInitiative {
+  id:              string;
+  title:           string;
+  body?:           string;
+  pillar?:         string;
+  category?:       string;
+  opening_grade?:  string;
+  event_start_at?: string;
+  capacity_internal?: number;
+  capacity_cross?:    number;
+}
 
 interface KoraSpaceItem {
   id:           string;
@@ -82,10 +96,112 @@ const PILLAR_COLORS: Record<string, string> = {
   LIFE: '#C76F3D', GROWTH: '#2F7D55', CONNECTION: '#D99767', IMPACT: '#4A7FE0', LEGACY: '#8A7562',
 };
 
+function OperatingModelNotice() {
+  return (
+    <div
+      data-testid="space-operating-model-worker"
+      style={{
+        background: 'rgba(6,3,43,0.03)', border: '1px solid rgba(6,3,43,0.09)',
+        borderRadius: 12, padding: '14px 18px', marginBottom: 16,
+      }}
+    >
+      <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px', lineHeight: 1.4 }}>
+        KORA Space è il luogo in cui KORA passa dalla misurazione all&apos;attivazione.
+      </p>
+      <p style={{ fontSize: 12, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.65 }}>
+        Non è un social network. Non è sorveglianza dei lavoratori.
+        La partecipazione individuale resta privata. Le aziende vedono solo segnali aggregati.
+        KORA Contribution™ è un indicatore companion — non è una componente del KORA Index™.
+      </p>
+    </div>
+  );
+}
+
+function PrivacyNotice() {
+  return (
+    <div
+      data-testid="kora-space-worker-privacy"
+      style={{
+        background: 'rgba(47,125,85,0.06)', border: '1.5px solid rgba(47,125,85,0.22)',
+        borderRadius: 12, padding: '14px 18px', marginBottom: 24,
+      }}
+    >
+      <p
+        data-testid="space-employer-privacy-notice"
+        style={{ fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.75 }}
+      >
+        KORA Space mostra contenuti e opportunità condivise. Non espone dati individuali dei lavoratori.{' '}
+        Le richieste dei lavoratori sono gestite solo in forma aggregata o supervisionata.{' '}
+        La partecipazione individuale non è visibile all&apos;azienda in questa vista.{' '}
+        KORA misura l&apos;organizzazione, non classifica le persone.{' '}
+        <strong>Il datore di lavoro non vede il tuo percorso individuale.</strong>{' '}
+        La tua partecipazione può contribuire alla tua timeline personale e, in forma aggregata,
+        alla KORA Contribution dell&apos;ecosistema.
+      </p>
+    </div>
+  );
+}
+
+function TimelineConnectionNote() {
+  return (
+    <div
+      data-testid="space-timeline-connection-note"
+      style={{
+        background: TOKENS.canvas, border: `1px solid ${TOKENS.inkBorder}`,
+        borderRadius: 10, padding: '12px 16px', marginBottom: 20,
+      }}
+    >
+      <p style={{ fontSize: 12, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px', lineHeight: 1.4 }}>
+        Partecipazione, traccia personale e Dynamic Impact CV
+      </p>
+      <ul style={{ fontSize: 12, color: TOKENS.inkSecondary, margin: 0, paddingLeft: 16, lineHeight: 1.75 }}>
+        <li>
+          La partecipazione confermata può apparire nella tua timeline personale come traccia privata,
+          quando sarà disponibile un ciclo di scoring collegato.
+        </li>
+        <li>
+          L&apos;inclusione nel Dynamic Impact CV dipende dalla Dynamic Impact CV policy e dalla
+          classificazione CV-eligible dell&apos;iniziativa.
+        </li>
+        <li>
+          Non tutta la partecipazione in KORA Space diventa badge condivisibile.
+        </li>
+        <li>
+          Sei tu a decidere cosa condividere dalla tua timeline personale — il datore di lavoro
+          non vede il tuo percorso individuale.
+        </li>
+      </ul>
+    </div>
+  );
+}
+
 export default function WorkerKoraSpacePage() {
   const { activeRole } = useRole();
+  const [mode, setMode] = useState<SpaceMode>('checking');
+  const [liveInitiatives, setLiveInitiatives] = useState<LiveInitiative[]>([]);
 
-  if (!myKoraPreviewService.canAccess(activeRole)) {
+  useEffect(() => {
+    fetch('/api/worker/pib')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.isSynthetic !== false) {
+          setMode('demo');
+        } else {
+          // Real authenticated worker — try live initiatives feed
+          fetch('/api/commons/initiatives')
+            .then((r) => r.ok ? r.json() : null)
+            .then((idata) => {
+              const items: LiveInitiative[] = idata?.initiatives ?? [];
+              setLiveInitiatives(items);
+              setMode(items.length > 0 ? 'live' : 'empty');
+            })
+            .catch(() => setMode('empty'));
+        }
+      })
+      .catch(() => setMode('demo'));
+  }, []);
+
+  if (!myKoraPreviewService.canAccess(activeRole) && mode !== 'checking') {
     return (
       <div
         data-testid="access-denied"
@@ -102,18 +218,16 @@ export default function WorkerKoraSpacePage() {
     );
   }
 
-  return (
-    <div style={{ fontFamily: FONT }} data-testid="kora-space-worker">
+  if (mode === 'checking') return null;
 
-      {/* Breadcrumb */}
+  const PageHeader = () => (
+    <>
       <Link
         href="/my-kora"
         style={{ fontSize: 11, color: TOKENS.inkHint, textDecoration: 'none', display: 'inline-block', marginBottom: 20 }}
       >
         ← My KORA
       </Link>
-
-      {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
           <span style={{
@@ -122,13 +236,6 @@ export default function WorkerKoraSpacePage() {
             padding: '2px 8px', border: '1px solid rgba(181,81,46,0.22)',
           }}>
             supervisionato da KORA
-          </span>
-          <span style={{
-            fontSize: 10, fontWeight: 600,
-            color: '#2F7D55', background: 'rgba(47,125,85,0.07)', borderRadius: 4,
-            padding: '2px 8px', border: '1px solid rgba(47,125,85,0.18)',
-          }}>
-            dati individuali non visibili all&apos;azienda
           </span>
           <span style={{
             fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
@@ -145,22 +252,154 @@ export default function WorkerKoraSpacePage() {
           Lo spazio condiviso per iniziative, richieste e opportunità di attivazione.
         </p>
       </div>
+    </>
+  );
 
-      {/* Privacy notice — non-suppressible */}
-      <div
-        data-testid="kora-space-worker-privacy"
-        style={{
-          background: 'rgba(47,125,85,0.06)', border: '1.5px solid rgba(47,125,85,0.22)',
-          borderRadius: 12, padding: '14px 18px', marginBottom: 28,
-        }}
-      >
-        <p style={{ fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.75 }}>
-          KORA Space mostra contenuti e opportunità condivise. Non espone dati individuali dei lavoratori.{' '}
-          Le richieste dei lavoratori sono gestite solo in forma aggregata o supervisionata.{' '}
-          La partecipazione individuale non è visibile all&apos;azienda in questa vista.{' '}
-          KORA misura l&apos;organizzazione, non classifica le persone.
+  if (mode === 'live') {
+    return (
+      <div style={{ fontFamily: FONT }} data-testid="kora-space-worker">
+        <PageHeader />
+        <OperatingModelNotice />
+        <PrivacyNotice />
+        <h2 style={{
+          fontSize: 13, fontWeight: 700, color: TOKENS.inkSecondary,
+          margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.06em',
+        }}>
+          Iniziative disponibili
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
+          {liveInitiatives.map((item) => {
+            const pillarColor = item.pillar ? PILLAR_COLORS[item.pillar] : TOKENS.accent;
+            return (
+              <div
+                key={item.id}
+                data-testid={`kora-space-live-card-${item.id}`}
+                style={{
+                  background: '#FFFFFF', border: '1px solid rgba(6,3,43,0.09)',
+                  borderRadius: 14, padding: '18px 20px',
+                }}
+              >
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
+                  {item.pillar && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 600, color: pillarColor,
+                      background: `${pillarColor}18`, borderRadius: 4, padding: '2px 8px',
+                    }}>
+                      {item.pillar}
+                    </span>
+                  )}
+                  {item.opening_grade && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 600, color: '#2F7D55',
+                      background: 'rgba(47,125,85,0.08)', borderRadius: 4, padding: '2px 8px',
+                    }}>
+                      {item.opening_grade === 'cross_company' ? 'Cross-azienda' : item.opening_grade === 'company_internal' ? 'Interna' : 'Estesa'}
+                    </span>
+                  )}
+                  {item.event_start_at && (
+                    <span style={{ fontSize: 10, color: TOKENS.inkHint, marginLeft: 'auto' }}>
+                      {new Date(item.event_start_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: 14, fontWeight: 700, color: TOKENS.ink, margin: '0 0 6px', lineHeight: 1.3 }}>
+                  {item.title}
+                </p>
+                {item.body && (
+                  <p style={{ fontSize: 12, color: TOKENS.inkSecondary, margin: '0 0 14px', lineHeight: 1.6,
+                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {item.body}
+                  </p>
+                )}
+                <Link
+                  href="/worker/commons"
+                  style={{
+                    fontSize: 11, fontWeight: 600, color: TOKENS.accent,
+                    textDecoration: 'none', display: 'inline-block',
+                  }}
+                >
+                  Scopri su KORA Commons →
+                </Link>
+              </div>
+            );
+          })}
+        </div>
+        <TimelineConnectionNote />
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <Link href="/worker/commons" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
+            → KORA Commons (feed completo)
+          </Link>
+          <Link href="/my-kora/personal-impact-balance" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
+            → Personal Impact Balance
+          </Link>
+        </div>
+        <p style={{ fontSize: 10, fontFamily: 'monospace', color: TOKENS.inkHint, marginTop: 28 }}>
+          live_feed: true · session_authenticated · KORA Space v0.1 · B142-A
         </p>
       </div>
+    );
+  }
+
+  if (mode === 'empty') {
+    return (
+      <div style={{ fontFamily: FONT }} data-testid="kora-space-worker">
+        <PageHeader />
+        <OperatingModelNotice />
+        <PrivacyNotice />
+        <div
+          data-testid="kora-space-empty"
+          style={{
+            textAlign: 'center', padding: '40px 24px',
+            background: 'rgba(6,3,43,0.03)', borderRadius: 12,
+            border: '1px dashed rgba(6,3,43,0.12)', marginBottom: 24,
+          }}
+        >
+          <p style={{ fontSize: 14, fontWeight: 600, color: TOKENS.ink, margin: '0 0 8px' }}>
+            Nessuna iniziativa disponibile
+          </p>
+          <p style={{ fontSize: 12, color: TOKENS.inkSecondary, margin: '0 0 12px', lineHeight: 1.6 }}>
+            Le iniziative KORA Space pubblicate dalla tua azienda appariranno qui.
+            Nessuna iniziativa è stata ancora pubblicata per il tuo profilo.
+          </p>
+          <Link
+            href="/worker/commons"
+            style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
+          >
+            Vai a KORA Commons per esplorare la rete →
+          </Link>
+        </div>
+        <TimelineConnectionNote />
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <Link href="/my-kora/personal-impact-balance" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
+            → Personal Impact Balance
+          </Link>
+          <Link href="/worker/workspace" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
+            → Spazio operativo
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // demo mode — synthetic content with visible label
+  return (
+    <div style={{ fontFamily: FONT }} data-testid="kora-space-worker">
+      <PageHeader />
+
+      {/* Demo label */}
+      <div
+        data-testid="kora-space-demo-label"
+        style={{
+          background: 'rgba(74,127,224,0.06)', border: '1px solid rgba(74,127,224,0.18)',
+          borderRadius: 8, padding: '8px 14px', marginBottom: 16,
+          fontSize: 10, color: '#3B5A8A',
+        }}
+      >
+        Demo preview · Dati dimostrativi · Non rappresenta iniziative reali del lavoratore
+      </div>
+
+      <OperatingModelNotice />
+      <PrivacyNotice />
 
       {/* In evidenza */}
       <h2 style={{
@@ -190,14 +429,11 @@ export default function WorkerKoraSpacePage() {
                   {item.type_label}
                 </span>
                 {item.pillars.map((p) => (
-                  <span
-                    key={p}
-                    style={{
-                      fontSize: 10, fontWeight: 600,
-                      color: PILLAR_COLORS[p], background: `${PILLAR_COLORS[p]}18`,
-                      borderRadius: 4, padding: '2px 8px',
-                    }}
-                  >
+                  <span key={p} style={{
+                    fontSize: 10, fontWeight: 600,
+                    color: PILLAR_COLORS[p], background: `${PILLAR_COLORS[p]}18`,
+                    borderRadius: 4, padding: '2px 8px',
+                  }}>
                     {p}
                   </span>
                 ))}
@@ -230,6 +466,8 @@ export default function WorkerKoraSpacePage() {
         })}
       </div>
 
+      <TimelineConnectionNote />
+
       {/* Regole dello spazio */}
       <div style={{
         background: TOKENS.surface, border: `1px solid ${TOKENS.inkBorder}`,
@@ -246,23 +484,18 @@ export default function WorkerKoraSpacePage() {
         </ul>
       </div>
 
-      {/* Links to other worker spaces */}
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <Link
-          href="/my-kora/personal-impact-balance"
-          style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
-        >
+        <Link href="/my-kora/personal-impact-balance" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
           → Personal Impact Balance
         </Link>
-        <Link
-          href="/my-kora/dynamic-cv"
-          style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
-        >
+        <Link href="/my-kora/dynamic-cv" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
           → Dynamic Impact CV
+        </Link>
+        <Link href="/worker/workspace" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
+          → Spazio operativo
         </Link>
       </div>
 
-      {/* Synthetic disclaimer */}
       <p style={{ fontSize: 10, fontFamily: 'monospace', color: TOKENS.inkHint, marginTop: 28 }}>
         synthetic_demo_data: true · Foundation Light Preview · KORA Space v0.1 · B142-A
       </p>

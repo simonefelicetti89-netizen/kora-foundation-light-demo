@@ -399,6 +399,48 @@ export default async function KoraContributionPage() {
                 )}
               </div>
 
+              {/* Space → Contribution narrative */}
+              <div
+                data-testid="space-to-contribution-narrative"
+                style={{
+                  background:   'rgba(47,125,85,0.05)',
+                  border:       '1px solid rgba(47,125,85,0.18)',
+                  borderRadius: 12,
+                  padding:      '14px 18px',
+                  marginBottom: 16,
+                }}
+              >
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#2F7D55', margin: '0 0 8px', fontFamily: FONT, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Contribution Events
+                </p>
+                <p style={{ fontSize: 11, color: '#2F5A42', margin: '0 0 8px', lineHeight: 1.6, fontFamily: FONT }}>
+                  KORA Space è prima di tutto l&apos;ambiente di attivazione — KORA Contribution™ è uno dei segnali aggregati che ne emergono, non il suo scopo principale.
+                </p>
+                <ul style={{ fontSize: 11, color: '#2F5A42', lineHeight: 1.75, margin: 0, paddingLeft: 18 }}>
+                  <li style={{ marginBottom: 4 }}>Le partecipazioni confermate nelle iniziative KORA Space creano <strong>Contribution Events</strong>.</li>
+                  <li style={{ marginBottom: 4 }}>Questi eventi alimenteranno la dashboard live di KORA Contribution™ quando il profilo pilot sarà attivo.</li>
+                  <li>KORA Contribution™ è un indicatore companion — <strong>non è una componente del KORA Index™</strong>.</li>
+                </ul>
+              </div>
+
+              {/* Contribution event capture notice */}
+              <div
+                data-testid="contribution-event-capture-notice"
+                style={{
+                  background:   'rgba(74,127,224,0.06)',
+                  border:       '1px solid rgba(74,127,224,0.18)',
+                  borderRadius: 10,
+                  padding:      '10px 14px',
+                  marginBottom: 16,
+                  fontSize:     11,
+                  color:        '#3B5A8A',
+                  lineHeight:   1.6,
+                }}
+              >
+                Gli eventi di partecipazione possono essere registrati;
+                la dashboard live richiede l&apos;attivazione pilot (<code style={{ fontSize: 10 }}>production_ready = true</code>).
+              </div>
+
               {/* Next steps notice */}
               <div style={{
                 background:   TOKENS.canvas,

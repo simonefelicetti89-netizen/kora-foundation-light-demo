@@ -88,8 +88,73 @@ export default async function CompanyCommonsPage() {
           KORA Space
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
-          Spazio moderato per comunicare iniziative e contenuti ai worker del tuo tenant.
+          Il layer operativo dell'attivazione umana nel tuo tenant. Non un social network. Non un modulo welfare.
         </p>
+      </div>
+
+      {/* Operating model — non-suppressible */}
+      <div
+        data-testid="space-operating-model"
+        style={{
+          background:   'rgba(6,3,43,0.03)',
+          border:       '1px solid rgba(6,3,43,0.09)',
+          borderRadius: 12,
+          padding:      '14px 18px',
+          marginBottom: 20,
+        }}
+      >
+        <p style={{ fontSize: 12, fontWeight: 700, color: '#06032B', margin: '0 0 6px' }}>
+          KORA Space è il luogo in cui KORA passa dalla misurazione all&apos;attivazione.
+        </p>
+        <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: 0, lineHeight: 1.65 }}>
+          Non è un social network e non è sorveglianza dei lavoratori.
+          Le adesioni sono visibili all&apos;azienda solo in forma aggregata — nessun nome, nessun ID worker, nessuna traccia individuale.
+          KORA Contribution™ è un indicatore companion che legge parte del valore generato dallo Space — non è il suo scopo principale e non è una componente del KORA Index™.
+        </p>
+      </div>
+
+      {/* Activation loop — non-suppressible */}
+      <div
+        data-testid="space-activation-loop"
+        style={{
+          background:   'rgba(47,125,85,0.05)',
+          border:       '1.5px solid rgba(47,125,85,0.18)',
+          borderRadius: 12,
+          padding:      '16px 20px',
+          marginBottom: 20,
+        }}
+      >
+        <p style={{ fontSize: 11, fontWeight: 700, color: '#2F7D55', margin: '0 0 10px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          Come funziona KORA Space
+        </p>
+        <ol style={{ fontSize: 12, color: '#2F5A42', lineHeight: 1.8, margin: 0, paddingLeft: 18 }}>
+          <li>L&apos;azienda propone un&apos;iniziativa in KORA Space.</li>
+          <li>KORA la modera e la pubblica — solo dopo approvazione KORA.</li>
+          <li>I lavoratori scoprono e partecipano — il datore di lavoro vede solo aggregati.</li>
+          <li>La partecipazione viene confermata dall&apos;admin.</li>
+          <li>La partecipazione confermata crea una traccia privata nel percorso personale del lavoratore (timeline personale).</li>
+          <li>In forma aggregata, può generare un <strong>Contribution Event</strong> per KORA Contribution™ — indicatore companion separato dal KORA Index™ e <strong>non una sua componente</strong>.</li>
+        </ol>
+      </div>
+
+      {/* Pilot Preview notice — non-suppressible */}
+      <div
+        data-testid="space-pilot-preview-notice"
+        style={{
+          background:   'rgba(74,127,224,0.06)',
+          border:       '1px solid rgba(74,127,224,0.18)',
+          borderRadius: 10,
+          padding:      '10px 14px',
+          marginBottom: 20,
+          fontSize:     11,
+          color:        '#3B5A8A',
+          lineHeight:   1.6,
+        }}
+      >
+        <strong>KORA Space · Pilot Preview.</strong>{' '}
+        La dashboard live di KORA Contribution™ richiede l&apos;attivazione del profilo Pilot+.
+        Gli eventi di partecipazione possono essere registrati; la dashboard live richiede l&apos;attivazione pilot.
+        KORA Space non influenza direttamente il KORA Index™.
       </div>
 
       {/* Moderation copy — non-suppressible */}
@@ -197,8 +262,26 @@ export default async function CompanyCommonsPage() {
         )}
       </div>
 
+      {/* Aggregate privacy copy — non-suppressible */}
+      <div
+        data-testid="space-aggregate-privacy-copy"
+        style={{
+          background:   'rgba(47,125,85,0.04)',
+          border:       '1px solid rgba(47,125,85,0.14)',
+          borderRadius: 10,
+          padding:      '10px 14px',
+          marginTop: 28,
+          marginBottom: 0,
+        }}
+      >
+        <p style={{ fontSize: 11, color: '#2F5A42', margin: 0, lineHeight: 1.6 }}>
+          Le adesioni sono gestite nel rispetto del perimetro privacy: l'azienda vede solo aggregati.
+          Nessun lavoratore identificabile, nessun percorso individuale visibile in questa vista.
+        </p>
+      </div>
+
       {/* Privacy footer — non-suppressible */}
-      <div style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16, marginTop: 40 }}>
+      <div style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16, marginTop: 20 }}>
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.6 }}>
           KORA Space · B128 · Tenant-scoped · Moderation-first ·
           Nessun dato individuale worker esposto. Nessun analytics di lettura individuale.
