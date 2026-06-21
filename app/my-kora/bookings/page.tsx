@@ -20,6 +20,9 @@ interface BookingRecord {
   attended_at?:  string | null;
 }
 
+// Statuses where the worker may cancel their booking.
+const CANCELLABLE_STATUSES = new Set(['pending', 'requested', 'approved', 'confirmed']);
+
 interface InitiativeSummary {
   id:              string;
   title:           string;
@@ -63,6 +66,8 @@ export default function Bookings() {
   const [mode, setMode] = useState<BookingsMode>('checking');
   const [liveBookings, setLiveBookings] = useState<BookingRecord[]>([]);
   const [initiativesMap, setInitiativesMap] = useState<Record<string, InitiativeSummary>>({});
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [cancelErrors, setCancelErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch('/api/worker/pib')
@@ -89,6 +94,33 @@ export default function Bookings() {
       })
       .catch(() => setMode('demo'));
   }, []);
+
+  async function handleCancel(bookingId: string) {
+    setCancellingId(bookingId);
+    setCancelErrors((prev) => { const { [bookingId]: _, ...rest } = prev; return rest; });
+    try {
+      const res  = await fetch(`/api/worker/commons/bookings/${bookingId}`, { method: 'DELETE' });
+      const data = await res.json() as { ok: boolean; error?: string };
+      if (data.ok) {
+        // Update local state — mark as cancelled so the cancel button disappears.
+        setLiveBookings((prev) =>
+          prev.map((b) => b.id === bookingId ? { ...b, status: 'cancelled' } : b),
+        );
+      } else {
+        setCancelErrors((prev) => ({
+          ...prev,
+          [bookingId]: 'Impossibile annullare la richiesta. Riprova più tardi.',
+        }));
+      }
+    } catch {
+      setCancelErrors((prev) => ({
+        ...prev,
+        [bookingId]: 'Errore di rete. Riprova più tardi.',
+      }));
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   if (mode === 'checking') return null;
 
@@ -178,6 +210,51 @@ export default function Bookings() {
                   {booking.attended_at && (
                     <p style={{ fontSize: 10, color: '#2F7D55', margin: '4px 0 0' }}>
                       Partecipazione confermata il {new Date(booking.attended_at).toLocaleDateString('it-IT')}
+                    </p>
+                  )}
+
+                  {/* Cancel action — only for pending/approved statuses */}
+                  {CANCELLABLE_STATUSES.has(booking.status) && (
+                    <div
+                      data-testid={`booking-cancel-section-${booking.id}`}
+                      style={{ marginTop: 8 }}
+                    >
+                      <p style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '0 0 6px', fontFamily: FONT }}>
+                        Puoi annullare una richiesta finché non è stata completata.
+                      </p>
+                      <button
+                        data-testid={`booking-cancel-btn-${booking.id}`}
+                        disabled={cancellingId === booking.id}
+                        onClick={() => void handleCancel(booking.id)}
+                        style={{
+                          fontSize:     11,
+                          fontWeight:   600,
+                          padding:      '5px 12px',
+                          borderRadius: 7,
+                          border:       '1px solid rgba(158,59,47,0.25)',
+                          background:   'rgba(158,59,47,0.06)',
+                          color:        '#9E3B2F',
+                          cursor:       cancellingId === booking.id ? 'not-allowed' : 'pointer',
+                          fontFamily:   FONT,
+                        }}
+                      >
+                        {cancellingId === booking.id ? 'Annullamento…' : 'Annulla richiesta'}
+                      </button>
+                      {cancelErrors[booking.id] && (
+                        <p style={{ fontSize: 10, color: '#9E3B2F', margin: '4px 0 0', fontFamily: FONT }}>
+                          {cancelErrors[booking.id]}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Cancelled re-request notice — no automatic re-registration (DB UNIQUE constraint) */}
+                  {booking.status === 'cancelled' && (
+                    <p
+                      data-testid={`booking-cancelled-reopen-notice-${booking.id}`}
+                      style={{ fontSize: 10, color: TOKENS.inkSecondary, margin: '8px 0 0', lineHeight: 1.5, fontFamily: FONT }}
+                    >
+                      Per una nuova richiesta sulla stessa iniziativa, contatta KORA/Admin.
                     </p>
                   )}
 

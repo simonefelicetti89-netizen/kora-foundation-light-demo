@@ -488,26 +488,32 @@ describe('B166 — feature gate getContributionLive', () => {
 // ── 14. Worker commons page — pulsante Prenota ────────────────────────────────
 
 describe('B166 — worker commons page prenota', () => {
-  const src = read('app/worker/commons/page.tsx');
+  // B185: booking logic moved to WorkerBookingButton client component (JSON fetch fix).
+  // page.tsx imports the button; button contains the booking content.
+  const pageSrc = read('app/worker/commons/page.tsx');
+  const btnSrc  = read('components/commons/WorkerBookingButton.tsx');
 
   it('ha pulsante Prenota partecipazione', () => {
-    expect(src).toContain('Prenota partecipazione');
+    expect(btnSrc).toContain('Prenota partecipazione');
   });
 
   it('il form punta a /api/worker/commons/bookings', () => {
-    expect(src).toContain('/api/worker/commons/bookings');
+    // Path is now in WorkerBookingButton which uses JSON fetch (not HTML form)
+    expect(btnSrc).toContain('/api/worker/commons/bookings');
   });
 
   it('il pulsante è visibile solo per grade=cross_company', () => {
-    expect(src).toContain("grade === 'cross_company'");
+    expect(pageSrc).toContain("grade === 'cross_company'");
   });
 
   it('avviso privacy: nome non visibile all\'organizzatore', () => {
-    expect(src).toContain('nome non è visibile all');
+    expect(btnSrc).toContain('nome non è visibile all');
   });
 
-  it('data-testid worker-booking-form presente', () => {
-    expect(src).toContain('worker-booking-form-');
+  it('data-testid worker-book-btn presente (sostituisce worker-booking-form)', () => {
+    expect(btnSrc).toContain('worker-book-btn-');
+    // Old HTML form testid removed — page now renders WorkerBookingButton
+    expect(pageSrc).toContain('WorkerBookingButton');
   });
 });
 
