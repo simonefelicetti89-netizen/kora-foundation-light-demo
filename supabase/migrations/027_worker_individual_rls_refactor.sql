@@ -15,10 +15,40 @@
 -- NON applicare a nessun DB (production o staging) prima della chiusura di Gate 2 (CTO review).
 -- Applicare SOLO dopo: conferma Gate 2 + verifica provisioning service-role isolato.
 --
+-- ╔══════════════════════════════════════════════════════════════════════════════╗
+-- ║  DO NOT APPLY UNTIL THE FOLLOWING PRECONDITIONS ARE ALL MET:               ║
+-- ║                                                                              ║
+-- ║  1. Gate 2 (CTO architecture review) is formally closed.                   ║
+-- ║  2. Gate 3 (Legal/DPO review) has reviewed personal-schema RLS design.     ║
+-- ║  3. lib/supabase/worker-provisioning-service-key.ts is deployed and tested. ║
+-- ║     (File exists as of B168-P3 — verify it is in production build.)        ║
+-- ║  4. app/api/admin/workers/provision/route.ts uses insertWorkerIdentity()   ║
+-- ║     from worker-provisioning-service-key.ts (NOT a kora_admin RLS path).   ║
+-- ║  5. Staging smoke test: provision a worker via service-role path after      ║
+-- ║     applying this migration — confirm worker_identity row is created.       ║
+-- ║                                                                              ║
+-- ║  Applying without these conditions permanently removes KORA_ADMIN INSERT   ║
+-- ║  on personal.worker_identity — worker provisioning will break with no      ║
+-- ║  rollback path other than a follow-on migration that re-adds the policies. ║
+-- ╚══════════════════════════════════════════════════════════════════════════════╝
+--
 -- IDEMPOTENT: this migration can be applied multiple times safely.
 -- All statements use DROP POLICY IF EXISTS (B168.6 P4.0.4 verified).
 
 BEGIN;
+
+-- Runtime notice: reminds the operator of preconditions at apply time.
+-- Does NOT block application — that decision belongs to the operator.
+DO $$
+BEGIN
+  RAISE NOTICE
+    '027_worker_individual_rls_refactor: PRECONDITION REMINDER — '
+    'Apply ONLY after Gate 2 close + service-role provisioning path confirmed. '
+    'lib/supabase/worker-provisioning-service-key.ts must be in production build. '
+    'Verify with: SELECT routine_name FROM information_schema.routines '
+    'WHERE routine_schema = ''kora'' AND routine_name = ''kora_role'';';
+END;
+$$;
 
 -- ── personal.worker_identity ────────────────────────────────────────────────
 -- Accesso admin rimosso. Il provisioning worker (onboarding, invito) deve usare
@@ -56,8 +86,10 @@ DROP POLICY IF EXISTS kora_admin_impact_unit_insert ON analytics.impact_unit;
 -- ── Nota: Operazioni di provisioning ────────────────────────────────────────
 -- Con questa migrazione, le operazioni di provisioning worker che usavano RLS
 -- admin devono transitare al path service-role isolato:
---   lib/supabase/worker-provisioning-service-key.ts (da creare)
+--   lib/supabase/worker-provisioning-service-key.ts (EXISTS — implementato in B168-P3)
 -- Pattern identico a lib/supabase/auth-admin-update-user.ts (B163) e
 --   lib/supabase/storage-service-key.ts (B168-P3).
+-- Verificare che insertWorkerIdentity() sia usato in app/api/admin/workers/provision/
+-- prima di applicare questa migrazione.
 
 COMMIT;

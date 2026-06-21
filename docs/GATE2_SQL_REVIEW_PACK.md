@@ -46,7 +46,7 @@ worker data processing.
 | 002 | `002_grants_and_softdelete` | analytics, personal, gov, audit | GRANT USAGE/SELECT/ALL; FORCE RLS on personal.* | FORCE RLS added | No | Low | NEEDS_CTO_REVIEW | CTO | service_role GRANT ALL — confirm bypass scope |
 | 003 | `003_claim_functions_app_metadata` | kora | `kora.kora_role()`, `kora.tenant_id()` updated | No | No | None | NEEDS_CTO_REVIEW | CTO | SUPERSEDED by 004; retained for audit trail only |
 | 004 | `004_gate3a_claims_and_grants` | kora, personal | Claim functions + GRANT SELECT on personal.uploaded_record + policy verification DO block | No | No | Low | NEEDS_CTO_REVIEW | CTO | Supersedes 003; GRANT on personal table requires CTO sign-off |
-| 005 | `005_impact_unit_trace_layer` | analytics | `analytics.impact_unit` table | Yes | No | Low | NEEDS_CTO_REVIEW | CTO | **CRITICAL:** uses `auth.jwt() ->> 'role'` (wrong pattern) and `COMPANY_USER` (non-existent role). factor_trace excluded at app layer only. |
+| 005 | `005_impact_unit_trace_layer` | analytics | `analytics.impact_unit` table | Yes | No | Low | NEEDS_CTO_REVIEW | CTO | ~~CRITICAL: auth.jwt() ->> 'role' + COMPANY_USER~~ **P0 fixed 2026-06-21** — policies rewritten to use `kora.kora_role()` and `kora.tenant_id()`; `COMPANY_USER` replaced with `COMPANY_ADMIN`, `COMPANY_VIEWER`. Pending CTO review. |
 | 006 | `006_canonical_tenant_key` | kora | `kora.tenant_id()` updated for `kora_tenant_id` canonical key | No | No | None | NEEDS_CTO_REVIEW | CTO | Supersedes 003/004 for tenant_id; introduces canonical JWT key `kora_tenant_id` |
 | 007 | `007_worker_provisioning` | personal | `personal.worker_identity`, `personal.worker_profile_private` | Yes, FORCE RLS | No | HIGH (auth_user_id → tenant_id mapping) | NEEDS_LEGAL_PRIVACY_REVIEW | CTO + DPO | First table linking Supabase auth user to KORA tenant. Worker update access. Requires DPIA. |
 | 008 | `008_worker_initiatives` | personal | `personal.worker_initiative`, `personal.worker_participation` | Yes, FORCE RLS | No | HIGH (individual participation rows + private_note) | NEEDS_LEGAL_PRIVACY_REVIEW | CTO + DPO | `private_note` field — never logged. Participation rows are worker-private. |
@@ -66,9 +66,9 @@ worker data processing.
 | 022 | `022_worker_rls_gaps` | personal, analytics | New RLS policies: worker_identity UPDATE for WORKER; analytics.tenant SELECT for WORKER | Yes (2 new policies) | No | Low | NEEDS_CTO_REVIEW | CTO | Gate 2 OPEN. WITH CHECK on worker_identity UPDATE prevents auth_user_id reassignment — verify. |
 | 023 | `023_uploaded_record_attendee` | personal | `personal.uploaded_record_attendee` | Yes, FORCE RLS | No | HIGH (pseudonymised attendee matching table; worker_identity_id linkage) | **DO_NOT_APPLY_YET** | CTO + DPO | Gate 2 OPEN. HMAC pseudonymisation at app layer — KORA_PSEUDONYM_SECRET key management undocumented. Gate 3 mandatory. |
 | 024 | `024_commons_initiative_fields` | commons | ALTER commons.post: 10 new columns; cross-company worker RLS policy | Yes (1 new policy) | No | Low | NEEDS_CTO_REVIEW | CTO | Gate 2 OPEN. Cross-tenant visibility for `cross_company` posts — review cross-tenant RLS logic. |
-| 025 | `025_commons_booking_contribution` | commons, personal | `commons.booking`, `commons.contribution_event`; `commons.booking_aggregate_for_promoter()` SECURITY DEFINER; ALTER worker_pib: source_booking_id | Yes (3 tables) | Yes (1 function) | HIGH (worker_identity_id in bookings; PIB extension) | **DO_NOT_APPLY_YET** | CTO + DPO | Gate 2 OPEN. **BUG RISK:** trigger references `kora.set_updated_at()` (line 58) but function is `set_updated_at()` in public schema — may fail. Cross-company booking privacy model requires DPO review. |
+| 025 | `025_commons_booking_contribution` | commons, personal | `commons.booking`, `commons.contribution_event`; `commons.booking_aggregate_for_promoter()` SECURITY DEFINER; ALTER worker_pib: source_booking_id | Yes (3 tables) | Yes (1 function) | HIGH (worker_identity_id in bookings; PIB extension) | **DO_NOT_APPLY_YET** | CTO + DPO | Gate 2 OPEN. ~~BUG RISK: kora.set_updated_at()~~ **P0 fixed 2026-06-21** — trigger corrected to `set_updated_at()` (public schema, migration 001). Cross-company booking privacy model still requires DPO review. |
 | 026 | `026_company_route_rls_gaps` | analytics, audit | New INSERT/UPDATE policies on source_batch; INSERT policy on audit_log for COMPANY_ADMIN | Yes (3 new policies) | No | Low | NEEDS_CTO_REVIEW | CTO | **ISSUE:** Uses `auth.jwt() ->> 'kora_role'` directly (inconsistent with `kora.kora_role()`). GRANT INSERT on audit_log to authenticated — verify append-only guarantee. |
-| 027 | `027_worker_individual_rls_refactor` | personal, analytics | DROP POLICY: removes KORA_ADMIN access from worker_identity, worker_pib, worker_pseudonym_map, worker_profile_private, impact_unit | Removes policies | No | CRITICAL impact (removes fallback admin access) | **DO_NOT_APPLY_YET** | CTO | Gate 2 OPEN. **DEPENDENCY:** requires `lib/supabase/worker-provisioning-service-key.ts` (noted as "to create"). If applied without the service-role provisioning path, KORA_ADMIN loses ability to provision workers. Irreversible without rollback. |
+| 027 | `027_worker_individual_rls_refactor` | personal, analytics | DROP POLICY: removes KORA_ADMIN access from worker_identity, worker_pib, worker_pseudonym_map, worker_profile_private, impact_unit | Removes policies | No | CRITICAL impact (removes fallback admin access) | **DO_NOT_APPLY_YET** | CTO | Gate 2 OPEN. ~~DEPENDENCY: service-key file missing~~ **P0 updated 2026-06-21** — `lib/supabase/worker-provisioning-service-key.ts` EXISTS (B168-P3). Precondition block + `RAISE NOTICE` added. Still DO_NOT_APPLY_YET pending Gate 2 + staging smoke test confirming service-role path works. |
 | 028 | `028_audit_log_enrichment` | audit | ALTER audit_log: environment, ip_hash, user_agent_hash columns; CREATE ROLE audit_reader; SELECT policy for audit_reader | Yes (1 new policy) | No | Low | NEEDS_CTO_REVIEW | CTO | Gate 2 OPEN. Creates DB-level role `audit_reader`. Retention/proportionality of ip_hash and user_agent_hash requires DPO review. |
 
 ---
@@ -83,8 +83,8 @@ worker data processing.
 | `kora.tenant_id()` | 001 → 003 → 004 → 006 (current) | Returns caller's tenant UUID from JWT | Priority: top-level `kora_tenant_id` → `app_metadata.kora_tenant_id` (canonical) → `app_metadata.tenant_id` (legacy fallback) | NULL if no valid claim → RLS blocks all rows for that session. Canonical key is `kora_tenant_id`. | CTO: confirm legacy `tenant_id` fallback can be removed after pilot provisioning |
 
 **Inconsistencies requiring CTO attention:**
-- Migration 005 uses `auth.jwt() ->> 'role'` instead of `kora.kora_role()` — bypasses the canonical function entirely, does not benefit from the app_metadata fallback logic. The role string `'COMPANY_USER'` does not exist in the KORA role taxonomy.
-- Migrations 013, 025, 026 use `auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id'` directly instead of `kora.tenant_id()`. These policies do not benefit from future canonical key updates.
+- ~~Migration 005 uses `auth.jwt() ->> 'role'` instead of `kora.kora_role()`.~~ **Fixed 2026-06-21** — migration 005 now uses `kora.kora_role()` and `kora.tenant_id()` throughout. `COMPANY_USER` removed; `COMPANY_ADMIN`/`COMPANY_VIEWER` used.
+- Migrations 013, 025, 026 use `auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id'` directly instead of `kora.tenant_id()`. These policies do not benefit from future canonical key updates. (Not in scope for P0 cleanup — CTO decision required.)
 
 ### 3.2 SECURITY DEFINER functions
 
@@ -145,15 +145,15 @@ company users and personal.* or analytics.uef_record data.
 ## 4. Gate 2 Checklist — CTO
 
 - [ ] **Claim functions read the correct JWT fields.** `kora.kora_role()` and `kora.tenant_id()` both read from `app_metadata` as the canonical path. Verify this is what Supabase JWT delivers after `setSession`/`signInWithPassword` for a provisioned user.
-- [ ] **Migration 005 role inconsistency resolved.** `auth.jwt() ->> 'role' = 'COMPANY_USER'` does not match the KORA role taxonomy. The policy must be rewritten to use `kora.kora_role()` and role names `'COMPANY_ADMIN'`, `'COMPANY_VIEWER'`, or `'KORA_ADMIN'` before application.
+- [x] **Migration 005 role inconsistency resolved.** ~~`auth.jwt() ->> 'role' = 'COMPANY_USER'`~~ **Fixed 2026-06-21** — policies now use `kora.kora_role()` and `kora.tenant_id()`; roles are `'COMPANY_ADMIN'`, `'COMPANY_VIEWER'`, `'KORA_ADMIN'`. See §9 P0 cleanup update.
 - [ ] **Migrations 013 / 025 / 026 tenant isolation inconsistency resolved.** Direct `auth.jwt() -> 'app_metadata' ->> 'kora_tenant_id'` reads must be replaced with `kora.tenant_id()` for consistency and maintainability.
 - [ ] **SECURITY DEFINER functions cannot be called by unauthorized roles.** Verify that `fn_company_worker_status()` and `fn_company_activation_summary()` cannot be invoked by `anon` (REVOKE confirmed in 015) or WORKER (no explicit REVOKE — verify RLS context prevents this).
 - [ ] **N≥10 suppression in `fn_company_activation_summary` is correct.** Boundary test: count = 0 → 0 (not suppressed), count = 1..9 → NULL, count ≥ 10 → actual count.
 - [ ] **`v_company_uploaded_record_safe` excludes all worker identifiers by construction.** Confirm pseudonym_id and raw_hash are absent from the SELECT list and cannot be accessed by any COMPANY_* role directly or via JOIN.
 - [ ] **FORCE ROW LEVEL SECURITY on personal.* is effective.** Verify that even a session with postgres privileges cannot bypass RLS in an authenticated context (Supabase: BYPASSRLS applies to service_role, not to `postgres` role in RPC context).
 - [ ] **`audit.audit_log` INSERT by COMPANY_ADMIN (026) preserves append-only guarantee.** REVOKE UPDATE, DELETE from PUBLIC (001) must apply to authenticated as well. Confirm no UPDATE or DELETE is possible for authenticated sessions.
-- [ ] **Migration 027 dependency confirmed before application.** `lib/supabase/worker-provisioning-service-key.ts` must exist and be tested before dropping KORA_ADMIN policies from personal.worker_identity, worker_pib, and worker_pseudonym_map. Dropping these policies without a working service-role provisioning path will break worker onboarding irreversibly.
-- [ ] **Migration 025 trigger bug resolved.** Line 58 of 025 references `kora.set_updated_at()` — verify whether this function exists in the kora schema or if it must be `public.set_updated_at()`. This will cause an error at apply time if the function does not exist in the kora schema.
+- [x] **Migration 027 dependency confirmed before application.** ~~Service-key file missing.~~ **Updated 2026-06-21** — `lib/supabase/worker-provisioning-service-key.ts` EXISTS (B168-P3). Precondition block + `RAISE NOTICE` added to migration 027. Still DO_NOT_APPLY_YET — Gate 2 close + staging smoke test required.
+- [x] **Migration 025 trigger bug resolved.** ~~Line 58 references `kora.set_updated_at()`.~~ **Fixed 2026-06-21** — corrected to `set_updated_at()` (public schema, migration 001). All 13 other trigger sites use the same unqualified reference.
 - [ ] **`kora_worker_id` JWT field provisioning documented.** Migration 011 reads `app_metadata.kora_worker_id` to authorize worker CV share access. Document where and when this field is written to app_metadata during worker provisioning.
 - [ ] **Migration order is safe and dependency chain is respected.** Confirm that 016 → 017 → 018 → 019 → 020 are applied in sequence; and that 025 is applied after 018 (personal.worker_pib must exist).
 - [ ] **Rollback strategy documented.** Define what rollback means for each migration: whether dropping objects or reverting schema changes is possible without data loss on a live database.
@@ -189,11 +189,11 @@ company users and personal.* or analytics.uef_record data.
 - **Gate 2 (CTO review) not closed.** No migration may be applied to any database holding real company or worker data until Gate 2 closes.
 - **Gate 3 (Legal/DPO review) not closed.** No real worker accounts may be created, and no company data upload may occur, until Gate 3 closes.
 - **Migrations not applied or validated in staging.** No migration has been applied anywhere. A staging environment must be provisioned, all migrations applied in order, and basic connectivity tested before pilot.
-- **Migration 005 has non-existent role `COMPANY_USER`.** This migration creates a broken RLS policy that will never grant access and will silently allow wrong queries. Must be corrected before application.
+- ~~**Migration 005 has non-existent role `COMPANY_USER`.**~~ **Fixed 2026-06-21** — policies rewritten to use `kora.kora_role()` and `kora.tenant_id()`; `COMPANY_USER` replaced with `COMPANY_ADMIN`, `COMPANY_VIEWER`. Pending CTO review of the fix.
 - **RLS integration tests not run against real Supabase.** All RLS behaviour is currently verified only via TypeScript static analysis (tests/unit/route-privacy.test.ts etc.). Integration tests against a real Supabase project with real JWTs are required.
 - **Supabase generated TypeScript types not updated after migrations.** `supabase gen types typescript` must be run after all migrations are applied so the TypeScript client reflects the actual schema. Current TS types are hand-written and may drift.
 - **Backup and rollback plan missing.** No rollback runbook exists. Before applying to any persistent database, define rollback procedures for each migration.
-- **`lib/supabase/worker-provisioning-service-key.ts` does not exist.** Migration 027 requires this file before application. Dropping KORA_ADMIN policies without this service-role path will lock out worker provisioning permanently.
+- ~~**`lib/supabase/worker-provisioning-service-key.ts` does not exist.**~~ **Updated 2026-06-21** — file EXISTS (B168-P3, `insertWorkerIdentity()` implemented). Migration 027 still requires Gate 2 close + staging smoke test before application — it remains DO_NOT_APPLY_YET.
 
 ### P1 — Blocks pilot readiness (resolve before first real tenant)
 
@@ -212,13 +212,13 @@ company users and personal.* or analytics.uef_record data.
 
 2. **`kora_worker_id` provisioning path.** Migration 011 reads `app_metadata.kora_worker_id` to authorize worker CV share access. Where is this field written? Which provisioning route sets it? This is undocumented.
 
-3. **`kora.set_updated_at()` function existence.** Migration 025 line 58 calls `kora.set_updated_at()`. The trigger function created in migration 001 is named `set_updated_at()` in the public/default schema. Does `kora.set_updated_at()` exist? If not, this migration will error on apply.
+3. ~~**`kora.set_updated_at()` function existence.**~~ **Resolved 2026-06-21** — migration 025 corrected to call `set_updated_at()` (public schema). `kora.set_updated_at()` does not exist and is not needed.
 
 4. **Raw `ip_address` column in audit_log.** Migration 001 stores raw IP addresses. Migration 028 adds `ip_hash` as a safer alternative. Is the intent to stop writing to `ip_address` immediately? A follow-on migration should remove or nullify the column.
 
 5. **`personal.uploaded_record` GRANT SELECT (migration 004).** Migration 004 grants SELECT on `personal.uploaded_record` to `authenticated`. RLS limits this to KORA_ADMIN. Confirm there is no COMPANY_* policy that could be added later that would accidentally expose individual rows.
 
-6. **`analytics.impact_unit` RLS is broken (migration 005).** The role name `COMPANY_USER` does not exist. Company users can never read impact_unit via this policy. Is this intentional (impact_unit is admin-only)? Or should the policy target `'COMPANY_ADMIN'` and `'COMPANY_VIEWER'`?
+6. ~~**`analytics.impact_unit` RLS is broken (migration 005).**~~ **Resolved 2026-06-21** — policy now targets `COMPANY_ADMIN` and `COMPANY_VIEWER` using `kora.kora_role()`. analytics.impact_unit is aggregate-safe (no worker identity, no PIB); company read access is correct.
 
 7. **`v_company_uef_eligibility_summary` and `analytics.impact_unit`.** The view has a placeholder `NULL::numeric AS iu_average_ev` because impact_unit is "not present in Foundation Light DB." Once migration 005 is applied, this view should be updated. Who owns this update?
 
@@ -226,7 +226,7 @@ company users and personal.* or analytics.uef_record data.
 
 9. **`audit_reader` role lifecycle.** Migration 028 creates the `audit_reader` role but does not document how it is granted to specific DB users, who can revoke it, and how it integrates with the Supabase dashboard access model.
 
-10. **KORA_ADMIN provisioning path after 027.** Migration 027 drops all KORA_ADMIN policies from sensitive personal tables. The comment notes that `lib/supabase/worker-provisioning-service-key.ts` must be created. What is the scope of this file? What operations does it cover? Is the scope of dropped admin access fully enumerated?
+10. ~~**KORA_ADMIN provisioning path after 027 — service-key file missing.**~~ **Resolved 2026-06-21** — `lib/supabase/worker-provisioning-service-key.ts` EXISTS (B168-P3). Scope: `insertWorkerIdentity()` with whitelist `{worker_ref, tenant_id, auth_user_id, status}` + `updateWorkerIdentityStatus()`. Migration 027 precondition block updated. Still DO_NOT_APPLY_YET until staging smoke test passes.
 
 11. **`commons.booking` cross-company data model and GDPR.** A booking links a worker (from Tenant A) to an initiative (from Tenant B). KORA holds this cross-company relationship. What is the legal basis? Does this require inter-controller data sharing agreements?
 
@@ -238,13 +238,13 @@ company users and personal.* or analytics.uef_record data.
 
 1. **Distribute this review pack to CTO and DPO/Legal.** Gate 2 and Gate 3 can proceed in parallel. CTO reviews §§3–4. DPO reviews §§3.3, 5.
 
-2. **Resolve migration 005 role inconsistency** (critical blocker — must be done before any migration is applied). Rewrite RLS policies to use `kora.kora_role()` and correct role names.
+2. ~~**Resolve migration 005 role inconsistency.**~~ **DONE 2026-06-21** — policies use `kora.kora_role()` / `kora.tenant_id()` / `COMPANY_ADMIN` / `COMPANY_VIEWER`.
 
 3. **Resolve migrations 013/025/026 tenant isolation inconsistency** (CTO decision: refactor to `kora.tenant_id()` or document rationale for keeping direct JWT reads).
 
-4. **Confirm `kora.set_updated_at()` existence or fix migration 025** before applying to any database.
+4. ~~**Confirm `kora.set_updated_at()` existence or fix migration 025.**~~ **DONE 2026-06-21** — trigger corrected to `set_updated_at()` (public schema).
 
-5. **Create `lib/supabase/worker-provisioning-service-key.ts`** before migration 027 can be considered for application.
+5. ~~**Create `lib/supabase/worker-provisioning-service-key.ts`.**~~ **EXISTS (B168-P3)** — migration 027 precondition block updated. Next: staging smoke test.
 
 6. **Provision Supabase staging project.** Apply migrations 001–016, 021–022 in order. Verify schema, RLS, and generated types.
 
@@ -264,4 +264,81 @@ company users and personal.* or analytics.uef_record data.
 
 ---
 
-*This document reflects the state of `supabase/migrations/` as of 2026-06-21. No migrations have been applied to any database. This document does not constitute CTO or legal approval. Gate 2 and Gate 3 sign-off must be obtained separately.*
+---
+
+## 9. P0 Cleanup Update — 2026-06-21
+
+**Date:** 2026-06-21  
+**Commit:** `fix: clean up Gate 2 SQL P0 blockers`  
+**Scope:** migration SQL only — no migrations applied, no DB touched, no engine/formula/output changes
+
+### Files changed
+
+| File | Change |
+|------|--------|
+| `supabase/migrations/005_impact_unit_trace_layer.sql` | RLS policies rewritten — see below |
+| `supabase/migrations/025_commons_booking_contribution.sql` | Trigger reference corrected — see below |
+| `supabase/migrations/027_worker_individual_rls_refactor.sql` | Precondition block + `RAISE NOTICE` added; stale comment updated |
+| `docs/GATE2_SQL_REVIEW_PACK.md` | This document — resolved items downgraded, §9 added |
+| `tests/unit/gate2-sql-p0-cleanup.test.ts` | New static tests verifying all three fixes |
+
+### What was fixed
+
+**Migration 005 — RLS claim pattern and role name**
+
+Before:
+```sql
+USING (auth.jwt() ->> 'role' = 'KORA_ADMIN')         -- wrong: raw JWT, skips app_metadata
+WITH CHECK (auth.jwt() ->> 'role' = 'KORA_ADMIN')    -- same
+USING (
+  auth.jwt() ->> 'role' = 'COMPANY_USER'              -- wrong: role doesn't exist
+  AND tenant_id = (auth.jwt() -> 'app_metadata' ->> 'tenant_id')::uuid  -- pre-006 key
+)
+```
+
+After:
+```sql
+USING (kora.kora_role() = 'KORA_ADMIN')              -- canonical: reads app_metadata with fallback
+WITH CHECK (kora.kora_role() = 'KORA_ADMIN')         -- same
+USING (
+  kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')  -- correct roles
+  AND tenant_id = kora.tenant_id()                    -- canonical: reads kora_tenant_id (mig 006)
+)
+```
+
+**Migration 025 — Trigger schema reference**
+
+Before (line 58):
+```sql
+FOR EACH ROW EXECUTE FUNCTION kora.set_updated_at();   -- kora.set_updated_at() does not exist
+```
+
+After:
+```sql
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();         -- public schema, defined in migration 001
+```
+
+`set_updated_at()` is defined in migration 001 (public/default schema). All 13 other trigger references across 5 migration files use the same unqualified form.
+
+**Migration 027 — Precondition documentation**
+
+- Dependency comment updated from "(da creare)" to "(EXISTS — implementato in B168-P3)" for `worker-provisioning-service-key.ts`.
+- Added explicit `╔══╗` precondition block listing all 5 conditions that must be met before application.
+- Added `DO $$ BEGIN RAISE NOTICE ... END $$;` runtime warning fired at apply time (non-blocking — operator must confirm preconditions manually).
+- Migration remains DO_NOT_APPLY_YET until Gate 2 closes and staging smoke test passes.
+
+### What remains blocked
+
+| Item | Status | Unblocked by |
+|------|--------|-------------|
+| Migration 005 apply | Blocked — Gate 2 OPEN | Gate 2 CTO sign-off |
+| Migration 025 apply | Blocked — Gate 2 OPEN + Gate 3 OPEN | Gate 2 + Gate 3 + staging verify |
+| Migration 027 apply | Blocked — Gate 2 OPEN + staging smoke test | Gate 2 + smoke test on service-role path |
+| Migrations 013/025/026 direct JWT reads | Unresolved — CTO decision needed | CTO review |
+| Staging Supabase project provisioning | Not started | Gate 2 sign-off |
+| RLS integration tests | Not run | Staging project + Gate 2 |
+| DPIA | Not started | DPO engagement |
+
+---
+
+*This document reflects the state of `supabase/migrations/` as of 2026-06-21 (updated after P0 cleanup). No migrations have been applied to any database. This document does not constitute CTO or legal approval. Gate 2 and Gate 3 sign-off must be obtained separately.*

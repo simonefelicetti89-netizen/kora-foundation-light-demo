@@ -55,24 +55,33 @@ CREATE INDEX idx_impact_unit_period       ON analytics.impact_unit (tenant_id, r
 CREATE INDEX idx_impact_unit_uef_record   ON analytics.impact_unit (uef_record_id);
 
 -- RLS
+-- All policies use canonical claim helpers:
+--   kora.kora_role()  — reads app_metadata.kora_role with fallback (migrations 004, 006)
+--   kora.tenant_id()  — reads app_metadata.kora_tenant_id canonical key (migration 006)
+-- Never use raw auth.jwt() ->> 'role' or inline app_metadata reads in policies.
+-- Raw JWT reads bypass the canonical fallback chain and break if claim structure changes.
 ALTER TABLE analytics.impact_unit ENABLE ROW LEVEL SECURITY;
 
--- KORA Admin: full read + insert (no update — append-only)
+-- KORA Admin: full read + insert (no update — append-only).
+-- Note: migration 027 removes these two policies once the service-role provisioning
+-- path (lib/supabase/worker-provisioning-service-key.ts) is confirmed in place.
 CREATE POLICY "kora_admin_impact_unit_read"
   ON analytics.impact_unit FOR SELECT
-  USING (auth.jwt() ->> 'role' = 'KORA_ADMIN');
+  USING (kora.kora_role() = 'KORA_ADMIN');
 
 CREATE POLICY "kora_admin_impact_unit_insert"
   ON analytics.impact_unit FOR INSERT
-  WITH CHECK (auth.jwt() ->> 'role' = 'KORA_ADMIN');
+  WITH CHECK (kora.kora_role() = 'KORA_ADMIN');
 
--- Company role: can read aggregate impact_unit data for their own tenant.
--- factor_trace is excluded from company-facing queries at the application layer.
+-- Company roles: read aggregate IU data for their own tenant only.
+-- Both COMPANY_ADMIN and COMPANY_VIEWER receive read access — analytics.impact_unit
+-- is aggregate-safe (no worker identity, no PIB).
+-- factor_trace is excluded from company-facing API responses at the application layer.
 CREATE POLICY "company_own_impact_unit_read"
   ON analytics.impact_unit FOR SELECT
   USING (
-    auth.jwt() ->> 'role' = 'COMPANY_USER'
-    AND tenant_id = (auth.jwt() -> 'app_metadata' ->> 'tenant_id')::uuid
+    kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')
+    AND tenant_id = kora.tenant_id()
   );
 
 -- Trigger: no updated_at — append-only by design

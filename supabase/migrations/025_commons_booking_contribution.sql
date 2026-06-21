@@ -53,9 +53,11 @@ CREATE TABLE IF NOT EXISTS commons.booking (
   CONSTRAINT uq_booking_post_worker UNIQUE (post_id, worker_identity_id)
 );
 
+-- set_updated_at() is defined in migration 001 (public/default schema).
+-- All other migrations reference it unqualified. kora.set_updated_at() does NOT exist.
 CREATE TRIGGER trg_booking_updated_at
   BEFORE UPDATE ON commons.booking
-  FOR EACH ROW EXECUTE FUNCTION kora.set_updated_at();
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 -- Indici operativi
 CREATE INDEX IF NOT EXISTS idx_booking_post_id           ON commons.booking (post_id);
