@@ -181,6 +181,39 @@ export default function Bookings() {
                     </p>
                   )}
 
+                  {/* Private trace section — attended bookings only */}
+                  {booking.status === 'attended' && (
+                    <div
+                      data-testid="booking-attended-trace-notice"
+                      style={{
+                        marginTop: 10,
+                        background: 'rgba(59,110,186,0.05)',
+                        border: '1px solid rgba(59,110,186,0.16)',
+                        borderRadius: 8,
+                        padding: '10px 14px',
+                      }}
+                    >
+                      <p style={{ fontSize: 11, fontWeight: 700, color: '#3B5A8A', margin: '0 0 6px', fontFamily: FONT }}>
+                        Traccia privata My KORA
+                      </p>
+                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
+                        Questa partecipazione è una traccia privata del tuo percorso My KORA.
+                      </p>
+                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 4px', lineHeight: 1.6, fontFamily: FONT }}>
+                        Il datore di lavoro non vede il tuo percorso individuale.
+                        Eventuali segnali verso l&apos;organizzazione sono aggregati.
+                      </p>
+                      <p style={{ fontSize: 11, color: '#3B5A8A', margin: '0 0 6px', lineHeight: 1.6, fontFamily: FONT }}>
+                        La partecipazione completata può contribuire al tuo Personal Impact Balance quando disponibile.
+                      </p>
+                      <p style={{ fontSize: 10, color: 'rgba(59,110,186,0.65)', margin: 0, lineHeight: 1.55, fontFamily: FONT }}>
+                        Non tutta la partecipazione in KORA Space entra nel Dynamic Impact CV.
+                        Solo le esperienze idonee secondo la Dynamic Impact CV policy possono diventare esperienze CV.
+                        Il lavoratore controlla cosa rendere condivisibile.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Fallback note when enrichment not available */}
                   {!initiative && (
                     <p style={{ fontSize: 9, fontFamily: 'monospace', color: TOKENS.inkMeta, margin: '4px 0 0' }}>

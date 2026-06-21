@@ -166,9 +166,22 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
           fontSize: 11, color: '#3B5A8A', fontFamily: FONT, lineHeight: 1.6,
         }}
       >
-        Il completamento della partecipazione genera una traccia operativa gestita da KORA.
-        Il percorso individuale resta privato; eventuali segnali sono aggregati.
-        La partecipazione completata non alimenta il KORA Index™ — è un segnale separato del companion indicator KORA Contribution™.
+        <p style={{ margin: '0 0 6px', fontWeight: 700, fontFamily: FONT }}>Cosa fa "Segna Partecipazione Completata":</p>
+        <ul style={{ margin: '0 0 8px', paddingLeft: 18 }}>
+          <li>Conferma la partecipazione dell&apos;utente all&apos;iniziativa.</li>
+          <li>Può generare una traccia privata del lavoratore nel suo percorso My KORA.</li>
+          <li>Crea un segnale aggregato per il companion indicator KORA Contribution™.</li>
+        </ul>
+        <p style={{ margin: '0 0 6px', fontWeight: 700, fontFamily: FONT }}>Cosa NON fa:</p>
+        <ul style={{ margin: '0 0 8px', paddingLeft: 18 }}>
+          <li>Non espone il percorso individuale al datore di lavoro.</li>
+          <li>Non crea un badge pubblico.</li>
+          <li>Non alimenta il KORA Index™.</li>
+        </ul>
+        <p style={{ margin: 0, fontFamily: FONT }}>
+          Il percorso individuale resta privato; eventuali segnali sono aggregati.
+          La partecipazione completata non alimenta il KORA Index™ — è un segnale separato del companion indicator KORA Contribution™.
+        </p>
       </div>
 
       {/* Filter tabs */}

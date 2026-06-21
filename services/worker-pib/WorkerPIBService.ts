@@ -338,6 +338,13 @@ export class WorkerPIBService {
     // Build timeline from worker_initiative join on source_uef_record_id.
     // Each UEF record appears once (deduped by uef id to avoid multi-pillar inflation).
     // Safe fields only — no worker identity, no employer-visible fields.
+    //
+    // NOTE: KORA Space booking-sourced PIB rows (written by cross-company-attribution.ts
+    // when a booking is marked attended) have source_uef_record_id=null and source_booking_id set.
+    // They ARE included in IU totals above but are excluded from the timeline here because
+    // worker_initiative cannot be joined without source_uef_record_id.
+    // KORA Space attendance trace is surfaced in /my-kora/bookings (attended booking card).
+    // Post-Gate-2: enrich timeline via source_booking_id → commons.booking + commons.post.
     const initiativeByUefId = new Map(
       initiatives.map((i) => [i.source_uef_record_id, i]),
     );

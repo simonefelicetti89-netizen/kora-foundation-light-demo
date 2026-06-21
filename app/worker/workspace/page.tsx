@@ -373,6 +373,69 @@ export default async function WorkerWorkspacePage() {
         )}
       </div>
 
+      {/* KORA Space trace summary — links to private trace surfaces */}
+      <div
+        data-testid="workspace-trace-summary"
+        style={{
+          border:         '1px solid rgba(59,110,186,0.18)',
+          borderRadius:   14,
+          padding:        '18px 22px',
+          background:     '#FAFAFA',
+          marginBottom:   16,
+          display:        'flex',
+          alignItems:     'flex-start',
+          justifyContent: 'space-between',
+          gap:            16,
+        }}
+      >
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3B6EBA', margin: '0 0 6px' }}>
+            Le tue tracce personali
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+            Partecipazioni e percorso privato
+          </p>
+          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            Le partecipazioni confermate restano nel tuo percorso privato.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <a
+              href="/my-kora/bookings"
+              data-testid="workspace-trace-bookings-link"
+              style={{ fontSize: 12, fontWeight: 600, color: '#3B6EBA', textDecoration: 'none' }}
+            >
+              Prenotazioni &amp; partecipazioni →
+            </a>
+            <a
+              href="/my-kora/personal-impact-balance"
+              style={{ fontSize: 12, fontWeight: 600, color: '#C76F3D', textDecoration: 'none' }}
+            >
+              Il tuo bilancio →
+            </a>
+            <a
+              href="/my-kora/dynamic-cv"
+              style={{ fontSize: 12, fontWeight: 600, color: '#2F7D55', textDecoration: 'none' }}
+            >
+              Dynamic Impact CV →
+            </a>
+          </div>
+        </div>
+        <span
+          style={{
+            fontSize:      9,
+            fontWeight:    700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding:       '3px 8px',
+            borderRadius:  999,
+            background:    'rgba(59,110,186,0.10)',
+            color:         '#3B6EBA',
+          }}
+        >
+          Privato
+        </span>
+      </div>
+
       {/* My KORA — navigation bridge to personal area */}
       <div
         data-testid="workspace-my-kora-link"

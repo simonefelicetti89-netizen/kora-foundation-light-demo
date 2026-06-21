@@ -131,7 +131,11 @@ export async function attributePIBForBooking(
   const boostedRows = baseRows.map((row) => ({
     ...row,
     iu_value:             +(row.iu_value * CROSS_COMPANY_MULTIPLIER).toFixed(4),
-    source_uef_record_id: null,      // non è un evento UEF
+    // source_uef_record_id=null: booking non è evento UEF. Conseguenza: queste righe
+    // contribuiscono agli IU totali in getPIBLive() ma sono escluse dal timeline worker
+    // (che richiede source_uef_record_id per il join a personal.worker_initiative).
+    // Trace KORA Space attendance → /my-kora/bookings (booking card attended).
+    source_uef_record_id: null,
     source_booking_id:    bookingId, // FK a commons.booking per idempotenza
   }));
 
