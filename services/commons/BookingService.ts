@@ -193,6 +193,32 @@ export async function listPendingForModeration(params: {
   return (data as any[] | null) ?? [];
 }
 
+/**
+ * Lista prenotazioni per moderazione — supporta filtro per status opzionale.
+ * status=null → tutte le prenotazioni (scope=all).
+ * SELECT: stessi campi di listPendingForModeration + moderated_at + attended_at.
+ */
+export async function listBookingsForModeration(params: {
+  db:      any;
+  status?: string | null;
+  limit?:  number;
+}): Promise<any[]> {
+  const { db, status, limit = 500 } = params;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let query = (db as any)
+    .schema('commons')
+    .from('booking')
+    .select('id, post_id, post_tenant_id, worker_tenant_id, status, moderation_notes, moderated_at, attended_at, created_at')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (status) query = query.eq('status', status);
+
+  const { data } = await query;
+  return (data as any[] | null) ?? [];
+}
+
 /** Moderation: approved / rejected. */
 export async function moderate(params: {
   db:              any;

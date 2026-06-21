@@ -10,15 +10,27 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
-import { listPendingForModeration } from '@/services/commons/BookingService';
+import { listPendingForModeration, listBookingsForModeration } from '@/services/commons/BookingService';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 
-  const db = await getSupabaseServerClient();
-  const pending = await listPendingForModeration({ db });
+  const scope  = request.nextUrl.searchParams.get('scope');   // 'all' → tutte le prenotazioni
+  const status = request.nextUrl.searchParams.get('status');  // filtro per singolo status
 
-  // worker_identity_id non è nel SELECT di listPendingForModeration (non necessario per moderazione)
+  const db = await getSupabaseServerClient();
+
+  // scope=all oppure status=<value> → usa listBookingsForModeration con filtro opzionale
+  if (scope === 'all' || (status && status !== 'pending')) {
+    const bookings = await listBookingsForModeration({
+      db,
+      status: scope === 'all' ? null : status,
+    });
+    return NextResponse.json({ ok: true, bookings, count: bookings.length });
+  }
+
+  // Default: pending only (backward-compatible — non rompe AdminBookingModerationSection v1)
+  const pending = await listPendingForModeration({ db });
   return NextResponse.json({ ok: true, bookings: pending, count: pending.length });
 }

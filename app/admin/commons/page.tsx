@@ -54,6 +54,14 @@ export default async function AdminCommonsPage() {
     return acc;
   }, {} as Record<string, string>);
 
+  // postsMap: id → { id, title, pillar, event_start_at, opening_grade }
+  // Passed to AdminBookingModerationSection for safe initiative enrichment.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const postsMap = allPosts.reduce((acc: Record<string, any>, p: any) => {
+    acc[p.id] = { id: p.id, title: p.title, pillar: p.pillar ?? null, event_start_at: p.event_start_at ?? null, opening_grade: p.opening_grade ?? null };
+    return acc;
+  }, {} as Record<string, any>);
+
   const pending   = allPosts.filter((p) => p.status === 'pending_review');
   const published = allPosts.filter((p) => p.status === 'published');
   const drafts    = allPosts.filter((p) => p.status === 'draft');
@@ -127,8 +135,8 @@ export default async function AdminCommonsPage() {
         tenantMap={tenantMap}
       />
 
-      {/* B166 — Sezione Prenotazioni in moderazione */}
-      <AdminBookingModerationSection tenantMap={tenantMap} />
+      {/* B166 — Booking lifecycle control */}
+      <AdminBookingModerationSection tenantMap={tenantMap} postsMap={postsMap} />
 
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 14, marginTop: 40 }}>
