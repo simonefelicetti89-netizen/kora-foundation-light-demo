@@ -20,7 +20,10 @@ export interface WorkerPillarData {
   label:       string;
   score:       number;
   iu_total:    number;
-  trend:       'up' | 'stable' | 'down';
+  // 'not_available': cross-period trend cannot be computed without historical worker PIB data.
+  // Cross-period trend requires at least two scoring periods. Foundation Light provides only
+  // single-period data. Synthetic preview data may carry 'stable' as a pre-computed value.
+  trend:       'up' | 'stable' | 'down' | 'not_available';
   event_count: number;
 }
 

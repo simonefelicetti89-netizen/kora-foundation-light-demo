@@ -18,7 +18,9 @@ export interface PillarPreview {
   label: string;
   score: number;         // 0–100, personal normalized scale
   iu_total: number;      // raw IU total for this pillar (pre-computed)
-  trend: 'up' | 'stable' | 'down';
+  // 'not_available': cross-period trend cannot be computed without historical data (live path).
+  // Synthetic preview data uses 'up'|'stable'|'down'. Live path uses 'not_available'.
+  trend: 'up' | 'stable' | 'down' | 'not_available';
   event_count: number;
 }
 

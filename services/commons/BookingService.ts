@@ -31,6 +31,10 @@ interface PostForBooking {
   external_participants_evidence: string | null;
 }
 
+// ── Costanti errore ───────────────────────────────────────────────────────────
+
+const SAFE_INTERNAL_ERROR = 'Errore interno. Riprova più tardi.';
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function fetchPostForBooking(
@@ -110,7 +114,8 @@ export async function createBooking(params: {
     if (error.code === '23505') {
       return { ok: false, error: 'Prenotazione già esistente per questa iniziativa.', status: 409 };
     }
-    return { ok: false, error: error.message, status: 500 };
+    console.error('[BookingService] createBooking insert error:', error.message);
+    return { ok: false, error: SAFE_INTERNAL_ERROR, status: 500 };
   }
 
   return { ok: true, booking: data as CommonsBooking };
@@ -169,7 +174,10 @@ export async function cancelBooking(params: {
     .update({ status: 'cancelled' })
     .eq('id', bookingId);
 
-  if (error) return { ok: false, error: error.message, status: 500 };
+  if (error) {
+    console.error('[BookingService] cancelBooking update error:', error.message);
+    return { ok: false, error: SAFE_INTERNAL_ERROR, status: 500 };
+  }
   return { ok: true };
 }
 
@@ -255,7 +263,10 @@ export async function moderate(params: {
     .select('id, post_id, worker_identity_id, worker_tenant_id, post_tenant_id, status, moderation_notes, moderated_by, moderated_at, attended_at, created_at, updated_at')
     .single();
 
-  if (error) return { ok: false, error: error.message, status: 500 };
+  if (error) {
+    console.error('[BookingService] moderate update error:', error.message);
+    return { ok: false, error: SAFE_INTERNAL_ERROR, status: 500 };
+  }
   return { ok: true, booking: data as CommonsBooking };
 }
 
@@ -313,7 +324,10 @@ export async function markAttended(params: {
     })
     .eq('id', bookingId);
 
-  if (updateErr) return { ok: false, error: updateErr.message, status: 500 };
+  if (updateErr) {
+    console.error('[BookingService] markAttended update error:', updateErr.message);
+    return { ok: false, error: SAFE_INTERNAL_ERROR, status: 500 };
+  }
 
   // Fetch post per pillar e external_participants
   const post = await fetchPostForBooking(serviceDb, b.post_id);

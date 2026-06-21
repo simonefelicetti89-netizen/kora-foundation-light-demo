@@ -31,6 +31,31 @@ import { PILLAR_LABELS } from '@/lib/constants/kora';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabaseClient = any;
 
+// ── PIB overall_index scaling — Foundation Light provisional formula ───────────
+//
+// METODOLOGIA PROVVISORIA — pre_empirical_calibration.
+//
+// Il PIB overall_index è un indice personale di riepilogo su scala 0–100 che
+// sintetizza gli Impact Unit accumulati nel periodo.
+//
+// Formula corrente (Foundation Light):
+//   overall_index = min(round(period_iu_total × PIB_OVERALL_INDEX_SCALE_FACTOR), 100)
+//
+// Questo fattore di scala è provvisorio: mappa gli IU personali accumulati su uno
+// spazio 0–100 leggibile. Il valore 10 è un punto di partenza Foundation Light.
+// Non è stato validato empiricamente né calibrato tramite studio Delphi.
+//
+// Questa costante NON va hardcodata nelle logiche di rendering.
+// Post-pilot: il fattore di scala e la forma della funzione saranno ricalibrati
+// sulla base della distribuzione reale degli IU tra lavoratori.
+//
+// Invarianti non negoziabili:
+//   - L'overall_index NON è visibile al datore di lavoro.
+//   - L'overall_index NON è un indicatore di performance.
+//   - L'overall_index NON fa parte del KORA Index aziendale.
+//   - L'overall_index è uno strumento informativo per il lavoratore, non una valutazione.
+const PIB_OVERALL_INDEX_SCALE_FACTOR = 10;
+
 const VALID_SCENARIOS: ScenarioId[] = ['S1', 'S2', 'S3', 'S4'];
 
 function toScenarioId(s: string): ScenarioId {
@@ -307,7 +332,7 @@ export class WorkerPIBService {
 
     const period_iu_total   = rows.reduce((s, r) => s + r.iu_value, 0);
     const totalUefIds       = new Set(rows.map((r) => r.source_uef_record_id).filter(Boolean));
-    const overall_index     = Math.min(Math.round(period_iu_total * 10), 100);
+    const overall_index     = Math.min(Math.round(period_iu_total * PIB_OVERALL_INDEX_SCALE_FACTOR), 100);
     const activePillars     = [...byPillar.entries()].filter(([, v]) => v.iu_total > 0);
 
     const pillar_breakdown: WorkerPillarData[] = activePillars.map(([pillar, v]) => ({
@@ -315,8 +340,10 @@ export class WorkerPIBService {
       label:       PILLAR_LABELS[pillar] ?? pillar,
       score:       +(v.iu_total / period_iu_total * 100).toFixed(1),
       iu_total:    +v.iu_total.toFixed(4),
-      // STUB: cross-period trend richiede history, post-pilot
-      trend:       'stable' as const,
+      // Cross-period trend non disponibile in Foundation Light: richiede almeno due periodi
+      // di dati storici per worker (personal.worker_pib multi-period). Disponibile post-pilot.
+      // Il campo è 'not_available' — mai interpretare come "stabile" nel rendering.
+      trend:       'not_available' as const,
       event_count: v.uef_ids.size,
     }));
 

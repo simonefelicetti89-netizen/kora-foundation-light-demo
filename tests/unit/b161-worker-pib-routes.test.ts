@@ -236,11 +236,14 @@ describe('B161 WorkerIUComputationService — invarianti core (via source audit)
     expect(src).toContain("if (sourceKind === 'company_sourced') return 'L3'");
   });
 
-  it('trend cross-period è marcato STUB con commento esplicito', () => {
+  it('trend cross-period è not_available nel live path (non hardcoded stable)', () => {
     const src = read('services/worker-pib/WorkerPIBService.ts');
-    // STUB: cross-period trend richiede history, post-pilot
-    expect(src).toContain('STUB: cross-period trend');
-    expect(src).toContain("'stable' as const");
+    // Il trend cross-period non è disponibile in Foundation Light — mai 'stable' fittizio.
+    // Il campo è impostato a 'not_available' finché non esistono dati storici multi-periodo.
+    expect(src).toContain('not_available');
+    expect(src).toContain('Cross-period trend non disponibile in Foundation Light');
+    // Il vecchio STUB hardcoded 'stable' non deve più essere nel path live
+    expect(src).not.toMatch(/_aggregatePIBRows[\s\S]{0,2000}trend:\s*'stable' as const/);
   });
 });
 

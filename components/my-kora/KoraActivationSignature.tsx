@@ -25,7 +25,7 @@ export function KoraActivationSignature({ pillarBreakdown, className }: KoraActi
   const ordered = PILLAR_ORDER.map(
     (code) =>
       pillarBreakdown.find((p) => p.pillar === code) ?? {
-        pillar: code, iu_total: 0, score: 0, label: code, trend: 'stable' as const, event_count: 0,
+        pillar: code, iu_total: 0, score: 0, label: code, trend: 'not_available' as const, event_count: 0,
       },
   );
 

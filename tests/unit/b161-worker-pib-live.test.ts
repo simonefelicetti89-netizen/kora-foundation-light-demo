@@ -114,11 +114,13 @@ describe('WorkerPIBService.getPIBLive', () => {
     expect(pib.isSynthetic).toBe(false);
   });
 
-  it('trend = stable marcato come stub (non è dato reale cross-period)', async () => {
+  it('trend = not_available nel live path (cross-period non disponibile senza history)', async () => {
     const supabase = makeSupabaseMock(new Map([['worker_pib', [LIFE_ROW]]]));
     const pib = await service.getPIBLive(supabase);
     pib.pillar_breakdown.forEach((p) => {
-      expect(p.trend).toBe('stable');  // STUB: cross-period trend richiede history, post-pilot
+      // Il trend è 'not_available' nel live path perché non esistono dati storici cross-periodo.
+      // Non viene hardcodato 'stable' — non c'è storia da confrontare.
+      expect(p.trend).toBe('not_available');
     });
   });
 
