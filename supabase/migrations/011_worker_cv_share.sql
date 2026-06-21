@@ -95,14 +95,9 @@ CREATE POLICY "worker_cv_share_worker_own_all" ON personal.worker_cv_share
 GRANT SELECT, INSERT, UPDATE ON personal.worker_cv_share TO authenticated;
 
 -- ── 5. Updated_at trigger ─────────────────────────────────────────────────────
-
-CREATE TRIGGER trg_worker_cv_share_updated_at
-  BEFORE UPDATE ON personal.worker_cv_share
-  FOR EACH ROW
-  EXECUTE FUNCTION extensions.moddatetime('updated_at');
-
--- Note: updated_at column intentionally omitted — status/revoked_at/last_accessed_at
--- serve as the audit trail. The trigger is added for forward-compatibility if
--- updated_at is added in a future migration.
--- To avoid trigger error on missing column, drop it:
-DROP TRIGGER IF EXISTS trg_worker_cv_share_updated_at ON personal.worker_cv_share;
+-- Vestigial block removed (Gate 2 pre-patch).
+-- The table has no updated_at column; status/revoked_at/last_accessed_at serve as
+-- the full audit trail. The CREATE TRIGGER + DROP TRIGGER pattern that was here
+-- referenced extensions.moddatetime, which may not be enabled in all environments
+-- and would fail if the extension is absent, blocking this entire migration.
+-- If updated_at is added in a future migration, add the trigger there instead.

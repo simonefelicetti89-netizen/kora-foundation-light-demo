@@ -52,6 +52,12 @@ DECLARE
   v_uef           analytics.uef_record%ROWTYPE;
   v_initiative_id uuid;
 BEGIN
+  -- 0. KORA_ADMIN guard — SECURITY DEFINER bypasses RLS; guard must be explicit here.
+  --    auth.jwt() is still available inside SECURITY DEFINER functions.
+  IF kora.kora_role() <> 'KORA_ADMIN' THEN
+    RAISE EXCEPTION 'kora/unauthorized: KORA_ADMIN required to publish company initiatives';
+  END IF;
+
   -- 1. Carica il UEF record
   SELECT * INTO v_uef
   FROM analytics.uef_record
