@@ -47,7 +47,12 @@ Run all verification targets in section E before proceeding to mig 027.
 1. Passes 1 and 2 are complete and verified
 2. All preconditions in the 027 block comment are confirmed (see migration file header)
 3. Worker provisioning via service-role path has been smoke-tested in staging
-4. A rollback migration has been prepared (adding back the dropped policies, if needed)
+4. **`029_rollback_027_if_needed.sql` exists in the repository** — do not apply 027 without 029 present
+5. 029 has NOT been applied yet (it is the emergency safety net, not a prerequisite to apply)
+
+> **Do not apply migration 027 without 029 present in the repository.**  
+> `supabase/migrations/029_rollback_027_if_needed.sql` must exist before 027 is applied to any environment.  
+> As of Gate 2 Phase 1 Safety Sprint, 029 is present and committed. It has NOT been applied.
 
 **WHY 027 must be separate:**
 - It removes `KORA_ADMIN INSERT` on `personal.worker_identity` permanently
@@ -260,7 +265,19 @@ Expected: 0 rows.
 
 ---
 
-## F. EXPLICIT WARNINGS
+## F. MIGRATION 029 — ROLLBACK RULES
+
+> These rules apply to `029_rollback_027_if_needed.sql`.
+
+- **DO NOT apply 029 unless 027 has already been applied** and has caused a confirmed staging breakage.
+- **DO NOT apply 029 preemptively** — it is not part of the normal apply sequence.
+- **DO NOT apply 029 to production** without a separate, explicit technical-owner approval.
+- **DO NOT use 029 to bypass 027** — the goal is always to fix the root cause and re-apply 027.
+- After applying 029, fix the root cause (typically: deploy the service-role provisioning path), then re-apply 027 or a forward granularization migration.
+
+---
+
+## H. EXPLICIT WARNINGS
 
 > **DO NOT run migrations against production.**  
 > **DO NOT use production connection strings or project refs.**  
@@ -270,7 +287,7 @@ Expected: 0 rows.
 
 ---
 
-## G. MIGRATION 027 — SEPARATE APPLY RATIONALE
+## I. MIGRATION 027 — SEPARATE APPLY RATIONALE
 
 Migration `027_worker_individual_rls_refactor.sql` must be applied separately from 001–026 because:
 

@@ -326,10 +326,10 @@ describe('Regression — constraints from sprint', () => {
     const migFiles = readdirSync(resolve(ROOT, 'supabase/migrations'))
       .filter((f: string) => f.endsWith('.sql'))
       .sort();
-    // Migrations 001–028 exist; no 029 or beyond from this sprint
+    // Migrations 001–029 exist; 029 is the rollback safety file for 027
     const lastMig = migFiles[migFiles.length - 1];
     const migNumber = parseInt(lastMig.split('_')[0], 10);
-    expect(migNumber).toBeLessThanOrEqual(28);
+    expect(migNumber).toBeLessThanOrEqual(29);
   });
 
   it('Existing Gate 2 external review doc still exists', () => {

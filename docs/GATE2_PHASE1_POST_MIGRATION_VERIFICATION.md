@@ -444,33 +444,16 @@ DELETE FROM analytics.tenant            WHERE id        = 'aaaaaaaa-0001-0001-00
 | `lib/supabase/worker-provisioning-service-key.ts` exists and is deployed | ✓ EXISTS — `insertWorkerIdentity()` exported |
 | `app/api/admin/workers/provision/route.ts` uses `insertWorkerIdentity()` (not KORA_ADMIN RLS path) | ✓ CONFIRMED — line 19 imports `insertWorkerIdentity`, line 90 calls it |
 | Staging smoke test: provision a worker via service-role path AFTER applying 027 | Not yet — must run after 027 is applied |
-| Rollback migration `029_rollback_027_if_needed.sql` prepared BEFORE applying 027 | NOT YET — must be prepared first |
+| Rollback migration `029_rollback_027_if_needed.sql` prepared BEFORE applying 027 | ✓ PREPARED — `supabase/migrations/029_rollback_027_if_needed.sql` exists, NOT applied |
 | No routes depend on direct KORA_ADMIN SELECT on `personal.worker_pib`, `personal.worker_pseudonym_map`, or `personal.worker_identity` | Needs route audit before 027 |
 | No real personal data present in staging | ✓ True (no seed applied yet) |
 
-### Rollback migration 029 skeleton (must be prepared before 027)
+### Rollback migration 029
 
-```sql
--- 029_rollback_027_if_needed.sql
--- ONLY apply if mig 027 smoke test fails and worker provisioning breaks.
--- Re-adds the four kora_admin_all policies removed by mig 027.
+`supabase/migrations/029_rollback_027_if_needed.sql` has been prepared and committed.
+See section 9 (Rollback 029 Preparation) for full details.
 
-CREATE POLICY worker_identity_kora_admin_all ON personal.worker_identity
-  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN')
-  WITH CHECK (kora.kora_role() = 'KORA_ADMIN');
-
-CREATE POLICY worker_pib_kora_admin_all ON personal.worker_pib
-  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN')
-  WITH CHECK (kora.kora_role() = 'KORA_ADMIN');
-
-CREATE POLICY worker_pseudonym_map_kora_admin_all ON personal.worker_pseudonym_map
-  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN')
-  WITH CHECK (kora.kora_role() = 'KORA_ADMIN');
-
-CREATE POLICY worker_profile_kora_admin_all ON personal.worker_profile_private
-  FOR ALL USING (kora.kora_role() = 'KORA_ADMIN')
-  WITH CHECK (kora.kora_role() = 'KORA_ADMIN');
-```
+**029 was NOT applied.** It exists only as an emergency safety net.
 
 ---
 
@@ -482,8 +465,65 @@ Migration 027 (`027_worker_individual_rls_refactor.sql`) removes KORA_ADMIN INSE
 
 ---
 
-**Document version:** v1.0  
+---
+
+## 9. Rollback 029 Preparation
+
+### Purpose
+
+`supabase/migrations/029_rollback_027_if_needed.sql` is a controlled emergency rollback for migration 027. It was prepared as a safety prerequisite before 027 can be applied to any environment.
+
+### What 029 does
+
+Restores exactly the 6 RLS policies that migration 027 drops:
+
+1. `worker_identity_kora_admin_all` on `personal.worker_identity` (ALL)
+2. `worker_pib_kora_admin_all` on `personal.worker_pib` (ALL)
+3. `worker_pseudonym_map_kora_admin_all` on `personal.worker_pseudonym_map` (ALL)
+4. `worker_profile_kora_admin_all` on `personal.worker_profile_private` (ALL)
+5. `kora_admin_impact_unit_read` on `analytics.impact_unit` (SELECT)
+6. `kora_admin_impact_unit_insert` on `analytics.impact_unit` (INSERT)
+
+It does NOT disable RLS, does NOT add FORCE RLS removal, does NOT grant anon access, and does NOT grant any company or employer role direct access to `personal.*`.
+
+### When 029 MAY be used
+
+- Migration 027 has already been applied to staging
+- Applying 027 has confirmed broken a required staging path (e.g., worker provisioning fails because the service-role path is not yet deployed)
+- A forward fix is not immediately available
+- The rollback has been explicitly approved by the technical owner
+
+### When 029 MUST NOT be used
+
+- Migration 027 has NOT yet been applied (do not apply preemptively)
+- Real worker data is present in the target environment
+- The target is production — production requires separate, explicit approval
+- A forward fix (deploying the service-role path and retrying) is available
+
+### Relationship between 027 and 029
+
+027 → removes the 6 KORA_ADMIN direct-access policies (privacy hardening)  
+029 → restores those same 6 policies (emergency rollback only)
+
+Applying 029 returns the schema to its pre-027 state. After applying 029, the root cause (typically: service-role provisioning path not deployed) must be fixed, then 027 (or a forward granularization migration) must be re-applied.
+
+### Confirmation: 029 was NOT applied
+
+As of this document, migration 029 exists in the repository but has NOT been applied to any environment. It is present as a safety file only.
+
+### Requirement: 029 must be tested only after 027 in a controlled staging environment
+
+Do not test 029 in isolation. The correct test sequence is:
+1. Apply 027 to staging
+2. Run smoke test (worker provisioning via service-role path)
+3. If smoke test passes: 029 is not needed — leave unapplied
+4. If smoke test fails: apply 029 to restore access, fix root cause, then re-apply 027
+
+---
+
+**Document version:** v1.1  
 **Prepared:** 2026-06-21  
+**Updated:** 2026-06-21 — rollback 029 prepared  
 **Gate status:** Gate 2 OPEN · Gate 3 OPEN  
 **Applies to staging:** `haqflkurpmeaxpikozjl` only  
 **Production:** NOT touched
