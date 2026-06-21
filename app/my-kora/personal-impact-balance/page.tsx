@@ -348,6 +348,13 @@ export default function PersonalImpactBalancePage() {
           KORA Index v1.0 su dati sintetici.
         </p>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] overflow-hidden">
+          {isRealWorkerMode && pib.timeline.length === 0 && (
+            <div className="px-4 py-6 text-center" data-testid="timeline-live-empty">
+              <p className="text-sm text-[rgba(6,3,43,0.55)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+                La tua timeline personale sarà disponibile dopo il completamento del primo ciclo di scoring della tua azienda.
+              </p>
+            </div>
+          )}
           <div className="divide-y divide-[rgba(6,3,43,0.05)]">
             {pib.timeline.map((item) => {
               const attribution = workerAttributionService.classify({

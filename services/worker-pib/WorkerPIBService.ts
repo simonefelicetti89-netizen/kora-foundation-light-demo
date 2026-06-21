@@ -142,6 +142,13 @@ export class WorkerPIBService {
       source_uef_record_id: string | null;
       reporting_period:     string;
     };
+    type InitiativeRow = {
+      title:                string;
+      pillar:               string;
+      source_uef_record_id: string | null;
+      start_date:           string | null;
+      eligibility_class:    string | null;
+    };
 
     let query = supabase
       .schema('personal')
@@ -158,7 +165,20 @@ export class WorkerPIBService {
       return this._emptyLivePIB(reportingPeriod);
     }
 
-    return this._aggregatePIBRows(data, reportingPeriod);
+    // Fetch initiative metadata for timeline — same join pattern as getCVDataLive.
+    // RLS on personal.worker_initiative scopes to authenticated worker's own rows.
+    const uefIds = [...new Set(data.map((r) => r.source_uef_record_id).filter(Boolean))];
+    let initiatives: InitiativeRow[] = [];
+    if (uefIds.length > 0) {
+      const { data: initData } = await (supabase
+        .schema('personal')
+        .from('worker_initiative')
+        .select('title, pillar, source_uef_record_id, start_date, eligibility_class')
+        .in('source_uef_record_id', uefIds)) as { data: InitiativeRow[] | null; error: unknown };
+      initiatives = initData ?? [];
+    }
+
+    return this._aggregatePIBRows(data, reportingPeriod, initiatives);
   }
 
   async getCVDataLive(supabase: AnySupabaseClient): Promise<WorkerCVData> {
@@ -269,6 +289,13 @@ export class WorkerPIBService {
       reporting_period:     string;
     }>,
     reportingPeriod?: string,
+    initiatives: Array<{
+      title:                string;
+      pillar:               string;
+      source_uef_record_id: string | null;
+      start_date:           string | null;
+      eligibility_class:    string | null;
+    }> = [],
   ): WorkerPIB {
     const byPillar = new Map<string, { iu_total: number; uef_ids: Set<string> }>();
     for (const row of rows) {
@@ -308,8 +335,37 @@ export class WorkerPIBService {
     const dominantPillar = dominantEntry?.[0];
     const dominantLabel  = dominantPillar ? (PILLAR_LABELS[dominantPillar] ?? dominantPillar) : '—';
 
-    // Timeline vuota — richiede join a worker_initiative, post-pilot
+    // Build timeline from worker_initiative join on source_uef_record_id.
+    // Each UEF record appears once (deduped by uef id to avoid multi-pillar inflation).
+    // Safe fields only — no worker identity, no employer-visible fields.
+    const initiativeByUefId = new Map(
+      initiatives.map((i) => [i.source_uef_record_id, i]),
+    );
+    const seenUefIds = new Set<string>();
     const timeline: WorkerTimelineEvent[] = [];
+    for (const row of rows) {
+      if (!row.source_uef_record_id) continue;
+      if (seenUefIds.has(row.source_uef_record_id)) continue;
+      const init = initiativeByUefId.get(row.source_uef_record_id);
+      if (!init) continue;
+      seenUefIds.add(row.source_uef_record_id);
+      const isEligible = init.eligibility_class === 'eligible';
+      const iu = row.iu_value;
+      timeline.push({
+        id:                  `live-tl-${row.source_uef_record_id}`,
+        date:                init.start_date ?? row.reporting_period,
+        category:            init.title,
+        pillar:              row.pillar,
+        source_type:         'company_sourced',
+        verification_status: 'verified',
+        iu_contribution:     iu >= 5 ? 'high' : iu >= 2 ? 'medium' : 'low',
+        iu_value:            iu,
+        cv_eligible:         isEligible,
+        cv_eligible_reason:  isEligible
+          ? 'Attività idonea — può comparire nel Dynamic Impact CV.'
+          : `Classe ${init.eligibility_class ?? 'sconosciuta'} — non idonea per il Dynamic Impact CV.`,
+      });
+    }
 
     return {
       period:                         rows[0]?.reporting_period ?? reportingPeriod ?? '—',

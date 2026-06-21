@@ -494,9 +494,20 @@ export const koraContributionService = new KoraContributionService();
 // ── B166/B167: funzioni live da DB per tenant production_ready ────────────────
 //
 // Tutte le funzioni sono gated su analytics.tenant.production_ready.
-// Tenant Foundation Light → restituisce null (il chiamante mostra la shell).
+// Tenant Foundation Light → restituisce null (il chiamante mostra la shell sintetica).
 // Pattern B163: usano getSupabaseServerClient, mai service-client.
 // KORA Contribution è companion indicator — NON componente KORA Index (CLAUDE.md §12.7).
+//
+// ABILITAZIONE LIVE CONTRIBUTION PER TENANT PILOT:
+//   Per attivare il path live (getContributionLive / getContributionPromoterView /
+//   getContributionOriginEmployerView) per un tenant specifico, impostare:
+//     UPDATE analytics.tenant SET production_ready = true WHERE id = '<tenant_id>';
+//   Questa è una modifica DB — non è controllata da config o feature flag in codice.
+//   Non abilitare globalmente per tutti i tenant Foundation Light.
+//   contribution_event records sono già scritti correttamente da BookingService.markAttended().
+//
+// STATUS (2026-06-21): deferred — nessun tenant ha production_ready=true in DB.
+//   Il dashboard aziendale mostra la shell sintetica PRE-PILOT PREVIEW per tutti i tenant FL.
 
 import type { LiveContributionSummary } from '@/lib/commons/booking-types';
 import type { ContributionPromoterView, ContributionOriginEmployerView } from '@/lib/commons/contribution-views';

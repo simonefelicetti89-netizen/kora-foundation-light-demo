@@ -11,6 +11,7 @@
 //          or KORA Link events). No social feed, no co-participant counts, no ranking.
 //          Only the worker's own contribution is shown — never others'.
 
+import { useState, useEffect } from 'react';
 import { usePersona, useRole, useScenario } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { isContributionEligibleEvent, CONTRIBUTION_PILLARS } from '@/lib/kora-engine/contribution-family-detector';
@@ -48,11 +49,66 @@ function cvRelevance(pillar: string, verif: string): 'alta' | 'media' | 'bassa' 
   return 'bassa';
 }
 
+// Auth detection mode — same pattern as personal-impact-balance.
+// 'checking': session fetch pending; 'empty': real worker, no live data; 'demo': unauthenticated/demo.
+type CollectiveMode = 'checking' | 'empty' | 'demo';
+
 export default function CollectiveImpact() {
   const { activeRole }     = useRole();
   const { activeScenario } = useScenario();
   const { activePersona }  = usePersona();
   const personaId          = activePersona?.id ?? 'persona-elena-m';
+
+  const [collectiveMode, setCollectiveMode] = useState<CollectiveMode>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/worker/pib')
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) { setCollectiveMode('demo'); return; }
+        const data = await res.json();
+        // isSynthetic: false means a real worker JWT — no live collective data path yet in FL
+        if (data.isSynthetic !== false) { setCollectiveMode('demo'); return; }
+        setCollectiveMode('empty');
+      })
+      .catch(() => { if (!cancelled) setCollectiveMode('demo'); });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Hold render until session resolves (avoids flash of demo content for real workers)
+  if (collectiveMode === 'checking') return null;
+
+  // Real authenticated worker — no live collective data path in Foundation Light.
+  // Show honest empty state; do NOT show synthetic persona data as if real.
+  if (collectiveMode === 'empty') {
+    return (
+      <div style={{ maxWidth: 560 }}>
+        <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: '10px', letterSpacing: '0.10em', textTransform: 'uppercase', color: TOKENS.accent, marginBottom: 10 }}>
+          My KORA · Impatto Collettivo
+        </p>
+        <h1 style={{ fontFamily: FONT, fontWeight: 800, fontSize: '1.875rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: TOKENS.ink, marginBottom: 6 }}>
+          Contributo Collettivo
+        </h1>
+        <div data-testid="collective-empty-state" style={{ borderRadius: TOKENS.cardRadius, border: TOKENS.cardBorder, background: TOKENS.taupe, padding: '28px 24px', marginBottom: 16 }}>
+          <p style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 600, color: TOKENS.inkSecondary, marginBottom: 8 }}>
+            Nessuna attività collettiva disponibile.
+          </p>
+          <p style={{ fontFamily: FONT, fontSize: '12px', color: TOKENS.inkHint, lineHeight: 1.6, maxWidth: 380 }}>
+            Le tue attività collettive saranno visibili dopo che la tua azienda avrà completato un ciclo di scoring e le iniziative saranno state verificate.
+          </p>
+        </div>
+        <div style={{ borderRadius: TOKENS.cardRadiusSm, border: TOKENS.cardBorder, padding: '12px 16px' }} data-testid="collective-privacy-notice">
+          <p style={{ fontFamily: FONT, fontSize: '11.5px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
+            Il tuo datore di lavoro vede solo il Contribution Score aggregato aziendale — mai le tue attività individuali.
+          </p>
+          <p style={{ fontFamily: 'monospace', fontSize: '10px', color: TOKENS.inkMeta, marginTop: 8 }}>
+            not_employer_visible: true · no_ranking: true
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Role guard — My KORA is worker-private
   if (!isWorkerRole(activeRole)) {

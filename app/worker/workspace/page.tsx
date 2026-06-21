@@ -373,6 +373,65 @@ export default async function WorkerWorkspacePage() {
         )}
       </div>
 
+      {/* My KORA — navigation bridge to personal area */}
+      <div
+        data-testid="workspace-my-kora-link"
+        style={{
+          border:         '1px solid rgba(199,111,61,0.18)',
+          borderRadius:   14,
+          padding:        '18px 22px',
+          background:     '#FAFAFA',
+          marginBottom:   16,
+          display:        'flex',
+          alignItems:     'flex-start',
+          justifyContent: 'space-between',
+          gap:            16,
+        }}
+      >
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#C76F3D', margin: '0 0 6px' }}>
+            My KORA · Area personale
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+            Il tuo spazio privato KORA
+          </p>
+          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            Il tuo bilancio privato e le tue esperienze di attivazione. Solo tu puoi vederlo.
+          </p>
+          <a
+            href="/my-kora/personal-impact-balance"
+            data-testid="workspace-my-kora-pib-link"
+            style={{
+              display:        'inline-block',
+              fontSize:       12,
+              fontWeight:     600,
+              color:          '#C76F3D',
+              textDecoration: 'none',
+              padding:        '7px 14px',
+              border:         '1px solid rgba(199,111,61,0.28)',
+              borderRadius:   8,
+              background:     'rgba(199,111,61,0.06)',
+            }}
+          >
+            Vai alla tua area personale →
+          </a>
+        </div>
+        <span
+          style={{
+            fontSize:      9,
+            fontWeight:    700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding:       '3px 8px',
+            borderRadius:  999,
+            background:    'rgba(199,111,61,0.10)',
+            color:         '#C76F3D',
+          }}
+        >
+          Privato
+        </span>
+      </div>
+
       {/* Dynamic Impact CV — B121 */}
       <div
         data-testid="workspace-dynamic-cv-card"

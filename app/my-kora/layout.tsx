@@ -51,7 +51,30 @@ export default function MyKoraLayout({ children }: { children: React.ReactNode }
      isAdminRole(activeRole as Parameters<typeof isAdminRole>[0]));
 
   if (realUserPermitted || demoVisitorPermitted) {
-    return <WorkerSessionProvider>{children}</WorkerSessionProvider>;
+    return (
+      <WorkerSessionProvider>
+        {/* Navigation bridge: real workers can return to authenticated workspace */}
+        {realRole === 'WORKER' && (
+          <div style={{ marginBottom: 12 }}>
+            <a
+              href="/worker/workspace"
+              data-testid="my-kora-workspace-link"
+              style={{
+                fontSize:       11,
+                fontWeight:     600,
+                color:          'rgba(6,3,43,0.45)',
+                textDecoration: 'none',
+                display:        'inline-block',
+                padding:        '4px 0',
+              }}
+            >
+              ← Spazio operativo
+            </a>
+          </div>
+        )}
+        {children}
+      </WorkerSessionProvider>
+    );
   }
 
   // Access denied — message differs for real users vs. demo visitors
