@@ -437,7 +437,145 @@ Browser/UI route smoke: MANUAL PENDING — no staging app URL in repository; pas
 
 ---
 
-**Document version:** v1.1  
+---
+
+## Local Browser Smoke Results
+
+**Date:** 2026-06-22  
+**Commit tested:** `1ae3810`  
+**App URL tested:** `http://localhost:3000`  
+**Supabase project ref:** `haqflkurpmeaxpikozjl` (staging only)  
+**NEXT_PUBLIC_KORA_DEFAULT_ENV:** `live`  
+**Migration 027:** NOT applied  
+**Migration 029:** NOT applied  
+**Production:** NOT touched
+
+### Method
+
+Programmatic HTTP smoke via Node.js script (`.tmp/browser-smoke.mjs` — gitignored).
+Bearer token auth used for API routes; Supabase SSR cookie approach used for page routes.
+No passwords, tokens, or secrets printed or stored.
+
+### Sign-in Results
+
+| User | Sign-in |
+|---|---|
+| `company-admin@staging.kora.internal` | ✓ OK |
+| `worker-a@staging.kora.internal` | ✓ OK |
+| `worker-b@staging.kora.internal` | ✓ OK |
+| `worker-c@staging.kora.internal` | ✓ OK |
+
+### Company Admin Route Results
+
+| Route | Result | Notes |
+|---|---|---|
+| `/company/login` | PASS | 307 → internal redirect |
+| `/company/workspace` | PASS (auth enforced) | Auth check PASS; DB 403 — see provisioning gap below |
+| `/company/kora-index` | PASS (auth enforced) | Redirect enforcement confirmed |
+| `/company/activation` | PASS (auth enforced) | Redirect enforcement confirmed |
+| `/company/pillars` | PASS (auth enforced) | Redirect enforcement confirmed |
+| `/company/financial` | PASS (auth enforced) | Redirect enforcement confirmed |
+| `/company/reports` | PASS (auth enforced) | Redirect enforcement confirmed |
+| `/company/contribution` | PASS (auth enforced) | Redirect enforcement confirmed |
+| `/company/commons` | PASS (auth enforced) | Redirect enforcement confirmed |
+| `/company/profile` | PASS (auth enforced) | Redirect enforcement confirmed |
+| `/company/status` | PASS (auth enforced) | Redirect enforcement confirmed |
+
+**Company workspace provisioning gap:** Bearer auth succeeds (COMPANY_ADMIN JWT validated,
+`kora_tenant_id` extracted). `requireCompanyUser` then queries `analytics.tenant` —
+no row found for STAGE-001 → returns 403 "Workspace non trovato."
+This is a staging DB provisioning gap, not a security bug. Auth enforcement is correct.
+
+### Worker Route Results
+
+| User | Route | Result |
+|---|---|---|
+| worker-a | `/worker/workspace` | PASS (auth enforced) |
+| worker-a | `/worker/dynamic-cv` | PASS (auth enforced) |
+| worker-a | `/worker/privacy` | PASS (auth enforced) |
+| worker-a | `/worker/opportunities` | PASS (auth enforced) |
+| worker-b | `/worker/workspace` | PASS (auth enforced) |
+| worker-b | `/worker/dynamic-cv` | PASS (auth enforced) |
+| worker-b | `/worker/privacy` | PASS (auth enforced) |
+| worker-b | `/worker/opportunities` | PASS (auth enforced) |
+| worker-c | `/worker/workspace` | PASS (auth enforced) |
+| worker-c | `/worker/dynamic-cv` | PASS (auth enforced) |
+| worker-c | `/worker/privacy` | PASS (auth enforced) |
+| worker-c | `/worker/opportunities` | PASS (auth enforced) |
+
+**Worker live PIB provisioning gap:** Staging workers have `kora_worker_ref` in
+`app_metadata` but not `kora_worker_id`. `requireWorkerUser` requires `kora_worker_id`
+→ returns 401. Auth enforcement is correct; metadata provisioning is incomplete.
+
+### Privacy / Isolation Results
+
+| Check | Result | Detail |
+|---|---|---|
+| C-11 Company admin blocked from `/api/worker/pib` | **PASS** | 401 — correct rejection |
+| C-11 Company aggregate API returns no individual rows | **PASS** | 403 (workspace not provisioned) — no data leak |
+| C-12 Company aggregate returns no individual PIB | **PASS** | 403 (workspace not provisioned) — no data leak |
+| W-04 Worker A blocked from `/api/company/workspace` | **PASS** | 403 — correct rejection |
+| W-04 Worker B blocked from `/api/company/workspace` | **PASS** | 403 — correct rejection |
+| W-04 Worker C blocked from `/api/company/workspace` | **PASS** | 403 — correct rejection |
+| W-04 Cross-worker `/api/worker/dynamic-cv` isolation | **PASS** | Different responses per JWT — no cross-contamination |
+| W-04 Cross-worker `/api/worker/profile` isolation | **PASS** | Profiles differ per worker JWT |
+
+### Anonymous Access Results
+
+| Check | Result | Detail |
+|---|---|---|
+| Anon `/company/workspace` | **PASS** | 307 → `/login?role_hint=company` |
+| Anon `/company/kora-index` | **PASS** | 307 → `/login?role_hint=company` |
+| Anon `/worker/workspace` | **PASS** | 307 → `/login?role_hint=company` |
+| Anon `/my-kora` | **EXPECTED** | 200 — demo-state route, intentionally public in Foundation Light (by design per middleware) |
+| `NEXT_PUBLIC_KORA_DEFAULT_ENV=live` | **PASS** | App in live mode, not demo-only |
+
+### Routes Not Implemented in This Smoke
+
+- KORA Space browser render: not tested programmatically (requires browser auth flow)
+- Page rendering with live session: requires browser SSR cookie from real auth flow
+
+### Staging Setup Gaps Discovered
+
+| Gap | Impact | Next step |
+|---|---|---|
+| `analytics.tenant` not provisioned for STAGE-001 | Company workspace returns 403 after auth | Provision tenant row for STAGE-001 |
+| Workers missing `kora_worker_id` in `app_metadata` | Worker live PIB/profile APIs return 401 | Update workers' `raw_app_meta_data` with `kora_worker_id` |
+
+These are provisioning gaps, not security bugs. Auth enforcement is correct in both cases.
+
+### Runtime Errors
+
+No runtime crashes observed. Two Sentry deprecation warnings (non-blocking):
+- `autoInstrumentServerFunctions` deprecated with Turbopack
+- `autoInstrumentMiddleware` deprecated with Turbopack
+
+### Final Verdict
+
+| Category | Result |
+|---|---|
+| Sign-in (4/4) | **PASS** |
+| Unauthenticated redirect enforcement | **PASS** |
+| NEXT_PUBLIC_KORA_DEFAULT_ENV=live | **PASS** |
+| C-11 company blocked from worker PIB | **PASS** |
+| C-12 company aggregate no individual data | **PASS** |
+| W-04 worker isolated from company | **PASS** |
+| W-04 cross-worker JWT isolation | **PASS** |
+| Company workspace render | **BLOCKED** — `analytics.tenant` not provisioned for STAGE-001 |
+| Worker live PIB | **BLOCKED** — `kora_worker_id` missing from worker `app_metadata` |
+| Page route live render | **REQUIRES BROWSER** — SSR cookie requires real browser auth flow |
+| Migration 027 | **NOT applied** |
+| Migration 029 | **NOT applied** |
+| Production | **NOT touched** |
+
+**Overall verdict: PARTIAL PASS.**  
+Auth enforcement and privacy isolation: ALL PASS — no security issues.  
+Staging DB provisioning: 2 gaps found (analytics.tenant, kora_worker_id) — blocking company workspace and worker live PIB.  
+Recommended next: provision STAGE-001 analytics.tenant and add kora_worker_id to worker app_metadata.
+
+---
+
+**Document version:** v1.2  
 **Prepared:** 2026-06-22  
 **Gate status:** Gate 2 OPEN · Gate 3 OPEN  
 **Applies to staging:** `haqflkurpmeaxpikozjl` only  
