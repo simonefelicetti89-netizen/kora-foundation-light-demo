@@ -441,6 +441,26 @@ export default async function KoraContributionPage() {
                 la dashboard live richiede l&apos;attivazione pilot (<code style={{ fontSize: 10 }}>production_ready = true</code>).
               </div>
 
+              {/* KORA Value Chain separation — KORA Contribution ≠ KORA Value Chain */}
+              <div
+                data-testid="contribution-value-chain-separation"
+                style={{
+                  background:   TOKENS.canvas,
+                  border:       `1px solid ${TOKENS.inkBorder}`,
+                  borderRadius: 10,
+                  padding:      '10px 14px',
+                  marginBottom: 16,
+                  fontSize:     10,
+                  color:        TOKENS.inkMeta,
+                  lineHeight:   1.65,
+                }}
+              >
+                <strong>KORA Contribution™ ≠ KORA Value Chain.</strong>{' '}
+                KORA Contribution™ misura il contributo collettivo aggregato che emerge dall&apos;ecosistema di attivazione — iniziative cross-azienda, eventi territoriali, partecipazioni tra organizzazioni.
+                Non copre filiere di fornitura, partner commerciali o reti di distribuzione.
+                Queste estensioni appartengono a <em>KORA Value Chain</em> — prodotto separato in roadmap (post-pilot), non attivo in Foundation Light.
+              </div>
+
               {/* Next steps notice */}
               <div style={{
                 background:   TOKENS.canvas,
