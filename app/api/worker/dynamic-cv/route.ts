@@ -17,6 +17,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
+import { classifyForDynamicCV } from '@/lib/dynamic-cv/dynamic-impact-cv-policy';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -26,14 +27,19 @@ type PillarCode = typeof ALL_PILLARS[number];
 type ParticipationStatus = 'interested' | 'registered' | 'attended' | 'cancelled';
 
 export type CVExperience = {
-  initiative_id: string;
-  title:         string;
-  pillar:        PillarCode;
-  status:        ParticipationStatus;
-  statusLabel:   string;
-  date:          string;
-  mode:          string | null;
-  provider:      string | null;
+  initiative_id:  string;
+  title:          string;
+  pillar:         PillarCode;
+  status:         ParticipationStatus;
+  statusLabel:    string;
+  date:           string;
+  mode:           string | null;
+  provider:       string | null;
+  cvEligible:     boolean;
+  badgeEligible:  boolean;
+  shareableByWorker: boolean;
+  privateOnly:    boolean;
+  cvExcludeReason?: string; // set when not shown in main CV list
 };
 
 export type CVPillarEntry = {
@@ -53,21 +59,29 @@ export type DynamicCVResponse = {
     preferredLang: string;
   };
   summary: {
-    totalActivities:  number; // attended + registered + interested
-    totalAttended:    number;
-    totalRegistered:  number;
-    totalInterested:  number;
-    activePillars:    number;
-    lastUpdatedAt:    string | null;
+    totalActivities:   number; // attended + registered + interested (before policy filter)
+    totalAttended:     number;
+    totalRegistered:   number;
+    totalInterested:   number;
+    activePillars:     number;
+    lastUpdatedAt:     string | null;
+    cvEligibleCount:   number; // items shown in main CV list
+    badgeEligibleCount: number;
+    excludedCount:     number; // compliance + economic relief + sensitive excluded
+    privateOnlyCount:  number;
   };
-  pillars:     CVPillarEntry[];
-  experiences: CVExperience[];
+  pillars:         CVPillarEntry[];
+  experiences:     CVExperience[];  // only cvEligible=true items (excluding private_only)
+  badgeItems:      CVExperience[];  // badgeEligible=true subset
+  privateItems:    CVExperience[];  // privateOnly=true (private section only)
+  excludedCount:   number;          // count of sensitiveExcluded + not_cv_relevant
   narrative: {
-    headline:      string;
-    strengths:     string[];
-    emergingAreas: string[];
+    headline:       string;
+    strengths:      string[];
+    emergingAreas:  string[];
     missingPillars: PillarCode[];
   };
+  selectivityNote:    string; // "Il Dynamic Impact CV non contiene tutte le Impact Units."
   privacyNotice:      string;
   interpretationNote: string;
 };
@@ -158,6 +172,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   // ── 2. Participation history — exclude private_note from CV output ─────────
   // RLS worker_participation_worker_own_all (mig 008) isola via auth.uid() — nessun filtro worker_id.
+  // Extend worker_initiative select to include action_family and eligibility_class for policy classification.
+  // These fields may not exist on all initiative rows — safe nullish fallback applied below.
   const { data: rows, error } = await db
     .schema('personal')
     .from('worker_participation')
@@ -169,7 +185,10 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       worker_initiative:initiative_id (
         title,
         pillar,
-        delivery_mode
+        delivery_mode,
+        action_family,
+        eligibility_class,
+        is_mandatory
       )
     `)
     .order('updated_at', { ascending: false });
@@ -181,7 +200,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const participations = (rows ?? []) as any[];
 
-  // ── 3. Build pillar counters ───────────────────────────────────────────────
+  // ── 3. Build pillar counters and classify experiences ─────────────────────
   const pillarCounters: Record<PillarCode, {
     attended: number; registered: number; interested: number; cancelled: number;
   }> = {
@@ -193,8 +212,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   };
 
   let lastUpdatedAt: string | null = null;
+  let totalExcluded = 0;
 
-  const allExperiences: CVExperience[] = [];
+  const cvExperiences:     CVExperience[] = []; // cvEligible=true, !privateOnly
+  const badgeExperiences:  CVExperience[] = []; // badgeEligible=true
+  const privateExperiences: CVExperience[] = []; // privateOnly=true
 
   for (const row of participations) {
     const init   = row.worker_initiative ?? {};
@@ -203,7 +225,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     if (!pillar || !pillarCounters[pillar]) continue;
 
-    // Update last activity timestamp
     if (!lastUpdatedAt || row.updated_at > lastUpdatedAt) {
       lastUpdatedAt = row.updated_at as string;
     }
@@ -213,22 +234,48 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     else if (status === 'interested') pillarCounters[pillar].interested++;
     else if (status === 'cancelled')  pillarCounters[pillar].cancelled++;
 
-    // cancelled NOT included in CV experiences
     if (status === 'cancelled') continue;
 
-    allExperiences.push({
-      initiative_id: row.initiative_id as string,
-      title:         (init.title as string) ?? '—',
+    // Apply Dynamic Impact CV policy classification
+    const classification = classifyForDynamicCV({
+      eligibility_class: (init.eligibility_class as string | null) ?? null,
+      category:          (init.action_family as string | null) ?? (init.title as string) ?? '',
+      pillar,
+      is_mandatory:      (init.is_mandatory as boolean | undefined) ?? false,
+      evidence_level:    status === 'attended' ? 'high' : status === 'registered' ? 'medium' : 'low',
+    });
+
+    const exp: CVExperience = {
+      initiative_id:    row.initiative_id as string,
+      title:            (init.title as string) ?? '—',
       pillar,
       status,
-      statusLabel:   STATUS_LABELS[status],
-      date:          (row.updated_at as string).slice(0, 10),
-      mode:          (init.delivery_mode as string | null) ?? null,
-      provider:      null, // provider name not yet in worker_initiative schema
-    });
+      statusLabel:      STATUS_LABELS[status],
+      date:             (row.updated_at as string).slice(0, 10),
+      mode:             (init.delivery_mode as string | null) ?? null,
+      provider:         null,
+      cvEligible:       classification.cvEligible,
+      badgeEligible:    classification.badgeEligible,
+      shareableByWorker: classification.shareableByWorker,
+      privateOnly:      classification.privateOnly,
+      cvExcludeReason:  (!classification.cvEligible || classification.sensitiveExcluded)
+        ? classification.reason : undefined,
+    };
+
+    if (classification.sensitiveExcluded || classification.cvClass === 'not_cv_relevant') {
+      totalExcluded++;
+      // not added to any experience list
+    } else if (classification.privateOnly) {
+      privateExperiences.push(exp);
+    } else if (classification.cvEligible) {
+      cvExperiences.push(exp);
+      if (classification.badgeEligible) badgeExperiences.push(exp);
+    } else {
+      totalExcluded++;
+    }
   }
 
-  // ── 4. Pillar distribution ────────────────────────────────────────────────
+  // ── 4. Pillar distribution (based on total active, before policy filter) ──
   const pillars: CVPillarEntry[] = ALL_PILLARS.map(p => {
     const c = pillarCounters[p];
     return {
@@ -240,14 +287,20 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     };
   });
 
+  const allActiveCount = cvExperiences.length + privateExperiences.length + totalExcluded;
+
   // ── 5. Summary ────────────────────────────────────────────────────────────
   const summary: DynamicCVResponse['summary'] = {
-    totalActivities:  allExperiences.length,
-    totalAttended:    pillars.reduce((s, p) => s + p.attended,   0),
-    totalRegistered:  pillars.reduce((s, p) => s + p.registered, 0),
-    totalInterested:  pillars.reduce((s, p) => s + p.interested, 0),
-    activePillars:    pillars.filter(p => p.total_active > 0).length,
+    totalActivities:    allActiveCount,
+    totalAttended:      pillars.reduce((s, p) => s + p.attended,   0),
+    totalRegistered:    pillars.reduce((s, p) => s + p.registered, 0),
+    totalInterested:    pillars.reduce((s, p) => s + p.interested, 0),
+    activePillars:      pillars.filter(p => p.total_active > 0).length,
     lastUpdatedAt,
+    cvEligibleCount:    cvExperiences.length,
+    badgeEligibleCount: badgeExperiences.length,
+    excludedCount:      totalExcluded,
+    privateOnlyCount:   privateExperiences.length,
   };
 
   // ── 6. Narrative (rule-based, no LLM) ─────────────────────────────────────
@@ -258,8 +311,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     profile,
     summary,
     pillars,
-    experiences: allExperiences,
+    experiences:     cvExperiences,
+    badgeItems:      badgeExperiences,
+    privateItems:    privateExperiences,
+    excludedCount:   totalExcluded,
     narrative,
+    selectivityNote:    'Il Dynamic Impact CV non contiene tutte le Impact Units. Mostra solo esperienze selezionabili, verificabili e controllate dal lavoratore.',
     privacyNotice:      'Il Dynamic Impact CV è privato. Il tuo datore di lavoro non vede questo CV. KORA misura l\'organizzazione, non valuta il singolo lavoratore.',
     interpretationNote: 'Questo CV non è un ranking e non contiene confronti con colleghi. Le esperienze derivano dalle attività registrate in KORA.',
   };

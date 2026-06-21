@@ -120,10 +120,13 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
     );
   }
 
-  const { profile, summary, pillars, experiences, narrative } = data;
+  const { profile, summary, pillars, experiences, badgeItems, privateItems, excludedCount, narrative } = data;
   const activePillarList  = pillars.filter((p: CVPillarEntry) => p.total_active > 0);
   const missingPillarList = pillars.filter((p: CVPillarEntry) => p.total_active === 0);
   const hasExperiences    = experiences.length > 0;
+  const hasBadgeItems     = (badgeItems ?? []).length > 0;
+  const hasPrivateItems   = (privateItems ?? []).length > 0;
+  const excluded          = excludedCount ?? 0;
 
   const activeShares   = shares.filter(s => s.status === 'active' && !s.isExpired);
   const inactiveShares = shares.filter(s => s.status !== 'active' || s.isExpired);
@@ -163,6 +166,31 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
         <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.60)', margin: 0, lineHeight: 1.6, fontStyle: 'italic' }}>
           &ldquo;{narrative.headline}&rdquo;
         </p>
+      </div>
+
+      {/* ── Selectivity notice — non-suppressible ─────────────────────────── */}
+      <div
+        data-testid="dynamic-cv-selectivity-notice"
+        style={{
+          background:   'rgba(59,110,186,0.05)',
+          border:       '1px solid rgba(59,110,186,0.16)',
+          borderRadius: 12,
+          padding:      '12px 18px',
+          marginBottom: 14,
+        }}
+      >
+        <p style={{ fontSize: 12, fontWeight: 700, color: '#3B6EBA', margin: '0 0 3px' }}>
+          Il Dynamic Impact CV non contiene tutte le Impact Units.
+        </p>
+        <p style={{ fontSize: 11, color: 'rgba(59,110,186,0.75)', margin: 0, lineHeight: 1.5 }}>
+          Mostra solo esperienze selezionabili, verificabili e controllate dal lavoratore.
+          Il lavoratore decide cosa condividere. Alcune esperienze restano private e non sono suggerite per la condivisione.
+        </p>
+        {excluded > 0 && (
+          <p style={{ fontSize: 10, color: 'rgba(59,110,186,0.55)', margin: '4px 0 0', fontStyle: 'italic' }}>
+            {excluded} {excluded === 1 ? 'esperienza non inclusa' : 'esperienze non incluse'}: compliance, sollievo economico, o categoria sensibile.
+          </p>
+        )}
       </div>
 
       {/* ── Privacy banner — non-suppressible ─────────────────────────────── */}
@@ -394,6 +422,94 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
             })}
           </div>
         )}
+      </div>
+
+      {/* ── Badge-ready experiences ───────────────────────────────────────── */}
+      {hasBadgeItems && (
+        <div
+          data-testid="dynamic-cv-badge-section"
+          style={{ marginBottom: 20 }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: 0 }}>
+              Esperienze badge-ready
+            </p>
+            <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 999, background: 'rgba(192,125,42,0.10)', color: '#C07D2A', border: '1px solid rgba(192,125,42,0.22)' }}>
+              {(badgeItems ?? []).length} idonee al badge
+            </span>
+          </div>
+          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.45)', margin: '0 0 10px', lineHeight: 1.5 }}>
+            Queste esperienze soddisfano i requisiti di categoria e livello di evidenza per un badge o credenziale.
+            Il badge non viene emesso automaticamente — richiedilo su tua iniziativa.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {(badgeItems ?? []).map(exp => (
+              <div key={exp.initiative_id} style={{ border: '1px solid rgba(192,125,42,0.25)', borderRadius: 8, padding: '10px 14px', background: 'rgba(192,125,42,0.04)' }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>{exp.title}</p>
+                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>{exp.pillar} · {exp.date}</p>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.38)', margin: '8px 0 0', fontStyle: 'italic' }}>
+            Badge e credenziali: In arrivo · Pianificato — non attivo in Foundation Light.
+          </p>
+        </div>
+      )}
+
+      {/* ── Private-only experiences ───────────────────────────────────────── */}
+      {hasPrivateItems && (
+        <div
+          data-testid="dynamic-cv-private-section"
+          style={{ marginBottom: 20 }}
+        >
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.35)', margin: '0 0 6px' }}>
+            Esperienze private
+          </p>
+          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.45)', margin: '0 0 10px', lineHeight: 1.5 }}>
+            Queste esperienze sono incluse nel tuo PIB personale ma non sono suggerite per la condivisione.
+            Restano visibili solo a te.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {(privateItems ?? []).map(exp => (
+              <div key={exp.initiative_id} style={{ border: '1px solid rgba(6,3,43,0.08)', borderRadius: 8, padding: '10px 14px', background: 'rgba(6,3,43,0.02)', opacity: 0.75 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: '#06032B', margin: '0 0 2px' }}>{exp.title}</p>
+                <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: 0 }}>{exp.pillar} · {exp.date} · Privata</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Future sharing options — planned, not active ───────────────────── */}
+      <div
+        data-testid="dynamic-cv-future-sharing"
+        style={{
+          border:       '1px solid rgba(6,3,43,0.08)',
+          borderRadius: 12,
+          padding:      '16px 18px',
+          marginBottom: 20,
+          background:   'rgba(6,3,43,0.02)',
+        }}
+      >
+        <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(6,3,43,0.55)', margin: '0 0 6px' }}>
+          Opzioni di condivisione future
+        </p>
+        <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.40)', margin: '0 0 12px', fontStyle: 'italic' }}>
+          Nessuna condivisione attiva in Foundation Light. Il lavoratore deciderà cosa condividere in Pilot+.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {[
+            { label: 'Badge KORA verificato', desc: 'In arrivo · Pianificato' },
+            { label: 'Link di verifica pubblica', desc: 'In arrivo · Pianificato' },
+            { label: 'Esporta PDF', desc: 'In arrivo · Pianificato' },
+            { label: 'LinkedIn badge / credenziale verificabile', desc: 'In arrivo · Pianificato' },
+          ].map(({ label, desc }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.52)', margin: 0 }}>{label}</p>
+              <span style={{ fontSize: 9, fontWeight: 600, color: 'rgba(6,3,43,0.35)', background: 'rgba(6,3,43,0.05)', border: '1px solid rgba(6,3,43,0.08)', borderRadius: 4, padding: '2px 7px', whiteSpace: 'nowrap' }}>{desc}</span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Export & condivisione — B126 ───────────────────────────────────── */}

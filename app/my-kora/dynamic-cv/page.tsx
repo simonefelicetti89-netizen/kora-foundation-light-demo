@@ -15,6 +15,7 @@ import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
 import type { WorkerCVItem } from '@/lib/types/domains/worker-pib';
 import { workerAttributionService } from '@/services/worker-attribution/WorkerAttributionService';
 import { workerAchievementService } from '@/services/worker-achievements/WorkerAchievementService';
+import { classifyForDynamicCV } from '@/lib/dynamic-cv/dynamic-impact-cv-policy';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
@@ -196,7 +197,25 @@ export default function DynamicCV() {
 
   const personaId = activePersona?.id ?? 'persona-elena-m';
   const cvData    = workerPIBService.getCVData(personaId);
-  const pillarDist = computePillarDistribution(cvData.items);
+
+  // Apply Dynamic Impact CV policy to demo items — same rules as real API
+  const classifiedItems = cvData.items.map((item) => ({
+    item,
+    classification: classifyForDynamicCV({
+      eligibility_class: null,
+      category: item.source_category + ' ' + item.title,
+      pillar: item.pillar,
+      evidence_level: item.verification_status === 'verified' ? 'high'
+        : item.verification_status === 'partial' ? 'medium' : 'low',
+    }),
+  }));
+
+  const cvEligibleItems  = classifiedItems.filter(({ classification }) => classification.cvEligible && !classification.privateOnly).map(({ item }) => item);
+  const badgeReadyItems  = classifiedItems.filter(({ classification }) => classification.badgeEligible).map(({ item }) => item);
+  const privateOnlyItems = classifiedItems.filter(({ classification }) => classification.privateOnly).map(({ item }) => item);
+  const excludedCount    = classifiedItems.filter(({ classification }) => classification.sensitiveExcluded || classification.cvClass === 'not_cv_relevant').length;
+
+  const pillarDist = computePillarDistribution(cvEligibleItems);
   const maxCount = Math.max(...pillarDist.map((p) => p.count), 1);
 
   const achStats = workerAchievementService.getAchievementStats();
@@ -246,21 +265,41 @@ export default function DynamicCV() {
         </p>
       </div>
 
+      {/* ── Selectivity notice — non-suppressible ── */}
+      <div
+        data-testid="dynamic-cv-selectivity-notice"
+        className="rounded-lg border border-[rgba(59,110,186,0.18)] bg-[rgba(59,110,186,0.05)] p-4 space-y-1"
+      >
+        <p className="text-sm font-bold text-[#3B6EBA]">
+          Il Dynamic Impact CV non contiene tutte le Impact Units.
+        </p>
+        <p className="text-xs text-[rgba(59,110,186,0.75)] leading-relaxed">
+          Mostra solo esperienze selezionabili, verificabili e controllate dal lavoratore.
+          Il lavoratore decide cosa condividere. Alcune esperienze restano private e non sono suggerite per la condivisione.
+        </p>
+        {excludedCount > 0 && (
+          <p className="text-[10px] text-[rgba(59,110,186,0.55)] italic">
+            {excludedCount} {excludedCount === 1 ? 'esperienza non inclusa' : 'esperienze non incluse'}: compliance, sollievo economico, o categoria sensibile.
+          </p>
+        )}
+        <p className="text-[10px] text-[rgba(59,110,186,0.50)] italic">
+          Nessun dato individuale è visibile al datore di lavoro.
+        </p>
+      </div>
+
       {/* ── Summary stats ── */}
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
-          <p className="text-xs text-[rgba(6,3,43,0.40)]">Elementi totali</p>
-          <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{cvData.total_items}</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)]">Esperienze CV</p>
+          <p className="text-2xl font-bold text-[rgba(6,3,43,0.90)] mt-1">{cvEligibleItems.length}</p>
         </div>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
-          <p className="text-xs text-[rgba(6,3,43,0.40)]">Verificati</p>
-          <p className="text-2xl font-bold text-[#2F7D55] mt-1">{cvData.verified_count}</p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)]">Badge-ready</p>
+          <p className="text-2xl font-bold text-[#2F7D55] mt-1">{badgeReadyItems.length}</p>
         </div>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-3 text-center">
-          <p className="text-xs text-[rgba(6,3,43,0.40)]">Condivisibili</p>
-          <p className="text-2xl font-bold text-[#C76F3D] mt-1">
-            {cvData.items.filter((i) => i.shareable).length}
-          </p>
+          <p className="text-xs text-[rgba(6,3,43,0.40)]">Private</p>
+          <p className="text-2xl font-bold text-[#C76F3D] mt-1">{privateOnlyItems.length}</p>
         </div>
       </div>
 
@@ -378,10 +417,10 @@ export default function DynamicCV() {
         </div>
       </div>
 
-      {/* ── CV Sections — grouped by pillar domain ── */}
+      {/* ── CV Sections — grouped by pillar domain (policy-filtered) ── */}
       <div className="space-y-5" data-testid="cv-sections">
         {CV_SECTIONS.map((section) => {
-          const sectionItems = cvData.items.filter((i) => section.pillars.includes(i.pillar));
+          const sectionItems = cvEligibleItems.filter((i) => section.pillars.includes(i.pillar));
           return (
             <div key={section.key} data-testid={`cv-section-${section.key}`}>
               <div className={cn(
@@ -413,6 +452,99 @@ export default function DynamicCV() {
             </div>
           );
         })}
+      </div>
+
+      {/* ── Badge-ready experiences ── */}
+      {badgeReadyItems.length > 0 && (
+        <div
+          data-testid="dynamic-cv-badge-section"
+          className="rounded-lg border border-[rgba(192,125,42,0.25)] bg-[rgba(192,125,42,0.04)] p-4 space-y-3"
+        >
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.78)]">Esperienze badge-ready</h2>
+            <span className="rounded border border-[rgba(192,125,42,0.22)] bg-[rgba(192,125,42,0.10)] px-2 py-0.5 text-[10px] font-semibold text-[#C07D2A]">
+              {badgeReadyItems.length} idonee
+            </span>
+          </div>
+          <p className="text-xs text-[rgba(6,3,43,0.50)] leading-relaxed">
+            Queste esperienze soddisfano i requisiti di categoria e livello di evidenza per un badge o credenziale verificabile.
+            Il badge non è emesso automaticamente — sarà richiedibile su tua iniziativa in Pilot+.
+          </p>
+          <div className="space-y-2">
+            {badgeReadyItems.map((item) => (
+              <div key={item.id} className="rounded-lg border border-[rgba(192,125,42,0.18)] bg-white p-3">
+                <p className="text-xs font-semibold text-[rgba(6,3,43,0.85)]">{item.title}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">{item.pillar} · {item.date}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-[rgba(6,3,43,0.38)] italic">
+            Badge KORA e credenziali verificabili: In arrivo · Pianificato — non attivo in Foundation Light.
+          </p>
+          <button
+            disabled
+            data-testid="dynamic-cv-request-badge-btn"
+            className="rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs font-medium text-[rgba(6,3,43,0.35)] cursor-not-allowed"
+          >
+            Richiedi badge — In arrivo
+          </button>
+        </div>
+      )}
+
+      {/* ── Private-only experiences ── */}
+      {privateOnlyItems.length > 0 && (
+        <div
+          data-testid="dynamic-cv-private-section"
+          className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.02)] p-4 space-y-2"
+        >
+          <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.55)]">Esperienze private</h2>
+          <p className="text-xs text-[rgba(6,3,43,0.45)] leading-relaxed">
+            Queste esperienze sono incluse nel tuo PIB personale ma non sono suggerite per la condivisione pubblica.
+            Restano visibili solo a te. Questa esperienza resta privata e non viene suggerita per la condivisione.
+          </p>
+          <div className="space-y-2">
+            {privateOnlyItems.map((item) => (
+              <div key={item.id} className="rounded-lg border border-[rgba(6,3,43,0.06)] p-3 opacity-70">
+                <p className="text-xs font-semibold text-[rgba(6,3,43,0.70)]">{item.title}</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.35)] mt-0.5">{item.pillar} · Privata</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Worker controls — planned features ── */}
+      <div
+        data-testid="dynamic-cv-worker-controls"
+        className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.02)] p-4 space-y-3"
+      >
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-[rgba(6,3,43,0.55)]">Controllo condivisione</h2>
+          <span className="rounded border border-[rgba(6,3,43,0.10)] bg-[rgba(6,3,43,0.05)] px-2 py-0.5 text-[10px] font-semibold text-[rgba(6,3,43,0.42)]">
+            In arrivo · Pianificato
+          </span>
+        </div>
+        <p className="text-xs text-[rgba(6,3,43,0.45)] leading-relaxed">
+          In Pilot+, il lavoratore potrà decidere cosa condividere, richiedere badge, creare link di verifica, esportare PDF o collegare il profilo LinkedIn.
+          Nessuna condivisione è attiva in Foundation Light.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {[
+            { label: 'Richiedi badge', testId: 'dynamic-cv-request-badge-planned' },
+            { label: 'Link di verifica pubblica', testId: 'dynamic-cv-public-link-planned' },
+            { label: 'Esporta PDF', testId: 'dynamic-cv-export-pdf-planned' },
+            { label: 'Condividi su LinkedIn', testId: 'dynamic-cv-linkedin-planned' },
+          ].map(({ label, testId }) => (
+            <button
+              key={label}
+              disabled
+              data-testid={testId}
+              className="rounded-md border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2 text-xs font-medium text-[rgba(6,3,43,0.35)] cursor-not-allowed text-left"
+            >
+              {label} — In arrivo
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Milestones & Credentials — Pilot+ placeholder ── */}
