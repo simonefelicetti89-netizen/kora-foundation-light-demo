@@ -7,6 +7,9 @@
 //   - Nessuna classifica, nessun ranking, nessun confronto tra lavoratori
 //   - Partecipazione non visibile all'azienda in forma individuale
 //   - Four-state detection: checking / live / empty / demo (same pattern as PIB and collective)
+//   - Inline booking (B-IB): POST /api/worker/commons/bookings con { post_id } da JWT.
+//     Auth da cookie session — nessun identificatore di identità come query param.
+//     Identità del lavoratore risolta server-side — mai esposta nel componente UI.
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -29,6 +32,12 @@ interface LiveInitiative {
   event_start_at?: string;
   capacity_internal?: number;
   capacity_cross?:    number;
+}
+
+// Only post_id + status used from booking records — no identity fields stored in UI state.
+interface BookingSummary {
+  post_id: string;
+  status:  string;
 }
 
 interface KoraSpaceItem {
@@ -96,6 +105,18 @@ const PILLAR_COLORS: Record<string, string> = {
   LIFE: '#C76F3D', GROWTH: '#2F7D55', CONNECTION: '#D99767', IMPACT: '#4A7FE0', LEGACY: '#8A7562',
 };
 
+// Canonical Italian booking status labels (mirrors bookings/page.tsx)
+const BOOKING_STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+  pending:   { label: 'Richiesta inviata',         color: '#8A5A00', bg: 'rgba(192,125,42,0.10)' },
+  approved:  { label: 'Partecipazione confermata', color: '#2F7D55', bg: 'rgba(47,125,85,0.08)'  },
+  rejected:  { label: 'Richiesta non approvata',   color: '#9E3B2F', bg: 'rgba(158,59,47,0.08)'  },
+  attended:  { label: 'Partecipazione completata', color: '#3B6EBA', bg: 'rgba(59,110,186,0.08)' },
+  cancelled: { label: 'Annullata',                 color: 'rgba(6,3,43,0.45)', bg: 'rgba(6,3,43,0.05)' },
+};
+function bookingStatusMeta(s: string) {
+  return BOOKING_STATUS_META[s] ?? { label: 'Stato in verifica', color: 'rgba(6,3,43,0.40)', bg: 'rgba(6,3,43,0.04)' };
+}
+
 function OperatingModelNotice() {
   return (
     <div
@@ -136,8 +157,27 @@ function PrivacyNotice() {
         KORA misura l&apos;organizzazione, non classifica le persone.{' '}
         <strong>Il datore di lavoro non vede il tuo percorso individuale.</strong>{' '}
         La tua partecipazione può contribuire alla tua timeline personale e, in forma aggregata,
-        alla KORA Contribution dell&apos;ecosistema.
+        alla KORA Contribution dell&apos;ecosistema.{' '}
+        Nessuna condivisione pubblica avviene automaticamente.
       </p>
+    </div>
+  );
+}
+
+function BookingRequestNotice() {
+  return (
+    <div
+      data-testid="space-booking-request-notice"
+      style={{
+        background: 'rgba(47,125,85,0.04)', border: '1px solid rgba(47,125,85,0.14)',
+        borderRadius: 10, padding: '10px 14px', marginBottom: 16,
+        fontSize: 11, color: '#2F5A42', fontFamily: FONT, lineHeight: 1.65,
+      }}
+    >
+      <strong>La richiesta di partecipazione è privata.</strong>{' '}
+      KORA/Admin può gestire lo stato operativo della partecipazione — il tuo percorso individuale
+      resta sempre privato.{' '}
+      La partecipazione completata può generare una traccia personale privata nel tuo percorso My KORA.
     </div>
   );
 }
@@ -179,6 +219,10 @@ export default function WorkerKoraSpacePage() {
   const { activeRole } = useRole();
   const [mode, setMode] = useState<SpaceMode>('checking');
   const [liveInitiatives, setLiveInitiatives] = useState<LiveInitiative[]>([]);
+  // post_id → booking status — uses only the post_id key, no identity fields.
+  const [bookingsByPostId, setBookingsByPostId] = useState<Record<string, string>>({});
+  const [bookingLoadingId, setBookingLoadingId] = useState<string | null>(null);
+  const [bookingErrors, setBookingErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch('/api/worker/pib')
@@ -187,19 +231,54 @@ export default function WorkerKoraSpacePage() {
         if (data?.isSynthetic !== false) {
           setMode('demo');
         } else {
-          // Real authenticated worker — try live initiatives feed
-          fetch('/api/commons/initiatives')
-            .then((r) => r.ok ? r.json() : null)
-            .then((idata) => {
-              const items: LiveInitiative[] = idata?.initiatives ?? [];
-              setLiveInitiatives(items);
-              setMode(items.length > 0 ? 'live' : 'empty');
-            })
-            .catch(() => setMode('empty'));
+          // Real authenticated worker — fetch initiatives + existing bookings in parallel
+          Promise.all([
+            fetch('/api/commons/initiatives').then((r) => r.ok ? r.json() : null),
+            fetch('/api/worker/commons/bookings').then((r) => r.ok ? r.json() : null).catch(() => null),
+          ]).then(([idata, bdata]) => {
+            const items: LiveInitiative[] = idata?.initiatives ?? [];
+            // Build post_id → status map from existing bookings (no worker identity fields)
+            const bMap: Record<string, string> = {};
+            const bList: BookingSummary[] = bdata?.bookings ?? [];
+            for (const b of bList) bMap[b.post_id] = b.status;
+            setBookingsByPostId(bMap);
+            setLiveInitiatives(items);
+            setMode(items.length > 0 ? 'live' : 'empty');
+          }).catch(() => setMode('empty'));
         }
       })
       .catch(() => setMode('demo'));
   }, []);
+
+  // Inline booking request — POST to existing worker booking API.
+  // Auth from JWT cookie (requireWorkerUser server-side) — no identity query params.
+  async function requestBooking(postId: string) {
+    setBookingLoadingId(postId);
+    setBookingErrors((prev) => { const { [postId]: _, ...rest } = prev; return rest; });
+    try {
+      const res = await fetch('/api/worker/commons/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: postId }),
+      });
+      const data = await res.json() as { ok: boolean; error?: string };
+      if (data.ok) {
+        setBookingsByPostId((prev) => ({ ...prev, [postId]: 'pending' }));
+      } else {
+        setBookingErrors((prev) => ({
+          ...prev,
+          [postId]: 'Impossibile completare la richiesta. Riprova più tardi.',
+        }));
+      }
+    } catch {
+      setBookingErrors((prev) => ({
+        ...prev,
+        [postId]: 'Errore di rete. Riprova più tardi.',
+      }));
+    } finally {
+      setBookingLoadingId(null);
+    }
+  }
 
   if (!myKoraPreviewService.canAccess(activeRole) && mode !== 'checking') {
     return (
@@ -261,6 +340,7 @@ export default function WorkerKoraSpacePage() {
         <PageHeader />
         <OperatingModelNotice />
         <PrivacyNotice />
+        <BookingRequestNotice />
         <h2 style={{
           fontSize: 13, fontWeight: 700, color: TOKENS.inkSecondary,
           margin: '0 0 14px', textTransform: 'uppercase', letterSpacing: '0.06em',
@@ -269,7 +349,12 @@ export default function WorkerKoraSpacePage() {
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
           {liveInitiatives.map((item) => {
-            const pillarColor = item.pillar ? PILLAR_COLORS[item.pillar] : TOKENS.accent;
+            const pillarColor      = item.pillar ? PILLAR_COLORS[item.pillar] : TOKENS.accent;
+            const isCrossCompany   = item.opening_grade === 'cross_company';
+            const existingStatus   = bookingsByPostId[item.id];
+            const isThisLoading    = bookingLoadingId === item.id;
+            const cardError        = bookingErrors[item.id];
+
             return (
               <div
                 key={item.id}
@@ -311,31 +396,88 @@ export default function WorkerKoraSpacePage() {
                     {item.body}
                   </p>
                 )}
-                <Link
-                  href="/worker/commons"
-                  style={{
-                    fontSize: 11, fontWeight: 600,
-                    color: item.opening_grade === 'cross_company' ? '#2F7D55' : TOKENS.accent,
-                    textDecoration: 'none', display: 'inline-block',
-                    padding: item.opening_grade === 'cross_company' ? '6px 14px' : undefined,
-                    background: item.opening_grade === 'cross_company' ? 'rgba(47,125,85,0.09)' : undefined,
-                    borderRadius: item.opening_grade === 'cross_company' ? 7 : undefined,
-                    border: item.opening_grade === 'cross_company' ? '1px solid rgba(47,125,85,0.22)' : undefined,
-                  }}
-                >
-                  {item.opening_grade === 'cross_company'
-                    ? 'Richiedi partecipazione su KORA Commons →'
-                    : 'Scopri su KORA Commons →'}
-                </Link>
-                {item.opening_grade === 'cross_company' && (
-                  <p style={{ fontSize: 9, color: TOKENS.inkHint, margin: '4px 0 0', lineHeight: 1.5 }}>
-                    La prenotazione è soggetta ad approvazione KORA. Il tuo nome non è visibile all&apos;organizzatore.
-                  </p>
+
+                {/* ── CTA: cross_company only ── */}
+                {isCrossCompany && (
+                  <div>
+                    {/* Already has an active/terminal booking for this initiative */}
+                    {existingStatus && existingStatus !== 'cancelled' ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                        <span
+                          data-testid={`space-booking-status-${item.id}`}
+                          style={{
+                            fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                            background: bookingStatusMeta(existingStatus).bg,
+                            color:      bookingStatusMeta(existingStatus).color,
+                          }}
+                        >
+                          {bookingStatusMeta(existingStatus).label}
+                        </span>
+                        {(existingStatus === 'pending' || existingStatus === 'approved') && (
+                          <Link
+                            href="/my-kora/bookings"
+                            style={{ fontSize: 11, color: '#2F7D55', textDecoration: 'none', fontWeight: 600 }}
+                          >
+                            → Vedi le tue prenotazioni
+                          </Link>
+                        )}
+                      </div>
+                    ) : (
+                      /* No booking or cancelled — show inline request button */
+                      <button
+                        data-testid={`space-request-booking-${item.id}`}
+                        onClick={() => void requestBooking(item.id)}
+                        disabled={isThisLoading}
+                        style={{
+                          fontSize: 11, fontWeight: 700, color: '#FFFFFF',
+                          background: isThisLoading ? 'rgba(47,125,85,0.50)' : '#2F7D55',
+                          border: 'none', borderRadius: 7, padding: '7px 16px',
+                          cursor: isThisLoading ? 'not-allowed' : 'pointer',
+                          fontFamily: FONT,
+                        }}
+                      >
+                        {isThisLoading ? 'Invio richiesta…' : 'Richiedi partecipazione'}
+                      </button>
+                    )}
+
+                    {/* Per-card error */}
+                    {cardError && (
+                      <p
+                        data-testid={`space-booking-error-${item.id}`}
+                        style={{ fontSize: 11, color: '#9E3B2F', margin: '6px 0 0', fontFamily: FONT }}
+                      >
+                        {cardError}
+                      </p>
+                    )}
+
+                    <p style={{ fontSize: 9, color: TOKENS.inkHint, margin: '6px 0 0', lineHeight: 1.5 }}>
+                      La prenotazione è soggetta ad approvazione KORA. Il tuo nome non è visibile all&apos;organizzatore.
+                    </p>
+
+                    {/* Handoff to /worker/commons for full page — always available */}
+                    <Link
+                      href="/worker/commons"
+                      style={{ fontSize: 10, color: TOKENS.inkSecondary, textDecoration: 'none', display: 'inline-block', marginTop: 4 }}
+                    >
+                      Apri scheda completa su KORA Commons →
+                    </Link>
+                  </div>
+                )}
+
+                {/* Non-cross_company: navigate to full page */}
+                {!isCrossCompany && (
+                  <Link
+                    href="/worker/commons"
+                    style={{ fontSize: 11, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
+                  >
+                    Scopri su KORA Commons →
+                  </Link>
                 )}
               </div>
             );
           })}
         </div>
+
         {/* Booking lifecycle — non-suppressible */}
         <div
           data-testid="space-booking-lifecycle"
@@ -365,9 +507,12 @@ export default function WorkerKoraSpacePage() {
           <Link href="/my-kora/personal-impact-balance" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
             → Personal Impact Balance
           </Link>
+          <Link href="/my-kora/bookings" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
+            → Le mie prenotazioni
+          </Link>
         </div>
         <p style={{ fontSize: 10, fontFamily: 'monospace', color: TOKENS.inkHint, marginTop: 28 }}>
-          live_feed: true · session_authenticated · KORA Space v0.1 · B142-A
+          live_feed: true · session_authenticated · inline_booking: true · KORA Space v0.1 · B142-A
         </p>
       </div>
     );
