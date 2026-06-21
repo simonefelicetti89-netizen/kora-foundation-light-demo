@@ -236,9 +236,20 @@ export async function moderate(params: {
 /**
  * Segna un booking come attended (dopo l'evento, confermato da KORA_ADMIN).
  * Triggera:
- *   1. PIB worker con IU maggiorato cross_company (×1.30)
- *   2. Due righe Contribution: promoter + origin_employer
+ *   1. PIB worker con IU maggiorato cross_company (×1.30) — inserisce in personal.worker_pib
+ *   2. Due righe Contribution: promoter + origin_employer — inserisce in commons.contribution_event
  *   3. (Se post ha external_participants_count > 0) riga Contribution per familiari
+ *
+ * Idempotenza garantita da UNIQUE constraint (mig 025) su commons.contribution_event(source_booking_id, role).
+ * Una seconda chiamata su stessa booking restituisce contribution_written=0 senza errore.
+ *
+ * Status: ACTIVE in Foundation Light Pilot Preview.
+ *   - commons.contribution_event records vengono scritti quando booking → attended.
+ *   - I record contribution_event alimentano KoraContributionService.getPromoterContribution()
+ *     e .getOriginEmployerContribution() per il KORA Contribution companion indicator.
+ *   - KORA Contribution NON è un componente del KORA Index — è un companion indicator separato.
+ *   - La pipeline live verso il KORA Index non è attiva pre-Gate-2. Contribution è un
+ *     Pilot Preview indicator, non ancora parte del calcolo KORA Index live.
  *
  * Usa serviceDb per bypassare RLS — pattern identico a B164 office-attribution.
  */

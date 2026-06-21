@@ -682,12 +682,45 @@ interface Props {
   userRole: string;
 }
 
+// ── History entry from /api/company/data-submissions/history ────────────────
+
+interface HistoryEntry {
+  batchId:          string;
+  sourceType:       string;
+  sourceName:       string | null;
+  period:           string | null;
+  status:           string;
+  statusLabel:      string;
+  rowCount:         number | null;
+  mappedCount:      number | null;
+  createdAt:        string | null;
+  processedAt:      string | null;
+  eligibilityCounts: Record<string, number> | null;
+  submissionType:   string | null;
+  fileCount:        number | null;
+}
+
+const HISTORY_STATUS_CLS: Record<string, string> = {
+  pending:                        'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
+  approved:                       'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  rejected:                       'bg-[rgba(158,59,47,0.06)] text-red-500 border-[rgba(158,59,47,0.22)]',
+  archived:                       'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.42)] border-[rgba(6,3,43,0.10)]',
+  submission_draft:               'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]',
+  submission_pending:             'bg-[rgba(43,92,230,0.08)] text-[#1E4A8A] border-[rgba(43,92,230,0.20)]',
+  submission_needs_clarification: 'bg-[rgba(217,154,43,0.08)] text-amber-700 border-[rgba(217,154,43,0.25)]',
+  submission_accepted:            'bg-[rgba(47,125,85,0.08)] text-[#2F7D55] border-[rgba(47,125,85,0.22)]',
+  submission_rejected:            'bg-[rgba(158,59,47,0.06)] text-red-500 border-[rgba(158,59,47,0.22)]',
+};
+
 export function DataSubmissionSection({ userRole }: Props) {
   const isAdmin = userRole === 'COMPANY_ADMIN';
   const [list,          setList]          = useState<SubmissionSummary[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [showWizard,    setShowWizard]    = useState(false);
   const [activeClarSub, setActiveClarSub] = useState<SubmissionSummary | null>(null);
+  const [history,       setHistory]       = useState<HistoryEntry[]>([]);
+  const [historyOpen,   setHistoryOpen]   = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
 
   async function loadList() {
     try {
@@ -696,6 +729,16 @@ export function DataSubmissionSection({ userRole }: Props) {
       if (d.ok) setList(d.submissions);
     } catch { /* network error — keep empty list */ }
     finally { setLoading(false); }
+  }
+
+  async function loadHistory() {
+    if (historyLoaded) return;
+    try {
+      const r = await fetch('/api/company/data-submissions/history', { credentials: 'include' });
+      const d = await r.json() as { ok: boolean; history: HistoryEntry[] };
+      if (d.ok) setHistory(d.history);
+    } catch { /* ignore */ }
+    finally { setHistoryLoaded(true); }
   }
 
   useEffect(() => { loadList(); }, []); // eslint-disable-line react-hooks/set-state-in-effect
@@ -859,6 +902,63 @@ export function DataSubmissionSection({ userRole }: Props) {
           </a>
         </div>
       )}
+
+      {/* ── Cronologia Upload — all batches for this tenant ────────────────── */}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] overflow-hidden" data-testid="upload-history-panel">
+        <button
+          className="w-full flex items-center justify-between px-4 py-3 bg-[rgba(6,3,43,0.02)] hover:bg-[rgba(6,3,43,0.04)] transition-colors text-left"
+          onClick={() => { setHistoryOpen((v) => !v); loadHistory(); }}
+          data-testid="upload-history-toggle"
+        >
+          <div>
+            <p className="text-[11px] font-semibold text-[rgba(6,3,43,0.72)]">Cronologia Upload</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Tutti i batch caricati per il tuo tenant</p>
+          </div>
+          <span className="text-[10px] text-[rgba(6,3,43,0.40)]">{historyOpen ? '▲' : '▼'}</span>
+        </button>
+
+        {historyOpen && (
+          <div className="divide-y divide-[rgba(6,3,43,0.05)]">
+            {!historyLoaded && (
+              <div className="px-4 py-3 text-[11px] text-[rgba(6,3,43,0.40)]">Caricamento…</div>
+            )}
+            {historyLoaded && history.length === 0 && (
+              <div className="px-4 py-5 text-center" data-testid="upload-history-empty">
+                <p className="text-xs text-[rgba(6,3,43,0.45)]">Nessun upload registrato per questo tenant.</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.35)] mt-1">I batch compariranno qui una volta che KORA Admin avrà accettato i tuoi file.</p>
+              </div>
+            )}
+            {historyLoaded && history.map((entry) => (
+              <div key={entry.batchId} className="px-4 py-3 flex items-start gap-3" data-testid="upload-history-entry">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] font-medium text-[rgba(6,3,43,0.80)] truncate max-w-[200px]">
+                      {entry.sourceName ?? entry.sourceType}
+                    </span>
+                    <span className={`inline-block rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${HISTORY_STATUS_CLS[entry.status] ?? 'bg-[rgba(6,3,43,0.04)] text-[rgba(6,3,43,0.52)] border-[rgba(6,3,43,0.12)]'}`}>
+                      {entry.statusLabel}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-[rgba(6,3,43,0.42)] mt-0.5 flex flex-wrap gap-2">
+                    {entry.period && <span>{entry.period}</span>}
+                    {entry.rowCount != null && <span>{entry.rowCount} righe</span>}
+                    {entry.mappedCount != null && <span>{entry.mappedCount} idonee</span>}
+                    {entry.fileCount != null && <span>{entry.fileCount} file</span>}
+                    {entry.createdAt && <span>{ts(entry.createdAt)}</span>}
+                  </div>
+                  {entry.eligibilityCounts && (
+                    <div className="text-[9px] text-[rgba(6,3,43,0.38)] mt-0.5 flex gap-2 flex-wrap">
+                      {Object.entries(entry.eligibilityCounts).map(([k, v]) => (
+                        <span key={k}>{k}: {v}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       <p className="text-[9.5px] text-[rgba(6,3,43,0.40)] pt-1">
         Caricamento dati ≠ scoring KORA · La revisione è svolta da KORA Admin · Nessuna UEF generata automaticamente.

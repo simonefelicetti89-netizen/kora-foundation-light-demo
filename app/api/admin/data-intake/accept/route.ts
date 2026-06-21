@@ -713,7 +713,51 @@ export async function POST(request: NextRequest) {
     parseWarnings.push(totalsFilterResult.warning);
   }
 
-  // ── 11. Eligibility classification on mapped rows ────────────────────────────
+  // ── 11a. Deduplication guard — batch level (exact match only) ────────────────
+  // Conservative check: if a non-rejected/non-archived batch already exists for
+  // (tenant_id, reporting_period, source_name), reject to prevent double-counting.
+  // Near-matches (different file name, same data) are NOT automatically deduped —
+  // operator must explicitly review.
+  const { data: existingBatches } = await db
+    .schema('analytics')
+    .from('source_batch')
+    .select('id, batch_status, created_at')
+    .eq('tenant_id', tenantId)
+    .eq('reporting_period', reportingPeriod)
+    .eq('source_name', batchLabel)
+    .not('batch_status', 'in', '("rejected","archived")')
+    .limit(1);
+
+  if (existingBatches && existingBatches.length > 0) {
+    const dup = existingBatches[0] as { id: string; batch_status: string; created_at: string };
+    await db.schema('audit').from('audit_log').insert(
+      makeAudit({
+        tenantId, actorId: authResult.id,
+        action: 'batch_duplicate_rejected',
+        resourceType: 'analytics.source_batch',
+        resourceId: dup.id,
+        metadata: {
+          reason:           'exact_duplicate_batch',
+          existing_batch_id: dup.id,
+          existing_status:   dup.batch_status,
+          existing_created:  dup.created_at,
+          reporting_period:  reportingPeriod,
+          source_name:       batchLabel,
+          policy:            'conservative_exact_match_only',
+        },
+      }),
+    );
+    return NextResponse.json({
+      ok:              false,
+      error:           'Batch duplicato rilevato. Un batch con lo stesso periodo, tenant e nome file è già presente in stato non rifiutato.',
+      duplicateOf:     dup.id,
+      duplicateStatus: dup.batch_status,
+      hint:            'Per caricare una revisione, rinomina il file o usa un periodo diverso. Per annullare il batch precedente, cambiarne lo stato in "rejected" prima di ricaricare.',
+      policy:          'conservative_exact_match_only',
+    }, { status: 409 });
+  }
+
+  // ── 11b. Eligibility classification on mapped rows ────────────────────────────
   const records: RawUploadedRecord[] = csvToUploadedRecords(finalRows);
   const eligResults = classifyEligibilityBatch(records);
 
@@ -725,7 +769,7 @@ export async function POST(request: NextRequest) {
     total:          eligResults.length,
   };
 
-  // ── 11. Create source_batch ───────────────────────────────────────────────────
+  // ── 11c. Create source_batch ──────────────────────────────────────────────────
   const { data: batchData, error: batchErr } = await db.schema('analytics').from('source_batch')
     .insert({
       tenant_id:              tenantId,

@@ -300,8 +300,9 @@ describe('Tenant Isolation — commons/posts: contratto tenant per ruolo', () =>
 // ── 10. Sanity check: count delle route coperte ───────────────────────────────
 
 describe('Tenant Isolation — copertura routes', () => {
-  it('copre tutte le 15 company routes', () => {
-    expect(COMPANY_ROUTES.length).toBe(15);
+  it('copre tutte le 17 company routes', () => {
+    // P1 sprint added: /api/company/data-submissions/history, /api/company/initiatives/explainability
+    expect(COMPANY_ROUTES.length).toBe(17);
   });
 
   it('copre tutte le admin routes (baseline: ≥45)', () => {

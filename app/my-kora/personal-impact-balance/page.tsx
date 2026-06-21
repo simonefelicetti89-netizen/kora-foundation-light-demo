@@ -17,6 +17,7 @@
 //   KoraActivationSignature = STRATO worker privato, solo in sezione PIB.
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
@@ -28,6 +29,7 @@ import { AttributionMatrix } from '@/components/my-kora/AttributionMatrix';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { PreviewToLiveNotice } from '@/components/my-kora/PreviewToLiveNotice';
 import { cn } from '@/lib/utils';
+import type { WorkerPIB } from '@/lib/types/domains/worker-pib';
 
 // ─── Styling maps ─────────────────────────────────────────────────────────────
 
@@ -49,10 +51,36 @@ const VERIF_COLOR: Record<string, string> = {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+// Live PIB detection states for authenticated worker mode.
+// 'checking' → fetch in progress; 'live' → real worker JWT found, data returned;
+// 'empty' → real worker JWT but no scoring data yet; 'demo' → 401/unauthenticated, show synthetic preview.
+type LivePIBState = 'checking' | 'live' | 'empty' | 'demo';
+
 export default function PersonalImpactBalancePage() {
   const { activeRole } = useRole();
   const { activeScenario } = useScenario();
   const { activePersona } = usePersona();
+
+  const [livePIBState, setLivePIBState] = useState<LivePIBState>('checking');
+  const [livePIB, setLivePIB] = useState<WorkerPIB | null>(null);
+
+  // Attempt to detect a real worker JWT. If /api/worker/pib responds with
+  // isSynthetic: false, the authenticated worker must see their real PIB,
+  // not the synthetic demo persona. On 401 → stay in demo mode.
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/worker/pib')
+      .then(async (res) => {
+        if (cancelled) return;
+        if (!res.ok) { setLivePIBState('demo'); return; }
+        const data = (await res.json()) as WorkerPIB;
+        if (data.isSynthetic !== false) { setLivePIBState('demo'); return; }
+        setLivePIB(data);
+        setLivePIBState(data.period_iu_total === 0 && data.active_pillars === 0 ? 'empty' : 'live');
+      })
+      .catch(() => { if (!cancelled) setLivePIBState('demo'); });
+    return () => { cancelled = true; };
+  }, []);
 
   if (!myKoraPreviewService.canAccess(activeRole)) {
     return (
@@ -65,8 +93,43 @@ export default function PersonalImpactBalancePage() {
     );
   }
 
+  // Authenticated worker with no scoring data yet — show honest empty state.
+  // Do NOT show synthetic persona data.
+  if (livePIBState === 'empty') {
+    return (
+      <div className="space-y-6" data-testid="pib-empty-state">
+        <div>
+          <Link href="/my-kora" className="text-xs text-[rgba(6,3,43,0.45)] hover:text-[rgba(6,3,43,0.70)] transition-colors" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', textDecoration: 'none' }}>
+            ← My KORA
+          </Link>
+        </div>
+        <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#06032B' }}>
+          Personal Impact Balance
+        </h1>
+        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-6 space-y-3" data-testid="pib-no-data">
+          <p className="text-sm font-semibold text-[rgba(6,3,43,0.78)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Nessun Personal Impact Balance disponibile.
+          </p>
+          <p className="text-xs text-[rgba(6,3,43,0.55)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            Il tuo PIB sarà disponibile dopo che la tua azienda avrà completato un ciclo di scoring.
+          </p>
+          <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-3 py-2">
+            <p className="text-[11px] text-[rgba(6,3,43,0.55)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }} data-testid="pib-employer-privacy-notice">
+              Il tuo datore di lavoro non può vedere il tuo PIB individuale. Questo spazio è privato.
+            </p>
+          </div>
+        </div>
+        <p className="text-[11px] text-[rgba(6,3,43,0.38)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+          L&apos;employer non può vedere il PIB individuale.
+        </p>
+      </div>
+    );
+  }
+
   const personaId = activePersona?.id ?? 'persona-elena-m';
-  const pib       = workerPIBService.getPIB(personaId, activeScenario);
+  // In 'live' mode, use real PIB from API. In 'demo' or 'checking', use synthetic persona.
+  const pib = (livePIBState === 'live' && livePIB) ? livePIB : workerPIBService.getPIB(personaId, activeScenario);
+  const isRealWorkerMode = livePIBState === 'live' && livePIB !== null && livePIB.isSynthetic === false;
 
   return (
     <div className="space-y-6" data-testid="pib-dedicated-page">
@@ -84,7 +147,16 @@ export default function PersonalImpactBalancePage() {
 
       {/* ── Header ───────────────────────────────────────────────────────────── */}
       <div data-testid="pib-page-header">
-        <BoundaryBadge mode="PREVIEW" variant="light" suffix="· dati sintetici" style={{ marginBottom: 10 }} />
+        {!isRealWorkerMode && (
+          <BoundaryBadge mode="PREVIEW" variant="light" suffix="· dati sintetici" style={{ marginBottom: 10 }} />
+        )}
+        {isRealWorkerMode && (
+          <div className="rounded border border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.06)] px-3 py-2 mb-3" data-testid="pib-live-notice">
+            <p className="text-[11px] font-semibold text-[#2F7D55]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+              Dati reali · PIB verificato dalla pipeline KORA
+            </p>
+          </div>
+        )}
         <h1 style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.03em', lineHeight: 1.06, color: '#06032B' }}>
           Personal Impact Balance
         </h1>
@@ -103,9 +175,11 @@ export default function PersonalImpactBalancePage() {
             <span className="rounded border border-[rgba(199,111,61,0.22)] bg-[rgba(199,111,61,0.08)] px-2 py-0.5 text-xs font-mono text-[#C76F3D]">
               privato · solo per te
             </span>
-            <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.42)]">
-              IU sintetici pre-computati
-            </span>
+            {!isRealWorkerMode && (
+              <span className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.04)] px-2 py-0.5 text-[10px] font-mono text-[rgba(6,3,43,0.42)]">
+                IU sintetici pre-computati
+              </span>
+            )}
           </div>
         </div>
 
@@ -118,7 +192,7 @@ export default function PersonalImpactBalancePage() {
         </p>
 
         {/* Privacy notice — non-suppressible */}
-        <p className="text-xs text-[rgba(6,3,43,0.60)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+        <p className="text-xs text-[rgba(6,3,43,0.60)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }} data-testid="pib-employer-privacy-notice">
           Questo spazio appartiene a te. KORA misura l&apos;organizzazione, non classifica i lavoratori.
           Il tuo datore di lavoro non vede queste informazioni.
         </p>
@@ -379,23 +453,27 @@ export default function PersonalImpactBalancePage() {
         </div>
       </div>
 
-      {/* ── PreviewToLiveNotice ────────────────────────────────────────────────── */}
-      <PreviewToLiveNotice
-        what="Personal Impact Balance è il bilancio privato delle tue esperienze di attivazione — mai visibile al datore di lavoro."
-        preview="I dati mostrati sono costruiti su un profilo sintetico dimostrativo."
-        live="Proverranno dalle tue attività realmente verificate tramite la pipeline KORA aziendale."
-        privacy="Il tuo datore di lavoro non accede a questo spazio in nessuna modalità."
-      />
+      {/* ── PreviewToLiveNotice — only in demo mode ───────────────────────────── */}
+      {!isRealWorkerMode && (
+        <PreviewToLiveNotice
+          what="Personal Impact Balance è il bilancio privato delle tue esperienze di attivazione — mai visibile al datore di lavoro."
+          preview="I dati mostrati sono costruiti su un profilo sintetico dimostrativo."
+          live="Proverranno dalle tue attività realmente verificate tramite la pipeline KORA aziendale."
+          privacy="Il tuo datore di lavoro non accede a questo spazio in nessuna modalità."
+        />
+      )}
 
-      {/* ── Synthetic demo notice ─────────────────────────────────────────────── */}
-      <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-        Questa anteprima usa dati sintetici. Personal Impact Balance è una preview del layer personale.
-        Non rappresenta account reali, identità reali, wallet, booking, pagamenti o certificazioni attive.
-        Il percorso reale richiederà identità worker-owned e consenso (Pilot+).
-        <span className="block mt-0.5 font-mono text-[rgba(6,3,43,0.28)]">
-          synthetic_demo_data: true · Foundation Light Preview · KORA Index v1.0 · pre_empirical_calibration
-        </span>
-      </div>
+      {/* ── Synthetic demo notice — only in demo mode ────────────────────────── */}
+      {!isRealWorkerMode && (
+        <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)] leading-relaxed" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+          Questa anteprima usa dati sintetici. Personal Impact Balance è una preview del layer personale.
+          Non rappresenta account reali, identità reali, wallet, booking, pagamenti o certificazioni attive.
+          Il percorso reale richiederà identità worker-owned e consenso (Pilot+).
+          <span className="block mt-0.5 font-mono text-[rgba(6,3,43,0.28)]">
+            synthetic_demo_data: true · Foundation Light Preview · KORA Index v1.0 · pre_empirical_calibration
+          </span>
+        </div>
+      )}
     </div>
   );
 }
