@@ -420,6 +420,97 @@ Post-repair migration list confirms:
 
 Drift is fully resolved. Migration history now matches actual DB state.
 
+---
+
+## 13. Rollback 029 Quarantine
+
+**Date:** 2026-06-22  
+**Commit:** see Gate 2.2 quarantine commit
+
+### 13.1 Why 029 was quarantined
+
+Migration 029 (`029_rollback_027_if_needed.sql`) was created as an emergency safety net for 027. After 027 was applied successfully and the migration history was repaired (`027 Local ✓ / Remote ✓`), 029 remained pending in the forward migration pipeline (`Local ✓ / Remote —`).
+
+The risk: any future `supabase migration up` would see 029 as the next unapplied migration and apply it automatically — re-adding the 6 KORA_ADMIN policies that 027 removed, silently undoing the entire privacy hardening.
+
+029 is explicitly "NOT part of the normal apply sequence" (per its own header comments). It belongs in a manual-only artifact store, not in `supabase/migrations/`.
+
+### 13.2 Quarantine action
+
+Migration 029 was moved via `git mv`:
+
+```
+supabase/migrations/029_rollback_027_if_needed.sql
+  → supabase/rollback/029_rollback_027_if_needed.sql
+```
+
+`supabase/rollback/README.md` was created to document:
+
+- Rollback files are manual-only artifacts
+- They must never be applied by `supabase migration up`
+- Execution requires explicit CTO / technical-owner approval
+- Staging and production targets must be confirmed separately
+- Rollbacks are temporary — a forward fix must follow
+
+### 13.3 029 is no longer in the forward migration pipeline
+
+Post-quarantine `supabase migration list --linked` confirms:
+
+```
+001–028: Local ✓ / Remote ✓   (all aligned, including 027)
+029:     no longer listed      (removed from pipeline)
+```
+
+Supabase CLI scans only `supabase/migrations/` for migration files. Moving 029 to `supabase/rollback/` removes it from pipeline visibility entirely. No `supabase migration up` can apply it automatically.
+
+### 13.4 029 was not applied
+
+At no point during quarantine was 029 executed. The database state remains:
+
+- 6 kora_admin policies ABSENT (post-027 hardening intact) ✓
+- `worker_pib_worker_own_all`, `worker_identity_worker_own_select/update`, etc. — unchanged ✓
+- C-11 / C-12 / W-04: PASS ✓
+
+### 13.5 027 remains applied and tracked
+
+| Migration | Local | Remote | Status |
+|---|---|---|---|
+| 027 | ✓ | ✓ | Applied — aligned (per §12 repair) |
+| 029 | ✓ | — | Quarantined — manual-only, NOT in pipeline |
+
+### 13.6 Operational instruction for future rollback
+
+If 029 is ever needed (confirmed 027-induced breakage, CTO approval in place):
+
+```bash
+# 1. Confirm preconditions (see supabase/rollback/README.md)
+# 2. Confirm target: staging haqflkurpmeaxpikozjl — confirm in writing
+# 3. Execute manually (NOT via migration up):
+supabase db query --linked --file supabase/rollback/029_rollback_027_if_needed.sql
+
+# 4. Verify rollback applied (see 029 POST-APPLY VERIFICATION QUERIES in file header)
+# 5. Deploy forward fix as soon as possible
+# 6. Re-apply 027 (or successor) once root cause resolved
+```
+
+### 13.7 Warning — do not use `supabase migration up` for rollback
+
+`supabase migration up` applies migrations in forward order. It must never be used to trigger a rollback. If 029 is in `supabase/rollback/`, it cannot be accidentally applied by `migration up`. If it were moved back to `supabase/migrations/`, it would be applied as the next migration — re-adding all 027-removed policies without warning.
+
+### 13.8 Production rollback
+
+029 comments state: "Do not apply to production without a separate, explicit approval process."
+
+Production rollback of 027 requires:
+
+- Separate incident / change record
+- Explicit CTO sign-off
+- Production target confirmed in writing
+- Post-rollback recovery timeline documented
+- Gate 3 / Gate 5 implications reviewed before execution
+
+---
+
 ### 12.8 Post-repair hygiene
 
 | Check | Status |

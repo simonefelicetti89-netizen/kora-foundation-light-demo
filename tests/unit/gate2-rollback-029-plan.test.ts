@@ -1,9 +1,10 @@
 /**
  * Gate 2 — Rollback 029 Plan assertions.
  *
- * Verifies that supabase/migrations/029_rollback_027_if_needed.sql exists,
- * is correctly marked as emergency-only, does not introduce dangerous access
- * patterns, and that docs reflect the 027/029 relationship correctly.
+ * Verifies that supabase/rollback/029_rollback_027_if_needed.sql exists
+ * (quarantined from supabase/migrations/ as of Gate 2.2), is correctly marked
+ * as emergency-only, does not introduce dangerous access patterns, and that
+ * docs reflect the 027/029 relationship correctly.
  *
  * No SQL is executed. No DB is touched. No migration is applied.
  */
@@ -14,12 +15,8 @@ import { resolve } from 'path';
 
 const root = resolve(process.cwd());
 
-function migration(name: string): string {
-  return readFileSync(resolve(root, `supabase/migrations/${name}`), 'utf-8');
-}
-
 function rollback(): string {
-  return migration('029_rollback_027_if_needed.sql');
+  return readFileSync(resolve(root, 'supabase/rollback/029_rollback_027_if_needed.sql'), 'utf-8');
 }
 
 function phase1doc(): string {
@@ -30,11 +27,15 @@ function checklist(): string {
   return readFileSync(resolve(root, 'docs/GATE2_STAGING_EXECUTION_CHECKLIST.md'), 'utf-8');
 }
 
-// ── 1. Migration 029 exists ───────────────────────────────────────────────────
+// ── 1. Rollback 029 exists in quarantine location ────────────────────────────
 
 describe('029_rollback_027_if_needed.sql — existence', () => {
-  it('029 file exists', () => {
-    expect(existsSync(resolve(root, 'supabase/migrations/029_rollback_027_if_needed.sql'))).toBe(true);
+  it('029 file exists in supabase/rollback/ (quarantined from migrations/)', () => {
+    expect(existsSync(resolve(root, 'supabase/rollback/029_rollback_027_if_needed.sql'))).toBe(true);
+  });
+
+  it('029 is NOT in supabase/migrations/ (pipeline quarantine enforced)', () => {
+    expect(existsSync(resolve(root, 'supabase/migrations/029_rollback_027_if_needed.sql'))).toBe(false);
   });
 
   it('029 is non-empty', () => {
@@ -224,7 +225,7 @@ describe('no migration command suggested', () => {
     expect(self).not.toMatch(/from ['"]@supabase\/supabase-js['"]|createClient\(|new Pool\(/);
   });
 
-  it('this test file performs only file-system reads', () => {
+  it('this test file performs only file-system reads and no network calls', () => {
     const self = readFileSync(resolve(root, 'tests/unit/gate2-rollback-029-plan.test.ts'), 'utf-8');
     expect(self).not.toMatch(/fetch\(|axios\.|pg\.query\(|pool\.query\(/);
   });
