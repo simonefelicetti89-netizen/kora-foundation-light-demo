@@ -310,11 +310,118 @@ This is a documented technical debt item, not a security defect. It is tracked f
 
 ---
 
-**Document version:** v1.0  
-**Prepared:** 2026-06-22  
+## 12. Migration History / Drift Reconciliation
+
+**Audit date:** 2026-06-22 (Gate 2.2 Migration Drift Reconciliation Audit)
+
+### 12.1 Migration history check
+
+027 was applied to staging via `supabase db query --linked --file` — direct SQL execution. This method runs the SQL but does **not** write a record into the `supabase_migrations.schema_migrations` tracking table.
+
+| Source | 027 recorded? | 029 recorded? |
+|---|---|---|
+| `supabase migration list --linked` | No (Local ✓, Remote —) | No (Local ✓, Remote —) |
+| `supabase_migrations.schema_migrations` (DB query) | **ABSENT** | **ABSENT** |
+
+The tracking table records: 001–026 + 028. 027 and 029 do not appear.
+
+### 12.2 Actual DB state vs migration history
+
+| Item | Migration history | Actual DB state | Status |
+|---|---|---|---|
+| 027 migration record | NOT recorded | SQL effects PRESENT (0 kora_admin policies remain) | **DRIFT** |
+| `worker_identity_kora_admin_all` | NOT in history | ABSENT from `pg_policies` ✓ | Applied |
+| `worker_pib_kora_admin_all` | NOT in history | ABSENT from `pg_policies` ✓ | Applied |
+| `worker_pseudonym_map_kora_admin_all` | NOT in history | ABSENT from `pg_policies` ✓ | Applied |
+| `worker_profile_kora_admin_all` | NOT in history | ABSENT from `pg_policies` ✓ | Applied |
+| `kora_admin_impact_unit_read` | NOT in history | ABSENT from `pg_policies` ✓ | Applied |
+| `kora_admin_impact_unit_insert` | NOT in history | ABSENT from `pg_policies` ✓ | Applied |
+| 029 migration record | NOT recorded | 029 SQL effects ABSENT (policies not re-added) | Aligned — not applied |
+| `kora_admin_all_uef` on `analytics.uef_record` | N/A (027 intentionally left it) | PRESENT | Expected |
+| Service-role provisioning path | N/A | INSERT PASS, ROLLBACK ✓ | Pass |
+| C-11 (company blocked from PIB) | N/A | PASS — `worker_own_all` only | Pass |
+| C-12 (company blocked from identity) | N/A | PASS — `worker_own_select/update` only | Pass |
+| W-04 (cross-worker isolation) | N/A | PASS — `auth.uid()` qualifier | Pass |
+
+### 12.3 Drift classification
+
+**Classification: BENIGN MANUAL-APPLY DRIFT**
+
+The SQL effects of 027 are fully present in the database. The discrepancy is only in the migration tracking table — the record is absent because `supabase db query --linked --file` does not write to `supabase_migrations.schema_migrations`. This is expected behavior of the command used and is documented.
+
+The drift is benign because:
+- All 6 policies are correctly removed (verified by direct `pg_policies` query)
+- 029 effects are correctly absent (verified by same query)
+- Security posture matches the intended post-027 state exactly
+- No data, schema, or RLS configuration was inadvertently altered
+
+### 12.4 Implications
+
+**1. Future `supabase migration up`:** Would see 027 as pending and attempt to apply it. Since 027 is idempotent (`DROP POLICY IF EXISTS`), re-running it is harmless for 027 itself. However, `migration up` would then continue to 029, which re-adds all dropped policies — **undoing 027**. Risk: MEDIUM if 027 history is not reconciled before any future `migration up`.
+
+**2. Future production migration planning:** Production has never been touched. When production is provisioned (post Gate 3), the migration sequence must apply 027 via `supabase migration up` (not `db query`), which will record it in production history correctly. Production is unaffected by staging drift.
+
+**3. Rollback 029:** 029 MUST NOT be applied. It re-adds the 6 dropped policies. The only trigger for 029 is a confirmed security regression caused by 027. No such regression was observed. 029 remains available as a safety net.
+
+**4. Gate 2.3:** Gate 2.3 scope (SECURITY DEFINER views to granularize `kora_admin_all_uef` on `analytics.uef_record`) should be a new migration (030 or later). Before introducing any new migration, the drift on 027 should be reconciled to avoid confusion in migration ordering. **Reconcile 027 history before Gate 2.3.**
+
+**5. Auditability:** The `supabase_migrations` table does not match the actual DB state for migration 027. Any future audit that relies solely on the migration history table will incorrectly classify the staging environment as not having applied 027. This is a documentation and auditability gap, not a security gap.
+
+### 12.5 Reconciliation options
+
+| Option | Description | Risk | Action |
+|---|---|---|---|
+| A | Leave as documented manual apply — no action | Future `migration up` may apply 029 accidentally | Low (if documented, no `migration up` run) |
+| B | `supabase migration repair --status applied 027 --linked` | Minimal — only writes a row to tracking table, no SQL run | **Recommended** |
+| C | Roll back and re-apply via `migration up` | Applies 029 (rollback) then 027 again — risky, unnecessary | Not recommended |
+| D | Create follow-up migration to reconcile | Adds noise without benefit — 027 is already correct | Not recommended |
+| E | Do nothing until Gate 2.3 | Risk of accidental 029 via `migration up` remains | Acceptable only with strict process controls |
+
+### 12.6 Recommended reconciliation strategy
+
+**Option B: `supabase migration repair --status applied 027 --linked`**
+
+This command writes a row into `supabase_migrations.schema_migrations` for migration 027 with status "applied". It does NOT re-run any SQL. It is:
+- Safe: only modifies the tracking table
+- Non-destructive: does not change schema, RLS, policies, or data
+- Reversible: can be undone with `--status reverted`
+- The correct Supabase-native tool for exactly this scenario
+
+Exact command (to be executed by operator, not automatically in this audit):
+```
+supabase migration repair --status applied 027 --linked
+```
+
+After reconciliation:
+- 027: recorded as applied ✓ — matches DB state
+- 029: still pending in history — remains available as safety net
+- Future `migration up`: sees 027 as applied (skip), 029 as pending (do not run unless manual rollback decision)
+
+**Precondition:** Confirm again that the 6 policies are absent before running repair (verified: ✓).  
+**Post-condition:** Verify `supabase migration list --linked` shows 027 with a Remote value.  
+**029 governance note:** Even after repair, 029 remains in "pending" state in history. Operators must not run `supabase migration up` without reviewing that 029 would be the next migration to apply. Add an explicit label in ops runbooks: "029 = ROLLBACK ONLY — requires manual decision before apply."
+
+### 12.7 No migrations applied during this audit
+
+No migrations, schema changes, RLS changes, or policy changes were made during this reconciliation audit. The audit is read-only + documentation only.
+
+| Check | Status |
+|---|---|
+| No migrations applied | ✓ CONFIRMED |
+| No rollback applied | ✓ CONFIRMED |
+| No `supabase db push` | ✓ CONFIRMED |
+| No schema changes | ✓ CONFIRMED |
+| Production not touched | ✓ CONFIRMED |
+| No secrets printed | ✓ CONFIRMED |
+
+---
+
+**Document version:** v1.1  
+**Prepared:** 2026-06-22 (v1.0) / Updated 2026-06-22 (v1.1 — drift reconciliation)  
 **Gate 2.2 status:** COMPLETE  
 **Applies to staging:** `haqflkurpmeaxpikozjl` only  
 **Production:** NOT touched  
-**027 status:** APPLIED to staging  
+**027 status:** APPLIED to staging (SQL effects present) — migration history DRIFT (see §12)  
+**027 repair recommendation:** Option B — `supabase migration repair --status applied 027 --linked`  
 **029 status:** NOT applied  
 **Gate 3:** OPEN — NOT CLOSED
