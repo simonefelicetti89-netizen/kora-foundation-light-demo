@@ -14,7 +14,7 @@
 // non deve mai produrre ADMIN_NAV_GROUPS, nemmeno durante il pending iniziale.
 
 import { describe, it, expect } from 'vitest';
-import { buildNavGroups, resolveNavRole } from '../../components/layout/Sidebar';
+import { buildNavGroups, resolveNavRole, NAV_PENDING } from '../../components/layout/Sidebar';
 import { ADMIN_NAV_GROUPS } from '../../lib/navigation/admin-nav-groups';
 
 const EXPECTED_COMPANY_HEADINGS = ['Command', 'Intelligence', 'Evidence & Report', 'Network', 'Governance'];
@@ -118,38 +118,54 @@ describe('resolveNavRole — sessione confermata', () => {
 // ── 2b. resolveNavRole — stato PENDING (realRole === undefined) ───────────────
 //
 // undefined ≠ null. undefined = "non so ancora" (getSession non ha ancora risposto).
-// In questo stato NON si può mostrare nav admin perché non c'è certezza del ruolo.
-// Se activeRole è admin (possibilmente stale), si usa un fallback sicuro non-admin.
+// Qualunque activeRole sia in demo-state, il navRole è PENDING — nessun ruolo viene
+// indovinato. La Sidebar renderizza uno skeleton con ZERO href nel DOM.
 
 describe('resolveNavRole — stato pending (realRole === undefined)', () => {
 
-  it('pending + activeRole=KORA_ADMIN → COMPANY_ADMIN (anti-flash: non si produce nav admin senza certezza)', () => {
-    const role = resolveNavRole(undefined, 'KORA_ADMIN');
-    expect(role).toBe('COMPANY_ADMIN');
+  it('pending + activeRole=KORA_ADMIN → NAV_PENDING (nessun ruolo indovinato)', () => {
+    expect(resolveNavRole(undefined, 'KORA_ADMIN')).toBe(NAV_PENDING);
   });
 
-  it('pending + activeRole=KORA_ADMIN → buildNavGroups produce 5 gruppi company, mai ADMIN_NAV_GROUPS', () => {
-    const navRole = resolveNavRole(undefined, 'KORA_ADMIN');
-    const groups  = buildNavGroups(navRole);
-    expect(groups).toHaveLength(5);
-    expect(groups.map((g) => g.heading)).toEqual(EXPECTED_COMPANY_HEADINGS);
-    for (const adminHeading of ADMIN_HEADINGS) {
-      expect(groups.map((g) => g.heading)).not.toContain(adminHeading);
-    }
-    const allHrefs = groups.flatMap((g) => g.items.map((i) => i.href));
+  it('pending + activeRole=COMPANY_ADMIN → NAV_PENDING', () => {
+    expect(resolveNavRole(undefined, 'COMPANY_ADMIN')).toBe(NAV_PENDING);
+  });
+
+  it('pending + activeRole=WORKER → NAV_PENDING', () => {
+    expect(resolveNavRole(undefined, 'WORKER')).toBe(NAV_PENDING);
+  });
+
+  it('pending + activeRole=PARTNER → NAV_PENDING', () => {
+    expect(resolveNavRole(undefined, 'PARTNER')).toBe(NAV_PENDING);
+  });
+
+  it('buildNavGroups(NAV_PENDING) restituisce [] — zero gruppi, zero href nel DOM', () => {
+    const groups = buildNavGroups(NAV_PENDING);
+    expect(groups).toHaveLength(0);
+    expect(groups.flatMap((g) => g.items)).toHaveLength(0);
+  });
+
+  it('buildNavGroups(NAV_PENDING) non contiene nessun href admin', () => {
+    const allHrefs = buildNavGroups(NAV_PENDING).flatMap((g) => g.items.map((i) => i.href));
     for (const adminHref of ADMIN_HREFS) {
       expect(allHrefs).not.toContain(adminHref);
     }
   });
 
-  it('pending + activeRole non-admin → usa activeRole as-is (sicuro: nav non privilegiata)', () => {
-    expect(resolveNavRole(undefined, 'COMPANY_ADMIN')).toBe('COMPANY_ADMIN');
-    expect(resolveNavRole(undefined, 'WORKER')).toBe('WORKER');
-    expect(resolveNavRole(undefined, 'PARTNER')).toBe('PARTNER');
+  it('buildNavGroups(NAV_PENDING) non contiene nessun href /company', () => {
+    const allHrefs = buildNavGroups(NAV_PENDING).flatMap((g) => g.items.map((i) => i.href));
+    for (const href of allHrefs) {
+      expect(href).not.toMatch(/^\/company/);
+      expect(href).not.toMatch(/^\/admin/);
+    }
   });
 
-  it('pending + activeRole=KORA_ADMIN → navRole non è mai KORA_ADMIN', () => {
-    expect(resolveNavRole(undefined, 'KORA_ADMIN')).not.toBe('KORA_ADMIN');
+  it('pending: navRole non è mai KORA_ADMIN, indipendentemente da activeRole', () => {
+    for (const role of ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER', 'ADVISOR']) {
+      expect(resolveNavRole(undefined, role)).not.toBe('KORA_ADMIN');
+      expect(resolveNavRole(undefined, role)).not.toBe('COMPANY_ADMIN');
+      expect(resolveNavRole(undefined, role)).toBe(NAV_PENDING);
+    }
   });
 });
 
@@ -179,22 +195,38 @@ describe('resolveNavRole — no sessione (realRole === null)', () => {
 
 describe('resolveNavRole — scenario mismatch hydration end-to-end', () => {
 
-  it('stale KORA_ADMIN activeRole non produce mai ADMIN_NAV_GROUPS in nessuno stato', () => {
-    const scenarios: Array<[string | null | undefined, string]> = [
-      ['COMPANY_ADMIN', 'KORA_ADMIN'], // sessione confermata
-      [undefined,       'KORA_ADMIN'], // pending
-      // null + 'KORA_ADMIN' è demo mode puro — il visitatore può vedere admin nav (by design)
-    ];
-    for (const [realRole, activeRole] of scenarios) {
-      const navRole = resolveNavRole(realRole, activeRole);
-      const groups  = buildNavGroups(navRole);
-      const allHrefs = groups.flatMap((g) => g.items.map((i) => i.href));
-      for (const adminHref of ADMIN_HREFS) {
-        expect(allHrefs).not.toContain(adminHref);
-      }
-      for (const adminHeading of ADMIN_HEADINGS) {
-        expect(groups.map((g) => g.heading)).not.toContain(adminHeading);
-      }
+  it('sessione confermata COMPANY_ADMIN con stale activeRole=KORA_ADMIN → nav company, zero href admin', () => {
+    const navRole  = resolveNavRole('COMPANY_ADMIN', 'KORA_ADMIN');
+    expect(navRole).toBe('COMPANY_ADMIN');
+    const groups   = buildNavGroups(navRole);
+    const allHrefs = groups.flatMap((g) => g.items.map((i) => i.href));
+    for (const adminHref of ADMIN_HREFS) {
+      expect(allHrefs).not.toContain(adminHref);
     }
+  });
+
+  it('pending con qualsiasi activeRole → navRole=PENDING → buildNavGroups restituisce [] → zero href nel DOM', () => {
+    for (const activeRole of ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER']) {
+      const navRole  = resolveNavRole(undefined, activeRole);
+      expect(navRole).toBe(NAV_PENDING);
+      const groups   = buildNavGroups(navRole);
+      expect(groups).toHaveLength(0);
+      const allHrefs = groups.flatMap((g) => g.items.map((i) => i.href));
+      expect(allHrefs).toHaveLength(0);
+    }
+  });
+
+  it('ciclo completo pending→risolto: la nav corretta appare solo una volta (nessun ruolo intermedio)', () => {
+    // Stato 1 — pending: nessun href
+    const pendingNav = buildNavGroups(resolveNavRole(undefined, 'KORA_ADMIN'));
+    expect(pendingNav).toHaveLength(0);
+
+    // Stato 2 — risolto KORA_ADMIN (usa activeRole=KORA_ADMIN per role preview)
+    const resolvedNavAdmin = buildNavGroups(resolveNavRole('KORA_ADMIN', 'KORA_ADMIN'));
+    expect(resolvedNavAdmin.some((g) => ADMIN_HEADINGS.includes(g.heading))).toBe(true);
+
+    // Stato 2 alternativo — risolto COMPANY_ADMIN (sessione reale, activeRole stale)
+    const resolvedNavCompany = buildNavGroups(resolveNavRole('COMPANY_ADMIN', 'KORA_ADMIN'));
+    expect(resolvedNavCompany.map((g) => g.heading)).toEqual(EXPECTED_COMPANY_HEADINGS);
   });
 });

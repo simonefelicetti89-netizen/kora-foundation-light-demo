@@ -70,6 +70,10 @@ interface NavGroup {
 export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPreview = false): NavGroup[] {
   void activeCompanyId; // unused for admin since B169
 
+  // Guard: session not yet resolved — no role can be shown, return empty.
+  // The Sidebar renders a skeleton instead; this prevents any href leaking into the DOM.
+  if (role === 'PENDING') return [];
+
   if (isAdminRole(role as Parameters<typeof isAdminRole>[0])) {
     return ADMIN_NAV_GROUPS.map((group) => ({
       heading:    group.label,
@@ -226,23 +230,21 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
 
 // Exported for unit testing.
 //
+// Returns 'PENDING' when the session is not yet resolved (realRole === undefined).
+// No role-guessing during pending — the Sidebar renders a skeleton with zero nav hrefs.
+//
 // Role resolution matrix:
-//   realRole confirmed non-admin  → use realRole  (session wins over stale context)
-//   realRole === 'KORA_ADMIN'     → use activeRole (demo-state drives nav for role preview)
-//   realRole === 'AUTHENTICATED'  → use activeRole (provisioning gap, no kora_role yet)
-//   realRole === null             → use activeRole (no session: demo/visitor mode)
-//   realRole === undefined        → session still pending (useEffect not yet fired):
-//     - non-admin activeRole → safe to use as-is (server-seeded, not privileged)
-//     - admin activeRole     → CANNOT verify: stale vs real admin indistinguishable.
-//                              Return safe non-admin default. Real KORA_ADMIN sees
-//                              company nav for one render cycle (~50ms) before
-//                              getSession() resolves — acceptable, documented trade-off.
+//   realRole === undefined        → 'PENDING'   (session not yet resolved)
+//   realRole confirmed non-admin  → realRole    (session wins over stale context)
+//   realRole === 'KORA_ADMIN'     → activeRole  (demo-state drives nav for role preview)
+//   realRole === 'AUTHENTICATED'  → activeRole  (provisioning gap, no kora_role yet)
+//   realRole === null             → activeRole  (no session: demo/visitor mode)
+export const NAV_PENDING = 'PENDING' as const;
+
 export function resolveNavRole(realRole: string | null | undefined, activeRole: string): string {
+  if (realRole === undefined) return NAV_PENDING;
   if (realRole && realRole !== 'KORA_ADMIN' && realRole !== 'AUTHENTICATED') {
     return realRole;
-  }
-  if (realRole === undefined && activeRole === 'KORA_ADMIN') {
-    return 'COMPANY_ADMIN';
   }
   return activeRole;
 }
@@ -275,7 +277,8 @@ export function Sidebar() {
   const companyIdMatch = pathname.match(/^\/admin\/companies\/([^/]+)(?:\/|$)/);
   const activeCompanyId = companyIdMatch?.[1] !== 'new' ? companyIdMatch?.[1] : undefined;
 
-  const navRole = resolveNavRole(realRole, activeRole);
+  const navRole   = resolveNavRole(realRole, activeRole);
+  const isPending = navRole === NAV_PENDING;
 
   const isAdmin   = isAdminRole(navRole as Parameters<typeof isAdminRole>[0]);
   const groups    = buildNavGroups(navRole, activeCompanyId, isAdminPreview);
@@ -341,7 +344,28 @@ export function Sidebar() {
         <KoraLogo variant="on-dark" className="h-[26px] w-auto" />
       </div>
 
-      {/* Nav */}
+      {/* Nav — skeleton while session is unresolved (zero hrefs in DOM) */}
+      {isPending ? (
+        <nav
+          className="flex-1 overflow-y-auto py-4 px-2"
+          aria-label="Navigazione principale"
+          aria-busy="true"
+          data-pending="true"
+        >
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              style={{
+                margin:       '1px 4px',
+                marginBottom: 6,
+                height:       32,
+                borderRadius: 12,
+                background:   'rgba(255,255,255,0.05)',
+              }}
+            />
+          ))}
+        </nav>
+      ) : (
       <nav
         className="flex-1 overflow-y-auto py-4 px-2"
         aria-label="Navigazione principale"
@@ -551,12 +575,22 @@ export function Sidebar() {
           );
         })}
       </nav>
+      )}
 
-      {/* Footer — role + environment */}
+      {/* Footer — role + environment; skeleton while pending */}
       <div
         className="px-4 pt-3 pb-4 mt-auto"
         style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}
       >
+        {isPending ? (
+          <div
+            className="flex items-center gap-2 rounded-xl px-3 py-2.5"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
+          >
+            <div className="flex-shrink-0 w-7 h-7 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }} />
+            <div style={{ height: 10, width: '55%', background: 'rgba(255,255,255,0.08)', borderRadius: 6 }} />
+          </div>
+        ) : (
         <div
           className="flex items-center gap-2 rounded-xl px-3 py-2.5"
           style={{ background: 'rgba(255,255,255,0.05)' }}
@@ -591,6 +625,7 @@ export function Sidebar() {
             )}
           </div>
         </div>
+        )}
       </div>
     </aside>
   );
