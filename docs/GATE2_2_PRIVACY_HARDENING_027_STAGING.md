@@ -401,27 +401,45 @@ After reconciliation:
 **Post-condition:** Verify `supabase migration list --linked` shows 027 with a Remote value.  
 **029 governance note:** Even after repair, 029 remains in "pending" state in history. Operators must not run `supabase migration up` without reviewing that 029 would be the next migration to apply. Add an explicit label in ops runbooks: "029 = ROLLBACK ONLY — requires manual decision before apply."
 
-### 12.7 No migrations applied during this audit
+### 12.7 Repair executed
 
-No migrations, schema changes, RLS changes, or policy changes were made during this reconciliation audit. The audit is read-only + documentation only.
+Option B was executed by the operator:
+
+```
+supabase migration repair --status applied 027 --linked
+```
+
+**Result:** `Repaired migration history: [027] => applied`
+
+Post-repair migration list confirms:
+
+| Migration | Local | Remote | Status |
+|---|---|---|---|
+| 027 | ✓ | ✓ | **ALIGNED** |
+| 029 | ✓ | — | Pending — safety net only, MUST NOT be applied without manual decision |
+
+Drift is fully resolved. Migration history now matches actual DB state.
+
+### 12.8 Post-repair hygiene
 
 | Check | Status |
 |---|---|
-| No migrations applied | ✓ CONFIRMED |
+| No schema changes made | ✓ CONFIRMED |
+| No SQL re-executed | ✓ CONFIRMED — repair only updates tracking table |
 | No rollback applied | ✓ CONFIRMED |
 | No `supabase db push` | ✓ CONFIRMED |
-| No schema changes | ✓ CONFIRMED |
 | Production not touched | ✓ CONFIRMED |
 | No secrets printed | ✓ CONFIRMED |
+| 027 Local = Remote | ✓ CONFIRMED |
+| 029 Local only (pending) | ✓ CONFIRMED — by design |
 
 ---
 
-**Document version:** v1.1  
-**Prepared:** 2026-06-22 (v1.0) / Updated 2026-06-22 (v1.1 — drift reconciliation)  
+**Document version:** v1.2  
+**Prepared:** 2026-06-22 (v1.0) / Updated 2026-06-22 (v1.1 — drift audit) / Updated 2026-06-22 (v1.2 — repair executed)  
 **Gate 2.2 status:** COMPLETE  
 **Applies to staging:** `haqflkurpmeaxpikozjl` only  
 **Production:** NOT touched  
-**027 status:** APPLIED to staging (SQL effects present) — migration history DRIFT (see §12)  
-**027 repair recommendation:** Option B — `supabase migration repair --status applied 027 --linked`  
-**029 status:** NOT applied  
+**027 status:** APPLIED to staging — migration history ALIGNED (drift resolved 2026-06-22)  
+**029 status:** NOT applied — pending in history as safety net only  
 **Gate 3:** OPEN — NOT CLOSED

@@ -171,22 +171,38 @@ describe('gate2-2-drift-reconciliation — recommendation', () => {
   });
 });
 
-// ── 8. No migrations applied during audit ────────────────────────────────────
+// ── 8. Repair executed and post-repair state ──────────────────────────────────
 
-describe('gate2-2-drift-reconciliation — audit hygiene', () => {
-  it('doc confirms no migrations applied during reconciliation audit', () => {
-    expect(doc()).toMatch(/no migrations applied|migrations.*not.*applied.*audit|read-only.*documentation/i);
+describe('gate2-2-drift-reconciliation — repair executed', () => {
+  it('doc records repair command was executed', () => {
+    expect(doc()).toMatch(/[Rr]epair.*executed|Option B.*executed|executed.*repair/i);
   });
 
-  it('doc confirms no rollback applied during audit', () => {
+  it('doc records repair result: [027] => applied', () => {
+    expect(doc()).toMatch(/\[027\].*applied|Repaired migration history.*027/i);
+  });
+
+  it('doc confirms post-repair 027 Local = Remote (ALIGNED)', () => {
+    expect(doc()).toMatch(/027.*ALIGNED|ALIGNED.*027|Local.*Remote.*aligned/i);
+  });
+
+  it('doc confirms 029 remains Local only (pending by design)', () => {
+    expect(doc()).toMatch(/029.*[Pp]ending|029.*Local only|029.*safety net/i);
+  });
+
+  it('doc confirms no SQL was re-executed during repair', () => {
+    expect(doc()).toMatch(/no SQL re-executed|repair only updates tracking|not.*re-run/i);
+  });
+
+  it('doc confirms no rollback applied', () => {
     expect(doc()).toMatch(/no rollback applied|rollback.*not.*applied/i);
   });
 
-  it('doc confirms no supabase db push during audit', () => {
+  it('doc confirms no supabase db push', () => {
     expect(doc()).toMatch(/supabase db push/i);
   });
 
-  it('doc confirms production not touched during audit', () => {
+  it('doc confirms production not touched', () => {
     expect(doc()).toMatch(/[Pp]roduction.*not touched|NOT touched.*[Pp]roduction/i);
   });
 
