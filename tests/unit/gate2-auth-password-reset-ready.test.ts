@@ -120,11 +120,12 @@ describe('gate2-auth-password-reset — smoke readiness', () => {
 
 describe('gate2-auth-password-reset — script hygiene', () => {
   it('reset script is gitignored (not tracked)', () => {
-    // The script lives under .tmp/ which must be gitignored.
-    // We verify it is not a tracked file by checking it does not exist in the
-    // docs tree (i.e., not accidentally committed).
+    // Git hygiene: verify .tmp/ is listed in .gitignore (so the script is never tracked)
+    // and that the passwords file is absent from the committed tests/ directory.
+    // We do NOT assert the script exists locally — it is absent on clean clones by design.
+    const gitignore = readFileSync(resolve(process.cwd(), '.gitignore'), 'utf-8');
+    expect(gitignore).toMatch(/\.tmp\//);
     expect(existsSync(resolve(process.cwd(), 'tests/.env.staging.passwords.local'))).toBe(false);
-    expect(existsSync(resolve(process.cwd(), '.tmp/reset-staging-passwords.mjs'))).toBe(true);
   });
 
   it('.env.staging.passwords.local is not committed to tests/', () => {

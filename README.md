@@ -169,6 +169,104 @@ npm run test                       # Vitest unit + integration tests
 npm run build                      # Next.js production build
 ```
 
+> **Modalità demo (nessun DB richiesto):** se vuoi solo esplorare l'UI con dati sintetici, i
+> placeholder di `.env.local.example` sono sufficienti — `npm install && npm run dev` è tutto
+> ciò che serve. I 29 file JSON in `/data/synthetic/` sono caricati in-memory dai mock service;
+> nessuna azione sul DB è necessaria.
+
+---
+
+## Setup completo con DB locale
+
+Per sviluppo con autenticazione reale, API live e RLS attivo.
+
+### Prerequisiti aggiuntivi
+
+| Strumento | Versione minima | Installazione |
+|---|---|---|
+| Node.js | ≥ 20 | https://nodejs.org |
+| Docker Desktop | 4.x | https://www.docker.com/products/docker-desktop |
+| Supabase CLI | 2.x | `brew install supabase/tap/supabase` |
+
+### Sequenza di avvio
+
+```bash
+# 1. Avvia il backend Supabase locale (richiede Docker in esecuzione)
+supabase start
+# → stampa API URL, anon key e service role key (validi solo in locale)
+
+# 2. Applica tutte le migration su un DB pulito
+supabase db reset
+# → applica supabase/migrations/001_*.sql … 029_*.sql in ordine
+
+# 3. Compila .env.local con le credenziali locali
+cp .env.local.example .env.local
+# Sostituisci NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY
+# con i valori stampati da `supabase status`
+
+# 4. Crea gli utenti locali (vedi sezione sotto)
+
+# 5. Avvia il dev server
+npm install
+npm run dev   # http://localhost:3000
+```
+
+### Creare gli utenti locali
+
+Senza utenti con `app_metadata.kora_role` il login fallisce silenziosamente.
+Apri Supabase Studio (`http://localhost:54323` → SQL Editor) e incolla:
+
+```sql
+-- Utente KORA_ADMIN locale
+-- Email: admin@kora.local  Password: KoraLocal2024!
+INSERT INTO auth.users (
+  instance_id, id, aud, role, email,
+  encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data,
+  created_at, updated_at,
+  confirmation_token, recovery_token, email_change_token_new, email_change
+) VALUES (
+  '00000000-0000-0000-0000-000000000000',
+  gen_random_uuid(),
+  'authenticated', 'authenticated',
+  'admin@kora.local',
+  crypt('KoraLocal2024!', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"],"kora_role":"KORA_ADMIN"}',
+  '{}',
+  now(), now(), '', '', '', ''
+);
+```
+
+Con questo utente puoi accedere all'admin workspace e usare il role switcher (VISTA)
+per esplorare le viste COMPANY_ADMIN e WORKER in modalità demo.
+
+**Per COMPANY_ADMIN live** occorre prima un tenant in `analytics.tenant` e poi:
+```sql
+-- Sostituisci <tenant-uuid> con l'id del tenant creato
+INSERT INTO auth.users ( instance_id, id, aud, role, email,
+  encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+  created_at, updated_at, confirmation_token, recovery_token,
+  email_change_token_new, email_change
+) VALUES (
+  '00000000-0000-0000-0000-000000000000', gen_random_uuid(),
+  'authenticated', 'authenticated', 'company@kora.local',
+  crypt('KoraLocal2024!', gen_salt('bf')), now(),
+  '{"provider":"email","providers":["email"],"kora_role":"COMPANY_ADMIN","kora_tenant_id":"<tenant-uuid>"}',
+  '{}', now(), now(), '', '', '', ''
+);
+```
+
+Usa lo script `scripts/worker-trial-seed.ts` per creare tenant e workforce completi:
+```bash
+npx tsx scripts/worker-trial-seed.ts --tenantCode ACME --apply
+```
+
+### Porta Studio locale
+
+`supabase status` stampa la URL di Studio (tipicamente `http://localhost:54323`).
+Da Studio puoi ispezionare le tabelle, eseguire SQL, e verificare gli utenti Auth.
+
 ---
 
 ## Project structure
