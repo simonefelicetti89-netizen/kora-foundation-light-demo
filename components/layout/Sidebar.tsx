@@ -224,6 +224,29 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
   ];
 }
 
+// Exported for unit testing.
+//
+// Role resolution matrix:
+//   realRole confirmed non-admin  → use realRole  (session wins over stale context)
+//   realRole === 'KORA_ADMIN'     → use activeRole (demo-state drives nav for role preview)
+//   realRole === 'AUTHENTICATED'  → use activeRole (provisioning gap, no kora_role yet)
+//   realRole === null             → use activeRole (no session: demo/visitor mode)
+//   realRole === undefined        → session still pending (useEffect not yet fired):
+//     - non-admin activeRole → safe to use as-is (server-seeded, not privileged)
+//     - admin activeRole     → CANNOT verify: stale vs real admin indistinguishable.
+//                              Return safe non-admin default. Real KORA_ADMIN sees
+//                              company nav for one render cycle (~50ms) before
+//                              getSession() resolves — acceptable, documented trade-off.
+export function resolveNavRole(realRole: string | null | undefined, activeRole: string): string {
+  if (realRole && realRole !== 'KORA_ADMIN' && realRole !== 'AUTHENTICATED') {
+    return realRole;
+  }
+  if (realRole === undefined && activeRole === 'KORA_ADMIN') {
+    return 'COMPANY_ADMIN';
+  }
+  return activeRole;
+}
+
 export function Sidebar() {
   const { activeRole } = useRole();
   const { activeEnvironment } = useEnvironment();
@@ -252,9 +275,11 @@ export function Sidebar() {
   const companyIdMatch = pathname.match(/^\/admin\/companies\/([^/]+)(?:\/|$)/);
   const activeCompanyId = companyIdMatch?.[1] !== 'new' ? companyIdMatch?.[1] : undefined;
 
-  const isAdmin = isAdminRole(activeRole as Parameters<typeof isAdminRole>[0]);
-  const groups  = buildNavGroups(activeRole, activeCompanyId, isAdminPreview);
-  const roleLabel = ROLE_DISPLAY[activeRole] ?? activeRole;
+  const navRole = resolveNavRole(realRole, activeRole);
+
+  const isAdmin   = isAdminRole(navRole as Parameters<typeof isAdminRole>[0]);
+  const groups    = buildNavGroups(navRole, activeCompanyId, isAdminPreview);
+  const roleLabel = ROLE_DISPLAY[navRole] ?? navRole;
 
   // Collapsible groups — admin only. Expand the group containing the active path; collapse others.
   // Non-admin: all groups always expanded (no state needed).
@@ -269,6 +294,24 @@ export function Sidebar() {
     }
     return init;
   });
+
+  // When realRole resolves to KORA_ADMIN (after the pending phase), isAdmin transitions
+  // false → true and expandedGroups is still empty (initialized during non-admin pending).
+  // Re-initialize with path-based defaults so the active group is expanded on first paint.
+  useEffect(() => {
+    if (!isAdmin) return;
+    setExpandedGroups((prev) => {
+      if (Object.keys(prev).length > 0) return prev;
+      const init: Record<string, boolean> = {};
+      for (const group of ADMIN_NAV_GROUPS) {
+        init[group.id] = group.items.some(
+          (item) => pathname === item.href ||
+            (item.href !== '/admin/companies' && pathname.startsWith(item.href + '/')),
+        );
+      }
+      return init;
+    });
+  }, [isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   function toggleGroup(id: string) {
     setExpandedGroups((prev) => ({ ...prev, [id]: !prev[id] }));
