@@ -89,9 +89,13 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Case B: list UEF candidates for a specific batch ─────────────────────────
+  // Gate 2.3: `payload` excluded from SELECT — app-layer payload exclusion.
+  // After migration 030 is applied and verified on staging, switch this to:
+  //   db.schema('analytics').rpc('fn_admin_uef_review', { p_batch_id: batchId })
+  // which returns named typed columns for safe payload sub-fields at DB level.
   const { data: records, error: rErr } = await db
     .schema('analytics').from('uef_record')
-    .select('id, raw_name, eligibility, primary_pillar, action_family, event_nature, review_status, approved_for_scoring, approved_for_bti_governance, approved_for_impact_units, data_completeness_score, missing_fields, reviewer_notes, reviewed_by, reviewed_at, payload, created_at')
+    .select('id, raw_name, eligibility, primary_pillar, action_family, event_nature, review_status, approved_for_scoring, approved_for_bti_governance, approved_for_impact_units, data_completeness_score, missing_fields, reviewer_notes, reviewed_by, reviewed_at, created_at')
     .eq('batch_id', batchId)
     .order('created_at', { ascending: true });
 
@@ -100,11 +104,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: true, batchId, candidates: [], total: 0 });
   }
 
-  // Return safe fields only — no PII, only interpreter-derived fields
+  // Return safe fields only — no PII, payload excluded at query level (Gate 2.3).
+  // Payload-derived fields (eventType, reasonCodes, etc.) will be restored as
+  // named typed columns after migration 030 is applied and routes switch to
+  // fn_admin_uef_review() RPC — two-step rollout plan per Gate 2.3 design.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const safe = (records as any[]).map((r: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const pl = (r.payload ?? {}) as Record<string, any>;
     return {
       id:                    r.id,
       rawName:               r.raw_name,
@@ -119,28 +124,27 @@ export async function GET(request: NextRequest) {
       reviewerNotes:         r.reviewer_notes,
       reviewedBy:            r.reviewed_by,
       reviewedAt:            r.reviewed_at,
-      // Extended fields from interpreter payload (safe — no PII)
-      eventType:                pl['event_type'] ?? null,
-      reasonCodes:              pl['reason_codes'] ?? [],
-      budgetAmount:             pl['budget_amount'] ?? null,
-      participants:             pl['participants'] ?? null,
-      evidenceLevel:            pl['evidence_level'] ?? null,
-      sourceTier:               pl['source_tier'] ?? null,
-      interpreterVersion:       pl['interpreter_version'] ?? null,
-      scoringLocked:            pl['scoring_locked'] ?? true,
-      // ── B65-B2: parsing transparency ─────────────────────────────────────────
-      amountParsingStatus:      pl['amount_parsing_status']     ?? 'missing',
-      participantsApproximate:  pl['participants_approximate']  ?? false,
-      rawAmountValue:           pl['raw_amount_value']          ?? null,
-      // ── B11: enrichment classification fields ─────────────────────────────────
-      initiativeDomain:         pl['initiative_domain']         ?? null,
-      budgetClass:              pl['budget_class']              ?? null,
-      needsEnrichment:          pl['needs_enrichment']          ?? false,
-      financialConfidence:      pl['financial_confidence']      ?? null,
-      enrichmentMissingFields:  pl['enrichment_missing_fields'] ?? [],
-      enrichedBy:               pl['enriched_by']               ?? null,
-      enrichedAt:               pl['enriched_at']               ?? null,
-      b11Enriched:              pl['b11_enriched']              ?? false,
+      // Payload-derived fields: null/defaults until post-030 fn_admin_uef_review() migration.
+      // Restore these by switching to: db.schema('analytics').rpc('fn_admin_uef_review', ...)
+      eventType:                null,
+      reasonCodes:              [],
+      budgetAmount:             null,
+      participants:             null,
+      evidenceLevel:            null,
+      sourceTier:               null,
+      interpreterVersion:       null,
+      scoringLocked:            true,
+      amountParsingStatus:      'missing',
+      participantsApproximate:  false,
+      rawAmountValue:           null,
+      initiativeDomain:         null,
+      budgetClass:              null,
+      needsEnrichment:          false,
+      financialConfidence:      null,
+      enrichmentMissingFields:  [],
+      enrichedBy:               null,
+      enrichedAt:               null,
+      b11Enriched:              false,
       createdAt:                r.created_at,
     };
   });
@@ -219,6 +223,10 @@ export async function POST(request: NextRequest) {
   }
 
   // ── Update uef_record ─────────────────────────────────────────────────────────
+  // Gate 2.3 two-step rollout: service-role direct UPDATE works before and after 030.
+  // After migration 030 applied and verified: can switch to
+  //   db.schema('analytics').rpc('fn_admin_uef_update_review', { p_uef_id, p_action, p_notes, p_reviewer })
+  // The function provides DB-layer action validation + SECURITY DEFINER guard.
   const { error: updateErr } = await db
     .schema('analytics').from('uef_record')
     .update({

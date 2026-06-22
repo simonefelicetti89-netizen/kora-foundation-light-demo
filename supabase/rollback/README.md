@@ -73,5 +73,30 @@ It is not a permanent fix. After rollback:
 
 ---
 
+### `030_rollback_030_if_needed.sql`
+
+| Property | Value |
+|---|---|
+| Rolls back | Migration 030 (`030_uef_admin_access_hardening.sql`) |
+| Effect | Re-adds `kora_admin_all_uef` policy on `analytics.uef_record`; drops 030 SECURITY DEFINER functions |
+| Trigger condition | 030 applied AND confirmed staging breakage (e.g., UEF review workflow broken, generate-candidates fails) |
+| Authorization required | Explicit CTO / technical-owner approval |
+| Staging target | `haqflkurpmeaxpikozjl` only — confirmed in writing before execution |
+| Production target | Separate approval required — treat as incident change |
+| Forward-fix preference | Always prefer a 031 patch migration over this rollback |
+| Status | **NOT APPLIED** — retained as safety net only |
+| Privacy note | Applying this file restores raw payload access for KORA_ADMIN JWT. DPO must be informed if applied to real-data environments |
+
+**Do not apply 030 rollback unless all of the following are true:**
+
+1. Migration 030 has been applied and verified.
+2. 030 has caused a confirmed, reproducible breakage that cannot be resolved forward.
+3. The rollback has been explicitly approved by the technical owner in writing.
+4. The target environment is confirmed (staging = `haqflkurpmeaxpikozjl`; production = separate approval).
+5. A post-rollback recovery plan (forward fix) is in place.
+6. DPO is informed if the rollback touches an environment with real worker data.
+
+---
+
 **Maintained by:** KORA Engineering  
 **Last updated:** 2026-06-22

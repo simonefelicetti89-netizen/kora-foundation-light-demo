@@ -231,9 +231,9 @@ describe('Gate 2 review pack — migration files unchanged', () => {
     expect(stat?.isDirectory()).toBe(true);
   });
 
-  it('28 migration files are present (029 quarantined to supabase/rollback/)', () => {
+  it('29 migration files are present (029 quarantined; 030 added by Gate 2.3)', () => {
     const { readdirSync } = require('fs');
     const files = readdirSync(migrationDir).filter((f: string) => f.endsWith('.sql'));
-    expect(files.length).toBe(28);
+    expect(files.length).toBe(29);
   });
 });

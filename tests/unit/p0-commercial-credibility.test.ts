@@ -319,17 +319,17 @@ describe('P0-4 — KORA Space commercial credibility', () => {
 // ── Regression guards ─────────────────────────────────────────────────────────
 
 describe('Regression — constraints from sprint', () => {
-  it('No migrations were created or modified', () => {
-    // This sprint must not touch migrations
-    // We verify by checking the migration directory only has expected files
+  it('Migration directory contains expected files (001–028 + 030; 029 quarantined)', () => {
+    // Gate 2.3: migration 030 (UEF admin access hardening) added.
+    // 029 remains quarantined in supabase/rollback/ — not in migrations/.
     const { readdirSync } = require('fs');
     const migFiles = readdirSync(resolve(ROOT, 'supabase/migrations'))
       .filter((f: string) => f.endsWith('.sql'))
       .sort();
-    // Migrations 001–029 exist; 029 is the rollback safety file for 027
     const lastMig = migFiles[migFiles.length - 1];
     const migNumber = parseInt(lastMig.split('_')[0], 10);
-    expect(migNumber).toBeLessThanOrEqual(29);
+    expect(migNumber).toBeLessThanOrEqual(30);
+    expect(migFiles.length).toBe(29); // 001–028 + 030 (029 quarantined)
   });
 
   it('Existing Gate 2 external review doc still exists', () => {

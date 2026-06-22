@@ -103,6 +103,11 @@ export async function POST(request: NextRequest) {
 
   const db = getSupabaseServiceClient();
 
+  // Gate 2.3 two-step rollout: service-role direct UPDATE works before and after 030.
+  // After migration 030 applied and verified: enrichment with full payload recompute
+  // (needsEnrichment, financialConfidence) remains in this route. The DB-layer
+  // fn_admin_uef_enrich() provides whitelist enforcement for direct SQL ops only.
+
   // ── Lookup UEF record ─────────────────────────────────────────────────────
   const { data: rec, error: recErr } = await db
     .schema('analytics').from('uef_record')

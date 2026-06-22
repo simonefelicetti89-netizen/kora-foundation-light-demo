@@ -496,46 +496,157 @@ After this sprint, migration 030 can safely drop `kora_admin_all_uef` with reduc
 
 ---
 
-## 10. Final Recommendation
+---
 
-**Proceed to migration 030 design and implementation** after:
+## 10. Migration 030 Preparation
 
-1. ✓ This design review is documented and committed.
-2. ✓ App-layer service-role path hardening complete (this sprint — `getSupabaseServiceClient()` in all UEF admin routes).
-3. □ `review/route.ts` GET and POST switched to SECURITY DEFINER view/function (requires 030 SQL first).
-4. □ SECURITY DEFINER view and functions are drafted as migration SQL.
-5. □ Rollback file (`030_rollback_030_if_needed.sql`) is prepared before applying.
+**Completed:** 2026-06-22 — Migration 030 file prepared, rollback staged, app routes updated (two-step rollout plan). Migration 030 NOT yet applied.
 
-**Do NOT apply migration 030 to staging before:**
-- `review/route.ts` GET Case B switched to `v_admin_uef_review` (drops payload at DB level)
-- `review/route.ts` POST switched to `fn_admin_uef_update_review()` 
-- Integration smoke test of ingestion pipeline passes after 030
-- KORA_ADMIN review workflow tested end-to-end via new functions
+### 10.1 Migration file created
 
-**Do NOT apply migration 030 to production before:**
-- Gate 3 (Legal/DPO) formally closes
-- Real UEF data governance policy is documented
+`supabase/migrations/030_uef_admin_access_hardening.sql`
+
+| Object | Action | Privacy boundary |
+|---|---|---|
+| `analytics.fn_admin_uef_review(batch_id uuid)` | CREATE SECURITY DEFINER | Returns all meta fields + safe payload sub-fields as named columns. `payload` JSONB intentionally excluded. |
+| `analytics.fn_admin_uef_update_review(uef_id, action, notes, reviewer)` | CREATE SECURITY DEFINER | Validates action (approve/reject/needs_info). Sets approval flags. Does not expose payload. |
+| `analytics.fn_admin_uef_enrich(uef_id, enrichment_fields jsonb, reviewer)` | CREATE SECURITY DEFINER | Enforces field whitelist (8 allowed keys). Rejects forbidden keys with exception. |
+| `kora_admin_all_uef` policy | DROP | Removes direct ALL access for KORA_ADMIN JWT. Service-role path unaffected (BYPASSRLS). |
+| `advisor_tenant_uef_read` | PRESERVED | Gate 3 concern noted (payload included). DPO review required before narrowing. |
+
+### 10.2 Rollback artifact created
+
+`supabase/rollback/030_rollback_030_if_needed.sql`
+
+- Restores `kora_admin_all_uef` (re-opens raw payload access for KORA_ADMIN JWT)
+- Drops fn_admin_uef_review, fn_admin_uef_update_review, fn_admin_uef_enrich
+- Requires CTO approval + DPO notification (if real-data environment)
+- Status: NOT APPLIED — manual-only safety net
+
+`supabase/rollback/README.md` updated with 030 rollback entry.
+
+### 10.3 DB objects: auth pattern
+
+All three functions use `current_role IN ('service_role', 'postgres') OR kora.kora_role() = 'KORA_ADMIN'` because `kora.kora_role()` reads JWT claims (`request.jwt.claims`) which is NULL for service-role clients. This allows:
+- service_role server-side calls (trusted, app-layer auth already confirmed) ✓
+- authenticated JWT with KORA_ADMIN claim ✓
+- All other JWT roles: blocked by exception ✓
+
+### 10.4 App routes updated — two-step rollout plan
+
+**Why two-step:** SECURITY DEFINER functions don't exist until 030 is applied. Calling non-existent functions would break the review workflow. Two-step plan:
+
+**Step 1 (completed this sprint):**
+- `review/route.ts` GET Case B: `payload` removed from SELECT string (app-layer exclusion). Payload-derived fields (eventType, reasonCodes, etc.) return null/defaults until Step 2.
+- `review/route.ts` POST: service-role direct UPDATE preserved with post-030 annotation pointing to `fn_admin_uef_update_review()`.
+- `enrich/route.ts`: service-role direct UPDATE preserved with post-030 annotation pointing to `fn_admin_uef_enrich()`.
+- `generate-candidates/route.ts`: unchanged — already correct (service-role, no payload in response).
+
+**Step 2 (after 030 applied and verified on staging):**
+- `review/route.ts` GET Case B: switch to `db.schema('analytics').rpc('fn_admin_uef_review', { p_batch_id })` — restores named typed payload sub-fields (event_type, reason_codes, etc.)
+- `review/route.ts` POST: switch to `fn_admin_uef_update_review()` RPC — adds DB-layer action validation
+- `enrich/route.ts`: optionally switch payload-only enrichment path to `fn_admin_uef_enrich()` (app-layer logic for recomputing needsEnrichment/financialConfidence stays in TypeScript)
+
+### 10.5 Payload exclusion rule (enforced)
+
+| Layer | Before 030 | After 030 |
+|---|---|---|
+| DB — KORA_ADMIN JWT | `kora_admin_all_uef`: ALL access including payload | No direct policy: 0 rows via JWT SELECT |
+| DB — service_role | BYPASSRLS: ALL access | BYPASSRLS: ALL access (unchanged) |
+| DB — fn_admin_uef_review | Not available | Returns named columns, payload excluded |
+| App — GET Case B | SELECT included payload, response mapped safe sub-fields | SELECT excludes payload (app layer); Step 2: use RPC function |
+| App — GET response | eventType, reasonCodes etc. from payload | null/defaults (Step 1); typed named columns (Step 2 post-030) |
+| App — generate-candidates response | Aggregate stats only, no payload | Same (unchanged) |
+
+### 10.6 Service-role path: preserved
+
+- `generate-candidates`: service-role INSERT on uef_record → BYPASSRLS → UNAFFECTED by 030 ✓
+- `review` POST: service-role UPDATE on uef_record → BYPASSRLS → UNAFFECTED by 030 ✓
+- `enrich`: service-role UPDATE on uef_record → BYPASSRLS → UNAFFECTED by 030 ✓
+- Scoring engine: service-role SELECT on uef_record → BYPASSRLS → UNAFFECTED ✓
+
+### 10.7 Staging apply plan
+
+When ready to apply migration 030 to staging:
+
+```bash
+# 1. Confirm rollback artifact is staged (already done)
+ls supabase/rollback/030_rollback_030_if_needed.sql
+
+# 2. Apply 030 via explicit file (NOT migration up / db push)
+supabase db query --linked --file supabase/migrations/030_uef_admin_access_hardening.sql
+
+# 3. Repair migration history
+supabase migration repair --status applied 030 --linked
+
+# 4. Verify DB objects (run verification queries from migration 030 §VERIFICA)
+# 5. Smoke test: generate-candidates, review GET/POST, enrich POST
+# 6. Update review route to Step 2 (RPC calls) and test
+```
+
+### 10.8 Browser/API smoke plan (post-030)
+
+1. KORA_ADMIN login → `/admin/uef-review` → batch list loads (Case A) ✓
+2. Select a batch → UEF candidates load via `fn_admin_uef_review()` (named columns) ✓
+3. Approve a UEF record → status changes via `fn_admin_uef_update_review()` ✓
+4. COMPANY_ADMIN → no UEF records visible ✓
+5. generate-candidates POST → batch generates candidates ✓
+6. Check: raw payload NOT in any GET response body ✓
+
+### 10.9 Gate 3 implications
+
+- `advisor_tenant_uef_read` still includes payload — Gate 3 DPO review required before narrowing
+- Migration 030 does NOT close Gate 3 (OPEN)
+- Production NOT touched
+
+### 10.10 Code changes summary (migration 030 prep sprint)
+
+| File | Change |
+|---|---|
+| `supabase/migrations/030_uef_admin_access_hardening.sql` | NEW — 3 SECURITY DEFINER functions + DROP kora_admin_all_uef |
+| `supabase/rollback/030_rollback_030_if_needed.sql` | NEW — manual-only rollback artifact |
+| `supabase/rollback/README.md` | UPDATED — 030 rollback entry |
+| `app/api/admin/uef/review/route.ts` | GET Case B: payload removed from SELECT; POST: two-step annotation |
+| `app/api/admin/uef/enrich/route.ts` | Two-step rollout annotation |
+| `tests/unit/gate2-3-migration-030-preparation.test.ts` | NEW — 58 assertions |
+| `tests/unit/gate2-review-pack.test.ts` | UPDATED — file count 28 → 29 |
+| `tests/unit/p0-commercial-credibility.test.ts` | UPDATED — migration cap 29 → 30 |
 
 ---
 
-## 11. Gate State
+## 11. Final Recommendation
+
+1. ✓ Design review complete (§1–9).
+2. ✓ Pre-migration app hardening complete (§9).
+3. ✓ Migration 030 SQL prepared — NOT yet applied (§10).
+4. ✓ Rollback 030 staged in `supabase/rollback/`.
+5. □ Apply 030 to staging via `supabase db query --linked --file`.
+6. □ Repair migration history: `supabase migration repair --status applied 030 --linked`.
+7. □ Smoke test staging (Gate 2.3 §10.8).
+8. □ Update review route to Step 2 (RPC function calls).
+9. □ Gate 3 (Legal/DPO): formally review `advisor_tenant_uef_read` payload exposure.
+10. □ Production: blocked until Gate 3 closes and real data governance is documented.
+
+---
+
+## 12. Gate State
 
 | Gate | Status |
 |---|---|
 | Gate 2 | CLOSED WITH CONDITIONS (met: 027 applied, 029 quarantined) |
 | Gate 2.2 | COMPLETE |
-| Gate 2.3 | DESIGN REVIEW COMPLETE — pre-migration app hardening COMPLETE |
+| Gate 2.3 | MIGRATION 030 PREPARED — not yet applied to staging |
 | Gate 3 | OPEN — NOT CLOSED |
 | Gate 5 | OPEN |
 
 ---
 
-**Document version:** v1.1  
+**Document version:** v1.2  
 **Prepared:** 2026-06-22  
-**Gate 2.3 status:** DESIGN REVIEW COMPLETE — pre-migration app hardening COMPLETE — no migration applied  
+**Gate 2.3 status:** MIGRATION 030 PREPARED — pre-migration app hardening COMPLETE — no migration applied  
 **Applies to:** `haqflkurpmeaxpikozjl` inspection only  
 **Production:** NOT touched  
 **027 status:** Applied and tracked  
 **029 status:** Quarantined, not applied  
-**030 status:** PLANNED — not yet written or applied  
+**030 status:** PREPARED — SQL written, not yet applied to staging  
 **Gate 3:** OPEN — NOT CLOSED
