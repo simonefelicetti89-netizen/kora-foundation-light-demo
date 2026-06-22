@@ -408,19 +408,108 @@ Do NOT put rollback in `supabase/migrations/` (follow 029 quarantine pattern).
 
 ---
 
-## 9. Final Recommendation
+---
+
+## 9. Pre-Migration App Hardening
+
+**Completed:** 2026-06-22 — Gate 2.3 pre-migration sprint (code changes only, no DB touched).
+
+### 9.1 Routes inspected
+
+| Route | Previous pattern | Risk |
+|---|---|---|
+| `app/api/admin/uef/generate-candidates/route.ts` | Inline `createClient<Database>(url, SUPABASE_SERVICE_ROLE_KEY, opts)` | Service-role key referenced directly in route; inconsistent with canonical pattern |
+| `app/api/admin/uef/review/route.ts` | Same inline pattern × 2 (GET and POST) | Same risk; payload column fetched in GET Case B |
+| `app/api/admin/uef/enrich/route.ts` | Already used `getSupabaseServiceClient()` | Correct ✓ (baseline) |
+
+### 9.2 Previous dependency / risk
+
+All three UEF admin routes accessed `analytics.uef_record` via service-role (correct), but two used inline `createClient` instead of `getSupabaseServiceClient()` from `lib/supabase/server.ts`. This created:
+- Inconsistent pattern across UEF admin routes (three routes, two patterns)
+- No centralized validation of env vars (url + key) before client construction
+- Missing documentation of WHY service-role is used here (Gate 2.3 context)
+
+**The KORA_ADMIN authorization check (`requireKoraAdmin`) was already called before service-role client construction in all routes** — the auth-before-service-role invariant was satisfied. No authorization regression existed; this was a pattern consolidation.
+
+### 9.3 Service-role execution model
+
+The correct model (now implemented and documented):
+
+1. `requireKoraAdmin(request)` is called at the start of every handler ← **FIRST**
+2. `isKoraAuthError(authResult)` guard returns early on auth failure ← **SECOND**
+3. Only after authorization passes, `getSupabaseServiceClient()` is called ← **THIRD**
+4. `getSupabaseServiceClient()` validates env vars and creates a typed service-role client
+5. Service-role client is used only for system ingestion operations (INSERT, UPDATE on uef_record, source_batch, audit_log)
+6. Service-role key is never returned in any HTTP response body
+7. Service-role key is never referenced directly in the route files
+
+### 9.4 Authorization-before-service-role rule
+
+All UEF admin routes now satisfy: `requireKoraAdmin` → early-return-on-failure → `getSupabaseServiceClient()`. This ordering is enforced structurally (the service-role client is created inside the POST/GET body after the auth check, not at module level). Tests in `gate2-3-uef-admin-service-role-hardening.test.ts` verify the ordering via string index comparison.
+
+### 9.5 Response redaction rule
+
+- `generate-candidates`: returns only aggregate stats (`generatedCount`, `highConfidenceCount`, `avgConfidence`, etc.). No raw `payload` or candidate rows returned. ✓
+- `review` GET Case B: fetches `payload` column from `uef_record`, but response only returns interpreter-derived sub-fields (event_type, reason_codes, etc.) — NOT the raw payload JSON. Post-030, this SELECT should switch to `v_admin_uef_review` which excludes `payload` at DB level.
+- `review` POST: returns only review status update confirmation. No payload. ✓
+- `enrich` PATCH: returns only update confirmation. No payload. ✓
+
+### 9.6 New module: lib/supabase/uef-service-key.ts
+
+Created `lib/supabase/uef-service-key.ts` following the `impact-unit-service-key.ts` pattern:
+- Documents Gate 2.3 context and `kora_admin_all_uef` removal plan
+- Exports `ALLOWED_UEF_REVIEW_COLUMNS` — column whitelist for SELECT operations, explicitly excluding `payload`
+- Exports `assertUEFReviewColumns()` — runtime guard that throws on forbidden columns
+- Exports `queryUEFBatchMeta()` — typed batch-level SELECT (payload excluded)
+- Exports `countUEFCandidates()` — idempotency check helper
+- Post-030: `queryUEFBatchMeta()` can be simplified to use `v_admin_uef_review` view instead of direct table
+
+### 9.7 Readiness for migration 030
+
+After this sprint, migration 030 can safely drop `kora_admin_all_uef` with reduced breakage risk:
+
+| Route / Component | 030 readiness | Remaining work for 030 |
+|---|---|---|
+| `generate-candidates/route.ts` | ✓ Ready — uses service-role, bypasses RLS | None — service-role path unaffected by kora_admin_all_uef removal |
+| `review/route.ts` GET (Case B) | Partial — uses service-role now, but SELECTs payload directly | Switch SELECT to `v_admin_uef_review` (SECURITY DEFINER view, no payload) |
+| `review/route.ts` POST | Partial — uses service-role now | Switch UPDATE to `fn_admin_uef_update_review()` SECURITY DEFINER function |
+| `enrich/route.ts` | Partial — uses service-role | Switch UPDATE to `fn_admin_uef_enrich()` SECURITY DEFINER function |
+| `lib/supabase/uef-service-key.ts` | ✓ Ready — pattern documented | Update `queryUEFBatchMeta()` to use `v_admin_uef_review` after 030 |
+
+### 9.8 Remaining work before applying migration 030
+
+1. □ Write migration 030 SQL (SECURITY DEFINER view + 2 functions + DROP policy)
+2. □ Update `review/route.ts` GET Case B: switch SELECT from direct table to `v_admin_uef_review`
+3. □ Update `review/route.ts` POST: switch UPDATE to call `fn_admin_uef_update_review()`
+4. □ Update `enrich/route.ts`: switch UPDATE payload to call `fn_admin_uef_enrich()`
+5. □ Prepare `supabase/rollback/030_rollback_030_if_needed.sql` before applying
+6. □ Run integration smoke: generate-candidates + review + enrich end-to-end after 030
+
+### 9.9 Code changes summary
+
+| File | Change | Impact |
+|---|---|---|
+| `app/api/admin/uef/generate-candidates/route.ts` | Replace `createClient` inline → `getSupabaseServiceClient()` | Pattern canonical; service-role path unchanged; 030 safe |
+| `app/api/admin/uef/review/route.ts` | Same fix × 2 (GET + POST) + post-030 annotations | Pattern canonical; SELECT still reads payload (pre-030 interim state) |
+| `lib/supabase/uef-service-key.ts` | NEW — column whitelist + query helpers | Documents Gate 2.3 contract for UEF system operations |
+| `tests/unit/gate2-3-uef-admin-service-role-hardening.test.ts` | NEW — 41 assertions | Verifies code structure, auth ordering, no service-role key exposure |
+
+---
+
+## 10. Final Recommendation
 
 **Proceed to migration 030 design and implementation** after:
 
 1. ✓ This design review is documented and committed.
-2. □ App-layer changes to 3 admin UEF routes are scoped (service-role INSERT path established per `worker-provisioning-service-key.ts` pattern).
-3. □ SECURITY DEFINER view and functions are drafted as migration SQL.
-4. □ Test plan is confirmed.
+2. ✓ App-layer service-role path hardening complete (this sprint — `getSupabaseServiceClient()` in all UEF admin routes).
+3. □ `review/route.ts` GET and POST switched to SECURITY DEFINER view/function (requires 030 SQL first).
+4. □ SECURITY DEFINER view and functions are drafted as migration SQL.
 5. □ Rollback file (`030_rollback_030_if_needed.sql`) is prepared before applying.
 
 **Do NOT apply migration 030 to staging before:**
-- App-layer UEF route changes are in place (generate-candidates must use service-role client)
-- Integration smoke test of ingestion pipeline (generate-candidates) passes
+- `review/route.ts` GET Case B switched to `v_admin_uef_review` (drops payload at DB level)
+- `review/route.ts` POST switched to `fn_admin_uef_update_review()` 
+- Integration smoke test of ingestion pipeline passes after 030
 - KORA_ADMIN review workflow tested end-to-end via new functions
 
 **Do NOT apply migration 030 to production before:**
@@ -429,21 +518,21 @@ Do NOT put rollback in `supabase/migrations/` (follow 029 quarantine pattern).
 
 ---
 
-## 10. Gate State Post-Review
+## 11. Gate State
 
 | Gate | Status |
 |---|---|
 | Gate 2 | CLOSED WITH CONDITIONS (met: 027 applied, 029 quarantined) |
 | Gate 2.2 | COMPLETE |
-| Gate 2.3 | DESIGN REVIEW COMPLETE — implementation pending |
+| Gate 2.3 | DESIGN REVIEW COMPLETE — pre-migration app hardening COMPLETE |
 | Gate 3 | OPEN — NOT CLOSED |
 | Gate 5 | OPEN |
 
 ---
 
-**Document version:** v1.0  
+**Document version:** v1.1  
 **Prepared:** 2026-06-22  
-**Gate 2.3 status:** DESIGN REVIEW COMPLETE — no migration applied  
+**Gate 2.3 status:** DESIGN REVIEW COMPLETE — pre-migration app hardening COMPLETE — no migration applied  
 **Applies to:** `haqflkurpmeaxpikozjl` inspection only  
 **Production:** NOT touched  
 **027 status:** Applied and tracked  

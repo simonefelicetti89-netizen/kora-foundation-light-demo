@@ -15,8 +15,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import {
   interpretUploadedRecord,
@@ -51,11 +50,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'batchId is required.' }, { status: 400 });
   }
 
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  // Service-role: UEF candidate generation is a system ingestion operation.
+  // KORA_ADMIN authorization is confirmed above before this client is created.
+  // Bypasses RLS by design — this path must remain service-role so migration
+  // 030 (dropping kora_admin_all_uef) does not break UEF candidate generation.
+  const db = getSupabaseServiceClient();
 
   // ── Lookup source_batch ──────────────────────────────────────────────────────
   const { data: batch, error: batchErr } = await db

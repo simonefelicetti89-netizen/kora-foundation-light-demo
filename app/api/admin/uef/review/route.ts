@@ -10,8 +10,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 
 function makeAudit(p: {
@@ -34,11 +33,10 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const batchId = searchParams.get('batchId');
 
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  // Service-role: UEF review reads require system-level access after KORA_ADMIN auth.
+  // Post-030 (migration dropping kora_admin_all_uef): Case B SELECT should switch to
+  // analytics.v_admin_uef_review (SECURITY DEFINER, payload excluded at DB level).
+  const db = getSupabaseServiceClient();
 
   // ── Case A: list reviewable batches (no batchId) ─────────────────────────────
   if (!batchId) {
@@ -184,11 +182,9 @@ export async function POST(request: NextRequest) {
     }, { status: 400 });
   }
 
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  // Service-role: UPDATE on uef_record requires system access after KORA_ADMIN auth.
+  // Post-030: switch to fn_admin_uef_update_review() SECURITY DEFINER function.
+  const db = getSupabaseServiceClient();
 
   // ── Lookup uef_record ─────────────────────────────────────────────────────────
   const { data: rec, error: recErr } = await db
