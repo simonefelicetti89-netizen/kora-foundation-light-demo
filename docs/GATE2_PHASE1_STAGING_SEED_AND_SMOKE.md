@@ -709,7 +709,89 @@ No security issues. No migrations applied. Production not touched.
 
 ---
 
-**Document version:** v1.3  
+## Manual Browser Smoke Final Result
+
+**Date/time:** 2026-06-22  
+**Commit tested:** `23bb323` (branch: `main`)  
+**Local app URL:** `http://localhost:3000`  
+**Staging project ref:** `haqflkurpmeaxpikozjl`  
+**Env file used:** `.env.staging.local` (gitignored, not committed)
+
+### Observations
+
+| Check | Result |
+|---|---|
+| Company admin login | **PASS** |
+| Protected routing | **PASS** |
+| Company context (`KORA Staging Synthetic Company`) | **PASS** |
+| LIVE / SERVICE-ASSISTED state visible | **PASS** |
+| Status Center rendered | **PASS** |
+| Status Center — next action: upload first dataset | **PASS** |
+| Status Center — pipeline at initial stage | **PASS** |
+| Status Center — workspace activated | **PASS** |
+| Status Center — workforce/submission/scoring/Decision Pack not yet completed | **PASS** |
+| UI rendering (no crash, no runtime blocking error) | **PASS** |
+| Privacy boundary — no individual worker data visible to company admin | **PASS** |
+| Demo/fake fallback | **NOT USED** |
+| Synthetic/fake data added to populate dashboards | **NONE** |
+
+### Company Route Classification
+
+| Route | Result |
+|---|---|
+| `/company/status` | **PASS** — onboarding/status center rendered correctly |
+| `/company/workspace` | **PASS** — coherent empty/onboarding state |
+| `/company/kora-index` | **PASS** — coherent unavailable/not-yet-scored state |
+| `/company/activation` | **PASS** — coherent empty state |
+| `/company/pillars` | **PASS** — coherent empty state |
+| `/company/financial` | **PASS** — coherent empty state |
+| `/company/reports` | **PASS** — coherent empty state |
+
+### Empty-State Interpretation
+
+Company dashboard data is empty by design because the tenant is in onboarding state and no dataset/scoring/Decision Pack has been loaded.
+
+The pages render correctly and show expected empty/onboarding states because the tenant has not submitted a dataset and no scoring/Decision Pack exists yet. This is not a data path bug.
+
+- No dataset submitted: **correct**
+- No scoring run executed: **correct**
+- No Decision Pack generated: **correct**
+- Classification: **EMPTY BY DESIGN / ONBOARDING STATE**
+
+### Migration State Confirmed
+
+| Migration | Status |
+|---|---|
+| 027 (`worker_individual_rls_refactor`) | **NOT applied** |
+| 029 (`rollback_027_if_needed`) | **NOT applied** |
+
+### Production Safety Confirmed
+
+- Production: **NOT touched**
+- No `supabase db push` executed
+- No `supabase migration up` executed
+- No schema/RLS/grant/policy changes
+- No secrets, passwords, or tokens printed or committed
+
+### Final Verdict
+
+| Category | Result |
+|---|---|
+| Auth | **PASS** |
+| Protected routing | **PASS** |
+| Company context | **PASS** |
+| UI rendering | **PASS** |
+| Dashboard data | **EMPTY BY DESIGN / ONBOARDING STATE** |
+| Privacy boundary | **PASS** |
+| Fake fallback | **NOT USED** |
+| Migration 027 | **NOT applied** |
+| Migration 029 | **NOT applied** |
+| Production | **NOT touched** |
+| **Overall verdict** | **PASS WITH EXPECTED ONBOARDING EMPTY STATE** |
+
+---
+
+**Document version:** v1.4  
 **Prepared:** 2026-06-22  
 **Gate status:** Gate 2 OPEN · Gate 3 OPEN  
 **Applies to staging:** `haqflkurpmeaxpikozjl` only  
