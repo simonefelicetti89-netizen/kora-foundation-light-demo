@@ -1232,13 +1232,195 @@ Production NOT touched. Gate 3: OPEN — NOT CLOSED.
 
 ---
 
-**Document version:** v1.7  
+---
+
+## 18. Gate 2.3 Final Closure Audit
+
+**Audit date:** 2026-06-23  
+**Audit type:** Read-only DB verification + code static analysis  
+**Auditor:** Gate 2.3 closure sprint  
+**Staging project:** `haqflkurpmeaxpikozjl` — read-only queries only  
+**Production:** NOT touched
+
+> No secrets, passwords, tokens, or connection strings included in this section.  
+> No migrations applied. No rollback applied. No schema changes made.  
+> No real worker data created or imported. Gate 3 remains OPEN — NOT CLOSED.
+
+---
+
+### 18.1 Commits Included in Gate 2.3
+
+| Commit | Description |
+|---|---|
+| `c6a32c2` | prepare migration 030 UEF admin access hardening |
+| `6882f33` | review migration 030 before staging apply |
+| `807b86c` | revise migration 030 advisor UEF payload boundary |
+| `a1927c9` | apply migration 030 UEF hardening on staging |
+| `05fbc2c` | harden UEF SECURITY DEFINER function grants (031) |
+| `c096304` | switch UEF review route to safe RPC (`fn_admin_uef_review`) |
+
+### 18.2 Migrations Applied (Staging Only)
+
+| Migration | Description | Status |
+|---|---|---|
+| 027 | Worker individual RLS refactor | Applied and tracked |
+| 029 | Rollback 027 if needed | QUARANTINED — in `supabase/rollback/`, not in forward pipeline |
+| 030 | UEF admin access hardening | Applied and tracked — 2026-06-23 |
+| 031 | Revoke PUBLIC EXECUTE on UEF SECURITY DEFINER functions | Applied and tracked — 2026-06-23 |
+
+Verified via `supabase migration list --linked`: 001–028 ✓, 030 ✓, 031 ✓ (029 absent — quarantined).
+
+### 18.3 App Route Change
+
+`app/api/admin/uef/review/route.ts` GET Case B:
+
+| Before | After |
+|---|---|
+| Direct `analytics.uef_record` SELECT (column list excludes payload) | `fn_admin_uef_review` RPC — payload excluded at DB object level |
+| Null-default workarounds for payload sub-fields | Real typed values from SECURITY DEFINER function |
+| No `UEFReviewRow` type (broad `any`) | `UEFReviewRow` interface (39 columns, payload explicitly absent) |
+
+### 18.4 DB Verification Results (Read-Only, Staging)
+
+All queries executed against staging (`haqflkurpmeaxpikozjl`). No writes performed.
+
+**Grant posture — all 4 UEF functions (`fn_admin_uef_review`, `fn_admin_uef_update_review`, `fn_admin_uef_enrich`, `fn_advisor_uef_read`):**
+
+| Grantee | EXECUTE | Verification |
+|---|---|---|
+| `PUBLIC` | NO | Revoked by migration 031 — absent from `information_schema.role_routine_grants` |
+| `anon` | NO | No explicit grant; PUBLIC revoked — absent from grants query |
+| `authenticated` | YES | Explicit grant (030) — confirmed, 4 rows |
+| `service_role` | YES | Explicit grant (031) — confirmed, 4 rows |
+| `postgres` | YES | Owner — confirmed, 4 rows |
+
+**RLS on `analytics.uef_record`:**
+
+| Check | Result |
+|---|---|
+| `relrowsecurity` | `true` — RLS enabled |
+| `relforcerowsecurity` | `false` — expected (owner bypass not forced) |
+| Active policies | 0 — `kora_admin_all_uef` dropped by 030; no replacement policy; direct JWT SELECT returns 0 rows |
+
+**Function security type:**
+
+| Function | `prosecdef` | search_path |
+|---|---|---|
+| `fn_admin_uef_review` | `true` (SECURITY DEFINER) | `analytics, kora, public` |
+| `fn_admin_uef_update_review` | `true` (SECURITY DEFINER) | `analytics, kora, public` |
+| `fn_admin_uef_enrich` | `true` (SECURITY DEFINER) | `analytics, kora, public` |
+| `fn_advisor_uef_read` | `true` (SECURITY DEFINER) | `analytics, kora, public` |
+
+Note: `public` in `search_path` is M-01 finding — see §18.5. All table references are schema-qualified in function bodies.
+
+**`analytics.uef_record.payload` column:**
+
+Column exists (type `jsonb`, ordinal 19). It is intentionally absent from all 4 function `RETURNS TABLE` definitions — payload sub-fields are exposed only as named typed columns via `payload ->> 'key'` extractions.
+
+### 18.5 Gate 2.3 Objective Verification
+
+| # | Objective | Verified |
+|---|---|---|
+| 1 | KORA_ADMIN no longer has direct raw `payload` access | ✓ RLS enabled, 0 policies, fn excludes payload column |
+| 2 | ADVISOR no longer has direct raw `payload` access | ✓ fn_advisor_uef_read excludes payload JSONB |
+| 3 | Direct table SELECT policies exposing raw payload removed | ✓ kora_admin_all_uef dropped; 0 policies on uef_record |
+| 4 | Safe SECURITY DEFINER functions exist | ✓ All 4 functions confirmed in DB with `prosecdef: true` |
+| 5 | PUBLIC EXECUTE revoked | ✓ PUBLIC absent from grants query (12 rows: 4×3 grantees) |
+| 6 | anon cannot execute functions | ✓ anon absent from grants; PUBLIC revoked |
+| 7 | authenticated/service_role grants intentional | ✓ Both confirmed with explicit grants; internal role checks enforce access |
+| 8 | Internal role checks protect functions | ✓ RAISE EXCEPTION for 3 functions; WHERE clause filter for fn_admin_uef_review |
+| 9 | service-role ingestion/system path functional | ✓ service_role has EXECUTE + BYPASSRLS |
+| 10 | Admin review route uses fn_admin_uef_review | ✓ `.rpc('fn_admin_uef_review', { p_batch_id: batchId })` confirmed |
+| 11 | Admin review route does not select raw payload | ✓ No `.select(... payload ...)` in GET Case B |
+| 12 | Admin review route does not return raw payload | ✓ `UEFReviewRow` interface; no `payload:` key in response object |
+| 13 | C-11/C-12/W-04 remain PASS | ✓ personal.* table RLS unchanged by 030/031; regression tests PASS |
+| 14 | Company roles cannot see raw UEF | ✓ No grant, no RLS policy → 0 rows on direct access |
+| 15 | Worker roles cannot see raw/cross-worker UEF | ✓ No grant, no RLS policy for worker roles on uef_record |
+
+### 18.6 Finding Status
+
+| Finding | Severity | Status | Resolution |
+|---|---|---|---|
+| H-01 | HIGH | **RESOLVED** | fn_advisor_uef_read excludes raw payload JSONB; confirmed in DB |
+| M-01 | MEDIUM | **OPEN BEFORE PRODUCTION** | `public` in search_path of all 4 SECURITY DEFINER functions; all table refs schema-qualified so no shadowing risk on staging; must be remediated before production apply |
+| M-02 | MEDIUM | **ACCEPTED FOR STAGING ONLY** | fn_admin_uef_review silently returns 0 rows on auth failure (WHERE clause); other 3 functions use RAISE EXCEPTION; inconsistency is safe for staging read-only RPC; resolve before production |
+| M-03 | MEDIUM | **RESOLVED** | `c096304` — GET Case B now calls fn_admin_uef_review RPC; null-defaults removed |
+| M-04 | MEDIUM | **RESOLVED** | Migration 031 — PUBLIC EXECUTE revoked from all 4 functions; confirmed in DB |
+| L-01 | LOW | **ACCEPTED FOR STAGING ONLY** | `raw_amount_value` returned by fn_admin_uef_review; numeric amount, not personal identifier; re-assess for production |
+| L-02 | LOW | **ACCEPTED FOR STAGING ONLY** | No per-call audit trail for fn_advisor_uef_read; add in production |
+| L-03 | LOW | **ACCEPTED FOR STAGING ONLY** | fn_admin_uef_enrich may set b11_enriched=true with empty enrichment fields; edge-case only; fix in production migration |
+| L-04 | LOW | **NOT APPLICABLE** | Rollback 030/031 concurrent-load testing; production concern only |
+
+### 18.7 Final Access Matrix
+
+| Actor | Direct table SELECT | Function EXECUTE | Raw payload access | Safe sub-fields |
+|---|---|---|---|---|
+| service_role | YES (BYPASSRLS) | YES (explicit grant) | YES (system-only path) | YES |
+| postgres | YES (owner) | YES (owner) | YES (owner/system) | YES |
+| authenticated + KORA_ADMIN JWT | NO (0 rows — RLS enabled, 0 policies) | YES (authenticated grant + internal check PASS) | NO (payload excluded from fn output) | YES (fn_admin_uef_review) |
+| authenticated + ADVISOR JWT | NO (0 rows — RLS enabled, 0 policies) | YES (authenticated grant + internal check PASS) | NO (payload excluded from fn output) | YES (fn_advisor_uef_read, own tenant only) |
+| authenticated + COMPANY_ADMIN JWT | NO (0 rows — RLS enabled, 0 policies) | NO (internal check RAISE EXCEPTION) | NO | NO |
+| authenticated + WORKER JWT | NO (0 rows — RLS enabled, 0 policies) | NO (internal check RAISE EXCEPTION) | NO | NO |
+| anon | NO (0 rows — RLS enabled, 0 policies) | NO (no grant, PUBLIC revoked) | NO | NO |
+| PUBLIC | NO (0 rows — RLS enabled, 0 policies) | NO (EXECUTE revoked by 031) | NO | NO |
+
+### 18.8 Remaining Production-Only Concerns
+
+These are NOT blockers for staging synthetic data. They are OPEN BEFORE PRODUCTION and gated behind Gate 3.
+
+1. **M-01: `public` in search_path** — All 4 SECURITY DEFINER functions have `search_path=analytics, kora, public`. Requires a migration to remove `public` from search_path before production. No schema-poisoning risk with current schema-qualified table refs.
+
+2. **M-02: fn_admin_uef_review auth consistency** — Read function silently returns 0 rows on unauthorized calls; mutating functions raise exceptions. Decide on uniform behavior before production.
+
+3. **L-01/L-02/L-03** — Minor edge-cases and audit trail gaps acceptable for staging synthetic data; remediate before production.
+
+4. **Step 3: POST switch to fn_admin_uef_update_review** — Direct service-role UPDATE still used for POST. The SECURITY DEFINER function exists and is correctly granted. Switch to RPC for consistency is a separate post-Gate 3 sprint.
+
+5. **Production apply of 030/031** — Requires Gate 3 closure (DPO/legal/privacy sign-off). Not authorized until then.
+
+### 18.9 Gate 3 Dependency
+
+Gate 3 (Legal/Privacy) is OPEN — NOT CLOSED.
+
+The following remain blocked until Gate 3 closes:
+- Production apply of migrations 030 and 031
+- Live company data ingestion
+- Real worker accounts / real identity records
+- Real HRIS/LMS/welfare provider API calls
+- Production RBAC/RLS policies
+- Production authentication
+
+Gate 2.3 technical work is complete. Gate 3 is a legal/privacy/DPO clearance, not a technical prerequisite.
+
+### 18.10 Final Verdict
+
+**Gate 2.3 — UEF Admin Access Hardening — is technically CLOSED for staging synthetic data only.**
+
+What this closure means:
+- Raw `analytics.uef_record.payload` is inaccessible to KORA_ADMIN and ADVISOR via any JWT path — blocked at DB level (RLS enabled, 0 policies, SECURITY DEFINER functions exclude raw payload column)
+- PUBLIC EXECUTE is revoked from all 4 UEF SECURITY DEFINER functions
+- anon has no path to UEF data
+- service-role system path remains functional
+- admin review route uses safe RPC (payload excluded at DB object level)
+- All Gate 2.3 H-findings and M-findings except M-01 and M-02 are RESOLVED
+
+What this closure does NOT mean:
+- Real worker data is NOT authorized — Gate 3 remains OPEN
+- Production is NOT authorized — Gate 3 must close first
+- M-01 and M-02 are not resolved — they remain OPEN BEFORE PRODUCTION
+- Rollback 030/031 must never be applied without CTO + DPO approval
+
+> **Gate 2.3 is technically closed for staging synthetic data only. It does not authorize real worker data or production real-data use. Production apply remains blocked until Gate 3 (legal/privacy/DPO) is formally closed.**
+
+---
+
+**Document version:** v1.8  
 **Prepared:** 2026-06-22; updated 2026-06-23  
-**Gate 2.3 status:** STEP 2 COMPLETE — fn_admin_uef_review RPC now used — M-03 RESOLVED  
+**Gate 2.3 status:** CLOSED FOR STAGING SYNTHETIC DATA — all objectives verified — see §18  
 **Applies to:** `haqflkurpmeaxpikozjl` (kora-staging) only  
-**Production:** NOT touched  
+**Production:** NOT touched — NOT authorized until Gate 3 closes  
 **027 status:** Applied and tracked  
-**029 status:** Quarantined, not applied  
+**029 status:** Quarantined — in `supabase/rollback/`, not in forward pipeline  
 **030 status:** APPLIED TO STAGING — 2026-06-23 — H-01 resolved — no raw payload exposure  
 **031 status:** APPLIED TO STAGING — 2026-06-23 — M-04 resolved — PUBLIC EXECUTE revoked  
-**Gate 3:** OPEN — NOT CLOSED
+**Gate 3:** OPEN — NOT CLOSED — blocks production apply and real-data use

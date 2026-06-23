@@ -276,8 +276,8 @@ describe('gate2-3-step2 — documentation updated', () => {
     expect(DOC).toMatch(/direct.*SELECT.*replaced|direct.*uef_record.*SELECT|previous.*SELECT.*remov/i);
   });
 
-  it('design doc notes RPC now used', () => {
-    expect(DOC).toMatch(/RPC.*now.*used|fn_admin_uef_review.*now.*called/i);
+  it('design doc notes RPC now used or route switch complete', () => {
+    expect(DOC).toMatch(/RPC.*now.*used|fn_admin_uef_review.*now.*call|GET Case B.*fn_admin_uef_review|Step 2.*complete/i);
   });
 
   it('design doc notes payload exclusion at DB object level', () => {
