@@ -560,4 +560,15 @@ describe('hardening — 18. Gate 3 remains open', () => {
     const doc = read('KORA_Contribution_Audit.md');
     expect(doc).toMatch(/resolution|Resolution/i);
   });
+
+  it('KORA_Contribution_IU_Source_Audit.md exists with required sections', () => {
+    expect(exists('KORA_Contribution_IU_Source_Audit.md')).toBe(true);
+    const doc = read('KORA_Contribution_IU_Source_Audit.md');
+    expect(doc).toContain('## 4. Current IU Eligibility Logic');
+    expect(doc).toContain('## 6. Version B Readiness Assessment');
+    expect(doc).toContain('## 8. Privacy Boundary Review');
+    expect(doc).toContain('## 9. Target IU-to-Contribution Mapping');
+    expect(doc).toContain('## 10. Recommended Implementation Path');
+    expect(doc).toContain('Gate 3');
+  });
 });
