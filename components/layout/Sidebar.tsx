@@ -101,7 +101,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/company/opportunities', label: 'Opportunità' },
           { href: '/company/financial',    label: 'Budget-to-Human-Impact™' },
           { href: '/company/activation',   label: 'Activation Intelligence™' },
-          { href: '/company/contribution', label: 'Contribution' },
+          { href: '/company/contribution', label: 'KORA Contribution™' },
           { href: '/company/pillars',      label: 'Pillar Analysis' },
         ],
       },

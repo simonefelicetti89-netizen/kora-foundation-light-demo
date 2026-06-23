@@ -220,3 +220,45 @@ describe('KORA Contribution — architecture invariants', () => {
     expect(items).toContain('future_and_legacy');
   });
 });
+
+// ── Section 8: UI labeling consistency (22–26) ────────────────────────────────
+
+const SIDEBAR = 'components/layout/Sidebar.tsx';
+
+describe('KORA Contribution — UI labeling consistency (micro-fix smoke)', () => {
+  let sidebar: string;
+  let page: string;
+  let service: string;
+
+  beforeAll(() => {
+    sidebar  = read(SIDEBAR);
+    page     = read(CONTRIBUTION_PAGE);
+    service  = read(CONTRIBUTION_SERVICE);
+  });
+
+  test('22. Sidebar nav entry for /company/contribution uses full label "KORA Contribution™"', () => {
+    // The nav label must include the full canonical name, not bare "Contribution"
+    expect(sidebar).toContain("href: '/company/contribution', label: 'KORA Contribution™'");
+    expect(sidebar).not.toContain("href: '/company/contribution', label: 'Contribution'");
+  });
+
+  test('23. Contribution page FL preview score section has data-testid="contribution-score-presentation-mode"', () => {
+    expect(page).toContain('data-testid="contribution-score-presentation-mode"');
+  });
+
+  test('24. Score presentation mode data-value is wired to flPreview.scorePresentationMode', () => {
+    // The data-value attribute must read from the service output, not a hardcoded literal
+    expect(page).toContain('data-value={flPreview.scorePresentationMode}');
+  });
+
+  test('25. KoraContributionService scorePresentationMode resolves to "provisional_demo_only"', () => {
+    // The service must output this exact string (read from getContributionConfig)
+    expect(service).toContain("scorePresentationMode:  'provisional_demo_only'");
+  });
+
+  test('26. Contribution page synthetic/demo-only framing visible via PRE-PILOT PREVIEW badge', () => {
+    expect(page).toContain('PRE-PILOT PREVIEW');
+    expect(page).toContain('Dati sintetici dimostrativi');
+    expect(page).toContain('Non rappresentano dati reali');
+  });
+});

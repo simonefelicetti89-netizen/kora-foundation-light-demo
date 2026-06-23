@@ -340,7 +340,11 @@ export default async function KoraContributionPage() {
                 padding:      '24px 22px',
                 marginBottom: 20,
               }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px', fontFamily: FONT }}>
+                <p
+                  data-testid="contribution-score-presentation-mode"
+                  data-value={flPreview.scorePresentationMode}
+                  style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px', fontFamily: FONT }}
+                >
                   Punteggio indicatore (simulato)
                 </p>
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
