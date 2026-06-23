@@ -216,6 +216,60 @@ export function getEquityComponentWeights(): { eqw: number; eqs: number; pc: num
   };
 }
 
+// ── KORA Contribution companion indicator config ──────────────────────────────
+// KORA Contribution is NOT a KORA Index component (CLAUDE.md §12.7).
+// These weights are read by KoraContributionService — never hardcoded there.
+
+export interface ContributionWeights {
+  family_breadth:   number;  // 30 — breadth of contribution families present
+  initiatives_norm: number;  // 20 — initiatives count normalized to 10
+  evidence_quality: number;  // 25 — share of verified evidence
+  territorial:      number;  // 15 — territorial activation binary
+  ecosystem:        number;  // 10 — multi-family ecosystem breadth binary
+}
+
+export interface ContributionLevels {
+  advanced:  number;  // score >= advanced
+  active:    number;  // score >= active
+  emerging:  number;  // score >= emerging
+  minimal:   number;  // else
+}
+
+export interface ContributionConfig {
+  version:             string;
+  calibration_status:  string;
+  is_kora_index_component: false;
+  score_label:         string;
+  weights:             ContributionWeights;
+  levels:              ContributionLevels;
+}
+
+/** Returns KORA Contribution methodology config. Weights must be read from here — never hardcoded. */
+export function getContributionConfig(): ContributionConfig {
+  const contrib = (config as unknown as Record<string, unknown>).kora_contribution as Record<string, unknown> | undefined;
+  const weights = contrib?.weights as Partial<ContributionWeights> | undefined;
+  const levels  = contrib?.levels  as Partial<ContributionLevels>  | undefined;
+  return {
+    version:                 typeof contrib?.version === 'string' ? contrib.version : 'v0.1',
+    calibration_status:      typeof contrib?.calibration_status === 'string' ? contrib.calibration_status : 'pre_empirical_calibration',
+    is_kora_index_component: false,
+    score_label:             typeof contrib?.score_label === 'string' ? contrib.score_label : 'provisional_demo_only',
+    weights: {
+      family_breadth:   weights?.family_breadth   ?? 30,
+      initiatives_norm: weights?.initiatives_norm ?? 20,
+      evidence_quality: weights?.evidence_quality ?? 25,
+      territorial:      weights?.territorial      ?? 15,
+      ecosystem:        weights?.ecosystem        ?? 10,
+    },
+    levels: {
+      advanced: levels?.advanced ?? 66,
+      active:   levels?.active   ?? 36,
+      emerging: levels?.emerging ?? 16,
+      minimal:  levels?.minimal  ?? 0,
+    },
+  };
+}
+
 // ── Monte Carlo config accessor ───────────────────────────────────────────────
 
 export interface MCConfig {

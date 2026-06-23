@@ -158,6 +158,21 @@ export async function attributePIBForBooking(
 
 // ── Attribuzione Contribution per booking attended ────────────────────────────
 // Due righe per partecipazione: promoter (Beta) + origin_employer (Acme).
+//
+// TRANSACTION SAFETY (C-9): Le due INSERT avvengono sequenzialmente senza wrapper
+// transazionale esplicito. Se la seconda INSERT fallisce con un errore non idempotente,
+// la prima riga è già committata → attribution parziale.
+//
+// MITIGAZIONE ATTUALE: idempotenza via UNIQUE constraint (error code 23505) su entrambe
+// le righe. Una retry del chiamante (BookingService.markAttended) corregge il parziale
+// su seconda chiamata per lo stesso bookingId.
+//
+// SOLUZIONE PROPOSTA: Migration 026 (supabase/proposed/026_contribution_atomic_attribution.sql)
+// crea RPC commons.attribute_contribution_for_booking_atomic() che esegue entrambi gli
+// INSERT in una singola transazione DB. Richiederebbe Gate 3 + CTO review prima del deploy.
+//
+// STATUS: migration 026 NON applicata. Partial attribution risk documentato e accettato
+// per Foundation Light (synthetic data only).
 
 export async function attributeContributionForBooking(
   params: BookingAttendedParams,
@@ -192,6 +207,7 @@ export async function attributeContributionForBooking(
   ];
 
   let written = 0;
+  let partialWritten = false;
   for (const row of rows) {
     const { error } = await (db as any)
       .schema('commons')
@@ -202,10 +218,19 @@ export async function attributeContributionForBooking(
       if (error.code === '23505') {
         written++; // idempotente
       } else {
-        console.error('[B166 cross-company-attribution] contribution_event insert error:', error.message, { bookingId, role: row.role });
+        // Non-idempotency failure: if this is the second row, attribution is partial.
+        // The first row is already committed (no transaction). Caller retry on same
+        // bookingId will self-correct via idempotency on the first row.
+        // Full fix: use attribute_contribution_for_booking_atomic() RPC (migration 026, pending).
+        if (partialWritten) {
+          console.error('[B166 cross-company-attribution] PARTIAL ATTRIBUTION — second row failed after first committed:', error.message, { bookingId, role: row.role });
+        } else {
+          console.error('[B166 cross-company-attribution] contribution_event insert error:', error.message, { bookingId, role: row.role });
+        }
       }
     } else {
       written++;
+      partialWritten = true; // first row committed — second row failure would be partial
     }
   }
 

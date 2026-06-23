@@ -119,5 +119,35 @@
     "macroblock_perturbation_pts": 5,
     "shrinkage_k": 10,
     "shrinkage_prior": 40.0
+  },
+
+  "kora_contribution": {
+    "_note": "KORA Contribution è un indicatore companion — NON un componente del KORA Index. Pesi direzionali pre-calibrazione empirica. Da ricalibrazione dopo Delphi Study. Unica fonte di verità per i pesi — mai hardcoded nel servizio.",
+    "version": "v0.1",
+    "calibration_status": "pre_empirical_calibration",
+    "is_kora_index_component": false,
+    "score_label": "provisional_demo_only",
+    "score_presentation_note": "Il punteggio 0–100 è prodotto solo nel percorso Foundation Light (demo sintetico). Il percorso Pilot+ live NON espone un punteggio aggregato unico — segue la dottrina no-single-score (contribution-views.ts).",
+    "weights": {
+      "_note": "Pesi direzionali — somma = 100. Non validati empiricamente. Ricalibrazione post-Delphi Study.",
+      "family_breadth": 30,
+      "initiatives_norm": 20,
+      "evidence_quality": 25,
+      "territorial": 15,
+      "ecosystem": 10
+    },
+    "levels": {
+      "_note": "Soglie livello provvisorie — da calibrare post-Delphi.",
+      "advanced": 66,
+      "active": 36,
+      "emerging": 16,
+      "minimal": 0
+    },
+    "eligibility": {
+      "_note": "Un evento è contribution-eligible se ha action_family in contribution_families OPPURE event_nature in contribution_event_natures. Il match solo su pillar non è sufficiente.",
+      "contribution_action_families": ["territorial_impact", "inclusion_and_connection", "future_and_legacy"],
+      "contribution_pillars": ["IMPACT", "CONNECTION", "LEGACY"],
+      "contribution_event_natures": ["collective_initiative", "territorial_initiative", "partner_service"]
+    }
   }
 }

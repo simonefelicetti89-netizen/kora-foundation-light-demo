@@ -1,5 +1,5 @@
 import type { ScenarioId } from '@/lib/types';
-import { getMethodologyVersion, getCalibrationStatus } from '@/lib/methodology-config/v0.1';
+import { getMethodologyVersion, getCalibrationStatus, getContributionConfig } from '@/lib/methodology-config/v0.1';
 import contributionOutputsRaw from '@/data/synthetic/kora-contribution-outputs.json';
 import collectiveInitiativesRaw from '@/data/synthetic/collective-initiatives.json';
 import {
@@ -135,7 +135,10 @@ export interface ContributionSummary {
   company_id: string;
   scenario_id: ScenarioId;
   reporting_period: string;
-  contributionScore: number;         // 0–100, provisional_companion_indicator
+  contributionScore: number;
+  /** Always 'provisional_demo_only' — score is for Foundation Light demo only.
+   *  Pilot+ live path uses ContributionPromoterView / ContributionOriginEmployerView (no score field). */
+  scorePresentationMode: 'provisional_demo_only';
   contributionLevel: 'minimal' | 'emerging' | 'active' | 'advanced';
   initiativesCount: number;
   ecosystemPartners: number;
@@ -164,7 +167,7 @@ export interface ContributionSummary {
 
 // ── Provisional score formula — clearly labeled non-empirical ────────────────
 // Five simple bounded components — no empirical calibration claimed.
-// Component weights are directional scaffolding, not validated.
+// Weights are read from methodology-config via getContributionConfig() — never hardcoded here.
 
 function computeProvisionalScore(inputs: ContributionPipelineInput[]): {
   score: number;
@@ -216,6 +219,10 @@ function computeProvisionalScore(inputs: ContributionPipelineInput[]): {
       .reduce((s, r) => s + r.impact_units_total, 0);
   }
 
+  const cfg = getContributionConfig();
+  const w   = cfg.weights;
+  const lv  = cfg.levels;
+
   const familyBreadth   = families.length / 3;
   const initiativesNorm = Math.min(count, 10) / 10;
   const evidenceQ       = count > 0 ? evDist.verified / count : 0;
@@ -223,17 +230,17 @@ function computeProvisionalScore(inputs: ContributionPipelineInput[]): {
   const ecosystem       = families.length >= 2 ? 1 : 0;
 
   const score = Math.round(
-    familyBreadth * 30 +
-    initiativesNorm * 20 +
-    evidenceQ * 25 +
-    territorial * 15 +
-    ecosystem * 10,
+    familyBreadth   * w.family_breadth   +
+    initiativesNorm * w.initiatives_norm +
+    evidenceQ       * w.evidence_quality +
+    territorial     * w.territorial      +
+    ecosystem       * w.ecosystem,
   );
 
   const level: ContributionSummary['contributionLevel'] =
-    score >= 66 ? 'advanced' :
-    score >= 36 ? 'active'   :
-    score >= 16 ? 'emerging' : 'minimal';
+    score >= lv.advanced ? 'advanced' :
+    score >= lv.active   ? 'active'   :
+    score >= lv.emerging ? 'emerging' : 'minimal';
 
   return {
     score,
@@ -256,7 +263,12 @@ const INITIATIVE_TYPE_TO_FAMILY: Record<string, string> = {
   partner_collective_event:      'territorial_impact',
   collective_community_event:    'inclusion_and_connection',
   internal_mentoring_collective: 'future_and_legacy',
-  collective_upskilling:         'professional_growth',  // NOT contribution-eligible
+  // collective_upskilling → professional_growth (NOT a contribution action family).
+  // These events are NOT contribution-eligible via action_family alone.
+  // If partner-led (init.partner_id set), getSummaryV2 assigns event_nature='partner_service'
+  // so they become eligible via event_nature — partner-led upskilling IS ecosystem activation.
+  // Non-partner collective upskilling → no event_nature fallback → not eligible. Correct.
+  collective_upskilling:         'professional_growth',
 };
 
 const VERIFICATION_TO_EV: Record<string, number> = {
@@ -422,6 +434,7 @@ export class KoraContributionService implements IKoraContributionService {
       scenario_id:            scenarioId,
       reporting_period:       seedRec?.reporting_period ?? scenarioId,
       contributionScore:      computed.score,
+      scorePresentationMode:  'provisional_demo_only',
       contributionLevel:      computed.level,
       initiativesCount:       computed.initiativesCount,
       ecosystemPartners:      seedRec?.ecosystem_partners_active ?? 0,
@@ -465,17 +478,25 @@ export class KoraContributionService implements IKoraContributionService {
       // IU total = participation_count × NM × BC × EV (simplified; CQ/CF/AGF omitted for demo)
       const iuEstimate   = +(init.aggregate_participation_count * nm * bc * ev * 0.10).toFixed(3);
       const isComputed   = init.status !== 'archived' && iuEstimate > 0;
+      // Derive event_nature from initiative_type — used by isContributionEligibleEvent().
+      // Do NOT use 'collective_initiative' as a blanket default: collective_upskilling
+      // without a partner would incorrectly become contribution-eligible via event_nature.
+      // Partner-led upskilling uses 'partner_service' — ecosystem activation is legitimate.
+      const event_nature: string | undefined =
+        init.initiative_type === 'cross_company_volunteering'  ? 'collective_initiative'
+        : init.initiative_type === 'partner_collective_event'  ? 'partner_service'
+        : init.initiative_type === 'collective_community_event'? 'collective_initiative'
+        : init.initiative_type === 'internal_mentoring_collective' ? 'collective_initiative'
+        : init.initiative_type === 'collective_upskilling' && init.partner_id ? 'partner_service'
+        : undefined;  // non-partner upskilling → no event_nature → relies on action_family only
+
       return {
         action_family:            actionFamily,
         primary_pillar:           pillar,
         impact_units_total:       isComputed ? iuEstimate : 0,
         evidence_verification_ev: ev,
         computed:                 isComputed,
-        event_nature:             init.initiative_type === 'cross_company_volunteering'
-                                    ? 'collective_initiative'
-                                    : init.initiative_type === 'partner_collective_event'
-                                      ? 'partner_service'
-                                      : 'collective_initiative',
+        event_nature,
       };
     });
 

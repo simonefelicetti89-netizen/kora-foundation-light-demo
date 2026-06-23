@@ -65,27 +65,38 @@ describe('isContributionEligibleEvent — action_family', () => {
   });
 });
 
-// ── 2. isContributionEligibleEvent — pillar detection ───────────────────────
+// ── 2. isContributionEligibleEvent — pillar alone is not sufficient (C-5) ───
+// Bare pillar match was removed in C-5 hardening.
+// A training event with pillar=IMPACT that is not collective must NOT be eligible.
+// Pillar is used only for breakdown aggregation — not as an eligibility signal.
 
-describe('isContributionEligibleEvent — pillar', () => {
-  it('IMPACT pillar → true', () => {
-    expect(isContributionEligibleEvent({ pillar: 'IMPACT' })).toBe(true);
+describe('isContributionEligibleEvent — pillar alone is not sufficient (C-5)', () => {
+  it('IMPACT pillar alone (no action_family, no event_nature) → false', () => {
+    expect(isContributionEligibleEvent({ pillar: 'IMPACT' })).toBe(false);
   });
 
-  it('CONNECTION pillar → true', () => {
-    expect(isContributionEligibleEvent({ pillar: 'CONNECTION' })).toBe(true);
+  it('CONNECTION pillar alone → false', () => {
+    expect(isContributionEligibleEvent({ pillar: 'CONNECTION' })).toBe(false);
   });
 
-  it('LEGACY pillar → true', () => {
-    expect(isContributionEligibleEvent({ pillar: 'LEGACY' })).toBe(true);
+  it('LEGACY pillar alone → false', () => {
+    expect(isContributionEligibleEvent({ pillar: 'LEGACY' })).toBe(false);
   });
 
-  it('LIFE pillar → false', () => {
+  it('LIFE pillar → false (non-contribution pillar)', () => {
     expect(isContributionEligibleEvent({ pillar: 'LIFE' })).toBe(false);
   });
 
-  it('GROWTH pillar → false', () => {
+  it('GROWTH pillar → false (non-contribution pillar)', () => {
     expect(isContributionEligibleEvent({ pillar: 'GROWTH' })).toBe(false);
+  });
+
+  it('IMPACT pillar + collective_initiative event_nature → true (event_nature signal sufficient)', () => {
+    expect(isContributionEligibleEvent({ pillar: 'IMPACT', event_nature: 'collective_initiative' })).toBe(true);
+  });
+
+  it('IMPACT pillar + territorial_impact action_family → true (action_family signal sufficient)', () => {
+    expect(isContributionEligibleEvent({ pillar: 'IMPACT', action_family: 'territorial_impact' })).toBe(true);
   });
 });
 

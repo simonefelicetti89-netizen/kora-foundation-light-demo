@@ -38,29 +38,32 @@ export interface ContributionEventInput {
 
 /**
  * Returns true if this event is contribution-eligible.
- * A contribution-eligible event:
- *   - belongs to territorial_impact, inclusion_and_connection, or future_and_legacy, OR
- *   - maps to IMPACT, CONNECTION, or LEGACY pillar, OR
- *   - has a contribution event_nature (collective_initiative, territorial_initiative, partner_service)
+ *
+ * A contribution-eligible event must have at least one of:
+ *   1. action_family in CONTRIBUTION_ACTION_FAMILIES (territorial_impact, inclusion_and_connection, future_and_legacy)
+ *   2. event_nature in CONTRIBUTION_EVENT_NATURES (collective_initiative, territorial_initiative, partner_service)
+ *
+ * Bare pillar match alone (IMPACT/CONNECTION/LEGACY) is NOT sufficient.
+ * Rationale: an individual training with pillar=IMPACT is NOT a collective contribution event.
+ * Pillar is used only for breakdown computation — not as an eligibility signal.
+ * CONTRIBUTION_PILLARS remains exported for breakdown aggregation in KoraContributionService.
  *
  * This is a downstream classifier — it does NOT re-run eligibility.
  * AGF=0 (disqualified) records are already filtered by the IU engine before reaching here.
  */
 export function isContributionEligibleEvent(input: ContributionEventInput): boolean {
+  // action_family is the strongest signal — event was explicitly classified as collective by taxonomy
   if (
     input.action_family &&
     CONTRIBUTION_ACTION_FAMILIES.includes(input.action_family as ActionFamily)
   ) {
     return true;
   }
-  if (
-    input.pillar &&
-    CONTRIBUTION_PILLARS.includes(input.pillar as ContributionPillar)
-  ) {
-    return true;
-  }
+  // event_nature signals an explicitly collective/territorial/partner event
   if (input.event_nature && CONTRIBUTION_EVENT_NATURES.has(input.event_nature)) {
     return true;
   }
+  // Bare pillar match alone (IMPACT/CONNECTION/LEGACY) is intentionally NOT sufficient.
+  // An event must have action_family or event_nature to be contribution-eligible.
   return false;
 }

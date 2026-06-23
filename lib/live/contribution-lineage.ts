@@ -4,6 +4,20 @@
 //
 // Used by the Company Evidence Archive API to classify each initiative
 // by its role in the KORA Index computation pipeline.
+//
+// ── NAMING DISAMBIGUATION (C-6) ──────────────────────────────────────────────
+// WARNING: "ContributionRole" here is a PIPELINE classification term.
+// It describes the role of a UEF/HR intake record in the KORA Index+BTI pipeline:
+//   kora_index_and_bti, kora_index_only, bti_only_economic_relief, etc.
+//
+// This is COMPLETELY DIFFERENT from "KORA Contribution" (the companion indicator):
+//   - KORA Contribution = companion indicator measuring collective ecosystem engagement
+//   - Implemented in: services/kora-contribution/KoraContributionService.ts
+//   - Doctrine: lib/kora-contribution/contribution-methodology.ts
+//
+// The naming collision is acknowledged (audit finding C-6). A rename to
+// IUPipelineRole or KoraIndexPipelineRole is recommended in a future sprint.
+// ─────────────────────────────────────────────────────────────────────────────
 
 export type ContributionRole =
   | 'kora_index_and_bti'       // eligible + approved + deep_activation budget
