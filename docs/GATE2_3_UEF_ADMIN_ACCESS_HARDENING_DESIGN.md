@@ -641,12 +641,158 @@ supabase migration repair --status applied 030 --linked
 
 ---
 
-**Document version:** v1.2  
-**Prepared:** 2026-06-22  
-**Gate 2.3 status:** MIGRATION 030 PREPARED — pre-migration app hardening COMPLETE — no migration applied  
+---
+
+## 13. Migration 030 Pre-Apply SQL Security Review
+
+**Review date:** 2026-06-23  
+**Reviewer:** Gate 2.3 Security Review  
+**Reviewed files:** `030_uef_admin_access_hardening.sql`, `030_rollback_030_if_needed.sql`, three app routes, `uef-service-key.ts`  
+**No SQL was executed. No migration was applied. Production was not touched.**
+
+### 13.1 Migration 030 SQL Review
+
+| Check | Result | Notes |
+|---|---|---|
+| Drops `kora_admin_all_uef` | PASS | `DROP POLICY IF EXISTS kora_admin_all_uef ON analytics.uef_record` present |
+| Raw `payload` excluded from KORA_ADMIN path | PASS | `fn_admin_uef_review` RETURNS TABLE excludes `payload jsonb`; comment confirms "intentionally absent" |
+| SECURITY DEFINER used | PASS | All 3 functions declare `SECURITY DEFINER` |
+| `search_path` explicitly set | PASS | `SET search_path = analytics, kora, public` on all 3 functions |
+| `public` in search_path | MEDIUM | See §13.4. All table refs are schema-qualified, so no practical attack path for staging; best practice recommends removing `public` before production |
+| Function owner / SECURITY DEFINER safe | PASS | Auth check (`current_role IN ('service_role','postgres') OR kora.kora_role() = 'KORA_ADMIN'`) enforced before data access |
+| Grants limited to intended roles | PASS | `GRANT EXECUTE TO authenticated`; `REVOKE EXECUTE FROM anon`. Internal role check prevents non-KORA_ADMIN from obtaining data |
+| `anon` excluded | PASS | `REVOKE EXECUTE FROM anon` on all 3 functions |
+| Company roles excluded from raw UEF | PASS | No company-role policy created. `kora_admin_all_uef` removed. Company callers get 0 rows or exception |
+| Worker cross-access blocked | PASS | Same as company — no worker policy on uef_record |
+| ADVISOR permissions safe | PASS (pre-existing caveat) | `advisor_tenant_uef_read` preserved unchanged — see HIGH finding §13.4 |
+| Tenant filters | PASS (design decision) | Functions scope by `batch_id` or `uef_id`. KORA_ADMIN is a platform-wide role; cross-tenant access is intentional |
+| Input validation — review action whitelist | PASS | `fn_admin_uef_update_review`: `p_action NOT IN ('approve','reject','needs_info')` → RAISE EXCEPTION |
+| Input validation — enrichment field whitelist | PASS | `fn_admin_uef_enrich`: iterates `p_enrichment_fields` keys, rejects non-whitelisted with RAISE EXCEPTION |
+| `fn_admin_uef_review` auth style | MEDIUM | Auth in WHERE clause (0 rows for unauth) vs RAISE EXCEPTION. No data leak; inconsistent with other functions — see §13.4 |
+| Destructive data changes | PASS | No data deleted, no table altered, no column changed |
+| Formula / methodology changes | PASS | No IU formula, no KORA Index weights, no pillar codes modified |
+| Idempotent | PASS | `CREATE OR REPLACE FUNCTION`, `DROP POLICY IF EXISTS` — safe to re-apply |
+| Comments / auditability | PASS | Function comments, `COMMENT ON FUNCTION`, post-apply verification queries in block |
+
+### 13.2 Rollback 030 Review
+
+| Check | Result | Notes |
+|---|---|---|
+| Outside `supabase/migrations/` | PASS | `supabase/rollback/030_rollback_030_if_needed.sql` — not in forward pipeline |
+| Manual-only | PASS | Header: "EMERGENCY ROLLBACK ONLY", explicit apply command required |
+| Warns raw access restored | PASS | "APPLYING THIS FILE RESTORES kora_admin_all_uef POLICY — KORA_ADMIN JWT gains direct ALL access ... including the raw payload field" |
+| Requires CTO approval | PASS | "DO NOT APPLY TO PRODUCTION without separate CTO sign-off" + RAISE NOTICE with CTO approval requirement |
+| Does not run automatically | PASS | Not in migrations/; requires explicit `supabase db query --linked --file` |
+| Can restore pre-030 state | PASS | Re-creates `kora_admin_all_uef`, drops 3 SECURITY DEFINER functions |
+| Idempotent | PASS | `DROP POLICY IF EXISTS`, `CREATE POLICY`, `DROP FUNCTION IF EXISTS` |
+| Does not touch production | PASS | All notices say staging = `haqflkurpmeaxpikozjl` only; production = separate approval |
+| No silent privacy weakening | PASS | Extensive warnings; RAISE NOTICE at execute time; DPO notification required for real-data environments |
+
+### 13.3 App Route Readiness Review
+
+| Route / File | Check | Result | Notes |
+|---|---|---|---|
+| `review/route.ts` GET | auth-before-service-role | PASS | `requireKoraAdmin` → `isKoraAuthError` guard → then `getSupabaseServiceClient()` |
+| `review/route.ts` GET | raw payload not in SELECT | PASS | Case B SELECT omits `payload`; post-030 annotation for RPC switch present |
+| `review/route.ts` GET | raw payload not in response | PASS | Response mapping uses null defaults for all payload-derived fields |
+| `review/route.ts` GET | works after 030 (Step 1) | PASS | service-role BYPASSRLS unaffected; Case B returns null fields (expected Step 1) |
+| `review/route.ts` POST | auth-before-service-role | PASS | `requireKoraAdmin` before `getSupabaseServiceClient()` |
+| `review/route.ts` POST | works after 030 | PASS | service-role direct UPDATE via BYPASSRLS unaffected by RLS policy removal |
+| `review/route.ts` POST | two-step annotation | PASS | `fn_admin_uef_update_review()` annotation present with migration instructions |
+| `enrich/route.ts` | auth-before-service-role | PASS | `requireKoraAdmin` before `getSupabaseServiceClient()` |
+| `enrich/route.ts` | works after 030 | PASS | service-role UPDATE BYPASSRLS unaffected |
+| `enrich/route.ts` | two-step annotation | PASS | `fn_admin_uef_enrich` annotation present |
+| `generate-candidates/route.ts` | auth-before-service-role | PASS | `requireKoraAdmin` before `getSupabaseServiceClient()` |
+| `generate-candidates/route.ts` | response excludes raw payload | PASS | Response is aggregate stats only (generatedCount, avgConfidence, etc.) |
+| `generate-candidates/route.ts` | works after 030 | PASS | service-role INSERT via BYPASSRLS unaffected |
+| `uef-service-key.ts` | payload excluded from whitelist | PASS | `ALLOWED_UEF_REVIEW_COLUMNS` explicitly excludes `payload` |
+| `uef-service-key.ts` | whitelist enforced at runtime | PASS | `assertUEFReviewColumns()` throws on forbidden columns |
+| All routes | no formula changes | PASS | No methodology, KORA Index, or IU formula references modified |
+| All routes | no demo/fake fallback | PASS | No fallback to synthetic data; all paths require KORA_ADMIN auth |
+| All routes | no company/worker raw UEF | PASS | All endpoints guarded by `requireKoraAdmin` — no company or worker role can reach them |
+
+**Step 2 note (not a blocker):** After 030 is applied and verified on staging, `review/route.ts` GET Case B must switch from direct table SELECT to `db.schema('analytics').rpc('fn_admin_uef_review', { p_batch_id })`. This restores payload-derived fields (eventType, reasonCodes, etc.) as named typed columns. Step 1 (payload excluded) is currently active and correct.
+
+### 13.4 Findings
+
+#### HIGH
+| ID | Finding | File | Mitigation |
+|---|---|---|---|
+| H-01 | `advisor_tenant_uef_read` still includes raw `payload` | `030_uef_admin_access_hardening.sql` | Pre-existing. Explicitly noted in migration comment. Blocked by Gate 3 (DPO review required). No real worker data until Gate 3 closes. |
+
+H-01 is **not introduced by migration 030**. The migration correctly preserves the policy unchanged and documents the Gate 3 dependency. Action required before loading real data: DPO must decide whether ADVISOR role needs raw payload access or should be narrowed to named columns via `fn_advisor_uef_read`.
+
+#### MEDIUM
+| ID | Finding | File | Risk | Mitigation |
+|---|---|---|---|---|
+| M-01 | `public` in SECURITY DEFINER search_path | `030_uef_admin_access_hardening.sql` | Theoretical attack path if attacker can create objects in `public`. All refs are schema-qualified. Staging synthetic data only. | Recommend removing `public` from all 3 functions in a future 031 cleanup migration before production. Not a blocker for staging with synthetic data. |
+| M-02 | `fn_admin_uef_review` auth via WHERE clause (silent: 0 rows, no exception) | `030_uef_admin_access_hardening.sql` | No data leaked (0 rows). Auth failures harder to detect in logs. Inconsistent with `fn_admin_uef_update_review`/`fn_admin_uef_enrich` (both RAISE EXCEPTION). | Acceptable for staging. For production, consider converting to `LANGUAGE plpgsql` with pre-flight `RAISE EXCEPTION` for consistent auth error visibility. |
+| M-03 | Step 2 of two-step rollout incomplete | `app/api/admin/uef/review/route.ts` | Payload-derived fields (eventType, reasonCodes, etc.) return null defaults in GET Case B. UEF review UI shows limited context until Step 2. | Documented and expected. Must be completed after 030 staging apply and smoke test pass. Track as a required post-apply action. |
+
+#### LOW
+| ID | Finding | File | Notes |
+|---|---|---|---|
+| L-01 | `fn_admin_uef_review` RETURNS TABLE missing `updated_at` | `030_uef_admin_access_hardening.sql` | `updated_at` is in `ALLOWED_UEF_REVIEW_COLUMNS` (uef-service-key.ts) but not in function's return columns. Minor inconsistency when Step 2 switches to RPC. |
+| L-02 | `fn_admin_uef_enrich` error message "rejected or not found" | `030_uef_admin_access_hardening.sql` | Misleading for a genuinely missing record. Acceptable for staging. |
+| L-03 | Empty `p_enrichment_fields` marks record `b11_enriched = true` | `030_uef_admin_access_hardening.sql` | App-layer validation prevents this in practice. Consider adding `IF p_enrichment_fields = '{}'::jsonb THEN RAISE EXCEPTION` guard. |
+| L-04 | Verification queries require manual execution post-apply | `030_uef_admin_access_hardening.sql` | Expected — they are in commented block. Track as post-apply checklist item. |
+
+### 13.5 Pre-Apply Decision
+
+**APPLY 030 TO STAGING WITH NOTES**
+
+No blockers found. Migration is correctly structured: idempotent, SECURITY DEFINER with safe auth checks, payload excluded, rollback staged, all grants reviewed.
+
+**Required before staging apply:**
+1. Rollback artifact confirmed staged ✓ (done)
+2. App routes confirmed using `getSupabaseServiceClient()` ✓ (done)
+3. `review/route.ts` GET Case B confirmed not requesting `payload` ✓ (done)
+4. TSC clean ✓ (done)
+5. Full unit suite passes ✓ (done)
+
+**Required after staging apply:**
+1. Run verification queries from `030_uef_admin_access_hardening.sql` §VERIFICA block
+2. Smoke test: generate-candidates, review GET/POST, enrich POST
+3. Complete Step 2: switch `review/route.ts` GET Case B to `fn_admin_uef_review()` RPC
+4. Note M-01: plan `public` removal from search_path in a follow-up migration before production
+5. Note M-02: consider converting `fn_admin_uef_review` to plpgsql with explicit RAISE for production hardening
+6. Note H-01: schedule Gate 3 DPO review for `advisor_tenant_uef_read` payload access
+
+**Production apply:** blocked until Gate 3 closes.
+
+### 13.6 Required Fixes Before Staging Apply
+
+None — no blockers. The items in §13.4 are documented for tracking only.
+
+### 13.7 Safety Confirmation (Review Session)
+
+- Production: NOT touched
+- No connection strings printed
+- No secrets printed
+- No passwords printed
+- No tokens printed
+- Migration 030: NOT applied
+- Rollback 030: NOT applied
+- No SQL executed against staging
+- No `supabase db push` run
+- No `supabase migration up` run
+- No schema changes applied
+- No RLS changes applied
+- No grants/policies changed
+- 027: applied and tracked (verified)
+- 029: quarantined, not applied (verified)
+- Gate 3: OPEN, NOT CLOSED
+- No real worker data created or imported
+- No local env files committed
+
+---
+
+**Document version:** v1.3  
+**Prepared:** 2026-06-22; updated 2026-06-23  
+**Gate 2.3 status:** PRE-APPLY SECURITY REVIEW COMPLETE — decision: APPLY 030 TO STAGING WITH NOTES  
 **Applies to:** `haqflkurpmeaxpikozjl` inspection only  
 **Production:** NOT touched  
 **027 status:** Applied and tracked  
 **029 status:** Quarantined, not applied  
-**030 status:** PREPARED — SQL written, not yet applied to staging  
+**030 status:** PREPARED — security-reviewed, SAFE TO APPLY TO STAGING WITH NOTES  
 **Gate 3:** OPEN — NOT CLOSED
