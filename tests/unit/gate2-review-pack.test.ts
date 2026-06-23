@@ -231,9 +231,9 @@ describe('Gate 2 review pack — migration files unchanged', () => {
     expect(stat?.isDirectory()).toBe(true);
   });
 
-  it('29 migration files are present (029 quarantined; 030 added by Gate 2.3)', () => {
+  it('30 migration files are present (029 quarantined; 030 + 031 added by Gate 2.3)', () => {
     const { readdirSync } = require('fs');
     const files = readdirSync(migrationDir).filter((f: string) => f.endsWith('.sql'));
-    expect(files.length).toBe(29);
+    expect(files.length).toBe(30);
   });
 });

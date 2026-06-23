@@ -319,8 +319,8 @@ describe('P0-4 — KORA Space commercial credibility', () => {
 // ── Regression guards ─────────────────────────────────────────────────────────
 
 describe('Regression — constraints from sprint', () => {
-  it('Migration directory contains expected files (001–028 + 030; 029 quarantined)', () => {
-    // Gate 2.3: migration 030 (UEF admin access hardening) added.
+  it('Migration directory contains expected files (001–028 + 030 + 031; 029 quarantined)', () => {
+    // Gate 2.3: migration 030 (UEF admin access hardening) + 031 (PUBLIC EXECUTE hardening) added.
     // 029 remains quarantined in supabase/rollback/ — not in migrations/.
     const { readdirSync } = require('fs');
     const migFiles = readdirSync(resolve(ROOT, 'supabase/migrations'))
@@ -328,8 +328,8 @@ describe('Regression — constraints from sprint', () => {
       .sort();
     const lastMig = migFiles[migFiles.length - 1];
     const migNumber = parseInt(lastMig.split('_')[0], 10);
-    expect(migNumber).toBeLessThanOrEqual(30);
-    expect(migFiles.length).toBe(29); // 001–028 + 030 (029 quarantined)
+    expect(migNumber).toBeLessThanOrEqual(31);
+    expect(migFiles.length).toBe(30); // 001–028 + 030 + 031 (029 quarantined)
   });
 
   it('Existing Gate 2 external review doc still exists', () => {

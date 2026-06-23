@@ -415,13 +415,13 @@ describe('gate2-3-030 — secrets hygiene', () => {
   });
 });
 
-// ── 18. Migration inventory: 29 files in migrations/ (028 + 030, not 029) ─────
+// ── 18. Migration inventory: 028 + 030 + 031, 029 quarantined ───────────────
 
 describe('gate2-3-030 — migration file count', () => {
-  it('supabase/migrations/ now has 29 files (028 + new 030, 029 quarantined)', () => {
+  it('supabase/migrations/ now has 30 files (028 + 030 + 031, 029 quarantined)', () => {
     const { readdirSync } = require('fs');
     const files = readdirSync(resolve(root, 'supabase/migrations')).filter((f: string) => f.endsWith('.sql'));
-    expect(files.length).toBe(29);
+    expect(files.length).toBe(30);
   });
 
   it('029 is still NOT in supabase/migrations/', () => {

@@ -98,5 +98,30 @@ It is not a permanent fix. After rollback:
 
 ---
 
+### `031_rollback_031_if_needed.sql`
+
+| Property | Value |
+|---|---|
+| Rolls back | Migration 031 (`031_revoke_public_execute_uef_definer_functions.sql`) |
+| Effect | Re-grants PUBLIC EXECUTE on 4 UEF SECURITY DEFINER functions; removes explicit service_role grant added by 031 |
+| Trigger condition | 031 applied AND confirmed staging breakage that cannot be resolved forward (e.g., service_role path fails despite explicit grant) |
+| Authorization required | Explicit CTO / technical-owner approval |
+| Staging target | `haqflkurpmeaxpikozjl` only — confirmed in writing before execution |
+| Production target | Separate approval required — treat as incident change |
+| Forward-fix preference | Always prefer a 032 patch migration over this rollback |
+| Status | **NOT APPLIED** — retained as safety net only |
+| Security note | Applying this file restores PUBLIC EXECUTE on all 4 UEF SECURITY DEFINER functions. Gate 2.3 M-04 finding is REOPENED. Internal auth checks continue to protect data, but anon can call the functions. DPO must be informed if applied to any real-data environment. |
+
+**Do not apply 031 rollback unless all of the following are true:**
+
+1. Migration 031 has been applied and verified.
+2. 031 has caused a confirmed, reproducible breakage that cannot be resolved forward.
+3. The rollback has been explicitly approved by the technical owner in writing.
+4. The target environment is confirmed (staging = `haqflkurpmeaxpikozjl`; production = separate approval).
+5. A post-rollback recovery plan (forward fix) is in place.
+6. DPO is informed if the rollback touches an environment with real worker data.
+
+---
+
 **Maintained by:** KORA Engineering  
-**Last updated:** 2026-06-22
+**Last updated:** 2026-06-23

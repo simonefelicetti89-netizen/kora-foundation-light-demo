@@ -1026,12 +1026,118 @@ Rollback 030 remains manual-only emergency artifact in `supabase/rollback/`. CTO
 
 ---
 
-**Document version:** v1.5  
+---
+
+## 16. Migration 031 PUBLIC EXECUTE Hardening
+
+**Apply date:** 2026-06-23  
+**Finding resolved:** M-04 MEDIUM (PUBLIC EXECUTE on SECURITY DEFINER functions — migration 030 post-apply finding)  
+**Applied to:** `haqflkurpmeaxpikozjl` (kora-staging) only. Production NOT touched.  
+**Apply method:** `supabase db query --linked --file supabase/migrations/031_revoke_public_execute_uef_definer_functions.sql`  
+**Synthetic data only. Gate 3 remains OPEN.**
+
+### 16.1 M-04 Finding: Why PUBLIC EXECUTE on SECURITY DEFINER Is Unsafe
+
+PostgreSQL grants EXECUTE to `PUBLIC` by default when `CREATE FUNCTION` is issued without an explicit `REVOKE FROM PUBLIC` beforehand. Migration 030 issued `REVOKE FROM anon` but not `REVOKE FROM PUBLIC`. This left `anon` with effective EXECUTE on all 4 UEF SECURITY DEFINER functions through the PUBLIC grant, even after the explicit per-role revoke.
+
+For `SECURITY DEFINER` functions specifically, PUBLIC EXECUTE is a higher-risk default because:
+1. The function runs with the privileges of the definer (postgres/owner), not the caller.
+2. Even though internal auth checks block data access, any role can call the function and receive an error response — which reveals the function's existence and, in some cases, error message details.
+3. Least-privilege posture requires that only intended callers (authenticated, service_role) have EXECUTE at the ACL level.
+
+### 16.2 Pre-031 Grant State (Post-030)
+
+| Role | EXECUTE |
+|---|---|
+| `PUBLIC` | YES (default PostgreSQL grant) — **problem** |
+| `anon` | NO explicit grant, but YES via PUBLIC — **problem** |
+| `authenticated` | YES (030 explicit grant) |
+| `service_role` | NO explicit grant, but YES via PUBLIC |
+| `postgres` | YES (owner) |
+
+### 16.3 Migration 031 Design
+
+Migration 031 performs 4 operations in one `BEGIN/COMMIT` transaction:
+
+**Step 1:** `REVOKE EXECUTE FROM PUBLIC` on all 4 functions  
+**Step 2:** `GRANT EXECUTE TO service_role` on all 4 functions (explicit replacement for PUBLIC path)  
+**Step 3:** Re-issue `GRANT EXECUTE TO authenticated` (idempotent; makes intent self-documenting)  
+**Step 4:** `REVOKE EXECUTE FROM anon` (belt-and-suspenders; survives accidental future PUBLIC re-grants)
+
+Function bodies are unchanged. Internal auth checks remain the authoritative guard.
+
+### 16.4 Post-031 Grant State (DB Verified)
+
+| Role | EXECUTE | Notes |
+|---|---|---|
+| `PUBLIC` | **NO** | `PUBLIC_EXECUTE_REVOKED_OK` ✓ |
+| `anon` | **NO** | `ANON_EXECUTE_ABSENT_OK` ✓ |
+| `authenticated` | YES | `authenticated_count: 4` ✓ |
+| `service_role` | YES | `service_role_count: 4` ✓ |
+| `postgres` | YES | Owner (always granted) ✓ |
+
+Post-031 DB verification query result: `PUBLIC_EXECUTE_REVOKED_OK`, `ANON_EXECUTE_ABSENT_OK`, `service_role_count: 4`, `authenticated_count: 4`. Total grant rows: 12 (3 grantees × 4 functions: authenticated, postgres, service_role). PUBLIC and anon absent.
+
+### 16.5 Migration Tracking Post-031
+
+```
+supabase migration repair --status applied 031 --linked
+# Result: Repaired migration history: [031] => applied
+
+supabase migration list --linked
+# 001–028 ✓, 030 ✓, 031 ✓ (029 absent — quarantined)
+```
+
+### 16.6 Post-031 Smoke Tests
+
+| Test | Result |
+|---|---|
+| `fn_admin_uef_review` callable (service_role/postgres path) | PASS — 0 rows for empty batch |
+| `fn_admin_uef_update_review` invalid action rejected | PASS — RAISE EXCEPTION confirmed |
+| `fn_admin_uef_enrich` non-whitelisted field rejected | PASS — RAISE EXCEPTION confirmed |
+| `fn_advisor_uef_read` callable (0 rows empty tenant) | PASS |
+| PUBLIC absent from all 4 function grants | PASS — `PUBLIC_EXECUTE_REVOKED_OK` |
+| anon absent from all 4 function grants | PASS — `ANON_EXECUTE_ABSENT_OK` |
+| service_role present on all 4 functions | PASS — count: 4 |
+| authenticated present on all 4 functions | PASS — count: 4 |
+| raw payload absent from all UEF function returns | PASS — `payload_columns_found: 0` |
+| 0 RLS policies on `analytics.uef_record` | unchanged (030) |
+
+### 16.7 C-11 / C-12 / W-04
+
+These test `personal.*` table RLS — unchanged by 031. Confirmed PASS (regression tests from prior sessions).
+
+### 16.8 Rollback 031
+
+`supabase/rollback/031_rollback_031_if_needed.sql` — manual-only.  
+Rollback re-grants PUBLIC EXECUTE on all 4 functions and revokes the explicit service_role grant added by 031. Applying the rollback REOPENS M-04. CTO + DPO approval required. DO NOT apply rollback 031.
+
+### 16.9 Final Gate 2.3 Security Posture
+
+| Layer | Status |
+|---|---|
+| Raw UEF payload — KORA_ADMIN JWT | BLOCKED (030: fn_admin_uef_review excludes payload column) |
+| Raw UEF payload — ADVISOR JWT | BLOCKED (030: fn_advisor_uef_read excludes payload column; H-01 resolved) |
+| Raw UEF payload — COMPANY_ADMIN / WORKER | BLOCKED (0 RLS policies on uef_record; no function grant for these roles) |
+| Direct table access — KORA_ADMIN JWT | BLOCKED (no RLS policy → 0 rows) |
+| Direct table access — ADVISOR JWT | BLOCKED (no RLS policy → 0 rows) |
+| PUBLIC EXECUTE on SECURITY DEFINER functions | REVOKED (031) |
+| anon EXECUTE on SECURITY DEFINER functions | REVOKED (030 + 031) |
+| service_role path | FUNCTIONAL (031 explicit grant; BYPASSRLS for direct table) |
+| authenticated path | FUNCTIONAL (030 grant retained) |
+| M-04 finding | **RESOLVED** |
+
+Production NOT touched. Gate 3: OPEN — NOT CLOSED.
+
+---
+
+**Document version:** v1.6  
 **Prepared:** 2026-06-22; updated 2026-06-23  
-**Gate 2.3 status:** MIGRATION 030 APPLIED TO STAGING — all smoke tests PASS  
+**Gate 2.3 status:** MIGRATION 031 APPLIED TO STAGING — M-04 RESOLVED — all smoke tests PASS  
 **Applies to:** `haqflkurpmeaxpikozjl` (kora-staging) only  
 **Production:** NOT touched  
 **027 status:** Applied and tracked  
 **029 status:** Quarantined, not applied  
 **030 status:** APPLIED TO STAGING — 2026-06-23 — H-01 resolved — no raw payload exposure  
+**031 status:** APPLIED TO STAGING — 2026-06-23 — M-04 resolved — PUBLIC EXECUTE revoked  
 **Gate 3:** OPEN — NOT CLOSED
