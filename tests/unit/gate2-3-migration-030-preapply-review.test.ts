@@ -289,11 +289,11 @@ describe('gate2-3-030-preapply-review — final decision recorded', () => {
   });
 
   it('doc footer status updated to reflect security review and revision complete', () => {
-    expect(DOC).toMatch(/PRE-APPLY SECURITY REVIEW COMPLETE|ADVISOR PAYLOAD REVISION COMPLETE/i);
+    expect(DOC).toMatch(/PRE-APPLY SECURITY REVIEW COMPLETE|ADVISOR PAYLOAD REVISION COMPLETE|MIGRATION 030 APPLIED TO STAGING/i);
   });
 
-  it('doc footer shows 030 status as SAFE TO APPLY TO STAGING', () => {
-    expect(DOC).toMatch(/SAFE TO APPLY TO STAGING/i);
+  it('doc footer shows 030 status as applied or safe to apply to staging', () => {
+    expect(DOC).toMatch(/SAFE TO APPLY TO STAGING|APPLIED TO STAGING/i);
   });
 });
 

@@ -902,12 +902,136 @@ Required before staging apply: ✓ (all items verified — same as §13.5 pre-ap
 
 ---
 
-**Document version:** v1.4  
+---
+
+## 15. Migration 030 Staging Apply Results
+
+**Apply date:** 2026-06-23  
+**Applied to:** `haqflkurpmeaxpikozjl` (kora-staging) only. Production NOT touched.  
+**Apply method:** `supabase db query --linked --file supabase/migrations/030_uef_admin_access_hardening.sql`  
+**Result:** SQL executed without errors. Empty rows response (expected for BEGIN/COMMIT transaction).  
+**Synthetic data only. Gate 3 remains OPEN.**
+
+### 15.1 Apply Method and Migration Repair
+
+```
+supabase db query --linked --file supabase/migrations/030_uef_admin_access_hardening.sql
+# Result: {"rows": []} — OK
+
+supabase migration repair --status applied 030 --linked
+# Result: Repaired migration history: [030] => applied
+```
+
+### 15.2 Final Migration List State
+
+| Range | Local | Remote | Notes |
+|---|---|---|---|
+| 001–028 | ✓ | ✓ | All aligned |
+| 029 | — | — | Quarantined in `supabase/rollback/` — NOT in forward pipeline |
+| 030 | ✓ | ✓ | Applied 2026-06-23 |
+
+029 absent from migration list — quarantine intact. ✓
+
+### 15.3 Policies Removed (DB Verification)
+
+| Policy | Pre-030 | Post-030 | Verified |
+|---|---|---|---|
+| `kora_admin_all_uef` ON `analytics.uef_record` | EXISTS (ALL) | DROPPED | ✓ `policy_drop_result: BOTH_DROPPED_OK` |
+| `advisor_tenant_uef_read` ON `analytics.uef_record` | EXISTS (SELECT) | DROPPED | ✓ `advisor_policy: 0` |
+
+Post-030: 0 RLS policies remain on `analytics.uef_record`. Confirmed via `pg_policies` query.
+
+### 15.4 Functions Created (DB Verification)
+
+| Function | security_type | Verified |
+|---|---|---|
+| `analytics.fn_admin_uef_review(uuid)` | DEFINER | ✓ |
+| `analytics.fn_admin_uef_update_review(uuid, text, text, text)` | DEFINER | ✓ |
+| `analytics.fn_admin_uef_enrich(uuid, jsonb, text)` | DEFINER | ✓ |
+| `analytics.fn_advisor_uef_read(uuid)` | DEFINER | ✓ |
+
+All 4 functions confirmed `security_type = DEFINER` via `information_schema.routines`.
+
+### 15.5 Raw Payload Boundary Result
+
+Payload column confirmed **absent** from both `fn_admin_uef_review` and `fn_advisor_uef_read` RETURNS TABLE (verified via `information_schema.parameters` with `parameter_name = 'payload'` → 0 rows).
+
+### 15.6 KORA_ADMIN Result
+
+- Direct SELECT on `analytics.uef_record` via KORA_ADMIN JWT: 0 rows (no RLS policy → 0 rows)
+- `fn_admin_uef_review(batch_id)`: 0 rows for empty staging batch (expected) — callable by service_role ✓
+- `fn_admin_uef_update_review('invalid_action')`: RAISE EXCEPTION confirmed ✓
+- `fn_admin_uef_enrich('{"forbidden_field":"value"}')`: RAISE EXCEPTION "enrichment field not allowed" confirmed ✓
+
+### 15.7 ADVISOR Result
+
+- Direct SELECT on `analytics.uef_record` via ADVISOR JWT: 0 rows (no RLS policy → 0 rows)
+- `fn_advisor_uef_read(tenant_id)`: callable by service_role, 0 rows for empty tenant ✓
+- Cross-tenant guard logic (RAISE EXCEPTION for wrong tenant): verified by code — SQL JWT simulation not available via `db query --linked`
+- Function confirmed `SECURITY DEFINER`, `LANGUAGE plpgsql`, RAISE EXCEPTION pattern ✓
+
+**H-01 RESOLVED.** ADVISOR raw payload access eliminated.
+
+### 15.8 Service-Role Path Result
+
+- `fn_admin_uef_review`: callable by service_role (bypasses JWT auth check via `current_role IN ('service_role','postgres')`) — 0 rows for empty batch ✓
+- `fn_advisor_uef_read`: callable by service_role ✓
+- `generate-candidates`, `review POST`, `enrich POST`: all use service-role BYPASSRLS — unaffected by 030 policy drops ✓
+
+### 15.9 Grants Observation (New Finding M-04)
+
+All 4 SECURITY DEFINER functions have `PUBLIC` EXECUTE grant (PostgreSQL default for newly created functions). The migration issued `REVOKE EXECUTE FROM anon` but did NOT issue `REVOKE EXECUTE FROM PUBLIC`. This means:
+- `anon` retains EXECUTE via the PUBLIC grant
+- Internal auth checks protect data regardless (fn returns 0 rows or RAISE EXCEPTION for unauthorized callers)
+- No data leak for synthetic staging environment
+
+**M-04 MEDIUM:** Add `REVOKE EXECUTE ON FUNCTION ... FROM PUBLIC` before specific `GRANT TO authenticated` in a pre-production 031 patch migration. Acceptable for staging with synthetic data.
+
+### 15.10 C-11 / C-12 / W-04 Results
+
+| Test | Description | Result | Notes |
+|---|---|---|---|
+| C-11 | COMPANY_ADMIN reads `personal.worker_identity` | PASS | RLS policies on personal.* unchanged by 030 |
+| C-12 | COMPANY_ADMIN reads `personal.worker_pib` | PASS | RLS policies on personal.* unchanged by 030 |
+| W-04 | Worker A reads Worker B's `personal.worker_pib` | PASS | Cross-worker RLS unchanged by 030 |
+
+Note: C-11/C-12/W-04 test `personal.*` table RLS (not `analytics.uef_record`). Migration 030 only modifies `analytics.*` — these tests are regression-only and confirmed PASS from prior staging seed session.
+
+### 15.11 Browser/API Smoke Subset
+
+| Check | Method | Result |
+|---|---|---|
+| Company aggregation smoke | `analytics.activation_result` count query | PASS (0 rows — empty staging, expected) |
+| fn_admin_uef_review callable | service-role SQL smoke | PASS |
+| fn_advisor_uef_read callable | service-role SQL smoke | PASS |
+| fn_admin_uef_update_review invalid action rejected | SQL smoke (DO block) | PASS |
+| fn_admin_uef_enrich non-whitelisted field rejected | SQL smoke (DO block) | PASS |
+| 0 RLS policies on uef_record | pg_policies count | PASS |
+| generate-candidates route | Service-role path unchanged | STRUCTURAL PASS |
+| review GET no raw payload | App-layer SELECT excludes payload | STRUCTURAL PASS |
+| enrich POST no raw payload | App-layer response excludes payload | STRUCTURAL PASS |
+
+### 15.12 Rollback Decision
+
+**DO NOT apply rollback 030.** Migration 030 applied successfully. No breakage detected. All verification checks PASS.
+
+Rollback 030 remains manual-only emergency artifact in `supabase/rollback/`. CTO + DPO approval required before any rollback.
+
+### 15.13 Remaining Notes
+
+1. **M-04 (new):** PUBLIC EXECUTE grant on all 4 functions — fix via 031 patch migration `REVOKE FROM PUBLIC` before production apply.
+2. **M-01 (existing):** `public` in SECURITY DEFINER search_path — fix via 031 patch before production apply.
+3. **Step 2 pending:** Switch `review/route.ts` GET Case B from direct table SELECT to `fn_admin_uef_review()` RPC call. This restores payload-derived fields (eventType, reasonCodes, etc.) as named typed columns. Must be done as a separate sprint.
+4. **Gate 3 status:** OPEN — NOT CLOSED. Real worker data still blocked.
+
+---
+
+**Document version:** v1.5  
 **Prepared:** 2026-06-22; updated 2026-06-23  
-**Gate 2.3 status:** ADVISOR PAYLOAD REVISION COMPLETE — H-01 resolved — ready to apply to staging  
-**Applies to:** `haqflkurpmeaxpikozjl` inspection only  
+**Gate 2.3 status:** MIGRATION 030 APPLIED TO STAGING — all smoke tests PASS  
+**Applies to:** `haqflkurpmeaxpikozjl` (kora-staging) only  
 **Production:** NOT touched  
 **027 status:** Applied and tracked  
 **029 status:** Quarantined, not applied  
-**030 status:** REVISED — advisor_tenant_uef_read dropped, fn_advisor_uef_read added, SAFE TO APPLY TO STAGING  
+**030 status:** APPLIED TO STAGING — 2026-06-23 — H-01 resolved — no raw payload exposure  
 **Gate 3:** OPEN — NOT CLOSED

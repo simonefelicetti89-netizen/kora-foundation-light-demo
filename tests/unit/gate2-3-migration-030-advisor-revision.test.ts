@@ -275,12 +275,12 @@ describe('gate2-3-030-advisor — documentation updated', () => {
     expect(DOC).toMatch(/APPLY 030 TO STAGING/i);
   });
 
-  it('design doc updated version to v1.4', () => {
-    expect(DOC).toMatch(/v1\.4/);
+  it('design doc updated version to v1.4 or later', () => {
+    expect(DOC).toMatch(/v1\.[4-9]|v[2-9]\.\d/);
   });
 
-  it('design doc footer shows 030 status as revised and safe to apply', () => {
-    expect(DOC).toMatch(/REVISED.*fn_advisor_uef_read|fn_advisor_uef_read.*SAFE TO APPLY/i);
+  it('design doc footer shows 030 status as revised, safe to apply, or applied', () => {
+    expect(DOC).toMatch(/REVISED.*fn_advisor_uef_read|fn_advisor_uef_read.*SAFE TO APPLY|030.*APPLIED TO STAGING/i);
   });
 
   it('design doc Gate 3 remains OPEN', () => {
