@@ -85,7 +85,7 @@ It is not a permanent fix. After rollback:
 | Production target | Separate approval required — treat as incident change |
 | Forward-fix preference | Always prefer a 031 patch migration over this rollback |
 | Status | **NOT APPLIED** — retained as safety net only |
-| Privacy note | Applying this file restores raw payload access for KORA_ADMIN JWT. DPO must be informed if applied to real-data environments |
+| Privacy note | Applying this file restores raw payload access for KORA_ADMIN JWT AND ADVISOR JWT (advisor_tenant_uef_read). Both are PRIVACY REGRESSIONS. DPO must be informed if applied to real-data environments. |
 
 **Do not apply 030 rollback unless all of the following are true:**
 

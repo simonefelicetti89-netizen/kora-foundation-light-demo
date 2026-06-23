@@ -1,31 +1,35 @@
 -- 030_uef_admin_access_hardening.sql
--- Gate 2.3 — UEF Admin Access Hardening: rimozione kora_admin_all_uef.
+-- Gate 2.3 — UEF Admin Access Hardening: rimozione kora_admin_all_uef e narrowing advisor.
 --
 -- OBIETTIVO:
 --   Rimuovere la policy ALL `kora_admin_all_uef` su `analytics.uef_record`.
---   Sostituire l'accesso diretto con funzioni SECURITY DEFINER controllate.
+--   Rimuovere la policy SELECT `advisor_tenant_uef_read` (espone payload grezzo).
+--   Sostituire entrambi gli accessi diretti con funzioni SECURITY DEFINER controllate.
 --   Allineare il DB con la dichiarazione access-matrix.ts:
 --     worker_individual_uef: { KORA_ADMIN: allowed: false }
 --
 -- POST-027 (applicata e tracked):
 --   kora_admin_all_uef era rimasta per tensione architetturale (pipeline vs privacy).
---   Questa migrazione risolve quella tensione con SECURITY DEFINER functions.
+--   advisor_tenant_uef_read era rimasta come policy legacy con accesso al payload grezzo.
+--   Questa migrazione risolve entrambe le tensioni con SECURITY DEFINER functions.
 --
 -- PERCORSI POST-030:
 --   1. service_role (server-side): bypassa RLS via BYPASSRLS — INVARIATO.
 --      Usato da: generate-candidates, scoring engine, provisioning pipeline.
 --   2. authenticated JWT, KORA_ADMIN: accesso SOLO via fn_admin_uef_review() e
 --      fn_admin_uef_update_review() — payload escluso per design.
---   3. authenticated JWT, ADVISOR: SELECT via advisor_tenant_uef_read (tenant-scoped).
---      NOTA: advisor_tenant_uef_read include il campo payload — Gate 3 concern.
---      Narrowing advisor policy è bloccato da Gate 3 (DPO review richiesto).
+--   3. authenticated JWT, ADVISOR: accesso SOLO via fn_advisor_uef_read() —
+--      payload escluso, tenant-scoped con guard cross-tenant esplicito.
+--      advisor_tenant_uef_read DROPPATA — nessun accesso diretto alla tabella.
 --   4. authenticated JWT, COMPANY_ADMIN/WORKER: nessun accesso — INVARIATO.
 --
--- PRIVACY BOUNDARY:
---   fn_admin_uef_review() NON espone il campo payload.
+-- PRIVACY BOUNDARY (Gate 2.3, rivisto dopo review H-01):
+--   fn_admin_uef_review() e fn_advisor_uef_read() NON espongono il campo payload.
 --   Il campo payload contiene dati raw dall'upload HR/welfare (potenzialmente PII).
 --   Gate 3 (DPO) deve approvare la policy di retention del campo payload
 --   prima di caricare dati HR reali.
+--   advisor_tenant_uef_read droppata in questa migrazione perché il payload grezzo
+--   non deve essere accessibile ad alcun ruolo authenticated prima di Gate 3.
 --
 -- ╔══════════════════════════════════════════════════════════════════════════════╗
 -- ║  PRECONDITIONS BEFORE APPLYING:                                             ║
@@ -344,6 +348,135 @@ COMMENT ON FUNCTION analytics.fn_admin_uef_enrich(uuid, jsonb, text) IS
 
 
 -- ════════════════════════════════════════════════════════════════════════════════
+-- OBJECT 4: analytics.fn_advisor_uef_read
+-- ════════════════════════════════════════════════════════════════════════════════
+-- UEF review list for ADVISOR — tenant-scoped, payload excluded.
+--
+-- Sostituisce advisor_tenant_uef_read (droppata in questa migrazione).
+-- ADVISOR mantiene visibilità sui campi di classificazione interpreter-derived,
+-- ma NON può leggere il campo payload grezzo (dati HR/welfare raw).
+--
+-- PRIVACY: payload field intentionally excluded.
+--   Solo sub-campi interpreter-derived (classificazione, eligibilità, budget class)
+--   sono restituiti come colonne named e typed.
+--   Il campo payload non viene mai restituito nemmeno parzialmente.
+--
+-- AUTH:
+--   Chiamato via authenticated JWT: kora.kora_role() DEVE essere 'ADVISOR'.
+--   Tenant guard esplicito: kora.tenant_id() DEVE corrispondere a p_tenant_id.
+--     → Cross-tenant RAISE EXCEPTION (non silenzioso) per auditability.
+--   Chiamato via service_role: sempre consentito (trusted server context).
+--
+-- SECURITY DEFINER: esegue come function owner, bypassa RLS su uef_record.
+--   Safe perché auth check e tenant check sono enforced prima del RETURN QUERY.
+
+CREATE OR REPLACE FUNCTION analytics.fn_advisor_uef_read(p_tenant_id uuid)
+RETURNS TABLE (
+  id                          uuid,
+  tenant_id                   uuid,
+  batch_id                    uuid,
+  reporting_period            text,
+  raw_name                    text,
+  eligibility                 text,
+  primary_pillar              text,
+  action_family               text,
+  event_nature                text,
+  approved_for_scoring        boolean,
+  approved_for_bti_governance boolean,
+  approved_for_impact_units   boolean,
+  data_completeness_score     numeric,
+  missing_fields              text[],
+  review_status               text,
+  reviewer_notes              text,
+  reviewed_by                 text,
+  reviewed_at                 timestamptz,
+  created_at                  timestamptz,
+  -- Safe interpreter-derived sub-fields (non-raw, non-PII):
+  event_type                  text,
+  reason_codes                jsonb,
+  budget_amount               numeric,
+  evidence_level              text,
+  initiative_domain           text,
+  budget_class                text,
+  needs_enrichment            boolean,
+  financial_confidence        text,
+  b11_enriched                boolean
+  -- payload JSONB intentionally absent — Gate 2.3 H-01 revision / Gate 3 privacy boundary
+  -- participants intentionally absent — small-team re-identification risk (Gate 3)
+  -- raw_amount_value intentionally absent — potential PII in small datasets (Gate 3)
+)
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+SET search_path = analytics, kora, public
+AS $$
+BEGIN
+  -- Auth check: only ADVISOR role or trusted server roles may call this function.
+  -- service_role and postgres bypass this check (trusted server context).
+  IF current_role NOT IN ('service_role', 'postgres') THEN
+    IF kora.kora_role() <> 'ADVISOR' THEN
+      RAISE EXCEPTION
+        'fn_advisor_uef_read: access denied — ADVISOR role required (role: %)',
+        COALESCE(kora.kora_role(), 'NULL');
+    END IF;
+
+    -- Tenant guard: ADVISOR can only query their own tenant.
+    -- Explicit exception (not silent 0-rows) to surface cross-tenant attempts in logs.
+    IF kora.tenant_id() IS DISTINCT FROM p_tenant_id THEN
+      RAISE EXCEPTION
+        'fn_advisor_uef_read: cross-tenant access denied — '
+        'requested tenant: %, authorized tenant: %',
+        p_tenant_id, kora.tenant_id();
+    END IF;
+  END IF;
+
+  RETURN QUERY
+  SELECT
+    u.id,
+    u.tenant_id,
+    u.batch_id,
+    u.reporting_period,
+    u.raw_name,
+    u.eligibility,
+    u.primary_pillar,
+    u.action_family,
+    u.event_nature,
+    u.approved_for_scoring,
+    u.approved_for_bti_governance,
+    u.approved_for_impact_units,
+    u.data_completeness_score,
+    u.missing_fields,
+    u.review_status,
+    u.reviewer_notes,
+    u.reviewed_by,
+    u.reviewed_at,
+    u.created_at,
+    -- Interpreter-derived classification fields (not raw HR data):
+    (u.payload ->> 'event_type'),
+    (u.payload -> 'reason_codes'),
+    (u.payload ->> 'budget_amount')::numeric,
+    (u.payload ->> 'evidence_level'),
+    (u.payload ->> 'initiative_domain'),
+    (u.payload ->> 'budget_class'),
+    (u.payload ->> 'needs_enrichment')::boolean,
+    (u.payload ->> 'financial_confidence'),
+    (u.payload ->> 'b11_enriched')::boolean
+  FROM analytics.uef_record u
+  WHERE u.tenant_id = p_tenant_id
+  ORDER BY u.created_at ASC;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION analytics.fn_advisor_uef_read(uuid) TO authenticated;
+REVOKE EXECUTE ON FUNCTION analytics.fn_advisor_uef_read(uuid) FROM anon;
+
+COMMENT ON FUNCTION analytics.fn_advisor_uef_read(uuid) IS
+  'Gate 2.3 H-01 revision: ADVISOR UEF read — payload excluded, tenant-scoped. '
+  'Replaces advisor_tenant_uef_read (dropped in this migration). '
+  'ADVISOR or service_role only. Cross-tenant access raises exception.';
+
+
+-- ════════════════════════════════════════════════════════════════════════════════
 -- DROP: kora_admin_all_uef
 -- ════════════════════════════════════════════════════════════════════════════════
 -- Rimuove l'accesso diretto ALL su analytics.uef_record per KORA_ADMIN JWT.
@@ -354,14 +487,24 @@ COMMENT ON FUNCTION analytics.fn_admin_uef_enrich(uuid, jsonb, text) IS
 DROP POLICY IF EXISTS kora_admin_all_uef ON analytics.uef_record;
 
 -- ════════════════════════════════════════════════════════════════════════════════
--- PRESERVE: advisor_tenant_uef_read
+-- DROP: advisor_tenant_uef_read  (H-01 revision — Gate 2.3 pre-apply security review)
 -- ════════════════════════════════════════════════════════════════════════════════
--- Policy invariata — ADVISOR mantiene SELECT su uef_record tenant-scoped.
--- NOTA GATE 3: advisor_tenant_uef_read include il campo payload.
---   DPO review deve valutare: ADVISOR ha accesso necessario al campo payload?
---   Se no, narroware a colonne specifiche o creare fn_advisor_uef_read.
---   Questa decisione è bloccata da Gate 3 — non modificare qui senza DPO sign-off.
--- La policy viene preservata (no DROP, no CREATE) per retrocompatibilità.
+-- Rimuove la policy SELECT che dava ad ADVISOR accesso diretto a uef_record
+-- incluso il campo payload grezzo (dati HR/welfare raw, potenzialmente PII).
+--
+-- MOTIVO DELLA RIMOZIONE:
+--   Pre-apply security review (2026-06-23) ha classificato advisor_tenant_uef_read
+--   come finding H-01 HIGH: ADVISOR non deve avere accesso al payload grezzo
+--   prima di Gate 3 (DPO review) e prima che dati reali siano caricati.
+--   Nessuna route app ADVISOR dipende attualmente da questo accesso.
+--
+-- SOSTITUZIONE: fn_advisor_uef_read (OBJECT 4) — payload escluso, tenant-scoped,
+--   cross-tenant guard esplicito (RAISE EXCEPTION).
+--
+-- POST-030: ADVISOR ha accesso a uef_record SOLO via fn_advisor_uef_read().
+--   SELECT diretto su uef_record da ADVISOR JWT → 0 rows (nessuna policy applicabile).
+
+DROP POLICY IF EXISTS advisor_tenant_uef_read ON analytics.uef_record;
 
 -- ════════════════════════════════════════════════════════════════════════════════
 -- GRANTS: uef_record SELECT per authenticated (già in migration 002, invariato)
@@ -369,43 +512,66 @@ DROP POLICY IF EXISTS kora_admin_all_uef ON analytics.uef_record;
 -- analytics.uef_record ha già: GRANT SELECT ON analytics.uef_record TO authenticated
 -- (migration 002). RLS policies determinano quali righe sono visibili.
 -- Post-030: KORA_ADMIN JWT ha 0 rows via SELECT diretto (nessuna policy applicabile).
+--           ADVISOR JWT ha 0 rows via SELECT diretto (nessuna policy applicabile).
 -- Il SELECT diretto via service_role bypassa RLS → continua a funzionare.
+-- Tutti i ruoli authenticated accedono via SECURITY DEFINER functions (OBJECT 1–4).
 
 -- ════════════════════════════════════════════════════════════════════════════════
 -- VERIFICA POST-APPLICAZIONE (run after apply, check-only queries)
 -- ════════════════════════════════════════════════════════════════════════════════
 /*
--- 1. Conferma kora_admin_all_uef è stata rimossa:
+-- 1. Conferma ENTRAMBE le policies sono state rimosse:
 SELECT policyname, tablename, cmd, qual
 FROM pg_policies
 WHERE tablename = 'uef_record'
   AND schemaname = 'analytics'
 ORDER BY policyname;
--- Atteso: solo advisor_tenant_uef_read. kora_admin_all_uef ASSENTE.
+-- Atteso: 0 righe. kora_admin_all_uef ASSENTE. advisor_tenant_uef_read ASSENTE.
+-- (nessuna policy RLS su uef_record post-030 — accesso solo via BYPASSRLS o SECURITY DEFINER functions)
 
--- 2. Conferma fn_admin_uef_review esiste:
+-- 2. Conferma tutte e 4 le SECURITY DEFINER functions esistono:
 SELECT routine_name, routine_type, security_type
 FROM information_schema.routines
 WHERE routine_schema = 'analytics'
-  AND routine_name IN ('fn_admin_uef_review', 'fn_admin_uef_update_review', 'fn_admin_uef_enrich');
--- Atteso: 3 righe, security_type = 'DEFINER'.
+  AND routine_name IN (
+    'fn_admin_uef_review',
+    'fn_admin_uef_update_review',
+    'fn_admin_uef_enrich',
+    'fn_advisor_uef_read'
+  );
+-- Atteso: 4 righe, security_type = 'DEFINER'.
 
--- 3. Conferma GRANT EXECUTE su authenticated:
+-- 3. Conferma GRANT EXECUTE su authenticated per tutte le functions:
 SELECT grantee, routine_name, privilege_type
 FROM information_schema.role_routine_grants
 WHERE routine_schema = 'analytics'
-  AND routine_name IN ('fn_admin_uef_review', 'fn_admin_uef_update_review', 'fn_admin_uef_enrich')
+  AND routine_name IN (
+    'fn_admin_uef_review',
+    'fn_admin_uef_update_review',
+    'fn_admin_uef_enrich',
+    'fn_advisor_uef_read'
+  )
 ORDER BY routine_name, grantee;
--- Atteso: authenticated ha EXECUTE. anon non ha EXECUTE.
+-- Atteso: authenticated ha EXECUTE per tutte e 4. anon non ha EXECUTE.
 
 -- 4. Smoke test fn_admin_uef_review (service_role context):
 -- SELECT COUNT(*) FROM analytics.fn_admin_uef_review('<some-batch-id>');
 -- Atteso: ritorna count senza errori. payload NON tra le colonne.
 
--- 5. RLS invariata: advisor_tenant_uef_read ancora attiva:
-SELECT policyname FROM pg_policies
-WHERE tablename = 'uef_record' AND schemaname = 'analytics' AND policyname = 'advisor_tenant_uef_read';
--- Atteso: 1 riga.
+-- 5. Smoke test fn_advisor_uef_read (service_role context):
+-- SELECT COUNT(*) FROM analytics.fn_advisor_uef_read('<some-tenant-id>');
+-- Atteso: ritorna count senza errori. payload NON tra le colonne.
+-- Verifica che participants, raw_amount_value NON siano tra le colonne.
+
+-- 6. Conferma che ADVISOR JWT con p_tenant_id sbagliato riceve EXCEPTION:
+-- (richiede contesto JWT con kora_role=ADVISOR e tenant_id diverso da p_tenant_id)
+-- SELECT * FROM analytics.fn_advisor_uef_read('<wrong-tenant-id>');
+-- Atteso: EXCEPTION 'fn_advisor_uef_read: cross-tenant access denied'.
+
+-- 7. Conferma che SELECT diretto su uef_record da ADVISOR JWT → 0 rows:
+-- (richiede contesto JWT con kora_role=ADVISOR)
+-- SET request.jwt.claims = '{"kora_role":"ADVISOR","tenant_id":"<uuid>"}';
+-- SELECT COUNT(*) FROM analytics.uef_record; -- Atteso: 0 (nessuna policy applicabile)
 */
 
 COMMIT;

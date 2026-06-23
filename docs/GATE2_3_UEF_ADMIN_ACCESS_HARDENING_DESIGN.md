@@ -787,12 +787,127 @@ None — no blockers. The items in §13.4 are documented for tracking only.
 
 ---
 
-**Document version:** v1.3  
+---
+
+## 14. Migration 030 Advisor Raw Payload Revision
+
+**Revision date:** 2026-06-23  
+**Trigger:** H-01 finding from pre-apply security review (§13).  
+**No SQL executed. No migration applied. Production not touched.**
+
+### 14.1 H-01 Finding: Why ADVISOR Raw Payload Access Is Unacceptable
+
+`advisor_tenant_uef_read` (migration 001) gave ADVISOR role a direct `FOR SELECT` on `analytics.uef_record`, including the `payload` JSONB column. The `payload` field contains raw data from HR/welfare file uploads — potentially identifiable employee event data, compensation figures, participation counts, and diagnostic codes uploaded by the company before pseudonymization or consent verification.
+
+Three reasons this must be closed before migration 030 is applied:
+
+1. **Migration 030 is specifically intended to close all raw UEF payload access at the DB level.** Leaving `advisor_tenant_uef_read` intact would mean 030 closes KORA_ADMIN raw access but leaves ADVISOR raw access — an internally inconsistent hardening.
+
+2. **No ADVISOR app route currently depends on raw UEF payload.** Inspection confirms `app/api/advisor/` does not exist and no route under `app/api/` queries `uef_record` with an ADVISOR context. The policy is un-exercised app-side — dropping it causes no regression.
+
+3. **Gate 3 is OPEN.** Real worker data cannot be loaded until Gate 3 (Legal/DPO) closes. Leaving raw payload access open for ADVISOR contradicts the Gate 3 pre-condition.
+
+### 14.2 Revised Migration Decision
+
+**DROP `advisor_tenant_uef_read`** in migration 030, not in a future migration.
+
+**ADD `fn_advisor_uef_read(p_tenant_id uuid)`** — SECURITY DEFINER function with:
+- `payload` JSONB excluded
+- Interpreter-derived sub-fields returned as named typed columns (same Gate 2.3 pattern as `fn_admin_uef_review`)
+- Tenant scope: `WHERE tenant_id = p_tenant_id`
+- Cross-tenant guard: explicit `RAISE EXCEPTION` (not silent 0-rows) if `kora.tenant_id() ≠ p_tenant_id`
+- `participants` and `raw_amount_value` excluded — small-team re-identification risk under Gate 3
+- `GRANT EXECUTE TO authenticated`, `REVOKE EXECUTE FROM anon`
+- `LANGUAGE plpgsql` (not `LANGUAGE sql STABLE`) to allow pre-flight RAISE EXCEPTION auth check
+
+This resolves M-02 (silent auth failure) for the ADVISOR path specifically: cross-tenant access produces an auditable exception, not silent 0-rows.
+
+### 14.3 Post-Revision Access Matrix for analytics.uef_record
+
+| Role path | Before 030 | After 030 (revised) |
+|---|---|---|
+| service_role | BYPASSRLS — full access | BYPASSRLS — full access (unchanged) |
+| KORA_ADMIN JWT | `kora_admin_all_uef` ALL (incl. payload) | 0 rows direct; `fn_admin_uef_review()` (payload excluded) |
+| ADVISOR JWT | `advisor_tenant_uef_read` SELECT tenant-scoped (incl. payload) | 0 rows direct; `fn_advisor_uef_read()` (payload excluded, tenant-scoped) |
+| COMPANY_ADMIN JWT | No policy → 0 rows | No policy → 0 rows (unchanged) |
+| WORKER JWT | No policy → 0 rows | No policy → 0 rows (unchanged) |
+| anon | No grant | No grant (unchanged) |
+
+### 14.4 Tenant Scoping Preserved
+
+`fn_advisor_uef_read(p_tenant_id uuid)`:
+- `WHERE u.tenant_id = p_tenant_id` in RETURN QUERY
+- Pre-flight check: `kora.tenant_id() IS DISTINCT FROM p_tenant_id` → RAISE EXCEPTION
+- An ADVISOR calling with wrong `p_tenant_id` gets an auditable exception, not data
+
+Tenant isolation is therefore **stronger** than the previous `advisor_tenant_uef_read` RLS policy, which enforced tenant scope via `USING (... AND tenant_id = kora.tenant_id())` — a WHERE-clause-style check. The function pre-flight is explicit and auditable.
+
+### 14.5 Payload Exclusion
+
+`fn_advisor_uef_read` RETURNS TABLE excludes `payload jsonb`. Excluded from ADVISOR view:
+- Raw payload JSONB — never returned
+- `participants` — small-team re-identification risk (Gate 3)
+- `raw_amount_value` — potential PII for small company datasets (Gate 3)
+- `source_tier`, `amount_parsing_status`, `participants_approximate`, `interpreter_version`, `scoring_locked`, `enriched_by`, `enriched_at` — operational/audit fields not needed for ADVISOR review workflow
+
+Included (safe interpreter-derived classification fields):
+- `event_type`, `initiative_domain`, `budget_class`, `budget_amount`, `evidence_level`
+- `reason_codes`, `needs_enrichment`, `financial_confidence`, `b11_enriched`
+
+### 14.6 Rollback 030 — Updated
+
+Rollback 030 now also:
+- Re-creates `advisor_tenant_uef_read` (restoring ADVISOR raw payload access — **PRIVACY REGRESSION**)
+- Drops `fn_advisor_uef_read`
+- RAISE NOTICE updated to warn explicitly about both policy restorations
+- Header updated to call out the two-level privacy regression (KORA_ADMIN + ADVISOR)
+
+DPO must be informed before rollback 030 is applied to any environment with real data.
+
+### 14.7 App Route Impact
+
+No ADVISOR app routes reference `uef_record` or UEF data. No app code changes required.
+
+Future ADVISOR routes that need UEF visibility should call `fn_advisor_uef_read()` via `db.schema('analytics').rpc('fn_advisor_uef_read', { p_tenant_id })` after KORA_ADMIN-style auth verification.
+
+### 14.8 Gate 3 Implications (Unchanged)
+
+Gate 3 remains OPEN. This revision:
+- Closes H-01 finding
+- Does NOT close Gate 3
+- Does NOT allow real worker data to be loaded
+- Does NOT grant ADVISOR access to raw payload
+- Does NOT change the DPO review requirement for real data
+
+Gate 3 DPO review will need to validate whether `fn_advisor_uef_read` column set is appropriate or needs further narrowing.
+
+### 14.9 Revised Pre-Apply Finding Classification
+
+| ID | Severity | Finding | Status after revision |
+|---|---|---|---|
+| H-01 | ~~HIGH~~ | advisor_tenant_uef_read raw payload | **RESOLVED** — dropped, replaced by fn_advisor_uef_read |
+| M-01 | MEDIUM | `public` in SECURITY DEFINER search_path | UNCHANGED — acceptable for staging |
+| M-02 | MEDIUM | fn_admin_uef_review silent auth | PARTIALLY RESOLVED — fn_advisor_uef_read uses RAISE EXCEPTION; fn_admin_uef_review still WHERE-clause |
+| M-03 | MEDIUM | Step 2 two-step rollout incomplete | UNCHANGED — expected post-apply action |
+| L-01 | LOW | fn_admin_uef_review missing updated_at | UNCHANGED — minor |
+| L-02 | LOW | enrichment error message misleading | UNCHANGED — minor |
+| L-03 | LOW | empty enrichment fields edge case | UNCHANGED — minor |
+| L-04 | LOW | verification queries manual | UNCHANGED — expected |
+
+### 14.10 Revised Pre-Apply Decision
+
+**APPLY 030 TO STAGING** — H-01 resolved. Remaining findings are MEDIUM/LOW only.
+
+Required before staging apply: ✓ (all items verified — same as §13.5 pre-apply checklist).
+
+---
+
+**Document version:** v1.4  
 **Prepared:** 2026-06-22; updated 2026-06-23  
-**Gate 2.3 status:** PRE-APPLY SECURITY REVIEW COMPLETE — decision: APPLY 030 TO STAGING WITH NOTES  
+**Gate 2.3 status:** ADVISOR PAYLOAD REVISION COMPLETE — H-01 resolved — ready to apply to staging  
 **Applies to:** `haqflkurpmeaxpikozjl` inspection only  
 **Production:** NOT touched  
 **027 status:** Applied and tracked  
 **029 status:** Quarantined, not applied  
-**030 status:** PREPARED — security-reviewed, SAFE TO APPLY TO STAGING WITH NOTES  
+**030 status:** REVISED — advisor_tenant_uef_read dropped, fn_advisor_uef_read added, SAFE TO APPLY TO STAGING  
 **Gate 3:** OPEN — NOT CLOSED

@@ -288,8 +288,8 @@ describe('gate2-3-030-preapply-review — final decision recorded', () => {
     expect(DOC).toMatch(/No blockers found|no blockers\./i);
   });
 
-  it('doc footer status updated to reflect security review complete', () => {
-    expect(DOC).toMatch(/PRE-APPLY SECURITY REVIEW COMPLETE/i);
+  it('doc footer status updated to reflect security review and revision complete', () => {
+    expect(DOC).toMatch(/PRE-APPLY SECURITY REVIEW COMPLETE|ADVISOR PAYLOAD REVISION COMPLETE/i);
   });
 
   it('doc footer shows 030 status as SAFE TO APPLY TO STAGING', () => {

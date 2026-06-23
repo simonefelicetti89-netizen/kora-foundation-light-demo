@@ -122,19 +122,24 @@ describe('gate2-3-030 — payload excluded from admin review path', () => {
     expect(returnsBlock).not.toMatch(/^\s+payload\s+jsonb/m);
   });
 
-  it('030 notes the Gate 3 concern about advisor_tenant_uef_read including payload', () => {
+  it('030 drops advisor_tenant_uef_read (H-01 revision — ADVISOR raw payload removed)', () => {
     expect(src('supabase/migrations/030_uef_admin_access_hardening.sql'))
-      .toMatch(/Gate 3.*advisor|advisor.*payload|advisor_tenant_uef_read.*payload/i);
+      .toMatch(/DROP POLICY IF EXISTS advisor_tenant_uef_read/i);
+  });
+
+  it('030 adds fn_advisor_uef_read as safe ADVISOR replacement (payload excluded)', () => {
+    expect(src('supabase/migrations/030_uef_admin_access_hardening.sql'))
+      .toMatch(/fn_advisor_uef_read/);
   });
 });
 
 // ── 5. SECURITY DEFINER search_path ──────────────────────────────────────────
 
 describe('gate2-3-030 — SECURITY DEFINER search_path safety', () => {
-  it('030 sets search_path at least 3 times (one per SECURITY DEFINER function)', () => {
+  it('030 sets search_path at least 4 times (one per SECURITY DEFINER function)', () => {
     const sql = src('supabase/migrations/030_uef_admin_access_hardening.sql');
     const count = (sql.match(/SET search_path/gi) ?? []).length;
-    expect(count).toBeGreaterThanOrEqual(3);
+    expect(count).toBeGreaterThanOrEqual(4);
   });
 
   it('030 search_path includes analytics and kora schemas', () => {
@@ -233,6 +238,16 @@ describe('gate2-3-030 — grants', () => {
     expect(src('supabase/migrations/030_uef_admin_access_hardening.sql'))
       .toMatch(/GRANT EXECUTE ON FUNCTION analytics\.fn_admin_uef_enrich.*TO authenticated/i);
   });
+
+  it('030 grants EXECUTE on fn_advisor_uef_read to authenticated', () => {
+    expect(src('supabase/migrations/030_uef_admin_access_hardening.sql'))
+      .toMatch(/GRANT EXECUTE ON FUNCTION analytics\.fn_advisor_uef_read.*TO authenticated/i);
+  });
+
+  it('030 revokes EXECUTE on fn_advisor_uef_read from anon', () => {
+    expect(src('supabase/migrations/030_uef_admin_access_hardening.sql'))
+      .toMatch(/REVOKE EXECUTE ON FUNCTION analytics\.fn_advisor_uef_read.*FROM anon/i);
+  });
 });
 
 // ── 11. Rollback 030 exists outside migrations/ ───────────────────────────────
@@ -272,11 +287,18 @@ describe('gate2-3-030 — rollback 030', () => {
       .toMatch(/kora_admin_all_uef/);
   });
 
-  it('030 rollback drops the new 030 SECURITY DEFINER functions', () => {
+  it('030 rollback drops the 030 SECURITY DEFINER functions including fn_advisor_uef_read', () => {
     const sql = src('supabase/rollback/030_rollback_030_if_needed.sql');
     expect(sql).toMatch(/DROP FUNCTION.*fn_admin_uef_review/i);
     expect(sql).toMatch(/DROP FUNCTION.*fn_admin_uef_update_review/i);
     expect(sql).toMatch(/DROP FUNCTION.*fn_admin_uef_enrich/i);
+    expect(sql).toMatch(/DROP FUNCTION.*fn_advisor_uef_read/i);
+  });
+
+  it('030 rollback also restores advisor_tenant_uef_read (warns this is a privacy regression)', () => {
+    const sql = src('supabase/rollback/030_rollback_030_if_needed.sql');
+    expect(sql).toMatch(/advisor_tenant_uef_read/);
+    expect(sql).toMatch(/PRIVACY REGRESSION|privacy regression/i);
   });
 
   it('rollback README documents 030 rollback entry', () => {
