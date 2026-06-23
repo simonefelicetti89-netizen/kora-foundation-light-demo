@@ -1,5 +1,5 @@
 import type { ScenarioId } from '@/lib/types';
-import { getMethodologyVersion, getCalibrationStatus, getContributionConfig } from '@/lib/methodology-config/v0.1';
+import { getMethodologyVersion, getCalibrationStatus, getContributionConfig, getContributionConfigV2 } from '@/lib/methodology-config/v0.1';
 import contributionOutputsRaw from '@/data/synthetic/kora-contribution-outputs.json';
 import collectiveInitiativesRaw from '@/data/synthetic/collective-initiatives.json';
 import {
@@ -163,10 +163,195 @@ export interface ContributionSummary {
   contribution_explanation?: string;
   limitations_text?: string;
   companion_label?: string;
+  /** Version B (v0.2) — active public presentation model */
+  v2: ContributionV2Result;
 }
 
-// ── Provisional score formula — clearly labeled non-empirical ────────────────
-// Five simple bounded components — no empirical calibration claimed.
+// ── Version B (v0.2) output types ─────────────────────────────────────────────
+// Public presentation: maturity band + confidence + component breakdown.
+// No single 0–100 score as primary public output.
+// is_kora_index_component is always false — enforced here, not at call site.
+
+export type ContributionMaturityBand =
+  | 'systemic'
+  | 'active'
+  | 'emerging'
+  | 'nascent'
+  | 'insufficient_signal';
+
+export interface ContributionV2Components {
+  activationDepth:       number;  // 0–1 normalized
+  evidenceQuality:       number;  // 0–1 normalized (shrinkage-adjusted)
+  ecosystemContribution: number;  // 0–1 normalized
+  adoptionReach:         number;  // 0–1 normalized (concave)
+  strategicBreadth:      number;  // 0–1 normalized
+}
+
+export interface ContributionV2Result {
+  modelVersion:              'v0.2';
+  publicPresentation:        'maturity_band_with_confidence';
+  maturityBand:              ContributionMaturityBand;
+  maturityBandLabel:         string;       // Italian UI label
+  insufficientSignal:        boolean;
+  confidence:                number;       // 0–1, non-additive, external to score
+  confidenceLabel:           string;       // Bassa / Media / Alta
+  components:                ContributionV2Components;
+  internalScore:             number;       // 0–100 internal only — NOT primary output
+  insights:                  string[];     // Italian narrative bullets
+  aggregateSignals: {
+    totalEligibleEvents:     number;
+    ecosystemEventsCount:    number;
+    totalIU:                 number;
+  };
+  isKoraIndexComponent:      false;
+  preEmpiricalCalibration:   true;
+  noWorkerRanking:           true;
+  noIndividualScore:         true;
+  noCompanyRanking:          true;
+}
+
+// ── Version B computation ─────────────────────────────────────────────────────
+// Reads all weights/thresholds from config — none hardcoded.
+// Available data from ContributionPipelineInput[]:
+//   action_family, primary_pillar, impact_units_total, evidence_verification_ev, computed, event_nature
+
+function computeContributionV2(inputs: ContributionPipelineInput[]): ContributionV2Result {
+  const cfg = getContributionConfigV2();
+  const w   = cfg.weights;
+  const mb  = cfg.maturity_bands;
+  const t   = cfg.thresholds;
+  const cp  = cfg.confidence;
+
+  const eligible = inputs.filter((r) =>
+    isContributionEligibleEvent({
+      action_family: r.action_family,
+      event_nature:  r.event_nature,
+      pillar:        r.primary_pillar ?? undefined,
+    }) && r.computed && r.impact_units_total > 0
+  );
+
+  const count   = eligible.length;
+  const totalIU = eligible.reduce((s, r) => s + r.impact_units_total, 0);
+
+  // 1. Activation Depth (30%)
+  // Concave function: rewards aggregate IU intensity, not linear count.
+  // IU_reference from config — provisional, to calibrate with pilot data.
+  const activationDepth = count === 0 ? 0 : Math.min(1, 1 - Math.exp(-totalIU / t.activation_depth_iu_reference));
+
+  // 2. Evidence Quality (25%)
+  // Shrinkage toward prior (0.5) — avoids extreme rates with low N.
+  const verifiedCount = eligible.filter((r) => r.evidence_verification_ev >= 0.85).length;
+  const evidenceQuality = (verifiedCount + t.evidence_shrinkage_k * t.evidence_shrinkage_prior)
+                        / (count         + t.evidence_shrinkage_k);
+
+  // 3. Ecosystem Contribution (20%)
+  // Fraction of events with cross-company / partner / territorial signal.
+  const ecosystemEvents = eligible.filter(
+    (r) => r.event_nature && ['collective_initiative', 'partner_service', 'territorial_initiative'].includes(r.event_nature),
+  );
+  const ecosystemContribution = count === 0 ? 0 : ecosystemEvents.length / count;
+
+  // 4. Adoption & Reach (15%)
+  // Concave function on event count — avoids pure count inflation.
+  const adoptionReach = count === 0 ? 0 : Math.min(1, 1 - Math.exp(-count / t.adoption_reach_event_reference));
+
+  // 5. Strategic Breadth (10%)
+  // Average of family diversity and pillar diversity — neither alone is sufficient.
+  const families = [...new Set(eligible.map((r) => r.action_family).filter(Boolean))];
+  const pillars  = [...new Set(eligible.map((r) => r.primary_pillar).filter((p): p is string => p !== null))];
+  const familyDiv = Math.min(families.length / 3, 1);
+  const pillarDiv = Math.min(pillars.length / 3, 1);
+  const strategicBreadth = (familyDiv + pillarDiv) / 2;
+
+  // Internal score (0–100) — NOT the primary public output.
+  const internalScore = Math.round(
+    activationDepth       * w.activation_depth       +
+    evidenceQuality       * w.evidence_quality       +
+    ecosystemContribution * w.ecosystem_contribution +
+    adoptionReach         * w.adoption_reach         +
+    strategicBreadth      * w.strategic_breadth,
+  );
+
+  // Confidence — separate, non-additive. Reflects signal sufficiency.
+  const nFactor    = Math.min(1, count / cp.n_events_reference);
+  const crossFlag  = ecosystemEvents.length > 0 ? 1 : 0.5;
+  const confidence = +(
+    nFactor         * cp.n_events_weight        +
+    evidenceQuality * cp.evidence_quality_weight +
+    crossFlag       * cp.ecosystem_signal_weight
+  ).toFixed(3);
+
+  // Insufficient signal check — show placeholder instead of band.
+  const insufficientSignal = count < t.insufficient_signal_min_events || confidence < t.insufficient_signal_max_confidence;
+
+  // Maturity band — derived from internal score.
+  let maturityBand: ContributionMaturityBand;
+  let maturityBandLabel: string;
+  if (insufficientSignal) {
+    maturityBand      = 'insufficient_signal';
+    maturityBandLabel = 'Segnali aggregati insufficienti';
+  } else if (internalScore >= mb.systemic) {
+    maturityBand      = 'systemic';
+    maturityBandLabel = 'Sistemica';
+  } else if (internalScore >= mb.active) {
+    maturityBand      = 'active';
+    maturityBandLabel = 'Attiva';
+  } else if (internalScore >= mb.emerging) {
+    maturityBand      = 'emerging';
+    maturityBandLabel = 'Emergente';
+  } else {
+    maturityBand      = 'nascent';
+    maturityBandLabel = 'Nascente';
+  }
+
+  // Confidence label
+  const confidenceLabel = confidence >= 0.70 ? 'Alta' : confidence >= 0.40 ? 'Media' : 'Bassa';
+
+  // Italian insight bullets
+  const insights: string[] = [];
+  if (insufficientSignal) {
+    insights.push('Segnali aggregati insufficienti per determinare la banda di maturità.');
+    insights.push(`Sono disponibili ${count} event${count === 1 ? 'o' : 'i'} di contribuzione. Attivare iniziative collettive per aumentare i segnali.`);
+  } else {
+    if (activationDepth >= 0.6)      insights.push('Forte intensità di attivazione: le iniziative generano impatto verificabile.');
+    else if (activationDepth >= 0.3) insights.push('Intensità di attivazione moderata. Aumentare la profondità di partecipazione per consolidare il segnale.');
+    else                             insights.push('Intensità di attivazione ancora debole. Prioritizzare il completamento e la verifica delle iniziative.');
+
+    if (ecosystemContribution >= 0.5) insights.push('Buona presenza di segnali cross-company, partner o territoriali nell\'ecosistema.');
+    else if (ecosystemEvents.length > 0) insights.push('Segnali ecosistema presenti. Ampliare la partecipazione cross-company o territoriale per rafforzarli.');
+    else                              insights.push('Nessun segnale cross-company o territoriale rilevato. Considerare iniziative aperte all\'ecosistema esterno.');
+
+    if (verifiedCount === count && count > 0) insights.push('Evidenza completamente verificata — qualità del dato ottimale.');
+    else if (verifiedCount > 0)               insights.push('Evidenza parzialmente verificata. Completare la validazione delle iniziative restanti.');
+  }
+
+  return {
+    modelVersion:            'v0.2',
+    publicPresentation:      'maturity_band_with_confidence',
+    maturityBand,
+    maturityBandLabel,
+    insufficientSignal,
+    confidence,
+    confidenceLabel,
+    components: { activationDepth, evidenceQuality, ecosystemContribution, adoptionReach, strategicBreadth },
+    internalScore,
+    insights,
+    aggregateSignals: {
+      totalEligibleEvents:  count,
+      ecosystemEventsCount: ecosystemEvents.length,
+      totalIU:              +totalIU.toFixed(3),
+    },
+    isKoraIndexComponent:     false,
+    preEmpiricalCalibration:  true,
+    noWorkerRanking:          true,
+    noIndividualScore:        true,
+    noCompanyRanking:         true,
+  };
+}
+
+// ── Version A provisional score formula — LEGACY / FL internal fallback ───────
+// Replaced by Version B (computeContributionV2) as the public model.
+// Retained for backward compatibility with existing tests and consumers.
 // Weights are read from methodology-config via getContributionConfig() — never hardcoded here.
 
 function computeProvisionalScore(inputs: ContributionPipelineInput[]): {
@@ -428,6 +613,7 @@ export class KoraContributionService implements IKoraContributionService {
   ): ContributionSummary {
     const seedRec  = this.findContribution(companyId, scenarioId);
     const computed = computeProvisionalScore(iuResults);
+    const v2       = computeContributionV2(iuResults);
 
     return {
       company_id:             companyId,
@@ -453,6 +639,7 @@ export class KoraContributionService implements IKoraContributionService {
       contribution_explanation: seedRec?.contribution_explanation,
       limitations_text:         seedRec?.limitations_text,
       companion_label:          seedRec?.companion_label,
+      v2,
     };
   }
 

@@ -1,8 +1,13 @@
 # KORA Contribution — Methodology Document
-**Version:** v0.1 (pre-empirical calibration)  
+**Version:** v0.2 (pre-empirical calibration) — Version B active  
+**Previous:** v0.1 (Version A — legacy FL fallback only)  
 **Status:** Foundation Light — synthetic data only  
-**Date:** 2026-06-23  
+**Date:** 2026-06-23 (updated 2026-06-23)  
 **Gate status:** Gate 3 OPEN — production live signals blocked
+
+> **Version A (v0.1) is no longer the primary public model.**  
+> Version B (v0.2) is now the active methodology direction.  
+> Public output is maturity band + confidence + component signals — no single 0–100 score.
 
 ---
 
@@ -83,22 +88,39 @@ KORA Contribution and KORA Index are **completely separate computations**:
 
 ## 6. Formula / Config Status
 
-### Foundation Light (demo) — provisional score
+### Version B (v0.2) — Active public model
 
-The provisional score is computed by `computeProvisionalScore()` in `KoraContributionService.ts`. Weights are read from `data/methodology/methodology-config.json` via `getContributionConfig()` — never hardcoded.
+Public presentation: **maturity band + confidence + 5-component breakdown**. No single 0–100 score as primary output.
+
+Computed by `computeContributionV2()` in `KoraContributionService.ts`. All weights/thresholds read from `data/methodology/methodology-config.json → kora_contribution_v2` via `getContributionConfigV2()` — never hardcoded.
 
 | Component | Calculation | Weight |
 |---|---|---|
-| Family Breadth | `distinct contribution families / 3` | 30 |
-| Initiatives Norm | `min(count, 10) / 10` | 20 |
-| Evidence Quality | `verified events / total events` | 25 |
-| Territorial | `territorial events > 0 ? 1 : 0` | 15 |
-| Ecosystem | `distinct families >= 2 ? 1 : 0` | 10 |
+| Activation Depth | `1 - exp(-totalIU / IU_reference)` — concave, rewards intensity not count | 30 |
+| Evidence Quality | Shrinkage-adjusted: `(verified + k·prior) / (N + k)` — avoids small-N extremes | 25 |
+| Ecosystem Contribution | `ecosystem_events / N` — fraction with cross-company/partner/territorial signal | 20 |
+| Adoption & Reach | `1 - exp(-N / event_reference)` — concave saturation on event count | 15 |
+| Strategic Breadth | `(family_diversity + pillar_diversity) / 2` — diversity, not token presence | 10 |
 | **Total** | | **100** |
 
-**Levels:** Advanced (≥66), Active (≥36), Emerging (≥16), Minimal (<16)
+**Maturity bands (from internal score):** Systemic (≥75), Active (≥50), Emerging (≥20), Nascent (<20)
 
-**Score label:** `provisional_demo_only` — this score is a Foundation Light demonstration artifact.
+**Insufficient signal:** shown if N events < 2 OR confidence < 0.20 — maturity band not shown.
+
+**Confidence (separate, non-additive):**  
+`confidence = nFactor × 0.50 + evidenceQuality × 0.30 + ecosystemSignal × 0.20`  
+Confidence is displayed alongside the maturity band but does NOT enter the band computation.
+
+**Signal sources eligible for V2:**  
+Company initiatives, cross-company initiatives, partner/territory initiatives, KORA-originated initiatives (if adopted/supported), KORA-enabled initiatives (if adopted/supported), aggregate bookings, aggregate participation.
+
+**KORA-originated/KORA-enabled initiatives:** eligible only if adopted/supported/activated by the organization — no automatic bonus for KORA-sourced initiatives.
+
+### Version A (v0.1) — LEGACY / FL internal fallback only
+
+Version A (`computeProvisionalScore()`) is retired from public presentation. The 5-component 0–100 score (`family_breadth/initiatives_norm/evidence_quality/territorial/ecosystem`) was replaced because it overweighted breadth and binary thresholds over real activation.
+
+Version A is retained as internal FL fallback only. The `contributionScore` and `contributionLevel` fields remain in `ContributionSummary` for backward compatibility but are no longer the primary public output.
 
 ### Pilot+ live path — NO single score
 

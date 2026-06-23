@@ -270,6 +270,99 @@ export function getContributionConfig(): ContributionConfig {
   };
 }
 
+// ── KORA Contribution Version B (v0.2) config ─────────────────────────────────
+// Active public model. Source of truth for V2 weights, maturity bands, thresholds.
+// Version A (kora_contribution) is legacy/FL fallback only.
+
+export interface ContributionV2Weights {
+  activation_depth:       number;  // 30
+  evidence_quality:       number;  // 25
+  ecosystem_contribution: number;  // 20
+  adoption_reach:         number;  // 15
+  strategic_breadth:      number;  // 10
+}
+
+export interface ContributionV2MaturityBands {
+  systemic: number;  // ≥ 75
+  active:   number;  // ≥ 50
+  emerging: number;  // ≥ 20
+  nascent:  number;  // ≥ 0
+}
+
+export interface ContributionV2Thresholds {
+  insufficient_signal_min_events:    number;
+  insufficient_signal_max_confidence: number;
+  activation_depth_iu_reference:     number;
+  adoption_reach_event_reference:    number;
+  evidence_shrinkage_k:              number;
+  evidence_shrinkage_prior:          number;
+}
+
+export interface ContributionV2ConfidenceParams {
+  n_events_weight:       number;
+  evidence_quality_weight: number;
+  ecosystem_signal_weight: number;
+  n_events_reference:    number;
+}
+
+export interface ContributionV2Config {
+  version:                  string;
+  status:                   string;
+  calibration_status:       string;
+  is_kora_index_component:  false;
+  public_presentation:      string;
+  no_public_single_score:   true;
+  weights:                  ContributionV2Weights;
+  maturity_bands:           ContributionV2MaturityBands;
+  thresholds:               ContributionV2Thresholds;
+  confidence:               ContributionV2ConfidenceParams;
+}
+
+/** Returns KORA Contribution Version B (v0.2) config — active model. Weights must never be hardcoded. */
+export function getContributionConfigV2(): ContributionV2Config {
+  const raw  = (config as unknown as Record<string, unknown>).kora_contribution_v2 as Record<string, unknown> | undefined;
+  const rawW = raw?.weights as Partial<ContributionV2Weights> | undefined;
+  const rawB = raw?.maturity_bands as Partial<ContributionV2MaturityBands> | undefined;
+  const rawT = raw?.thresholds as Partial<ContributionV2Thresholds> | undefined;
+  const rawC = raw?.confidence as Partial<ContributionV2ConfidenceParams> | undefined;
+
+  return {
+    version:                 typeof raw?.version === 'string'  ? raw.version : 'v0.2',
+    status:                  typeof raw?.status  === 'string'  ? raw.status  : 'active',
+    calibration_status:      typeof raw?.calibration_status === 'string' ? raw.calibration_status : 'pre_empirical_calibration',
+    is_kora_index_component: false,
+    public_presentation:     typeof raw?.public_presentation === 'string' ? raw.public_presentation : 'maturity_band_with_confidence',
+    no_public_single_score:  true,
+    weights: {
+      activation_depth:       rawW?.activation_depth       ?? 30,
+      evidence_quality:       rawW?.evidence_quality       ?? 25,
+      ecosystem_contribution: rawW?.ecosystem_contribution ?? 20,
+      adoption_reach:         rawW?.adoption_reach         ?? 15,
+      strategic_breadth:      rawW?.strategic_breadth      ?? 10,
+    },
+    maturity_bands: {
+      systemic: rawB?.systemic ?? 75,
+      active:   rawB?.active   ?? 50,
+      emerging: rawB?.emerging ?? 20,
+      nascent:  rawB?.nascent  ?? 0,
+    },
+    thresholds: {
+      insufficient_signal_min_events:     rawT?.insufficient_signal_min_events     ?? 2,
+      insufficient_signal_max_confidence: rawT?.insufficient_signal_max_confidence ?? 0.20,
+      activation_depth_iu_reference:      rawT?.activation_depth_iu_reference      ?? 10.0,
+      adoption_reach_event_reference:     rawT?.adoption_reach_event_reference     ?? 5,
+      evidence_shrinkage_k:               rawT?.evidence_shrinkage_k               ?? 5,
+      evidence_shrinkage_prior:           rawT?.evidence_shrinkage_prior           ?? 0.50,
+    },
+    confidence: {
+      n_events_weight:         rawC?.n_events_weight         ?? 0.50,
+      evidence_quality_weight: rawC?.evidence_quality_weight ?? 0.30,
+      ecosystem_signal_weight: rawC?.ecosystem_signal_weight ?? 0.20,
+      n_events_reference:      rawC?.n_events_reference      ?? 5,
+    },
+  };
+}
+
 // ── Monte Carlo config accessor ───────────────────────────────────────────────
 
 export interface MCConfig {

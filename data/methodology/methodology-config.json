@@ -122,14 +122,15 @@
   },
 
   "kora_contribution": {
-    "_note": "KORA Contribution è un indicatore companion — NON un componente del KORA Index. Pesi direzionali pre-calibrazione empirica. Da ricalibrazione dopo Delphi Study. Unica fonte di verità per i pesi — mai hardcoded nel servizio.",
+    "_note": "Version A — LEGACY. Non più il modello pubblico primario. Mantenuto solo come fallback interno Foundation Light. Il modello pubblico attivo è kora_contribution_v2.",
+    "_status": "legacy_fl_fallback_only",
     "version": "v0.1",
     "calibration_status": "pre_empirical_calibration",
     "is_kora_index_component": false,
     "score_label": "provisional_demo_only",
-    "score_presentation_note": "Il punteggio 0–100 è prodotto solo nel percorso Foundation Light (demo sintetico). Il percorso Pilot+ live NON espone un punteggio aggregato unico — segue la dottrina no-single-score (contribution-views.ts).",
+    "score_presentation_note": "Il punteggio 0–100 Version A non è più il modello pubblico primario. Sostituito da kora_contribution_v2 (banda di maturità + confidence). Mantenuto come fallback interno per compatibilità.",
     "weights": {
-      "_note": "Pesi direzionali — somma = 100. Non validati empiricamente. Ricalibrazione post-Delphi Study.",
+      "_note": "Pesi Version A — legacy. Sostituiti da kora_contribution_v2.weights.",
       "family_breadth": 30,
       "initiatives_norm": 20,
       "evidence_quality": 25,
@@ -137,7 +138,7 @@
       "ecosystem": 10
     },
     "levels": {
-      "_note": "Soglie livello provvisorie — da calibrare post-Delphi.",
+      "_note": "Soglie Version A — legacy. Sostituite da kora_contribution_v2.maturity_bands.",
       "advanced": 66,
       "active": 36,
       "emerging": 16,
@@ -148,6 +149,60 @@
       "contribution_action_families": ["territorial_impact", "inclusion_and_connection", "future_and_legacy"],
       "contribution_pillars": ["IMPACT", "CONNECTION", "LEGACY"],
       "contribution_event_natures": ["collective_initiative", "territorial_initiative", "partner_service"]
+    }
+  },
+
+  "kora_contribution_v2": {
+    "_note": "MODELLO ATTIVO — Version B. KORA Contribution v0.2. Presentazione pubblica: banda di maturità + confidence + scomposizione componenti. Nessun punteggio 0–100 come output primario pubblico. Non è un componente KORA Index. Non è un punteggio individuale. Non è un ranking aziendale. Unica fonte di verità per pesi e soglie — mai hardcoded nel servizio.",
+    "version": "v0.2",
+    "status": "active",
+    "calibration_status": "pre_empirical_calibration",
+    "is_kora_index_component": false,
+    "public_presentation": "maturity_band_with_confidence",
+    "no_public_single_score": true,
+    "weights": {
+      "_note": "Pesi Version B — somma = 100. Non validati empiricamente. Ricalibrazione post-Delphi Study / pilot data.",
+      "activation_depth": 30,
+      "evidence_quality": 25,
+      "ecosystem_contribution": 20,
+      "adoption_reach": 15,
+      "strategic_breadth": 10
+    },
+    "maturity_bands": {
+      "_note": "Soglie banda di maturità. Score interno (0–100) non esposto come output primario. La banda è l'output pubblico.",
+      "systemic": 75,
+      "active": 50,
+      "emerging": 20,
+      "nascent": 0
+    },
+    "thresholds": {
+      "_note": "Parametri computazionali — non calibrati empiricamente. Da rivedere con dati pilot reali.",
+      "insufficient_signal_min_events": 2,
+      "insufficient_signal_max_confidence": 0.20,
+      "activation_depth_iu_reference": 10.0,
+      "adoption_reach_event_reference": 5,
+      "evidence_shrinkage_k": 5,
+      "evidence_shrinkage_prior": 0.50
+    },
+    "confidence": {
+      "_note": "La confidence è separata e non additiva — non fa parte dello score interno. Indica la sufficienza dei segnali aggregati disponibili.",
+      "n_events_weight": 0.50,
+      "evidence_quality_weight": 0.30,
+      "ecosystem_signal_weight": 0.20,
+      "n_events_reference": 5
+    },
+    "signal_sources": {
+      "_note": "Fonti di segnale contribution-eligible. Le iniziative KORA-originated e KORA-enabled contribuiscono solo se adottate/supportate dall'organizzazione.",
+      "company_initiatives": true,
+      "cross_company_initiatives": true,
+      "partner_territory_initiatives": true,
+      "kora_originated_if_adopted": true,
+      "kora_enabled_if_adopted": true,
+      "aggregate_bookings": true,
+      "aggregate_participation": true,
+      "aggregate_evaluations": false,
+      "recurring_aggregate_requests": false,
+      "replication_scalability": false
     }
   }
 }

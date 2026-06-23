@@ -332,74 +332,156 @@ export default async function KoraContributionPage() {
 
           {flPreview && (
             <>
-              {/* Score & level */}
-              <div style={{
-                background:   TOKENS.surface,
-                border:       `1.5px solid ${TOKENS.inkBorderStrong}`,
-                borderRadius: 16,
-                padding:      '24px 22px',
-                marginBottom: 20,
-              }}>
-                <p
-                  data-testid="contribution-score-presentation-mode"
-                  data-value={flPreview.scorePresentationMode}
-                  style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px', fontFamily: FONT }}
-                >
-                  Punteggio indicatore (simulato)
-                </p>
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 16 }}>
-                  <MetricCard
-                    value={flPreview.contributionScore}
-                    label="Contribution Score (0–100)"
-                    color={flPreview.contributionScore >= 66 ? TOKENS.success : flPreview.contributionScore >= 36 ? '#D99A2B' : TOKENS.inkHint}
+              {/* ── Version B: Maturity Band + Confidence (primary public output) ── */}
+              <div
+                data-testid="contribution-v2-maturity-panel"
+                style={{
+                  background:   TOKENS.surface,
+                  border:       `1.5px solid ${TOKENS.inkBorderStrong}`,
+                  borderRadius: 16,
+                  padding:      '24px 22px',
+                  marginBottom: 20,
+                }}
+              >
+                {/* Version label */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 4,
+                    background: 'rgba(74,127,224,0.10)', color: '#3B6EBA', letterSpacing: '0.06em',
+                    border: '1px solid rgba(74,127,224,0.20)',
+                  }}>
+                    MODELLO v0.2
+                  </span>
+                  <span style={{
+                    fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 4,
+                    background: 'rgba(199,111,61,0.09)', color: TOKENS.accent, letterSpacing: '0.06em',
+                    border: '1px solid rgba(199,111,61,0.20)',
+                  }}>
+                    PRE-EMPIRICAL CALIBRATION
+                  </span>
+                  {/* Internal marker for automated test assertions */}
+                  <span
+                    data-testid="contribution-score-presentation-mode"
+                    data-value={flPreview.scorePresentationMode}
+                    data-v2-public-presentation={flPreview.v2.publicPresentation}
+                    style={{ display: 'none' }}
                   />
-                  <MetricCard
-                    value={{ minimal: 'Minimo', emerging: 'Emergente', active: 'Attivo', advanced: 'Avanzato' }[flPreview.contributionLevel]}
-                    label="Livello"
-                    color={flPreview.contributionScore >= 36 ? TOKENS.success : TOKENS.inkHint}
-                  />
-                  <MetricCard value={flPreview.initiativesCount} label="Iniziative collettive" />
-                  <MetricCard value={flPreview.ecosystemPartners} label="Partner ecosistema" />
                 </div>
 
-                {/* Evidence distribution */}
-                <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontFamily: FONT }}>
-                  Distribuzione evidenze
-                </p>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+                {/* Maturity band hero */}
+                {flPreview.v2.insufficientSignal ? (
+                  <div
+                    data-testid="contribution-insufficient-signal"
+                    style={{
+                      background: 'rgba(199,111,61,0.06)', border: '1px solid rgba(199,111,61,0.20)',
+                      borderRadius: 12, padding: '16px 18px', marginBottom: 16,
+                    }}
+                  >
+                    <p style={{ fontSize: 13, fontWeight: 700, color: TOKENS.accent, margin: '0 0 4px', fontFamily: FONT }}>
+                      Segnali aggregati insufficienti
+                    </p>
+                    <p style={{ fontSize: 11, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.55 }}>
+                      I segnali disponibili non sono ancora sufficienti per determinare la banda di maturità.
+                      Attivare iniziative collettive per aumentare i segnali.
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    data-testid="contribution-maturity-band"
+                    data-band={flPreview.v2.maturityBand}
+                    style={{ marginBottom: 16 }}
+                  >
+                    <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontFamily: FONT }}>
+                      Banda di maturità
+                    </p>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                      <span style={{
+                        fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em',
+                        color: flPreview.v2.maturityBand === 'systemic' ? TOKENS.success
+                             : flPreview.v2.maturityBand === 'active'   ? '#2F7D55'
+                             : flPreview.v2.maturityBand === 'emerging' ? '#D99A2B'
+                             : TOKENS.inkHint,
+                        fontFamily: FONT, lineHeight: 1,
+                      }}>
+                        {flPreview.v2.maturityBandLabel}
+                      </span>
+                      <span style={{ fontSize: 10, color: TOKENS.inkHint, fontFamily: 'monospace' }}>
+                        [{flPreview.v2.maturityBand}]
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Confidence */}
+                <div
+                  data-testid="contribution-confidence"
+                  data-confidence-value={flPreview.v2.confidence}
+                  style={{ marginBottom: 16 }}
+                >
+                  <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px', fontFamily: FONT }}>
+                    Confidence · Sufficienza segnale
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ flex: 1, background: TOKENS.taupe, borderRadius: 6, height: 6, overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${Math.round(flPreview.v2.confidence * 100)}%`,
+                        background: flPreview.v2.confidence >= 0.70 ? TOKENS.success : flPreview.v2.confidence >= 0.40 ? '#D99A2B' : TOKENS.accent,
+                        height: '100%', borderRadius: 6,
+                      }} />
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 700, fontFamily: 'monospace', minWidth: 40, color: TOKENS.inkSecondary }}>
+                      {Math.round(flPreview.v2.confidence * 100)}%
+                    </span>
+                    <span style={{ fontSize: 10, color: TOKENS.inkHint, fontFamily: FONT }}>
+                      {flPreview.v2.confidenceLabel}
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 10, color: TOKENS.inkHint, margin: '5px 0 0', lineHeight: 1.5 }}>
+                    Separata e non additiva — non entra nel calcolo della banda di maturità.
+                  </p>
+                </div>
+
+                {/* V2 Component breakdown */}
+                <div data-testid="contribution-v2-components">
+                  <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontFamily: FONT }}>
+                    Scomposizione componenti (v0.2)
+                  </p>
                   {[
-                    { label: 'Verificato', count: flPreview.evidenceDistribution.verified,      color: TOKENS.success },
-                    { label: 'In verifica', count: flPreview.evidenceDistribution.partial,      color: '#D99A2B'      },
-                    { label: 'Autodichiarato', count: flPreview.evidenceDistribution.self_declared, color: TOKENS.inkHint },
-                  ].map(({ label, count, color }) => (
-                    <div key={label} style={{
-                      borderRadius: 8, padding: '8px 14px', border: `1px solid ${TOKENS.inkBorder}`,
-                      background: TOKENS.canvas, textAlign: 'center', minWidth: 80,
-                    }}>
-                      <p style={{ fontSize: 18, fontWeight: 700, color, margin: '0 0 2px', lineHeight: 1 }}>{count}</p>
-                      <p style={{ fontSize: 10, color: TOKENS.inkHint, margin: 0 }}>{label}</p>
+                    { key: 'activationDepth',       label: 'Profondità di attivazione',  weight: 30, value: flPreview.v2.components.activationDepth },
+                    { key: 'evidenceQuality',        label: 'Qualità evidenza',            weight: 25, value: flPreview.v2.components.evidenceQuality },
+                    { key: 'ecosystemContribution',  label: 'Contribuzione ecosistema',    weight: 20, value: flPreview.v2.components.ecosystemContribution },
+                    { key: 'adoptionReach',          label: 'Adozione & portata',          weight: 15, value: flPreview.v2.components.adoptionReach },
+                    { key: 'strategicBreadth',       label: 'Ampiezza strategica',         weight: 10, value: flPreview.v2.components.strategicBreadth },
+                  ].map(({ key, label, weight, value }) => (
+                    <div key={key} data-testid={`contribution-component-${key}`} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 10, color: TOKENS.inkSecondary, fontFamily: FONT, width: 170, flexShrink: 0 }}>{label}</span>
+                      <span style={{ fontSize: 9, color: TOKENS.inkHint, fontFamily: 'monospace', width: 26, flexShrink: 0 }}>{weight}%</span>
+                      <div style={{ flex: 1, background: TOKENS.taupe, borderRadius: 4, height: 5, overflow: 'hidden' }}>
+                        <div style={{ width: `${Math.round(value * 100)}%`, background: TOKENS.success, height: '100%', borderRadius: 4 }} />
+                      </div>
+                      <span style={{ fontSize: 9, color: TOKENS.inkTertiary, fontFamily: 'monospace', width: 34, textAlign: 'right' }}>
+                        {Math.round(value * 100)}%
+                      </span>
                     </div>
                   ))}
                 </div>
 
-                {/* Contribution families */}
-                {flPreview.contributionFamilies.length > 0 && (
-                  <>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: TOKENS.inkMeta, textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontFamily: FONT }}>
-                      Famiglie di contribuzione attive
-                    </p>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      {flPreview.contributionFamilies.map((f) => (
-                        <span key={f} style={{
-                          fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 6,
-                          background: 'rgba(47,125,85,0.08)', color: TOKENS.success,
-                          border: '1px solid rgba(47,125,85,0.20)',
-                        }}>
-                          {f.replace(/_/g, ' ')}
-                        </span>
-                      ))}
-                    </div>
-                  </>
+                {/* Aggregate signals */}
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
+                  <MetricCard value={flPreview.v2.aggregateSignals.totalEligibleEvents} label="eventi eligible" />
+                  <MetricCard value={flPreview.v2.aggregateSignals.ecosystemEventsCount} label="eventi ecosistema" />
+                  <MetricCard value={flPreview.ecosystemPartners} label="partner ecosistema" />
+                </div>
+
+                {/* Insights */}
+                {flPreview.v2.insights.length > 0 && (
+                  <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${TOKENS.inkBorder}` }}>
+                    {flPreview.v2.insights.map((s, i) => (
+                      <p key={i} style={{ fontSize: 11, color: TOKENS.inkSecondary, margin: i === 0 ? 0 : '5px 0 0', lineHeight: 1.6, fontFamily: FONT }}>
+                        {s}
+                      </p>
+                    ))}
+                  </div>
                 )}
               </div>
 

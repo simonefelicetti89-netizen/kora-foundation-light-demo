@@ -172,7 +172,7 @@ Sprint `fix: harden KORA Contribution methodology` — all findings addressed.
 | C-9 | PARTIALLY RESOLVED | Transaction risk documented in `attributeContributionForBooking()` with partial failure detection (log PARTIAL ATTRIBUTION on second row failure). Proposed atomic fix in `supabase/proposed/026_contribution_atomic_attribution.sql`. Requires Gate 3 + CTO review before apply. Idempotency via UNIQUE constraints mitigates risk for Foundation Light (retry self-corrects). |
 | C-10 | DOCUMENTED | Divergence between seed values and pipeline-computed values documented in `docs/KORA_CONTRIBUTION_METHODOLOGY.md §10`. Acceptable for demo; seed path removed post-pilot. |
 
-**Files created/modified:**
+**Files created/modified (Hardening Sprint — 2026-06-23):**
 - `lib/kora-contribution/contribution-methodology.ts` (new — doctrine constants)
 - `lib/kora-engine/contribution-family-detector.ts` (C-5 — stricter eligibility)
 - `lib/methodology-config/v0.1.ts` (C-4 — `getContributionConfig()`)
@@ -185,3 +185,41 @@ Sprint `fix: harden KORA Contribution methodology` — all findings addressed.
 - `tests/unit/kora-contribution-pipeline.test.ts` (updated pillar-only tests)
 - `tests/unit/kora-contribution-hardening.test.ts` (new — 18 hardening assertions)
 - `docs/KORA_CONTRIBUTION_METHODOLOGY.md` (new — full methodology doc)
+
+---
+
+## §9 — Version B Sprint Final Decision (2026-06-23)
+
+### Decision
+
+| Item | Status |
+|---|---|
+| Version A public score model retired | ✓ Done |
+| Version B implemented as active methodology direction | ✓ Done |
+| Public UI changed to maturity band + confidence (no primary 0–100 score) | ✓ Done |
+| C-9 atomic attribution — remains open before Pilot+ | Open |
+| Gate 3 — remains open | Open |
+
+### Version A retirement
+
+`computeProvisionalScore()` retained as internal FL fallback only. `kora_contribution` block in config marked `_status: "legacy_fl_fallback_only"`. `contributionScore` and `contributionLevel` fields preserved in `ContributionSummary` for backward compatibility but no longer primary public output.
+
+### Version B implementation
+
+`computeContributionV2()` implemented in `KoraContributionService.ts`. Five components: `activation_depth` (30), `evidence_quality` (25), `ecosystem_contribution` (20), `adoption_reach` (15), `strategic_breadth` (10). Weights read from `kora_contribution_v2` block in `methodology-config.json` — never hardcoded. `ContributionV2Result` output object includes `maturityBand`, `confidence` (separate, non-additive), `components`, `insights`, `isKoraIndexComponent: false`, `noWorkerRanking: true`, `noIndividualScore: true`, `noCompanyRanking: true`.
+
+### UI change
+
+`app/company/contribution/page.tsx` FL preview section replaced. Old "Punteggio indicatore (simulato)" / "Contribution Score (0–100)" MetricCard removed. New primary display: maturity band hero (`data-testid="contribution-maturity-band"`), confidence bar (`data-testid="contribution-confidence"`), component breakdown (`data-testid="contribution-v2-components"`), insights. Insufficient signal state handled (`data-testid="contribution-insufficient-signal"`).
+
+### Tests
+
+New: `tests/unit/kora-contribution-version-b.test.ts` — 20 assertions covering V2 model, weights, doctrine, UI markers, signal sources, gate status.
+
+### Files modified (Version B Sprint — 2026-06-23)
+- `data/methodology/methodology-config.json` — added `kora_contribution_v2` block; marked `kora_contribution` as legacy
+- `lib/methodology-config/v0.1.ts` — added `getContributionConfigV2()`, V2 config interfaces
+- `services/kora-contribution/KoraContributionService.ts` — added `ContributionV2Result`, `ContributionV2Components`, `ContributionMaturityBand`; `computeContributionV2()`; `v2` field in `ContributionSummary`; wired V2 into `computeFromPipelineResult()`
+- `app/company/contribution/page.tsx` — FL preview section replaced with V2 maturity band presentation
+- `tests/unit/kora-contribution-version-b.test.ts` — new (20 tests)
+- `docs/KORA_CONTRIBUTION_METHODOLOGY.md` — updated to reflect V2 as active model
