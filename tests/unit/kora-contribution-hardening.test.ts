@@ -571,4 +571,18 @@ describe('hardening — 18. Gate 3 remains open', () => {
     expect(doc).toContain('## 10. Recommended Implementation Path');
     expect(doc).toContain('Gate 3');
   });
+
+  it('KORA_Space_Contribution_Source_Integration_Audit.md exists with required sections', () => {
+    expect(exists('KORA_Space_Contribution_Source_Integration_Audit.md')).toBe(true);
+    const doc = read('KORA_Space_Contribution_Source_Integration_Audit.md');
+    expect(doc).toContain('## 4. Current Signal Flow');
+    expect(doc).toContain('## 5. KORA Space Signals → V2 Component Coverage');
+    expect(doc).toContain('## 6. Privacy Boundary Audit');
+    expect(doc).toContain('## 7. Gap Analysis');
+    expect(doc).toContain('## 8. Readiness Verdict');
+    expect(doc).toContain('## 9. Fix Plan');
+    expect(doc).toContain('Gate 3');
+    expect(doc).toContain('is_kora_index_component');
+    expect(doc).toContain('production_ready');
+  });
 });
