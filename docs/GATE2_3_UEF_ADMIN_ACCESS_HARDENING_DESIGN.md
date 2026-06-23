@@ -1131,9 +1131,110 @@ Production NOT touched. Gate 3: OPEN — NOT CLOSED.
 
 ---
 
-**Document version:** v1.6  
+---
+
+## 17. Step 2 — App Route Switch to fn_admin_uef_review
+
+### 17.1 Context
+
+Migration 030 created `analytics.fn_admin_uef_review()` — a SECURITY DEFINER function
+returning 39 named typed columns, intentionally excluding the raw `payload` JSONB column.
+Migration 031 enforced least-privilege grants (PUBLIC EXECUTE revoked; service_role explicit).
+
+The Gate 2.3 two-step rollout plan required:
+- **Step 1** (done by 030): Payload excluded from app-layer SELECT via column list
+- **Step 2** (this section): Replace direct `analytics.uef_record` SELECT in GET Case B with an RPC call to `fn_admin_uef_review()` — payload excluded at DB object level
+
+Finding **M-03** (Step 2 incomplete) is resolved by this change.
+
+### 17.2 Change Summary
+
+| File | Change |
+|---|---|
+| `app/api/admin/uef/review/route.ts` | GET Case B: direct table SELECT → `fn_admin_uef_review` RPC |
+| `app/api/admin/uef/review/route.ts` | Added local `UEFReviewRow` interface (39 columns, payload absent) |
+| `app/api/admin/uef/review/route.ts` | Removed null-default workaround for payload sub-fields |
+| `lib/supabase/uef-service-key.ts` | Updated comments to reflect Step 2 complete |
+| `tests/unit/gate2-3-step2-uef-review-rpc-switch.test.ts` | New test file — 13 describe blocks |
+
+### 17.3 RPC Call Pattern
+
+```typescript
+// Gate 2.3 Step 2: calls fn_admin_uef_review — SECURITY DEFINER, payload excluded at DB level.
+// Migration 030 creates the function; migration 031 enforces least-privilege grants.
+// Service-role client (BYPASSRLS) is authorised by the function's internal role check.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const { data: records, error: rErr } = await (db.schema('analytics') as any)
+  .rpc('fn_admin_uef_review', { p_batch_id: batchId });
+```
+
+Pattern follows established codebase convention (`(db.schema('analytics') as any).rpc(...)`) as used in `app/api/company/workers/aggregate/route.ts`.
+
+### 17.4 Payload Exclusion Chain (now DB-level)
+
+| Layer | Status after Step 2 |
+|---|---|
+| DB function definition | `payload` column absent from RETURNS TABLE (030) |
+| DB grant posture | SERVICE_ROLE + authenticated EXECUTE only (031) |
+| Application SELECT | No direct uef_record SELECT in GET Case B |
+| Application mapping | No `payload` key in response object |
+| TypeScript interface | `UEFReviewRow` has no `payload` field; comment notes absence |
+
+### 17.5 Null-defaults Removed
+
+The Step 1 workaround mapped all payload-derived fields as null/defaults
+(`eventType: null`, `scoringLocked: true`, `amountParsingStatus: 'missing'`, etc.).
+Step 2 replaces these with real values from the SECURITY DEFINER function:
+
+| Field | Before (Step 1) | After (Step 2) |
+|---|---|---|
+| `eventType` | `null` | `r.event_type` |
+| `reasonCodes` | `[]` | `Array.isArray(r.reason_codes) ? r.reason_codes : []` |
+| `scoringLocked` | `true` (hardcoded) | `r.scoring_locked ?? true` |
+| `amountParsingStatus` | `'missing'` (hardcoded) | `r.amount_parsing_status ?? 'missing'` |
+| `evidenceLevel` | `null` | `r.evidence_level` |
+| `budgetAmount` | `null` | `r.budget_amount` |
+| `initiativeDomain` | `null` | `r.initiative_domain` |
+| (+ 12 others) | null/default | real typed values |
+
+### 17.6 Auth-before-service-role Preserved
+
+Ordering in GET handler unchanged:
+1. `requireKoraAdmin(request)` — KORA_ADMIN JWT check
+2. `isKoraAuthError(authResult)` — early return on auth failure
+3. `getSupabaseServiceClient()` — service-role client (BYPASSRLS)
+4. `(db.schema('analytics') as any).rpc('fn_admin_uef_review', ...)` — RPC call
+
+### 17.7 Response Shape Preserved
+
+The `safe` mapping output keys are unchanged:
+`id`, `rawName`, `eligibility`, `pillar`, `actionFamily`, `eventNature`,
+`reviewStatus`, `approvedForScoring`, `mappingConfidence`, `warnings`,
+`reviewerNotes`, `reviewedBy`, `reviewedAt`, `eventType`, `reasonCodes`,
+`budgetAmount`, `participants`, `evidenceLevel`, `sourceTier`,
+`interpreterVersion`, `scoringLocked`, `amountParsingStatus`,
+`participantsApproximate`, `rawAmountValue`, `initiativeDomain`,
+`budgetClass`, `needsEnrichment`, `financialConfidence`,
+`enrichmentMissingFields`, `enrichedBy`, `enrichedAt`, `b11Enriched`, `createdAt`.
+
+No UI change required — response contract is backward-compatible (null → real value is safe).
+
+### 17.8 Remaining Gate 2.3 Work
+
+| Item | Status |
+|---|---|
+| Step 1: payload excluded from SELECT | ✓ Done (030 + Step 1 code) |
+| Step 2: GET Case B uses fn_admin_uef_review RPC | ✓ Done (this section) |
+| Step 3: POST uses fn_admin_uef_update_review RPC | Pending — separate sprint |
+| Production apply (030, 031) | Blocked until Gate 3 closes |
+
+Production NOT touched. Gate 3: OPEN — NOT CLOSED.
+
+---
+
+**Document version:** v1.7  
 **Prepared:** 2026-06-22; updated 2026-06-23  
-**Gate 2.3 status:** MIGRATION 031 APPLIED TO STAGING — M-04 RESOLVED — all smoke tests PASS  
+**Gate 2.3 status:** STEP 2 COMPLETE — fn_admin_uef_review RPC now used — M-03 RESOLVED  
 **Applies to:** `haqflkurpmeaxpikozjl` (kora-staging) only  
 **Production:** NOT touched  
 **027 status:** Applied and tracked  

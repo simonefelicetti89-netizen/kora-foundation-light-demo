@@ -502,7 +502,7 @@ describe('gate2-3-031-public-execute — doc version updated', () => {
     expect(DOC).toMatch(/M-04 resolved/i);
   });
 
-  it('doc status shows MIGRATION 031 APPLIED', () => {
-    expect(DOC).toMatch(/MIGRATION 031 APPLIED|031 APPLIED/i);
+  it('doc status shows 031 applied to staging', () => {
+    expect(DOC).toMatch(/MIGRATION 031 APPLIED|031 APPLIED|031 status.*APPLIED/i);
   });
 });

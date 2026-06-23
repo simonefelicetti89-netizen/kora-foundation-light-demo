@@ -3,15 +3,16 @@
 // Service-role utilities per operazioni di sistema su analytics.uef_record.
 // Pattern parallelo a impact-unit-service-key.ts e worker-provisioning-service-key.ts.
 //
-// PERCHÉ ESISTE:
-//   Gate 2.3 design: migration 030 rimuoverà kora_admin_all_uef (policy ALL su
-//   analytics.uef_record). Prima di quella rimozione, le route admin che leggono
-//   uef_record devono già operare via service-role client (bypassa RLS), non
-//   tramite JWT autenticato che dipende da kora_admin_all_uef.
+// STATO GATE 2.3:
+//   Migration 030: kora_admin_all_uef rimossa; fn_admin_uef_review SECURITY DEFINER creata.
+//   Migration 031: PUBLIC EXECUTE revocato dalle 4 funzioni UEF; service_role + authenticated
+//     hanno EXECUTE esplicito.
+//   Step 2 (completo): review/route.ts GET Case B ora chiama fn_admin_uef_review()
+//     — payload escluso a livello DB, payload sub-fields disponibili come colonne typed.
 //
 //   generate-candidates usa service-role per le INSERT (sistema ingestion).
-//   review/route usa service-role per SELECT — post-030, sarà rimpiazzato da
-//   SECURITY DEFINER view v_admin_uef_review che esclude il campo payload.
+//   queryUEFBatchMeta() è mantenuto come utility per lettori non-review che richiedono
+//   accesso diretto alla tabella tramite service-role senza passare per la funzione RPC.
 //
 // COSA NON DEVE FARE:
 //   - NON esporre il client Supabase al browser.
@@ -33,7 +34,8 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
 // ── Whitelist colonne SELECT per admin review ─────────────────────────────────
 // Esclude `payload` — contiene dati raw dall'upload HR/welfare (Gate 3).
-// Post-030: queste saranno le colonne esposte da analytics.v_admin_uef_review.
+// Gate 2.3 Step 2 completo: review route usa fn_admin_uef_review() per Case B.
+// Questo set rimane la whitelist per queryUEFBatchMeta() (altri lettori).
 // AGGIORNARE SOLO se una nuova colonna è verificata non-PII.
 
 export const ALLOWED_UEF_REVIEW_COLUMNS = new Set([

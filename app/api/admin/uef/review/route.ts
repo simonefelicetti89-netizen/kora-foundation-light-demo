@@ -6,8 +6,58 @@
 // POST /api/admin/uef/review            → approve | reject | needs_info action
 //
 // NO scoring. approve only sets approved_for_scoring flag — does NOT trigger scoring.
+//
+// Gate 2.3 Step 2 (complete): GET Case B now calls analytics.fn_admin_uef_review()
+//   — SECURITY DEFINER function, payload excluded at DB object level.
+//   Created by migration 030; least-privilege grants enforced by migration 031.
 
 export const runtime = 'nodejs';
+
+// Local return type for analytics.fn_admin_uef_review(p_batch_id uuid).
+// Replace with generated DB types once supabase gen types is refreshed post-Gate 2.
+// payload JSONB intentionally absent — excluded at DB object level (Gate 2.3).
+interface UEFReviewRow {
+  id: string;
+  tenant_id: string;
+  batch_id: string;
+  reporting_period: string;
+  raw_name: string;
+  eligibility: string;
+  primary_pillar: string | null;
+  action_family: string | null;
+  event_nature: string | null;
+  approved_for_scoring: boolean;
+  approved_for_bti_governance: boolean;
+  approved_for_impact_units: boolean;
+  data_completeness_score: number;
+  missing_fields: string[] | null;
+  review_status: string;
+  reviewer_notes: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  // Interpreter-derived payload sub-fields (named typed columns — not raw payload):
+  event_type: string | null;
+  reason_codes: unknown[] | null;
+  budget_amount: number | null;
+  participants: number | null;
+  evidence_level: string | null;
+  source_tier: string | null;
+  amount_parsing_status: string | null;
+  participants_approximate: boolean | null;
+  raw_amount_value: number | null;
+  initiative_domain: string | null;
+  budget_class: string | null;
+  needs_enrichment: boolean | null;
+  financial_confidence: string | null;
+  enrichment_missing_fields: unknown[] | null;
+  interpreter_version: string | null;
+  scoring_locked: boolean | null;
+  enriched_by: string | null;
+  enriched_at: string | null;
+  b11_enriched: boolean | null;
+  // payload: JSONB intentionally absent — fn_admin_uef_review does not return it
+}
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
@@ -34,8 +84,8 @@ export async function GET(request: NextRequest) {
   const batchId = searchParams.get('batchId');
 
   // Service-role: UEF review reads require system-level access after KORA_ADMIN auth.
-  // Post-030 (migration dropping kora_admin_all_uef): Case B SELECT should switch to
-  // analytics.v_admin_uef_review (SECURITY DEFINER, payload excluded at DB level).
+  // Gate 2.3 complete: kora_admin_all_uef dropped (030); Case B now calls
+  // fn_admin_uef_review() SECURITY DEFINER (payload excluded at DB object level).
   const db = getSupabaseServiceClient();
 
   // ── Case A: list reviewable batches (no batchId) ─────────────────────────────
@@ -89,65 +139,56 @@ export async function GET(request: NextRequest) {
   }
 
   // ── Case B: list UEF candidates for a specific batch ─────────────────────────
-  // Gate 2.3: `payload` excluded from SELECT — app-layer payload exclusion.
-  // After migration 030 is applied and verified on staging, switch this to:
-  //   db.schema('analytics').rpc('fn_admin_uef_review', { p_batch_id: batchId })
-  // which returns named typed columns for safe payload sub-fields at DB level.
-  const { data: records, error: rErr } = await db
-    .schema('analytics').from('uef_record')
-    .select('id, raw_name, eligibility, primary_pillar, action_family, event_nature, review_status, approved_for_scoring, approved_for_bti_governance, approved_for_impact_units, data_completeness_score, missing_fields, reviewer_notes, reviewed_by, reviewed_at, created_at')
-    .eq('batch_id', batchId)
-    .order('created_at', { ascending: true });
+  // Gate 2.3 Step 2: calls fn_admin_uef_review — SECURITY DEFINER, payload excluded at DB level.
+  // Migration 030 creates the function; migration 031 enforces least-privilege grants.
+  // Service-role client (BYPASSRLS) is authorised by the function's internal role check.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: records, error: rErr } = await (db.schema('analytics') as any)
+    .rpc('fn_admin_uef_review', { p_batch_id: batchId });
 
   if (rErr) return NextResponse.json({ error: rErr.message }, { status: 500 });
-  if (!records || records.length === 0) {
+  if (!records || (records as UEFReviewRow[]).length === 0) {
     return NextResponse.json({ ok: true, batchId, candidates: [], total: 0 });
   }
 
-  // Return safe fields only — no PII, payload excluded at query level (Gate 2.3).
-  // Payload-derived fields (eventType, reasonCodes, etc.) will be restored as
-  // named typed columns after migration 030 is applied and routes switch to
-  // fn_admin_uef_review() RPC — two-step rollout plan per Gate 2.3 design.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const safe = (records as any[]).map((r: any) => {
-    return {
-      id:                    r.id,
-      rawName:               r.raw_name,
-      eligibility:           r.eligibility,
-      pillar:                r.primary_pillar,
-      actionFamily:          r.action_family,
-      eventNature:           r.event_nature,
-      reviewStatus:          r.review_status,
-      approvedForScoring:    r.approved_for_scoring,
-      mappingConfidence:     r.data_completeness_score,
-      warnings:              r.missing_fields ?? [],
-      reviewerNotes:         r.reviewer_notes,
-      reviewedBy:            r.reviewed_by,
-      reviewedAt:            r.reviewed_at,
-      // Payload-derived fields: null/defaults until post-030 fn_admin_uef_review() migration.
-      // Restore these by switching to: db.schema('analytics').rpc('fn_admin_uef_review', ...)
-      eventType:                null,
-      reasonCodes:              [],
-      budgetAmount:             null,
-      participants:             null,
-      evidenceLevel:            null,
-      sourceTier:               null,
-      interpreterVersion:       null,
-      scoringLocked:            true,
-      amountParsingStatus:      'missing',
-      participantsApproximate:  false,
-      rawAmountValue:           null,
-      initiativeDomain:         null,
-      budgetClass:              null,
-      needsEnrichment:          false,
-      financialConfidence:      null,
-      enrichmentMissingFields:  [],
-      enrichedBy:               null,
-      enrichedAt:               null,
-      b11Enriched:              false,
-      createdAt:                r.created_at,
-    };
-  });
+  // fn_admin_uef_review returns named typed columns including safe payload sub-fields.
+  // payload JSONB is excluded at DB object level — not returned, not mapped, not exposed.
+  const safe = (records as UEFReviewRow[]).map((r) => ({
+    id:                    r.id,
+    rawName:               r.raw_name,
+    eligibility:           r.eligibility,
+    pillar:                r.primary_pillar,
+    actionFamily:          r.action_family,
+    eventNature:           r.event_nature,
+    reviewStatus:          r.review_status,
+    approvedForScoring:    r.approved_for_scoring,
+    mappingConfidence:     r.data_completeness_score,
+    warnings:              r.missing_fields ?? [],
+    reviewerNotes:         r.reviewer_notes,
+    reviewedBy:            r.reviewed_by,
+    reviewedAt:            r.reviewed_at,
+    // Interpreter-derived payload sub-fields — now proper typed values from fn_admin_uef_review:
+    eventType:                r.event_type,
+    reasonCodes:              Array.isArray(r.reason_codes) ? r.reason_codes : [],
+    budgetAmount:             r.budget_amount,
+    participants:             r.participants,
+    evidenceLevel:            r.evidence_level,
+    sourceTier:               r.source_tier,
+    interpreterVersion:       r.interpreter_version,
+    scoringLocked:            r.scoring_locked ?? true,
+    amountParsingStatus:      r.amount_parsing_status ?? 'missing',
+    participantsApproximate:  r.participants_approximate ?? false,
+    rawAmountValue:           r.raw_amount_value,
+    initiativeDomain:         r.initiative_domain,
+    budgetClass:              r.budget_class,
+    needsEnrichment:          r.needs_enrichment ?? false,
+    financialConfidence:      r.financial_confidence,
+    enrichmentMissingFields:  Array.isArray(r.enrichment_missing_fields) ? r.enrichment_missing_fields : [],
+    enrichedBy:               r.enriched_by,
+    enrichedAt:               r.enriched_at,
+    b11Enriched:              r.b11_enriched ?? false,
+    createdAt:                r.created_at,
+  }));
 
   const summary = {
     total:      safe.length,
@@ -187,7 +228,8 @@ export async function POST(request: NextRequest) {
   }
 
   // Service-role: UPDATE on uef_record requires system access after KORA_ADMIN auth.
-  // Post-030: switch to fn_admin_uef_update_review() SECURITY DEFINER function.
+  // Gate 2.3: direct service-role UPDATE retained for POST; switch to
+  // fn_admin_uef_update_review() SECURITY DEFINER function is a separate post-031 step.
   const db = getSupabaseServiceClient();
 
   // ── Lookup uef_record ─────────────────────────────────────────────────────────

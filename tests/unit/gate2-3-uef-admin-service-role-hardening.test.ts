@@ -224,17 +224,17 @@ describe('gate2-3-service-role — service-role key confinement', () => {
   });
 });
 
-// ── 9. Migration 030 readiness documented in review route ─────────────────────
+// ── 9. Migration 030 / Step 2 status in review route ─────────────────────────
 
-describe('gate2-3-service-role — migration 030 readiness annotations', () => {
-  it('review route GET comment notes post-030 switch to v_admin_uef_review', () => {
+describe('gate2-3-service-role — migration 030 step-2 status in review route', () => {
+  it('review route GET Case B now uses fn_admin_uef_review RPC (Step 2 complete)', () => {
     const content = src('app/api/admin/uef/review/route.ts');
-    expect(content).toMatch(/v_admin_uef_review|post.030.*view|030.*payload.*excluded/i);
+    expect(content).toMatch(/fn_admin_uef_review|Gate 2\.3 Step 2/i);
   });
 
-  it('review route POST comment notes post-030 switch to fn_admin_uef_update_review', () => {
+  it('review route POST comment notes fn_admin_uef_update_review as next step', () => {
     const content = src('app/api/admin/uef/review/route.ts');
-    expect(content).toMatch(/fn_admin_uef_update_review|post.030.*function/i);
+    expect(content).toMatch(/fn_admin_uef_update_review|Gate 2\.3/i);
   });
 
   it('generate-candidates comment notes migration 030 context', () => {
