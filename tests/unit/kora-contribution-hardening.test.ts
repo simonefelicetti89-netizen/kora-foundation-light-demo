@@ -1587,3 +1587,85 @@ describe('hardening — 22. Handoff snapshot document integrity', () => {
     expect(read(HANDOFF)).toContain('6384026');
   });
 });
+
+// ── 23. CTO review document integrity ────────────────────────────────────────
+
+describe('hardening — 23. CTO review document integrity', () => {
+  const CTO_REVIEW = 'CTO_REVIEW_KORA_CONTRIBUTION_SOURCE_LAYER.md';
+
+  it('CTO review document exists', () => {
+    expect(exists(CTO_REVIEW)).toBe(true);
+  });
+
+  it('CTO review mentions migration 025', () => {
+    expect(read(CTO_REVIEW)).toContain('025');
+  });
+
+  it('CTO review mentions migration 032', () => {
+    expect(read(CTO_REVIEW)).toContain('032');
+  });
+
+  it('CTO review mentions migration 033', () => {
+    expect(read(CTO_REVIEW)).toContain('033');
+  });
+
+  it('CTO review states Gate 3 OPEN', () => {
+    expect(read(CTO_REVIEW)).toContain('Gate 3');
+    expect(read(CTO_REVIEW)).toContain('OPEN');
+  });
+
+  it('CTO review states no migrations applied', () => {
+    expect(read(CTO_REVIEW)).toContain('NOT APPLIED');
+  });
+
+  it('CTO review mentions N≥10', () => {
+    expect(read(CTO_REVIEW)).toContain('N≥10');
+  });
+
+  it('CTO review mentions uq_contribution_external', () => {
+    expect(read(CTO_REVIEW)).toContain('uq_contribution_external');
+  });
+
+  it('CTO review mentions reporting_period', () => {
+    expect(read(CTO_REVIEW)).toContain('reporting_period');
+  });
+
+  it('CTO review states no worker ranking', () => {
+    expect(read(CTO_REVIEW)).toContain('No worker ranking');
+  });
+
+  it('CTO review states no individual score', () => {
+    expect(read(CTO_REVIEW)).toContain('No individual contribution score');
+  });
+
+  it('CTO review states KORA Contribution is outside KORA Index', () => {
+    const doc = read(CTO_REVIEW);
+    expect(doc).toContain('companion indicator');
+    expect(doc).toContain('KORA Index');
+  });
+
+  it('CTO review Do Not Do Yet section prohibits applying 025', () => {
+    expect(read(CTO_REVIEW)).toContain('DO NOT apply migration 025');
+  });
+
+  it('CTO review Do Not Do Yet section prohibits applying 032', () => {
+    expect(read(CTO_REVIEW)).toContain('DO NOT apply migration 032');
+  });
+
+  it('CTO review Do Not Do Yet section prohibits applying 033', () => {
+    expect(read(CTO_REVIEW)).toContain('DO NOT apply migration 033');
+  });
+
+  it('CTO review includes Gate 3 preconditions section', () => {
+    expect(read(CTO_REVIEW)).toContain('Gate 3 Preconditions');
+  });
+
+  it('CTO review includes risk register', () => {
+    expect(read(CTO_REVIEW)).toContain('Risk Register');
+    expect(read(CTO_REVIEW)).toContain('DPO');
+  });
+
+  it('CTO review includes overall verdict', () => {
+    expect(read(CTO_REVIEW)).toContain('PASS_WITH_MINOR_NOTES');
+  });
+});
