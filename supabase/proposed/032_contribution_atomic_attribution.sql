@@ -1,6 +1,10 @@
--- supabase/proposed/026_contribution_atomic_attribution.sql
+-- supabase/proposed/032_contribution_atomic_attribution.sql
 -- PROPOSED MIGRATION — NOT APPLIED TO ANY DATABASE.
 -- Purpose: atomic KORA Contribution attribution for cross-company bookings.
+--
+-- NUMBERING: was previously proposed as 026 — renumbered to 032 to avoid conflict
+-- with applied migration 026_company_route_rls_gaps.sql. Last applied migration
+-- in forward pipeline: 031_revoke_public_execute_uef_definer_functions.sql.
 --
 -- PROBLEM (C-9): attributeContributionForBooking() in lib/commons/cross-company-attribution.ts
 -- writes 2 rows to commons.contribution_event sequentially without a transaction wrapper.
@@ -10,13 +14,16 @@
 -- guaranteeing atomic attribution (both succeed or both rollback).
 --
 -- PREREQUISITES:
---   - commons schema must exist (migration 025 applied)
+--   - commons schema must exist (migration 025 applied and confirmed)
 --   - commons.contribution_event table must exist
+--   - commons.booking table must exist
 --   - Gate 3 must be closed (production apply) or staging-only (synthetic data)
 --
 -- GATE STATUS: Gate 3 OPEN — NOT APPLIED.
 -- APPLY: only after CTO review and Gate 3 closure. Do NOT run supabase db push.
--- CALLER: update attributeContributionForBooking() to call this RPC via .rpc()
+-- APPLY ORDER: must be applied AFTER migration 025. Do not apply standalone.
+-- CALLER: update attributeContributionForBooking() in lib/commons/cross-company-attribution.ts
+--         to call this RPC via .rpc('attribute_contribution_for_booking_atomic', ...)
 --         after this migration is applied to the target environment.
 --
 -- REVIEW REQUIRED: CTO + Gate 3 sign-off before production apply.

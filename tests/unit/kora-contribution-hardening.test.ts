@@ -452,12 +452,16 @@ describe('hardening — 14. No individual activity to company', () => {
 // ── 15. Transaction safety documented for booking attribution ─────────────────
 
 describe('hardening — 15. Transaction safety (C-9)', () => {
-  it('proposed migration 026 exists', () => {
-    expect(exists('supabase/proposed/026_contribution_atomic_attribution.sql')).toBe(true);
+  it('proposed migration 032 exists (renumbered from 026 to fix numbering conflict)', () => {
+    expect(exists('supabase/proposed/032_contribution_atomic_attribution.sql')).toBe(true);
+    // Old conflicting number must be gone
+    expect(exists('supabase/proposed/026_contribution_atomic_attribution.sql')).toBe(false);
   });
 
-  it('migration 026 is NOT in forward migrations pipeline', () => {
-    expect(exists('supabase/migrations/026_contribution_atomic_attribution.sql')).toBe(false);
+  it('migration 032 is NOT in forward migrations pipeline (Gate 3 open)', () => {
+    expect(exists('supabase/migrations/032_contribution_atomic_attribution.sql')).toBe(false);
+    // Applied 026 is a different migration (company route RLS gaps)
+    expect(exists('supabase/migrations/026_company_route_rls_gaps.sql')).toBe(true);
   });
 
   it('cross-company-attribution: partial attribution risk documented', () => {
@@ -465,21 +469,20 @@ describe('hardening — 15. Transaction safety (C-9)', () => {
     expect(src).toMatch(/PARTIAL ATTRIBUTION|partial attribution risk|transaction.*safety/i);
   });
 
-  it('cross-company-attribution: proposed migration 026 referenced as fix', () => {
+  it('cross-company-attribution: atomic attribution function name referenced as fix', () => {
     const src = read('lib/commons/cross-company-attribution.ts');
-    expect(src).toMatch(/026_contribution_atomic|attribute_contribution_for_booking_atomic/i);
+    expect(src).toMatch(/032_contribution_atomic|026_contribution_atomic|attribute_contribution_for_booking_atomic/i);
   });
 
-  it('proposed migration 026: SECURITY DEFINER atomic function defined', () => {
-    const sql = read('supabase/proposed/026_contribution_atomic_attribution.sql');
+  it('proposed migration 032: SECURITY DEFINER atomic function defined', () => {
+    const sql = read('supabase/proposed/032_contribution_atomic_attribution.sql');
     expect(sql).toContain('attribute_contribution_for_booking_atomic');
     expect(sql).toContain('SECURITY DEFINER');
-    expect(sql).toContain('Gate 2 OPEN');
     expect(sql).toContain('NOT APPLIED TO ANY DATABASE');
   });
 
-  it('proposed migration 026: uses ON CONFLICT idempotence (no duplicate risk)', () => {
-    const sql = read('supabase/proposed/026_contribution_atomic_attribution.sql');
+  it('proposed migration 032: uses ON CONFLICT idempotence (no duplicate risk)', () => {
+    const sql = read('supabase/proposed/032_contribution_atomic_attribution.sql');
     expect(sql).toContain('ON CONFLICT ON CONSTRAINT uq_contribution_booking DO NOTHING');
   });
 });
@@ -584,5 +587,31 @@ describe('hardening — 18. Gate 3 remains open', () => {
     expect(doc).toContain('Gate 3');
     expect(doc).toContain('is_kora_index_component');
     expect(doc).toContain('production_ready');
+  });
+
+  it('KORA_Space_Contribution_Source_PrePilot_Plan.md exists with required sections', () => {
+    expect(exists('KORA_Space_Contribution_Source_PrePilot_Plan.md')).toBe(true);
+    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    expect(doc).toContain('## 1. Migration 025 Review');
+    expect(doc).toContain('## 2. Proposed Migration 026 Review');
+    expect(doc).toContain('adoption/sponsorship');
+    expect(doc).toContain('kora_originated');
+    expect(doc).toContain('N≥10');
+    expect(doc).toContain('Gate 3');
+    expect(doc).toContain('NOT applied');
+    expect(doc).toContain('REVISE_BEFORE_APPLY');
+  });
+
+  it('proposed migration 026 is renamed to 032 (numbering conflict resolved)', () => {
+    // Applied migration 026 exists (company route RLS gaps)
+    expect(exists('supabase/migrations/026_company_route_rls_gaps.sql')).toBe(true);
+    // Proposed atomic attribution must NOT use conflicting number 026
+    expect(exists('supabase/proposed/026_contribution_atomic_attribution.sql')).toBe(false);
+    // Correct renumbered version must exist
+    expect(exists('supabase/proposed/032_contribution_atomic_attribution.sql')).toBe(true);
+    // New file must reference correct number in header
+    const mig032 = read('supabase/proposed/032_contribution_atomic_attribution.sql');
+    expect(mig032).toContain('032_contribution_atomic_attribution');
+    expect(mig032).toContain('026_company_route_rls_gaps');
   });
 });
