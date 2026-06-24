@@ -65,10 +65,13 @@
 --   1. commons schema must exist (migration 013 applied)
 --   2. commons.post table must exist (migration 013)
 --   3. commons.post.opening_grade must exist (migration 024, if applicable)
---   4. commons.contribution_event must exist with M025-6 fields:
---      source_type, event_type, contribution_component_hint, aggregate_count,
---      privacy_threshold_met, is_cross_company, is_kora_originated,
---      is_kora_enabled, adoption_type (migration 025 REVISED, READY_FOR_REVIEW)
+--   4. commons.contribution_event must exist with M025-6 + M025-7 fields/constraints:
+--      M025-6 fields: source_type, event_type, contribution_component_hint, aggregate_count,
+--        privacy_threshold_met, is_cross_company, is_kora_originated, is_kora_enabled, adoption_type
+--      M025-7 constraint: uq_contribution_external must be (tenant_id, source_post_id,
+--        contribution_kind, role, reporting_period) — the 5-column form. The 033 attribution
+--        function uses ON CONFLICT ON CONSTRAINT uq_contribution_external DO NOTHING and
+--        inserts all 5 constraint columns. Apply migration 025 REVISED (M025-7) before 033.
 --   5. kora.kora_role() and kora.tenant_id() must exist (migration 006)
 --   6. set_updated_at() must exist (migration 001)
 --   7. migration 032 (attribute_contribution_for_booking_atomic) should be

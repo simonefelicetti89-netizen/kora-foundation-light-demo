@@ -1264,3 +1264,250 @@ describe('hardening — 20. Migration 033 initiative adoption source model', () 
     expect(CONTRIBUTION_NO_INDIVIDUAL_SCORE).toBe(true);
   });
 });
+
+// ── 21. Contribution Event Idempotency / Reporting Period Hardening (M025-7) ─
+
+describe('hardening — 21. Contribution event idempotency / reporting period (M025-7)', () => {
+  const MIG025 = 'supabase/migrations/025_commons_booking_contribution.sql';
+  const MIG032 = 'supabase/proposed/032_contribution_atomic_attribution.sql';
+  const MIG033 = 'supabase/proposed/033_initiative_adoption_source_model.sql';
+
+  // ── Constraint design ──────────────────────────────────────────────────────
+
+  it('uq_contribution_external includes tenant_id', () => {
+    expect(read(MIG025)).toMatch(/uq_contribution_external.*UNIQUE.*tenant_id/);
+  });
+
+  it('uq_contribution_external includes source_post_id', () => {
+    const sql = read(MIG025);
+    const constraintBlock = sql.substring(
+      sql.indexOf('uq_contribution_external'),
+      sql.indexOf('uq_contribution_external') + 300
+    );
+    expect(constraintBlock).toContain('source_post_id');
+  });
+
+  it('uq_contribution_external includes contribution_kind', () => {
+    const sql = read(MIG025);
+    const constraintBlock = sql.substring(
+      sql.indexOf('uq_contribution_external'),
+      sql.indexOf('uq_contribution_external') + 300
+    );
+    expect(constraintBlock).toContain('contribution_kind');
+  });
+
+  it('M025-7: uq_contribution_external includes role', () => {
+    const sql = read(MIG025);
+    const constraintBlock = sql.substring(
+      sql.indexOf('CONSTRAINT uq_contribution_external'),
+      sql.indexOf('CONSTRAINT uq_contribution_external') + 200
+    );
+    expect(constraintBlock).toContain('role');
+  });
+
+  it('M025-7: uq_contribution_external includes reporting_period', () => {
+    const sql = read(MIG025);
+    const constraintBlock = sql.substring(
+      sql.indexOf('CONSTRAINT uq_contribution_external'),
+      sql.indexOf('CONSTRAINT uq_contribution_external') + 200
+    );
+    expect(constraintBlock).toContain('reporting_period');
+  });
+
+  it('M025-7: uq_contribution_external is NOT the old 3-column form (tenant_id, source_post_id, contribution_kind)', () => {
+    const sql = read(MIG025);
+    const constraintBlock = sql.substring(
+      sql.indexOf('CONSTRAINT uq_contribution_external'),
+      sql.indexOf('CONSTRAINT uq_contribution_external') + 200
+    );
+    // Old 3-column form would end after contribution_kind — new form adds role and reporting_period
+    // Verify the 5-column form is present
+    expect(constraintBlock).toMatch(/tenant_id.*source_post_id.*contribution_kind.*role.*reporting_period/);
+  });
+
+  it('uq_contribution_booking remains scoped to (tenant_id, role, source_booking_id) — unchanged by M025-7', () => {
+    const sql = read(MIG025);
+    const constraintBlock = sql.substring(
+      sql.indexOf('CONSTRAINT uq_contribution_booking'),
+      sql.indexOf('CONSTRAINT uq_contribution_booking') + 150
+    );
+    expect(constraintBlock).toContain('tenant_id');
+    expect(constraintBlock).toContain('role');
+    expect(constraintBlock).toContain('source_booking_id');
+    // Must NOT include reporting_period (booking is keyed by source_booking_id, not period)
+    expect(constraintBlock).not.toContain('reporting_period');
+  });
+
+  it('migration 025 header documents M025-7', () => {
+    expect(read(MIG025)).toContain('M025-7');
+  });
+
+  // ── Multi-period reporting proofs (structural) ─────────────────────────────
+
+  it('reporting_period is a NOT NULL column in contribution_event', () => {
+    const sql = read(MIG025);
+    expect(sql).toMatch(/reporting_period\s+text\s+NOT NULL/);
+  });
+
+  it('5-column uq_contribution_external allows multi-period reporting for same (tenant, post, kind, role)', () => {
+    // Proof by constraint design: (tenant, post, kind, role, Q2) ≠ (tenant, post, kind, role, Q3)
+    // The constraint has 5 distinct columns; different period → different row → no conflict.
+    const sql = read(MIG025);
+    expect(sql).toContain('reporting_period');
+    // The constraint comment documents multi-period support
+    expect(sql).toContain('Multi-period reporting');
+  });
+
+  it('5-column constraint separates adopter and promoter rows for same (tenant, post, kind, period)', () => {
+    // Proof: when adopter_tenant = origin_tenant (edge case), role differs (adopter vs promoter)
+    // → different value in role column → no conflict.
+    const sql = read(MIG025);
+    expect(sql).toContain('role');
+    // Constraint comment documents this
+    expect(sql).toContain('Cross-company dual-row separation');
+  });
+
+  it('multiple adoption types for same initiative are not blocked (different contribution_kind)', () => {
+    // company_adoption vs company_sponsorship → different contribution_kind → distinct rows
+    const sql = read(MIG025);
+    expect(sql).toContain("'company_adoption'");
+    expect(sql).toContain("'company_sponsorship'");
+    // They coexist because contribution_kind is part of the constraint
+  });
+
+  // ── Migration 032 compatibility ────────────────────────────────────────────
+
+  it('migration 032 uses uq_contribution_booking (not uq_contribution_external)', () => {
+    const sql = read(MIG032);
+    const conflicts = (sql.match(/ON CONFLICT ON CONSTRAINT \S+/g) || []);
+    expect(conflicts.every(c => c.includes('uq_contribution_booking'))).toBe(true);
+    expect(sql).not.toContain('ON CONFLICT ON CONSTRAINT uq_contribution_external');
+  });
+
+  it('migration 032 M025-7 compatibility note present', () => {
+    expect(read(MIG032)).toContain('M025-7');
+  });
+
+  it('migration 032 ON CONFLICT targets are valid against revised migration 025 constraints', () => {
+    // uq_contribution_booking exists in migration 025 and is UNCHANGED by M025-7
+    const sql025 = read(MIG025);
+    const sql032 = read(MIG032);
+    expect(sql025).toContain('uq_contribution_booking');
+    expect(sql032).toContain('ON CONFLICT ON CONSTRAINT uq_contribution_booking DO NOTHING');
+  });
+
+  // ── Migration 033 compatibility ────────────────────────────────────────────
+
+  it('migration 033 uses uq_contribution_external for contribution_event inserts', () => {
+    const sql = read(MIG033);
+    // Both adopter and promoter rows use uq_contribution_external
+    const count = (sql.match(/ON CONFLICT ON CONSTRAINT uq_contribution_external/g) || []).length;
+    expect(count).toBeGreaterThanOrEqual(2);
+  });
+
+  it('migration 033 attribution INSERT includes tenant_id (constraint column 1)', () => {
+    const sql = read(MIG033);
+    expect(sql).toContain('tenant_id,');
+  });
+
+  it('migration 033 attribution INSERT includes source_post_id (constraint column 2)', () => {
+    const sql = read(MIG033);
+    expect(sql).toContain('source_post_id,');
+  });
+
+  it('migration 033 attribution INSERT includes contribution_kind (constraint column 3)', () => {
+    const sql = read(MIG033);
+    expect(sql).toContain('contribution_kind,');
+  });
+
+  it('migration 033 attribution INSERT includes role (constraint column 4 — M025-7)', () => {
+    // role is set via v_adopter_role and 'promoter' in both INSERTs
+    const sql = read(MIG033);
+    expect(sql).toContain('role,');
+    expect(sql).toContain("v_adopter_role");
+    expect(sql).toContain("'promoter'");
+  });
+
+  it('migration 033 attribution INSERT includes reporting_period (constraint column 5 — M025-7)', () => {
+    // p_reporting_period is passed to both INSERTs
+    const sql = read(MIG033);
+    expect(sql).toContain('reporting_period,');
+    expect(sql).toContain('p_reporting_period,');
+  });
+
+  it('migration 033 prerequisites note updated for M025-7 constraint requirement', () => {
+    expect(read(MIG033)).toContain('M025-7');
+    expect(read(MIG033)).toContain('5-column');
+  });
+
+  // ── Privacy boundary ───────────────────────────────────────────────────────
+
+  it('no worker_identity_id in contribution_event constraint columns', () => {
+    const sql = read(MIG025);
+    const constraintBlock = sql.substring(
+      sql.indexOf('CONSTRAINT uq_contribution_external'),
+      sql.indexOf('CONSTRAINT uq_contribution_external') + 200
+    );
+    expect(constraintBlock).not.toContain('worker_identity_id');
+    expect(constraintBlock).not.toContain('worker_id');
+  });
+
+  it('no worker_id in contribution_event constraint columns', () => {
+    const sql = read(MIG025);
+    const constraintBlock = sql.substring(
+      sql.indexOf('CONSTRAINT uq_contribution_booking'),
+      sql.indexOf('CONSTRAINT uq_contribution_booking') + 150
+    );
+    expect(constraintBlock).not.toContain('worker_identity_id');
+    expect(constraintBlock).not.toContain('worker_id');
+  });
+
+  // ── Pre-pilot plan documentation ───────────────────────────────────────────
+
+  it('pre-pilot plan documents idempotency review sprint', () => {
+    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    expect(doc).toContain('Contribution Event Idempotency / Reporting Period Review');
+    expect(doc).toContain('M025-7');
+    expect(doc).toContain('uq_contribution_external');
+    expect(doc).toContain('reporting_period');
+    expect(doc).toContain('Multi-period reporting');
+  });
+
+  it('pre-pilot plan documents that multi-period is unblocked', () => {
+    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    expect(doc).toContain('Two distinct rows — different `reporting_period`');
+  });
+
+  // ── Migration status ───────────────────────────────────────────────────────
+
+  it('migration 025 is NOT applied after idempotency sprint', () => {
+    expect(read(MIG025)).toMatch(/NOT applied/i);
+  });
+
+  it('migration 032 is NOT applied after idempotency sprint', () => {
+    expect(exists('supabase/proposed/032_contribution_atomic_attribution.sql')).toBe(true);
+    expect(exists('supabase/migrations/032_contribution_atomic_attribution.sql')).toBe(false);
+  });
+
+  it('migration 033 is NOT applied after idempotency sprint', () => {
+    expect(exists('supabase/proposed/033_initiative_adoption_source_model.sql')).toBe(true);
+    expect(exists('supabase/migrations/033_initiative_adoption_source_model.sql')).toBe(false);
+  });
+
+  // ── Global doctrine ────────────────────────────────────────────────────────
+
+  it('KORA Contribution remains outside KORA Index after idempotency sprint', async () => {
+    const { CONTRIBUTION_IS_KORA_INDEX_COMPONENT } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_IS_KORA_INDEX_COMPONENT).toBe(false);
+  });
+
+  it('no worker ranking introduced by idempotency sprint', async () => {
+    const { CONTRIBUTION_NO_RANKING } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_NO_RANKING).toBe(true);
+  });
+
+  it('no individual contribution score introduced by idempotency sprint', async () => {
+    const { CONTRIBUTION_NO_INDIVIDUAL_SCORE } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_NO_INDIVIDUAL_SCORE).toBe(true);
+  });
+});

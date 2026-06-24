@@ -758,4 +758,101 @@ Adoption-sourced contribution events do NOT expose individual worker identity. C
 
 ---
 
+---
+
+## Contribution Event Idempotency / Reporting Period Review
+
+**Sprint completed:** 2026-06-24 (Idempotency Review Sprint — M025-7)
+
+### Original risk
+
+Migration 033's `attribute_contribution_for_adoption()` uses `ON CONFLICT ON CONSTRAINT uq_contribution_external DO NOTHING` for adoption-sourced contribution events. The pre-Migration 033 report flagged: `uq_contribution_external` scoped as `(tenant_id, source_post_id, contribution_kind)` may incorrectly block legitimate future events — specifically multi-period adoption reporting.
+
+### Current unique constraints (before M025-7)
+
+| Constraint | Columns | Source class |
+|---|---|---|
+| `uq_contribution_booking` | `(tenant_id, role, source_booking_id)` | A. Booking/attendance |
+| `uq_contribution_external` (old) | `(tenant_id, source_post_id, contribution_kind)` | B. External participants, C. Adoption |
+
+### Issue confirmed
+
+`uq_contribution_external (tenant_id, source_post_id, contribution_kind)` — **3 columns, missing `role` and `reporting_period`** — caused the following blocking failures:
+
+| Scenario | Blocked incorrectly? |
+|---|---|
+| Company adopts initiative X in Q2 → adopts again in Q3 | YES — same (tenant, post, kind), different period → DO NOTHING |
+| External participants counted for Q2 and Q3 for same initiative | YES — same (tenant, post, kind), different period → DO NOTHING |
+| Promoter (origin company) + self-adoption row with same (tenant, post, kind) | YES — same 3-column tuple → DO NOTHING |
+| Multiple adoption types for same initiative (adoption + sponsorship) | No — different contribution_kind → distinct rows ✓ |
+| Cross-company dual-row (adopter + promoter for different tenants) | No — different tenant_id → distinct rows ✓ |
+
+### Chosen idempotency model (post M025-7)
+
+**Two-class constraint design:**
+
+| Class | Constraint | Scope | Source class |
+|---|---|---|---|
+| A. Booking | `uq_contribution_booking` | `(tenant_id, role, source_booking_id)` | Booking/attendance (mig 032) |
+| B+C. Non-booking | `uq_contribution_external` | `(tenant_id, source_post_id, contribution_kind, role, reporting_period)` | External participants + Adoption (mig 033) |
+
+**NULL semantics clarification:**
+- `uq_contribution_booking`: `source_booking_id = NULL` → NOT covered by this constraint (Postgres UNIQUE semantics). Adoption events pass through to `uq_contribution_external`.
+- `uq_contribution_external`: All 5 columns are `NOT NULL` → full coverage. No NULL gap.
+
+**Why `reporting_period` is included:** Without it, the same (tenant, post, kind, role) tuple could only ever generate ONE contribution_event row across all time. This incorrectly blocks Q3 when Q2 already exists. With `reporting_period`, each period generates a distinct row. ✓
+
+**Why `role` is included:** The adopter row `(adopting_tenant, initiative_id, company_adoption, adopter, Q2)` and the promoter row `(origin_tenant, initiative_id, company_adoption, promoter, Q2)` differ only in `role` (when both happen to use the same tenant). Including `role` ensures they are distinct. ✓
+
+**Why `source_adoption_id` was NOT added:** A FK field `source_adoption_id → commons.initiative_adoption.id` would give traceability but creates a FK ordering problem — `contribution_event` (in migration 025) cannot FK to `initiative_adoption` (defined in migration 033, applied later). Adding the FK in migration 033 as a later ALTER TABLE is feasible but adds complexity. Deferred to post-Pilot. The 5-column constraint provides sufficient idempotency without the FK.
+
+### Idempotency proofs
+
+| Scenario | Post-M025-7 result |
+|---|---|
+| Same adoption re-attributed in Q2 (function called twice) | Second call → DO NOTHING ✓ |
+| Same adoption attributed in Q2, then again in Q3 | Two distinct rows — different `reporting_period` ✓ |
+| Formal adoption + sponsorship for same initiative | Two rows — different `contribution_kind` ✓ |
+| Adopter + promoter rows for same initiative, different tenants | Two rows — different `tenant_id` ✓ |
+| Adopter + promoter rows if somehow same tenant (edge case) | Two rows — different `role` ✓ |
+| Booking attribution (mig 032) unaffected by M025-7 | Uses `uq_contribution_booking`, not `uq_contribution_external` ✓ |
+
+### Migration 025 changes
+
+- `uq_contribution_external` definition changed from 3 columns → 5 columns
+- Header revised with M025-7 entry
+- Table COMMENT updated
+- Idempotency design documented inline with source class A/B/C comments
+- Classification remains: `READY_FOR_REVIEW`
+- Status: NOT applied
+
+### Migration 032 changes
+
+- Header updated: M025-7 compatibility note added confirming `uq_contribution_booking` is unchanged
+- No functional changes
+- Status: NOT applied
+
+### Migration 033 changes
+
+- Prerequisites updated: added M025-7 note requiring the 5-column `uq_contribution_external`
+- The attribution function's ON CONFLICT already correctly targets `uq_contribution_external` — valid against the 5-column form because all 5 columns (`tenant_id`, `source_post_id`, `contribution_kind`, `role`, `reporting_period`) are present in every INSERT
+- No functional changes to the function
+- Status: NOT applied
+
+### Privacy boundary confirmation
+
+- `uq_contribution_external` 5-column constraint does NOT include any worker identifier
+- `worker_identity_id` and `worker_id` remain structurally absent from `contribution_event`
+- Multi-period reporting does not expose individual worker activity — still aggregate company-level signals
+- N≥10 threshold enforcement unchanged and unaffected by M025-7
+
+### Final classification
+
+- Migration 025: `READY_FOR_REVIEW` (M025-7 incorporated)
+- Migration 032: `READY_FOR_REVIEW` (no functional change, compatibility confirmed)
+- Migration 033: `READY_FOR_REVIEW` (prerequisite note updated, no functional change)
+- All three remain NOT applied. Gate 3 OPEN.
+
+---
+
 *Pre-Pilot Plan complete — read-only document, no migrations applied, no production state changed, Gate 3 OPEN.*

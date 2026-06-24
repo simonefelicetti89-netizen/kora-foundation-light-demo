@@ -20,6 +20,10 @@
 --   - commons.booking table must exist
 --   - Gate 3 must be closed (production apply) or staging-only (synthetic data)
 -- SCHEMA COMPAT: updated 2026-06-24 to populate M025-6 fields on both INSERTs.
+-- M025-7 NOTE: this function uses ON CONFLICT ON CONSTRAINT uq_contribution_booking
+--   (tenant_id, role, source_booking_id). That constraint is UNCHANGED by M025-7.
+--   M025-7 only modified uq_contribution_external (used by adoption events, not bookings).
+--   No changes required to this function for M025-7 compatibility.
 --
 -- GATE STATUS: Gate 3 OPEN — NOT APPLIED.
 -- APPLY: only after CTO review and Gate 3 closure. Do NOT run supabase db push.

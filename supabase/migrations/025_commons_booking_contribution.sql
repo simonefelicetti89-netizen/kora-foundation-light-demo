@@ -12,6 +12,10 @@
 --   M025-6: added source_type, event_type, contribution_component_hint, aggregate_count,
 --            privacy_threshold_met, is_cross_company, is_kora_originated, is_kora_enabled,
 --            adoption_type fields to contribution_event
+-- Revised:     2026-06-24 — Idempotency hardening sprint (M025-7)
+--   M025-7: expanded uq_contribution_external to (tenant_id, source_post_id, contribution_kind,
+--            role, reporting_period) — fixes multi-period reporting block for adoption and
+--            external_participants_event; also separates adopter/promoter rows cleanly
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- Questo file crea/estende:
@@ -280,18 +284,46 @@ CREATE TABLE IF NOT EXISTS commons.contribution_event (
 
   created_at          timestamptz   NOT NULL DEFAULT now(),
 
-  -- Idempotenza per booking: (tenant_id, role, source_booking_id) è univoco
-  CONSTRAINT uq_contribution_booking UNIQUE (tenant_id, role, source_booking_id)
-    DEFERRABLE INITIALLY DEFERRED, -- partial workaround: NULL source_booking_id escluso implicitamente da UNIQUE
+  -- ── Idempotency constraints ────────────────────────────────────────────────
+  --
+  -- SOURCE CLASS A — Booking/attendance events (source_booking_id NOT NULL):
+  --   uq_contribution_booking (tenant_id, role, source_booking_id)
+  --   One contribution_event per (tenant, role, booking). Postgres NULL semantics
+  --   mean this constraint does NOT apply when source_booking_id IS NULL — used by
+  --   booking attribution (migration 032). Adoption events fall through to
+  --   uq_contribution_external below.
+  --
+  -- SOURCE CLASS B — External participants + SOURCE CLASS C — Adoption/sponsorship
+  -- (source_booking_id IS NULL):
+  --   uq_contribution_external (tenant_id, source_post_id, contribution_kind, role, reporting_period)
+  --   M025-7: role and reporting_period added to allow:
+  --     • Multi-period reporting: same company + same initiative + same kind + same role
+  --       can produce contribution_event rows in Q2 and Q3 (different reporting_period).
+  --     • Cross-company dual-row separation: adopter row (role='adopter') and promoter row
+  --       (role='promoter') for the same (tenant≠, initiative, kind, period) are distinct rows
+  --       because tenant_id differs — but even same-tenant edge cases are safe because role differs.
+  --     • Multiple adoption types: company_adoption (role=adopter) and company_sponsorship
+  --       (role=sponsor) for same initiative are distinct by contribution_kind. ✓
+  --   BEFORE M025-7: constraint was (tenant_id, source_post_id, contribution_kind) — this
+  --   incorrectly blocked multi-period reporting and same-kind-different-role rows.
 
-  -- Idempotenza per familiari: (tenant_id, source_post_id, contribution_kind) per eventi external
-  CONSTRAINT uq_contribution_external UNIQUE (tenant_id, source_post_id, contribution_kind)
+  CONSTRAINT uq_contribution_booking UNIQUE (tenant_id, role, source_booking_id)
+    DEFERRABLE INITIALLY DEFERRED,
+
+  -- M025-7: expanded from (tenant_id, source_post_id, contribution_kind) to include role
+  -- and reporting_period. All five columns are set by every source RPC:
+  --   • attribute_contribution_for_booking_atomic() (mig 032) — uses uq_contribution_booking, not this
+  --   • attribute_contribution_for_adoption() (mig 033) — uses this constraint
+  --   • future external_participants attribution RPC — will use this constraint
+  CONSTRAINT uq_contribution_external UNIQUE (tenant_id, source_post_id, contribution_kind, role, reporting_period)
     DEFERRABLE INITIALLY DEFERRED
 );
 
--- Nota: i vincoli UNIQUE standard in Postgres NON si applicano a righe con NULL in qualsiasi
--- colonna vincolata. Quindi uq_contribution_booking non copre source_booking_id NULL.
--- L'applicazione garantisce l'idempotenza anche per source_booking_id NULL tramite ON CONFLICT.
+-- Postgres UNIQUE semantics for NULL:
+-- Standard UNIQUE constraints do NOT apply to rows where any constrained column is NULL.
+-- uq_contribution_booking: NULL source_booking_id → not covered → adoption events fall through.
+-- uq_contribution_external: no nullable columns in the 5-column constraint (tenant_id, source_post_id,
+-- contribution_kind, role, and reporting_period are all NOT NULL) → full coverage for non-booking events.
 
 CREATE INDEX IF NOT EXISTS idx_contribution_tenant       ON commons.contribution_event (tenant_id);
 CREATE INDEX IF NOT EXISTS idx_contribution_post         ON commons.contribution_event (source_post_id);
@@ -303,6 +335,8 @@ COMMENT ON TABLE commons.contribution_event IS
   'Una partecipazione cross_company genera due righe: role=promoter + role=origin_employer. '
   'External participants generano una riga role=promoter contribution_kind=external_participants_event. '
   'M025-1/2/3/6 revised 2026-06-24: expanded CHECKs, new source/event/privacy fields. '
+  'M025-7 revised 2026-06-24: uq_contribution_external expanded to (tenant_id, source_post_id, '
+  'contribution_kind, role, reporting_period) — enables multi-period reporting. '
   'Gate 2 OPEN: NOT applied to any live database.';
 
 -- ── 5. RLS commons.contribution_event ────────────────────────────────────────
