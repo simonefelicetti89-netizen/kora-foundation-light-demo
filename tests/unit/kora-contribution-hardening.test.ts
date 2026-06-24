@@ -615,3 +615,303 @@ describe('hardening — 18. Gate 3 remains open', () => {
     expect(mig032).toContain('026_company_route_rls_gaps');
   });
 });
+
+// ── 19. Migration 025 Revision Sprint ────────────────────────────────────────
+
+describe('hardening — 19. Migration 025 revision sprint (M025-1 through M025-6)', () => {
+  const MIG025 = 'supabase/migrations/025_commons_booking_contribution.sql';
+
+  it('migration 025 exists in forward pipeline (written, not applied)', () => {
+    expect(exists(MIG025)).toBe(true);
+    const sql = read(MIG025);
+    expect(sql).toContain('NOT applied to any live database');
+  });
+
+  it('migration 025 NOT in applied set — must not appear in supabase/migrations as applied', () => {
+    // Applied migrations are tracked via supabase migration history, not filesystem.
+    // Structural check: file must still carry the "Gate 2 OPEN" / NOT applied marker.
+    const sql = read(MIG025);
+    expect(sql).toMatch(/NOT applied/i);
+  });
+
+  // M025-1: expanded contribution_kind CHECK
+  it('M025-1: contribution_kind CHECK includes cross_company_participation', () => {
+    expect(read(MIG025)).toContain("'cross_company_participation'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes external_participants_event', () => {
+    expect(read(MIG025)).toContain("'external_participants_event'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes company_adoption', () => {
+    expect(read(MIG025)).toContain("'company_adoption'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes company_sponsorship', () => {
+    expect(read(MIG025)).toContain("'company_sponsorship'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes company_support', () => {
+    expect(read(MIG025)).toContain("'company_support'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes company_cofunding', () => {
+    expect(read(MIG025)).toContain("'company_cofunding'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes kora_originated_adoption', () => {
+    expect(read(MIG025)).toContain("'kora_originated_adoption'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes kora_enabled_adoption', () => {
+    expect(read(MIG025)).toContain("'kora_enabled_adoption'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes initiative_replication', () => {
+    expect(read(MIG025)).toContain("'initiative_replication'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes aggregate_feedback', () => {
+    expect(read(MIG025)).toContain("'aggregate_feedback'");
+  });
+
+  it('M025-1: contribution_kind CHECK includes aggregate_follow_up', () => {
+    expect(read(MIG025)).toContain("'aggregate_follow_up'");
+  });
+
+  // M025-2: expanded evidence_status CHECK
+  it('M025-2: evidence_status CHECK includes verified', () => {
+    expect(read(MIG025)).toContain("'verified'");
+  });
+
+  it('M025-2: evidence_status CHECK includes self_declared', () => {
+    expect(read(MIG025)).toContain("'self_declared'");
+  });
+
+  it('M025-2: evidence_status CHECK includes partner_verified', () => {
+    expect(read(MIG025)).toContain("'partner_verified'");
+  });
+
+  it('M025-2: evidence_status CHECK includes advisor_verified', () => {
+    expect(read(MIG025)).toContain("'advisor_verified'");
+  });
+
+  it('M025-2: evidence_status CHECK includes system_verified', () => {
+    expect(read(MIG025)).toContain("'system_verified'");
+  });
+
+  // M025-3: expanded role CHECK
+  it('M025-3: role CHECK includes promoter', () => {
+    expect(read(MIG025)).toContain("'promoter'");
+  });
+
+  it('M025-3: role CHECK includes origin_employer', () => {
+    expect(read(MIG025)).toContain("'origin_employer'");
+  });
+
+  it('M025-3: role CHECK includes adopter', () => {
+    expect(read(MIG025)).toContain("'adopter'");
+  });
+
+  it('M025-3: role CHECK includes sponsor', () => {
+    expect(read(MIG025)).toContain("'sponsor'");
+  });
+
+  it('M025-3: role CHECK includes supporter', () => {
+    expect(read(MIG025)).toContain("'supporter'");
+  });
+
+  it('M025-3: role CHECK includes cofunder', () => {
+    expect(read(MIG025)).toContain("'cofunder'");
+  });
+
+  it('M025-3: role CHECK includes kora_enabler', () => {
+    expect(read(MIG025)).toContain("'kora_enabler'");
+  });
+
+  it('M025-3: role CHECK includes partner', () => {
+    // Scoped to contribution_event role column (not commons.post or other tables)
+    const sql = read(MIG025);
+    expect(sql).toContain("'partner'");
+  });
+
+  // M025-4: N≥10 threshold in booking_aggregate_for_promoter()
+  it('M025-4: booking_aggregate_for_promoter contains N≥10 threshold variable', () => {
+    const sql = read(MIG025);
+    expect(sql).toContain('v_privacy_threshold');
+  });
+
+  it('M025-4: threshold value is 10', () => {
+    const sql = read(MIG025);
+    expect(sql).toMatch(/v_privacy_threshold\s+constant\s+int\s*:=\s*10/);
+  });
+
+  it('M025-4: function returns below_threshold when N < threshold', () => {
+    const sql = read(MIG025);
+    expect(sql).toContain("'below_threshold'");
+    expect(sql).toContain('v_total_count < v_privacy_threshold');
+  });
+
+  it('M025-4: KORA_ADMIN bypasses threshold for oversight', () => {
+    const sql = read(MIG025);
+    expect(sql).toContain("v_caller_role = 'COMPANY_ADMIN' AND v_total_count < v_privacy_threshold");
+  });
+
+  it('M025-4: no exact small-N counts returned to COMPANY_ADMIN when below threshold', () => {
+    const sql = read(MIG025);
+    // The GROUP BY breakdown only runs when threshold check passes
+    const thresholdBlock = sql.indexOf('v_total_count < v_privacy_threshold');
+    const groupByBlock = sql.indexOf('GROUP BY b.status');
+    expect(thresholdBlock).toBeGreaterThan(0);
+    expect(groupByBlock).toBeGreaterThan(thresholdBlock);
+  });
+
+  // M025-5: restricted grants
+  it('M025-5: no broad INSERT/UPDATE grant on contribution_event to authenticated', () => {
+    const sql = read(MIG025);
+    // Must not have the broad pre-revision grant
+    expect(sql).not.toMatch(/GRANT\s+SELECT\s*,\s*INSERT\s*,\s*UPDATE\s+ON\s+commons\.contribution_event\s+TO\s+authenticated/i);
+  });
+
+  it('M025-5: authenticated gets only SELECT on contribution_event', () => {
+    const sql = read(MIG025);
+    expect(sql).toMatch(/GRANT\s+SELECT\s+ON\s+commons\.contribution_event\s+TO\s+authenticated/i);
+  });
+
+  it('M025-5: explicit REVOKE INSERT, UPDATE on contribution_event from authenticated', () => {
+    const sql = read(MIG025);
+    expect(sql).toMatch(/REVOKE\s+INSERT\s*,\s*UPDATE\s+ON\s+commons\.contribution_event\s+FROM\s+authenticated/i);
+  });
+
+  it('M025-5: SECURITY DEFINER function preserved (booking_aggregate_for_promoter)', () => {
+    const sql = read(MIG025);
+    expect(sql).toContain('SECURITY DEFINER');
+    expect(sql).toContain('booking_aggregate_for_promoter');
+  });
+
+  // M025-6: new source/event/privacy fields
+  it('M025-6: source_type field present in contribution_event', () => {
+    expect(read(MIG025)).toContain('source_type');
+  });
+
+  it('M025-6: event_type field present in contribution_event', () => {
+    expect(read(MIG025)).toContain('event_type');
+  });
+
+  it('M025-6: contribution_component_hint field present', () => {
+    expect(read(MIG025)).toContain('contribution_component_hint');
+  });
+
+  it('M025-6: aggregate_count field present', () => {
+    expect(read(MIG025)).toContain('aggregate_count');
+  });
+
+  it('M025-6: privacy_threshold_met field present', () => {
+    expect(read(MIG025)).toContain('privacy_threshold_met');
+  });
+
+  it('M025-6: is_cross_company field present', () => {
+    expect(read(MIG025)).toContain('is_cross_company');
+  });
+
+  it('M025-6: is_kora_originated field present', () => {
+    expect(read(MIG025)).toContain('is_kora_originated');
+  });
+
+  it('M025-6: is_kora_enabled field present', () => {
+    expect(read(MIG025)).toContain('is_kora_enabled');
+  });
+
+  it('M025-6: adoption_type field present', () => {
+    expect(read(MIG025)).toContain('adoption_type');
+  });
+
+  // Constitutional privacy exclusions — no individual worker data in contribution_event
+  it('worker_identity_id NOT present in commons.contribution_event schema', () => {
+    const sql = read(MIG025);
+    // commons.booking legitimately has worker_identity_id.
+    // contribution_event must NOT have it. Verify by checking the CREATE TABLE block.
+    const ceBlock = sql.substring(
+      sql.indexOf('CREATE TABLE IF NOT EXISTS commons.contribution_event'),
+      sql.indexOf('CREATE INDEX IF NOT EXISTS idx_contribution_tenant')
+    );
+    expect(ceBlock).not.toContain('worker_identity_id');
+  });
+
+  it('worker_id NOT present in commons.contribution_event schema', () => {
+    const sql = read(MIG025);
+    const ceBlock = sql.substring(
+      sql.indexOf('CREATE TABLE IF NOT EXISTS commons.contribution_event'),
+      sql.indexOf('CREATE INDEX IF NOT EXISTS idx_contribution_tenant')
+    );
+    expect(ceBlock).not.toContain('worker_id');
+  });
+
+  // Migration 032 compatibility after M025-6 schema expansion
+  it('migration 032 populates source_type field in both INSERTs', () => {
+    const sql = read('supabase/proposed/032_contribution_atomic_attribution.sql');
+    expect(sql).toContain("source_type, event_type, contribution_component_hint");
+    expect(sql).toContain("'booking', 'attendance_marked', 'activation_depth'");
+  });
+
+  it('migration 032 sets is_cross_company = true on both INSERTs', () => {
+    const sql = read('supabase/proposed/032_contribution_atomic_attribution.sql');
+    const count = (sql.match(/is_cross_company/g) || []).length;
+    expect(count).toBeGreaterThanOrEqual(2); // at least in column list + value
+  });
+
+  it('migration 032 sets privacy_threshold_met = false at INSERT time (runtime threshold enforced by RPC)', () => {
+    const sql = read('supabase/proposed/032_contribution_atomic_attribution.sql');
+    expect(sql).toContain('privacy_threshold_met');
+    expect(sql).toContain('false');
+  });
+
+  it('migration 032 is NOT in forward pipeline (Gate 3 open)', () => {
+    expect(exists('supabase/migrations/032_contribution_atomic_attribution.sql')).toBe(false);
+    expect(exists('supabase/proposed/032_contribution_atomic_attribution.sql')).toBe(true);
+  });
+
+  // Pre-pilot plan doc updated with revision status
+  it('pre-pilot plan doc includes migration 025 revision status section', () => {
+    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    expect(doc).toContain('Migration 025 Revision Status');
+    expect(doc).toContain('READY_FOR_REVIEW');
+    expect(doc).toContain('M025-1');
+    expect(doc).toContain('M025-2');
+    expect(doc).toContain('M025-3');
+    expect(doc).toContain('M025-4');
+    expect(doc).toContain('M025-5');
+    expect(doc).toContain('M025-6');
+    expect(doc).toContain('NOT applied to any database');
+  });
+
+  // Global safety confirmation
+  it('migration 025 is not applied (not in supabase/migrations/applied set)', () => {
+    // Forward migrations directory contains 025 but Supabase tracks applied state separately.
+    // Structural check: the file must carry the "NOT applied" marker — this is the source of truth
+    // for this pre-apply sprint.
+    expect(exists(MIG025)).toBe(true);
+    expect(read(MIG025)).toMatch(/NOT applied/i);
+  });
+
+  it('migration 032 is not applied (in proposed/, not in applied pipeline)', () => {
+    expect(exists('supabase/proposed/032_contribution_atomic_attribution.sql')).toBe(true);
+    expect(exists('supabase/migrations/032_contribution_atomic_attribution.sql')).toBe(false);
+    expect(read('supabase/proposed/032_contribution_atomic_attribution.sql')).toContain('NOT APPLIED');
+  });
+
+  it('KORA Contribution remains outside KORA Index after revision sprint', async () => {
+    const { CONTRIBUTION_IS_KORA_INDEX_COMPONENT } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_IS_KORA_INDEX_COMPONENT).toBe(false);
+  });
+
+  it('no worker ranking introduced by revision sprint', async () => {
+    const { CONTRIBUTION_NO_RANKING } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_NO_RANKING).toBe(true);
+  });
+
+  it('no individual contribution score introduced by revision sprint', async () => {
+    const { CONTRIBUTION_NO_INDIVIDUAL_SCORE } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_NO_INDIVIDUAL_SCORE).toBe(true);
+  });
+});

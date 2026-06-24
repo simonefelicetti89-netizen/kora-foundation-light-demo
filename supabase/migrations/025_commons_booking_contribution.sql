@@ -3,6 +3,15 @@
 -- Feature:     B166 — Prenotazioni cross-azienda + alimentazione KORA Contribution
 -- Gate 2 OPEN: WRITTEN, NOT applied to any live database.
 -- Author:      KORA Foundation Light · 2026-06-16
+-- Revised:     2026-06-24 — Pre-Pilot hardening sprint (M025-1 through M025-6)
+--   M025-1: expanded contribution_kind CHECK (adoption/sponsorship/replication/KORA-origin)
+--   M025-2: expanded evidence_status CHECK (partner_verified, advisor_verified, system_verified)
+--   M025-3: expanded role CHECK (adopter, sponsor, supporter, cofunder, kora_enabler, partner)
+--   M025-4: N≥10 privacy threshold enforced in booking_aggregate_for_promoter()
+--   M025-5: restricted grants — authenticated gets SELECT only on contribution_event
+--   M025-6: added source_type, event_type, contribution_component_hint, aggregate_count,
+--            privacy_threshold_met, is_cross_company, is_kora_originated, is_kora_enabled,
+--            adoption_type fields to contribution_event
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- Questo file crea/estende:
@@ -111,9 +120,12 @@ CREATE OR REPLACE FUNCTION commons.booking_aggregate_for_promoter(p_post_id uuid
 RETURNS TABLE (booking_status text, booking_count bigint)
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = commons, personal, public AS $$
 DECLARE
-  v_post_tenant_id uuid;
-  v_caller_role    text;
-  v_caller_tenant  uuid;  -- canonical helper returns uuid directly (kora.tenant_id(), mig 006)
+  v_post_tenant_id     uuid;
+  v_caller_role        text;
+  v_caller_tenant      uuid;  -- canonical helper returns uuid directly (kora.tenant_id(), mig 006)
+  v_total_count        bigint;
+  -- M025-4: KORA safe_aggregation_threshold = 10 (aligned with PrivacyVisibilityService)
+  v_privacy_threshold  constant int := 10;
 BEGIN
   v_caller_role   := kora.kora_role();
   v_caller_tenant := kora.tenant_id();
@@ -136,6 +148,20 @@ BEGIN
     RAISE EXCEPTION 'booking_aggregate_for_promoter: accesso negato — tenant non corrisponde';
   END IF;
 
+  -- M025-4: N≥10 privacy threshold (safe_aggregation_threshold = 10).
+  -- Se il totale prenotazioni è sotto la soglia, non restituire breakdown per status —
+  -- potrebbe permettere all'azienda promotrice di identificare partecipanti singoli.
+  -- Restituisce invece un bucket anonimizzato ('below_threshold', total_count).
+  -- KORA_ADMIN bypassa il threshold per esigenze di moderazione e oversight.
+  SELECT COUNT(*) INTO v_total_count
+  FROM commons.booking
+  WHERE post_id = p_post_id;
+
+  IF v_caller_role = 'COMPANY_ADMIN' AND v_total_count < v_privacy_threshold THEN
+    RETURN QUERY SELECT 'below_threshold'::text, v_total_count;
+    RETURN;
+  END IF;
+
   RETURN QUERY
   SELECT b.status::text, COUNT(*)::bigint
   FROM commons.booking b
@@ -147,7 +173,9 @@ $$;
 COMMENT ON FUNCTION commons.booking_aggregate_for_promoter(uuid) IS
   'B166 — Ritorna count prenotazioni per status per una singola iniziativa. '
   'SECURITY DEFINER per bypassare RLS sulla tabella booking. '
-  'Verifica ruolo JWT internamente. MAI righe individuali.';
+  'Verifica ruolo JWT internamente. MAI righe individuali. '
+  'M025-4: N<10 → restituisce below_threshold (safe_aggregation_threshold=10). '
+  'KORA_ADMIN bypassa il threshold per oversight/moderation.';
 
 -- ── 4. commons.contribution_event ────────────────────────────────────────────
 -- Binario reale che alimenta KORA Contribution per i tenant production_ready.
@@ -165,22 +193,90 @@ CREATE TABLE IF NOT EXISTS commons.contribution_event (
   source_post_id      uuid          NOT NULL REFERENCES commons.post (id) ON DELETE CASCADE,
 
   -- Ruolo dell'azienda in questo evento di Contribution
+  -- M025-3: expanded from (promoter, origin_employer) to support adoption/sponsorship/ecosystem
   role                text          NOT NULL
-                                    CHECK (role IN ('promoter', 'origin_employer')),
+                                    CHECK (role IN (
+                                      'promoter',         -- azienda che ha promosso l'iniziativa
+                                      'origin_employer',  -- azienda da cui proviene il worker partecipante
+                                      'adopter',          -- azienda che adotta un'iniziativa già esistente
+                                      'sponsor',          -- azienda che sponsorizza un'iniziativa esterna
+                                      'supporter',        -- azienda che supporta senza sponsorizzare
+                                      'cofunder',         -- azienda che cofinanzia
+                                      'kora_enabler',     -- azienda che ha reso possibile un'iniziativa KORA-originated
+                                      'partner'           -- partner esterno che co-progetta l'iniziativa
+                                    )),
 
-  -- Tipo di evento: booking cross-azienda o partecipanti esterni (familiari/comunità)
+  -- Tipo di evento: M025-1: expanded to support full contribution taxonomy A-F
   contribution_kind   text          NOT NULL
-                                    CHECK (contribution_kind IN ('cross_company_participation', 'external_participants_event')),
+                                    CHECK (contribution_kind IN (
+                                      -- A. Booking/Participation (Gate 3 — mig 025 source)
+                                      'cross_company_participation',
+                                      'external_participants_event',
+                                      -- B. Adoption/Sponsorship
+                                      'company_adoption',
+                                      'company_sponsorship',
+                                      'company_support',
+                                      'company_cofunding',
+                                      -- C. KORA-Originated/Enabled
+                                      'kora_originated_adoption',
+                                      'kora_enabled_adoption',
+                                      -- E. Replication/Scale
+                                      'initiative_replication',
+                                      -- D. Feedback/Value (aggregate only, N≥10)
+                                      'aggregate_feedback',
+                                      'aggregate_follow_up'
+                                    )),
 
   -- Peso di impatto che alimenta il companion indicator (0.0000 – 9.9999)
   impact_weight       numeric(8,4)  NOT NULL,
 
-  -- Qualità evidenza: booking approved→attended = verified; external_participants = self_declared
+  -- Qualità evidenza: M025-2: expanded to support partner/advisor/system verification
   evidence_status     text          NOT NULL
-                                    CHECK (evidence_status IN ('verified', 'self_declared')),
+                                    CHECK (evidence_status IN (
+                                      'verified',          -- admin-confirmed (attendance_marked)
+                                      'self_declared',     -- company self-reports (external_participants)
+                                      'partner_verified',  -- partner confirms participation
+                                      'advisor_verified',  -- KORA Advisor confirms
+                                      'system_verified'    -- automatic system verification (e.g. LMS API)
+                                    )),
 
   -- Periodo di rendicontazione (es. '2026-Q2')
   reporting_period    text          NOT NULL,
+
+  -- ── M025-6: Source / Event classification fields ──────────────────────────
+  -- These fields classify the signal source and component hint for V2 computation.
+  -- All nullable with safe defaults — new kinds default to NULL until set by source RPC.
+
+  -- Sorgente del segnale: 'booking', 'external_participants', 'adoption', 'sponsorship', 'replication'
+  source_type              text          NULL,
+
+  -- Evento specifico: 'attendance_marked', 'company_adopted', 'initiative_replicated', etc.
+  event_type               text          NULL,
+
+  -- Suggerimento al motore V2 su quale componente alimentare primarily
+  -- Values: 'activation_depth', 'adoption_reach', 'ecosystem_contribution', 'evidence_quality', 'strategic_breadth'
+  contribution_component_hint text        NULL,
+
+  -- N per segnali aggregati (feedback, follow-up). NULL per segnali per-evento (booking).
+  aggregate_count          integer       NULL CHECK (aggregate_count IS NULL OR aggregate_count >= 0),
+
+  -- true quando aggregate_count (o booking total per l'iniziativa) ha raggiunto N≥10 (privacy safe).
+  -- Enforcement primario avviene in booking_aggregate_for_promoter() e nel service layer.
+  privacy_threshold_met    boolean       NOT NULL DEFAULT false,
+
+  -- true se coinvolge due tenant distinti (worker tenant ≠ post tenant)
+  is_cross_company         boolean       NOT NULL DEFAULT false,
+
+  -- KORA-originated: l'iniziativa è stata creata/originata da KORA (non da un tenant).
+  -- Config declares kora_originated_if_adopted=true — implementation per Pre-Pilot plan G-3.
+  is_kora_originated       boolean       NOT NULL DEFAULT false,
+
+  -- KORA-enabled: KORA ha reso possibile il collegamento anche se non è l'iniziativa originale.
+  is_kora_enabled          boolean       NOT NULL DEFAULT false,
+
+  -- Tipo adozione per kind in (company_adoption, company_sponsorship, kora_originated_adoption, ...)
+  -- Values: 'sponsored', 'cofunded', 'promoted', 'made_available', 'formal_adoption'
+  adoption_type            text          NULL,
 
   created_at          timestamptz   NOT NULL DEFAULT now(),
 
@@ -206,7 +302,8 @@ COMMENT ON TABLE commons.contribution_event IS
   'B166 — Binario reale KORA Contribution (companion indicator — NON KORA Index). '
   'Una partecipazione cross_company genera due righe: role=promoter + role=origin_employer. '
   'External participants generano una riga role=promoter contribution_kind=external_participants_event. '
-  'Gate 2 OPEN: NOT applied.';
+  'M025-1/2/3/6 revised 2026-06-24: expanded CHECKs, new source/event/privacy fields. '
+  'Gate 2 OPEN: NOT applied to any live database.';
 
 -- ── 5. RLS commons.contribution_event ────────────────────────────────────────
 
@@ -227,8 +324,9 @@ CREATE POLICY "contribution_event_company_own_select"
     AND tenant_id = kora.tenant_id()
   );
 
--- WORKER: nessuna policy — i worker non vedono il Contribution aziendale
-GRANT SELECT ON commons.contribution_event TO authenticated;
+-- WORKER: nessuna policy — i worker non vedono il Contribution aziendale.
+-- La deny-by-default di RLS blocca qualsiasi SELECT da parte dei worker.
+-- Il GRANT tabella-livello è in sezione 7 (Grants) per chiarezza.
 
 -- ── 6. Estensione personal.worker_pib — source_booking_id ───────────────────
 -- Aggiunge FK a commons.booking per il PIB attribuito da partecipazione cross_company.
@@ -246,8 +344,20 @@ COMMENT ON COLUMN personal.worker_pib.source_booking_id IS
   'Mutual-exclusive con source_uef_record_id e source_participation_id.';
 
 -- ── 7. Grants ─────────────────────────────────────────────────────────────────
+-- M025-5: Restrict contribution_event grants.
+-- authenticated (company/worker) may only SELECT — enforced by company_own_select RLS policy.
+-- All INSERTs and UPDATEs to contribution_event must go through SECURITY DEFINER functions
+-- called by service_role (e.g. attribute_contribution_for_booking_atomic in mig 032).
+-- This enforces the invariant that contribution signals are not self-reported by tenants.
 
-GRANT SELECT, INSERT, UPDATE ON commons.contribution_event TO authenticated;
+GRANT SELECT ON commons.contribution_event TO authenticated;
+REVOKE INSERT, UPDATE ON commons.contribution_event FROM authenticated;
+REVOKE INSERT, UPDATE, DELETE ON commons.contribution_event FROM anon;
+
+-- booking: authenticated may INSERT/UPDATE (worker books, KORA_ADMIN moderates).
+-- See section 2 for the canonical booking grant — here for explicitness.
+-- GRANT SELECT, INSERT, UPDATE ON commons.booking TO authenticated; (already in section 2)
+
 GRANT EXECUTE ON FUNCTION commons.booking_aggregate_for_promoter(uuid) TO authenticated;
 
 -- ── 8. NOTIFY PostgREST ──────────────────────────────────────────────────────

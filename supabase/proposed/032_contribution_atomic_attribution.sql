@@ -14,10 +14,12 @@
 -- guaranteeing atomic attribution (both succeed or both rollback).
 --
 -- PREREQUISITES:
---   - commons schema must exist (migration 025 applied and confirmed)
---   - commons.contribution_event table must exist
+--   - commons schema must exist (migration 025 REVISED + applied and confirmed)
+--   - commons.contribution_event table must exist with M025-6 fields:
+--     source_type, event_type, contribution_component_hint, is_cross_company, privacy_threshold_met
 --   - commons.booking table must exist
 --   - Gate 3 must be closed (production apply) or staging-only (synthetic data)
+-- SCHEMA COMPAT: updated 2026-06-24 to populate M025-6 fields on both INSERTs.
 --
 -- GATE STATUS: Gate 3 OPEN — NOT APPLIED.
 -- APPLY: only after CTO review and Gate 3 closure. Do NOT run supabase db push.
@@ -61,12 +63,19 @@ BEGIN
   END IF;
 
   -- INSERT promoter row (booking host tenant)
+  -- M025-6 fields: source_type='booking', event_type='attendance_marked', is_cross_company=true.
+  -- privacy_threshold_met is not set here — the N≥10 check is enforced by
+  -- booking_aggregate_for_promoter() at read time. Set to false at write time.
   INSERT INTO commons.contribution_event (
     tenant_id, source_booking_id, source_post_id,
-    role, contribution_kind, impact_weight, evidence_status, reporting_period
+    role, contribution_kind, impact_weight, evidence_status, reporting_period,
+    source_type, event_type, contribution_component_hint,
+    is_cross_company, privacy_threshold_met
   ) VALUES (
     p_post_tenant_id, p_booking_id, p_post_id,
-    'promoter', 'cross_company_participation', p_promoter_weight, 'verified', p_reporting_period
+    'promoter', 'cross_company_participation', p_promoter_weight, 'verified', p_reporting_period,
+    'booking', 'attendance_marked', 'activation_depth',
+    true, false
   )
   ON CONFLICT ON CONSTRAINT uq_contribution_booking DO NOTHING;
 
@@ -75,10 +84,14 @@ BEGIN
   -- INSERT origin_employer row (worker's home tenant) — same transaction
   INSERT INTO commons.contribution_event (
     tenant_id, source_booking_id, source_post_id,
-    role, contribution_kind, impact_weight, evidence_status, reporting_period
+    role, contribution_kind, impact_weight, evidence_status, reporting_period,
+    source_type, event_type, contribution_component_hint,
+    is_cross_company, privacy_threshold_met
   ) VALUES (
     p_worker_tenant_id, p_booking_id, p_post_id,
-    'origin_employer', 'cross_company_participation', p_origin_weight, 'verified', p_reporting_period
+    'origin_employer', 'cross_company_participation', p_origin_weight, 'verified', p_reporting_period,
+    'booking', 'attendance_marked', 'activation_depth',
+    true, false
   )
   ON CONFLICT ON CONSTRAINT uq_contribution_booking DO NOTHING;
 

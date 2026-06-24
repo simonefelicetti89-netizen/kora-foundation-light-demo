@@ -582,4 +582,54 @@ Note: `insufficient_signal_min_events=2` was correct as a confidence threshold (
 
 ---
 
+---
+
+## Migration 025 Revision Status
+
+**Sprint completed:** 2026-06-24 (Migration 025 Revision Sprint — Pre-Apply Hardening)
+
+| ID | Issue | Status | Resolution |
+|---|---|---|---|
+| M025-1 | `contribution_kind` CHECK too narrow | **FIXED** | Expanded to 11 values: adds `company_adoption`, `company_sponsorship`, `company_support`, `company_cofunding`, `kora_originated_adoption`, `kora_enabled_adoption`, `initiative_replication`, `aggregate_feedback`, `aggregate_follow_up` |
+| M025-2 | `evidence_status` CHECK too narrow | **FIXED** | Expanded to 5 values: adds `partner_verified`, `advisor_verified`, `system_verified` |
+| M025-3 | `role` CHECK too narrow | **FIXED** | Expanded to 8 values: adds `adopter`, `sponsor`, `supporter`, `cofunder`, `kora_enabler`, `partner` |
+| M025-4 | `booking_aggregate_for_promoter()` no N≥10 threshold | **FIXED** | Added `v_privacy_threshold constant int := 10`. COMPANY_ADMIN receives `('below_threshold', total_count)` when N < 10. KORA_ADMIN bypasses threshold for oversight. Aligned with `safe_aggregation_threshold = 10`. |
+| M025-5 | Broad `GRANT SELECT, INSERT, UPDATE ON contribution_event TO authenticated` | **FIXED** | Section 7 now grants `SELECT` only + explicit `REVOKE INSERT, UPDATE FROM authenticated` and `REVOKE INSERT, UPDATE, DELETE FROM anon`. All contribution writes go through SECURITY DEFINER functions via service_role. |
+| M025-6 | Missing source/event/privacy fields | **FIXED** | Added 9 new columns: `source_type`, `event_type`, `contribution_component_hint`, `aggregate_count`, `privacy_threshold_met`, `is_cross_company`, `is_kora_originated`, `is_kora_enabled`, `adoption_type`. All nullable or with safe defaults. |
+
+### Migration 025 current status
+
+- **Classification changed:** `REVISE_BEFORE_APPLY` → **`READY_FOR_REVIEW`**
+- **Status:** Written, revised, NOT applied to any database
+- **Gate dependency:** Gate 3 OPEN — no live apply until Gate 3 closes
+- **No production state changed by this revision sprint**
+
+### Migration 032 current status
+
+- **Classification:** `READY_FOR_REVIEW` (updated for M025-6 schema compatibility)
+- **Status:** Proposed, NOT applied to any database
+- **Change:** Both INSERTs in `attribute_contribution_for_booking_atomic()` now populate M025-6 fields: `source_type='booking'`, `event_type='attendance_marked'`, `contribution_component_hint='activation_depth'`, `is_cross_company=true`, `privacy_threshold_met=false`
+- **Header updated:** Prerequisites now explicitly reference M025-6 fields
+- **Gate dependency:** Gate 3 OPEN — must be applied after revised migration 025
+
+### Remaining Gate 3 dependencies
+
+These capabilities remain blocked until Gate 3 closes and migrations are applied in sequence:
+
+1. Live booking → `commons.booking` INSERT
+2. Live `booking_aggregate_for_promoter()` call
+3. Live `attribute_contribution_for_booking_atomic()` call (mig 032)
+4. `computeContributionV2()` reading from real `contribution_event` rows
+5. `production_ready = true` tenant flag
+
+### Real-data and Pilot remain blocked
+
+- No real worker data created or imported
+- No migrations applied (`supabase db push` not run, `supabase migration up` not run)
+- KORA Contribution remains outside KORA Index — companion indicator only
+- KORA Index formula unchanged
+- No worker ranking, no individual contribution score
+
+---
+
 *Pre-Pilot Plan complete — read-only document, no migrations applied, no production state changed, Gate 3 OPEN.*
