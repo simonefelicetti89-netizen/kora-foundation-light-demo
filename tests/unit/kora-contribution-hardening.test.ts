@@ -1511,3 +1511,79 @@ describe('hardening — 21. Contribution event idempotency / reporting period (M
     expect(CONTRIBUTION_NO_INDIVIDUAL_SCORE).toBe(true);
   });
 });
+
+// ── 22. Handoff snapshot document integrity ───────────────────────────────────
+
+describe('hardening — 22. Handoff snapshot document integrity', () => {
+  const HANDOFF = 'HANDOFF_KORA_CONTRIBUTION_SOURCE_LAYER.md';
+
+  it('handoff document exists', () => {
+    expect(exists(HANDOFF)).toBe(true);
+  });
+
+  it('handoff mentions migration 025', () => {
+    expect(read(HANDOFF)).toContain('025');
+  });
+
+  it('handoff mentions migration 032', () => {
+    expect(read(HANDOFF)).toContain('032');
+  });
+
+  it('handoff mentions migration 033', () => {
+    expect(read(HANDOFF)).toContain('033');
+  });
+
+  it('handoff states Gate 3 OPEN', () => {
+    expect(read(HANDOFF)).toContain('Gate 3');
+    expect(read(HANDOFF)).toContain('OPEN');
+  });
+
+  it('handoff states no migrations applied', () => {
+    const doc = read(HANDOFF);
+    expect(doc).toContain('NOT applied');
+  });
+
+  it('handoff mentions uq_contribution_external', () => {
+    expect(read(HANDOFF)).toContain('uq_contribution_external');
+  });
+
+  it('handoff mentions reporting_period', () => {
+    expect(read(HANDOFF)).toContain('reporting_period');
+  });
+
+  it('handoff states KORA Contribution is outside KORA Index', () => {
+    const doc = read(HANDOFF);
+    expect(doc).toContain('companion indicator');
+    expect(doc).toContain('NOT');
+    expect(doc).toMatch(/NOT.*KORA Index component|companion indicator.*NOT/);
+  });
+
+  it('handoff states no worker ranking', () => {
+    const doc = read(HANDOFF);
+    expect(doc).toContain('worker ranking');
+    // Safety section must explicitly prohibit it
+    expect(doc).toContain('DO NOT introduce worker ranking');
+    // Safety confirmation table must confirm it is absent
+    expect(doc).toContain('No worker ranking');
+  });
+
+  it('handoff states no individual contribution score', () => {
+    const doc = read(HANDOFF);
+    expect(doc).toContain('individual contribution score');
+    expect(doc).toContain('DO NOT introduce individual contribution scores');
+    expect(doc).toContain('No individual contribution score');
+  });
+
+  it('handoff includes Do Not Do Yet section', () => {
+    expect(read(HANDOFF)).toContain('Do Not Do Yet');
+    expect(read(HANDOFF)).toContain('DO NOT apply migration 025');
+    expect(read(HANDOFF)).toContain('DO NOT apply migration 032');
+    expect(read(HANDOFF)).toContain('DO NOT apply migration 033');
+    expect(read(HANDOFF)).toContain('DO NOT run supabase db push');
+    expect(read(HANDOFF)).toContain('DO NOT close Gate 3');
+  });
+
+  it('handoff HEAD commit matches sprint 3 commit', () => {
+    expect(read(HANDOFF)).toContain('6384026');
+  });
+});
