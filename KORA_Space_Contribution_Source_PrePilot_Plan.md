@@ -632,4 +632,130 @@ These capabilities remain blocked until Gate 3 closes and migrations are applied
 
 ---
 
+---
+
+## Migration 033 Initiative Adoption Source Model
+
+**Sprint completed:** 2026-06-24 (Migration 033 Design Sprint)
+
+### Why migration 033 is needed
+
+Migration 025 M025-1 expanded the `contribution_kind` CHECK in `commons.contribution_event` to include adoption/sponsorship values: `company_adoption`, `company_sponsorship`, `company_support`, `company_cofunding`, `kora_originated_adoption`, `kora_enabled_adoption`. However, there is no source table that can generate these events.
+
+The `WorkerPillarAdoptionService` is a different concept — it provides company-level IU pillar distribution (GROWTH/LIFE/etc. share). It cannot be reused for company-to-initiative adoption signals.
+
+Migration 033 closes this gap by creating `commons.initiative_adoption` — a company-level record of adoption decisions — and the SECURITY DEFINER function `attribute_contribution_for_adoption()` that converts approved adoptions into `commons.contribution_event` rows.
+
+### Source gap closed
+
+| Gap | Before 033 | After 033 (Gate 3) |
+|---|---|---|
+| company_adoption kind source | No table | `commons.initiative_adoption` |
+| company_sponsorship kind source | No table | `commons.initiative_adoption` |
+| company_support kind source | No table | `commons.initiative_adoption` |
+| company_cofunding kind source | No table | `commons.initiative_adoption` |
+| kora_originated_adoption source | No table | `commons.initiative_adoption` + `is_kora_originated` flag |
+| kora_enabled_adoption source | No table | `commons.initiative_adoption` + `is_kora_enabled` flag |
+| Adoption attribution function | Missing | `attribute_contribution_for_adoption()` SECURITY DEFINER |
+
+### Schema overview
+
+**Table:** `commons.initiative_adoption`
+
+Key fields:
+- `initiative_id` → FK to `commons.post` (the KORA Space initiative)
+- `adopting_company_tenant_id` — tenant of the company adopting
+- `origin_company_tenant_id` — tenant of the originating company (NULL if KORA-originated)
+- `adoption_type` CHECK: 9 values — see taxonomy below
+- `adoption_status` CHECK: proposed → approved → active → completed | cancelled | rejected
+- `source_origin` CHECK: 6 values — company_originated, cross_company, partner_originated, territory_originated, kora_originated, kora_enabled
+- `is_kora_originated`, `is_kora_enabled`, `is_cross_company` — propagated to contribution_event
+- `evidence_status` CHECK: 5 values aligned with migration 025 M025-2
+- `effective_from`, `effective_to` — temporal scope
+- `notes` — internal only, never surfaced in worker-facing UI
+- `created_by` — audit FK to `auth.users`
+
+**Idempotency:** `UNIQUE (initiative_id, adopting_company_tenant_id, adoption_type)` — a company can only adopt a given initiative once per adoption type, but can hold multiple types (e.g., both `formal_adoption` and `cofunding` on the same initiative).
+
+**Constitutional exclusions (hard schema rule):** `worker_identity_id`, `worker_id`, individual bookings, individual participation, individual comments/ratings — NEVER present in `commons.initiative_adoption`.
+
+### Adoption/Sponsorship/Support Taxonomy
+
+| adoption_type | contribution_kind | role | component_hint |
+|---|---|---|---|
+| `formal_adoption` | `company_adoption` | `adopter` | `adoption_reach` |
+| `sponsorship` | `company_sponsorship` | `sponsor` | `adoption_reach` |
+| `support` / `promotion` / `made_available` | `company_support` | `supporter` | `adoption_reach` |
+| `cofunding` | `company_cofunding` | `cofunder` | `ecosystem_contribution` |
+| `kora_enabled_adoption` | `kora_enabled_adoption` | `kora_enabler` | `ecosystem_contribution` |
+| `kora_originated_adoption` | `kora_originated_adoption` | `kora_enabler` | `ecosystem_contribution` |
+| `partner_delivery` | `company_support` | `partner` | `adoption_reach` |
+
+All `adoption_type`, `contribution_kind`, and `role` values exist in migration 025's expanded CHECK constraints. No migration 025 changes needed for 033 compatibility.
+
+### KORA-originated / KORA-enabled handling
+
+Config declared `kora_originated_if_adopted: true` and `kora_enabled_if_adopted: true` (G-3 from IU Source Audit). Migration 033 implements these as runtime fields:
+- `is_kora_originated boolean NOT NULL DEFAULT false` on `initiative_adoption`
+- `is_kora_enabled boolean NOT NULL DEFAULT false` on `initiative_adoption`
+- Both fields are propagated to `contribution_event.is_kora_originated` / `is_kora_enabled` by `attribute_contribution_for_adoption()`
+- Founder decision on whether to enable before Pilot still pending (Q-1)
+
+### Contribution event mapping
+
+`attribute_contribution_for_adoption(p_adoption_id, p_reporting_period)` — SECURITY DEFINER (KORA_ADMIN / service_role):
+
+1. Validates adoption record exists and status is approved/active/completed
+2. Maps `adoption_type` → `contribution_kind` + `role` + `component_hint` via CASE
+3. INSERTs adopter row: `tenant_id = adopting_company_tenant_id`, `role = adopter/sponsor/etc.`, `source_type = 'adoption'`, `privacy_threshold_met = false`
+4. If `is_cross_company=true` AND `origin_company_tenant_id IS NOT NULL`: INSERTs promoter row for the origin company at `p_origin_weight` (default 0.5000), `component_hint = 'ecosystem_contribution'`
+5. Both INSERTs in same PL/pgSQL block (atomic via implicit transaction)
+6. Idempotency: `ON CONFLICT ON CONSTRAINT uq_contribution_external DO NOTHING`
+
+### Privacy threshold boundary
+
+| Signal | N≥10 threshold? | Rationale |
+|---|---|---|
+| Adoption decision itself | No — company-level decision | No workers involved in the record |
+| `privacy_threshold_met` in contribution_event | Default `false` | Adoption alone doesn't confirm N≥10 worker participation |
+| Booking/participation combined with adoption | Yes — `booking_aggregate_for_promoter()` | N<10 → `below_threshold` response (M025-4) |
+| Adoption + booking count in V2 `adoptionReach` | Yes — `privacy_threshold_min_events: 10` in config | Must not expose small-N counts to employer |
+
+Adoption-sourced contribution events do NOT expose individual worker identity. Combining adoption signals with booking data requires the full N≥10 enforcement chain.
+
+### RLS / Grants summary
+
+| Role | initiative_adoption access |
+|---|---|
+| KORA_ADMIN | ALL (full oversight) |
+| COMPANY_ADMIN | SELECT WHERE tenant = adopter OR tenant = origin |
+| COMPANY_VIEWER | SELECT WHERE tenant = adopter OR tenant = origin |
+| WORKER | None (deny-by-default) |
+| anon | None (REVOKE ALL) |
+| PUBLIC | None (REVOKE ALL) |
+| Direct INSERT from authenticated | Blocked — use `create_initiative_adoption()` RPC |
+| attribute_contribution_for_adoption | service_role + KORA_ADMIN only |
+
+### Apply order
+
+```
+025 (REVISED, READY_FOR_REVIEW)
+  → 032 (atomic booking attribution)
+  → 033 (initiative adoption source model)
+```
+
+032 and 033 are independent — apply order between them does not matter. Both depend on 025.
+
+### Status
+
+- **Migration 033:** `supabase/proposed/033_initiative_adoption_source_model.sql`
+- **Classification:** READY_FOR_REVIEW (design only)
+- **Status:** PROPOSED — NOT applied to any database
+- **Gate 3 dependency:** All live paths blocked until Gate 3 closes
+- **Real-data/Pilot:** Blocked
+- **KORA Contribution:** Remains outside KORA Index (companion indicator only)
+- **No runtime code changed by this design sprint**
+
+---
+
 *Pre-Pilot Plan complete — read-only document, no migrations applied, no production state changed, Gate 3 OPEN.*

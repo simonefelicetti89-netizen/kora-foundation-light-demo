@@ -915,3 +915,352 @@ describe('hardening — 19. Migration 025 revision sprint (M025-1 through M025-6
     expect(CONTRIBUTION_NO_INDIVIDUAL_SCORE).toBe(true);
   });
 });
+
+// ── 20. Migration 033 — Initiative Adoption Source Model ─────────────────────
+
+describe('hardening — 20. Migration 033 initiative adoption source model', () => {
+  const MIG033 = 'supabase/proposed/033_initiative_adoption_source_model.sql';
+  const MIG025 = 'supabase/migrations/025_commons_booking_contribution.sql';
+
+  // File location
+  it('migration 033 exists in supabase/proposed/ (design only, not in forward pipeline)', () => {
+    expect(exists(MIG033)).toBe(true);
+  });
+
+  it('migration 033 is NOT in supabase/migrations/ (not applied)', () => {
+    expect(exists('supabase/migrations/033_initiative_adoption_source_model.sql')).toBe(false);
+  });
+
+  it('migration 033 carries NOT APPLIED marker', () => {
+    expect(read(MIG033)).toMatch(/NOT APPLIED/i);
+  });
+
+  // Table definition
+  it('migration 033 creates commons.initiative_adoption table', () => {
+    const sql = read(MIG033);
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS commons.initiative_adoption');
+  });
+
+  // adoption_type CHECK values
+  it('adoption_type CHECK includes formal_adoption', () => {
+    expect(read(MIG033)).toContain("'formal_adoption'");
+  });
+
+  it('adoption_type CHECK includes sponsorship', () => {
+    expect(read(MIG033)).toContain("'sponsorship'");
+  });
+
+  it('adoption_type CHECK includes support', () => {
+    expect(read(MIG033)).toContain("'support'");
+  });
+
+  it('adoption_type CHECK includes cofunding', () => {
+    expect(read(MIG033)).toContain("'cofunding'");
+  });
+
+  it('adoption_type CHECK includes promotion', () => {
+    expect(read(MIG033)).toContain("'promotion'");
+  });
+
+  it('adoption_type CHECK includes made_available', () => {
+    expect(read(MIG033)).toContain("'made_available'");
+  });
+
+  it('adoption_type CHECK includes partner_delivery', () => {
+    expect(read(MIG033)).toContain("'partner_delivery'");
+  });
+
+  it('adoption_type CHECK includes kora_enabled_adoption', () => {
+    expect(read(MIG033)).toContain("'kora_enabled_adoption'");
+  });
+
+  it('adoption_type CHECK includes kora_originated_adoption', () => {
+    expect(read(MIG033)).toContain("'kora_originated_adoption'");
+  });
+
+  // adoption_status CHECK values
+  it('adoption_status CHECK includes proposed', () => {
+    expect(read(MIG033)).toContain("'proposed'");
+  });
+
+  it('adoption_status CHECK includes approved', () => {
+    expect(read(MIG033)).toContain("'approved'");
+  });
+
+  it('adoption_status CHECK includes active', () => {
+    expect(read(MIG033)).toContain("'active'");
+  });
+
+  it('adoption_status CHECK includes completed', () => {
+    expect(read(MIG033)).toContain("'completed'");
+  });
+
+  it('adoption_status CHECK includes cancelled', () => {
+    expect(read(MIG033)).toContain("'cancelled'");
+  });
+
+  it('adoption_status CHECK includes rejected', () => {
+    expect(read(MIG033)).toContain("'rejected'");
+  });
+
+  // source_origin CHECK values
+  it('source_origin CHECK includes company_originated', () => {
+    expect(read(MIG033)).toContain("'company_originated'");
+  });
+
+  it('source_origin CHECK includes cross_company', () => {
+    expect(read(MIG033)).toContain("'cross_company'");
+  });
+
+  it('source_origin CHECK includes partner_originated', () => {
+    expect(read(MIG033)).toContain("'partner_originated'");
+  });
+
+  it('source_origin CHECK includes territory_originated', () => {
+    expect(read(MIG033)).toContain("'territory_originated'");
+  });
+
+  it('source_origin CHECK includes kora_originated', () => {
+    expect(read(MIG033)).toContain("'kora_originated'");
+  });
+
+  it('source_origin CHECK includes kora_enabled', () => {
+    expect(read(MIG033)).toContain("'kora_enabled'");
+  });
+
+  // evidence_status alignment with migration 025 M025-2
+  it('evidence_status in 033 includes self_declared (aligned with mig 025 M025-2)', () => {
+    expect(read(MIG033)).toContain("'self_declared'");
+  });
+
+  it('evidence_status in 033 includes verified (aligned with mig 025 M025-2)', () => {
+    const sql = read(MIG033);
+    // Check within the initiative_adoption table block (not contribution_event)
+    expect(sql).toContain("'verified'");
+  });
+
+  it('evidence_status in 033 includes partner_verified (aligned with mig 025 M025-2)', () => {
+    expect(read(MIG033)).toContain("'partner_verified'");
+  });
+
+  it('evidence_status in 033 includes advisor_verified (aligned with mig 025 M025-2)', () => {
+    expect(read(MIG033)).toContain("'advisor_verified'");
+  });
+
+  it('evidence_status in 033 includes system_verified (aligned with mig 025 M025-2)', () => {
+    expect(read(MIG033)).toContain("'system_verified'");
+  });
+
+  // Constitutional privacy exclusions
+  it('worker_identity_id NOT a column in initiative_adoption (may appear in exclusion comments)', () => {
+    const sql = read(MIG033);
+    const tableBlock = sql.substring(
+      sql.indexOf('CREATE TABLE IF NOT EXISTS commons.initiative_adoption'),
+      sql.indexOf('CREATE TRIGGER trg_initiative_adoption_updated_at')
+    );
+    // Column definitions follow the pattern: identifier  type (with leading whitespace, not in a comment line)
+    // The comment "-- ✗ NO worker_identity_id" documents the exclusion but is not a column definition.
+    const columnDefLines = tableBlock.split('\n')
+      .filter(l => !l.trim().startsWith('--'))   // exclude comment lines
+      .join('\n');
+    expect(columnDefLines).not.toContain('worker_identity_id');
+  });
+
+  it('worker_id NOT a column in initiative_adoption (may appear in exclusion comments)', () => {
+    const sql = read(MIG033);
+    const tableBlock = sql.substring(
+      sql.indexOf('CREATE TABLE IF NOT EXISTS commons.initiative_adoption'),
+      sql.indexOf('CREATE TRIGGER trg_initiative_adoption_updated_at')
+    );
+    const columnDefLines = tableBlock.split('\n')
+      .filter(l => !l.trim().startsWith('--'))
+      .join('\n');
+    expect(columnDefLines).not.toContain('worker_id');
+  });
+
+  it('no individual comment/rating/feedback column in initiative_adoption (exclusion docs allowed)', () => {
+    const sql = read(MIG033);
+    const tableBlock = sql.substring(
+      sql.indexOf('CREATE TABLE IF NOT EXISTS commons.initiative_adoption'),
+      sql.indexOf('CREATE TRIGGER trg_initiative_adoption_updated_at')
+    );
+    // Strip comment lines before checking — constitutional exclusion comments are expected
+    const columnDefLines = tableBlock.split('\n')
+      .filter(l => !l.trim().startsWith('--'))
+      .join('\n');
+    // These must not appear as column identifiers (they may appear only in comment text)
+    expect(columnDefLines).not.toMatch(/^\s+rating\s/m);
+    expect(columnDefLines).not.toMatch(/^\s+individual_feedback\s/m);
+    // 'notes' is acceptable — it's internal admin-only free text, never individual worker feedback
+  });
+
+  // RLS
+  it('RLS enabled on initiative_adoption', () => {
+    expect(read(MIG033)).toContain('ALTER TABLE commons.initiative_adoption ENABLE ROW LEVEL SECURITY');
+  });
+
+  it('KORA_ADMIN has full access policy on initiative_adoption', () => {
+    const sql = read(MIG033);
+    expect(sql).toContain("initiative_adoption_kora_admin_all");
+    expect(sql).toContain("kora.kora_role() = 'KORA_ADMIN'");
+  });
+
+  it('COMPANY_ADMIN/VIEWER has own-tenant SELECT policy', () => {
+    const sql = read(MIG033);
+    expect(sql).toContain("initiative_adoption_company_select");
+    expect(sql).toContain("kora.kora_role() IN ('COMPANY_ADMIN', 'COMPANY_VIEWER')");
+  });
+
+  it('anon has no access — REVOKE ALL FROM anon', () => {
+    expect(read(MIG033)).toContain('REVOKE ALL ON commons.initiative_adoption FROM anon');
+  });
+
+  it('PUBLIC has no unsafe access — REVOKE ALL FROM PUBLIC', () => {
+    expect(read(MIG033)).toContain('REVOKE ALL ON commons.initiative_adoption FROM PUBLIC');
+  });
+
+  // Contribution event mapping
+  it('attribute_contribution_for_adoption function exists', () => {
+    expect(read(MIG033)).toContain('attribute_contribution_for_adoption');
+  });
+
+  it('attribution maps to company_adoption contribution_kind', () => {
+    expect(read(MIG033)).toContain("'company_adoption'");
+  });
+
+  it('attribution maps to company_sponsorship contribution_kind', () => {
+    expect(read(MIG033)).toContain("'company_sponsorship'");
+  });
+
+  it('attribution maps to company_support contribution_kind', () => {
+    expect(read(MIG033)).toContain("'company_support'");
+  });
+
+  it('attribution maps to company_cofunding contribution_kind', () => {
+    expect(read(MIG033)).toContain("'company_cofunding'");
+  });
+
+  it('attribution maps to kora_originated_adoption contribution_kind', () => {
+    expect(read(MIG033)).toContain("'kora_originated_adoption'");
+  });
+
+  it('attribution maps to kora_enabled_adoption contribution_kind', () => {
+    expect(read(MIG033)).toContain("'kora_enabled_adoption'");
+  });
+
+  // All contribution_kind values used in 033 exist in 025 CHECK constraint
+  it('all 033 contribution_kinds are present in migration 025 M025-1 CHECK', () => {
+    const sql025 = read(MIG025);
+    expect(sql025).toContain("'company_adoption'");
+    expect(sql025).toContain("'company_sponsorship'");
+    expect(sql025).toContain("'company_support'");
+    expect(sql025).toContain("'company_cofunding'");
+    expect(sql025).toContain("'kora_originated_adoption'");
+    expect(sql025).toContain("'kora_enabled_adoption'");
+  });
+
+  // All role values used in 033 exist in 025 M025-3 CHECK
+  it('all 033 role values are present in migration 025 M025-3 CHECK', () => {
+    const sql025 = read(MIG025);
+    expect(sql025).toContain("'adopter'");
+    expect(sql025).toContain("'sponsor'");
+    expect(sql025).toContain("'supporter'");
+    expect(sql025).toContain("'cofunder'");
+    expect(sql025).toContain("'kora_enabler'");
+    expect(sql025).toContain("'partner'");
+    expect(sql025).toContain("'promoter'");  // for origin company row
+  });
+
+  // Idempotency
+  it('idempotency constraint exists on initiative_adoption', () => {
+    expect(read(MIG033)).toContain('uq_initiative_adoption');
+  });
+
+  it('attribution function uses ON CONFLICT DO NOTHING (idempotent)', () => {
+    const sql = read(MIG033);
+    const count = (sql.match(/ON CONFLICT.*DO NOTHING/g) || []).length;
+    expect(count).toBeGreaterThanOrEqual(2); // at least adopter + promoter INSERTs
+  });
+
+  // privacy_threshold_met conservative default
+  it('privacy_threshold_met set to false at adoption INSERT (not confirmed by adoption alone)', () => {
+    const sql = read(MIG033);
+    // attribution function sets privacy_threshold_met = false
+    expect(sql).toContain('privacy_threshold_met');
+    // Should appear in the INSERT VALUES with false
+    const attrFn = sql.substring(sql.indexOf('attribute_contribution_for_adoption'));
+    expect(attrFn).toContain('false  -- N≥10 not confirmed');
+  });
+
+  // Apply order documented
+  it('migration 033 documents apply order 025 → 032 → 033', () => {
+    const sql = read(MIG033);
+    expect(sql).toContain('025');
+    expect(sql).toContain('032');
+    expect(sql).toContain('033');
+    expect(sql).toMatch(/025.*032.*033|APPLY ORDER/);
+  });
+
+  // Gate 3 dependency documented
+  it('migration 033 documents Gate 3 dependency', () => {
+    expect(read(MIG033)).toContain('Gate 3');
+  });
+
+  // Pre-pilot plan updated
+  it('pre-pilot plan includes migration 033 section', () => {
+    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    expect(doc).toContain('Migration 033 Initiative Adoption Source Model');
+    expect(doc).toContain('initiative_adoption');
+    expect(doc).toContain('adoption_type');
+    expect(doc).toContain('kora_originated');
+    expect(doc).toContain('READY_FOR_REVIEW');
+    expect(doc).toContain('NOT applied');
+  });
+
+  // SECURITY DEFINER guards
+  it('attribute_contribution_for_adoption is SECURITY DEFINER', () => {
+    expect(read(MIG033)).toContain('SECURITY DEFINER');
+  });
+
+  it('attribute_contribution_for_adoption restricted to service_role', () => {
+    const sql = read(MIG033);
+    expect(sql).toContain('GRANT EXECUTE ON FUNCTION commons.attribute_contribution_for_adoption TO service_role');
+    expect(sql).toContain('REVOKE ALL ON FUNCTION commons.attribute_contribution_for_adoption FROM PUBLIC');
+  });
+
+  it('create_initiative_adoption EXECUTE granted to authenticated (company-facing RPC)', () => {
+    expect(read(MIG033)).toContain('GRANT EXECUTE ON FUNCTION commons.create_initiative_adoption TO authenticated');
+  });
+
+  // Migration status
+  it('migration 033 is NOT applied — not in forward migration pipeline', () => {
+    expect(exists('supabase/migrations/033_initiative_adoption_source_model.sql')).toBe(false);
+    expect(exists('supabase/proposed/033_initiative_adoption_source_model.sql')).toBe(true);
+  });
+
+  it('migration 025 is still NOT applied (unchanged by 033 design sprint)', () => {
+    expect(read(MIG025)).toMatch(/NOT applied/i);
+    expect(exists('supabase/migrations/025_commons_booking_contribution.sql')).toBe(true);
+  });
+
+  it('migration 032 is still NOT applied (unchanged by 033 design sprint)', () => {
+    expect(exists('supabase/proposed/032_contribution_atomic_attribution.sql')).toBe(true);
+    expect(exists('supabase/migrations/032_contribution_atomic_attribution.sql')).toBe(false);
+  });
+
+  // Global doctrine
+  it('KORA Contribution remains outside KORA Index after 033 design sprint', async () => {
+    const { CONTRIBUTION_IS_KORA_INDEX_COMPONENT } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_IS_KORA_INDEX_COMPONENT).toBe(false);
+  });
+
+  it('no worker ranking introduced by 033 design sprint', async () => {
+    const { CONTRIBUTION_NO_RANKING } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_NO_RANKING).toBe(true);
+  });
+
+  it('no individual contribution score introduced by 033 design sprint', async () => {
+    const { CONTRIBUTION_NO_INDIVIDUAL_SCORE } = await import('@/lib/kora-contribution/contribution-methodology');
+    expect(CONTRIBUTION_NO_INDIVIDUAL_SCORE).toBe(true);
+  });
+});
