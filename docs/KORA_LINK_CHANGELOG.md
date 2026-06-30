@@ -69,4 +69,65 @@ Sezioni prodotte (21 sezioni, design-only):
 
 ---
 
-*KORA_LINK_CHANGELOG.md — KL-01 · 2026-06-30*
+## KL-02 — Decision Gate: Open Questions + Branch Strategy
+
+**Data:** 2026-06-30
+**Branch:** `feat/kora-link-v1`
+**Tipo:** Decisionale — nessuna modifica runtime
+
+### Contenuto
+
+Creato `docs/KORA_LINK_KL02_DECISION_GATE.md` — documento decisionale pre-codice KORA Link.
+
+| Sezione | Contenuto |
+|---------|-----------|
+| §1 Executive Summary | Stato post-KL-01; divergenza branch; cosa serve prima del codice |
+| §2 Branch Topology | Merge base `eaecdad`; 1 ahead / 10 behind `platform/readiness`; perché questa divergenza blocca il codice |
+| §3 OQ-01→OQ-04/OQ-12 | 5 domande critiche con analisi opzioni e raccomandazione netta |
+| §4 Additional OQs | 16 domande addizionali con owner, blocco codice/produzione |
+| §5 Recommended Decisions | Tabella decisioni raccomandate con rationale e residual risk |
+| §6 Branch Strategy Options | Analisi A/B/C dettagliata con pro/contro |
+| §7 Recommended Strategy | **Option B** — nuovo branch `feat/kora-link-v1-platform` da `platform/readiness` + cherry-pick KL-01 |
+| §8 Pre-Migration Gates | 10 gate (MG-01→MG-10) con status |
+| §9 Pre-Runtime Gates | 13 gate (RG-01→RG-13) con status |
+| §10 Next KL Prompts | Sequenza KL-03→KL-08 |
+
+### Decisioni raccomandate chiave
+
+| OQ | Decisione |
+|----|-----------|
+| OQ-01 URL dominio | `https://app.kora.ai/link/<token>` — stessa app, nessuna infra aggiuntiva |
+| OQ-02 Token hash | Solo hash BLAKE2b+salt — DB leak non espone token attivi |
+| OQ-03 TTL | 180gg pre-attivazione, nessun TTL post-attivazione v1 |
+| OQ-04 Pre-assignment | Batch↔tenant server-side; chip rimane anonimo |
+| OQ-12 Schema | `kora_link.*` dedicato — isolamento e revocabilità completi |
+
+### Branch strategy raccomandata
+
+**Option B:** `feat/kora-link-v1-platform` da `platform/readiness` + cherry-pick `361829a` (KL-01).
+
+Motivazione: KORA Link codice deve partire dalla base hardenizzata CC-07→CC-15; cherry-pick zero-risk (2 doc files); storia pulita; non blocca review CTO di `platform/readiness`.
+
+### Metriche
+
+- File creati: 1 (`docs/KORA_LINK_KL02_DECISION_GATE.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- Codice runtime modificato: 0
+- Migrations create: 0
+- TypeScript: 0 errori
+- Vitest: 8079/8079 green
+- Build: OK
+
+### Gate status post-KL-02
+
+| Gate | Status |
+|------|--------|
+| Gate 2 (CTO schema review) | OPEN |
+| Gate 3 (DPO/legal) | OPEN |
+| KL-01 Design | ✅ COMPLETATO |
+| KL-02 Decision Gate | ✅ COMPLETATO |
+| KL-03 Branch strategy execution | In attesa approvazione Founder/CTO su OQ + Option B |
+
+---
+
+*KORA_LINK_CHANGELOG.md — KL-02 · 2026-06-30*
