@@ -202,4 +202,61 @@ export const FEATURE_FLAGS = {
 
 ---
 
-*Prossimo step: CC-04*
+---
+
+## CC-04 — DATA_MODEL.md
+
+**Data:** 2026-06-30
+**Branch:** `docs/consolidation`
+**HEAD iniziale:** `79b8706` (CC-03)
+
+**Scopo:** documentazione tecnica del modello dati KORA per CTO, reviewer esterno, team di sviluppo.
+
+**Fonti lette (read-only):**
+- `supabase/migrations/` — tutti i 30 file (001–031, no 029)
+- `supabase/proposed/032_contribution_atomic_attribution.sql`
+- `supabase/proposed/033_initiative_adoption_source_model.sql`
+- `lib/supabase/types.ts` (542 righe, hand-written)
+
+**Nessuna connessione a Supabase. Nessuna migration applicata. Produzione non toccata.**
+
+**Struttura documento (16 sezioni):**
+
+| Sezione | Contenuto |
+|---------|-----------|
+| 1 | Executive Summary — 2 principi architetturali, metriche schema |
+| 2 | Schema Map — 7 schemi, purpose, chi accede, privacy level |
+| 3 | Core Entity Map — tutte le tabelle per schema con migration di origine |
+| 4 | Privacy Boundary Map — matrice 25×7 (tabella × ruolo) |
+| 5 | Migration Map — 001–031 (applicate), 032–033 (proposed), 034–035 (pianificate) |
+| 6 | RLS Model — meccanismo canonico, pattern policy, funzioni SECURITY DEFINER |
+| 7 | Supabase Types — stato hand-written, 8 rischi di drift identificati |
+| 8 | KORA Index Data Model — catena analytics 14-stage, immutabilità scoring |
+| 9 | Worker PIB Data Model — catena personal, re-identificazione prevention |
+| 10 | KORA Space / Contribution Data Model — commons chain cross-company |
+| 11 | KORA Link v1 Candidate Model — 034/035, Modalità A/B, prerequisiti |
+| 12 | Two-Track Event Model — Track 1 (IU→Index) vs Track 2 (Contribution) |
+| 13 | Partner L4 Accreditation — EV correction factor, accreditamento schema |
+| 14 | Wallet Hook — gov.kip_records escluso, Gate 5 blocca |
+| 15 | Data Risks — 8 rischi identificati (DR-01 a DR-08) |
+| 16 | Migration Roadmap — ordine apply 032/033/034/035 con prerequisiti |
+
+**Chiarimento numerazione KORA Link:**
+- 032 occupato: `032_contribution_atomic_attribution.sql` (proposed/)
+- 033 occupato: `033_initiative_adoption_source_model.sql` (proposed/)
+- **034** = primo numero libero → `034_kora_link_schema.sql`
+- **035** = secondo numero libero → `035_kora_link_rls.sql`
+
+**File prodotti:** `DATA_MODEL.md`
+
+**Conferme:**
+- ✅ Nessun codice runtime modificato
+- ✅ Nessun Supabase client usato
+- ✅ Produzione non toccata
+- ✅ Nessun merge in `main`
+- ✅ Nessun segreto stampato
+- ✅ Nessuna migration applicata
+
+---
+
+*Consolidazione completata: CC-00 → CC-04*
