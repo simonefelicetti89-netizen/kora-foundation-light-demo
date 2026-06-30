@@ -12,7 +12,8 @@ import { Sidebar } from '@/components/layout/Sidebar';
 // Route che non ricevono il chrome AppShell (sidebar + header + banner).
 // /pilot è pubblico come la landing.
 // B126: /cv/share/ added — public share view, no AppShell chrome needed.
-const PUBLIC_ROUTE_PREFIXES = ['/', '/demo', '/pilot', '/login', '/admin/login', '/auth/', '/request-access', '/cv/share/'];
+// KL-10: /link/ added — KORA Link public NFC entry point, no chrome.
+const PUBLIC_ROUTE_PREFIXES = ['/', '/demo', '/pilot', '/login', '/admin/login', '/auth/', '/request-access', '/cv/share/', '/link/'];
 
 function isPublicRoute(pathname: string): boolean {
   return PUBLIC_ROUTE_PREFIXES.some((p) =>

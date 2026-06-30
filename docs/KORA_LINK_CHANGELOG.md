@@ -6,6 +6,108 @@
 
 ---
 
+## KL-10 — KORA Link Public Route Skeleton /link/[token]
+
+**Data:** 2026-07-01
+**Branch:** `feat/kora-link-v1-platform`
+**Tipo:** Codice TypeScript runtime + Next.js server component + test unit — nessuna migration, nessun DB, nessuna activation, nessuna UI completa
+
+### Contenuto
+
+Creato `lib/kora-link/public-route.ts` — helper server-only per la valutazione dello stato della route pubblica.
+Creato `app/link/[token]/page.tsx` — server component (`runtime=nodejs`, `dynamic=force-dynamic`) come entry point NFC.
+Creato `tests/unit/kora-link-public-route.test.ts` — 28 test unit, copertura completa, zero vi.mock, zero network.
+Modificato `components/layout/AppShell.tsx` — aggiunto `/link/` a `PUBLIC_ROUTE_PREFIXES` (nessun chrome per la route pubblica NFC).
+
+### Funzioni esportate
+
+#### `lib/kora-link/public-route.ts`
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `KoraLinkPublicRouteState` | type | Unione discriminata: `hidden` · `token_invalid` · `unavailable` · `rate_limited` · `skeleton` |
+| `EvaluateKoraLinkPublicRouteParams` | type | `{ rawToken, identifier?, env?, rateLimiterOverride? }` — tutto injectable |
+| `evaluateKoraLinkPublicRouteState(params)` | fn | Valuta lo stato della route in sequenza: flag → format → readiness → rate limit → skeleton |
+
+### Logica della route (sequenza)
+
+```
+evaluateKoraLinkPublicRouteState(params)
+  1. isKoraLinkEnabled(env)           → hidden se off
+  2. isValidTokenFormat(rawToken)     → token_invalid se malformato
+  3. getKoraLinkReadiness(env)        → unavailable se secret/base-url mancanti
+  4. createKoraLinkRateLimiter(env)   → unavailable se factory throws (production guard)
+     rateLimiter.check(...)
+       → unavailable se reason=missing_provider|not_implemented
+       → rate_limited se allowed=false senza quelle reason
+       → skeleton se allowed=true
+```
+
+### Comportamento per stato
+
+| Stato | Causa | Response page.tsx |
+|-------|-------|-------------------|
+| `hidden` | Feature flag off | `notFound()` |
+| `token_invalid` | Formato token non valido | `notFound()` |
+| `unavailable` | Runtime non pronto o factory throw | `KoraLinkUnavailablePage` |
+| `rate_limited` | Limite superato (provider configurato) | `KoraLinkRateLimitedPage` |
+| `skeleton` | Tutti i check superati | `KoraLinkSkeletonPage` |
+
+### Sicurezza
+
+- Token raw mai loggato, mai in nessun stato restituito
+- `notFound()` usato per hidden/token_invalid: non rivela se il token esiste o è valido
+- Identifier default: `anonymous:public_link` (via `createRateLimitIdentifier`) — nessun IP raw
+- Errori del rate limiter/factory catturati e mappati a `unavailable` (no dettagli esposti)
+- `runtime='nodejs'` per `node:crypto` — non compatibile con Edge runtime
+- Nessun import Supabase, nessun DB lookup, nessuna activation
+
+### Modifiche esistenti
+
+| File | Modifica |
+|------|----------|
+| `components/layout/AppShell.tsx` | Aggiunto `/link/` a `PUBLIC_ROUTE_PREFIXES` — la route NFC non riceve sidebar/header/banner |
+
+### Copertura test (28 test, 6 suite)
+
+| Suite | Test |
+|-------|------|
+| 1. Feature flag off | 4 |
+| 2. Token format validation | 7 |
+| 3. Runtime readiness | 3 |
+| 4. Rate limiting | 7 |
+| 5. Skeleton state | 2 |
+| 6. Privacy safety | 5 |
+
+Strategia: env injection + `rateLimiterOverride` injection — nessun `vi.mock`, nessuna rete.
+
+### Metriche
+
+- File creati: 3 (`lib/kora-link/public-route.ts`, `app/link/[token]/page.tsx`, `tests/unit/kora-link-public-route.test.ts`)
+- File modificati: 2 (`components/layout/AppShell.tsx`, `docs/KORA_LINK_CHANGELOG.md`)
+- Dipendenze aggiunte: 0
+- Supabase usato: no
+- DB lookup: no
+- Activation: no
+- Migration: 0
+- TypeScript: 0 errori
+- ESLint: 0 errori, 0 warning
+- Vitest: 8381/8381 passed (+28 rispetto a KL-09)
+- Build: OK — `/link/[token]` presente come route dynamic
+- E2E: 6/6 passed
+
+### Gate status post-KL-10
+
+| Gate | Status |
+|------|--------|
+| Gate 2 (CTO schema review) | OPEN |
+| Gate 3 (DPO/legal) | OPEN |
+| KL-01 → KL-09 | ✅ COMPLETATI |
+| KL-10 Public Route Skeleton | ✅ COMPLETATO |
+| KL-11+ | DB lookup (Gate 2+3 required) · Worker activation flow · NFC full flow |
+
+---
+
 ## KL-09 — KORA Link Upstash Rate Limit Adapter
 
 **Data:** 2026-07-01
