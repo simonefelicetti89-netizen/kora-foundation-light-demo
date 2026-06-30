@@ -102,4 +102,92 @@ per un CTO esterno. Poi Opzione A per completare la demo readiness.
 
 ---
 
+## CC-08 — Playwright E2E Setup + Primo Golden Path
+
+**Data:** 2026-06-30
+**Commit:** (vedi log post-commit)
+**Branch:** `platform/readiness`
+
+### Cosa è stato aggiunto
+
+| File | Tipo | Contenuto |
+|------|------|-----------|
+| `playwright.config.ts` | Config | Playwright setup: Chromium, webServer, baseURL localhost:3000 |
+| `tests/e2e/kora-smoke.spec.ts` | Test E2E | 6 smoke test su pagine pubbliche |
+| `docs/E2E_TESTING.md` | Documentazione | Guida completa: comandi, golden path futuri, limiti, troubleshooting |
+| `package.json` | Script | `test:e2e`, `test:e2e:headed`, `test:e2e:ui` |
+
+### Playwright — stato pre-setup
+
+- `playwright` 1.60.0 era già in devDependencies — **non reinstallato**
+- `playwright/test` subpath funzionava già (no `@playwright/test` separato necessario)
+- Chromium era già in cache (`/Users/.../ms-playwright/chromium-1223`)
+- Zero config E2E, zero test E2E
+
+### Test E2E creati (6/6 green)
+
+| ID | Percorso | Asserzione chiave | Risultato |
+|----|---------|-----------------|---------|
+| S01 | `/` | "Human Impact Intelligence Platform" visibile | ✅ |
+| S02 | `/login` | "Accedi a KORA" + `data-testid="login-email-input"` | ✅ |
+| S03 | `/login?role_hint=company` | "Area Aziendale" visibile | ✅ |
+| S04 | `/login?role_hint=worker` | "Il tuo spazio privato KORA" visibile | ✅ |
+| S05 | `/request-access` | `data-testid="request-access-page"` + h1 "Richiedi accesso" | ✅ |
+| S06 | `/demo` | Status < 500, no runtime error, "KORA" in body | ✅ |
+
+**Tempo totale run:** ~6 secondi (con dev server già caldo)
+
+### Comandi
+
+```bash
+npm run test:e2e           # headless
+npm run test:e2e:headed    # con browser visibile
+npm run test:e2e:ui        # UI interattiva
+```
+
+### Metriche
+
+| Metrica | Prima CC-08 | Dopo CC-08 |
+|---------|------------|-----------|
+| E2E browser test | 0 | 6 (6/6 green) |
+| TypeScript | CLEAN | CLEAN |
+| vitest | 8079/8079 | 8079/8079 |
+| Build | OK | OK |
+| Playwright config | assente | presente |
+| Scripts E2E in package.json | 0 | 3 |
+
+### Rischi residui
+
+- Nessun test autenticato — golden path company/worker richiedono account staging dedicati
+- Solo Chromium — Firefox/Safari non testati
+- No CI/CD integration — Playwright non è ancora in pipeline CI
+- `@sparticuz/chromium` in dependencies (per uso server-side) è separato da Playwright browser — nessun conflitto
+
+### Cosa NON è stato toccato
+
+- Nessun codice runtime modificato
+- Nessun SQL, RLS, migrations
+- Nessun Supabase client usato
+- Produzione non toccata
+- Auth/middleware non toccati
+- Business logic invariata
+
+### Prossimi step raccomandati (CC-09)
+
+**Opzione A — Cluster B (Shell/Demo Gating):**
+Board Pack shell label, sidebar inactive flag, verifica sistematica pagine vuote.
+Claude Code: sì. Nessun rischio tecnico.
+
+**Opzione B — E2E autenticati (staging):**
+Richiede account di test dedicati su staging e configurazione variabili env E2E.
+Non implementabile senza credenziali. Documentare in CC-09 come prerequisiti.
+
+**Opzione C — Cluster E (Supabase types):**
+Aggiornare `lib/supabase/types.ts` con campi mancanti dalle migrations (tenant_kind, ecc.).
+Claude Code: sì. Basso rischio.
+
+Consiglio: **Opzione A** (Shell/Demo Gating) — immediato, nessun prerequisito esterno, alta visibilità demo.
+
+---
+
 *Aggiornare questo documento dopo ogni CC-XX che tocca `platform/readiness`.*
