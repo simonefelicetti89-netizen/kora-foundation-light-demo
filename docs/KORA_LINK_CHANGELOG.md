@@ -284,4 +284,102 @@ per review CTO/Postgres/DPO. NON in `supabase/migrations/`.
 
 ---
 
-*KORA_LINK_CHANGELOG.md — KL-05 · 2026-06-30*
+---
+
+## KL-06 — Token Core: generazione, validazione, digest, redazione
+
+**Data:** 2026-06-30
+**Branch:** `feat/kora-link-v1-platform`
+**Tipo:** Codice TypeScript runtime + test unit — nessuna migration, nessuna UI, nessuna route
+
+### Contenuto
+
+Creato `lib/kora-link/token.ts` — modulo server-only per il token core KORA Link.
+Creato `tests/unit/kora-link-token.test.ts` — 65 test unit copertura completa.
+
+### Funzioni esportate
+
+| Funzione | Scopo |
+|----------|-------|
+| `generateToken()` | Genera token CSPRNG `kl1_<48 base62>` con rejection sampling (no modulo bias) |
+| `validateTokenFormat(token)` | Valida formato — restituisce `{ valid: true }` o `{ valid: false, reason }`, mai eccezione |
+| `isValidTokenFormat(token)` | Type guard booleano su `validateTokenFormat` |
+| `computeDigest(tokenValue, secret)` | HMAC-SHA256(tokenValue, secret) → 64-char hex — unico valore da persistere in DB |
+| `digestPrefix(digest)` | Restituisce i primi 8 char del digest — per audit log, non come lookup key |
+| `getTokenSecret()` | Legge `KORA_LINK_TOKEN_SECRET` da `process.env`; lancia eccezione se assente o < 64 char |
+| `redactToken(input)` | Sostituisce ogni `kl1_<48 base62>` con `kl1_[REDACTED]` — chiamare prima di qualsiasi logger |
+
+### Costanti esportate
+
+| Costante | Valore | Note |
+|----------|--------|------|
+| `KORA_LINK_TOKEN_PREFIX` | `'kl1_'` | Prefisso versione 1 |
+| `KORA_LINK_TOKEN_PAYLOAD_LENGTH` | `48` | Char base62 dopo il prefisso |
+| `KORA_LINK_TOKEN_MIN_LENGTH` | `52` | Lunghezza totale (4 + 48) |
+| `KORA_LINK_TOKEN_MAX_LENGTH` | `52` | Uguale a MIN in v1 |
+| `KORA_LINK_TOKEN_DIGEST_LENGTH` | `64` | HMAC-SHA256 hex output |
+| `KORA_LINK_TOKEN_DIGEST_PREFIX_LENGTH` | `8` | Char prefix per audit log |
+| `KORA_LINK_SECRET_MIN_LENGTH` | `64` | 256 bit in hex |
+
+### Invarianti rispettati
+
+- `token_value` (cleartext): **mai passato a nessun logger** — `redactToken()` è il guardrail
+- `KORA_LINK_TOKEN_SECRET`: letto da env, mai hardcodato, mai loggato
+- Rejection sampling: byte ≥ 248 scartati — nessun modulo bias su base62
+- `computeDigest` produce sempre hex lowercase di 64 char
+- `digestPrefix` restituisce 8 char per correlazione audit, non come lookup key
+- Nessuna importazione da client/browser; `node:crypto` only
+
+### Copertura test (65 test, 8 suite)
+
+| Suite | Test |
+|-------|------|
+| Constants | 7 — valori canonici verificati |
+| generateToken | 7 — formato, unicità 1000 campioni, copertura charset |
+| validateTokenFormat (valid) | 3 — casi corretti |
+| validateTokenFormat (invalid) | 13 — null, undefined, numero, vuoto, prefisso errato, lunghezza errata, char non-base62 |
+| isValidTokenFormat | 3 — type guard |
+| computeDigest | 8 — determinismo, differenza per input diversi, unicità 1000 digest, eccezioni |
+| digestPrefix | 6 — lunghezza, valore, hex, eccezioni |
+| getTokenSecret | 6 — env mancante, vuoto, troppo corto, valido, eccezione con messaggio bit |
+| redactToken | 10 — token bare, in frase, in URL, multipli, assente, parziale, da generateToken |
+
+### File non modificati
+
+- Nessuna route `/link/[token]`
+- Nessuna UI
+- Nessuna migration
+- Nessun file `.env`
+- `supabase/proposed/034_kora_link_schema.sql` non modificato
+- Nessun codice RLS, auth, middleware, service-role, Supabase client
+
+### Metriche
+
+- File creati: 2 (`lib/kora-link/token.ts`, `tests/unit/kora-link-token.test.ts`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- Dipendenze npm aggiunte: 0 (solo `node:crypto` nativo)
+- TypeScript: 0 errori (`tsc --noEmit`)
+- Vitest KL-06: 65/65 passed
+- Vitest suite completa: 8193/8193 passed (+65 rispetto a KL-05)
+- Build: non rilanciate (no modifica route/UI)
+- Supabase usato: no
+- DB connesso: no
+- SQL eseguito: no
+
+### Gate status post-KL-06
+
+| Gate | Status |
+|------|--------|
+| Gate 2 (CTO schema review) | OPEN |
+| Gate 3 (DPO/legal) | OPEN |
+| KL-01 Design | ✅ COMPLETATO |
+| KL-02 Decision Gate | ✅ COMPLETATO |
+| KL-03 Branch strategy | ✅ COMPLETATO |
+| KL-04 Token Threat Model | ✅ COMPLETATO |
+| KL-05 Migration 034 draft | ✅ COMPLETATO — in attesa review CTO |
+| KL-06 Token Core | ✅ COMPLETATO |
+| KL-07 Route pubblica `/link/[token]` | Prerequisiti: `KORA_LINK_ENABLED` feature flag; rate limiting Upstash; Gate 2+3 |
+
+---
+
+*KORA_LINK_CHANGELOG.md — KL-06 · 2026-06-30*
