@@ -130,4 +130,81 @@ Motivazione: KORA Link codice deve partire dalla base hardenizzata CC-07→CC-15
 
 ---
 
-*KORA_LINK_CHANGELOG.md — KL-02 · 2026-06-30*
+## KL-04 — Token Threat Model
+
+**Data:** 2026-06-30
+**Branch:** `feat/kora-link-v1-platform`
+**Tipo:** Design only — nessuna modifica runtime
+
+### Contenuto
+
+Creato `docs/KORA_LINK_TOKEN_THREAT_MODEL.md` — threat model tecnico completo del token KORA Link.
+
+| Sezione | Contenuto |
+|---------|-----------|
+| §1 Executive Summary | Token anonimo, HMAC-SHA256, rate limiting bloccante |
+| §2 Token asset definition | Cosa è/non è il token; perché non è credenziale da sola |
+| §3 Token generation | CSPRNG, 48 char base62, prefisso `kl1_`, ~285 bit entropia |
+| §4 Token storage comparison | Opzioni A/B/C/D con pro/contro/rischio |
+| §5 Storage decision | **HMAC-SHA256 + `KORA_LINK_TOKEN_SECRET`** — definitivo |
+| §6 Token lifecycle | 10 stati con transizioni, visibilità per ruolo, audit |
+| §7 TTL policy | 180gg pre-attivazione, no TTL post v1, replacement |
+| §8 Public route behavior | Tabella completa per ogni condizione di stato |
+| §9 Uniform error/timing | 404 uniforme, timing oracle, messaggi pubblici |
+| §10 Logging policy | Cosa non loggare mai; cosa loggare; IP/DPO |
+| §11 Rate limiting | Per-endpoint, Upstash Redis, bloccante per prod |
+| §12 Replay/abuse | 13 rischi con mitigazione v1/futura e blocco codice/prod |
+| §13 Lost/stolen/replacement | Processo end-to-end per worker, company, admin |
+| §14 Partner scan constraints | Vincoli v1.1+: privacy, accreditamento, no double counting |
+| §15 Migration 034 requirements | Tabelle, enum, indici, vincoli per `kora_link.*` |
+| §16 RLS 035 requirements | Deny-by-default, policy per tabella, SECURITY DEFINER |
+| §17 Environment/secrets | `KORA_LINK_TOKEN_SECRET` spec, lunghezza, rotazione |
+| §18 Acceptance criteria — migration | 14 item checklist |
+| §19 Acceptance criteria — runtime | 15 item checklist |
+| §20 Final recommendation | Storage, TTL, route behavior, rate limiting; KL-05 sì |
+
+### Decisioni chiave
+
+| Tema | Decisione |
+|------|-----------|
+| Hash algorithm | **HMAC-SHA256** (non BLAKE2b — nativo Node, standard, difendibile) |
+| Token format | `kl1_` + 48 char base62 → ~285 bit entropia |
+| Storage | Solo `token_digest` nel DB — cleartext mai persistito |
+| Secret | `KORA_LINK_TOKEN_SECRET` env var, 256 bit, staging/prod separati |
+| TTL | 180gg pre-attivazione; no TTL post-attivazione v1 |
+| 404 uniforme | Missing = revocato = scaduto = sospeso (no oracle) |
+| Rate limiting | Upstash Redis — bloccante per produzione, opzionale staging |
+
+### OQ risolte da KL-04
+
+- OQ-02: HMAC-SHA256 confermato (supera BLAKE2b per praticità Node/Next)
+- OQ-06: token length = 48 char base62 (+ prefisso `kl1_`)
+- OQ-07: charset = base62 [A-Za-z0-9]
+- Versioning: prefisso `kl1_` per migration futura algoritmo
+
+### Metriche
+
+- File creati: 1 (`docs/KORA_LINK_TOKEN_THREAT_MODEL.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- Codice runtime modificato: 0
+- Migrations create: 0
+- TypeScript: 0 errori
+- Vitest: 8128/8128 green
+- Build: OK
+- E2E Playwright: 6/6 passed
+
+### Gate status post-KL-04
+
+| Gate | Status |
+|------|--------|
+| Gate 2 (CTO schema review) | OPEN |
+| Gate 3 (DPO/legal) | OPEN |
+| KL-01 Design | ✅ COMPLETATO |
+| KL-02 Decision Gate | ✅ COMPLETATO |
+| KL-03 Branch strategy | ✅ COMPLETATO |
+| KL-04 Token Threat Model | ✅ COMPLETATO |
+| KL-05 Migration 034 draft | In attesa approvazione CTO su token strategy + schema |
+
+---
+
+*KORA_LINK_CHANGELOG.md — KL-04 · 2026-06-30*
