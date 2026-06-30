@@ -140,4 +140,38 @@ export const FEATURE_FLAGS = {
 
 ---
 
-*Prossimo step: CC-02 — platform readiness*
+---
+
+## CC-02 — Platform Inventory
+
+**Data:** 2026-06-30
+**Branch:** `docs/consolidation`
+**HEAD iniziale:** `f985fe2` (CC-01)
+
+**Scopo:** fotografia oggettiva della piattaforma per CTO, investitori, clienti e team esterno.
+
+**Chiarimento tag CC-01:** il commit `c1c57db` era la HEAD di `main` quando CC-01 è iniziato. Durante CC-01, i doc CC-00/CC-00B/CC-00C sono stati committati su `main` creando `eaecdad`. Il tag `value-freeze-v1` è stato apposto su `eaecdad` — ovvero sul freeze completo comprensivo di documentazione, non sul punto di partenza grezzo. Corretto: il freeze cattura lo stato documentato.
+
+**Aree analizzate:** 25
+
+**Distribuzione stato:**
+
+| Stato | N. aree |
+|---|---|
+| LIVE | ~14 |
+| PREVIEW / LIVE-AWARE | ~5 |
+| DEMO-ONLY / LOCKED-SHELL / MOCKUP | ~8 |
+| Migration non applicate | 3 (025 staging, 032, 033) |
+
+**File prodotti:** `docs/KORA_PLATFORM_INVENTORY.md`
+
+**Conferme:**
+- ✅ Nessun codice runtime modificato
+- ✅ Nessun Supabase client usato
+- ✅ Produzione non toccata
+- ✅ Nessun merge in `main`
+- ✅ Nessun segreto stampato
+
+---
+
+*Prossimo step: CC-03*
