@@ -259,4 +259,77 @@ export const FEATURE_FLAGS = {
 
 ---
 
-*Consolidazione completata: CC-00 → CC-04*
+---
+
+## CC-05 — INVARIANTS.md + KORA Product Doctrine
+
+**Data:** 2026-06-30
+**Branch:** `docs/consolidation`
+**HEAD iniziale:** `138f2f8` (CC-04)
+
+**Scopo:** fissare gli invarianti non negoziabili di KORA e la dottrina prodotto per proteggere identità, privacy, metodologia e confini del sistema nelle fasi di sviluppo futuro.
+
+**File creati:**
+
+| File | Descrizione |
+|------|-------------|
+| `spec/INVARIANTS.md` | 84 invarianti strutturati con ID, titolo, descrizione, vieta/permette, area sorgente, review richiesta |
+| `spec/KORA_PRODUCT_DOCTRINE.md` | Dottrina prodotto narrativa in 10 sezioni, rivolta a fondatori, advisor, CTO, investitori |
+
+**Sezioni INVARIANTS.md — 7 sezioni, 84 invarianti:**
+
+| Sezione | Codici | N. | Topic |
+|---------|--------|----|-------|
+| A | INV-A01 → INV-A20 | 20 | Core KORA — privacy, separazione schemi, service-role, triple protection, demo/live |
+| B | INV-B21 → INV-B30 | 10 | Engine / Metodologia — pesi, scoring path, IU formula, spiegabilità |
+| C | INV-C31 → INV-C50 | 20 | KORA Link v1 — chip, token, URL, attivazione self-service, privacy link |
+| D | INV-D51 → INV-D60 | 10 | Modello a due binari — Modalità A/B, singolo binario, no double counting |
+| E | INV-E61 → INV-E70 | 10 | Partner L4 / Advisor Audit — EV, accreditamento, scadenza, revoca |
+| F | INV-F71 → INV-F77 | 7 | Wallet Futuro — nessun wallet in v1, hook predisposto, prerequisiti legali |
+| G | INV-G78 → INV-G84 | 7 | Investor/Client Readiness — gating, demo labeling, release criteria |
+
+**Sezioni KORA_PRODUCT_DOCTRINE.md — 10 sezioni:**
+
+| # | Sezione |
+|---|---------|
+| 1 | What KORA Is |
+| 2 | What KORA Is Not |
+| 3 | Core Promise |
+| 4 | Privacy Doctrine |
+| 5 | Methodology Doctrine |
+| 6 | KORA Space Doctrine |
+| 7 | KORA Link Doctrine |
+| 8 | Release Doctrine |
+| 9 | Investor/Client Doctrine |
+| 10 | Non-Negotiables (10 principi) |
+
+**Top 10 invarianti più critici:**
+
+| ID | Motivo |
+|----|--------|
+| INV-A01 | KORA misura organizzazioni — core identity |
+| INV-A03 | Output azienda solo aggregato — confine privacy primario |
+| INV-A04 | Worker privacy boundary — `personal.*` inaccessibile a company |
+| INV-A16 | Triple protection — nessuno dei 3 layer è rimuovibile |
+| INV-C33 | Chip NFC anonimo — design fisico anti-sorveglianza |
+| INV-C39 | Legame token↔worker = self-service lavoratore — mai pre-associato |
+| INV-D52 | Ogni evento alimenta un solo binario — no double counting |
+| INV-C48 | Route pubblica `/link/[token]` senza PII |
+| INV-A08 | KORA Contribution non altera il KORA Index |
+| INV-B26 | KORA Index spiegabile con CS + calibration_status sempre presenti |
+
+**Conflitti con codice esistente:** nessuno identificato — documento puro, nessuna modifica runtime.
+
+**Cartella `spec/` creata** (non esisteva prima di CC-05).
+
+**Conferme:**
+- ✅ Nessun codice runtime modificato
+- ✅ Nessun SQL modificato
+- ✅ Nessun Supabase client usato
+- ✅ Produzione non toccata
+- ✅ Nessun merge in `main`
+- ✅ Nessun segreto stampato
+
+---
+
+*Consolidazione completata: CC-00 → CC-05*
