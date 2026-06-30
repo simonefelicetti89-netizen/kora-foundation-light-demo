@@ -6,6 +6,61 @@
 
 ---
 
+## KL-11 — Runtime Checkpoint + Gate Report
+
+**Data:** 2026-07-01
+**Branch:** `feat/kora-link-v1-platform`
+**Tipo:** Documentazione tecnica/operativa — nessun codice runtime, nessuna migration, nessuna UI
+
+### Contenuto
+
+Creato `docs/KORA_LINK_RUNTIME_CHECKPOINT.md` — checkpoint tecnico-funzionale post KL-10:
+stato implementato (KL-01→KL-10), comportamento route pubblica, privacy posture, security posture,
+testing status (8381/8381, 253 test KORA Link), cosa NON è implementato, blocker correnti,
+raccomandazione prossimo step (Option A — DB/RLS path prioritaria).
+
+Creato `docs/KORA_LINK_GATE_REPORT.md` — report operativo con 9 gate:
+Gate 1 (Runtime base ✅), Gate 2 (schema 034 🔴 pending CTO), Gate 3 (Privacy/DPO 🔴),
+Gate 4 (RLS 035 🔴 not started), Gate 5 (Staging 🔴), Gate 6 (Route enablement 🟡 skeleton ok),
+Gate 7-9 (Activation / Partner / Production 🔴). Gate decision: RUNTIME_READY_FOR_REVIEW.
+
+### Gate decision
+
+```
+RUNTIME_BASE     → ✅ READY_FOR_REVIEW
+DB_LOOKUP        → 🔴 NOT_READY (Gate 2+4)
+WORKER_ACTIVATION → 🔴 NOT_READY (Gate 2+3+4+6)
+PRODUCTION       → 🔴 NOT_READY (tutti i gate)
+```
+
+### Metriche
+
+- File creati: 2 (`docs/KORA_LINK_RUNTIME_CHECKPOINT.md`, `docs/KORA_LINK_GATE_REPORT.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- Codice runtime modificato: 0
+- Migrations create: 0
+- TypeScript: 0 errori
+- Vitest: 8381/8381 (verificato corrente)
+- Build: OK
+- E2E: 6/6
+
+### Gate status post-KL-11
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (Schema 034 CTO review) | 🔴 OPEN — azione immediata raccomandata |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| Gate 4 (RLS 035) | 🔴 OPEN — not started |
+| Gate 5 (Staging env) | 🔴 OPEN |
+| Gate 6 (Public route enablement) | 🟡 Skeleton completo, enablement bloccato |
+| Gate 7-9 | 🔴 OPEN |
+| KL-01 → KL-10 | ✅ COMPLETATI |
+| KL-11 Checkpoint + Gate Report | ✅ COMPLETATO |
+| KL-12 | Raccomandato: CTO review checklist 034 (Option A) |
+
+---
+
 ## KL-10 — KORA Link Public Route Skeleton /link/[token]
 
 **Data:** 2026-07-01
