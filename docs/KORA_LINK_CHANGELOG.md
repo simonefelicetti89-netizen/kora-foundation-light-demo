@@ -6,6 +6,53 @@
 
 ---
 
+## KL-12 — 034 CTO Review Checklist
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Documentazione — analisi sola lettura di `supabase/proposed/034_kora_link_schema.sql`. Nessun codice runtime, nessuna migration, nessun SQL eseguito.
+
+### Contenuto
+
+Creato `docs/KORA_LINK_034_CTO_REVIEW_CHECKLIST.md` — checklist completa per la CTO/Postgres review dello schema 034:
+
+- **Sezione 1** — Executive summary e stato gate
+- **Sezione 2** — Scope della review (in scope / Gate 3 / Gate 4)
+- **Sezione 3** — Riepilogo file 034: 11 tabelle, 25 indici, dipendenze, invarianti già implementati
+- **Sezione 4** — 8 domande bloccanti (TODO-CTO-01→08): FK targets, `UNIQUE NULLS NOT DISTINCT` Postgres 15+, colonna generata `scan_date` + timezone, TTL enforcement strategy, `audit_log` retention, `public_lookup_attempts` volume, secret rotation procedure, deferred self-FK compatibilità Supabase
+- **Sezione 5** — 5 domande non bloccanti: indice ridondante su UNIQUE constraint, scope `link_delivery_records` v1 vs v1.1+, `public_lookup_attempts` vs Upstash, trigger `updated_at` su `link_consents`, `partner_scans` in 034 vs migration separata
+- **Sezione 6** — Privacy review checklist (14 invarianti P-01→P-14) con status 034 e azioni richieste
+- **Sezione 7** — Security review checklist (15 controlli S-01→S-15)
+- **Sezione 8** — RLS 035 dependency map: policy per-tabella (A–N), SECURITY DEFINER functions spec, vista aggregata company spec, prerequisiti per scrivere 035
+- **Sezione 9** — Istruzioni per il reviewer: query verifica dipendenze pre-apply, query verifica post-apply, focus aree DBA
+- **Sezione 10** — Decision template compilabile: una casella per ogni TODO-CTO e firma CTO
+- **Sezione 11** — Recommended outcome: percorso KL-12→KL-15, ipotesi durata Gate 2, blocco assoluto
+
+### Metriche
+
+- File creati: 1 (`docs/KORA_LINK_034_CTO_REVIEW_CHECKLIST.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- Codice runtime modificato: 0
+- SQL eseguito: 0
+- Migrations create: 0
+- TypeScript: 0 errori
+- Vitest: invariato (nessun codice runtime modificato)
+- Build: invariato
+
+### Gate status post-KL-12
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (Schema 034 CTO review) | 🔴 OPEN — checklist KL-12 disponibile per il reviewer |
+| Gate 3 (DPO/legal) | 🔴 OPEN — può avanzare in parallelo |
+| Gate 4 (RLS 035) | 🔴 OPEN — dipende da Gate 2 stabilizzato |
+| Gate 5-9 | 🔴 OPEN |
+| KL-12 Checklist CTO | ✅ COMPLETATO |
+| KL-13 | Raccomandato: draft 035 RLS (dopo Gate 2 avanzato) |
+
+---
+
 ## KL-11 — Runtime Checkpoint + Gate Report
 
 **Data:** 2026-07-01
