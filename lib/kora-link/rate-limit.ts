@@ -1,15 +1,18 @@
 // lib/kora-link/rate-limit.ts
-// KORA Link — rate limit types, policy, adapter skeleton.
-// Server-only. No browser imports. No Supabase. No DB. No network.
+// KORA Link — rate limit types, policy, adapters, and factory.
+// Server-only. No browser imports. No Supabase. No DB.
 //
-// PROVIDER STATUS (KL-08):
-//   'disabled' → dev/test only, always allows. Production use blocked by factory.
-//   'upstash'  → not yet integrated. Returns unavailable/not_implemented until KL-09+.
+// PROVIDER STATUS (KL-09):
+//   'disabled' → dev/test only, always allows. Production blocked by factory.
+//   'upstash'  → real Upstash Redis adapter. Requires UPSTASH_REDIS_REST_URL + TOKEN.
 //   null       → provider not configured. Denied in dev/test, throws in production.
 //
-// PRODUCTION RULE:
-//   Never deploy with KORA_LINK_RATE_LIMIT_PROVIDER missing or 'disabled'.
-//   Enforce at server startup via assertKoraLinkRateLimitProductionSafe().
+// PRODUCTION RULES:
+//   KORA_LINK_RATE_LIMIT_PROVIDER must be 'upstash' with Upstash env configured.
+//   Call assertKoraLinkRateLimitProductionSafe() at server startup to enforce.
+
+import { Redis } from '@upstash/redis';
+import { Ratelimit } from '@upstash/ratelimit';
 
 import {
   KORA_LINK_RATE_LIMIT_WINDOW_MS,
@@ -41,6 +44,12 @@ export type KoraLinkRateLimitDecision = {
 
 export type KoraLinkRateLimiter = {
   check(context: KoraLinkRateLimitContext): Promise<KoraLinkRateLimitDecision>;
+};
+
+export type KoraLinkUpstashEnvStatus = {
+  hasUrl: boolean;
+  hasToken: boolean;
+  ready: boolean;
 };
 
 // ── Per-route limits ───────────────────────────────────────────────────────────
@@ -92,7 +101,7 @@ export function createDisabledKoraLinkRateLimiter(): KoraLinkRateLimiter {
 }
 
 // ── Unavailable limiter ────────────────────────────────────────────────────────
-// Denies every request. Used when provider is missing or not yet integrated.
+// Denies every request. Used when provider is missing or not yet configured.
 
 export function createUnavailableKoraLinkRateLimiter(
   provider: KoraLinkRateLimitProvider | null
@@ -107,6 +116,77 @@ export function createUnavailableKoraLinkRateLimiter(
         remaining: 0,
         resetAt: null,
         reason: provider === null ? 'missing_provider' : 'not_implemented',
+      };
+    },
+  };
+}
+
+// ── Upstash env status ─────────────────────────────────────────────────────────
+
+export function getKoraLinkUpstashEnvStatus(
+  env: KoraLinkEnv = process.env
+): KoraLinkUpstashEnvStatus {
+  const hasUrl = Boolean(env['UPSTASH_REDIS_REST_URL']);
+  const hasToken = Boolean(env['UPSTASH_REDIS_REST_TOKEN']);
+  return { hasUrl, hasToken, ready: hasUrl && hasToken };
+}
+
+export function assertKoraLinkUpstashReady(env: KoraLinkEnv = process.env): void {
+  const status = getKoraLinkUpstashEnvStatus(env);
+  if (status.ready) return;
+  const missing: string[] = [];
+  if (!status.hasUrl) missing.push('UPSTASH_REDIS_REST_URL');
+  if (!status.hasToken) missing.push('UPSTASH_REDIS_REST_TOKEN');
+  throw new Error(
+    `KORA Link Upstash: variabili env mancanti — ${missing.join(', ')}`
+  );
+}
+
+// ── Upstash adapter ────────────────────────────────────────────────────────────
+
+export function createUpstashKoraLinkRateLimiter(
+  env: KoraLinkEnv = process.env
+): KoraLinkRateLimiter {
+  const url = env['UPSTASH_REDIS_REST_URL'];
+  const token = env['UPSTASH_REDIS_REST_TOKEN'];
+
+  if (!url || !token) {
+    throw new Error(
+      'KORA Link Upstash: env non configurato — UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN richiesti'
+    );
+  }
+
+  const redis = new Redis({ url, token });
+  // Ratelimit instances are created lazily per route on first check() call.
+  const limiters = new Map<KoraLinkRateLimitContext['route'], Ratelimit>();
+
+  function getLimiter(route: KoraLinkRateLimitContext['route']): Ratelimit {
+    let limiter = limiters.get(route);
+    if (!limiter) {
+      const { limit, windowMs } = getKoraLinkRateLimitPolicy(route);
+      const windowSecs = Math.round(windowMs / 1000);
+      limiter = new Ratelimit({
+        redis,
+        limiter: Ratelimit.slidingWindow(limit, `${windowSecs} s`),
+        analytics: false,
+        prefix: `kl:rl:${route}`,
+      });
+      limiters.set(route, limiter);
+    }
+    return limiter;
+  }
+
+  return {
+    async check(context: KoraLinkRateLimitContext): Promise<KoraLinkRateLimitDecision> {
+      const { limit } = getKoraLinkRateLimitPolicy(context.route);
+      const ratelimiter = getLimiter(context.route);
+      const result = await ratelimiter.limit(context.identifier);
+      return {
+        allowed: result.success,
+        provider: 'upstash',
+        limit,
+        remaining: result.remaining,
+        resetAt: result.reset,
       };
     },
   };
@@ -137,8 +217,16 @@ export function createKoraLinkRateLimiter(env: KoraLinkEnv = process.env): KoraL
   }
 
   if (provider === 'upstash') {
-    // Upstash not yet integrated (pending KL-09+). Deny all until wired.
-    return createUnavailableKoraLinkRateLimiter('upstash');
+    const upstashStatus = getKoraLinkUpstashEnvStatus(env);
+    if (!upstashStatus.ready) {
+      if (isProduction) {
+        throw new Error(
+          'KORA Link: Upstash env mancanti in production — configurare UPSTASH_REDIS_REST_URL e UPSTASH_REDIS_REST_TOKEN'
+        );
+      }
+      return createUnavailableKoraLinkRateLimiter('upstash');
+    }
+    return createUpstashKoraLinkRateLimiter(env);
   }
 
   throw new Error('KORA Link: provider non riconosciuto');
@@ -163,7 +251,10 @@ export function assertKoraLinkRateLimitProductionSafe(env: KoraLinkEnv = process
     );
   }
 
-  // 'upstash' → accepted (Upstash integration pending; enforcement is at route level in KL-09+)
+  if (provider === 'upstash') {
+    // Also verify Upstash env is configured when provider is set to upstash
+    assertKoraLinkUpstashReady(env);
+  }
 }
 
 // ── Identifier builder ─────────────────────────────────────────────────────────

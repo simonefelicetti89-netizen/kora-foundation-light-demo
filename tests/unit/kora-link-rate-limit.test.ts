@@ -1,6 +1,8 @@
 // tests/unit/kora-link-rate-limit.test.ts
-// KL-08 — KORA Link rate limit adapter skeleton unit tests.
+// KL-08/KL-09 — KORA Link rate limit adapter unit tests.
 // No Supabase. No DB. No network. All env injected via parameter.
+// Factory tests that create Upstash adapters use the real constructors (no network
+// from construction). Real check() calls are tested separately in kora-link-rate-limit-upstash.test.ts.
 
 import { describe, it, expect } from 'vitest';
 import {
@@ -281,11 +283,30 @@ describe('createKoraLinkRateLimiter', () => {
     expect(decision.reason).toBe('not_implemented');
   });
 
-  it('provider upstash in production → returns unavailable/not_implemented (does not throw)', async () => {
-    const limiter = createKoraLinkRateLimiter(prodEnv('upstash'));
-    const decision = await limiter.check(BASE_CTX);
-    expect(decision.allowed).toBe(false);
-    expect(decision.reason).toBe('not_implemented');
+  it('provider upstash in production without Upstash env → throws', () => {
+    expect(() => createKoraLinkRateLimiter(prodEnv('upstash'))).toThrow();
+  });
+
+  it('provider upstash with Upstash env in dev → returns limiter (Upstash adapter)', () => {
+    const env = {
+      NODE_ENV: 'development',
+      KORA_LINK_RATE_LIMIT_PROVIDER: 'upstash',
+      UPSTASH_REDIS_REST_URL: 'https://fake.upstash.io',
+      UPSTASH_REDIS_REST_TOKEN: 'fake-token',
+    };
+    const limiter = createKoraLinkRateLimiter(env);
+    expect(typeof limiter.check).toBe('function');
+  });
+
+  it('provider upstash with Upstash env in production → returns limiter (does not throw)', () => {
+    const env = {
+      NODE_ENV: 'production',
+      KORA_LINK_RATE_LIMIT_PROVIDER: 'upstash',
+      UPSTASH_REDIS_REST_URL: 'https://fake.upstash.io',
+      UPSTASH_REDIS_REST_TOKEN: 'fake-token',
+    };
+    const limiter = createKoraLinkRateLimiter(env);
+    expect(typeof limiter.check).toBe('function');
   });
 
   it('unknown provider in env → throws via getKoraLinkRateLimitProvider', () => {
@@ -320,8 +341,19 @@ describe('assertKoraLinkRateLimitProductionSafe', () => {
     expect(() => assertKoraLinkRateLimitProductionSafe(prodEnv('disabled'))).toThrow();
   });
 
-  it('does not throw in production with upstash provider', () => {
-    expect(() => assertKoraLinkRateLimitProductionSafe(prodEnv('upstash'))).not.toThrow();
+  it('throws in production with upstash provider but missing Upstash env', () => {
+    expect(() => assertKoraLinkRateLimitProductionSafe(prodEnv('upstash'))).toThrow();
+  });
+
+  it('does not throw in production with upstash provider and Upstash env configured', () => {
+    expect(() =>
+      assertKoraLinkRateLimitProductionSafe({
+        NODE_ENV: 'production',
+        KORA_LINK_RATE_LIMIT_PROVIDER: 'upstash',
+        UPSTASH_REDIS_REST_URL: 'https://fake.upstash.io',
+        UPSTASH_REDIS_REST_TOKEN: 'fake-token',
+      })
+    ).not.toThrow();
   });
 
   it('production error is privacy-safe (does not leak env input)', () => {

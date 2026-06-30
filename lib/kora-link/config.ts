@@ -23,6 +23,8 @@ export type KoraLinkEnv = {
   KORA_LINK_TOKEN_SECRET?: string | undefined;
   KORA_LINK_PUBLIC_BASE_URL?: string | undefined;
   KORA_LINK_RATE_LIMIT_PROVIDER?: string | undefined;
+  UPSTASH_REDIS_REST_URL?: string | undefined;
+  UPSTASH_REDIS_REST_TOKEN?: string | undefined;
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────

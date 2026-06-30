@@ -6,6 +6,106 @@
 
 ---
 
+## KL-09 — KORA Link Upstash Rate Limit Adapter
+
+**Data:** 2026-07-01
+**Branch:** `feat/kora-link-v1-platform`
+**Tipo:** Codice TypeScript runtime + test unit — nessuna migration, nessuna UI, nessuna route, nessuna scrittura DB
+
+### Contenuto
+
+Implementato l'adapter Upstash Redis reale in `lib/kora-link/rate-limit.ts`.
+Aggiornato `lib/kora-link/config.ts` — aggiunto `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` a `KoraLinkEnv`.
+Creato `tests/unit/kora-link-rate-limit-upstash.test.ts` — 35 test unit sull'adapter Upstash (mock SDK, nessuna chiamata network).
+Aggiornato `tests/unit/kora-link-rate-limit.test.ts` — 57 → 59 test (aggiornata gestione upstash+env nel factory e assertProductionSafe).
+Installato `@upstash/redis` e `@upstash/ratelimit` (unica dipendenza npm consentita in KL-09).
+
+### Funzioni aggiunte / modificate
+
+#### `lib/kora-link/rate-limit.ts`
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `KoraLinkUpstashEnvStatus` | type | `{ hasUrl, hasToken, ready }` — status env Upstash |
+| `getKoraLinkUpstashEnvStatus(env?)` | fn | Legge URL e token da env — restituisce status senza lanciare, senza esporre valori |
+| `assertKoraLinkUpstashReady(env?)` | fn | Lancia con lista env mancanti se `ready = false` — messaggi privacy-safe |
+| `createUpstashKoraLinkRateLimiter(env?)` | fn | Costruisce adapter reale: Redis + Ratelimit lazy-initialized per route; `check()` chiama Upstash con sliding window |
+| `createKoraLinkRateLimiter` | fn (updated) | Branch upstash: verifica env → real adapter o unavailable; lancia in production se env mancanti |
+| `assertKoraLinkRateLimitProductionSafe` | fn (updated) | Branch upstash: aggiunge `assertKoraLinkUpstashReady` oltre al check provider |
+
+#### Aggiunta a `lib/kora-link/config.ts`
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `UPSTASH_REDIS_REST_URL?` | KoraLinkEnv key | URL REST Upstash Redis |
+| `UPSTASH_REDIS_REST_TOKEN?` | KoraLinkEnv key | Token autenticazione Upstash |
+
+### Comportamento Upstash adapter
+
+```
+createUpstashKoraLinkRateLimiter(env)
+  ├─ Lancia se URL o token mancanti (privacy-safe, nessun valore esposto)
+  ├─ Crea Redis({ url, token }) una sola volta
+  ├─ getLimiter(route): Ratelimit creato lazy su prima check(), riusato per route identica
+  │    └─ Ratelimit.slidingWindow(limit, '60 s'), prefix 'kl:rl:<route>', analytics: false
+  └─ check(ctx) → { allowed: result.success, provider: 'upstash', limit, remaining: result.remaining, resetAt: result.reset }
+```
+
+### Provider status KL-09
+
+| Provider | Status | Comportamento factory |
+|----------|--------|-----------------------|
+| `null` (assente) | — | dev/test: unavailable/denied · production: throws |
+| `'disabled'` | Dev/test only | dev/test: always-allow · production: throws |
+| `'upstash'` + env mancanti | Dev/test: unavailable · production: throws |
+| `'upstash'` + env configurati | ✅ Adapter reale Upstash |
+
+### Copertura test
+
+| File | Test | Suite |
+|------|------|-------|
+| `kora-link-rate-limit-upstash.test.ts` (nuovo) | 35 | 4 |
+| `kora-link-rate-limit.test.ts` (aggiornato) | 59 (+2) | 7 |
+
+| Suite (upstash) | Test |
+|-----------------|------|
+| getKoraLinkUpstashEnvStatus | 9 |
+| assertKoraLinkUpstashReady | 8 |
+| createUpstashKoraLinkRateLimiter — construction | 5 |
+| createUpstashKoraLinkRateLimiter — check() behavior | 13 |
+
+### Decisioni tecniche
+
+- **Circular import evitato**: Tutto il codice Upstash è in `rate-limit.ts`, non in un file separato `rate-limit-upstash.ts`. Un file separato avrebbe creato un ciclo (`rate-limit.ts ↔ rate-limit-upstash.ts`) che in CJS-compiled Next.js può causare `undefined` su valori catturati durante l'inizializzazione modulo.
+- **Vitest mock class-based**: `vi.fn().mockImplementation(() => ({}))` non è un costruttore valido. Si usano classi reali (`class MockRedis { constructor() {} }`) con `vi.hoisted` per condivisione stato tra factory closure e test.
+- **No network al momento della costruzione**: `new Redis({...})` e `new Ratelimit({...})` non fanno chiamate network — i test factory non richiedono mock per questi path.
+- **Lazy Ratelimit**: Un'istanza `Ratelimit` per route, creata al primo `check()` e riusata — evita overhead istanziazione per ogni request.
+
+### Metriche
+
+- File creati: 1 (`tests/unit/kora-link-rate-limit-upstash.test.ts`)
+- File modificati: 5 (`lib/kora-link/rate-limit.ts`, `lib/kora-link/config.ts`, `tests/unit/kora-link-rate-limit.test.ts`, `package.json`, `package-lock.json`)
+- Dipendenze aggiunte: 2 (`@upstash/redis`, `@upstash/ratelimit`)
+- Provider Upstash integrato: sì
+- Network calls nei test: 0 (SDK completamente mockato)
+- TypeScript: 0 errori
+- ESLint: 0 errori, 2 warning (parametri `_config` in mock constructor — attesi, test-only)
+- Vitest: 8353/8353 passed (+38 rispetto a KL-08)
+- Build: OK
+- E2E: 6/6 passed
+
+### Gate status post-KL-09
+
+| Gate | Status |
+|------|--------|
+| Gate 2 (CTO schema review) | OPEN |
+| Gate 3 (DPO/legal) | OPEN |
+| KL-01 → KL-08 | ✅ COMPLETATI |
+| KL-09 Upstash Rate Limit Adapter | ✅ COMPLETATO |
+| KL-10 Route pubblica `/link/[token]` | Prerequisiti: Gate 2+3 chiusi · `KORA_LINK_ENABLED=true` · `KORA_LINK_RATE_LIMIT_PROVIDER=upstash` + Upstash env |
+
+---
+
 ## KL-08 — Rate Limit Adapter Skeleton
 
 **Data:** 2026-07-01
