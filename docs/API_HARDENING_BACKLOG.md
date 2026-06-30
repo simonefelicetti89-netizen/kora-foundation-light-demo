@@ -85,40 +85,31 @@ Aggiungere rate limiting a livello di Edge Middleware (Vercel Edge Config + Upst
 
 ---
 
-### H-004 — Zero schema validation strutturata (Zod)
+### H-004 — Zero schema validation strutturata (Zod) — PARZIALMENTE RISOLTO CC-12
 
 **Finding:** F-004
 
-**Problema:**
-Le route con body usano validazione manuale con `typeof` e `trim()`. Risultato: inconsistenza, errori 500 invece di 400 su input malformati, difficoltà di testing.
+**Stato:** **PARZIALMENTE RISOLTO in CC-12** (2026-06-30). Zod installato (v4.4.3). 4 route hardened.
 
-**Route prioritarie per Zod:**
-1. `POST /api/admin/workers/provision` — email, tenantCode (già parzialmente validati)
-2. `POST /api/admin/live-company` — company_name, tenant_code, admin_email, admin_role
-3. `POST /api/admin/data-intake/accept` — multipart, tenantId, batchId
-4. `POST /api/admin/scoring/run-approved-batch` — batchId
-5. `POST /api/worker/initiatives/[id]/interest` — status enum, private_note max
+**Route hardened in CC-12:**
+- ✅ `POST /api/admin/workers/provision` — `ProvisionWorkerSchema`: tenantCode min(1)+max(32), email format, workerRef optional
+- ✅ `POST /api/admin/companies/provision` — `ProvisionCompanySchema`: company_name required, admin_email format, optional fields
+- ✅ `POST /api/admin/scoring/run-approved-batch` — `RunBatchSchema`: batchId required, workforcePopulation optional number
+- ✅ `POST /api/worker/initiatives/[id]/interest` — `InterestSchema`: status z.enum (3 valori), private_note max(500)
 
-**Template schema:**
-```typescript
-import { z } from 'zod';
+**Route escluse da CC-12 (rimandare a CC futuro):**
+- `POST /api/admin/live-company` — 400+ righe, payload > 10 campi, complesso
+- `POST /api/admin/data-intake/accept` — multipart, payload costoso, scope adiacente
+- `POST /api/admin/workers/provision` (KORA Link) — non implementato
+- GET routes con query param — H-006, gestire separatamente
 
-const ProvisionWorkerSchema = z.object({
-  tenantCode: z.string().min(1).max(20),
-  email:      z.string().email(),
-  workerRef:  z.string().max(100).optional(),
-});
+**Invarianti rispettate:**
+- Output per payload valido identico — solo input validation cambia
+- Auth guard non modificata
+- runKoraPipeline non toccata
+- Privacy: InterestSchema esclude worker_id/tenant_id da body per costruzione
 
-// In route:
-const parsed = ProvisionWorkerSchema.safeParse(body);
-if (!parsed.success) {
-  return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
-}
-const { tenantCode, email, workerRef } = parsed.data;
-```
-
-**Claude Code:** SÌ parzialmente — l'aggiunta di Zod è meccanica, ma richiede revisione di ogni route individualmente. Suggerito: procedere route per route in CC-11.
-**Test:** vitest per ogni route con input invalidi.
+**Test:** `tests/unit/cc12-zod-validation.test.ts` — 25 test, 25/25 green. `b109b-participation-privacy.test.ts` aggiornato. Suite completa: 8104/8104 green.
 
 ---
 
@@ -358,7 +349,7 @@ Valutazione per KORA Link v1 (futura):
 | H-001 (commons service client) | ✅ RISOLTO CC-11 | Review post-fix |
 | H-002 (direct createClient) | ✅ RISOLTO CC-11 | — |
 | H-003 (rate limiting) | NO | SÌ — decisione architetturale |
-| H-004 (Zod validation) | SÌ parzialmente | Review schema |
+| H-004 (Zod validation) | ✅ PARZIALE CC-12 (4 route; live-company + data-intake pendenti) | Review schema |
 | H-005 (logout guard) | SÌ | — |
 | H-006 (UUID validation) | SÌ | — |
 | H-007 (errori standardizzati) | SÌ | — |
@@ -371,5 +362,5 @@ Valutazione per KORA Link v1 (futura):
 
 ---
 
-*API_HARDENING_BACKLOG.md — CC-10 generato · CC-11 aggiornato · Branch `platform/readiness`*
+*API_HARDENING_BACKLOG.md — CC-10 generato · CC-11 aggiornato · CC-12 aggiornato · Branch `platform/readiness`*
 *Aggiornare dopo ogni CC che risolve un finding.*

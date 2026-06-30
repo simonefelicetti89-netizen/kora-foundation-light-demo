@@ -14,34 +14,39 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { insertWorkerIdentity } from '@/lib/supabase/worker-provisioning-service-key';
 
-interface ProvisionBody {
-  tenantCode: string;
-  email: string;
-  workerRef?: string;
-}
+const ProvisionWorkerSchema = z.object({
+  tenantCode: z.string().min(1, 'tenantCode is required').max(32),
+  email:      z.string().email('email non valido'),
+  workerRef:  z.string().max(100).optional(),
+});
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
 
-  let body: ProvisionBody;
+  let rawBody: unknown;
   try {
-    body = await request.json() as ProvisionBody;
+    rawBody = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const tenantCode = (body.tenantCode ?? '').trim();
-  const email      = (body.email ?? '').trim().toLowerCase();
-  const workerRef  = (body.workerRef ?? '').trim() || `WRK-${Date.now()}`;
+  const parsed = ProvisionWorkerSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'Payload non valido.' },
+      { status: 400 },
+    );
+  }
 
-  if (!tenantCode) return NextResponse.json({ error: 'tenantCode is required' }, { status: 400 });
-  if (!email)      return NextResponse.json({ error: 'email is required' }, { status: 400 });
-  if (!email.includes('@')) return NextResponse.json({ error: 'email non valido' }, { status: 400 });
+  const tenantCode = parsed.data.tenantCode.trim();
+  const email      = parsed.data.email.trim().toLowerCase();
+  const workerRef  = (parsed.data.workerRef ?? '').trim() || `WRK-${Date.now()}`;
 
   const db = getSupabaseServiceClient();
 

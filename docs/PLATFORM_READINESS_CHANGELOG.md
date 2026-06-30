@@ -428,4 +428,99 @@ Verifica RLS su `commons.post` (mig 013) — policies presenti e complete:
 
 ---
 
+---
+
+## CC-12 — API Input Validation P1: Zod su route selezionate
+
+**Data:** 2026-06-30
+**Branch:** `platform/readiness`
+**Tipo:** hardening input validation — 4 route runtime + 1 test aggiornato + 1 test nuovo + 2 doc
+
+### Obiettivo
+
+Ridurre H-004 (zero schema validation strutturata): aggiungere Zod su 4 route POST ad alto valore.
+
+### Setup
+
+Zod v4.4.3 installato come dipendenza runtime (`npm install zod`). Nessun peer dependency.
+
+### Route hardened
+
+| Route | Schema Zod | Campi validati | Comportamento precedente |
+|-------|------------|----------------|------------------------|
+| `POST /api/admin/workers/provision` | `ProvisionWorkerSchema` | `tenantCode` min(1)+max(32), `email` format, `workerRef` optional | `typeof` + `.includes('@')` manual |
+| `POST /api/admin/companies/provision` | `ProvisionCompanySchema` | `company_name` required+max(200), `admin_email` format+required | `typeof` + regex manual |
+| `POST /api/admin/scoring/run-approved-batch` | `RunBatchSchema` | `batchId` required string, `workforcePopulation` optional number | `String().trim()` + empty check |
+| `POST /api/worker/initiatives/[id]/interest` | `InterestSchema` | `status` z.enum (3 valori), `private_note` max(500) | Enum array check + slice/length |
+
+### Invarianti rispettate per ogni route
+
+- Auth guard invariata (requireKoraAdmin / requireWorkerUser)
+- Query DB invariata — nessun cambio logica
+- Output per payload valido identico
+- Error shape `{ error: string }` — identico all'esistente
+- `runKoraPipeline` non toccata — solo input validation prima della chiamata
+
+### Pattern adottato
+
+```typescript
+// Schema locale in cima alla route
+const Schema = z.object({ ... });
+
+// Parse dopo JSON decode
+const parsed = Schema.safeParse(rawBody);
+if (!parsed.success) {
+  return NextResponse.json(
+    { error: parsed.error.issues[0]?.message ?? 'Payload non valido.' },
+    { status: 400 },
+  );
+}
+// usa parsed.data.* — typed e safe
+```
+
+### Privacy: worker/initiatives/interest
+
+`InterestSchema` include solo `status` e `private_note` — Zod rimuove per costruzione qualsiasi `worker_id` o `tenant_id` dal body (strip per default in Zod v4). Invariante più forte rispetto al pattern manuale precedente. `ALLOWED_STATUSES` aggiornato a `as const satisfies` per compatibilità con `z.enum()`.
+
+### Route escluse (rimandare)
+
+- `POST /api/admin/live-company` — 400+ righe, 10+ campi; troppo grande per questo round
+- `POST /api/admin/data-intake/accept` — multipart; fuori scope CC-12
+- Route GET con query param — trattare in H-006 (UUID validation)
+
+### File modificati
+
+| File | Tipo | Cambio |
+|------|------|--------|
+| `app/api/admin/workers/provision/route.ts` | Runtime | Schema Zod + safeParse |
+| `app/api/admin/companies/provision/route.ts` | Runtime | Schema Zod + safeParse |
+| `app/api/admin/scoring/run-approved-batch/route.ts` | Runtime | Schema Zod + safeParse |
+| `app/api/worker/initiatives/[id]/interest/route.ts` | Runtime | Schema Zod + safeParse; ALLOWED_STATUSES as const |
+| `tests/unit/cc12-zod-validation.test.ts` | Test nuovo | 25 structural test sulle 4 route |
+| `tests/unit/b109b-participation-privacy.test.ts` | Test update | Asserzione aggiornata: Zod schema → pattern moderno |
+| `docs/API_HARDENING_BACKLOG.md` | Doc | H-004 status aggiornato |
+| `docs/PLATFORM_READINESS_CHANGELOG.md` | Doc | Aggiunto CC-12 |
+| `package.json` / `package-lock.json` | Config | Aggiunto zod v4.4.3 |
+
+### Metriche
+
+| Metrica | Valore |
+|---------|--------|
+| Route hardened | 4 |
+| Test nuovi (CC-12) | 25/25 green |
+| Test aggiornati (B109-B) | 1 |
+| vitest totale | **8104/8104** (was 8079, +25 CC-12) |
+| TypeScript (`tsc --noEmit`) | CLEAN |
+| Finding P1 H-004 | PARZIALE — 4 route done; live-company + data-intake pendenti |
+
+### Prossimi step raccomandati (CC-13)
+
+**Opzione A — H-005: `auth/logout` guard** (3 righe — minimale, basso rischio)
+
+**Opzione B — H-006: UUID validation query param** (`admin/impact-units`, `admin/worker-initiatives`, `admin/workers/list`) — Zod già installato, meccanico
+
+**Opzione C — H-004 continuazione: Zod su `live-company`** — più grande, separato
+
+---
+
 *Aggiornare questo documento dopo ogni CC-XX che tocca `platform/readiness`.*

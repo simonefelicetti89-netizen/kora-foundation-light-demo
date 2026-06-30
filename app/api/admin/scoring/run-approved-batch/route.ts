@@ -14,6 +14,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { runKoraPipeline } from '@/lib/kora-engine';
@@ -45,6 +46,11 @@ async function flushAudit(db: ReturnType<typeof getSupabaseServiceClient>, rows:
   if (error) console.error('[scoring/run-approved-batch] audit flush:', error.message);
 }
 
+const RunBatchSchema = z.object({
+  batchId:             z.string().min(1, 'batchId is required.'),
+  workforcePopulation: z.number().int().positive().optional().nullable(),
+});
+
 export async function POST(request: NextRequest) {
 
   // ── 1. Auth ─────────────────────────────────────────────────────────────────
@@ -52,16 +58,20 @@ export async function POST(request: NextRequest) {
   if (isKoraAuthError(authResult)) return authResult;
 
   // ── 2. Parse body ────────────────────────────────────────────────────────────
-  let body: Record<string, unknown>;
-  try { body = await request.json(); }
+  let rawBody: unknown;
+  try { rawBody = await request.json(); }
   catch { return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 }); }
 
-  const batchId = String(body['batchId'] ?? '').trim();
-  if (!batchId) return NextResponse.json({ error: 'batchId is required.' }, { status: 400 });
+  const parsed = RunBatchSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'Payload non valido.' },
+      { status: 400 },
+    );
+  }
 
-  const bodyWfPop = body['workforcePopulation'] != null
-    ? Number(body['workforcePopulation'])
-    : null;
+  const batchId    = parsed.data.batchId.trim();
+  const bodyWfPop  = parsed.data.workforcePopulation ?? null;
 
   const db = getSupabaseServiceClient();
   const auditRows: AuditRow[] = [];
