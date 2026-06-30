@@ -29,8 +29,8 @@ export function useCountUp<T extends HTMLElement = HTMLDivElement>({
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reduced) {
-      setValue(Math.round(target));
-      return;
+      const id = requestAnimationFrame(() => setValue(Math.round(target)));
+      return () => cancelAnimationFrame(id);
     }
 
     const io = new IntersectionObserver(([entry]) => {

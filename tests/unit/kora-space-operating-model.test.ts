@@ -32,7 +32,7 @@ describe('KORA Space — operating model positioning', () => {
   });
 
   test('1. Company KORA Space describes Space as activation environment', () => {
-    expect(companyCommonsSrc).toContain("layer operativo dell'attivazione umana");
+    expect(companyCommonsSrc).toContain("layer operativo dell&apos;attivazione umana");
   });
 
   test('2. Both KORA Space surfaces have operating-model positioning testids', () => {
@@ -60,7 +60,7 @@ describe('KORA Space — operating model positioning', () => {
   });
 
   test('6. Company KORA Space states companies see only aggregate signals', () => {
-    expect(companyCommonsSrc).toContain("l'azienda vede solo aggregati");
+    expect(companyCommonsSrc).toContain("l&apos;azienda vede solo aggregati");
   });
 });
 
@@ -154,7 +154,7 @@ describe('Company KORA Space — operating dashboard', () => {
   });
 
   test('18. Company page shows aggregate-only privacy copy', () => {
-    expect(companyCommonsSrc).toContain("l'azienda vede solo aggregati");
+    expect(companyCommonsSrc).toContain("l&apos;azienda vede solo aggregati");
   });
 
   test('19. Company page does not claim KORA Space feeds KORA Index', () => {

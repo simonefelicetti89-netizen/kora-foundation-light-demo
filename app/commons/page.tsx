@@ -428,7 +428,7 @@ export default function CommonsPage() {
             KORA Commons non è un social network.
           </p>
           <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: '4px 0 0 0', lineHeight: 1.5 }}>
-            Non ci sono like, commenti, follower o feed algoritmici. KORA Commons è uno spazio per opportunità di attivazione umana: ogni iniziativa deve rispondere alla domanda "quale opportunità di crescita, impatto o connessione esiste?". Il lavoratore rimane sovrano sui propri dati.
+            Non ci sono like, commenti, follower o feed algoritmici. KORA Commons è uno spazio per opportunità di attivazione umana: ogni iniziativa deve rispondere alla domanda {'"quale opportunità di crescita, impatto o connessione esiste?"'}. Il lavoratore rimane sovrano sui propri dati.
           </p>
         </div>
       </div>

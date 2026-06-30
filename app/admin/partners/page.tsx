@@ -95,7 +95,7 @@ export default async function AdminPartnersPage() {
             {schemaNotExposed
               ? 'Lo schema "network" non è in "Extra Search Path" del progetto Supabase.'
               : `Errore query: ${partnersError?.message}`}
-            {' '}Per risolvere: <strong>Supabase Dashboard → Project Settings → API → Extra Search Path → aggiungi "network"</strong>.
+            {' '}Per risolvere: <strong>{'Supabase Dashboard → Project Settings → API → Extra Search Path → aggiungi "network"'}</strong>.
             Poi eseguire: <code style={{ background: 'rgba(6,3,43,0.08)', padding: '1px 5px', borderRadius: 4 }}>NOTIFY pgrst, &apos;reload schema&apos;;</code>
           </p>
         </div>
