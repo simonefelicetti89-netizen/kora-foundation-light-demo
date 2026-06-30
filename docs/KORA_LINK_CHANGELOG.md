@@ -207,4 +207,81 @@ Creato `docs/KORA_LINK_TOKEN_THREAT_MODEL.md` — threat model tecnico completo 
 
 ---
 
-*KORA_LINK_CHANGELOG.md — KL-04 · 2026-06-30*
+## KL-05 — Migration 034 Draft: KORA Link Schema
+
+**Data:** 2026-06-30
+**Branch:** `feat/kora-link-v1-platform`
+**Tipo:** SQL draft in `supabase/proposed/` — NON applicato a nessun database
+
+### Contenuto
+
+Creato `supabase/proposed/034_kora_link_schema.sql` — draft schema KORA Link
+per review CTO/Postgres/DPO. NON in `supabase/migrations/`.
+
+### Stile repo rilevato da audit 031/032/033
+
+| Aspetto | Scelta repo | Applicato in 034 |
+|---------|------------|-----------------|
+| Enum | `text + CHECK` (non `CREATE TYPE`) | ✅ Sì |
+| PK | `uuid DEFAULT gen_random_uuid()` | ✅ Sì |
+| Timestamps | `timestamptz NOT NULL DEFAULT now()` | ✅ Sì |
+| updated_at | Trigger `set_updated_at()` (mig 001) | ✅ Sì |
+| Index naming | `idx_<table>_<col>` | ✅ Sì |
+| FK tenant_id | No FK (repo pattern da 033) | ✅ Sì |
+| Header | Block comment con gate/prerequisiti | ✅ Sì |
+| Transaction | `BEGIN;` / `COMMIT;` | ✅ Sì |
+| PostgREST reload | `NOTIFY pgrst, 'reload schema';` | ✅ Sì |
+| RLS | In file separato (035) | ✅ Sì (solo TODO commentati) |
+
+### Tabelle nel draft
+
+| # | Tabella | Scopo |
+|---|---------|-------|
+| 1 | `kora_link.link_batches` | Batch admin chip NFC |
+| 2 | `kora_link.links` | Token record (digest-only, no cleartext) |
+| 3 | `kora_link.link_assignments` | Associazione token↔worker post-consenso |
+| 4 | `kora_link.link_consents` | Consenso worker all'informativa Link |
+| 5 | `kora_link.link_events` | Log operativo eventi lifecycle |
+| 6 | `kora_link.revocations` | Revoca/sospensione audit trail |
+| 7 | `kora_link.link_replacements` | Catena replacement old→new token |
+| 8 | `kora_link.partner_scans` | Placeholder Track A scan partner (v1.1+) |
+| 9 | `kora_link.audit_log` | Audit append-only privacy-safe |
+| 10 | `kora_link.public_lookup_attempts` | Supporto rate limiting public route |
+| 11 | `kora_link.link_delivery_records` | Traccia consegna chip a company |
+
+### Invarianti critici nel draft
+
+- `token_value` (cleartext): **ZERO colonne** in tutto lo schema — confermato
+- `UNIQUE(token_digest)` enforced via `CONSTRAINT uq_link_token_digest`
+- `UNIQUE(link_id) WHERE status = 'active'` su `link_assignments` — un solo assignment attivo per token
+- `partner_scans` non alimenta IU/PIB/Index — commento esplicito nel file
+- Nessuna policy RLS — solo TODO commentati per 035
+- 8 TODO CTO espliciti per review pre-apply
+
+### Metriche
+
+- File creati: 1 (`supabase/proposed/034_kora_link_schema.sql`, 1272 righe)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- File in `supabase/migrations/`: 0 nuovi
+- Codice runtime modificato: 0
+- TypeScript: 0 errori
+- Vitest: 8128/8128 green
+- Build: OK
+- E2E Playwright: 6/6 passed
+
+### Gate status post-KL-05
+
+| Gate | Status |
+|------|--------|
+| Gate 2 (CTO schema review) | OPEN — review di 034 è il gate |
+| Gate 3 (DPO/legal) | OPEN |
+| KL-01 Design | ✅ COMPLETATO |
+| KL-02 Decision Gate | ✅ COMPLETATO |
+| KL-03 Branch strategy | ✅ COMPLETATO |
+| KL-04 Token Threat Model | ✅ COMPLETATO |
+| KL-05 Migration 034 draft | ✅ COMPLETATO — in attesa review CTO |
+| KL-06 RLS 035 draft | In attesa approvazione CTO su schema 034 |
+
+---
+
+*KORA_LINK_CHANGELOG.md — KL-05 · 2026-06-30*
