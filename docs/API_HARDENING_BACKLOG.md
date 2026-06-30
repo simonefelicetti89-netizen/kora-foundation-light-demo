@@ -134,24 +134,35 @@ await supabase.auth.signOut();
 
 ---
 
-### H-006 — UUID validation assente su tenantId query param
+### H-006 — UUID validation assente su tenantId query param ✅ RISOLTO CC-13
 
 **Finding:** F-007
 
-**Route:**
-- `GET /api/admin/impact-units?tenantId=<uuid>`
-- `GET /api/admin/worker-initiatives?tenantId=<uuid>`
-- `GET /api/admin/workers/list` (tenantCode param)
+**Stato:** **RISOLTO in CC-13** (2026-06-30)
 
-**Fix:**
+**Route hardened:**
+- ✅ `GET /api/admin/impact-units?tenantId=<uuid>` — `z.string().uuid().safeParse()`
+- ✅ `GET /api/admin/worker-initiatives?tenantId=<uuid>` — idem
+- ✅ `GET /api/admin/company-users?tenantId=<uuid>` — idem (aggiunta vs backlog originale)
+- ✅ `GET /api/admin/workers/list?tenantCode=<string>` — `z.string().min(1).max(40).safeParse()`
+
+**Pattern applicato:**
 ```typescript
 import { z } from 'zod';
-const uuidSchema = z.string().uuid();
-const tenantIdResult = uuidSchema.safeParse(tenantId);
-if (!tenantIdResult.success) {
-  return NextResponse.json({ ok: false, error: 'tenantId deve essere un UUID valido.' }, { status: 400 });
+const tenantIdParsed = z.string().uuid().safeParse(searchParams.get('tenantId'));
+if (!tenantIdParsed.success) {
+  return NextResponse.json({ error: 'tenantId non valido.' }, { status: 400 });
 }
+const tenantId = tenantIdParsed.data;
 ```
+
+**Invarianti rispettate:**
+- Output per param valido identico — solo validazione input aggiunta
+- Guard auth non modificate
+- Query DB invariate (ricevono lo stesso valore, ora validato)
+- Errore generico privacy-safe — raw value non esposto
+
+**Test:** `tests/unit/cc13-query-param-validation.test.ts` — 22/22 green. Suite: 8126/8126.
 
 **Claude Code:** SÌ.
 
@@ -351,7 +362,7 @@ Valutazione per KORA Link v1 (futura):
 | H-003 (rate limiting) | NO | SÌ — decisione architetturale |
 | H-004 (Zod validation) | ✅ PARZIALE CC-12 (4 route; live-company + data-intake pendenti) | Review schema |
 | H-005 (logout guard) | SÌ | — |
-| H-006 (UUID validation) | SÌ | — |
+| H-006 (UUID validation) | ✅ RISOLTO CC-13 | — |
 | H-007 (errori standardizzati) | SÌ | — |
 | H-008 (pattern public route) | SÌ (struttura) | Review sicurezza |
 | H-009 (rate limiting Link) | NO | SÌ |

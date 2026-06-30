@@ -60,7 +60,7 @@ Nessuna route pubblica attuale è modellata correttamente per un endpoint `/link
 | `company-live-preview` | GET | admin | `requireKoraAdmin` | service | SÌ | nessuna | OK | aggregated, no individual |
 | `company-submissions/[id]/review` | PATCH | admin | `requireKoraAdmin` | service | SÌ | basic | OK | action enum validato |
 | `company-submissions` | GET | admin | `requireKoraAdmin` | service | SÌ | nessuna | OK | queue, no worker data |
-| `company-users` | GET, POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | email typeof+lower |
+| `company-users` | GET, POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | tenantId UUID validato CC-13 (GET); email typeof+lower |
 | `company-workspace` | GET | admin | `requireKoraAdmin` | service | SÌ | basic | OK | aggregato, no individual |
 | `data-intake/accept` | POST | admin | `requireKoraAdmin` | service | SÌ | estesa | OK | Usava `createClient` diretto — **fixato CC-11** con `getSupabaseServiceClient()` |
 | `data-intake/preview` | GET | admin | `requireKoraAdmin` | (mock/computed) | NO | nessuna | OK | dry-run, no write |
@@ -77,7 +77,7 @@ Nessuna route pubblica attuale è modellata correttamente per un endpoint `/link
 | `evidence-attachments/preview` | POST | admin | `requireKoraAdmin` | (parse only) | NO | basic | OK | no write |
 | `evidence-attachments/register` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | metadata safe |
 | `evidence-attachments/signed-url` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | short-lived, no GET |
-| `impact-units` | GET | admin | `requireKoraAdmin` | service (via lib) | SÌ | basic | OK | tenantId req, UUID check assente |
+| `impact-units` | GET | admin | `requireKoraAdmin` | service (via lib) | SÌ | basic | OK | tenantId UUID validato CC-13 |
 | `live-company` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | compound provisioning |
 | `live-spine-diagnostics` | GET | admin | `requireKoraAdmin` | service | SÌ | nessuna | OK | read-only diagnostics |
 | `operator-flow` | POST, GET | admin | `requireKoraAdmin` | service | SÌ | basic | OK | pipeline sintetica |
@@ -93,8 +93,8 @@ Nessuna route pubblica attuale è modellata correttamente per un endpoint `/link
 | `uef/review` | GET, POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | action enum validato |
 | `worker-diagnostics` | GET | admin | `requireKoraAdmin` | service | SÌ | nessuna | OK | aggregati, no individual |
 | `worker-initiatives/[id]` | PATCH | admin | `requireKoraAdmin` | service | SÌ | basic | OK | no worker_participation |
-| `worker-initiatives` | GET, POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | no private_note espose |
-| `workers/list` | GET | admin | `requireKoraAdmin` | service | SÌ | nessuna | OK | worker_identity, no profilo privato |
+| `worker-initiatives` | GET, POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | tenantId UUID validato CC-13 (GET); no private_note |
+| `workers/list` | GET | admin | `requireKoraAdmin` | service | SÌ | basic | OK | tenantCode max(40) validato CC-13 |
 | `workers/provision` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | email+tenantCode, inviteUserByEmail |
 | `workforce-baseline` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | headcount ≥ 10 check |
 
@@ -318,12 +318,10 @@ Nessuno trovato per il perimetro Foundation Light corrente.
 - Fix: standardizzare su `{ ok: false, error: string, code?: string }`
 - Claude Code: **SÌ** parzialmente — cambio meccanico ma alto numero di file
 
-**F-007 — UUID validation assente su query param tenantId**
-- Route: `admin/impact-units`, `admin/worker-initiatives`, `admin/workers/list`
-- Problema: `tenantId` da query param accettato come stringa senza validazione UUID
-- Rischio: input malevolo produce errore DB invece di 400 pulito
-- Fix: aggiungere regex UUID o Zod `z.string().uuid()`
-- Claude Code: **SÌ**
+**F-007 — UUID validation assente su query param tenantId** ✅ RISOLTO CC-13
+- Route: `admin/impact-units`, `admin/worker-initiatives`, `admin/workers/list`, `admin/company-users` (GET)
+- Fix applicato: `z.string().uuid().safeParse()` su tenantId; `z.string().min(1).max(40)` su tenantCode
+- Errore privacy-safe `{ error: 'tenantId non valido.' }` — raw value non echeggiato
 
 **F-008 — Nessun audit log per read company/worker**
 - Route: tutte le route company e worker GET

@@ -430,6 +430,66 @@ Verifica RLS su `commons.post` (mig 013) — policies presenti e complete:
 
 ---
 
+## CC-13 — API Query Param Validation P1: UUID hardening
+
+**Data:** 2026-06-30
+**Branch:** `platform/readiness`
+**Tipo:** hardening query param — 4 route GET + 1 test nuovo + 2 doc
+
+### Obiettivo
+
+Risolvere H-006 (UUID validation assente su query param tenantId): aggiungere `z.string().uuid()` / `z.string().min(1).max(40)` su 4 route GET admin, senza modificare business logic, auth, o output successful.
+
+### Route modificate
+
+| Route | File | Param | Schema Zod |
+|-------|------|-------|------------|
+| `GET /api/admin/impact-units` | `app/api/admin/impact-units/route.ts` | `tenantId` required | `z.string().uuid()` |
+| `GET /api/admin/worker-initiatives` | `app/api/admin/worker-initiatives/route.ts` | `tenantId` required | `z.string().uuid()` |
+| `GET /api/admin/company-users` | `app/api/admin/company-users/route.ts` | `tenantId` required (GET handler) | `z.string().uuid()` |
+| `GET /api/admin/workers/list` | `app/api/admin/workers/list/route.ts` | `tenantCode` required | `z.string().min(1).max(40)` |
+
+### Pattern applicato
+
+```typescript
+const tenantIdParsed = z.string().uuid().safeParse(searchParams.get('tenantId'));
+if (!tenantIdParsed.success) {
+  return NextResponse.json({ error: 'tenantId non valido.' }, { status: 400 });
+}
+const tenantId = tenantIdParsed.data;
+```
+
+### Invarianti rispettate
+
+- Output per param valido identico — solo validazione input aggiunta prima del DB
+- Guard `requireKoraAdmin` non modificata in nessuna route
+- Query DB invariate — ricevono lo stesso valore tipizzato, ora validato pre-query
+- Errore `400` privacy-safe — il raw value non viene echeggiato nella response
+- POST/PATCH handler nelle stesse route non toccati (scope CC-13: solo GET query param)
+
+### File modificati
+
+| File | Tipo modifica |
+|------|---------------|
+| `app/api/admin/impact-units/route.ts` | `import { z }` + safeParse tenantId |
+| `app/api/admin/worker-initiatives/route.ts` | `import { z }` + safeParse tenantId (GET) |
+| `app/api/admin/company-users/route.ts` | `import { z }` + safeParse tenantId (GET) |
+| `app/api/admin/workers/list/route.ts` | `import { z }` + safeParse tenantCode |
+| `tests/unit/cc13-query-param-validation.test.ts` | Nuovo — 22 test strutturali |
+| `docs/API_HARDENING_BACKLOG.md` | H-006 → RISOLTO CC-13; summary table aggiornata |
+| `docs/PLATFORM_READINESS_CHANGELOG.md` | Questa entry |
+
+### Metriche
+
+- Route hardened: 4
+- Nuovi test: 22/22 green
+- Suite completa: 8126/8126 green
+- TypeScript: 0 errori
+- ESLint mirato (5 file): 0 errors, 0 warnings
+- File produzione toccati: 0
+
+---
+
 ## CC-12 — API Input Validation P1: Zod su route selezionate
 
 **Data:** 2026-06-30

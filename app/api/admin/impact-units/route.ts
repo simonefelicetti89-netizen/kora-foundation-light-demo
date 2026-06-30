@@ -14,6 +14,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { queryImpactUnits, queryImpactUnitPeriods } from '@/lib/supabase/impact-unit-service-key';
@@ -83,12 +84,13 @@ export async function GET(request: NextRequest) {
   if (isKoraAuthError(authResult)) return authResult;
 
   const { searchParams } = new URL(request.url);
-  const tenantId           = (searchParams.get('tenantId') ?? '').trim();
+  const tenantIdParsed       = z.string().uuid().safeParse(searchParams.get('tenantId'));
   const reportingPeriodParam = (searchParams.get('reportingPeriod') ?? '').trim();
 
-  if (!tenantId) {
-    return NextResponse.json({ error: 'tenantId è obbligatorio.' }, { status: 400 });
+  if (!tenantIdParsed.success) {
+    return NextResponse.json({ error: 'tenantId non valido.' }, { status: 400 });
   }
+  const tenantId = tenantIdParsed.data;
 
   const db = getSupabaseServiceClient();
 
