@@ -159,7 +159,7 @@ Nessuna route pubblica attuale è modellata correttamente per un endpoint `/link
 | `/api/commons/initiatives` | GET | commons | Multi-role sequenziale (admin→company→worker→401) | server | NO | JWT + RLS | OK | Usa `getSupabaseServerClient` da prima di CC-11 (matrice CC-10 errata) |
 | `/api/commons/posts` | GET, POST | commons | Multi-role sequenziale (admin→company→worker→401) | server | NO | JWT + RLS | OK | **Fixato CC-11**: `getSupabaseServerClient` per tutti i path — RLS gestisce scoping |
 | `/api/commons/posts/[id]` | PATCH | commons | Multi-role sequenziale (admin→company→worker→401) | server | NO | JWT + RLS | OK | **Fixato CC-11**: `getSupabaseServerClient` per tutti i path — RLS gestisce scoping |
-| `/api/auth/logout` | POST | auth | **Nessuna guard esplicita** | server | NO | N/A | **NEEDS_REVIEW** | Legge sessione per redirect, chiama `signOut()`. Harmless se no sessione, ma semanticamente incompleto. |
+| `/api/auth/logout` | POST | auth | Nessuna guard `requireXxx` (cross-role by design) | server | NO | N/A | **OK** | CC-14: early return `if (!user)` esplicito; `signOut()` solo se sessione attiva |
 
 ---
 
@@ -169,10 +169,10 @@ Nessuna route pubblica attuale è modellata correttamente per un endpoint `/link
 
 ### `/api/auth/logout`
 
-- **Perché "pubblica":** nessun guard `requireXxx`. Legge `supabase.auth.getUser()` (può tornare null) prima di fare `signOut()`.
+- **Stato CC-14:** ✅ RISOLTO
+- **Scelta:** cross-role by design (nessun `requireXxx`); aggiunto early return `if (!user)` esplicito dopo `getUser()`.
 - **Cosa espone:** solo redirect HTTP, nessun dato.
-- **Rischio:** minimo. `signOut()` su sessione vuota è no-op. La risposta è solo un redirect.
-- **Cosa serve:** aggiungere check esplicito — se no sessione, redirect direttamente a `/company/login` senza chiamate DB.
+- **Rischio residuo:** nessuno. No-session path ora esplicito e documentato nel codice.
 
 ### Future `/link/[token]` requirements
 
@@ -304,12 +304,10 @@ Nessuno trovato per il perimetro Foundation Light corrente.
 
 ### P2 — Medium
 
-**F-005 — `auth/logout` senza guard esplicita**
+**F-005 — `auth/logout` senza guard esplicita** ✅ RISOLTO CC-14
 - Route: `auth/logout`
-- Problema: nessuna `requireXxx`. Legge `getUser()` che può ritornare null.
-- Rischio: minimo — `signOut()` su no-session è no-op. La risposta è solo un redirect.
-- Fix: aggiungere check `if (!user) return redirect('/company/login')` prima di `signOut()`
-- Claude Code: **SÌ** — 3 righe
+- Fix applicato: `if (!user) return NextResponse.redirect(new URL('/company/login', request.url))` dopo `getUser()` — no-session path ora esplicito, `signOut()` solo se sessione attiva
+- Rischio residuo: nessuno
 
 **F-006 — Formato errori non strutturato**
 - Route: tutte

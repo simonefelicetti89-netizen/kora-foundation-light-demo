@@ -14,7 +14,13 @@ export async function POST(request: NextRequest) {
 
   // Read role BEFORE signing out — session is gone after signOut.
   const { data: { user } } = await supabase.auth.getUser();
-  const koraRole = user?.app_metadata?.kora_role as string | undefined;
+
+  // No active session — logout is idempotent; redirect to default login without calling signOut.
+  if (!user) {
+    return NextResponse.redirect(new URL('/company/login', request.url));
+  }
+
+  const koraRole = user.app_metadata?.kora_role as string | undefined;
 
   await supabase.auth.signOut();
 

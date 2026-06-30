@@ -6,6 +6,58 @@
 
 ---
 
+## CC-14 — auth/logout guard consistency (H-005)
+
+**Data:** 2026-06-30
+**Branch:** `platform/readiness`
+**Tipo:** hardening auth — 1 route + 2 test + 3 doc
+
+### Obiettivo
+
+Risolvere H-005: rendere esplicito il comportamento no-session in `auth/logout` senza modificare `lib/auth/`, `middleware.ts` o business logic.
+
+### Scelta implementata: Opzione A — check sessione esplicito locale
+
+Aggiunto early return `if (!user)` dopo `getUser()` in `app/api/auth/logout/route.ts`. Route cross-role by design (nessun `requireXxx`).
+
+### Comportamento
+
+| Caso | Prima | Dopo |
+|------|-------|------|
+| Sessione attiva | `getUser()` → role → `signOut()` → redirect role-aware | **Invariato** |
+| No sessione | `getUser()` → null → `signOut()` no-op → redirect `/company/login` | `getUser()` → null → early return `/company/login` — `signOut()` non chiamata |
+
+### File modificati
+
+| File | Tipo modifica |
+|------|---------------|
+| `app/api/auth/logout/route.ts` | Early return `if (!user)` + commento esplicito |
+| `tests/unit/b112-auth-ux.test.ts` | 2 nuovi test CC-14 (idempotent guard check) |
+| `docs/API_HARDENING_BACKLOG.md` | H-005 → RISOLTO CC-14; summary table aggiornata |
+| `docs/API_ROUTE_AUTH_MATRIX.md` | Riga logout → OK; sezione §6 aggiornata; F-005 risolto |
+| `docs/PLATFORM_READINESS_CHANGELOG.md` | Questa entry |
+
+### Metriche
+
+- Route modificate: 1
+- Nuovi test: 2/2 green (b112: 36/36 totale)
+- Suite completa: 8128/8128 green
+- TypeScript: 0 errori
+- ESLint mirato (2 file): 0 errors, 0 warnings
+- Build: OK
+- E2E: 6/6 green
+
+### Non toccato
+
+- `lib/auth/kora-session.ts` — invariato
+- `middleware.ts` — invariato
+- Supabase clients — invariati
+- SQL/RLS — invariati
+- Redirect destinations — invariate
+- Guard `requireXxx` — non aggiunte (cross-role by design)
+
+---
+
 ## CC-07 — ESLint Runtime Fixes Pass 1
 
 **Data:** 2026-06-30

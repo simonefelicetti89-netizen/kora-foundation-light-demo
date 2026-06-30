@@ -113,24 +113,41 @@ Aggiungere rate limiting a livello di Edge Middleware (Vercel Edge Config + Upst
 
 ---
 
-### H-005 — `auth/logout` senza guard esplicita
+### H-005 — `auth/logout` senza guard esplicita ✅ RISOLTO CC-14
 
 **Finding:** F-005
 
-**Problema:**
-`/api/auth/logout` non ha `requireXxx`. Chiama `getUser()` (può ritornare null) poi `signOut()` poi redirect.
+**Stato:** **RISOLTO in CC-14** (2026-06-30)
 
-**Fix (3 righe):**
+**Scelta implementata: Opzione A — check sessione esplicito locale alla route**
+
+Aggiunto early return `if (!user)` dopo `getUser()`. Se nessuna sessione attiva, redirect immediato a `/company/login` senza chiamare `signOut()` (che sarebbe no-op). Il path autenticato è invariato.
+
+**Fix applicato (`app/api/auth/logout/route.ts`):**
 ```typescript
 const { data: { user } } = await supabase.auth.getUser();
-if (!user) return NextResponse.redirect(new URL('/company/login', request.url));
+
+// No active session — logout is idempotent; redirect to default login without calling signOut.
+if (!user) {
+  return NextResponse.redirect(new URL('/company/login', request.url));
+}
+
 const koraRole = user.app_metadata?.kora_role as string | undefined;
 await supabase.auth.signOut();
 // ... redirect
 ```
 
-**Claude Code:** SÌ.
-**Rischio se non fixato:** minimo (signOut su no-session è no-op).
+**Comportamento prima:** `user` null → `koraRole` undefined → `signOut()` no-op → redirect `/company/login` (implicito)
+**Comportamento dopo:** `user` null → early return → redirect `/company/login` (esplicito); `signOut()` non chiamata
+
+**Invarianti rispettate:**
+- Redirect destination identica per tutte le path
+- `getUser()` ancora prima di `signOut()` (test esistente b112 test 4 invariato)
+- Nessuna modifica a `lib/auth/`, `middleware.ts`, Supabase clients
+
+**Test:** 2 nuovi test in `tests/unit/b112-auth-ux.test.ts` — suite b112: 36/36 green. Totale: 8128/8128.
+
+**Rischio residuo:** nessuno.
 
 ---
 
@@ -361,7 +378,7 @@ Valutazione per KORA Link v1 (futura):
 | H-002 (direct createClient) | ✅ RISOLTO CC-11 | — |
 | H-003 (rate limiting) | NO | SÌ — decisione architetturale |
 | H-004 (Zod validation) | ✅ PARZIALE CC-12 (4 route; live-company + data-intake pendenti) | Review schema |
-| H-005 (logout guard) | SÌ | — |
+| H-005 (logout guard) | ✅ RISOLTO CC-14 | — |
 | H-006 (UUID validation) | ✅ RISOLTO CC-13 | — |
 | H-007 (errori standardizzati) | SÌ | — |
 | H-008 (pattern public route) | SÌ (struttura) | Review sicurezza |

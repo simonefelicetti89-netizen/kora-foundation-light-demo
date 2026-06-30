@@ -100,6 +100,21 @@ describe('Logout route — role-aware redirect', () => {
     expect(getUserIdx).toBeGreaterThan(0);
     expect(signOutIdx).toBeGreaterThan(getUserIdx);
   });
+
+  it('CC-14: logout route has explicit no-session early return (idempotent guard)', () => {
+    // H-005 fix: if no active session, redirect immediately without calling signOut.
+    expect(logoutRoute).toContain('if (!user)');
+    expect(logoutRoute).toContain("'/company/login'");
+  });
+
+  it('CC-14: signOut is not called on no-session path (explicit early return before signOut)', () => {
+    const stripped = stripLineComments(logoutRoute);
+    const earlyReturnIdx = stripped.indexOf('if (!user)');
+    const signOutIdx     = stripped.indexOf('signOut()');
+    // early return appears in source BEFORE signOut — unauthenticated path exits first
+    expect(earlyReturnIdx).toBeGreaterThan(0);
+    expect(signOutIdx).toBeGreaterThan(earlyReturnIdx);
+  });
 });
 
 // ─── 5. Admin login has "Password dimenticata?" link ──────────────────────────
