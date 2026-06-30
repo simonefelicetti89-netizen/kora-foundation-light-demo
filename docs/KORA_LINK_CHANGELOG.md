@@ -382,4 +382,86 @@ Creato `tests/unit/kora-link-token.test.ts` — 65 test unit copertura completa.
 
 ---
 
-*KORA_LINK_CHANGELOG.md — KL-06 · 2026-06-30*
+---
+
+## KL-07 — Runtime Config Core
+
+**Data:** 2026-06-30
+**Branch:** `feat/kora-link-v1-platform`
+**Tipo:** Codice TypeScript runtime + test unit — nessuna migration, nessuna UI, nessuna route
+
+### Contenuto
+
+Creato `lib/kora-link/config.ts` — modulo server-only per configurazione KORA Link.
+Creato `tests/unit/kora-link-config.test.ts` — 59 test unit, copertura completa.
+
+### Funzioni e costanti esportate
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `KoraLinkEnv` | type | Subset env per KORA Link — accetta `process.env` e oggetti parziali nei test |
+| `KoraLinkReadinessResult` | type | `{ ready: true }` o `{ ready: false; missing: string[] }` |
+| `KoraLinkRateLimitConfig` | type | Shape config rate limiting |
+| `KORA_LINK_RATE_LIMIT_WINDOW_MS` | const | `60_000` (1 minuto) |
+| `KORA_LINK_RATE_LIMIT_MAX_PUBLIC` | const | `20` scansioni per finestra |
+| `KORA_LINK_RATE_LIMIT_KEY_PREFIX` | const | `'kl:rl:pub:'` — prefix Redis |
+| `isKoraLinkEnabled(env?)` | fn | `true` solo se `KORA_LINK_ENABLED === 'true'` — case-sensitive, default off |
+| `getKoraLinkPublicBaseUrl(env?)` | fn | Legge e valida URL, strip trailing slash, lancia se assente/invalida |
+| `getKoraLinkReadiness(env?)` | fn | Check non-bloccante — non lancia mai |
+| `assertKoraLinkReady(env?)` | fn | Guard bloccante per route handler |
+| `getKoraLinkRateLimitConfig()` | fn | Restituisce config rate limiting — nessun provider integrato |
+
+### Design pattern
+
+Tutte le funzioni accettano `env?: KoraLinkEnv` con default `process.env`.
+Nessuna lettura env al top-level: il modulo è sicuro per test e build.
+
+```ts
+// test injection — nessun process.env polluted
+getKoraLinkReadiness({ KORA_LINK_ENABLED: 'true', ... });
+
+// produzione
+assertKoraLinkReady(); // legge process.env
+```
+
+### Note TypeScript (TS2559)
+
+`KoraLinkEnv` include un index signature `[key: string]: string | undefined` oltre alle named properties. Necessario in TypeScript 5.9 per passare `process.env` come default (weak-type check). I named keys restano come documentazione e type hint.
+
+### Copertura test (59 test, 7 suite)
+
+| Suite | Test |
+|-------|------|
+| Constants | 4 |
+| isKoraLinkEnabled | 9 — tutti i valori falsy + 'true' esatto |
+| getKoraLinkPublicBaseUrl (valid) | 7 — https, http, trailing slash, porta, path |
+| getKoraLinkPublicBaseUrl (invalid) | 7 — assente, non-URL, protocollo non supportato, no info leak |
+| getKoraLinkReadiness | 13 — tutti i casi ready/not-ready, conteggio missing |
+| assertKoraLinkReady | 7 — no-throw, throws, errore non espone secret |
+| getKoraLinkRateLimitConfig + type shapes | 11 |
+
+### Metriche
+
+- File creati: 2 (`lib/kora-link/config.ts`, `tests/unit/kora-link-config.test.ts`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- Dipendenze aggiunte: 0
+- TypeScript: 0 errori nel codice KL (errori `.next/dev/types/validator.ts` pre-esistenti, file gitignored)
+- Vitest KL-07: 59/59 passed
+- Vitest suite totale: 8252/8252 (+59 rispetto a KL-06)
+- Build: OK
+- E2E: 6/6 passed
+- ESLint: 0 errori, 0 warning
+
+### Gate status post-KL-07
+
+| Gate | Status |
+|------|--------|
+| Gate 2 (CTO schema review) | OPEN |
+| Gate 3 (DPO/legal) | OPEN |
+| KL-01 → KL-06 | ✅ COMPLETATI |
+| KL-07 Runtime Config Core | ✅ COMPLETATO |
+| KL-08 Route `/link/[token]` | Prerequisiti: `KORA_LINK_ENABLED=true` · Upstash Redis · Gate 2+3 |
+
+---
+
+*KORA_LINK_CHANGELOG.md — KL-07 · 2026-06-30*
