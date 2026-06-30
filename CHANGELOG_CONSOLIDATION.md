@@ -332,4 +332,66 @@ export const FEATURE_FLAGS = {
 
 ---
 
-*Consolidazione completata: CC-00 → CC-05*
+---
+
+## CC-06 — Technical Debt Map + Vibecoding Risk Reduction Plan
+
+**Data:** 2026-06-30
+**Branch:** `docs/consolidation`
+**HEAD iniziale:** `17e5a2c` (CC-05)
+
+**Scopo:** mappa oggettiva del debito tecnico e piano operativo per ridurre il rischio vibecoding — rendere KORA più credibile e sicura per CTO, investitori, clienti e developer esterni.
+
+**Fonti lette (read-only):**
+- ESLint output completo (`npx eslint . --ext .ts,.tsx --format json`)
+- 84 API route files (pattern guard auth)
+- `middleware.ts` (protezione globale route)
+- `lib/supabase/types.ts` (drift schema)
+- Migration map (CC-04 DATA_MODEL.md)
+- `vitest.config.ts` e struttura test
+- File grandi > 300 righe (10 individuati)
+- Pattern JSON import in componenti
+- eslint-disable e @ts-ignore nel runtime
+
+**Nessun codice modificato. Nessuna connessione DB. Produzione non toccata.**
+
+**File creati:**
+
+| File | Descrizione |
+|------|-------------|
+| `docs/TECHNICAL_DEBT_MAP.md` | 10 sezioni: executive summary, quality baseline, ESLint debt, type safety, runtime arch, security/privacy, data/model, product/demo, testing, investor perception |
+| `docs/VIBECODING_RISK_REDUCTION_PLAN.md` | Strategia, P0/P1/P2/P3, 6 cluster operativi, branch strategy, no-go zones, 30/60/90 day plan, success criteria |
+
+**Key findings ESLint:**
+- Runtime: 94 errori, 53 warning (non bloccanti per build)
+- 70 errori = `@typescript-eslint/no-explicit-any` (non security risk, concentrati in admin/diagnostics)
+- 8 errori = `setState` sincrono in `useEffect` — anti-pattern React (file: Sidebar, DynamicCVClient, CompanyWorkspacePanel, useCountUp, altri admin)
+- 3 errori = component during render (`app/my-kora/kora-space/page.tsx`)
+- 23 errori = `require()` in test (non runtime)
+- 11 errori = `no-unescaped-entities` (apostrofi/virgolette non escaped)
+
+**Key findings architettura:**
+- Zero E2E browser test (Playwright assente) — rischio più alto per CTO perception
+- `lib/supabase/types.ts` hand-written — 4 campi mancanti certi (tenant_kind, production_ready*, audit enrichment, opening_grade)
+- 6 golden path E2E proposti (E2E-01 → E2E-06)
+- Migration 025 M025-7 non verificata su staging — prerequisito per 032/033
+
+**Cluster operativi:**
+- Cluster A: ESLint critical runtime fixes
+- Cluster B: Shell/demo page gating
+- Cluster C: API route hardening backlog
+- Cluster D: E2E golden path setup
+- Cluster E: Supabase types readiness
+- Cluster F: KORA Link pre-build gates
+
+**Conferme:**
+- ✅ Nessun codice runtime modificato
+- ✅ Nessun SQL modificato
+- ✅ Nessun Supabase client usato
+- ✅ Produzione non toccata
+- ✅ Nessun merge in `main`
+- ✅ Nessun segreto stampato
+
+---
+
+*Consolidazione completata: CC-00 → CC-06*
