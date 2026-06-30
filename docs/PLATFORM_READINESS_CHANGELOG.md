@@ -190,4 +190,83 @@ Consiglio: **Opzione A** (Shell/Demo Gating) — immediato, nessun prerequisito 
 
 ---
 
+## CC-09 — Shell/Demo Page Gating + Client-Safe Navigation
+
+**Data:** 2026-06-30
+**Branch:** `platform/readiness`
+
+### Obiettivo
+
+Ridurre il rischio "vibecoded" durante demo cliente/investitore: label, badge e gating
+leggero sulle superfici shell/demo/preview. Nessuna nuova feature. Nessuna business logic.
+
+### Audit sistematico eseguito
+
+Pagine ispezionate (data-gathering):
+- Tutte le route `/demo/*` — audit badge DEMO / DemoAccessBanner
+- Tutte le route `/company/*` in sidebar — audit flag comingSoon / inactive / preview
+- `/app/demo/future-vision/page.tsx` — già "NON ATTIVO" ✓
+- `/app/company/contribution/page.tsx` — già "PRE-PILOT PREVIEW" ✓
+- `/app/company/scoring/page.tsx` — già `OperatorToolBoundary` ✓
+- `/app/company/financial/page.tsx` — già `NoDataState` ✓
+
+### Modifiche applicate
+
+| File | Tipo | Cambio |
+|------|------|--------|
+| `app/demo/portfolio/page.tsx` | Badge | Aggiunto `BoundaryBadge mode="DEMO" · dati sintetici` all'header |
+| `components/layout/Sidebar.tsx` | Flag nav | Aggiunto `preview: true` a `/company/opportunities` |
+
+#### `app/demo/portfolio/page.tsx`
+
+Unica pagina demo priva di `BoundaryBadge` nell'header — le pagine gemelle
+(`index-registry`, `benchmarks`, `network`, `ai-onboarding`) lo avevano già.
+Fix: wrap eyebrow in flex + badge, pattern identico alle altre demo pages.
+
+Il testo "dati sintetici" era già presente nella descrizione e nei demo notes
+(`synthetic_demo_data: true`). Il badge non riduplica — lo porta in posizione
+standard visibile immediatamente.
+
+#### `components/layout/Sidebar.tsx`
+
+`/company/opportunities` compariva nel sidebar senza flag: l'utente cliccava
+e vedeva "Modulo non ancora attivo per questo tenant". Aggiunto `preview: true`
+→ badge arancio "preview" compare prima del click, setta aspettative corrette.
+
+Il cambio tocca SOLO la entry nav (array di oggetti) — nessuna logica sidebar
+modificata. La pagina `/company/opportunities` stessa è invariata.
+
+### Metriche
+
+| Metrica | Prima CC-09 | Dopo CC-09 |
+|---------|------------|-----------|
+| Demo pages con BoundaryBadge header | 5/6 | 6/6 |
+| Sidebar company items con flag | 3/N | 4/N (+ opportunities preview) |
+| TypeScript (`tsc --noEmit`) | CLEAN | CLEAN |
+| vitest | 8079/8079 | 8079/8079 |
+
+### Cosa NON è stato toccato
+
+- Nessun codice runtime modificato oltre label/badge/flag nav
+- Nessun SQL, RLS, migrations
+- Nessun Supabase client usato
+- Produzione non toccata
+- Auth/middleware non toccati
+- Business logic invariata
+
+### Prossimi step raccomandati (CC-10)
+
+**Opzione A — Cluster A rimanente (ESLint setState):**
+`Sidebar.tsx`, `DynamicCVClient.tsx`, `CompanyWorkspacePanel.tsx` — richiedono pair review.
+
+**Opzione B — E2E autenticati (staging):**
+Account di test staging dedicati + golden path E2E-01/E2E-03.
+Richiede credenziali — non implementabile automaticamente.
+
+**Opzione C — Cluster E (Supabase types):**
+Aggiornare `lib/supabase/types.ts` con campi mancanti dalle migrations (tenant_kind, ecc.).
+Claude Code: sì. Basso rischio.
+
+---
+
 *Aggiornare questo documento dopo ogni CC-XX che tocca `platform/readiness`.*
