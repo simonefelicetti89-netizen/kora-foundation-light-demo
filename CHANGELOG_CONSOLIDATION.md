@@ -174,4 +174,32 @@ export const FEATURE_FLAGS = {
 
 ---
 
-*Prossimo step: CC-03*
+## CC-03 — ARCHITECTURE.md Industriale
+
+**Data:** 2026-06-30
+**Branch:** `docs/consolidation`
+**HEAD iniziale:** `1034a0d` (CC-02)
+
+**Scopo:** documentazione architetturale operativa per CTO, investitori tecnici, team esterno.
+
+**Chiarimento migration 032/033:**
+- 032 (`032_contribution_atomic_attribution.sql`) — in `supabase/proposed/`, READY_FOR_REVIEW, NON in `migrations/`
+- 033 (`033_initiative_adoption_source_model.sql`) — in `supabase/proposed/`, READY_FOR_REVIEW, NON in `migrations/`
+- Ultima migration in `migrations/`: `031_revoke_public_execute_uef_definer_functions.sql`
+- 032/033 sono occupati — non liberi per KORA Link
+- Prossimo numero libero per KORA Link: **034**
+
+**Sezioni create:** 16 (executive summary, repository map, runtime areas, roles, Supabase architecture, KORA Engine, data flow KORA Index, data flow PIB, data flow KORA Space → Contribution, Decision Pack, demo/live/mock boundary, technical quality, KORA Link integration, off-limits areas, investor/CTO narrative, 90-day roadmap)
+
+**File prodotti:** `ARCHITECTURE.md`
+
+**Conferme:**
+- ✅ Nessun codice runtime modificato
+- ✅ Nessun Supabase client usato
+- ✅ Produzione non toccata
+- ✅ Nessun merge in `main`
+- ✅ Nessun segreto stampato
+
+---
+
+*Prossimo step: CC-04*
