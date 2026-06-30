@@ -1,0 +1,405 @@
+# KORA — API Hardening Backlog
+
+**Branch:** `platform/readiness`
+**Generato:** CC-10 · 2026-06-30
+**Fonte:** `docs/API_ROUTE_AUTH_MATRIX.md`
+**Scope:** Foundation Light staging → produzione → pilot real data → KORA Link v1
+
+---
+
+## P0 — Must fix before real data
+
+Queste issue bloccano l'introduzione di dati aziendali o worker reali.
+
+---
+
+### H-001 — `commons/posts` e `commons/posts/[id]` e `commons/initiatives`: service client per path non-admin
+
+**Finding:** F-001 (see API_ROUTE_AUTH_MATRIX.md §10)
+
+**Problema:**
+Le tre route commons (`/api/commons/posts` GET/POST, `/api/commons/posts/[id]` PATCH, `/api/commons/initiatives` GET) usano `getSupabaseServiceClient()` per tutti i path, inclusi company e worker. Il filtro tenant è applicativo: `.eq('tenant_id', tenantId)` dove `tenantId` viene dalla sessione. Nessuna RLS come backstop.
+
+**Rischio con real data:**
+Se il layer sessione ritorna un `tenantId` errato (bug, session confusion, race condition), un company user potrebbe leggere post di un altro tenant. La RLS non lo impedirebbe perché il client è service-role.
+
+**Fix:**
+```typescript
+// Attuale (problematico per path non-admin):
+const db = getSupabaseServiceClient();
+// ...per tutti i path (admin, company, worker)
+
+// Corretto:
+// - path admin: getSupabaseServiceClient() (cross-tenant, corretto)
+// - path company: getSupabaseServerClient() (RLS scoped a tenant via JWT)
+// - path worker:  getSupabaseServerClient() (RLS scoped a tenant via JWT)
+```
+
+**File da modificare:**
+- `app/api/commons/posts/route.ts` — GET e POST
+- `app/api/commons/posts/[id]/route.ts` — PATCH
+- `app/api/commons/initiatives/route.ts` — GET
+
+**Claude Code:** SÌ — refactor meccanico. Nessuna logica business cambia.
+**Test necessario:** unit test che verifica che company/worker path vede solo il proprio tenant.
+**Priorità:** P0 — da risolvere prima di qualsiasi tenant con dati reali.
+
+---
+
+### H-002 — Direct `createClient` con service role key
+
+**Finding:** F-002
+
+**Problema:**
+Due route istanziano direttamente il service client con `createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)` invece di usare il wrapper canonico `getSupabaseServiceClient()` definito in `lib/supabase/server.ts`.
+
+**File coinvolti:**
+- `app/api/admin/data-intake/accept/route.ts` (linea ~434)
+- `app/api/admin/decision-pack/status/route.ts` (linea ~68)
+
+**Rischio:**
+- Basso in termini di sicurezza (KORA_ADMIN già verificato prima)
+- Alto in termini di coerenza: se la convenzione del wrapper cambia (es. pool, logging), questi file non ricevono l'aggiornamento automaticamente
+- Rende il mocking nei test più difficile
+
+**Fix:**
+```typescript
+// Rimuovere:
+import { createClient } from '@supabase/supabase-js';
+const db = createClient<Database>(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+);
+
+// Sostituire con:
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
+const db = getSupabaseServiceClient();
+```
+
+**Claude Code:** SÌ — 2 file, ~3 righe ciascuno.
+**Test:** verificare che i test esistenti (build + vitest) passino invariati.
+
+---
+
+## P1 — Should fix before client pilot
+
+Queste issue non bloccano staging ma sono richieste prima di una demo con dati reali o un pilot commerciale.
+
+---
+
+### H-003 — Zero rate limiting
+
+**Finding:** F-003
+
+**Problema:**
+Nessuna delle 84 route ha rate limiting. Le route più rischiose:
+
+| Route | Perché critica |
+|-------|---------------|
+| `POST /api/admin/workers/provision` | Chiama `auth.admin.inviteUserByEmail` — abuso crea spam email |
+| `POST /api/admin/companies/provision` | Crea tenant Supabase — abuso crea noise nel DB |
+| `POST /api/admin/data-intake/accept` | Esegue parsing + write batch — costoso CPU/DB |
+| `POST /api/admin/scoring/run-approved-batch` | Esegue scoring live — costoso CPU |
+| `POST /api/admin/live-company` | Compound operation (tenant + auth user + baseline) |
+
+**Approccio consigliato:**
+Aggiungere rate limiting a livello di Edge Middleware (Vercel Edge Config + Upstash Redis) piuttosto che in ogni route individualmente.
+
+**Claude Code:** NO — richiede:
+1. Decisione su soluzione (Upstash/Redis vs Vercel Edge vs in-memory)
+2. Modifica a `middleware.ts` (escluso da CC) o nuovo middleware layer
+3. Configurazione Redis (infrastruttura)
+
+**CTO review:** SÌ — decisione architetturale.
+**Timing:** prima di pilot con real data.
+
+---
+
+### H-004 — Zero schema validation strutturata (Zod)
+
+**Finding:** F-004
+
+**Problema:**
+Le route con body usano validazione manuale con `typeof` e `trim()`. Risultato: inconsistenza, errori 500 invece di 400 su input malformati, difficoltà di testing.
+
+**Route prioritarie per Zod:**
+1. `POST /api/admin/workers/provision` — email, tenantCode (già parzialmente validati)
+2. `POST /api/admin/live-company` — company_name, tenant_code, admin_email, admin_role
+3. `POST /api/admin/data-intake/accept` — multipart, tenantId, batchId
+4. `POST /api/admin/scoring/run-approved-batch` — batchId
+5. `POST /api/worker/initiatives/[id]/interest` — status enum, private_note max
+
+**Template schema:**
+```typescript
+import { z } from 'zod';
+
+const ProvisionWorkerSchema = z.object({
+  tenantCode: z.string().min(1).max(20),
+  email:      z.string().email(),
+  workerRef:  z.string().max(100).optional(),
+});
+
+// In route:
+const parsed = ProvisionWorkerSchema.safeParse(body);
+if (!parsed.success) {
+  return NextResponse.json({ ok: false, error: parsed.error.flatten() }, { status: 400 });
+}
+const { tenantCode, email, workerRef } = parsed.data;
+```
+
+**Claude Code:** SÌ parzialmente — l'aggiunta di Zod è meccanica, ma richiede revisione di ogni route individualmente. Suggerito: procedere route per route in CC-11.
+**Test:** vitest per ogni route con input invalidi.
+
+---
+
+### H-005 — `auth/logout` senza guard esplicita
+
+**Finding:** F-005
+
+**Problema:**
+`/api/auth/logout` non ha `requireXxx`. Chiama `getUser()` (può ritornare null) poi `signOut()` poi redirect.
+
+**Fix (3 righe):**
+```typescript
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) return NextResponse.redirect(new URL('/company/login', request.url));
+const koraRole = user.app_metadata?.kora_role as string | undefined;
+await supabase.auth.signOut();
+// ... redirect
+```
+
+**Claude Code:** SÌ.
+**Rischio se non fixato:** minimo (signOut su no-session è no-op).
+
+---
+
+### H-006 — UUID validation assente su tenantId query param
+
+**Finding:** F-007
+
+**Route:**
+- `GET /api/admin/impact-units?tenantId=<uuid>`
+- `GET /api/admin/worker-initiatives?tenantId=<uuid>`
+- `GET /api/admin/workers/list` (tenantCode param)
+
+**Fix:**
+```typescript
+import { z } from 'zod';
+const uuidSchema = z.string().uuid();
+const tenantIdResult = uuidSchema.safeParse(tenantId);
+if (!tenantIdResult.success) {
+  return NextResponse.json({ ok: false, error: 'tenantId deve essere un UUID valido.' }, { status: 400 });
+}
+```
+
+**Claude Code:** SÌ.
+
+---
+
+### H-007 — Formato errori non standardizzato
+
+**Finding:** F-006
+
+**Problema:** mix di `{ error: 'msg' }`, `{ ok: false, error: 'msg' }`, `{ message: 'msg' }`.
+
+**Convenzione proposta:**
+```typescript
+// Standard error shape per KORA API
+interface KoraErrorResponse {
+  ok:     false;
+  error:  string;
+  code?:  string;  // machine-readable (es. 'UNAUTHORIZED', 'TENANT_NOT_FOUND')
+}
+
+interface KoraSuccessResponse<T> {
+  ok:   true;
+  data: T;
+}
+```
+
+**Claude Code:** SÌ (meccanico, molti file).
+**Timing:** da fare prima di integrazioni partner o client SDK.
+
+---
+
+## P2 — Should fix before KORA Link
+
+Queste issue sono specificamente richieste per abilitare KORA Link v1 in sicurezza.
+
+---
+
+### H-008 — Pattern route pubblica mancante
+
+**Problema:**
+KORA Link richiede una route pubblica (`GET /api/link/[token]` o `GET /link/[token]`) accessibile senza sessione. Non esiste alcun template o pattern per route pubbliche sicure in KORA.
+
+**Requisiti per la route pubblica:**
+```typescript
+// Pattern: public route sicura
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: { token: string } }
+) {
+  // 1. Validate token format (no DB query for invalid format)
+  const tokenSchema = z.string().regex(/^[A-Za-z0-9_-]{32,64}$/);
+  const tokenResult = tokenSchema.safeParse(params.token);
+  if (!tokenResult.success) {
+    return NextResponse.json({ ok: false, error: 'Link non valido.' }, { status: 400 });
+  }
+
+  // 2. Lookup token (server-side, service role OK here)
+  const db = getSupabaseServiceClient();
+  const { data: linkRecord } = await db
+    .schema('personal') // or appropriate schema
+    .from('kora_link')
+    .select('worker_identity_id, tenant_id, status, expires_at')
+    .eq('token', tokenResult.data)
+    .single();
+
+  // 3. Check revoked/expired (timing-safe: same response as not-found)
+  if (!linkRecord || linkRecord.status !== 'active' || new Date(linkRecord.expires_at) < new Date()) {
+    return NextResponse.json({ ok: false, error: 'Link non valido o scaduto.' }, { status: 404 });
+  }
+
+  // 4. Return NO PII — only safe activation data
+  return NextResponse.json({
+    ok: true,
+    data: {
+      activation_pillar: linkRecord.pillar,
+      event_ref:         linkRecord.event_ref,
+      // NO: worker_id, tenant_id, email, nome
+    }
+  });
+}
+```
+
+**Claude Code:** SÌ parzialmente (struttura route). Rate limiting e audit: CTO review.
+
+---
+
+### H-009 — Rate limiting per route pubblica KORA Link
+
+**Problema:**
+Una route pubblica senza rate limiting è esposta a scan di token e DoS.
+
+**Requisiti minimi:**
+- Max 10 req/IP/minuto su `GET /link/[token]`
+- Max 5 req/IP/minuto su `POST /api/worker/kora-link/activate`
+- Blocco automatico IP dopo N errori in M minuti
+
+**Claude Code:** NO — richiede infrastruttura rate limiting (H-003 prerequisito).
+**CTO review:** SÌ — security decision.
+
+---
+
+### H-010 — Endpoint partner/event registration per KORA Link
+
+**Richiede:**
+1. `POST /api/admin/kora-link` — KORA_ADMIN genera token link
+2. `POST /api/company/kora-link/revoke` — COMPANY_ADMIN revoca token
+3. `POST /api/worker/kora-link/activate` — WORKER attiva scan
+
+**Note di progettazione:**
+- I token sono UUID v4 o CUID2 (non sequenziali — no enumeration attack)
+- `activate` richiede WORKER session (no public activation)
+- Revoca è soft (status=revoked, non delete — per audit trail)
+- Ogni attivazione crea un record in `audit.audit_log`
+
+**Claude Code:** SÌ (struttura route, se Gate 2 e Gate 3 chiusi).
+**Gate blocker:** Gate 3 (legal/privacy) deve chiudersi prima di endpoint live.
+
+---
+
+### H-011 — RLS negative tests per KORA Link
+
+**Problema:**
+Prima di KORA Link, servono test che verificano che le RLS policy blocchino:
+1. Un worker che vede il token di un altro worker
+2. Un company admin che vede token non del proprio tenant
+3. Un unauthenticated user che chiama endpoint protetti
+
+**Claude Code:** SÌ (vitest + test infrastruttura). Richiede schema DB definito (post Gate 2).
+
+---
+
+## P3 — Nice to have
+
+### H-012 — Request correlation ID
+
+**Problema:** nessun `X-Request-ID` header per correlare log.
+**Fix:** aggiungere in `middleware.ts` (un'aggiunta, non modifica logica).
+**Claude Code:** SÌ (se middleware scope aperto).
+
+### H-013 — API versioning
+
+**Problema:** nessun prefisso versione.
+**Fix:** stabilire convenzione (header vs path) prima di partner API.
+**Claude Code:** NO — decisione architetturale.
+
+### H-014 — Documentazione OpenAPI/Swagger
+
+**Problema:** nessuna specifica API formale.
+**Fix:** generare da TSDoc/Zod schema.
+**Claude Code:** SÌ (dopo H-004 Zod).
+
+### H-015 — Structured logging
+
+**Problema:** `console.log` / `console.error` non strutturati in molte route.
+**Fix:** logger strutturato (pino) con `requestId`, `tenantId`, `userId` (hash).
+**Claude Code:** SÌ parzialmente.
+
+---
+
+## KORA Link API Readiness
+
+Valutazione per KORA Link v1 (futura):
+
+| Endpoint | Status | Prerequisiti | Gate |
+|----------|--------|-------------|------|
+| `GET /link/[token]` (public) | ❌ Non implementato | H-008, H-009, H-011 | Gate 3 |
+| `POST /api/admin/kora-link` | ❌ Non implementato | H-010 | Gate 2 + 3 |
+| `POST /api/company/kora-link/revoke` | ❌ Non implementato | H-010 | Gate 2 + 3 |
+| `POST /api/worker/kora-link/activate` | ❌ Non implementato | H-010, H-011 | Gate 2 + 3 |
+| Endpoint partner/event registration | ❌ Non implementato | H-010 | Gate 2 + 3 + partner onboarding |
+| Audit trail KORA Link | ❌ Non implementato | audit.audit_log schema | Gate 2 |
+| Rate limiting public route | ❌ Non implementato | H-003, H-009 | Gate 3 |
+| RLS negative tests | ❌ Non implementato | H-011, schema DB | Gate 2 |
+
+**Prerequisiti infrastrutturali KORA Link:**
+1. Gate 2 chiuso (SQL schema, RLS, produzione)
+2. Gate 3 chiuso (legal/privacy su dati worker in scan)
+3. H-001 risolto (commons service client)
+4. H-003 risolto (rate limiting infrastruttura)
+5. H-008 pattern pubblico definito
+6. Security review CTO + eventuale pen test su route pubbliche
+
+**Stima effort KORA Link (post-prerequisiti):**
+- Route core (admin/company/worker): 1-2 sprint
+- Public route sicura + rate limiting: 0.5 sprint + infra
+- RLS + test: 0.5 sprint
+- Security review: esterno
+
+---
+
+## Cosa può fare Claude Code vs cosa richiede CTO/Security
+
+| Issue | Claude Code | CTO/Security |
+|-------|------------|-------------|
+| H-001 (commons service client) | SÌ | Review post-fix |
+| H-002 (direct createClient) | SÌ | — |
+| H-003 (rate limiting) | NO | SÌ — decisione architetturale |
+| H-004 (Zod validation) | SÌ parzialmente | Review schema |
+| H-005 (logout guard) | SÌ | — |
+| H-006 (UUID validation) | SÌ | — |
+| H-007 (errori standardizzati) | SÌ | — |
+| H-008 (pattern public route) | SÌ (struttura) | Review sicurezza |
+| H-009 (rate limiting Link) | NO | SÌ |
+| H-010 (endpoint KORA Link) | SÌ (post Gate 2+3) | Review pre-merge |
+| H-011 (RLS negative tests) | SÌ (post Gate 2) | — |
+| H-012 (correlation ID) | SÌ (se middleware aperto) | — |
+| H-013 (API versioning) | NO | SÌ |
+
+---
+
+*API_HARDENING_BACKLOG.md — CC-10 · Branch `platform/readiness`*
+*Aggiornare dopo ogni CC che risolve un finding.*

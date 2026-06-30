@@ -269,4 +269,87 @@ Claude Code: sì. Basso rischio.
 
 ---
 
+## CC-10 — API Route Auth Matrix + Hardening Backlog
+
+**Data:** 2026-06-30
+**Branch:** `platform/readiness`
+**Tipo:** documentale — nessun codice runtime modificato
+
+### Obiettivo
+
+Audit sistematico di tutte le API route KORA per:
+- ridurre rischio vibecoding/security su demo CTO/investitore;
+- preparare infrastruttura per KORA Link v1;
+- identificare finding P0/P1/P2/P3 e distinguere fix Claude Code vs CTO.
+
+### File creati
+
+| File | Contenuto |
+|------|-----------|
+| `docs/API_ROUTE_AUTH_MATRIX.md` | Matrice completa 84 route: guard, client, tenant isolation, privacy, findings |
+| `docs/API_HARDENING_BACKLOG.md` | Backlog operativo P0→P3 + KORA Link readiness section |
+
+### Risultati audit
+
+| Metrica | Valore |
+|---------|--------|
+| Route file analizzate | 84 |
+| Handler HTTP totali (approx.) | ~110 |
+| Aree | admin(46) · company(17) · worker(17) · commons(3) · auth(1) |
+| Route HIGH RISK | **0** |
+| Route NEEDS REVIEW | **8** |
+| Route OK | **75** |
+| Route UNKNOWN | 0 |
+
+### Top findings
+
+| ID | Priorità | Route | Problema | Claude Code |
+|----|----------|-------|----------|------------|
+| H-001 | P0 | `commons/posts` (3 file) | Service client per path company/worker — nessun RLS backstop | SÌ |
+| H-002 | P0 | `data-intake/accept`, `decision-pack/status` | `createClient` diretto con service role key | SÌ |
+| H-003 | P1 | Tutte le 84 route | Zero rate limiting | NO — CTO |
+| H-004 | P1 | Route POST/PATCH | Zero Zod schema validation | SÌ parzialmente |
+| H-005 | P1 | `auth/logout` | Nessuna guard esplicita | SÌ |
+| H-006 | P1 | `admin/impact-units`, `admin/worker-initiatives`, `admin/workers/list` | UUID non validato su query param | SÌ |
+| H-007 | P1 | Tutte | Formato errori non standardizzato | SÌ |
+| H-008 | P2 | `/link/[token]` (futura) | Pattern route pubblica mancante | SÌ (struttura) |
+| H-009 | P2 | KORA Link | Rate limiting public route | NO — CTO |
+| H-010 | P2 | KORA Link | Endpoint admin/company/worker KORA Link | SÌ (post Gate 2+3) |
+
+### KORA Link readiness
+
+Nessuno dei 5 endpoint KORA Link è implementato. Prerequisiti prima del merge:
+- H-001 risolto
+- H-003 infrastruttura rate limiting
+- Gate 2 chiuso (schema DB, RLS)
+- Gate 3 chiuso (legal/privacy su scan worker)
+- Security review CTO
+
+### Cosa può fare Claude Code (prossimi CC)
+
+- H-001: refactor commons service client → P0
+- H-002: refactor createClient diretto → P0
+- H-004: aggiungere Zod su route prioritarie
+- H-005: fix logout guard
+- H-006: UUID validation
+- H-007: standardizzare error shape
+
+### Cosa richiede CTO/Security
+
+- H-003: rate limiting (decisione architetturale)
+- H-009: rate limiting public route KORA Link
+- H-013: API versioning
+- Review pre-merge KORA Link
+
+### Metriche
+
+| Metrica | Valore |
+|---------|--------|
+| Codice runtime modificato | **NO** |
+| TypeScript | CLEAN (nessuna modifica) |
+| vitest | 8079/8079 (nessuna modifica) |
+| Supabase usato | **NO** |
+
+---
+
 *Aggiornare questo documento dopo ogni CC-XX che tocca `platform/readiness`.*
