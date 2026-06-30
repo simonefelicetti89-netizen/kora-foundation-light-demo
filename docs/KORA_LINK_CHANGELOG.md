@@ -6,6 +6,56 @@
 
 ---
 
+## KL-13 — 034 CTO Decision Pack
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Documentazione — nessun codice runtime, nessuna migration, nessun SQL.
+
+### Contenuto
+
+Creato `docs/KORA_LINK_034_CTO_DECISION_PACK.md` — decision pack sintetico per CTO/Postgres reviewer con 13 sezioni:
+
+- **Sezione 1** — Executive summary (15 righe max)
+- **Sezione 2** — Decision table sintetica: 8 decisioni, raccomandazione, owner, blocco 035/promotion, rischio
+- **Sezioni 3–10** — Una sezione per ogni decisione (D-01→D-08): stato attuale, opzioni con pro/contro, raccomandazione v1
+  - D-01 FK targets: Opzione A no-FK raccomandata (coerente con 033; RLS + SECDEF sono il boundary corretto)
+  - D-02 PG15 compatibility: verificare versione; partial index come fallback se PG<15; differire con partner_scans
+  - D-03 generated scan_date: rimuovere partner_scans da 034 (→ migration 036) come soluzione principale
+  - D-04 TTL enforcement: app-layer only per v1; pg_cron in fase separata post-Gate-3
+  - D-05 audit_log retention: non blocca Gate 2; durata da DPO (Gate 3); meccanismo preferito pg_cron
+  - D-06 public_lookup_attempts: rimuovere da 034 v1 (nessun consumer; Upstash sufficiente)
+  - D-07 secret rotation: Opzione A (no rotation ordinaria in v1) + emergency C come fallback
+  - D-08 deferred self-FK: Alternativa A (rimuovere self-FK; catena via link_replacements)
+- **Sezione 11** — Change set consolidato raccomandato (3 modifiche alta priorità: rimuovere partner_scans, rimuovere public_lookup_attempts, rimuovere self-FK deferred)
+- **Sezione 12** — Decision template compilabile per il CTO (tabella + firma)
+- **Sezione 13** — Go/No-Go: 034_PROMOTION 🔴 · 035_DRAFT 🔴 · DB_LOOKUP 🔴 · ACTIVATION 🔴 · RUNTIME_PUBLIC_ROUTE 🟡 skeleton ok
+
+### Metriche
+
+- File creati: 1 (`docs/KORA_LINK_034_CTO_DECISION_PACK.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- Codice runtime modificato: 0
+- SQL eseguito: 0
+- Migrations create: 0
+- TypeScript: 0 errori
+- Vitest: invariato
+- Build: invariato
+
+### Gate status post-KL-13
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (Schema 034 CTO review) | 🔴 OPEN — decision pack pronto per il CTO |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| Gate 4 (RLS 035) | 🔴 OPEN — dipende da Gate 2 + D-01 + D-07 risolti |
+| Gate 5-9 | 🔴 OPEN |
+| KL-13 Decision Pack | ✅ COMPLETATO |
+| KL-14 | Raccomandato: modifiche a 034 in proposed/ dopo decisioni CTO |
+
+---
+
 ## KL-12 — 034 CTO Review Checklist
 
 **Data:** 2026-07-01  
