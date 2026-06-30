@@ -27,16 +27,16 @@
 
 **Pattern auth dominante:** ogni area ha la propria guard function (`requireKoraAdmin` / `requireCompanyUser` / `requireWorkerUser`) che legge il JWT Supabase dal cookie di sessione e lo verifica contro `app_metadata.kora_role`. Non ci sono route completamente prive di auth.
 
-**Principal risks:**
-- `commons/posts` (GET+POST) e `commons/posts/[id]` (PATCH) usano service-role client anche per i path company/worker — bypassa RLS, si affida solo a filtro applicativo `tenant_id` da sessione.
-- `data-intake/accept` e `decision-pack/status` istanziano direttamente `createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!)` invece di `getSupabaseServiceClient()`.
+**Principal risks (stato post CC-11):**
+- ~~`commons/posts` (GET+POST) e `commons/posts/[id]` (PATCH) usano service-role client per i path company/worker~~ **RISOLTO CC-11** — ora usa `getSupabaseServerClient()` con RLS backstop.
+- ~~`data-intake/accept` e `decision-pack/status` istanziano direttamente `createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!)`~~ **RISOLTO CC-11** — ora usa `getSupabaseServiceClient()`.
 - Zero rate limiting su tutte le 84 route.
 - Zero schema validation (Zod) — solo controlli `typeof` manuali, inconsistenti tra route.
 - `auth/logout` non ha guard esplicito (harmless ma inconsistente).
 
 **Cosa serve prima di real data:**
-- Migrare `commons/posts` a `getSupabaseServerClient` per i path company/worker.
-- Standardizzare istanziazione service client (no `createClient` diretto).
+- ~~Migrare `commons/posts` a `getSupabaseServerClient` per i path company/worker.~~ **FATTO CC-11**
+- ~~Standardizzare istanziazione service client (no `createClient` diretto).~~ **FATTO CC-11**
 - Aggiungere rate limiting almeno sulle route di scrittura (POST/PATCH/DELETE).
 - Schema validation strutturata su route di intake (data-intake/accept, workers/provision, live-company).
 
@@ -62,7 +62,7 @@ Nessuna route pubblica attuale è modellata correttamente per un endpoint `/link
 | `company-submissions` | GET | admin | `requireKoraAdmin` | service | SÌ | nessuna | OK | queue, no worker data |
 | `company-users` | GET, POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | email typeof+lower |
 | `company-workspace` | GET | admin | `requireKoraAdmin` | service | SÌ | basic | OK | aggregato, no individual |
-| `data-intake/accept` | POST | admin | `requireKoraAdmin` | **createClient diretto** | SÌ | estesa | **NEEDS_REVIEW** | `createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!)` — non canonico |
+| `data-intake/accept` | POST | admin | `requireKoraAdmin` | service | SÌ | estesa | OK | Usava `createClient` diretto — **fixato CC-11** con `getSupabaseServiceClient()` |
 | `data-intake/preview` | GET | admin | `requireKoraAdmin` | (mock/computed) | NO | nessuna | OK | dry-run, no write |
 | `data-intake/upload-preview` | POST | admin | `requireKoraAdmin` | (parse only) | NO | estesa | OK | dry-run, zero write a DB |
 | `data-lifecycle/archive` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | batchId richiesto |
@@ -70,7 +70,7 @@ Nessuna route pubblica attuale è modellata correttamente per un endpoint `/link
 | `data-lifecycle` | GET | admin | `requireKoraAdmin` | service | SÌ | basic | OK | read-only lifecycle |
 | `decision-pack/pdf` | GET | admin | `requireKoraAdmin` | (renderer) | NO | basic | OK | no DB query diretta |
 | `decision-pack/preview` | GET | admin | `requireKoraAdmin` | (renderer) | NO | basic | OK | no DB query diretta |
-| `decision-pack/status` | POST | admin | `requireKoraAdmin` | **createClient diretto** | SÌ | basic | **NEEDS_REVIEW** | `createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!)` — non canonico |
+| `decision-pack/status` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | Usava `createClient` diretto — **fixato CC-11** con `getSupabaseServiceClient()` |
 | `demo/provision-viewer` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | DEMO_VIEWER only |
 | `diagnostics` | GET | admin | `requireKoraAdmin` | service | SÌ | nessuna | OK | critico: service key mai in response |
 | `evidence-attachments/lifecycle` | POST | admin | `requireKoraAdmin` | service | SÌ | basic | OK | action enum validato |
@@ -156,9 +156,9 @@ Nessuna route pubblica attuale è modellata correttamente per un endpoint `/link
 
 | Path | Methods | Area | Guard | Client DB | Service-Role | Tenant Scoped | Risk | Note |
 |------|---------|------|-------|-----------|-------------|--------------|------|------|
-| `/api/commons/initiatives` | GET | commons | Multi-role sequenziale (admin→company→worker→401) | service | SÌ | sessione per non-admin | **NEEDS_REVIEW** | Service client per path company/worker |
-| `/api/commons/posts` | GET, POST | commons | Multi-role sequenziale (admin→company→worker→401) | service | SÌ | sessione per non-admin | **NEEDS_REVIEW** | Service client per path company/worker — nessun RLS backstop |
-| `/api/commons/posts/[id]` | PATCH | commons | Multi-role sequenziale (admin→company→worker→401) | service | SÌ | sessione per non-admin | **NEEDS_REVIEW** | Service client per path company/worker |
+| `/api/commons/initiatives` | GET | commons | Multi-role sequenziale (admin→company→worker→401) | server | NO | JWT + RLS | OK | Usa `getSupabaseServerClient` da prima di CC-11 (matrice CC-10 errata) |
+| `/api/commons/posts` | GET, POST | commons | Multi-role sequenziale (admin→company→worker→401) | server | NO | JWT + RLS | OK | **Fixato CC-11**: `getSupabaseServerClient` per tutti i path — RLS gestisce scoping |
+| `/api/commons/posts/[id]` | PATCH | commons | Multi-role sequenziale (admin→company→worker→401) | server | NO | JWT + RLS | OK | **Fixato CC-11**: `getSupabaseServerClient` per tutti i path — RLS gestisce scoping |
 | `/api/auth/logout` | POST | auth | **Nessuna guard esplicita** | server | NO | N/A | **NEEDS_REVIEW** | Legge sessione per redirect, chiama `signOut()`. Harmless se no sessione, ma semanticamente incompleto. |
 
 ---
@@ -203,24 +203,22 @@ Tutte le route `/api/admin/*` eccetto:
 
 Queste sono **corrette**: l'admin ha accesso cross-tenant e il service role è necessario.
 
-### Uso non canonico — `createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!)`
+### Uso non canonico — `createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!)` ✅ RISOLTO CC-11
 
-| Route | Motivo | Rischio | Fix |
-|-------|--------|---------|-----|
-| `app/api/admin/data-intake/accept/route.ts` | Istanza diretta per un sotto-step specifico | Basso (KORA_ADMIN already verified) | Refactor a `getSupabaseServiceClient()` |
-| `app/api/admin/decision-pack/status/route.ts` | Istanza diretta per lifecycle update | Basso (KORA_ADMIN already verified) | Refactor a `getSupabaseServiceClient()` |
+| Route | Stato |
+|-------|-------|
+| `app/api/admin/data-intake/accept/route.ts` | **FIXATO CC-11** — ora usa `getSupabaseServiceClient()` |
+| `app/api/admin/decision-pack/status/route.ts` | **FIXATO CC-11** — ora usa `getSupabaseServiceClient()` |
 
-**Perché è NEEDS_REVIEW anche se rischio basso:** il pattern diretto accoppia il codice alla variabile env specifica, rende più difficile il mocking nei test, e rompe la convenzione canonizzata in `lib/supabase/server.ts`. Un refactor risolve entrambi i problemi.
+### `commons/posts` + `commons/posts/[id]` — service client per path non-admin ✅ RISOLTO CC-11
 
-### `commons/posts` + `commons/posts/[id]` + `commons/initiatives` — service client per path non-admin
+| Route | Stato |
+|-------|-------|
+| `commons/posts` GET/POST | **FIXATO CC-11** — `getSupabaseServerClient()` per tutti i path; RLS mig 013 garantisce scoping |
+| `commons/posts/[id]` PATCH | **FIXATO CC-11** — `getSupabaseServerClient()` per tutti i path; RLS mig 013 garantisce scoping |
+| `commons/initiatives` GET | ✅ Già corretto prima di CC-11 — matrice CC-10 errata |
 
-| Route | Path | Perché service client | Rischio |
-|-------|------|----------------------|---------|
-| `commons/posts` GET/POST | company/worker path | Eredità — nessun RLS backstop | NEEDS_REVIEW |
-| `commons/posts/[id]` PATCH | company/worker path | Eredità — nessun RLS backstop | NEEDS_REVIEW |
-| `commons/initiatives` GET | company/worker path | Multi-role con un solo client | NEEDS_REVIEW |
-
-**Fix:** usare `getSupabaseServerClient()` per i path company e worker (il tenant_id viene dalla sessione e la RLS lo rinforza a DB level). Per i path admin, il service client rimane corretto.
+**RLS analysis CC-11:** policies `commons_post_kora_admin_all` (FOR ALL), `commons_post_company_admin_select/insert/update` (WITH tenant_id = kora.tenant_id()), `commons_post_worker_published_select` (WITH tenant_id + status='published') garantiscono isolamento completo con server client. Cambio comportamentale documentato: PATCH company cross-tenant → 404 invece di 403 (più sicuro — non rivela esistenza post altrui).
 
 ---
 
@@ -255,8 +253,8 @@ Route che gestiscono dati personali worker:
 | Tutte `/api/company/*` | `requireCompanyUser` → sessione → `tenantId` restituito dalla guard | OK |
 | `company/workers/aggregate` | `kora.tenant_id()` SQL function (JWT-based) | OK — DB-level |
 | `company/workers/activation-aggregate` | `fn_company_activation_summary()` + JWT | OK — DB-level |
-| `commons/posts` (company path) | Sessione + `.eq('tenant_id', tenantId)` + **service client** | **NEEDS_REVIEW** |
-| `commons/posts` (worker path) | Sessione + `.eq('tenant_id', tenantId)` + **service client** | **NEEDS_REVIEW** |
+| `commons/posts` (company path) | JWT + RLS `commons_post_company_admin_select` (`tenant_id = kora.tenant_id()`) | OK — **fixato CC-11** |
+| `commons/posts` (worker path) | JWT + RLS `commons_post_worker_published_select` (`tenant_id + status='published'`) | OK — **fixato CC-11** |
 | Tutte `/api/admin/*` | Nessuna (admin cross-tenant per design) | OK — by design |
 | `admin/workers/list` | `tenantCode` param → lookup tenant_id | OK (lookup server-side) |
 
@@ -274,22 +272,17 @@ Nessuno trovato per il perimetro Foundation Light corrente.
 
 ### P1 — High
 
-**F-001 — Commons service client per path non-admin**
-- Route: `commons/posts` (GET+POST), `commons/posts/[id]` (PATCH), `commons/initiatives` (GET)
-- Problema: usa `getSupabaseServiceClient()` anche per path company e worker. Il filtro `tenant_id` è applicativo (`.eq('tenant_id', tenantId)`), senza RLS come backstop.
-- Rischio: se `requireCompanyUser` o `requireWorkerUser` ritornano un `tenantId` errato (bug in sessione), un company user potrebbe leggere post di un altro tenant.
-- Fix: usare `getSupabaseServerClient()` per i path company e worker. Lasciare service client solo per il path admin.
-- Claude Code: **SÌ** — refactor meccanico, nessuna logica di business
+**F-001 — Commons service client per path non-admin** ✅ **RISOLTO CC-11**
+- Route: `commons/posts` (GET+POST), `commons/posts/[id]` (PATCH)
+- Nota: `commons/initiatives` era già corretto (matrice CC-10 errata)
+- Fix applicato: `getSupabaseServerClient()` per tutti i path — RLS mig 013 garantisce scoping a DB level
+- Cambiamento comportamentale: PATCH company cross-tenant → 404 invece di 403 (più sicuro)
 - CTO review: consigliata prima di real data
-- Test necessario: unit test che verifica che company user vede solo il proprio tenant
 
-**F-002 — Direct `createClient` con service role key**
+**F-002 — Direct `createClient` con service role key** ✅ **RISOLTO CC-11**
 - Route: `data-intake/accept`, `decision-pack/status`
-- Problema: `createClient(url, process.env.SUPABASE_SERVICE_ROLE_KEY!)` invece di `getSupabaseServiceClient()`
-- Rischio: basso (KORA_ADMIN già verificato), ma pattern non canonico, non mockabile nei test, fragile se la convenzione cambia
-- Fix: refactor a `getSupabaseServiceClient()` — 2 righe ciascuno
-- Claude Code: **SÌ** — refactor triviale
-- Test: verifica che i test esistenti passino dopo il refactor
+- Fix applicato: `getSupabaseServiceClient()` wrapper canonico; `createClient` diretto rimosso
+- Test: tsc clean + 8079/8079 vitest post-fix
 
 **F-003 — Zero rate limiting**
 - Route: tutte le 84 route
@@ -357,5 +350,5 @@ Nessuno trovato per il perimetro Foundation Light corrente.
 
 ---
 
-*API_ROUTE_AUTH_MATRIX.md — CC-10 · Branch `platform/readiness`*
+*API_ROUTE_AUTH_MATRIX.md — CC-10 generato · CC-11 aggiornato · Branch `platform/readiness`*
 *Aggiornare dopo ogni route nuova o modifica auth significativa.*

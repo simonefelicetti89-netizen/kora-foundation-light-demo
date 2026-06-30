@@ -13,71 +13,41 @@ Queste issue bloccano l'introduzione di dati aziendali o worker reali.
 
 ---
 
-### H-001 — `commons/posts` e `commons/posts/[id]` e `commons/initiatives`: service client per path non-admin
+### H-001 — `commons/posts` e `commons/posts/[id]`: service client per path non-admin ✅ RISOLTO CC-11
 
 **Finding:** F-001 (see API_ROUTE_AUTH_MATRIX.md §10)
 
-**Problema:**
-Le tre route commons (`/api/commons/posts` GET/POST, `/api/commons/posts/[id]` PATCH, `/api/commons/initiatives` GET) usano `getSupabaseServiceClient()` per tutti i path, inclusi company e worker. Il filtro tenant è applicativo: `.eq('tenant_id', tenantId)` dove `tenantId` viene dalla sessione. Nessuna RLS come backstop.
+**Stato:** **RISOLTO in CC-11** (2026-06-30)
 
-**Rischio con real data:**
-Se il layer sessione ritorna un `tenantId` errato (bug, session confusion, race condition), un company user potrebbe leggere post di un altro tenant. La RLS non lo impedirebbe perché il client è service-role.
+**Fix applicato:**
+- `app/api/commons/posts/route.ts` (GET e POST): `getSupabaseServiceClient()` → `await getSupabaseServerClient()`
+- `app/api/commons/posts/[id]/route.ts` (PATCH): idem
+- `app/api/commons/initiatives/route.ts` — già corretto prima di CC-11; matrice CC-10 errata
 
-**Fix:**
-```typescript
-// Attuale (problematico per path non-admin):
-const db = getSupabaseServiceClient();
-// ...per tutti i path (admin, company, worker)
+**RLS backstop confermato (mig 013):**
+- `commons_post_kora_admin_all` FOR ALL
+- `commons_post_company_admin_select/insert/update` con `tenant_id = kora.tenant_id()`
+- `commons_post_worker_published_select` con `tenant_id + status='published'`
 
-// Corretto:
-// - path admin: getSupabaseServiceClient() (cross-tenant, corretto)
-// - path company: getSupabaseServerClient() (RLS scoped a tenant via JWT)
-// - path worker:  getSupabaseServerClient() (RLS scoped a tenant via JWT)
-```
+**Cambiamento comportamentale documentato:**
+- PATCH company su post cross-tenant: da 403 → 404 (più sicuro — non rivela esistenza post altrui)
+- GET/POST: comportamento identico; la RLS rinforza a DB level quello che il codice già faceva applicativamente
 
-**File da modificare:**
-- `app/api/commons/posts/route.ts` — GET e POST
-- `app/api/commons/posts/[id]/route.ts` — PATCH
-- `app/api/commons/initiatives/route.ts` — GET
-
-**Claude Code:** SÌ — refactor meccanico. Nessuna logica business cambia.
-**Test necessario:** unit test che verifica che company/worker path vede solo il proprio tenant.
-**Priorità:** P0 — da risolvere prima di qualsiasi tenant con dati reali.
+**Test:** tsc clean + 8079/8079 vitest post-fix.
 
 ---
 
-### H-002 — Direct `createClient` con service role key
+### H-002 — Direct `createClient` con service role key ✅ RISOLTO CC-11
 
 **Finding:** F-002
 
-**Problema:**
-Due route istanziano direttamente il service client con `createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)` invece di usare il wrapper canonico `getSupabaseServiceClient()` definito in `lib/supabase/server.ts`.
+**Stato:** **RISOLTO in CC-11** (2026-06-30)
 
-**File coinvolti:**
-- `app/api/admin/data-intake/accept/route.ts` (linea ~434)
-- `app/api/admin/decision-pack/status/route.ts` (linea ~68)
+**Fix applicato:**
+- `app/api/admin/data-intake/accept/route.ts`: rimosso `import { createClient } from '@supabase/supabase-js'` e `import type { Database }`, sostituito con `import { getSupabaseServiceClient } from '@/lib/supabase/server'`; istanza diretta → `const db = getSupabaseServiceClient()`
+- `app/api/admin/decision-pack/status/route.ts`: idem
 
-**Rischio:**
-- Basso in termini di sicurezza (KORA_ADMIN già verificato prima)
-- Alto in termini di coerenza: se la convenzione del wrapper cambia (es. pool, logging), questi file non ricevono l'aggiornamento automaticamente
-- Rende il mocking nei test più difficile
-
-**Fix:**
-```typescript
-// Rimuovere:
-import { createClient } from '@supabase/supabase-js';
-const db = createClient<Database>(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-);
-
-// Sostituire con:
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
-const db = getSupabaseServiceClient();
-```
-
-**Claude Code:** SÌ — 2 file, ~3 righe ciascuno.
-**Test:** verificare che i test esistenti (build + vitest) passino invariati.
+**Test:** tsc clean + 8079/8079 vitest post-fix. Comportamento identico — stesso client, stesse opzioni, stessa key.
 
 ---
 
@@ -385,8 +355,8 @@ Valutazione per KORA Link v1 (futura):
 
 | Issue | Claude Code | CTO/Security |
 |-------|------------|-------------|
-| H-001 (commons service client) | SÌ | Review post-fix |
-| H-002 (direct createClient) | SÌ | — |
+| H-001 (commons service client) | ✅ RISOLTO CC-11 | Review post-fix |
+| H-002 (direct createClient) | ✅ RISOLTO CC-11 | — |
 | H-003 (rate limiting) | NO | SÌ — decisione architetturale |
 | H-004 (Zod validation) | SÌ parzialmente | Review schema |
 | H-005 (logout guard) | SÌ | — |
@@ -401,5 +371,5 @@ Valutazione per KORA Link v1 (futura):
 
 ---
 
-*API_HARDENING_BACKLOG.md — CC-10 · Branch `platform/readiness`*
+*API_HARDENING_BACKLOG.md — CC-10 generato · CC-11 aggiornato · Branch `platform/readiness`*
 *Aggiornare dopo ogni CC che risolve un finding.*

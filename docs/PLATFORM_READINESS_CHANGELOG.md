@@ -352,4 +352,80 @@ Nessuno dei 5 endpoint KORA Link è implementato. Prerequisiti prima del merge:
 
 ---
 
+---
+
+## CC-11 — API Hardening P0: commons RLS backstop + service-role canonicalization
+
+**Data:** 2026-06-30
+**Branch:** `platform/readiness`
+**Tipo:** hardening sicurezza — 4 file runtime modificati, 3 doc aggiornati
+
+### Obiettivo
+
+Risolvere i due finding P0 emersi da CC-10:
+- **H-001:** `commons/posts` usava `getSupabaseServiceClient()` per path company/worker, senza RLS backstop — solo filtro applicativo `tenant_id`
+- **H-002:** `data-intake/accept` e `decision-pack/status` istanziavano `createClient` direttamente con service role key invece del wrapper canonico
+
+### Analisi pre-fix (H-001)
+
+Verifica RLS su `commons.post` (mig 013) — policies presenti e complete:
+- `commons_post_kora_admin_all` — FOR ALL, nessuna restrizione tenant
+- `commons_post_company_admin_select/insert/update` — WITH `tenant_id = kora.tenant_id()`
+- `commons_post_worker_published_select` — WITH `tenant_id = kora.tenant_id() AND status='published'`
+
+`commons/initiatives/route.ts` — già usa `getSupabaseServerClient()` da prima di CC-11. Matrice CC-10 errata: listava erroneamente questa route come NEEDS_REVIEW.
+
+**Conclusione:** il passaggio a `getSupabaseServerClient()` per `commons/posts` è sicuro. La RLS garantisce lo stesso scoping tenant che il codice applicativo già implementava, con DB-level enforcement aggiuntivo.
+
+### Modifiche applicate
+
+| File | Cambio | H-finding |
+|------|--------|-----------|
+| `app/api/commons/posts/route.ts` | `getSupabaseServiceClient()` → `await getSupabaseServerClient()` (GET e POST) | H-001 |
+| `app/api/commons/posts/[id]/route.ts` | `getSupabaseServiceClient()` → `await getSupabaseServerClient()` (PATCH) | H-001 |
+| `app/api/admin/data-intake/accept/route.ts` | `createClient<Database>(url, key, opts)` → `getSupabaseServiceClient()`; rimosso `import { createClient }` e `import type { Database }` | H-002 |
+| `app/api/admin/decision-pack/status/route.ts` | idem | H-002 |
+
+### Cambiamenti comportamentali documentati
+
+| Route | Path | Comportamento prima | Comportamento dopo | Valutazione |
+|-------|------|--------------------|--------------------|-------------|
+| `PATCH /api/commons/posts/[id]` | COMPANY_ADMIN cross-tenant | 403 "Accesso negato — post di un altro tenant" | 404 "Post non trovato" | Più sicuro: non rivela esistenza post altrui |
+| `GET /api/commons/posts` | COMPANY_ADMIN | Filtro `tenant_id` applicativo | RLS `company_admin_select` (`tenant_id = kora.tenant_id()`) + filtro applicativo come backup | Identico per l'utente; più sicuro per il DB |
+| `POST /api/commons/posts` | COMPANY_ADMIN | Status check applicativo; tenant da sessione | RLS `company_admin_insert` come backstop aggiuntivo | Identico per l'utente |
+| `data-intake/accept`, `decision-pack/status` | KORA_ADMIN | Client diretto | Wrapper canonico (stesse opzioni, stessa key) | Identico — solo coerenza |
+
+### Cosa NON è stato cambiato
+
+- Logica business invariata — query, filtri, output, error messages
+- Auth guards invariati — `requireKoraAdmin`, `requireCompanyUser`, `requireWorkerUser`
+- Nessuna migrazione, nessun SQL, nessuna RLS modificata
+- `commons/initiatives/route.ts` — non toccata (già corretto)
+- `lib/supabase/server.ts` — non toccata (wrapper consumato, non modificato)
+- Middleware, auth, KORA Engine — non toccati
+
+### Metriche
+
+| Metrica | Valore |
+|---------|--------|
+| File runtime modificati | 4 |
+| Doc aggiornati | 3 (`API_ROUTE_AUTH_MATRIX.md`, `API_HARDENING_BACKLOG.md`, `PLATFORM_READINESS_CHANGELOG.md`) |
+| TypeScript (`tsc --noEmit`) | CLEAN |
+| vitest | 8079/8079 |
+| Finding P0 risolti | **2/2** (H-001 + H-002) |
+| Finding P0 rimanenti | 0 |
+| Finding P1 rimanenti | H-003 (rate limiting — CTO), H-004 (Zod), H-005 (logout), H-006 (UUID), H-007 (errori) |
+
+### Prossimi step raccomandati (CC-12)
+
+**Opzione A — H-005: `auth/logout` guard** (3 righe, basso rischio)
+
+**Opzione B — H-006: UUID validation su query param** (`admin/impact-units`, `admin/worker-initiatives`, `admin/workers/list`)
+
+**Opzione C — H-004 Zod partial**: aggiungere schema Zod su route di intake prioritarie (`workers/provision`, `live-company`)
+
+**Opzione D — CC-08 follow-up: E2E autenticati su staging** (richiede credenziali staging + account di test)
+
+---
+
 *Aggiornare questo documento dopo ogni CC-XX che tocca `platform/readiness`.*

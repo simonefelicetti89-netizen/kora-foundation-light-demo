@@ -20,7 +20,7 @@ import {
   requireWorkerUser,
   isKoraAuthError,
 } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 
 const VALID_CATEGORIES    = ['announcement', 'initiative_update', 'opportunity', 'event', 'request', 'resource'] as const;
 const VALID_PILLARS       = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY', null] as const;
@@ -39,7 +39,7 @@ function sanitizeText(value: unknown): string {
 // ── GET /api/commons/posts ────────────────────────────────────────────────────
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   // Try KORA_ADMIN first
   const adminAuth = await requireKoraAdmin(request);
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // ── POST /api/commons/posts ───────────────────────────────────────────────────
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   let body: Record<string, unknown>;
   try {

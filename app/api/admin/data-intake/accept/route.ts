@@ -17,9 +17,8 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { detectPiiInPayload, summarizePiiFindings } from '@/lib/privacy/pii-guard';
 import { classifyEligibilityBatch } from '@/lib/kora-engine/eligibility-gate';
 import { parseCsvContent, flattenCsvWarnings } from '@/lib/data-intake/csv-parser';
@@ -429,11 +428,7 @@ export async function POST(request: NextRequest) {
   }
 
   // ── 7. Tenant lookup (early — needed for audit events on rejection) ───────────
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const db = getSupabaseServiceClient();
 
   const { data: tenant, error: tenantErr } = await db.schema('analytics').from('tenant')
     .select('id').eq('tenant_code', tenantCode).maybeSingle();

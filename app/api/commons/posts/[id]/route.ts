@@ -18,7 +18,7 @@ import {
   requireWorkerUser,
   isKoraAuthError,
 } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { geocodeAddress } from '@/lib/commons/geocoding';
 
 const VALID_OPENING_GRADES = ['company_internal', 'company_extended', 'cross_company'] as const;
@@ -42,7 +42,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
   const { id: postId } = await params;
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   let body: Record<string, unknown>;
   try {
