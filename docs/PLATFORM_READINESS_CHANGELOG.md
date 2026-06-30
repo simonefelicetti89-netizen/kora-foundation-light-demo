@@ -6,6 +6,46 @@
 
 ---
 
+## CC-15 — Platform Readiness Summary + Merge Gate Report
+
+**Data:** 2026-06-30
+**Branch:** `platform/readiness`
+**Tipo:** documentazione checkpoint — nessuna modifica runtime
+
+### Obiettivo
+
+Checkpoint tecnico complessivo CC-07→CC-14. Produzione di due documenti di sintesi per CTO, advisor e investitori.
+
+### File creati
+
+| File | Scopo |
+|------|-------|
+| `docs/PLATFORM_READINESS_SUMMARY.md` | Executive summary, before/after, security improvements, rischi residui, next steps |
+| `docs/PLATFORM_MERGE_GATE_REPORT.md` | Merge candidate status, diff summary, off-limits check, test gate, security gate, rollback plan, raccomandazione |
+| `docs/PLATFORM_READINESS_CHANGELOG.md` | Questa entry |
+
+### Merge gate status
+
+`READY_FOR_REVIEW` — tutti i gate tecnici soddisfatti; review CTO richiesta prima del merge.
+
+### Metriche al checkpoint CC-15
+
+| Metrica | Valore |
+|---------|--------|
+| Commit sul branch | 9 (CC-07 → CC-14) |
+| File modificati vs base | 39 |
+| Inserzioni / rimozioni | +2242 / -148 |
+| TypeScript | 0 errori |
+| Vitest | 8128/8128 green (193 file) |
+| E2E | 6/6 green |
+| Build | OK |
+| P0 security findings chiusi | 4/4 (H-001, H-002, H-005, H-006) |
+| P1 parziali | H-004 (8/10 route), H-003/H-007 aperti |
+| Produzione toccata | No |
+| SQL/RLS/auth/middleware | Non modificati |
+
+---
+
 ## CC-14 — auth/logout guard consistency (H-005)
 
 **Data:** 2026-06-30
