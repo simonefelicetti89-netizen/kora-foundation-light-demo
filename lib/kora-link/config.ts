@@ -22,6 +22,7 @@ export type KoraLinkEnv = {
   KORA_LINK_ENABLED?: string | undefined;
   KORA_LINK_TOKEN_SECRET?: string | undefined;
   KORA_LINK_PUBLIC_BASE_URL?: string | undefined;
+  KORA_LINK_RATE_LIMIT_PROVIDER?: string | undefined;
 };
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -152,4 +153,22 @@ export function getKoraLinkRateLimitConfig(): KoraLinkRateLimitConfig {
     maxRequests: KORA_LINK_RATE_LIMIT_MAX_PUBLIC,
     keyPrefix: KORA_LINK_RATE_LIMIT_KEY_PREFIX,
   };
+}
+
+// ── Rate limit provider ───────────────────────────────────────────────────────
+
+/**
+ * Returns the configured rate limit provider from env.
+ * Returns null if the env var is absent (unset or empty).
+ * Throws a privacy-safe error for unrecognised values — never exposes the raw value.
+ */
+export function getKoraLinkRateLimitProvider(
+  env: KoraLinkEnv = process.env
+): 'disabled' | 'upstash' | null {
+  const raw = env.KORA_LINK_RATE_LIMIT_PROVIDER;
+  if (!raw) return null;
+  if (raw === 'disabled' || raw === 'upstash') return raw;
+  throw new Error(
+    'KORA_LINK_RATE_LIMIT_PROVIDER: valore non riconosciuto — valori ammessi: disabled, upstash'
+  );
 }

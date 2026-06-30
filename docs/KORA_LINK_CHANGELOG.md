@@ -6,6 +6,105 @@
 
 ---
 
+## KL-08 — Rate Limit Adapter Skeleton
+
+**Data:** 2026-07-01
+**Branch:** `feat/kora-link-v1-platform`
+**Tipo:** Codice TypeScript runtime + test unit — nessuna migration, nessuna UI, nessuna route, nessun provider Upstash
+
+### Contenuto
+
+Creato `lib/kora-link/rate-limit.ts` — modulo server-only per rate limiting KORA Link.
+Creato `tests/unit/kora-link-rate-limit.test.ts` — 57 test unit, copertura completa.
+Modificato `lib/kora-link/config.ts` — aggiunto `KORA_LINK_RATE_LIMIT_PROVIDER` a `KoraLinkEnv` + `getKoraLinkRateLimitProvider`.
+Modificato `tests/unit/kora-link-config.test.ts` — aggiunti 7 test per `getKoraLinkRateLimitProvider` (totale: 66 test).
+
+### Funzioni e costanti esportate
+
+#### `lib/kora-link/rate-limit.ts`
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `KoraLinkRateLimitProvider` | type | `'disabled' \| 'upstash'` |
+| `KoraLinkRateLimitContext` | type | Input per `check()`: route, identifier, now opzionale |
+| `KoraLinkRateLimitDecision` | type | Output: allowed, provider, limit, remaining, resetAt, reason |
+| `KoraLinkRateLimiter` | type | Interface: `{ check(ctx): Promise<Decision> }` |
+| `KORA_LINK_RATE_LIMIT_WINDOW_MS` | const | `60_000` — re-exported da config |
+| `KORA_LINK_PUBLIC_ROUTE_LIMIT` | const | `30` scan/finestra — route pubblica `/link/[token]` |
+| `KORA_LINK_ACTIVATION_LIMIT` | const | `10` — attivazione chip |
+| `KORA_LINK_PARTNER_SCAN_LIMIT` | const | `60` — scan partner Track A |
+| `KORA_LINK_ADMIN_BATCH_LIMIT` | const | `10` — batch admin |
+| `getKoraLinkRateLimitPolicy(route)` | fn | Restituisce `{ limit, windowMs }` per ogni route — lancia se route sconosciuta |
+| `createDisabledKoraLinkRateLimiter()` | fn | Always-allow — dev/test only |
+| `createUnavailableKoraLinkRateLimiter(provider)` | fn | Always-deny — provider assente o non integrato |
+| `createKoraLinkRateLimiter(env?)` | fn | Factory: seleziona adapter da config — blocca in production se missing/disabled |
+| `assertKoraLinkRateLimitProductionSafe(env?)` | fn | Guard startup: lancia se production con provider missing o disabled |
+| `createRateLimitIdentifier(parts)` | fn | Crea identifier stabile per rate limit bucket — non accetta token raw |
+
+#### Aggiunta a `lib/kora-link/config.ts`
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `getKoraLinkRateLimitProvider(env?)` | fn | Legge `KORA_LINK_RATE_LIMIT_PROVIDER` — null se assente, throw se valore non riconosciuto |
+
+### Provider status KL-08
+
+| Provider | Status | Comportamento factory |
+|----------|--------|-----------------------|
+| `null` (assente) | — | dev/test: unavailable/denied · production: throws |
+| `'disabled'` | Dev/test only | dev/test: always-allow · production: throws |
+| `'upstash'` | Pending KL-09+ | qualsiasi env: unavailable/not_implemented |
+
+### Regole production enforcement
+
+```
+KORA_LINK_RATE_LIMIT_PROVIDER missing  → blocca in production (throw da factory + assertKoraLinkRateLimitProductionSafe)
+KORA_LINK_RATE_LIMIT_PROVIDER=disabled → blocca in production (throw da factory + assertKoraLinkRateLimitProductionSafe)
+KORA_LINK_RATE_LIMIT_PROVIDER=upstash  → accettato (Upstash non integrato → denied per ogni request — enforcement a livello route in KL-09+)
+```
+
+### Copertura test
+
+| File | Test | Suite |
+|------|------|-------|
+| `kora-link-rate-limit.test.ts` | 57 | 7 |
+| `kora-link-config.test.ts` (delta KL-08) | +7 | +1 (`getKoraLinkRateLimitProvider`) |
+
+| Suite (rate-limit) | Test |
+|--------------------|------|
+| Constants | 5 |
+| getKoraLinkRateLimitPolicy | 8 |
+| createDisabledKoraLinkRateLimiter | 8 |
+| createUnavailableKoraLinkRateLimiter | 7 |
+| createKoraLinkRateLimiter | 9 |
+| assertKoraLinkRateLimitProductionSafe | 7 |
+| createRateLimitIdentifier | 13 |
+
+### Metriche
+
+- File creati: 2 (`lib/kora-link/rate-limit.ts`, `tests/unit/kora-link-rate-limit.test.ts`)
+- File modificati: 3 (`lib/kora-link/config.ts`, `tests/unit/kora-link-config.test.ts`, `docs/KORA_LINK_CHANGELOG.md`)
+- Dipendenze aggiunte: 0
+- Provider Upstash integrato: no
+- Produzione con provider missing/disabled bloccata: sì
+- TypeScript: 0 errori
+- ESLint: 0 errori, 0 warning
+- Vitest: 8315/8315 passed (+63 rispetto a KL-07)
+- Build: OK
+- E2E: 6/6 passed
+
+### Gate status post-KL-08
+
+| Gate | Status |
+|------|--------|
+| Gate 2 (CTO schema review) | OPEN |
+| Gate 3 (DPO/legal) | OPEN |
+| KL-01 → KL-07 | ✅ COMPLETATI |
+| KL-08 Rate Limit Adapter Skeleton | ✅ COMPLETATO |
+| KL-09 Route pubblica `/link/[token]` | Prerequisiti: `KORA_LINK_ENABLED=true` · `KORA_LINK_RATE_LIMIT_PROVIDER=upstash` + Upstash Redis integrato · Gate 2+3 |
+
+---
+
 ## KL-01 — KORA Link v1 Design Doc
 
 **Data:** 2026-06-30

@@ -9,6 +9,7 @@ import {
   getKoraLinkReadiness,
   assertKoraLinkReady,
   getKoraLinkRateLimitConfig,
+  getKoraLinkRateLimitProvider,
   KORA_LINK_RATE_LIMIT_WINDOW_MS,
   KORA_LINK_RATE_LIMIT_MAX_PUBLIC,
   KORA_LINK_RATE_LIMIT_KEY_PREFIX,
@@ -400,7 +401,51 @@ describe('getKoraLinkRateLimitConfig', () => {
 
 });
 
-// ── 7. Type assertions ────────────────────────────────────────────────────────
+// ── 7. getKoraLinkRateLimitProvider ──────────────────────────────────────────
+
+describe('getKoraLinkRateLimitProvider', () => {
+
+  it('returns null when env var is not set', () => {
+    expect(getKoraLinkRateLimitProvider({})).toBeNull();
+  });
+
+  it('returns null when env var is empty string', () => {
+    expect(getKoraLinkRateLimitProvider({ KORA_LINK_RATE_LIMIT_PROVIDER: '' })).toBeNull();
+  });
+
+  it('returns "disabled" when env var is "disabled"', () => {
+    expect(getKoraLinkRateLimitProvider({ KORA_LINK_RATE_LIMIT_PROVIDER: 'disabled' })).toBe('disabled');
+  });
+
+  it('returns "upstash" when env var is "upstash"', () => {
+    expect(getKoraLinkRateLimitProvider({ KORA_LINK_RATE_LIMIT_PROVIDER: 'upstash' })).toBe('upstash');
+  });
+
+  it('throws for an unknown provider value', () => {
+    expect(() =>
+      getKoraLinkRateLimitProvider({ KORA_LINK_RATE_LIMIT_PROVIDER: 'redis' })
+    ).toThrow();
+  });
+
+  it('error for unknown provider does not expose the raw value', () => {
+    const secretValue = 'my-internal-custom-provider-xyz';
+    try {
+      getKoraLinkRateLimitProvider({ KORA_LINK_RATE_LIMIT_PROVIDER: secretValue });
+      expect.fail('avrebbe dovuto lanciare');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        expect(err.message).not.toContain(secretValue);
+      }
+    }
+  });
+
+  it('uses process.env by default (does not throw)', () => {
+    expect(() => getKoraLinkRateLimitProvider()).not.toThrow();
+  });
+
+});
+
+// ── 8. Type assertions ────────────────────────────────────────────────────────
 // Static checks that the exported types are assignable to the expected shapes.
 // These fail at compile time (tsc), not at runtime.
 
