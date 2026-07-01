@@ -2,19 +2,53 @@
 -- Migration:   034_kora_link_schema
 -- Feature:     KL-05 — KORA Link v1 — Physical-Digital Bridge Schema
 -- Author:      KORA Foundation Light · 2026-06-30
+-- Amended:     KL-16 — Engineering provisional amendments · 2026-07-01
 -- Gate:        Gate 2 OPEN + Gate 3 OPEN — PROPOSED, NOT APPLIED TO ANY DATABASE.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- STATUS: PROPOSED / NOT APPLIED
+-- STATUS: PROPOSED_AMENDED_INTERNAL_ENGINEERING
 -- ─────────────────────────────────────────────────────────────────────────────
--- This file is a DESIGN DRAFT for CTO/Postgres/RLS review only.
--- DO NOT run `supabase db push`.
--- DO NOT run `supabase migration up`.
--- DO NOT apply to staging or production without:
---   (1) CTO review and sign-off on schema, indexes, and token model
+-- This file is a DESIGN DRAFT amended by Engineering based on KL-14 plan.
+-- These are internal Engineering provisional decisions — NOT CTO-approved yet.
+-- The file remains PROPOSED. Do not promote to supabase/migrations/ until:
+--   (1) CTO review and formal sign-off on the amended schema
 --   (2) DPO review of privacy boundary and consent model
 --   (3) Gate 2 closure (CTO architecture review)
 --   (4) Gate 3 closure (legal/privacy for real worker data)
+--
+-- DO NOT run `supabase db push`.
+-- DO NOT run `supabase migration up`.
+-- DO NOT apply to staging or production.
+-- DO NOT copy to supabase/migrations/ without CTO + DPO sign-off.
+--
+-- KL-16 AMENDMENTS APPLIED (internal Engineering provisional)
+-- ─────────────────────────────────────────────────────────────────────────────
+--   A-01 D-01: No FK on tenant_id/worker_id/partner_id — pattern migration 033.
+--              Boundary enforced by RLS 035 + SECURITY DEFINER + app invariants.
+--   A-02 D-02: Removed PG15-only constructs (UNIQUE NULLS NOT DISTINCT was in
+--              partner_scans, which is now deferred). No PG15 dependency remains.
+--   A-03 D-03: partner_scans table DEFERRED to migration 036 (Track A, v1.1+).
+--              Eliminates GENERATED ALWAYS AS scan_date and timezone concern.
+--   A-04 D-04: pre_activation_expires_at kept. TTL enforcement: app/job-level.
+--              No pg_cron in this file.
+--   A-05 D-05: audit_log kept. Retention policy: external, DPO-approved (Gate 3).
+--   A-06 D-06: public_lookup_attempts REMOVED. Upstash handles rate limiting.
+--              No high-volume GDPR table without consumer in v1.
+--   A-07 D-07: No key_version column. v1 stable secret policy documented.
+--   A-08 D-08: Removed replaced_by_link_id column and deferred self-FK.
+--              link_replacements is now the sole source of replacement chain.
+--   A-09:      Removed redundant idx_links_token_digest index
+--              (UNIQUE constraint already creates the btree index).
+--   A-10:      link_delivery_records kept with DPO note on delivered_to_label.
+--   A-11:      link_consents clarified as append-only consent events.
+--   A-12:      partner_scans deferred to migration 036 (see A-03).
+--
+-- Table set v1 after amendments: 9 tables (was 11)
+--   Removed:  public_lookup_attempts
+--   Deferred: partner_scans (→ 036), link_delivery_records (→ 036 if not needed)
+--   Core 8:   link_batches, links, link_assignments, link_consents,
+--             link_events, revocations, link_replacements, audit_log
+--   Plus:     link_delivery_records (kept for pilot logistics)
 --
 -- DEPENDENCY
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -31,11 +65,12 @@
 --   035_kora_link_rls.sql must be applied AFTER this migration.
 --   RLS is NOT enabled in this file — see TODO [RLS-035] comments.
 --
--- FUTURE MIGRATION
+-- FUTURE MIGRATIONS
 -- ─────────────────────────────────────────────────────────────────────────────
 --   035_kora_link_rls.sql  — RLS policies, grants, SECURITY DEFINER functions
 --                             for public route lookup (fn_kora_link_public_lookup)
 --                             and worker activation (fn_kora_link_activate).
+--   036_kora_link_partner.sql — partner_scans table + Track A RLS (v1.1+).
 --
 -- DESIGN DECISIONS (from KL-04 Token Threat Model)
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -48,7 +83,10 @@
 --   • No TTL post-activation in v1 — only manual revocation
 --   • Association token↔worker: server-side only, post login + explicit consent
 --   • Company visibility: aggregate counts only — never individual worker activity
---   • Partner scan: structural placeholder — no automatic Index scoring in v1
+--   • Secret rotation: v1 uses stable secret. No key_version column.
+--     Emergency procedure: revoke all tokens + re-issue chips. See KL-16 docs.
+--   • FK policy: no FK on tenant_id/worker_id — follows migration 033 pattern.
+--     Canonical targets documented in comments. Boundary enforced by 035 RLS.
 --
 -- ENUM / CHECK CONSTRAINT STYLE NOTE
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -63,8 +101,7 @@
 --   ✗ No raw NFC URL column in any table
 --   ✗ No PII in metadata JSONB columns (enforced by application layer)
 --   ✗ kora_link.link_assignments must NEVER be visible to company roles via RLS
---   ✗ partner_scans must NEVER expose worker_id to partner roles
---   ✗ No automatic KORA Index or IU attribution from partner_scans in this migration
+--   ✗ No automatic KORA Index or IU attribution from link events in this migration
 --   ✗ No individual worker activity visible to employer roles (enforced in 035)
 --
 -- ROLLBACK
@@ -84,9 +121,10 @@ CREATE SCHEMA IF NOT EXISTS kora_link;
 COMMENT ON SCHEMA kora_link IS
   'KL-05 — KORA Link physical-digital bridge schema. '
   'Isolated schema for NFC chip lifecycle, token digest storage, worker activation, '
-  'consent, partner scan placeholders, and audit. '
+  'consent, and audit. '
+  'partner_scans deferred to migration 036. '
   'RLS policies and SECURITY DEFINER functions are in 035_kora_link_rls.sql. '
-  'Gate 2+3 OPEN: NOT applied to any database.';
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied to any database.';
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -109,8 +147,9 @@ CREATE TABLE IF NOT EXISTS kora_link.link_batches (
 
   -- Tenant this batch was assigned to. Nullable: batch may be created before
   -- tenant assignment (e.g., pre-produced stock). Tenant isolation enforced by RLS (035).
-  -- TODO [FK-034-1]: consider FK to analytics.tenant(id) ON DELETE RESTRICT
-  --                  if analytics schema is confirmed stable before 034 apply.
+  -- FK POLICY (A-01/D-01): intentionally no FK in v1 (pattern: migration 033).
+  -- Canonical target: analytics.tenant(id). FK deferred until schema confirmed stable.
+  -- Boundary: RLS 035 WHERE tenant_id = kora.tenant_id().
   tenant_id           uuid          NULL,
 
   -- Human-readable batch identifier for admin operations (e.g., "B2026-07-001").
@@ -161,11 +200,12 @@ COMMENT ON TABLE kora_link.link_batches IS
   'KL-05 — Administrative batch of NFC chips generated by KORA_ADMIN. '
   'Company sees only aggregate counts (via 035 view). '
   'PRIVACY: no worker data stored here. '
-  'Gate 2+3 OPEN: NOT applied.';
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
 
 COMMENT ON COLUMN kora_link.link_batches.tenant_id IS
   'Tenant this batch was assigned to. Nullable for pre-produced stock. '
-  'TODO [FK-034-1]: add FK to analytics.tenant(id) if confirmed stable.';
+  'FK POLICY (D-01): no FK in v1 — pattern migration 033. '
+  'Canonical target: analytics.tenant(id). Enforced by RLS 035.';
 
 COMMENT ON COLUMN kora_link.link_batches.quantity IS
   'Number of chips produced in this batch. Immutable after creation.';
@@ -187,6 +227,17 @@ COMMENT ON COLUMN kora_link.link_batches.notes IS
 --   token_version = 1 corresponds to kl1_ prefix tokens (48 char base62)
 --   UNIQUE(token_digest) is the primary lookup key for the public route
 --
+-- SECRET ROTATION POLICY (D-07/A-07)
+--   v1 uses a stable KORA_LINK_TOKEN_SECRET throughout the pilot lifecycle.
+--   No key_version column. No rotation in ordinary operations.
+--   Emergency procedure: revoke all tokens + re-issue chips.
+--   See docs/KORA_LINK_034_ENGINEERING_DECISION_RECORD.md §D-07.
+--
+-- REPLACEMENT CHAIN (A-08/D-08)
+--   The replacement chain (old token → new token) is tracked exclusively
+--   via kora_link.link_replacements. No self-FK on this table.
+--   This avoids DEFERRABLE FK and Supabase pooler concerns.
+--
 -- PRIVACY NOTE
 -- This table is NEVER directly accessible to company roles.
 -- Company sees only aggregate counts via a view in 035.
@@ -203,6 +254,8 @@ CREATE TABLE IF NOT EXISTS kora_link.links (
 
   -- Tenant this token is assigned to (copied from batch at generation time).
   -- Denormalized for query performance and RLS. Nullable if batch has no tenant yet.
+  -- FK POLICY (A-01/D-01): intentionally no FK in v1 (pattern: migration 033).
+  -- Canonical target: analytics.tenant(id). Enforced by RLS 035 + SECURITY DEFINER.
   tenant_id                   uuid          NULL,
 
   -- HMAC-SHA256(token_value, KORA_LINK_TOKEN_SECRET) — 64-char hex string.
@@ -210,6 +263,7 @@ CREATE TABLE IF NOT EXISTS kora_link.links (
   -- token_value (cleartext) is NEVER stored here.
   -- token_value is NEVER logged.
   -- Lookup: SELECT * FROM kora_link.links WHERE token_digest = $computed_digest
+  -- SECRET POLICY (D-07): v1 stable secret. No key_version. See header §Secret Rotation.
   token_digest                text          NOT NULL
                                             CHECK (length(token_digest) = 64),
 
@@ -238,6 +292,9 @@ CREATE TABLE IF NOT EXISTS kora_link.links (
   -- Application: set to created_at + INTERVAL '180 days' at generation time.
   -- NULL = no TTL (edge case for pre-existing tokens migrated to this schema).
   -- Post-activation TTL: NOT implemented in v1 — revoke manually for offboarding.
+  -- TTL ENFORCEMENT (D-04/A-04): app-layer check in route + fn_kora_link_public_lookup.
+  -- Batch expiry job (pg_cron or Edge Function) deferred to post-Gate-3.
+  -- Aggregate views in 035 must filter on this field alongside status.
   pre_activation_expires_at   timestamptz   NULL,
 
   -- Populated when status transitions to 'active'.
@@ -246,36 +303,22 @@ CREATE TABLE IF NOT EXISTS kora_link.links (
   -- Populated when status transitions to 'revoked' or 'replaced'.
   revoked_at                  timestamptz   NULL,
 
-  -- Self-reference to the replacement token, if this token was replaced.
-  -- NULL if not replaced. Populated when status = 'replaced'.
-  -- NOTE: self-FK deferred to avoid circular dependency on INSERT order.
-  replaced_by_link_id         uuid          NULL,
-
   created_at                  timestamptz   NOT NULL DEFAULT now(),
   updated_at                  timestamptz   NOT NULL DEFAULT now(),
 
   -- CONSTITUTIONAL: no token_value column — never store cleartext.
   -- CONSTITUTIONAL: no nfc_url column — the URL is computed from token_value externally.
+  -- A-08/D-08: no replaced_by_link_id column — replacement chain via link_replacements.
 
   CONSTRAINT uq_link_token_digest UNIQUE (token_digest)
 );
-
--- Self-FK added after table creation to avoid circular dependency.
-ALTER TABLE kora_link.links
-  ADD CONSTRAINT fk_links_replaced_by
-  FOREIGN KEY (replaced_by_link_id) REFERENCES kora_link.links (id)
-  ON DELETE SET NULL
-  DEFERRABLE INITIALLY DEFERRED;
 
 CREATE TRIGGER trg_links_updated_at
   BEFORE UPDATE ON kora_link.links
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
--- PRIMARY LOOKUP INDEX: used by public route for every scan.
--- UNIQUE constraint already creates a btree index on token_digest.
--- Explicit index below for clarity and to support INCLUDE if needed in future.
-CREATE INDEX IF NOT EXISTS idx_links_token_digest
-  ON kora_link.links (token_digest);
+-- PRIMARY LOOKUP INDEX: UNIQUE constraint above already creates a btree index.
+-- A-09: removed redundant explicit idx_links_token_digest (UNIQUE is sufficient).
 
 CREATE INDEX IF NOT EXISTS idx_links_status
   ON kora_link.links (status);
@@ -297,12 +340,14 @@ COMMENT ON TABLE kora_link.links IS
   'Stores HMAC-SHA256 digest only — cleartext token NEVER stored. '
   'UNIQUE(token_digest) is the primary lookup for the public route. '
   'PRIVACY: NEVER directly accessible to company roles (RLS in 035). '
-  'Gate 2+3 OPEN: NOT applied.';
+  'A-08: no self-FK; replacement chain via link_replacements. '
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
 
 COMMENT ON COLUMN kora_link.links.token_digest IS
   'HMAC-SHA256(token_value, KORA_LINK_TOKEN_SECRET) — 64-char hex. '
   'The ONLY token identifier stored in the DB. '
-  'Cleartext token_value: NEVER stored, NEVER logged.';
+  'Cleartext token_value: NEVER stored, NEVER logged. '
+  'v1 stable secret policy: no key_version. See docs/KORA_LINK_034_ENGINEERING_DECISION_RECORD.md §D-07.';
 
 COMMENT ON COLUMN kora_link.links.token_version IS
   'Token format version: 1 = kl1_ prefix + 48 char base62. '
@@ -310,11 +355,13 @@ COMMENT ON COLUMN kora_link.links.token_version IS
 
 COMMENT ON COLUMN kora_link.links.pre_activation_expires_at IS
   'TTL for unactivated tokens. Set to created_at + 180 days at generation. '
-  'Post-activation TTL: NOT implemented v1. Revoke manually for offboarding.';
+  'Post-activation TTL: NOT implemented v1. Revoke manually for offboarding. '
+  'Enforcement: app-layer (route + fn_kora_link_public_lookup in 035). No pg_cron in 034.';
 
-COMMENT ON COLUMN kora_link.links.replaced_by_link_id IS
-  'Self-FK to replacement token. Populated when status = replaced. '
-  'Old chip is inert; worker must activate the new chip separately.';
+COMMENT ON COLUMN kora_link.links.tenant_id IS
+  'Denormalized tenant for query performance and RLS. '
+  'FK POLICY (D-01): no FK in v1 — pattern migration 033. '
+  'Canonical target: analytics.tenant(id). Enforced by RLS 035 + SECURITY DEFINER.';
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -343,12 +390,13 @@ CREATE TABLE IF NOT EXISTS kora_link.link_assignments (
                                       REFERENCES kora_link.links (id)
                                       ON DELETE RESTRICT,
 
-  -- Tenant of the worker. Must match the token's tenant_id (validated by application).
+  -- Tenant of the worker. Must match the token's tenant_id (validated by SECURITY DEFINER).
+  -- FK POLICY (A-01/D-01): no FK in v1. Enforced by fn_kora_link_activate in 035.
   tenant_id             uuid          NOT NULL,
 
-  -- Worker identity. FK to personal.worker_identity if schema confirmed.
-  -- TODO [FK-034-2]: add FK REFERENCES personal.worker_identity(id) ON DELETE RESTRICT
-  --                  once personal schema FK stability is confirmed pre-034-apply.
+  -- Worker identity. FK POLICY (A-01/D-01): no FK in v1 (pattern: migration 033).
+  -- Canonical target: personal.worker_identity(id).
+  -- Enforced by fn_kora_link_activate: validates worker exists in tenant before INSERT.
   worker_id             uuid          NOT NULL,
 
   -- Assignment lifecycle state.
@@ -406,10 +454,12 @@ COMMENT ON TABLE kora_link.link_assignments IS
   'Created ONLY after: authenticated worker session + tenant match + explicit consent. '
   'PRIVACY INVARIANT: NEVER accessible to company roles via any RLS path. '
   'RLS (035): SELECT only for kora_admin OR worker self. '
-  'Gate 2+3 OPEN: NOT applied.';
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
 
 COMMENT ON COLUMN kora_link.link_assignments.worker_id IS
-  'Worker identity. TODO [FK-034-2]: FK to personal.worker_identity(id) pending schema confirmation.';
+  'Worker identity. FK POLICY (D-01): no FK in v1 — pattern migration 033. '
+  'Canonical target: personal.worker_identity(id). '
+  'Validated by fn_kora_link_activate (035) before INSERT.';
 
 COMMENT ON COLUMN kora_link.link_assignments.tenant_id IS
   'Must match kora_link.links.tenant_id. Validated by activation function (035 SECDEF).';
@@ -424,6 +474,14 @@ COMMENT ON COLUMN kora_link.link_assignments.tenant_id IS
 -- A consent record must exist (status = 'accepted') before link_assignments
 -- can be created. Withdrawal of consent triggers revocation of the assignment.
 --
+-- APPEND-ONLY SEMANTICS (A-11)
+-- Consent records are append-only events. Each state transition (pending →
+-- accepted, accepted → withdrawn, etc.) should be modeled as a new record
+-- in a future v2 event-sourced design. In v1, a single mutable record per
+-- (worker, link, consent_version) is used for simplicity, with accepted_at
+-- and withdrawn_at capturing the key timestamps.
+-- The UNIQUE constraint prevents duplicate consent for the same combination.
+--
 -- GDPR NOTE
 -- consent_version must reference the exact version of the privacy notice
 -- shown to the worker (text content approved by DPO before activation goes live).
@@ -432,7 +490,7 @@ COMMENT ON COLUMN kora_link.link_assignments.tenant_id IS
 CREATE TABLE IF NOT EXISTS kora_link.link_consents (
   id                  uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  -- The token this consent relates to. Nullable if consent pre-dates full activation.
+  -- The token this consent relates to.
   link_id             uuid          NOT NULL
                                     REFERENCES kora_link.links (id)
                                     ON DELETE RESTRICT,
@@ -446,7 +504,8 @@ CREATE TABLE IF NOT EXISTS kora_link.link_consents (
   tenant_id           uuid          NOT NULL,
 
   -- Worker who gave or withdrew consent.
-  -- TODO [FK-034-3]: FK to personal.worker_identity(id) pending schema confirmation.
+  -- FK POLICY (A-01/D-01): no FK in v1. Enforced by fn_kora_link_activate (035).
+  -- Canonical target: personal.worker_identity(id).
   worker_id           uuid          NOT NULL,
 
   -- Version identifier of the privacy notice shown to the worker.
@@ -468,6 +527,7 @@ CREATE TABLE IF NOT EXISTS kora_link.link_consents (
   created_at          timestamptz   NOT NULL DEFAULT now(),
 
   -- One consent record per (worker, link, version) to prevent duplicates.
+  -- In v1: single mutable record per combination. v2: append-only event log.
   CONSTRAINT uq_link_consent UNIQUE (worker_id, link_id, consent_version)
 );
 
@@ -480,14 +540,19 @@ CREATE INDEX IF NOT EXISTS idx_consents_worker_id
 COMMENT ON TABLE kora_link.link_consents IS
   'KL-05 — Worker consent to KORA Link privacy notice. '
   'Required before link_assignments can be created. '
+  'A-11: v1 uses single mutable record per (worker,link,version); v2 target: append-only events. '
   'GDPR: consent_version must reference DPO-approved notice text. '
   'Retention policy: define with DPO (Gate 3) before production apply. '
-  'Gate 2+3 OPEN: NOT applied.';
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
 
 COMMENT ON COLUMN kora_link.link_consents.consent_version IS
   'Version string of the privacy notice shown to the worker. '
   'Must match a known, DPO-approved version (e.g. kora-link-privacy-v1.0). '
   'Gate 3: DPO must approve notice text before this field can be populated in production.';
+
+COMMENT ON COLUMN kora_link.link_consents.worker_id IS
+  'FK POLICY (D-01): no FK in v1 — canonical target: personal.worker_identity(id). '
+  'Enforced by fn_kora_link_activate (035).';
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -518,7 +583,7 @@ CREATE TABLE IF NOT EXISTS kora_link.link_events (
   tenant_id       uuid          NULL,
 
   -- Worker involved. Nullable for admin/system events.
-  -- TODO [FK-034-4]: FK to personal.worker_identity(id) pending schema confirmation.
+  -- FK POLICY (A-01/D-01): no FK in v1. Canonical target: personal.worker_identity(id).
   worker_id       uuid          NULL,
 
   -- Event type — what happened.
@@ -532,7 +597,6 @@ CREATE TABLE IF NOT EXISTS kora_link.link_events (
                                   'activation_completed',
                                   'consent_accepted',
                                   'quick_access',
-                                  'partner_scan_received',
                                   'revoked',
                                   'replaced',
                                   'suspended',
@@ -546,7 +610,6 @@ CREATE TABLE IF NOT EXISTS kora_link.link_events (
                                   'quick_access',
                                   'activation',
                                   'initiative',
-                                  'partner',
                                   'admin_test'
                                 )),
 
@@ -556,11 +619,10 @@ CREATE TABLE IF NOT EXISTS kora_link.link_events (
                                   'kora_admin',
                                   'company_admin',
                                   'worker',
-                                  'partner',
                                   'system'
                                 )),
 
-  -- Actor UUID (admin user, worker, partner). Nullable for system events.
+  -- Actor UUID (admin user, worker). Nullable for system events.
   actor_id        uuid          NULL,
 
   -- Result category (e.g., 'ok', 'not_found', 'forbidden', 'error').
@@ -596,12 +658,16 @@ COMMENT ON TABLE kora_link.link_events IS
   'NOT an IU/PIB/Index source — no scoring. '
   'PRIVACY: company NEVER sees individual rows. Aggregate counts via 035 view only. '
   'metadata JSONB: NEVER store token cleartext, full NFC URL, or unnecessary PII. '
-  'Gate 2+3 OPEN: NOT applied.';
+  'A-03: partner scan events deferred to migration 036 (partner scan context removed). '
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
 
 COMMENT ON COLUMN kora_link.link_events.metadata IS
   'Structured event metadata. '
   'PROHIBITED keys: token_value, nfc_url, full_token, worker_name, worker_email. '
   'Allowed keys: event_category, result_category, rate_limit_bucket, request_id.';
+
+COMMENT ON COLUMN kora_link.link_events.worker_id IS
+  'FK POLICY (D-01): no FK in v1. Canonical target: personal.worker_identity(id).';
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -627,7 +693,7 @@ CREATE TABLE IF NOT EXISTS kora_link.revocations (
   tenant_id               uuid          NULL,
 
   -- Worker whose assignment is affected. Nullable if token was never activated.
-  -- TODO [FK-034-5]: FK to personal.worker_identity(id) pending schema confirmation.
+  -- FK POLICY (A-01/D-01): no FK in v1. Canonical target: personal.worker_identity(id).
   worker_id               uuid          NULL,
 
   -- Why the token was revoked.
@@ -654,7 +720,6 @@ CREATE TABLE IF NOT EXISTS kora_link.revocations (
                                           'kora_admin',
                                           'company_admin',
                                           'worker',
-                                          'partner',
                                           'system'
                                         )),
 
@@ -684,11 +749,14 @@ COMMENT ON TABLE kora_link.revocations IS
   'KL-05 — Immutable revocation/suspension audit trail for KORA Link tokens. '
   'Append-only: each event is a new row. '
   'Authoritative current state is kora_link.links.status. '
-  'Gate 2+3 OPEN: NOT applied.';
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
 
 COMMENT ON COLUMN kora_link.revocations.details IS
   'Free-text detail. Required for admin_override actor_type and reason=other. '
   'Enforced at application layer. Must not contain token cleartext.';
+
+COMMENT ON COLUMN kora_link.revocations.worker_id IS
+  'FK POLICY (D-01): no FK in v1. Canonical target: personal.worker_identity(id).';
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -702,6 +770,11 @@ COMMENT ON COLUMN kora_link.revocations.details IS
 -- may be pre-activated (if the worker already had an active assignment)
 -- or starts fresh.
 -- UNIQUE(old_link_id): one replacement record per old token (one successor at a time).
+--
+-- REPLACEMENT CHAIN (A-08/D-08)
+-- This table is the SOLE SOURCE of the replacement chain in v1.
+-- There is no replaced_by_link_id column on kora_link.links.
+-- To navigate the replacement chain: JOIN link_replacements ON old_link_id = links.id.
 
 CREATE TABLE IF NOT EXISTS kora_link.link_replacements (
   id                        uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -720,7 +793,7 @@ CREATE TABLE IF NOT EXISTS kora_link.link_replacements (
   tenant_id                 uuid          NULL,
 
   -- Worker whose assignment is being migrated. Nullable if token was never activated.
-  -- TODO [FK-034-6]: FK to personal.worker_identity(id) pending schema confirmation.
+  -- FK POLICY (A-01/D-01): no FK in v1. Canonical target: personal.worker_identity(id).
   worker_id                 uuid          NULL,
 
   -- Why the replacement was requested.
@@ -743,7 +816,6 @@ CREATE TABLE IF NOT EXISTS kora_link.link_replacements (
                                             'kora_admin',
                                             'company_admin',
                                             'worker',
-                                            'partner',
                                             'system'
                                           )),
 
@@ -766,133 +838,33 @@ CREATE INDEX IF NOT EXISTS idx_replacements_new_link_id
 
 COMMENT ON TABLE kora_link.link_replacements IS
   'KL-05 — Token replacement chain. One record per replaced token. '
+  'A-08: SOLE SOURCE of replacement chain in v1. No self-FK on kora_link.links. '
   'old_link_id UNIQUE: one canonical successor per replaced token. '
-  'Gate 2+3 OPEN: NOT applied.';
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
+
+COMMENT ON COLUMN kora_link.link_replacements.worker_id IS
+  'FK POLICY (D-01): no FK in v1. Canonical target: personal.worker_identity(id).';
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 8. kora_link.partner_scans
+-- NOTE: partner_scans TABLE DEFERRED (A-03/A-12/D-02/D-03)
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- PURPOSE
--- Structural placeholder for future Track A partner scan events (v1.1+).
--- Records the minimal data needed to validate a partner scan:
---   - which token was scanned (link_id, not token_digest — internal reference)
---   - which partner scanned it
---   - what event was referenced
---   - validation outcome
---
--- WHAT THIS TABLE DOES NOT DO IN v1
---   • Does NOT automatically feed IU/PIB/KORA Index
---   • Does NOT expose worker_id to partner_id (via application + RLS 035)
---   • Does NOT record cross-partner visibility
---   • No scoring trigger defined here
---
--- IDEMPOTENCY
--- UNIQUE(partner_id, link_id, event_ref, scan_date) prevents duplicate scans
--- for the same partner+link+event on the same day.
---
--- PRIVACY NOTE
--- partner_id identifies the partner, not the worker.
--- worker_id is populated internally for KORA_ADMIN audit only.
--- Partners query their own scan results, never worker identity.
-
-CREATE TABLE IF NOT EXISTS kora_link.partner_scans (
-  id                  uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  -- The token that was scanned. Nullable if scan arrived before token lookup.
-  link_id             uuid          NULL
-                                    REFERENCES kora_link.links (id)
-                                    ON DELETE SET NULL,
-
-  -- Tenant of the worker (for internal admin visibility). Never exposed to partner.
-  tenant_id           uuid          NULL,
-
-  -- The partner who performed the scan.
-  -- TODO [FK-034-7]: FK to partner.profile(id) or equivalent when partner schema confirmed.
-  partner_id          uuid          NULL,
-
-  -- Partner-side reference for the event being validated.
-  -- E.g., "gym-session-2026-07-15" or the partner's internal event ID.
-  event_ref           text          NULL,
-
-  -- Validation outcome.
-  scan_status         text          NOT NULL DEFAULT 'received'
-                                    CHECK (scan_status IN (
-                                      'received',   -- scan received, validation pending
-                                      'validated',  -- confirmed valid — token active, consent present
-                                      'rejected',   -- invalid token, missing consent, or policy violation
-                                      'duplicate',  -- idempotency: same scan already recorded today
-                                      'cancelled'   -- scan cancelled by partner or admin
-                                    )),
-
-  -- Context type — should always be 'partner' for this table.
-  scan_context        text          NOT NULL DEFAULT 'partner'
-                                    CHECK (scan_context IN (
-                                      'quick_access',
-                                      'activation',
-                                      'initiative',
-                                      'partner',
-                                      'admin_test'
-                                    )),
-
-  -- When the scan event occurred (partner-reported or server-received).
-  occurred_at         timestamptz   NOT NULL,
-
-  -- Date component for idempotency index (no timestamp needed for dedup logic).
-  scan_date           date          NOT NULL GENERATED ALWAYS AS (occurred_at::date) STORED,
-
-  -- When validated by KORA system (null until validation completes).
-  validated_at        timestamptz   NULL,
-
-  -- If rejected, optional reason for the partner's reference.
-  -- Must NOT contain worker identity.
-  rejection_reason    text          NULL,
-
-  -- Structured metadata. NEVER include worker_id, worker_name, or token_digest here.
-  -- Allowed: event_category, partner_event_type, scan_source.
-  metadata            jsonb         NOT NULL DEFAULT '{}'::jsonb,
-
-  created_at          timestamptz   NOT NULL DEFAULT now(),
-
-  -- Idempotency: one validated scan per partner+link+event_ref per day.
-  -- UNIQUE on (partner_id, link_id, event_ref, scan_date) for non-null combinations.
-  -- Partial unique: only when all four fields are populated.
-  CONSTRAINT uq_partner_scan_daily
-    UNIQUE NULLS NOT DISTINCT (partner_id, link_id, event_ref, scan_date)
-
-  -- NO automatic IU/PIB/Index scoring — Track A scoring requires v2 + methodology review.
-  -- KORA Index impact from partner scans: BLOCKED until CTO + methodology team sign-off.
-);
-
-CREATE INDEX IF NOT EXISTS idx_partner_scans_partner_occurred
-  ON kora_link.partner_scans (partner_id, occurred_at DESC)
-  WHERE partner_id IS NOT NULL;
-
-CREATE INDEX IF NOT EXISTS idx_partner_scans_link_id
-  ON kora_link.partner_scans (link_id)
-  WHERE link_id IS NOT NULL;
-
-CREATE INDEX IF NOT EXISTS idx_partner_scans_scan_date
-  ON kora_link.partner_scans (scan_date);
-
-COMMENT ON TABLE kora_link.partner_scans IS
-  'KL-05 — Structural placeholder for Track A partner scan events (v1.1+). '
-  'NO automatic IU/PIB/Index scoring — methodology review required before v2. '
-  'PRIVACY: partner_id NEVER receives worker_id via any RLS path (enforced in 035). '
-  'Idempotency: UNIQUE(partner_id, link_id, event_ref, scan_date). '
-  'Gate 2+3 OPEN: NOT applied.';
-
-COMMENT ON COLUMN kora_link.partner_scans.scan_date IS
-  'Date component of occurred_at. Generated column. Used for idempotency index.';
-
-COMMENT ON COLUMN kora_link.partner_scans.metadata IS
-  'PROHIBITED keys: worker_id, worker_name, token_value, token_digest. '
-  'Allowed: event_category, partner_event_type, scan_source.';
+-- partner_scans is deferred to migration 036 (Track A / partner scan, v1.1+).
+-- Deferral eliminates the following v1 concerns:
+--   - UNIQUE NULLS NOT DISTINCT (PostgreSQL 15+ only — A-02/D-02)
+--   - GENERATED ALWAYS AS scan_date (timezone UTC behavior — A-03/D-03)
+--   - FK-034-7: partner_id → partner.profile(id) (schema not yet stable)
+--   - RLS-035-I: PARTNER role policy in 035 (complexity deferred)
+-- partner_scans will be introduced in 036_kora_link_partner.sql when:
+--   - Track A scope is formally approved
+--   - PostgreSQL version of target instance confirmed ≥ 15
+--   - partner schema FK targets confirmed stable
+--   - DPO approves partner scan privacy model
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 9. kora_link.audit_log
+-- 8. kora_link.audit_log
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- PURPOSE
@@ -907,9 +879,15 @@ COMMENT ON COLUMN kora_link.partner_scans.metadata IS
 --   • metadata JSONB: structured audit data — no PII beyond minimum necessary
 --   • Append-only enforced by RLS INSERT-only policy in 035
 --
--- RETENTION
--- Retention policy: to be defined with DPO (Gate 3).
--- TODO [RLS-035-AUDIT]: add INSERT-only policy — no UPDATE, no DELETE.
+-- RETENTION POLICY (A-05/D-05)
+-- Retention policy: NOT defined in this schema. Duration must be approved by DPO (Gate 3).
+-- Mechanism options: pg_cron, Supabase Edge Function scheduled, external archive.
+-- INSERT-only enforced by RLS (035). No UPDATE, no DELETE policy in this file.
+-- Implement retention job in a separate migration or Edge Function after Gate 3.
+--
+-- DPO NOTE ON request_fingerprint
+-- request_fingerprint field is nullable. Do not populate in production until DPO
+-- confirms IP hashing strategy and GDPR legal basis for storing fingerprints.
 
 CREATE TABLE IF NOT EXISTS kora_link.audit_log (
   id                      uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -926,7 +904,6 @@ CREATE TABLE IF NOT EXISTS kora_link.audit_log (
                                           'kora_admin',
                                           'company_admin',
                                           'worker',
-                                          'partner',
                                           'system'
                                         )),
 
@@ -938,7 +915,6 @@ CREATE TABLE IF NOT EXISTS kora_link.audit_log (
   -- Suggested values: BATCH_CREATED, TOKEN_GENERATED, ACTIVATION_ATTEMPTED,
   --   ACTIVATION_COMPLETED, CONSENT_ACCEPTED, CONSENT_WITHDRAWN,
   --   TOKEN_REVOKED, TOKEN_SUSPENDED, TOKEN_REPLACED, QUICK_ACCESS,
-  --   PARTNER_SCAN_RECEIVED, PARTNER_SCAN_VALIDATED, PARTNER_SCAN_REJECTED,
   --   BREAK_GLASS_ACCESS, ADMIN_OVERRIDE.
   action                  text          NOT NULL CHECK (length(action) > 0),
 
@@ -946,8 +922,7 @@ CREATE TABLE IF NOT EXISTS kora_link.audit_log (
   result                  text          NULL,
 
   -- Privacy-safe request fingerprint (hash of IP+UA, never raw IP).
-  -- Requires DPO sign-off before logging any fingerprint in production.
-  -- TODO [DPO-034-1]: confirm IP hashing strategy with DPO before enabling this field.
+  -- NULL until DPO confirms hashing strategy and GDPR basis (Gate 3).
   request_fingerprint     text          NULL,
 
   -- First 8 chars of token_digest for correlation. NOT the full digest.
@@ -982,14 +957,15 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_action
 COMMENT ON TABLE kora_link.audit_log IS
   'KL-05 — Privacy-safe append-only audit trail for KORA Link. '
   'Accessible only to KORA_ADMIN and DPO (via 035 RLS). '
-  'Retention policy: define with DPO (Gate 3) before production apply. '
+  'A-05/D-05: retention policy NOT in this schema. Duration: DPO Gate 3. '
+  'Mechanism: pg_cron or Edge Function, post-Gate-3. No DELETE in 034. '
   'INSERT-only: no UPDATE, no DELETE — enforced by 035 RLS. '
   'No FK on link_id: audit survives token deletion. '
-  'Gate 2+3 OPEN: NOT applied.';
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
 
 COMMENT ON COLUMN kora_link.audit_log.request_fingerprint IS
   'Privacy-safe hash of IP+UA. NEVER raw IP. '
-  'TODO [DPO-034-1]: DPO must confirm hashing strategy before enabling in production.';
+  'NULL until DPO confirms hashing strategy (Gate 3).';
 
 COMMENT ON COLUMN kora_link.audit_log.token_digest_prefix IS
   'First 8 chars of token_digest — correlation only, not a lookup key. '
@@ -997,61 +973,21 @@ COMMENT ON COLUMN kora_link.audit_log.token_digest_prefix IS
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 10. kora_link.public_lookup_attempts
+-- NOTE: public_lookup_attempts TABLE REMOVED (A-06/D-06)
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- PURPOSE
--- Lightweight log of public route scan attempts, for rate limiting support and
--- anomaly detection. Stores NO token cleartext and NO worker identity.
--- Used by: rate limiting middleware, anomaly detection (future), DPO audit.
---
--- RETENTION
--- This table can grow large (every scan = one row). Aggressive retention policy
--- required (e.g., 7–30 days). Implement with pg_cron or Supabase Edge Function.
--- TODO [RETENTION-034-1]: define and implement retention policy before production.
-
-CREATE TABLE IF NOT EXISTS kora_link.public_lookup_attempts (
-  id                      uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
-
-  -- First 8 chars of token_digest for correlation — NOT full digest, NOT cleartext.
-  -- NULL if the token was malformed (no digest computed).
-  token_digest_prefix     text          NULL
-                                        CHECK (token_digest_prefix IS NULL OR length(token_digest_prefix) = 8),
-
-  -- Categorized result of the lookup.
-  -- 'ok_active' | 'ok_activation_pending' | 'not_found' | 'rate_limited'
-  -- | 'malformed' | 'feature_flag_off' | 'error'
-  result_category         text          NOT NULL CHECK (length(result_category) > 0),
-
-  -- Privacy-safe request fingerprint. See audit_log note above.
-  -- TODO [DPO-034-2]: confirm with DPO before logging any fingerprint.
-  request_fingerprint     text          NULL,
-
-  -- Rate limiting bucket key (hashed — no raw IP).
-  rate_limit_bucket       text          NULL,
-
-  created_at              timestamptz   NOT NULL DEFAULT now()
-
-  -- NO token cleartext. NO worker_id. NO tenant_id. NO actor_id.
-  -- Minimal data by design (GDPR minimization).
-);
-
-CREATE INDEX IF NOT EXISTS idx_public_attempts_created
-  ON kora_link.public_lookup_attempts (created_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_public_attempts_result
-  ON kora_link.public_lookup_attempts (result_category);
-
-COMMENT ON TABLE kora_link.public_lookup_attempts IS
-  'KL-05 — Lightweight log of public route /link/[token] scan attempts. '
-  'NO token cleartext. NO worker_id. NO tenant_id. GDPR minimization by design. '
-  'High-volume table: define aggressive retention policy (7–30 days) before production. '
-  'TODO [RETENTION-034-1]: implement retention before production. '
-  'Gate 2+3 OPEN: NOT applied.';
+-- public_lookup_attempts has been removed from 034 v1.
+-- Rationale:
+--   - No consumer in v1: anomaly detection is out of scope
+--   - Upstash handles rate limiting operationally (sliding window Redis)
+--   - High-volume GDPR-relevant table without utility in v1
+--   - audit_log covers significant events; Upstash covers rate limit evidence
+-- If anomaly detection is added in a future version, introduce this table in
+-- a separate migration (036 or 037) at that time.
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 11. kora_link.link_delivery_records
+-- 9. kora_link.link_delivery_records
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- PURPOSE
@@ -1061,6 +997,13 @@ COMMENT ON TABLE kora_link.public_lookup_attempts IS
 -- The delivery record uses 'delivered_to_label' (e.g., "HR Team", "Office Manager")
 -- instead of a worker identity, to avoid creating an employer-visible
 -- token↔worker mapping before the worker has activated and consented.
+--
+-- DPO NOTE (A-10)
+-- delivered_to_label MUST be a role/team label only (e.g., "HR Manager", "Office Reception").
+-- NEVER a person's name, worker_id, or email.
+-- This column MUST NOT be used to derive a token↔worker association.
+-- DPO must approve the semantics of delivered_to_label before production use.
+-- If this table is not needed for pilot logistics, defer to migration 036.
 
 CREATE TABLE IF NOT EXISTS kora_link.link_delivery_records (
   id                  uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1076,6 +1019,7 @@ CREATE TABLE IF NOT EXISTS kora_link.link_delivery_records (
                                     ON DELETE SET NULL,
 
   -- Tenant receiving the delivery.
+  -- FK POLICY (A-01/D-01): no FK in v1. Canonical target: analytics.tenant(id).
   tenant_id           uuid          NOT NULL,
 
   -- Admin who coordinated the delivery. Nullable for system-generated records.
@@ -1084,7 +1028,9 @@ CREATE TABLE IF NOT EXISTS kora_link.link_delivery_records (
   -- Non-identifying label for the delivery recipient (e.g., "HR Manager", "Office Reception").
   -- NEVER a worker name, worker ID, or email — this record must not create an
   -- employer-visible token↔worker mapping before activation and consent.
-  delivered_to_label  text          NULL,
+  -- DPO APPROVAL REQUIRED before populating in production (see table comment).
+  delivered_to_label  text          NULL
+                                    CHECK (delivered_to_label IS NULL OR length(delivered_to_label) < 200),
 
   delivered_at        timestamptz   NULL,
 
@@ -1100,14 +1046,17 @@ CREATE INDEX IF NOT EXISTS idx_delivery_records_tenant_id
 
 COMMENT ON TABLE kora_link.link_delivery_records IS
   'KL-05 — Optional chip physical delivery log. '
+  'A-10: kept for pilot logistics; defer to 036 if not needed. '
   'delivered_to_label: NEVER a worker name or ID — use role labels only. '
+  'DPO must approve delivered_to_label semantics before production use. '
   'Prevents employer-visible token↔worker mapping before activation + consent. '
-  'Gate 2+3 OPEN: NOT applied.';
+  'KL-16 amended. Gate 2+3 OPEN: NOT applied.';
 
 COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
-  'Non-identifying label only (e.g., "HR Manager"). '
+  'Non-identifying role/team label ONLY (e.g., "HR Manager"). '
   'NEVER worker name, worker ID, or email. '
-  'This column must NOT be used to derive token↔worker association.';
+  'This column MUST NOT be used to derive token↔worker association. '
+  'DPO approval required before production use.';
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -1118,7 +1067,7 @@ COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
 --   035_kora_link_rls.sql
 --
 -- This file intentionally does NOT enable RLS or create policies.
--- The following must be implemented in 035:
+-- The following must be implemented in 035 (updated for KL-16 table set):
 --
 -- [RLS-035-A] Enable RLS on all kora_link.* tables with deny-by-default.
 --
@@ -1135,12 +1084,13 @@ COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
 -- [RLS-035-D] link_assignments:
 --   • KORA_ADMIN: SELECT (full)
 --   • WORKER: SELECT WHERE worker_id = kora.current_worker_id() (self only)
---   • COMPANY_ADMIN: NO ACCESS (zero tolerance — this is the constitutional guarantee)
+--   • COMPANY_ADMIN: NO ACCESS (zero tolerance — constitutional guarantee)
 --   • Others: deny-by-default
 --
 -- [RLS-035-E] link_consents:
 --   • KORA_ADMIN: SELECT
 --   • WORKER: SELECT + INSERT WHERE worker_id = kora.current_worker_id()
+--   • v1: single mutable record per (worker,link,version); INSERT + UPDATE status
 --   • Others: deny-by-default
 --
 -- [RLS-035-F] link_events:
@@ -1158,79 +1108,84 @@ COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
 --   • KORA_ADMIN: SELECT/INSERT
 --   • Others: deny-by-default
 --
--- [RLS-035-I] partner_scans:
---   • KORA_ADMIN: SELECT
---   • PARTNER: SELECT WHERE partner_id = kora.current_partner_id()
---   • WORKER: SELECT WHERE link_id IN (own assignments) — limited
---   • COMPANY_ADMIN: NO ACCESS — no individual scan visibility
---   • Others: deny-by-default
+-- NOTE: partner_scans policy (RLS-035-I) deferred to 036 with partner_scans table.
 --
--- [RLS-035-J] audit_log:
+-- [RLS-035-I] audit_log:
 --   • KORA_ADMIN: SELECT
 --   • Others: INSERT only via SECURITY DEFINER functions — no direct INSERT from app
 --   • DPO: read access via break-glass function (documented, audited)
 --
--- [RLS-035-K] public_lookup_attempts:
---   • KORA_ADMIN: SELECT
---   • System: INSERT only via SECURITY DEFINER or service_role
---   • Others: deny-by-default
+-- NOTE: public_lookup_attempts policy removed (table removed A-06).
 --
--- [RLS-035-L] link_delivery_records:
+-- [RLS-035-J] link_delivery_records:
 --   • KORA_ADMIN: SELECT/INSERT
 --   • COMPANY_ADMIN: SELECT WHERE tenant_id = kora.tenant_id()
 --   • Others: deny-by-default
 --
--- [RLS-035-M] Company aggregate view:
+-- [RLS-035-K] Company aggregate view:
 --   CREATE VIEW kora_link.v_batch_stats AS
 --   SELECT tenant_id,
---     COUNT(*) FILTER (WHERE status = 'active') AS active_count,
+--     COUNT(*) FILTER (WHERE status = 'active'
+--       AND (pre_activation_expires_at IS NULL OR pre_activation_expires_at > now())) AS active_count,
 --     COUNT(*) FILTER (WHERE status = 'activation_pending') AS pending_count,
 --     COUNT(*) FILTER (WHERE status IN ('revoked','replaced','expired')) AS inactive_count,
 --     COUNT(*) AS total_count
 --   FROM kora_link.links
 --   GROUP BY tenant_id;
+--   NOTE: filter includes TTL check (A-04/D-04) for accurate counts.
 --   RLS: tenant_id = kora.tenant_id() for COMPANY_ADMIN/COMPANY_VIEWER.
 --   NEVER exposes link_id, worker_id, token_digest, or individual timestamps.
 --
--- [RLS-035-N] SECURITY DEFINER functions:
+-- [RLS-035-L] SECURITY DEFINER functions:
 --   fn_kora_link_public_lookup(p_token_digest text)
 --     RETURNS TABLE(link_id uuid, status text, pre_activation_expires_at timestamptz)
 --     — used by public route. Returns minimum fields. Never returns worker_id.
+--     D-01: validates tenant via token record; no cross-schema FK needed.
+--     D-07: single digest lookup (stable secret); no key_version branching.
 --
 --   fn_kora_link_activate(p_token_digest text, p_worker_id uuid, p_consent_version text)
 --     RETURNS jsonb
---     — validates token, tenant match, creates assignment + consent atomically.
+--     — validates token, tenant match (explicit check — no FK), creates
+--       link_assignments + link_consents atomically.
 --
 -- ═══════════════════════════════════════════════════════════════════════════════
--- OPEN TODOS FOR CTO REVIEW
+-- OPEN TODOS (updated post KL-16 amendments)
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- [TODO-CTO-01] FK-034-1 through FK-034-7: confirm FK targets for tenant_id and
---               worker_id before promoting to migrations/. Current approach (no FK)
---               mirrors pattern in migration 033 for tenant_id.
+-- RESOLVED BY KL-16 AMENDMENTS:
+--   [RESOLVED A-02] TODO-CTO-02: UNIQUE NULLS NOT DISTINCT — eliminated (partner_scans deferred)
+--   [RESOLVED A-03] TODO-CTO-03: Generated scan_date — eliminated (partner_scans deferred)
+--   [RESOLVED A-08] TODO-CTO-08: DEFERRABLE self-FK — eliminated (replaced_by_link_id removed)
+--   [RESOLVED A-09] Redundant token_digest index — eliminated
 --
--- [TODO-CTO-02] UNIQUE NULLS NOT DISTINCT on partner_scans: requires PostgreSQL 15+.
---               Confirm Supabase environment PostgreSQL version before apply.
+-- STILL OPEN (require CTO formal sign-off):
 --
--- [TODO-CTO-03] Generated column scan_date on partner_scans: confirm Supabase
---               support for GENERATED ALWAYS AS ... STORED on timestamptz→date.
+-- [TODO-CTO-01] FK-034-1 through FK-034-6 (partner FK-034-7 deferred with partner_scans):
+--              Current approach (no FK) is Engineering provisional per D-01/A-01.
+--              CTO should formally confirm this as the v1 pattern or require FKs.
 --
--- [TODO-CTO-04] Token TTL enforcement: pre_activation_expires_at is checked at
---               application layer (route + fn_kora_link_public_lookup). Consider
---               pg_cron job to batch-update status='expired' for efficiency.
+-- [TODO-CTO-04] Token TTL enforcement: pre_activation_expires_at checked at
+--              application layer. Engineering provisional per D-04/A-04.
+--              CTO should confirm app-layer enforcement is acceptable for v1.
 --
--- [TODO-CTO-05] audit_log retention: high-volume over time. Define pg_cron or
---               Supabase background job for retention enforcement (Gate 3 + DPO).
+-- [TODO-CTO-05] audit_log retention: Engineering provisional — no retention in 034.
+--              Duration and mechanism require DPO + CTO decision (Gate 3).
 --
--- [TODO-CTO-06] public_lookup_attempts retention: very high-volume. 7–30 day
---               retention recommended. Partition by month if volume justifies it.
+-- [TODO-CTO-06] link_delivery_records scope: kept for pilot logistics (A-10).
+--              CTO may choose to defer to 036 if not needed for Foundation Light.
 --
--- [TODO-CTO-07] Token version migration: when KORA_LINK_TOKEN_SECRET is rotated,
---               all existing token_digests must be recomputed. Define dual-digest
---               migration procedure before first secret rotation.
+-- [TODO-CTO-07] Token version migration: stable secret policy adopted (D-07/A-07).
+--              CTO should formally confirm no key_version in v1 and approve
+--              emergency re-issue as the rotation procedure.
 --
--- [TODO-CTO-08] Deferred self-FK on kora_link.links.replaced_by_link_id:
---               confirm DEFERRABLE INITIALLY DEFERRED behavior in Supabase.
+-- [TODO-DPO-01] request_fingerprint hashing strategy in audit_log: nullable,
+--              not populated until DPO confirms (Gate 3).
+--
+-- [TODO-DPO-02] link_consents.consent_version: content of privacy notice v1.0
+--              must be approved by DPO before production use (Gate 3).
+--
+-- [TODO-DPO-03] link_delivery_records.delivered_to_label semantics: DPO must
+--              approve what constitutes a non-identifying label (Gate 3).
 --
 -- ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1240,33 +1195,60 @@ COMMIT;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- POST-APPLY VERIFICATION QUERIES (run manually after apply — DO NOT automate)
+-- Updated for KL-16 table set (9 tables: removed public_lookup_attempts,
+-- deferred partner_scans)
 -- ─────────────────────────────────────────────────────────────────────────────
 --
 -- 1. Confirm schema created:
 --    SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'kora_link';
 --
--- 2. Confirm all 11 tables created:
+-- 2. Confirm all 9 tables created:
 --    SELECT table_name FROM information_schema.tables
 --    WHERE table_schema = 'kora_link' ORDER BY table_name;
 --    Expected: audit_log, link_assignments, link_batches, link_consents,
 --              link_delivery_records, link_events, link_replacements,
---              links, partner_scans, public_lookup_attempts, revocations
+--              links, revocations
+--    NOT expected: partner_scans (deferred to 036), public_lookup_attempts (removed)
 --
 -- 3. Confirm UNIQUE(token_digest) on kora_link.links:
 --    SELECT indexname FROM pg_indexes
 --    WHERE tablename = 'links' AND schemaname = 'kora_link'
 --      AND indexname = 'uq_link_token_digest';
 --
--- 4. Confirm partial unique index on link_assignments (one active per link):
+-- 4. Confirm NO redundant non-unique token_digest index:
+--    SELECT indexname FROM pg_indexes
+--    WHERE tablename = 'links' AND schemaname = 'kora_link'
+--      AND indexname = 'idx_links_token_digest';
+--    Expected: 0 rows (removed A-09)
+--
+-- 5. Confirm partial unique index on link_assignments (one active per link):
 --    SELECT indexname FROM pg_indexes
 --    WHERE tablename = 'link_assignments' AND schemaname = 'kora_link'
 --      AND indexname = 'uq_assignment_link_active';
 --
--- 5. Confirm NO token_value column exists anywhere in kora_link:
+-- 6. Confirm NO token_value column exists anywhere in kora_link:
 --    SELECT column_name, table_name FROM information_schema.columns
 --    WHERE table_schema = 'kora_link' AND column_name = 'token_value';
 --    Expected: 0 rows.
 --
--- 6. Confirm triggers:
+-- 7. Confirm NO replaced_by_link_id column on kora_link.links:
+--    SELECT column_name FROM information_schema.columns
+--    WHERE table_schema = 'kora_link' AND table_name = 'links'
+--      AND column_name = 'replaced_by_link_id';
+--    Expected: 0 rows (removed A-08)
+--
+-- 8. Confirm NO DEFERRABLE constraints:
+--    SELECT conname FROM pg_constraint
+--    WHERE connamespace = 'kora_link'::regnamespace AND condeferrable = true;
+--    Expected: 0 rows (removed A-08)
+--
+-- 9. Confirm triggers:
 --    SELECT trigger_name, event_object_table FROM information_schema.triggers
 --    WHERE trigger_schema = 'kora_link' ORDER BY event_object_table;
+--    Expected: trg_link_assignments_updated_at, trg_link_batches_updated_at,
+--              trg_links_updated_at
+--
+-- 10. Confirm RLS NOT enabled (RLS is in 035, not in 034):
+--     SELECT tablename FROM pg_tables
+--     WHERE schemaname = 'kora_link' AND rowsecurity = true;
+--     Expected: 0 rows

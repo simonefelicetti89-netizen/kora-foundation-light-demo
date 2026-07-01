@@ -6,6 +6,68 @@
 
 ---
 
+## KL-16 — 034 Engineering Amendments Applied
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** SQL proposed + Documentazione — nessuna migration applicata, nessun codice runtime modificato.
+
+### Contenuto
+
+Applicati gli amendments Engineering (A-01→A-12) a `supabase/proposed/034_kora_link_schema.sql` come decisioni interne provvisorie Engineering. Il file rimane in stato `PROPOSED_AMENDED_INTERNAL_ENGINEERING` — non applicato ad alcun database, non promosso a `migrations/`.
+
+**Modifiche a `supabase/proposed/034_kora_link_schema.sql`:**
+
+- **Header aggiornato:** status `PROPOSED_AMENDED_INTERNAL_ENGINEERING`, sezione KL-16 amendments, tabella v1 definitiva (9 tabelle), DPO notes aggiornate
+- **A-01/D-01** — Aggiunto commento FK policy su ogni colonna `tenant_id`/`worker_id` con target canonico
+- **A-02/D-02** — Risolto per eliminazione: costrutti PG15-only rimossi con partner_scans (A-12)
+- **A-03/A-12/D-03** — `kora_link.partner_scans` rimossa da 034; nota deferral a migration 036
+- **A-04/D-04** — Commento TTL su `pre_activation_expires_at`: enforcement app-layer documentato
+- **A-05/D-05** — Commento retention DPO su `kora_link.audit_log` aggiornato
+- **A-06/D-06** — `kora_link.public_lookup_attempts` rimossa da 034; nota rationale
+- **A-07/D-07** — Commento stable secret policy su `token_digest`; no colonna `key_version`
+- **A-08/D-08** — Rimossi da `kora_link.links`: colonna `replaced_by_link_id`, `ALTER TABLE ... DEFERRABLE`, COMMENT relativo
+- **A-09** — Rimosso `CREATE INDEX idx_links_token_digest` (ridondante con UNIQUE constraint)
+- **A-10** — `kora_link.link_delivery_records` mantenuto con commento DPO su `delivered_to_label`
+- **A-11** — Commento append-only semantics aggiornato in `kora_link.link_consents`
+- **RLS TODO section** — Aggiornato per riflettere tabella v1 (9 tabelle): rimossi policy PARTNER/partner_scans e public_lookup_attempts; nota 036 per partner_scans
+- **OPEN TODOs** — Segnati come RESOLVED: TODO-CTO-02, 03, 08 (+ A-09 ridondant index)
+- **POST-APPLY VERIFICATION** — Aggiornata lista expected tables (9 vs 11); aggiunte query per verificare assenza `replaced_by_link_id` e `idx_links_token_digest`; aggiornata query DEFERRABLE (expected: 0 rows)
+
+**Nuovo documento:** `docs/KORA_LINK_034_ENGINEERING_DECISION_RECORD.md`
+
+- Sezione 1: D-01→D-08 con rationale, azione applicata, residual risk, flag "CTO deve confermare"
+- Sezione 2: Tabella A-01→A-12 con status KL-16 (tutti ✅ applicati)
+- Sezione 3: Tabella v1 definitiva (9 tabelle con status)
+- Sezione 4: TODO aperti post-KL-16 (5 CTO + 3 DPO)
+- Sezione 5: Residui risks con livello e mitigazione
+- Sezione 6: Gate status post-KL-16
+- Sezione 7: Istruzioni d'uso per CTO, DPO, Engineering
+
+### Metriche
+
+- File creati: 1 (`docs/KORA_LINK_034_ENGINEERING_DECISION_RECORD.md`)
+- File modificati: 2 (`supabase/proposed/034_kora_link_schema.sql`, `docs/KORA_LINK_CHANGELOG.md`)
+- SQL applicato: 0 · Migration create: 0 · Codice runtime modificato: 0
+- Tabelle rimosse da 034: 2 (`public_lookup_attempts`, `partner_scans`)
+- Colonne rimosse da `kora_link.links`: 1 (`replaced_by_link_id`)
+- Constraint rimossi: 1 (`fk_links_replaced_by DEFERRABLE`)
+- Index ridondanti rimossi: 1 (`idx_links_token_digest`)
+- Tabella v1 finale: 9 (era 11)
+
+### Gate status post-KL-16
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (CTO schema review) | 🔴 OPEN — 034 amended pronto per review formale CTO |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| Gate 4 (RLS 035) | 🔴 BLOCKED — attende Gate 2 formale |
+| KL-16 | ✅ COMPLETATO |
+| KL-17 (RLS 035) | 🔴 BLOCKED — attende Gate 2 |
+
+---
+
 ## KL-15 — CTO Review Handoff Pack
 
 **Data:** 2026-07-01  
