@@ -6,6 +6,83 @@
 
 ---
 
+## KL-20 — KORA Link Demo Lab (NFC URL Generation)
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Codice TypeScript runtime + test unit — nessuna migration, nessun SQL applicato, nessuna modifica a 034/035/036, nessuna nuova dipendenza.
+
+### Contenuto
+
+Creato `lib/kora-link/demo-lab.ts` — helper server-only per generare token/URL demo effimeri da scrivere su chip NFC in laboratorio.
+Creato `app/admin/kora-link-lab/page.tsx` — pagina interna "KORA Link Lab", protetta dal layout admin esistente (`app/admin/layout.tsx` → `requireKoraAdmin()`), nessun nuovo sistema di auth introdotto.
+Creato `tests/unit/kora-link-demo-lab.test.ts` — 31 test unit.
+
+### Funzioni esportate (`lib/kora-link/demo-lab.ts`)
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `getKoraLinkDemoLabRuntimeStatus(env?)` | fn | Snapshot booleano dello stato runtime (`KORA_LINK_ENABLED`, base URL configurato sì/no, `KORA_LINK_DB_LOOKUP_ENABLED`, rate limit provider) — mai un secret |
+| `getKoraLinkPublicLinkUrl(token, env?)` | fn | Costruisce `${baseUrl}/link/${token}` — throw se base URL mancante/non valida |
+| `generateKoraLinkDemoLabLink(env?)` | fn | Genera `generateToken()` + URL demo — `{ ok: true, token, url }` o `{ ok: false, reason: 'base_url_not_configured' }`, mai un'eccezione |
+
+### Comportamento pagina `/admin/kora-link-lab`
+
+- Server component, `dynamic = 'force-dynamic'` — un nuovo token demo ad ogni caricamento (ricaricare la pagina = nuovo token, nessuna server action necessaria)
+- Pannello stato runtime: 4 righe booleane/enum, nessun valore di secret stampato
+- Pannello URL: `<textarea readOnly>` con `userSelect: all` per copia manuale (nessun client component, nessuna dipendenza clipboard)
+- Pannello token grezzo: mostrato con avviso esplicito "solo demo, non persistito"
+- Pannello sicurezza: 4 note esplicite (nessun record DB, nessuna associazione worker, nessuna activation, solo lab/demo)
+- Stato base URL mancante → messaggio safe, nessun crash, nessuna eccezione propagata
+
+### Sicurezza / invarianti
+
+- Nessun token salvato — generato in memoria ad ogni request, scartato al reload
+- Nessun DB, nessuna chiamata Supabase, nessun service role
+- Nessuna activation, nessun worker assignment, nessun Impact Unit, nessuno scoring, nessun partner scan
+- Nessun calcolo di digest (`computeDigest` non chiamato — il demo lab non usa il path DB/RPC)
+- Nessun secret (`KORA_LINK_TOKEN_SECRET`) letto, calcolato o stampato nella UI
+- Pagina protetta esclusivamente dal layer admin esistente (`requireKoraAdmin`) — nessun nuovo guard/auth introdotto
+- Nessuna modifica a `034_kora_link_schema.sql` / `035_kora_link_rls.sql` / `036_kora_link_rpc_functions.sql`
+- Nessuna migration creata, nessun SQL applicato, nessuna modifica a file `.env`
+- Nessuna nuova dipendenza (nessuna libreria QR, nessun pacchetto npm aggiunto)
+
+### Controlli statici
+
+- `grep Supabase` nei nuovi file: solo in commenti che ne dichiarano l'assenza (`// No Supabase`) — nessun import/uso reale ✅
+- `grep service_role`: 0 ✅
+- `grep KORA_LINK_TOKEN_SECRET` nella UI (`page.tsx`): 0 ✅
+- `grep console.log`: 0 ✅
+- 034/035/036 modificati: no ✅
+- Migration nuove: 0 ✅
+- `package.json` / `package-lock.json` modificati: no ✅
+- File `.env` modificati: no ✅
+
+### Metriche
+
+- File creati: 3 (`lib/kora-link/demo-lab.ts`, `app/admin/kora-link-lab/page.tsx`, `tests/unit/kora-link-demo-lab.test.ts`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- Dipendenze aggiunte: 0
+- SQL applicato: 0 · Migration create: 0 · 034/035/036 modificati: no
+- TypeScript: 0 errori
+- ESLint: 0 errori, 0 warning
+- Vitest: 8435/8435 passed (200 file, +31 rispetto a KL-19)
+- Build: OK — `/admin/kora-link-lab` presente come route dynamic
+- E2E: 6/6 passed
+
+### Gate status post-KL-20
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (CTO schema review) | 🔴 OPEN — 034 + 035 + 036 pronti per review formale |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| KL-19 | ✅ COMPLETATO |
+| KL-20 (Demo Lab NFC) | ✅ COMPLETATO — strumento interno admin, nessun impatto su Gate 2/3 |
+| KL-21+ | Worker activation flow · staging deploy — bloccati da Gate 2+3 |
+
+---
+
 ## KL-19 — KORA Link Public DB Lookup Runtime
 
 **Data:** 2026-07-01  
