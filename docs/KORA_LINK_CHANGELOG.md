@@ -6,6 +6,94 @@
 
 ---
 
+## KL-22 — KORA Link Worker Activation Runtime Flow
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Codice TypeScript runtime + test unit — nessuna migration, nessun SQL applicato, nessuna modifica a 034/035/036, nessuna nuova dipendenza, nessun nuovo sistema auth.
+
+### Contenuto
+
+Creato `lib/kora-link/activation.ts` — helper server-only per il worker activation flow: `activateKoraLinkForWorker()` (chiama `fn_activate_link_for_worker`, draft in 036) e `buildKoraLinkActivationState()` (stato UI puro/derivato).
+Modificato `lib/kora-link/config.ts` — aggiunto `KORA_LINK_ACTIVATION_ENABLED` a `KoraLinkEnv` + `isKoraLinkActivationEnabled(env)`.
+Modificato `app/link/[token]/page.tsx` — nel ramo `state === 'ready'` risolve la sessione worker (solo se activation è enabled) e il pannello di attivazione (`ActivationPanel`), leggendo l'esito da `?activation=` dopo il redirect del POST.
+Creato `app/link/[token]/activate/route.ts` — endpoint POST server-only, consumato dal `<form>` HTML della pagina pubblica (nessun client JS, nessuna dipendenza nuova).
+Creato `tests/unit/kora-link-activation.test.ts` — 52 test.
+Aggiornato `tests/unit/kora-link-config.test.ts` — +9 test per `isKoraLinkActivationEnabled`.
+
+### Comportamento
+
+```
+KORA_LINK_ACTIVATION_ENABLED (default: assente/false)
+  → false: pannello activation mostra "KORA Link pronto. Activation non abilitata in questo ambiente."
+           nessuna sessione worker viene risolta, nessuna chiamata RPC possibile
+  → true:  worker non autenticato → CTA "Accedi come worker per completare l'attivazione" (→ /worker/login, pattern esistente)
+           worker autenticato     → form con checkbox di consenso + CTA "Attiva KORA Link"
+             → POST /link/[token]/activate
+                 → valida token, readiness, sessione worker, checkbox di consenso
+                 → activateKoraLinkForWorker(): computeDigest(token, secret) → fn_activate_link_for_worker
+                     (p_token_digest, p_worker_id, p_consent_version)
+                 → redirect 303 a /link/[token]?activation=<esito safe> (mai digest, mai worker_id, mai token raw oltre l'URL già esistente)
+```
+
+### Funzioni esportate (`lib/kora-link/activation.ts`)
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `KORA_LINK_ACTIVATION_CONSENT_VERSION` | const | `'kora-link-consent-v1-draft'` — versione di consenso provvisoria, copy finale in attesa di DPO/legal |
+| `activateKoraLinkForWorker(params)` | fn | Flag off → `disabled`; token/worker/consent non validi → stato safe dedicato senza chiamare la RPC; altrimenti calcola il digest e chiama `fn_activate_link_for_worker`; normalizza qualunque risposta/errore RPC a uno stato safe (mai un'eccezione, mai `digest`/`token`/`worker_id` nel risultato) |
+| `buildKoraLinkActivationState(params)` | fn | Funzione pura che deriva lo stato UI (`disabled · unauthenticated · lookup_not_ready · ready · activating · activated · unavailable · error`) da flag, readiness del lookup, stato auth worker ed esito activation — precedenza: flag off > lookup non pronto > worker non autenticato > esito > ready |
+
+### Sicurezza / invarianti
+
+- `KORA_LINK_ACTIVATION_ENABLED` default **off** — nessuna activation possibile finché non è esplicitamente `'true'`
+- Token raw **non** inviato al DB — solo `computeDigest(token, secret)` attraversa la RPC
+- Digest completo **non** esposto in nessuno stato restituito al chiamante
+- `worker_id` risolto lato server dalla sessione autenticata — **mai** accettato da input client, **mai** presente nel risultato di `activateKoraLinkForWorker` o nell'URL di redirect
+- Nessun service role — l'activation gira sotto la sessione del worker (client server-side standard, stesso pattern di KL-19)
+- Nessun nuovo sistema di autenticazione — riusa `getCurrentWorkerUser()` / `requireWorkerUser` (`lib/auth/kora-session.ts`) e la route `/worker/login` esistenti
+- Consenso obbligatorio: il POST richiede la checkbox `consent_confirmed`; assente → stato `consent_required` → `error` safe, nessuna chiamata RPC se il consenso manca lato helper
+- Fallback safe su ogni errore RPC/client/digest → `unavailable` o `error`, mai un'eccezione propagata
+- Nessun Impact Unit, nessuno scoring, nessun effetto sul KORA Index — l'activation aggiorna solo stato link/assignment lato RPC (draft 036), mai la pipeline IU/PIB/KORA Index
+- Nessuna modifica a `034_kora_link_schema.sql` / `035_kora_link_rls.sql` / `036_kora_link_rpc_functions.sql`
+- Nessuna migration creata, nessun SQL applicato, nessuna modifica a file `.env`, nessuna nuova dipendenza
+
+### Controlli statici
+
+- `grep service_role` in `app/link` + `lib/kora-link`: 0 ✅
+- `grep console.log` nei file modificati: 0 ✅
+- `grep fn_activate_link_for_worker`: presente solo in `activation.ts`, test dedicato, changelog, documentazione 036 ✅
+- `grep token_value|raw_token|clear_token|token_plaintext` nei file modificati: 0 ✅
+- `grep KORA_LINK_ACTIVATION_ENABLED`: presente in `config.ts`, `activation.ts`, `page.tsx`, test ✅
+- 034/035/036 modificati: no ✅
+- Migration nuove: 0 ✅
+- `package.json` / `package-lock.json` modificati: no ✅
+
+### Metriche
+
+- File creati: 3 (`lib/kora-link/activation.ts`, `app/link/[token]/activate/route.ts`, `tests/unit/kora-link-activation.test.ts`)
+- File modificati: 3 (`app/link/[token]/page.tsx`, `lib/kora-link/config.ts`, `tests/unit/kora-link-config.test.ts`) + `docs/KORA_LINK_CHANGELOG.md`
+- Dipendenze aggiunte: 0
+- SQL applicato: 0 · Migration create: 0 · 034/035/036 modificati: no
+- TypeScript: 0 errori
+- ESLint: 0 errori, 2 warning (pre-esistenti da KL-19, non introdotti in questo step)
+- Vitest: 8521/8521 passed (201 file, +62 rispetto a KL-21)
+- Build: OK — `/link/[token]/activate` presente come nuova route dynamic
+- E2E: 6/6 passed
+
+### Gate status post-KL-22
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (CTO schema review) | 🔴 OPEN — 034 + 035 + 036 pronti per review formale |
+| Gate 3 (DPO/legal) | 🔴 OPEN — consent copy e version whitelist ancora provvisori |
+| KL-21 | ✅ COMPLETATO |
+| KL-22 (Activation runtime) | ✅ COMPLETATO — dietro feature flag, default off; abilitazione reale richiede Gate 2+3 chiusi + 036 applicato |
+| KL-23+ | Admin revocation/replacement flow · staging deploy — bloccati da Gate 2+3 |
+
+---
+
 ## KL-21 — KORA Link Lab Usability Polish for NFC Physical Testing
 
 **Data:** 2026-07-01  

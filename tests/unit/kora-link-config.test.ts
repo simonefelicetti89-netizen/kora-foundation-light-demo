@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   isKoraLinkEnabled,
+  isKoraLinkActivationEnabled,
   getKoraLinkPublicBaseUrl,
   getKoraLinkReadiness,
   assertKoraLinkReady,
@@ -91,6 +92,51 @@ describe('isKoraLinkEnabled', () => {
 
   it('uses process.env by default (does not throw)', () => {
     expect(() => isKoraLinkEnabled()).not.toThrow();
+  });
+
+});
+
+// ── 2b. isKoraLinkActivationEnabled (KL-22) ───────────────────────────────────
+
+describe('isKoraLinkActivationEnabled', () => {
+
+  it('returns false when env var is not set (default off)', () => {
+    expect(isKoraLinkActivationEnabled({})).toBe(false);
+  });
+
+  it('returns false when env var is undefined', () => {
+    expect(isKoraLinkActivationEnabled({ KORA_LINK_ACTIVATION_ENABLED: undefined })).toBe(false);
+  });
+
+  it('returns false when env var is empty string', () => {
+    expect(isKoraLinkActivationEnabled({ KORA_LINK_ACTIVATION_ENABLED: '' })).toBe(false);
+  });
+
+  it('returns false when env var is "false"', () => {
+    expect(isKoraLinkActivationEnabled({ KORA_LINK_ACTIVATION_ENABLED: 'false' })).toBe(false);
+  });
+
+  it('returns false when env var is "1" (not exact string)', () => {
+    expect(isKoraLinkActivationEnabled({ KORA_LINK_ACTIVATION_ENABLED: '1' })).toBe(false);
+  });
+
+  it('returns false when env var is "TRUE" (case-sensitive)', () => {
+    expect(isKoraLinkActivationEnabled({ KORA_LINK_ACTIVATION_ENABLED: 'TRUE' })).toBe(false);
+  });
+
+  it('returns true only when env var is exactly "true"', () => {
+    expect(isKoraLinkActivationEnabled({ KORA_LINK_ACTIVATION_ENABLED: 'true' })).toBe(true);
+  });
+
+  it('is independent from KORA_LINK_DB_LOOKUP_ENABLED and KORA_LINK_ENABLED', () => {
+    expect(isKoraLinkActivationEnabled({
+      KORA_LINK_ENABLED: 'true',
+      KORA_LINK_DB_LOOKUP_ENABLED: 'true',
+    })).toBe(false);
+  });
+
+  it('uses process.env by default (does not throw)', () => {
+    expect(() => isKoraLinkActivationEnabled()).not.toThrow();
   });
 
 });

@@ -24,6 +24,7 @@ export type KoraLinkEnv = {
   KORA_LINK_PUBLIC_BASE_URL?: string | undefined;
   KORA_LINK_RATE_LIMIT_PROVIDER?: string | undefined;
   KORA_LINK_DB_LOOKUP_ENABLED?: string | undefined;
+  KORA_LINK_ACTIVATION_ENABLED?: string | undefined;
   UPSTASH_REDIS_REST_URL?: string | undefined;
   UPSTASH_REDIS_REST_TOKEN?: string | undefined;
 };
@@ -70,6 +71,16 @@ export function isKoraLinkEnabled(env: KoraLinkEnv = process.env): boolean {
  */
 export function isKoraLinkDbLookupEnabled(env: KoraLinkEnv = process.env): boolean {
   return env.KORA_LINK_DB_LOOKUP_ENABLED === 'true';
+}
+
+/**
+ * Returns true only if KORA_LINK_ACTIVATION_ENABLED === 'true' (exact, case-sensitive).
+ * Default: false. When false, the public route never attempts worker activation —
+ * it shows a safe "activation not enabled" message instead, even if a worker is signed in.
+ * Enable only when the 036 RPC functions are deployed and Gate 2 + Gate 3 are closed.
+ */
+export function isKoraLinkActivationEnabled(env: KoraLinkEnv = process.env): boolean {
+  return env.KORA_LINK_ACTIVATION_ENABLED === 'true';
 }
 
 // ── Public base URL ───────────────────────────────────────────────────────────
