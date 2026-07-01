@@ -151,7 +151,7 @@ describe('migration 027 — precondition documentation', () => {
 
 describe('review pack — P0 cleanup reflected', () => {
   const doc = () =>
-    readFileSync(resolve(root, 'docs/GATE2_SQL_REVIEW_PACK.md'), 'utf-8');
+    readFileSync(resolve(root, 'docs/archive/gate2/GATE2_SQL_REVIEW_PACK.md'), 'utf-8');
 
   it('migration 005 entry no longer lists COMPANY_USER as unresolved', () => {
     const lines = doc().split('\n');

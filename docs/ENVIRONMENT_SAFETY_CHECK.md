@@ -53,14 +53,14 @@ I due file puntano a **progetti Supabase distinti**.
 
 Identificazione tramite documentazione interna (nessuna connessione remota):
 
-- `docs/sprint-B168-6/phase4-target-env.md` (riga 11):
+- `docs/archive/sprints/sprint-B168-6/phase4-target-env.md` (riga 11):
   > **Supabase project URL:** `azdnepfmwrmacruykskm.supabase.co`
   > **Ambiente scelto:** Production
 
-- `docs/sprint-B168-6/phase4-execution-queries.md` (riga 3):
+- `docs/archive/sprints/sprint-B168-6/phase4-execution-queries.md` (riga 3):
   > Ambiente: **Production** `azdnepfmwrmacruykskm.supabase.co`
 
-- `docs/sprint-B168-6/exposed-domains.md`:
+- `docs/archive/sprints/sprint-B168-6/exposed-domains.md`:
   > `azdnepfmwrmacruykskm.supabase.co` — Backend — Supabase project
 
 **Conclusione: `azdn**** = PRODUCTION`**

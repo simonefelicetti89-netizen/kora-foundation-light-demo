@@ -16,7 +16,7 @@ const root = resolve(process.cwd());
 
 function doc(): string {
   return readFileSync(
-    resolve(root, 'docs/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md'),
+    resolve(root, 'docs/archive/gate2/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md'),
     'utf-8'
   );
 }
@@ -26,7 +26,7 @@ function doc(): string {
 describe('GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md smoke section', () => {
   it('smoke doc exists', () => {
     expect(
-      existsSync(resolve(root, 'docs/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md'))
+      existsSync(resolve(root, 'docs/archive/gate2/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md'))
     ).toBe(true);
   });
 

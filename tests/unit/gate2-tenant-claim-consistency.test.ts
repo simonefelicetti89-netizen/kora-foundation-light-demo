@@ -211,7 +211,7 @@ describe('full migration set — no direct auth.jwt() JWT reads in executable SQ
 
 describe('review pack — tenant claim consistency reflected', () => {
   const doc = () =>
-    readFileSync(resolve(root, 'docs/GATE2_SQL_REVIEW_PACK.md'), 'utf-8');
+    readFileSync(resolve(root, 'docs/archive/gate2/GATE2_SQL_REVIEW_PACK.md'), 'utf-8');
 
   it('§3.1 no longer lists 013/025/026 as unresolved inconsistencies', () => {
     const content = doc();

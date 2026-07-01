@@ -15,14 +15,14 @@ import { resolve } from 'path';
 const root = resolve(process.cwd());
 
 function doc(): string {
-  return readFileSync(resolve(root, 'docs/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md'), 'utf-8');
+  return readFileSync(resolve(root, 'docs/archive/gate2/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md'), 'utf-8');
 }
 
 // ── 1. Document exists ────────────────────────────────────────────────────────
 
 describe('GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md — existence', () => {
   it('doc exists', () => {
-    expect(existsSync(resolve(root, 'docs/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md'))).toBe(true);
+    expect(existsSync(resolve(root, 'docs/archive/gate2/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md'))).toBe(true);
   });
 
   it('doc is non-empty', () => {

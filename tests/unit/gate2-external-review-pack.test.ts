@@ -18,7 +18,7 @@ function read(rel: string): string {
   return readFileSync(resolve(root, rel), 'utf-8');
 }
 
-const docPath = 'docs/gate-2-external-review-pack.md';
+const docPath = 'docs/archive/gate2/gate-2-external-review-pack.md';
 
 // ── 1. Document existence and structure ───────────────────────────────────────
 
@@ -304,7 +304,7 @@ describe('gate-2-external-review-pack.md — handoff message', () => {
 describe('gate-2-external-review-pack.md — consistent with GATE2_SQL_REVIEW_PACK.md', () => {
   it('migration count matches: both documents state 28 migrations', () => {
     const extDoc = read(docPath);
-    const sqlDoc = read('docs/GATE2_SQL_REVIEW_PACK.md');
+    const sqlDoc = read('docs/archive/gate2/GATE2_SQL_REVIEW_PACK.md');
     expect(extDoc).toMatch(/28 migration/i);
     expect(sqlDoc).toMatch(/28 file/i);
   });
@@ -327,7 +327,7 @@ describe('gate-2-external-review-pack.md — consistent with GATE2_SQL_REVIEW_PA
 
   it('Gate 2 open question about kora.worker_id() matches GATE2_SQL_REVIEW_PACK.md §7', () => {
     const extDoc = read(docPath);
-    const sqlDoc = read('docs/GATE2_SQL_REVIEW_PACK.md');
+    const sqlDoc = read('docs/archive/gate2/GATE2_SQL_REVIEW_PACK.md');
     // Both documents must reference the same design question
     expect(extDoc).toMatch(/kora\.worker_id\(\)/);
     expect(sqlDoc).toMatch(/kora\.worker_id\(\)/);

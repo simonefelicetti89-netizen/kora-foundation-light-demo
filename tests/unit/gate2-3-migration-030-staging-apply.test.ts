@@ -26,7 +26,7 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
 const root = resolve(process.cwd());
-const DOC = readFileSync(resolve(root, 'docs/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md'), 'utf-8');
+const DOC = readFileSync(resolve(root, 'docs/archive/gate2/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md'), 'utf-8');
 
 // ── 1. Migration 030 staging apply recorded ───────────────────────────────────
 

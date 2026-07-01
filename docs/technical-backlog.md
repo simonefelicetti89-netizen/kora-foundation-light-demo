@@ -95,7 +95,7 @@ Auth UI KORA_ADMIN stabile: login, sessione persistente, logout funzionante in a
 2. Rimuovere la funzione `checkAuth()` e sostituirla con chiamata diretta a `requireKoraAdmin()`.
 3. Rimuovere `KORA_OPERATOR_SECRET` da `.env.local` e da qualsiasi CI/CD env.
 4. Aggiornare questo TODO a DONE.
-5. Aggiornare `docs/test-routes-removal-before-production.md`.
+5. Aggiornare `docs/archive/qa/test-routes-removal-before-production.md`.
 
 ---
 
@@ -108,7 +108,7 @@ Auth UI KORA_ADMIN stabile: login, sessione persistente, logout funzionante in a
 | **Stato** | DEFERRED — mandatory before real data |
 | **Priorità** | Bloccante per qualunque dato reale cliente |
 | **Aggiunto** | 2026-05-30 |
-| **Documento di riferimento** | `docs/gate-3b-privacy-readiness-pack.md` |
+| **Documento di riferimento** | `docs/archive/gate2/gate-3b-privacy-readiness-pack.md` |
 
 ### Nota chiave: distinzione enforce-by-code vs enforce-by-contract
 
@@ -146,7 +146,7 @@ KORA garantisce tecnicamente (enforce-by-code):
 
 ### Azione richiesta
 
-Vedere checklist completa in `docs/gate-3b-privacy-readiness-pack.md`.
+Vedere checklist completa in `docs/archive/gate2/gate-3b-privacy-readiness-pack.md`.
 
 ---
 

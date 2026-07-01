@@ -17,7 +17,7 @@ const root = resolve(process.cwd());
 
 function doc(): string {
   return readFileSync(
-    resolve(root, 'docs/GATE2_PHASE1_VALID_AUTH_USERS_READY.md'),
+    resolve(root, 'docs/archive/gate2/GATE2_PHASE1_VALID_AUTH_USERS_READY.md'),
     'utf-8'
   );
 }
@@ -27,7 +27,7 @@ function doc(): string {
 describe('GATE2_PHASE1_VALID_AUTH_USERS_READY.md — existence', () => {
   it('doc exists', () => {
     expect(
-      existsSync(resolve(root, 'docs/GATE2_PHASE1_VALID_AUTH_USERS_READY.md'))
+      existsSync(resolve(root, 'docs/archive/gate2/GATE2_PHASE1_VALID_AUTH_USERS_READY.md'))
     ).toBe(true);
   });
 

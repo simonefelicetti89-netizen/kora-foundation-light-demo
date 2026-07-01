@@ -17,13 +17,13 @@
 
 | Document | Version | Status |
 |---|---|---|
-| `docs/GATE2_STAGING_EXECUTION_CHECKLIST.md` | v1.0 | Reviewed |
-| `docs/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md` | v1.1 | Reviewed |
-| `docs/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md` | v1.4 | Reviewed |
-| `docs/GATE2_PHASE1_AUTH_USERS_AND_SMOKE_READY.md` | — | Reviewed |
-| `docs/GATE2_PHASE1_AUTH_INTEGRITY_AUDIT.md` | — | Reviewed |
-| `docs/GATE2_PHASE1_VALID_AUTH_USERS_READY.md` | v1.1 | Reviewed |
-| `docs/GATE2_STAGING_APP_ENV_WIRING.md` | — | Reviewed |
+| `docs/archive/gate2/GATE2_STAGING_EXECUTION_CHECKLIST.md` | v1.0 | Reviewed |
+| `docs/archive/gate2/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md` | v1.1 | Reviewed |
+| `docs/archive/gate2/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md` | v1.4 | Reviewed |
+| `docs/archive/gate2/GATE2_PHASE1_AUTH_USERS_AND_SMOKE_READY.md` | — | Reviewed |
+| `docs/archive/gate2/GATE2_PHASE1_AUTH_INTEGRITY_AUDIT.md` | — | Reviewed |
+| `docs/archive/gate2/GATE2_PHASE1_VALID_AUTH_USERS_READY.md` | v1.1 | Reviewed |
+| `docs/archive/gate2/GATE2_STAGING_APP_ENV_WIRING.md` | — | Reviewed |
 | `tests/unit/gate2-*.test.ts` | 18 files | All PASS |
 | `tests/unit/route-privacy.test.ts` | — | PASS |
 | `tests/unit/tenant-isolation.test.ts` | — | PASS |

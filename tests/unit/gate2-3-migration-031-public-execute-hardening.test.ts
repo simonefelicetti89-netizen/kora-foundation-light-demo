@@ -26,7 +26,7 @@ function src(rel: string): string { return readFileSync(resolve(root, rel), 'utf
 const SQL = src('supabase/migrations/031_revoke_public_execute_uef_definer_functions.sql');
 const RB  = src('supabase/rollback/031_rollback_031_if_needed.sql');
 const RB_README = src('supabase/rollback/README.md');
-const DOC = src('docs/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md');
+const DOC = src('docs/archive/gate2/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md');
 
 // ── 1. Migration 031 SQL file structure ───────────────────────────────────────
 
