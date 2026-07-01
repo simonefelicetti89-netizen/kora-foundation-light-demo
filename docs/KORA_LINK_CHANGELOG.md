@@ -1,8 +1,28 @@
 # KORA Link — Changelog
 
-**Branch:** `feat/kora-link-v1`
+**Branch:** `feat/kora-link-v1-platform` (mergiato in `main` @ `db89f05`, 2026-07-01)
 **Base:** `eaecdad` (`value-freeze-v1`)
-**Non mergiare in main senza Gate 2 + Gate 3 chiusi + CTO review.**
+**Stato:** codice mergiato in `main`. Gate 2 (CTO schema review) e Gate 3 (DPO/legal) restano aperti — nessuna abilitazione reale (DB lookup, activation) è consentita in staging/produzione finché non chiudono.
+
+---
+
+## QA-01 — KORA Link Staging Readiness Audit
+
+**Data:** 2026-07-01
+**Branch:** `qa/kora-link-staging-readiness`
+**Tipo:** Audit — nessuna modifica a codice, nessun fix (nessun bug trovato in questo step).
+
+### Contenuto
+
+Creato `docs/KORA_LINK_STAGING_READINESS_QA.md` — audit di readiness per QA browser/staging post-merge: routes readiness (7 route), env readiness matrix (8 variabili), role QA matrix (4 ruoli), manual NFC test plan (12 step), safety boundary verification, known blockers.
+
+### Risultato
+
+Tutte le verifiche tecniche confermate verdi su `main` post-merge (TypeScript 0 errori, Vitest 8622/8622, build OK, E2E 6/6). QA browser live riuscita per `/company/kora-link` con credenziale reale `company-admin@staging.kora.internal`. QA live bloccata per `/admin/kora-link`, `/admin/kora-link-lab`, `/partner/kora-link` (nessuna credenziale KORA_ADMIN/PARTNER di staging) e `/my-kora/kora-link` (i 3 account worker di staging sono bloccati in stato `onboarding` — pre-esistente, non specifico KORA Link).
+
+### Conclusione
+
+`STAGING_BROWSER_QA_READY: no` (parziale) · `NFC_DEMO_READY: no` (bloccato da credenziali admin) · `DB_LOOKUP_ENABLEMENT_READY: no` · `ACTIVATION_ENABLEMENT_READY: no` · `PRODUCTION_READY: no`.
 
 ---
 
