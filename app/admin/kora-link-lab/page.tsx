@@ -1,5 +1,5 @@
 // app/admin/kora-link-lab/page.tsx
-// KORA Link Lab (KL-20) — internal demo tool for NFC chip lab writing.
+// KORA Link Lab (KL-20, polished in KL-21) — internal demo tool for NFC chip lab writing.
 // Protected by app/admin/layout.tsx (requireKoraAdmin — no new auth system here).
 // No DB. No Supabase. No activation. No worker assignment. Demo only, never persisted.
 
@@ -8,6 +8,10 @@ export const dynamic = 'force-dynamic';
 import {
   getKoraLinkDemoLabRuntimeStatus,
   generateKoraLinkDemoLabLink,
+  getKoraLinkDemoLabSafetyBoundaries,
+  getKoraLinkDemoLabNfcChecklist,
+  getKoraLinkDemoLabExpectedBehavior,
+  type KoraLinkDemoLabRuntimeStatus,
 } from '@/lib/kora-link/demo-lab';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
@@ -41,6 +45,8 @@ export default function KoraLinkLabPage() {
 
       <RuntimeStatusPanel status={status} />
       <LinkPanel result={linkResult} />
+      <NfcChecklistPanel />
+      <ExpectedBehaviorPanel status={status} />
       <SafetyNotice />
     </div>
   );
@@ -73,6 +79,11 @@ function RuntimeStatusPanel({
       label: 'Rate limit provider',
       value: status.rateLimitProvider ?? 'non configurato',
       ok: status.rateLimitProvider !== null,
+    },
+    {
+      label: 'Lab readiness',
+      value: status.publicBaseUrlConfigured ? 'pronto' : 'non pronto',
+      ok: status.publicBaseUrlConfigured,
     },
   ];
 
@@ -144,7 +155,10 @@ function LinkPanel({
       }}
     >
       <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkHint, margin: '0 0 10px' }}>
-        URL demo — copia per la programmazione NFC
+        URL demo generato — copia per la programmazione NFC
+      </p>
+      <p style={{ fontSize: 11, fontWeight: 700, color: C.red, margin: '0 0 10px', lineHeight: 1.5 }}>
+        Demo only — not persisted. Il token non viene salvato: ricarica la pagina per generarne uno nuovo.
       </p>
       <textarea
         readOnly
@@ -164,9 +178,27 @@ function LinkPanel({
           resize: 'none',
         }}
       />
-      <p style={{ fontSize: 11, color: C.inkHint, margin: '8px 0 16px', lineHeight: 1.5 }}>
+      <p style={{ fontSize: 11, color: C.inkHint, margin: '8px 0 12px', lineHeight: 1.5 }}>
         Seleziona il testo e copia (Cmd/Ctrl+C) per scrivere l&apos;URL sul chip NFC.
       </p>
+      <a
+        href={result.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          display: 'inline-block',
+          fontSize: 12.5,
+          fontWeight: 700,
+          color: '#fff',
+          background: C.ink,
+          padding: '8px 14px',
+          borderRadius: 8,
+          textDecoration: 'none',
+          marginBottom: 20,
+        }}
+      >
+        Apri il link generato →
+      </a>
 
       <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkHint, margin: '0 0 10px' }}>
         Token grezzo — solo demo, non persistito
@@ -193,15 +225,64 @@ function LinkPanel({
   );
 }
 
+// ── NFC write checklist ───────────────────────────────────────────────────────
+
+function NfcChecklistPanel() {
+  const steps = getKoraLinkDemoLabNfcChecklist();
+  return (
+    <section
+      style={{
+        border: `1px solid ${C.inkBdr}`,
+        borderRadius: 12,
+        padding: '18px 20px',
+        marginBottom: 20,
+        background: '#fff',
+      }}
+    >
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkHint, margin: '0 0 12px' }}>
+        Checklist scrittura NFC
+      </p>
+      <ol style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: C.inkSec, lineHeight: 1.9 }}>
+        {steps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+// ── Expected behavior ─────────────────────────────────────────────────────────
+
+function ExpectedBehaviorPanel({ status }: { status: KoraLinkDemoLabRuntimeStatus }) {
+  const items = getKoraLinkDemoLabExpectedBehavior(status);
+  return (
+    <section
+      style={{
+        border: `1px solid ${C.inkBdr}`,
+        borderRadius: 12,
+        padding: '18px 20px',
+        marginBottom: 20,
+        background: '#fff',
+      }}
+    >
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkHint, margin: '0 0 12px' }}>
+        Comportamento atteso
+      </p>
+      <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: C.inkSec, lineHeight: 1.9 }}>
+        {items.map((item) => (
+          <li key={item.condition + item.outcome}>
+            <span style={{ fontWeight: 700, color: C.ink }}>{item.condition}</span> — {item.outcome}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 // ── Safety notice ──────────────────────────────────────────────────────────────
 
 function SafetyNotice() {
-  const items = [
-    'Nessun record creato su database',
-    'Nessuna associazione a un worker',
-    'Nessuna activation eseguita',
-    'Solo per laboratorio NFC / demo interna',
-  ];
+  const items = getKoraLinkDemoLabSafetyBoundaries();
   return (
     <section
       style={{
@@ -212,7 +293,7 @@ function SafetyNotice() {
       }}
     >
       <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkHint, margin: '0 0 10px' }}>
-        Stato sicurezza
+        Limiti di sicurezza (Safety boundaries)
       </p>
       <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: C.inkSec, lineHeight: 1.8 }}>
         {items.map((item) => (

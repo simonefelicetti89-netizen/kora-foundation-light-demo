@@ -1,5 +1,5 @@
 // tests/unit/kora-link-demo-lab.test.ts
-// KL-20 — KORA Link Demo Lab helper unit tests.
+// KL-20/KL-21 — KORA Link Demo Lab helper unit tests.
 // No Supabase. No DB. No network. All env injected.
 
 import { describe, it, expect } from 'vitest';
@@ -7,7 +7,11 @@ import {
   getKoraLinkPublicLinkUrl,
   generateKoraLinkDemoLabLink,
   getKoraLinkDemoLabRuntimeStatus,
+  getKoraLinkDemoLabSafetyBoundaries,
+  getKoraLinkDemoLabNfcChecklist,
+  getKoraLinkDemoLabExpectedBehavior,
   type KoraLinkDemoLabLinkResult,
+  type KoraLinkDemoLabRuntimeStatus,
 } from '@/lib/kora-link/demo-lab';
 import { isValidTokenFormat, KORA_LINK_SECRET_MIN_LENGTH } from '@/lib/kora-link/token';
 import type { KoraLinkEnv } from '@/lib/kora-link/config';
@@ -142,6 +146,29 @@ describe('generateKoraLinkDemoLabLink', () => {
     }
   });
 
+  it('marks the generated model as persisted:false — demo/non-persisted by construction', () => {
+    const result = generateKoraLinkDemoLabLink(READY_ENV);
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.persisted).toBe(false);
+    }
+  });
+
+});
+
+// ── 2b. Result model shape (demo-only marker) ─────────────────────────────────
+
+describe('KoraLinkDemoLabLinkResult shape', () => {
+
+  it('ok:true variant always includes token, url and persisted:false', () => {
+    const result = generateKoraLinkDemoLabLink(READY_ENV);
+    if (result.ok) {
+      expect(Object.keys(result).sort()).toEqual(['ok', 'persisted', 'token', 'url'].sort());
+    } else {
+      throw new Error('expected ok:true for READY_ENV fixture');
+    }
+  });
+
 });
 
 // ── 3. getKoraLinkDemoLabRuntimeStatus ────────────────────────────────────────
@@ -226,6 +253,161 @@ describe('getKoraLinkDemoLabRuntimeStatus', () => {
     expect(() => getKoraLinkDemoLabRuntimeStatus({})).not.toThrow();
     expect(() => getKoraLinkDemoLabRuntimeStatus({ KORA_LINK_PUBLIC_BASE_URL: '' })).not.toThrow();
     expect(() => getKoraLinkDemoLabRuntimeStatus({ KORA_LINK_ENABLED: 'garbage' })).not.toThrow();
+  });
+
+});
+
+// ── 4. getKoraLinkDemoLabSafetyBoundaries ─────────────────────────────────────
+
+describe('getKoraLinkDemoLabSafetyBoundaries', () => {
+
+  it('returns a non-empty list of safety boundary statements', () => {
+    const items = getKoraLinkDemoLabSafetyBoundaries();
+    expect(items.length).toBeGreaterThan(0);
+  });
+
+  it('covers no DB write', () => {
+    const items = getKoraLinkDemoLabSafetyBoundaries();
+    expect(items.some((i) => /database/i.test(i))).toBe(true);
+  });
+
+  it('covers no Supabase call', () => {
+    const items = getKoraLinkDemoLabSafetyBoundaries();
+    expect(items.some((i) => /supabase/i.test(i))).toBe(true);
+  });
+
+  it('covers no worker assignment', () => {
+    const items = getKoraLinkDemoLabSafetyBoundaries();
+    expect(items.some((i) => /worker/i.test(i))).toBe(true);
+  });
+
+  it('covers no activation', () => {
+    const items = getKoraLinkDemoLabSafetyBoundaries();
+    expect(items.some((i) => /activation/i.test(i))).toBe(true);
+  });
+
+  it('covers no token persistence', () => {
+    const items = getKoraLinkDemoLabSafetyBoundaries();
+    expect(items.some((i) => /persistenza/i.test(i))).toBe(true);
+  });
+
+  it('covers no KORA Index effect', () => {
+    const items = getKoraLinkDemoLabSafetyBoundaries();
+    expect(items.some((i) => /kora index/i.test(i))).toBe(true);
+  });
+
+  it('never includes a secret value', () => {
+    const serialized = JSON.stringify(getKoraLinkDemoLabSafetyBoundaries());
+    expect(serialized).not.toContain(VALID_SECRET);
+  });
+
+});
+
+// ── 5. getKoraLinkDemoLabNfcChecklist ─────────────────────────────────────────
+
+describe('getKoraLinkDemoLabNfcChecklist', () => {
+
+  it('returns a non-empty ordered list of steps', () => {
+    const steps = getKoraLinkDemoLabNfcChecklist();
+    expect(steps.length).toBeGreaterThan(0);
+  });
+
+  it('mentions copying the generated URL', () => {
+    const steps = getKoraLinkDemoLabNfcChecklist();
+    expect(steps.some((s) => /copia/i.test(s) && /url/i.test(s))).toBe(true);
+  });
+
+  it('mentions writing to the NFC chip', () => {
+    const steps = getKoraLinkDemoLabNfcChecklist();
+    expect(steps.some((s) => /nfc/i.test(s))).toBe(true);
+    expect(steps.some((s) => /scrivi/i.test(s) && /chip/i.test(s))).toBe(true);
+  });
+
+  it('mentions verifying the /link/[token] route opens', () => {
+    const steps = getKoraLinkDemoLabNfcChecklist();
+    expect(steps.some((s) => s.includes('/link/[token]'))).toBe(true);
+  });
+
+  it('mentions the flags to check when the route is unavailable', () => {
+    const steps = getKoraLinkDemoLabNfcChecklist();
+    expect(steps.some((s) => /KORA_LINK_ENABLED/.test(s) && /KORA_LINK_PUBLIC_BASE_URL/.test(s))).toBe(true);
+  });
+
+  it('is stable across calls (pure content, not randomly generated)', () => {
+    expect(getKoraLinkDemoLabNfcChecklist()).toEqual(getKoraLinkDemoLabNfcChecklist());
+  });
+
+});
+
+// ── 6. getKoraLinkDemoLabExpectedBehavior ─────────────────────────────────────
+
+describe('getKoraLinkDemoLabExpectedBehavior', () => {
+
+  const disabledStatus: KoraLinkDemoLabRuntimeStatus = {
+    koraLinkEnabled: false,
+    publicBaseUrlConfigured: true,
+    dbLookupEnabled: false,
+    rateLimitProvider: null,
+  };
+
+  const lookupOffStatus: KoraLinkDemoLabRuntimeStatus = {
+    koraLinkEnabled: true,
+    publicBaseUrlConfigured: true,
+    dbLookupEnabled: false,
+    rateLimitProvider: 'upstash',
+  };
+
+  const lookupOnStatus: KoraLinkDemoLabRuntimeStatus = {
+    koraLinkEnabled: true,
+    publicBaseUrlConfigured: true,
+    dbLookupEnabled: true,
+    rateLimitProvider: 'upstash',
+  };
+
+  it('describes the hidden/safe state when KORA_LINK_ENABLED is false', () => {
+    const items = getKoraLinkDemoLabExpectedBehavior(disabledStatus);
+    expect(items[0].condition).toContain('KORA_LINK_ENABLED=false');
+    expect(items[0].outcome).toMatch(/nascosta|404/i);
+  });
+
+  it('describes the skeleton/safe state when lookup is off', () => {
+    const items = getKoraLinkDemoLabExpectedBehavior(lookupOffStatus);
+    expect(items[0].outcome).toMatch(/skeleton/i);
+  });
+
+  it('describes the RPC lookup + unavailable fallback state when lookup is on', () => {
+    const items = getKoraLinkDemoLabExpectedBehavior(lookupOnStatus);
+    expect(items[0].outcome).toMatch(/unavailable/i);
+  });
+
+  it('differentiates the three states (lookup off vs on vs disabled produce different first entries)', () => {
+    const off = getKoraLinkDemoLabExpectedBehavior(lookupOffStatus)[0];
+    const on = getKoraLinkDemoLabExpectedBehavior(lookupOnStatus)[0];
+    const disabled = getKoraLinkDemoLabExpectedBehavior(disabledStatus)[0];
+    expect(off.outcome).not.toBe(on.outcome);
+    expect(off.outcome).not.toBe(disabled.outcome);
+    expect(on.outcome).not.toBe(disabled.outcome);
+  });
+
+  it('always includes a statement that no worker is activated', () => {
+    const items = getKoraLinkDemoLabExpectedBehavior(lookupOnStatus);
+    expect(items.some((i) => /worker/i.test(i.outcome) && /attivat/i.test(i.outcome))).toBe(true);
+  });
+
+  it('always includes a statement that no data is saved by the Lab', () => {
+    const items = getKoraLinkDemoLabExpectedBehavior(lookupOnStatus);
+    expect(items.some((i) => /salvato/i.test(i.outcome))).toBe(true);
+  });
+
+  it('always includes a statement that no DB record is created by the Lab', () => {
+    const items = getKoraLinkDemoLabExpectedBehavior(lookupOnStatus);
+    expect(items.some((i) => /record DB/i.test(i.outcome))).toBe(true);
+  });
+
+  it('never throws regardless of the status combination', () => {
+    expect(() => getKoraLinkDemoLabExpectedBehavior(disabledStatus)).not.toThrow();
+    expect(() => getKoraLinkDemoLabExpectedBehavior(lookupOffStatus)).not.toThrow();
+    expect(() => getKoraLinkDemoLabExpectedBehavior(lookupOnStatus)).not.toThrow();
   });
 
 });

@@ -71,14 +71,14 @@ export function getKoraLinkPublicLinkUrl(token: string, env: KoraLinkEnv = proce
 // ── Demo lab token generation ─────────────────────────────────────────────────
 
 export type KoraLinkDemoLabLinkResult =
-  | { ok: true; token: string; url: string }
+  | { ok: true; token: string; url: string; persisted: false }
   | { ok: false; reason: 'base_url_not_configured' };
 
 /**
  * Generates an ephemeral demo token + public URL for NFC chip lab writing.
  * DEMO ONLY — never persisted. No DB record, no worker assignment, no activation.
- * The caller is responsible for discarding the value after copying it — this
- * function never writes it anywhere.
+ * `persisted: false` is a literal marker, not a live check — this function
+ * never writes anywhere, so the value is always false by construction.
  */
 export function generateKoraLinkDemoLabLink(
   env: KoraLinkEnv = process.env
@@ -86,8 +86,89 @@ export function generateKoraLinkDemoLabLink(
   const token = generateToken();
   try {
     const url = getKoraLinkPublicLinkUrl(token, env);
-    return { ok: true, token, url };
+    return { ok: true, token, url, persisted: false };
   } catch {
     return { ok: false, reason: 'base_url_not_configured' };
   }
+}
+
+// ── Safety boundaries ─────────────────────────────────────────────────────────
+
+/**
+ * Fixed list of safety guarantees shown on the Lab page.
+ * Kept as data (not hardcoded JSX strings) so it can be unit-tested directly.
+ */
+export const KORA_LINK_DEMO_LAB_SAFETY_BOUNDARIES: readonly string[] = [
+  'Nessuna scrittura su database',
+  'Nessuna chiamata a Supabase',
+  'Nessuna associazione a un worker',
+  'Nessuna activation',
+  'Nessuna persistenza del token',
+  'Nessun effetto sul KORA Index',
+];
+
+export function getKoraLinkDemoLabSafetyBoundaries(): readonly string[] {
+  return KORA_LINK_DEMO_LAB_SAFETY_BOUNDARIES;
+}
+
+// ── NFC write checklist ───────────────────────────────────────────────────────
+
+/**
+ * Ordered operational steps for writing the generated URL to a physical NFC
+ * chip and testing it. Pure content — no chip I/O happens in this module.
+ */
+export const KORA_LINK_DEMO_LAB_NFC_CHECKLIST: readonly string[] = [
+  "Copia l'URL generato qui sopra",
+  "Apri un'app di scrittura NFC esterna sul telefono (es. NFC Tools)",
+  "Scrivi un record URL/URI sul chip usando l'URL copiato",
+  'Avvicina il telefono al chip per testare la lettura',
+  'Verifica che si apra la route /link/[token] nel browser',
+  'Se la route mostra "unavailable" o non trovata, verifica KORA_LINK_ENABLED e KORA_LINK_PUBLIC_BASE_URL nel pannello Stato runtime',
+];
+
+export function getKoraLinkDemoLabNfcChecklist(): readonly string[] {
+  return KORA_LINK_DEMO_LAB_NFC_CHECKLIST;
+}
+
+// ── Expected behavior ──────────────────────────────────────────────────────────
+
+export type KoraLinkDemoLabExpectedBehaviorItem = {
+  condition: string;
+  outcome: string;
+};
+
+/**
+ * Explains what the public /link/[token] route will actually do given the
+ * current feature-flag combination — differentiates lookup off vs on so the
+ * person testing NFC in the field knows what result to expect.
+ */
+export function getKoraLinkDemoLabExpectedBehavior(
+  status: KoraLinkDemoLabRuntimeStatus
+): KoraLinkDemoLabExpectedBehaviorItem[] {
+  const items: KoraLinkDemoLabExpectedBehaviorItem[] = [];
+
+  if (!status.koraLinkEnabled) {
+    items.push({
+      condition: 'KORA_LINK_ENABLED=false',
+      outcome: 'La route /link/[token] resta nascosta (risposta 404 safe) — nessun dato esposto.',
+    });
+  } else if (!status.dbLookupEnabled) {
+    items.push({
+      condition: 'KORA_LINK_ENABLED=true · KORA_LINK_DB_LOOKUP_ENABLED=false',
+      outcome: 'La route mostra lo stato skeleton (safe) — nessun accesso al database.',
+    });
+  } else {
+    items.push({
+      condition: 'KORA_LINK_ENABLED=true · KORA_LINK_DB_LOOKUP_ENABLED=true',
+      outcome: 'La route esegue il lookup RPC; se la RPC non è disponibile mostra "unavailable" (fallback safe), mai un errore.',
+    });
+  }
+
+  items.push(
+    { condition: 'In ogni caso', outcome: 'Nessun worker viene attivato.' },
+    { condition: 'In ogni caso', outcome: 'Nessun dato viene salvato dal Lab.' },
+    { condition: 'In ogni caso', outcome: 'Nessun record DB viene creato dal Lab.' }
+  );
+
+  return items;
 }

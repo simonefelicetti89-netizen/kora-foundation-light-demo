@@ -6,6 +6,88 @@
 
 ---
 
+## KL-21 — KORA Link Lab Usability Polish for NFC Physical Testing
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Codice TypeScript runtime + test unit — nessuna migration, nessun SQL applicato, nessuna modifica a 034/035/036, nessuna nuova dipendenza.
+
+### Contenuto
+
+Ampliato `lib/kora-link/demo-lab.ts` (KL-20) con contenuto strutturato e testabile per la pagina Lab:
+`persisted: false` esplicito sul risultato di generazione, lista safety boundaries, checklist NFC, e logica "comportamento atteso" differenziata per stato dei feature flag.
+Aggiornato `app/admin/kora-link-lab/page.tsx` — aggiunte le sezioni "Checklist scrittura NFC" e "Comportamento atteso", link cliccabile "Apri il link generato →", riga "Lab readiness" nel pannello stato runtime, nota esplicita "Demo only — not persisted".
+Aggiornato `tests/unit/kora-link-demo-lab.test.ts` — 55 test (+24 rispetto a KL-20).
+
+### Funzioni aggiunte (`lib/kora-link/demo-lab.ts`)
+
+| Export | Tipo | Scopo |
+|--------|------|-------|
+| `getKoraLinkDemoLabSafetyBoundaries()` | fn | Ritorna 6 affermazioni di sicurezza fisse: no DB write, no Supabase call, no worker assignment, no activation, no token persistence, no KORA Index effect |
+| `getKoraLinkDemoLabNfcChecklist()` | fn | Ritorna la checklist operativa ordinata per scrivere l'URL su un chip NFC e verificarne la lettura |
+| `getKoraLinkDemoLabExpectedBehavior(status)` | fn | Ritorna la spiegazione del comportamento della route pubblica in base a `KORA_LINK_ENABLED` e `KORA_LINK_DB_LOOKUP_ENABLED` — differenzia esplicitamente i 3 stati: flag off (hidden/404 safe) · flag on + lookup off (skeleton safe) · flag on + lookup on (RPC + fallback unavailable safe) |
+
+### Modifica al tipo esistente
+
+`KoraLinkDemoLabLinkResult` — variante `ok: true` ora include `persisted: false` come marcatore letterale (non un controllo live: la funzione non scrive mai da nessuna parte, quindi il valore è sempre `false` per costruzione).
+
+### Sezioni pagina `/admin/kora-link-lab` (KL-21)
+
+| Sezione | Contenuto |
+|---------|-----------|
+| Stato runtime | + riga "Lab readiness" (pronto/non pronto, derivata da base URL configurato) |
+| URL demo generato | + nota "Demo only — not persisted" + pulsante "Apri il link generato →" (`<a target="_blank">`, nessun client component) |
+| Checklist scrittura NFC | Nuova — 6 step operativi da `getKoraLinkDemoLabNfcChecklist()` |
+| Comportamento atteso | Nuova — condizioni/esiti da `getKoraLinkDemoLabExpectedBehavior(status)` |
+| Limiti di sicurezza (Safety boundaries) | Rinominata da "Stato sicurezza"; contenuto ora da `getKoraLinkDemoLabSafetyBoundaries()` (6 voci) |
+
+### Sicurezza / invarianti (invariate da KL-20, riconfermate)
+
+- Nessun token salvato — generato in memoria ad ogni request, scartato al reload
+- Nessun DB, nessuna chiamata Supabase, nessun service role
+- Nessuna activation, nessun worker assignment, nessun Impact Unit, nessuno scoring, nessun partner scan
+- Nessun secret (`KORA_LINK_TOKEN_SECRET`) letto, calcolato o stampato nella UI
+- Pagina protetta esclusivamente da `requireKoraAdmin()` — nessun nuovo guard/auth introdotto
+- Nessuna modifica a `034_kora_link_schema.sql` / `035_kora_link_rls.sql` / `036_kora_link_rpc_functions.sql`
+- Nessuna migration creata, nessun SQL applicato, nessuna modifica a file `.env`
+- Nessuna nuova dipendenza, nessuna libreria QR
+
+### Controlli statici
+
+- `grep Supabase` in `demo-lab.ts` + `page.tsx`: solo in commenti/copy che ne dichiarano l'assenza ("No Supabase", "Nessuna chiamata a Supabase") — nessun import/uso reale ✅
+- `grep service_role`: 0 ✅
+- `grep KORA_LINK_TOKEN_SECRET` nella UI: 0 ✅
+- `grep console.log`: 0 ✅
+- 034/035/036 modificati: no ✅
+- Migration nuove: 0 ✅
+- `package.json` / `package-lock.json` modificati: no ✅
+- File `.env` modificati: no ✅
+
+### Metriche
+
+- File modificati: 3 (`lib/kora-link/demo-lab.ts`, `app/admin/kora-link-lab/page.tsx`, `tests/unit/kora-link-demo-lab.test.ts`) + `docs/KORA_LINK_CHANGELOG.md`
+- File creati: 0
+- Dipendenze aggiunte: 0
+- SQL applicato: 0 · Migration create: 0 · 034/035/036 modificati: no
+- TypeScript: 0 errori
+- ESLint: 0 errori, 0 warning
+- Vitest: 8459/8459 passed (200 file, +24 rispetto a KL-20)
+- Build: OK — `/admin/kora-link-lab` presente come route dynamic
+- E2E: 6/6 passed
+
+### Gate status post-KL-21
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (CTO schema review) | 🔴 OPEN — 034 + 035 + 036 pronti per review formale |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| KL-20 | ✅ COMPLETATO |
+| KL-21 (Lab usability polish) | ✅ COMPLETATO — strumento interno admin, nessun impatto su Gate 2/3 |
+| KL-22+ | Worker activation flow · staging deploy — bloccati da Gate 2+3 |
+
+---
+
 ## KL-20 — KORA Link Demo Lab (NFC URL Generation)
 
 **Data:** 2026-07-01  
