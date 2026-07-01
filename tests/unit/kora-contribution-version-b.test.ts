@@ -34,7 +34,7 @@ const PAGE           = 'app/company/contribution/page.tsx';
 const CONFIG_TS      = 'lib/methodology-config/v0.1.ts';
 const CONFIG_JSON    = 'data/methodology/methodology-config.json';
 const METHODOLOGY_DOC = 'docs/KORA_CONTRIBUTION_METHODOLOGY.md';
-const AUDIT_DOC      = 'KORA_Contribution_Audit.md';
+const AUDIT_DOC      = 'docs/archive/contribution-source-layer/KORA_Contribution_Audit.md';
 
 // ── Section 1: Version B model exists (1–3) ───────────────────────────────────
 

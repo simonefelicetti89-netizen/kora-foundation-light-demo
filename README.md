@@ -298,7 +298,7 @@ Da Studio puoi ispezionare le tabelle, eseguire SQL, e verificare gli utenti Aut
 
 ## Handoff reference
 
-**Start here:** `HANDOFF_NEXT.md` (root) — current platform state, migration status, privacy architecture, technical debt, what to touch and what not to.
+**Start here:** `docs/archive/handoffs/HANDOFF_NEXT.md` — historical platform state snapshot (2026-06-18), migration status, privacy architecture, technical debt at that point in time. Archived docs may not reflect current runtime state — see `docs/README.md`.
 
 Additional canonical documents:
 - `CLAUDE.md` — operating constitution for this codebase (read before any code change)
