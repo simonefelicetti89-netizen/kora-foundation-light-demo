@@ -6,6 +6,84 @@
 
 ---
 
+## KL-18 — Draft KORA Link RPC Functions 036
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** SQL proposed + Documentazione — nessuna migration applicata, nessun codice runtime modificato.
+
+### Contenuto
+
+Creato `supabase/proposed/036_kora_link_rpc_functions.sql` — draft delle funzioni SECURITY DEFINER per KORA Link v1. Stato: `PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING`. Non applicato ad alcun database. Dipende da 034 + 035.
+
+**Funzioni definite:**
+
+| Funzione | Tipo | Caller | Ruolo |
+|----------|------|--------|-------|
+| `fn_is_valid_token_digest(text)` | helper IMMUTABLE INVOKER | interno | — |
+| `fn_public_lookup_link(text)` | SECURITY DEFINER | route /link/[token] | anon/authenticated |
+| `fn_activate_link_for_worker(text,uuid,text)` | SECURITY DEFINER | activation API route | authenticated |
+| `fn_revoke_link(uuid,text)` | SECURITY DEFINER | admin API route | authenticated (KORA_ADMIN) |
+| `fn_replace_link(uuid,uuid,text)` | SECURITY DEFINER | admin API route | authenticated (KORA_ADMIN) |
+| `fn_company_link_status_aggregate(uuid)` | SECURITY DEFINER | company dashboard | authenticated (COMPANY_ADMIN/KORA_ADMIN) |
+
+**Scelte di design chiave:**
+
+- `fn_public_lookup_link`: risposta uniforme per "not found" e "unusable" (anti-enumeration); chip active → `ready` (quick access flow); ogni exception → `unavailable/service_unavailable`; no link_id, no worker_id, no tenant_id nel return
+- `fn_activate_link_for_worker`: `FOR UPDATE NOWAIT` per lock anti-race; `ON CONFLICT DO UPDATE` su consent record; `uq_assignment_link_active` come seconda linea difesa; atomic: consent + assignment + link status + event in unica transazione
+- `fn_revoke_link` / `fn_replace_link`: KORA_ADMIN role check interno; append-only su revocations/link_replacements/link_events; solo UPDATE su campi status
+- `fn_replace_link`: usa `link_replacements` come unica fonte catena sostituzione (A-08/D-08); nessun `replaced_by_link_id` su links
+- `fn_company_link_status_aggregate`: tenant validation vs JWT; TTL-aware reclassification dei chip scaduti; restituisce solo (status, count)
+- `REVOKE ALL FROM PUBLIC` + GRANT selettivo per ogni funzione
+- `search_path` esplicito su tutte le funzioni SECURITY DEFINER
+
+**4 TODO aperti (CTO/DPO):**
+
+- `TODO-RPC-01`: GRANT a `anon` per public lookup o service_role-only?
+- `TODO-RPC-02`: cross-schema validation worker_id → personal.worker_identity
+- `TODO-RPC-03`: DPO approval testo notice `kora-link-privacy-v1.0`
+- `TODO-RPC-04`: privacy threshold su aggregate count?
+
+**Nuovo documento:** `docs/KORA_LINK_036_RPC_FUNCTIONS_NOTES.md`
+
+### Controlli statici
+
+- `grep token_value 036`: 0 ✅
+- `grep raw_token/clear_token/token_plaintext 036`: 0 ✅
+- `grep partner_scans 036`: 0 ✅
+- `grep public_lookup_attempts 036`: 0 ✅
+- `grep SECURITY DEFINER 036` (non-comment): 5 funzioni previste ✅
+- `grep search_path 036`: presente in 5 funzioni SECURITY DEFINER ✅
+- `grep "USING (true)"`: 0 ✅
+- `grep "WITH CHECK (true)"`: 0 ✅
+- `grep DROP TABLE`: 0 ✅
+- `grep CREATE TABLE`: 0 ✅
+- `grep CREATE POLICY`: 0 ✅
+- `grep ALTER TABLE` (non-comment): 0 ✅
+- 034 modificato: no ✅
+- 035 modificato: no ✅
+
+### Metriche
+
+- File creati: 2 (`supabase/proposed/036_kora_link_rpc_functions.sql`, `docs/KORA_LINK_036_RPC_FUNCTIONS_NOTES.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- SQL applicato: 0 · Migration create: 0 · Codice runtime modificato: 0
+- 034 modificato: no · 035 modificato: no
+
+### Gate status post-KL-18
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (CTO schema review) | 🔴 OPEN — 034 + 035 + 036 pronti per review formale |
+| Gate 3 (DPO/legal) | 🔴 OPEN — consent model e notice text richiedono approvazione |
+| Gate 4 (RLS 035) | ✅ Draft completato (KL-17) |
+| Gate 5 (RPC 036) | ✅ Draft completato (KL-18) |
+| KL-18 | ✅ COMPLETATO |
+| KL-19 (route runtime) | 🔴 BLOCKED — attende Gate 2+3 + staging deploy |
+
+---
+
 ## KL-17 — Draft KORA Link RLS 035
 
 **Data:** 2026-07-01  
