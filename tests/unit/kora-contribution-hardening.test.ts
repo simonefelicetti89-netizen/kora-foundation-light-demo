@@ -560,13 +560,13 @@ describe('hardening — 18. Gate 3 remains open', () => {
   });
 
   it('KORA_Contribution_Audit.md resolution section exists', () => {
-    const doc = read('KORA_Contribution_Audit.md');
+    const doc = read('docs/archive/contribution-source-layer/KORA_Contribution_Audit.md');
     expect(doc).toMatch(/resolution|Resolution/i);
   });
 
   it('KORA_Contribution_IU_Source_Audit.md exists with required sections', () => {
-    expect(exists('KORA_Contribution_IU_Source_Audit.md')).toBe(true);
-    const doc = read('KORA_Contribution_IU_Source_Audit.md');
+    expect(exists('docs/archive/contribution-source-layer/KORA_Contribution_IU_Source_Audit.md')).toBe(true);
+    const doc = read('docs/archive/contribution-source-layer/KORA_Contribution_IU_Source_Audit.md');
     expect(doc).toContain('## 4. Current IU Eligibility Logic');
     expect(doc).toContain('## 6. Version B Readiness Assessment');
     expect(doc).toContain('## 8. Privacy Boundary Review');
@@ -576,8 +576,8 @@ describe('hardening — 18. Gate 3 remains open', () => {
   });
 
   it('KORA_Space_Contribution_Source_Integration_Audit.md exists with required sections', () => {
-    expect(exists('KORA_Space_Contribution_Source_Integration_Audit.md')).toBe(true);
-    const doc = read('KORA_Space_Contribution_Source_Integration_Audit.md');
+    expect(exists('docs/archive/kora-space/KORA_Space_Contribution_Source_Integration_Audit.md')).toBe(true);
+    const doc = read('docs/archive/kora-space/KORA_Space_Contribution_Source_Integration_Audit.md');
     expect(doc).toContain('## 4. Current Signal Flow');
     expect(doc).toContain('## 5. KORA Space Signals → V2 Component Coverage');
     expect(doc).toContain('## 6. Privacy Boundary Audit');
@@ -590,8 +590,8 @@ describe('hardening — 18. Gate 3 remains open', () => {
   });
 
   it('KORA_Space_Contribution_Source_PrePilot_Plan.md exists with required sections', () => {
-    expect(exists('KORA_Space_Contribution_Source_PrePilot_Plan.md')).toBe(true);
-    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    expect(exists('docs/archive/kora-space/KORA_Space_Contribution_Source_PrePilot_Plan.md')).toBe(true);
+    const doc = read('docs/archive/kora-space/KORA_Space_Contribution_Source_PrePilot_Plan.md');
     expect(doc).toContain('## 1. Migration 025 Review');
     expect(doc).toContain('## 2. Proposed Migration 026 Review');
     expect(doc).toContain('adoption/sponsorship');
@@ -873,7 +873,7 @@ describe('hardening — 19. Migration 025 revision sprint (M025-1 through M025-6
 
   // Pre-pilot plan doc updated with revision status
   it('pre-pilot plan doc includes migration 025 revision status section', () => {
-    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    const doc = read('docs/archive/kora-space/KORA_Space_Contribution_Source_PrePilot_Plan.md');
     expect(doc).toContain('Migration 025 Revision Status');
     expect(doc).toContain('READY_FOR_REVIEW');
     expect(doc).toContain('M025-1');
@@ -1208,7 +1208,7 @@ describe('hardening — 20. Migration 033 initiative adoption source model', () 
 
   // Pre-pilot plan updated
   it('pre-pilot plan includes migration 033 section', () => {
-    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    const doc = read('docs/archive/kora-space/KORA_Space_Contribution_Source_PrePilot_Plan.md');
     expect(doc).toContain('Migration 033 Initiative Adoption Source Model');
     expect(doc).toContain('initiative_adoption');
     expect(doc).toContain('adoption_type');
@@ -1465,7 +1465,7 @@ describe('hardening — 21. Contribution event idempotency / reporting period (M
   // ── Pre-pilot plan documentation ───────────────────────────────────────────
 
   it('pre-pilot plan documents idempotency review sprint', () => {
-    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    const doc = read('docs/archive/kora-space/KORA_Space_Contribution_Source_PrePilot_Plan.md');
     expect(doc).toContain('Contribution Event Idempotency / Reporting Period Review');
     expect(doc).toContain('M025-7');
     expect(doc).toContain('uq_contribution_external');
@@ -1474,7 +1474,7 @@ describe('hardening — 21. Contribution event idempotency / reporting period (M
   });
 
   it('pre-pilot plan documents that multi-period is unblocked', () => {
-    const doc = read('KORA_Space_Contribution_Source_PrePilot_Plan.md');
+    const doc = read('docs/archive/kora-space/KORA_Space_Contribution_Source_PrePilot_Plan.md');
     expect(doc).toContain('Two distinct rows — different `reporting_period`');
   });
 
@@ -1515,7 +1515,7 @@ describe('hardening — 21. Contribution event idempotency / reporting period (M
 // ── 22. Handoff snapshot document integrity ───────────────────────────────────
 
 describe('hardening — 22. Handoff snapshot document integrity', () => {
-  const HANDOFF = 'HANDOFF_KORA_CONTRIBUTION_SOURCE_LAYER.md';
+  const HANDOFF = 'docs/archive/contribution-source-layer/HANDOFF_KORA_CONTRIBUTION_SOURCE_LAYER.md';
 
   it('handoff document exists', () => {
     expect(exists(HANDOFF)).toBe(true);
@@ -1591,7 +1591,7 @@ describe('hardening — 22. Handoff snapshot document integrity', () => {
 // ── 23. CTO review document integrity ────────────────────────────────────────
 
 describe('hardening — 23. CTO review document integrity', () => {
-  const CTO_REVIEW = 'CTO_REVIEW_KORA_CONTRIBUTION_SOURCE_LAYER.md';
+  const CTO_REVIEW = 'docs/archive/contribution-source-layer/CTO_REVIEW_KORA_CONTRIBUTION_SOURCE_LAYER.md';
 
   it('CTO review document exists', () => {
     expect(exists(CTO_REVIEW)).toBe(true);
