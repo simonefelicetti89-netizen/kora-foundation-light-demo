@@ -6,6 +6,53 @@
 
 ---
 
+## KL-14 — 034 Amendment Plan
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Documentazione — nessun SQL modificato, nessuna migration, nessun codice runtime.
+
+### Contenuto
+
+Creato `docs/KORA_LINK_034_AMENDMENT_PLAN.md` — piano pre-redline per le modifiche a 034. 19 sezioni, 12 amendment (A-01→A-12):
+
+- **A-01** — FK policy: mantenere UUID senza FK; commenti con target canonici; coerente con 033
+- **A-02** — PG compat: evitare `UNIQUE NULLS NOT DISTINCT` se PG<15; partial index equivalente
+- **A-03** — `partner_scans`/`scan_date`: rimuovere GENERATED ALWAYS AS o spostare in 036
+- **A-04** — TTL: mantenere `pre_activation_expires_at`; enforcement app-layer; no pg_cron in 034
+- **A-05** — `audit_log`: mantenere; aggiungere commento retention DPO-external
+- **A-06** — Rimuovere `public_lookup_attempts` da v1 (nessun consumer; Upstash sufficiente)
+- **A-07** — Secret: no `key_version` in v1; commento stable-secret policy
+- **A-08** — Self-FK deferred: rimuovere `replaced_by_link_id` + constraint; catena via `link_replacements`
+- **A-09** — Rimuovere `idx_links_token_digest` (ridondante con UNIQUE constraint)
+- **A-10** — `link_delivery_records`: valutare deferral a 036
+- **A-11** — `link_consents`: chiarire design append-only vs mutable (impatta RLS-035-E)
+- **A-12** — Defer `partner_scans` a migration 036 con Track A (elimina TODO-CTO-02, 03, FK-034-7)
+
+**Proposed v1 table set:** Core 8 (link_batches, links, link_assignments, link_consents, link_events, revocations, link_replacements, audit_log) · Review/defer 2 (link_delivery_records, partner_scans) · Remove 1 (public_lookup_attempts)
+
+### Metriche
+
+- File creati: 1 (`docs/KORA_LINK_034_AMENDMENT_PLAN.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- SQL 034 modificato: 0
+- Codice runtime modificato: 0
+- Migrations create: 0
+- TypeScript: 0 errori · Vitest: invariato · Build: invariato
+
+### Gate status post-KL-14
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (Schema 034) | 🔴 OPEN — amendment plan pronto (KL-14); CTO compila Sezione 18 |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| Gate 4 (RLS 035) | 🔴 BLOCKED — attende A-01, A-11, A-12, D-07 + 034 stabilizzata |
+| KL-14 Amendment Plan | ✅ COMPLETATO |
+| KL-15 | Raccomandato: applicare amendments approvati a proposed/034 + iniziare 035 draft |
+
+---
+
 ## KL-13 — 034 CTO Decision Pack
 
 **Data:** 2026-07-01  
