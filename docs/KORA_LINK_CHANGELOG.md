@@ -6,6 +6,108 @@
 
 ---
 
+## KL-23 — KORA Link Ecosystem Control Layer
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Codice TypeScript runtime + UI + test unit — nessuna migration, nessun SQL applicato, nessuna modifica a 034/035/036, nessuna nuova dipendenza.
+
+### Obiettivo
+
+Trasformare KORA Link da feature isolata a layer trasversale dell'ecosistema KORA: modello concettuale condiviso (ruoli, capability, gate, confini privacy, lifecycle, mapping algoritmo futuro) + superfici UI coerenti in Admin, Worker, Company e Partner.
+
+### Contenuto
+
+Creato `lib/kora-link/ecosystem.ts` — single source of truth server-safe (pure data + pure funzioni, nessun Supabase, nessun DB):
+
+- **6 ruoli**: `admin · worker · company · partner · space · algorithm`
+- **9 gate** (`KORA_LINK_GATES` + `KORA_LINK_GATE_STATUS`) — Gate 1 chiuso, Gate 2-9 aperti, coerente con CLAUDE.md §9
+- **13 capability** (`KORA_LINK_CAPABILITIES`) classificate in 4 livelli di implementazione: `always_on` (token_generation, nfc_url_generation) · `flag_gated` (public_route, db_lookup, worker_activation, consent_capture) · `drafted_pending_gate` (revocation, replacement, company_aggregate_visibility — draft SQL in 036, zero codice runtime) · `roadmap` (partner_verified_scan, space_initiative_linking, impact_unit_mapping, confidence_score_support — nessun draft)
+- **6 stati capability** (`available · configured · locked · requires_gate · planned · disabled`) derivati da un'unica funzione pura `getKoraLinkCapabilityState()` — mai impostati a mano per pagina
+- **6 confini privacy** (`KORA_LINK_PRIVACY_BOUNDARIES`) — company mai worker-level, partner mai dati non necessari, worker controlla sempre consenso/attivazione, admin gestisce infrastruttura non scoring, algoritmo consuma solo eventi eleggibili, nessuna persistenza token grezzo
+- **7 stage lifecycle** (`KORA_LINK_LIFECYCLE`) — batch generation → NFC preparation → delivery → activation → revocation → replacement → audit, ciascuno con stato derivato
+- **7 eventi futuri** (`KORA_LINK_EVENT_MAPPING`) — tassonomia algoritmo: `link_generated · link_delivered · link_activated · link_revoked · link_replaced · verified_partner_event_future · space_initiative_participation_future`, ciascuno mappato a role source, privacy level, eleggibilità IU, effetto KORA Index, effetto Confidence, gate richiesto — **eleggibilità IU e effetto KORA Index/Confidence non sono mai `'yes'`, solo `'no'` o `'future'`**
+
+Creati 4 componenti condivisi in `components/kora-link/` (presentazionali puri, server-renderable, nessun fetch):
+
+| Componente | Scopo |
+|---|---|
+| `KoraLinkCapabilityCard` | Una capability con badge di stato colorato (6 stati → 6 stili) |
+| `KoraLinkBoundaryCard` | Lista dei confini privacy per un ruolo |
+| `KoraLinkReadinessPanel` | Scala dei 9 gate con stato open/closed |
+| `KoraLinkRoleDashboard` | Compone i tre sopra per un `KoraLinkRoleSummary` — shell riusata da tutte e 4 le pagine ruolo |
+
+Creata **4 pagine ruolo**, ciascuna protetta dal layout esistente del proprio route group (nessun nuovo sistema auth):
+
+| Pagina | Layout guard | Contenuto |
+|---|---|---|
+| `/admin/kora-link` | `app/admin/layout.tsx` (`requireKoraAdmin`) | Control Tower: link al Lab, runtime readiness, feature flag, lifecycle overview, capability matrix 13×6 ruoli, capacità admin, gate status, confini privacy dell'intero ecosistema, prossime azioni operative (gate ancora aperti) |
+| `/my-kora/kora-link` | `app/my-kora/layout.tsx` (worker/admin-preview/demo) | "My KORA Link": stato attivazione, cosa può fare il worker, spiegazione consenso (versione provvisoria), come attivare (scan chip), cosa l'azienda non vede, esperienze verificate future |
+| `/company/kora-link` | `app/company/layout.tsx` (`requireCompanyUser`) | Governance aggregata: rollout readiness, 4 metric card (coverage/activation/replacement/revocation aggregate — stato derivato, **nessun numero finto**), banner esplicito "nessuna visibilità individuale", capacità company, gate, confini privacy |
+| `/partner/kora-link` | `app/partner/layout.tsx` (`requirePartnerUser`) | Verified event infrastructure: scan readiness (roadmap), requisito di accreditamento, interazione privacy-safe, capacità partner, gate, confini privacy |
+
+Aggiunta voce **KORA Link** alla navigazione esistente (nessuna struttura nuova):
+- `lib/navigation/admin-nav-groups.ts` — gruppo `operations` → `/admin/kora-link`
+- `components/layout/Sidebar.tsx` — gruppo Company "Network" → `/company/kora-link`; gruppo Worker "Attivazione" → `/my-kora/kora-link`; gruppo Partner "Portale Partner" → `/partner/kora-link`
+
+Creato `tests/unit/kora-link-ecosystem.test.ts` — 98 test.
+
+### KORA Space integration — deferred
+
+`app/commons/page.tsx` (KORA Space/Commons) è un client component esistente di grandi dimensioni con un proprio service layer (`CommonsService`). Come previsto dalla regola "se non è semplice, implementa mapping in ecosystem.ts e segnala UI deferred": il modello concettuale è completo in `ecosystem.ts` (ruolo `space`, capability `space_initiative_linking`, evento `space_initiative_participation_future`), ma **nessuna modifica UI è stata fatta a `/commons`, `/company/commons`, `/worker/commons`** in questo step — deferred a un KL futuro per non introdurre rischio di regressione su una superficie già esistente e non richiesta come modifica obbligatoria.
+
+### Partner integration — non deferred
+
+Il routing partner esisteva già (`app/partner/layout.tsx` con `requirePartnerUser`) — la pagina `/partner/kora-link` è stata quindi implementata direttamente (non deferred), con contenuto esplicitamente "roadmap/Track A futuro" dato che nessuno scan partner è implementato oggi.
+
+### Sicurezza / invarianti
+
+- Nessun uso di Supabase o DB in `ecosystem.ts` o nei nuovi componenti — solo lettura env (`process.env`) tramite le funzioni già esistenti di `config.ts`
+- Nessun service role
+- Nessun dato worker-level esposto alla company — la company vede solo `company_aggregate_visibility`, mai `worker_activation`/`consent_capture`; il testo esplicito della pagina company dichiara cosa non sarà mai mostrato
+- Nessun dato personale esposto al partner — pagina partner descrive solo modello futuro, nessun dato reale
+- Nessun token grezzo, nessun digest, nessun `worker_id` nei modelli dati (`KORA_LINK_CAPABILITIES`, `KORA_LINK_LIFECYCLE`, `KORA_LINK_EVENT_MAPPING`) — verificato con test dedicati
+- Nessun Impact Unit creato, nessuna mutazione del KORA Index — `impactUnitEligible` e `affectsKoraIndex` non sono mai `'yes'` in nessuna delle 13 capability o dei 7 eventi, solo `'no'`/`'future'`
+- Nessuna nuova pagina bypassa un guard esistente — tutte e 4 le pagine ereditano il layout guard del proprio route group
+- Nessuna modifica a `034_kora_link_schema.sql` / `035_kora_link_rls.sql` / `036_kora_link_rpc_functions.sql`
+- Nessuna migration creata, nessun SQL applicato, nessuna modifica a file `.env`, nessuna nuova dipendenza
+
+### Controlli statici
+
+- `grep service_role` nei nuovi file: 0 ✅
+- `grep token_value|raw_token|clear_token|token_plaintext` nei nuovi file: solo l'id dichiarativo `no_raw_token_persistence` (nessun valore reale) ✅
+- `grep worker_id` nella company page/helper: solo prosa che dichiara l'assenza del dato, nessun dato esposto ✅
+- `grep` creazione Impact Unit: 0 ✅
+- `grep` mutazione KORA Index: 0 ✅
+- 034/035/036 modificati: no ✅
+- Migration nuove: 0 ✅
+- `package.json` / `package-lock.json` modificati: no ✅
+
+### Metriche
+
+- File creati: 10 (`lib/kora-link/ecosystem.ts`, 4 componenti in `components/kora-link/`, 4 pagine ruolo, `tests/unit/kora-link-ecosystem.test.ts`)
+- File modificati: 2 (`lib/navigation/admin-nav-groups.ts`, `components/layout/Sidebar.tsx`) + `docs/KORA_LINK_CHANGELOG.md`
+- Dipendenze aggiunte: 0
+- SQL applicato: 0 · Migration create: 0 · 034/035/036 modificati: no
+- TypeScript: 0 errori
+- ESLint: 0 errori sui file nuovi/modificati da KL-23 (1 errore pre-esistente in `Sidebar.tsx`, non introdotto da questo step — confermato via `git stash` sulla versione precedente)
+- Vitest: 8620/8620 passed (202 file, +98 rispetto a KL-22, incluse tutte le suite nav/sidebar pre-esistenti senza regressioni)
+- Build: OK — `/admin/kora-link`, `/my-kora/kora-link`, `/company/kora-link`, `/partner/kora-link` presenti come route dynamic
+- E2E: 6/6 passed
+
+### Gate status post-KL-23
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (CTO schema review) | 🔴 OPEN |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| KL-22 | ✅ COMPLETATO |
+| KL-23 (Ecosystem control layer) | ✅ COMPLETATO — modello + UI multi-ruolo, nessun impatto su Gate 2/3 |
+| KL-24+ | KORA Space UI integration (deferred da KL-23) · Admin revocation/replacement UI reale · staging deploy — bloccati da Gate 2+3 |
+
+---
+
 ## KL-22 — KORA Link Worker Activation Runtime Flow
 
 **Data:** 2026-07-01  
