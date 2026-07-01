@@ -136,9 +136,10 @@ describe('B109-B — worker API: session-only workerId/tenantId', () => {
 
   it('POST interest: body worker_id is silently rejected (not read from body)', () => {
     const src = readFile('app/api/worker/initiatives/[id]/interest/route.ts');
-    // Only status and private_note extracted from body — worker_id/tenant_id ignored
-    expect(src).toContain('body.status');
-    expect(src).toContain('body.private_note');
+    // CC-12: Zod InterestSchema only exposes status + private_note — worker_id/tenant_id stripped at schema level
+    expect(src).toContain('InterestSchema');
+    expect(src).toContain('status');
+    expect(src).toContain('private_note');
     expect(src).not.toContain('body.worker_id');
     expect(src).not.toContain('body.tenant_id');
   });

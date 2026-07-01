@@ -88,7 +88,7 @@ export default async function CompanyCommonsPage() {
           KORA Space
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
-          Il layer operativo dell'attivazione umana nel tuo tenant. Non un social network. Non un modulo welfare.
+          Il layer operativo dell&apos;attivazione umana nel tuo tenant. Non un social network. Non un modulo welfare.
         </p>
       </div>
 
@@ -275,7 +275,7 @@ export default async function CompanyCommonsPage() {
         }}
       >
         <p style={{ fontSize: 11, color: '#2F5A42', margin: 0, lineHeight: 1.6 }}>
-          Le adesioni sono gestite nel rispetto del perimetro privacy: l'azienda vede solo aggregati.
+          Le adesioni sono gestite nel rispetto del perimetro privacy: l&apos;azienda vede solo aggregati.
           Nessun lavoratore identificabile, nessun percorso individuale visibile in questa vista.
         </p>
       </div>

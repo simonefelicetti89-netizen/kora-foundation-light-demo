@@ -17,9 +17,8 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '@/lib/supabase/types';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
 type AllowedNextStatus = 'ready' | 'exported';
 
@@ -65,11 +64,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const db = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } },
-  );
+  const db = getSupabaseServiceClient();
 
   // ── Resolve tenant ─────────────────────────────────────────────────────────
 

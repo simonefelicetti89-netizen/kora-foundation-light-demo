@@ -184,7 +184,7 @@ describe('Operating model — regression', () => {
   });
 
   test('20. KORA Space still describes itself as activation environment', () => {
-    expect(companyCommonsSrc).toContain("layer operativo dell'attivazione umana");
+    expect(companyCommonsSrc).toContain("layer operativo dell&apos;attivazione umana");
   });
 
   test('21. KORA Contribution is still companion indicator — not KORA Index component', () => {

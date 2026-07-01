@@ -178,7 +178,7 @@ export default function PillarsInitiatives() {
       {/* ── Portfolio programmi — dati non ancora disponibili in live ──────── */}
       <SectionLabel>Portfolio programmi</SectionLabel>
       <div style={{ background: TOKENS.surface, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadius, padding: '1.5rem', color: TOKENS.inkHint, fontSize: '13px' }}>
-        Il portfolio programmi sarà disponibile dopo l'integrazione con le fonti dati welfare.
+        Il portfolio programmi sarà disponibile dopo l&apos;integrazione con le fonti dati welfare.
         Contatta KORA Admin per configurare le fonti dati.
       </div>
 

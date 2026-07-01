@@ -175,6 +175,26 @@ describe('P0-2 — KORA Index historical trend', () => {
     const route = read('app/api/company/kora-index/history/route.ts');
     expect(route).toContain('KORA Index v3');
   });
+
+  // Regression test for the KL-24 bugfix: safeguard_status lives on
+  // analytics.kora_index_result itself, never on analytics.activation_result.
+  // Selecting it inside the activation_result embed caused a real Postgres
+  // "column does not exist" error → the route's own `if (error)` branch
+  // returned 500 for every request, even with valid auth and existing data.
+  it('history API selects safeguard_status as a top-level kora_index_result column, not nested under the activation_result embed', () => {
+    const selectStart = historyRoute.indexOf('.select(`');
+    const selectBlock = historyRoute.slice(selectStart, historyRoute.indexOf('`)', selectStart));
+    expect(selectBlock).toMatch(/^\s*safeguard_status,/m);
+
+    const activationEmbedMatch = selectBlock.match(/activation_result:activation_result_id\s*\(([^)]*)\)/);
+    expect(activationEmbedMatch).not.toBeNull();
+    expect(activationEmbedMatch?.[1] ?? '').not.toContain('safeguard_status');
+  });
+
+  it('history API maps safeguard_status from the row itself, not from the activation_result embed', () => {
+    expect(historyRoute).toContain('row.safeguard_status');
+    expect(historyRoute).not.toContain('actResult?.safeguard_status');
+  });
 });
 
 // ── P0-3: Naming alignment ────────────────────────────────────────────────────

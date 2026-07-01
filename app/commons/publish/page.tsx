@@ -259,7 +259,7 @@ export default function PublishPage() {
               Anteprima generata — nessuna pubblicazione reale
             </p>
             <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.50)', margin: '3px 0 0 0' }}>
-              In Foundation Light le pubblicazioni non vengono salvate. In Pilot+ l'iniziativa verrebbe inviata per review prima della pubblicazione nella rete KORA.
+              In Foundation Light le pubblicazioni non vengono salvate. In Pilot+ l&apos;iniziativa verrebbe inviata per review prima della pubblicazione nella rete KORA.
             </p>
           </div>
         </div>

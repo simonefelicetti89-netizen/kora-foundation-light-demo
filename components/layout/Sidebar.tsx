@@ -98,7 +98,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Intelligence',
         items: [
-          { href: '/company/opportunities', label: 'Opportunità' },
+          { href: '/company/opportunities', label: 'Opportunità', preview: true },
           { href: '/company/financial',    label: 'Budget-to-Human-Impact™' },
           { href: '/company/activation',   label: 'Activation Intelligence™' },
           { href: '/company/contribution', label: 'KORA Contribution™' },
@@ -117,6 +117,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         heading: 'Network',
         items: [
           { href: '/company/commons', label: 'KORA Space' },
+          { href: '/company/kora-link', label: 'KORA Link' },
         ],
       },
       {
@@ -155,6 +156,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           },
           { href: '/my-kora/kora-space', label: 'KORA Space' },
           { href: '/worker/commons',   label: 'KORA Space' },
+          { href: '/my-kora/kora-link', label: 'My KORA Link' },
           { href: '/my-kora/bookings', label: 'Prenotazioni', comingSoon: true },
           { href: '/my-kora/collective', label: 'Collettivo', comingSoon: true },
         ],
@@ -185,6 +187,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         heading: 'Portale Partner',
         items: [
           { href: '/partner',     label: 'Workspace Partner' },
+          { href: '/partner/kora-link', label: 'KORA Link' },
           { href: '/demo/guide',  label: 'Demo Guide' },
         ],
       },

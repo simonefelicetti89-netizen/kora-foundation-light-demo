@@ -166,7 +166,7 @@ export function AdminBookingModerationSection({ tenantMap, postsMap }: Props) {
           fontSize: 11, color: '#3B5A8A', fontFamily: FONT, lineHeight: 1.6,
         }}
       >
-        <p style={{ margin: '0 0 6px', fontWeight: 700, fontFamily: FONT }}>Cosa fa "Segna Partecipazione Completata":</p>
+        <p style={{ margin: '0 0 6px', fontWeight: 700, fontFamily: FONT }}>Cosa fa {'"Segna Partecipazione Completata"'}:</p>
         <ul style={{ margin: '0 0 8px', paddingLeft: 18 }}>
           <li>Conferma la partecipazione dell&apos;utente all&apos;iniziativa.</li>
           <li>Può generare una traccia privata del lavoratore nel suo percorso My KORA.</li>

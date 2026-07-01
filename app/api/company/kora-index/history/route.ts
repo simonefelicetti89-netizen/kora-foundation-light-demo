@@ -58,14 +58,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     .select(`
       reporting_period,
       kora_index_value,
+      safeguard_status,
       is_current,
       created_at,
       confidence_result:confidence_result_id (
         confidence_score
       ),
       activation_result:activation_result_id (
-        activation_rate,
-        safeguard_status
+        activation_rate
       )
     `)
     .eq('tenant_id', tenantId)
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       confidence_score: confResult?.confidence_score != null
         ? +(Number(confResult.confidence_score) * 100).toFixed(0)
         : null,
-      safeguard_status: (actResult?.safeguard_status as string | null) ?? null,
+      safeguard_status: (row.safeguard_status as string | null) ?? null,
       activation_rate:  actResult?.activation_rate != null
         ? +(Number(actResult.activation_rate) * 100).toFixed(1)
         : null,

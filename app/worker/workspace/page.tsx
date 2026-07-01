@@ -314,7 +314,7 @@ export default async function WorkerWorkspacePage() {
           </div>
         )}
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', marginTop: 12, marginBottom: 0, lineHeight: 1.5 }}>
-          Solo tu puoi vedere questo storico. Non è condiviso con l'azienda.
+          Solo tu puoi vedere questo storico. Non è condiviso con l&apos;azienda.
         </p>
       </div>
 

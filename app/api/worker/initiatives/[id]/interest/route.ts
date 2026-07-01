@@ -15,18 +15,26 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import type { WorkerParticipationRow } from '@/lib/supabase/types';
 
 // attended is intentionally excluded — workers cannot self-declare attendance.
 // Attendance is set only by admin/system flows to prevent gaming.
-const ALLOWED_STATUSES: WorkerParticipationRow['status'][] = [
-  'interested', 'registered', 'cancelled',
-];
+const ALLOWED_STATUSES = ['interested', 'registered', 'cancelled'] as const satisfies WorkerParticipationRow['status'][];
 
 // Maximum length for worker private notes — prevents abuse, not a content filter.
 const PRIVATE_NOTE_MAX_LENGTH = 500;
+
+const InterestSchema = z.object({
+  status: z.enum(ALLOWED_STATUSES, {
+    error: () => ({ message: `status non valido. Valori accettati: ${ALLOWED_STATUSES.join(', ')}` }),
+  }),
+  private_note: z.string().max(PRIVATE_NOTE_MAX_LENGTH, {
+    message: `private_note supera il limite massimo di ${PRIVATE_NOTE_MAX_LENGTH} caratteri.`,
+  }).nullable().optional(),
+});
 
 export async function POST(
   request: NextRequest,
@@ -42,32 +50,24 @@ export async function POST(
     return NextResponse.json({ error: 'Initiative ID obbligatorio.' }, { status: 400 });
   }
 
-  let body: Record<string, unknown> = {};
+  let rawBody: unknown = {};
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json({ error: 'Body JSON non valido.' }, { status: 400 });
   }
 
-  // worker_id and tenant_id from body are silently rejected — session-only.
-  const status = body.status as WorkerParticipationRow['status'] | undefined;
-  const rawNote = body.private_note;
-  const privateNote = typeof rawNote === 'string' ? rawNote.slice(0, PRIVATE_NOTE_MAX_LENGTH) : null;
-
-  // Validate note length explicitly after truncation guard
-  if (typeof rawNote === 'string' && rawNote.length > PRIVATE_NOTE_MAX_LENGTH) {
+  // worker_id and tenant_id from body are silently rejected — schema only exposes status + private_note.
+  const bodyParsed = InterestSchema.safeParse(rawBody);
+  if (!bodyParsed.success) {
     return NextResponse.json(
-      { error: `private_note supera il limite massimo di ${PRIVATE_NOTE_MAX_LENGTH} caratteri.` },
+      { error: bodyParsed.error.issues[0]?.message ?? 'Payload non valido.' },
       { status: 400 },
     );
   }
 
-  if (!status || !ALLOWED_STATUSES.includes(status)) {
-    return NextResponse.json(
-      { error: `status non valido. Valori accettati: ${ALLOWED_STATUSES.join(', ')}` },
-      { status: 400 },
-    );
-  }
+  const status      = bodyParsed.data.status;
+  const privateNote = bodyParsed.data.private_note ?? null;
 
   // Difesa in profondità: tenant_id e status mantenuti come filtri espliciti anche con RLS (scrittura).
   const db = await getSupabaseServerClient();

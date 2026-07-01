@@ -15,6 +15,7 @@
 export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
@@ -24,6 +25,14 @@ const TENANT_META_KEY = 'kora_tenant_id' as const;
 // B143: COMPANY_VIEWER rimosso — non esiste più come ruolo. Solo COMPANY_ADMIN è supportato.
 const VALID_ROLES: ReadonlyArray<string> = ['COMPANY_ADMIN'];
 type CompanyRole = 'COMPANY_ADMIN';
+
+const ProvisionCompanySchema = z.object({
+  company_name: z.string().min(1, 'company_name è obbligatorio.').max(200),
+  tenant_code:  z.string().optional(),
+  admin_email:  z.string().min(1, 'admin_email è obbligatorio.').email('admin_email non valido.'),
+  admin_name:   z.string().max(128).optional().nullable(),
+  admin_role:   z.string().optional(),
+});
 
 // ── Tenant code helpers ───────────────────────────────────────────────────────
 
@@ -42,29 +51,28 @@ export async function POST(request: NextRequest) {
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
 
-  let body: Record<string, unknown>;
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
   }
 
   // ── Input validation ────────────────────────────────────────────────────────
-  const companyName = typeof body['company_name'] === 'string' ? body['company_name'].trim() : '';
-  const rawCode     = typeof body['tenant_code']  === 'string' ? body['tenant_code'].trim().toUpperCase() : null;
-  const adminEmail  = typeof body['admin_email']  === 'string' ? body['admin_email'].trim().toLowerCase() : '';
-  const adminName   = typeof body['admin_name']   === 'string' ? body['admin_name'].trim() : null;
-  const adminRole   = (typeof body['admin_role']  === 'string' ? body['admin_role'].trim().toUpperCase() : 'COMPANY_ADMIN') as CompanyRole;
+  const parsed = ProvisionCompanySchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? 'Payload non valido.' },
+      { status: 400 },
+    );
+  }
 
-  if (!companyName) {
-    return NextResponse.json({ error: 'company_name è obbligatorio.' }, { status: 400 });
-  }
-  if (!adminEmail) {
-    return NextResponse.json({ error: 'admin_email è obbligatorio.' }, { status: 400 });
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) {
-    return NextResponse.json({ error: 'admin_email non valido.' }, { status: 400 });
-  }
+  const companyName = parsed.data.company_name.trim();
+  const rawCode     = parsed.data.tenant_code?.trim().toUpperCase() ?? null;
+  const adminEmail  = parsed.data.admin_email.trim().toLowerCase();
+  const adminName   = parsed.data.admin_name?.trim() ?? null;
+  const adminRole   = (parsed.data.admin_role?.trim().toUpperCase() ?? 'COMPANY_ADMIN') as CompanyRole;
+
   if (!VALID_ROLES.includes(adminRole)) {
     return NextResponse.json({
       error: `admin_role deve essere ${VALID_ROLES.join(' o ')}.`,

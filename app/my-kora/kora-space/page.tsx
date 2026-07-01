@@ -215,6 +215,43 @@ function TimelineConnectionNote() {
   );
 }
 
+function PageHeader() {
+  return (
+    <>
+      <Link
+        href="/my-kora"
+        style={{ fontSize: 11, color: TOKENS.inkHint, textDecoration: 'none', display: 'inline-block', marginBottom: 20 }}
+      >
+        ← My KORA
+      </Link>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
+            color: '#B5512E', background: 'rgba(181,81,46,0.08)', borderRadius: 4,
+            padding: '2px 8px', border: '1px solid rgba(181,81,46,0.22)',
+          }}>
+            supervisionato da KORA
+          </span>
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: TOKENS.inkHint, background: TOKENS.taupe, borderRadius: 4,
+            padding: '2px 8px', border: `1px solid ${TOKENS.inkBorder}`,
+          }}>
+            Foundation Light preview
+          </span>
+        </div>
+        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 6px' }}>
+          KORA Space
+        </h1>
+        <p style={{ fontSize: 13, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.55 }}>
+          Lo spazio condiviso per iniziative, richieste e opportunità di attivazione.
+        </p>
+      </div>
+    </>
+  );
+}
+
 export default function WorkerKoraSpacePage() {
   const { activeRole } = useRole();
   const [mode, setMode] = useState<SpaceMode>('checking');
@@ -298,41 +335,6 @@ export default function WorkerKoraSpacePage() {
   }
 
   if (mode === 'checking') return null;
-
-  const PageHeader = () => (
-    <>
-      <Link
-        href="/my-kora"
-        style={{ fontSize: 11, color: TOKENS.inkHint, textDecoration: 'none', display: 'inline-block', marginBottom: 20 }}
-      >
-        ← My KORA
-      </Link>
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-          <span style={{
-            fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
-            color: '#B5512E', background: 'rgba(181,81,46,0.08)', borderRadius: 4,
-            padding: '2px 8px', border: '1px solid rgba(181,81,46,0.22)',
-          }}>
-            supervisionato da KORA
-          </span>
-          <span style={{
-            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-            color: TOKENS.inkHint, background: TOKENS.taupe, borderRadius: 4,
-            padding: '2px 8px', border: `1px solid ${TOKENS.inkBorder}`,
-          }}>
-            Foundation Light preview
-          </span>
-        </div>
-        <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: TOKENS.ink, letterSpacing: '-0.03em', margin: '0 0 6px' }}>
-          KORA Space
-        </h1>
-        <p style={{ fontSize: 13, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.55 }}>
-          Lo spazio condiviso per iniziative, richieste e opportunità di attivazione.
-        </p>
-      </div>
-    </>
-  );
 
   if (mode === 'live') {
     return (
