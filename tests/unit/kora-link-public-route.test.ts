@@ -1,10 +1,11 @@
 // tests/unit/kora-link-public-route.test.ts
-// KL-10 — evaluateKoraLinkPublicRouteState unit tests.
+// KL-10 + KL-19 — evaluateKoraLinkPublicRouteState unit tests.
 // All external dependencies are injected — no vi.mock, no network calls.
 
 import { describe, it, expect } from 'vitest';
 import { evaluateKoraLinkPublicRouteState } from '@/lib/kora-link/public-route';
 import type { KoraLinkRateLimiter, KoraLinkRateLimitDecision } from '@/lib/kora-link/rate-limit';
+import type { KoraLinkRpcClient } from '@/lib/kora-link/public-lookup';
 
 // ── Fixtures ───────────────────────────────────────────────────────────────────
 
@@ -15,6 +16,11 @@ const READY_ENV = {
   KORA_LINK_TOKEN_SECRET: 'a'.repeat(64),
   KORA_LINK_PUBLIC_BASE_URL: 'https://test.kora.ai',
   KORA_LINK_RATE_LIMIT_PROVIDER: 'disabled',
+};
+
+const LOOKUP_ENABLED_ENV = {
+  ...READY_ENV,
+  KORA_LINK_DB_LOOKUP_ENABLED: 'true',
 };
 
 // ── Rate limiter helpers ───────────────────────────────────────────────────────

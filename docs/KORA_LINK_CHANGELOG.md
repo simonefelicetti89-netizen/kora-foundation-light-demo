@@ -6,6 +6,79 @@
 
 ---
 
+## KL-19 — KORA Link Public DB Lookup Runtime
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Codice TypeScript runtime + test unit — nessuna migration, nessun SQL applicato, nessuna modifica a 034/035/036.
+
+### Contenuto
+
+Creato `lib/kora-link/public-lookup.ts` — helper server-only che esegue il DB lookup della route pubblica `/link/[token]` tramite la RPC `fn_public_lookup_link` (draft in 036).
+Modificato `lib/kora-link/config.ts` — aggiunto `KORA_LINK_DB_LOOKUP_ENABLED` a `KoraLinkEnv` + `isKoraLinkDbLookupEnabled(env)`.
+Modificato `lib/kora-link/public-route.ts` — aggiunto step 5 (DB lookup) alla sequenza di valutazione stato route, condizionato al feature flag.
+Modificato `app/link/[token]/page.tsx` — aggiunto stato `ready` (`KoraLinkReadyPage`) accanto a `skeleton`.
+Creato `tests/unit/kora-link-public-lookup.test.ts`.
+Aggiornato `tests/unit/kora-link-public-route.test.ts` per coprire il nuovo step.
+
+### Comportamento
+
+```
+KORA_LINK_DB_LOOKUP_ENABLED (default: assente/false)
+  → false: stato 'skeleton' invariato — nessun DB lookup eseguito (comportamento KL-10)
+  → true:  lookupKoraLinkPublicState() calcola computeDigest(token, secret)
+             → chiama fn_public_lookup_link(p_token_digest) server-side (client Supabase server, no service role)
+             → status='ready' → route state 'ready'
+             → qualsiasi altro status, errore RPC, o eccezione → 'unavailable' (fallback safe)
+```
+
+### Sicurezza / invarianti
+
+- Public DB lookup runtime aggiunto dietro `KORA_LINK_DB_LOOKUP_ENABLED` — default lookup **off**
+- RPC `fn_public_lookup_link` chiamata solo server-side (`lib/kora-link/public-lookup.ts`, mai da client)
+- Token raw **non** inviato al DB — solo `computeDigest(token, secret)` (HMAC-SHA256, 64-char hex) attraversa la RPC
+- Digest completo **non** esposto al client — resta interno al server component
+- Fallback safe: qualsiasi errore RPC, client, o digest → `'unavailable'` (mai eccezione propagata, mai dettaglio esposto)
+- Nessuna activation implementata
+- Nessun worker assignment implementato
+- Nessuna modifica a `034_kora_link_schema.sql` / `035_kora_link_rls.sql` / `036_kora_link_rpc_functions.sql`
+- Nessuna migration creata
+- Nessun SQL applicato ad alcun database
+- `supabase/.temp/` non incluso nel commit (artefatto locale non tracciato)
+
+### Controlli statici
+
+- `grep service_role` in `app/link` + `lib/kora-link/public*`: 0 ✅
+- `grep console.log` in `app/link` + `lib/kora-link/public*`: 0 ✅
+- `grep fn_public_lookup_link`: presente solo in `public-lookup.ts`, `config.ts` (commento), test dedicato, documentazione 036 ✅
+- `grep KORA_LINK_DB_LOOKUP_ENABLED`: presente in `config.ts`, `public-lookup.ts`, `public-route.ts` (commento), test ✅
+- 034/035/036 modificati: no ✅
+- Migration nuove: 0 ✅
+
+### Metriche
+
+- File creati: 2 (`lib/kora-link/public-lookup.ts`, `tests/unit/kora-link-public-lookup.test.ts`)
+- File modificati: 4 (`app/link/[token]/page.tsx`, `lib/kora-link/config.ts`, `lib/kora-link/public-route.ts`, `tests/unit/kora-link-public-route.test.ts`) + `docs/KORA_LINK_CHANGELOG.md`
+- SQL applicato: 0 · Migration create: 0 · 034/035/036 modificati: no
+- TypeScript: 0 errori
+- ESLint: 0 errori, 3 warning (variabili non usate in file di test, pre-esistenti al pattern)
+- Vitest: 8404/8404 passed (199 file)
+- Build: OK — `/link/[token]` presente come route dynamic
+- E2E: 6/6 passed
+
+### Gate status post-KL-19
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (CTO schema review) | 🔴 OPEN — 034 + 035 + 036 pronti per review formale |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| KL-18 | ✅ COMPLETATO |
+| KL-19 (DB lookup runtime) | ✅ COMPLETATO — dietro feature flag, default off; abilitazione reale richiede Gate 2+3 chiusi + 036 applicato |
+| KL-20+ | Worker activation flow · staging deploy — bloccati da Gate 2+3 |
+
+---
+
 ## KL-18 — Draft KORA Link RPC Functions 036
 
 **Data:** 2026-07-01  
@@ -80,7 +153,7 @@ Creato `supabase/proposed/036_kora_link_rpc_functions.sql` — draft delle funzi
 | Gate 4 (RLS 035) | ✅ Draft completato (KL-17) |
 | Gate 5 (RPC 036) | ✅ Draft completato (KL-18) |
 | KL-18 | ✅ COMPLETATO |
-| KL-19 (route runtime) | 🔴 BLOCKED — attende Gate 2+3 + staging deploy |
+| KL-19 (route runtime) | ✅ COMPLETATO (vedi sezione KL-19 sopra) — abilitazione reale attende Gate 2+3 + staging deploy |
 
 ---
 

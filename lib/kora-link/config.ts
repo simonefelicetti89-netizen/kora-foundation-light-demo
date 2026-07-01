@@ -23,6 +23,7 @@ export type KoraLinkEnv = {
   KORA_LINK_TOKEN_SECRET?: string | undefined;
   KORA_LINK_PUBLIC_BASE_URL?: string | undefined;
   KORA_LINK_RATE_LIMIT_PROVIDER?: string | undefined;
+  KORA_LINK_DB_LOOKUP_ENABLED?: string | undefined;
   UPSTASH_REDIS_REST_URL?: string | undefined;
   UPSTASH_REDIS_REST_TOKEN?: string | undefined;
 };
@@ -52,7 +53,7 @@ export const KORA_LINK_RATE_LIMIT_MAX_PUBLIC = 20;
 // Redis key prefix for all KORA Link rate limit buckets.
 export const KORA_LINK_RATE_LIMIT_KEY_PREFIX = 'kl:rl:pub:';
 
-// ── Feature flag ──────────────────────────────────────────────────────────────
+// ── Feature flags ─────────────────────────────────────────────────────────────
 
 /**
  * Returns true only if KORA_LINK_ENABLED === 'true' (exact string, case-sensitive).
@@ -60,6 +61,15 @@ export const KORA_LINK_RATE_LIMIT_KEY_PREFIX = 'kl:rl:pub:';
  */
 export function isKoraLinkEnabled(env: KoraLinkEnv = process.env): boolean {
   return env.KORA_LINK_ENABLED === 'true';
+}
+
+/**
+ * Returns true only if KORA_LINK_DB_LOOKUP_ENABLED === 'true' (exact, case-sensitive).
+ * Default: false. When false, the public route shows the safe skeleton page without DB access.
+ * Enable only when fn_public_lookup_link RPC is deployed (Gate 2 + Gate 3 closed).
+ */
+export function isKoraLinkDbLookupEnabled(env: KoraLinkEnv = process.env): boolean {
+  return env.KORA_LINK_DB_LOOKUP_ENABLED === 'true';
 }
 
 // ── Public base URL ───────────────────────────────────────────────────────────

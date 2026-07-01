@@ -1,12 +1,13 @@
 // lib/kora-link/public-route.ts
 // KORA Link — public route state evaluator.
-// Server-only. No Supabase. No DB. No activation.
+// Server-only. No activation.
 //
-// evaluateKoraLinkPublicRouteState() accepts injectable `env` and
-// `rateLimiterOverride` for testability — no vi.mock needed in tests.
+// evaluateKoraLinkPublicRouteState() accepts injectable `env`, `rateLimiterOverride`,
+// and `rpcClientOverride` for testability — no vi.mock needed in tests.
 
 import {
   isKoraLinkEnabled,
+  isKoraLinkDbLookupEnabled,
   getKoraLinkReadiness,
   type KoraLinkEnv,
 } from './config';
@@ -17,6 +18,10 @@ import {
   type KoraLinkRateLimiter,
   type KoraLinkRateLimitDecision,
 } from './rate-limit';
+import {
+  lookupKoraLinkPublicState,
+  type KoraLinkRpcClient,
+} from './public-lookup';
 
 // ── State ──────────────────────────────────────────────────────────────────────
 
@@ -25,7 +30,8 @@ export type KoraLinkPublicRouteState =
   | { state: 'token_invalid' }    // format check failed → notFound()
   | { state: 'unavailable' }      // runtime not ready → safe error page
   | { state: 'rate_limited'; decision: KoraLinkRateLimitDecision }
-  | { state: 'skeleton' };        // all checks passed → KL-10 skeleton page
+  | { state: 'skeleton' }         // checks passed but DB lookup disabled → safe skeleton
+  | { state: 'ready' };           // DB lookup confirmed chip is usable
 
 // ── Params ─────────────────────────────────────────────────────────────────────
 
@@ -34,6 +40,7 @@ export type EvaluateKoraLinkPublicRouteParams = {
   identifier?: string;
   env?: KoraLinkEnv;
   rateLimiterOverride?: KoraLinkRateLimiter;
+  rpcClientOverride?: KoraLinkRpcClient;
 };
 
 // ── Evaluator ──────────────────────────────────────────────────────────────────
@@ -83,6 +90,25 @@ export async function evaluateKoraLinkPublicRouteState(
     return { state: 'rate_limited', decision };
   }
 
-  // 5. All checks passed — KL-10 skeleton (no DB lookup yet)
-  return { state: 'skeleton' };
+  // 5. DB lookup (when KORA_LINK_DB_LOOKUP_ENABLED=true)
+  if (!isKoraLinkDbLookupEnabled(env)) {
+    return { state: 'skeleton' };
+  }
+
+  // Secret is guaranteed present by readiness check in step 3
+  const secret = env.KORA_LINK_TOKEN_SECRET ?? '';
+
+  // params.rawToken is narrowed to string by type guard in step 2
+  const lookupResult = await lookupKoraLinkPublicState({
+    validatedToken: params.rawToken,
+    secret,
+    env,
+    rpcClientOverride: params.rpcClientOverride,
+  });
+
+  if (lookupResult === 'ready') {
+    return { state: 'ready' };
+  }
+  // 'unavailable' or unexpected 'lookup_disabled' (flag just checked above) → safe
+  return { state: 'unavailable' };
 }
