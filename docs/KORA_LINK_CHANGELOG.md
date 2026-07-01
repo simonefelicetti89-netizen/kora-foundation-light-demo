@@ -6,6 +6,50 @@
 
 ---
 
+## KL-15 — CTO Review Handoff Pack
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** Documentazione — nessun SQL modificato, nessuna migration, nessun codice runtime.
+
+### Contenuto
+
+Creato `docs/KORA_LINK_CTO_REVIEW_HANDOFF.md` — handoff pack sintetico per CTO/Postgres reviewer esterno o interno. 13 sezioni:
+
+- **Sezione 1** — Executive summary per il reviewer (15 righe, cosa leggere, cosa non toccare)
+- **Sezione 2** — Tre domande a cui rispondere: 034 stabilizzabile? Amendments approvati? 035 può partire?
+- **Sezione 3** — Tabella file da leggere in ordine: 7 file, tempo stimato, output atteso (60–90 min totale)
+- **Sezione 4** — Cosa è già implementato: 14 componenti runtime con stato e test
+- **Sezione 5** — Cosa non è implementato: 14 elementi bloccati per gate
+- **Sezione 6** — File che il reviewer non deve applicare (lista esplicita)
+- **Sezione 7** — Decision checklist compilabile D-01→D-08 con raccomandazione Engineering + caselle APPROVE/CHANGE/DEFER
+- **Sezione 8** — Amendment checklist compilabile A-01→A-12 con tipo, caselle e "Apply to 034?"
+- **Sezione 9** — Minimo approvazioni per 035 draft (8 prerequisiti) e per promozione 034 (7 passi)
+- **Sezione 10** — Output atteso dal reviewer: 7 elementi richiesti
+- **Sezione 11** — Response template copiabile con firma (decisioni D/A, autorizzazioni, blocking notes, RLS notes)
+- **Sezione 12** — Tabella 9 gate con status, owner, cosa sblocca
+- **Sezione 13** — Istruzione finale: FARE e NON FARE lista esplicita
+
+### Metriche
+
+- File creati: 1 (`docs/KORA_LINK_CTO_REVIEW_HANDOFF.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- SQL modificato: 0 · Codice runtime modificato: 0 · Migrations create: 0
+
+### Gate status post-KL-15
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (Schema 034) | 🔴 OPEN — handoff pack pronto per il reviewer (KL-15) |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| Gate 4 (RLS 035) | 🔴 BLOCKED — attende Gate 2 |
+| Gate 5-9 | 🔴 BLOCKED |
+| KL-15 Handoff Pack | ✅ COMPLETATO |
+| KL-16 | Attende decisioni CTO → Engineering applica amendments a proposed/034 |
+
+---
+
 ## KL-14 — 034 Amendment Plan
 
 **Data:** 2026-07-01  
