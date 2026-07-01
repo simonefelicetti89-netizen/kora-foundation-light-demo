@@ -6,6 +6,95 @@
 
 ---
 
+## KL-17 — Draft KORA Link RLS 035
+
+**Data:** 2026-07-01  
+**Branch:** `feat/kora-link-v1-platform`  
+**Tipo:** SQL proposed + Documentazione — nessuna migration applicata, nessun codice runtime modificato.
+
+### Contenuto
+
+Creato `supabase/proposed/035_kora_link_rls.sql` — primo draft RLS per le 9 tabelle KORA Link v1. Stato: `PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING`. Non applicato ad alcun database.
+
+**Struttura di 035:**
+
+- **Header:** status, dipendenza da 034, istruzione DO NOT APPLY, gate blocking conditions
+- **RAISE NOTICE precondition:** operatore avvisato delle condizioni di apply
+- **GRANT USAGE** su `kora_link` a `authenticated` e `anon`
+- **`kora_link.is_kora_admin()`** — thin wrapper su `kora.kora_role() = 'KORA_ADMIN'` (migration 003); non ridefinisce i helper esistenti
+- **9 sezioni RLS** — una per tabella, con ENABLE + FORCE ROW LEVEL SECURITY, GRANT/REVOKE, policy
+- **22 policy totali** tutte deny-by-default salvo KORA_ADMIN
+- **Tabelle append-only** (`link_events`, `revocations`, `link_replacements`, `link_consents`, `audit_log`): `REVOKE UPDATE, DELETE FROM PUBLIC`; nessuna policy UPDATE/DELETE
+- **TODO spec** per 5 SECURITY DEFINER functions (commentate, non operative): `fn_kora_link_public_lookup`, `fn_kora_link_activate`, `fn_kora_link_revoke`, `fn_kora_link_replace`, `fn_kora_link_company_batch_stats`
+- **6 TODO-RLS + 1 TODO-DPO** aperti per CTO/DPO review
+- **Post-apply verification queries** (7 query manuali)
+
+**Policy per tabella:**
+
+| Tabella | Policies |
+|---------|----------|
+| `link_batches` | 3 (select/insert/update admin) |
+| `links` | 3 (select/insert/update admin) |
+| `link_assignments` | 3 (select/insert/update admin) |
+| `link_consents` | 2 (select/insert admin) |
+| `link_events` | 2 (select/insert admin) |
+| `revocations` | 2 (select/insert admin) |
+| `link_replacements` | 2 (select/insert admin) |
+| `audit_log` | 2 (select/insert admin) |
+| `link_delivery_records` | 3 (select/insert/update admin) |
+| **Totale** | **22** |
+
+**Scelte di design chiave:**
+
+- `FORCE ROW LEVEL SECURITY` su tutte le tabelle (difesa contro bypass owner accidentale)
+- `kora_link.is_kora_admin()` delega a `kora.kora_role()` — nessuna duplicazione JWT logic
+- Nessuna policy company/worker diretta in v1 (visibilità aggregata futura via view)
+- `anon`: solo USAGE schema, nessun GRANT tabelle — accesso futuro via SECURITY DEFINER
+- Accesso worker self: policy commentata in link_assignments (richiede cross-schema join approvazione CTO)
+- Nessuna funzione SECURITY DEFINER operativa: tutte in spec commentata per review
+
+**Nuovo documento:** `docs/KORA_LINK_035_RLS_DRAFT_NOTES.md`
+
+- Sezione 1: Scopo e principi di progettazione
+- Sezione 2: Scelte di design (helper, FORCE RLS, GRANT pattern, append-only, company, worker)
+- Sezione 3: Policy count e struttura tabella
+- Sezione 4: SECURITY DEFINER status per funzione
+- Sezione 5: Dipendenze critiche (034, migration 003, schema personal)
+- Sezione 6: 6 TODO-RLS + 1 TODO-DPO per CTO review
+- Sezione 7: Gate status post-KL-17
+
+### Controlli statici
+
+- `grep public_lookup_attempts 035`: 0 occorrenze (rimossa in A-06)
+- `grep partner_scans 035`: 0 occorrenze (deferred a 036)
+- `grep token_value 035`: 0 occorrenze
+- `grep "USING (true)"`: 0 occorrenze
+- `grep "WITH CHECK (true)"`: 0 occorrenze
+- `grep SECURITY DEFINER 035`: solo in TODO commentati
+- ENABLE RLS: 9 tabelle ✅
+- CREATE POLICY: 22 policy ✅
+- 034 non modificato ✅
+
+### Metriche
+
+- File creati: 2 (`supabase/proposed/035_kora_link_rls.sql`, `docs/KORA_LINK_035_RLS_DRAFT_NOTES.md`)
+- File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
+- SQL applicato: 0 · Migration create: 0 · Codice runtime modificato: 0
+- 034 modificato: no
+
+### Gate status post-KL-17
+
+| Gate | Status |
+|------|--------|
+| Gate 1 (Runtime base) | ✅ COMPLETE |
+| Gate 2 (CTO schema review) | 🔴 OPEN — 034 + 035 pronti per review formale CTO |
+| Gate 3 (DPO/legal) | 🔴 OPEN |
+| Gate 4 (RLS 035) | ✅ Draft completato (KL-17) — applicabile dopo Gate 2+3 |
+| KL-17 | ✅ COMPLETATO |
+| KL-18 (SECDEF functions) | 🔴 BLOCKED — attende Gate 2+3 + function spec approval |
+
+---
+
 ## KL-16 — 034 Engineering Amendments Applied
 
 **Data:** 2026-07-01  
