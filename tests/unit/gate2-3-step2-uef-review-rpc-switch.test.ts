@@ -29,7 +29,7 @@ function src(rel: string): string { return readFileSync(resolve(root, rel), 'utf
 
 const ROUTE   = src('app/api/admin/uef/review/route.ts');
 const SERVICE = src('lib/supabase/uef-service-key.ts');
-const DOC     = src('docs/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md');
+const DOC     = src('docs/archive/gate2/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md');
 
 // ── 1. RPC call to fn_admin_uef_review ────────────────────────────────────────
 

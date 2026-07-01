@@ -25,7 +25,7 @@ function src(relPath: string): string {
 
 const SQL = src('supabase/migrations/030_uef_admin_access_hardening.sql');
 const RB  = src('supabase/rollback/030_rollback_030_if_needed.sql');
-const DOC = src('docs/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md');
+const DOC = src('docs/archive/gate2/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md');
 
 // ── 1. advisor_tenant_uef_read is dropped ─────────────────────────────────────
 

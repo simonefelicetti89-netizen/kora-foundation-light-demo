@@ -17,7 +17,7 @@ const root = resolve(process.cwd());
 
 function doc(): string {
   return readFileSync(
-    resolve(root, 'docs/GATE2_STAGING_APP_ENV_WIRING.md'),
+    resolve(root, 'docs/archive/gate2/GATE2_STAGING_APP_ENV_WIRING.md'),
     'utf-8'
   );
 }
@@ -27,7 +27,7 @@ function doc(): string {
 describe('GATE2_STAGING_APP_ENV_WIRING.md — existence', () => {
   it('doc exists', () => {
     expect(
-      existsSync(resolve(root, 'docs/GATE2_STAGING_APP_ENV_WIRING.md'))
+      existsSync(resolve(root, 'docs/archive/gate2/GATE2_STAGING_APP_ENV_WIRING.md'))
     ).toBe(true);
   });
 

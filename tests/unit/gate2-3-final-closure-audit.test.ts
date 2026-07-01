@@ -16,7 +16,7 @@ import { resolve } from 'path';
 const root = resolve(process.cwd());
 function src(rel: string): string { return readFileSync(resolve(root, rel), 'utf-8'); }
 
-const DOC   = src('docs/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md');
+const DOC   = src('docs/archive/gate2/GATE2_3_UEF_ADMIN_ACCESS_HARDENING_DESIGN.md');
 const ROUTE = src('app/api/admin/uef/review/route.ts');
 
 // ── 1. Gate 2.3 Final Closure Audit section exists ────────────────────────────

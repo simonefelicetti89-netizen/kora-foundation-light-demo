@@ -17,7 +17,7 @@ const root = resolve(process.cwd());
 
 function doc(): string {
   return readFileSync(
-    resolve(root, 'docs/GATE2_PHASE1_AUTH_INTEGRITY_AUDIT.md'),
+    resolve(root, 'docs/archive/gate2/GATE2_PHASE1_AUTH_INTEGRITY_AUDIT.md'),
     'utf-8'
   );
 }
@@ -27,7 +27,7 @@ function doc(): string {
 describe('GATE2_PHASE1_AUTH_INTEGRITY_AUDIT.md — existence', () => {
   it('audit doc exists', () => {
     expect(
-      existsSync(resolve(root, 'docs/GATE2_PHASE1_AUTH_INTEGRITY_AUDIT.md'))
+      existsSync(resolve(root, 'docs/archive/gate2/GATE2_PHASE1_AUTH_INTEGRITY_AUDIT.md'))
     ).toBe(true);
   });
 

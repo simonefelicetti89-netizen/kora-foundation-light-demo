@@ -14,7 +14,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
-const DOC_PATH = 'docs/GATE2_2_PRIVACY_HARDENING_027_STAGING.md';
+const DOC_PATH = 'docs/archive/gate2/GATE2_2_PRIVACY_HARDENING_027_STAGING.md';
 const ROLLBACK_FILE = 'supabase/rollback/029_rollback_027_if_needed.sql';
 const ROLLBACK_README = 'supabase/rollback/README.md';
 const MIGRATIONS_029 = 'supabase/migrations/029_rollback_027_if_needed.sql';

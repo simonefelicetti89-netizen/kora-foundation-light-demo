@@ -13,7 +13,7 @@ import { resolve } from 'path';
 const root = resolve(process.cwd());
 
 function doc(): string {
-  return readFileSync(resolve(root, 'docs/GATE2_SQL_REVIEW_PACK.md'), 'utf-8');
+  return readFileSync(resolve(root, 'docs/archive/gate2/GATE2_SQL_REVIEW_PACK.md'), 'utf-8');
 }
 
 // ── Section 1: Document exists and has all 8 required sections ────────────────

@@ -14,7 +14,7 @@
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_STAGING_READINESS_QA.md` — audit di readiness per QA browser/staging post-merge: routes readiness (7 route), env readiness matrix (8 variabili), role QA matrix (4 ruoli), manual NFC test plan (12 step), safety boundary verification, known blockers.
+Creato `docs/archive/qa/KORA_LINK_STAGING_READINESS_QA.md` — audit di readiness per QA browser/staging post-merge: routes readiness (7 route), env readiness matrix (8 variabili), role QA matrix (4 ruoli), manual NFC test plan (12 step), safety boundary verification, known blockers.
 
 ### Risultato
 
@@ -486,7 +486,7 @@ Creato `supabase/proposed/036_kora_link_rpc_functions.sql` — draft delle funzi
 - `TODO-RPC-03`: DPO approval testo notice `kora-link-privacy-v1.0`
 - `TODO-RPC-04`: privacy threshold su aggregate count?
 
-**Nuovo documento:** `docs/KORA_LINK_036_RPC_FUNCTIONS_NOTES.md`
+**Nuovo documento:** `docs/archive/kora-link/KORA_LINK_036_RPC_FUNCTIONS_NOTES.md`
 
 ### Controlli statici
 
@@ -507,7 +507,7 @@ Creato `supabase/proposed/036_kora_link_rpc_functions.sql` — draft delle funzi
 
 ### Metriche
 
-- File creati: 2 (`supabase/proposed/036_kora_link_rpc_functions.sql`, `docs/KORA_LINK_036_RPC_FUNCTIONS_NOTES.md`)
+- File creati: 2 (`supabase/proposed/036_kora_link_rpc_functions.sql`, `docs/archive/kora-link/KORA_LINK_036_RPC_FUNCTIONS_NOTES.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - SQL applicato: 0 · Migration create: 0 · Codice runtime modificato: 0
 - 034 modificato: no · 035 modificato: no
@@ -573,7 +573,7 @@ Creato `supabase/proposed/035_kora_link_rls.sql` — primo draft RLS per le 9 ta
 - Accesso worker self: policy commentata in link_assignments (richiede cross-schema join approvazione CTO)
 - Nessuna funzione SECURITY DEFINER operativa: tutte in spec commentata per review
 
-**Nuovo documento:** `docs/KORA_LINK_035_RLS_DRAFT_NOTES.md`
+**Nuovo documento:** `docs/archive/kora-link/KORA_LINK_035_RLS_DRAFT_NOTES.md`
 
 - Sezione 1: Scopo e principi di progettazione
 - Sezione 2: Scelte di design (helper, FORCE RLS, GRANT pattern, append-only, company, worker)
@@ -597,7 +597,7 @@ Creato `supabase/proposed/035_kora_link_rls.sql` — primo draft RLS per le 9 ta
 
 ### Metriche
 
-- File creati: 2 (`supabase/proposed/035_kora_link_rls.sql`, `docs/KORA_LINK_035_RLS_DRAFT_NOTES.md`)
+- File creati: 2 (`supabase/proposed/035_kora_link_rls.sql`, `docs/archive/kora-link/KORA_LINK_035_RLS_DRAFT_NOTES.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - SQL applicato: 0 · Migration create: 0 · Codice runtime modificato: 0
 - 034 modificato: no
@@ -643,7 +643,7 @@ Applicati gli amendments Engineering (A-01→A-12) a `supabase/proposed/034_kora
 - **OPEN TODOs** — Segnati come RESOLVED: TODO-CTO-02, 03, 08 (+ A-09 ridondant index)
 - **POST-APPLY VERIFICATION** — Aggiornata lista expected tables (9 vs 11); aggiunte query per verificare assenza `replaced_by_link_id` e `idx_links_token_digest`; aggiornata query DEFERRABLE (expected: 0 rows)
 
-**Nuovo documento:** `docs/KORA_LINK_034_ENGINEERING_DECISION_RECORD.md`
+**Nuovo documento:** `docs/archive/kora-link/KORA_LINK_034_ENGINEERING_DECISION_RECORD.md`
 
 - Sezione 1: D-01→D-08 con rationale, azione applicata, residual risk, flag "CTO deve confermare"
 - Sezione 2: Tabella A-01→A-12 con status KL-16 (tutti ✅ applicati)
@@ -655,7 +655,7 @@ Applicati gli amendments Engineering (A-01→A-12) a `supabase/proposed/034_kora
 
 ### Metriche
 
-- File creati: 1 (`docs/KORA_LINK_034_ENGINEERING_DECISION_RECORD.md`)
+- File creati: 1 (`docs/archive/kora-link/KORA_LINK_034_ENGINEERING_DECISION_RECORD.md`)
 - File modificati: 2 (`supabase/proposed/034_kora_link_schema.sql`, `docs/KORA_LINK_CHANGELOG.md`)
 - SQL applicato: 0 · Migration create: 0 · Codice runtime modificato: 0
 - Tabelle rimosse da 034: 2 (`public_lookup_attempts`, `partner_scans`)
@@ -685,7 +685,7 @@ Applicati gli amendments Engineering (A-01→A-12) a `supabase/proposed/034_kora
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_CTO_REVIEW_HANDOFF.md` — handoff pack sintetico per CTO/Postgres reviewer esterno o interno. 13 sezioni:
+Creato `docs/archive/kora-link/KORA_LINK_CTO_REVIEW_HANDOFF.md` — handoff pack sintetico per CTO/Postgres reviewer esterno o interno. 13 sezioni:
 
 - **Sezione 1** — Executive summary per il reviewer (15 righe, cosa leggere, cosa non toccare)
 - **Sezione 2** — Tre domande a cui rispondere: 034 stabilizzabile? Amendments approvati? 035 può partire?
@@ -703,7 +703,7 @@ Creato `docs/KORA_LINK_CTO_REVIEW_HANDOFF.md` — handoff pack sintetico per CTO
 
 ### Metriche
 
-- File creati: 1 (`docs/KORA_LINK_CTO_REVIEW_HANDOFF.md`)
+- File creati: 1 (`docs/archive/kora-link/KORA_LINK_CTO_REVIEW_HANDOFF.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - SQL modificato: 0 · Codice runtime modificato: 0 · Migrations create: 0
 
@@ -729,7 +729,7 @@ Creato `docs/KORA_LINK_CTO_REVIEW_HANDOFF.md` — handoff pack sintetico per CTO
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_034_AMENDMENT_PLAN.md` — piano pre-redline per le modifiche a 034. 19 sezioni, 12 amendment (A-01→A-12):
+Creato `docs/archive/kora-link/KORA_LINK_034_AMENDMENT_PLAN.md` — piano pre-redline per le modifiche a 034. 19 sezioni, 12 amendment (A-01→A-12):
 
 - **A-01** — FK policy: mantenere UUID senza FK; commenti con target canonici; coerente con 033
 - **A-02** — PG compat: evitare `UNIQUE NULLS NOT DISTINCT` se PG<15; partial index equivalente
@@ -748,7 +748,7 @@ Creato `docs/KORA_LINK_034_AMENDMENT_PLAN.md` — piano pre-redline per le modif
 
 ### Metriche
 
-- File creati: 1 (`docs/KORA_LINK_034_AMENDMENT_PLAN.md`)
+- File creati: 1 (`docs/archive/kora-link/KORA_LINK_034_AMENDMENT_PLAN.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - SQL 034 modificato: 0
 - Codice runtime modificato: 0
@@ -776,7 +776,7 @@ Creato `docs/KORA_LINK_034_AMENDMENT_PLAN.md` — piano pre-redline per le modif
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_034_CTO_DECISION_PACK.md` — decision pack sintetico per CTO/Postgres reviewer con 13 sezioni:
+Creato `docs/archive/kora-link/KORA_LINK_034_CTO_DECISION_PACK.md` — decision pack sintetico per CTO/Postgres reviewer con 13 sezioni:
 
 - **Sezione 1** — Executive summary (15 righe max)
 - **Sezione 2** — Decision table sintetica: 8 decisioni, raccomandazione, owner, blocco 035/promotion, rischio
@@ -795,7 +795,7 @@ Creato `docs/KORA_LINK_034_CTO_DECISION_PACK.md` — decision pack sintetico per
 
 ### Metriche
 
-- File creati: 1 (`docs/KORA_LINK_034_CTO_DECISION_PACK.md`)
+- File creati: 1 (`docs/archive/kora-link/KORA_LINK_034_CTO_DECISION_PACK.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - Codice runtime modificato: 0
 - SQL eseguito: 0
@@ -826,7 +826,7 @@ Creato `docs/KORA_LINK_034_CTO_DECISION_PACK.md` — decision pack sintetico per
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_034_CTO_REVIEW_CHECKLIST.md` — checklist completa per la CTO/Postgres review dello schema 034:
+Creato `docs/archive/kora-link/KORA_LINK_034_CTO_REVIEW_CHECKLIST.md` — checklist completa per la CTO/Postgres review dello schema 034:
 
 - **Sezione 1** — Executive summary e stato gate
 - **Sezione 2** — Scope della review (in scope / Gate 3 / Gate 4)
@@ -842,7 +842,7 @@ Creato `docs/KORA_LINK_034_CTO_REVIEW_CHECKLIST.md` — checklist completa per l
 
 ### Metriche
 
-- File creati: 1 (`docs/KORA_LINK_034_CTO_REVIEW_CHECKLIST.md`)
+- File creati: 1 (`docs/archive/kora-link/KORA_LINK_034_CTO_REVIEW_CHECKLIST.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - Codice runtime modificato: 0
 - SQL eseguito: 0
@@ -873,7 +873,7 @@ Creato `docs/KORA_LINK_034_CTO_REVIEW_CHECKLIST.md` — checklist completa per l
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_RUNTIME_CHECKPOINT.md` — checkpoint tecnico-funzionale post KL-10:
+Creato `docs/archive/kora-link/KORA_LINK_RUNTIME_CHECKPOINT.md` — checkpoint tecnico-funzionale post KL-10:
 stato implementato (KL-01→KL-10), comportamento route pubblica, privacy posture, security posture,
 testing status (8381/8381, 253 test KORA Link), cosa NON è implementato, blocker correnti,
 raccomandazione prossimo step (Option A — DB/RLS path prioritaria).
@@ -894,7 +894,7 @@ PRODUCTION       → 🔴 NOT_READY (tutti i gate)
 
 ### Metriche
 
-- File creati: 2 (`docs/KORA_LINK_RUNTIME_CHECKPOINT.md`, `docs/KORA_LINK_GATE_REPORT.md`)
+- File creati: 2 (`docs/archive/kora-link/KORA_LINK_RUNTIME_CHECKPOINT.md`, `docs/KORA_LINK_GATE_REPORT.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - Codice runtime modificato: 0
 - Migrations create: 0
@@ -1229,7 +1229,7 @@ KORA_LINK_RATE_LIMIT_PROVIDER=upstash  → accettato (Upstash non integrato → 
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_V1_DESIGN.md` — design tecnico-funzionale completo di KORA Link v1.
+Creato `docs/archive/kora-link/KORA_LINK_V1_DESIGN.md` — design tecnico-funzionale completo di KORA Link v1.
 
 Sezioni prodotte (21 sezioni, design-only):
 
@@ -1259,7 +1259,7 @@ Sezioni prodotte (21 sezioni, design-only):
 
 ### Metriche
 
-- File creati: 2 (`docs/KORA_LINK_V1_DESIGN.md`, `docs/KORA_LINK_CHANGELOG.md`)
+- File creati: 2 (`docs/archive/kora-link/KORA_LINK_V1_DESIGN.md`, `docs/KORA_LINK_CHANGELOG.md`)
 - Codice runtime modificato: 0
 - Migrations create: 0
 - TypeScript: 0 errori
@@ -1292,7 +1292,7 @@ Sezioni prodotte (21 sezioni, design-only):
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_KL02_DECISION_GATE.md` — documento decisionale pre-codice KORA Link.
+Creato `docs/archive/kora-link/KORA_LINK_KL02_DECISION_GATE.md` — documento decisionale pre-codice KORA Link.
 
 | Sezione | Contenuto |
 |---------|-----------|
@@ -1325,7 +1325,7 @@ Motivazione: KORA Link codice deve partire dalla base hardenizzata CC-07→CC-15
 
 ### Metriche
 
-- File creati: 1 (`docs/KORA_LINK_KL02_DECISION_GATE.md`)
+- File creati: 1 (`docs/archive/kora-link/KORA_LINK_KL02_DECISION_GATE.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - Codice runtime modificato: 0
 - Migrations create: 0
@@ -1353,7 +1353,7 @@ Motivazione: KORA Link codice deve partire dalla base hardenizzata CC-07→CC-15
 
 ### Contenuto
 
-Creato `docs/KORA_LINK_TOKEN_THREAT_MODEL.md` — threat model tecnico completo del token KORA Link.
+Creato `docs/archive/kora-link/KORA_LINK_TOKEN_THREAT_MODEL.md` — threat model tecnico completo del token KORA Link.
 
 | Sezione | Contenuto |
 |---------|-----------|
@@ -1399,7 +1399,7 @@ Creato `docs/KORA_LINK_TOKEN_THREAT_MODEL.md` — threat model tecnico completo 
 
 ### Metriche
 
-- File creati: 1 (`docs/KORA_LINK_TOKEN_THREAT_MODEL.md`)
+- File creati: 1 (`docs/archive/kora-link/KORA_LINK_TOKEN_THREAT_MODEL.md`)
 - File modificati: 1 (`docs/KORA_LINK_CHANGELOG.md`)
 - Codice runtime modificato: 0
 - Migrations create: 0

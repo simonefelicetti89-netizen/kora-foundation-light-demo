@@ -19,7 +19,7 @@ function seed(): string {
 }
 
 function smokedoc(): string {
-  return readFileSync(resolve(root, 'docs/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md'), 'utf-8');
+  return readFileSync(resolve(root, 'docs/archive/gate2/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md'), 'utf-8');
 }
 
 // ── 1. Seed SQL file exists ───────────────────────────────────────────────────
@@ -207,7 +207,7 @@ describe('seed SQL does not reference production', () => {
 
 describe('GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md — existence', () => {
   it('smoke doc exists', () => {
-    expect(existsSync(resolve(root, 'docs/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md'))).toBe(true);
+    expect(existsSync(resolve(root, 'docs/archive/gate2/GATE2_PHASE1_STAGING_SEED_AND_SMOKE.md'))).toBe(true);
   });
 
   it('smoke doc is non-empty', () => {

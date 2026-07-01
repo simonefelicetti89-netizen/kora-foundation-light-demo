@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { resolve } from 'path';
 
-const DOC_PATH = 'docs/GATE2_PHASE1_VALID_AUTH_USERS_READY.md';
+const DOC_PATH = 'docs/archive/gate2/GATE2_PHASE1_VALID_AUTH_USERS_READY.md';
 
 function doc(): string {
   return readFileSync(resolve(process.cwd(), DOC_PATH), 'utf-8');

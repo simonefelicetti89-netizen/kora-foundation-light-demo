@@ -20,11 +20,11 @@ function rollback(): string {
 }
 
 function phase1doc(): string {
-  return readFileSync(resolve(root, 'docs/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md'), 'utf-8');
+  return readFileSync(resolve(root, 'docs/archive/gate2/GATE2_PHASE1_POST_MIGRATION_VERIFICATION.md'), 'utf-8');
 }
 
 function checklist(): string {
-  return readFileSync(resolve(root, 'docs/GATE2_STAGING_EXECUTION_CHECKLIST.md'), 'utf-8');
+  return readFileSync(resolve(root, 'docs/archive/gate2/GATE2_STAGING_EXECUTION_CHECKLIST.md'), 'utf-8');
 }
 
 // ── 1. Rollback 029 exists in quarantine location ────────────────────────────

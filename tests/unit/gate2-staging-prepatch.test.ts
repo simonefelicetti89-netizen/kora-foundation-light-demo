@@ -27,14 +27,14 @@ function mig(name: string): string {
 }
 
 function checklist(): string {
-  return read('docs/GATE2_STAGING_EXECUTION_CHECKLIST.md');
+  return read('docs/archive/gate2/GATE2_STAGING_EXECUTION_CHECKLIST.md');
 }
 
 // ── 1. Checklist doc exists ────────────────────────────────────────────────────
 
 describe('GATE2_STAGING_EXECUTION_CHECKLIST.md', () => {
   it('checklist doc exists', () => {
-    expect(existsSync(resolve(root, 'docs/GATE2_STAGING_EXECUTION_CHECKLIST.md'))).toBe(true);
+    expect(existsSync(resolve(root, 'docs/archive/gate2/GATE2_STAGING_EXECUTION_CHECKLIST.md'))).toBe(true);
   });
 
   it('checklist is non-empty', () => {

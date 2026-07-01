@@ -83,23 +83,23 @@ describe('/api/test/* routes — confirmed absent from main', () => {
   });
 
   it('doc states test routes are absent from main', () => {
-    const doc = read('docs/test-routes-removal-before-production.md');
+    const doc = read('docs/archive/qa/test-routes-removal-before-production.md');
     expect(doc).toMatch(/removed from.*main|absent.*from.*main|removed from `main`/i);
   });
 
   it('doc separates completed removal from pre-staging and pre-production checklist items', () => {
-    const doc = read('docs/test-routes-removal-before-production.md');
+    const doc = read('docs/archive/qa/test-routes-removal-before-production.md');
     expect(doc).toContain('Pre-Staging Checklist');
     expect(doc).toContain('Pre-Production Checklist');
   });
 
   it('doc marks route removal as completed [x]', () => {
-    const doc = read('docs/test-routes-removal-before-production.md');
+    const doc = read('docs/archive/qa/test-routes-removal-before-production.md');
     expect(doc).toMatch(/\[x\].*Remove all.*\/api\/test/i);
   });
 
   it('doc does not contain language implying routes still exist', () => {
-    const doc = read('docs/test-routes-removal-before-production.md');
+    const doc = read('docs/archive/qa/test-routes-removal-before-production.md');
     // Should not say "routes that exist" as a present-tense claim
     expect(doc).not.toMatch(/routes that exist for development/i);
     // Should not say "These routes must be removed" as a future-tense imperative without noting they already are
@@ -181,7 +181,7 @@ describe('migration 011 — kora_worker_id read is intentionally retained and do
 // ── D. Gate 2 Review Pack reflects final state ────────────────────────────────
 
 describe('Gate 2 Review Pack — migration 011 state correctly documented', () => {
-  const doc = () => read('docs/GATE2_SQL_REVIEW_PACK.md');
+  const doc = () => read('docs/archive/gate2/GATE2_SQL_REVIEW_PACK.md');
 
   it('migration 011 row no longer implies uncleaned raw role reads', () => {
     const content = doc();
@@ -226,7 +226,7 @@ describe('Gate 2 Review Pack — migration 011 state correctly documented', () =
 
   it('test-routes doc reference or its current status is clean', () => {
     // The doc should no longer imply routes still need to be removed
-    const testRoutesDoc = read('docs/test-routes-removal-before-production.md');
+    const testRoutesDoc = read('docs/archive/qa/test-routes-removal-before-production.md');
     expect(testRoutesDoc).toMatch(/removed from.*main|absent.*main/i);
   });
 });
