@@ -86,7 +86,7 @@ function NoDataState({ companyName }: { companyName?: string | null }) {
   return (
     <div className="space-y-5">
       <PageMasthead
-        eyebrow="KORA Index™ v3 · Scomposizione analitica"
+        eyebrow="KORA Index v1.0 · Scomposizione analitica"
         title={companyName ?? 'La tua organizzazione'}
         subline="Il KORA Index™ sarà disponibile al termine della pipeline dati."
       />

@@ -235,7 +235,7 @@ export function buildExplainabilityTrace(params: {
     confidence: round3(confidence.score / 100),
     warning:
       koraIndex.calibrationStatus === 'pre_empirical_calibration'
-        ? 'KORA Index v0.1 pre_empirical_calibration — non certificato per uso regolatorio o legale.'
+        ? 'KORA Index v1.0 pre_empirical_calibration — non certificato per uso regolatorio o legale.'
         : undefined,
     source: ENGINE_SOURCE,
   });

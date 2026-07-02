@@ -223,7 +223,7 @@ export function HeroDiagnosis({
         fontFamily:   'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif',
       }}>
         <strong style={{ color: 'rgba(255,255,255,0.40)', fontWeight: 600 }}>Interpretazione score:</strong>{' '}
-        KORA Index v0.1 è in calibrazione pre-empirica. Non esistono ancora benchmark di settore validati —
+        KORA Index v1.0 è in calibrazione pre-empirica. Non esistono ancora benchmark di settore validati —
         i valori sono diagnostici e interni. Confronto settoriale disponibile post-pilot (Delphi Study).
         &nbsp;·&nbsp; Calibrazione: <span style={{ fontFamily: 'ui-monospace, monospace' }}>pre_empirical_calibration</span>
       </div>

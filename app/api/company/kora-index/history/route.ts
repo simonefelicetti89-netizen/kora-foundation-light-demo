@@ -116,6 +116,6 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     period_count:    periodCount,
     first_period:    periodCount === 1,
     has_trend:       periodCount >= 2,
-    methodology_note: 'Storico KORA Index v3 — Dati aggregati · Nessun dato individuale · pre_empirical_calibration',
+    methodology_note: 'Storico KORA Index v1.0 — Dati aggregati · Nessun dato individuale · pre_empirical_calibration',
   } satisfies KoraIndexHistoryResponse);
 }

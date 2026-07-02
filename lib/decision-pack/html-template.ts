@@ -945,7 +945,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
     <!-- KORA Index as visual anchor -->
     <div class="cv-ki-block">
-      <span class="cv-ki-label">KORA Index v2.0</span>
+      <span class="cv-ki-label">KORA Index v1.0</span>
       <span class="cv-ki-num">${kiVal}</span>
       <span class="cv-ki-denom">/100</span>
     </div>
@@ -1012,7 +1012,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
         <span class="toc-num">2</span>
         <div style="flex:1;">
           <div class="toc-label">KORA Index &amp; Activation Safeguard</div>
-          <div class="toc-sub">Valore KORA Index v2.0, Confidence Score, Activation Safeguard, Reach Semantics.</div>
+          <div class="toc-sub">Valore KORA Index v1.0, Confidence Score, Activation Safeguard, Reach Semantics.</div>
         </div>
       </div>
       <div class="toc-row">
@@ -1104,7 +1104,7 @@ ${buildExecutiveBriefPage(data)}
 
     <div class="bm-metrics">
       <div class="bm-metric" style="border:1px solid #eaebf4;border-radius:5pt;">
-        <div class="bm-metric-label">KORA Index v2.0</div>
+        <div class="bm-metric-label">KORA Index v1.0</div>
         <div class="bm-metric-val" style="font-size:56pt;">${kiVal}</div>
         <div class="bm-metric-sub">/100 · ${esc(koraIndex.methodologyVersionId)}</div>
         <div style="font-size:7pt;color:#9899b3;margin-top:6pt;line-height:1.4;text-align:left;padding:0 3pt;">Efficacia nel convertire iniziative people in attivazione verificata, distribuita e significativa. Output aziendale aggregato — nessun individuo misurabile.</div>
@@ -1172,7 +1172,7 @@ ${buildExecutiveBriefPage(data)}
   <div class="pc">
 
     <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:16pt;max-width:460pt;">
-      Il KORA Index v2.0 è composto da 4 macroblocchi con pesi differenziati. Ogni macroblocco esprime una
+      Il KORA Index v1.0 è composto da 4 macroblocchi con pesi differenziati. Ogni macroblocco esprime una
       dimensione strategica dell'attivazione organizzativa. I valori sono pre-calibrazione empirica (v0.1).
     </p>
 
@@ -1226,14 +1226,14 @@ ${buildExecutiveBriefPage(data)}
 
 <!-- ═══════════════════════════════════════════
      PAGE — DIAGNOSTIC COMPONENTS (§4)
-     I 10 componenti del KORA Index v2.0
+     I 10 componenti del KORA Index v1.0
      ═══════════════════════════════════════════ -->
 <div class="page cp">
   ${pageHeader('Diagnostic Components')}
   <div class="pc">
 
     <p style="font-size:10pt;color:#555670;line-height:1.6;margin-bottom:14pt;max-width:460pt;">
-      Il KORA Index v2.0 è composto da 10 componenti fissi. Ogni componente misura una dimensione specifica
+      Il KORA Index v1.0 è composto da 10 componenti fissi. Ogni componente misura una dimensione specifica
       dell'attivazione organizzativa. Il Confidence Score (CS) è esterno al KORA Index — peso = 0.
     </p>
 
@@ -1284,7 +1284,7 @@ ${buildExecutiveBriefPage(data)}
       </tbody>
     </table>
     <div style="margin-top:12pt;padding:9pt 14pt;background:#fffbeb;border:1px solid #fde68a;border-radius:4pt;font-size:8pt;color:#92400e;line-height:1.5;">
-      <strong>CS = Confidence Score</strong> è un indicatore esterno al KORA Index v2.0 (peso = 0). Non entra nel calcolo.
+      <strong>CS = Confidence Score</strong> è un indicatore esterno al KORA Index v1.0 (peso = 0). Non entra nel calcolo.
       Viene mostrato affianco al KORA Index come indicatore di affidabilità dei dati sottostanti.
       EQ = Equity misura equità distributiva tra segmenti workforce — non include equità tra individui.
     </div>
@@ -1371,7 +1371,7 @@ ${buildExecutiveBriefPage(data)}
 
     <div style="margin-top:auto;">
       <p style="font-size:7.5pt;color:#9899b3;">
-        Componenti KORA Index v2.0: ${koraIndex.componentCount > 0 ? koraIndex.componentCount : 10} / 10 &nbsp;·&nbsp;
+        Componenti KORA Index v1.0: ${koraIndex.componentCount > 0 ? koraIndex.componentCount : 10} / 10 &nbsp;·&nbsp;
         ${esc(koraIndex.methodologyVersionId)} &nbsp;·&nbsp; ${esc(koraIndex.calibrationStatus)}
       </p>
     </div>
@@ -1410,7 +1410,7 @@ ${buildExecutiveBriefPage(data)}
     ${pillarDistribution && dominantPillar && dominantPct > 60 ? `
     <div class="pb-note">
       <strong>Nota squilibrio:</strong> Il pillar ${esc(dominantPillar)} rappresenta il ${dominantPct}% dell'attivazione classificata.
-      Una distribuzione più equilibrata (Pillar Balance — PB) contribuisce positivamente al KORA Index v2.0.
+      Una distribuzione più equilibrata (Pillar Balance — PB) contribuisce positivamente al KORA Index v1.0.
       Considerare programmi nei pillar meno rappresentati.
     </div>` : ''}
 
@@ -2141,7 +2141,7 @@ ${buildExecutiveBriefPage(data)}
         <div class="mp-ic">📊</div>
         <div>
           <div class="mp-title">Confidence Score Esterno</div>
-          <div class="mp-desc">Il CS non è un componente del KORA Index v2.0 (peso = 0). È un indicatore di qualità dati — sempre mostrato affianco all'indice.</div>
+          <div class="mp-desc">Il CS non è un componente del KORA Index v1.0 (peso = 0). È un indicatore di qualità dati — sempre mostrato affianco all'indice.</div>
         </div>
       </div>
       <div class="mp-item">
@@ -2366,7 +2366,7 @@ ${buildExecutiveBriefPage(data)}
             <td style="padding:5pt 8pt;">CF è una proxy sito/cluster in v0.1. Il valore canonico (cross-periodo, basato su PIB individuale) richiede dati multi-periodo non disponibili in questo pilota.</td>
           </tr>
           <tr style="border-bottom:1px solid #e8e7f7;">
-            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">Pesi KORA Index v2.0</td>
+            <td style="padding:5pt 8pt;font-weight:600;color:#06032B;">Pesi KORA Index v1.0</td>
             <td style="padding:5pt 8pt;">REACH 25% · QUALITY 30% · EQUITY 25% · BTI 20% — calibrazione v0.1 pre-empirica. Non validati esternamente. Non vi è benchmark di settore disponibile in KORA Foundation Light.</td>
           </tr>
           <tr>

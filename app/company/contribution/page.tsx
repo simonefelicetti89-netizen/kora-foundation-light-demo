@@ -226,7 +226,7 @@ export default async function KoraContributionPage() {
           lineHeight:   1.6,
         }}
       >
-        <strong>Nota metodologica.</strong> KORA Contribution™ è un indicatore companion — non è una componente del KORA Index™ v3 e non influenza il punteggio organizzativo.
+        <strong>Nota metodologica.</strong> KORA Contribution™ è un indicatore companion — non è una componente della KORA Methodology Architecture v3 (KORA Index v1.0) e non influenza il punteggio organizzativo.
         Calibrazione: {getCalibrationStatus().replace(/_/g, ' ')} · Formula provvisoria non calibrata empiricamente.
       </div>
 

@@ -91,6 +91,8 @@ Pillar codes used in code: `LIFE`, `GROWTH`, `CONNECTION`, `IMPACT`, `LEGACY`
 
 ## 5. KORA Index v3 — Exactly 10 Components
 
+> **Clarification (KORA-INDEX-VERSION-02):** "KORA Index v3" names the internal methodology/architecture generation — the 10-component macroblock structure defined in this section and in `docs/10-architecture-v3-layer-specification.md`. It is not a public release label. Public/client-facing product surfaces (UI, reports, Decision Pack, API metadata) use **"KORA Index v1.0"** as the version label unless explicitly revised by founder decision. The two are different axes, not competing values for the same field.
+
 The KORA Index v3 has exactly these 10 components. Do not add, remove, merge, or rename any.
 
 | Code | Name | Meaning | Macroblock |
