@@ -1,4 +1,4 @@
-# E2E Authenticated Test Fixtures (GOLDEN-02)
+# E2E Authenticated Test Fixtures (GOLDEN-02 / GOLDEN-03B)
 
 Status: test infrastructure only. No golden path steps (upload, UEF, scoring,
 Decision Pack) are exercised yet — see `docs/GOLDEN_PATH_RUNBOOK.md` for the
@@ -45,6 +45,41 @@ Playwright does not auto-load `.env.local` — export these in your shell
 (or your CI secret store) before running `npm run test:e2e`. Do not put
 real values in `.env.local.example`.
 
+## Running A01 (KORA_ADMIN) locally (GOLDEN-03B)
+
+`E2E_BASE_URL` now actually controls where Playwright navigates
+(`playwright.config.ts` reads it into `use.baseURL`) — previously it was
+only read by the production guard, decoupled from real navigation.
+
+Local run (default target, local dev server auto-starts):
+
+```bash
+export E2E_KORA_ADMIN_EMAIL="kora-admin@staging.kora.internal"
+export E2E_KORA_ADMIN_PASSWORD="<operator-local-password>"
+export E2E_BASE_URL="http://localhost:3000"
+npm run test:e2e -- --grep "A01"
+```
+
+Set the password yourself, locally, in your own shell — never share it in
+chat, an issue, a PR, or a commit. `E2E_BASE_URL` is optional here since
+it matches the default, shown only for clarity.
+
+Staging run (only if you know it's safe to point at a real staging
+deployment — requires the production guard's explicit opt-in since any
+non-local host is treated as production-like):
+
+```bash
+export E2E_KORA_ADMIN_EMAIL="kora-admin@staging.kora.internal"
+export E2E_KORA_ADMIN_PASSWORD="<operator-local-password>"
+export E2E_BASE_URL="https://<staging-host>"
+export E2E_ALLOW_PRODUCTION=true
+npm run test:e2e -- --grep "A01"
+```
+
+When `E2E_BASE_URL` is set to anything other than the default, Playwright
+no longer auto-starts a local dev server (`webServer` is skipped) — the
+target under `E2E_BASE_URL` is assumed to already be running.
+
 ## Production guard
 
 `tests/e2e/helpers/env.ts#guardBaseUrl()` treats any `E2E_BASE_URL` host
@@ -52,6 +87,9 @@ other than `localhost` / `127.0.0.1` / `0.0.0.0` / `::1` / `*.local` as
 production-like and skips all authenticated tests with a clear reason
 unless `E2E_ALLOW_PRODUCTION=true` is explicitly set. This is a safety
 guard, not an access-control mechanism — it does not touch app auth code.
+As of GOLDEN-03B, this guard now governs a value that actually drives
+browser navigation, so it is a meaningful safeguard rather than a
+documentation-only check.
 
 ## What is intentionally out of scope here
 
