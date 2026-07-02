@@ -5,6 +5,10 @@
 
 This document describes the exact steps to onboard a pilot company from contract signature to live KORA Index display. Each step references the actual API route or UI path.
 
+**This is a service-assisted path.** Every step through Step 10 is performed
+by KORA_ADMIN, not the pilot company. COMPANY_ADMIN access (Step 11) is
+view-only. KORA Link is frozen and is not part of this protocol.
+
 ---
 
 ## Prerequisites
@@ -278,9 +282,17 @@ They should see:
 - Data readiness status: updated after intake
 - Decision Pack status: `draft` (or `ready` if you publish it)
 
-**Current state (Foundation Light v0.1):** The `/company/workspace` page shows live Supabase data. Other company pages (`/company/kora-index`, `/company/financial`, etc.) currently show the Meridiana Group synthetic demo data — not the pilot company's live score. Live display on company intelligence pages is Sprint P2 work.
+**Current state:** `/company/workspace` and `/company/kora-index` both show live,
+per-tenant Supabase data — there is no synthetic demo fallback on these pages
+(confirmed in the GOLDEN-01 golden path audit). The company sees their own
+score, not a placeholder. This access is currently **view-only**: the
+COMPANY_ADMIN does not upload data, approve UEF, or trigger scoring — that
+remains a KORA_ADMIN-operated (service-assisted) step, per this protocol.
 
-**Workaround for pilot presentation:** Share the Decision Pack PDF directly with the company. Use the admin preview at `/api/admin/decision-pack/preview` to present the KORA Index live in a screen share.
+**For pilot presentation:** the Decision Pack PDF/HTML preview
+(`/api/admin/decision-pack/preview`) remains the recommended artifact to walk
+through with the company, since it is the polished, report-formatted output —
+but `/company/kora-index` itself is also live and can be shown directly.
 
 ---
 
@@ -291,9 +303,9 @@ Every KORA Index output shown to the company must include:
 - KORA Index value
 - Confidence Score (external — not a KORA Index component)
 - Activation Safeguard status (CLEAR / WARNING / FLAGGED)
-- `KORA Methodology v0.1`
+- `methodology_version_id: "KORA Index v1.0"`
 - `calibration_status: pre_empirical_calibration`
-- The following disclaimer: *"KORA Index Foundation Light v0.1 — pre-calibrazione empirica. Output diagnostico pilota. Non certificato, non regulatory-grade."*
+- The following disclaimer: *"KORA Foundation Light — pre-empirical calibration. Output diagnostico pilota. Non certificato, non regulatory-grade."*
 
 These are non-suppressible per doc 21b.
 
@@ -308,7 +320,6 @@ These are non-suppressible per doc 21b.
 | `PII detected — batch rejected` | Company file contains personal identifiers | Return file to company with finding details |
 | `Tenant not found` | Wrong tenantId UUID | Verify tenantId from step 1 |
 | `workforcePopulation must be >= 10` | Workforce count < 10 | Check company data — must have at least 10 workers |
-| Company sees Meridiana demo data | Sprint P2 not yet complete | Use admin preview for pilot presentation |
 | `batchId not found` | Wrong batch UUID | Check batch list at `GET /api/admin/uef/review` |
 
 ---
