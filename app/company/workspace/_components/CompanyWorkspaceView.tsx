@@ -368,7 +368,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 </p>
               </div>
               <p className="text-[9px] text-[rgba(6,3,43,0.35)] font-mono pt-1">
-                KORA Index v3 · pre_empirical_calibration · Dati aggregati
+                KORA Index v1.0 · pre_empirical_calibration · Dati aggregati
               </p>
             </div>
           ) : (
@@ -418,7 +418,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
                 </table>
               </div>
               <p className="text-[9px] text-[rgba(6,3,43,0.35)] font-mono">
-                KORA Index v3 · pre_empirical_calibration · Dati aggregati · Nessun dato individuale
+                KORA Index v1.0 · pre_empirical_calibration · Dati aggregati · Nessun dato individuale
               </p>
             </div>
           )}

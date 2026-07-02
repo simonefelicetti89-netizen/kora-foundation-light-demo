@@ -200,7 +200,7 @@ export function computeConfidence(params: {
 
   warnings.push(
     `Fonte: ${ENGINE_SOURCE} | KORA-METHOD-v2.0 | ` +
-    'CS è ESTERNO al KORA Index v2.0 — peso=0 nel calcolo, ' +
+    'CS è ESTERNO al KORA Index v1.0 — peso=0 nel calcolo, ' +
     'mostrato a fianco per trasparenza metodologica (doc 21b).',
   );
 

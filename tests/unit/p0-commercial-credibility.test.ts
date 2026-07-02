@@ -4,7 +4,9 @@
  * Verifies that the four P0 commercial gaps identified in the Founder Audit are addressed:
  *   P0-1  KORA Contribution Foundation Light fallback (not empty shell)
  *   P0-2  KORA Index historical trend API + panel
- *   P0-3  KORA Index naming alignment (v3 canonical, EQW/EQS not EQ)
+ *   P0-3  KORA Index naming alignment (EQW/EQS not EQ; public label KORA Index v1.0,
+ *         internal architecture generation "KORA Methodology Architecture v3" —
+ *         see KORA-INDEX-VERSION-02)
  *   P0-4  KORA Space commercial credibility (no embarrassing synthetic labels)
  *
  * All tests are pure file-system checks — no runtime, no DB, no network.
@@ -171,9 +173,10 @@ describe('P0-2 — KORA Index historical trend', () => {
     expect(workspace).toContain('Primo periodo misurato');
   });
 
-  it('history panel methodology note references v3', () => {
+  it('history panel methodology note references the public version label', () => {
     const route = read('app/api/company/kora-index/history/route.ts');
-    expect(route).toContain('KORA Index v3');
+    expect(route).toContain('KORA Index v1.0');
+    expect(route).not.toContain('KORA Index v3');
   });
 
   // Regression test for the KL-24 bugfix: safeguard_status lives on
@@ -239,9 +242,10 @@ describe('P0-3 — KORA Index naming alignment', () => {
     expect(workspace).not.toContain('WB + PC + PB + EQ');
   });
 
-  it('Contribution page methodology notice uses KORA Index v3 label', () => {
+  it('Contribution page methodology notice names the internal architecture generation without a ™ version label', () => {
     const contrib = read('app/company/contribution/page.tsx');
-    expect(contrib).toContain('KORA Index™ v3');
+    expect(contrib).toContain('KORA Methodology Architecture v3');
+    expect(contrib).not.toContain('KORA Index™ v3');
   });
 
   it('Contribution page does not show "KORA Index v2.0" in public-facing text', () => {
@@ -251,14 +255,15 @@ describe('P0-3 — KORA Index naming alignment', () => {
     expect(contrib).not.toContain("'KORA Index v2.0'");
   });
 
-  it('History panel references KORA Index v3 in methodology note', () => {
+  it('History panel references the public version label in methodology note', () => {
     const route = read('app/api/company/kora-index/history/route.ts');
-    expect(route).toContain('KORA Index v3');
+    expect(route).toContain('KORA Index v1.0');
+    expect(route).not.toContain('KORA Index v3');
   });
 
   it('KORA Index formula macroblock structure remains unchanged', () => {
     const engine = read('lib/kora-engine/kora-index-engine.ts');
-    // KORA Index v3 macroblock names must still be present
+    // Macroblock names are structural — unaffected by the v1.0/v3 label unification
     expect(engine).toContain('REACH');
     expect(engine).toContain('QUALITY');
     expect(engine).toContain('EQUITY');

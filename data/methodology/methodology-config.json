@@ -1,15 +1,15 @@
 {
-  "version": "KORA Index v2.0",
+  "version": "KORA Index v1.0",
   "algorithm_version": "KORA-METHOD-v3.0",
   "calibration_status": "pre_empirical_calibration",
 
-  "methodology_note": "KORA Index v2.0 — Sprint 1 IU-centric refactor. pillarDistribution ora IU-weighted. QUALITY = EVQ×34% + INT×33% + CONT×33%. EQUITY = EQW×30% + EQS×20% + PC×25% + PB×25%. Componenti insufficient_data contribuiscono 0 senza redistribuzione (tetto, non gonfiaggio). Pre-calibrazione empirica.",
+  "methodology_note": "KORA Index v1.0 — Sprint 1 IU-centric refactor. pillarDistribution ora IU-weighted. QUALITY = EVQ×34% + INT×33% + CONT×33%. EQUITY = EQW×30% + EQS×20% + PC×25% + PB×25%. Componenti insufficient_data contribuiscono 0 senza redistribuzione (tetto, non gonfiaggio). Pre-calibrazione empirica.",
 
   "kora_index_v3": {
     "cs_external": true,
-    "cs_note": "Confidence Score (CS) è esterno al KORA Index v2.0. Peso = 0. Mostrato a fianco per trasparenza metodologica (doc 21b).",
+    "cs_note": "Confidence Score (CS) è esterno al KORA Index v1.0. Peso = 0. Mostrato a fianco per trasparenza metodologica (doc 21b).",
     "activation_safeguard_note": "Activation Safeguard (CLEAR / WARNING / FLAGGED) è un gate interpretativo post-calcolo. Non è un componente pesato.",
-    "note": "KORA Index v2.0 — IU-centric, no redistribuzione pesi, Foundation Light pre-empirical calibration.",
+    "note": "KORA Index v1.0 — IU-centric, no redistribuzione pesi, Foundation Light pre-empirical calibration.",
 
     "int_target_iu_per_active_worker": 1.0,
 

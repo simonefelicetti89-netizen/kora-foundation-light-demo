@@ -6,6 +6,9 @@ const config: MethodologyConfig = rawConfig as MethodologyConfig;
 
 // ── Existing functions — unchanged, safe for all current consumers ─────────────
 
+// Existing historical records may contain older methodology_version_id values
+// (e.g. "KORA Index v2.0"). This function defines the label for newly generated
+// outputs only — no backfill of already-persisted rows.
 export function getMethodologyVersion(): string {
   return config.version;
 }
@@ -51,7 +54,7 @@ export function getIntTarget(): number {
 }
 
 /**
- * Returns the four macroblock weights for KORA Index v2.0.
+ * Returns the four macroblock weights for KORA Index v1.0.
  * REACH 0.25 · QUALITY 0.30 · EQUITY 0.25 · BTI 0.20
  * Falls back to canonical constants if config is not yet populated.
  */
