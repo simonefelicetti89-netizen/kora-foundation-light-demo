@@ -1,5 +1,8 @@
 # KORA — Platform Readiness Summary
 
+> **Superseded as the current-status reference by `docs/STATUS.md`** (CLEANUP-01, 2026-07-03).
+> This document is a historical snapshot dated 2026-06-30 — kept for record, not for current facts.
+
 **Branch:** `platform/readiness`
 **Base:** `value-freeze-v1` (`eaecdad`) = `main`
 **HEAD:** `b9f0359` (CC-14)
