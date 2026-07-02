@@ -1,30 +1,52 @@
 # KORA Data Intake Studio — Technical Documentation
 
-**Status:** Implemented · Synthetic Live v1  
+**Status:** Implemented — synthetic OP-001 preview **and** real tenant upload  
 **Route:** `/admin/data-intake`  
 **Auth:** KORA_ADMIN session only  
-**Data:** Synthetic deterministic (OP-001) · No real people or company data  
-**Scope:** Preview only — no file upload, no real data intake, no scoring recalculation
+**Data:** Synthetic (OP-001, preview/demo) **or** real tenant data (real upload, real tenant code)  
+**Scope:** Preview + real file upload/accept for real tenants; scoring recalculation happens separately in `/admin/uef-review`
+
+> **Update:** real CSV/XLSX upload for real tenants was added after this
+> document was first written and is documented end-to-end in
+> `docs/GOLDEN_PATH_RUNBOOK.md` (Step 3) and `docs/PILOT_INTAKE_PROTOCOL.md`
+> (Steps 4–5). The sections below describing the **OP-001 synthetic preview**
+> flow (`GET /api/admin/data-intake/preview`) are still accurate for that
+> specific, still-synthetic-only code path — they do not describe the whole
+> `/admin/data-intake` route anymore.
 
 ---
 
 ## Scopo
 
-Il KORA Data Intake Studio è una UI didattica che rende visibile il percorso con cui KORA trasforma un batch sintetico in output:
+Il KORA Data Intake Studio serve due scopi sulla stessa route `/admin/data-intake`:
 
-> Synthetic batch preview → PII Guard → Eligibility Gate → UEF Preview → Run Scoring → Decision Pack
+1. **Preview didattico OP-001** (sintetico, invariato da questo documento):
+   > Synthetic batch preview → PII Guard → Eligibility Gate → UEF Preview → Run Scoring → Decision Pack
+2. **Upload reale per tenant reali** (aggiunto successivamente — vedi
+   `docs/GOLDEN_PATH_RUNBOOK.md` Step 3): selezione tenant reale → upload
+   CSV/XLSX → dry-run preview → conferma pseudonimizzazione → accept →
+   generazione candidati UEF.
 
-Aiuta a spiegare KORA in demo: "Il dato entra, viene controllato, normalizzato, trasformato in UEF, passa nel motore, produce risultati e genera Decision Pack."
+Il preview OP-001 aiuta a spiegare KORA in demo: "Il dato entra, viene controllato, normalizzato, trasformato in UEF, passa nel motore, produce risultati e genera Decision Pack" — senza toccare dati reali.
 
 ---
 
-## Solo dati sintetici — nessun upload reale
+## OP-001: solo dati sintetici — nessun upload reale (per questo tenant)
 
-- **Nessun `<input type="file">`** — la UI non ha form di upload.
-- **Nessun CSV/XLSX parsing** — i record sono costruiti deterministicamente da `getOp001SyntheticRecords()`.
-- **Nessuna scrittura DB** dal preview endpoint — solo lettura read-only per il result snapshot.
-- **Nessun dato reale** — tutti i record sono sintetici, etichettati `syntheticData: true` e `notRealPeople: true`.
-- **Gate 3B required** prima di qualsiasi intake con dati reali di persone o aziende.
+Quanto segue si applica **solo alla selezione del tenant OP-001**, non alla route nel suo complesso:
+
+- **Nessun `<input type="file">` nel percorso preview OP-001** — il preview endpoint (`GET /api/admin/data-intake/preview`) non ha form di upload, i record sono costruiti deterministicamente da `getOp001SyntheticRecords()`.
+- **Nessuna scrittura DB** dal preview endpoint OP-001 — solo lettura read-only per il result snapshot.
+- **Nessun dato reale in OP-001** — tutti i record sono sintetici, etichettati `syntheticData: true` e `notRealPeople: true`.
+
+Per un **tenant reale** selezionato nella stessa UI, esistono invece form di
+upload reali (`<input type="file" accept=".csv,.xlsx">`) e due route reali:
+`POST /api/admin/data-intake/upload-preview` (dry-run, nessuna scrittura) e
+`POST /api/admin/data-intake/accept` (persiste su `analytics.source_batch` e
+`personal.uploaded_record`). **Gate 3B resta un prerequisito legale/privacy
+per l'onboarding di dati reali di persone o aziende** — non blocca
+tecnicamente l'upload, ma è un prerequisito di processo prima di usarlo con
+un cliente reale.
 
 ---
 
@@ -103,24 +125,31 @@ Il rendering del client component avviene solo dopo che `requireKoraAdmin()` ha 
 
 ## Limiti attuali
 
-- Solo dati sintetici OP-001 — non personalizzabile per altri tenant nella UI
-- Nessun upload reale — by design (Gate 3B required)
+**Percorso OP-001 (preview sintetico):**
+- Solo dati sintetici predefiniti — non personalizzabile, un solo batch fisso
 - Nessun pillar mapping nel preview (il Pillar Mapper è un modulo separato non ancora integrato nel flow)
 - Il result snapshot è read-only — per aggiornarlo bisogna usare "Run operator flow"
-- La UI mostra i dati del solo batch sintetico predefinito, non batch reali
+
+**Percorso tenant reale (upload):**
+- L'upload reale esiste (`upload-preview` + `accept`) — vedi nota di aggiornamento in cima al documento
+- Nessuna gestione batch multipli/storico/rollback in UI dedicata (vedi punto 8 sotto)
 
 ---
 
-## Cosa manca per il data intake reale
+## Cosa manca per il data intake reale end-to-end
 
-1. **Gate 3B chiuso** — legal/privacy review completa
-2. **Upload form sicuro** — con validazione, limite dimensione, tipi file consentiti
-3. **CSV/XLSX parser** — server-side, con strict PII check prima di qualsiasi persistenza
-4. **PII policy strict reject** — TODO-004 (attualmente `review_required`)
-5. **Source pseudonymization pipeline** — pseudonimizzazione all'origine prima del caricamento
-6. **Consent worker check** — verifica consenso worker per ogni record
-7. **DPA e clausole contrattuali** — prerequisiti legali per dati reali
-8. **Batch management UI** — gestione batch multipli, storico, rollback
+1. **Gate 3B chiuso** — legal/privacy review completa (ancora aperto)
+2. ~~Upload form sicuro~~ — **implementato**: `DataIntakeStudio.tsx` ha upload CSV/XLSX reale con validazione, dry-run preview e conferma pseudonimizzazione
+3. ~~CSV/XLSX parser server-side~~ — **implementato**: `upload-preview` (dry-run) + `accept` (persistenza), con PII guard prima di qualsiasi scrittura
+4. **PII policy strict reject** — TODO-004 (attualmente `review_required`, non ancora verificato in questa revisione)
+5. **Source pseudonymization pipeline** — pseudonimizzazione all'origine prima del caricamento (non ancora verificato in questa revisione)
+6. **Consent worker check** — verifica consenso worker per ogni record (non ancora verificato in questa revisione)
+7. **DPA e clausole contrattuali** — prerequisiti legali per dati reali (fuori ambito tecnico)
+8. **Batch management UI** — gestione batch multipli, storico, rollback (non ancora verificato in questa revisione)
+
+Items 4–6 e 8 non sono stati riverificati contro il codice in questa revisione
+documentale (GOLDEN-04-DOCS, solo allineamento versioning/upload) — trattali
+come stato all'ultima verifica nota, non come confermati aggiornati.
 
 ---
 

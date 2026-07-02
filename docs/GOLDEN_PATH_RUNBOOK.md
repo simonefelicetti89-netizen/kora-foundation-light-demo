@@ -28,6 +28,21 @@ Se vedi `v0.1`, `v3`, `Foundation Light v0.1`, o `KORA Index v3` nelle superfici
 
 ---
 
+## Percorso pilota attuale
+
+Il percorso cliente reale oggi è **service-assisted**, non self-service: KORA_ADMIN
+esegue l'intake, la review UEF, l'approvazione, lo scoring e la generazione del
+Decision Pack per conto del tenant. Il COMPANY_ADMIN accede in sola visualizzazione
+al proprio workspace — non carica dati, non approva UEF, non lancia scoring.
+
+**KORA Link è congelato** — non fa parte del percorso pilota corrente. Nessuno step
+di questo runbook dipende da KORA Link.
+
+Vedi anche "Pilot Readiness Status" in fondo a questo documento per lo stato di
+verifica automatizzata (E2E) del percorso.
+
+---
+
 ## Prerequisiti
 
 Prima di iniziare, verifica:
@@ -342,7 +357,7 @@ Dopo il Golden Path completato, il tenant `ACME-TST` deve mostrare:
 
 ## Interpretare il punteggio Golden Path
 
-### Bande di interpretazione del KORA Index (v2.0)
+### Bande di interpretazione del KORA Index (v1.0)
 
 Soglie definite in `data/methodology/methodology-config.json["score_bands"]` (fonte canonica).
 Orientative e non sostitutive dell'analisi contestuale di CS + Safeguard + regime.
@@ -365,19 +380,53 @@ Orientative e non sostitutive dell'analisi contestuale di CS + Safeguard + regim
 - **`calibration_status = pre_empirical_calibration`**: label non sopprimibile — il punteggio è diagnostico, non certificato.
 - **NM**: sforzo/attualità/ripetizione girando neutro (=1.0) finché l'intake non porta `hours`, `event_date`, `b6_repetition_count` (voce P1 BACKLOG).
 
-### Dataset di calibrazione disponibili (motore v2.0 — Foundation Light)
+### Dataset di calibrazione disponibili (KORA Index v1.0 — Foundation Light)
 
 Output deterministici verificati da `runKoraPipeline` (b108b-score-smoke-test). Non sono target dichiarati.
 
-| File | Scenario | KORA Index v2.0 | Banda | CS | Safeguard |
+| File | Scenario | KORA Index | Banda | CS | Safeguard |
 |---|---|---|---|---|---|
 | `kora_weak_company_upload.csv` | Azienda debole | **30.73** | Attivazione debole | 69 | FLAGGED |
 | `kora_average_company_upload.csv` | Azienda media | **43.42** | Attivazione iniziale | 73 | CLEAR |
 | `kora_golden_path_upload.csv` | Golden path | **52.53** | In sviluppo | 76 | CLEAR |
 
-> Nota strutturale v2.0: EQW e EQS = `insufficient_data` nei CSV senza dati per-lavoratore → contribuiscono 0 (tetto, non redistribuzione). Il rebalance dei pesi è stato rimosso in Sprint 1 IU-centric. EQUITY non viene gonfiata artificialmente.
+> Nota strutturale: EQW e EQS = `insufficient_data` nei CSV senza dati per-lavoratore → contribuiscono 0 (tetto, non redistribuzione). Il rebalance dei pesi è stato rimosso in Sprint 1 IU-centric. EQUITY non viene gonfiata artificialmente.
 
 Vedi `data/golden-path/README.md` per struttura, eligibility attesa e note metodologiche per ciascun dataset.
+
+---
+
+## Pilot Readiness Status
+
+Stato aggiornato dopo GOLDEN-01 (audit read-only), GOLDEN-02/03B (fixture E2E
+autenticate), a valle della Professionalization Sprint.
+
+**Provato manualmente** (walkthrough operatore, questo runbook, non ancora
+automatizzato in CI):
+- Il percorso end-to-end file/input → UEF → approvazione → scoring → KORA Index
+  → Decision Pack è reale e funzionante quando eseguito da KORA_ADMIN.
+- `/company/workspace` e `/company/kora-index` mostrano dati live per-tenant,
+  senza fallback demo.
+
+**Provato via E2E automatizzato (Playwright, `tests/e2e/authenticated-smoke.spec.ts`)**:
+- `A01` — login KORA_ADMIN → `/admin` — **PASS** (eseguito localmente
+  dall'operatore con credenziali reali di staging).
+- `A02` — login COMPANY_A → `/company/workspace` — **non ancora eseguito**
+  (account esistente e già verificato manualmente in una QA precedente, ma non
+  ancora tramite questo fixture).
+- `A03` — login COMPANY_B → `/company/workspace` — **bloccato**: nessun secondo
+  tenant/account COMPANY_ADMIN esiste ancora in staging.
+- `A04` — isolamento tenant COMPANY_A vs COMPANY_B — **bloccato** per lo stesso
+  motivo di A03.
+
+**Non ancora provato in nessuna forma:**
+- Il golden path completo (upload → UEF → scoring → Decision Pack) non è
+  coperto da alcun test E2E automatizzato — solo dal walkthrough manuale sopra.
+- Isolamento cross-tenant a livello di RLS/DB (nessun test negativo automatizzato).
+
+**KORA Link:** congelato, non fa parte di questo percorso, nessuna dipendenza.
+
+Dettagli completi: `docs/testing-e2e-auth.md`.
 
 ---
 

@@ -11,7 +11,7 @@ KORA Foundation Light is the demo and pilot build of the **KORA Human Impact Int
 
 KORA measures organizations. The KORA Index is a company-level output. Individual intermediate data (PIB, IU, UEF) exists only to produce that aggregate — never to rate, rank, or surveil workers.
 
-**Methodology:** KORA Methodology v0.1
+**Methodology:** KORA Index v1.0 (public label) · KORA Methodology Architecture v3 (internal 10-component structure)
 **Calibration status:** `pre_empirical_calibration` — not empirically validated, not regulatory-grade
 **Purpose:** Pilot-grade diagnostic intelligence for organizational activation measurement
 
@@ -99,8 +99,8 @@ Weights and thresholds are read from `lib/methodology-config/v0.1.ts`. Never har
 | Macroblock | Weight | Components |
 |---|---|---|
 | Activation Reach | 25% | AR (12.5%) + MAR (12.5%) |
-| Activation Quality | 30% | NI (~10%) + VR (~10%) + CO (~10%) |
-| Distribution & Equity | 25% | WB (6.25%) + PC (6.25%) + PB (6.25%) + EQ (6.25%) |
+| Activation Quality | 30% | EVQ (~10%) + INT (~10%) + CONT (~10%) |
+| Distribution & Equity | 25% | EQW (~7.5%) + EQS (~5%) + PC (~6.25%) + PB (~6.25%) |
 | Budget-to-Human-Impact | 20% | BTI Engine |
 
 Confidence Score (CS) is **external to the KORA Index** (weight = 0). Always displayed alongside KORA Index — never omitted.

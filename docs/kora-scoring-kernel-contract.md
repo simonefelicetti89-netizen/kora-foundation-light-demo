@@ -11,6 +11,14 @@
 
 This document is the technical handoff contract for the KORA Scoring Kernel. It defines what the kernel is, what it is not, its input/output contract, canonical execution flow, privacy invariants, and which parts a technical partner should reuse versus treat as provisional.
 
+> **Alignment note (post KORA-INDEX-VERSION-02):** the 10-component names and
+> `methodology_version_id` value below were updated to match current code
+> (`lib/constants/kora.ts`, CLAUDE.md §5). Component renames since the
+> original B71 handoff: `NI → INT`, `VR → EVQ`, `CO → CONT`, `WB → EQW`,
+> `EQ → EQS` — same underlying concepts, current names. The IU formula,
+> factor ranges, and privacy invariants below are unchanged and still
+> canonical.
+
 ---
 
 ## 2. What the kernel is
@@ -87,7 +95,7 @@ KoraComputationResult {
   activation: ActivationResult;         // AR, MAR, Activation Safeguard
   koraIndex: KoraIndexResult;           // 4 macroblocks, 10 components, value 0–100
   confidence: ConfidenceResult;         // CS — external to KORA Index
-  componentSignals: ComponentSignals;   // NI, VR, CO raw signals
+  componentSignals: ComponentSignals;   // EVQ, INT, CONT raw signals
   pibAggregation: CompanyPIBAggregation; // PIB mandatory intermediate (Stage 11)
   iuSummary: ImpactUnitComputationSummary;  // aggregate IU totals (employer-safe)
   iuResults: ImpactUnitComputationResult[]; // per-record IU with factor trace (server-only)
@@ -132,7 +140,7 @@ Upload row (RawUploadedRecord)
   │         L0–L4 evidence tier per record
   │
   ▼ Step 7: Component Signals  [lib/kora-engine/component-engine.ts]
-  │         NI (Normalized Intensity), VR (Verification Rate), CO (Continuity)
+  │         EVQ (Evidence Quality), INT (Normalized Intensity), CONT (Continuity)
   │
   ▼ Step 8: BTI Engine™  [lib/kora-engine/bti-engine.ts]
   │         Budget-to-Human-Impact: spend routing, Activation Debt, BTI Score
@@ -187,8 +195,8 @@ Weights are read from `lib/methodology-config/v0.1.ts` via `getMacroblockWeights
 | Macroblock | Code | Weight | Components |
 |---|---|---|---|
 | Activation Reach | `REACH` | 25% | AR (12.5%) + MAR (12.5%) |
-| Activation Quality | `QUALITY` | 30% | NI (~10%) + VR (~10%) + CO (~10%) |
-| Distribution & Equity | `EQUITY` | 25% | WB (6.25%) + PC (6.25%) + PB (6.25%) + EQ (6.25%) |
+| Activation Quality | `QUALITY` | 30% | EVQ (~10%) + INT (~10%) + CONT (~10%) |
+| Distribution & Equity | `EQUITY` | 25% | EQW (~7.5%) + EQS (~5%) + PC (~6.25%) + PB (~6.25%) |
 | Budget-to-Human-Impact | `BTI` | 20% | BTI Score from BTI Engine |
 
 Confidence Score (CS) weight = 0. It is external to the KORA Index — displayed alongside, never merged into the index value.
@@ -201,16 +209,16 @@ Confidence Score (CS) weight = 0. It is external to the KORA Index — displayed
 |---|---|---|---|
 | `AR` | Activation Rate | REACH | Share of workforce with ≥1 approved IU |
 | `MAR` | Meaningful Activation Rate | REACH | Share with IU above materiality threshold |
-| `NI` | Normalized Intensity | QUALITY | Average IU magnitude per active worker |
-| `VR` | Verification Rate | QUALITY | Share of IU backed by verified evidence |
-| `CO` | Continuity | QUALITY | Share of workers with cross-period engagement |
-| `WB` | Worker Balance | EQUITY | IU distribution evenness across workers |
+| `EVQ` | Evidence Quality | QUALITY | Solidity/verifiability of evidence sources backing approved IU |
+| `INT` | Normalized Intensity | QUALITY | Total IU per active worker, normalized against the configured target |
+| `CONT` | Continuity | QUALITY | Share of workers with cross-period sustained engagement |
+| `EQW` | Equity Workers | EQUITY | IU distribution across active workers (Gini-based) — `insufficient_data` in Foundation Light base (requires individual PIB distribution) |
+| `EQS` | Equity Segments | EQUITY | Equity of activation rate across departments/sites (N≥10) — requires per-department headcount |
 | `PC` | Pillar Coverage | EQUITY | Number of pillars with meaningful presence |
 | `PB` | Pillar Balance | EQUITY | Evenness of IU distribution across pillars |
-| `EQ` | Equity | EQUITY | Activation equity across workforce segments (dept, seniority, contract type, site) |
 | `CS` | Confidence Score | — (external) | Data completeness, source quality, verification weight |
 
-**EQ is distribution equity, not evidence quality.** Evidence quality is handled by VR, CS, EV (IU factor), Evidence Debt, and Trust Ledger.
+**EQW and EQS are distinct components.** EQW measures worker-level IU distribution equity; EQS measures segment-level (department/site) activation-rate equity. Neither is evidence quality — evidence quality is handled by EVQ, CS, and EV (IU formula correction factor).
 
 ---
 
@@ -246,7 +254,7 @@ UEF records are program-level aggregates (one row per initiative, not per worker
 Current state:
 - `pibAggregation.pibSnapshotsAvailable === false`
 - `pibAggregation.estimationBasis === 'aggregate_estimate'`
-- WB (Worker Balance) = `null` / `insufficient_data` (requires individual PIB distribution)
+- EQW (Equity Workers) = `null` / `insufficient_data` (requires individual PIB distribution)
 - AR/MAR derived from activation engine bounded-reach estimate
 
 This is an architecture limitation of the v0.1 aggregate upload model, not a design defect. When My KORA worker platform is live (Pilot+) with individual participation confirmation, individual PIBs will be computable and this limitation lifts.
@@ -286,7 +294,7 @@ PIB is a worker-private mandatory intermediate layer. It appears in My KORA (wor
 All scoring outputs carry:
 
 ```
-methodology_version_id: "KORA Methodology v0.1"
+methodology_version_id: "KORA Index v1.0"
 calibration_status: "pre_empirical_calibration"
 productionReady: false
 ```
@@ -335,8 +343,8 @@ These components are stable, tested, and form the portable KORA kernel:
 | Future Vision screens | Static mockups | No runtime logic |
 | `EligibilityGateService` keyword patterns | Provisional | Expand with pilot data |
 | PIB individual snapshots | Not available | Requires Pilot+ worker platform |
-| WB Gini coefficient | Not computed | Requires individual PIB distribution |
-| CO cross-period continuity | Estimated | Requires multi-batch data |
+| EQW Gini coefficient | Not computed | Requires individual PIB distribution |
+| CONT cross-period continuity | Estimated | Requires multi-batch data |
 
 ---
 

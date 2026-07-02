@@ -16,6 +16,18 @@ These tests exist to give CI a heartbeat check that authentication and role
 routing still work, ahead of building the full authenticated golden path
 E2E suite.
 
+**Checkpoint status (GOLDEN-03B, operator-run):**
+- `A01` (KORA_ADMIN) — **PASS**, run locally by the operator with real
+  staging credentials, ~4.7s. `kora-admin@staging.kora.internal` browser
+  login is confirmed working end-to-end for the first time.
+- `A02` (COMPANY_A) — not yet run through this fixture. The account
+  (`company-admin@staging.kora.internal`, tenant `STAGE-001`) is known and
+  was verified working manually in an earlier, separate Gate-2 QA pass
+  (2026-06-22) — just not through this E2E spec yet.
+- `A03` (COMPANY_B) — blocked. No second company/tenant account exists in
+  staging yet; this is a provisioning gap, not a credentials or code gap.
+- `A04` (tenant separation) — blocked for the same reason as A03.
+
 ## Files
 
 - `tests/e2e/helpers/env.ts` — reads credentials from `process.env` only,
