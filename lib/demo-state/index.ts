@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { KoraRole, ScenarioId, WorkerPersona, Environment } from '@/lib/types';
 
 interface DemoState {
@@ -16,6 +16,29 @@ interface DemoState {
 
 const DemoStateContext = createContext<DemoState | null>(null);
 
+// ROLE-SWITCHER-02: pure reconciliation logic, exported for direct unit
+// testing without a React renderer (this project has no React
+// rendering-test dependency — see tests/unit/role-switcher-*-reconcile).
+//
+// activeRole is seeded once from initialRole at DemoStateProvider mount;
+// React does not re-sync a useState initial value on later prop changes.
+// So a role that only becomes known after login (initialRole flips from
+// null to KORA_ADMIN post-auth, via router.refresh()) never reached
+// activeRole, leaving a stale COMPANY_ADMIN view fighting a real
+// KORA_ADMIN session. This reconciles activeRole to the real role once it
+// becomes available, unless the operator has since deliberately switched
+// the preview role — a manual switch always wins over reconciliation.
+export function reconcileActiveRole(
+  currentRole: KoraRole,
+  initialRole: KoraRole | null | undefined,
+  manualOverride: boolean,
+): KoraRole {
+  if (initialRole && !manualOverride) {
+    return initialRole;
+  }
+  return currentRole;
+}
+
 export function DemoStateProvider({
   children,
   initialRole,
@@ -27,13 +50,23 @@ export function DemoStateProvider({
   const [activeScenario, setActiveScenario] = useState<ScenarioId>('S1');
   const [activePersona, setActivePersona] = useState<WorkerPersona | null>(null);
   const [activeEnvironment, setActiveEnvironment] = useState<Environment>('demo');
+  const manualOverrideRef = useRef(false);
+
+  useEffect(() => {
+    setActiveRole((current) => reconcileActiveRole(current, initialRole, manualOverrideRef.current));
+  }, [initialRole]);
+
+  function setRole(role: KoraRole) {
+    manualOverrideRef.current = true;
+    setActiveRole(role);
+  }
 
   const value: DemoState = {
     activeRole,
     activeScenario,
     activePersona,
     activeEnvironment,
-    setRole: setActiveRole,
+    setRole,
     setScenario: setActiveScenario,
     setPersona: setActivePersona,
     setEnvironment: setActiveEnvironment,
