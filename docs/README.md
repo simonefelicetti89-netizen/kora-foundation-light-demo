@@ -2,21 +2,33 @@
 
 Quick pointers into `docs/`. This is an index, not a canonical source — see `CLAUDE.md` (repo root) for the authoritative document hierarchy.
 
-## Current platform status
+## Current status (start here)
 
-- `PLATFORM_READINESS_SUMMARY.md` — current readiness snapshot
-- `PLATFORM_READINESS_CHANGELOG.md` — running log of readiness changes
+- **`STATUS.md`** — current platform status: what's proven, what's not, last-verified commit. Supersedes `PLATFORM_READINESS_SUMMARY.md`/`PLATFORM_READINESS_CHANGELOG.md` as the primary status reference (those remain as historical snapshots).
+- `GOLDEN_PATH.md` — golden path readiness status and E2E checkpoint log
+- `QA_STATUS.md` — test coverage and verification checkpoint detail
+- `KORA_LINK_STATUS.md` — KORA Link's current frozen status
+- `CHANGELOG.md` — dated log of documentation consolidation/reconciliation work
 
-## Golden path
+## Golden path (operational)
 
 - `GOLDEN_PATH_RUNBOOK.md` — file → UEF → approvazione → scoring → Decision Pack, passo per passo per KORA_ADMIN
+- `PILOT_INTAKE_PROTOCOL.md` — pilot company onboarding, step by step
 
 ## Architecture & methodology
 
+- **`ARCHITECTURE.md`** — current repository/runtime architecture reference (repo map, engine, roles, Supabase, off-limits areas)
+- **`METHODOLOGY.md`** — KORA Index v1.0 / KORA Methodology Architecture v3, current 10-component names, IU formula — the single unambiguous versioning reference
 - `kora-canonical-product-architecture-v1.md` — canonical product architecture (read first, per `CLAUDE.md`)
-- `10-architecture-v3-layer-specification.md` — 14-stage algorithm, IU formula, KORA Index components
-- `12-technical-data-model-database-schema.md` — schema reference (post Gate 2)
+- `10-architecture-v3-layer-specification.md` — 14-stage algorithm, IU formula, KORA Index components (canonical detail)
+- `kora-scoring-kernel-contract.md` — technical handoff contract for the scoring kernel
+- `12-technical-data-model-database-schema.md` — schema reference (post Gate 2, canonical for schema)
 - `21-founder-gate-resolution-log.md` — founder decision record (D-01–D-21)
+
+## Testing
+
+- `testing-e2e-auth.md` — how to run the authenticated E2E fixtures (KORA_ADMIN, COMPANY_A, COMPANY_B)
+- `E2E_TESTING.md` — general E2E testing guide
 
 ## Archived / historical docs
 
