@@ -31,14 +31,14 @@ Per `KORA_LINK_GATE_REPORT.md` (KL-11), as of its date:
 | Gate 1 — Runtime Base | Complete |
 | Gate 2 — Schema 034 Review (CTO) | Open — pending CTO, 8 TODOs in the draft migration |
 | Gate 3 — Privacy/DPO/Legal | Open — privacy notice not approved |
-| Gate 4 — RLS 035 Review | Open — not started, migration 035 not yet drafted |
+| Gate 4 — RLS 035 Review | Open — **draft exists** (`supabase/proposed/035_kora_link_rls.sql`, 725 lines: KORA_ADMIN-only policies on all 9 tables), but incomplete: the worker-self-select policy on `link_assignments` and both SECURITY DEFINER lookup functions (`fn_kora_link_public_lookup`, `fn_kora_link_activate`) are commented out. No company-facing SELECT policy exists at all yet. Not reviewed/applied. |
 | Gate 5 — Staging Env (`KORA_LINK_ENABLED=true`) | Open — not ready, depends on Gates 2+3+4 |
 | Gate 6 — Public Route Enablement | Skeleton complete, requires Gates 2+3+5 |
 | Gate 7 — Worker Activation flow | Open — not started |
 | Gate 8 — Partner Scan | Open — explicitly out of v1 scope |
 | Gate 9 — Production Readiness | Open — depends on all prior gates |
 
-This table was not re-verified against the live `feat/kora-link-v1-platform` branch as part of this reconciliation — treat it as "last known state per KL-11" and check that branch/report directly for anything more recent.
+This table was re-verified directly against `main` during KORA-LINK-S1 (2026-07-04) — the 035 row above was corrected accordingly (KL-11 had said "not yet drafted"; a draft exists but is incomplete). See `KORA_LINK_ADR.md` for the current pilot architecture decision and full current-state inventory (docs, proposed SQL, runtime code, feature flags).
 
 ---
 
@@ -56,4 +56,4 @@ Per repeated founder-level framing across this sprint: the current strategic pri
 
 ## Related docs
 
-`KORA_LINK_GATE_REPORT.md`, `KORA_LINK_CHANGELOG.md`, `ARCHITECTURE.md` §8, `STATUS.md`.
+`KORA_LINK_ADR.md` (pilot architecture decision + current-state inventory), `KORA_LINK_GATE_REPORT.md`, `KORA_LINK_CHANGELOG.md`, `ARCHITECTURE.md` §8, `STATUS.md`.

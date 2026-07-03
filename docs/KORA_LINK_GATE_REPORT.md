@@ -14,7 +14,7 @@
 | Gate 1 | Runtime Base | ✅ COMPLETE | Engineering | — | KL-06→KL-10 completi |
 | Gate 2 | Schema 034 Review | 🔴 OPEN — pending CTO | CTO / Postgres | DB lookup, activation, tutto il DB path | 8 TODO CTO nel file 034 |
 | Gate 3 | Privacy / DPO / Legal | 🔴 OPEN | DPO / Legal | Activation consent, partner scan, live data | Privacy notice non approvata |
-| Gate 4 | RLS 035 Review | 🔴 OPEN — not started | CTO + DPO | Qualsiasi DB write/read con RLS | 035 non ancora redatto |
+| Gate 4 | RLS 035 Review | 🔴 OPEN — draft exists, incomplete | CTO + DPO | Qualsiasi DB write/read con RLS | 035 draft redatto (KORA_ADMIN-only su tutte le 9 tabelle); worker self-select e le due funzioni SECURITY DEFINER sono commentate — vedi `KORA_LINK_ADR.md` |
 | Gate 5 | Staging Env | 🔴 OPEN — not ready | Engineering + Infra | Test reali con KORA_LINK_ENABLED=true | Dipende da Gate 2+3+4 |
 | Gate 6 | Public Route Enablement | 🟡 SKELETON COMPLETE | Engineering | `KORA_LINK_ENABLED=true` in staging/prod | Richiede Gate 2+3+5 |
 | Gate 7 | Worker Activation | 🔴 OPEN — not started | Engineering + DPO | Worker flow end-to-end | Dipende da Gate 2+3+4+6 |
@@ -125,7 +125,7 @@ Gate 1 è chiuso. Nessuna azione richiesta prima di procedere con Gate 2.
 
 ## 5. Gate 4 — RLS 035
 
-**Stato: 🔴 OPEN — non ancora redatto**
+**Stato: 🔴 OPEN — draft esistente (`supabase/proposed/035_kora_link_rls.sql`, 725 righe) ma incompleto: policy worker self-select su `link_assignments` e le funzioni SECURITY DEFINER `fn_kora_link_public_lookup`/`fn_kora_link_activate` sono commentate. Nessuna policy company-facing esiste ancora. Non revisionato, non applicato.** Aggiornato KORA-LINK-S1 (2026-07-04) — vedi `KORA_LINK_ADR.md`.
 
 **Owner:** CTO + DBA  
 **Dipendenze:** Gate 2 deve essere sostanzialmente avanzato (tabelle 034 stabilizzate) prima di redigere 035
@@ -160,7 +160,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA kora_link REVOKE ALL ON TABLES FROM PUBLIC;
 
 ```
 ✓ 034 stabilizzato (Gate 2 avanzato)
-✓ 035 draft redatto
+✓ 035 draft redatto — draft esiste ma incompleto (worker self-select e SECURITY DEFINER lookup commentati, nessuna policy company-facing) — vedi `KORA_LINK_ADR.md`
 ✓ Review negativa: employer non vede nessun dato individuale
 ✓ Review positiva: worker vede solo i propri dati
 ✓ Audit log append-only verificato (no delete policy)
