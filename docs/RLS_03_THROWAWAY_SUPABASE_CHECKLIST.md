@@ -258,14 +258,33 @@ fails), distinguish before concluding anything:
 
 ## I. Next Sequence After This Checklist
 
-- **RLS-03C** — implement the skip-safe integration test
+**Superseded (RLS-03D onward actually executed against local Supabase, not a
+hosted throwaway project — see notes in §B):**
+
+- **RLS-03C** — DONE. Implemented the skip-safe integration test
   (`tests/integration/rls-two-tenant-negative.test.ts`), fully inert with no
   env vars set. No Supabase touched in this step.
-- **RLS-03D** — create the throwaway project (behind `CONFIRM RLS-03 PROJECT CREATE`).
-- **RLS-03E** — apply migrations 001–031 (behind `CONFIRM RLS-03 MIGRATION APPLY`).
-- **RLS-03F** — create users and insert fixtures (behind `CONFIRM RLS-03 USER CREATE` and `CONFIRM RLS-03 FIXTURE INSERT`).
-- **RLS-03G** — first live run (behind `CONFIRM RLS-03 LIVE TEST RUN`).
-- **RLS-03H** — document results (update `docs/QA_STATUS.md`/`docs/GOLDEN_PATH.md`; decide whether to keep or tear down the throwaway project).
+- **RLS-03C-Rewrite** — DONE. Rewrote the test to connect directly to
+  Postgres via `pg` instead of `@supabase/supabase-js`/PostgREST, removing
+  the schema-exposure requirement entirely (`RLS03_PG_URL` replaces the old
+  `RLS03_SUPABASE_*`/`RLS03_TENANT_*` vars — see §C).
+- **RLS-03D/E/F/G** — DONE, against **local** Supabase (Docker + `supabase
+  init`/`start`), not a hosted throwaway project: Docker/CLI confirmed
+  working, `supabase/config.toml` committed, local stack started, canonical
+  migrations `001`–`028`/`030`/`031` applied (auto-applied by `supabase
+  start` on the fresh local volume — no manual apply command was needed), no
+  seed executed, schemas/tables/functions verified directly against the DB.
+- **RLS-03H/I** — DONE. Targeted test run: **13/13 passed**
+  (`RLS03_ALLOW_RUN=true RLS03_PG_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`),
+  no fixes needed, synthetic fixture rows fully cleaned up afterward
+  (verified directly against the DB).
+- **RLS-03J** — result documented in `docs/QA_STATUS.md` and `docs/STATUS.md`;
+  local Supabase stack stopped; branch `test/rls03-direct-postgres` prepared
+  for PR into `main`.
+- **RLS-04/RLS-05/RLS-06** — still open, future work: API/PostgREST-level
+  tenant-override rejection through the app, worker-vs-worker isolation
+  (`personal.*`), and a KORA_ADMIN legitimate-cross-tenant-access control
+  test, respectively.
 
 ## J. Do-Not-Do List
 

@@ -30,6 +30,10 @@ This document reflects a Professionalization Sprint spanning: PROF-01/PROF-02B-L
 - KORA_ADMIN (`kora-admin@staging.kora.internal`) login succeeds in Production and reaches `/admin`.
 - A client-state bug causing a false "access denied" for a real KORA_ADMIN session on first login (stale demo-state role, see `ROLE-SWITCHER-01/02` history) was diagnosed, fixed, deployed, and confirmed resolved in Production.
 
+**RLS negative testing, local direct-Postgres (RLS-03, branch `test/rls03-direct-postgres`, not yet merged):**
+- A direct-Postgres integration test (`tests/integration/rls-two-tenant-negative.test.ts`, no PostgREST/`@supabase/supabase-js` involved) proved on 2026-07-04 that Postgres RLS itself — not application code — rejects cross-tenant reads on `analytics.source_batch`, `kora_index_result`, and `activation_result`: 13/13 tests passed against local Supabase, synthetic fixtures fully cleaned up, no cloud/staging/production/Vercel touched. See `QA_STATUS.md` for full detail.
+- This does **not** prove GoTrue sign-in, PostgREST schema-exposure correctness, browser/E2E flows, worker-vs-worker isolation, or report/export privacy suppression — those remain RLS-04/05/06, still open.
+
 **Version/label consistency:**
 - Public/client-facing label is **KORA Index v1.0**, consistently applied across UI, Decision Pack, API metadata, and (as of GOLDEN-04-DOCS) documentation.
 - Internal methodology/architecture generation label is **KORA Methodology Architecture v3** (the 10-component macroblock structure) — a distinct axis from the public version, per CLAUDE.md §5.
@@ -44,7 +48,7 @@ Be precise about this — overclaiming here defeats the purpose of the document.
 - **COMPANY_A / COMPANY_B Production auth flows are not fully proven.**
   - COMPANY_A (`company-admin@staging.kora.internal`, tenant `STAGE-001`) exists, was verified working in an earlier manual Gate-2 QA pass (2026-06-22), and has a ready E2E fixture (`A02`) — but that fixture has not been run against Production, and COMPANY_A's login has not been manually checked in Production either.
   - **COMPANY_B does not exist.** As of the last check in this sprint, no second company/tenant account exists in staging or Production. This blocks the `A03` (COMPANY_B login) and `A04` (tenant-separation) E2E tests entirely — not a credentials gap, a provisioning gap.
-- **RLS negative testing is still missing.** No automated test authenticates as one tenant and proves Postgres itself (not just application code) rejects a cross-tenant read. Existing tenant-isolation tests are static source-code analysis, not live-database verification.
+- **RLS negative testing is only partially closed.** A direct-Postgres test now proves Postgres itself (not just application code) rejects cross-tenant reads on three analytics tables (see "What is proven" above) — but only locally, only on an unmerged branch, and only for those three tables. It does not cover worker-vs-worker isolation (`personal.*`), PostgREST/API-level enforcement, or authenticated browser flows — those remain RLS-04/RLS-05/RLS-06, still open.
 - **Automated E2E has not been run against Production at all** — only manually (browser) and only against local dev. The `E2E_BASE_URL` mechanism supports pointing Playwright at Production (with a production guard requiring explicit opt-in), but this has not been exercised.
 - **Gate 2 status is ambiguous between two current documents.** `CLAUDE.md` (the repo's own operating constitution) states Gate 2 is `OPEN (blocks SQL)`. `docs/GATE2_CTO_CLOSE_REVIEW.md` (2026-06-22) recommends `CLOSE GATE 2 WITH CONDITIONS`. This has not been reconciled by this sprint — treat `CLAUDE.md` as authoritative per its own stated document hierarchy until a founder decision formally updates it.
 
