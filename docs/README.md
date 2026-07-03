@@ -8,6 +8,7 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 - `GOLDEN_PATH.md` — golden path readiness status and E2E checkpoint log
 - `QA_STATUS.md` — test coverage and verification checkpoint detail
 - `KORA_LINK_STATUS.md` — KORA Link's current frozen status
+- `KORA_LINK_ADR.md` — KORA Link pilot architecture decision + current-state inventory (docs/SQL/code/flags)
 - `CHANGELOG.md` — dated log of documentation consolidation/reconciliation work
 
 ## Golden path (operational)

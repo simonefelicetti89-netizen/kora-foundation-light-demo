@@ -125,7 +125,7 @@ tests/
 | Worker | `app/worker/`, `app/my-kora/`, `app/api/worker/` | `WORKER` | Live (authenticated) / synthetic-labeled (unauthenticated preview) |
 | Public/Auth | `app/login/`, `app/auth/`, `app/request-access/` | none | Live |
 | Demo/Preview | `app/demo/` | varies | Synthetic, labeled |
-| KORA Link (future) | `app/link/[token]/` (not present) | — | **Not implemented.** Frozen — see `KORA_LINK_STATUS.md` |
+| KORA Link (future) | `app/link/[token]/`, `app/admin/kora-link*/`, `app/company/kora-link/`, `app/my-kora/kora-link/`, `app/partner/kora-link/` | `KORA_ADMIN`/`WORKER`/`COMPANY_ADMIN`/`PARTNER` | Flag-gated skeleton (`KORA_LINK_ENABLED`, default off). **Not "not implemented"** — see §8 and `KORA_LINK_ADR.md`/`KORA_LINK_STATUS.md` for what actually exists vs. what's blocked |
 
 For the detailed page-by-page live/demo/mock classification, see `docs/PAGE_INVENTORY.md` — that inventory was not re-verified as part of this reconciliation and may contain stale per-page status; treat it as a starting point, not a current fact sheet, until re-checked.
 
