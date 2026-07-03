@@ -29,6 +29,7 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 
 - `testing-e2e-auth.md` — how to run the authenticated E2E fixtures (KORA_ADMIN, COMPANY_A, COMPANY_B)
 - `E2E_TESTING.md` — general E2E testing guide
+- `RLS_03_THROWAWAY_SUPABASE_CHECKLIST.md` — operational checklist for the dedicated throwaway Supabase project required by RLS-03 (synthetic two-tenant negative DB test); not yet executed
 
 ## Archived / historical docs
 
