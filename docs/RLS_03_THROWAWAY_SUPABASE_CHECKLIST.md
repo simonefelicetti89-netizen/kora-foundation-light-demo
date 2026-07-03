@@ -42,6 +42,22 @@ No users created. No fixtures inserted.
   dedicated, standing RLS regression project** for future re-runs (RLS-03
   and later RLS negative tests). This decision can be deferred to RLS-03H
   (result documentation) — it does not need to be made now.
+- **Implementation clarification (added during RLS-03C):** the test queries
+  non-`public` schemas (`.schema('analytics').from(...)`, matching the app's
+  own convention in `lib/decision-pack/pdf-data.ts` and `lib/auth/kora-session.ts`).
+  Before RLS-03G's first live run, confirm the throwaway project's Data API
+  settings (Project Settings → Data API → "Exposed schemas") include
+  `analytics` — PostgREST returns a schema-not-found error otherwise. Add
+  `personal`, `commons`, `network`, `gov`, `audit` too if a later sprint
+  (RLS-05/RLS-06) extends into those schemas.
+- **Implementation clarification (added during RLS-03C):** the integration
+  test's own guarded setup creates/upserts the two `analytics.tenant` rows
+  (idempotent, by `tenant_code`). RLS-03F (user creation) depends on those
+  rows already existing, since each COMPANY_ADMIN test user's
+  `app_metadata.kora_tenant_id` must be set to the real `analytics.tenant.id`
+  UUID generated for `RLS03-A`/`RLS03-B` — not a value chosen in advance. Run
+  the test once (or insert the two tenant rows manually) to obtain those ids
+  **before** provisioning the two users in RLS-03F.
 
 ## C. Required Env Vars (names only — no values)
 
