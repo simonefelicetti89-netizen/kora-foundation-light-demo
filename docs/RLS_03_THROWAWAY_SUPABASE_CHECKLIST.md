@@ -16,9 +16,10 @@ No users created. No fixtures inserted.
 - RLS-03 is a **synthetic two-tenant negative DB test**: it authenticates as
   two different tenants and asserts that Postgres/Supabase RLS — not app
   code — rejects cross-tenant reads.
-- It is **not** an app/browser E2E test. It calls the Supabase client
-  directly (`@supabase/supabase-js`), never the Next.js app or a browser.
-  App/route-level authenticated testing is RLS-04's job, not RLS-03's.
+- It is **not** an app/browser E2E test. As of RLS-03C-Rewrite it connects
+  directly to Postgres (`pg`), never the Next.js app, a browser, or even
+  PostgREST/`@supabase/supabase-js`. App/route-level authenticated testing
+  is RLS-04's job, not RLS-03's.
 - It must use **synthetic data only**. No real company data, no real worker
   data, ever, at any step.
 
@@ -35,21 +36,35 @@ No users created. No fixtures inserted.
   in-flight work depends on — layering a synthetic negative-test tenant pair
   onto it risks contaminating that state. Only use staging if explicitly
   re-approved as a deliberate exception (see §J).
-- **No local Supabase stack exists today** (no `supabase/config.toml`, no
+- **Superseded (RLS-03D/E, local Supabase now set up):** the "no local
+  Supabase stack exists" note below described the state at RLS-03A preflight
+  time. As of RLS-03D/E, Docker and the Supabase CLI are confirmed
+  installed/running locally, `supabase init` has been run, and
+  `supabase/config.toml` + `supabase/.gitignore` are committed
+  (`8f681d1 chore: add local supabase config`). The original bullet is kept
+  below for historical context only — do not treat it as current.
+- ~~**No local Supabase stack exists today** (no `supabase/config.toml`, no
   docker-compose) — confirmed during the RLS-03A preflight. Local is not an
-  option until that stack is separately set up.
+  option until that stack is separately set up.~~
 - The throwaway project **may be deleted after the test**, or **kept as a
   dedicated, standing RLS regression project** for future re-runs (RLS-03
   and later RLS negative tests). This decision can be deferred to RLS-03H
   (result documentation) — it does not need to be made now.
-- **Implementation clarification (added during RLS-03C):** the test queries
-  non-`public` schemas (`.schema('analytics').from(...)`, matching the app's
-  own convention in `lib/decision-pack/pdf-data.ts` and `lib/auth/kora-session.ts`).
-  Before RLS-03G's first live run, confirm the throwaway project's Data API
-  settings (Project Settings → Data API → "Exposed schemas") include
-  `analytics` — PostgREST returns a schema-not-found error otherwise. Add
-  `personal`, `commons`, `network`, `gov`, `audit` too if a later sprint
-  (RLS-05/RLS-06) extends into those schemas.
+- **Implementation clarification (superseded during RLS-03C-Rewrite):** the
+  test previously queried non-`public` schemas via `@supabase/supabase-js`
+  (`.schema('analytics').from(...)`), which required the target project's
+  Data API "Exposed schemas" setting to include `analytics` before any live
+  run. This was a security-relevant PostgREST exposure decision made just to
+  simplify the test, which is exactly what the standing product/security
+  decision says not to do. `tests/integration/rls-two-tenant-negative.test.ts`
+  now connects **directly to Postgres via `pg`** instead, and simulates the
+  `request.jwt.claims` GUC PostgREST would normally set. **No schema
+  exposure via PostgREST is required for RLS-03 at all** — analytics,
+  personal, commons, gov, audit, and network all remain unexposed. See the
+  test file's own header comment for the exact claims shape used
+  (`kora.kora_role()` / `kora.tenant_id()`, sourced from
+  `supabase/migrations/004_gate3a_claims_and_grants.sql` and
+  `supabase/migrations/006_canonical_tenant_key.sql`).
 - **Implementation clarification (added during RLS-03C):** the integration
   test's own guarded setup creates/upserts the two `analytics.tenant` rows
   (idempotent, by `tenant_code`). RLS-03F (user creation) depends on those
@@ -61,6 +76,23 @@ No users created. No fixtures inserted.
 
 ## C. Required Env Vars (names only — no values)
 
+**Current (direct Postgres, since RLS-03C-Rewrite):**
+
+```
+RLS03_PG_URL=
+RLS03_ALLOW_RUN=
+```
+
+`RLS03_PG_URL` must point ONLY at a local Postgres instance (loopback host —
+127.0.0.1/localhost/::1 — enforced by the test's own always-on guard).
+Confirm the real value via `supabase status` rather than assuming a default.
+No Supabase Auth sign-in is required under this approach, so no tenant user
+email/password vars are needed for this specific test.
+
+**Deprecated (PostgREST/@supabase-js approach, superseded by RLS-03C-Rewrite —
+kept here only so anyone who set these previously knows they're no longer
+read by the test):**
+
 ```
 RLS03_SUPABASE_URL=
 RLS03_SUPABASE_ANON_KEY=
@@ -71,7 +103,6 @@ RLS03_TENANT_B_EMAIL=
 RLS03_TENANT_B_PASSWORD=
 RLS03_ADMIN_EMAIL=
 RLS03_ADMIN_PASSWORD=
-RLS03_ALLOW_RUN=
 ```
 
 - **Values must never be pasted in chat** — not even partially or masked.
