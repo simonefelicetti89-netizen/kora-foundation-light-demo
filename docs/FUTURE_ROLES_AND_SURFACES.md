@@ -15,8 +15,8 @@ Concise, not a manifesto. See `docs/PILOT_SAAS_READINESS.md` for pilot-v1 scope,
 **Current state (more built than "future" implies):**
 - Real role: login via `app_metadata.kora_role === 'PARTNER'`, enforced by `requirePartnerUser()` (`lib/auth/kora-session.ts`), same guard pattern as `COMPANY_ADMIN`/`WORKER`.
 - Real DB model: `network.partner_profile` (name, description, pillar, category, delivery mode, status) and `network.partner_identity` (auth-linking), both RLS-enabled, both already applied (migrations `010`, `012`).
-- Real routes: `app/partner/layout.tsx` (guard), `app/partner/page.tsx` (root — 100% synthetic demo data), `app/partner/workspace/page.tsx` (live, fetches own `partner_profile` scoped by `partnerId`), `app/partner/kora-link/page.tsx` (KORA Link partner page — explicitly no scan endpoint exists).
-- **Open ambiguity**: `/partner` (demo) and `/partner/workspace` (live) sit behind the same login with no visual distinction for a real partner user — worth a product decision on which is "home," not an engineering fix in isolation.
+- Real routes: `app/partner/layout.tsx` (guard, `requirePartnerUser()`), `app/partner/page.tsx` (root — redirects to `/partner/workspace`, PARTNER-01), `app/partner/workspace/page.tsx` (live, fetches own `partner_profile` scoped by `partnerId` — this is home), `app/partner/kora-link/page.tsx` (KORA Link partner page — explicitly no scan endpoint exists).
+- ~~Open ambiguity: `/partner` (demo) and `/partner/workspace` (live) sit behind the same login with no visual distinction~~ — **resolved in PARTNER-01** (2026-07-04): `/partner/workspace` is home. `/partner` root is now a thin redirect there (still behind the same real `requirePartnerUser()` gate, so nothing changes for an actual partner session). The synthetic 100%-fake dashboard that used to render at `/partner` root moved to `app/demo/partner/page.tsx`, gated like every other `/demo/*` route (`requireDemoGate()` — DEMO_VIEWER/KORA_ADMIN only, never a real PARTNER session) so it can no longer be mistaken for the live workspace by a real partner. See `tests/unit/partner-01-pilot-surface.test.ts`.
 
 **Should partner be (per this sprint's assessment):** **(A) a full role in the auth/access matrix** — it already is, more than the sprint brief assumed. The remaining work is *feature* completion (what a partner can actually do), not *role* bootstrapping.
 
@@ -28,8 +28,9 @@ Concise, not a manifesto. See `docs/PILOT_SAAS_READINESS.md` for pilot-v1 scope,
 
 **Missing foundations for the next increment:**
 - A DB model for "initiative participation" linked to `partner_profile` (doesn't exist yet — would need a new migration, out of scope this sprint).
-- A decision on whether `/partner` root becomes the real dashboard or is retired in favor of `/partner/workspace`.
+- ~~A decision on whether `/partner` root becomes the real dashboard or is retired in favor of `/partner/workspace`~~ — **decided in PARTNER-01**: retired in favor of `/partner/workspace`; see above.
 - Gate 8 (KORA Link partner scan) — explicitly out of v1 per the KORA Link ADR, no change recommended here.
+- `app/partner/layout.tsx`'s own header comment references an `/admin/preview/partner/workspace` admin-preview page that does not actually exist (`app/admin/preview/partner/` is an empty directory) — pre-existing gap, not introduced or fixed by PARTNER-01, flagged here so a future sprint doesn't assume it's built.
 
 **Privacy red lines (unchanged, already enforced in code):** no `worker_id`/`workerName` in any partner-facing page or query; aggregate-only company outcomes if ever exposed to partners; no cross-partner visibility (`partner_identity` has a partner-self RLS policy already).
 

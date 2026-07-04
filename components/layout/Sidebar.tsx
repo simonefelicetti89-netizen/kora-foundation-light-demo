@@ -186,7 +186,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Portale Partner',
         items: [
-          { href: '/partner',     label: 'Workspace Partner' },
+          { href: '/partner/workspace', label: 'Workspace Partner' },
           { href: '/partner/kora-link', label: 'KORA Link' },
           { href: '/demo/guide',  label: 'Demo Guide' },
         ],
