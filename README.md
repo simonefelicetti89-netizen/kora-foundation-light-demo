@@ -34,7 +34,7 @@ KORA measures organizations. The KORA Index is a company-level output. Individua
 
 The repository includes a live Supabase backend with:
 
-**SQL migrations 001–015** in `supabase/migrations/`:
+**SQL migrations** in `supabase/migrations/` — 29 files total, numbered `001`–`028` plus `030`–`031` (there is no `029`; do not add a gap-filling migration at that number — see `docs/RLS_03_THROWAWAY_SUPABASE_CHECKLIST.md` for how this was verified). Earliest/most architecturally significant:
 - `001_live_v1_foundation.sql` — core schemas and tables (tenant, source_batch, uef_record, workforce_baseline, uploaded_record)
 - `002_grants_and_softdelete.sql` — FORCE RLS on personal.*, role grants
 - `003_claim_functions_app_metadata.sql` — first version of kora.kora_role() and kora.tenant_id()
@@ -50,6 +50,7 @@ The repository includes a live Supabase backend with:
 - `013_kora_commons.sql` — commons schema + commons.post
 - `014_tenant_classification.sql` — tenant_kind on analytics.tenant
 - `015_company_safe_aggregation_layer.sql` — **CANONICAL**: 4 analytics objects for company-safe data access (B152/B153)
+- `016`–`028`, `030`–`031` — worker/company/commons RLS hardening, audit log enrichment, UEF admin access hardening, and related follow-on fixes; see each file's own header comment for specifics rather than a restated list here (this section is a starting orientation, not a substitute for reading the migration files).
 
 **Row-Level Security (RLS)** is enabled on all production tables.
 
@@ -197,7 +198,7 @@ supabase start
 
 # 2. Applica tutte le migration su un DB pulito
 supabase db reset
-# → applica supabase/migrations/001_*.sql … 029_*.sql in ordine
+# → applica tutti i file in supabase/migrations/ in ordine (001–028, 030–031; non esiste 029)
 
 # 3. Compila .env.local con le credenziali locali
 cp .env.local.example .env.local
@@ -279,7 +280,7 @@ Da Studio puoi ispezionare le tabelle, eseguire SQL, e verificare gli utenti Aut
 /lib/supabase         Supabase client initialization (browser + server)
 /services             Mock service layer — mirrors future production service boundaries
 /data/synthetic       Synthetic JSON seed files (demo data only)
-/supabase/migrations  SQL DDL 001–015 (production schema, Gate 2 reference)
+/supabase/migrations  SQL DDL 001–028, 030–031 (production schema, Gate 2 reference; no 029)
 /tests                Vitest unit + integration tests
 /docs                 Canonical architecture documents
 ```

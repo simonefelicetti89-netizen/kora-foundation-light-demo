@@ -37,7 +37,7 @@ The golden path: **file/input → UEF → approval → scoring → KORA Index �
 - **`A02` (COMPANY_A login) has not been run** — neither the E2E fixture nor a manual Production check. The account is known-good from an earlier, separate manual QA pass (2026-06-22, pre-dating this fixture).
 - **`A03` (COMPANY_B login) and `A04` (tenant separation) cannot run at all** — COMPANY_B does not exist as a provisioned tenant/account. This is a provisioning gap, not a credentials or code gap.
 - **No automated golden path test exists** — nothing in CI/local test runs actually drives upload → UEF → scoring → Decision Pack end-to-end. All verification of that chain to date has been manual.
-- **RLS negative testing is missing** — see `QA_STATUS.md`.
+- **RLS negative testing is only partially closed** — a direct-Postgres test (RLS-03, merged via PR #26) proves Postgres RLS itself rejects cross-tenant reads on three `analytics.*` tables, but not through PostgREST/the app (RLS-04) or for worker-vs-worker isolation (RLS-05) — see `QA_STATUS.md`.
 
 ---
 
@@ -60,7 +60,7 @@ The golden path: **file/input → UEF → approval → scoring → KORA Index �
 1. Run `A02` against local dev, then Production, using the existing fixture — no new code needed.
 2. Provision a COMPANY_B tenant (a deliberate, explicitly-confirmed action — this repo's own precedent treats staging/Production Auth writes as requiring explicit sign-off, not something to bundle into a routine task).
 3. Extend the E2E suite to cover at least one real upload → scoring → Decision Pack run, ideally against a disposable test tenant, before claiming the golden path is proven in Production rather than just locally.
-4. Add RLS negative tests (see `QA_STATUS.md`) before treating tenant isolation as verified rather than designed-correctly-but-unproven.
+4. Extend RLS negative tests to PostgREST/app-level (RLS-04) and worker-vs-worker isolation (RLS-05) — see `QA_STATUS.md` — before treating tenant isolation as fully verified rather than partially proven at the DB level.
 
 ---
 

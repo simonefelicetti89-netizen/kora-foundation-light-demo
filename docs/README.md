@@ -4,12 +4,14 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 
 ## Current status (start here)
 
-- **`STATUS.md`** — current platform status: what's proven, what's not, last-verified commit. Supersedes `PLATFORM_READINESS_SUMMARY.md`/`PLATFORM_READINESS_CHANGELOG.md` as the primary status reference (those remain as historical snapshots).
+- **`STATUS.md`** — current platform status: what's proven, what's not, last-verified commit. Supersedes `archive/PLATFORM_READINESS_SUMMARY.md`/`archive/PLATFORM_READINESS_CHANGELOG.md` as the primary status reference (moved to archive in PILOT-SAAS-01, confirmed historical).
 - `GOLDEN_PATH.md` — golden path readiness status and E2E checkpoint log
 - `QA_STATUS.md` — test coverage and verification checkpoint detail
 - `KORA_LINK_STATUS.md` — KORA Link's current frozen status
 - `KORA_LINK_ADR.md` — KORA Link pilot architecture decision + current-state inventory (docs/SQL/code/flags)
 - `CHANGELOG.md` — dated log of documentation consolidation/reconciliation work
+- `PILOT_SAAS_READINESS.md` — what's ready/not ready for a first real pilot, operator flow, top blockers, top feature-expansion opportunities
+- `FUTURE_ROLES_AND_SURFACES.md` — Partner Platform and Advisor Platform: current state, role model recommendation, privacy boundaries, suggested build order
 
 ## Golden path (operational)
 
@@ -30,7 +32,7 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 
 - `testing-e2e-auth.md` — how to run the authenticated E2E fixtures (KORA_ADMIN, COMPANY_A, COMPANY_B)
 - `E2E_TESTING.md` — general E2E testing guide
-- `RLS_03_THROWAWAY_SUPABASE_CHECKLIST.md` — operational checklist for the dedicated throwaway Supabase project required by RLS-03 (synthetic two-tenant negative DB test); not yet executed
+- `RLS_03_THROWAWAY_SUPABASE_CHECKLIST.md` — operational checklist for RLS-03 (synthetic two-tenant negative DB test); executed locally against direct Postgres (not the originally-planned hosted throwaway project — see the doc's own superseded-section note) and merged to `main` via PR #26
 
 ## Archived / historical docs
 
