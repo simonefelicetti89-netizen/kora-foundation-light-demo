@@ -419,10 +419,28 @@ automatizzato in CI):
 - `A04` — isolamento tenant COMPANY_A vs COMPANY_B — **bloccato** per lo stesso
   motivo di A03.
 
+**GOLDEN-E2E-01 (2026-07-04) — `tests/e2e/golden-admin-company.spec.ts`**, skip-safe,
+stesse variabili env di A01/A02 (nessun nome nuovo):
+- `G01` — narrativa golden path in un solo test: KORA_ADMIN raggiunge
+  `/admin`, poi (contesto browser separato) COMPANY_ADMIN raggiunge
+  `/company/workspace` — **non ancora eseguito con credenziali reali**
+  (stesso stato di A01/A02: skip-safe by design finché non impostate).
+- `G02` — da `/company/workspace`, COMPANY_ADMIN raggiunge
+  `/company/kora-index` (prova che la superficie dati/report tenant-scoped è
+  raggiungibile, non solo il redirect di login) e viene verificato che la
+  pagina non renderizzi un identificativo worker-level
+  (`worker_id`/`kora_worker_id`/`token_digest`/`link_id`) né una lista
+  implausibile di email — **non ancora eseguito con credenziali reali**.
+- Questo file estende A01/A02 oltre il login, ma **non sostituisce** A03/A04
+  (isolamento cross-tenant, ancora bloccato dall'assenza di COMPANY_B) né
+  prova RLS a livello DB (quello resta `tests/integration/rls-two-tenant-negative.test.ts`,
+  RLS-03, già in `main`).
+
 **Non ancora provato in nessuna forma:**
 - Il golden path completo (upload → UEF → scoring → Decision Pack) non è
   coperto da alcun test E2E automatizzato — solo dal walkthrough manuale sopra.
-- Isolamento cross-tenant a livello di RLS/DB (nessun test negativo automatizzato).
+- Isolamento cross-tenant a livello di RLS/DB tramite E2E autenticato (il
+  livello DB diretto è invece provato — vedi RLS-03 sopra).
 
 **KORA Link:** congelato, non fa parte di questo percorso, nessuna dipendenza.
 
