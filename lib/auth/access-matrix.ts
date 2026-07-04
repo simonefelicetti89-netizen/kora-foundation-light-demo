@@ -10,12 +10,14 @@
 
 // ── Tipi ─────────────────────────────────────────────────────────────────────
 
-export type KoraRole =
-  | 'KORA_ADMIN'
-  | 'COMPANY_ADMIN'
-  | 'WORKER'
-  | 'PARTNER'
-  | 'DEMO_VIEWER';
+// KoraRole is derived from lib/constants/kora.ts's KORA_ROLES (ROLE-01,
+// 2026-07-04) — the single canonical role source. Before this reconciliation,
+// this file declared its own independent 5-role literal (with DEMO_VIEWER,
+// without ADVISOR) that silently diverged from KORA_ROLES (with ADVISOR,
+// without DEMO_VIEWER). Do not redeclare this type as a local literal again —
+// extend KORA_ROLES's sub-arrays instead if a new role is ever needed.
+import type { KORA_ROLES } from '@/lib/constants/kora';
+export type KoraRole = (typeof KORA_ROLES)[number];
 
 // Ambiente operativo: determina il banner e il contesto dell'audit log.
 // demo    → Foundation Light, dati sintetici
@@ -53,6 +55,14 @@ type RoleDecision = {
   denyReason?:   string;
 };
 
+// ADVISOR has no session guard/live route today (see lib/constants/kora.ts's
+// FUTURE_KORA_ROLES, docs/FUTURE_ROLES_AND_SURFACES.md) — every resource
+// below DENYs it explicitly, the same way every other role gets an explicit
+// reason, rather than relying silently on canAccess()'s fail-closed fallback
+// for an undefined role/resource pair. If ADVISOR ever gets real enforcement,
+// update the relevant row(s) here deliberately, plus docs/access-matrix.md.
+const ADVISOR_NOT_YET_ENFORCED = 'ADVISOR has no live session/route enforcement yet — see docs/FUTURE_ROLES_AND_SURFACES.md';
+
 // Keyed by resource then role — data-driven, non if-else.
 const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = {
   company_kpi_kora_index: {
@@ -61,6 +71,7 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     WORKER:        { allowed: false, requiresAudit: false, denyReason: 'Company KPI not accessible to WORKER role' },
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'Company KPI not accessible to PARTNER role' },
     DEMO_VIEWER:   { allowed: false, requiresAudit: false, denyReason: 'Company KPI not accessible to DEMO_VIEWER role' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: ADVISOR_NOT_YET_ENFORCED },
   },
 
   company_config_source_batch: {
@@ -69,6 +80,7 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     WORKER:        { allowed: false, requiresAudit: false, denyReason: 'Company config not accessible to WORKER role' },
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'Company config not accessible to PARTNER role' },
     DEMO_VIEWER:   { allowed: false, requiresAudit: false, denyReason: 'Company config not accessible to DEMO_VIEWER role' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: ADVISOR_NOT_YET_ENFORCED },
   },
 
   company_submissions_approval: {
@@ -77,6 +89,7 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     WORKER:        { allowed: false, requiresAudit: false, denyReason: 'Submissions not accessible to WORKER role' },
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'Submissions not accessible to PARTNER role' },
     DEMO_VIEWER:   { allowed: false, requiresAudit: false, denyReason: 'Submissions not accessible to DEMO_VIEWER role' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: ADVISOR_NOT_YET_ENFORCED },
   },
 
   aggregates_n_ge_10: {
@@ -85,6 +98,7 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     WORKER:        { allowed: true,  requiresAudit: false },
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'Aggregate data not accessible to PARTNER role' },
     DEMO_VIEWER:   { allowed: false, requiresAudit: false, denyReason: 'Aggregate data not accessible to DEMO_VIEWER role' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: ADVISOR_NOT_YET_ENFORCED },
   },
 
   // Worker-individual: DENY for KORA_ADMIN — non negoziabile, invariato in ogni env.
@@ -94,6 +108,7 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     WORKER:        { allowed: true,  requiresAudit: false }, // own data only — enforced at RLS layer
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'Worker individual data not accessible to PARTNER role' },
     DEMO_VIEWER:   { allowed: false, requiresAudit: false, denyReason: 'Worker individual data not accessible to DEMO_VIEWER role' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: 'Worker individual data not accessible to ADVISOR role — privacy boundary, independent of enforcement status' },
   },
 
   worker_individual_uef: {
@@ -102,6 +117,12 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     WORKER:        { allowed: true,  requiresAudit: false }, // own data only — enforced at RLS layer
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'Worker individual data not accessible to PARTNER role' },
     DEMO_VIEWER:   { allowed: false, requiresAudit: false, denyReason: 'Worker individual data not accessible to DEMO_VIEWER role' },
+    // Note: analytics.fn_advisor_uef_read() (migration 030) grants ADVISOR a
+    // tenant-scoped, payload-excluded, non-individual read path at the DB
+    // layer — that is a SEPARATE, narrower RPC, not this app-layer resource
+    // code. This row governs direct/individual uef_record access, which
+    // remains DENY for ADVISOR here regardless of that RPC's existence.
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: 'Worker individual data not accessible to ADVISOR role via this resource — see analytics.fn_advisor_uef_read() for the separate tenant-scoped aggregate path' },
   },
 
   // Tabella più sensibile: DENY per tutti — zero accessi applicativi.
@@ -112,6 +133,7 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     WORKER:        { allowed: false, requiresAudit: false, denyReason: 'pseudonym_map: zero application access — system procedures only' },
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'pseudonym_map: zero application access — system procedures only' },
     DEMO_VIEWER:   { allowed: false, requiresAudit: false, denyReason: 'pseudonym_map: zero application access — system procedures only' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: 'pseudonym_map: zero application access — system procedures only' },
   },
 
   hq_operator_console: {
@@ -120,6 +142,7 @@ const MATRIX: Record<AccessResource, Partial<Record<KoraRole, RoleDecision>>> = 
     WORKER:        { allowed: false, requiresAudit: false, denyReason: 'HQ Operator Console not accessible to WORKER role' },
     PARTNER:       { allowed: false, requiresAudit: false, denyReason: 'HQ Operator Console not accessible to PARTNER role' },
     DEMO_VIEWER:   { allowed: false, requiresAudit: false, denyReason: 'HQ Operator Console not accessible to DEMO_VIEWER role' },
+    ADVISOR:       { allowed: false, requiresAudit: false, denyReason: ADVISOR_NOT_YET_ENFORCED },
   },
 };
 

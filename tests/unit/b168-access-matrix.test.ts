@@ -125,7 +125,7 @@ describe('canAccess — worker individual (WORKER: ALLOW own)', () => {
 
 describe('canAccess — personal_pseudonym_map (DENY per tutti)', () => {
   const allRoles: KoraRole[] = [
-    'KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER', 'DEMO_VIEWER',
+    'KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER', 'DEMO_VIEWER', 'ADVISOR',
   ];
 
   for (const role of allRoles) {

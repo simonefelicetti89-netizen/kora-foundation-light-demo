@@ -1,7 +1,7 @@
 # KORA Access Matrix — Documento Autoritativo
 
-**Versione:** 1.1  
-**Data:** 2026-07-04 (matrice ruoli aggiornata in PILOT-SAAS-01; corpo documento originale B168 invariato)  
+**Versione:** 1.2  
+**Data:** 2026-07-04 (matrice ruoli aggiornata in PILOT-SAAS-01; tipo `KoraRole` riconciliato in ROLE-01; corpo documento originale B168 invariato)  
 **Sprint:** B168 — Privacy Guard Granularization  
 **Autorità:** Supera qualsiasi check hardcoded nel codice. In caso di conflitto, questo documento vince.
 
@@ -24,6 +24,8 @@ La privacy doctrine "i nomi seguono la fonte" e la promessa worker-owned del PIB
 
 **Aggiornamento (PILOT-SAAS-01, 2026-07-04):** la colonna combinata `PARTNER / DEMO_VIEWER` è stata separata — `PARTNER` è oggi un ruolo reale, con login e route dedicate (`app/partner/*`, `requirePartnerUser()`), distinto da `DEMO_VIEWER` (sintetico, nessuna grant su tabelle live by design). È stata aggiunta anche una colonna `ADVISOR` — vedi nota sotto la tabella: il ruolo esiste solo a livello di tipo/DB, senza alcuna route o guard di sessione reale oggi.
 
+**Aggiornamento (ROLE-01, 2026-07-04):** `ADVISOR` è ora modellato esplicitamente in `MATRIX` (`lib/auth/access-matrix.ts`) con una riga `DENY` per ogni risorsa, invece di affidarsi implicitamente al fallback fail-closed di `canAccess()`. Il `KoraRole` di questo file e il `KoraRole` usato altrove nell'app derivano ora dalla stessa fonte canonica (`KORA_ROLES` in `lib/constants/kora.ts`) — vedi la nota aggiornata più sotto in "Implementazione: `canAccess()`".
+
 | Risorsa | KORA_ADMIN | COMPANY_ADMIN | WORKER | PARTNER | DEMO_VIEWER | ADVISOR | Env constraint |
 |---|---|---|---|---|---|---|---|
 | Company KPI / KORA Index org | **ALLOW + audit** | ALLOW | DENY | DENY | DENY | DENY | tutti |
@@ -40,7 +42,7 @@ La privacy doctrine "i nomi seguono la fonte" e la promessa worker-owned del PIB
 - `ALLOW (own)` = il worker (o partner) può accedere solo ai propri dati, mai a quelli di altri worker/partner
 - `personal.worker_pseudonym_map`: zero accessi applicativi — solo procedure SECURITY DEFINER di sistema
 - Aggregati N≥10: la soglia privacy (`safe_aggregation_threshold = 10`) è invariata — gruppi sotto soglia restano soppressi
-- **`ADVISOR` (*):** `analytics.fn_advisor_uef_read()` esiste a livello DB (migration 030, `SECURITY DEFINER`, tenant-scoped, payload escluso) ma **nessuna route o guard di sessione reale la richiama oggi** — `ADVISOR` non ha `require*User()` in `lib/auth/kora-session.ts`, non ha login, e `/advisor` reindirizza permanentemente a `/demo/advisor` (showcase statico). Trattare questa riga come "DENY in pratica, funzione DB pronta ma inutilizzata" — non promettere accesso advisor reale ai clienti. Vedi `docs/FUTURE_ROLES_AND_SURFACES.md`.
+- **`ADVISOR` (*):** dal ROLE-01, `canAccess()` restituisce `DENY` esplicito per `ADVISOR` su ogni risorsa di questa tabella — non è più un caso non modellato. Per `worker_individual_uef` specificamente, questo `DENY` riguarda l'accesso diretto/individuale via questa risorsa app-layer; `analytics.fn_advisor_uef_read()` esiste separatamente a livello DB (migration 030, `SECURITY DEFINER`, tenant-scoped, payload escluso) ma **nessuna route o guard di sessione reale la richiama oggi** — `ADVISOR` non ha `require*User()` in `lib/auth/kora-session.ts`, non ha login, e `/advisor` reindirizza permanentemente a `/demo/advisor` (showcase statico). Non promettere accesso advisor reale ai clienti. Vedi `docs/FUTURE_ROLES_AND_SURFACES.md`.
 - **`PARTNER`** è un ruolo reale con login (`requirePartnerUser()`, `app_metadata.kora_role === 'PARTNER'`), non solo un'etichetta demo — ma oggi limitato al proprio profilo (`network.partner_profile`/`partner_identity`); nessuna visibilità su dati worker o company a livello individuale, per design.
 
 ---
@@ -73,7 +75,7 @@ Restituisce:
 - `banner?: BannerVariant` — variante banner se applicabile
 - `denyReason?: string` — stringa human-readable del motivo di blocco (non esposta all'utente, per logging)
 
-**Attenzione — due tipi `KoraRole` non coincidenti (trovato in PILOT-SAAS-01):** il `KoraRole` usato da `canAccess()` (definito in `lib/auth/access-matrix.ts`) include `KORA_ADMIN | COMPANY_ADMIN | WORKER | PARTNER | DEMO_VIEWER` — **non** `ADVISOR`. Un secondo `KoraRole`, derivato da `lib/constants/kora.ts`'s `KORA_ROLES` e usato da `lib/permissions/index.ts`, include `ADVISOR` ma **non** `DEMO_VIEWER`. Questi sono due elenchi di ruoli distinti che non condividono una singola fonte di verità — prima di aggiungere un nuovo ruolo (es. `ADVISOR` reale, o un futuro `PARTNER` esteso), riconciliare esplicitamente i due tipi invece di estenderne uno solo. Vedi `docs/PILOT_SAAS_READINESS.md` e `docs/FUTURE_ROLES_AND_SURFACES.md`.
+**Risolto in ROLE-01 (2026-07-04) — prima due tipi `KoraRole` non coincidenti, trovato in PILOT-SAAS-01:** il `KoraRole` usato da `canAccess()` (`lib/auth/access-matrix.ts`) dichiarava un'unione letterale indipendente (`KORA_ADMIN | COMPANY_ADMIN | WORKER | PARTNER | DEMO_VIEWER`, senza `ADVISOR`) che divergeva silenziosamente da `KoraRole` in `lib/types/index.ts` (derivato da `KORA_ROLES` in `lib/constants/kora.ts`, con `ADVISOR` ma senza `DEMO_VIEWER`). Entrambi ora derivano dalla stessa fonte canonica: `KORA_ROLES = [...ACTIVE_KORA_ROLES, ...FUTURE_KORA_ROLES, ...DEMO_KORA_ROLES]` in `lib/constants/kora.ts` (6 ruoli: `KORA_ADMIN, COMPANY_ADMIN, WORKER, PARTNER, ADVISOR, DEMO_VIEWER`). `ActiveProductRole`/`KoraUserRole` (`lib/types/index.ts`) restano un sottotipo deliberatamente più stretto (5 ruoli, esclude `DEMO_VIEWER`) per i call site che intendono "ruolo prodotto reale" — non un terzo elenco indipendente, ma un derivato di `ACTIVE_PRODUCT_KORA_ROLES`. Verificato da `tests/unit/pilot-saas-01-role-architecture-invariants.test.ts`. Vedi `docs/PILOT_SAAS_READINESS.md` e `docs/FUTURE_ROLES_AND_SURFACES.md`.
 
 ---
 
