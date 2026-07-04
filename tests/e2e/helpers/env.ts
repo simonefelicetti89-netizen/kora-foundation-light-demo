@@ -97,3 +97,16 @@ export function guardBaseUrl(): BaseUrlGuardResult {
 export function envPresence(name: string): 'set' | 'missing' {
   return readEnv(name) ? 'set' : 'missing';
 }
+
+/**
+ * GOLDEN-E2E-02 — explicit second gate for the data-bearing golden path test.
+ * Unlike the read-only reachability tests, this one uploads a file, creates a
+ * real source_batch row, generates/approves UEF records, and runs scoring
+ * against whatever tenant E2E_COMPANY_A_* points at. Credential presence
+ * alone is not enough consent for a mutating test — mirrors the
+ * RLS03_ALLOW_RUN / RLS05_ALLOW_RUN pattern already used in this repo for
+ * higher-risk test tiers.
+ */
+export function isGoldenDataBearingRunAllowed(): boolean {
+  return readEnv('E2E_GOLDEN_DATA_BEARING_ALLOW_RUN') === 'true';
+}
