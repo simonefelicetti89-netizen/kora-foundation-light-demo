@@ -31,6 +31,7 @@ function fileExists(rel: string): boolean {
 const pibPageSrc    = read('app/my-kora/personal-impact-balance/page.tsx');
 const homeSrc       = read('app/my-kora/page.tsx');
 const layoutSrc     = read('app/my-kora/layout.tsx');
+const demoGateSrc   = read('app/my-kora/_providers/MyKoraDemoGate.tsx');
 const middlewareSrc = read('middleware.ts');
 const sessionSrc    = read('lib/auth/kora-session.ts');
 const sidebarSrc    = read('components/layout/Sidebar.tsx');
@@ -81,29 +82,57 @@ describe('B141-B — My KORA home lightened', () => {
   });
 });
 
-// ── 10–13: Layout access control ─────────────────────────────────────────────
+// ── 10–13: Layout access control (MYKORA-01: server-side guard) ─────────────
+//
+// MYKORA-01 converted app/my-kora/layout.tsx from a client-side
+// (useEffect + browser getSession()) guard to a server-side guard, matching
+// the pattern in app/admin/layout.tsx / app/company/layout.tsx / app/partner
+// /layout.tsx (B137). The real-session admission decision now lives in the
+// server layout; the pure demo-visitor path moved to MyKoraDemoGate.tsx
+// (client component, only reached when there is no real session at all).
 
-describe('B141-B — My KORA layout KORA_ADMIN access', () => {
-  it('10. layout imports getSupabaseBrowserClient for real session detection', () => {
-    expect(layoutSrc).toContain('getSupabaseBrowserClient');
+describe('B141-B / MYKORA-01 — My KORA layout real-session access', () => {
+  it('10. layout is a Server Component — no use client directive', () => {
+    expect(layoutSrc.trimStart().startsWith("'use client'")).toBe(false);
+  });
+
+  it('10b. layout resolves the real session server-side via getSessionKoraRole (kora-session.ts)', () => {
+    expect(layoutSrc).toContain('getSessionKoraRole');
+    expect(layoutSrc).toContain('kora-session');
+    expect(layoutSrc).not.toContain('getSupabaseBrowserClient');
+    expect(layoutSrc).not.toContain('useEffect(');
+    expect(layoutSrc).not.toContain('.auth.getSession()');
   });
 
   it('11. layout checks realRole === KORA_ADMIN for real admin session', () => {
     expect(layoutSrc).toContain("realRole === 'KORA_ADMIN'");
   });
 
-  it('12. layout does not admit COMPANY_ADMIN — isAdminRole gates demo visitor path only (B151-A)', () => {
-    // B151-A: gate was refactored to separate real user admission from demo visitor admission.
-    // isAdminRole is still used but scoped to the demoVisitorPermitted check (null session only).
-    // COMPANY_ADMIN real session is blocked because realUserPermitted requires WORKER or KORA_ADMIN.
-    expect(layoutSrc).toContain('isAdminRole(activeRole');
+  it('12. layout does not admit COMPANY_ADMIN — isAdminRole gates the demo visitor path only (in MyKoraDemoGate.tsx)', () => {
+    // The server layout blocks any real session that is not WORKER/KORA_ADMIN
+    // (including COMPANY_ADMIN) before rendering children — no isAdminRole
+    // check needed there. isAdminRole is only used in MyKoraDemoGate.tsx,
+    // scoped to the pure-demo-visitor (no real session) path.
     expect(layoutSrc).not.toContain("'COMPANY_ADMIN'");
+    expect(demoGateSrc).toContain('isAdminRole(activeRole');
   });
 
-  it('13. layout uses realUserPermitted and demoVisitorPermitted as separate gates (B151-A)', () => {
-    // B151-A renamed: demoPermitted → demoVisitorPermitted, realAdminPermitted → realUserPermitted
+  it('13. layout uses realUserPermitted; MyKoraDemoGate.tsx uses demoVisitorPermitted (separate gates)', () => {
     expect(layoutSrc).toContain('realUserPermitted');
-    expect(layoutSrc).toContain('demoVisitorPermitted');
+    expect(demoGateSrc).toContain('demoVisitorPermitted');
+  });
+
+  it('13b. layout hard-blocks any other real session (realRole !== null) before falling back to demo-state', () => {
+    expect(layoutSrc).toContain('realRole !== null');
+  });
+
+  it('13c. MyKoraDemoGate is only reached when there is no real session', () => {
+    expect(layoutSrc).toContain('MyKoraDemoGate');
+    // The demo gate itself must not re-derive or trust any "real session" state —
+    // it is pure demo-state (useRole), which is fine precisely because the
+    // server layout already excluded all real sessions before reaching it.
+    expect(demoGateSrc).toContain("'use client'");
+    expect(demoGateSrc).toContain('useRole');
   });
 });
 
@@ -137,9 +166,12 @@ describe('B141-B — KORA Link card uses only canonical KoraStratoMark', () => {
   });
 });
 
-// ── 17–18: No touch to middleware / auth ──────────────────────────────────────
+// ── 17–18: middleware unchanged / existing WORKER guard preserved ───────────
+// MYKORA-01 added getSessionKoraRole() to kora-session.ts (additive only) —
+// these assertions confirm the pre-existing requireWorkerUser() guard logic
+// was not weakened or removed by that addition.
 
-describe('B141-B — middleware.ts and kora-session.ts untouched', () => {
+describe('B141-B — middleware.ts unchanged, kora-session.ts WORKER guard preserved', () => {
   it('17. middleware.ts has no KORA_ADMIN redirect rule (unchanged)', () => {
     // Middleware correctly has no special redirect for KORA_ADMIN.
     // If a 'KORA_ADMIN' redirect rule were added, that would be a regression.

@@ -15,9 +15,11 @@ Current test coverage and verification checkpoint status, across unit/integratio
 ## What is proven
 
 **Unit/integration (vitest):**
-- 204 test files, 8656 tests passing, ~4s runtime, verified at this doc's commit (`npm test`).
+- 209 test files, 8778 tests passing (12 skipped), ~5s runtime, verified 2026-07-04 on branch `hardening/my-kora-server-guard` (MYKORA-01) via `npm test`.
 - Includes static/structural version-consistency tests (e.g. `b100-versioning-consistency.test.ts`) that assert forbidden stale labels don't appear in client-facing strings, tenant-isolation source-analysis tests, and role/auth-routing structural tests.
 - **Important caveat on what these prove:** most of this suite is static source-code analysis (reading files as text, asserting patterns) or pure-function logic testing — not runtime rendering or live-database verification. A test named "golden path" or "tenant isolation" in this suite does not necessarily mean the actual runtime behavior was exercised end-to-end; check what a given test file actually does before citing it as proof of a live behavior.
+
+**MYKORA-01 — `/my-kora` server-side guard (2026-07-04):** `app/my-kora/layout.tsx` converted from client-side session detection to a server-side guard (`getSessionKoraRole()`, additive to `lib/auth/kora-session.ts`), closing PILOT_SAAS_READINESS.md blocker #5. New coverage: `tests/unit/mykora-01-server-guard.test.ts` (structural — asserts the layout has no `'use client'` directive, resolves the session server-side, hard-blocks any non-WORKER/non-KORA_ADMIN real session before rendering children, and only reaches the client-side `MyKoraDemoGate.tsx` when there is no real session at all). Existing structural suites touching this layout (`b141b-my-kora-pib-ia-and-admin-access.test.ts`, `b151a-demo-live-sidebar-worker-gate.test.ts`, `b81b-worker-identity-foundation.test.ts`) were updated to match the new file split rather than the old single-file client gate. **Not covered:** no authenticated E2E exercises `/my-kora` under a real WORKER/COMPANY_ADMIN/PARTNER session (static/unit only, per sprint scope — authenticated staging E2E explicitly deferred).
 
 **Authenticated E2E (Playwright, `tests/e2e/authenticated-smoke.spec.ts`):**
 - Infrastructure built GOLDEN-02: skip-safe fixtures (`tests/e2e/helpers/{env,roles,auth}.ts`) for KORA_ADMIN, COMPANY_A, COMPANY_B, with a production guard (`E2E_BASE_URL` must be local unless `E2E_ALLOW_PRODUCTION=true`) and no credentials ever hardcoded or logged.

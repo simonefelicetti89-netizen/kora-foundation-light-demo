@@ -387,6 +387,10 @@ describe('B81-B Task 5 — privacy-escalation-model.md', () => {
 
 describe('B81-B Task 6 — My KORA layout uses WorkerSessionProvider', () => {
   const src = read('app/my-kora/layout.tsx');
+  // MYKORA-01: the pure demo-visitor role predicate (isWorkerRole/isAdminRole)
+  // now lives in the client delegate, reached only when there is no real
+  // session — see app/my-kora/_providers/MyKoraDemoGate.tsx.
+  const demoGateSrc = read('app/my-kora/_providers/MyKoraDemoGate.tsx');
 
   it('imports WorkerSessionProvider', () => {
     expect(src).toContain("WorkerSessionProvider");
@@ -397,19 +401,25 @@ describe('B81-B Task 6 — My KORA layout uses WorkerSessionProvider', () => {
     expect(src).toContain("<WorkerSessionProvider>");
   });
 
-  it('gates on isWorkerRole and isAdminRole', () => {
-    expect(src).toContain("isWorkerRole");
-    expect(src).toContain("isAdminRole");
+  it('gates demo visitors on isWorkerRole and isAdminRole (MyKoraDemoGate.tsx)', () => {
+    expect(demoGateSrc).toContain("isWorkerRole");
+    expect(demoGateSrc).toContain("isAdminRole");
   });
 
-  it('shows PrivacyBoundaryNotice for blocked employer roles', () => {
+  it('shows PrivacyBoundaryNotice for blocked employer roles (real session in layout, demo visitor in MyKoraDemoGate)', () => {
     expect(src).toContain("PrivacyBoundaryNotice");
     expect(src).toContain("employer_role");
+    expect(demoGateSrc).toContain("PrivacyBoundaryNotice");
+    expect(demoGateSrc).toContain("employer_role");
   });
 
-  it('documents current PREVIEW mode and Pilot+ path', () => {
-    expect(src).toContain("PREVIEW");
-    expect(src).toContain("Pilot+");
+  it('documents current PREVIEW mode and Pilot+ path (WorkerSessionProvider)', () => {
+    // MYKORA-01 moved the layout to a server-side guard; the PREVIEW/Pilot+
+    // migration note now lives on WorkerSessionProvider, the component that
+    // actually resolves PREVIEW vs LIVE worker data.
+    const providerSrc = read('app/my-kora/_providers/WorkerSessionProvider.tsx');
+    expect(providerSrc).toContain("PREVIEW");
+    expect(providerSrc).toContain("Pilot+");
   });
 });
 
