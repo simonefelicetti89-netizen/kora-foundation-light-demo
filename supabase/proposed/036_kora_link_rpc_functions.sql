@@ -2,16 +2,23 @@
 -- Migration:   036_kora_link_rpc_functions
 -- Feature:     KL-18 — KORA Link v1 — Server-side RPC / SECURITY DEFINER functions
 -- Author:      KORA Foundation Light · 2026-07-01
--- Depends on:  034_kora_link_schema.sql (PROPOSED_AMENDED_INTERNAL_ENGINEERING)
---              035_kora_link_rls.sql    (PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING)
--- Gate:        Gate 2 OPEN + Gate 3 OPEN — PROPOSED, NOT APPLIED TO ANY DATABASE.
+-- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
+--              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
+--              035_kora_link_rls.sql    (PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING — still open, Gate 4)
+-- Gate:        This file (036) itself: Gate 2 OPEN + Gate 3 OPEN, NOT reviewed, NOT applied.
+--              034's own engineering review closed at KL-19 — that does NOT extend to 036.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- STATUS: PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING
 -- ─────────────────────────────────────────────────────────────────────────────
 -- This file is a DESIGN DRAFT. Internal Engineering provisional — NOT CTO-approved.
+-- KL-19 (2026-07-04) reviewed and closed 034's own engineering TODOs — it did NOT
+-- review or change the RPC functions in this file (the function bodies below are
+-- unchanged; only 035's spec-comment names were reconciled to match these already-
+-- implemented names — see 035 header).
 -- Do not apply until:
---   (1) 034 formally approved by CTO (Gate 2)
+--   (1) 034 formally approved by CTO (Gate 2 — engineering substance closed at KL-19,
+--       human CTO ratification still pending)
 --   (2) 035 RLS applied and smoke-tested on staging
 --   (3) DPO review of consent model and public lookup response (Gate 3)
 --   (4) All GRANT decisions confirmed by CTO (especially anon access to public lookup)

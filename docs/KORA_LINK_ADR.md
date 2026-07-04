@@ -1,8 +1,8 @@
 # KORA Link — Architecture Decision Record (Pilot Backbone)
 
-**Status:** Accepted (pilot-scope decision; does not close any gate)
-**Date:** 2026-07-04
-**Sprint:** KORA-LINK-S1
+**Status:** Accepted (pilot-scope decision; §6/KL-19 closes Gate 2's engineering substance, no other gate closed)
+**Date:** 2026-07-04 (§1–§5: KORA-LINK-S1; §6 added same day by KORA-LINK-S2/KL-19)
+**Sprint:** KORA-LINK-S1, extended by KORA-LINK-S2
 **Audience:** CTO, technical advisor, anyone implementing the next KORA Link increment
 
 ---
@@ -27,7 +27,7 @@ KORA Link's decision history is scattered across `docs/archive/kora-link/` (11 f
 | `docs/archive/kora-link/*` | Historical design record (V1 design, 034/035/036 notes, threat model, CTO handoff, KL-02 decision gate, runtime checkpoint) — not rewritten, still the detailed backstory | Left as-is (historical) |
 
 ### 1.2 Proposed SQL (`supabase/proposed/`, not applied, Gate 2 blocks application)
-- **`034_kora_link_schema.sql`** (1254 lines) — schema `kora_link`, 9 tables: `link_batches`, `links`, `link_assignments`, `link_consents`, `link_events`, `revocations`, `link_replacements`, `audit_log`, `link_delivery_records`. `links.token_digest` is the only token-related column (`text`, 64-char HMAC-SHA256 hex, `CHECK` on length) — explicit constitutional comments prohibit `token_value`/`nfc_url`/`full_token`/`worker_name`/`worker_email` columns, and the file embeds its own verification query (line ~1229) to confirm no such column ever exists. `links.status` lifecycle: `generated → assigned_to_tenant → delivered → activation_pending → active → suspended → revoked/replaced/expired/orphaned` — covers the required active/inactive states (a lost/stolen chip is revoked, not a separate literal status). **8 open CTO TODOs block Gate 2**: FK target ambiguity, `UNIQUE NULLS NOT DISTINCT` Postgres-version compatibility, generated-column compatibility, redundant indexes, audit-log retention policy, schema-naming, and two tables of disputed necessity.
+- **`034_kora_link_schema.sql`** (~1300 lines) — schema `kora_link`, 9 tables: `link_batches`, `links`, `link_assignments`, `link_consents`, `link_events`, `revocations`, `link_replacements`, `audit_log`, `link_delivery_records`. `links.token_digest` is the only token-related column (`text`, 64-char HMAC-SHA256 hex, `CHECK` on length) — explicit constitutional comments prohibit `token_value`/`nfc_url`/`full_token`/`worker_name`/`worker_email` columns, and the file embeds its own verification query (line ~1229) to confirm no such column ever exists. `links.status` lifecycle: `generated → assigned_to_tenant → delivered → activation_pending → active → suspended → revoked/replaced/expired/orphaned` — covers the required active/inactive states (a lost/stolen chip is revoked, not a separate literal status). **UPDATE (KORA-LINK-S2/KL-19, 2026-07-04): the "8 open CTO TODOs" line below is superseded.** 5 of the 8 were engineering-decidable and are now resolved with documented rationale (FK cross-schema policy, TTL enforcement layer, `link_delivery_records` v1 scope, secret rotation policy, schema naming/PG-version compatibility) — see `034`'s header and `docs/KORA_LINK_STATUS.md`. The remaining 3 are genuine Gate 3 (DPO/legal) blockers, not CTO/engineering questions: audit-log retention *duration* (the mechanism recommendation is resolved), `request_fingerprint` hashing strategy, and consent-notice/`delivered_to_label` content approval.
 - **`035_kora_link_rls.sql`** (725 lines) — RLS policies, `kl_*_admin_select/insert/update` (KORA_ADMIN-only) across all 9 tables. **Incomplete as drafted**: the worker-self-select policy on `link_assignments` and both `SECURITY DEFINER` lookup functions (`fn_kora_link_public_lookup`, `fn_kora_link_activate`) are commented out. **No company-facing SELECT policy exists in 035 at all** — company access is meant to go entirely through the aggregate RPC in 036, never direct table access.
 - **`036_kora_link_rpc_functions.sql`** (879 lines) — 6 `SECURITY DEFINER` RPCs: `fn_is_valid_token_digest`, `fn_public_lookup_link`, `fn_activate_link_for_worker`, `fn_revoke_link`, `fn_replace_link`, `fn_company_link_status_aggregate`. The company-facing one enforces `p_tenant_id = kora.tenant_id()` and returns **only `(status, count)` grouped rows** — comment states it "NEVER returns link_id, token_digest, worker_id, or any per-chip data." No individual-data leak found in any RPC body.
 
@@ -86,7 +86,7 @@ Already encoded as data, not just prose, in `lib/kora-link/ecosystem.ts`'s `KORA
 - **Cross-cutting:** "nessun token grezzo viene mai persistito" — applies to every role, no exception.
 
 ### 3.5 What this ADR deliberately does not decide
-- Does not resolve the 8 CTO TODOs in 034 (technical schema decisions, need CTO sign-off, out of scope for a docs/foundations sprint).
+- Does not resolve the 8 CTO TODOs in 034 (technical schema decisions, need CTO sign-off, out of scope for a docs/foundations sprint). **Superseded by KORA-LINK-S2/KL-19 (2026-07-04, see §6):** a later, dedicated sprint did take on this technical review and closed 5 of the 8 with documented engineering rationale; this line is left as-is to show it was correctly out of scope for S1 specifically.
 - Does not draft the missing worker-self-select policy or the two commented-out `SECURITY DEFINER` functions in 035 (writing untested RLS policy text with no way to verify it against a running DB in this sprint would be worse than leaving it honestly marked incomplete).
 - Does not touch consent copy, retention periods, or DPO/legal language (Gate 3, needs a legal reviewer, not an engineering decision).
 - Does not create a `lib/types/kora-link.ts` file. `lib/kora-link/ecosystem.ts` (plus per-module types in `token.ts`/`config.ts`) is already the canonical, single-source type model for roles, gates, capability states, and privacy boundaries. Introducing a second type module would create a competing source of truth for no benefit — the existing structure already satisfies "shared type definitions."
@@ -103,19 +103,29 @@ Nothing else was added. Given how complete the existing `lib/kora-link/` + route
 
 ---
 
-## 5. Remaining steps before any gate closes (unchanged by this sprint, restated for clarity)
+## 5. Remaining steps before any gate closes (status as of KORA-LINK-S1; superseded in part by §6/KL-19)
 
-1. **Gate 2 (CTO):** resolve the 8 TODOs in `034_kora_link_schema.sql` (FK targets, `UNIQUE NULLS NOT DISTINCT` PG-version check, generated-column compatibility, redundant indexes, audit-log retention, schema naming, necessity review of two tables).
-2. **Gate 4 (RLS):** write and review the worker-self-select policy on `link_assignments` and the two `SECURITY DEFINER` functions currently commented out in `035_kora_link_rls.sql`; add explicit negative-test coverage (company cannot read `link_assignments`/`link_consents` directly) before this gate can close — the RLS-03 direct-Postgres pattern from PR #26 is directly reusable here once 034/035 are stable enough to apply to a local Supabase instance.
-3. **Gate 3 (DPO/legal):** consent copy, retention policy, privacy notice — needs a legal reviewer, not engineering.
+1. ~~**Gate 2 (CTO):** resolve the 8 TODOs in `034_kora_link_schema.sql`~~ — **substantively done, see §6.** 5/8 resolved with engineering rationale; 3 reclassified as Gate 3 blockers (folded into item 3 below).
+2. **Gate 4 (RLS):** write and review the worker-self-select policy on `link_assignments` and the two `SECURITY DEFINER` functions currently commented out in `035_kora_link_rls.sql` (the functions themselves are now fully implemented in `036` — §6 reconciled 035's stale spec-only names to match — but 035 still does not enable them via policy); add explicit negative-test coverage (company cannot read `link_assignments`/`link_consents` directly) before this gate can close — the RLS-03/05/06 direct-Postgres pattern (merged 2026-07-04) is directly reusable here once 034/035 are stable enough to apply to a local Supabase instance.
+3. **Gate 3 (DPO/legal):** consent copy, retention policy, privacy notice — needs a legal reviewer, not engineering. Now precisely scoped to 3 items (§6): audit-log retention **duration**, `request_fingerprint` hashing strategy, `consent_version`/`delivered_to_label` content approval.
 4. **Gate 5 (staging):** apply 034/035/036 to a staging project only after Gates 2–4 close.
 5. **Gate 6 (public route):** flip `KORA_LINK_ENABLED`/`KORA_LINK_DB_LOOKUP_ENABLED` only after Gate 5.
 6. **Gate 7 (worker activation):** flip `KORA_LINK_ACTIVATION_ENABLED` only after Gate 6.
 7. **Gate 8 (partner scan):** out of v1 scope entirely — no design work recommended until v1 ships and is stable.
 8. **Gate 9 (production):** all prior gates closed.
 
-None of steps 1–8 can happen without applying migrations to a real database — which is exactly why this sprint stops at documentation and DB-free tests.
+None of steps 1–8 can happen without applying migrations to a real database — which is exactly why KORA-LINK-S1 stopped at documentation and DB-free tests. KORA-LINK-S2 (§6) extended that same DB-free-review approach to close Gate 2's engineering substance without applying anything either.
+
+## 6. KORA-LINK-S2 (KL-19) — Gate 2 technical review closure (2026-07-04)
+
+**This sprint changes no running behavior**, same constraint as S1 (§0): no migration applied, no RLS policy written to a database, no feature flag flipped, no scoring/methodology touched.
+
+- **034 Gate 2 review closed at the engineering level.** Of the 8 open TODOs (§1.2, now superseded), 5 were pure engineering/architecture tradeoffs and are resolved with documented rationale directly in `034`'s header (`OPEN TODOS` section): FK cross-schema policy (confirmed consistent with migration 033's precedent, and now RLS-proven live by RLS-03/RLS-05/RLS-06), TTL enforcement (confirmed already implemented at the `036` SECURITY DEFINER query layer, not merely app-layer as originally framed), `link_delivery_records` v1 scope (confirmed needed regardless of which migration defines it), secret rotation (stable-secret + documented emergency reissue confirmed sufficient for pilot scale), and schema naming + Postgres-version compatibility (confirmed consistent with repo convention; `major_version = 17` in `supabase/config.toml`).
+- **3 items reclassified as precise Gate 3 (DPO) BLOCKER comments**, not resolved by engineering judgment: audit-log retention *duration* (mechanism recommendation — Edge Function on schedule, not `pg_cron` — is resolved), `request_fingerprint` hashing strategy, and `link_consents.consent_version`/`link_delivery_records.delivered_to_label` content approval.
+- **035/036 minimally updated for consistency, not re-reviewed.** Their own headers now correctly reference 034's KL-19 status instead of the stale pre-review label, with an explicit note that 034's engineering-review closure does NOT extend to 035's own (still fully open, Gate 4) RLS review or to any change in 036's function bodies. A genuine naming inconsistency was found and fixed: 035's `TODO_SECURITY_DEFINER` spec section named functions `fn_kora_link_public_lookup`/`fn_kora_link_activate`/etc., while `036` actually implements (and `lib/kora-link/public-lookup.ts`/`activation.ts` already correctly call) `fn_public_lookup_link`/`fn_activate_link_for_worker`/etc. Reconciled in 035 as a comment-only fix.
+- **New regression-lock test:** `tests/unit/kora-link-schema034-review.test.ts` — 034/035 table-reference consistency, 035/036 function-name consistency, PG15-construct-elimination (no regression on the KL-16 fixes), gate-status-header internal consistency, and public-lookup RPC return-shape minimality (extends the existing company-aggregate-RPC check from `kora-link-privacy-invariants.test.ts` to the anon-facing lookup RPC too).
+- **What this sprint does NOT decide:** it does not substitute for a human CTO's formal ratification of the KL-19 resolutions (an AI-assisted engineering review pass is not the same thing as organizational sign-off) — but no further schema engineering work blocks that ratification. It does not touch Gate 3/DPO content, Gate 4's RLS substance, or any code outside the three proposed SQL files' comments/headers and the one new test file.
 
 ## Related docs
 
-`KORA_LINK_STATUS.md`, `KORA_LINK_GATE_REPORT.md`, `KORA_LINK_CHANGELOG.md`, `ARCHITECTURE.md` §8, `docs/archive/kora-link/` (historical design detail), `STATUS.md`.
+`KORA_LINK_STATUS.md`, `KORA_LINK_GATE_REPORT.md` (KL-19 addendum), `KORA_LINK_CHANGELOG.md`, `ARCHITECTURE.md` §8, `docs/archive/kora-link/` (historical design detail), `STATUS.md`.

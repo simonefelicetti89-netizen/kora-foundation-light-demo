@@ -7,12 +7,40 @@
 
 ---
 
+## KL-19 Addendum (2026-07-04) — Gate 2 Technical Review Closure
+
+**This section updates the Gate 2 status below; the rest of this report (KL-11, 2026-07-01) is left as the historical record and is not otherwise rewritten.** See `docs/KORA_LINK_STATUS.md` for the current single-source status and `supabase/proposed/034_kora_link_schema.sql`'s header for the full resolution text.
+
+KORA-LINK-S2 (KL-19) reviewed the 8 open TODOs listed in §3 below and closed the engineering-decidable portion:
+
+| # | Tema | Esito KL-19 |
+|---|------|-------------|
+| TODO-1 (FK targets) | **RESOLVED** — no-FK cross-schema pattern confirmed consistent with migration 033 precedent; boundary now RLS-proven live by RLS-03/RLS-05/RLS-06 (merged 2026-07-04) |
+| TODO-2 (`UNIQUE NULLS NOT DISTINCT`) | **Already resolved at KL-16** (partner_scans deferred to 036); KL-19 additionally confirmed `supabase/config.toml` pins Postgres `major_version = 17`, well above the PG15 floor that mattered |
+| TODO-3 (generated `scan_date`) | **Already resolved at KL-16** (partner_scans deferred) |
+| TODO-4 (redundant indexes) | **Already resolved at KL-16** (`idx_links_token_digest` removed — UNIQUE constraint already indexes it) |
+| TODO-5 (audit log retention) | **PARTIALLY RESOLVED** — mechanism recommendation (Edge Function on schedule, not `pg_cron`) is an engineering call and is now documented; the retention **duration** itself remains a genuine **Gate 3 / DPO blocker** — cannot be resolved by engineering judgment |
+| TODO-6 (schema naming) | **RESOLVED** — `kora_link` as a dedicated schema confirmed consistent with the repo's one-schema-per-domain convention (`analytics`/`personal`/`commons`/`gov`/`audit`/`network`) |
+| TODO-7 (`public_lookup_attempts`) | **Already resolved at KL-16** — table removed; Upstash handles rate limiting operationally |
+| TODO-8 (`link_delivery_records` scope) | **RESOLVED** — confirmed in-scope for v1; deferring to 036 would not reduce v1 scope since the functionality is needed by Gate 6/7 regardless of which migration file defines it |
+
+**Net result:** of the 8 original TODOs, all are now either resolved-at-KL-16, resolved-at-KL-19, or reclassified as one of exactly 3 genuine Gate 3 (DPO/legal) blockers (audit log retention **duration**, `request_fingerprint` hashing strategy, `link_consents.consent_version`/`delivered_to_label` content approval — see `034`'s header for the precise BLOCKER text on each). **Zero open engineering/CTO questions remain in 034.** A human CTO should still formally ratify the KL-19 resolutions (this pass was an engineering/AI-assisted technical review, not a substitute for that ratification), but no further schema engineering work blocks it.
+
+**Byproduct fix:** a naming inconsistency was found between `035`'s `TODO_SECURITY_DEFINER` spec section (which named functions `fn_kora_link_public_lookup`/`fn_kora_link_activate`/etc.) and `036`'s actual implementation (`fn_public_lookup_link`/`fn_activate_link_for_worker`/etc., which the runtime code in `lib/kora-link/public-lookup.ts`/`activation.ts` already correctly calls). Reconciled in `035` as a comment-only fix — no RLS policy or function logic was touched.
+
+**Gate 2 row in §1 below should now read:** 🟡 SUBSTANTIVELY CLOSED (engineering) — human CTO ratification pending, no open engineering questions.
+**Gate 4 row is unaffected by KL-19** — 035's own RLS review (worker-self-select policy, SECURITY DEFINER grants still commented out) remains open and separate; KL-19 only reconciled stale header references in 035/036, not their substance.
+
+New test coverage: `tests/unit/kora-link-schema034-review.test.ts` (034/035/036 reference consistency, PG15-construct-elimination regression lock, public-lookup RPC minimality).
+
+---
+
 ## 1. Gate Status Summary
 
 | Gate | Nome | Stato | Owner | Blocca | Note |
 |------|------|-------|-------|--------|------|
 | Gate 1 | Runtime Base | ✅ COMPLETE | Engineering | — | KL-06→KL-10 completi |
-| Gate 2 | Schema 034 Review | 🔴 OPEN — pending CTO | CTO / Postgres | DB lookup, activation, tutto il DB path | 8 TODO CTO nel file 034 |
+| Gate 2 | Schema 034 Review | 🟡 SUBSTANTIVELY CLOSED (engineering) — KL-19, 2026-07-04 | CTO / Postgres | Human CTO ratification only — no open engineering questions | 5/8 TODO risolti con motivazione documentata; 3 riclassificati come blocker Gate 3 (DPO) — vedi addendum KL-19 sopra |
 | Gate 3 | Privacy / DPO / Legal | 🔴 OPEN | DPO / Legal | Activation consent, partner scan, live data | Privacy notice non approvata |
 | Gate 4 | RLS 035 Review | 🔴 OPEN — draft exists, incomplete | CTO + DPO | Qualsiasi DB write/read con RLS | 035 draft redatto (KORA_ADMIN-only su tutte le 9 tabelle); worker self-select e le due funzioni SECURITY DEFINER sono commentate — vedi `KORA_LINK_ADR.md` |
 | Gate 5 | Staging Env | 🔴 OPEN — not ready | Engineering + Infra | Test reali con KORA_LINK_ENABLED=true | Dipende da Gate 2+3+4 |
