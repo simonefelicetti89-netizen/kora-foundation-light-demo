@@ -93,15 +93,33 @@ describe('Sidebar footer badge — logica di resolveBannerEnvironment', () => {
 });
 
 // ── MY-KORA GATE — source audit ───────────────────────────────────────────────
+//
+// MYKORA-01 converted this gate from client-side (useEffect + browser
+// supabase.auth.getSession() + resolveRealRoleFromSession) to a server-side
+// guard: getSessionKoraRole() (lib/auth/kora-session.ts) reads the real
+// session from cookies before any HTML is sent — no pending/flash state, no
+// client spoofing surface. The decision table below (WORKER/KORA_ADMIN admit,
+// any other real role block, demo-state only for null session) is unchanged;
+// only the mechanism moved server-side. The demo-visitor-only branch lives in
+// app/my-kora/_providers/MyKoraDemoGate.tsx (client component), reached only
+// when getSessionKoraRole() resolves to null.
 
-describe('my-kora/layout.tsx — source audit: gate non dipende solo da activeRole', () => {
-  it('importa resolveRealRoleFromSession da demo-controls-guard', () => {
-    expect(myKoraSrc).toContain('resolveRealRoleFromSession');
-    expect(myKoraSrc).toContain('demo-controls-guard');
+const demoGateSrc = readFileSync(resolve(root, 'app/my-kora/_providers/MyKoraDemoGate.tsx'), 'utf-8');
+
+describe('my-kora/layout.tsx — source audit: gate reale è server-side, non dipende da activeRole', () => {
+  it('è un Server Component — nessuna direttiva use client', () => {
+    expect(myKoraSrc.trimStart().startsWith("'use client'")).toBe(false);
   });
 
-  it('non usa più il vecchio fallback ?? null direttamente su app_metadata', () => {
-    expect(myKoraSrc).not.toContain("app_metadata?.kora_role ?? null");
+  it('risolve la sessione reale server-side via getSessionKoraRole (kora-session.ts)', () => {
+    expect(myKoraSrc).toContain('getSessionKoraRole');
+    expect(myKoraSrc).toContain('kora-session');
+  });
+
+  it('non usa più resolveRealRoleFromSession / browser getSession (mechanism moved server-side)', () => {
+    expect(myKoraSrc).not.toContain('resolveRealRoleFromSession');
+    expect(myKoraSrc).not.toContain('getSupabaseBrowserClient');
+    expect(myKoraSrc).not.toContain('useEffect');
   });
 
   it('controlla realRole === "WORKER" per ammissione diretta worker reale', () => {
@@ -112,43 +130,50 @@ describe('my-kora/layout.tsx — source audit: gate non dipende solo da activeRo
     expect(myKoraSrc).toContain("realRole === 'KORA_ADMIN'");
   });
 
-  it('il gate non dipende solo da activeRole — verifica realRole prima', () => {
-    // realUserPermitted deve essere controllato PRIMA di demoVisitorPermitted
+  it('il gate reale (realUserPermitted) è valutato server-side, prima di delegare al demo gate', () => {
     const realUserIdx = myKoraSrc.indexOf('realUserPermitted');
-    const demoVisitorIdx = myKoraSrc.indexOf('demoVisitorPermitted');
+    const demoGateUsageIdx = myKoraSrc.indexOf('<MyKoraDemoGate>');
     expect(realUserIdx).toBeGreaterThan(-1);
-    expect(demoVisitorIdx).toBeGreaterThan(-1);
-    expect(realUserIdx).toBeLessThan(demoVisitorIdx);
+    expect(demoGateUsageIdx).toBeGreaterThan(-1);
+    expect(realUserIdx).toBeLessThan(demoGateUsageIdx);
+    // demoVisitorPermitted (the demo-only check) now lives in the delegate, not here.
+    expect(demoGateSrc).toContain('demoVisitorPermitted');
   });
 
   it('il messaggio access denied per utente reale NON menziona Role Switcher', () => {
-    // Il testo "Role Switcher" deve comparire solo nel branch demo visitor
-    // Verifica: il messaggio per isRealUser non contiene "Role Switcher"
     expect(myKoraSrc).toContain('Il tuo account non ha accesso a questa area');
     expect(myKoraSrc).toContain('Contatta il tuo KORA referente');
+    expect(myKoraSrc).not.toContain('Role Switcher');
   });
 
-  it('il Role Switcher è citato solo per il branch demo visitor (null session)', () => {
-    expect(myKoraSrc).toContain('usa il Role Switcher per passare a WORKER');
-    // Ma solo nel ramo condizionale — entrambe le frasi devono coesistere
-    // (una per reale, una per demo)
-    expect(myKoraSrc).toContain('isRealUser');
+  it('il Role Switcher è citato solo nel demo gate (null session)', () => {
+    expect(demoGateSrc).toContain('usa il Role Switcher per passare a WORKER');
   });
 
-  it('COMPANY_ADMIN reale non è ammesso — il gate non ha una path che ammette tutti i real roles', () => {
-    // Il gate ammette solo WORKER e KORA_ADMIN come real roles
+  it('COMPANY_ADMIN reale non è ammesso — nessuna path ammette tutti i real roles', () => {
     expect(myKoraSrc).not.toContain("realRole === 'COMPANY_ADMIN'");
-    // Conferma: l'unico modo per un real user di essere ammesso è WORKER o KORA_ADMIN
     expect(myKoraSrc).toContain("realRole === 'WORKER' || realRole === 'KORA_ADMIN'");
+    // Any other real role (non-null, non-WORKER/KORA_ADMIN) falls into the
+    // explicit hard-block branch — fail closed, no path bypasses it.
+    expect(myKoraSrc).toContain('realRole !== null');
   });
 
-  it('il pending state (undefined) restituisce null — nessun flash', () => {
-    expect(myKoraSrc).toContain('realRole === undefined) return null');
+  it('nessuno stato pending/flash — server-side, un solo render deterministico', () => {
+    // The old client gate had `if (realRole === undefined) return null` while
+    // waiting for the browser session check. A Server Component has no such
+    // state — the session is resolved before the first render.
+    expect(myKoraSrc).not.toContain('realRole === undefined');
   });
 });
 
 // ── MY-KORA GATE — logica pura estratta inline ────────────────────────────────
-// Replica la logica del layout come funzione pura per test comportamentali.
+// Replica la TABELLA DI DECISIONE del layout come funzione pura per test
+// comportamentali — indipendente dal meccanismo di risoluzione della sessione
+// (che dopo MYKORA-01 è getSessionKoraRole() server-side, non più
+// resolveRealRoleFromSession lato client). resolveRealRoleFromSession resta
+// usata qui solo come stub comodo per costruire l'input `session → realRole`
+// nei casi di test; il contratto verificato è la tabella admit/block, non il
+// meccanismo di lettura.
 
 function myKoraGate(
   session: { user?: { app_metadata?: Record<string, unknown> } } | null,

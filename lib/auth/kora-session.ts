@@ -61,6 +61,22 @@ async function resolveUser(request?: NextRequest): Promise<User | null> {
   return null;
 }
 
+// ── getSessionKoraRole — lightweight role read for routing decisions only ────
+//
+// Returns the raw kora_role from app_metadata, or null if there is no session.
+// This is NOT a fine-grained authorization check — no tenant/status/DB
+// validation, same coarse read middleware.ts already performs for routing.
+// Use it only to decide which gate a layout should apply (e.g. "is there any
+// real session at all, and if so what role"). Use require*User() /
+// getCurrent*User() for resource-level authorization decisions.
+export async function getSessionKoraRole(request?: NextRequest): Promise<string | null> {
+  const user = await resolveUser(request);
+  if (!user) return null;
+
+  const appMeta = user.app_metadata as Record<string, unknown> | undefined;
+  return (appMeta?.kora_role as string | undefined) ?? null;
+}
+
 // ── getCurrentKoraUser — returns user + role or null (no redirect/throw) ─────
 
 export async function getCurrentKoraUser(request?: NextRequest): Promise<KoraUser | null> {

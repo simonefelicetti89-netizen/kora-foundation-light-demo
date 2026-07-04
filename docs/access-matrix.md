@@ -89,6 +89,8 @@ Per ogni risorsa protetta, i livelli di enforcement sono **tutti e tre obbligato
 
 Per `worker-individual` e `pseudonym_map` in particolare: tutti e tre i livelli devono bloccare KORA_ADMIN. **Non basta uno solo.**
 
+**Nota — `/my-kora` (MYKORA-01, 2026-07-04):** `/my-kora` non ha un `AccessResource` dedicato in questa matrice — è una superficie PREVIEW/demo (dati sintetici only in Foundation Light), non una risorsa live coperta da `canAccess()`. `app/my-kora/layout.tsx` è comunque ora un guard server-side: legge la sessione reale (`getSessionKoraRole()`) prima di qualunque render, ammette solo WORKER e KORA_ADMIN reali, e blocca ogni altro ruolo reale (`COMPANY_ADMIN`, `PARTNER`, `DEMO_VIEWER`, ...) prima che la pagina figlia venga mai renderizzata. Il ramo demo-visitor (nessuna sessione reale) resta client-side per design, perché serve solo persona sintetiche — non è un confine di privacy su dati reali. Vedi `docs/PILOT_SAAS_READINESS.md` e `docs/QA_STATUS.md`.
+
 ---
 
 ## Appendice: Codici Risorsa
