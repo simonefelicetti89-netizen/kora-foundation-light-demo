@@ -395,7 +395,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-5xl mx-auto py-6 px-3 space-y-5">
+    <div className="max-w-5xl mx-auto py-6 px-3 space-y-5" data-testid="admin-uef-review-page">
 
       {/* Header */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
@@ -456,6 +456,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           {batches.map(b => (
             <div key={b.batchId}
               onClick={() => b.canReview && selectBatch(b.batchId)}
+              data-testid="uef-batch-card"
               className={`rounded-lg border px-4 py-3 space-y-2 cursor-pointer transition-colors ${selectedBatchId === b.batchId ? 'border-[#C76F3D] bg-[#f5f4ff]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] hover:border-[rgba(6,3,43,0.14)]'}`}>
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -476,6 +477,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                 <button
                   onClick={e => { e.stopPropagation(); handleGenerate(b.batchId); }}
                   disabled={genStatus === 'loading'}
+                  data-testid="uef-generate-candidates-button"
                   className="w-full text-xs font-semibold rounded bg-[#06032B] text-white px-3 py-1.5 hover:bg-[#1a1756] disabled:opacity-50 transition-colors">
                   {genStatus === 'loading' ? '⏳ Generating…' : '⚙ Generate UEF candidates'}
                 </button>
@@ -558,6 +560,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                     <button
                       onClick={handleBulkApprove}
                       disabled={bulkStatus === 'loading'}
+                      data-testid="uef-bulk-approve-button"
                       className="rounded-lg border border-green-300 bg-green-100 px-4 py-1.5 text-xs font-semibold text-green-700 hover:bg-[rgba(47,125,85,0.15)] disabled:opacity-50 transition-colors">
                       {bulkStatus === 'loading' ? '⏳ Approvazione…' : `✓ Approva ${eligible.length} record`}
                     </button>
@@ -818,13 +821,16 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
             <input
               type="number" min={10}
               placeholder="workforcePopulation (≥10)"
+              aria-label="workforcePopulation"
               value={scoringWfPop}
               onChange={e => setScoringWfPop(e.target.value)}
+              data-testid="uef-workforce-population-input"
               className="rounded border border-[rgba(6,3,43,0.14)] px-3 py-1.5 text-xs text-[rgba(6,3,43,0.78)] w-56 focus:outline-none focus:ring-1 focus:ring-slate-400"
             />
             <button
               onClick={() => handleRunScoring(selectedBatchId)}
               disabled={scoringStatus === 'loading'}
+              data-testid="uef-run-scoring-button"
               className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-50 transition-colors">
               {scoringStatus === 'loading' ? '⏳ Running scoring…' : '▶ Run scoring from approved UEF'}
             </button>
@@ -850,6 +856,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
               <div className="flex gap-2 flex-wrap pt-1 border-t border-green-100">
                 {scoringResult.previewUrl && (
                   <a href={scoringResult.previewUrl} target="_blank" rel="noopener noreferrer"
+                    data-testid="decision-pack-preview-link"
                     className="inline-flex items-center gap-1 border border-[#C76F3D] text-[#C76F3D] rounded px-3 py-1 text-[11px] font-medium hover:bg-[#f5f4ff] transition-colors">
                     ↗ HTML Preview
                   </a>

@@ -224,7 +224,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
   const isViewer = false;
 
   return (
-    <div className="max-w-3xl mx-auto py-6 px-3 space-y-5">
+    <div className="max-w-3xl mx-auto py-6 px-3 space-y-5" data-testid="company-workspace-page">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">

@@ -565,7 +565,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
   const isOp = opStatus === 'running' || opStatus === 'reading';
 
   return (
-    <div className="max-w-4xl mx-auto py-6 px-3 space-y-5">
+    <div className="max-w-4xl mx-auto py-6 px-3 space-y-5" data-testid="admin-data-intake-page">
 
       {/* ── A. HEADER ── */}
       <div className="rounded-xl bg-[#06032B] px-6 py-5 flex items-start justify-between">
@@ -607,6 +607,8 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
           <input
             type="file"
             accept=".csv,.xlsx"
+            aria-label="Seleziona file CSV o XLSX"
+            data-testid="data-intake-upload-input"
             onChange={e => {
               const f = e.target.files?.[0] ?? null;
               setCsvFile(f);
@@ -632,6 +634,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <button
               onClick={handleValidateCsv}
               disabled={!csvFile || csvStatus === 'loading' || !isTenantSelected}
+              data-testid="data-intake-dry-run-button"
               className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[rgba(6,3,43,0.88)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {csvStatus === 'loading' ? '⏳ Validating…' : '✓ Validate CSV'}
@@ -1151,6 +1154,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
               ] as [boolean, (v: boolean) => void, string][]).map(([val, setter, label], i) => (
                 <label key={i} className="flex items-start gap-2 cursor-pointer">
                   <input type="checkbox" checked={val} onChange={e => setter(e.target.checked)}
+                    data-testid={`data-intake-pseudonymization-checkbox-${i}`}
                     className="mt-0.5 h-3.5 w-3.5 rounded border-[rgba(6,3,43,0.14)] text-[#C76F3D] focus:ring-[#C76F3D]" />
                   <span className="text-xs text-[rgba(6,3,43,0.78)]">{label}</span>
                 </label>
@@ -1176,6 +1180,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <button
               onClick={handleAcceptBatch}
               disabled={!isTenantSelected || !allPseudonymChecked || (fileType === 'xlsx' && !selectedSheet && additionalFiles.length === 0)}
+              data-testid="data-intake-accept-batch-button"
               className="rounded-lg bg-[#06032B] text-white px-4 py-1.5 text-xs font-semibold hover:bg-[#1a1756] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               ↓ {additionalFiles.length > 0 ? `Create multi-file batch (${1 + additionalFiles.length} file)` : 'Create intake batch'}
@@ -1260,6 +1265,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 <p className="text-[9px] font-bold uppercase tracking-widest text-green-700">Passo successivo</p>
                 <a
                   href={`/admin/uef-review?batchId=${encodeURIComponent(acceptResult.batchId)}`}
+                  data-testid="data-intake-goto-uef-review-link"
                   className="inline-flex items-center gap-1.5 rounded-lg bg-[#06032B] text-white px-4 py-2 text-xs font-semibold hover:bg-[#1a1756] transition-colors"
                 >
                   → Genera candidati UEF

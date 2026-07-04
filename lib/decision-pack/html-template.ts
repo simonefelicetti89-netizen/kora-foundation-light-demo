@@ -914,7 +914,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
 <title>KORA Decision Pack — ${esc(meta.companyName)} — ${esc(meta.reportingPeriod)}</title>
 <style>${css}</style>
 </head>
-<body>
+<body data-testid="decision-pack-preview">
 
 
 <!-- ═══════════════════════════════════════════
