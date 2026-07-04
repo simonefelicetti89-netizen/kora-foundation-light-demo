@@ -1,5 +1,14 @@
 /**
- * GOLDEN-E2E-02 — Authenticated Staging Data-Bearing Golden Path
+ * GOLDEN-E2E-02/03 — Authenticated Staging Data-Bearing Golden Path
+ *
+ * GOLDEN-E2E-03: structural interactions (which element to click/fill) now
+ * use stable `data-testid` selectors added to the real components
+ * (DataIntakeStudio.tsx, UefReviewQueue.tsx, CompanyWorkspaceView.tsx,
+ * app/company/kora-index/page.tsx, lib/decision-pack/html-template.ts) —
+ * see each file's `data-testid` for the full list. Content/outcome
+ * assertions (success text, canonical labels, KORA Index/Safeguard values,
+ * privacy checks) deliberately remain text-based, since those verify actual
+ * product copy/behavior rather than which element to interact with.
  *
  * Scope: the first automated E2E that drives the actual data-bearing pipeline —
  * upload → dry-run validate → accept batch → generate UEF candidates → bulk
@@ -122,53 +131,46 @@ test.describe('KORA — Golden Path: data-bearing pipeline (upload → UEF → s
       await adminPage.goto(
         `/admin/data-intake?tenantCode=${encodeURIComponent(tenantCode)}&reportingPeriod=${encodeURIComponent(reportingPeriod)}`,
       );
+      await expect(adminPage.getByTestId('admin-data-intake-page')).toBeVisible();
       await expect(adminPage.getByText('Synthetic demo tenant', { exact: false })).toHaveCount(0);
 
-      // Main file input has no `multiple` attribute; the optional
-      // additional-files input (multi-file batch) does — this is what
-      // distinguishes them, since neither has a data-testid.
-      await adminPage.locator('input[type="file"]:not([multiple])').setInputFiles(GOLDEN_PATH_CSV);
-      await adminPage.getByRole('button', { name: /Validate CSV/ }).click();
+      await adminPage.getByTestId('data-intake-upload-input').setInputFiles(GOLDEN_PATH_CSV);
+      await adminPage.getByTestId('data-intake-dry-run-button').click();
       await expect(adminPage.getByText('File validation passed', { exact: false }).first())
         .toBeVisible({ timeout: 30_000 });
 
-      const pseudonymLabels = [
-        'Il file non contiene nomi, cognomi, email, codici fiscali, telefoni o indirizzi.',
-        'Eventuali identificativi lavoratore sono pseudonimi non reversibili.',
-        'I dati sono caricati per analisi organizzativa aggregata, non per valutazione individuale.',
-        'Sono consapevole che KORA rifiuterà PII dirette e non produrrà report individuali.',
-      ];
-      for (const label of pseudonymLabels) {
-        await adminPage.getByLabel(label).check();
+      for (let i = 0; i < 4; i++) {
+        await adminPage.getByTestId(`data-intake-pseudonymization-checkbox-${i}`).check();
       }
 
-      await adminPage.getByRole('button', { name: /Create intake batch/ }).click();
+      await adminPage.getByTestId('data-intake-accept-batch-button').click();
       await expect(adminPage.getByText('Batch created', { exact: false }).first())
         .toBeVisible({ timeout: 30_000 });
 
-      const genUefLink = adminPage.getByRole('link', { name: /Genera candidati UEF/ });
+      const genUefLink = adminPage.getByTestId('data-intake-goto-uef-review-link');
       await expect(genUefLink).toBeVisible();
       await genUefLink.click();
       await adminPage.waitForURL(/\/admin\/uef-review\?batchId=/, { timeout: 15_000 });
 
       // ── Step 2 — UEF Review: generate candidates → bulk-approve → run scoring ──
+      await expect(adminPage.getByTestId('admin-uef-review-page')).toBeVisible();
       // Batch card never renders the full batchId in markup (only a
       // fallback truncated slice when sourceName is absent, which it never
       // is here) — scope by the unique reportingPeriod text instead.
-      const batchCard = adminPage.locator('div.cursor-pointer').filter({ hasText: reportingPeriod });
+      const batchCard = adminPage.getByTestId('uef-batch-card').filter({ hasText: reportingPeriod });
       await expect(batchCard).toBeVisible({ timeout: 15_000 });
-      await batchCard.getByRole('button', { name: /Generate UEF candidates/ }).click();
+      await batchCard.getByTestId('uef-generate-candidates-button').click();
       await expect(adminPage.getByText('UEF candidates generated', { exact: false }).first())
         .toBeVisible({ timeout: 30_000 });
 
-      const bulkApproveButton = adminPage.getByRole('button', { name: /Approva \d+ record/ });
+      const bulkApproveButton = adminPage.getByTestId('uef-bulk-approve-button');
       await expect(bulkApproveButton).toBeVisible({ timeout: 15_000 });
       await bulkApproveButton.click();
       await expect(adminPage.getByText('Approvazione massiva completata', { exact: false }).first())
         .toBeVisible({ timeout: 30_000 });
 
-      await adminPage.getByPlaceholder('workforcePopulation (≥10)').fill(WORKFORCE_POPULATION);
-      await adminPage.getByRole('button', { name: /Run scoring from approved UEF/ }).click();
+      await adminPage.getByTestId('uef-workforce-population-input').fill(WORKFORCE_POPULATION);
+      await adminPage.getByTestId('uef-run-scoring-button').click();
       await expect(adminPage.getByText('Decision Pack generated from approved UEF records', { exact: false }).first())
         .toBeVisible({ timeout: 45_000 });
 
@@ -179,9 +181,10 @@ test.describe('KORA — Golden Path: data-bearing pipeline (upload → UEF → s
 
       // ── Step 3 — Decision Pack HTML preview: canonical labels present ──────
       const previewPagePromise = adminContext.waitForEvent('page');
-      await adminPage.getByRole('link', { name: /HTML Preview/ }).click();
+      await adminPage.getByTestId('decision-pack-preview-link').click();
       const previewPage = await previewPagePromise;
       await previewPage.waitForLoadState();
+      await expect(previewPage.getByTestId('decision-pack-preview')).toBeVisible();
       const previewHtml = await previewPage.content();
       expect(previewHtml, 'Decision Pack must show KORA Foundation Light labelling (doc 21b)').toMatch(/KORA Foundation Light/);
       expect(previewHtml, 'Decision Pack must show KORA Index v1.0, not v0.1/v3').toMatch(/KORA Index v1\.0/);
@@ -197,10 +200,12 @@ test.describe('KORA — Golden Path: data-bearing pipeline (upload → UEF → s
       const companyPage = await companyContext.newPage();
       await loginViaUI(companyPage, companyCreds!);
       await assertReachedWorkspace(companyPage, ROLE_HOME.COMPANY);
+      await expect(companyPage.getByTestId('company-workspace-page')).toBeVisible();
       await assertNoWorkerLevelIdentifiers(companyPage);
 
       await companyPage.goto('/company/kora-index');
       await expect(companyPage).toHaveURL(/\/company\/kora-index/, { timeout: 15_000 });
+      await expect(companyPage.getByTestId('company-kora-index-page')).toBeVisible();
       await assertNoWorkerLevelIdentifiers(companyPage);
     } finally {
       await companyContext.close();

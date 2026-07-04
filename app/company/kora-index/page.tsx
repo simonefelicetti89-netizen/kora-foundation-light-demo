@@ -84,7 +84,7 @@ function Divider({ label }: { label: string }) {
 
 function NoDataState({ companyName }: { companyName?: string | null }) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" data-testid="company-kora-index-page">
       <PageMasthead
         eyebrow="KORA Index v1.0 · Scomposizione analitica"
         title={companyName ?? 'La tua organizzazione'}
@@ -306,7 +306,7 @@ export default function KoraIndexDetail() {
   });
 
   return (
-    <div style={{ maxWidth: 900 }}>
+    <div style={{ maxWidth: 900 }} data-testid="company-kora-index-page">
 
       {/* ── Page header ── */}
       <div style={{ marginBottom: 28 }}>
