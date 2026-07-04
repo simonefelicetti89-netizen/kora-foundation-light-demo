@@ -31,6 +31,7 @@
 
 import type {
   KORA_ROLES,
+  ACTIVE_PRODUCT_KORA_ROLES,
   PILLAR_CODES,
   KORA_INDEX_COMPONENTS,
   MACROBLOCK_CODES,
@@ -1560,15 +1561,17 @@ export interface WorkforceBaselineRecord {
 // ── Access Control Foundation ───────────────────────────────────────────────────
 // Foundation Light active product roles are intentionally simplified.
 // Granular HR/ESG/Finance/Executive permissions are future permission layers, not active MVP roles.
+//
+// ActiveProductRole is deliberately NARROWER than KoraRole above: it excludes
+// DEMO_VIEWER (access-matrix/demo-only, see lib/constants/kora.ts's
+// DEMO_KORA_ROLES) since a demo viewer is not a real product account. Derived
+// from lib/constants/kora.ts's ACTIVE_PRODUCT_KORA_ROLES (ROLE-01) rather than
+// hand-duplicated — do not re-list role strings here.
 
-export type ActiveProductRole =
-  | 'KORA_ADMIN'
-  | 'COMPANY_ADMIN'
-  | 'WORKER'
-  | 'PARTNER'
-  | 'ADVISOR';
+export type ActiveProductRole = (typeof ACTIVE_PRODUCT_KORA_ROLES)[number];
 
-// KoraUserRole — canonical 6-role union for Foundation Light.
+// KoraUserRole — canonical 5-role union for Foundation Light (KORA_ADMIN,
+// COMPANY_ADMIN, WORKER, PARTNER, ADVISOR).
 // Broader internal roles (KORA_ANALYST, FOUNDER_INTERNAL, COMPANY_HR, COMPANY_FINANCE, etc.)
 // are future/internal permission layers and are not active product roles.
 export type KoraUserRole = ActiveProductRole;

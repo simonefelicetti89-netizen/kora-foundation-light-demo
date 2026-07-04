@@ -69,7 +69,7 @@ Data upload, UEF approval, scoring runs, tenant provisioning, user creation. COM
 3. Build at least one automated golden-path E2E (upload → scoring → Decision Pack) — currently manual-only.
 4. Extend RLS negative testing to PostgREST/app level (RLS-04) before claiming full tenant isolation, not just DB-level.
 5. Convert `app/my-kora/layout.tsx` to server-side role gating, matching every other role area (admin/company/partner) — currently the one architectural outlier and a repeat-incident risk.
-6. Reconcile the two `KoraRole` type definitions before adding any new role (see `access-matrix.md`).
+6. ~~Reconcile the two `KoraRole` type definitions before adding any new role~~ — **done in ROLE-01** (2026-07-04): both derive from `KORA_ROLES` in `lib/constants/kora.ts`, see `access-matrix.md`.
 7. Resolve the KORA Link Gate 2 CTO TODOs (8 items in migration 034) — not pilot-blocking itself, but the longest-running open item on the roadmap.
 8. Decide and document whether `/partner` (root, synthetic demo) or `/partner/workspace` (live) is the intended landing page for a real partner — currently both sit behind the same login with no visual distinction.
 9. Re-verify lint status — not re-checked in the last several reconciliation passes per `QA_STATUS.md`'s own caveat.

@@ -6,15 +6,47 @@ export const KORA_INDEX_COMPONENTS = ['AR', 'MAR', 'EVQ', 'INT', 'CONT', 'EQW', 
 // KORA Index v1.0 macroblock codes
 export const MACROBLOCK_CODES = ['REACH', 'QUALITY', 'EQUITY', 'BTI'] as const;
 
+// ── Canonical role model (ROLE-01, 2026-07-04) ────────────────────────────────
+// Single source of truth for every role string valid anywhere in KORA's
+// TypeScript layer. Before this reconciliation, lib/auth/access-matrix.ts and
+// this file each maintained an independent, silently-diverging role list (one
+// had DEMO_VIEWER, the other ADVISOR) — see docs/access-matrix.md's history
+// note. Do not add a new role string anywhere else; extend one of the arrays
+// below and let KoraRole (lib/types/index.ts) and lib/auth/access-matrix.ts's
+// KoraRole both pick it up automatically (both derive from KORA_ROLES).
+
+// Real, session-guard-enforced, RLS-backed today. See lib/auth/kora-session.ts.
+export const ACTIVE_KORA_ROLES = ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER'] as const;
+
+// Exists in the type/permission/routing layer (lib/permissions/index.ts) but
+// has NO session guard in lib/auth/kora-session.ts and no live enforced route
+// today (`/advisor` redirects to a static demo). Treat as unreachable in
+// production until that changes — see docs/FUTURE_ROLES_AND_SURFACES.md.
+export const FUTURE_KORA_ROLES = ['ADVISOR'] as const;
+
+// Synthetic-only by design — never backed by a real Supabase Auth user or an
+// RLS grant on any live table. See lib/auth/access-matrix.ts, lib/demo-state/.
+export const DEMO_KORA_ROLES = ['DEMO_VIEWER'] as const;
+
+// Historical — removed at the app layer (B143; lib/permissions/index.ts's
+// isViewerRole() always returns false). Never valid in KORA_ROLES below —
+// kept only so tests can assert it stays removed, not to be reintroduced casually.
+export const REMOVED_KORA_ROLES = ['COMPANY_VIEWER'] as const;
+
 // Foundation Light active product roles are intentionally simplified.
 // Granular HR/ESG/Finance/Executive permissions are future permission layers, not active MVP roles.
+// All role strings valid anywhere in the app — active + future + demo.
 export const KORA_ROLES = [
-  'KORA_ADMIN',
-  'COMPANY_ADMIN',
-  'WORKER',
-  'PARTNER',
-  'ADVISOR',
+  ...ACTIVE_KORA_ROLES,
+  ...FUTURE_KORA_ROLES,
+  ...DEMO_KORA_ROLES,
 ] as const;
+
+// Product-facing subset of KORA_ROLES — excludes DEMO_VIEWER. Use this where
+// "a role a real product user/account could have" is the intended meaning
+// (e.g. account provisioning), as opposed to KoraRole/KORA_ROLES, which also
+// recognizes the synthetic demo-only role for the access-matrix/privacy layer.
+export const ACTIVE_PRODUCT_KORA_ROLES = [...ACTIVE_KORA_ROLES, ...FUTURE_KORA_ROLES] as const;
 
 export const SAFEGUARD_THRESHOLDS = {
   CLEAR: { AR: 0.40, MAR: 0.30 },

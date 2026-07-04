@@ -54,9 +54,8 @@ Concise, not a manifesto. See `docs/PILOT_SAAS_READINESS.md` for pilot-v1 scope,
 
 **Missing foundations for the next increment:**
 - `requireAdvisorUser()` + a `KoraAdvisorUser` type in `lib/auth/kora-session.ts` (mirrors the existing `require*User()` pattern exactly — low-risk to add when the time comes).
-- A row in `docs/access-matrix.md`'s `canAccess()` implementation (`lib/auth/access-matrix.ts`'s `KoraRole` type needs `ADVISOR` added — currently absent, see the type-mismatch note in `access-matrix.md`).
+- ~~A row in `docs/access-matrix.md`'s `canAccess()` implementation (`ADVISOR` needs adding to `lib/auth/access-matrix.ts`'s `KoraRole`)~~ — **done in ROLE-01** (2026-07-04): `ADVISOR` now has an explicit `DENY` row on every resource in `MATRIX`, ready to flip to real rules once a real guard exists.
 - A real `/advisor` route replacing the permanent redirect to `/demo/advisor`.
-- Reconciling the two `KoraRole` type definitions (see below) before or during this work, not after.
 
 ---
 
@@ -70,7 +69,7 @@ Treating either as a "sub-mode" of Company or Worker would blur exactly the priv
 
 ## Suggested implementation order
 
-1. Reconcile the two `KoraRole` type definitions (prerequisite for both).
+1. ~~Reconcile the two `KoraRole` type definitions (prerequisite for both)~~ — **done in ROLE-01** (2026-07-04, see `access-matrix.md`).
 2. Partner: decide `/partner` vs. `/partner/workspace` as home, then build initiative-participation read views on the existing `partner_profile` model.
 3. Advisor: add `requireAdvisorUser()` + a real `/advisor` route consuming `fn_advisor_uef_read()`, read-only, single-tenant.
 4. Only after both are stable: consider scan-point/service-offering (Partner) or comment/suggestion features (Advisor) — genuinely new surfaces, not extensions of what exists.
