@@ -5,7 +5,7 @@
 // Covers all source_batch types: company_submission + csv_upload (admin-accepted).
 //
 // Security:
-//   - COMPANY_ADMIN or COMPANY_VIEWER (requireCompanyUser).
+//   - COMPANY_ADMIN only (requireCompanyUser; B143: COMPANY_VIEWER removed).
 //   - tenantId ALWAYS from session JWT — never from query param.
 //   - No worker-level rows returned. No raw payload. No pseudonym_id.
 //   - Eligibility counts from payload_sample (aggregate only).

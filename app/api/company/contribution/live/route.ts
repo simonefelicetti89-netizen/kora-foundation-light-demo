@@ -1,7 +1,7 @@
 // app/api/company/contribution/live/route.ts
 // B166: GET /api/company/contribution/live?period=... — dato reale KORA Contribution.
 //
-// Auth: COMPANY_ADMIN (o COMPANY_VIEWER) JWT.
+// Auth: COMPANY_ADMIN JWT only (B143: COMPANY_VIEWER removed).
 // Feature gate: solo tenant production_ready (analytics.tenant.production_ready = true).
 // Per tenant Foundation Light → 404 con messaggio esplicativo (no dato sintetico su questo path).
 // KORA Contribution è companion indicator — NON componente KORA Index (CLAUDE.md §12.7).

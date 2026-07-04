@@ -1,6 +1,10 @@
 // tests/integration/b169-company-tabs.test.ts
 // B169 FASE 6 — CompanyTabNav + company drill-in layout integrity.
 // Verifies: 8 tabs, companyId in path, auth guard, notFound for unknown company.
+//
+// Static/structural only (readFileSync/existsSync string checks against source
+// files) — does not render a route, exercise an auth guard at runtime, or
+// trigger notFound() behavior. Same caveat as b145-workspace-route-boundary.test.ts.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
