@@ -454,6 +454,9 @@ vedi sotto):
   `E2E_COMPANY_A_TENANT_CODE`, con un `reportingPeriod` univoco per run per
   evitare il guard anti-duplicato del route di accept. Usare solo un tenant
   di staging sintetico/disponibile, mai un tenant cliente reale.
+- **Manual/staging authenticated tests are deferred until the final
+  pilot-validation session. GD01 exists as a skip-safe E2E and remains
+  implemented-but-not-live-proven until that session.**
 
 **Non ancora provato in nessuna forma:**
 - Il golden path completo (upload → UEF → scoring → Decision Pack) ora ha un
