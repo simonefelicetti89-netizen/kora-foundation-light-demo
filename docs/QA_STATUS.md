@@ -24,6 +24,12 @@ Current test coverage and verification checkpoint status, across unit/integratio
 - `A01` (KORA_ADMIN) — **PASS**, run by the operator with real staging credentials, ~4.7s, GOLDEN-03B.
 - `A02`/`A03`/`A04` — not yet run (see `GOLDEN_PATH.md` checkpoint log for detail and blockers).
 
+**Golden-path narrative E2E (Playwright, `tests/e2e/golden-admin-company.spec.ts`, GOLDEN-E2E-01, 2026-07-04):**
+- New file, skip-safe, reuses the exact same `helpers/{env,roles,auth}.ts` as `authenticated-smoke.spec.ts` — no new env var names introduced. Confirmed skip-safe locally (2 tests, 2 skipped, zero network calls beyond the auto-started local dev server) with no credentials set.
+- `G01` — chains KORA_ADMIN→`/admin` and COMPANY_ADMIN→`/company/workspace` in one narrative test (two browser contexts) — not yet run with real credentials.
+- `G02` — from `/company/workspace`, navigates to `/company/kora-index` (tenant-scoped data/report surface reachability) and asserts the rendered page contains no worker-level identifier (`worker_id`/`kora_worker_id`/`token_digest`/`link_id`) and no implausible email list (new `tests/e2e/helpers/privacy.ts`) — not yet run with real credentials.
+- **What this adds beyond A01/A02:** proof that a real data/report surface is reachable past login, plus a markup-level privacy smoke check. **What it does not add:** it does not replace A03/A04 (still blocked on COMPANY_B provisioning) and it is not RLS/DB-level proof (that remains `tests/integration/rls-two-tenant-negative.test.ts`, RLS-03, already merged) — the privacy check here is a smoke assertion on rendered HTML, not an access-control guarantee.
+
 **RLS negative testing, local direct-Postgres (RLS-03, merged to `main` via PR #26):**
 - `tests/integration/rls-two-tenant-negative.test.ts` connects directly to a local Supabase Postgres instance (`pg`, no PostgREST/`@supabase/supabase-js` involved) and proves Postgres RLS itself — not application code — rejects cross-tenant reads on `analytics.source_batch`, `analytics.kora_index_result`, and `analytics.activation_result`. Own-tenant reads (positive control) pass and cross-tenant reads return zero rows, for both synthetic tenants in both directions.
 - Run 2026-07-04 against local Supabase (migrations `001`–`028`, `030`, `031` applied, no seed): **13/13 tests passed** (`RLS03_ALLOW_RUN=true RLS03_PG_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres npm test -- tests/integration/rls-two-tenant-negative.test.ts`). Synthetic fixture rows fully cleaned up afterward (verified directly against the DB). No cloud/staging/production Supabase or Vercel involved at any point.
@@ -51,7 +57,7 @@ Current test coverage and verification checkpoint status, across unit/integratio
 
 1. `A02` run locally and against Production (no new code — just execution).
 2. COMPANY_B provisioning, then `A03`/`A04`.
-3. A golden-path E2E covering generate→approve UEF→run scoring→assert KORA Index value present.
+3. A golden-path E2E covering generate→approve UEF→run scoring→assert KORA Index value present — **partially done:** `golden-admin-company.spec.ts` (GOLDEN-E2E-01) proves admin/company workspace reachability + a real data/report surface (`/company/kora-index`) is reachable past login, but does not yet drive the upload→UEF→scoring chain itself — that remains open.
 4. A Decision Pack E2E asserting the v1.0 label, Confidence Score, Safeguard, and all 10 components render.
 5. RLS negative tests — **partially done:** cross-tenant read denial now proven at the direct-Postgres/local level for `analytics.source_batch`/`kora_index_result`/`activation_result` (see above), merged to `main`. Still open: API-level tenant-override rejection through PostgREST/the app (RLS-04); worker-vs-worker isolation (RLS-05); a control test confirming KORA_ADMIN's legitimate cross-tenant access still works (RLS-06), so the negative tests don't become a false regression trap.
 

@@ -19,12 +19,12 @@ Practical, short. See `docs/STATUS.md`/`docs/QA_STATUS.md` for full verification
 
 ## What is not ready
 
-- **No automated golden path E2E** — the full upload→Decision Pack chain has only been driven manually. `tests/unit/b103-golden-path.test.ts` checks file existence, not behavior — don't cite it as coverage.
+- **No automated golden path E2E for the data-bearing steps** — the full upload→Decision Pack chain has only been driven manually. `tests/unit/b103-golden-path.test.ts` checks file existence, not behavior — don't cite it as coverage. `tests/e2e/golden-admin-company.spec.ts` (GOLDEN-E2E-01) now automates the admin/company workspace + data-surface-reachability half, plus a markup-level privacy smoke check — but not upload/UEF/scoring/Decision-Pack generation itself.
 - **RLS negative testing is partial** — DB-level proven (RLS-03), but PostgREST/app-level (RLS-04) and worker-vs-worker (RLS-05) are still open.
 - **COMPANY_B doesn't exist** — blocks any real two-tenant demonstration to a prospective client beyond synthetic data.
 - **No authenticated E2E has run against Production** — only against local dev backed by real staging Supabase.
 - **`app/my-kora/layout.tsx` gates role client-side**, not server-side like every other role area — the same bug class that already caused one production incident (ROLE-SWITCHER-01/02, now fixed elsewhere). Not fixed this sprint (real refactor, out of low-risk scope) — flagged as a top blocker below.
-- **Two independent `KoraRole` type definitions exist** with different memberships (`lib/auth/access-matrix.ts` vs. `lib/constants/kora.ts`) — see `docs/access-matrix.md`'s new warning note. Not reconciled this sprint.
+- ~~Two independent `KoraRole` type definitions exist~~ — **reconciled in ROLE-01** (2026-07-04, see `access-matrix.md`); this line itself was missed in that sprint's doc pass and is corrected now.
 - **KORA Link, Partner Platform beyond profile view, and Advisor Platform are all explicitly not part of the pilot** — see below.
 
 ## Intended operator flow (pilot v1)
@@ -66,7 +66,7 @@ Data upload, UEF approval, scoring runs, tenant provisioning, user creation. COM
 
 1. Provision a real COMPANY_B (or the pilot client's actual second reference tenant) — currently blocks any live two-tenant demonstration.
 2. Run `A02` (COMPANY_A E2E) locally and in Production — fixture exists, unexecuted.
-3. Build at least one automated golden-path E2E (upload → scoring → Decision Pack) — currently manual-only.
+3. Build at least one automated golden-path E2E (upload → scoring → Decision Pack) — **partially done:** `golden-admin-company.spec.ts` (GOLDEN-E2E-01) automates admin/company workspace reachability + a real data/report surface + a privacy smoke check; the upload → UEF → scoring → Decision Pack chain itself remains manual-only.
 4. Extend RLS negative testing to PostgREST/app level (RLS-04) before claiming full tenant isolation, not just DB-level.
 5. Convert `app/my-kora/layout.tsx` to server-side role gating, matching every other role area (admin/company/partner) — currently the one architectural outlier and a repeat-incident risk.
 6. ~~Reconcile the two `KoraRole` type definitions before adding any new role~~ — **done in ROLE-01** (2026-07-04): both derive from `KORA_ROLES` in `lib/constants/kora.ts`, see `access-matrix.md`.
