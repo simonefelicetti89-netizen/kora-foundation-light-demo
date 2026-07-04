@@ -291,8 +291,8 @@ describe('B80-B — Worker pages show PREVIEW boundary label', () => {
 // ── Partner/Advisor pages: DEMO boundary label ────────────────────────────────
 
 describe('B80-B — Partner and Advisor pages have DEMO badge', () => {
-  it('partner page has DEMO badge', () => {
-    const src = read('app/partner/page.tsx');
+  it('partner demo preview page has DEMO badge (PARTNER-01: relocated to app/demo/partner/page.tsx)', () => {
+    const src = read('app/demo/partner/page.tsx');
     expect(src).toContain('BoundaryBadge');
     expect(src).toContain("mode=\"DEMO\"");
   });

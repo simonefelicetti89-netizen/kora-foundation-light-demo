@@ -149,9 +149,10 @@ KORA_ADMIN → /admin/partners → seleziona partner → "Invita referente"
 
 | Path | Ruolo | Scopo |
 |---|---|---|
-| `app/partner/workspace/page.tsx` | PARTNER | Workspace auth-gated, server component |
-| `app/partner/layout.tsx` | PARTNER / KORA_ADMIN | Layout con doppia modalità (real auth + demo-state) |
-| `app/partner/page.tsx` | PARTNER (demo) | Demo sintetica Foundation Light — dati inline |
+| `app/partner/workspace/page.tsx` | PARTNER | Workspace auth-gated, server component — home |
+| `app/partner/layout.tsx` | PARTNER / KORA_ADMIN | Server-side guard (`requirePartnerUser()`); KORA_ADMIN redirected to `/admin` — no demo-state fallback |
+| `app/partner/page.tsx` | PARTNER | **PARTNER-01:** ora un redirect server-side a `/partner/workspace` — non più un dashboard |
+| `app/demo/partner/page.tsx` | DEMO_VIEWER / KORA_ADMIN | **PARTNER-01:** anteprima demo sintetica (ex `app/partner/page.tsx`), gated da `requireDemoGate()` — mai una sessione PARTNER reale |
 | `app/api/admin/partners/[id]/invite-user/route.ts` | KORA_ADMIN | POST — invita referente partner |
 | `app/admin/preview/partner/workspace/page.tsx` | KORA_ADMIN | Preview sintetica admin |
 | `lib/auth/kora-session.ts` | — | `KoraPartnerUser`, `requirePartnerUser`, `getCurrentPartnerUser` |
