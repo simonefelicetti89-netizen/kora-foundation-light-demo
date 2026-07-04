@@ -47,7 +47,7 @@ Own tenant's aggregate KORA Index (all 10 components + Confidence Score + Activa
 Own PIB, own Dynamic CV, own privacy/consent settings, own booking requests. Never another worker's data; never visible to their employer's admin view.
 
 ## What PARTNER might do in future
-Today: view/manage own `network.partner_profile`/`partner_identity` record only. Future (deferred, not pilot v1): initiative participation visibility, service offering catalog, scan-point operational role (Gate 8, KORA Link). See `FUTURE_ROLES_AND_SURFACES.md`.
+Today: view/manage own `network.partner_profile`/`partner_identity` record only, plus an "Iniziative" section on `/partner/workspace` that is a UI/service foundation only (PARTNER-02, 2026-07-04) — always shows an honest empty state, no live data source exists yet. Future (deferred, not pilot v1): real initiative-participation data (needs a new migration), service offering catalog, scan-point operational role (Gate 8, KORA Link). See `FUTURE_ROLES_AND_SURFACES.md`.
 
 ## What ADVISOR might do in future
 Today: nothing live — no login, no route, no session guard, `/advisor` redirects to a static demo showcase. DB-layer read access (`fn_advisor_uef_read()`) already exists, hardened, unused. Future: Decision Pack review/comment, methodology feedback, onboarding support — always aggregate/anonymized unless explicitly authorized per engagement. See `FUTURE_ROLES_AND_SURFACES.md`.
@@ -77,7 +77,7 @@ Data upload, UEF approval, scoring runs, tenant provisioning, user creation. COM
 
 ## Top 5 feature-expansion opportunities after pilot base is stable
 
-1. **Partner Platform, phase 1**: extend the existing real `PARTNER` role/login to show initiative participation and aggregate-only outcome data — the auth/DB foundation already exists (`network.partner_profile`, `requirePartnerUser()`), this is additive, not greenfield.
+1. **Partner Platform, phase 1**: the UI/service foundation for initiative participation now exists (PARTNER-02, 2026-07-04 — `lib/partner-initiatives/`, "Iniziative" section on `/partner/workspace`, always-honest empty state). What remains: a new migration for real partner-initiative-participation data (table or RPC, aggregate-only outcomes, no worker-level visibility) — schema/Gate-2-shaped work, not yet started. The auth/DB foundation for the role itself already exists (`network.partner_profile`, `requirePartnerUser()`).
 2. **Advisor Platform, phase 1**: give `fn_advisor_uef_read()` an actual consumer — a real `ADVISOR` session guard + a read-only Decision Pack review route. DB-layer hardening is already done; this is almost entirely app-layer work.
 3. **COMPANY_ADMIN self-service data intake** — once the golden path is automated/proven, consider letting COMPANY_ADMIN trigger their own uploads under supervision.
 4. **Automated E2E golden path in CI** — turns every future change into a regression-checked one instead of manual-only verification.

@@ -17,6 +17,7 @@ export const dynamic = 'force-dynamic';
 import { requirePartnerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { getPartnerInitiatives } from '@/lib/partner-initiatives/service';
 
 export const metadata = { title: 'Partner Workspace · KORA' };
 
@@ -44,6 +45,8 @@ export default async function PartnerWorkspacePage() {
   }
 
   const { partnerId, email, partnerStatus } = auth;
+
+  const initiativesResult = await getPartnerInitiatives(partnerId);
 
   const db = getSupabaseServiceClient();
 
@@ -264,6 +267,70 @@ export default async function PartnerWorkspacePage() {
         >
           {visibilityNote}
         </p>
+      </div>
+
+      {/* ── Initiatives — foundation, no live data model yet ─────────────── */}
+      <div
+        data-testid="partner-workspace-initiatives"
+        style={{
+          border:       '1px solid rgba(6,3,43,0.09)',
+          borderRadius: 14,
+          padding:      '20px 24px',
+          marginBottom: 20,
+          background:   '#FAFAFA',
+        }}
+      >
+        <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', color: 'rgba(6,3,43,0.35)', margin: '0 0 10px' }}>
+          Iniziative
+        </p>
+
+        {initiativesResult.initiatives.length > 0 ? (
+          <div style={{ display: 'grid', gap: 10 }}>
+            {initiativesResult.initiatives.map((initiative) => {
+              const pillarMetaForInitiative = PILLAR_META[initiative.pillar] ?? null;
+              return (
+                <div
+                  key={initiative.id}
+                  data-testid="partner-initiative-card"
+                  style={{
+                    border:       '1px solid rgba(6,3,43,0.08)',
+                    borderRadius: 10,
+                    padding:      '12px 14px',
+                    background:   '#FFFFFF',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    {pillarMetaForInitiative && (
+                      <span
+                        style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '2px 8px', borderRadius: 999, background: pillarMetaForInitiative.bg, color: pillarMetaForInitiative.color, border: `1px solid ${pillarMetaForInitiative.border}` }}
+                      >
+                        {initiative.pillar}
+                      </span>
+                    )}
+                    <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: 0 }}>{initiative.title}</p>
+                  </div>
+                  <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: 0, lineHeight: 1.5 }}>{initiative.summary}</p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p
+            data-testid="partner-workspace-initiatives-empty"
+            style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}
+          >
+            {initiativesResult.emptyStateMessage}
+          </p>
+        )}
+
+        {!initiativesResult.isLive && (
+          <p
+            data-testid="partner-workspace-initiatives-not-live-note"
+            style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', margin: '10px 0 0', lineHeight: 1.5 }}
+          >
+            Funzionalità in costruzione — nessun dato individuale worker sarà mai mostrato in questa sezione, solo iniziative ed eventuali conteggi aggregati.
+          </p>
+        )}
       </div>
 
       {/* ── Future capabilities — coming soon ────────────────────────────── */}

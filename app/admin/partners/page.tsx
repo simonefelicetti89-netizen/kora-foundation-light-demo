@@ -75,6 +75,30 @@ export default async function AdminPartnersPage() {
         </p>
       </div>
 
+      {/* Operator note — PARTNER-02 foundation status. Remove only once a real
+          partner-initiative-participation table/RPC is implemented and wired
+          into lib/partner-initiatives/service.ts. */}
+      <div
+        data-testid="partner-initiatives-not-wired-note"
+        style={{
+          marginBottom: 24,
+          borderRadius: 10,
+          border: '1px dashed rgba(6,3,43,0.15)',
+          background: 'rgba(6,3,43,0.02)',
+          padding: '12px 16px',
+          fontSize: 12,
+          color: 'rgba(6,3,43,0.55)',
+          lineHeight: 1.5,
+        }}
+      >
+        <strong style={{ color: 'rgba(6,3,43,0.70)' }}>Nota operativa — Iniziative partner:</strong>{' '}
+        la sezione &ldquo;Iniziative&rdquo; nel workspace partner (
+        <code>/partner/workspace</code>) è oggi una fondazione UI/servizio — mostra sempre uno stato
+        vuoto onesto (nessun dato demo o fittizio). Non esiste ancora una tabella o RPC di
+        partecipazione iniziativa partner nel database live; serve una migrazione dedicata
+        (Gate 2) prima che questa sezione possa mostrare dati reali.
+      </div>
+
       {/* Diagnostic banner — shown only when the network schema query fails */}
       {hasError && (
         <div

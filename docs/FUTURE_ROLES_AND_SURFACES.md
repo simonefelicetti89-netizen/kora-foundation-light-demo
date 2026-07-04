@@ -23,16 +23,17 @@ Concise, not a manifesto. See `docs/PILOT_SAAS_READINESS.md` for pilot-v1 scope,
 **What partners may see/do — pilot-v1-and-beyond boundaries (unchanged from current design):**
 - ✅ Own profile management (`partner_profile`/`partner_identity`) — already live.
 - ✅ Aggregate-only outcome data, once built (e.g. "N initiatives delivered this period").
-- 🔒 Deferred: scan-point management, service-offering catalog, initiative-participation dashboards — no DB model or route exists for these yet.
+- 🔶 **Initiative participation — foundation only (PARTNER-02, 2026-07-04).** `/partner/workspace` now has a real "Iniziative" section, always server-rendered inside the same `requirePartnerUser()` gate as the rest of the page. It has no live data source — no migration has introduced a partner-initiative-participation table or RPC — so it always shows an honest empty state (`"Nessuna iniziativa partner assegnata ancora."`), never fabricated or demo data. `lib/partner-initiatives/{types,config,service}.ts` establish the shape (`PartnerInitiativeCard`, `PartnerInitiativesResult`) and a feature flag (`PARTNER_INITIATIVES_LIVE_ENABLED`, default false) a future migration can wire real data into without changing the page's call site. See §Missing foundations below for exactly what's still needed.
+- 🔒 Deferred: scan-point management, service-offering catalog — no DB model or route exists for these yet.
 - ❌ Never: worker-level visibility of any kind, unless explicitly consented per-engagement and legally governed (Gate 3-equivalent for partners, not yet defined).
 
 **Missing foundations for the next increment:**
-- A DB model for "initiative participation" linked to `partner_profile` (doesn't exist yet — would need a new migration, out of scope this sprint).
+- ~~A DB model for "initiative participation" linked to `partner_profile` (doesn't exist yet)~~ — **still missing after PARTNER-02**: the UI/service foundation now exists (see above), but the actual table/RPC (e.g. a `network.partner_initiative_participation` table, or extending `commons.initiative_adoption` from `supabase/proposed/033_initiative_adoption_source_model.sql` with a partner-facing read path) is a new migration — schema/Gate-2-shaped work, explicitly out of scope for PARTNER-02 and still open.
 - ~~A decision on whether `/partner` root becomes the real dashboard or is retired in favor of `/partner/workspace`~~ — **decided in PARTNER-01**: retired in favor of `/partner/workspace`; see above.
 - Gate 8 (KORA Link partner scan) — explicitly out of v1 per the KORA Link ADR, no change recommended here.
-- `app/partner/layout.tsx`'s own header comment references an `/admin/preview/partner/workspace` admin-preview page that does not actually exist (`app/admin/preview/partner/` is an empty directory) — pre-existing gap, not introduced or fixed by PARTNER-01, flagged here so a future sprint doesn't assume it's built.
+- `app/partner/layout.tsx`'s own header comment references an `/admin/preview/partner/workspace` admin-preview page that does not actually exist (`app/admin/preview/partner/` is an empty directory) — pre-existing gap, not introduced or fixed by PARTNER-01/02, flagged here so a future sprint doesn't assume it's built.
 
-**Privacy red lines (unchanged, already enforced in code):** no `worker_id`/`workerName` in any partner-facing page or query; aggregate-only company outcomes if ever exposed to partners; no cross-partner visibility (`partner_identity` has a partner-self RLS policy already).
+**Privacy red lines (unchanged, already enforced in code):** no `worker_id`/`workerName` in any partner-facing page or query; aggregate-only company outcomes if ever exposed to partners; no cross-partner visibility (`partner_identity` has a partner-self RLS policy already). PARTNER-02 extends this explicitly to initiative data: `PartnerInitiativeCard` has no field shaped like a per-individual identifier — only `participantCountAggregate: number | null`, never a list of workers — enforced by `tests/unit/partner-02-initiative-participation.test.ts`.
 
 ---
 
