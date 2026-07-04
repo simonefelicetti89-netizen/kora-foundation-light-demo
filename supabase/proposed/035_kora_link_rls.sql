@@ -2,18 +2,26 @@
 -- Migration:   035_kora_link_rls
 -- Feature:     KL-17 — KORA Link v1 — Row Level Security Policies
 -- Author:      KORA Foundation Light · 2026-07-01
--- Depends on:  034_kora_link_schema.sql (PROPOSED_AMENDED_INTERNAL_ENGINEERING)
--- Gate:        Gate 2 OPEN + Gate 3 OPEN — PROPOSED, NOT APPLIED TO ANY DATABASE.
+-- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
+--              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
+-- Gate:        This file (035) itself: Gate 2/4 OPEN, NOT reviewed, NOT applied to any database.
+--              Its dependency (034) closed its own engineering review at KL-19 — that does
+--              NOT extend to 035's own RLS design, which remains its own, separate review.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- STATUS: PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING
 -- ─────────────────────────────────────────────────────────────────────────────
 -- This file is a DESIGN DRAFT. Internal Engineering provisional — NOT CTO-approved.
+-- KL-19 (2026-07-04) reviewed and closed 034's own engineering TODOs — it did NOT
+-- review or change anything in this file. 035 remains its own, separate, still-open
+-- review (Gate 4 per docs/KORA_LINK_GATE_REPORT.md): the worker-self-select policy
+-- and the SECURITY DEFINER function grants below are still commented out/spec-only.
 -- Do not apply until:
---   (1) 034_kora_link_schema.sql is formally approved by CTO (Gate 2)
+--   (1) 034_kora_link_schema.sql is formally approved by CTO (Gate 2 — engineering
+--       substance closed at KL-19, human CTO ratification still pending)
 --   (2) DPO review of consent + delivery record model (Gate 3)
---   (3) fn_kora_link_public_lookup + fn_kora_link_activate routes are tested
---   (4) Gate 2 and Gate 3 formally closed
+--   (3) fn_public_lookup_link + fn_activate_link_for_worker routes are tested
+--   (4) Gate 2 and Gate 3 formally closed, and this file's own Gate 4 review completed
 --
 -- DO NOT run `supabase db push`.
 -- DO NOT run `supabase migration up`.
@@ -51,9 +59,9 @@
 -- PRIVACY DESIGN PRINCIPLES (constitutional)
 -- ─────────────────────────────────────────────────────────────────────────────
 -- [P-1] No direct SELECT on kora_link.links by any non-KORA_ADMIN role.
---       Public lookup uses future SECURITY DEFINER fn_kora_link_public_lookup.
+--       Public lookup uses future SECURITY DEFINER fn_public_lookup_link.
 -- [P-2] No access to kora_link.link_assignments by COMPANY_ADMIN or WORKER directly.
---       Worker activation uses future SECURITY DEFINER fn_kora_link_activate.
+--       Worker activation uses future SECURITY DEFINER fn_activate_link_for_worker.
 -- [P-3] Company visibility = aggregate counts only (future view — not in this file).
 -- [P-4] audit_log is INSERT-only for authenticated paths; no UPDATE, no DELETE.
 --       kora_link.audit_log INSERT goes via server-side (Edge Function or SECDEF).
@@ -65,11 +73,11 @@
 -- FUTURE SECURITY DEFINER FUNCTIONS (TODO spec — not created in this migration)
 -- ─────────────────────────────────────────────────────────────────────────────
 -- See §TODO_SECURITY_DEFINER at the bottom of this file for stub specs.
---   fn_kora_link_public_lookup(p_token_digest text)
---   fn_kora_link_activate(p_token_digest text, p_worker_id uuid, p_consent_version text)
---   fn_kora_link_revoke(p_link_id uuid, p_reason text)
---   fn_kora_link_replace(p_old_link_id uuid, p_new_token_digest text, p_reason text)
---   fn_kora_link_company_batch_stats(p_tenant_id uuid)
+--   fn_public_lookup_link(p_token_digest text)
+--   fn_activate_link_for_worker(p_token_digest text, p_worker_id uuid, p_consent_version text)
+--   fn_revoke_link(p_link_id uuid, p_reason text)
+--   fn_replace_link(p_old_link_id uuid, p_new_token_digest text, p_reason text)
+--   fn_company_link_status_aggregate(p_tenant_id uuid)
 --
 -- ROLLBACK (manual — requires CTO approval)
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -96,7 +104,7 @@ BEGIN
   RAISE NOTICE
     '035_kora_link_rls: PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING. '
     'APPLY ONLY after: Gate 2 CTO sign-off on 034 + Gate 3 DPO review + '
-    'fn_kora_link_public_lookup and fn_kora_link_activate tested on staging. '
+    'fn_public_lookup_link and fn_activate_link_for_worker tested on staging. '
     'DO NOT apply to production before all gates are closed.';
 END;
 $$;
@@ -186,7 +194,7 @@ CREATE POLICY "kl_batches_admin_update"
 -- This is the most sensitive operational table.
 -- Contains token_digest — the HMAC-SHA256 of the NFC token.
 -- No authenticated role may SELECT this table directly except KORA_ADMIN.
--- Public route (/link/[token]): must use future SECURITY DEFINER fn_kora_link_public_lookup.
+-- Public route (/link/[token]): must use future SECURITY DEFINER fn_public_lookup_link.
 -- Worker/Company: no direct access, ever.
 
 ALTER TABLE kora_link.links ENABLE ROW LEVEL SECURITY;
@@ -218,7 +226,7 @@ CREATE POLICY "kl_links_admin_update"
   WITH CHECK (kora_link.is_kora_admin());
 
 -- IMPORTANT: anon has no GRANT on kora_link.links — no row access even if RLS is bypassed.
--- The public /link/[token] route MUST use fn_kora_link_public_lookup (SECURITY DEFINER).
+-- The public /link/[token] route MUST use fn_public_lookup_link (SECURITY DEFINER).
 -- That function is a TODO/spec in this file; it must be created and tested before
 -- the public route goes live.
 
@@ -229,7 +237,7 @@ CREATE POLICY "kl_links_admin_update"
 --
 -- CONSTITUTIONAL INVARIANT: Company roles MUST NEVER access this table.
 -- This table maps token_digest → worker. Any company access is a privacy violation.
--- Worker self-service: future fn_kora_link_activate (SECURITY DEFINER).
+-- Worker self-service: future fn_activate_link_for_worker (SECURITY DEFINER).
 -- No direct table INSERT/SELECT for authenticated non-KORA_ADMIN.
 
 ALTER TABLE kora_link.link_assignments ENABLE ROW LEVEL SECURITY;
@@ -263,9 +271,9 @@ CREATE POLICY "kl_assignments_admin_update"
   USING (kora_link.is_kora_admin())
   WITH CHECK (kora_link.is_kora_admin());
 
--- FUTURE POLICY (add when fn_kora_link_activate is created and tested):
+-- FUTURE POLICY (add when fn_activate_link_for_worker is created and tested):
 -- Worker SELECT self-only — BLOCKED until activation function is ready.
--- Do NOT add this policy until fn_kora_link_activate is deployed:
+-- Do NOT add this policy until fn_activate_link_for_worker is deployed:
 --
 -- CREATE POLICY "kl_assignments_worker_self_select"
 --   ON kora_link.link_assignments
@@ -288,7 +296,7 @@ CREATE POLICY "kl_assignments_admin_update"
 --
 -- Consent records created only via activation function (future).
 -- KORA_ADMIN: SELECT (for governance and DPO audit).
--- Worker direct INSERT: NOT allowed in v1 — must go via fn_kora_link_activate.
+-- Worker direct INSERT: NOT allowed in v1 — must go via fn_activate_link_for_worker.
 -- No UPDATE, no DELETE from any authenticated path.
 
 ALTER TABLE kora_link.link_consents ENABLE ROW LEVEL SECURITY;
@@ -314,12 +322,12 @@ CREATE POLICY "kl_consents_admin_insert"
 -- APPEND-ONLY ENFORCEMENT
 -- No UPDATE policy: existing consent records cannot be modified by any role.
 -- Withdrawal is modeled as a new row (future v2 event-sourced design) or a status
--- update via SECURITY DEFINER fn_kora_link_revoke (which also updates link_assignments).
+-- update via SECURITY DEFINER fn_revoke_link (which also updates link_assignments).
 -- Direct UPDATE is NOT allowed from any authenticated path in v1.
 --
--- FUTURE (when fn_kora_link_activate is deployed):
+-- FUTURE (when fn_activate_link_for_worker is deployed):
 -- Worker INSERT via activation function will bypass direct table insert.
--- fn_kora_link_activate is SECURITY DEFINER — it owns the INSERT on this table.
+-- fn_activate_link_for_worker is SECURITY DEFINER — it owns the INSERT on this table.
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -363,7 +371,7 @@ CREATE POLICY "kl_events_admin_insert"
 -- Immutable audit trail of revocation events.
 -- KORA_ADMIN: SELECT + INSERT.
 -- No UPDATE, no DELETE.
--- Worker-initiated revocations go via fn_kora_link_revoke (future SECURITY DEFINER).
+-- Worker-initiated revocations go via fn_revoke_link (future SECURITY DEFINER).
 
 ALTER TABLE kora_link.revocations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE kora_link.revocations FORCE ROW LEVEL SECURITY;
@@ -393,7 +401,7 @@ CREATE POLICY "kl_revocations_admin_insert"
 -- Replacement chain log. Append-only.
 -- KORA_ADMIN: SELECT + INSERT.
 -- No UPDATE, no DELETE.
--- Replacement operations go via fn_kora_link_replace (future SECURITY DEFINER).
+-- Replacement operations go via fn_replace_link (future SECURITY DEFINER).
 
 ALTER TABLE kora_link.link_replacements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE kora_link.link_replacements FORCE ROW LEVEL SECURITY;
@@ -502,6 +510,19 @@ CREATE POLICY "kl_delivery_admin_update"
 -- NOT created in this migration. Spec only — for CTO and engineering review.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
+-- KL-19 NOTE (2026-07-04): these functions are NOT hypothetical anymore — they
+-- are already implemented in supabase/proposed/036_kora_link_rpc_functions.sql.
+-- The function names below were renamed at KL-19 (from fn_kora_link_public_lookup/
+-- fn_kora_link_activate/fn_kora_link_revoke/fn_kora_link_replace/
+-- fn_kora_link_company_batch_stats) to match 036's actual implemented names
+-- (fn_public_lookup_link/fn_activate_link_for_worker/fn_revoke_link/
+-- fn_replace_link/fn_company_link_status_aggregate) — 036 dropped the redundant
+-- "kora_link_" prefix since the functions already live in the kora_link schema.
+-- This spec section is kept as the original design rationale/privacy-constraint
+-- record; treat 036 as the authoritative current implementation where the two
+-- differ on anything beyond naming. The STUB blocks below are historical and
+-- superseded by 036 — do not uncomment them.
+--
 -- These functions must be created in a follow-on migration (036 or a dedicated
 -- 035b) AFTER the following conditions are met:
 --   (1) CTO approves the function signatures and privacy design below
@@ -510,7 +531,7 @@ CREATE POLICY "kl_delivery_admin_update"
 --   (4) Functions are deployed and smoke-tested on staging before production apply
 --
 -- ────────────────────────────────────────────────────────────────────────────
--- FUNCTION SPEC A: fn_kora_link_public_lookup
+-- FUNCTION SPEC A: fn_public_lookup_link
 -- ────────────────────────────────────────────────────────────────────────────
 -- PURPOSE: Used by the public route /link/[token] to look up a token without
 --   exposing the raw kora_link.links table to any Postgres role.
@@ -533,7 +554,7 @@ CREATE POLICY "kl_delivery_admin_update"
 --   Rate limiting: Upstash handles upstream; function does NOT implement DB rate limit
 --
 -- STUB (do not uncomment until conditions above are met):
--- CREATE OR REPLACE FUNCTION kora_link.fn_kora_link_public_lookup(
+-- CREATE OR REPLACE FUNCTION kora_link.fn_public_lookup_link(
 --   p_token_digest text
 -- )
 -- RETURNS TABLE (
@@ -555,15 +576,15 @@ CREATE POLICY "kl_delivery_admin_update"
 --   LIMIT 1;
 -- END;
 -- $$;
--- REVOKE ALL ON FUNCTION kora_link.fn_kora_link_public_lookup(text) FROM PUBLIC;
--- GRANT EXECUTE ON FUNCTION kora_link.fn_kora_link_public_lookup(text) TO anon, authenticated;
--- COMMENT ON FUNCTION kora_link.fn_kora_link_public_lookup(text) IS
+-- REVOKE ALL ON FUNCTION kora_link.fn_public_lookup_link(text) FROM PUBLIC;
+-- GRANT EXECUTE ON FUNCTION kora_link.fn_public_lookup_link(text) TO anon, authenticated;
+-- COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
 --   'SECURITY DEFINER — public token lookup. Returns minimum fields. '
 --   'Never returns worker_id, token_digest, batch_id, or PII. '
 --   'D-07: single HMAC. D-04: TTL check inside. Rate limit: Upstash upstream.';
 --
 -- ────────────────────────────────────────────────────────────────────────────
--- FUNCTION SPEC B: fn_kora_link_activate
+-- FUNCTION SPEC B: fn_activate_link_for_worker
 -- ────────────────────────────────────────────────────────────────────────────
 -- PURPOSE: Atomically create link_assignments + link_consents after worker
 --   authenticates and explicitly accepts the KORA Link privacy notice.
@@ -585,7 +606,7 @@ CREATE POLICY "kl_delivery_admin_update"
 --   Uses SERIALIZABLE isolation or SELECT FOR UPDATE on links row to prevent races
 --
 -- STUB (do not uncomment until conditions above are met):
--- CREATE OR REPLACE FUNCTION kora_link.fn_kora_link_activate(
+-- CREATE OR REPLACE FUNCTION kora_link.fn_activate_link_for_worker(
 --   p_token_digest    text,
 --   p_consent_version text
 -- )
@@ -605,16 +626,16 @@ CREATE POLICY "kl_delivery_admin_update"
 --   RETURN jsonb_build_object('success', false, 'error_code', 'not_implemented');
 -- END;
 -- $$;
--- REVOKE ALL ON FUNCTION kora_link.fn_kora_link_activate(text, text) FROM PUBLIC;
--- GRANT EXECUTE ON FUNCTION kora_link.fn_kora_link_activate(text, text) TO authenticated;
--- COMMENT ON FUNCTION kora_link.fn_kora_link_activate(text, text) IS
+-- REVOKE ALL ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) FROM PUBLIC;
+-- GRANT EXECUTE ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) TO authenticated;
+-- COMMENT ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) IS
 --   'SECURITY DEFINER — atomic worker activation. '
 --   'Creates link_assignments + link_consents + updates links.status atomically. '
 --   'Validates tenant match, consent version, token status. '
 --   'Returns minimum jsonb — never returns token_digest or assignment_id.';
 --
 -- ────────────────────────────────────────────────────────────────────────────
--- FUNCTION SPEC C: fn_kora_link_revoke
+-- FUNCTION SPEC C: fn_revoke_link
 -- ────────────────────────────────────────────────────────────────────────────
 -- PURPOSE: Revoke a link (worker-initiated or admin-initiated).
 --   Updates links.status = 'revoked', ends link_assignments, inserts into revocations.
@@ -624,7 +645,7 @@ CREATE POLICY "kl_delivery_admin_update"
 -- PRIVACY: Admin path validates KORA_ADMIN role. Worker path validates worker owns link.
 --
 -- ────────────────────────────────────────────────────────────────────────────
--- FUNCTION SPEC D: fn_kora_link_replace
+-- FUNCTION SPEC D: fn_replace_link
 -- ────────────────────────────────────────────────────────────────────────────
 -- PURPOSE: Replace old token with new token. Updates old link status = 'replaced',
 --   inserts link_replacements record, creates new links row if not pre-provisioned.
@@ -633,7 +654,7 @@ CREATE POLICY "kl_delivery_admin_update"
 -- OUTPUTS: jsonb { success: bool, new_link_id: uuid|null, error_code: text|null }
 --
 -- ────────────────────────────────────────────────────────────────────────────
--- FUNCTION SPEC E: fn_kora_link_company_batch_stats
+-- FUNCTION SPEC E: fn_company_link_status_aggregate
 -- ────────────────────────────────────────────────────────────────────────────
 -- PURPOSE: Aggregate-safe stats for a company's link batch.
 --   Company NEVER sees individual links; only counts by status.
@@ -647,13 +668,13 @@ CREATE POLICY "kl_delivery_admin_update"
 -- ────────────────────────────────────────────────────────────────────────────
 -- [TODO-RLS-01] Worker self-SELECT on link_assignments: approve policy spec above
 --               (requires cross-schema join to personal.worker_identity)?
--- [TODO-RLS-02] Approve fn_kora_link_public_lookup return type and TTL logic.
--- [TODO-RLS-03] Approve fn_kora_link_activate concurrency model (SERIALIZABLE vs FOR UPDATE).
+-- [TODO-RLS-02] Approve fn_public_lookup_link return type and TTL logic.
+-- [TODO-RLS-03] Approve fn_activate_link_for_worker concurrency model (SERIALIZABLE vs FOR UPDATE).
 -- [TODO-RLS-04] Company aggregate view: approve column set for v_tenant_batch_stats.
 -- [TODO-RLS-05] audit_log INSERT via server-side: confirm service_role pattern is
 --               sufficient or require a dedicated SECURITY DEFINER INSERT function.
 -- [TODO-RLS-06] DPO break-glass read on audit_log: design and approve access procedure.
--- [TODO-DPO-04] fn_kora_link_activate: DPO must approve consent_version validation list
+-- [TODO-DPO-04] fn_activate_link_for_worker: DPO must approve consent_version validation list
 --               before this function can be deployed with real privacy notice text.
 
 
