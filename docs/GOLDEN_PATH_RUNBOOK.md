@@ -436,9 +436,31 @@ stesse variabili env di A01/A02 (nessun nome nuovo):
   prova RLS a livello DB (quello resta `tests/integration/rls-two-tenant-negative.test.ts`,
   RLS-03, già in `main`).
 
+**GOLDEN-E2E-02 (2026-07-04) — `tests/e2e/golden-data-bearing.spec.ts`**, skip-safe,
+riusa gli stessi `helpers/{env,roles,auth,privacy}.ts` (una sola variabile
+nuova, `E2E_GOLDEN_DATA_BEARING_ALLOW_RUN`, gate esplicito perché mutante —
+vedi sotto):
+- `GD01` — pilota davvero il percorso data-bearing tramite l'app reale: upload
+  di `data/golden-path/kora_golden_path_upload.csv` su `/admin/data-intake`
+  (dry-run validate → accept batch), generazione candidati UEF e approvazione
+  massiva su `/admin/uef-review`, run scoring, verifica delle label canoniche
+  (`KORA Foundation Light` / `KORA Index v1.0` / `pre_empirical_calibration`)
+  sulla preview HTML del Decision Pack, poi login COMPANY_ADMIN separato su
+  `/company/workspace` e `/company/kora-index` con lo stesso smoke check di
+  privacy di G02 — **non ancora eseguito con credenziali reali** (stesso
+  stato skip-safe-only di G01/G02 finché le env var non sono impostate).
+- Test mutante, non di sola lettura: ogni esecuzione crea un batch reale
+  (e UEF/scoring/decision pack a valle) sul tenant puntato da
+  `E2E_COMPANY_A_TENANT_CODE`, con un `reportingPeriod` univoco per run per
+  evitare il guard anti-duplicato del route di accept. Usare solo un tenant
+  di staging sintetico/disponibile, mai un tenant cliente reale.
+
 **Non ancora provato in nessuna forma:**
-- Il golden path completo (upload → UEF → scoring → Decision Pack) non è
-  coperto da alcun test E2E automatizzato — solo dal walkthrough manuale sopra.
+- Il golden path completo (upload → UEF → scoring → Decision Pack) ora ha un
+  test E2E automatizzato implementato (`golden-data-bearing.spec.ts`,
+  GOLDEN-E2E-02) — ma non ancora eseguito con credenziali reali di staging.
+  Fino alla prima esecuzione reale, il walkthrough manuale sopra resta l'unica
+  prova effettiva.
 - Isolamento cross-tenant a livello di RLS/DB tramite E2E autenticato (il
   livello DB diretto è invece provato — vedi RLS-03 sopra).
 
