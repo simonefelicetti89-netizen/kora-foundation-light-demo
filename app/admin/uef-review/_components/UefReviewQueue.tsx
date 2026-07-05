@@ -414,6 +414,13 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
         </div>
       </div>
 
+      {/* Task C — plain-language purpose statement */}
+      <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed max-w-3xl">
+        UEF Review è il checkpoint di governance tra l&apos;intake dei dati e lo scoring: qui ogni candidato viene
+        classificato e verificato prima di poter contribuire al KORA Index. Nessun record entra nello scoring senza
+        approvazione esplicita — la generazione dei candidati è una trasformazione controllata, non automatica.
+      </p>
+
       {/* B61-B: Pilot checklist — step 6/7 highlighted (generate then review) */}
       <PilotOnboardingChecklist currentStep={6} compact />
 
@@ -449,7 +456,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
           {!batchesLoading && batches.length === 0 && (
             <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 text-xs text-[rgba(6,3,43,0.40)]">
-              No CSV batches pending review. Accept a CSV batch via Data Intake first.
+              Nessun batch da revisionare. Crea prima un batch da Data Intake per iniziare la review UEF.
             </div>
           )}
 
@@ -491,7 +498,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
           {!selectedBatchId && (
             <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-5 py-8 text-center text-sm text-[rgba(6,3,43,0.40)]">
-              Select a batch to review UEF candidates.
+              Seleziona un batch a sinistra per generare e revisionare i candidati UEF.
             </div>
           )}
 
@@ -540,6 +547,10 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <p className="text-xs font-bold text-green-700">Approvazione Massiva — Alta Confidenza</p>
+                    <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5 max-w-md">
+                      Azione di governance, non un dettaglio tecnico: approva in blocco solo i candidati ad alta confidenza
+                      e senza arricchimento mancante. Ogni approvazione resta tracciata e attribuita all&apos;operatore.
+                    </p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       <span className="rounded border border-green-300 bg-green-100 px-2 py-0.5 text-[9px] font-semibold text-green-700">
                         ✓ {eligible.length} approvabili
@@ -806,7 +817,10 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           <div className="flex items-start justify-between flex-wrap gap-2">
             <div>
               <p className="text-xs font-bold text-[#06032B] uppercase tracking-wide">Run Live Scoring</p>
-              <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">Only approved UEF records enter scoring.</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)] mt-0.5">
+                Solo i record UEF approvati entrano nel calcolo. Questa azione genera il KORA Index e il Decision Pack
+                per questo batch — è consequenziale, ma può essere ripetuta se servono correzioni a monte.
+              </p>
             </div>
             <span className="rounded border border-[rgba(47,125,85,0.22)] bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">
               {summary.approved} approved
@@ -814,7 +828,8 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
           </div>
 
           <p className="text-[10px] text-[#8A5A00] border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] rounded px-2 py-1">
-            Provide workforcePopulation if no workforce baseline exists for this company/period.
+            Numero totale di lavoratori dell&apos;azienda per questo periodo — necessario per calcolare Activation Rate
+            ed Equity. Serve solo se non esiste già una baseline workforce per questa azienda/periodo.
           </p>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -883,7 +898,7 @@ export function UefReviewQueue({ userEmail, userRole }: Props) {
 
       {selectedBatchId && summary && summary.approved === 0 && summary.total > 0 && (
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-2 text-xs text-[rgba(6,3,43,0.40)]">
-          No approved records yet. Approve UEF candidates above to enable scoring.
+          Nessun record approvato ancora. Lo scoring resta bloccato finché almeno un candidato UEF non è approvato.
         </div>
       )}
 
