@@ -248,6 +248,15 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
         </div>
       </div>
 
+      {/* Task E — plain-language purpose statement */}
+      {!wsLoading && w && (
+        <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed">
+          Questa pagina mostra il quadro aggregato e privacy-safe della tua azienda su KORA: nessun dato individuale
+          dei lavoratori è visibile qui. Il KORA Index e il Decision Pack riflettono la pipeline dati più recente;
+          la calibrazione della metodologia resta pre-empirica finché non indicato diversamente.
+        </p>
+      )}
+
       {/* ── Loading / error ─────────────────────────────────────────────────── */}
       {wsLoading && (
         <div className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[rgba(6,3,43,0.03)] px-4 py-6 text-xs text-[rgba(6,3,43,0.40)] text-center">
@@ -337,7 +346,7 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
           ) : (
             <div className="text-xs text-[rgba(6,3,43,0.52)] py-4 text-center space-y-1">
               <p className="font-semibold text-[rgba(6,3,43,0.78)]">KORA Index non ancora disponibile</p>
-              <p>La pipeline dati non è ancora stata completata per questa azienda.</p>
+              <p>La pipeline dati non è ancora stata completata per questa azienda. Il punteggio apparirà qui non appena l&apos;operatore KORA completerà data intake, review e scoring.</p>
             </div>
           )}
         </Section>

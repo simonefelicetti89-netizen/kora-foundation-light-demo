@@ -103,6 +103,10 @@ function NoDataState({ companyName }: { companyName?: string | null }) {
           Completa il data intake e la review delle evidenze per generare il KORA Index™.
           Contatta il tuo referente KORA per procedere.
         </p>
+        <p style={{ fontSize: '11px', color: '#7A4A1A', lineHeight: 1.6, maxWidth: 480, marginTop: 8, opacity: 0.85 }}>
+          Quando disponibile, il KORA Index™ mostrerà solo dati aggregati e privacy-safe — mai informazioni
+          individuali sui singoli lavoratori.
+        </p>
       </div>
     </div>
   );
@@ -319,7 +323,7 @@ export default function KoraIndexDetail() {
           color:         TOKENS.accent,
           marginBottom:  8,
         }}>
-          <TM>KORA Index</TM> v3 · Intelligence analitica
+          <TM>KORA Index</TM> v1.0 · Intelligence analitica
         </p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <h1 style={{

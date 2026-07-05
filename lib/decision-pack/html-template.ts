@@ -1075,7 +1075,8 @@ export function buildDecisionPackHtml(data: PdfData): string {
 
     <div style="margin-top:auto;padding-top:14pt;border-top:1px solid #eaebf4;">
       <p style="font-size:8pt;color:#9899b3;line-height:1.6;">
-        <strong>Nota:</strong> Questo documento è generato da KORA Foundation Light — calibrazione pre-empirica.
+        <strong>Come leggere questo documento:</strong> ogni sezione collega un numero a una decisione — indice, causa, azione.
+        Generato da KORA Foundation Light — calibrazione pre-empirica.
         I valori sono diagnostici e di pilota, non certificati. Non sostituisce analisi HR, consulenza ESG, legale o fiscale.
         KORA misura l'attivazione organizzativa — non individui. Nessun lavoratore è identificabile in questo documento.
       </p>

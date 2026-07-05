@@ -188,6 +188,18 @@ function badge(val: string, colorMap: Record<string,string>, fallback = 'bg-[rgb
   return <span className={`inline-block rounded border px-2 py-0.5 text-xs font-semibold ${cls}`}>{val}</span>;
 }
 
+// ── Page-local upload step indicator ────────────────────────────────────────
+// Distinct from the global 10-step PilotOnboardingChecklist rendered above it:
+// this tracks progress within the live upload flow on this page only.
+
+const UPLOAD_STEPS = [
+  { id: 1, label: 'Carica il dataset' },
+  { id: 2, label: 'Valida la struttura' },
+  { id: 3, label: 'Conferma i controlli privacy' },
+  { id: 4, label: 'Crea il batch di intake' },
+  { id: 5, label: 'Prosegui alla review UEF' },
+] as const;
+
 // ── Flow timeline phases ────────────────────────────────────────────────────
 
 const FLOW_PHASES = [
@@ -564,6 +576,22 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
 
   const isOp = opStatus === 'running' || opStatus === 'reading';
 
+  // Task B — page-local step status, derived from existing state only (no new logic/requests).
+  function uploadStepStatus(id: number): 'done' | 'current' | 'upcoming' {
+    const doneThrough4: Record<number, boolean> = {
+      1: csvFile !== null,
+      2: csvStatus === 'passed',
+      3: allPseudonymChecked,
+      4: acceptStatus === 'created',
+    };
+    if (id <= 4) {
+      if (doneThrough4[id]) return 'done';
+      for (let s = 1; s <= 4; s++) { if (!doneThrough4[s]) return s === id ? 'current' : 'upcoming'; }
+    }
+    if (id === 5) return acceptStatus === 'created' ? 'current' : 'upcoming';
+    return 'upcoming';
+  }
+
   return (
     <div className="max-w-4xl mx-auto py-6 px-3 space-y-5" data-testid="admin-data-intake-page">
 
@@ -586,15 +614,54 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         </div>
       </div>
 
+      {/* Task B — plain-language purpose statement */}
+      <p className="text-xs text-[rgba(6,3,43,0.62)] leading-relaxed max-w-2xl">
+        Data Intake è il primo passaggio del percorso KORA: qui il file dell&apos;azienda viene validato,
+        controllato per privacy e trasformato in un batch tracciabile, pronto per la review umana in UEF Review.
+        Nessun punteggio KORA Index viene calcolato in questa fase.
+      </p>
+
       {/* B61-B: Pilot checklist — step 3 highlighted */}
       <PilotOnboardingChecklist currentStep={3} compact />
+
+      {/* Task B — page-local step indicator for the live upload flow */}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
+        <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-2">In questa pagina</p>
+        <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+          {UPLOAD_STEPS.map((step, i) => {
+            const status = uploadStepStatus(step.id);
+            return (
+              <div key={step.id} className="flex items-center gap-1.5">
+                <span className={`flex items-center justify-center h-5 w-5 rounded-full text-[10px] font-bold shrink-0 ${
+                  status === 'done'    ? 'bg-[rgba(47,125,85,0.15)] text-[#2F7D55] border border-[rgba(47,125,85,0.30)]' :
+                  status === 'current' ? 'bg-[#06032B] text-white' :
+                  'bg-[rgba(6,3,43,0.06)] text-[rgba(6,3,43,0.38)] border border-[rgba(6,3,43,0.10)]'
+                }`}>
+                  {status === 'done' ? '✓' : step.id}
+                </span>
+                <span className={`text-[11px] ${
+                  status === 'current' ? 'font-bold text-[rgba(6,3,43,0.90)]' :
+                  status === 'done'    ? 'text-[#2F7D55] font-medium' :
+                  'text-[rgba(6,3,43,0.42)]'
+                }`}>
+                  {step.label}
+                </span>
+                {i < UPLOAD_STEPS.length - 1 && <span className="text-[rgba(6,3,43,0.20)] text-[11px] mx-1">→</span>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* ── B4.1 / B26. CSV + XLSX DRY-RUN PREVIEW ── */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-5 py-4 space-y-3">
         <div className="flex items-start justify-between flex-wrap gap-2">
           <div>
             <p className="text-xs font-bold text-[rgba(6,3,43,0.78)] uppercase tracking-wide">Live Intake Preview — dry run</p>
-            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">Validate a CSV or Excel (.xlsx) file against KORA intake rules. No data is stored.</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
+              Questa è una verifica preliminare: il file viene controllato contro le regole di intake KORA
+              (struttura, PII, eligibility) prima che qualunque dato venga accettato. Nulla viene salvato in questa fase.
+            </p>
           </div>
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-2 py-0.5 text-[10px] font-semibold text-[#8A5A00]">Dry-run only: no data is stored.</span>
@@ -1144,7 +1211,13 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         {/* B13 FASE 3 — Pseudonymization confirmation gate (shown after dry-run passed) */}
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
           <div className="rounded-lg border border-[rgba(6,3,43,0.14)] bg-[#F8F6F1] px-4 py-4 space-y-3">
-            <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Conferma pseudonimizzazione</p>
+            <div>
+              <p className="text-[10px] font-bold text-[rgba(6,3,43,0.62)] uppercase tracking-wide">Conferma pseudonimizzazione</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)] mt-0.5">
+                Controlli di governance obbligatori, non caselle opzionali: il batch non può essere creato finché tutti
+                e 4 i punti non sono confermati esplicitamente dall&apos;operatore.
+              </p>
+            </div>
             <div className="space-y-2">
               {([
                 [pCheck1, setPCheck1, 'Il file non contiene nomi, cognomi, email, codici fiscali, telefoni o indirizzi.'],
@@ -1167,7 +1240,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
         {csvStatus === 'passed' && csvResult?.ok && acceptStatus === 'idle' && (
           <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] px-4 py-3 space-y-2">
             <p className="text-[10px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Create Intake Batch</p>
-            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Only PII-free / pseudonymized files can be persisted. Scoring is not executed in B4.2.</p>
+            <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
+              Questo è il primo passaggio che salva dati: da qui in poi il batch esiste ed è visibile in UEF Review.
+              Solo file privi di PII / pseudonimizzati possono essere persistiti. Nessuno scoring viene eseguito in questo passaggio.
+            </p>
             {fileType === 'xlsx' && selectedSheet && (
               <p className="text-[10px] text-[#C76F3D] font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>
             )}
@@ -1263,6 +1339,7 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             {acceptResult.batchId && (
               <div className="pt-2 border-t border-green-100 space-y-1">
                 <p className="text-[9px] font-bold uppercase tracking-widest text-green-700">Passo successivo</p>
+                <p className="text-[10px] text-[rgba(6,3,43,0.52)]">Il batch è pronto per la review umana — genera i candidati UEF per procedere.</p>
                 <a
                   href={`/admin/uef-review?batchId=${encodeURIComponent(acceptResult.batchId)}`}
                   data-testid="data-intake-goto-uef-review-link"
