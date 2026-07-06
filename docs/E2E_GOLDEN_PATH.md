@@ -21,7 +21,7 @@
 ## What this does not cover
 
 - **Exact numeric equality** between this run's KORA Index value and what COMPANY_ADMIN sees — the company workspace shows the latest `kora_index_result` row for the tenant by `created_at`, which this run should produce, but the assertion is structural/reachability, not a value-equality check against this specific run.
-- **RLS/DB-level tenant isolation** — that is `tests/integration/rls-two-tenant-negative.test.ts`'s job (RLS-03). This file proves application-level behavior through the UI, not Postgres-level enforcement. Two-tenant isolation via an authenticated E2E is the next planned sprint (`PILOT-TWO-TENANT-ISOLATION-01`).
+- **RLS/DB-level tenant isolation** — that is `tests/integration/rls-two-tenant-negative.test.ts`'s job (RLS-03). This file proves application-level behavior through the UI, not Postgres-level enforcement. Two-tenant isolation via an authenticated E2E is implemented as a skip-safe scaffold in `tests/e2e/two-tenant-isolation.spec.ts` (`PILOT-TWO-TENANT-ISOLATION-01`) — see `docs/E2E_TWO_TENANT_ISOLATION.md`; not yet run live pending COMPANY_B provisioning.
 - **Anything in Production.** Same base-URL guard as every other authenticated E2E file in this repo (see below).
 - The privacy check (`helpers/privacy.ts`) is a markup smoke check for a short list of forbidden identifier patterns — not proof of RLS enforcement.
 

@@ -55,6 +55,7 @@ The golden path: **file/input → UEF → approval → scoring → KORA Index �
 | G01 | KORA_ADMIN → `/admin`, COMPANY_ADMIN → `/company/workspace` (one narrative) | Not run via fixture | GOLDEN-E2E-01, skip-safe implemented |
 | G02 | COMPANY_ADMIN → `/company/kora-index` reachability + privacy smoke | Not run via fixture | GOLDEN-E2E-01, skip-safe implemented |
 | GD01 | Upload → UEF → scoring → Decision Pack → company visibility | Not run via fixture | GOLDEN-E2E-02, skip-safe implemented; deferred to the final pilot-validation session |
+| T01/T02 | COMPANY_A/B cross-tenant isolation via `/api/company/workspace` | **Blocked** | COMPANY_B does not exist; skip-safe scaffold implemented, `tests/e2e/two-tenant-isolation.spec.ts` — see `docs/E2E_TWO_TENANT_ISOLATION.md` |
 
 ---
 
