@@ -25,7 +25,7 @@ KORA measures organizations. The KORA Index is a company-level output. Individua
 | Styling | Tailwind CSS + shadcn/ui |
 | Backend | Supabase (PostgreSQL + Auth + RLS) |
 | Auth | Supabase Auth with `app_metadata.kora_role` — roles are server-controlled |
-| ORM | None — raw SQL migrations only (Gate 2 open, no Prisma/ORM) |
+| ORM | None — raw SQL migrations only (Gate 2 closed with conditions, no Prisma/ORM; see `docs/GATE2_STATUS.md`) |
 | AI/ML | None — KORA Classification Engine is fully rule-based (no external LLM calls on HR/worker data) |
 
 ---
@@ -152,9 +152,11 @@ const result = runKoraPipeline({ tenantId, records, workforcePopulation });
 | Gate | Status | Blocks |
 |---|---|---|
 | Gate 1 — Founder decisions | CLOSED | — |
-| Gate 2 — CTO architecture review | OPEN | Prisma/ORM, production backend expansion |
+| Gate 2 — CTO architecture review | CLOSED WITH CONDITIONS | Production Supabase provisioning, production backend expansion — staging-only work is authorized (see `docs/GATE2_STATUS.md`) |
 | Gate 3 — Legal/privacy counsel | OPEN | Live worker data, real HRIS/LMS integrations |
 | Gate 5 — Tax/fiscal advisor | OPEN | Live fiscal/tax outputs |
+
+See `docs/GATE2_STATUS.md` for the full canonical Gate 2 status and conditions.
 
 ---
 
@@ -280,7 +282,7 @@ Da Studio puoi ispezionare le tabelle, eseguire SQL, e verificare gli utenti Aut
 /lib/supabase         Supabase client initialization (browser + server)
 /services             Mock service layer — mirrors future production service boundaries
 /data/synthetic       Synthetic JSON seed files (demo data only)
-/supabase/migrations  SQL DDL 001–028, 030–031 (production schema, Gate 2 reference; no 029)
+/supabase/migrations  SQL DDL 001–028, 030–031 (production schema, staging-applied under Gate 2 closed-with-conditions; no 029)
 /tests                Vitest unit + integration tests
 /docs                 Canonical architecture documents
 ```

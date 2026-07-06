@@ -154,7 +154,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
             label:   'Opportunità',
             preview: isAdminPreview ? true : undefined,
           },
-          { href: '/my-kora/kora-space', label: 'KORA Space' },
+          { href: '/my-kora/kora-space', label: 'KORA Space (Anteprima)', preview: true },
           { href: '/worker/commons',   label: 'KORA Space' },
           { href: '/my-kora/kora-link', label: 'My KORA Link' },
           { href: '/my-kora/bookings', label: 'Prenotazioni', comingSoon: true },
