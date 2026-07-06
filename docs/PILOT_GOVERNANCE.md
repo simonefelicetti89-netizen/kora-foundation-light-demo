@@ -7,7 +7,7 @@
 
 ## 1. Scope
 
-This doc answers one question: **"where does KORA's pilot readiness actually stand, and where is the authoritative detail for each claim?"** It does not restate operational how-to steps (see the runbooks linked below) or re-derive architecture (see `docs/ARCHITECTURE.md`). Where this doc and a linked source doc appear to disagree, the source doc governs — this index is a summary, not a new source of truth.
+This doc answers one question: **"where does KORA's pilot readiness actually stand, and where is the authoritative detail for each claim?"** It does not restate operational how-to steps (see the runbooks linked below) or re-derive architecture (see `docs/ARCHITECTURE.md`). Where this doc and a linked source doc appear to disagree, the source doc governs — this index is a summary, not a new source of truth. For an external-reviewer-facing version of this material (executive overview, reading paths by audience, external sharing guidance), see `docs/PILOT_REVIEW_PACKAGE.md`.
 
 ---
 

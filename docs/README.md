@@ -4,6 +4,7 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 
 ## Current status (start here)
 
+- **`PILOT_REVIEW_PACKAGE.md`** — reviewer-facing entry point for a technical reviewer, academic advisor, venture studio, or pilot partner: executive overview, evidence matrix, do-not-claim boundaries, external sharing guidance.
 - **`PILOT_GOVERNANCE.md`** — canonical pilot governance index: single cross-referenced summary of Gate 2/CI/RLS/E2E scaffold status, known blockers, "do not claim" boundaries, and the final validation sequence.
 - **`STATUS.md`** — current platform status: what's proven, what's not, last-verified commit. Supersedes `archive/PLATFORM_READINESS_SUMMARY.md`/`archive/PLATFORM_READINESS_CHANGELOG.md` as the primary status reference (moved to archive in PILOT-SAAS-01, confirmed historical).
 - `GOLDEN_PATH.md` — golden path readiness status and E2E checkpoint log
