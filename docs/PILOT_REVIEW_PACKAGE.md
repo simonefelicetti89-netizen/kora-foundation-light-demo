@@ -134,7 +134,7 @@ These are hard lines. Do not present any of the following to an external reviewe
 
 ## 10. Final validation checklist
 
-Canonical detail lives in `docs/PILOT_GOVERNANCE.md` §16 — this is a summary, not a replacement:
+Canonical detail lives in `docs/PILOT_GOVERNANCE.md` §16 — this is a summary, not a replacement. For the step-by-step operating procedure (roles, pre-flight checklist, stop conditions, evidence collection), see `docs/PILOT_OPERATING_RUNBOOK.md`.
 
 1. Run `A02` (COMPANY_A) live against local dev, then Production.
 2. Provision COMPANY_B — a deliberate, explicitly-approved action, never bundled into a routine sprint.

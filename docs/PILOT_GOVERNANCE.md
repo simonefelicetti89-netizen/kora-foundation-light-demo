@@ -114,6 +114,8 @@ A credential cleanup topic exists and is **explicitly deferred until the end of 
 6. Run RLS-06's live direct-Postgres control test.
 7. Only after all of the above: begin the deferred credential cleanup sequence (§15).
 
+For the operating procedure behind this sequence — roles, pre-flight checklist, per-step read-only/mutating classification, stop conditions, evidence collection, closeout — see `docs/PILOT_OPERATING_RUNBOOK.md`.
+
 This sequence is descriptive of intended order, not a commitment to a timeline — each step still requires its own explicit approval per this repo's established precedent (staging/Production Auth writes require explicit sign-off, not routine-task bundling).
 
 ## 17. Next roadmap sequence
