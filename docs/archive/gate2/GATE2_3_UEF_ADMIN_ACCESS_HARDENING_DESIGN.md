@@ -1,5 +1,7 @@
 # Gate 2.3 — UEF Admin Access Hardening Design Review
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Type:** Design review — no migration applied  
 **Date:** 2026-06-22  
 **HEAD at review:** `f20851f`  

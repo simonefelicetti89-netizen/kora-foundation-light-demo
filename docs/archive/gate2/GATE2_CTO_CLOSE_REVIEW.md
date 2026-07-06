@@ -1,5 +1,7 @@
 # Gate 2 — CTO Architecture Review & Close Decision
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Verdict:** CLOSE GATE 2 WITH CONDITIONS  
 **Reviewer:** CTO Architecture Review (automated evidence synthesis)  
 **Date:** 2026-06-22  

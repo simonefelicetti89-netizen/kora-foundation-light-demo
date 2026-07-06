@@ -252,7 +252,7 @@ export default function DemoHomePage() {
         style={{ borderTop: '1px solid rgba(6,3,43,0.08)', paddingTop: 18, marginBottom: 24 }}
       >
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', lineHeight: 1.65 }}>
-          KORA Foundation Light v0.1 · Area Dimostrativa · Dati sintetici ·
+          KORA Foundation Light · Area Dimostrativa · Dati sintetici ·
           Methodology v0.1 pre-empirical calibration · Non certificato, non regulatory-grade ·
           KORA misura organizzazioni, mai individui · Nessun dato aziendale reale caricato.
         </p>

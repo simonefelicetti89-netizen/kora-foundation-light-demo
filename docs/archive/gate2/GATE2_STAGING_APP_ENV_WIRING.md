@@ -1,5 +1,7 @@
 # Gate 2 — Staging App Environment Wiring
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Status:** Audit complete — ready for local staging run or Vercel Preview  
 **Staging Supabase project:** `haqflkurpmeaxpikozjl` (dedicated staging only)  
 **Production:** NOT touched  

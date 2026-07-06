@@ -1,5 +1,7 @@
 # GATE 2 STAGING EXECUTION CHECKLIST
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Status:** Gate 2 OPEN — migrations written, NOT applied to any database.  
 **Target environment:** kora-staging ONLY — project ref `haqflkurpmeaxpikozjl`  
 **Production:** MUST NOT be touched at any point during Gate 2 staging execution.

@@ -1,5 +1,7 @@
 # Gate 2 — Phase 1 Post-Migration Verification & Minimal Seed Plan
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Status:** Phase 1 complete — read-only verification passed  
 **Staging project:** `haqflkurpmeaxpikozjl` (dedicated staging only)  
 **Production:** NOT touched  
