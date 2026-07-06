@@ -34,21 +34,30 @@ const EMAIL_PATTERN = /[\w.+-]+@[\w-]+\.[\w.-]+/g;
 const MAX_PLAUSIBLE_EMAILS_ON_COMPANY_PAGE = 2;
 
 /**
+ * Text-level version of the same check — used both for rendered page markup
+ * and for raw JSON response bodies from `/api/company/*` (PILOT-TWO-TENANT-
+ * ISOLATION-01), so the forbidden-pattern list stays in one place rather than
+ * being duplicated per call site.
+ */
+export function assertNoWorkerLevelIdentifiersInText(text: string, context = 'response'): void {
+  for (const pattern of FORBIDDEN_IDENTIFIER_PATTERNS) {
+    expect(pattern.test(text), `${context} must never contain ${pattern} (worker-level identifier leak)`).toBe(false);
+  }
+
+  const emailMatches = text.match(EMAIL_PATTERN) ?? [];
+  const distinctEmails = new Set(emailMatches.map((email) => email.toLowerCase()));
+  expect(
+    distinctEmails.size,
+    `${context} contains ${distinctEmails.size} distinct email addresses — looks like a personal contact list, not aggregate company copy`,
+  ).toBeLessThanOrEqual(MAX_PLAUSIBLE_EMAILS_ON_COMPANY_PAGE);
+}
+
+/**
  * Asserts the current page's rendered HTML contains no obvious worker-level
  * identifier and no implausibly large set of email addresses. Call this
  * after navigating to any company-facing page in an authenticated E2E test.
  */
 export async function assertNoWorkerLevelIdentifiers(page: Page): Promise<void> {
   const html = await page.content();
-
-  for (const pattern of FORBIDDEN_IDENTIFIER_PATTERNS) {
-    expect(pattern.test(html), `page markup must never contain ${pattern} (worker-level identifier leak)`).toBe(false);
-  }
-
-  const emailMatches = html.match(EMAIL_PATTERN) ?? [];
-  const distinctEmails = new Set(emailMatches.map((email) => email.toLowerCase()));
-  expect(
-    distinctEmails.size,
-    `company page renders ${distinctEmails.size} distinct email addresses — looks like a personal contact list, not aggregate company copy`,
-  ).toBeLessThanOrEqual(MAX_PLAUSIBLE_EMAILS_ON_COMPANY_PAGE);
+  assertNoWorkerLevelIdentifiersInText(html, 'page markup');
 }
