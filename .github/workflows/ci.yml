@@ -1,0 +1,47 @@
+name: KORA CI
+
+# Minimal CI gate (PILOT-CI-01): proves TypeScript and the unit/integration
+# test suite on every PR into main. Intentionally does not run E2E/Playwright,
+# does not build a deploy artifact against staging/Production, and does not
+# use any repository secrets — see docs/CI.md for scope and rationale.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  ci:
+    name: TypeScript, tests, build, lint (report-only)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Lint is report-only for now: the repo has known pre-existing ESLint
+      # debt (mostly in tests/unit/*, e.g. no-require-imports/no-unused-vars).
+      # `|| true` keeps this step visible in the CI log without failing the
+      # PR check. Remove `|| true` once the existing lint debt is reduced
+      # and lint is meant to gate merges.
+      - name: Lint (report-only, non-blocking)
+        run: npm run lint || true
