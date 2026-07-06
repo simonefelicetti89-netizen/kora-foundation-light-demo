@@ -70,4 +70,4 @@ The golden path: **file/input → UEF → approval → scoring → KORA Index �
 
 ## Related docs
 
-`GOLDEN_PATH_RUNBOOK.md`, `PILOT_INTAKE_PROTOCOL.md`, `QA_STATUS.md`, `STATUS.md`, `testing-e2e-auth.md`, `E2E_GOLDEN_PATH.md` (what `GD01` covers, env vars, how to run it, known gaps).
+`GOLDEN_PATH_RUNBOOK.md`, `PILOT_INTAKE_PROTOCOL.md`, `QA_STATUS.md`, `STATUS.md`, `testing-e2e-auth.md`, `E2E_GOLDEN_PATH.md` (what `GD01` covers, env vars, how to run it, known gaps), `PILOT_GOVERNANCE.md` (single cross-referenced governance index).

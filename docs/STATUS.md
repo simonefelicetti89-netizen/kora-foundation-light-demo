@@ -8,7 +8,7 @@
 
 ## Scope
 
-This is the canonical, current-state entry point for "where does KORA actually stand today." It supersedes `PLATFORM_READINESS_SUMMARY.md` and `PLATFORM_READINESS_CHANGELOG.md` as the primary status reference (moved to `docs/archive/` in PILOT-SAAS-01 as confirmed-historical snapshots — see the note at the top of each). It does not restate operational how-to steps (see `GOLDEN_PATH_RUNBOOK.md`, `PILOT_INTAKE_PROTOCOL.md`) or architecture detail (see `ARCHITECTURE.md`) — it links to those instead.
+This is the canonical, current-state entry point for "where does KORA actually stand today." It supersedes `PLATFORM_READINESS_SUMMARY.md` and `PLATFORM_READINESS_CHANGELOG.md` as the primary status reference (moved to `docs/archive/` in PILOT-SAAS-01 as confirmed-historical snapshots — see the note at the top of each). It does not restate operational how-to steps (see `GOLDEN_PATH_RUNBOOK.md`, `PILOT_INTAKE_PROTOCOL.md`) or architecture detail (see `ARCHITECTURE.md`) — it links to those instead. For a single cross-referenced index of Gate 2/CI/RLS/E2E/blocker status in one place, see `docs/PILOT_GOVERNANCE.md`.
 
 This document reflects a Professionalization Sprint spanning: PROF-01/PROF-02B-LIGHT (docs cleanup), KORA-INDEX-VERSION-02 (version label unification), GOLDEN-01 through GOLDEN-04-DOCS (golden path audit, E2E fixtures, docs alignment), VERCEL-01 through VERCEL-05 (Production deployment verification), and ROLE-SWITCHER-01 through ROLE-SWITCHER-03 (a client-state auth-view bug found and fixed in Production).
 
