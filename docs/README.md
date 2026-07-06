@@ -8,6 +8,7 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 - `GOLDEN_PATH.md` — golden path readiness status and E2E checkpoint log
 - `QA_STATUS.md` — test coverage and verification checkpoint detail
 - `KORA_LINK_STATUS.md` — KORA Link's current frozen status
+- `GATE2_STATUS.md` — canonical Gate 2 (CTO Architecture Review) status: closed with conditions, what's still gated by Gate 3/5
 - `KORA_LINK_ADR.md` — KORA Link pilot architecture decision + current-state inventory (docs/SQL/code/flags)
 - `CHANGELOG.md` — dated log of documentation consolidation/reconciliation work
 - `PILOT_SAAS_READINESS.md` — what's ready/not ready for a first real pilot, operator flow, top blockers, top feature-expansion opportunities
@@ -34,13 +35,18 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 - `E2E_TESTING.md` — general E2E testing guide
 - `RLS_03_THROWAWAY_SUPABASE_CHECKLIST.md` — operational checklist for RLS-03 (synthetic two-tenant negative DB test); executed locally against direct Postgres (not the originally-planned hosted throwaway project — see the doc's own superseded-section note) and merged to `main` via PR #26
 
+## Deploy & migrations
+
+- `DEPLOY_CHECKLIST.md` — manual pre/post-deploy checklist for any deploy a pilot company could be affected by
+- `MIGRATION_SEQUENCE_NOTE.md` — why `supabase/migrations/` has no `029` (quarantined rollback for 027, moved to `supabase/rollback/`, never applied)
+
 ## Archived / historical docs
 
 - `archive/strategy/` — early product/redesign docs, pre-build audits, and completed build-phase plans (`KORA_DOCTRINE.md`, `KORA_REDESIGN.md`, `PLATFORM_STRATEGIC_AUDIT.md`, `SPRINT_0_AUDIT.md`, `phase-*.md`, `build-readiness-brief.md`, `synthetic-seed-file-plan.md`, `demo-walkthrough.md`)
 - `archive/handoffs/` — point-in-time handoff snapshots (`HANDOFF_NEXT.md`)
 - `archive/contribution-source-layer/` — KORA Contribution source layer audits and handoff
 - `archive/kora-space/` — KORA Space contribution integration audits
-- `archive/gate2/` — historical Gate 2/3 staging and review docs (current Gate status lives in `GATE2_CTO_CLOSE_REVIEW.md` and `GATE3_LEGAL_DPO_READINESS_REVIEW.md`, still at `docs/` root — status not yet reconciled, see those files directly)
+- `archive/gate2/` — historical Gate 2 staging and review docs, each archived with a redirect note; canonical current Gate 2 status now lives in `docs/GATE2_STATUS.md` (`docs/` root). Gate 3 status is unaffected by this reconciliation and still lives in `GATE3_LEGAL_DPO_READINESS_REVIEW.md` at `docs/` root.
 - `archive/kora-link/` — historical KORA Link design, migration review, and decision docs (KORA Link is frozen; current status source is `KORA_LINK_GATE_REPORT.md` and `KORA_LINK_CHANGELOG.md`, still at `docs/` root)
 - `archive/qa/` — historical QA/staging-access results and reports (live QA references remain at `docs/` root: `E2E_TESTING.md`, `ENVIRONMENT_SAFETY_CHECK.md`, `API_ROUTE_AUTH_MATRIX.md`)
 - `archive/sprints/` — raw working notes from specific completed sprints (`sprint-B168-5/`, `sprint-B168-6/`, `sprint-B169/`)

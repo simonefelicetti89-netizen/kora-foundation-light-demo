@@ -1,5 +1,7 @@
 # Gate 2 — Phase 1 Valid Auth Users Ready
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Status:** Auth metadata set — worker identity linked — passwords reset — smoke tests ready  
 **Staging project:** `haqflkurpmeaxpikozjl` (dedicated staging only)  
 **Production:** NOT touched  

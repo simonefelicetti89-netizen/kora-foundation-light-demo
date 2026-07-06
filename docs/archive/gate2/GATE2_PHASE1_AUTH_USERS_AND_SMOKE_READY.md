@@ -1,5 +1,7 @@
 # Gate 2 — Phase 1 Auth Users & Smoke Ready
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Status:** Auth users created — identity link complete — smoke tests ready  
 **Staging project:** `haqflkurpmeaxpikozjl` (dedicated staging only)  
 **Production:** NOT touched  

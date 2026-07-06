@@ -12,7 +12,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-const DOC_PATH = 'docs/GATE2_CTO_CLOSE_REVIEW.md';
+const DOC_PATH = 'docs/archive/gate2/GATE2_CTO_CLOSE_REVIEW.md';
 
 function doc(): string {
   return readFileSync(resolve(process.cwd(), DOC_PATH), 'utf-8');

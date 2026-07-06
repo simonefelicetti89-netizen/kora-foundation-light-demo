@@ -1,5 +1,7 @@
 # Gate 2 — Phase 1 Auth Integrity Audit & Repair Plan
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Status:** Ghost users removed — staging ready for valid user creation  
 **Staging project:** `haqflkurpmeaxpikozjl` (dedicated staging only)  
 **Production:** NOT touched  

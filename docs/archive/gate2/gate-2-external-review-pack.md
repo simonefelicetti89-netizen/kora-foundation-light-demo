@@ -1,5 +1,7 @@
 # KORA Gate 2 External Review Pack
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Document:** `docs/gate-2-external-review-pack.md`  
 **Prepared:** 2026-06-21  
 **Branch:** `main` — HEAD `088f3c4` — synchronized with `origin/main`  

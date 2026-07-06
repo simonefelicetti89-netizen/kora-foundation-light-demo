@@ -1,5 +1,7 @@
 # Gate 2.2 — Privacy Hardening Sprint: Migration 027 Staging Synthetic Only
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Sprint:** Gate 2.2 Privacy Hardening  
 **Date:** 2026-06-22  
 **HEAD at sprint:** `2d63c45`  

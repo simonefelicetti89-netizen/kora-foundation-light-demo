@@ -1,5 +1,7 @@
 # KORA Gate 2 SQL Review Pack
 
+> Archived: canonical Gate 2 status now lives in docs/GATE2_STATUS.md.
+
 **Prepared:** 2026-06-21  
 **Scope:** `supabase/migrations/` — 28 files, none applied to any production or staging database  
 **Gate status:** Gate 2 OPEN (CTO review required) · Gate 3 OPEN (Legal/DPO required)  
