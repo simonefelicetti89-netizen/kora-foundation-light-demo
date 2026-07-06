@@ -4,7 +4,7 @@
 **Sprint:** PILOT-SAAS-01
 **Audience:** anyone deciding what to work on before the first real client pilot, or scoping Partner/Advisor work after it
 
-Practical, short. See `docs/STATUS.md`/`docs/QA_STATUS.md` for full verification detail, `docs/ARCHITECTURE.md` for structure, `docs/access-matrix.md` for the authoritative access rules, `docs/FUTURE_ROLES_AND_SURFACES.md` for Partner/Advisor specifics, `docs/PILOT_GOVERNANCE.md` for the single cross-referenced governance index.
+Practical, short. See `docs/STATUS.md`/`docs/QA_STATUS.md` for full verification detail, `docs/ARCHITECTURE.md` for structure, `docs/access-matrix.md` for the authoritative access rules, `docs/FUTURE_ROLES_AND_SURFACES.md` for Partner/Advisor specifics, `docs/PILOT_GOVERNANCE.md` for the single cross-referenced governance index, `docs/PILOT_REVIEW_PACKAGE.md` if sharing this material with an external reviewer or pilot partner.
 
 ---
 

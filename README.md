@@ -301,7 +301,9 @@ Da Studio puoi ispezionare le tabelle, eseguire SQL, e verificare gli utenti Aut
 
 ## Handoff reference
 
-**Start here:** `docs/archive/handoffs/HANDOFF_NEXT.md` — historical platform state snapshot (2026-06-18), migration status, privacy architecture, technical debt at that point in time. Archived docs may not reflect current runtime state — see `docs/README.md`.
+**Evaluating KORA as a reviewer, advisor, or pilot partner?** Start with `docs/PILOT_REVIEW_PACKAGE.md` instead of this file.
+
+**Start here (engineering handoff):** `docs/archive/handoffs/HANDOFF_NEXT.md` — historical platform state snapshot (2026-06-18), migration status, privacy architecture, technical debt at that point in time. Archived docs may not reflect current runtime state — see `docs/README.md`.
 
 Additional canonical documents:
 - `CLAUDE.md` — operating constitution for this codebase (read before any code change)
