@@ -1,5 +1,13 @@
 /**
- * GOLDEN-E2E-02/03 — Authenticated Staging Data-Bearing Golden Path
+ * GOLDEN-E2E-02/03/04 — Authenticated Staging Data-Bearing Golden Path
+ *
+ * GOLDEN-E2E-04 (PILOT-E2E-GOLDEN-PATH-01): added an explicit positive
+ * assertion that the intake page renders the selected tenantCode (not just
+ * the absence of synthetic-tenant copy), and a Decision Pack PDF check that
+ * calls `/api/admin/decision-pack/pdf` directly (no live-flow UI button links
+ * there) and accepts either a real PDF (200, application/pdf, non-trivial
+ * size) or the route's own documented 501 fallback — whichever staging
+ * actually supports, proven dynamically rather than assumed.
  *
  * GOLDEN-E2E-03: structural interactions (which element to click/fill) now
  * use stable `data-testid` selectors added to the real components
@@ -33,6 +41,12 @@
  *   - The resulting Decision Pack HTML preview shows the canonical
  *     `KORA Foundation Light` / `KORA Index v1.0` / `pre_empirical_calibration`
  *     labels (doc 21b non-suppressible requirement).
+ *   - The intake page explicitly shows the tenantCode this run selected —
+ *     not just the absence of demo/synthetic-tenant copy.
+ *   - Decision Pack PDF generation, if the staging runtime supports it,
+ *     produces a real non-trivial PDF; if not, the route's own documented
+ *     501 fallback (pointing back at the HTML preview) fires correctly —
+ *     whichever is true for this environment, not an assumed outcome.
  *   - COMPANY_ADMIN, in a separate browser context/session, reaches
  *     `/company/workspace` and `/company/kora-index` afterward without a
  *     worker-level identifier leak in the rendered markup.
@@ -133,6 +147,11 @@ test.describe('KORA — Golden Path: data-bearing pipeline (upload → UEF → s
       );
       await expect(adminPage.getByTestId('admin-data-intake-page')).toBeVisible();
       await expect(adminPage.getByText('Synthetic demo tenant', { exact: false })).toHaveCount(0);
+      // Positive tenant-selection proof — the header renders "Synthetic Live v1
+      // · {TENANT} · {PERIOD}" (DataIntakeStudio.tsx). Asserting the exact
+      // tenantCode is visible (not just "not synthetic") proves the intake
+      // actually targets the tenant this run selected, not merely some tenant.
+      await expect(adminPage.getByText(tenantCode, { exact: false }).first()).toBeVisible();
 
       await adminPage.getByTestId('data-intake-upload-input').setInputFiles(GOLDEN_PATH_CSV);
       await adminPage.getByTestId('data-intake-dry-run-button').click();
@@ -190,6 +209,29 @@ test.describe('KORA — Golden Path: data-bearing pipeline (upload → UEF → s
       expect(previewHtml, 'Decision Pack must show KORA Index v1.0, not v0.1/v3').toMatch(/KORA Index v1\.0/);
       expect(previewHtml, 'calibration_status must be the non-suppressible pre_empirical_calibration label').toMatch(/pre_empirical_calibration/);
       await previewPage.close();
+
+      // ── Step 3b — Decision Pack PDF: proves whichever outcome staging
+      // actually supports, rather than assuming one ──────────────────────────
+      // /api/admin/decision-pack/pdf always attempts real Chromium rendering
+      // and returns EITHER a real PDF (200, application/pdf) if the runtime
+      // is available, OR a controlled 501 fallback (documented in the route
+      // itself) pointing back at the HTML preview if it is not — expected on
+      // constrained hosts (see lib/decision-pack/pdf-strategy.ts). No UI
+      // button in the live tenant flow links here (only the unrelated OP-001
+      // synthetic operator-flow section does), so this calls the API
+      // directly, reusing the already-authenticated admin session/cookies.
+      const pdfResponse = await adminPage.request.get(
+        `/api/admin/decision-pack/pdf?tenantCode=${encodeURIComponent(tenantCode)}&reportingPeriod=${encodeURIComponent(reportingPeriod)}`,
+      );
+      if (pdfResponse.status() === 200) {
+        expect(pdfResponse.headers()['content-type'], 'PDF response must be application/pdf').toMatch(/application\/pdf/);
+        const pdfBuffer = await pdfResponse.body();
+        expect(pdfBuffer.length, 'PDF generation must produce a non-trivial file, not an empty/stub buffer').toBeGreaterThan(1000);
+      } else {
+        expect(pdfResponse.status(), 'PDF route must fail with the documented controlled 501 fallback, not any other error').toBe(501);
+        const fallback = await pdfResponse.json();
+        expect(fallback.preview, '501 fallback must point back at the HTML preview route').toContain('/api/admin/decision-pack/preview');
+      }
     } finally {
       await adminContext.close();
     }
