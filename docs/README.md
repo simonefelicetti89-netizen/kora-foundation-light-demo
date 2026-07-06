@@ -7,6 +7,7 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 - **`PILOT_REVIEW_PACKAGE.md`** — reviewer-facing entry point for a technical reviewer, academic advisor, venture studio, or pilot partner: executive overview, evidence matrix, do-not-claim boundaries, external sharing guidance.
 - **`PILOT_GOVERNANCE.md`** — canonical pilot governance index: single cross-referenced summary of Gate 2/CI/RLS/E2E scaffold status, known blockers, "do not claim" boundaries, and the final validation sequence.
 - **`PILOT_OPERATING_RUNBOOK.md`** — operating procedure for actually running the remaining pilot validation sequence: roles, pre-flight checklist, stop conditions, evidence collection, closeout.
+- **`PILOT_DATA_INTAKE_READINESS.md`** — readiness synthesis for a real pilot company's data intake: field dictionary, do-not-send list, PII guard notes, pre-upload checklist, company-facing data request checklist.
 - **`STATUS.md`** — current platform status: what's proven, what's not, last-verified commit. Supersedes `archive/PLATFORM_READINESS_SUMMARY.md`/`archive/PLATFORM_READINESS_CHANGELOG.md` as the primary status reference (moved to archive in PILOT-SAAS-01, confirmed historical).
 - `GOLDEN_PATH.md` — golden path readiness status and E2E checkpoint log
 - `QA_STATUS.md` — test coverage and verification checkpoint detail

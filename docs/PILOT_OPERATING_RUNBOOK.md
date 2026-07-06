@@ -36,7 +36,7 @@ Before starting **any** step in §5:
 - [ ] COMPANY_A account status is known (exists, tenant `STAGE-001`, per `docs/GOLDEN_PATH.md`).
 - [ ] COMPANY_B provisioning status is known (as of this doc: **does not exist** — see `docs/PILOT_GOVERNANCE.md` §10).
 - [ ] Credential handling rules are understood: credentials are set in the operator's own shell/secret store, never pasted into chat, issues, PRs, or commits (see `docs/testing-e2e-auth.md`).
-- [ ] Data intake prerequisites for the specific step about to run are understood (e.g. `GD01` needs a disposable/synthetic staging tenant, never a real client's — see `docs/E2E_GOLDEN_PATH.md`).
+- [ ] Data intake prerequisites for the specific step about to run are understood (e.g. `GD01` needs a disposable/synthetic staging tenant, never a real client's — see `docs/E2E_GOLDEN_PATH.md`; for real pilot company data, see `docs/PILOT_DATA_INTAKE_READINESS.md`).
 - [ ] Privacy boundaries are acknowledged by the privacy/governance reviewer before any step that could touch real or realistic data.
 - [ ] Stop conditions (§7) have been read by whoever is executing, before execution starts.
 
