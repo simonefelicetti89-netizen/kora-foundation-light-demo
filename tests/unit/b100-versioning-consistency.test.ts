@@ -307,3 +307,37 @@ describe('KORA-INDEX-VERSION-02 — legacy v0.1 removed from key visible compone
     expect(explainability).not.toContain('KORA Index v0.1');
   });
 });
+
+// ── 9. KORA-INDEX-METHODOLOGY-CONSISTENCY-FIX-01 — superseded component codes ──
+// Regression guard: the Decision Pack template must never reintroduce the
+// pre-Sprint-1 superseded component codes (NI, VR, CO, WB, EQ — see
+// docs/METHODOLOGY.md) in its table-of-contents or component descriptions.
+// Current canonical codes: AR, MAR, EVQ, INT, CONT, EQW, EQS, PC, PB, CS.
+
+describe('KORA-INDEX-METHODOLOGY-CONSISTENCY-FIX-01 — Decision Pack component code consistency', () => {
+  const html = readSrc('lib/decision-pack/html-template.ts');
+
+  it('table-of-contents lists the current canonical 10 component codes', () => {
+    expect(html).toContain('AR, MAR, EVQ, INT, CONT, EQW, EQS, PC, PB, CS');
+  });
+
+  it('table-of-contents does not list the superseded component codes', () => {
+    expect(html).not.toContain('AR, MAR, NI, VR, CO, WB, PC, PB, EQ, BTI');
+  });
+
+  it('does not contain superseded component codes as object keys', () => {
+    // Checks the key, not the human-readable name — "Normalized Intensity" is
+    // still INT's correct current name, so only the old key (NI:) is stale.
+    expect(html).not.toContain("NI:  'Normalized Intensity");
+    expect(html).not.toContain("VR:  'Verification Rate");
+    expect(html).not.toContain("CO:  'Continuity");
+    expect(html).not.toContain("WB:  'Worker Balance");
+    expect(html).not.toContain('EQ:  "Equity —');
+  });
+
+  it('contains current canonical component-description entries', () => {
+    expect(html).toContain('Evidence Quality — solidità e verificabilità delle fonti evidenza');
+    expect(html).toContain('Equity Workers — distribuzione IU tra workers attivi');
+    expect(html).toContain('Equity Segments — equità del tasso di attivazione tra dipartimenti/sedi');
+  });
+});
