@@ -193,6 +193,7 @@ Before uploading any real pilot company file:
 - `docs/METHODOLOGY.md` — KORA Index versioning, 10 components, IU formula reference.
 - `docs/privacy-escalation-model.md` — the canonical principle that KORA_ADMIN access ≠ worker-PIB access.
 - `docs/access-matrix.md` — the authoritative role/resource access matrix.
+- `docs/PILOT_PRIVACY_GOVERNANCE.md` — consolidated pilot privacy governance summary, including intake-specific PII guard and minimization notes in broader context.
 
 ---
 
