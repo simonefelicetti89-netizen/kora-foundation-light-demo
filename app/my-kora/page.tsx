@@ -480,14 +480,14 @@ export default function MyKoraHome() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <h3 className="text-sm font-bold text-[rgba(6,3,43,0.90)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-                KORA Commons
+                KORA Space
               </h3>
               <span className="rounded border border-[rgba(74,127,224,0.22)] bg-[rgba(74,127,224,0.10)] px-1.5 py-0.5 text-[9px] font-bold text-[rgba(74,127,224,0.80)] uppercase tracking-[0.08em]">
                 PREVIEW
               </span>
             </div>
             <p className="text-xs text-[rgba(6,3,43,0.48)]" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-              Commons mostra opportunità di attivazione nel network KORA.
+              KORA Space mostra opportunità di attivazione nel network KORA.
             </p>
           </div>
           {commonsPillars.length > 0 && (
@@ -505,7 +505,7 @@ export default function MyKoraHome() {
             </div>
           )}
           <p className="text-[10.5px] text-[rgba(6,3,43,0.40)] italic" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-            KORA Commons non è un social network. I tuoi dati rimangono privati.
+            KORA Space non è un social network. I tuoi dati rimangono privati.
           </p>
           <Link
             href="/commons"
@@ -513,7 +513,7 @@ export default function MyKoraHome() {
             style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif', textDecoration: 'none' }}
             data-testid="commons-cta"
           >
-            Esplora Commons →
+            Esplora KORA Space →
           </Link>
         </div>
       </div>

@@ -461,7 +461,7 @@ export default function WorkerKoraSpacePage() {
                       href="/worker/commons"
                       style={{ fontSize: 10, color: TOKENS.inkSecondary, textDecoration: 'none', display: 'inline-block', marginTop: 4 }}
                     >
-                      Apri scheda completa su KORA Commons →
+                      Apri scheda completa su KORA Space →
                     </Link>
                   </div>
                 )}
@@ -472,7 +472,7 @@ export default function WorkerKoraSpacePage() {
                     href="/worker/commons"
                     style={{ fontSize: 11, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
                   >
-                    Scopri su KORA Commons →
+                    Scopri su KORA Space →
                   </Link>
                 )}
               </div>
@@ -492,7 +492,7 @@ export default function WorkerKoraSpacePage() {
             Come funziona la partecipazione
           </p>
           <ol style={{ fontSize: 11, color: '#2F5A42', margin: 0, paddingLeft: 16, lineHeight: 1.9 }}>
-            <li>Richiedi partecipazione su KORA Commons</li>
+            <li>Richiedi partecipazione su KORA Space</li>
             <li>KORA esamina la richiesta</li>
             <li>Ricevi conferma (partecipazione confermata)</li>
             <li>Partecipazione registrata dopo l&apos;evento</li>
@@ -504,7 +504,7 @@ export default function WorkerKoraSpacePage() {
         <TimelineConnectionNote />
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <Link href="/worker/commons" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}>
-            → KORA Commons (feed completo e prenotazioni)
+            → KORA Space (feed completo e prenotazioni)
           </Link>
           <Link href="/my-kora/personal-impact-balance" style={{ fontSize: 12, fontWeight: 600, color: TOKENS.inkSecondary, textDecoration: 'none' }}>
             → Personal Impact Balance
@@ -545,7 +545,7 @@ export default function WorkerKoraSpacePage() {
             href="/worker/commons"
             style={{ fontSize: 12, fontWeight: 600, color: TOKENS.accent, textDecoration: 'none' }}
           >
-            Vai a KORA Commons per esplorare la rete →
+            Vai a KORA Space per esplorare la rete →
           </Link>
         </div>
         <TimelineConnectionNote />

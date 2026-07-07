@@ -106,7 +106,7 @@ describe('Worker KORA Space — booking journey', () => {
   test('11. UI explains the booking lifecycle steps', () => {
     expect(spaceSrc).toContain('space-booking-lifecycle');
     expect(spaceSrc).toContain('Come funziona la partecipazione');
-    expect(spaceSrc).toContain('Richiedi partecipazione su KORA Commons');
+    expect(spaceSrc).toContain('Richiedi partecipazione su KORA Space');
     expect(spaceSrc).toContain('Traccia privata nel tuo percorso personale');
   });
 

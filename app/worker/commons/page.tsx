@@ -23,7 +23,7 @@ import { OPENING_GRADE_LABELS, OPENING_GRADE_COLORS } from '@/lib/commons/types'
 import { InitiativesMapClient } from '@/components/commons/InitiativesMapClient';
 import { WorkerBookingButton } from '@/components/commons/WorkerBookingButton';
 
-export const metadata = { title: 'KORA Commons · Worker' };
+export const metadata = { title: 'KORA Space · Worker' };
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif';
 
@@ -97,7 +97,7 @@ export default async function WorkerCommonsPage() {
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
-          KORA Commons
+          KORA Space
         </h1>
         <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.50)', margin: 0, lineHeight: 1.6 }}>
           Iniziative, opportunità e contenuti pubblicati per la tua organizzazione e la rete KORA.
@@ -120,7 +120,7 @@ export default async function WorkerCommonsPage() {
       >
         <span style={{ fontSize: 14, lineHeight: 1.2, flexShrink: 0 }}>&#128274;</span>
         <p style={{ fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.6 }}>
-          KORA Commons mostra contenuti approvati per il tuo tenant e iniziative aperte alla rete.
+          KORA Space mostra contenuti approvati per il tuo tenant e iniziative aperte alla rete.
           La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale.
         </p>
       </div>
@@ -257,7 +257,7 @@ export default async function WorkerCommonsPage() {
             <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.45)', margin: 0 }}>
               {hasInitiatives
                 ? 'Nessun contenuto generico — guarda le iniziative sopra.'
-                : 'La tua organizzazione non ha ancora pubblicato contenuti in KORA Commons.'}
+                : 'La tua organizzazione non ha ancora pubblicato contenuti in KORA Space.'}
             </p>
           </div>
         ) : (
@@ -311,7 +311,7 @@ export default async function WorkerCommonsPage() {
         style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16, marginTop: 40 }}
       >
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.6 }}>
-          KORA Commons · Tenant-scoped · Solo contenuti approvati da KORA ·
+          KORA Space · Tenant-scoped · Solo contenuti approvati da KORA ·
           Nessun commento · Nessuna reaction · Nessun read receipt ·
           Mappa: OpenStreetMap · La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale.
         </p>
