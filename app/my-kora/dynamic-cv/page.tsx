@@ -407,10 +407,19 @@ export default function DynamicCV() {
               </button>
             ))}
           </div>
+          <p className="text-[10px] text-[rgba(6,3,43,0.42)] leading-relaxed" data-testid="dynamic-cv-real-share-pointer">
+            Link di condivisione e stampa/PDF sono già disponibili oggi nel tuo Dynamic Impact CV completo →{' '}
+            <Link href="/worker/dynamic-cv" className="underline underline-offset-2 text-[#3B6EBA]">
+              apri il CV completo
+            </Link>
+          </p>
         </div>
 
         {/* Navigation */}
         <div className="flex gap-3 text-xs pt-2 border-t border-[rgba(6,3,43,0.06)]">
+          <Link href="/worker/dynamic-cv" className="text-[rgba(6,3,43,0.55)] hover:text-[rgba(6,3,43,0.80)] underline underline-offset-2" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
+            → Dynamic Impact CV completo
+          </Link>
           <Link href="/worker/workspace" className="text-[rgba(6,3,43,0.55)] hover:text-[rgba(6,3,43,0.80)] underline underline-offset-2" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
             → Spazio operativo
           </Link>

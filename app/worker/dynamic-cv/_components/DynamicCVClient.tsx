@@ -212,7 +212,11 @@ export function DynamicCVClient({ userEmail: _userEmail }: DynamicCVClientProps)
         </p>
         <p style={{ fontSize: 11, color: 'rgba(47,125,85,0.80)', margin: 0, lineHeight: 1.5 }}>
           Questo CV non è una valutazione individuale. Non contiene ranking o confronto con colleghi.
-          Le esperienze derivano dalle attività registrate in KORA.
+          Le esperienze derivano dalla tua partecipazione volontaria alle iniziative KORA Space —{' '}
+          <a href="/worker/commons" style={{ color: '#2F7D55', fontWeight: 600, textDecoration: 'underline' }}>
+            esplora KORA Space
+          </a>{' '}
+          per aggiungerne altre.
         </p>
       </div>
 

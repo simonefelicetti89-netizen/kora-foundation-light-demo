@@ -203,3 +203,29 @@ describe('COMPONENT-TEST-FOUNDATION-01 — BoundaryBadge LIVE state guard', () =
     expect(src).toContain('mode="LIVE"');
   });
 });
+
+// ── 6. Dynamic CV underclaiming/connection guard ──────────────────────────────
+// WORKER-DYNAMIC-CV-UX-01: app/my-kora/dynamic-cv/page.tsx's live branch listed
+// "Link di verifica pubblica" and "Esporta PDF" as "In arrivo" (not yet available),
+// even though the real /worker/dynamic-cv page already has a working share-link
+// (public verification link) and print/PDF-export feature today. This guard locks
+// in the pointer added from the preview page to the real one.
+
+describe('WORKER-DYNAMIC-CV-UX-01 — Dynamic CV underclaiming/connection guard', () => {
+  it('app/my-kora/dynamic-cv/page.tsx live branch points to the real /worker/dynamic-cv page for sharing/export that already works there', () => {
+    const src = readSrc('app/my-kora/dynamic-cv/page.tsx');
+    expect(src).toContain('/worker/dynamic-cv');
+    expect(src).toMatch(/già disponibili oggi/);
+  });
+
+  it('app/worker/dynamic-cv/_components/DynamicCVClient.tsx explicitly connects CV experiences to KORA Space', () => {
+    const src = readSrc('app/worker/dynamic-cv/_components/DynamicCVClient.tsx');
+    expect(src).toContain('KORA Space');
+    expect(src).toContain('/worker/commons');
+  });
+
+  it('does not introduce a visible "KORA Commons" label in either file', () => {
+    expect(readSrc('app/my-kora/dynamic-cv/page.tsx')).not.toContain('KORA Commons');
+    expect(readSrc('app/worker/dynamic-cv/_components/DynamicCVClient.tsx')).not.toContain('KORA Commons');
+  });
+});
