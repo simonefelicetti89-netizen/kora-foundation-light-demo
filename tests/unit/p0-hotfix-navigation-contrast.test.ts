@@ -131,12 +131,17 @@ describe('Sidebar — KORA Commons nav item', () => {
     expect(demoLabGroup?.groupBadge).toBe('SYNTHETIC');
   });
 
-  it('WORKER Prenotazioni and Collettivo remain comingSoon (correctly disabled)', () => {
+  it('WORKER Collettivo remains comingSoon (correctly disabled); Prenotazioni is a real live feature (not disabled)', () => {
+    // UX-DESIGN-SYSTEM-CONSISTENCY-01: /my-kora/bookings has a real live mode
+    // (app/api/worker/commons/bookings, BookingService.listMyBookings) — it was
+    // incorrectly marked comingSoon in a prior sprint. Collective has no live
+    // mode (CollectiveMode = 'checking' | 'empty' | 'demo', no 'live' state)
+    // and correctly remains comingSoon.
     const groups = buildNavGroups('WORKER');
     const allItems = groups.flatMap((g) => g.items);
     const bookings = allItems.find((i) => i.href === '/my-kora/bookings');
     const collective = allItems.find((i) => i.href === '/my-kora/collective');
-    expect(bookings?.comingSoon).toBe(true);
+    expect(bookings?.comingSoon).toBeUndefined();
     expect(collective?.comingSoon).toBe(true);
   });
 });

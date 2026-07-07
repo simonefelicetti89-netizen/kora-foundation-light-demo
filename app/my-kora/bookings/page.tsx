@@ -1,8 +1,9 @@
 'use client';
 // W-05: Prenotazioni — stato delle richieste di partecipazione alle iniziative.
-// Four-state detection: checking / empty / demo (no live booking list yet in FL).
-// Booking → confirm flow is active in the backend (BookingService.markAttended()),
-// but the worker-facing list view requires a live commons feed (post-Gate-2).
+// Four-state detection: checking / live / empty / demo.
+// B166 added a real live path: /api/worker/commons/bookings (BookingService.listMyBookings)
+// returns the worker's own bookings; 'live' mode renders them. 'demo' is shown only
+// when the worker session cannot be confirmed as non-synthetic.
 
 import { useState, useEffect } from 'react';
 import { TOKENS } from '@/lib/design/kora-design-tokens';

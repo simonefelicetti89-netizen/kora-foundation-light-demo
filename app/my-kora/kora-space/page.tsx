@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useRole } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -340,6 +341,9 @@ export default function WorkerKoraSpacePage() {
     return (
       <div style={{ fontFamily: FONT }} data-testid="kora-space-worker">
         <PageHeader />
+        <div style={{ marginBottom: 16 }}>
+          <BoundaryBadge mode="LIVE" variant="light" suffix="· le tue iniziative reali" />
+        </div>
         <OperatingModelNotice />
         <PrivacyNotice />
         <BookingRequestNotice />

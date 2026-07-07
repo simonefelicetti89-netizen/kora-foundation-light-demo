@@ -22,6 +22,7 @@ import type { CommonsPostWorkerView, InitiativeOpeningGrade } from '@/lib/common
 import { OPENING_GRADE_LABELS, OPENING_GRADE_COLORS } from '@/lib/commons/types';
 import { InitiativesMapClient } from '@/components/commons/InitiativesMapClient';
 import { WorkerBookingButton } from '@/components/commons/WorkerBookingButton';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 export const metadata = { title: 'KORA Space · Worker' };
 
@@ -96,6 +97,9 @@ export default async function WorkerCommonsPage() {
 
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 8 }}>
+          <BoundaryBadge mode="LIVE" variant="light" />
+        </div>
         <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#06032B', letterSpacing: '-0.03em', margin: '0 0 8px' }}>
           KORA Space
         </h1>
