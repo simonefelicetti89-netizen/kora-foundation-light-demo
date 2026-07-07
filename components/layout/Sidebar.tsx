@@ -152,13 +152,14 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           {
             href:    isAdminPreview ? '/admin/preview/worker/opportunities' : '/worker/opportunities',
             label:   'Opportunità',
+            description: 'Catalogo partner — informativo, nessuna prenotazione',
             preview: isAdminPreview ? true : undefined,
           },
-          { href: '/my-kora/kora-space', label: 'KORA Space (Anteprima)', preview: true },
-          { href: '/worker/commons',   label: 'KORA Space' },
+          { href: '/my-kora/kora-space', label: 'KORA Space (Anteprima)', description: 'Dati sintetici — non il tuo spazio reale', preview: true },
+          { href: '/worker/commons',   label: 'KORA Commons', description: 'Iniziative e contenuti reali della tua azienda' },
           { href: '/my-kora/kora-link', label: 'My KORA Link' },
-          { href: '/my-kora/bookings', label: 'Prenotazioni', comingSoon: true },
-          { href: '/my-kora/collective', label: 'Collettivo', comingSoon: true },
+          { href: '/my-kora/bookings', label: 'Prenotazioni', description: 'Non ancora disponibile in Foundation Light', comingSoon: true },
+          { href: '/my-kora/collective', label: 'Collettivo', description: 'Non ancora disponibile in Foundation Light', comingSoon: true },
         ],
       },
       {
