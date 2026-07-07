@@ -73,6 +73,7 @@ Five load-bearing facts, stated plainly:
 3. `docs/PILOT_DATA_INTAKE_READINESS.md` §13 — the company-facing checklist for what data to send and what not to send.
 4. `docs/GOLDEN_PATH_RUNBOOK.md` — the operator-run workflow that will process their data.
 5. `docs/privacy-escalation-model.md` — the privacy guarantee specific to their workers' data.
+6. `docs/PILOT_PRIVACY_GOVERNANCE.md` — consolidated pilot privacy governance summary (data visibility, role boundaries, stop conditions).
 
 ## 5. Technical validation map
 
