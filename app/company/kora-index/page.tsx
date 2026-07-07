@@ -467,7 +467,7 @@ export default function KoraIndexDetail() {
               )}
             </div>
             <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
-              Equity & Access Intelligence™ · pre_empirical_calibration · non modifica EQ né KORA Index™ · not_kora_index_component
+              Equity & Access Intelligence™ · pre_empirical_calibration · non modifica EQS né KORA Index™ · not_kora_index_component
             </p>
           </div>
         </div>
@@ -594,7 +594,7 @@ export default function KoraIndexDetail() {
               )}
             </div>
             <p style={{ padding: '8px 14px', fontSize: '10px', color: TOKENS.inkHint, borderTop: TOKENS.cardBorder, fontStyle: 'italic' }}>
-              Evidence Reliability Intelligence™ · pre_empirical_calibration · non modifica CS, VR né KORA Index™ · not_kora_index_component
+              Evidence Reliability Intelligence™ · pre_empirical_calibration · non modifica CS, EVQ né KORA Index™ · not_kora_index_component
             </p>
           </div>
         )}

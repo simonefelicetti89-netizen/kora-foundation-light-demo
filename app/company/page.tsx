@@ -7,10 +7,10 @@ import { useCompanySession } from './_providers/CompanySessionProvider';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 
 const NAV_ITEMS = [
-  { href: '/company/workspace',  label: 'Workspace',                desc: 'Il tuo spazio operativo live.' },
-  { href: '/company/kora-index', label: 'KORA Index™',              desc: 'Scomposizione analitica dei 10 componenti.' },
-  { href: '/company/status',     label: 'Status Center',            desc: 'Stato pipeline, onboarding e prossimi passi.' },
-  { href: '/company/reports',    label: 'Decision Pack',            desc: 'Report board-ready e period comparison.' },
+  { href: '/company/workspace',  label: 'Workspace',                desc: 'Riepilogo operativo del periodo corrente — il tuo riepilogo quotidiano.' },
+  { href: '/company/kora-index', label: 'KORA Index™',              desc: 'Il punteggio in dettaglio: 10 componenti, pesi e calibrazione.' },
+  { href: '/company/status',     label: 'Status Center',            desc: 'A che punto è la pipeline dati — non il punteggio in sé.' },
+  { href: '/company/reports',    label: 'Decision Pack',            desc: 'Report da esportare e condividere — board-ready.' },
   { href: '/company/activation', label: 'Activation Intelligence™', desc: 'Activation Debt e distribuzione pillar.' },
   { href: '/company/financial',  label: 'Budget-to-Human-Impact™',  desc: 'BTI Engine e correlazioni KPI.' },
   { href: '/company/pillars',    label: 'Pillar Analysis',          desc: 'Portfolio programmi sui 5 pillar KORA.' },
@@ -29,7 +29,8 @@ export default function ExecutiveCockpit() {
           {companyName ?? 'Il tuo workspace KORA'}
         </h1>
         <p style={{ fontSize: '13px', color: TOKENS.inkSecondary, lineHeight: 1.55 }}>
-          Sessione live attiva. Seleziona l&apos;area da esplorare — tutti i dati sono reali.
+          Sessione live attiva. Questo è il punto di partenza: da qui puoi raggiungere ogni area.
+          Seleziona l&apos;area da esplorare — tutti i dati sono reali.
         </p>
       </div>
 

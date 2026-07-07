@@ -15,6 +15,10 @@ export function ProvenanceFooter({ methodologyVersionId, calibrationStatus, repo
       calibrationStatus={calibrationStatus}
       period={reportingPeriod}
       variant="footer"
+      // ProvenanceFooter is only used on live company-facing pages (financial,
+      // activation, pillars, kora-index, reports) — never synthetic/demo data.
+      // MethodologyBadge's default (true) is meant for demo/preview contexts.
+      showSynthetic={false}
     />
   );
 }

@@ -89,10 +89,10 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
       {
         heading: 'Command',
         items: [
-          { href: '/company',            label: 'Executive Cockpit' },
-          { href: '/company/status',     label: 'Status Center' },
-          { href: '/company/kora-index', label: 'KORA Index™' },
-          { href: '/company/workspace',  label: 'KORA Workspace' },
+          { href: '/company',            label: 'Executive Cockpit', description: 'Punto di partenza — naviga tutte le aree' },
+          { href: '/company/status',     label: 'Status Center',     description: 'Stato pipeline, onboarding, prossimi passi' },
+          { href: '/company/kora-index', label: 'KORA Index™',       description: 'Punteggio, componenti e calibrazione' },
+          { href: '/company/workspace',  label: 'KORA Workspace',    description: 'Riepilogo del periodo corrente' },
         ],
       },
       {

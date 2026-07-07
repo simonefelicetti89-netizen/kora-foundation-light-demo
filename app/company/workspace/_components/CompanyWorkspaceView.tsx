@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { DataSubmissionSection } from './DataSubmissionSection';
+import { MethodologyBadge } from '@/components/ui/MethodologyBadge';
 import type { KoraIndexHistoryResponse } from '@/app/api/company/kora-index/history/route';
 
 // ── Types ───────────────────────────────────────────────────────────────────────
@@ -271,9 +272,13 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
 
       {/* ── Calibration / status bar ─────────────────────────────────────────── */}
       {w && (
-        <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-4 py-2.5 text-[10.5px] text-amber-700 font-medium">
-          {w.tenant.calibrationStatus.replace(/_/g, ' ')} · {w.tenant.methodologyVersion} · Dati aggregati
-        </div>
+        <MethodologyBadge
+          variant="inline"
+          versionId={w.tenant.methodologyVersion}
+          calibrationStatus={w.tenant.calibrationStatus}
+          note="Dati aggregati"
+          showSynthetic={false}
+        />
       )}
 
       {/* ── Welcome banner — new company with no data yet ─────────────────────── */}
