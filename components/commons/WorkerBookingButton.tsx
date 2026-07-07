@@ -12,6 +12,7 @@
 //   - No worker identity fields in component state.
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface Props {
   postId: string;
@@ -72,6 +73,12 @@ export function WorkerBookingButton({ postId }: Props) {
           La tua richiesta è in attesa di conferma KORA.
           Il tuo nome non è visibile all&apos;organizzatore.
         </p>
+        <Link
+          href="/my-kora/bookings"
+          style={{ fontSize: 9, color: '#2F7D55', fontWeight: 700, textDecoration: 'none', display: 'inline-block', marginTop: 4 }}
+        >
+          Vedi le tue prenotazioni →
+        </Link>
       </div>
     );
   }
