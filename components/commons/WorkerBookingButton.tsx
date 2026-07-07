@@ -71,7 +71,8 @@ export function WorkerBookingButton({ postId }: Props) {
         </span>
         <p style={{ fontSize: 9, color: 'rgba(6,3,43,0.40)', margin: '4px 0 0', fontFamily: FONT, lineHeight: 1.4 }}>
           La tua richiesta è in attesa di conferma KORA.
-          Il tuo nome non è visibile all&apos;organizzatore.
+          Il tuo nome non è visibile all&apos;organizzatore, né al tuo datore di lavoro.
+          Solo segnali aggregati e privacy-safe possono informare gli output KORA — mai la tua attività individuale.
         </p>
         <Link
           href="/my-kora/bookings"

@@ -57,7 +57,8 @@ function PrivacyNotice() {
     >
       <p style={{ fontFamily: FONT, fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.7 }}>
         <strong>Il datore di lavoro non vede il tuo percorso individuale.</strong>{' '}
-        Le tue prenotazioni sono private. La partecipazione confermata può contribuire
+        Le tue prenotazioni sono private e non generano alcuna classifica individuale.
+        La partecipazione confermata può contribuire
         alla tua timeline personale e, in forma aggregata, alla KORA Contribution dell&apos;ecosistema.
       </p>
     </div>
