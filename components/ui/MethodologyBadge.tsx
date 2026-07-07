@@ -9,12 +9,15 @@ interface MethodologyBadgeProps {
   privacyThreshold?: string;
   showSynthetic?:    boolean;
   variant?:          'inline' | 'footer' | 'strip';
+  // Optional short trailing note (e.g. "Dati aggregati") — additive only,
+  // does not change existing callers that omit it.
+  note?:             string;
 }
 
 // Non-suppressible per doc 21b. Appears on every KORA Index surface.
 // variant='strip' for a full-width bar, 'footer' for page footer, 'inline' for inline badge.
 export function MethodologyBadge({
-  versionId, calibrationStatus, period, privacyThreshold = 'N≥10', showSynthetic = true, variant = 'footer',
+  versionId, calibrationStatus, period, privacyThreshold = 'N≥10', showSynthetic = true, variant = 'footer', note,
 }: MethodologyBadgeProps) {
 
   if (variant === 'inline') {
@@ -35,7 +38,7 @@ export function MethodologyBadge({
           letterSpacing: '0.02em',
         }}
       >
-        {calibrationStatus.replace(/_/g, ' ')} · {versionId}
+        {calibrationStatus.replace(/_/g, ' ')} · {versionId}{note ? ` · ${note}` : ''}
       </span>
     );
   }

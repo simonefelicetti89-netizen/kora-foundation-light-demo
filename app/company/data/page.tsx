@@ -46,12 +46,18 @@ export default function DataEvidence() {
           Il dettaglio delle fonti dati e delle evidenze per il tuo tenant sarà visibile qui
           una volta che KORA Admin avrà elaborato il primo batch di dati.
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href="/company/workspace"
             className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.12)] bg-[rgba(6,3,43,0.04)] px-3.5 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.08)] transition-colors"
           >
             ← Torna al Workspace
+          </Link>
+          <Link
+            href="/company/ingestion"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.12)] bg-[rgba(6,3,43,0.04)] px-3.5 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.08)] transition-colors"
+          >
+            Vedi stato del processo di intake →
           </Link>
         </div>
       </div>

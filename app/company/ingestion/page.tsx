@@ -27,12 +27,18 @@ export default function AIIngestionAssistant() {
         <p className="mt-2 text-xs text-[rgba(6,3,43,0.40)]">
           Quando KORA Admin elabora nuovi dati per il tuo tenant, lo stato di attivazione verrà aggiornato nel tuo workspace.
         </p>
-        <div className="mt-4">
+        <div className="mt-4 flex flex-wrap gap-2">
           <Link
             href="/company/workspace"
             className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.12)] bg-[rgba(6,3,43,0.04)] px-3.5 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.08)] transition-colors"
           >
             ← Torna al Workspace
+          </Link>
+          <Link
+            href="/company/data"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[rgba(6,3,43,0.12)] bg-[rgba(6,3,43,0.04)] px-3.5 py-1.5 text-xs font-medium text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.08)] transition-colors"
+          >
+            Vedi stato dati &amp; evidenze →
           </Link>
         </div>
       </div>
