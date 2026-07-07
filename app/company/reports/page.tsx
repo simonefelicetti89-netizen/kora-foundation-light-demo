@@ -58,14 +58,8 @@ export default function Reports() {
         </p>
         <p style={{ fontSize: '12px', color: 'rgba(6,3,43,0.52)', marginTop: 6 }}>
           Completa il processo di intake e scoring per generare il Decision Pack.
+          Il tuo KORA Admin ti aggiornerà quando i dati saranno pronti.
         </p>
-        <a
-          href="/api/company/decision-pack"
-          target="_blank" rel="noopener noreferrer"
-          style={{ display: 'inline-block', marginTop: 16, fontSize: '12px', color: TOKENS.accent, textDecoration: 'underline' }}
-        >
-          Apri Board Pack (struttura demo) →
-        </a>
       </div>
     );
   }

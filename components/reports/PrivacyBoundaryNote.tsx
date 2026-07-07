@@ -51,10 +51,9 @@ export function PrivacyBoundaryNote() {
             <p className="text-[11px] font-bold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Label obbligatorie</p>
             <div className="flex flex-wrap gap-1.5 mt-1">
               {[
-                'synthetic_demo_data',
                 'pre_empirical_calibration',
+                'production_ready: false',
                 'KORA Foundation Light',
-                'not_live_data',
                 'informational_only',
               ].map((tag) => (
                 <span key={tag} className="font-mono text-[10px] rounded border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-1.5 py-0.5 text-[rgba(6,3,43,0.52)]">
