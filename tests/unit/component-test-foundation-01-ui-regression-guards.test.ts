@@ -229,3 +229,37 @@ describe('WORKER-DYNAMIC-CV-UX-01 — Dynamic CV underclaiming/connection guard'
     expect(readSrc('app/worker/dynamic-cv/_components/DynamicCVClient.tsx')).not.toContain('KORA Commons');
   });
 });
+
+// ── 7. Dynamic CV employer visibility / ranking guard ─────────────────────────
+// WORKER-DYNAMIC-CV-REGRESSION-GUARDS-01: neither Dynamic CV surface may ever
+// claim the employer can see the individual worker's CV, or that the CV is a
+// ranking/individual assessment. Not covered by the 3 guards added in
+// WORKER-DYNAMIC-CV-UX-01 (naming/connection-focused, not privacy-focused).
+
+describe('WORKER-DYNAMIC-CV-REGRESSION-GUARDS-01 — Dynamic CV employer visibility / ranking guard', () => {
+  const realCvSrc = readSrc('app/worker/dynamic-cv/_components/DynamicCVClient.tsx');
+  const previewCvSrc = readSrc('app/my-kora/dynamic-cv/page.tsx');
+
+  it('the real Dynamic CV page denies employer visibility', () => {
+    expect(realCvSrc).toContain('Il tuo datore di lavoro non vede questo CV');
+  });
+
+  it('the real Dynamic CV page denies ranking/individual assessment', () => {
+    expect(realCvSrc).toMatch(/non è una valutazione individuale/);
+    expect(realCvSrc).toContain('Non contiene ranking o confronto con colleghi');
+  });
+
+  it('the preview Dynamic CV page denies employer visibility', () => {
+    expect(previewCvSrc).toMatch(/datore di lavoro non (può|possono|ha)/);
+  });
+
+  it('neither page introduces a positive claim that the employer can see/access the individual CV', () => {
+    // Targeted: "datore di lavoro" directly followed by a positive-access verb,
+    // with no negation in between — e.g. "datore di lavoro vede questo CV" would
+    // match; "datore di lavoro non vede questo CV" (the correct, existing
+    // wording) does not, since "non" sits between "lavoro" and "vede".
+    const forbidden = /datore di lavoro (vede|accede|può vedere|può accedere)\b/i;
+    expect(realCvSrc).not.toMatch(forbidden);
+    expect(previewCvSrc).not.toMatch(forbidden);
+  });
+});
