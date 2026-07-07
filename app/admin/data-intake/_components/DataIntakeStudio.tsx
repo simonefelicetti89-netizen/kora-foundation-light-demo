@@ -14,6 +14,7 @@ import { useSearchParams } from 'next/navigation';
 import { PilotOnboardingChecklist } from '@/components/admin/PilotOnboardingChecklist';
 import { MatchReviewPanel, type MatchReviewDecision, type MatchReviewSection } from './MatchReviewPanel';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
+import { assessMappingCoverage } from '@/lib/data-intake/column-mapping';
 
 // ── API response types ─────────────────────────────────────────────────────
 
@@ -624,6 +625,26 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
       {/* B61-B: Pilot checklist — step 3 highlighted */}
       <PilotOnboardingChecklist currentStep={3} compact />
 
+      {/* DATA-INGESTION-UX-01: static operator pre-flight checklist — reference only, no dynamic state */}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
+        <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-2">Prima di accettare il batch — checklist operatore</p>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-[rgba(6,3,43,0.62)] list-none">
+          {[
+            'Azienda/tenant confermato — non è OP-001 o un altro tenant sbagliato',
+            'Periodo di rendicontazione confermato',
+            'Data owner interno confermato (chi ha prodotto il file)',
+            'Mapping colonne rivisto — non solo accettato di default',
+            'Privacy/minimizzazione verificata contro la do-not-send list',
+            'Dry-run rivisto ed esente da errori prima di procedere all’accept',
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-1.5">
+              <span className="text-[rgba(6,3,43,0.28)] mt-0.5">□</span>
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       {/* Task B — page-local step indicator for the live upload flow */}
       <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3">
         <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide mb-2">In questa pagina</p>
@@ -937,6 +958,23 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 Colonne non mappate vengono mantenute con il nome originale.
               </p>
             </div>
+            {(() => {
+              const coverage = assessMappingCoverage(csvResult.mappingSuggestions ?? []);
+              if (!coverage.looksOutdatedTemplate) return null;
+              return (
+                <div className="rounded-lg border border-[rgba(217,154,43,0.30)] bg-[rgba(217,154,43,0.08)] px-3 py-2.5 space-y-1">
+                  <p className="text-[10px] font-bold text-[#8A5A00] uppercase tracking-wide">
+                    ⚠ {coverage.unmatchedCount}/{coverage.total} colonne non riconosciute con sicurezza
+                  </p>
+                  <p className="text-[10px] text-[#8A5A00] leading-relaxed">
+                    Questo file potrebbe usare un template più vecchio o semplificato rispetto allo schema canonico attuale.
+                    Continua solo dopo aver rivisto il mapping riga per riga qui sotto — non accettare il batch finché
+                    dry-run, mapping e controlli privacy non sono puliti. Questo sprint non modifica il template stesso:
+                    la decisione su quale template diventi definitivo resta aperta (vedi <span className="font-mono">docs/PILOT_DATA_INTAKE_READINESS.md</span> §6).
+                  </p>
+                </div>
+              );
+            })()}
             <div className="overflow-x-auto">
               <table className="w-full text-xs border-collapse">
                 <thead>
@@ -1218,6 +1256,14 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
                 e 4 i punti non sono confermati esplicitamente dall&apos;operatore.
               </p>
             </div>
+            <div className="rounded border border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.02)] px-3 py-2 space-y-0.5">
+              <p className="text-[10px] font-semibold text-[rgba(6,3,43,0.52)] uppercase tracking-wide">Promemoria minimizzazione</p>
+              <p className="text-[10px] text-[rgba(6,3,43,0.52)] leading-relaxed">
+                Nessun segreto o credenziale nel file · nessun identificativo diretto non necessario ·
+                dati sensibili o inattesi (es. salute, disciplinari) → interrompi e segnala, non proseguire ·
+                preferisci sempre dati aggregati/minimizzati dove possibile.
+              </p>
+            </div>
             <div className="space-y-2">
               {([
                 [pCheck1, setPCheck1, 'Il file non contiene nomi, cognomi, email, codici fiscali, telefoni o indirizzi.'],
@@ -1243,6 +1289,10 @@ export function DataIntakeStudio({ userEmail, userRole }: Props) {
             <p className="text-[10px] text-[rgba(6,3,43,0.40)]">
               Questo è il primo passaggio che salva dati: da qui in poi il batch esiste ed è visibile in UEF Review.
               Solo file privi di PII / pseudonimizzati possono essere persistiti. Nessuno scoring viene eseguito in questo passaggio.
+              Il server ripete tutti i controlli — il dry-run non viene mai considerato sufficiente da solo.
+            </p>
+            <p className="text-[10px] text-[#9E3B2F]">
+              Se emergono PII inattesi o dati sensibili in questo passaggio, interrompi: non procedere, non tentare di correggere manualmente il file da qui — richiedi un file corretto all&apos;azienda.
             </p>
             {fileType === 'xlsx' && selectedSheet && (
               <p className="text-[10px] text-[#C76F3D] font-medium">📋 Sheet selezionato: <strong>{selectedSheet}</strong></p>

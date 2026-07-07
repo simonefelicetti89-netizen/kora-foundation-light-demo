@@ -293,6 +293,34 @@ export function validateMapping(
 }
 
 /**
+ * Assess how well a set of mapping suggestions covers the current canonical
+ * field set. Used only to power a UI warning when a file's headers look like
+ * they may come from an older/simplified template — does not change matching
+ * behavior or reject anything; classification only, read-only over the
+ * suggestions already produced by suggestColumnMapping().
+ */
+export function assessMappingCoverage(
+  suggestions: ReadonlyArray<{ suggestedField: string | null; confidence: number }>,
+): { total: number; unmatchedCount: number; unmatchedRatio: number; looksOutdatedTemplate: boolean } {
+  const total = suggestions.length;
+  if (total === 0) {
+    return { total: 0, unmatchedCount: 0, unmatchedRatio: 0, looksOutdatedTemplate: false };
+  }
+  const unmatchedCount = suggestions.filter(
+    s => !s.suggestedField || s.confidence < 0.65,
+  ).length;
+  const unmatchedRatio = unmatchedCount / total;
+  return {
+    total,
+    unmatchedCount,
+    unmatchedRatio,
+    // Heuristic only: a meaningful share of unmatched/low-confidence headers
+    // suggests an older or non-canonical template, not a definitive claim.
+    looksOutdatedTemplate: unmatchedRatio >= 0.3,
+  };
+}
+
+/**
  * Apply batch-level manual completion defaults to rows.
  * Only fills fields that are empty/missing — never overwrites existing values.
  * Returns modified rows + list of fields that were filled.
