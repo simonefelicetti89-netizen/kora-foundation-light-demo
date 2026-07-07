@@ -1205,7 +1205,7 @@ export default function UploadPage() {
                     <p className="text-xs text-[rgba(6,3,43,0.62)] mb-3 leading-relaxed">
                       I campi nome, cognome, email, matricola sono ammessi nel Data Pack per la <strong>deduplicazione dei record</strong>.
                       Non devono apparire in nessun output employer.
-                      La pseudonimizzazione tecnica è un requisito di implementazione futura — non ancora attiva in Foundation Light v0.
+                      La pseudonimizzazione tecnica è un requisito di implementazione futura — non ancora attiva in questa fase di Foundation Light.
                     </p>
                     <div className="space-y-2">
                       {sensitiveFlags.filter((f) => f.recommendedAction === 'pseudonymize').map((flag) => (
