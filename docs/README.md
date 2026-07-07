@@ -9,6 +9,7 @@ Quick pointers into `docs/`. This is an index, not a canonical source — see `C
 - **`PILOT_OPERATING_RUNBOOK.md`** — operating procedure for actually running the remaining pilot validation sequence: roles, pre-flight checklist, stop conditions, evidence collection, closeout.
 - **`PILOT_DATA_INTAKE_READINESS.md`** — readiness synthesis for a real pilot company's data intake: field dictionary, do-not-send list, PII guard notes, pre-upload checklist, company-facing data request checklist.
 - **`PILOT_PRIVACY_GOVERNANCE.md`** — pilot privacy governance synthesis: data visibility, role boundaries, PII guard/intake minimization, privacy stop conditions, external-safe summary — documentary, not a legal opinion.
+- **`PILOT_DEMO_SCRIPT.md`** — controlled pilot demo script: audience modes, allowed/forbidden claims, demo flow, stop conditions, Q&A bank — a demo-conversation tool, not a sales deck or live-validation proof.
 - **`STATUS.md`** — current platform status: what's proven, what's not, last-verified commit. Supersedes `archive/PLATFORM_READINESS_SUMMARY.md`/`archive/PLATFORM_READINESS_CHANGELOG.md` as the primary status reference (moved to archive in PILOT-SAAS-01, confirmed historical).
 - `GOLDEN_PATH.md` — golden path readiness status and E2E checkpoint log
 - `QA_STATUS.md` — test coverage and verification checkpoint detail

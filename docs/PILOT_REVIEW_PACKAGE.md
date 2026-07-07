@@ -74,6 +74,7 @@ Five load-bearing facts, stated plainly:
 4. `docs/GOLDEN_PATH_RUNBOOK.md` — the operator-run workflow that will process their data.
 5. `docs/privacy-escalation-model.md` — the privacy guarantee specific to their workers' data.
 6. `docs/PILOT_PRIVACY_GOVERNANCE.md` — consolidated pilot privacy governance summary (data visibility, role boundaries, stop conditions).
+7. `docs/PILOT_DEMO_SCRIPT.md` — controlled demo script for presenting this material live, with allowed/forbidden claims and stop conditions.
 
 ## 5. Technical validation map
 

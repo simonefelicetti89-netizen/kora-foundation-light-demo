@@ -126,7 +126,7 @@ This sprint (`PILOT-GOVERNANCE-01`) is followed by `PILOT-VISIBLE-CLEANUP-01` â€
 
 ## Related canonical docs
 
-`docs/GATE2_STATUS.md`, `docs/STATUS.md`, `docs/QA_STATUS.md`, `docs/PILOT_SAAS_READINESS.md`, `docs/GOLDEN_PATH.md`, `docs/GOLDEN_PATH_RUNBOOK.md`, `docs/CI.md`, `docs/DEPLOY_CHECKLIST.md`, `docs/access-matrix.md`, `docs/API_ROUTE_AUTH_MATRIX.md`, `docs/E2E_GOLDEN_PATH.md`, `docs/E2E_TWO_TENANT_ISOLATION.md`, `docs/privacy-escalation-model.md`.
+`docs/GATE2_STATUS.md`, `docs/STATUS.md`, `docs/QA_STATUS.md`, `docs/PILOT_SAAS_READINESS.md`, `docs/GOLDEN_PATH.md`, `docs/GOLDEN_PATH_RUNBOOK.md`, `docs/CI.md`, `docs/DEPLOY_CHECKLIST.md`, `docs/access-matrix.md`, `docs/API_ROUTE_AUTH_MATRIX.md`, `docs/E2E_GOLDEN_PATH.md`, `docs/E2E_TWO_TENANT_ISOLATION.md`, `docs/privacy-escalation-model.md`, `docs/PILOT_DEMO_SCRIPT.md` (controlled demo script for presenting this governance status live).
 
 **Document version:** v1.0
 **Created:** 2026-07-06 (PILOT-GOVERNANCE-01)

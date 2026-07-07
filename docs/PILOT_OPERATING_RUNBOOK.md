@@ -179,6 +179,7 @@ Next roadmap step: [name]
 - `docs/PILOT_REVIEW_PACKAGE.md` — reviewer-facing entry point: executive overview, evidence matrix, do-not-claim boundaries, external sharing guidance.
 - `docs/PILOT_GOVERNANCE.md` — canonical governance index: proven/scaffolded/blocked/deferred status, the authoritative final validation sequence.
 - `docs/PILOT_PRIVACY_GOVERNANCE.md` — consolidated pilot privacy governance summary: data visibility, role boundaries, PII guard/intake minimization, privacy stop conditions.
+- `docs/PILOT_DEMO_SCRIPT.md` — controlled pilot demo script: audience modes, allowed/forbidden claims, demo flow, demo stop conditions (distinct from this runbook's validation-session stop conditions).
 - `docs/GOLDEN_PATH_RUNBOOK.md` — manual, step-by-step KORA_ADMIN UI walkthrough for the golden path itself (upload → UEF → scoring → Decision Pack).
 - `docs/PILOT_INTAKE_PROTOCOL.md` — how to onboard a real pilot company, from contract signature to live KORA Index.
 - `docs/DEPLOY_CHECKLIST.md` — manual pre/post-deploy checklist for any deploy a pilot company could be affected by.
