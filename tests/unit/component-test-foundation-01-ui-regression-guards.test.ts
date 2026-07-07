@@ -142,6 +142,13 @@ describe('COMPONENT-TEST-FOUNDATION-01 — WorkerBookingButton success next-step
     expect(linkIndex).toBeGreaterThan(bookedBranchStart);
     expect(linkIndex).toBeLessThan(duplicateBranchStart);
   });
+
+  it('success state clarifies individual booking activity is not shown to the employer, only aggregate signals', () => {
+    // KORA-SPACE-ACTIVATION-FEEDBACK-UX-01: the booked state previously only
+    // reassured about the initiative organizer, not the employer specifically.
+    expect(buttonSrc).toContain('né al tuo datore di lavoro');
+    expect(buttonSrc).toMatch(/segnali aggregati/i);
+  });
 });
 
 // ── 4. KORA Space journey copy guard ──────────────────────────────────────────
