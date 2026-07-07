@@ -212,6 +212,7 @@ Before any pilot-facing privacy review or data-handling step:
 - `docs/PILOT_GOVERNANCE.md` — canonical pilot governance index: proven/scaffolded/blocked/deferred status, final validation sequence.
 - `docs/E2E_TWO_TENANT_ISOLATION.md` — what `T01`/`T02` prove, why COMPANY_B currently blocks them, explicit "not run live" statement.
 - `docs/E2E_GOLDEN_PATH.md` — what `GD01` proves, required env vars, known gaps, explicit "never executed live" statement.
+- `docs/PILOT_DEMO_SCRIPT.md` — controlled demo script for presenting this privacy governance material live, including its own §11 external-safe summary reused there.
 
 ---
 
