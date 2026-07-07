@@ -404,7 +404,7 @@ export default async function WorkerWorkspacePage() {
               data-testid="workspace-trace-bookings-link"
               style={{ fontSize: 12, fontWeight: 600, color: '#3B6EBA', textDecoration: 'none' }}
             >
-              Prenotazioni &amp; partecipazioni →
+              Prenotazioni &amp; partecipazioni <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(59,110,186,0.65)' }}>(anteprima)</span> →
             </a>
             <a
               href="/my-kora/personal-impact-balance"

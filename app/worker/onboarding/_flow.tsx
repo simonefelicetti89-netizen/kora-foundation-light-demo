@@ -241,7 +241,7 @@ function Step3CosaVediTu({ onBack, onNext }: { onBack: () => void; onNext: () =>
           'Il tuo storico personale di partecipazione',
           'Il tuo profilo privato per pillar (visibile solo a te)',
           'Le tue note personali (mai visibili all\'azienda)',
-          'In futuro: Dynamic Impact CV e opportunità partner (quando disponibili)',
+          'Il tuo Dynamic Impact CV e la rete partner — disponibili nel tuo spazio',
         ].map(t => <PrivacyChip key={t} text={t} positive={true} />)}
       </div>
 
