@@ -339,7 +339,7 @@ export default function Bookings() {
       >
         <p style={{ fontSize: '13px', color: TOKENS.inkHint, lineHeight: 1.6, margin: 0 }}>
           {mode === 'live'
-            ? 'Vai a KORA Commons per scoprire nuove iniziative e prenotare la partecipazione.'
+            ? 'Vai a KORA Space per scoprire nuove iniziative e prenotare la partecipazione.'
             : mode === 'empty'
             ? 'Le tue prenotazioni KORA Space appariranno qui dopo la conferma da parte dell\'admin.'
             : 'Il flusso prenotazioni non è attivo in Foundation Light. Richiesta e conferma partecipazione si abilitano nelle fasi successive del pilot.'}

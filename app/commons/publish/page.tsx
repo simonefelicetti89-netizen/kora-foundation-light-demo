@@ -346,7 +346,7 @@ export default function PublishPage() {
           marginBottom: 10,
           display:      'block',
         }}>
-          ← KORA Commons
+          ← KORA Space
         </Link>
         <h1 style={{
           fontWeight:    800,

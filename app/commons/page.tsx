@@ -375,7 +375,7 @@ export default function CommonsPage() {
         <span style={{ fontSize: 11, color: 'rgba(6,3,43,0.55)', lineHeight: 1.5 }}>
           Questa è una rete dimostrativa pre-launch con dati sintetici. Il layer live si attiverà
           quando le prime organizzazioni pilota pubblicheranno iniziative reali.
-          KORA Space e KORA Commons aziendali (nella sidebar) usano già dati reali per il tuo tenant.
+          KORA Space aziendale (nella sidebar) usa già dati reali per il tuo tenant.
         </span>
       </div>
 
@@ -390,7 +390,7 @@ export default function CommonsPage() {
             lineHeight:    1.06,
             margin:        0,
           }}>
-            KORA Commons
+            KORA Space
           </h1>
           <span style={{
             fontSize:      10,
@@ -425,10 +425,10 @@ export default function CommonsPage() {
         <span style={{ fontSize: 18, lineHeight: 1, marginTop: 1 }}>⚠</span>
         <div>
           <p style={{ fontWeight: 700, fontSize: 12.5, color: '#06032B', margin: 0 }}>
-            KORA Commons non è un social network.
+            KORA Space non è un social network.
           </p>
           <p style={{ fontSize: 12, color: 'rgba(6,3,43,0.55)', margin: '4px 0 0 0', lineHeight: 1.5 }}>
-            Non ci sono like, commenti, follower o feed algoritmici. KORA Commons è uno spazio per opportunità di attivazione umana: ogni iniziativa deve rispondere alla domanda {'"quale opportunità di crescita, impatto o connessione esiste?"'}. Il lavoratore rimane sovrano sui propri dati.
+            Non ci sono like, commenti, follower o feed algoritmici. KORA Space è uno spazio per opportunità di attivazione umana: ogni iniziativa deve rispondere alla domanda {'"quale opportunità di crescita, impatto o connessione esiste?"'}. Il lavoratore rimane sovrano sui propri dati.
           </p>
         </div>
       </div>
