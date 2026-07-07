@@ -158,7 +158,7 @@ This is the production export path on Vercel Hobby.
 5. **PDF signing / watermarking** — cryptographic signature for board-ready document integrity
 6. **Vercel Hobby hardening** — dedicated PDF microservice or cloud HTML-to-PDF (Gotenberg, WeasyPrint) if Hobby tier is required
 7. **Localization** — full Italian language for all template text (currently mixed IT/EN)
-8. **10-component breakdown** — add KORA Index v3 full component table to PDF
+8. ~~10-component breakdown~~ — **already implemented**: the full 10-component table (AR, MAR, EVQ, INT, CONT, EQW, EQS, PC, PB, CS) renders from persisted `kora_index_result` data in `lib/decision-pack/html-template.ts`. Component code/label consistency with the current methodology naming (superseded codes NI/VR/CO/WB/EQ) was corrected in KORA-INDEX-METHODOLOGY-CONSISTENCY-FIX-01. Not yet exercised against a real live-tenant PDF render — see `docs/E2E_GOLDEN_PATH.md`.
 9. **Audit event** — `decision_pack.pdf_generated` event (currently TODO, documented below)
 
 ---

@@ -1026,7 +1026,7 @@ export function buildDecisionPackHtml(data: PdfData): string {
         <span class="toc-num">4</span>
         <div style="flex:1;">
           <div class="toc-label">Diagnostic Components</div>
-          <div class="toc-sub">I 10 componenti diagnostici: AR, MAR, NI, VR, CO, WB, PC, PB, EQ, BTI.</div>
+          <div class="toc-sub">I 10 componenti diagnostici: AR, MAR, EVQ, INT, CONT, EQW, EQS, PC, PB, CS.</div>
         </div>
       </div>
       <div class="toc-row">
@@ -1180,7 +1180,7 @@ ${buildExecutiveBriefPage(data)}
     ${macroblocks && macroblocks.length === 4 ? (() => {
       const MB_DESC: Record<string, { desc: string; cardClass: string; color: string }> = {
         REACH:   { desc: "Misura quanto l'attivazione raggiunge la popolazione aziendale. Combina Activation Rate (reach complessivo) e Meaningful Activation Rate (segnale primario — esclude economic relief).", cardClass: 'mb-card-reach',   color: '#06032B' },
-        QUALITY: { desc: "Misura la profondità e la qualità dell'attivazione. Combina intensità normalizzata (NI), verification rate (VR) e continuità cross-periodo (CO).", cardClass: 'mb-card-quality', color: '#059669' },
+        QUALITY: { desc: "Misura la profondità e la qualità dell'attivazione. Combina intensità normalizzata (INT), evidence quality (EVQ) e continuità cross-periodo (CONT).", cardClass: 'mb-card-quality', color: '#059669' },
         EQUITY:  { desc: "Misura la distribuzione dell'attivazione sui 5 pillar KORA. Combina Pillar Coverage (PC — quanti pillar attivi) e Pillar Balance (PB — quanto equilibrata la distribuzione).", cardClass: 'mb-card-equity',  color: '#6156F5' },
         BTI:     { desc: "Misura l'efficienza del budget people. Budget-to-Human-Impact: quota di welfare convertita in attivazione profonda vs economic relief vs compliance blocked.", cardClass: 'mb-card-bti',    color: '#d97706' },
       };
@@ -1240,17 +1240,17 @@ ${buildExecutiveBriefPage(data)}
 
     ${components && components.length > 0 ? (() => {
       const COMP_DESC: Record<string, string> = {
-        AR:  'Activation Rate — share of workforce con almeno un IU approvato nel periodo',
-        MAR: 'Meaningful Activation Rate — share con IU sopra soglia materialità (segnale primario)',
-        NI:  'Normalized Intensity — intensità media IU per worker attivo',
-        VR:  'Verification Rate — share IU sostenuta da evidenza verificata o parzialmente verificata',
-        CO:  'Continuity — share workers con engagement cross-periodo sostenuto',
-        WB:  'Worker Balance — distribuzione IU tra workers attivi (equità individuale)',
-        PC:  'Pillar Coverage — numero pillar con presenza significativa (su 5 totali)',
-        PB:  'Pillar Balance — equità distribuzione IU tra pillar coperti',
-        EQ:  "Equity — equità distributiva dell'attivazione tra segmenti workforce (≥N10)",
-        BTI: 'Budget-to-Human-Impact — efficienza budget welfare → attivazione profonda',
-        CS:  'Confidence Score — qualità e completezza dati. Esterno al KORA Index (peso = 0)',
+        AR:   'Activation Rate — share of workforce con almeno un IU approvato nel periodo',
+        MAR:  'Meaningful Activation Rate — share con IU sopra soglia materialità (segnale primario)',
+        INT:  'Normalized Intensity — intensità media IU per worker attivo, normalizzata sul target',
+        EVQ:  'Evidence Quality — solidità e verificabilità delle fonti evidenza per IU approvate',
+        CONT: 'Continuity — share workers con engagement cross-periodo sostenuto',
+        EQW:  'Equity Workers — distribuzione IU tra workers attivi (equità individuale, Gini-based)',
+        PC:   'Pillar Coverage — numero pillar con presenza significativa (su 5 totali)',
+        PB:   'Pillar Balance — equità distribuzione IU tra pillar coperti',
+        EQS:  'Equity Segments — equità del tasso di attivazione tra dipartimenti/sedi (N≥10)',
+        BTI:  'Budget-to-Human-Impact — efficienza budget welfare → attivazione profonda',
+        CS:   'Confidence Score — qualità e completezza dati. Esterno al KORA Index (peso = 0)',
       };
       const nonExternal = components.filter(c => !c.external);
       const external    = components.filter(c => c.external);
@@ -1287,7 +1287,7 @@ ${buildExecutiveBriefPage(data)}
     <div style="margin-top:12pt;padding:9pt 14pt;background:#fffbeb;border:1px solid #fde68a;border-radius:4pt;font-size:8pt;color:#92400e;line-height:1.5;">
       <strong>CS = Confidence Score</strong> è un indicatore esterno al KORA Index v1.0 (peso = 0). Non entra nel calcolo.
       Viene mostrato affianco al KORA Index come indicatore di affidabilità dei dati sottostanti.
-      EQ = Equity misura equità distributiva tra segmenti workforce — non include equità tra individui.
+      EQS = Equity Segments misura l'equità del tasso di attivazione tra segmenti workforce (dipartimenti/sedi) — l'equità tra singoli lavoratori è misurata separatamente da EQW (Equity Workers).
     </div>
     `;
     })() : `
@@ -1815,7 +1815,7 @@ ${buildExecutiveBriefPage(data)}
       </div>
       <div class="fg-kpi">
         <div class="fg-kpi-val">${pibAggregation.wbEstimate !== null ? pibAggregation.wbEstimate.toFixed(3) : '—'}</div>
-        <div class="fg-kpi-label">WB Gini${pibAggregation.wbEstimate === null ? ' (n/d — aggregate model)' : ''}</div>
+        <div class="fg-kpi-label">EQW Gini${pibAggregation.wbEstimate === null ? ' (n/d — aggregate model)' : ''}</div>
       </div>
       <div class="fg-kpi">
         <div class="fg-kpi-val">${pibAggregation.workforceCount}</div>
@@ -1846,7 +1846,7 @@ ${buildExecutiveBriefPage(data)}
       <strong>AG-01 — Mandatory Intermediate Layer:</strong> questo strato garantisce che il KORA Index
       non venga calcolato direttamente da aggregati aziendali bypassando il PIB individuale.
       In v0.1 (aggregate_estimate): AR/MAR derivati dal motore di attivazione (bounded reach).
-      Il WB Gini è null — richiede distribuzione PIB individuale.
+      L'EQW Gini è null — richiede distribuzione PIB individuale.
       PIB individuale: <strong>mai visibile al datore di lavoro</strong> (D-04 / privacy constitutional rule).
       ${pibAggregation.estimationBasis === 'aggregate_estimate' ? `
       <span style="color:#d97706;font-weight:600;">estimation_basis=aggregate_estimate</span> ·
@@ -1886,7 +1886,7 @@ ${buildExecutiveBriefPage(data)}
     <div class="ev-tier-grid">
       <div class="ev-tier">
         <div class="ev-tier-label">Misurato</div>
-        <div class="ev-tier-val" style="color:#059669;">AR · MAR · VR · WB</div>
+        <div class="ev-tier-val" style="color:#059669;">AR · MAR · EVQ · EQW</div>
         <div class="ev-tier-sub">calcolato dal motore KORA su dati verificati</div>
       </div>
       <div class="ev-tier">
@@ -2601,7 +2601,7 @@ ${(iuSummary || enrichment) ? (() => {
   <div style="border-top:1px solid #eaebf4;padding-top:10pt;font-size:6.5pt;color:#9899b3;line-height:1.6;">
     Evidence Intelligence™ è un indicatore metodologico KORA Foundation Light.
     Non modifica il KORA Index™ né la formula IU™.
-    EV factor è una componente della formula IU — il suo miglioramento può aumentare il Verification Rate (VR).
+    EV factor è una componente della formula IU — il suo miglioramento può contribuire a migliorare l'Evidence Quality (EVQ).
     Data Reliability Index™ è esterno al KORA Index™ (peso = 0): sempre mostrato affianco come indicatore di affidabilità.
     Aggregate only — nessun dato individuale lavoratore · pre_empirical_calibration · not_kora_index_component: true
   </div>
@@ -2693,7 +2693,7 @@ ${(() => {
 
   <div style="border-top:1pt solid #eaebf4;padding-top:9pt;font-size:6.5pt;color:#9899b3;line-height:1.6;">
     Activation Opportunity Engine™ — regole deterministiche · no AI · no LLM · no previsioni · no claim ROI.
-    Le opportunità sono derivate dai segnali KORA (AR, MAR, EQ, VR, CO, NI, Pillar Distribution, Confidence Score).
+    Le opportunità sono derivate dai segnali KORA (AR, MAR, EVQ, INT, CONT, EQS, Pillar Distribution, Confidence Score).
     Non modificano il KORA Index™ né alcuna formula metodologica.
     KORA Foundation Light · pre_empirical_calibration · not_kora_index_component: true
   </div>
