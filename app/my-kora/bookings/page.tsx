@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
+import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -156,6 +157,9 @@ export default function Bookings() {
       {/* Live bookings list */}
       {mode === 'live' && (
         <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 10 }}>
+            <BoundaryBadge mode="LIVE" variant="light" />
+          </div>
           <p style={{ fontSize: 11, fontWeight: 700, color: TOKENS.ink, margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Le tue prenotazioni ({liveBookings.length})
           </p>

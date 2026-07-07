@@ -125,7 +125,8 @@ export default async function WorkerCommonsPage() {
         <span style={{ fontSize: 14, lineHeight: 1.2, flexShrink: 0 }}>&#128274;</span>
         <p style={{ fontSize: 12, color: '#2F7D55', margin: 0, lineHeight: 1.6 }}>
           KORA Space mostra contenuti approvati per il tuo tenant e iniziative aperte alla rete.
-          La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale.
+          La partecipazione è sempre volontaria e non genera classifiche individuali.
+          La tua visualizzazione non viene mostrata al datore di lavoro come dato individuale — l&apos;azienda vede solo segnali aggregati.
         </p>
       </div>
 
@@ -230,6 +231,11 @@ export default async function WorkerCommonsPage() {
                       che inviava application/x-www-form-urlencoded mentre l'API richiede JSON. */}
                   {grade === 'cross_company' && (
                     <WorkerBookingButton postId={initiative.id} />
+                  )}
+                  {grade !== 'cross_company' && (
+                    <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.35)', margin: '4px 0 0', lineHeight: 1.4 }}>
+                      Iniziativa informativa, pubblicata dalla tua azienda — non richiede prenotazione in KORA Space.
+                    </p>
                   )}
                 </article>
               );
