@@ -22,7 +22,7 @@ import {
   guardBaseUrl,
 } from './helpers/env';
 import { ROLE_HOME } from './helpers/roles';
-import { loginViaUI, assertReachedWorkspace, getPrimaryHeadingText } from './helpers/auth';
+import { loginViaUI, assertReachedWorkspace, getTenantIdentity } from './helpers/auth';
 
 test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
 
@@ -63,6 +63,11 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
   });
 
   test('A04 · COMPANY_A e COMPANY_B non condividono lo stesso contesto tenant', async ({ browser }) => {
+    // Two sequential logins, each followed by a real wait for the tenant
+    // identity fetch to settle (not a fixed sleep) — needs more headroom
+    // than the 30s file-level default.
+    test.setTimeout(60_000);
+
     const guard = guardBaseUrl();
     test.skip(guard.blocked, guard.reason);
 
@@ -81,15 +86,29 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
 
       await loginViaUI(pageA, credsA!);
       await assertReachedWorkspace(pageA, ROLE_HOME.COMPANY);
-      const nameA = await getPrimaryHeadingText(pageA);
+      const identityA = await getTenantIdentity(pageA);
 
       await loginViaUI(pageB, credsB!);
       await assertReachedWorkspace(pageB, ROLE_HOME.COMPANY);
-      const nameB = await getPrimaryHeadingText(pageB);
+      const identityB = await getTenantIdentity(pageB);
 
-      expect(nameA, 'nome tenant COMPANY_A non deve essere vuoto').not.toEqual('');
-      expect(nameB, 'nome tenant COMPANY_B non deve essere vuoto').not.toEqual('');
-      expect(nameA, 'COMPANY_A e COMPANY_B non devono mostrare lo stesso nome tenant').not.toEqual(nameB);
+      // Prefer tenant code — STAGE-001 vs STAGE-002 — as it's a more stable
+      // identity signal than the display name.
+      const valueA = identityA.tenantCode ?? identityA.companyName;
+      const valueB = identityB.tenantCode ?? identityB.companyName;
+
+      expect(valueA, 'identità tenant COMPANY_A non deve essere vuota').not.toEqual('');
+      expect(valueB, 'identità tenant COMPANY_B non deve essere vuota').not.toEqual('');
+      expect(valueA, 'COMPANY_A e COMPANY_B non devono condividere lo stesso contesto tenant').not.toEqual(valueB);
+
+      if (credsA!.tenantCode && identityA.tenantCode) {
+        expect(identityA.tenantCode, 'tenant code COMPANY_A non corrisponde a E2E_COMPANY_A_TENANT_CODE')
+          .toEqual(credsA!.tenantCode);
+      }
+      if (credsB!.tenantCode && identityB.tenantCode) {
+        expect(identityB.tenantCode, 'tenant code COMPANY_B non corrisponde a E2E_COMPANY_B_TENANT_CODE')
+          .toEqual(credsB!.tenantCode);
+      }
     } finally {
       await contextA.close();
       await contextB.close();
