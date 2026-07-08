@@ -4,6 +4,8 @@
 **Related:** `tests/e2e/golden-admin-company.spec.ts` (`G01`/`G02` — reachability-only, no data pipeline), `tests/e2e/authenticated-smoke.spec.ts` (`A01`–`A04` — login/routing fixtures)
 **Introduced:** GOLDEN-E2E-02/03 (2026-07-04); extended GOLDEN-E2E-04 (PILOT-E2E-GOLDEN-PATH-01, 2026-07-06)
 
+> **Update:** as of 2026-07-09, `GD01` has been run live against staging, with explicit founder approval, and passed. See [Live staging validation log](#live-staging-validation-log) below. The "Known gaps" section below (and its "never yet executed" framing) describes the state prior to that run and is kept for historical context.
+
 ## What this proves
 
 `GD01` drives the real commercial golden path through the actual UI, against a real (non-Production) staging environment, as one authenticated KORA_ADMIN session followed by a separate COMPANY_ADMIN session:
@@ -67,14 +69,56 @@ Every authenticated E2E file in this repo (`authenticated-smoke.spec.ts`, `golde
 
 ## Known gaps
 
-- **Never yet executed against real staging with real credentials.** This is the central finding of this sprint: `GD01` is fully implemented and has been statically verified (`npx tsc --noEmit` clean; `npx playwright test --list` correctly registers the one test with no execution) — see `docs/GOLDEN_PATH.md`'s checkpoint log, still marked "Not run via fixture." It has not been run because no `E2E_*` credentials or staging environment access were available in the environment this sprint was executed in. This is disclosed here rather than glossed over — no execution result is claimed.
-- COMPANY_B tenant does not exist in staging (a provisioning gap tracked separately), so no two-tenant isolation proof exists yet via an authenticated E2E — see the recommended next sprint below.
+- **Never yet executed against real staging with real credentials, as of this section's original writing (2026-07-06).** See the [Live staging validation log](#live-staging-validation-log) below for the 2026-07-09 live run, which supersedes this bullet. This is disclosed here rather than glossed over — no execution result was claimed at the time this section was written.
+- COMPANY_B tenant does not exist in staging (a provisioning gap tracked separately), so no two-tenant isolation proof exists yet via an authenticated E2E — see the recommended next sprint below. **Update:** COMPANY_B has since been provisioned and `T01`/`T02` have been run live and passed — see `docs/E2E_TWO_TENANT_ISOLATION.md`.
 - Decision Pack PDF: since no live-flow UI button links to `/api/admin/decision-pack/pdf`, this test calls it directly via API rather than a UI click. If the PDF runtime is unavailable in the target staging environment (expected on constrained hosts, see `lib/decision-pack/pdf-strategy.ts`), the test accepts the documented `501` fallback as a pass — this is intentional, not a lowered bar; the alternative would be inventing a UI interaction that doesn't exist in the golden path today.
 - `tests/unit/b103-golden-path.test.ts` — despite its name — only asserts static files exist; it does not call the real API or drive the UI and must not be cited as functional golden-path coverage (see `docs/QA_STATUS.md`).
 
 ## Relation to the pilot-readiness roadmap
 
-This closes the gap `docs/GOLDEN_PATH.md` and `docs/QA_STATUS.md` both flagged as "implemented but not yet run live" going into this sprint. The remaining pilot-readiness gaps this doc does **not** close: running `GD01` live at least once against staging (requires credentials/access not available to this sprint), and proving two-tenant isolation through an authenticated E2E once a `COMPANY_B` tenant is provisioned (`PILOT-TWO-TENANT-ISOLATION-01`, recommended next).
+This closes the gap `docs/GOLDEN_PATH.md` and `docs/QA_STATUS.md` both flagged as "implemented but not yet run live" going into this sprint. The remaining pilot-readiness gaps this doc does **not** close, as of this section's original writing: running `GD01` live at least once against staging, and proving two-tenant isolation through an authenticated E2E once a `COMPANY_B` tenant is provisioned. Both have since happened — see the [Live staging validation log](#live-staging-validation-log) below and `docs/E2E_TWO_TENANT_ISOLATION.md`.
+
+## Live staging validation log
+
+### 2026-07-09 — staging (Vercel remote, non-production data), run once with explicit founder approval
+
+- **Environment:** Vercel remote deployment backed by staging/non-production data, targeted via the operator's configured `E2E_BASE_URL` (value not printed in docs, commits, or chat — see `docs/testing-e2e-auth.md`).
+- **Target tenant:** the disposable/synthetic staging `COMPANY_A` tenant that `E2E_COMPANY_A_TENANT_CODE` points at (documented elsewhere in this repo, e.g. `docs/PILOT_OPERATING_RUNBOOK.md`, as tenant `STAGE-001`) — never a real client's tenant.
+- **Scope:** this is live staging validation only. It is **not** a Production validation.
+- **Command:** `npx playwright test tests/e2e/golden-data-bearing.spec.ts -g "GD01" --reporter=list`
+- **Result:** passed — 1 passed, 0 failed, 0 skipped — duration 31.3s
+
+**Pipeline steps validated by this run:**
+
+- KORA_ADMIN login (real `/login` form)
+- CSV upload of the golden-path fixture (`data/golden-path/kora_golden_path_upload.csv`)
+- Dry-run validation
+- Source batch created and accepted
+- UEF review reached, UEF candidates generated
+- UEF candidates bulk-approved
+- Scoring run executed
+- KORA Index result produced (non-empty value)
+- Confidence Score produced
+- Activation Safeguard status produced (CLEAR/WARNING/FLAGGED)
+- Decision Pack generated (HTML preview with canonical `KORA Foundation Light` / `KORA Index v1.0` / `pre_empirical_calibration` labels; PDF endpoint returned either a real PDF or its documented `501` fallback)
+- COMPANY_ADMIN visibility confirmed in a separate session (`/company/workspace`, `/company/kora-index`)
+- Privacy/worker-level-identifier smoke check passed on both company-facing pages
+
+**Data mutation note:** this run created new `source_batch`, UEF, `kora_index_result`, and Decision Pack rows on the target staging tenant. This is the test's documented, intentional behavior (see "MUTATION WARNING" in `tests/e2e/golden-data-bearing.spec.ts`), not a side effect. **No automatic cleanup exists or was performed** — the created rows remain on the staging tenant.
+
+**Explicitly NOT claimed by this entry:**
+
+- Production readiness is not claimed.
+- Production validation is not claimed.
+- GDPR compliance or certification is not claimed.
+- Real customer data processing is not claimed — synthetic fixture data on a disposable staging tenant only.
+- Empirical validation of scoring is not claimed — methodology remains `pre_empirical_calibration`; this proves the pipeline executes end-to-end and produces the canonical outputs, not that scoring values are methodologically validated.
+- Full pilot readiness is not claimed.
+
+**Outstanding governance gates (per `docs/PILOT_GOVERNANCE.md` §16), still not covered by this entry:**
+
+- RLS-06's live direct-Postgres control run.
+- Credential cleanup (explicitly deferred until the end of the roadmap).
 
 **Document version:** v1.0
 **Created:** 2026-07-06 (PILOT-E2E-GOLDEN-PATH-01)
