@@ -32,6 +32,41 @@ export async function getPrimaryHeadingText(page: Page): Promise<string> {
   return (await heading.textContent())?.trim() ?? '';
 }
 
+export interface TenantIdentity {
+  tenantCode: string | null;
+  companyName: string;
+}
+
+/**
+ * Reads the company workspace's tenant identity once it has actually loaded.
+ * The heading renders a '…' placeholder while the workspace fetch is in
+ * flight, so waiting only for visibility (as getPrimaryHeadingText does) can
+ * race the fetch and return the placeholder for every tenant. This waits on
+ * the tenant-code test id — which the app only renders after load — as the
+ * settle signal, falling back to the heading clearing the placeholder if no
+ * tenant code is present.
+ */
+export async function getTenantIdentity(page: Page): Promise<TenantIdentity> {
+  const codeLocator = page.getByTestId('company-tenant-code');
+  const nameLocator = page.getByTestId('company-tenant-name');
+
+  const codeAppeared = await codeLocator
+    .waitFor({ state: 'visible', timeout: 15_000 })
+    .then(() => true)
+    .catch(() => false);
+
+  if (codeAppeared) {
+    const tenantCode = (await codeLocator.textContent())?.trim() ?? null;
+    const companyName = (await nameLocator.textContent())?.trim() ?? '';
+    return { tenantCode, companyName };
+  }
+
+  await expect(nameLocator, 'nome tenant non deve restare bloccato sul placeholder di caricamento')
+    .not.toHaveText('…', { timeout: 15_000 });
+  const companyName = (await nameLocator.textContent())?.trim() ?? '';
+  return { tenantCode: null, companyName };
+}
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

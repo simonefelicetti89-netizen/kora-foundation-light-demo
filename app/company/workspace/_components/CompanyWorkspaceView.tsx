@@ -233,11 +233,11 @@ export function CompanyWorkspaceView({ userEmail, userRole }: Props) {
           <p className="text-xs font-semibold tracking-widest uppercase text-[#C76F3D] mb-1">
             KORA · Workspace Aziendale
           </p>
-          <h1 className="text-xl font-bold text-white tracking-tight">
+          <h1 className="text-xl font-bold text-white tracking-tight" data-testid="company-tenant-name">
             {wsLoading ? '…' : (w?.tenant.companyName ?? 'La tua organizzazione')}
           </h1>
           {!wsLoading && w?.tenant.tenantCode && (
-            <p className="text-xs text-white/35 mt-0.5 font-mono">{w.tenant.tenantCode}</p>
+            <p className="text-xs text-white/35 mt-0.5 font-mono" data-testid="company-tenant-code">{w.tenant.tenantCode}</p>
           )}
           <p className="text-sm text-white/45 mt-1">
             Vista aggregata · nessun dato individuale
