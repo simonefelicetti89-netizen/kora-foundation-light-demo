@@ -2,7 +2,9 @@
 
 **Test file:** `tests/e2e/two-tenant-isolation.spec.ts` (tests `T01`, `T02`)
 **Related:** `tests/e2e/authenticated-smoke.spec.ts` (`A03`/`A04` — login/tenant-name reachability, blocked on COMPANY_B), `tests/e2e/golden-admin-company.spec.ts` (`G01`/`G02` — reachability + privacy smoke), `tests/integration/rls-two-tenant-negative.test.ts` (RLS-03 — DB-level tenant isolation, direct Postgres, already merged)
-**Introduced:** PILOT-TWO-TENANT-ISOLATION-01 (2026-07-06), test infrastructure only — **not run live**
+**Introduced:** PILOT-TWO-TENANT-ISOLATION-01 (2026-07-06), test infrastructure only — not run live at introduction
+
+> **Update:** as of 2026-07-09, COMPANY_B has been provisioned in staging and `T01`/`T02` have been run live and passed. See [Live staging validation log](#live-staging-validation-log) below. The narrative in the sections immediately below describes the state at introduction (2026-07-06) and is kept for historical context; it no longer reflects current provisioning status.
 
 ## What this is meant to prove
 
@@ -58,6 +60,44 @@ This directly targets the blocker `docs/PILOT_SAAS_READINESS.md` lists first ("P
 
 This file is the missing third leg: a live, authenticated, real-session, real-HTTP proof — once COMPANY_B exists.
 
-## Explicit statement
+## Explicit statement (at introduction, 2026-07-06)
 
 **This test has not been run live. It cannot be, until `COMPANY_B` is provisioned and its credentials are supplied via `E2E_COMPANY_B_*`.** No live pass is claimed anywhere in this document or in the test file itself. Local validation performed this sprint was limited to: `npx tsc --noEmit`, `npm test`, `npm run build`, and `npx playwright test --list` (confirms the tests register correctly and would skip, not execute).
+
+This statement has since been superseded — see the live validation log below.
+
+## Live staging validation log
+
+### 2026-07-09 — staging (Vercel remote, non-production data)
+
+- **Environment:** Vercel remote deployment backed by staging/non-production data, targeted via the operator's configured `E2E_BASE_URL` (per repo convention, the value itself is not printed in docs, commits, or chat — see `docs/testing-e2e-auth.md`).
+- **Scope:** this is live staging validation only. It is **not** a Production validation.
+
+**Tests run and result:**
+
+| Test | Result |
+|---|---|
+| `authenticated-smoke.spec.ts` `A01` (KORA_ADMIN login) | passed |
+| `authenticated-smoke.spec.ts` `A02` (COMPANY_A login) | passed |
+| `authenticated-smoke.spec.ts` `A03` (COMPANY_B login) | passed |
+| `authenticated-smoke.spec.ts` `A04` (UI tenant-separation smoke) | passed |
+| `two-tenant-isolation.spec.ts` `T01` | passed |
+| `two-tenant-isolation.spec.ts` `T02` | passed |
+
+**What was observed:**
+
+- COMPANY_A and COMPANY_B logins both succeeded, each in its own browser context.
+- Rendered UI tenant identity (name and code) was distinct between the COMPANY_A and COMPANY_B sessions.
+- Server-side API tenant context (`/api/company/workspace`) was distinct between the two sessions (`tenantCode`, `companyName`, `id` all disjoint).
+- Client-supplied foreign tenant query parameters (`tenantId`, `tenant_id`, `tenantCode`, `tenant_code`, `companyId`, `company_id`) had no effect on which tenant's data was returned to the COMPANY_A session.
+- No worker-level identifiers were observed in either session's rendered page or API response.
+
+**Explicitly NOT claimed by this entry:**
+
+- Golden data-bearing validation (`GD01`) has not been run.
+- This is not a Production readiness or Production validation claim.
+- No GDPR compliance or certification claim is made.
+- No claim that real customer data has been processed — staging/non-production data only.
+- No claim of full pilot readiness — this covers login and two-tenant isolation only.
+
+**Next gate:** golden data-bearing staging validation (`GD01`), which requires an explicit `E2E_GOLDEN_DATA_BEARING_ALLOW_RUN` opt-in (see `tests/e2e/helpers/env.ts#isGoldenDataBearingRunAllowed()`) and has not been run as part of this validation.
