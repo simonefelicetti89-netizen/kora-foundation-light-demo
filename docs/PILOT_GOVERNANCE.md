@@ -104,6 +104,20 @@ These are the specific overclaiming traps this repo's own docs have already flag
 
 A credential cleanup topic exists and is **explicitly deferred until the end of the roadmap**. It is not in scope for `PILOT-GOVERNANCE-01` or any prior sprint referenced in this doc, and must not be started opportunistically inside an unrelated sprint. Any future session encountering credential-adjacent work should treat it as blocked-until-explicitly-scheduled, not as a task to fold in.
 
+**Final rotation plan (recorded 2026-07-09 — status: planned, not executed).** `A02`, COMPANY_B provisioning, `A03`/`A04`, `T01`/`T02`, `GD01`, and RLS-06's live run are all complete per this doc's own entries above, so the roadmap gate for starting credential cleanup (end of §16's sequence) is reached. This entry records the agreed plan only — no rotation has been performed.
+
+- **Cleanup type:** staging Supabase Auth password rotation only (no other environment, no other credential type).
+- **Accounts in scope (rotate password, keep account):** `kora-admin@staging.kora.internal`, `company-admin@staging.kora.internal`, the COMPANY_B admin account referenced by `E2E_COMPANY_B_EMAIL`.
+- **Explicitly out of scope:** `simone.felicetti.kora@gmail.com` — not to be touched.
+- **Actions:** rotate password only; keep account, role, and tenant binding unchanged; update local env files manually after rotation; verify old password rejected and new password accepted (boolean pass/fail only); document the result after execution with no values.
+- **Not included:** user deletion, session revocation, Production credentials, local Supabase credentials, or any credential value in docs/chat/logs/commits.
+- **Rotation mechanism:** Supabase Studio Dashboard Auth UI on the staging project — founder/operator enters new passwords directly; no password value is to pass through a terminal, chat, log, doc, or PR.
+- **Post-rotation env update:** `.env.e2e.local` (`E2E_KORA_ADMIN_PASSWORD`, `E2E_COMPANY_A_PASSWORD`, `E2E_COMPANY_B_PASSWORD`), updated manually. Whether `.env.staging.passwords.local` stores any of these under different variable names must be checked (name-only) before deciding whether it also needs a manual update.
+- **Stop conditions:** any secret would be printed; target Supabase project is not staging; target account is ambiguous; `E2E_COMPANY_B_EMAIL` cannot be safely resolved; local env update target is ambiguous. Any of these halts the step — see `docs/PILOT_OPERATING_RUNBOOK.md` §7 for the general form.
+- **Exact approval sentence required before execution:**
+  > "I approve executing the credential cleanup step now: rotate passwords (keep accounts) for kora-admin@staging.kora.internal, company-admin@staging.kora.internal, and the COMPANY_B admin account referenced by E2E_COMPANY_B_EMAIL, on the staging Supabase project only. Do not touch simone.felicetti.kora@gmail.com, do not revoke sessions, do not delete any user."
+- **Claim boundary for this entry:** this is a plan record only. Do not cite this entry as proof credential cleanup executed, as production readiness, as production validation, as GDPR compliance/certification, or as full pilot readiness — none of those are claimed here.
+
 ## 16. Final validation sequence (not yet executed — this is the intended order)
 
 1. Run `A02` (COMPANY_A) against local dev, then Production, using the existing fixture — no new code needed.
