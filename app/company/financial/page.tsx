@@ -186,7 +186,7 @@ export default function FinancialGovernanceLive() {
             'Nessun PIB individuale — tutti i valori sono aggregati sopra soglia privacy (≥10 lavoratori).',
             'Correlazione ≠ causalità — le variazioni KPI osservate non sono attribuibili a KORA.',
             'KORA non garantisce ROI, riduzione assenteismo, retention o engagement.',
-            'EQ = Equity (equità distributiva dell\'attivazione) — non Evidence Quality.',
+            'EQS/EQW = Equity (equità distributiva dell\'attivazione) — non Evidence Quality (EVQ).',
           ].map((note) => (
             <li key={note} style={{ display: 'flex', gap: 8, fontSize: '11.5px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
               <span style={{ flexShrink: 0, marginTop: 2, color: TOKENS.inkHint }}>·</span>
@@ -244,7 +244,7 @@ export default function FinancialGovernanceLive() {
         >
           <span style={{ fontWeight: 600, color: TOKENS.ink }}>Nota metodologica: </span>
           Il punteggio BTI (macroblocco al 20%) è calcolato dal motore BTI,
-          non dai valori dei componenti analitici AR, MAR, NI, VR, CO, WB, PC, PB, EQ.
+          non dai valori dei componenti analitici AR, MAR, EVQ, INT, CONT, EQW, EQS, PC, PB.
         </div>
       </div>
 

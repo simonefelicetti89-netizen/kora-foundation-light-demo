@@ -180,16 +180,16 @@ export default function Activation() {
           size="md"
         />
         <KPICard
-          code="CO"
-          label="Continuity Rate"
+          code="CONT"
+          label="Continuity"
           value={pct(aggregate.continuity_rate)}
           status={aggregate.continuity_rate >= 0.40 ? 'positive' : aggregate.continuity_rate >= 0.25 ? 'warning' : 'critical'}
           period="Engagement sostenuto"
           size="md"
         />
         <KPICard
-          code="VR"
-          label="Verification Rate"
+          code="EVQ"
+          label="Evidence Quality"
           value={pct(aggregate.verification_rate)}
           status={aggregate.verification_rate >= 0.60 ? 'positive' : aggregate.verification_rate >= 0.40 ? 'warning' : 'critical'}
           period="Evidenze verificate"
@@ -208,7 +208,7 @@ export default function Activation() {
           compact
         />
         <Explainer
-          what="VR è la quota di Impact Units supportata da evidenza verificata o parziale."
+          what="EVQ è la quota di Impact Units supportata da evidenza verificata o parziale."
           how="Più basso = Confidence Score™ più basso. <60% è area critica."
           compact
         />

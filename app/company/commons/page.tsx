@@ -283,7 +283,7 @@ export default async function CompanyCommonsPage() {
       {/* Privacy footer — non-suppressible */}
       <div style={{ borderTop: '1px solid rgba(6,3,43,0.06)', paddingTop: 16, marginTop: 20 }}>
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.6 }}>
-          KORA Space · B128 · Tenant-scoped · Moderation-first ·
+          KORA Space · Tenant-scoped · Moderation-first ·
           Nessun dato individuale worker esposto. Nessun analytics di lettura individuale.
           I contenuti pubblicati sono visibili ai worker solo dopo approvazione KORA.
         </p>
