@@ -1,10 +1,17 @@
--- supabase/proposed/032_contribution_atomic_attribution.sql
+-- supabase/proposed/037_contribution_atomic_attribution.sql
 -- PROPOSED MIGRATION — NOT APPLIED TO ANY DATABASE.
 -- Purpose: atomic KORA Contribution attribution for cross-company bookings.
 --
--- NUMBERING: was previously proposed as 026 — renumbered to 032 to avoid conflict
--- with applied migration 026_company_route_rls_gaps.sql. Last applied migration
--- in forward pipeline: 031_revoke_public_execute_uef_definer_functions.sql.
+-- NUMBERING: was previously proposed as 026 — renumbered to 032 (2026-06-24) to
+-- avoid conflict with applied migration 026_company_route_rls_gaps.sql.
+-- Renumbered again to 037 (B173-FIX-01) because active migrations
+-- 032_network_schema_grants.sql and 033_personal_worker_identity_service_role_grant.sql
+-- were applied on 2026-07-09, reusing 032/033 without checking this directory.
+-- 034/035/036 are already reserved by the proposed KORA Link migrations, so 037
+-- is the next free number across both supabase/migrations/ and supabase/proposed/.
+-- Before promoting this file (or any proposed file) into supabase/migrations/,
+-- re-check BOTH directories for the next free number — do not assume either
+-- directory alone reflects the full reserved range.
 --
 -- PROBLEM (C-9): attributeContributionForBooking() in lib/commons/cross-company-attribution.ts
 -- writes 2 rows to commons.contribution_event sequentially without a transaction wrapper.

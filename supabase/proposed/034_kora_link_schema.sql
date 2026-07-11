@@ -1172,7 +1172,8 @@ COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
 -- [RESOLVED TODO-CTO-01] FK policy on tenant_id/worker_id (no FK across schema
 --   boundaries): CONFIRMED as the v1 pattern, not just Engineering-provisional.
 --   Rationale: this is not a one-off shortcut — it is the same pattern already
---   used in supabase/proposed/033_initiative_adoption_source_model.sql
+--   used in supabase/proposed/038_initiative_adoption_source_model.sql
+--   (renumbered from 033 by B173-FIX-01 — active migration 033 now exists)
 --   (adopting_company_tenant_id/origin_company_tenant_id/partner_id: no FK;
 --   initiative_id, an in-schema reference to commons.post: has an FK). The
 --   convention is consistent: FK within the same schema (batch_id → link_batches,
