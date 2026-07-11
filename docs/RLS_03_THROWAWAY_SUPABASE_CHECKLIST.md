@@ -126,10 +126,11 @@ RLS03_ADMIN_PASSWORD=
   `035_kora_link_rls.sql`, `036_kora_link_rpc_functions.sql` exist in the
   repo but are outside `supabase/migrations/` and outside canonical scope —
   KORA Link is frozen; these must never be applied to the throwaway project.
-- `supabase/proposed/032_contribution_atomic_attribution.sql` and
-  `033_initiative_adoption_source_model.sql` are also proposed-only
-  (Gate 3 OPEN, not applied to any database) and are unrelated to tenant
-  isolation — do not apply them either.
+- `supabase/proposed/037_contribution_atomic_attribution.sql` and
+  `038_initiative_adoption_source_model.sql` (renumbered from 032/033 by
+  B173-FIX-01 — active migrations now occupy those numbers) are also
+  proposed-only (Gate 3 OPEN, not applied to any database) and are unrelated
+  to tenant isolation — do not apply them either.
 - **Migrations 022, 026, 027, 030, 031** — per the RLS-03A preflight
   findings, these are written but **not applied to production**, and 022/026/027
   are not applied anywhere at all (per their own file-header comments). On a
