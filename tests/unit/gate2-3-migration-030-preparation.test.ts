@@ -415,13 +415,30 @@ describe('gate2-3-030 — secrets hygiene', () => {
   });
 });
 
-// ── 18. Migration inventory: 028 + 030 + 031, 029 quarantined ───────────────
+// ── 18. Migration inventory: contiguous numbering, 029 quarantined ─────────
+// Not a frozen file count — new migrations are expected to land over time.
+// What must always hold: no duplicate migration numbers, no unexplained gaps
+// in the sequence other than the deliberately quarantined 029, and 030 present.
 
 describe('gate2-3-030 — migration file count', () => {
-  it('supabase/migrations/ now has 30 files (028 + 030 + 031, 029 quarantined)', () => {
+  function migrationNumbers(): number[] {
     const { readdirSync } = require('fs');
     const files = readdirSync(resolve(root, 'supabase/migrations')).filter((f: string) => f.endsWith('.sql'));
-    expect(files.length).toBe(30);
+    return files
+      .map((f: string) => parseInt(f.split('_')[0], 10))
+      .sort((a: number, b: number) => a - b);
+  }
+
+  it('supabase/migrations/ numbering has no duplicates', () => {
+    const numbers = migrationNumbers();
+    expect(new Set(numbers).size).toBe(numbers.length);
+  });
+
+  it('supabase/migrations/ numbering is contiguous from 001 to the highest file, with only the known 029 gap', () => {
+    const numbers = migrationNumbers();
+    const highest = numbers[numbers.length - 1];
+    const expected = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => n !== 29);
+    expect(numbers).toEqual(expected);
   });
 
   it('029 is still NOT in supabase/migrations/', () => {
