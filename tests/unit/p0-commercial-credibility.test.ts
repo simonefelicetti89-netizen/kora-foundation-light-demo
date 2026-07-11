@@ -344,17 +344,22 @@ describe('P0-4 — KORA Space commercial credibility', () => {
 // ── Regression guards ─────────────────────────────────────────────────────────
 
 describe('Regression — constraints from sprint', () => {
-  it('Migration directory contains expected files (001–028 + 030 + 031; 029 quarantined)', () => {
-    // Gate 2.3: migration 030 (UEF admin access hardening) + 031 (PUBLIC EXECUTE hardening) added.
+  it('Migration directory contains expected files (contiguous numbering; 029 quarantined)', () => {
+    // Not a frozen upper bound — later gates legitimately add further migrations
+    // beyond 031 (e.g. 032, 033). What must always hold: no duplicate numbers,
+    // no unexplained gaps other than the deliberately quarantined 029.
     // 029 remains quarantined in supabase/rollback/ — not in migrations/.
     const { readdirSync } = require('fs');
     const migFiles = readdirSync(resolve(ROOT, 'supabase/migrations'))
       .filter((f: string) => f.endsWith('.sql'))
       .sort();
-    const lastMig = migFiles[migFiles.length - 1];
-    const migNumber = parseInt(lastMig.split('_')[0], 10);
-    expect(migNumber).toBeLessThanOrEqual(31);
-    expect(migFiles.length).toBe(30); // 001–028 + 030 + 031 (029 quarantined)
+    const migNumbers = migFiles
+      .map((f: string) => parseInt(f.split('_')[0], 10))
+      .sort((a: number, b: number) => a - b);
+    expect(new Set(migNumbers).size).toBe(migNumbers.length); // no duplicate numbering
+    const highest = migNumbers[migNumbers.length - 1];
+    const expectedNumbers = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => n !== 29);
+    expect(migNumbers).toEqual(expectedNumbers); // contiguous except the known 029 gap
   });
 
   it('Existing Gate 2 external review doc still exists', () => {

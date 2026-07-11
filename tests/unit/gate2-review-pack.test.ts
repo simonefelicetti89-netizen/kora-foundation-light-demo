@@ -231,9 +231,31 @@ describe('Gate 2 review pack — migration files unchanged', () => {
     expect(stat?.isDirectory()).toBe(true);
   });
 
-  it('30 migration files are present (029 quarantined; 030 + 031 added by Gate 2.3)', () => {
+  it('the Gate 2 reviewed migration set (001–028, 030, 031) is still present, none removed or renamed', () => {
+    // Not a frozen directory count — later gates legitimately add further
+    // migrations (e.g. 032, 033). This only guards that the specific set
+    // reviewed at Gate 2 was never silently removed or renamed afterward.
     const { readdirSync } = require('fs');
-    const files = readdirSync(migrationDir).filter((f: string) => f.endsWith('.sql'));
-    expect(files.length).toBe(30);
+    const files: string[] = readdirSync(migrationDir).filter((f: string) => f.endsWith('.sql'));
+    const presentNumbers = new Set(files.map((f) => parseInt(f.split('_')[0], 10)));
+
+    const reviewedNumbers = [...Array.from({ length: 28 }, (_, i) => i + 1), 30, 31];
+    for (const n of reviewedNumbers) {
+      expect(presentNumbers.has(n)).toBe(true);
+    }
+  });
+
+  it('029 remains quarantined — not present in supabase/migrations/', () => {
+    const { readdirSync } = require('fs');
+    const files: string[] = readdirSync(migrationDir).filter((f: string) => f.endsWith('.sql'));
+    const presentNumbers = new Set(files.map((f) => parseInt(f.split('_')[0], 10)));
+    expect(presentNumbers.has(29)).toBe(false);
+  });
+
+  it('supabase/migrations/ numbering has no duplicates', () => {
+    const { readdirSync } = require('fs');
+    const files: string[] = readdirSync(migrationDir).filter((f: string) => f.endsWith('.sql'));
+    const numbers = files.map((f) => parseInt(f.split('_')[0], 10)).sort((a, b) => a - b);
+    expect(new Set(numbers).size).toBe(numbers.length);
   });
 });

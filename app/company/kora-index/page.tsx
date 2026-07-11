@@ -186,7 +186,9 @@ export default function KoraIndexDetail() {
   // ── Equity & Access Intelligence™ ────────────────────────────────────────
   // department_activation already filtered at N≥10 server-side.
   // Sprint 1: EQ→EQS (Equity Segments). Use EQW when available (Pilot+), else EQS.
-  const eqValue      = output.components.find((c) => c.code === 'EQS' || c.code === 'EQW')?.value ?? 0;
+  const eqComponent  = output.components.find((c) => c.code === 'EQS' || c.code === 'EQW');
+  const eqValue      = eqComponent?.value ?? 0;
+  const eqCode       = eqComponent?.code ?? 'EQS';
   const equityAccess = equityAccessIntelligenceService.compute(aggregate ?? null, eqValue, koraRole, undefined);
 
   // ── Evidence Reliability Intelligence™ ───────────────────────────────────
@@ -417,7 +419,7 @@ export default function KoraIndexDetail() {
                 </span>
               )}
               <span style={{ fontSize: '10px', fontWeight: 500, background: 'rgba(6,3,43,0.05)', color: TOKENS.inkHint, borderRadius: 4, padding: '2px 8px' }}>
-                EQ = {Math.round(equityAccess.eqValue * 100)}%
+                {eqCode} = {Math.round(equityAccess.eqValue * 100)}%
               </span>
             </div>
             <div style={{ padding: '1rem 1.25rem' }}>

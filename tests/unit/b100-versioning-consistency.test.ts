@@ -341,3 +341,40 @@ describe('KORA-INDEX-METHODOLOGY-CONSISTENCY-FIX-01 — Decision Pack component 
     expect(html).toContain('Equity Segments — equità del tasso di attivazione tra dipartimenti/sedi');
   });
 });
+
+// ── 10. LABEL-SWEEP-01 — superseded component codes on company-facing pages ────
+// Regression guard: extends KORA-INDEX-METHODOLOGY-CONSISTENCY-FIX-01 coverage
+// (which only checked lib/decision-pack/html-template.ts) to the company-facing
+// pages found still carrying pre-Sprint-1 codes during the LABEL-SWEEP-01 census.
+
+describe('LABEL-SWEEP-01 — company-facing component code consistency', () => {
+  it('activation page uses canonical CONT/EVQ, not superseded CO/VR', () => {
+    const src = readSrc('app/company/activation/page.tsx');
+    expect(src).toContain('code="CONT"');
+    expect(src).toContain('code="EVQ"');
+    expect(src).not.toContain('code="CO"');
+    expect(src).not.toContain('code="VR"');
+    expect(src).not.toMatch(/\bVR è la quota di Impact Units\b/);
+  });
+
+  it('financial page does not use bare "EQ" or the stale 9-code legend', () => {
+    const src = readSrc('app/company/financial/page.tsx');
+    expect(src).not.toContain("'EQ = Equity");
+    expect(src).not.toContain('AR, MAR, NI, VR, CO, WB, PC, PB, EQ');
+    expect(src).toContain('AR, MAR, EVQ, INT, CONT, EQW, EQS, PC, PB');
+  });
+
+  it('kora-index detail page renders the resolved EQS/EQW code, not a bare "EQ" label', () => {
+    const src = readSrc('app/company/kora-index/page.tsx');
+    expect(src).not.toContain('EQ = {Math.round(equityAccess.eqValue');
+    expect(src).toContain('{eqCode} = {Math.round(equityAccess.eqValue');
+  });
+
+  it('commons page privacy footer does not leak the internal B128 sprint code', () => {
+    // Scoped to the rendered footer string only — a `// B128:` file-header
+    // comment is fine (internal, not user-visible); only rendered JSX text matters.
+    const src = readSrc('app/company/commons/page.tsx');
+    expect(src).toContain('KORA Space · Tenant-scoped · Moderation-first ·');
+    expect(src).not.toContain('KORA Space · B128 ·');
+  });
+});
