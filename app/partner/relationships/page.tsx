@@ -238,6 +238,12 @@ export default function PartnerRelationshipsPage() {
       </p>
 
       <p style={{ fontSize: 12, color: TOKENS.inkHint, margin: 0 }}>
+        <Link href="/partner/activity-bookings" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+          Richieste e prenotazioni attività — stesso principio, per le Attività Partner →
+        </Link>
+      </p>
+
+      <p style={{ fontSize: 12, color: TOKENS.inkHint, margin: 0 }}>
         <Link href="/partner/initiatives" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
           ← Torna a Iniziative
         </Link>
