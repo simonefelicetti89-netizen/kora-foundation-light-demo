@@ -6,6 +6,26 @@
 
 ---
 
+## PARTNER-ECOSYSTEM-MODEL-01 — Align Initiatives vs Partner Activities
+
+**Data:** 2026-07-12
+**Tipo:** Allineamento concettuale/prodotto — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione CTO/DPO/fiscale/legale presa, nessun catalogo o booking reale costruito. Dettaglio completo in `docs/PARTNER_ECOSYSTEM_MODEL_01.md`.
+
+Segue l'audit read-only `PARTNER-ECOSYSTEM-MODEL-RO`, che ha rilevato un sistema KORA Space/Contribution maturo (`commons.post` → `commons.booking` → `commons.contribution_event`) e una collisione di naming reale su "iniziativa" tra tre superfici scollegate. Questo sprint formalizza la distinzione prima di costruire un catalogo:
+
+- Creato `docs/PARTNER_ECOSYSTEM_MODEL_01.md` — definisce la Corsia A (KORA Space/Contribution Initiatives, esistente e maturo) e la Corsia B (Partner Activity Catalog/KORA Index Activities, futura e non implementata), il registro delle collisioni di naming, il naming raccomandato, e le decisioni umane ancora pendenti (nessuna risolta qui).
+- Aggiunta `/admin/partner-ecosystem-model` — mappa di allineamento in sola lettura per KORA_ADMIN: modello a due corsie, stato attuale (cosa esiste/mock/non esiste), flow map di entrambe le corsie, guardia di naming, confine privacy, prossime opzioni di implementazione.
+- Chiarito il copy di `/partner/initiatives`: ora si presenta esplicitamente come "Proposte Partner", distinta sia dalle iniziative KORA Space già pubblicate (`commons.post`) sia dal futuro catalogo di attività partner. Nessuna modifica funzionale, nessun rename di route.
+- Aggiunta una voce di navigazione admin "Partner Ecosystem Model" sotto "Network & Content", accanto a Partner Map/KORA Space Moderation/Worker Initiatives.
+
+Creato `tests/unit/partner-ecosystem-model-01.test.ts` (22 assertion statiche): esistenza route, distinzione delle due corsie, output dichiarati (Contribution vs KORA Index), invarianti privacy, stato "futuro/non implementato" del catalogo, riferimento alla pipeline commons.post/booking/contribution esistente, nessun import Supabase/RPC/env, nessun feature flag, nessuna decisione DPO/CTO/fiscale/legale marcata come presa, copy di `/partner/initiatives` aggiornato, voce di navigazione, e invarianti 034/035/036/self-select/company-SELECT.
+
+**Nessun file toccato fuori da `app/admin/partner-ecosystem-model/page.tsx`, il copy di `app/partner/initiatives/page.tsx`, `lib/navigation/admin-nav-groups.ts`, il nuovo test file, e i due doc.** `commons.post`, `commons.booking`, `commons.contribution_event`, il calcolo del KORA Index, e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro allineamento concettuale, non tocca schema, RLS, RPC o governance reale.
+
+---
+
 ## GOVERNANCE-UI-01 — Platform Governance/DPO Surface
 
 **Data:** 2026-07-12
