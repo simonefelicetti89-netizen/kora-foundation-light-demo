@@ -1,5 +1,5 @@
 /**
- * KORA-LINK-S3A — RLS 035 / RPC 036 static review.
+ * KORA-LINK-S3A/S3B — RLS 035 / RPC 036 static review.
  *
  * Companion to tests/unit/kora-link-schema034-review.test.ts (which guards
  * 034/035/036 cross-file consistency from the KL-19 review pass) and
@@ -11,6 +11,15 @@
  * REVOKE ALL FROM PUBLIC before GRANT) on all 6 functions in 036 plus
  * is_kora_admin() in 035, and that service_role now has the grants it needs
  * (the gap this sprint closed — see 032/033 for the bug shape this prevents).
+ *
+ * KORA-LINK-S3B (2026-07-12, comment/docs-only) added the guards at the
+ * bottom of this file: the stale "future company aggregate view"
+ * (v_batch_stats / v_tenant_batch_stats — never built, inconsistently named
+ * between 034 and 035) is corrected to point at the already-implemented
+ * fn_company_link_status_aggregate RPC, any remaining historical sketch is
+ * clearly marked as such, and the 4 genuine Gate 3 (DPO/legal) BLOCKER items
+ * in 034 remain present and clearly marked — this file does not resolve or
+ * weaken any of them.
  *
  * Static/structural only — reads source text, does not run against a
  * database, does not apply anything. See docs/KORA_LINK_GATE_REPORT.md.
@@ -344,5 +353,122 @@ describe('KORA-LINK-S3A — header wording still declares these files proposed a
   it('036 header documents the KORA-LINK-S3A amendment without claiming Gate 2/3 closure', () => {
     expect(sql036).toMatch(/Amended:\s+KORA-LINK-S3A/);
     expect(sql036).toMatch(/does NOT close\s*\n?--\s*Gate 2 or Gate 3/);
+  });
+});
+
+// ── 13. No stale, unmarked "future aggregate view" references (KORA-LINK-S3B) ─
+
+describe('KORA-LINK-S3B — stale aggregate-view wording is corrected or clearly historical', () => {
+  it('034: every v_batch_stats mention is paired with a HISTORICAL/superseded marker nearby', () => {
+    const matches = [...sql034.matchAll(/v_batch_stats/g)];
+    expect(matches.length).toBeGreaterThan(0);
+    for (const m of matches) {
+      const idx = m.index ?? 0;
+      const window = sql034.slice(Math.max(0, idx - 600), idx + 100);
+      expect(window).toMatch(/HISTORICAL|superseded|do not create this view/i);
+    }
+  });
+
+  it('035: every v_tenant_batch_stats mention is paired with a HISTORICAL/superseded/never-built marker nearby', () => {
+    const matches = [...sql035.matchAll(/v_tenant_batch_stats/g)];
+    expect(matches.length).toBeGreaterThan(0);
+    for (const m of matches) {
+      const idx = m.index ?? 0;
+      const window = sql035.slice(Math.max(0, idx - 600), idx + 300);
+      expect(window).toMatch(/HISTORICAL|superseded|do not create this view|never built|never created/i);
+    }
+  });
+
+  it('034 and 035 both point the reader at fn_company_link_status_aggregate as the real implementation', () => {
+    expect(sql034).toMatch(/fn_company_link_status_aggregate/);
+    expect(sql035).toMatch(/fn_company_link_status_aggregate/);
+  });
+
+  it('034 and 035 both explicitly say no company-facing direct table SELECT policy exists or is planned', () => {
+    // SQL comment lines wrap at ~80 chars with a "-- " prefix per line, so
+    // match across that wrap by normalizing comment prefixes/whitespace
+    // before asserting on the sentence as a whole.
+    const normalize = (src: string) =>
+      src
+        .split('\n')
+        .map((line) => line.replace(/^\s*--\s?/, ''))
+        .join(' ')
+        .replace(/\s+/g, ' ');
+    expect(normalize(sql034)).toMatch(/No company-facing direct table SELECT policy exists or is planned/i);
+    expect(normalize(sql035)).toMatch(/No direct company table SELECT policy exists here or is planned/i);
+  });
+});
+
+// ── 14. fn_company_link_status_aggregate is the canonical company interface ─
+
+describe('KORA-LINK-S3B — fn_company_link_status_aggregate is the sole company aggregate interface', () => {
+  it('036 defines exactly one company-facing aggregate function', () => {
+    const companyFacingFns = [...sql036.matchAll(/CREATE OR REPLACE FUNCTION kora_link\.(\w+)/g)]
+      .map((m) => m[1])
+      .filter((name) => name.toLowerCase().includes('company'));
+    expect(companyFacingFns).toEqual(['fn_company_link_status_aggregate']);
+  });
+
+  it('no other proposed file defines a company-facing table or view', () => {
+    expect(sql034).not.toMatch(/^CREATE (TABLE|VIEW) IF NOT EXISTS kora_link\.\w*company\w*/m);
+    expect(sql035).not.toMatch(/^CREATE (TABLE|VIEW)/m);
+  });
+});
+
+// ── 15. Company direct SELECT absent; worker self-select inactive (re-confirmed) ─
+
+describe('KORA-LINK-S3B — re-confirms the two Gate 4 boundaries S3B did not touch', () => {
+  it('still no active policy scoped to COMPANY_ADMIN in 035', () => {
+    const activePolicyBlocks = sql035
+      .split('\n')
+      .filter((line) => !line.trim().startsWith('--'))
+      .join('\n');
+    expect(activePolicyBlocks).not.toMatch(/CREATE POLICY[\s\S]{0,300}COMPANY_ADMIN/);
+  });
+
+  it('still no active kl_assignments_worker_self_select policy', () => {
+    expect(sql035).not.toMatch(/^CREATE POLICY "kl_assignments_worker_self_select"/m);
+  });
+});
+
+// ── 16. Gate 3 BLOCKER items remain present and clearly marked, untouched ──
+
+describe('KORA-LINK-S3B — Gate 3 (DPO/legal) BLOCKER items remain unresolved and clearly marked', () => {
+  const GATE_3_BLOCKERS = [
+    'BLOCKER TODO-CTO-05 / GATE-3',
+    'BLOCKER TODO-DPO-01 / GATE-3',
+    'BLOCKER TODO-DPO-02 / GATE-3',
+    'BLOCKER TODO-DPO-03 / GATE-3',
+  ] as const;
+
+  for (const blocker of GATE_3_BLOCKERS) {
+    it(`034 still contains "${blocker}"`, () => {
+      expect(sql034).toContain(blocker);
+    });
+  }
+
+  it('none of the 4 Gate 3 BLOCKER items are marked RESOLVED', () => {
+    for (const blocker of GATE_3_BLOCKERS) {
+      const idx = sql034.indexOf(blocker);
+      expect(idx).toBeGreaterThan(-1);
+      const line = sql034.slice(Math.max(0, idx - 20), idx);
+      expect(line).not.toMatch(/RESOLVED/);
+    }
+  });
+
+  it('TODO-RLS-04 and TODO-RLS-05 in 035 are updated but explicitly not marked as resolving Gate 4', () => {
+    const idx04 = sql035.indexOf('[TODO-RLS-04]');
+    const idx05 = sql035.indexOf('[TODO-RLS-05]');
+    expect(idx04).toBeGreaterThan(-1);
+    expect(idx05).toBeGreaterThan(-1);
+    expect(sql035.slice(idx04, idx04 + 500)).toMatch(/UPDATED by KORA-LINK-S3B/);
+    expect(sql035.slice(idx05, idx05 + 700)).toMatch(/UPDATED by KORA-LINK-S3B/);
+    // Tolerate the SQL comment line-wrap ("-- " prefix per line) between words.
+    expect(sql035.slice(idx05, idx05 + 700)).toMatch(/decision, not an engineering\s*\n?--\s*gap/);
+  });
+
+  it('consent_version and privacy-threshold TODOs in 036 remain open (not resolved by S3A/S3B)', () => {
+    expect(sql036).toMatch(/\[TODO-RPC-03\] fn_activate_link_for_worker: consent_version whitelist\./);
+    expect(sql036).toMatch(/\[TODO-RPC-04\] fn_company_link_status_aggregate: privacy threshold\./);
   });
 });

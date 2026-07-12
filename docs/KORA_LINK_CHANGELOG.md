@@ -6,6 +6,28 @@
 
 ---
 
+## KORA-LINK-S3B — Docs/Comment Cleanup After S3A
+
+**Data:** 2026-07-12
+**Tipo:** Comment/docs only — nessuna migration, nessun SQL applicato, nessuna modifica a function bodies, nessuna policy aggiunta/rimossa, nessuna decisione CTO/DPO presa.
+
+Corretto un riferimento stale trovato in `034`/`035`: entrambi i file descrivevano una "future company aggregate view" mai costruita, con nomi incoerenti (`v_batch_stats` in 034 vs `v_tenant_batch_stats` in 035). Sostituito con un rimando esplicito alla RPC già implementata `fn_company_link_status_aggregate` (036) — nessuna view pianificata, nessuna policy company-facing diretta esiste o è prevista. Aggiornato `TODO-RLS-04`/`TODO-RLS-05` in 035 per riflettere lo stato corrente (S3A ha già aggiunto il grant `service_role` che TODO-RLS-05 chiedeva) senza chiudere alcun TODO. Aggiornato `docs/KORA_LINK_GATE_REPORT.md` §1/§5 con una nota S3A/S3B concisa. Nessuna decisione Gate 3 (DPO/legal) presa o influenzata.
+
+**Gate status invariato:** Gate 2 substantively closed (engineering, KL-19) · Gate 3 OPEN (DPO/legal) · Gate 4 OPEN (worker self-select e company-facing SELECT esattamente come prima).
+
+---
+
+## KORA-LINK-S3A — RLS 035/RPC 036 Draft Hardening
+
+**Data:** 2026-07-12
+**Tipo:** Proposed SQL draft-only (034/035/036 rimangono proposed/non applicati) + 1 nuovo test statico — nessuna migration applicata, nessun SQL eseguito, nessuna modifica ad active migrations.
+
+Chiuso un gap reale di grant-hygiene identificato in `KORA-LINK-S3-RO`: mancavano grant `service_role` per lo schema/tabelle/funzioni `kora_link` — stessa classe di bug già trovata e corretta nelle migration attive 032 e 033. Aggiunti grant `service_role` espliciti (schema USAGE + 9 tabelle in 035, EXECUTE su 6 funzioni in 036), aggiunto `REVOKE ALL ON FUNCTION kora_link.is_kora_admin() FROM PUBLIC` prima del suo `GRANT` per coerenza con il pattern già seguito da ogni funzione SECURITY DEFINER in 036 (derivato dalla migration 031). Rimossi gli stub SQL storici di `fn_public_lookup_link`/`fn_activate_link_for_worker` in 035 (superati da 036, che li implementa già per intero) mantenendo la prosa di design-rationale. Creato `tests/unit/kora-link-rls035-review.test.ts` (93 assertion statiche: RLS enable/force su tutte le 9 tabelle, set di policy KORA_ADMIN atteso, nessuna policy UPDATE/DELETE sulle tabelle append-only, worker self-select inattiva, nessuna policy company-facing diretta, hygiene SECURITY DEFINER su tutte le 6 funzioni, grant `service_role` presenti).
+
+**Gate status invariato:** Gate 4 rimane OPEN — questo è un hardening draft-only, non una review formale.
+
+---
+
 ## QA-01 — KORA Link Staging Readiness Audit
 
 **Data:** 2026-07-01

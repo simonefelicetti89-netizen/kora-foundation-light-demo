@@ -42,7 +42,7 @@ New test coverage: `tests/unit/kora-link-schema034-review.test.ts` (034/035/036 
 | Gate 1 | Runtime Base | ✅ COMPLETE | Engineering | — | KL-06→KL-10 completi |
 | Gate 2 | Schema 034 Review | 🟡 SUBSTANTIVELY CLOSED (engineering) — KL-19, 2026-07-04 | CTO / Postgres | Human CTO ratification only — no open engineering questions | 5/8 TODO risolti con motivazione documentata; 3 riclassificati come blocker Gate 3 (DPO) — vedi addendum KL-19 sopra |
 | Gate 3 | Privacy / DPO / Legal | 🔴 OPEN | DPO / Legal | Activation consent, partner scan, live data | Privacy notice non approvata |
-| Gate 4 | RLS 035 Review | 🔴 OPEN — draft exists, incomplete | CTO + DPO | Qualsiasi DB write/read con RLS | 035 draft redatto (KORA_ADMIN-only su tutte le 9 tabelle); worker self-select e le due funzioni SECURITY DEFINER sono commentate — vedi `KORA_LINK_ADR.md` |
+| Gate 4 | RLS 035 Review | 🔴 OPEN — draft exists, incomplete | CTO + DPO | Qualsiasi DB write/read con RLS | 035 draft redatto (KORA_ADMIN-only su tutte le 9 tabelle); worker self-select rimane commentata. **KORA-LINK-S3A/S3B (2026-07-12)** hanno chiuso i gap engineering-only (service_role grants, REVOKE ALL FROM PUBLIC, stub obsoleti, wording aggregate-view stale) senza chiudere il gate — vedi nota sotto §5. |
 | Gate 5 | Staging Env | 🔴 OPEN — not ready | Engineering + Infra | Test reali con KORA_LINK_ENABLED=true | Dipende da Gate 2+3+4 |
 | Gate 6 | Public Route Enablement | 🟡 SKELETON COMPLETE | Engineering | `KORA_LINK_ENABLED=true` in staging/prod | Richiede Gate 2+3+5 |
 | Gate 7 | Worker Activation | 🔴 OPEN — not started | Engineering + DPO | Worker flow end-to-end | Dipende da Gate 2+3+4+6 |
@@ -154,6 +154,8 @@ Gate 1 è chiuso. Nessuna azione richiesta prima di procedere con Gate 2.
 ## 5. Gate 4 — RLS 035
 
 **Stato: 🔴 OPEN — draft esistente (`supabase/proposed/035_kora_link_rls.sql`, 725 righe) ma incompleto: policy worker self-select su `link_assignments` e le funzioni SECURITY DEFINER `fn_kora_link_public_lookup`/`fn_kora_link_activate` sono commentate. Nessuna policy company-facing esiste ancora. Non revisionato, non applicato.** Aggiornato KORA-LINK-S1 (2026-07-04) — vedi `KORA_LINK_ADR.md`.
+
+**KORA-LINK-S3A (2026-07-12, draft-only, engineering-only):** chiuso un gap reale di grant-hygiene — aggiunti `service_role` grant espliciti (schema/tabelle/funzioni), aggiunto `REVOKE ALL FROM PUBLIC` prima del `GRANT` su `is_kora_admin()` per coerenza, rimossi gli stub SQL obsoleti di `fn_public_lookup_link`/`fn_activate_link_for_worker` in 035 (entrambe funzioni reali e già implementate in 036 — la prosa di design-rationale è stata mantenuta, solo lo stub SQL morto è stato rimosso), aggiunto `tests/unit/kora-link-rls035-review.test.ts` (93 assertion statiche). **KORA-LINK-S3B (2026-07-12, comment/wording-only):** corretto un riferimento stale a una "future company aggregate view" (`v_batch_stats`/`v_tenant_batch_stats`, mai costruita, nomi incoerenti tra 034 e 035) sostituendolo con un rimando esplicito alla RPC già implementata `fn_company_link_status_aggregate` (036); aggiornato lo status di TODO-RLS-04/05 per riflettere lo stato corrente senza chiuderli. **Nessuna delle due sessioni chiude Gate 4** — worker self-select e company-facing SELECT restano esattamente come prima; nessuna decisione CTO/DPO è stata presa.
 
 **Owner:** CTO + DBA  
 **Dipendenze:** Gate 2 deve essere sostanzialmente avanzato (tabelle 034 stabilizzate) prima di redigere 035
