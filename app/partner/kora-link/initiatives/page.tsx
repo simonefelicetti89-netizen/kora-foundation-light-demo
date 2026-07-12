@@ -222,6 +222,15 @@ export default function PartnerKoraLinkInitiativesPage() {
         </Link>
       </p>
 
+      {/* Cross-link — these are KORA Link Track A initiatives specifically; the
+          broader partner initiative pipeline (not chip/scan bound) lives at /partner/initiatives. */}
+      <p style={{ fontSize: 12, color: TOKENS.inkHint, margin: 0 }}>
+        Per iniziative non legate allo scan fisico KORA Link, vedi{' '}
+        <Link href="/partner/initiatives" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+          Iniziative partner
+        </Link>.
+      </p>
+
     </div>
   );
 }

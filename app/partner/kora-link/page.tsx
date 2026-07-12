@@ -92,6 +92,22 @@ export default function PartnerKoraLinkPage() {
         </Link>
       </p>
 
+      {/* Cross-link to the broader partner surface — KORA Link stays scoped to
+          Track A scan infrastructure; general partner engagement lives outside it. */}
+      <p style={{ fontSize: 12, color: TOKENS.inkHint, margin: 0 }}>
+        Oltre a KORA Link, l&apos;area partner include{' '}
+        <Link href="/partner/initiatives" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+          iniziative
+        </Link>,{' '}
+        <Link href="/partner/relationships" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+          relazioni con i lavoratori
+        </Link>{' '}
+        e{' '}
+        <Link href="/partner/privacy-boundary" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+          confine privacy
+        </Link>.
+      </p>
+
     </div>
   );
 }
