@@ -30,3 +30,17 @@ A dated log of documentation consolidation/reconciliation work — distinct from
 **Checks run:** `npx tsc --noEmit`, `npm test`, `npm run build` — see the reconciliation's final report for results. Authenticated E2E was not run. No Supabase, DB, migration, KORA Link implementation, or scoring/methodology-logic changes were made.
 
 **Recommended next sprint:** see `STATUS.md` and `QA_STATUS.md` for the current punch list (COMPANY_B provisioning, RLS negative tests, Production E2E). Separately: a dedicated `spec/INVARIANTS.md` reconciliation sprint, and a `DATA_MODEL.md` vs. `docs/12-technical-data-model-database-schema.md` compare, are both reasonable follow-ups not attempted here.
+
+---
+
+## 2026-07-12 — B174-A2: Company B / STAGE-001 documentation reconciliation
+
+**Context:** `DEMO-DEP-RO` (demo dependency audit) and `B174-PLAN-01` (Company B provisioning plan) found that `docs/STATUS.md`, `docs/GOLDEN_PATH.md`, `docs/PILOT_SAAS_READINESS.md`, and most of `docs/PILOT_GOVERNANCE.md` still stated "COMPANY_B does not exist" and that `A02`–`A04`/`T01`/`T02`/`GD01` had never run live — while `docs/E2E_TWO_TENANT_ISOLATION.md` and `docs/E2E_GOLDEN_PATH.md` (updated 2026-07-09, already on `main` before these audits ran) documented the opposite: a live staging session in which Company B/`STAGE-001` was provisioned and all of the above ran and passed, with explicit founder approval.
+
+**B174-A** (read-only) investigated this using only repo docs, git history (notably `FIX-A04-TENANT-HEADING-RACE`, a bug fix only discoverable by actually executing the test), and local non-secret `.env.e2e.local` configuration presence (variable names/non-emptiness only, no values). Concluded repo evidence strongly indicates the 2026-07-09 session genuinely occurred, not independently re-verified live.
+
+**B174-A2** (this entry) reconciled the stale docs identified above, plus `docs/PILOT_OPERATING_RUNBOOK.md`, `docs/PILOT_REVIEW_PACKAGE.md`, `docs/PILOT_PRIVACY_GOVERNANCE.md`, `docs/PILOT_DEMO_SCRIPT.md`, and `tests/unit/pilot-governance-inventory.test.ts`, so none of them present the pre-2026-07-09 state as current fact. Every updated claim carries an explicit "documented as passed/provisioned, 2026-07-09 — not independently re-verified since" caveat rather than asserting the 2026-07-09 record as a freshly-confirmed fact. `docs/PILOT_GOVERNANCE.md` §15a is the canonical record of this reconciliation; `docs/B174_COMPANY_B_AND_DEMO_TIGHTENING_PLAN.md` §0 cross-references it.
+
+**Checks run:** `npx tsc --noEmit`, `npm test` (required — `tests/unit/pilot-governance-inventory.test.ts` was restructured), `npm run build`. No Supabase, migration, GD01, authenticated E2E, user creation, or Vercel/deploy action was taken.
+
+**Recommended next step:** a fresh, operator-approved re-confirmation of the 2026-07-09 staging session (`A02`–`A04`, `T01`/`T02`, `GD01`) before any of it is relied upon for a client-facing claim or further B174 demo-tightening validation.

@@ -141,7 +141,7 @@ Before uploading any real pilot company file:
 - **Scoring** — runs on approved UEF records; produces the KORA Index, Confidence Score, and Activation Safeguard status.
 - **KORA Index** — the company-level output; always shown with Confidence Score and `calibration_status`.
 - **Decision Pack** — the polished, report-formatted output generated from a scoring run.
-- **`GD01`** — drives this exact pipeline through the real UI end-to-end, against a disposable staging tenant. **`GD01` is scaffolded but not live-run** — see `docs/E2E_GOLDEN_PATH.md`.
+- **`GD01`** — drives this exact pipeline through the real UI end-to-end, against a disposable staging tenant. **Updated by B174-A2 (2026-07-12):** this line previously said "scaffolded but not live-run." Repo evidence indicates it was run live against staging and passed on 2026-07-09 — not independently re-verified since. See `docs/E2E_GOLDEN_PATH.md`.
 - **Final pilot validation** — real pilot intake, through this pipeline, with a real company's real data, **has not yet been proven end-to-end**. Everything in this document describes the intended path and the pieces that are individually verified (engine, PII guard, mapping assistant) — not a claim that the full path has been exercised live with real pilot data. Static/code fixtures (`data/golden-path/*.csv`) are not the same as live operational proof.
 
 ## 12. Failure handling
@@ -177,7 +177,7 @@ Before uploading any real pilot company file:
 - **Final pilot intake template decision still needed** — which of the two templates (or a reconciled version) becomes the one real pilot companies receive (see §6).
 - **Public intake template vs. golden-path schema discrepancy** — unresolved, flagged in §6, not fixed by this sprint.
 - **Live validation still pending** — no real pilot company's data has been ingested through this pipeline yet.
-- **`GD01` not run live** — see `docs/E2E_GOLDEN_PATH.md`.
+- **`GD01` live-run status:** repo evidence indicates it ran live against staging and passed on 2026-07-09 (previously listed here as "not run live") — not independently re-verified since. See `docs/E2E_GOLDEN_PATH.md`.
 - **Privacy governance sprint still pending** — this document covers intake-specific privacy boundaries only; broader privacy governance is out of scope here (`PILOT-PRIVACY-GOVERNANCE-01`, recommended next).
 - **COMPANY_B not required for first-company intake** — it is only relevant to the two-tenant isolation proof (`T01`/`T02`), not to onboarding the first real pilot company's data.
 - **Real company data handling/retention policy to be confirmed** — beyond "the raw file is not stored in Supabase Storage" (§3), a full retention/deletion policy for accepted records has not been documented as part of this readiness pass.
@@ -186,7 +186,7 @@ Before uploading any real pilot company file:
 
 - `docs/PILOT_INTAKE_PROTOCOL.md` — the full 12-step KORA_ADMIN-operated onboarding protocol, contract signature to live KORA Index.
 - `docs/GOLDEN_PATH_RUNBOOK.md` — manual, step-by-step operator walkthrough of the golden path UI.
-- `docs/E2E_GOLDEN_PATH.md` — what `GD01` proves, required env vars, known gaps (not run live).
+- `docs/E2E_GOLDEN_PATH.md` — what `GD01` proves, required env vars, known gaps, and the 2026-07-09 documented live-staging pass.
 - `docs/PILOT_OPERATING_RUNBOOK.md` — the operating procedure this readiness doc's checklists plug into (roles, stop conditions, evidence collection).
 - `docs/PILOT_REVIEW_PACKAGE.md` — reviewer-facing entry point for evaluating KORA's overall pilot readiness.
 - `docs/PILOT_GOVERNANCE.md` — canonical governance index (proven/scaffolded/blocked/deferred status).

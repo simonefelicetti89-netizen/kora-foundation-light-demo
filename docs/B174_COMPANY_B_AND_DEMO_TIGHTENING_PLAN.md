@@ -2,8 +2,18 @@
 
 **Status:** Planning / not executed
 **Date:** 2026-07-12
-**Owner/operator action required:** Yes — this plan's first recommended task (B174-A) requires a human operator to read and reconcile conflicting repo docs before any further B174 work is scheduled. No Supabase, Vercel, or DB action is proposed or required to execute B174-A.
+**Owner/operator action required:** Yes — see the B174-A/B174-A2 result note immediately below for current status. No Supabase, Vercel, or DB action was performed by either task.
 **Scope of this document:** planning/docs only. No product code, migration, Supabase, or Vercel change is made by this document or by writing it.
+
+---
+
+## 0. B174-A / B174-A2 result note (2026-07-12)
+
+**B174-A (read-only reconciliation)** investigated the conflict described in §4a below using only repo docs, git history, and local non-secret E2E environment configuration (no Supabase query, no GD01 run, no E2E run, no user creation). It concluded that **repo evidence strongly indicates** Company B/`STAGE-001` was provisioned and that `A02`–`A04`, `T01`/`T02`, `GD01`, and RLS-06's live direct-Postgres half all ran and passed on **2026-07-09**, based on: three independent, mutually-consistent, dated validation-log docs; a corroborating git-history bug-fix commit (`FIX-A04-TENANT-HEADING-RACE`) of a kind only discoverable by actually executing the test; and local `.env.e2e.local` configuration (dated 2026-07-09, all required `E2E_COMPANY_A_*`/`E2E_COMPANY_B_*`/`E2E_KORA_ADMIN_*` variable names present and non-empty — values not inspected). **This was not independently re-verified live** by B174-A.
+
+**B174-A2 (docs reconciliation)** then updated the stale aggregate docs identified in §4a (`STATUS.md`, `GOLDEN_PATH.md`, `PILOT_SAAS_READINESS.md`, `PILOT_GOVERNANCE.md`, `PILOT_OPERATING_RUNBOOK.md`, `PILOT_REVIEW_PACKAGE.md`, `PILOT_PRIVACY_GOVERNANCE.md`, `PILOT_DEMO_SCRIPT.md`) and `tests/unit/pilot-governance-inventory.test.ts` so they no longer present the pre-2026-07-09 state as current fact, while preserving the caveat that none of this has been freshly re-checked. See `docs/PILOT_GOVERNANCE.md` §15a for the canonical reconciliation record.
+
+**Still not live-reverified after B174-A2.** The recommended next step remains a fresh, operator-approved re-confirmation of the 2026-07-09 session before any of it is cited in a client-facing claim or used as the basis for demo-tightening validation (B174-C in §11 below).
 
 ---
 

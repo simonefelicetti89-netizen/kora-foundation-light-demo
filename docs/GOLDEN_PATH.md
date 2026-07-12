@@ -34,10 +34,8 @@ The golden path: **file/input → UEF → approval → scoring → KORA Index �
 ## What is NOT proven
 
 - **No golden path step beyond login has been exercised in Production.** Upload, UEF generation/approval, scoring run, and Decision Pack generation have only been run manually against local dev / staging Supabase directly — never against the live Production deployment.
-- **`A02` (COMPANY_A login) has not been run** — neither the E2E fixture nor a manual Production check. The account is known-good from an earlier, separate manual QA pass (2026-06-22, pre-dating this fixture).
-- **`A03` (COMPANY_B login) and `A04` (tenant separation) cannot run at all** — COMPANY_B does not exist as a provisioned tenant/account. This is a provisioning gap, not a credentials or code gap.
-- **An automated golden path test now exists but has not been run live.** `tests/e2e/golden-data-bearing.spec.ts` (GOLDEN-E2E-02, test `GD01`) drives upload → UEF generation/approval → scoring → Decision Pack end-to-end through the real UI — skip-safe-verified locally, but not yet executed against staging with real credentials. **Manual/staging authenticated tests are deferred until the final pilot-validation session. GD01 exists as a skip-safe E2E and remains implemented-but-not-live-proven until that session.** See `QA_STATUS.md`'s GOLDEN-E2E-02 entry.
-- **RLS negative testing is mostly closed at the DB level, still open at the authenticated-request level.** Direct-Postgres tests prove Postgres RLS itself rejects cross-tenant reads (RLS-03, merged) and worker-vs-worker reads (RLS-05, merged, live run). App/API-level source code is statically audited (RLS-04, merged). KORA_ADMIN's legitimate cross-tenant access is proven statically (RLS-06, merged); its live direct-Postgres run is implemented skip-safe but not yet executed. None of RLS-03/04/05/06 has a live authenticated-request/PostgREST proof yet — see `QA_STATUS.md`.
+- **`A02`/`A03`/`A04`/`GD01`/`T01`/`T02` status (updated by B174-A2, 2026-07-12):** this section previously stated that `A02` had not been run via fixture, that `A03`/`A04` "cannot run at all" because COMPANY_B does not exist, and that `GD01` had not been run live. Since this document's last verification (2026-07-03), repo evidence indicates all of these were run live against staging on **2026-07-09**, with a documented pass result for each — see `docs/E2E_GOLDEN_PATH.md` (full pipeline log for `GD01`) and `docs/E2E_TWO_TENANT_ISOLATION.md` (per-test pass table for `A01`–`A04`, `T01`, `T02`). This has **not been independently re-verified in a later session** — this document's own last-verified date predates the 2026-07-09 runs and has not been re-walked since. A fresh, operator-approved confirmation is recommended before any of these are cited in a client-facing claim or used as the basis for further demo-tightening validation. See `docs/B174_COMPANY_B_AND_DEMO_TIGHTENING_PLAN.md` §4a for the full reconciliation.
+- **RLS negative testing is mostly closed at the DB level, still open at the authenticated-request level.** Direct-Postgres tests prove Postgres RLS itself rejects cross-tenant reads (RLS-03, merged) and worker-vs-worker reads (RLS-05, merged, live run). App/API-level source code is statically audited (RLS-04, merged). KORA_ADMIN's legitimate cross-tenant access is proven statically (RLS-06, merged); repo evidence (`docs/QA_STATUS.md`) indicates its live direct-Postgres run was also executed, local-Postgres-only, on 2026-07-09, with 11/11 passing — not independently re-verified since. **None of RLS-03/04/05/06 has a live authenticated-request/PostgREST proof** (as distinct from direct-Postgres) — see `QA_STATUS.md`.
 
 ---
 
@@ -46,25 +44,28 @@ The golden path: **file/input → UEF → approval → scoring → KORA Index �
 | ID | Flow | Status | Where verified |
 |---|---|---|---|
 | A01 | KORA_ADMIN login → `/admin` | **PASS** | Local dev (real staging Supabase), operator-run, GOLDEN-03B |
-| A02 | COMPANY_A login → `/company/workspace` | Not run via fixture | Account verified manually in a separate 2026-06-22 QA pass only |
-| A03 | COMPANY_B login → `/company/workspace` | **Blocked** | COMPANY_B does not exist |
-| A04 | COMPANY_A/B tenant separation | **Blocked** | Depends on A03 |
+| A02 | COMPANY_A login → `/company/workspace` | **Documented as PASS, staging, 2026-07-09** (not independently re-verified since) | `docs/E2E_TWO_TENANT_ISOLATION.md` live validation log; account previously verified manually in a separate 2026-06-22 QA pass |
+| A03 | COMPANY_B login → `/company/workspace` | **Documented as PASS, staging, 2026-07-09** (not independently re-verified since) | `docs/E2E_TWO_TENANT_ISOLATION.md` live validation log |
+| A04 | COMPANY_A/B tenant separation | **Documented as PASS, staging, 2026-07-09** (not independently re-verified since) | `docs/E2E_TWO_TENANT_ISOLATION.md` live validation log |
 | — | KORA_ADMIN login, manual, Production | **PASS** | VERCEL-05 |
 | — | Public smoke, manual, Production | **PASS** | VERCEL-03 |
 | — | Golden path steps 2–6 (upload → Decision Pack), Production | **Not attempted** | — |
 | G01 | KORA_ADMIN → `/admin`, COMPANY_ADMIN → `/company/workspace` (one narrative) | Not run via fixture | GOLDEN-E2E-01, skip-safe implemented |
 | G02 | COMPANY_ADMIN → `/company/kora-index` reachability + privacy smoke | Not run via fixture | GOLDEN-E2E-01, skip-safe implemented |
-| GD01 | Upload → UEF → scoring → Decision Pack → company visibility | Not run via fixture | GOLDEN-E2E-02, skip-safe implemented; deferred to the final pilot-validation session |
-| T01/T02 | COMPANY_A/B cross-tenant isolation via `/api/company/workspace` | **Blocked** | COMPANY_B does not exist; skip-safe scaffold implemented, `tests/e2e/two-tenant-isolation.spec.ts` — see `docs/E2E_TWO_TENANT_ISOLATION.md` |
+| GD01 | Upload → UEF → scoring → Decision Pack → company visibility | **Documented as PASS, staging, 2026-07-09** (not independently re-verified since) | `docs/E2E_GOLDEN_PATH.md` live validation log — full pipeline steps, exact command, duration |
+| T01/T02 | COMPANY_A/B cross-tenant isolation via `/api/company/workspace` | **Documented as PASS, staging, 2026-07-09** (not independently re-verified since) | `docs/E2E_TWO_TENANT_ISOLATION.md` live validation log |
+
+**Caveat for every "Documented as PASS" row above:** repo evidence (dated validation logs, corroborating git history, corroborating local E2E env configuration) indicates these ran and passed on 2026-07-09. This has not been independently re-verified in a later session. A fresh, operator-approved confirmation is recommended before any of these are cited in a client-facing claim or used as the basis for further demo-tightening validation — see `docs/B174_COMPANY_B_AND_DEMO_TIGHTENING_PLAN.md`.
 
 ---
 
 ## Minimum path to closing the gap (not a commitment, an assessment)
 
-1. Run `A02` against local dev, then Production, using the existing fixture — no new code needed.
-2. Provision a COMPANY_B tenant (a deliberate, explicitly-confirmed action — this repo's own precedent treats staging/Production Auth writes as requiring explicit sign-off, not something to bundle into a routine task).
-3. ~~Extend the E2E suite to cover at least one real upload → scoring → Decision Pack run~~ — **done (GOLDEN-E2E-02, test `GD01`)**: implemented and skip-safe-verified. Running it live against a disposable staging tenant is deferred to the final pilot-validation session, not a remaining build task.
+1. ~~Run `A02` against local dev, then Production, using the existing fixture~~ — **documented as run against staging, 2026-07-09** (see checkpoint log above). Not yet run against Production specifically; not independently re-verified since 2026-07-09.
+2. ~~Provision a COMPANY_B tenant~~ — **repo evidence indicates this was done in staging, 2026-07-09** (see `docs/E2E_TWO_TENANT_ISOLATION.md`). Not independently re-verified since.
+3. ~~Extend the E2E suite to cover at least one real upload → scoring → Decision Pack run~~ — **done (GOLDEN-E2E-02, test `GD01`)**: implemented, skip-safe-verified, and **documented as run live against a disposable staging tenant on 2026-07-09** (see `docs/E2E_GOLDEN_PATH.md`). Not independently re-verified since.
 4. ~~Extend RLS negative tests to PostgREST/app-level (RLS-04) and worker-vs-worker isolation (RLS-05)~~ — **done**: RLS-04 (static audit) and RLS-05 (live direct-Postgres proof) are both merged — see `QA_STATUS.md`. The remaining RLS gap is a live authenticated-request/PostgREST proof, not unbuilt negative tests.
+5. **New, per B174-A2 (2026-07-12):** obtain a fresh, operator-approved re-confirmation of steps 1–3 above (a repeat `A02`–`A04`/`T01`/`T02`/`GD01` run) before citing any of them in a client-facing claim or using them as the basis for further demo-tightening validation. The 2026-07-09 record is documented, not re-verified — treat it as strong evidence, not as a currently-live-checked fact.
 
 ---
 

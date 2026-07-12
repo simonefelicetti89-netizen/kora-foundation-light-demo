@@ -54,7 +54,7 @@ Use this as a starting point, adapted naturally to the room — not read verbati
 
 - **Objective:** show engineering substance and be precise about proven vs. scaffolded vs. blocked.
 - **What to emphasize:** real RLS enforcement, the 84-route auth audit, the defense-in-depth model, the honest proven/scaffolded/blocked framing already used across the pilot docs.
-- **What to avoid:** citing a static test as runtime proof, citing `GD01` or two-tenant isolation as passed.
+- **What to avoid:** citing a static test as runtime proof; citing `GD01` or two-tenant isolation as *currently, freshly* passed without the 2026-07-09 documented-date caveat (see §4's updated rows).
 - **Recommended docs/pages to show:** `docs/access-matrix.md`, `docs/API_ROUTE_AUTH_MATRIX.md`, `docs/E2E_GOLDEN_PATH.md`, `docs/E2E_TWO_TENANT_ISOLATION.md`, `docs/PILOT_GOVERNANCE.md`.
 - **Likely questions:** "Has this actually run against a live environment?", "How is tenant isolation enforced?", "What's your test coverage?"
 
@@ -87,9 +87,9 @@ Use this as a starting point, adapted naturally to the room — not read verbati
 | Privacy governance | "We have a documented privacy governance model with clear role boundaries and technical enforcement." | "This is a certified privacy/compliance framework." | `docs/PILOT_PRIVACY_GOVERNANCE.md` | Documentary, not legal certification |
 | CI/tests | "We have over 200 test files and 8,000+ passing tests covering the scoring engine, permissions, and route guards." | "Our test suite proves this works in production." | `docs/PILOT_GOVERNANCE.md` §5 | Most are static/unit tests — not the same as live/runtime proof |
 | Golden path | "The full upload-to-Decision-Pack flow works when walked through manually by an operator." | "The golden path has been proven in Production." | `docs/GOLDEN_PATH.md`, `docs/GOLDEN_PATH_RUNBOOK.md` | Manual/local-staging only; not exercised in Production beyond login |
-| GD01 | "We have a fully built, automated end-to-end test for the golden path, ready to run against staging." | "GD01 has passed" / "the golden path has been automatically verified live." | `docs/E2E_GOLDEN_PATH.md` | **Scaffolded, not live-run** — state this explicitly every time |
-| Two-tenant isolation | "Tenant isolation is enforced at the database level, proven directly against Postgres, and we have a ready authenticated test for the application layer." | "Two-tenant isolation has been proven live" / "COMPANY_B demo shows isolation working." | `docs/E2E_TWO_TENANT_ISOLATION.md`, `docs/PILOT_GOVERNANCE.md` §8 | **Scaffolded, not live-run**, blocked on COMPANY_B |
-| COMPANY_B | "We have the capability to provision a second company tenant when needed." | "We have a second pilot company set up" / "COMPANY_B exists." | `docs/PILOT_GOVERNANCE.md` §10 | COMPANY_B does not exist in any environment — do not imply otherwise |
+| GD01 | "We have a fully built, automated end-to-end test for the golden path. Repo records document it running against staging on 2026-07-09 and passing; we perform or cite a fresh confirmation before relying on that for this conversation." | "GD01 has passed" / "GD01 is currently proven" (stated without the dated caveat, or implying a fresh check was just done when it wasn't) | `docs/E2E_GOLDEN_PATH.md` | **Documented as passed, staging, 2026-07-09 — not independently re-verified since.** State the date and the caveat every time. |
+| Two-tenant isolation | "Tenant isolation is enforced at the database level, proven directly against Postgres. We also have an authenticated application-layer test, and repo records document it running against a second company tenant in staging on 2026-07-09 and passing." | "Two-tenant isolation is currently live-proven" / "COMPANY_B demo shows isolation working today" (stated without the dated caveat) | `docs/E2E_TWO_TENANT_ISOLATION.md`, `docs/PILOT_GOVERNANCE.md` §11 | **Documented as passed, staging, 2026-07-09 — not independently re-verified since.** |
+| COMPANY_B | "We have the capability to provision a second company tenant, and repo records document one being provisioned and validated in staging on 2026-07-09." | "We currently have a second pilot company set up and live-verified today" (stated without the dated caveat) | `docs/PILOT_GOVERNANCE.md` §10 | **Documented as provisioned, staging, 2026-07-09 — not independently re-verified since.** Do not imply a fresh, same-day confirmation unless one was actually just performed. |
 | Production readiness | "This is a pilot-grade working prototype, not a market-ready product yet." | "This is production-ready" / "this is ready to onboard paying customers today." | `docs/PILOT_REVIEW_PACKAGE.md` §7 | Explicit do-not-claim boundary — never soften this |
 | GDPR/legal compliance | "We've built this with privacy-by-design principles and a documented governance model; legal/DPO review is a separate, still-pending step." | "This is GDPR compliant" / "this meets legal certification requirements." | `docs/PILOT_PRIVACY_GOVERNANCE.md` §1 | Gate 3 (legal/privacy) remains OPEN — never claim compliance |
 | KORA Link | "KORA Link is a planned future capability, currently frozen with no live coupling to the pilot path." | "KORA Link is active" / "KORA Link can track individual interactions today." | `docs/KORA_LINK_STATUS.md` | Frozen; zero code coupling to golden path |
@@ -151,14 +151,14 @@ Use this as a starting point, adapted naturally to the room — not read verbati
 
 ### Stage 9 — Golden path evidence
 - **Show:** `docs/E2E_GOLDEN_PATH.md`.
-- **Say:** "the full pipeline is built and works manually; we also have a fully automated end-to-end test for it (`GD01`) that is built and verified statically, but **has not been run live yet** against staging."
-- **Don't say:** "GD01 passed" or any wording implying it executed.
+- **Say (updated by B174-A2, 2026-07-12):** "the full pipeline is built and works manually; we also have a fully automated end-to-end test for it (`GD01`). Repo records document it running against staging on 2026-07-09 and passing — before citing that result as current, we perform or point to a fresh confirmation."
+- **Don't say:** "GD01 passed" without the date and caveat, or anything implying a fresh check was just performed when it wasn't.
 - **Fallback:** the doc itself is written to be shared as-is with a technical reviewer.
 
 ### Stage 10 — Two-tenant isolation status
 - **Show:** `docs/E2E_TWO_TENANT_ISOLATION.md`.
-- **Say:** "tenant isolation is proven at the database level directly against Postgres; the authenticated, live, two-company version of this test is built and ready but **has not run live yet**, because it requires a second company tenant (COMPANY_B) that does not currently exist."
-- **Don't say:** "two-tenant isolation is proven" without the RLS-vs-live-authenticated distinction; do not imply COMPANY_B exists.
+- **Say (updated by B174-A2, 2026-07-12):** "tenant isolation is proven at the database level directly against Postgres. The authenticated, live, two-company version of this test is built and ready, and repo records document it running against a second company tenant (COMPANY_B) in staging on 2026-07-09 and passing — before citing that as current, we perform or point to a fresh confirmation."
+- **Don't say:** "two-tenant isolation is currently proven live" without the date and caveat; do not imply a same-day fresh confirmation unless one was actually just performed.
 - **Fallback:** the doc itself, plus `docs/access-matrix.md` for the underlying design if a deeper technical dive is requested.
 
 ### Stage 11 — Operating runbook
@@ -169,7 +169,7 @@ Use this as a starting point, adapted naturally to the room — not read verbati
 
 ### Stage 12 — Next-step validation
 - **Show:** `docs/PILOT_GOVERNANCE.md` §16 (final validation sequence).
-- **Say:** the ordered list of what happens next (A02, COMPANY_B provisioning, A03/A04, T01/T02, GD01, RLS-06 live, credential cleanup, final review) — framed as intended order, not a committed timeline.
+- **Say:** the ordered list (A02, COMPANY_B provisioning, A03/A04, T01/T02, GD01, RLS-06 live, credential cleanup, final review) — note that repo records document steps 1–6 as executed against staging on 2026-07-09, so "next" in practice means a fresh re-confirmation of those steps, followed by credential cleanup and final review. Framed as intended order, not a committed timeline.
 - **Don't say:** that any of these steps will happen "today" or "this week" unless that has actually been separately approved and scheduled.
 - **Fallback:** the numbered list itself, read aloud.
 
@@ -190,8 +190,8 @@ Use this as a starting point, adapted naturally to the room — not read verbati
 | `docs/PILOT_OPERATING_RUNBOOK.md` | Yes | Technical, internal operator | Operational tone, not audience-tailored |
 | `docs/PILOT_DATA_INTAKE_READINESS.md` | Yes | Pilot company, technical | §13 is the company-facing subset |
 | `docs/PILOT_PRIVACY_GOVERNANCE.md` | Yes | All | §11 is the reusable external-safe summary |
-| `docs/E2E_GOLDEN_PATH.md` | Yes | Technical | Already discloses "not run live" honestly |
-| `docs/E2E_TWO_TENANT_ISOLATION.md` | Yes | Technical | Already discloses "not run live" honestly |
+| `docs/E2E_GOLDEN_PATH.md` | Yes | Technical | Discloses both the original "not yet run live" state and the 2026-07-09 documented pass, with an explicit "not independently re-verified since" caveat |
+| `docs/E2E_TWO_TENANT_ISOLATION.md` | Yes | Technical | Discloses both the original "not yet run live" state and the 2026-07-09 documented pass, with an explicit "not independently re-verified since" caveat |
 | `docs/METHODOLOGY.md` | Yes | Academic/professor, technical | Concise and accurate |
 | `docs/decision-pack-pdf.md` | Yes, technical framing | Technical | Describes the OP-001 synthetic artifact specifically — state that distinction if the live-tenant path also comes up |
 | `app/company/workspace` | Conditional | Pilot company, technical | Live-only, per-tenant — requires a real staging session and valid tenant credentials; not a synthetic fallback |
@@ -243,7 +243,7 @@ Any of the following is an immediate stop. When one occurs: **(1) stop — (2) d
 | Reviewer asks for forbidden individual-worker use case | Decline clearly, state the constitutional boundary | That KORA does or will support this | Point to `docs/access-matrix.md`/`docs/privacy-escalation-model.md` as the reason |
 | Reviewer asks for disciplinary monitoring | Decline clearly | That KORA supports or will support this | Same as above |
 | App state inconsistent with claims | Stop; do not paper over the discrepancy | That the claim being made is accurate | Note the discrepancy, investigate afterward, correct the doc if needed |
-| COMPANY_B/two-tenant proof implied without evidence | Correct the statement immediately in the room | That two-tenant isolation or COMPANY_B is proven/exists | Restate the actual status per §5 stage 10 |
+| COMPANY_B/two-tenant proof implied as a currently-verified fact without the dated caveat | Correct the statement immediately in the room | That two-tenant isolation or COMPANY_B is currently, freshly live-verified | Restate the actual status per §5 stage 10 (documented 2026-07-09, not independently re-verified since) |
 | GDPR/legal compliance requested as a certification | Decline to certify; restate honestly | That KORA is GDPR compliant or legally certified | Point to Gate 3 (still OPEN) and `docs/PILOT_PRIVACY_GOVERNANCE.md` §1 |
 
 ---
@@ -260,10 +260,10 @@ No. The company only ever sees aggregate, company-level outputs. Individual work
 No. This is a pilot-grade working prototype — real engineering, real methodology, running on synthetic and staging data. It's not yet a market-ready, self-service product.
 
 **"Has the full golden path been live-run?"**
-The pipeline works when walked through manually by an operator. We also have a fully automated end-to-end test built for it, but it has not been executed live against staging yet — that's one of the next steps in our validation sequence.
+The pipeline works when walked through manually by an operator. We also have a fully automated end-to-end test built for it, and repo records document it running live against staging on 2026-07-09 and passing. That result hasn't been independently re-verified since, so before relying on it for anything beyond this conversation, we'd perform a fresh confirmation.
 
 **"Does two-tenant isolation work live?"**
-Tenant isolation is proven directly at the database level. The live, authenticated, two-company version of that proof is built and ready, but hasn't run yet, because it needs a second company tenant that doesn't exist yet.
+Tenant isolation is proven directly at the database level. The live, authenticated, two-company version of that proof is built and ready, and repo records document it running against a second company tenant in staging on 2026-07-09 and passing. That hasn't been independently re-verified since — same caveat as the golden path above.
 
 **"Can we use KORA Link to monitor individuals?"**
 No. KORA Link is a frozen, future capability with no live coupling to the platform today, and even in its intended design, individual-level KORA Link activity would never become company-visible — that's a constitutional boundary, not a current limitation we intend to relax.
@@ -278,7 +278,7 @@ It's automatically screened before acceptance — known patterns like emails, ph
 HR analytics typically reports on individual employee metrics. KORA is designed specifically to never do that for employers — it produces an organizational-level activation measure, not an individual performance or engagement score.
 
 **"What is still missing before pilot?"**
-A live-run of the full automated golden path, a live two-tenant isolation proof (blocked on provisioning a second company), and a final legal/privacy review before real worker data is processed.
+A fresh, re-confirmed live run of the full automated golden path and the two-tenant isolation proof (both are documented as passed in staging on 2026-07-09, but not independently re-verified since), any authenticated E2E run against Production, and a final legal/privacy review before real worker data is processed.
 
 **"Why should we trust the model?"**
 We're explicit that the current weights are pre-empirical, provisional scaffolding — every KORA Index output says so directly. The methodology is documented, versioned, and designed to be calibrated empirically post-pilot, not presented as already validated.
@@ -306,11 +306,9 @@ The methodology documents (`docs/METHODOLOGY.md`, the 10-component and IU-formul
 
 ## 11. Open questions/blockers
 
-- `GD01` not live-run — deferred to the final pilot-validation session by design.
-- Two-tenant isolation (`T01`/`T02`) not live-run — blocked on COMPANY_B's absence.
-- COMPANY_B absent in every environment.
+- `GD01`, two-tenant isolation (`T01`/`T02`), and COMPANY_B: repo evidence indicates all documented as passed/provisioned in staging on 2026-07-09 (previously listed here as not-live-run/absent) — not independently re-verified since; a fresh confirmation is recommended before relying on this in a live demo. See `docs/PILOT_GOVERNANCE.md` §15a.
 - Credential cleanup deferred to the end of the roadmap by deliberate decision.
-- Final staging validation sequence still pending (`docs/PILOT_GOVERNANCE.md` §16).
+- A fresh re-confirmation of the 2026-07-09 staging session is the practical remaining step in `docs/PILOT_GOVERNANCE.md` §16, not a first execution.
 - No GDPR legal opinion has been obtained — Gate 3 remains OPEN.
 - No production-readiness claim is made anywhere in this document or should be made in any demo.
 - Live pilot data has not yet been validated end-to-end through the real pipeline.
@@ -325,8 +323,8 @@ The methodology documents (`docs/METHODOLOGY.md`, the 10-component and IU-formul
 - `docs/PILOT_OPERATING_RUNBOOK.md` — operating procedure for the remaining pilot validation sequence: roles, stop conditions, evidence collection.
 - `docs/PILOT_DATA_INTAKE_READINESS.md` — data intake readiness: field dictionary, do-not-send list, PII guard notes, company-facing checklist.
 - `docs/PILOT_PRIVACY_GOVERNANCE.md` — consolidated pilot privacy governance summary: data visibility, role boundaries, stop conditions.
-- `docs/E2E_GOLDEN_PATH.md` — what `GD01` proves, required env vars, known gaps, explicit "never executed live" statement.
-- `docs/E2E_TWO_TENANT_ISOLATION.md` — what `T01`/`T02` prove, why COMPANY_B currently blocks them, explicit "not run live" statement.
+- `docs/E2E_GOLDEN_PATH.md` — what `GD01` proves, required env vars, known gaps, and the 2026-07-09 documented live-staging pass.
+- `docs/E2E_TWO_TENANT_ISOLATION.md` — what `T01`/`T02` prove, COMPANY_B's status, and the 2026-07-09 documented live-staging pass.
 - `docs/METHODOLOGY.md` — KORA Index v1.0 / Methodology Architecture v3 reference: 10 components, IU formula, calibration status.
 - `docs/decision-pack-pdf.md` — technical documentation of the Decision Pack PDF/HTML artifact (OP-001 synthetic operator-console version).
 - `docs/access-matrix.md` — the authoritative role/resource access matrix.

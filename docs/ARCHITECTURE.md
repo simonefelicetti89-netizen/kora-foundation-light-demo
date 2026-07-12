@@ -24,7 +24,7 @@ KORA is a **Human Impact Intelligence Platform**: it transforms heterogeneous or
 
 **The base is real.** This is not a demo shell: the scoring engine (`lib/kora-engine/`) runs a real 14-stage pipeline against real data in staging/Production Supabase. Authentication is Supabase with custom claims. RLS is layered across sensitive schemas. The test suite is green — 204 files, 8656 tests, run in ~4s (`npm test`, verified at this doc's commit).
 
-**What remains to consolidate (not rewrite).** The core assets — engine, auth, RLS, API routes, scoring path — are solid. Known gaps: RLS negative testing (no automated proof Postgres itself rejects cross-tenant reads — see `QA_STATUS.md`), authenticated E2E coverage against Production (not yet run), and a second company tenant for tenant-isolation testing (COMPANY_B does not exist). None of this requires a rewrite.
+**What remains to consolidate (not rewrite).** The core assets — engine, auth, RLS, API routes, scoring path — are solid. Known gaps: authenticated E2E coverage against Production (not yet run — as distinct from staging), and RLS proof at the live PostgREST/GoTrue-authenticated-request level (direct-Postgres and static proofs exist; see `QA_STATUS.md`). **Company B/tenant-isolation testing status (updated by B174-A2, 2026-07-12):** this line previously stated a second company tenant "does not exist." Repo evidence indicates one was provisioned in staging and tenant-isolation tests (`A03`/`A04`, `T01`/`T02`) passed live on 2026-07-09 — not independently re-verified since; see `docs/PILOT_GOVERNANCE.md` §10/§15a. None of this requires a rewrite.
 
 ---
 

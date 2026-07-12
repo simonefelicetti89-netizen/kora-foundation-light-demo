@@ -121,13 +121,14 @@ Using the same proven/scaffolded/blocked/deferred framing already established in
 - Every `app/api/**` route (84 files) derives tenant/worker identity from session `app_metadata`, never client input — static source audit (RLS-04).
 - Unit/integration suite passing, including route-privacy and tenant-isolation tests (`tests/unit/route-privacy.test.ts`, `tests/unit/tenant-isolation.test.ts`).
 
-**Scaffolded but not live-run:**
-- Two-tenant isolation via authenticated E2E (`T01`/`T02`, `tests/e2e/two-tenant-isolation.spec.ts`) — proves, once COMPANY_B exists, that a `COMPANY_A` session cannot resolve `COMPANY_B`'s data via `/api/company/workspace`, and vice versa. **Not run live**, blocked on COMPANY_B's absence. See `docs/E2E_TWO_TENANT_ISOLATION.md`.
-- `GD01` (full upload → UEF → scoring → Decision Pack golden path) — fully implemented, skip-safe-verified. **Never executed against real staging with real credentials.** See `docs/E2E_GOLDEN_PATH.md`.
-- RLS-06's live direct-Postgres positive-control run (static half is merged and verified).
+**Documented as executed live, staging, 2026-07-09 — not independently re-verified since (updated by B174-A2, 2026-07-12):**
+- Two-tenant isolation via authenticated E2E (`T01`/`T02`, `tests/e2e/two-tenant-isolation.spec.ts`) — proves that a `COMPANY_A` session cannot resolve `COMPANY_B`'s data via `/api/company/workspace`, and vice versa. Repo evidence indicates this ran against staging and passed on 2026-07-09. See `docs/E2E_TWO_TENANT_ISOLATION.md`.
+- `GD01` (full upload → UEF → scoring → Decision Pack golden path) — fully implemented, skip-safe-verified. Repo evidence indicates it was executed against real staging with real credentials, with explicit founder approval, on 2026-07-09, and passed. See `docs/E2E_GOLDEN_PATH.md`.
+- RLS-06's live direct-Postgres positive-control run — repo evidence indicates this also executed (local Postgres only, not staging) on 2026-07-09, 11/11 passed.
 
-**Blocked:**
-- `T01`/`T02` and `A03`/`A04` specifically, on COMPANY_B's absence (no second tenant/company account exists in any environment).
+**Caveat for the above:** none of this has been independently re-verified in a session after 2026-07-09. This is documented evidence, not a currently-live-checked fact — a fresh, operator-approved confirmation is recommended before it is cited for privacy sign-off on a real pilot data-handling step.
+
+**COMPANY_B status:** repo evidence indicates it was provisioned in staging on 2026-07-09 (previously: absent in every environment, blocking `T01`/`T02` and `A03`/`A04`). Not independently re-verified since — see `docs/PILOT_GOVERNANCE.md` §10/§15a.
 
 **Deferred:**
 - Credential cleanup, to the end of the roadmap, by deliberate prior decision.
@@ -188,9 +189,8 @@ Before any pilot-facing privacy review or data-handling step:
 
 ## 13. Open questions/blockers
 
-- No live two-tenant isolation proof yet — blocked on COMPANY_B's absence.
-- COMPANY_B absent in every environment — a provisioning gap, not a code gap.
-- `GD01` not live-run — deferred to the final pilot-validation session by design.
+- Two-tenant isolation and `GD01`: repo evidence indicates both ran live and passed against staging on 2026-07-09 (previously listed here as not-yet-run/blocked) — not independently re-verified since; a fresh confirmation is recommended before relying on this for a real pilot privacy sign-off. See `docs/PILOT_GOVERNANCE.md` §15a.
+- COMPANY_B: repo evidence indicates provisioned in staging, 2026-07-09 (previously listed here as absent) — not independently re-verified since.
 - Privacy governance, as described in this document, is **documentary, not legal certification**.
 - A final legal/GDPR/DPO review may still be needed before any real-data rollout (Gate 3 remains OPEN).
 - Credential cleanup remains deferred to the end of the roadmap by deliberate prior decision.
