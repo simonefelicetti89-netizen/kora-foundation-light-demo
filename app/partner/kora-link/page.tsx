@@ -11,6 +11,7 @@ import {
   getKoraLinkRoleSummary,
 } from '@/lib/kora-link/ecosystem';
 import { KoraLinkRoleDashboard } from '@/components/kora-link/KoraLinkRoleDashboard';
+import Link from 'next/link';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -84,6 +85,12 @@ export default function PartnerKoraLinkPage() {
         summary={summary}
         capabilitiesTitle="Capacità KORA Link per il partner"
       />
+
+      <p style={{ fontSize: 12, color: TOKENS.inkHint, margin: 0 }}>
+        <Link href="/partner/kora-link/initiatives" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+          Anteprima design — iniziative verificate →
+        </Link>
+      </p>
 
     </div>
   );

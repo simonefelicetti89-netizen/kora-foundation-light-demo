@@ -118,6 +118,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         items: [
           { href: '/company/commons', label: 'KORA Space' },
           { href: '/company/kora-link', label: 'KORA Link' },
+          { href: '/company/kora-link/campaigns', label: 'Campagne KORA Link', description: 'Anteprima design — nessuna campagna reale', preview: true },
         ],
       },
       {
@@ -158,6 +159,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/my-kora/kora-space', label: 'KORA Space (Anteprima)', description: 'Dati sintetici — non il tuo spazio reale', preview: true },
           { href: '/worker/commons',   label: 'KORA Space', description: 'Iniziative e contenuti reali della tua azienda' },
           { href: '/my-kora/kora-link', label: 'My KORA Link' },
+          { href: '/worker/kora-link/activate', label: 'Attiva KORA Link', description: 'Anteprima design — nessuna attivazione reale', preview: true },
           { href: '/my-kora/bookings', label: 'Prenotazioni', description: 'Le tue richieste di partecipazione — private' },
           { href: '/my-kora/collective', label: 'Collettivo', description: 'Non ancora disponibile in Foundation Light', comingSoon: true },
         ],
@@ -189,6 +191,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         items: [
           { href: '/partner/workspace', label: 'Workspace Partner' },
           { href: '/partner/kora-link', label: 'KORA Link' },
+          { href: '/partner/kora-link/initiatives', label: 'Iniziative KORA Link', description: 'Anteprima design — dati mock', preview: true },
           { href: '/demo/guide',  label: 'Demo Guide' },
         ],
       },
