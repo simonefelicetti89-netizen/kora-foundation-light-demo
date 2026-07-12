@@ -6,6 +6,25 @@
 
 ---
 
+## PARTNER-SURFACE-POLISH-01 — Terminology Cleanup After Partner Review
+
+**Data:** 2026-07-12
+**Tipo:** Copy/UI polish only — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione CTO/DPO presa, nessun gate chiuso.
+
+Applicato il polish sprint raccomandato da PARTNER-SURFACE-01-REVIEW (verdetto: da mantenere, nessun blocker, model clarity 5/5):
+
+- **Disambiguazione etichette di stato:** `/partner/initiatives` (pipeline generale proposta/sponsorship/adozione) ora usa etichette visibili distinte da `/partner/kora-link/initiatives` (pipeline Track A scan/accreditamento) — "In preparazione" / "In valutazione" / "Approvata" / "Attiva" / "Conclusa" al posto di "Bozza" / "Verificata", che restano invariate solo su KORA Link Track A. I valori interni del tipo `InitiativeStatus` non sono cambiati — solo il testo italiano visibile.
+- **Copy `/partner/aggregate-signals` tighten:** il pannello "Nessun dato individuale" non ripete più la frase sulla soglia di aggregazione già presente nel banner condiviso — aggiunge invece specificità nuova (l'azienda riceve anch'essa solo output aggregati su questi stessi segnali; i nominativi possono comparire solo su `/partner/relationships`, e solo per relazioni avviate volontariamente dal lavoratore).
+- **Polish visivo `/partner/privacy-boundary`:** i quattro riquadri "può/non può vedere" ora hanno un bordo sinistro e un badge titolo colorati con i token `TOKENS.safeguard.pass`/`.cap` già usati altrove — nessuna nuova palette, nessun nuovo contenuto di policy, solo un aiuto visivo di scansione.
+
+Aggiornato `tests/unit/partner-surface-01.test.ts` con 11 nuove assertion: nessuna sovrapposizione di etichette tra le due pipeline di iniziative, presenza delle nuove etichette disambiguate, invarianza delle etichette Track A, assenza di ripetizione della soglia di aggregazione, nuova specificità su company-aggregate-only e sul rimando a `/partner/relationships`, persistenza degli invarianti privacy-boundary dopo il polish visivo.
+
+**Nessun file toccato fuori da `app/partner/initiatives/page.tsx`, `app/partner/aggregate-signals/page.tsx`, `app/partner/privacy-boundary/page.tsx`, il test file e questo changelog.** `supabase/proposed/034/035/036` invariati, worker self-select e company direct SELECT invariati, nessun feature flag toccato.
+
+**Gate status invariato:** Gate 2, Gate 3 e Gate 4 restano tutti OPEN — questo step è puro polish di copy/UI, non tocca schema, RLS, RPC o governance reale.
+
+---
+
 ## PARTNER-SURFACE-01 — Partner Workspace With Worker-Initiated Visibility Model
 
 **Data:** 2026-07-12
