@@ -177,14 +177,16 @@ export default function PartnerInitiativesPage() {
 
       <div>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.inkHint, margin: '0 0 8px' }}>
-          Partner · Iniziative
+          Partner · Proposte
         </p>
         <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: TOKENS.ink, margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-          Iniziative — proponi, sponsorizza, adotta
+          Proposte Partner — proponi, sponsorizza, adotta
         </h1>
         <p style={{ fontSize: 13.5, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.6, maxWidth: 640 }}>
-          Il pipeline di iniziative con cui il tuo profilo partner può essere coinvolto — proposta, sponsorship,
-          adozione o supporto. Distinta dalle iniziative verificate KORA Link (scan fisico), che restano su{' '}
+          Il pipeline di proposte con cui il tuo profilo partner può essere coinvolto — proposta, sponsorship,
+          adozione o supporto. Questa pagina rappresenta proposte del partner, non iniziative KORA Space già
+          pubblicate e non il futuro catalogo di attività partner. Distinta anche dalle iniziative verificate
+          KORA Link (scan fisico), che restano su{' '}
           <Link href="/partner/kora-link/initiatives" style={{ color: TOKENS.accent, textDecoration: 'none', fontWeight: 700 }}>
             /partner/kora-link/initiatives
           </Link>.
