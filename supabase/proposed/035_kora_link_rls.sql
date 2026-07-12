@@ -4,6 +4,10 @@
 -- Author:      KORA Foundation Light · 2026-07-01
 -- Amended:     KORA-LINK-S3A — static draft hardening (service_role grants,
 --              REVOKE ALL FROM PUBLIC consistency, obsolete stub cleanup) · 2026-07-12
+-- Amended:     KORA-LINK-S3B — corrected stale aggregate-view wording
+--              (v_tenant_batch_stats never built, superseded by 036's
+--              fn_company_link_status_aggregate RPC), updated TODO-RLS-04/05
+--              status; comment-only, no schema/logic change · 2026-07-12
 -- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
 --              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
 -- Gate:        This file (035) itself: Gate 2/4 OPEN, NOT reviewed, NOT applied to any database.
@@ -11,7 +15,8 @@
 --              NOT extend to 035's own RLS design, which remains its own, separate review.
 --              KORA-LINK-S3A is a draft-only hardening pass (grants/consistency/cleanup) —
 --              it does NOT close Gate 4; worker self-select and company-facing SELECT
---              remain exactly as open as before this pass.
+--              remain exactly as open as before this pass. KORA-LINK-S3B is a comment/
+--              wording-only cleanup — same Gate 4 status, same non-closure.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- STATUS: PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING
@@ -228,7 +233,15 @@ CREATE POLICY "kl_batches_admin_update"
   USING (kora_link.is_kora_admin())
   WITH CHECK (kora_link.is_kora_admin());
 
--- PRIVACY NOTE: Company aggregate batch count view is a future TODO.
+-- PRIVACY NOTE (updated by KORA-LINK-S3B, 2026-07-12): the "future view"
+-- sketched below and in 034's RLS TODO §K was never created and is not
+-- planned. Company aggregate visibility is already implemented as the
+-- SECURITY DEFINER RPC kora_link.fn_company_link_status_aggregate(uuid) in
+-- 036_kora_link_rpc_functions.sql — tenant-scoped, (status, count) only. No
+-- direct company table SELECT policy exists here or is planned. The
+-- aggregate-count suppression threshold ([TODO-RPC-04] in 036) remains an
+-- open CTO/DPO decision, not resolved by this note.
+-- HISTORICAL sketch, kept for design-rationale record only — do not create:
 -- Create view kora_link.v_tenant_batch_stats for COMPANY_ADMIN in a follow-on
 -- migration once aggregate column set is agreed with CTO (see 034 RLS TODO §K).
 
@@ -669,9 +682,21 @@ CREATE POLICY "kl_delivery_admin_update"
 --               (requires cross-schema join to personal.worker_identity)?
 -- [TODO-RLS-02] Approve fn_public_lookup_link return type and TTL logic.
 -- [TODO-RLS-03] Approve fn_activate_link_for_worker concurrency model (SERIALIZABLE vs FOR UPDATE).
--- [TODO-RLS-04] Company aggregate view: approve column set for v_tenant_batch_stats.
--- [TODO-RLS-05] audit_log INSERT via server-side: confirm service_role pattern is
---               sufficient or require a dedicated SECURITY DEFINER INSERT function.
+-- [TODO-RLS-04] UPDATED by KORA-LINK-S3B (2026-07-12): the "v_tenant_batch_stats
+--               view" this item originally referred to was never built and is
+--               not planned — company aggregate visibility is already
+--               implemented as fn_company_link_status_aggregate(uuid) in 036.
+--               What remains open: CTO/DPO confirmation of whether a minimum
+--               chip-count suppression threshold applies (mirrors [TODO-RPC-04]
+--               in 036) — a decision, not an engineering gap.
+-- [TODO-RLS-05] UPDATED by KORA-LINK-S3B (2026-07-12): KORA-LINK-S3A added the
+--               explicit `GRANT SELECT, INSERT ON kora_link.audit_log TO
+--               service_role;` this item asked for (see §0b above). The
+--               mechanical grant now exists. What remains open: CTO
+--               confirmation that this service_role-write pattern is
+--               sufficient, or whether a dedicated SECURITY DEFINER INSERT
+--               function is still preferred — a decision, not an engineering
+--               gap. Gate 4 is not closed by this update.
 -- [TODO-RLS-06] DPO break-glass read on audit_log: design and approve access procedure.
 -- [TODO-DPO-04] fn_activate_link_for_worker: DPO must approve consent_version validation list
 --               before this function can be deployed with real privacy notice text.

@@ -4,6 +4,9 @@
 -- Author:      KORA Foundation Light · 2026-06-30
 -- Amended:     KL-16 — Engineering provisional amendments · 2026-07-01
 -- Reviewed:    KL-19 — Gate 2 technical review closure · 2026-07-04
+-- Amended:     KORA-LINK-S3B — corrected stale RLS-035-K aggregate-view
+--              wording (superseded by 036's fn_company_link_status_aggregate
+--              RPC); comment-only, no schema/logic change · 2026-07-12
 -- Gate:        Gate 2 SUBSTANTIVELY CLOSED (engineering) + Gate 3 OPEN (DPO/legal)
 --              — PROPOSED, NOT APPLIED TO ANY DATABASE.
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -1131,7 +1134,18 @@ COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
 --   • COMPANY_ADMIN: SELECT WHERE tenant_id = kora.tenant_id()
 --   • Others: deny-by-default
 --
--- [RLS-035-K] Company aggregate view:
+-- [RLS-035-K] Company aggregate view: HISTORICAL — superseded by KORA-LINK-S3B
+--   (2026-07-12). The view sketched below (kora_link.v_batch_stats) was never
+--   created. Company aggregate visibility is implemented instead as the
+--   SECURITY DEFINER RPC kora_link.fn_company_link_status_aggregate(uuid) in
+--   036_kora_link_rpc_functions.sql — tenant-scoped, returns only
+--   (status, count) rows, never link_id/worker_id/token_digest. This
+--   RPC-not-view sketch is kept only as the original design-rationale record;
+--   do not create this view. No company-facing direct table SELECT policy
+--   exists or is planned anywhere in this draft — aggregate visibility stays
+--   RPC-only. [TODO-RPC-04] (036): whether a minimum-count suppression
+--   threshold applies to chip counts remains an open CTO/DPO decision, not
+--   resolved by this note.
 --   CREATE VIEW kora_link.v_batch_stats AS
 --   SELECT tenant_id,
 --     COUNT(*) FILTER (WHERE status = 'active'
