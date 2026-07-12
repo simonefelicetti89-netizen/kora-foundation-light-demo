@@ -6,6 +6,26 @@
 
 ---
 
+## KORA-ACTIVATION-LAYER-01 — Define Phase 2 Activation Intelligence Layer
+
+**Data:** 2026-07-12
+**Tipo:** Allineamento concettuale/prodotto — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione DPO/CTO/fiscale/legale presa, nessun calcolo KORA Index modificato, nessuna persistenza creata. Dettaglio completo in `docs/KORA_ACTIVATION_LAYER_01.md`.
+
+Formalizza il **KORA Activation Layer**: la Fase 1 (Raw Data Intelligence — dati organizzativi caricati, classificati, che alimentano il KORA Index esistente) resta separata dalla Fase 2 (Activation Intelligence — segnali generati nativamente dalla piattaforma tramite Catalogo Attività Partner, abilitazione azienda, e scelta volontaria worker). Entrambe le fasi possono alimentare il KORA Index, ma restano due pipeline di segnale distinte — nessuna delle due è stata modificata da questo sprint.
+
+- Creato `docs/KORA_ACTIVATION_LAYER_01.md` — dottrina completa: Fase 1, Fase 2, relazione con KORA Index, confine Contribution, confine privacy, sequenza di implementazione futura (COMPANY-ACTIVITY-SELECTION-01 → WORKER-ACTIVITY-DISCOVERY-01 → PARTNER-ACTIVITY-BOOKINGS-01 → ACTIVATION-SIGNAL-PIPELINE-01 → KORA-INDEX-ACTIVATION-INTEGRATION-01). Include un registro esplicito della collisione di naming su "activation" (già usato per Activation Safeguard, Activation Intelligence™ su `/company/activation`, attivazione fisica KORA Link, e profilo di attivazione worker) — la Fase 2 di questo documento è un quinto concetto distinto, non va confusa con `/company/activation`.
+- Aggiunta `/admin/kora-activation-layer` — mappa di allineamento in sola lettura: modello a due flussi, flow diagram per entrambe le fasi, tabella di confine (sorgente/attore/tipo segnale/privacy/output/stato), stato di implementazione attuale, pannello privacy, sprint successivo raccomandato (COMPANY-ACTIVITY-SELECTION-01).
+- Cross-link aggiunti: `/admin/partner-ecosystem-model` → `/admin/kora-activation-layer`, `/partner/activity-catalog` → `/admin/kora-activation-layer`, e viceversa.
+- Aggiunta voce di navigazione admin "KORA Activation Layer" sotto "Network & Content", accanto a Partner Ecosystem Model.
+
+Creato `tests/unit/kora-activation-layer-01.test.ts` (32 assertion statiche): esistenza route, distinzione Fase 1/Fase 2, principio dei due flussi KORA Index, input dichiarati per entrambe le fasi, nessun calcolo live modificato, stato di implementazione per ciascun componente futuro, confine Contribution, confine privacy, assenza totale di dati worker-level, nessun import Supabase/RPC/env, nessun feature flag, nessuna decisione DPO/CTO/fiscale/legale marcata risolta, navigazione e cross-link presenti, registro della collisione di naming "activation", e invarianti 034/035/036/self-select/company-SELECT/KORA-Index-engine-invariato.
+
+**Nessun file toccato fuori da `app/admin/kora-activation-layer/page.tsx`, i cross-link aggiunti a `app/admin/partner-ecosystem-model/page.tsx` e `app/partner/activity-catalog/page.tsx`, `lib/navigation/admin-nav-groups.ts`, il nuovo test file, e i due doc.** `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro allineamento concettuale, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## PARTNER-ACTIVITY-CATALOG-01 — Standard Partner Activities Catalog Shell
 
 **Data:** 2026-07-12

@@ -252,6 +252,9 @@ export default function PartnerActivityCatalogPage() {
         <Link href="/admin/partner-ecosystem-model" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
           Modello ecosistema Partner →
         </Link>
+        <Link href="/admin/kora-activation-layer" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+          KORA Activation Layer — riferimento di modello →
+        </Link>
       </div>
 
     </div>
