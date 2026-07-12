@@ -59,8 +59,7 @@ export default async function WorkerKoraLinkActivatePage() {
           Attiva il tuo KORA Link — anteprima design
         </h1>
         <p style={{ fontSize: 13.5, color: TOKENS.inkSecondary, margin: 0, lineHeight: 1.6, maxWidth: 620 }}>
-          Anteprima del flusso di attivazione del tuo collegamento fisico–digitale KORA. Nessuna attivazione
-          reale avviene in questa build — nessun chip viene collegato al tuo profilo.
+          Anteprima del flusso di attivazione del tuo collegamento fisico–digitale KORA.
         </p>
       </div>
 
@@ -75,13 +74,12 @@ export default async function WorkerKoraLinkActivatePage() {
         </p>
       </div>
 
-      {/* Mock activation action */}
+      {/* Activation action — disabled preview, no real activation */}
       <Panel>
-        <SectionLabel>Attivazione (mock)</SectionLabel>
+        <SectionLabel>Attivazione</SectionLabel>
         <p style={{ margin: '0 0 14px', fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
-          Nella versione live, avvicinando il telefono al chip fisico KORA Link assegnato dalla tua azienda
-          si aprirà la pagina <code>/link/&lt;token&gt;</code> con richiesta di conferma esplicita.
-          In questa anteprima il pulsante è disabilitato.
+          Avvicinando il telefono al chip fisico KORA Link assegnato dalla tua azienda, si aprirà
+          automaticamente una pagina di conferma sicura con richiesta di consenso esplicita.
         </p>
         <button
           type="button"
@@ -98,7 +96,7 @@ export default async function WorkerKoraLinkActivatePage() {
             cursor: 'not-allowed',
           }}
         >
-          Attiva KORA Link (mock — non attivo)
+          Attiva KORA Link
         </button>
       </Panel>
 

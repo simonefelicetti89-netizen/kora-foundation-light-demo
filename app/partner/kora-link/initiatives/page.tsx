@@ -168,13 +168,51 @@ export default function PartnerKoraLinkInitiativesPage() {
         </div>
       </Panel>
 
+      {/* Come funziona per il partner — mirrors company's "come funzionerebbe la distribuzione" */}
+      <Panel>
+        <SectionLabel>Come funziona per il partner</SectionLabel>
+        <ol style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.8 }}>
+          <li>Il partner completa l&apos;accreditamento e l&apos;iniziativa viene verificata da KORA Admin.</li>
+          <li>Il partner propone l&apos;iniziativa o una sponsorship, con finestra temporale e tipo di evento.</li>
+          <li>La partecipazione viene confermata in modo privacy-safe — nessun dato identificativo del worker.</li>
+          <li>Il partner vede solo segnali aggregati (numero di conferme, non chi ha partecipato).</li>
+        </ol>
+      </Panel>
+
+      {/* Mock action — disabled preview, no real proposal created */}
+      <Panel>
+        <SectionLabel>Proporre una nuova iniziativa</SectionLabel>
+        <p style={{ margin: '0 0 14px', fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+          Nella versione live, un partner accreditato potrà proporre una nuova iniziativa o richiedere
+          una sponsorship direttamente da questa pagina.
+        </p>
+        <button
+          type="button"
+          disabled
+          title="Non attivo in questa anteprima — nessuna iniziativa reale viene creata"
+          style={{
+            fontSize: 12.5,
+            fontWeight: 700,
+            padding: '10px 18px',
+            borderRadius: 10,
+            border: `1px solid ${TOKENS.inkBorder}`,
+            background: 'rgba(6,3,43,0.04)',
+            color: TOKENS.inkHint,
+            cursor: 'not-allowed',
+          }}
+        >
+          Proponi una nuova iniziativa
+        </button>
+      </Panel>
+
       {/* Privacy-safe interaction — mirrors /partner/kora-link */}
       <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Interazione privacy-safe</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Il modello Track A è progettato perché il partner non riceva mai dati identificativi non
-          necessari alla verifica dell&apos;evento — nessun nome, nessun contatto, nessun profilo worker.
-          Solo la conferma minima che un evento verificato è avvenuto.
+          necessari alla verifica dell&apos;evento — nessun nome, nessun contatto, nessun profilo worker,
+          nessun evento di scansione o attivazione individuale. Solo segnali aggregati: la conferma minima
+          che un evento verificato è avvenuto.
         </p>
       </div>
 

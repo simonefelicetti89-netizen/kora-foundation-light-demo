@@ -6,6 +6,26 @@
 
 ---
 
+## KORA-LINK-SHELL-POLISH-01 — Copy/Layout Polish After Shell Review
+
+**Data:** 2026-07-12
+**Tipo:** Copy/layout polish only — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione CTO/DPO presa, nessuna chiusura di gate.
+
+Applicato il polish sprint raccomandato da KORA-LINK-SHELL-01-REVIEW (verdetto: shell da mantenere, nessun rischio blocker, punteggi Company 4/5, Worker 4/5, Partner 3/5, Governance 3/5):
+
+- **CTA labels:** rimossa la parola visibile "mock" dai pulsanti disabilitati di Company e Worker — "Scarica QR / istruzioni (mock)" → "Scarica QR e istruzioni"; "Attiva KORA Link (mock — non attivo)" → "Attiva KORA Link". Lo stato disabilitato e il tooltip esplicativo restano invariati — nessun CTA è stato reso funzionale.
+- **Worker copy:** rimossa la sintassi tecnica `/link/<token>` dal testo rivolto al worker, sostituita con linguaggio semplice ("si aprirà automaticamente una pagina di conferma sicura"). Ridotta la ripetizione di "anteprima"/"non attivo" nel corpo pagina, mantenendo intatti il banner condiviso e il placeholder di consenso in attesa di revisione DPO (Gate 3, invariato parola per parola).
+- **Partner parity:** aggiunto un pannello "Come funziona per il partner" (accreditamento → proposta/sponsorship → conferma privacy-safe → segnali aggregati) e un CTA disabilitato "Proponi una nuova iniziativa", per parità di interazione con Company/Worker. Rinforzato il testo privacy-safe con menzione esplicita di "nessun evento di scansione o attivazione individuale" e "solo segnali aggregati".
+- **Governance readability:** le 6 decisioni aperte sono ora raggruppate per owner (DPO/Legal, CTO, CTO+Founder, CTO+DPO) invece di una lista piatta — raggruppamento derivato da `OPEN_DECISIONS` (nessun dato duplicato o hardcoded). Tutte e 6 restano esplicitamente "Aperta / pending"; nessuna è stata marcata come risolta o decisa.
+
+Aggiornato `tests/unit/kora-link-shell-01.test.ts` con 5 nuovi describe block (16 nuove assertion) a guardia di: assenza di "(mock)" nei CTA label, assenza della sintassi `/link/<token>` nel copy worker, presenza del pannello "Come funziona per il partner" e del CTA partner, raggruppamento per owner in governance, e persistenza del placeholder di consenso DPO-pending dopo il cleanup del copy.
+
+**Nessun file toccato fuori da `app/{company,worker,partner,admin}/kora-link/.../page.tsx` e dal test file** — `supabase/proposed/034/035/036` invariati, worker self-select e company direct SELECT invariati (nessuna modifica a `035_kora_link_rls.sql`), nessun feature flag toccato.
+
+**Gate status invariato:** Gate 2, Gate 3 e Gate 4 restano tutti OPEN — questo step è puro polish di prodotto, non tocca schema, RLS, RPC o governance reale.
+
+---
+
 ## KORA-LINK-SHELL-01 — Multi-Stakeholder No-DB Shell + QA_STATUS Reconciliation
 
 **Data:** 2026-07-12

@@ -169,7 +169,7 @@ function CampaignRow({ campaign }: { campaign: MockCampaign }) {
             cursor: 'not-allowed',
           }}
         >
-          Scarica QR / istruzioni (mock)
+          Scarica QR e istruzioni
         </button>
       </div>
     </div>
