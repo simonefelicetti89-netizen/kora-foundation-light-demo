@@ -6,6 +6,21 @@
 
 ---
 
+## GOVERNANCE-UI-01 — Platform Governance/DPO Surface
+
+**Data:** 2026-07-12
+**Tipo:** Read-only admin UI, KORA-Link-adjacent only — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione CTO/DPO presa, nessun gate chiuso. Dettaglio completo in `docs/GOVERNANCE_UI_01.md`.
+
+Aggiunta `/admin/governance`, prima superficie di governance a livello di piattaforma (non solo KORA Link): panoramica principi privacy, stato gate (riusa `getKoraLinkGates()` da `lib/kora-link/ecosystem.ts`, nessun dato duplicato), registro di 10 decisioni pendenti raggruppate per owner (6 già presenti su `/admin/kora-link/governance` in forma sintetica con rimando, 4 nuove voci più tecniche da `TODO-RLS`/`TODO-RPC` in 035/036), mappa del confine privacy per attore, riferimenti a 6 documenti di evidenza. `/admin/kora-link/governance` aggiornata con un cross-link verso la nuova pagina; nessun contenuto duplicato integralmente. Aggiunto un nuovo gruppo di navigazione admin di primo livello "Governance", separato da "Operations".
+
+Creato `tests/unit/governance-ui-01.test.ts` (23 assertion statiche): esistenza route, nessun import Supabase/RPC/env, tutte e 10 le decisioni restano aperte/nessuna risolta, invarianti privacy dichiarati (azienda aggregate-only, partner worker-initiated, KORA Link proposed), riferimenti ai documenti senza rivendicare verifica fresca, nessun "mock"/"prossimamente"/ID interni in copy visibile, nessun feature flag, integrazione bidirezionale con KORA Link Governance, nav group dedicato, e invarianti 034/035/036/self-select/company-SELECT.
+
+**Nessun file toccato fuori da `app/admin/governance/page.tsx`, un cross-link aggiunto ad `app/admin/kora-link/governance/page.tsx`, `lib/navigation/admin-nav-groups.ts`, il nuovo test file, e i due doc.** `supabase/proposed/034/035/036` invariati, worker self-select e company direct SELECT invariati, nessun feature flag toccato.
+
+**Gate status invariato:** Gate 2, Gate 3 e Gate 4 restano tutti OPEN — questo step non tocca schema, RLS, RPC o governance reale, ed è puramente una superficie di lettura/registro.
+
+---
+
 ## PARTNER-SURFACE-POLISH-01 — Terminology Cleanup After Partner Review
 
 **Data:** 2026-07-12

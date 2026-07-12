@@ -35,6 +35,13 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
     ],
   },
   {
+    id:    'governance',
+    label: 'Privacy & Governance',
+    items: [
+      { label: 'Governance & Privacy',   href: '/admin/governance' },
+    ],
+  },
+  {
     id:    'operations',
     label: 'Operations',
     items: [

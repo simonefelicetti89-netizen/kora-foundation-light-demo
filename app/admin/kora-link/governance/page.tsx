@@ -174,6 +174,15 @@ export default function KoraLinkGovernancePage() {
         </Link>
       </p>
 
+      {/* Cross-link to the platform-wide register — this page stays KORA Link-specific. */}
+      <p style={{ fontSize: 12, color: TOKENS.inkHint, margin: 0 }}>
+        Per il registro di governance a livello di piattaforma (principi, confine privacy, decisioni
+        oltre KORA Link), vedi{' '}
+        <Link href="/admin/governance" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+          Governance &amp; Privacy
+        </Link>.
+      </p>
+
     </div>
   );
 }

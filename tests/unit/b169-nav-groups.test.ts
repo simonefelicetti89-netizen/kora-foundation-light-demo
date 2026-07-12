@@ -19,14 +19,17 @@ function exists(rel: string): boolean {
 // ── Group count and IDs ───────────────────────────────────────────────────────
 
 describe('ADMIN_NAV_GROUPS — structure', () => {
-  it('has exactly 6 groups', () => {
-    expect(ADMIN_NAV_GROUPS).toHaveLength(6);
+  it('has exactly 7 groups', () => {
+    // GOVERNANCE-UI-01 added a dedicated 'governance' group — platform-wide
+    // credibility surface, deliberately not nested inside 'operations'.
+    expect(ADMIN_NAV_GROUPS).toHaveLength(7);
   });
 
-  it('group IDs are: pilot-lifecycle, companies, operations, network-content, demo-lab, platform', () => {
+  it('group IDs are: pilot-lifecycle, companies, governance, operations, network-content, demo-lab, platform', () => {
     const ids = ADMIN_NAV_GROUPS.map((g) => g.id);
     expect(ids).toContain('pilot-lifecycle');
     expect(ids).toContain('companies');
+    expect(ids).toContain('governance');
     expect(ids).toContain('operations');
     expect(ids).toContain('network-content');
     expect(ids).toContain('demo-lab');
