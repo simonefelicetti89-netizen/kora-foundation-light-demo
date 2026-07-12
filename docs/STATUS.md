@@ -74,3 +74,4 @@ Be precise about this — overclaiming here defeats the purpose of the document.
 | `QA_STATUS.md` | Test coverage and E2E checkpoint detail |
 | `KORA_LINK_STATUS.md` | KORA Link frozen status and future integration design |
 | `CHANGELOG.md` | Dated log of consolidation/reconciliation work |
+| `B174_COMPANY_B_AND_DEMO_TIGHTENING_PLAN.md` | Planning doc (not executed) for Company B state reconciliation and demo tightening — flags that this document's COMPANY_B claim above may be stale relative to `E2E_TWO_TENANT_ISOLATION.md`/`E2E_GOLDEN_PATH.md`; see that plan's §4a before citing COMPANY_B status from this file |
