@@ -15,6 +15,8 @@
 
 **Still not live-reverified after B174-A2.** The recommended next step remains a fresh, operator-approved re-confirmation of the 2026-07-09 session before any of it is cited in a client-facing claim or used as the basis for demo-tightening validation (B174-C in §11 below).
 
+**B174-A3 (fresh staging confirmation attempt, 2026-07-12)** got as far as a read-only safety preflight and stopped there — no `A02`/`A03`/`A04`/`T01`/`T02`/`GD01` was run. The preflight found the configured `E2E_BASE_URL` hostname ambiguous (it matches the hostname documented elsewhere as Production) and `E2E_ALLOW_PRODUCTION=true` persistently set in `.env.e2e.local`, which together would have let a run target a production-looking host without being blocked. See `docs/issue-drafts/b174-a3b-staging-confirmation-safety.md` for the full safety checklist that must be resolved before a fresh confirmation can safely proceed.
+
 ---
 
 ## 1. Executive summary
