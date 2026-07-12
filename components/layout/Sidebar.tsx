@@ -210,6 +210,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         heading: 'Catalogo Attività',
         items: [
           { href: '/partner/activity-catalog', label: 'Catalogo Attività', description: 'Anteprima design — dati mock', preview: true },
+          { href: '/partner/activity-bookings', label: 'Richieste attività', description: 'Anteprima design — dati mock', preview: true },
         ],
       },
       {

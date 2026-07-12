@@ -6,6 +6,27 @@
 
 ---
 
+## PARTNER-ACTIVITY-BOOKINGS-01 — Partner Worker-Initiated Bookings/Requests Shell
+
+**Data:** 2026-07-13
+**Tipo:** No-DB/no-RLS UI shell — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione DPO/CTO/fiscale/legale presa, nessuna persistenza reale, nessuna notifica reale, nessuna condivisione worker reale, nessun aggiornamento di stato reale. Dettaglio completo in `docs/PARTNER_ACTIVITY_BOOKINGS_01.md`.
+
+Segue `WORKER-ACTIVITY-DISCOVERY-01` (discovery worker) e `PARTNER-ACTIVITY-CATALOG-01` (catalogo), costruendo il quarto passo operativo di Fase 2: come il partner vedrebbe le azioni avviate volontariamente dai worker (prenotazione, candidatura, richiesta di contatto, riscatto voucher, richiesta informazioni).
+
+- Creato `lib/partner-activities/bookings.ts` — modello statico puro (`PartnerActivityBookingPreview`, 6 richieste mock, una per tipo di azione, stati variati). Nomi mock fittizi deliberatamente distinti dal set già usato in `/partner/relationships` (Federica Moretti, Luca Santoro, Chiara Ricci, Alessandro Bruno, Valentina Colombo, Matteo Gallo). Ogni record ha `companyVisibility: 'aggregate_only'` e `consentBasis: 'worker_initiated'` fissi.
+- Aggiunta `/partner/activity-bookings` — introduzione Fase 2, card di riepilogo, elenco richieste, pannello confine dati worker, pannello azienda aggregate-only (cosa potrebbe/non potrebbe mai includere), anteprima flusso di stato a 6 stati (non funzionale), note KORA Index e Contribution.
+- Aggiunta `/partner/activity-bookings/detail` — anteprima statica di dettaglio per una richiesta di esempio (non route dinamica), con cronologia stato in anteprima.
+- Aggiunta voce di navigazione partner "Richieste attività" sotto "Catalogo Attività" (badge `preview`).
+- Cross-link aggiunti in entrambe le direzioni con `/partner/activity-catalog`, `/worker/activity-discovery`, `/admin/kora-activation-layer`, `/partner/privacy-boundary`, e da `/partner/relationships`.
+
+Creato `tests/unit/partner-activity-bookings-01.test.ts` (54 assertion statiche): esistenza route/modello, framing Fase 2, linguaggio Attività (non Iniziativa), riuso del catalogo statico, nominativi worker solo in contesto worker-initiated (e distinti dal set `/partner/relationships`), base di consenso/visibilità dichiarata, confine azienda aggregate-only, tutti e 5 i tipi di azione, tutti e 6 gli stati, categoria fiscale + pilastro, confine KORA Index/Contribution, assenza di controlli company-only, nessun import Supabase/RPC/env, nessuna `fetch`/`onClick`/`'use server'`/funzione di mutazione esportata, nessun feature flag, nessuna decisione DPO/CTO/fiscale/legale marcata risolta, navigazione e cross-link presenti, assenza di dati sensibili (sanitari/sindacali/politici) nei record mock, integrità del modello statico, e invarianti 034/035/036/self-select/company-SELECT/KORA-Index-engine/commons-invariati.
+
+**Nessun file toccato fuori da `lib/partner-activities/bookings.ts`, `app/partner/activity-bookings/page.tsx`, `app/partner/activity-bookings/detail/page.tsx`, cross-link aggiunti a `app/partner/activity-catalog/page.tsx` e `app/partner/relationships/page.tsx`, `components/layout/Sidebar.tsx` (nav), il nuovo test file, e i due doc.** `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `lib/partner-activities/catalog.ts` (solo importato, mai modificato), e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro shell UI, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## WORKER-ACTIVITY-DISCOVERY-01 — Worker Activity Discovery Shell
 
 **Data:** 2026-07-12
