@@ -2,11 +2,16 @@
 -- Migration:   035_kora_link_rls
 -- Feature:     KL-17 — KORA Link v1 — Row Level Security Policies
 -- Author:      KORA Foundation Light · 2026-07-01
+-- Amended:     KORA-LINK-S3A — static draft hardening (service_role grants,
+--              REVOKE ALL FROM PUBLIC consistency, obsolete stub cleanup) · 2026-07-12
 -- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
 --              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
 -- Gate:        This file (035) itself: Gate 2/4 OPEN, NOT reviewed, NOT applied to any database.
 --              Its dependency (034) closed its own engineering review at KL-19 — that does
 --              NOT extend to 035's own RLS design, which remains its own, separate review.
+--              KORA-LINK-S3A is a draft-only hardening pass (grants/consistency/cleanup) —
+--              it does NOT close Gate 4; worker self-select and company-facing SELECT
+--              remain exactly as open as before this pass.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- STATUS: PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING
@@ -120,6 +125,40 @@ $$;
 GRANT USAGE ON SCHEMA kora_link TO authenticated, anon;
 
 
+-- ── 0b. service_role grants (KORA-LINK-S3A) ────────────────────────────────────
+--
+-- service_role bypasses RLS entirely (a Postgres role attribute), but that
+-- does NOT imply it holds ordinary table/schema privileges — those are a
+-- separate, independent privilege layer. Migrations 032 (network schema) and
+-- 033 (personal.worker_identity) both had to retroactively fix the identical
+-- gap: a new schema/table created without an explicit service_role grant
+-- fails every service_role query with `42501 permission denied`, evaluated
+-- before RLS ever runs. This section closes that same gap here, before it is
+-- ever discovered against a real database.
+--
+-- Explicit, named grants only — no `GRANT ALL ON ALL TABLES IN SCHEMA`, per
+-- 032's own deliberate precedent (a future table added to kora_link needs its
+-- own reviewed grant, not silent inheritance). Verb sets mirror exactly what
+-- `authenticated` already receives per table below — service_role gets no
+-- more capability than the RLS-gated KORA_ADMIN path already has; it simply
+-- bypasses the RLS check itself, the standard service_role model already used
+-- by server-side/admin tooling elsewhere in this repo. No DELETE grant on any
+-- table — mirrors the `REVOKE DELETE ... FROM PUBLIC` pattern applied
+-- per-table below.
+
+GRANT USAGE ON SCHEMA kora_link TO service_role;
+
+GRANT SELECT, INSERT, UPDATE ON kora_link.link_batches          TO service_role;
+GRANT SELECT, INSERT, UPDATE ON kora_link.links                 TO service_role;
+GRANT SELECT, INSERT, UPDATE ON kora_link.link_assignments      TO service_role;
+GRANT SELECT, INSERT         ON kora_link.link_consents         TO service_role;
+GRANT SELECT, INSERT         ON kora_link.link_events           TO service_role;
+GRANT SELECT, INSERT         ON kora_link.revocations           TO service_role;
+GRANT SELECT, INSERT         ON kora_link.link_replacements     TO service_role;
+GRANT SELECT, INSERT         ON kora_link.audit_log             TO service_role;
+GRANT SELECT, INSERT, UPDATE ON kora_link.link_delivery_records TO service_role;
+
+
 -- ── 1. Helper function ────────────────────────────────────────────────────────
 --
 -- kora_link.is_kora_admin()
@@ -136,6 +175,13 @@ AS $$
   SELECT kora.kora_role() = 'KORA_ADMIN'
 $$;
 
+-- KORA-LINK-S3A: REVOKE ALL FROM PUBLIC before the selective GRANT below,
+-- for consistency with every SECURITY DEFINER function in 036 (which already
+-- follows this pattern, itself inherited from migration 031's hardening
+-- fix). Low severity here specifically — SECURITY INVOKER means no privilege
+-- elevation even if PUBLIC could call it — but the file should not have one
+-- function that skips its own otherwise-consistent convention.
+REVOKE ALL ON FUNCTION kora_link.is_kora_admin() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION kora_link.is_kora_admin() TO authenticated;
 
 COMMENT ON FUNCTION kora_link.is_kora_admin() IS
@@ -553,35 +599,11 @@ CREATE POLICY "kl_delivery_admin_update"
 --   D-04: TTL checked inside function: reject if status='generated' AND expired
 --   Rate limiting: Upstash handles upstream; function does NOT implement DB rate limit
 --
--- STUB (do not uncomment until conditions above are met):
--- CREATE OR REPLACE FUNCTION kora_link.fn_public_lookup_link(
---   p_token_digest text
--- )
--- RETURNS TABLE (
---   link_id                   uuid,
---   status                    text,
---   pre_activation_expires_at timestamptz,
---   tenant_id                 uuid
--- )
--- LANGUAGE plpgsql
--- SECURITY DEFINER
--- SET search_path = kora_link, kora, public
--- AS $$
--- BEGIN
---   RETURN QUERY
---   SELECT l.id, l.status, l.pre_activation_expires_at, l.tenant_id
---   FROM kora_link.links l
---   WHERE l.token_digest = p_token_digest
---     AND l.status NOT IN ('revoked', 'replaced', 'orphaned', 'suspended')
---   LIMIT 1;
--- END;
--- $$;
--- REVOKE ALL ON FUNCTION kora_link.fn_public_lookup_link(text) FROM PUBLIC;
--- GRANT EXECUTE ON FUNCTION kora_link.fn_public_lookup_link(text) TO anon, authenticated;
--- COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
---   'SECURITY DEFINER — public token lookup. Returns minimum fields. '
---   'Never returns worker_id, token_digest, batch_id, or PII. '
---   'D-07: single HMAC. D-04: TTL check inside. Rate limit: Upstash upstream.';
+-- KORA-LINK-S3A: historical placeholder SQL removed/superseded by
+-- 036_kora_link_rpc_functions.sql (fn_public_lookup_link) — do not
+-- implement here. The purpose/inputs/outputs/privacy-constraint prose
+-- above remains the original design-rationale record; 036 is authoritative
+-- for the actual implementation.
 --
 -- ────────────────────────────────────────────────────────────────────────────
 -- FUNCTION SPEC B: fn_activate_link_for_worker
@@ -605,34 +627,11 @@ CREATE POLICY "kl_delivery_admin_update"
 --   cross-schema join requires RLS on personal.worker_identity to allow SECDEF read
 --   Uses SERIALIZABLE isolation or SELECT FOR UPDATE on links row to prevent races
 --
--- STUB (do not uncomment until conditions above are met):
--- CREATE OR REPLACE FUNCTION kora_link.fn_activate_link_for_worker(
---   p_token_digest    text,
---   p_consent_version text
--- )
--- RETURNS jsonb
--- LANGUAGE plpgsql
--- SECURITY DEFINER
--- SET search_path = kora_link, kora, personal, public
--- AS $$
--- DECLARE
---   v_link         kora_link.links%ROWTYPE;
---   v_worker_id    uuid;
---   v_assignment_id uuid;
---   v_consent_id    uuid;
--- BEGIN
---   -- Placeholder: implementation deferred to post-Gate-2/3.
---   -- See KL-17 TODO spec for full logic.
---   RETURN jsonb_build_object('success', false, 'error_code', 'not_implemented');
--- END;
--- $$;
--- REVOKE ALL ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) FROM PUBLIC;
--- GRANT EXECUTE ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) TO authenticated;
--- COMMENT ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) IS
---   'SECURITY DEFINER — atomic worker activation. '
---   'Creates link_assignments + link_consents + updates links.status atomically. '
---   'Validates tenant match, consent version, token status. '
---   'Returns minimum jsonb — never returns token_digest or assignment_id.';
+-- KORA-LINK-S3A: historical placeholder SQL removed/superseded by
+-- 036_kora_link_rpc_functions.sql (fn_activate_link_for_worker) — do not
+-- implement here. The purpose/inputs/outputs/privacy-constraint prose
+-- above remains the original design-rationale record; 036 is authoritative
+-- for the actual implementation.
 --
 -- ────────────────────────────────────────────────────────────────────────────
 -- FUNCTION SPEC C: fn_revoke_link
@@ -730,12 +729,21 @@ COMMIT;
 --    WHERE schemaname = 'kora_link' AND cmd = 'DELETE';
 --    Expected: 0 rows.
 --
--- 6. Confirm schema USAGE granted to authenticated and anon:
+-- 6. Confirm schema USAGE granted to authenticated, anon, and service_role:
 --    SELECT grantee, privilege_type
 --    FROM information_schema.role_usage_grants
 --    WHERE object_schema = 'kora_link'
 --    ORDER BY grantee;
---    Expected: authenticated USAGE, anon USAGE.
+--    Expected: authenticated USAGE, anon USAGE, service_role USAGE.
+--
+-- 6b. Confirm service_role table grants exist on all 9 tables (KORA-LINK-S3A):
+--    SELECT table_name, privilege_type
+--    FROM information_schema.role_table_grants
+--    WHERE table_schema = 'kora_link' AND grantee = 'service_role'
+--    ORDER BY table_name, privilege_type;
+--    Expected: 9 tables present, each with SELECT/INSERT (+ UPDATE on
+--    link_batches, links, link_assignments, link_delivery_records) —
+--    matching the same verb set already granted to authenticated per table.
 --
 -- 7. Confirm no SECURITY DEFINER functions (TODO/spec only in KL-17):
 --    SELECT routine_name
