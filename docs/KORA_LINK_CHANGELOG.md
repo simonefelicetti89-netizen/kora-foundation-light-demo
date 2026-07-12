@@ -6,6 +6,27 @@
 
 ---
 
+## PARTNER-ACTIVITY-CATALOG-01 — Standard Partner Activities Catalog Shell
+
+**Data:** 2026-07-12
+**Tipo:** No-DB/no-RLS UI shell + static model — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione DPO/CTO/fiscale/legale presa, nessun booking reale costruito. Dettaglio completo in `docs/PARTNER_ACTIVITY_CATALOG_01.md`.
+
+Segue `PARTNER-ECOSYSTEM-MODEL-01`, che aveva formalizzato la Corsia B (Partner Activity Catalog/KORA Index Activities) come concetto futuro non implementato. Questo sprint costruisce la prima anteprima:
+
+- Creato `lib/partner-activities/catalog.ts` — modello statico puro (tipi, etichette italiane, 8 attività mock, funzioni di accesso pure e riepilogo derivato). Non è un'iniziativa: non tocca `commons.post`/`commons.booking`/`commons.contribution_event`, non importa/modifica `data/synthetic/action-taxonomy.json`.
+- Aggiunta `/partner/activity-catalog` — catalogo raggruppato per categoria fiscale, con card di riepilogo, nota privacy e nota di classificazione fiscale (metadato proposto, non approvazione).
+- Aggiunta `/partner/activity-catalog/[activityId]` — dettaglio attività: classificazione, mappatura pilastri, modalità future di selezione azienda, azione futura worker, anteprima segnale KORA Index (mai reale), confine privacy, disclaimer fiscale/legale.
+- Chiarito `/partner/initiatives`: aggiunto cross-link verso `/partner/activity-catalog` come corsia separata. Aggiornata anche l'etichetta di navigazione da "Iniziative Partner" a "Proposte Partner" per coerenza con il copy già introdotto in PARTNER-ECOSYSTEM-MODEL-01.
+- Aggiunta voce di navigazione partner "Catalogo Attività" (badge `preview`).
+
+Creato `tests/unit/partner-activity-catalog-01.test.ts` (43 assertion statiche): esistenza route/modello, linguaggio "Attività" mai "Iniziativa" per gli oggetti catalogo, distinzione da Proposte Partner/KORA Space, output dichiarati (KORA Index vs mai Contribution diretto), categoria fiscale + stato revisione senza claim di approvazione, mappatura pilastri, modello azione futura worker, assenza totale di dati worker-level, confine privacy (azienda aggregate-only, partner worker-initiated), nessun import Supabase/RPC/env, nessun feature flag, integrità del modello statico (summary derivato correttamente, nessun `contributionEligibility` implica feed diretto), nessuna decisione DPO/CTO/fiscale/legale marcata risolta, `/partner/initiatives` ancora chiaro, voce di navigazione, e invarianti 034/035/036/self-select/company-SELECT.
+
+**Nessun file toccato fuori da `lib/partner-activities/catalog.ts`, `app/partner/activity-catalog/page.tsx`, `app/partner/activity-catalog/[activityId]/page.tsx`, il copy/cross-link di `app/partner/initiatives/page.tsx`, `components/layout/Sidebar.tsx` (nav), il nuovo test file, e i due doc.** `commons.post`, `commons.booking`, `commons.contribution_event`, il calcolo del KORA Index, `data/synthetic/action-taxonomy.json`, e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro shell UI/modello statico, non tocca schema, RLS, RPC o governance reale.
+
+---
+
 ## PARTNER-ECOSYSTEM-MODEL-01 — Align Initiatives vs Partner Activities
 
 **Data:** 2026-07-12
