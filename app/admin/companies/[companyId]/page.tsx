@@ -3,7 +3,7 @@
 // Scopo: dare a KORA Admin visibilità completa su pipeline, scoring, evidenze,
 //        decisioni e stato operativo di un'azienda specifica.
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
 import Link from 'next/link';
 import { tenantService } from '@/services/tenant/TenantService';
@@ -37,6 +37,13 @@ function eur(v: number) { return `€${v.toLocaleString('it-IT')}`; }
 export default function AdminCompanyControlRoom({ params }: { params: { companyId: string } }) {
   const { companyId } = params;
   const [feedback, setFeedback] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // B175: computed client-side only, after mount — avoids SSR/client hydration
+  // mismatch (server ICU build vs browser Intl, and render-time wall clock skew).
+  const [todayLabel, setTodayLabel] = useState<string | null>(null);
+  useEffect(() => {
+    setTodayLabel(new Date().toLocaleDateString('it-IT'));
+  }, []);
 
   const tenant = tenantService.getTenant(companyId);
   const intakeSummary = companyDataIntakeService.getDataReadinessSummary(companyId);
@@ -112,7 +119,7 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           )}
         </div>
         <p className="text-[10px] font-mono text-[rgba(6,3,43,0.40)] mt-0.5">
-          tenant_id: {tenant.tenant_id} · company_id: {companyId} · {new Date().toLocaleDateString('it-IT')}
+          tenant_id: {tenant.tenant_id} · company_id: {companyId} · {todayLabel ?? '—'}
         </p>
       </div>
 
