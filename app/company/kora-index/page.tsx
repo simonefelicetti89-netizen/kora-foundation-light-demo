@@ -13,7 +13,6 @@ import { equityAccessIntelligenceService }        from '@/services/equity-access
 import { evidenceReliabilityIntelligenceService } from '@/services/evidence-reliability/EvidenceReliabilityIntelligenceService';
 import { lifeDiversityService }                   from '@/services/life-diversity/LifeDiversityService';
 import { careEconomyIntelligenceService }         from '@/services/care-economy/CareEconomyIntelligenceService';
-import { uefReviewService }                       from '@/services/uef-review/UEFReviewService';
 import { generateLiveRecommendations }            from '@/lib/live/live-recommendations';
 import { generateLiveBoardActions }               from '@/lib/live/live-board-actions';
 import { computeExecutiveIntelligence }           from '@/services/executive-intelligence/ExecutiveIntelligenceService';
@@ -225,11 +224,15 @@ export default function KoraIndexDetail() {
     calibration_status:      'pre_empirical_calibration',
   } : null;
 
-  // Fall back to the mock UEF summary only when liveCtx is absent.
-  const uefSummaryForEvidence = liveUefSummary ?? uefReviewService.getReviewSummary();
-  const evidenceReliability   = evidenceReliabilityIntelligenceService.compute(
-    liveIuSummary, uefSummaryForEvidence, confidence ?? null, koraRole,
-  );
+  // DEMO-GUARD-01: no synthetic fallback. When liveCtx has not resolved yet
+  // (loading, or /api/company/live-eligibility failed), evidenceReliability
+  // stays null and the panel below renders a pending/unavailable state —
+  // never synthetic seed content on this live page.
+  const evidenceReliability = liveCtx
+    ? evidenceReliabilityIntelligenceService.compute(
+        liveIuSummary, liveUefSummary, confidence ?? null, koraRole,
+      )
+    : null;
 
   // ── LIFE Diversity & Care Economy Intelligence™ ───────────────────────────
   const lifePillarShare = (aggregate?.pillar_distribution?.['LIFE'] as number | undefined) ?? 0;
@@ -519,6 +522,25 @@ export default function KoraIndexDetail() {
         </div>
 
         {/* Evidence Reliability Intelligence™ */}
+        {!evidenceReliability && !liveCtx && evidenceReliabilityIntelligenceService.canAccess(koraRole) && (
+          <div
+            data-testid="evidence-reliability-pending"
+            style={{
+              marginTop:    16,
+              background:   TOKENS.surface,
+              border:       TOKENS.cardBorder,
+              borderRadius: TOKENS.cardRadius,
+              padding:      '0.875rem 1.25rem',
+            }}
+          >
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '13px', color: TOKENS.ink, marginBottom: 4 }}>
+              Evidence Reliability Intelligence™
+            </p>
+            <p style={{ fontSize: '12px', color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
+              Dati evidenza non ancora disponibili per questo periodo. Nessun dato sintetico viene mostrato al posto dei dati live.
+            </p>
+          </div>
+        )}
         {evidenceReliability && (
           <div style={{
             marginTop:    16,
