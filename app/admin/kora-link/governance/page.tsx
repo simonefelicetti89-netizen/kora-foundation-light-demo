@@ -79,6 +79,10 @@ const OPEN_DECISIONS: OpenDecision[] = [
   },
 ];
 
+// Derived, not hardcoded — preserves OPEN_DECISIONS as the single source of
+// truth and keeps first-appearance order stable across re-renders.
+const OWNER_GROUPS: string[] = Array.from(new Set(OPEN_DECISIONS.map((d) => d.owner)));
+
 export default function KoraLinkGovernancePage() {
   const context = getKoraLinkEcosystemContext();
   const gates = getKoraLinkGates(context.gateStatus);
@@ -111,43 +115,51 @@ export default function KoraLinkGovernancePage() {
         </p>
       </div>
 
-      {/* Open decisions register */}
+      {/* Open decisions register — grouped by owner so DPO/Legal, CTO, and joint
+          decisions can be scanned separately instead of as one flat list. */}
       <Panel>
-        <SectionLabel>Decisioni aperte</SectionLabel>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {OPEN_DECISIONS.map((d) => (
-            <div
-              key={d.id}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 6,
-                padding: '14px 16px',
-                borderRadius: TOKENS.cardRadiusSm,
-                border: TOKENS.cardBorder,
-                background: '#fff',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: TOKENS.ink }}>{d.question}</p>
-                <span
+        <SectionLabel>Decisioni aperte, per owner</SectionLabel>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {OWNER_GROUPS.map((owner) => (
+            <div key={owner} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: TOKENS.inkHint, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                {owner}
+              </p>
+              {OPEN_DECISIONS.filter((d) => d.owner === owner).map((d) => (
+                <div
+                  key={d.id}
                   style={{
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    padding: '3px 10px',
-                    borderRadius: 999,
-                    background: 'rgba(217,154,43,0.12)',
-                    color: '#8A5A00',
-                    whiteSpace: 'nowrap',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 6,
+                    padding: '14px 16px',
+                    borderRadius: TOKENS.cardRadiusSm,
+                    border: TOKENS.cardBorder,
+                    background: '#fff',
                   }}
                 >
-                  Aperta / pending
-                </span>
-              </div>
-              <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 11.5, color: TOKENS.inkSecondary }}>
-                <span>Owner: {d.owner}</span>
-                <span>Bloccata da: {d.blockedGate}</span>
-              </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: TOKENS.ink }}>{d.question}</p>
+                    <span
+                      style={{
+                        fontSize: 10.5,
+                        fontWeight: 700,
+                        padding: '3px 10px',
+                        borderRadius: 999,
+                        background: 'rgba(217,154,43,0.12)',
+                        color: '#8A5A00',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Aperta / pending
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', fontSize: 11.5, color: TOKENS.inkSecondary }}>
+                    <span>Owner: {d.owner}</span>
+                    <span>Bloccata da: {d.blockedGate}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>

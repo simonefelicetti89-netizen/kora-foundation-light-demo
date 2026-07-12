@@ -199,6 +199,76 @@ describe('KORA Link shell 01 — navigation uses the established preview convent
   });
 });
 
+describe('KORA Link shell polish 01 — no visible CTA label contains the debug-flavored "(mock)" suffix', () => {
+  for (const page of SHELL_PAGES) {
+    it(`${page} has no <button> block containing "(mock"`, () => {
+      const source = readSource(page);
+      const buttonBlocks = source.match(/<button[\s\S]*?<\/button>/g) ?? [];
+      for (const block of buttonBlocks) {
+        expect(block.toLowerCase(), `${page}: a <button> block must not contain "(mock"`).not.toContain('(mock');
+      }
+    });
+  }
+});
+
+describe('KORA Link shell polish 01 — worker copy never exposes raw /link/<token> route syntax', () => {
+  it('app/worker/kora-link/activate/page.tsx describes activation in plain language, not URL syntax', () => {
+    const source = readSource('app/worker/kora-link/activate/page.tsx');
+    expect(source).not.toMatch(/\/link\/&lt;token&gt;/);
+    expect(source).not.toMatch(/\/link\/<token>/);
+  });
+});
+
+describe('KORA Link shell polish 01 — partner shell has workflow explanation and CTA parity with company', () => {
+  const source = readSource('app/partner/kora-link/initiatives/page.tsx');
+
+  it('has a "Come funziona per il partner" explanatory panel', () => {
+    expect(source).toContain('Come funziona per il partner');
+  });
+
+  it('has at least one disabled CTA, matching the company/worker interaction pattern', () => {
+    const buttonBlocks = source.match(/<button[\s\S]*?<\/button>/g) ?? [];
+    expect(buttonBlocks.length).toBeGreaterThan(0);
+    expect(buttonBlocks.some((b) => /disabled/.test(b))).toBe(true);
+  });
+
+  it('reinforces no worker identity, no individual scan/activation event, aggregate-only insight', () => {
+    expect(source).toMatch(/nessun profilo worker/);
+    expect(source).toMatch(/nessun evento di scansione o attivazione individuale/);
+    expect(source).toMatch(/segnali aggregati/);
+  });
+});
+
+describe('KORA Link shell polish 01 — governance decisions are grouped, not a flat undifferentiated list', () => {
+  const source = readSource('app/admin/kora-link/governance/page.tsx');
+
+  it('groups OPEN_DECISIONS by owner via a derived OWNER_GROUPS list', () => {
+    expect(source).toMatch(/OWNER_GROUPS/);
+    expect(source).toMatch(/OPEN_DECISIONS\.filter\(\(d\) => d\.owner === owner\)/);
+  });
+
+  it('still renders all six decisions as open/pending after grouping (no data lost, none resolved)', () => {
+    const decisionIdCount = (source.match(/id: '[a-z-]+',/g) ?? []).length;
+    expect(decisionIdCount).toBe(6);
+    expect(source).toContain('Aperta / pending');
+    expect(source).not.toMatch(/status:\s*['"]resolved['"]/i);
+    expect(source).not.toMatch(/status:\s*['"]closed['"]/i);
+  });
+
+  it('still states explicitly that no CTO/DPO decision is made or implied', () => {
+    expect(source).toMatch(/Nessuna decisione CTO o DPO viene presa o implicata/);
+  });
+});
+
+describe('KORA Link shell polish 01 — worker DPO-pending consent placeholder survives the copy cleanup', () => {
+  it('consent text is still explicitly flagged as pending DPO review, not final, not binding', () => {
+    const source = readSource('app/worker/kora-link/activate/page.tsx');
+    expect(source).toMatch(/attesa di revisione DPO/);
+    expect(source).toMatch(/non è\s*\n?\s*ancora stato approvato/);
+    expect(source).toMatch(/provvisoria e non vincolante/);
+  });
+});
+
 describe('KORA Link shell 01 — proposed SQL remains untouched and unapplied', () => {
   it('034/035/036 are still explicitly documented as proposed, not applied', () => {
     for (const file of [
