@@ -122,13 +122,16 @@ export default function PartnerAggregateSignalsPage() {
         </div>
       </Panel>
 
-      {/* No individual data — explicit, prominent */}
+      {/* No individual data — explicit, prominent. Threshold-pending language lives
+          only in the banner above; this panel adds specificity, not repetition. */}
       <div style={{ background: '#fffaf5', border: `1px dashed ${TOKENS.inkBorder}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
         <SectionLabel>Nessun dato individuale</SectionLabel>
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           Questa pagina non mostrerà mai nomi, email, identificativi worker (worker_id), tag UID, singoli
-          eventi di scansione o singole attivazioni. Solo aggregati — la stessa soglia minima di aggregazione
-          applicata al resto della piattaforma, la cui definizione esatta resta in attesa di decisione CTO/DPO.
+          eventi di scansione o singole attivazioni — solo aggregati. Per questi stessi segnali, anche
+          l&apos;azienda riceve unicamente output aggregati, mai il dettaglio disaggregato. I nominativi
+          possono comparire solo nella vista Relazioni con i lavoratori, e solo per relazioni avviate
+          volontariamente dal lavoratore.
         </p>
       </div>
 

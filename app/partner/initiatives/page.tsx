@@ -31,12 +31,15 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 type InitiativeStatus = 'Draft' | 'In review' | 'Verified' | 'Active' | 'Closed';
 
+// Visible labels are deliberately distinct from /partner/kora-link/initiatives'
+// (Bozza/Verificata) — this is a different pipeline (proposal/sponsorship/adoption,
+// not Track A scan accreditation) and must not read as the same one.
 const STATUS_LABEL: Record<InitiativeStatus, string> = {
-  Draft: 'Bozza',
-  'In review': 'In revisione',
-  Verified: 'Verificata',
+  Draft: 'In preparazione',
+  'In review': 'In valutazione',
+  Verified: 'Approvata',
   Active: 'Attiva',
-  Closed: 'Chiusa',
+  Closed: 'Conclusa',
 };
 
 const STATUS_COLOR: Record<InitiativeStatus, { bg: string; text: string }> = {
@@ -89,7 +92,7 @@ const MOCK_INITIATIVES: MockInitiative[] = [
     name: 'Programma di ergonomia e prevenzione posturale',
     status: 'Draft',
     pillar: 'LIFE',
-    engagementState: 'Bozza — non ancora inviata per revisione',
+    engagementState: 'In preparazione — non ancora inviata per valutazione',
     aggregateInterest: 'Basso',
   },
   {

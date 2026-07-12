@@ -30,10 +30,15 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 function BoundaryList({ title, items, tone }: { title: string; items: string[]; tone: 'can' | 'cannot' }) {
+  // Left accent border reuses the same pass/cap safeguard colors already used
+  // for the title — a scan cue so "can/cannot" reads at a glance, not a new palette.
   const color = tone === 'can' ? TOKENS.safeguard.pass.text : TOKENS.safeguard.cap.text;
+  const accentBg = tone === 'can' ? TOKENS.safeguard.pass.bg : TOKENS.safeguard.cap.bg;
   return (
-    <div style={{ background: '#fff', border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
-      <p style={{ margin: '0 0 10px', fontSize: 12.5, fontWeight: 700, color }}>{title}</p>
+    <div style={{ background: '#fff', border: TOKENS.cardBorder, borderLeft: `3px solid ${color}`, borderRadius: TOKENS.cardRadiusSm, padding: '16px 18px' }}>
+      <p style={{ display: 'inline-block', margin: '0 0 10px', fontSize: 11.5, fontWeight: 700, color, background: accentBg, padding: '2px 8px', borderRadius: 999 }}>
+        {title}
+      </p>
       <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
         {items.map((item, i) => (
           <li key={i} style={{ fontSize: 12, color: TOKENS.inkSecondary, lineHeight: 1.5 }}>
