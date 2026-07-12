@@ -6,6 +6,27 @@
 
 ---
 
+## WORKER-ACTIVITY-DISCOVERY-01 — Worker Activity Discovery Shell
+
+**Data:** 2026-07-12
+**Tipo:** No-DB/no-RLS UI shell — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione DPO/CTO/fiscale/legale presa, nessuna persistenza di booking/richiesta/contatto/voucher, nessuna logica di eleggibilità worker reale. Dettaglio completo in `docs/WORKER_ACTIVITY_DISCOVERY_01.md`.
+
+Segue `COMPANY-ACTIVITY-SELECTION-01` (perimetro azienda) e `PARTNER-ACTIVITY-CATALOG-01` (catalogo), costruendo il terzo passo operativo di Fase 2: come il worker scoprirebbe e sceglierebbe volontariamente tra le Attività Partner disponibili.
+
+- Aggiunta `/worker/activity-discovery` — introduzione Fase 2, pannello controllo/privacy worker, riepilogo "sfoglia per" (pilastro/categoria fiscale/partner/tipo/azione), cinque corsie suggerite per pilastro con etichette worker-friendly (Per il tuo benessere/crescere/connetterti/contribuire/lasciare traccia), card attività (riusa `lib/partner-activities/catalog.ts`, nessun nuovo modello) con CTA disabilitata in forma verbale (Prenota/Candidati/Richiedi contatto/Riscatta voucher/Scopri di più), nota di flusso Fase 2, note KORA Index e Contribution.
+- Aggiunta `/worker/activity-discovery/detail` — anteprima statica di dettaglio per un'attività di esempio (non route dinamica, per restare a basso rischio): cosa succede se scelta, cosa vedrebbe il partner dopo l'azione volontaria, cosa non vedrebbe mai l'azienda.
+- Aggiunta voce di navigazione worker "Attività disponibili" sotto "Attivazione" (badge `preview`), accanto a Opportunità e KORA Space.
+- Cross-link a `/worker/commons` (iniziative KORA Space reali, contrasto esplicito), `/partner/activity-catalog`, `/company/activity-selection`, `/admin/kora-activation-layer`.
+- Entrambe le pagine seguono lo stesso pattern di auth `requireWorkerUser()` già stabilito per `/worker/kora-link/activate` (KORA-LINK-SHELL-01).
+
+Creato `tests/unit/worker-activity-discovery-01.test.ts` (46 assertion statiche): esistenza route, framing Fase 2, distinzione da KORA Space/Contribution, riuso del modello statico condiviso, categoria fiscale + pilastro, nominativi partner (mai worker) come provider, presenza delle cinque etichette CTA, tutte le CTA disabilitate/non funzionali (incluso il controllo esplicito contro il regresso "(mock)" già corretto in KORA-LINK-SHELL-POLISH-01), invarianti di scelta volontaria e privacy, confine KORA Index/Contribution, assenza totale di dati di un altro worker, nessun import Supabase/RPC/env, nessun feature flag, gate di autenticazione worker, nessuna decisione DPO/CTO/fiscale/legale marcata risolta, navigazione e cross-link presenti, e invarianti 034/035/036/self-select/company-SELECT/KORA-Index-engine/commons-invariati.
+
+**Nessun file toccato fuori da `app/worker/activity-discovery/page.tsx`, `app/worker/activity-discovery/detail/page.tsx`, `components/layout/Sidebar.tsx` (nav), il nuovo test file, e i due doc.** `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `lib/partner-activities/catalog.ts` (solo importato, mai modificato), e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro shell UI, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## COMPANY-ACTIVITY-SELECTION-01 — Phase 2 Company Activity Selection Shell
 
 **Data:** 2026-07-12
