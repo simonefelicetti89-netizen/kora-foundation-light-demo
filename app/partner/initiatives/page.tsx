@@ -218,6 +218,9 @@ export default function PartnerInitiativesPage() {
       <Panel>
         <SectionLabel>Continua nell&apos;area partner</SectionLabel>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Link href="/partner/activity-catalog" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+            Catalogo Attività — corsia separata, alimenta KORA Index, non Contribution →
+          </Link>
           <Link href="/partner/relationships" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
             Relazioni con i lavoratori — dove e perché possono comparire nominativi →
           </Link>
