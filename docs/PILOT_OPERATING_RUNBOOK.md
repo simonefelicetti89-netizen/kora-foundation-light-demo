@@ -34,7 +34,7 @@ Before starting **any** step in §5:
 - [ ] The target environment for this session is explicitly named (local / staging / Production) — never assumed.
 - [ ] Everyone involved understands the local/staging/Production and demo/live data boundaries (§4).
 - [ ] COMPANY_A account status is known (exists, tenant `STAGE-001`, per `docs/GOLDEN_PATH.md`).
-- [ ] COMPANY_B provisioning status is known (as of this doc: **does not exist** — see `docs/PILOT_GOVERNANCE.md` §10).
+- [ ] COMPANY_B provisioning status is known. **Updated by B174-A2 (2026-07-12):** this checklist item previously said "does not exist." Repo evidence indicates COMPANY_B was provisioned in staging and live-validated on 2026-07-09 — see `docs/PILOT_GOVERNANCE.md` §10/§15a. Not independently re-verified since; confirm current status before relying on it for a new session.
 - [ ] Credential handling rules are understood: credentials are set in the operator's own shell/secret store, never pasted into chat, issues, PRs, or commits (see `docs/testing-e2e-auth.md`).
 - [ ] Data intake prerequisites for the specific step about to run are understood (e.g. `GD01` needs a disposable/synthetic staging tenant, never a real client's — see `docs/E2E_GOLDEN_PATH.md`; for real pilot company data, see `docs/PILOT_DATA_INTAKE_READINESS.md`).
 - [ ] Privacy boundaries are acknowledged by the privacy/governance reviewer before any step that could touch real or realistic data.
@@ -53,18 +53,20 @@ Before starting **any** step in §5:
 
 ## 5. Pilot validation sequence
 
-Canonical order (unchanged from `docs/PILOT_GOVERNANCE.md` §16 — **that document is the canonical governance sequence; this section is the operating view of the same sequence**, not a competing one):
+Canonical order (unchanged from `docs/PILOT_GOVERNANCE.md` §16 — **that document is the canonical governance sequence; this section is the operating view of the same sequence**, not a competing one).
 
-1. `A02` — COMPANY_A authenticated smoke.
-2. COMPANY_B provisioning.
-3. `A03`/`A04` — COMPANY_B login + tenant-separation smoke.
-4. `T01`/`T02` — two-tenant isolation.
-5. `GD01` — data-bearing golden path.
-6. RLS-06 — live positive control, if still outstanding at that point.
-7. Credential cleanup/reset.
+**Updated by B174-A2 (2026-07-12):** repo evidence indicates steps 1–6 below were executed against staging (step 6 against local Postgres only) on 2026-07-09 and passed — see `docs/PILOT_GOVERNANCE.md` §15a for the full reconciliation. This has not been independently re-verified in a later session. Treat this list as describing what a **fresh, explicitly-approved re-confirmation session** would repeat, not as a first execution still pending:
+
+1. `A02` — COMPANY_A authenticated smoke. *Documented as run, 2026-07-09.*
+2. COMPANY_B provisioning. *Repo evidence indicates done, 2026-07-09.*
+3. `A03`/`A04` — COMPANY_B login + tenant-separation smoke. *Documented as run, 2026-07-09.*
+4. `T01`/`T02` — two-tenant isolation. *Documented as run, 2026-07-09.*
+5. `GD01` — data-bearing golden path. *Documented as run, 2026-07-09, explicit founder approval.*
+6. RLS-06 — live positive control. *Documented as run (local Postgres), 2026-07-09.*
+7. Credential cleanup/reset. *Still deferred — see `docs/PILOT_GOVERNANCE.md` §15.*
 8. Final review.
 
-Each step still requires its own explicit approval when it is actually run — this list is descriptive of order, not a standing green light.
+Each step still requires its own explicit approval when it is actually (re-)run — this list is descriptive of order, not a standing green light, and a fresh confirmation of steps 1–6 is recommended before this session is cited as current in a client-facing claim.
 
 ## 6. Check classification
 

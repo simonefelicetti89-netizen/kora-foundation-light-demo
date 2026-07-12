@@ -13,7 +13,7 @@ This doc answers one question: **"where does KORA's pilot readiness actually sta
 
 ## 2. Current pilot-readiness state (one paragraph)
 
-The service-assisted golden path (upload → UEF → approval → scoring → KORA Index → Decision Pack) works when walked through manually by a KORA_ADMIN operator, and is proven with real staging credentials for login only (`A01`, KORA_ADMIN). Every other authenticated flow — `A02`–`A04`, `G01`/`G02`, `GD01`, `T01`/`T02` — is implemented as a skip-safe, credential-gated Playwright scaffold that has never been executed with real credentials against any live environment. Tenant isolation is proven at the direct-Postgres level (RLS-03/05) and statically at the app/API level (RLS-04, RLS-06's static half); no live authenticated-request/PostgREST proof exists yet for any of it. See `docs/QA_STATUS.md` for full detail — this section is a compressed pointer, not a replacement.
+**Reconciled by B174-A2 (2026-07-12) — see §15a below for the full history.** The service-assisted golden path (upload → UEF → approval → scoring → KORA Index → Decision Pack) works when walked through manually by a KORA_ADMIN operator, and is proven with real staging credentials for login (`A01`, KORA_ADMIN). `A02`–`A04`, `GD01`, and `T01`/`T02` are implemented as skip-safe, credential-gated Playwright scaffolds; repo evidence indicates all of them were executed with real credentials against staging and passed on **2026-07-09** (see §6, §10, §11, §15a). `G01`/`G02` remain not run via fixture. None of this has been independently re-verified in a later session — treat the 2026-07-09 record as strong documented evidence, not as a currently-live-checked fact, and obtain a fresh operator-approved confirmation before citing it in a client-facing claim. Tenant isolation is proven at the direct-Postgres level (RLS-03/05); RLS-04 is proven statically; RLS-06 is proven statically and, per repo evidence, also live (direct-Postgres, local-only, 2026-07-09 — see §8). No live authenticated-request/PostgREST proof (as distinct from direct-Postgres) exists yet for any of RLS-03/04/05/06. See `docs/QA_STATUS.md` for full detail — this section is a compressed pointer, not a replacement.
 
 ## 3. Gate 2 status
 
@@ -37,25 +37,25 @@ The service-assisted golden path (upload → UEF → approval → scoring → KO
 - Every `app/api/**` route (84 files) derives tenant/worker identity from session `app_metadata`, never client input — static source audit, all passing (RLS-04).
 - 217 unit/integration test files passing (as of this sprint) — static/structural correctness of route guards, access-matrix logic, and pure-function scoring/methodology code. **This is not the same as runtime/live-database proof** — see §8.
 
-## 6. What is scaffolded but not live-run
+## 6. What is scaffolded, and current live-run status
 
-All of the following are implemented, statically verified (`tsc` clean, Playwright registers the tests, skip-safe confirmed with no credentials set), and have **never executed against a live environment with real credentials**:
+**Updated by B174-A2 (2026-07-12).** All of the following are implemented and statically verified (`tsc` clean, Playwright registers the tests, skip-safe confirmed with no credentials set). Live-run status per row — for every "documented as PASS" row, repo evidence (dated logs in the linked doc, corroborated by git history and local E2E env configuration) indicates the run happened and passed on 2026-07-09; **none of it has been independently re-verified in a later session**:
 
-| Scaffold | File | Blocked by |
+| Scaffold | File | Live-run status |
 |---|---|---|
-| `A02` COMPANY_A login | `tests/e2e/authenticated-smoke.spec.ts` | Never executed; no code/credential gap |
-| `A03`/`A04` COMPANY_B login + tenant separation | `tests/e2e/authenticated-smoke.spec.ts` | COMPANY_B does not exist (§10) |
-| `G01`/`G02` admin↔company narrative + KORA Index reachability | `tests/e2e/golden-admin-company.spec.ts` | Never executed |
-| `GD01` full data-bearing golden path | `tests/e2e/golden-data-bearing.spec.ts` | Deferred to final pilot-validation session (§13); see `docs/E2E_GOLDEN_PATH.md` |
-| `T01`/`T02` two-tenant isolation via `/api/company/workspace` | `tests/e2e/two-tenant-isolation.spec.ts` | COMPANY_B does not exist (§10); see `docs/E2E_TWO_TENANT_ISOLATION.md` |
-| RLS-06 KORA_ADMIN positive control, live half | `tests/integration/rls-kora-admin-control.test.ts` | Static half done; live direct-Postgres run not yet executed |
+| `A02` COMPANY_A login | `tests/e2e/authenticated-smoke.spec.ts` | Documented as PASS, staging, 2026-07-09 — see `docs/E2E_TWO_TENANT_ISOLATION.md` |
+| `A03`/`A04` COMPANY_B login + tenant separation | `tests/e2e/authenticated-smoke.spec.ts` | Documented as PASS, staging, 2026-07-09 — see §10, `docs/E2E_TWO_TENANT_ISOLATION.md` |
+| `G01`/`G02` admin↔company narrative + KORA Index reachability | `tests/e2e/golden-admin-company.spec.ts` | Never executed — not part of the 2026-07-09 session |
+| `GD01` full data-bearing golden path | `tests/e2e/golden-data-bearing.spec.ts` | Documented as PASS, staging, 2026-07-09, explicit founder approval — see `docs/E2E_GOLDEN_PATH.md` |
+| `T01`/`T02` two-tenant isolation via `/api/company/workspace` | `tests/e2e/two-tenant-isolation.spec.ts` | Documented as PASS, staging, 2026-07-09 — see §11, `docs/E2E_TWO_TENANT_ISOLATION.md` |
+| RLS-06 KORA_ADMIN positive control, live half | `tests/integration/rls-kora-admin-control.test.ts` | Static half done; repo evidence indicates the live direct-Postgres run also executed (local-only, not staging) on 2026-07-09, 11/11 passed — see `docs/QA_STATUS.md` |
 
 ## 7. What is explicitly not proven yet
 
-- Any golden-path step beyond login, in Production.
-- COMPANY_A's login and workspace reachability, via the E2E fixture (manually verified separately, 2026-06-22, but not through `A02`).
-- Any cross-tenant isolation proof through a real authenticated HTTP request (UI or API) — RLS-03/05/06 are direct-Postgres with simulated claims, not PostgREST/GoTrue.
-- Anything involving COMPANY_B, because COMPANY_B does not exist (§10).
+- Any golden-path step beyond login, in Production (as distinct from staging).
+- Any cross-tenant isolation proof through a real authenticated HTTP request against Production — the 2026-07-09 `T01`/`T02` run (§11) was staging only.
+- Any RLS proof through a real authenticated HTTP request/PostgREST/GoTrue — RLS-03/05/06 are direct-Postgres with simulated claims, not PostgREST/GoTrue, regardless of the COMPANY_B reconciliation in §10.
+- **Independent re-verification of the 2026-07-09 staging session itself** (§6, §10, §11, §15a) — that session's results are documented, not re-checked by a later session. Do not treat "documented" as equivalent to "currently confirmed live."
 
 ## 8. RLS / static control status
 
@@ -67,11 +67,11 @@ See §6 table. Helpers (`tests/e2e/helpers/{env,auth,roles,privacy}.ts`) are sha
 
 ## 10. COMPANY_B status
 
-**COMPANY_B does not exist.** No second company/tenant account exists in staging or Production, as of this sprint. This is a provisioning gap, not a credentials or code gap — the app's own admin route (`POST /api/admin/companies/provision`, KORA_ADMIN-only) already supports creating it. Provisioning it is an explicitly-approved, separate action (Gate: requires KORA_ADMIN session + Supabase Admin API path) — out of scope for every documentation/governance sprint including this one.
+**Updated by B174-A2 (2026-07-12).** This section previously stated "COMPANY_B does not exist," as of `PILOT-GOVERNANCE-01` (2026-07-06). Since then, repo evidence indicates COMPANY_B was provisioned in staging (via the app's own admin route, `POST /api/admin/companies/provision`, KORA_ADMIN-only) and live-validated on **2026-07-09** — see `docs/E2E_TWO_TENANT_ISOLATION.md`'s live staging validation log, corroborated by git history (`FIX-A04-TENANT-HEADING-RACE`, a bug fix of the kind only discoverable by actually running the test) and by local E2E environment configuration. This is documented evidence, not an independent re-check performed by this reconciliation pass (B174-A/B174-A2) — no Supabase query, GD01 run, or E2E run was performed to confirm this status is still current as of the date this section was last edited. A fresh, operator-approved confirmation is recommended before COMPANY_B's existence is treated as an unconditionally current fact for any further mutation or client-facing claim. See `docs/B174_COMPANY_B_AND_DEMO_TIGHTENING_PLAN.md` §4a for the full evidence comparison.
 
 ## 11. Two-tenant isolation status
 
-Implemented as a skip-safe scaffold (`T01`/`T02`, `tests/e2e/two-tenant-isolation.spec.ts`, merged PR #32) proving, once COMPANY_B exists, that a COMPANY_A session cannot resolve COMPANY_B's tenant data via `/api/company/workspace` (and vice versa), both through rendered markup and a direct authenticated API call. **Has not been run live.** Blocked exclusively by COMPANY_B's absence (§10). See `docs/E2E_TWO_TENANT_ISOLATION.md`.
+Implemented as a skip-safe scaffold (`T01`/`T02`, `tests/e2e/two-tenant-isolation.spec.ts`, merged PR #32) proving, once COMPANY_B exists, that a COMPANY_A session cannot resolve COMPANY_B's tenant data via `/api/company/workspace` (and vice versa), both through rendered markup and a direct authenticated API call. **Updated by B174-A2 (2026-07-12):** this section previously said the test "has not been run live," blocked exclusively by COMPANY_B's absence. Repo evidence (`docs/E2E_TWO_TENANT_ISOLATION.md`'s live staging validation log) indicates it was run against staging on 2026-07-09 and both `T01` and `T02` passed. Not independently re-verified since — see §10's caveat, which applies equally here.
 
 ## 12. Privacy boundary status
 
@@ -79,26 +79,30 @@ Architecture is real, not aspirational: three-layer defense in depth (middleware
 
 ## 13. Known remaining pilot blockers
 
-1. COMPANY_B provisioning (§10) — blocks `A03`, `A04`, `T01`, `T02`.
-2. `A02` has never been run via fixture (no blocker beyond execution).
-3. `GD01` has never been run live — deferred to the final pilot-validation session, not an unbuilt-code gap.
-4. RLS-06's live direct-Postgres run has not been executed.
-5. No authenticated E2E has ever run against Production.
-6. Gate 2 status line in `CLAUDE.md` is stale (§3) — a founder-governance reconciliation, not a technical blocker.
-7. Credential cleanup remains deferred to the end of the roadmap (§15).
+**Updated by B174-A2 (2026-07-12).** Items 1–4 below were live blockers before 2026-07-09; repo evidence indicates they were resolved that day (§6, §10, §11, §15a). They are retained here, reframed, because none of them has been independently re-verified since — the residual blocker in each case is now "obtain a fresh confirmation," not "the underlying gap is unresolved."
+
+1. ~~COMPANY_B provisioning (§10) — blocks `A03`, `A04`, `T01`, `T02`.~~ Repo evidence indicates resolved 2026-07-09. Residual: fresh confirmation before client-facing use.
+2. ~~`A02` has never been run via fixture.~~ Repo evidence indicates run (staging) 2026-07-09, passed. Residual: not yet run against Production specifically; fresh confirmation recommended.
+3. ~~`GD01` has never been run live.~~ Repo evidence indicates run (staging, explicit founder approval) 2026-07-09, passed. Residual: fresh confirmation before client-facing use; still never run against Production.
+4. ~~RLS-06's live direct-Postgres run has not been executed.~~ Repo evidence indicates it was executed (local Postgres only, not staging) 2026-07-09, 11/11 passed. Residual: this was never a staging/Production run to begin with — that gap (§8) is unchanged.
+5. No authenticated E2E has ever run against Production. **Unchanged — still an open blocker**, regardless of the staging reconciliation above.
+6. Gate 2 status line in `CLAUDE.md` is stale (§3) — a founder-governance reconciliation, not a technical blocker. **Unchanged.**
+7. Credential cleanup remains deferred to the end of the roadmap (§15). **Unchanged** — and per §15's own entry, the roadmap gate for starting it may now be reached, pending the same fresh-confirmation caveat as everything else in this section.
+8. **New, per B174-A2:** the documentation drift itself (multiple aggregate docs stating "COMPANY_B does not exist" as current fact after 2026-07-09) was a governance process gap. This reconciliation pass addresses the docs found in `docs/B174_COMPANY_B_AND_DEMO_TIGHTENING_PLAN.md` §4a; confirm no further doc was missed before treating this item as fully closed.
 
 Full detail and history for each: `docs/PILOT_SAAS_READINESS.md`, `docs/STATUS.md`, `docs/GOLDEN_PATH.md`, `docs/QA_STATUS.md`.
 
 ## 14. "Do not claim" boundaries
 
-These are the specific overclaiming traps this repo's own docs have already flagged — repeated here as a single checklist so no future session has to rediscover them independently:
+These are the specific overclaiming traps this repo's own docs have flagged — repeated here as a single checklist so no future session has to rediscover them independently. **Updated by B174-A2 (2026-07-12):** the first three bullets below were unconditional prohibitions before 2026-07-09; repo evidence since then indicates the underlying events occurred (§6, §10, §11, §15a), so the boundary is reframed from "never happened" to "documented but not independently re-verified — do not state it as a currently-confirmed fact without that caveat."
 
-- **Do not claim `GD01` has run live.** It is implemented and skip-safe-verified only.
-- **Do not claim COMPANY_B exists.** It does not, in any environment.
-- **Do not claim two-tenant isolation (`T01`/`T02`) has passed live.** It has never executed with real credentials.
-- **Do not cite `tests/unit/b103-golden-path.test.ts` as functional E2E coverage.** Despite its name, it only asserts static files exist — it does not call any real API or drive any UI.
-- **Do not claim a static or unit test proves runtime/live-database behavior.** Most of `tests/unit/` is source-text analysis or pure-function logic. A test named "tenant isolation" or "golden path" does not by itself mean the behavior was exercised end-to-end — check what the specific test file actually does before citing it.
-- **Do not claim RLS-03/04/05/06 constitute a PostgREST/GoTrue/live-authenticated-request proof.** They are direct-Postgres-with-simulated-claims or static source audits.
+- **Do not claim `GD01` has run live and passed *without the 2026-07-09 documentation caveat*.** Repo evidence indicates it ran live and passed on that date (`docs/E2E_GOLDEN_PATH.md`); this has not been independently re-verified since. State it as "documented as passed, 2026-07-09, not independently re-verified since" — not as a bare, undated "GD01 passed" claim, and never as a currently-live-checked fact without a fresh confirmation.
+- **Do not claim COMPANY_B exists *as an unconditionally current, freshly-verified fact*.** Repo evidence indicates it was provisioned and validated in staging on 2026-07-09 (§10); this has not been independently re-verified since. State it as "repo evidence indicates COMPANY_B was provisioned in staging, 2026-07-09" — not as "COMPANY_B exists" bare, and not as a claim safe to act on for further mutation without a fresh confirmation.
+- **Do not claim two-tenant isolation (`T01`/`T02`) has passed live *as a freshly-verified fact*.** Repo evidence indicates it passed live in staging on 2026-07-09 (§11); this has not been independently re-verified since. State it with the same dated-documentation caveat as the two bullets above.
+- **Do not cite `tests/unit/b103-golden-path.test.ts` as functional E2E coverage.** Despite its name, it only asserts static files exist — it does not call any real API or drive any UI. **Unchanged by this reconciliation.**
+- **Do not claim a static or unit test proves runtime/live-database behavior.** Most of `tests/unit/` is source-text analysis or pure-function logic. A test named "tenant isolation" or "golden path" does not by itself mean the behavior was exercised end-to-end — check what the specific test file actually does before citing it. **Unchanged.**
+- **Do not claim RLS-03/04/05/06 constitute a PostgREST/GoTrue/live-authenticated-request proof.** They are direct-Postgres-with-simulated-claims or static source audits, even where (as with RLS-06, §8) a live direct-Postgres run is documented. **Unchanged** — direct-Postgres-with-simulated-claims is not the same claim as PostgREST/GoTrue, regardless of the COMPANY_B reconciliation.
+- **New, per B174-A2: do not claim any item in this document is "currently live-verified" or "safe to build further mutation on" solely because it is documented as having passed on 2026-07-09.** Documented-and-dated is not the same claim as currently-confirmed. A fresh, operator-approved confirmation is the bar for the latter.
 
 ## 15. Credential cleanup — deferred status
 
@@ -118,19 +122,29 @@ A credential cleanup topic exists and is **explicitly deferred until the end of 
   > "I approve executing the credential cleanup step now: rotate passwords (keep accounts) for kora-admin@staging.kora.internal, company-admin@staging.kora.internal, and the COMPANY_B admin account referenced by E2E_COMPANY_B_EMAIL, on the staging Supabase project only. Do not touch simone.felicetti.kora@gmail.com, do not revoke sessions, do not delete any user."
 - **Claim boundary for this entry:** this is a plan record only. Do not cite this entry as proof credential cleanup executed, as production readiness, as production validation, as GDPR compliance/certification, or as full pilot readiness — none of those are claimed here.
 
-## 16. Final validation sequence (not yet executed — this is the intended order)
+## 15a. B174-A / B174-A2 reconciliation note (2026-07-12)
 
-1. Run `A02` (COMPANY_A) against local dev, then Production, using the existing fixture — no new code needed.
-2. Provision COMPANY_B — a deliberate, explicitly-approved action (§10), never bundled into a routine sprint.
-3. Run `A03`/`A04` once COMPANY_B exists.
-4. Run `T01`/`T02` (two-tenant isolation) once COMPANY_B exists — see `docs/E2E_TWO_TENANT_ISOLATION.md`.
-5. Run `GD01` (full data-bearing golden path) against a disposable staging tenant — deferred to the final pilot-validation session by design, not before.
-6. Run RLS-06's live direct-Postgres control test.
-7. Only after all of the above: begin the deferred credential cleanup sequence (§15).
+This governance index previously described §§2, 6, 7, 10, 11, 13, 14, and 16 in future tense ("not yet executed," "COMPANY_B does not exist"), while §15 (added 2026-07-09, the same day the underlying events are documented as having occurred) stated the opposite in passing — an internal contradiction that went unreconciled for three days.
+
+`B174-A` (read-only, 2026-07-12) investigated this contradiction using only repo docs, git history, and local non-secret E2E environment configuration (no Supabase query, no GD01 run, no E2E run). It concluded that **repo evidence indicates** COMPANY_B/`STAGE-001` was provisioned and that `A02`–`A04`, `T01`/`T02`, `GD01`, and RLS-06's live direct-Postgres half all ran and passed on 2026-07-09, based on: (a) three independent, mutually-consistent, dated validation-log docs (`docs/E2E_TWO_TENANT_ISOLATION.md`, `docs/E2E_GOLDEN_PATH.md`, `docs/QA_STATUS.md`'s RLS-06 entries); (b) a corroborating git-history bug-fix commit (`FIX-A04-TENANT-HEADING-RACE`) of a kind only discoverable by actually executing the test against a running app; and (c) local `.env.e2e.local` configuration (file dated 2026-07-09, all required `E2E_COMPANY_A_*`/`E2E_COMPANY_B_*`/`E2E_KORA_ADMIN_*` variable names present and non-empty — values not inspected).
+
+**This was not independently re-verified live by B174-A or by this reconciliation pass (B174-A2).** `B174-A2` (this update) reconciles the sections listed above to stop presenting the pre-2026-07-09 state as current fact, while explicitly preserving the caveat that none of this has been freshly re-checked. See `docs/B174_COMPANY_B_AND_DEMO_TIGHTENING_PLAN.md` §4a for the full evidence comparison this reconciliation is based on.
+
+## 16. Final validation sequence (documented as executed 2026-07-09 — see §15a; this section now describes what a fresh re-confirmation would repeat, not a first execution)
+
+1. ~~Run `A02` (COMPANY_A) against local dev, then Production, using the existing fixture.~~ Documented as run against staging, 2026-07-09, passed. Not yet run against Production specifically.
+2. ~~Provision COMPANY_B — a deliberate, explicitly-approved action (§10).~~ Repo evidence indicates done, staging, 2026-07-09.
+3. ~~Run `A03`/`A04` once COMPANY_B exists.~~ Documented as run, staging, 2026-07-09, passed.
+4. ~~Run `T01`/`T02` (two-tenant isolation) once COMPANY_B exists.~~ Documented as run, staging, 2026-07-09, passed — see `docs/E2E_TWO_TENANT_ISOLATION.md`.
+5. ~~Run `GD01` (full data-bearing golden path) against a disposable staging tenant.~~ Documented as run, staging, explicit founder approval, 2026-07-09, passed.
+6. ~~Run RLS-06's live direct-Postgres control test.~~ Documented as run, local Postgres only, 2026-07-09, 11/11 passed.
+7. Begin the deferred credential cleanup sequence (§15) — per §15's own entry, the roadmap gate for this may now be reached, subject to a fresh confirmation of steps 1–6 first (see §15a).
+
+**None of steps 1–6 above has been independently re-verified in a session after 2026-07-09.** A fresh, explicitly-approved re-run of this sequence is recommended before any of it is relied upon for a client-facing claim or further B174 demo-tightening validation — see `docs/B174_COMPANY_B_AND_DEMO_TIGHTENING_PLAN.md`.
 
 For the operating procedure behind this sequence — roles, pre-flight checklist, per-step read-only/mutating classification, stop conditions, evidence collection, closeout — see `docs/PILOT_OPERATING_RUNBOOK.md`.
 
-This sequence is descriptive of intended order, not a commitment to a timeline — each step still requires its own explicit approval per this repo's established precedent (staging/Production Auth writes require explicit sign-off, not routine-task bundling).
+This sequence remains descriptive of order, not a commitment to a timeline — each future re-confirmation step still requires its own explicit approval per this repo's established precedent (staging/Production Auth writes require explicit sign-off, not routine-task bundling).
 
 ## 17. Next roadmap sequence
 
