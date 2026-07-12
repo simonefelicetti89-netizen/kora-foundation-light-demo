@@ -6,6 +6,26 @@
 
 ---
 
+## COMPANY-ACTIVITY-SELECTION-01 — Phase 2 Company Activity Selection Shell
+
+**Data:** 2026-07-12
+**Tipo:** No-DB/no-RLS UI shell — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione DPO/CTO/fiscale/legale presa, nessuna persistenza creata, nessuna enforcement di budget, nessuna logica di eleggibilità reale, nessun booking worker. Dettaglio completo in `docs/COMPANY_ACTIVITY_SELECTION_01.md`.
+
+Segue `KORA-ACTIVATION-LAYER-01` (Fase 1 vs Fase 2) e `PARTNER-ACTIVITY-CATALOG-01` (catalogo attività), costruendo il primo passo operativo di Fase 2: come un'azienda definirebbe il perimetro di attivazione per le Attività Partner prima che il worker possa scoprirle/prenotarle.
+
+- Aggiunta `/company/activity-selection` — introduzione Fase 2 (esplicitamente distinta da Fase 1 e da KORA Space/Contribution), flusso a 6 passi, cinque modalità di selezione (categoria fiscale, pilastro, partner, attività specifica, scelta libera worker entro budget), anteprima catalogo (riusa `lib/partner-activities/catalog.ts`, nessun nuovo modello), anteprima budget/perimetro statica, anteprima reportistica aggregata, note privacy/KORA Index/Contribution/fiscale-legale.
+- Aggiunta `/company/activity-selection/plan` — esempio statico di un piano concreto (categorie/pilastri/partner/attività selezionati).
+- Aggiunta voce di navigazione azienda "Selezione Attività" sotto "Intelligence" (badge `preview`).
+- Cross-link bidirezionale con `/admin/kora-activation-layer`, e link verso `/partner/activity-catalog`, `/company/kora-index`, `/company/activation`, `/company/contribution` (quest'ultimo esplicitamente "per contrasto, pipeline separata").
+
+Creato `tests/unit/company-activity-selection-01.test.ts` (49 assertion statiche): esistenza route, framing Fase 2 distinto da Fase 1, linguaggio Attività distinto da Iniziative KORA Space, presenza delle cinque modalità di selezione, riuso del modello statico condiviso, categoria fiscale + pilastro, anteprima budget/perimetro con nessuna enforcement dichiarata, direzione del segnale KORA Index senza modifica al calcolo live, confine Contribution, assenza totale di dati worker-level su entrambe le pagine, confine privacy, nessuna approvazione fiscale/legale rivendicata, nessun import Supabase/RPC/env, nessun feature flag, nessuna decisione DPO/CTO/fiscale/legale marcata risolta, navigazione e cross-link presenti (incluso il link di ritorno da `/admin/kora-activation-layer`), e invarianti 034/035/036/self-select/company-SELECT/KORA-Index-engine-invariato.
+
+**Nessun file toccato fuori da `app/company/activity-selection/page.tsx`, `app/company/activity-selection/plan/page.tsx`, un cross-link aggiunto ad `app/admin/kora-activation-layer/page.tsx`, `components/layout/Sidebar.tsx` (nav), il nuovo test file, e i due doc.** `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `lib/partner-activities/catalog.ts` (solo importato, mai modificato), e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro shell UI, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## KORA-ACTIVATION-LAYER-01 — Define Phase 2 Activation Intelligence Layer
 
 **Data:** 2026-07-12

@@ -260,7 +260,10 @@ export default function KoraActivationLayerPage() {
         <p style={{ margin: 0, fontSize: 12.5, color: TOKENS.inkSecondary, lineHeight: 1.6 }}>
           <strong style={{ color: TOKENS.ink }}>COMPANY-ACTIVITY-SELECTION-01</strong> — l&apos;azienda deve definire il
           perimetro di attivazione (categoria fiscale, pilastro, partner, attività specifica, o scelta libera worker
-          entro budget) prima che qualunque logica di prenotazione worker abbia senso.
+          entro budget) prima che qualunque logica di prenotazione worker abbia senso. Prima anteprima disponibile su{' '}
+          <Link href="/company/activity-selection" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+            Selezione Attività Partner
+          </Link>.
         </p>
       </Panel>
 
