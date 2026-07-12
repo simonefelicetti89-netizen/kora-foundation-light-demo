@@ -260,6 +260,9 @@ export default function PartnerEcosystemModelPage() {
         <Link href="/company/contribution" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
           KORA Contribution (live) →
         </Link>
+        <Link href="/admin/kora-activation-layer" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+          KORA Activation Layer — Fase 1 vs Fase 2 →
+        </Link>
       </div>
 
     </div>
