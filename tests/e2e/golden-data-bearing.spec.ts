@@ -93,9 +93,8 @@ import path from 'node:path';
 import {
   getAdminCredentials,
   getCompanyACredentials,
-  guardBaseUrl,
-  isGoldenDataBearingRunAllowed,
 } from './helpers/env';
+import { guardE2ETarget, guardGoldenDataBearingRun } from './helpers/e2e-safety';
 import { ROLE_HOME } from './helpers/roles';
 import { loginViaUI, assertReachedWorkspace } from './helpers/auth';
 import { assertNoWorkerLevelIdentifiers } from './helpers/privacy';
@@ -110,7 +109,7 @@ test.describe('KORA — Golden Path: data-bearing pipeline (upload → UEF → s
   test('GD01 · KORA_ADMIN drives upload→UEF→scoring→Decision Pack, then COMPANY_ADMIN sees the tenant-safe result', async ({ browser }) => {
     test.setTimeout(180_000);
 
-    const guard = guardBaseUrl();
+    const guard = guardE2ETarget('golden-data-bearing');
     test.skip(guard.blocked, guard.reason);
 
     const adminCreds = getAdminCredentials();
@@ -119,10 +118,8 @@ test.describe('KORA — Golden Path: data-bearing pipeline (upload → UEF → s
       !adminCreds || !companyCreds || !companyCreds.tenantCode,
       'E2E_KORA_ADMIN_* / E2E_COMPANY_A_* / E2E_COMPANY_A_TENANT_CODE non impostate tutte — test saltato.',
     );
-    test.skip(
-      !isGoldenDataBearingRunAllowed(),
-      'E2E_GOLDEN_DATA_BEARING_ALLOW_RUN non impostato a "true" — test mutante saltato per sicurezza (vedi helpers/env.ts).',
-    );
+    const goldenDataBearingGuard = guardGoldenDataBearingRun();
+    test.skip(goldenDataBearingGuard.blocked, goldenDataBearingGuard.reason);
 
     const tenantCode = companyCreds!.tenantCode!;
     // Fresh per run — dodges the accept route's exact-duplicate-batch guard

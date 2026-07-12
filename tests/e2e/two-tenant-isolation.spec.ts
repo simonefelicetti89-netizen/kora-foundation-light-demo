@@ -26,7 +26,8 @@
  */
 
 import { test, expect } from 'playwright/test';
-import { getCompanyACredentials, getCompanyBCredentials, guardBaseUrl } from './helpers/env';
+import { getCompanyACredentials, getCompanyBCredentials } from './helpers/env';
+import { guardE2ETarget } from './helpers/e2e-safety';
 import { ROLE_HOME } from './helpers/roles';
 import { loginViaUI, assertReachedWorkspace } from './helpers/auth';
 import { assertNoWorkerLevelIdentifiers, assertNoWorkerLevelIdentifiersInText } from './helpers/privacy';
@@ -43,7 +44,7 @@ interface CompanyWorkspaceResponse {
 test.describe('KORA — Two-Tenant Isolation (PILOT-TWO-TENANT-ISOLATION-01)', () => {
 
   test('T01 · COMPANY_A and COMPANY_B sessions resolve to disjoint tenant data via /api/company/workspace', async ({ browser }) => {
-    const guard = guardBaseUrl();
+    const guard = guardE2ETarget('two-tenant-isolation');
     test.skip(guard.blocked, guard.reason);
 
     const credsA = getCompanyACredentials();
@@ -110,7 +111,7 @@ test.describe('KORA — Two-Tenant Isolation (PILOT-TWO-TENANT-ISOLATION-01)', (
   });
 
   test('T02 · /api/company/* ignores a client-supplied foreign tenant identifier (cross-tenant injection has no effect)', async ({ page }) => {
-    const guard = guardBaseUrl();
+    const guard = guardE2ETarget('two-tenant-isolation');
     test.skip(guard.blocked, guard.reason);
 
     const credsA = getCompanyACredentials();

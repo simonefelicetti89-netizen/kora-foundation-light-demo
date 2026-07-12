@@ -19,15 +19,15 @@ import {
   getAdminCredentials,
   getCompanyACredentials,
   getCompanyBCredentials,
-  guardBaseUrl,
 } from './helpers/env';
+import { guardE2ETarget } from './helpers/e2e-safety';
 import { ROLE_HOME } from './helpers/roles';
 import { loginViaUI, assertReachedWorkspace, getTenantIdentity } from './helpers/auth';
 
 test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
 
   test('A01 · KORA_ADMIN accede e raggiunge il workspace admin', async ({ page }) => {
-    const guard = guardBaseUrl();
+    const guard = guardE2ETarget('authenticated-smoke');
     test.skip(guard.blocked, guard.reason);
 
     const creds = getAdminCredentials();
@@ -39,7 +39,7 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
   });
 
   test('A02 · COMPANY_A accede e raggiunge il company workspace', async ({ page }) => {
-    const guard = guardBaseUrl();
+    const guard = guardE2ETarget('authenticated-smoke');
     test.skip(guard.blocked, guard.reason);
 
     const creds = getCompanyACredentials();
@@ -51,7 +51,7 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
   });
 
   test('A03 · COMPANY_B accede e raggiunge il company workspace', async ({ page }) => {
-    const guard = guardBaseUrl();
+    const guard = guardE2ETarget('authenticated-smoke');
     test.skip(guard.blocked, guard.reason);
 
     const creds = getCompanyBCredentials();
@@ -68,7 +68,7 @@ test.describe('KORA — Authenticated Smoke (Golden Path Fixtures)', () => {
     // than the 30s file-level default.
     test.setTimeout(60_000);
 
-    const guard = guardBaseUrl();
+    const guard = guardE2ETarget('authenticated-smoke');
     test.skip(guard.blocked, guard.reason);
 
     const credsA = getCompanyACredentials();
