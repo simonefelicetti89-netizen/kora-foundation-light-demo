@@ -63,12 +63,20 @@ export default function KoraLinkControlTowerPage() {
           Infrastruttura di collegamento fisico–digitale KORA. Governance centralizzata di runtime,
           feature flag, lifecycle dei chip, gate di produzione e confini privacy.
         </p>
-        <Link
-          href="/admin/kora-link-lab"
-          style={{ display: 'inline-flex', marginTop: 14, fontSize: 12.5, fontWeight: 700, color: '#fff', background: TOKENS.ink, padding: '8px 14px', borderRadius: 8, textDecoration: 'none' }}
-        >
-          Apri KORA Link Lab (NFC) →
-        </Link>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
+          <Link
+            href="/admin/kora-link-lab"
+            style={{ display: 'inline-flex', fontSize: 12.5, fontWeight: 700, color: '#fff', background: TOKENS.ink, padding: '8px 14px', borderRadius: 8, textDecoration: 'none' }}
+          >
+            Apri KORA Link Lab (NFC) →
+          </Link>
+          <Link
+            href="/admin/kora-link/governance"
+            style={{ display: 'inline-flex', fontSize: 12.5, fontWeight: 700, color: TOKENS.ink, background: TOKENS.taupe, padding: '8px 14px', borderRadius: 8, textDecoration: 'none' }}
+          >
+            Registro decisioni aperte — anteprima →
+          </Link>
+        </div>
       </div>
 
       {/* Runtime readiness / feature flags */}

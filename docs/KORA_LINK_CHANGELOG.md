@@ -6,6 +6,28 @@
 
 ---
 
+## KORA-LINK-SHELL-01 — Multi-Stakeholder No-DB Shell + QA_STATUS Reconciliation
+
+**Data:** 2026-07-12
+**Tipo:** UI/UX preview shells + docs reconciliation only — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione CTO/DPO presa.
+
+Costruite quattro pagine di anteprima design, pure UI/UX, senza DB e senza collegamento a nessuna infrastruttura reale:
+
+- `app/company/kora-link/campaigns/page.tsx` — anteprima campagne di distribuzione (stati Draft/Approved/Ready to distribute/Expired, canali QR/NFC/Link, nota "nessuna visibilità individuale"), linkata da `/company/kora-link`.
+- `app/worker/kora-link/activate/page.tsx` — prima superficie KORA Link nell'albero live `/worker/*` (protetta da `requireWorkerUser()`, pattern identico a `app/worker/privacy/page.tsx`), con pulsante di attivazione disabilitato (mock) e testo di consenso esplicitamente segnalato come in attesa di revisione DPO (Gate 3). Distinta dalla superficie demo-preview `/my-kora/kora-link` già esistente.
+- `app/partner/kora-link/initiatives/page.tsx` — anteprima iniziative Track A (dati mock, nessuna tabella `partner_scans`), linkata da `/partner/kora-link`.
+- `app/admin/kora-link/governance/page.tsx` — registro delle 6 decisioni di governance ancora aperte (testo consenso, retention, hashing `request_fingerprint`, soglia di aggregazione, semantica `delivered_to_label`, procedura break-glass), ciascuna esplicitamente "Aperta / pending" con owner e gate bloccante — non risolve nessuna di esse. Linkata da `/admin/kora-link`.
+
+Tutte e quattro le pagine usano il flag di navigazione `preview: true` già esistente in `components/layout/Sidebar.tsx` (stessa convenzione di `/company/opportunities`, `/my-kora/kora-space`) o un suffisso `(Anteprima)` per `lib/navigation/admin-nav-groups.ts` — mai "prossimamente". Nessuna delle quattro pagine importa un client Supabase, chiama `.rpc()`, o abilita un feature flag KORA Link.
+
+Aggiornato `docs/QA_STATUS.md` per riconciliare contraddizioni stale rispetto a `docs/E2E_GOLDEN_PATH.md`, `docs/E2E_TWO_TENANT_ISOLATION.md` e `docs/PILOT_GOVERNANCE.md` §15/§15a (nessuna nuova esecuzione live in questo step — solo correzione di testo che non rifletteva più run già documentate altrove).
+
+Creato `tests/unit/kora-link-shell-01.test.ts` (31 assertion statiche): esistenza delle 4 pagine, banner "Anteprima design / no DB / Non attivo" su tutte, nessun import Supabase/RPC, nessun feature flag hardcoded a true, nessun identificativo worker/tag individuale referenziato come codice nelle pagine company/worker/partner, guardia auth (`requireWorkerUser`) sulla pagina worker, le 6 decisioni di governance restano tutte aperte, convenzione di navigazione `preview`/`(Anteprima)` rispettata senza "prossimamente", e 034/035/036 restano `proposed, non applicato`.
+
+**Gate status invariato:** Gate 2 (CTO schema review), Gate 3 (DPO/legal) e Gate 4 (RLS review) restano tutti OPEN — questo step non tocca schema, RLS o RPC proposti e non chiude alcun gate.
+
+---
+
 ## KORA-LINK-S3B — Docs/Comment Cleanup After S3A
 
 **Data:** 2026-07-12

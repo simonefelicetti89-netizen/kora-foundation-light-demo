@@ -13,6 +13,7 @@ import {
   type KoraLinkCapabilityState,
 } from '@/lib/kora-link/ecosystem';
 import { KoraLinkRoleDashboard } from '@/components/kora-link/KoraLinkRoleDashboard';
+import Link from 'next/link';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 
@@ -121,6 +122,12 @@ export default function CompanyKoraLinkPage() {
           </p>
         </Panel>
       </KoraLinkRoleDashboard>
+
+      <p style={{ fontSize: 12, color: TOKENS.inkHint, margin: 0 }}>
+        <Link href="/company/kora-link/campaigns" style={{ color: TOKENS.accent, fontWeight: 700, textDecoration: 'none' }}>
+          Anteprima design — campagne di distribuzione →
+        </Link>
+      </p>
 
     </div>
   );
