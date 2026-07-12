@@ -196,6 +196,15 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
         ],
       },
       {
+        heading: 'Iniziative & Community',
+        items: [
+          { href: '/partner/initiatives', label: 'Iniziative Partner', description: 'Anteprima design — dati mock', preview: true },
+          { href: '/partner/relationships', label: 'Relazioni con i lavoratori', description: 'Anteprima design — dati mock', preview: true },
+          { href: '/partner/aggregate-signals', label: 'Segnali aggregati', description: 'Anteprima design — dati mock', preview: true },
+          { href: '/partner/privacy-boundary', label: 'Confine privacy', description: 'Anteprima design', preview: true },
+        ],
+      },
+      {
         heading: 'Roadmap',
         items: [
           { href: '/demo/future-vision', label: 'Future Vision', inactive: true },

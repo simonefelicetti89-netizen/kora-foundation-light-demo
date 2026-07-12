@@ -6,6 +6,19 @@
 
 ---
 
+## PARTNER-SURFACE-01 — Partner Workspace With Worker-Initiated Visibility Model
+
+**Data:** 2026-07-12
+**Tipo:** No-DB/no-RLS Partner pages, KORA-Link-adjacent only — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione CTO/DPO presa. Dettaglio completo in `docs/PARTNER_SURFACE_01.md`.
+
+Aggiunte quattro pagine partner no-DB (`/partner/initiatives`, `/partner/relationships`, `/partner/aggregate-signals`, `/partner/privacy-boundary`) che applicano il principio corretto: KORA nasconde il lavoratore all'azienda, non a ogni stakeholder — il partner può vedere nome/cognome solo dentro relazioni avviate volontariamente dal lavoratore (`/partner/relationships`), mai nelle viste aggregate. `/partner/kora-link` e `/partner/kora-link/initiatives` (KORA-LINK-SHELL-01/POLISH-01) sono stati aggiornati con cross-link verso la nuova area, restando scope-specifici a KORA Link Track A (scan fisico) e senza duplicare contenuto.
+
+**Nessun file toccato fuori da `app/partner/{initiatives,relationships,aggregate-signals,privacy-boundary}/page.tsx`, i due file KORA Link partner esistenti (solo cross-link aggiunti), `components/layout/Sidebar.tsx` (nuova voce di navigazione), il nuovo test file e i due doc.** `supabase/proposed/034/035/036` invariati, worker self-select e company direct SELECT invariati, nessun feature flag toccato.
+
+**Gate status invariato:** Gate 2, Gate 3 e Gate 4 restano tutti OPEN — questo step non tocca schema, RLS, RPC o governance reale, ed è indipendente dal readiness gate di KORA Link (nessuna relazione lavoratore-partner reale viene persistita).
+
+---
+
 ## KORA-LINK-SHELL-POLISH-01 — Copy/Layout Polish After Shell Review
 
 **Data:** 2026-07-12
