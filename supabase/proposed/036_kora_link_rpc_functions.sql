@@ -2,11 +2,15 @@
 -- Migration:   036_kora_link_rpc_functions
 -- Feature:     KL-18 — KORA Link v1 — Server-side RPC / SECURITY DEFINER functions
 -- Author:      KORA Foundation Light · 2026-07-01
+-- Amended:     KORA-LINK-S3A — added service_role EXECUTE grants alongside each
+--              function's existing authenticated[/anon] grant · 2026-07-12
 -- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
 --              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
 --              035_kora_link_rls.sql    (PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING — still open, Gate 4)
 -- Gate:        This file (036) itself: Gate 2 OPEN + Gate 3 OPEN, NOT reviewed, NOT applied.
 --              034's own engineering review closed at KL-19 — that does NOT extend to 036.
+--              KORA-LINK-S3A is a draft-only grant-hardening pass — it does NOT close
+--              Gate 2 or Gate 3 for this file; every [TODO-RPC-0x] item remains open.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- STATUS: PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING
@@ -136,7 +140,7 @@ AS $$
 $$;
 
 REVOKE ALL ON FUNCTION kora_link.fn_is_valid_token_digest(text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION kora_link.fn_is_valid_token_digest(text) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION kora_link.fn_is_valid_token_digest(text) TO authenticated, anon, service_role;
 
 COMMENT ON FUNCTION kora_link.fn_is_valid_token_digest(text) IS
   'KL-18 — Validates token_digest is 64-char lowercase hex. '
@@ -245,7 +249,7 @@ $$;
 REVOKE ALL ON FUNCTION kora_link.fn_public_lookup_link(text) FROM PUBLIC;
 -- [TODO-RPC-01] GRANT to anon confirmed by CTO? Current: granted for public route.
 -- Alternative: remove anon grant and call exclusively via service_role from Next.js server.
-GRANT EXECUTE ON FUNCTION kora_link.fn_public_lookup_link(text) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION kora_link.fn_public_lookup_link(text) TO anon, authenticated, service_role;
 
 COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
   'KL-18 — Public token lookup. Accepts token_digest only (NEVER raw token). '
@@ -435,7 +439,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION kora_link.fn_activate_link_for_worker(text, uuid, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION kora_link.fn_activate_link_for_worker(text, uuid, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION kora_link.fn_activate_link_for_worker(text, uuid, text) TO authenticated, service_role;
 
 COMMENT ON FUNCTION kora_link.fn_activate_link_for_worker(text, uuid, text) IS
   'KL-18 — Atomic worker activation. '
@@ -564,7 +568,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION kora_link.fn_revoke_link(uuid, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION kora_link.fn_revoke_link(uuid, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION kora_link.fn_revoke_link(uuid, text) TO authenticated, service_role;
 
 COMMENT ON FUNCTION kora_link.fn_revoke_link(uuid, text) IS
   'KL-18 — Admin token revocation. KORA_ADMIN only (role check inside). '
@@ -734,7 +738,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION kora_link.fn_replace_link(uuid, uuid, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION kora_link.fn_replace_link(uuid, uuid, text) TO authenticated;
+GRANT EXECUTE ON FUNCTION kora_link.fn_replace_link(uuid, uuid, text) TO authenticated, service_role;
 
 COMMENT ON FUNCTION kora_link.fn_replace_link(uuid, uuid, text) IS
   'KL-18 — Admin token replacement chain. KORA_ADMIN only. '
@@ -821,7 +825,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION kora_link.fn_company_link_status_aggregate(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION kora_link.fn_company_link_status_aggregate(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION kora_link.fn_company_link_status_aggregate(uuid) TO authenticated, service_role;
 
 COMMENT ON FUNCTION kora_link.fn_company_link_status_aggregate(uuid) IS
   'KL-18 — Company-safe aggregate link counts by status. '
