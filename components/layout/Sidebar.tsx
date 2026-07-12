@@ -159,6 +159,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           },
           { href: '/my-kora/kora-space', label: 'KORA Space (Anteprima)', description: 'Dati sintetici — non il tuo spazio reale', preview: true },
           { href: '/worker/commons',   label: 'KORA Space', description: 'Iniziative e contenuti reali della tua azienda' },
+          { href: '/worker/activity-discovery', label: 'Attività disponibili', description: 'Anteprima design — attività partner standard, Fase 2', preview: true },
           { href: '/my-kora/kora-link', label: 'My KORA Link' },
           { href: '/worker/kora-link/activate', label: 'Attiva KORA Link', description: 'Anteprima design — nessuna attivazione reale', preview: true },
           { href: '/my-kora/bookings', label: 'Prenotazioni', description: 'Le tue richieste di partecipazione — private' },
