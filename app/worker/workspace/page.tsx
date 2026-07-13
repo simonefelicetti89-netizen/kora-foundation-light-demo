@@ -496,6 +496,65 @@ export default async function WorkerWorkspacePage() {
         </span>
       </div>
 
+      {/* KORA Link — worker-facing pilot surface (WORKER-PERSONAL-AREA-KORA-LINK-01) */}
+      <div
+        data-testid="workspace-kora-link-card"
+        style={{
+          border:         '1px solid rgba(97,86,245,0.18)',
+          borderRadius:   14,
+          padding:        '18px 22px',
+          background:     '#FAFAFA',
+          marginBottom:   16,
+          display:        'flex',
+          alignItems:     'flex-start',
+          justifyContent: 'space-between',
+          gap:            16,
+        }}
+      >
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#6156F5', margin: '0 0 6px' }}>
+            KORA Link
+          </p>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#06032B', margin: '0 0 4px' }}>
+            Il tuo collegamento fisico–digitale KORA
+          </p>
+          <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.50)', margin: '0 0 12px', lineHeight: 1.5 }}>
+            In preparazione per il pilota. La tua azienda vede solo conteggi aggregati di adozione — mai la tua attività individuale.
+          </p>
+          <a
+            href="/worker/kora-link/activate"
+            data-testid="workspace-kora-link-link"
+            style={{
+              display:        'inline-block',
+              fontSize:       12,
+              fontWeight:     600,
+              color:          '#6156F5',
+              textDecoration: 'none',
+              padding:        '7px 14px',
+              border:         '1px solid rgba(97,86,245,0.28)',
+              borderRadius:   8,
+              background:     'rgba(97,86,245,0.06)',
+            }}
+          >
+            Vai al tuo KORA Link →
+          </a>
+        </div>
+        <span
+          style={{
+            fontSize:      9,
+            fontWeight:    700,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            padding:       '3px 8px',
+            borderRadius:  999,
+            background:    'rgba(97,86,245,0.10)',
+            color:         '#6156F5',
+          }}
+        >
+          In preparazione
+        </span>
+      </div>
+
       {/* Dynamic Impact CV — B121 */}
       <div
         data-testid="workspace-dynamic-cv-card"

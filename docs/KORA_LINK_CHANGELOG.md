@@ -6,6 +6,27 @@
 
 ---
 
+## WORKER-PERSONAL-AREA-KORA-LINK-01 — Worker Personal Area & KORA Link Pilot Surface
+
+**Data:** 2026-07-14
+**Tipo:** Pilot-readiness — area personale worker, superficie worker-facing KORA Link (skeleton/preview). Nessun DB/RLS/migration, nessuna abilitazione KORA Link, nessuna integrazione KORA Index.
+
+Obiettivo: dopo il login, il worker deve atterrare in un'area personale chiara e credibile che spiega chi è in KORA, cos'è il suo KORA Link, cosa è attivo oggi, cosa è in preparazione, cosa può fare adesso e cosa l'azienda può/non può vedere.
+
+**Strategia scelta (Task B):** l'area personale worker pilota usa **`/worker/workspace`** (albero autenticato live, guardia server-side `getCurrentWorkerUser`/`requireWorkerUser`, hard-block KORA_ADMIN in `app/worker/layout.tsx`) come home, con **`app/worker/kora-link/activate/page.tsx`** (già esistente da KORA-LINK-SHELL-01) come superficie "Il tuo KORA Link". `/my-kora/*` **non** è stata usata come area primaria: `middleware.ts` redirige ogni sessione WORKER reale lontano da `/my-kora/` verso `/worker/workspace` (`/my-kora/` è intenzionalmente assente da `WORKER_ALLOWED_PREFIXES`) — è una superficie preview/demo per visitatori demo/persona e per anteprima founder/self, non il percorso reale del pilota. Nessuna nuova route creata: la pagina KORA Link worker-facing esisteva già ed è stata migliorata, non duplicata.
+
+**File modificati:**
+- `app/worker/workspace/page.tsx` — aggiunta una card "KORA Link" (`data-testid="workspace-kora-link-card"`) con stato "In preparazione" e link a `/worker/kora-link/activate` (`data-testid="workspace-kora-link-link"`). Nessuna card esistente toccata — tutti i `data-testid` precedenti (`workspace-page`, `workspace-hero`, `workspace-history-empty`, `workspace-partner-preview`, `workspace-dynamic-cv-card`, `workspace-dynamic-cv-link`, `workspace-privacy-card`, `workspace-privacy-link`, `workspace-my-kora-link`, `workspace-trace-summary`) restano invariati.
+- `app/worker/kora-link/activate/page.tsx` — titolo cambiato in "Il tuo KORA Link" (da "Attiva il tuo KORA Link — anteprima design"); aggiunte 5 pilot status card (Account worker, KORA Link, Chip NFC, Contribution, KORA Index — nessuna dichiara attivazione completa); aggiunto pannello "Confine privacy" con i 5 punti richiesti; aggiunto pannello "Prossimi passi" con link di ritorno a `/worker/workspace` (`data-testid="kora-link-back-to-workspace"`), link a `/worker/privacy`, e un CTA "Configura KORA Link" disabilitato. Banner demo-shell, pulsante di attivazione disabilitato, e testo di consenso in attesa DPO — tutti preservati testualmente (regression-locked da `tests/unit/kora-link-shell-01.test.ts`).
+
+**Cosa NON è stato toccato:** `app/my-kora/kora-link/page.tsx`, `app/my-kora/layout.tsx`, `middleware.ts`, `lib/kora-link/*` (config, ecosystem, activation, token, ecc.), `lib/auth/access-matrix.ts`, `lib/auth/kora-session.ts`, `lib/kora-engine/*`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `supabase/migrations/`, `supabase/proposed/034/035/036`, e nessuna variabile d'ambiente `KORA_LINK_*`.
+
+**Test:** `tests/unit/worker-personal-area-kora-link-01.test.ts` — 28 assertion statiche/strutturali (esistenza pagine, cross-link bidirezionali, guardia worker, hard-block KORA_ADMIN, messaggistica aggregate-only/pilota-in-preparazione, nessuna chiamata DB lookup/activation, nessuna creazione evento/contribution, nessuna modifica flag, non-regressione su 034/035/036/KORA Index/ingestion/UEF/access-matrix/commons.*, chip NFC descritto come test manuale non scritto dall'app, nessun riferimento a sourceBookingIds/Partner Activity booking).
+
+**Non abilita KORA Link:** `KORA_LINK_ENABLED`, `KORA_LINK_DB_LOOKUP_ENABLED`, `KORA_LINK_ACTIVATION_ENABLED` restano non impostati/`false`. Nessuna chiamata RPC (`fn_public_lookup_link`, `fn_activate_link_for_worker`) esiste in queste pagine. Nessuna riga viene inserita, nessun evento creato, nessun record di Contribution generato.
+
+---
+
 ## WORKER-BULK-PROVISIONING-01 — Bulk Worker Provisioning for Pilot Readiness
 
 **Data:** 2026-07-14
