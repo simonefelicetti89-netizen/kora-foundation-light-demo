@@ -350,6 +350,9 @@ export default function ActivationSignalPipelinePage() {
         <Link href="/company/kora-index" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
           KORA Index™ (Fase 1, live) →
         </Link>
+        <Link href="/company/activity-signals" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+          Segnali di Attivazione (Azienda) →
+        </Link>
       </div>
 
     </div>

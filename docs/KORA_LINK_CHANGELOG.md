@@ -6,6 +6,27 @@
 
 ---
 
+## COMPANY-ACTIVITY-SIGNAL-PREVIEW-01 — Company Aggregate Phase 2 Signal Preview
+
+**Data:** 2026-07-13
+**Tipo:** No-DB/no-RLS/no-migration UI shell — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione DPO/CTO/fiscale/legale presa, nessuna persistenza reale, nessuna aggregazione reale calcolata, nessun calcolo del KORA Index modificato. Dettaglio completo in `docs/COMPANY_ACTIVITY_SIGNAL_PREVIEW_01.md`.
+
+Rafforza `/company/activity-signals` (introdotta come shell minimale in `ACTIVATION-SIGNAL-PIPELINE-01`) in una vera superficie di reporting aggregato company-facing per la Fase 2 Activation Intelligence, senza integrare con il KORA Index live.
+
+- Rafforzata `/company/activity-signals` — introduzione con distinzione esplicita da Fase 1 (`/company/kora-index`, `/company/activation`) e da KORA Contribution/KORA Space, riepilogo esecutivo (segnali totali, eleggibili anteprima, richiedono revisione, soppressi/in revisione soglia, pilastri e categorie rappresentati), distribuzione per pilastro KORA (ordine canonico `LIFE`/`GROWTH`/`CONNECTION`/`IMPACT`/`LEGACY` + bucket multi-pilastro), distribuzione per categoria fiscale/welfare (con nota "metadati proposti, non approvazione fiscale/legale"), anteprima componenti KORA Index (`reach`/`quality`/`equity`/`activation`/`continuity`/`pillar_balance`), pannello soglie di privacy (con nota di visibilità partner worker-initiated), pannello "cosa può/non può vedere l'azienda", tabella segnali aggregati (nessun `sourceBookingIds`, nessun campo individuale), vista card, note di confine KORA Index e Contribution.
+- Aggiunta `/company/activity-signals/summary` — versione esecutiva compatta dello stesso modello aggregate-only.
+- Aggiunto cross-link mancante da `/admin/activation-signal-pipeline` verso `/company/activity-signals`.
+- Nessuna modifica al modello statico `lib/partner-activities/activation-signals.ts` — riusato invariato.
+- Nessuna modifica alla navigazione azienda — voce "Segnali Attivazione" già presente, confermata invariata.
+
+Creato `tests/unit/company-activity-signal-preview-01.test.ts`: esistenza route (inclusa la summary opzionale), framing Fase 2 aggregate preview, separazione da Fase 1 e da KORA Contribution/KORA Space, riuso del modello statico, presenza di riepilogo esecutivo/raggruppamento per pilastro/categoria fiscale/componente KORA Index, dichiarazione di calcolo KORA Index live invariato e mai eseguito, dichiarazione soglie di privacy non finali, azienda aggregate-only, liste "può vedere"/"non può mai vedere", assenza di dati worker individuali e di `sourceBookingIds` nell'UI, visibilità partner worker-initiated, confine Contribution, nessun import Supabase/RPC/env, nessuna `fetch`/`onClick`/`'use server'`, nessun feature flag, nessuna decisione DPO/CTO/fiscale/legale marcata risolta, navigazione e cross-link presenti, e invarianti 034/035/036/self-select/company-SELECT/KORA-Index-engine/ingestion/commons.
+
+**Nessun file toccato fuori da `app/company/activity-signals/page.tsx` (riscritta), `app/company/activity-signals/summary/page.tsx` (nuova), cross-link aggiunto a `app/admin/activation-signal-pipeline/page.tsx`, il nuovo test file, e i due doc.** `lib/partner-activities/activation-signals.ts`, `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `lib/partner-activities/catalog.ts`, `lib/partner-activities/bookings.ts`, e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro shell UI company-facing, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## ACTIVATION-SIGNAL-PIPELINE-01 — Phase 2 Aggregate Activation Signal Pipeline Shell
 
 **Data:** 2026-07-13
