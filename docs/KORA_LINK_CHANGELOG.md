@@ -6,6 +6,31 @@
 
 ---
 
+## KORA-LINK-PILOT-READINESS-CHECKLIST-01 — Admin/Founder Pilot Readiness Checklist
+
+**Data:** 2026-07-14
+**Tipo:** Pilot-readiness documentation/UI — checklist admin/founder, sola lettura. Nessuna abilitazione KORA Link, nessun DB lookup, nessun test NFC eseguito, nessuna integrazione KORA Index.
+
+Obiettivo: prima del test manuale finale del chip NFC, KORA Admin ha bisogno di una checklist chiara che mostri cosa è pronto, cosa resta volutamente disattivato e cosa non deve essere abilitato ancora.
+
+**Route scelta (Task B):** `/admin/kora-link/pilot-readiness` — non collide con nulla di esistente (`/admin/kora-link` = Control Tower, `/admin/kora-link/governance` = registro decisioni aperte). Protetta esclusivamente da `app/admin/layout.tsx` (`requireKoraAdmin`), stesso pattern delle altre due pagine KORA Link admin — nessun nuovo sistema di auth.
+
+**File modificati/aggiunti:**
+- `app/admin/kora-link/pilot-readiness/page.tsx` (nuovo) — pagina di sola lettura: nessun form, nessun `<button>`, nessun `onClick`, nessuna chiamata `fetch`. Legge lo stato dei flag runtime **solo** tramite l'helper già esistente `getKoraLinkEcosystemContext()` (stesso usato da Control Tower e Governance) — nessun accesso diretto a `process.env`, nessuna stampa di segreti. Contiene le 6 sezioni richieste: Foundation readiness, Stato runtime KORA Link, Blocchi di governance (034/035/036 + approvazione CTO/DPO/legal), Privacy worker, Cosa dimostrerà il test NFC finale, Cosa NON dimostrerà. Riusa `KoraLinkReadinessPanel` per lo stato dei 9 gate.
+- `app/admin/kora-link/page.tsx` — aggiunto un singolo link "Checklist readiness pilota →" verso la nuova pagina, nella riga di link esistente del Control Tower.
+- `lib/navigation/admin-nav-groups.ts` — aggiunta una voce "KORA Link — Pilot Readiness Checklist" nel gruppo Operations, accanto alle due voci KORA Link già esistenti.
+- `docs/KORA_LINK_CHANGELOG.md` — questa voce.
+
+**Navigazione:** checklist → Control Tower, KORA Link Lab, registro decisioni aperte, Governance & Privacy, Crea Azienda, Provisioning worker in blocco. `/worker/kora-link/activate` è citata solo come riferimento di route (`<code>`), mai come link cliccabile — nessuna impersonazione worker da pagina admin.
+
+**Cosa NON è stato toccato:** `app/worker/kora-link/activate/page.tsx`, `app/worker/workspace/page.tsx`, `app/api/admin/workers/bulk-provision/route.ts`, `app/admin/workers/bulk/page.tsx`, `lib/kora-link/config.ts` e resto di `lib/kora-link/*` (solo lette le funzioni già esposte), `lib/auth/access-matrix.ts`, `lib/kora-engine/*`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `supabase/migrations/`, `supabase/proposed/034/035/036`, e nessuna variabile d'ambiente `KORA_LINK_*`.
+
+**Test:** `tests/unit/kora-link-pilot-readiness-checklist-01.test.ts` — 33 assertion statiche/strutturali (esistenza pagina, guardia KORA_ADMIN via layout, assenza form/mutazioni/flag-write, contenuto richiesto delle 6 sezioni, dichiarazioni esplicite "KORA Link non alimenta il KORA Index oggi" e "Contribution non è automatico oggi", non-regressione su migrazioni/034-035-036/KORA Index/ingestion/UEF/access-matrix/commons.*, nessun codice di scrittura NFC, integrità della pagina worker KORA Link e del bulk provisioning esistenti).
+
+**Non abilita KORA Link, non esegue alcun test NFC:** `KORA_LINK_ENABLED`, `KORA_LINK_DB_LOOKUP_ENABLED`, `KORA_LINK_ACTIVATION_ENABLED` restano non impostati/`false`. Nessuna scrittura su chip fisico. Nessuna chiamata RPC. Nessun evento creato. Nessun record di Contribution generato.
+
+---
+
 ## WORKER-PERSONAL-AREA-KORA-LINK-01 — Worker Personal Area & KORA Link Pilot Surface
 
 **Data:** 2026-07-14

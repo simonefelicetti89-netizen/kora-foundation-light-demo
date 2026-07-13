@@ -53,6 +53,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { label: 'Trial Control Center',   href: '/admin/trial-control-center' },
       { label: 'KORA Link',              href: '/admin/kora-link' },
       { label: 'KORA Link — Governance (Anteprima)', href: '/admin/kora-link/governance' },
+      { label: 'KORA Link — Pilot Readiness Checklist', href: '/admin/kora-link/pilot-readiness' },
     ],
   },
   {
