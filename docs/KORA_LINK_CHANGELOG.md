@@ -6,6 +6,28 @@
 
 ---
 
+## WORKER-BULK-PROVISIONING-01 — Bulk Worker Provisioning for Pilot Readiness
+
+**Data:** 2026-07-14
+**Tipo:** Pilot-readiness — provisioning worker in blocco, admin-only. Nessun DB/RLS/migration, nessuna abilitazione KORA Link, nessuna modifica al KORA Index, nessun punteggio companion.
+
+Il `KORA-PILOT-READINESS-AUDIT-RO` aveva trovato che il provisioning worker esiste solo uno-alla-volta (`POST /api/admin/workers/provision`), sufficiente per un pilota piccolo ma non per una coorte più ampia. Questo sprint aggiunge un percorso di provisioning in blocco che riusa la sequenza già testata del provisioning singolo.
+
+**Decisione di design:** `app/api/admin/workers/provision/route.ts` **non è stato toccato**. `tests/unit/b104-worker-provisioning.test.ts` verifica in modo white-box il testo letterale esatto di quel file (spaziatura di `kora_role:      'WORKER'`, la riga di import di `insertWorkerIdentity`, ecc.) come parte del suo contratto. Estrarre quella logica in un helper condiviso avrebbe rotto quelle asserzioni senza alcun beneficio di sicurezza reale — la nuova route in blocco duplica quella breve sequenza già testata (invito Supabase → `insertWorkerIdentity()` → aggiornamento `app_metadata`), riusando lo stesso helper service-key con whitelist dei campi, mai la logica di un file diverso.
+
+- Aggiunto `lib/admin/bulk-worker-parser.ts` — parser puro per il formato di incolla/CSV pilota (con o senza intestazione, formato `Nome Cognome <email>`, o solo email), più validazione di batch (email duplicate, batch vuoto, dimensione massima `MAX_BULK_BATCH_SIZE = 50`). Nessun side effect, nessuna chiamata di rete — usato sia lato client (anteprima istantanea) sia lato server (ri-validazione in difesa in profondità).
+- Aggiunta `app/api/admin/workers/bulk-provision/route.ts` — richiede `KORA_ADMIN`, risolve il tenant una sola volta per `tenantId` (non `tenantCode`, coerente con `/admin/company-users-live` e `/admin/company-workspace-live`), poi itera sequenzialmente sul batch validato riusando `insertWorkerIdentity()` e la stessa forma esatta di `app_metadata` del provisioning singolo. Restituisce un risultato per riga (`created | already_exists | invited | failed | validation_error`). `firstName`/`lastName` sono accettati solo per la leggibilità dell'anteprima admin — non vengono mai passati a `insertWorkerIdentity()` né a Supabase Auth oltre l'email richiesta dall'invito.
+- Aggiunta `app/admin/workers/bulk/page.tsx` + `_components/BulkWorkerProvisioningClient.tsx` — nidificata sotto `/admin/workers` (non lo sostituisce: quella route ha già un significato uno-alla-volta protetto da `b104-worker-provisioning.test.ts`), guard server-side, lettura di `tenantId` da search params con messaggio chiaro se assente, casella di incolla con formato documentato in UI, anteprima parsata prima dell'invio, risultati per riga dopo l'invio, cross-link verso `/admin/company-users-live`, `/admin/company-workspace-live`, `/admin/companies/new`, e verso il provisioning singolo.
+- Aggiunto un singolo link da `app/admin/workers/page.tsx` verso `/admin/workers/bulk` — `WorkersAdminClient.tsx` (il componente client testato) non è stato toccato.
+
+Creato `tests/unit/worker-bulk-provisioning-01.test.ts` (46 assertion statiche): esistenza route/UI, guard admin, validazione `tenantId`/batch vuoto/duplicati/dimensione massima, risultati per riga, assenza di secret/service-role esposti, `app_metadata` scritto solo con la stessa forma del provisioning singolo, `firstName`/`lastName` mai persistiti, **provisioning singolo invariato** (incluso lo spot-check delle stesse stringhe letterali che il test B104 already asserisce), UI con formato documentato/anteprima/cross-link, assenza di riferimenti a flag KORA Link o a scrittura NFC, e invarianti su migrations/proposed-SQL/034-035-036/KORA-Index-engine/ingestion/access-matrix/RLS/commons.
+
+**Nessun file toccato fuori da `lib/admin/bulk-worker-parser.ts`, `app/api/admin/workers/bulk-provision/route.ts`, `app/admin/workers/bulk/page.tsx`, `app/admin/workers/bulk/_components/BulkWorkerProvisioningClient.tsx`, un singolo link aggiunto a `app/admin/workers/page.tsx`, il nuovo test file, e questo doc.** `app/api/admin/workers/provision/route.ts`, `app/admin/workers/_components/WorkersAdminClient.tsx`, `lib/supabase/worker-provisioning-service-key.ts`, `lib/kora-link/*`, `lib/auth/access-matrix.ts`, `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `supabase/migrations/`, e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Non abilita KORA Link.** Nessun flag `KORA_LINK_*` è menzionato nel codice nuovo; questo sprint è interamente scollegato dai gate KORA Link.
+
+---
+
 ## ADMIN-COMPANY-NAV-COMPLETION-01 — Admin Post-Provisioning Navigation Completion
 
 **Data:** 2026-07-14

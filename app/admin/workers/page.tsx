@@ -4,6 +4,7 @@
 // Renders a provisioning form and current worker list per tenant.
 
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { getCurrentKoraUser } from '@/lib/auth/kora-session';
 import WorkersAdminClient from './_components/WorkersAdminClient';
 
@@ -13,5 +14,17 @@ export default async function AdminWorkersPage() {
     redirect('/admin/login');
   }
 
-  return <WorkersAdminClient adminEmail={user.email} />;
+  return (
+    <>
+      <div style={{ maxWidth: 760, margin: '12px auto 0', padding: '0 24px' }}>
+        <Link
+          href="/admin/workers/bulk"
+          style={{ fontSize: 12.5, fontWeight: 700, color: '#C76F3D', textDecoration: 'none' }}
+        >
+          Provisioning in blocco (bulk) →
+        </Link>
+      </div>
+      <WorkersAdminClient adminEmail={user.email} />
+    </>
+  );
 }
