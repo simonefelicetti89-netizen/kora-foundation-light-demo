@@ -6,6 +6,26 @@
 
 ---
 
+## PHASE2-PRIVACY-THRESHOLD-DESIGN-01 — Draft Suppression Model for Activation Intelligence
+
+**Data:** 2026-07-14
+**Tipo:** Documentazione di design — bozza, non approvata dal DPO, non approvata legalmente. Nessun SQL, nessuna RLS, nessuna implementazione DB, nessun job di aggregazione, nessuna integrazione con il KORA Index, nessun punteggio companion, nessuna decisione DPO/CTO/fiscale/legale risolta. Dettaglio completo in `docs/PHASE2_PRIVACY_THRESHOLD_DESIGN_01.md`.
+
+Definisce, a livello di solo design, come i futuri segnali aggregati Phase 2 dovrebbero essere soppressi, consentiti, o segnalati prima di poter essere mostrati alle aziende o considerati come futuro input del KORA Index: principio di privacy, riepilogo della primitiva esistente `lib/privacy/group-threshold.ts` (inclusa la copertura test già presente in `tests/unit/privacy-boundary.test.ts`, correggendo l'assunzione precedente di assenza totale di test), classi di rischio per 13 tipi di segnale/aggregato, bozza di livelli di soglia T0–T4, 10 stati di output di soppressione, regole su piccolo N e re-identificazione (incluse combinazione tra filtri e differenziazione periodo-su-periodo), trattamento speciale per continuità/utilizzo ripetuto (rischio più alto in ogni revisione Phase 2 condotta finora) e per aggregati a livello di singolo partner, disaggregazione per dipartimento/sito/team (negata di default), concetto di `privacy_threshold_rule`/`privacy_threshold_decision`, comportamento dell'interfaccia azienda per segnali soppressi, confine futuro con il KORA Index (adapter aggregate-only, mai eventi sorgente), strategia di test futura, cosa non implementare ancora, e tredici decisioni aperte.
+
+- Aggiunto `docs/PHASE2_PRIVACY_THRESHOLD_DESIGN_01.md` — nessun SQL, nessun blocco di codice, nessuna istruzione DDL (verificato).
+- Nessuna modifica a `docs/access-matrix.md`, `lib/auth/access-matrix.ts`, `middleware.ts`, o ai guard di layout.
+- Nessuna modifica a `lib/privacy/group-threshold.ts` — solo riferimento e riepilogo concettuale.
+- Raccomanda `PHASE2-CONSENT-REVOCATION-DESIGN-01` come prossimo passo — `worker_consent_event` resta l'unico prerequisito ad alto rischio ancora privo di un design dedicato tra le entità individuate finora.
+
+Creato `tests/unit/phase2-privacy-threshold-design-01.test.ts` (46 assertion statiche): esistenza doc, stato bozza/non-approvato, assenza di SQL/RLS/DB/job di aggregazione, principio "un solo KORA Index", principio di privacy aggregate-only, riferimento alla primitiva esistente, tutte le classi di segnale, livelli di soglia T0–T4, tutti gli stati di soppressione, rischi di piccolo N/re-identificazione/combinazione/differenziazione, continuità e aggregati partner-level come rischio alto, disaggregazione dipartimento/team negata di default, concetti di `privacy_threshold_rule`/`privacy_threshold_decision`, comportamento UI azienda (nessun `sourceBookingIds`, nessun dato individuale, nessun conteggio esatto rischioso), confine adapter KORA Index aggregate-only, strategia di test futura, cosa non implementare, decisioni aperte, una sola raccomandazione di prossimo passo, nessuna decisione DPO/CTO marcata risolta, e invarianti su 034/035/036/migrations/access-matrix/KORA-Index-engine/ingestion/commons.
+
+**Nessun file toccato fuori da `docs/PHASE2_PRIVACY_THRESHOLD_DESIGN_01.md`, il nuovo test file, e questo doc.** `docs/access-matrix.md`, `lib/auth/access-matrix.ts`, `middleware.ts`, tutti i layout guard, `lib/privacy/group-threshold.ts`, `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `supabase/migrations/`, e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro artefatto documentale, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## PHASE2-ACCESS-MATRIX-DRAFT-01 — Non-Authoritative Draft Access-Matrix Extension
 
 **Data:** 2026-07-14

@@ -259,3 +259,5 @@ Ordine bozza, solo documentale:
 ## Documenti collegati
 
 `docs/PHASE2_SCHEMA_DESIGN_01.md`, `docs/PARTNER_ECOSYSTEM_MODEL_01.md`, `docs/KORA_ACTIVATION_LAYER_01.md`, `docs/ACTIVATION_SIGNAL_PIPELINE_01.md`, `docs/COMPANY_ACTIVITY_SIGNAL_PREVIEW_01.md`, `docs/access-matrix.md`.
+
+**Aggiornamento (PHASE2-PRIVACY-THRESHOLD-DESIGN-01):** il gap di soglia di privacy citato in §8 è stato approfondito in `docs/PHASE2_PRIVACY_THRESHOLD_DESIGN_01.md` — anch'esso una bozza, non approvata dal DPO, non un'implementazione.
