@@ -6,6 +6,25 @@
 
 ---
 
+## PHASE2-SCHEMA-DESIGN-01 — Docs-Only Data Model Design for Activation Intelligence
+
+**Data:** 2026-07-14
+**Tipo:** Documentazione di design — nessun SQL, nessuna migration, nessuna implementazione DB/RLS, nessuna integrazione con il KORA Index live, nessun punteggio companion, nessuna decisione DPO/CTO/fiscale/legale risolta. Dettaglio completo in `docs/PHASE2_SCHEMA_DESIGN_01.md`.
+
+Traduce la revisione read-only `PHASE2-SCHEMA-RO` in un artefatto di design concreto per revisori CTO/DPO: principi di design, opzioni di namespace (raccomandazione documentale `phase2.*`), catalogo di 16 entità future (scopo, campi bozza, relazioni, confine tenant, visibilità per ruolo, rischio privacy, complessità RLS, dipendenza CTO/DPO, tempistica), modello di relazioni con mappa ASCII, bozza di matrice ruolo/accesso (esplicitamente non autoritativa), piano di naming per policy RLS (solo nomi, nessuna policy reale), gap di design su AccessResource/access-matrix, soglia di privacy, e consenso/revoca, raccomandazioni di riuso vs nuova tabella, proposta di ordine di implementazione a 8 passi, cosa non implementare ancora, e undici decisioni aperte non risolte.
+
+- Aggiunto `docs/PHASE2_SCHEMA_DESIGN_01.md` — nessun SQL, nessun blocco DDL (verificato: nessun `CREATE TABLE`/`CREATE POLICY`/`ALTER TABLE`/`GRANT`/`REVOKE`/`ENABLE ROW LEVEL SECURITY`).
+- Nessuna modifica a `docs/access-matrix.md` (resta l'unica matrice autoritativa) né a `lib/auth/access-matrix.ts` (la union `AccessResource` resta invariata, 8 risorse note, nessuna aggiunta Phase 2).
+- Raccomanda `PHASE2-RLS-DESIGN-RO` come prossimo passo — non `PHASE2-PRIVACY-THRESHOLD-DESIGN-01`, perché il gap più grande resta l'assenza totale di voci `AccessResource`/RLS, mentre la soglia di privacy ha già un modulo di piattaforma riutilizzabile (`lib/privacy/group-threshold.ts`).
+
+Creato `tests/unit/phase2-schema-design-01.test.ts` (45 assertion statiche): esistenza doc, stato bozza/solo-documentazione, assenza SQL/migration/RLS/integrazione KORA Index/punteggio companion, principio "un solo KORA Index", naming Activity/Attività (mai Initiative/Iniziativa), confine aggregate-only azienda, azione volontaria worker, visibilità nominativa partner worker-initiated, separazione da KORA Space/Contribution, tutte e 16 le entità future, modello di relazioni, matrice ruolo/accesso bozza, piano di naming RLS, gap AccessResource, gap soglia privacy, gap consenso/revoca, riuso vs non-riuso, cosa non implementare, una sola raccomandazione di prossimo passo, nessuna decisione DPO/CTO marcata risolta, e invarianti 034/035/036/migrations/access-matrix.ts/KORA-Index-engine/ingestion/commons.
+
+**Nessun file toccato fuori da `docs/PHASE2_SCHEMA_DESIGN_01.md`, il nuovo test file, e questo doc.** `lib/auth/access-matrix.ts`, `docs/access-matrix.md`, `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `lib/partner-activities/*`, `supabase/migrations/`, e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro artefatto documentale, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## COMPANY-ACTIVITY-SIGNAL-PREVIEW-01 — Company Aggregate Phase 2 Signal Preview
 
 **Data:** 2026-07-13
