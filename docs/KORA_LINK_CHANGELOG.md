@@ -6,6 +6,27 @@
 
 ---
 
+## KORA-LINK-PUBLIC-SKELETON-POLISH-01 — Public /link/[token] Skeleton Polish
+
+**Data:** 2026-07-14
+**Tipo:** Pilot-readiness / preparazione test NFC — polish del solo stato `skeleton` della pagina pubblica `/link/[token]`. Nessuna abilitazione KORA Link, nessun DB lookup, nessuna attivazione, nessun evento, nessuna Contribution, nessuna integrazione KORA Index.
+
+Obiettivo: quando il test manuale finale del chip NFC aprirà `/link/<token>` (con `KORA_LINK_ENABLED=true` e DB lookup/attivazione ancora `false`), la pagina deve apparire credibile, a marchio KORA, e privacy-safe — non un placeholder scarno.
+
+**File modificato:** `app/link/[token]/page.tsx` — **solo** la funzione `KoraLinkSkeletonPage()` è stata riscritta; tutto il resto del file (`KoraLinkPublicPage()`, l'ordine di valutazione degli stati `hidden`/`token_invalid`/`unavailable`/`rate_limited`/`ready`/`skeleton`, `KoraLinkReadyPage`, `ActivationPanel`, `KoraLinkUnavailablePage`, `KoraLinkRateLimitedPage`) resta invariato. `lib/kora-link/public-route.ts` (l'evaluator del feature gate) non è stato toccato.
+
+**Contenuto aggiunto alla pagina skeleton:** badge di stato "Pilot in preparazione"; spiegazione del collegamento fisico-digitale NFC↔KORA; 5 dichiarazioni di confine privacy (nessun nome/email/dato personale nel link; nessuna attivazione/evento/dato individuale registrato in questa fase; l'azienda non vede attività individuali; l'apertura non modifica il KORA Index; l'apertura non genera automaticamente una Contribution); 5 chip di stato tecnico non cliccabili (Link pubblico, DB lookup, Attivazione, Eventi, KORA Index — tutti "spento"/"non registrato"/"non aggiornato" salvo il link pubblico stesso); messaggio finale su approvazione tecnica/privacy/governance richiesta.
+
+**Sicurezza token:** il componente `KoraLinkSkeletonPage()` non riceve né interpola alcun prop `token` — nessun token grezzo o parziale viene mai renderizzato in questo stato (era già così prima di questo sprint; confermato, non introdotto).
+
+**Cosa NON è stato toccato:** `lib/kora-link/public-route.ts`, `lib/kora-link/config.ts`, `lib/kora-link/activation.ts`, `lib/kora-link/public-lookup.ts`, `lib/kora-link/token.ts`, `lib/kora-link/rate-limit.ts`, `app/worker/kora-link/activate/page.tsx`, `app/admin/kora-link/pilot-readiness/page.tsx`, `lib/auth/access-matrix.ts`, `lib/kora-engine/*`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `supabase/migrations/`, `supabase/proposed/034/035/036`, e nessuna variabile d'ambiente `KORA_LINK_*`.
+
+**Test:** `tests/unit/kora-link-public-skeleton-polish-01.test.ts` — 32 assertion statiche/strutturali (esistenza pagina, gate evaluator invariato, nessuna chiamata Supabase/DB-lookup/attivazione/evento/Contribution/KORA-Index nel ramo skeleton, nessun PII worker, nessun token esposto, tutte le 9 stringhe di copy richieste presenti, chip DB-lookup/attivazione "off", non-regressione su 034/035/036/migrazioni/KORA Index/ingestion/UEF/access-matrix/commons.*, nessun codice di scrittura NFC, integrità della pagina worker KORA Link e della checklist admin esistenti).
+
+**Non abilita KORA Link, non esegue alcun test NFC:** `KORA_LINK_ENABLED`, `KORA_LINK_DB_LOOKUP_ENABLED`, `KORA_LINK_ACTIVATION_ENABLED` restano non impostati/`false`. Il comportamento del feature gate (quali stati vengono mostrati quando) è identico a prima di questo sprint — solo il contenuto visivo dello stato `skeleton` è cambiato.
+
+---
+
 ## KORA-LINK-PILOT-READINESS-CHECKLIST-01 — Admin/Founder Pilot Readiness Checklist
 
 **Data:** 2026-07-14
