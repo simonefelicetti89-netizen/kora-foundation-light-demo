@@ -456,3 +456,5 @@ Nessuna di queste è risolta in questo documento.
 ## Documenti collegati
 
 `docs/PARTNER_ECOSYSTEM_MODEL_01.md`, `docs/KORA_ACTIVATION_LAYER_01.md`, `docs/ACTIVATION_SIGNAL_PIPELINE_01.md`, `docs/COMPANY_ACTIVITY_SIGNAL_PREVIEW_01.md`, `docs/access-matrix.md`.
+
+**Aggiornamento (PHASE2-ACCESS-MATRIX-DRAFT-01):** il gap di Access Resource descritto in §8 è stato approfondito in `docs/PHASE2_ACCESS_MATRIX_DRAFT_01.md` — anch'esso una bozza non autoritativa, non parte del documento canonico `docs/access-matrix.md`.
