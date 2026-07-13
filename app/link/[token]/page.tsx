@@ -82,31 +82,99 @@ export default async function KoraLinkPublicPage({
 
 // ── Sub-pages ──────────────────────────────────────────────────────────────────
 
+// Non-clickable technical status chips — read-only, no token internals, no PII.
+// Each row is a static label/value pair mirroring the admin pilot readiness
+// checklist wording, so the public and admin surfaces never drift apart.
+const SKELETON_STATUS_CHIPS: ReadonlyArray<{ label: string; value: string }> = [
+  { label: 'Link pubblico', value: 'attivo solo in ambiente autorizzato' },
+  { label: 'DB lookup',     value: 'spento' },
+  { label: 'Attivazione',   value: 'spenta' },
+  { label: 'Eventi',        value: 'non registrati' },
+  { label: 'KORA Index',    value: 'non aggiornato' },
+];
+
 function KoraLinkSkeletonPage() {
   return (
     <div
       data-testid="kora-link-skeleton"
       style={{
-        maxWidth:     480,
-        margin:       '80px auto',
-        padding:      '40px 32px',
+        maxWidth:     460,
+        margin:       '56px auto',
+        padding:      '36px 28px',
         fontFamily:   FONT,
         border:       '1px solid rgba(6,3,43,0.08)',
-        borderRadius: 16,
+        borderRadius: 18,
+        boxShadow:    '0 10px 30px rgba(6,3,43,0.05)',
         textAlign:    'center',
       }}
     >
-      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.30)', margin: '0 0 16px' }}>
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(6,3,43,0.30)', margin: '0 0 14px' }}>
         KORA Link
       </p>
-      <h1 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#06032B', margin: '0 0 12px', letterSpacing: '-0.025em' }}>
+      <h1 style={{ fontSize: '1.3rem', fontWeight: 800, color: '#06032B', margin: '0 0 10px', letterSpacing: '-0.025em' }}>
         Accesso sicuro KORA Link
       </h1>
-      <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.55)', margin: '0 0 24px', lineHeight: 1.6 }}>
-        Questo collegamento sarà utilizzato per accedere in modo sicuro al percorso KORA Link.
+
+      <span
+        data-testid="kora-link-skeleton-status-badge"
+        style={{
+          display: 'inline-block', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.04em',
+          color: '#8A5A00', background: 'rgba(217,154,43,0.12)',
+          borderRadius: 999, padding: '4px 12px', margin: '0 0 18px',
+        }}
+      >
+        Pilot in preparazione
+      </span>
+
+      <p style={{ fontSize: 13, color: 'rgba(6,3,43,0.60)', margin: '0 0 18px', lineHeight: 1.6 }}>
+        Questo link serve a verificare il collegamento fisico-digitale tra chip NFC e ambiente KORA.
       </p>
+
+      {/* Privacy-safe boundaries — every statement required by KORA-LINK-PUBLIC-SKELETON-POLISH-01 */}
+      <div
+        style={{
+          textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 8,
+          background: '#F8F6F1', borderRadius: 12, padding: '16px 18px', margin: '0 0 18px',
+        }}
+      >
+        <p style={{ fontSize: 11.5, color: 'rgba(6,3,43,0.62)', margin: 0, lineHeight: 1.55 }}>
+          Il link non contiene nome, email o dati personali del lavoratore.
+        </p>
+        <p style={{ fontSize: 11.5, color: 'rgba(6,3,43,0.62)', margin: 0, lineHeight: 1.55 }}>
+          In questa fase non vengono registrate attivazioni, eventi o dati individuali.
+        </p>
+        <p style={{ fontSize: 11.5, color: 'rgba(6,3,43,0.62)', margin: 0, lineHeight: 1.55 }}>
+          L&apos;azienda non vede attività individuali del lavoratore.
+        </p>
+        <p style={{ fontSize: 11.5, color: 'rgba(6,3,43,0.62)', margin: 0, lineHeight: 1.55 }}>
+          Questa apertura non modifica il KORA Index.
+        </p>
+        <p style={{ fontSize: 11.5, color: 'rgba(6,3,43,0.62)', margin: 0, lineHeight: 1.55 }}>
+          Questa apertura non genera automaticamente una Contribution.
+        </p>
+      </div>
+
+      {/* Technical status chips — non-clickable, no token internals */}
+      <div
+        data-testid="kora-link-skeleton-chips"
+        style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', margin: '0 0 18px' }}
+      >
+        {SKELETON_STATUS_CHIPS.map((chip) => (
+          <span
+            key={chip.label}
+            style={{
+              fontSize: 10, color: 'rgba(6,3,43,0.45)', background: 'rgba(6,3,43,0.04)',
+              border: '1px solid rgba(6,3,43,0.08)', borderRadius: 999, padding: '3px 10px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {chip.label}: {chip.value}
+          </span>
+        ))}
+      </div>
+
       <p style={{ fontSize: 11, color: 'rgba(6,3,43,0.30)', margin: 0, lineHeight: 1.5 }}>
-        La funzione è in fase di preparazione.
+        La funzionalità completa sarà attivata solo dopo approvazione tecnica, privacy e governance.
       </p>
     </div>
   );
