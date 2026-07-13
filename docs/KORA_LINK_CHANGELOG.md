@@ -6,6 +6,29 @@
 
 ---
 
+## ADMIN-COMPANY-NAV-COMPLETION-01 — Admin Post-Provisioning Navigation Completion
+
+**Data:** 2026-07-14
+**Tipo:** Pilot-readiness — completamento navigazione admin, pagine read-only. Nessun DB/RLS/migration, nessuna modifica ai flag KORA Link, nessuna modifica al KORA Index, nessun punteggio companion.
+
+Il `KORA-PILOT-READINESS-AUDIT-RO` aveva trovato che il flusso di provisioning azienda (`app/api/admin/companies/provision/route.ts`) è reale e DB-backed, ma la risposta di successo linka a due pagine admin che non esistevano ancora — `/admin/company-users?tenantId=...` e `/admin/company-workspace?tenantId=...` — causando un 404 subito dopo la creazione di un'azienda pilota. Le API sottostanti (`app/api/admin/company-users/route.ts`, `app/api/admin/company-workspace/route.ts`) esistevano già ed erano reali; mancava solo la UI.
+
+**Scoperta architetturale durante l'implementazione:** quei due percorsi flat (`/admin/company-users`, `/admin/company-workspace`) non erano semplicemente "mai costruiti" — ospitavano un sistema admin *diverso*, sintetico/demo (`tenantService`/`accountProvisioningService`, componenti in `components/admin/`), deliberatamente rimosso e consolidato in `app/admin/companies/[companyId]/{users,workspace}` da uno sprint precedente (B171), che blocca esplicitamente il ritorno di un `page.tsx` a quei percorsi flat (`tests/unit/b168-5-gen3-consolidation.test.ts`). Costruire lì avrebbe fatto fallire quel test di regressione e, peggio, avrebbe rischiato di far collidere concettualmente il sistema demo/sintetico con l'API live reale. Le nuove pagine vivono quindi a percorsi distinti con suffisso `-live`, e `provision/route.ts` è stato aggiornato di conseguenza.
+
+- Aggiunta `app/admin/company-users-live/page.tsx` — server component con guard `requireKoraAdmin()`, lettura di `tenantId` da search params, messaggio chiaro se assente (nessun crash), pannello client `CompanyUsersPanel` che consuma `GET /api/admin/company-users?tenantId=...` (invariato).
+- Aggiunta `app/admin/company-workspace-live/page.tsx` — stesso pattern di guard; risolve `tenantId` → `tenant_code` con una singola lookup su `analytics.tenant` (stessa forma già usata in `company-users/route.ts`, non una duplicazione della logica di aggregazione pilota), poi il pannello client `CompanyWorkspacePanel` consuma `GET /api/admin/company-workspace?tenantCode=...` (invariato).
+- Entrambe le pagine sono strettamente di sola lettura: nessun `<form>`, nessuna chiamata `POST`/`PATCH`/`DELETE`, nessun invito/creazione utente, nessuna scrittura di `app_metadata`. Il link "prossima azione consigliata" nella workspace naviga verso strumenti admin esistenti — non è una mutazione di questa pagina.
+- **Modificato** `app/api/admin/companies/provision/route.ts` — i tre riferimenti a `/admin/company-users`/`/admin/company-workspace` (link di successo, link di recovery nel percorso 207 partial-failure, messaggio di warning) sono stati aggiornati a `/admin/company-users-live`/`/admin/company-workspace-live`. Nessun'altra logica del route toccata — nessuna modifica a validazione, provisioning, invito, o scrittura `app_metadata`.
+- Cross-link aggiunti in entrambe le direzioni tra le due nuove pagine, e da entrambe verso `/admin/companies/new`.
+
+Creato `tests/unit/admin-company-nav-completion-01.test.ts` (49 assertion statiche): esistenza pagine, guard admin server-side, gestione sicura di `tenantId` assente, assenza di form/mutazioni/creazione utenti/scrittura `app_metadata`/`onClick` di scrittura, cross-link presenti, link di provisioning ora puntano a pagine reali, **guardia esplicita di non-collisione con i percorsi flat protetti da B171** (verifica che `tests/unit/b168-5-gen3-consolidation.test.ts` esista ancora e che nessun `page.tsx` sia stato aggiunto ai percorsi flat vietati), invarianti su migrations/proposed-SQL/034-035-036/flag KORA Link/KORA-Index-engine/ingestion/access-matrix/RLS/commons.
+
+**Nessun file toccato fuori da `app/admin/company-users-live/page.tsx`, `app/admin/company-users-live/_components/CompanyUsersPanel.tsx`, `app/admin/company-workspace-live/page.tsx`, `app/admin/company-workspace-live/_components/CompanyWorkspacePanel.tsx`, `app/api/admin/companies/provision/route.ts` (solo le tre stringhe di link), il nuovo test file, e questo doc.** `lib/kora-link/*`, `lib/auth/access-matrix.ts`, `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `supabase/migrations/`, `supabase/proposed/034/035/036`, il sistema demo/sintetico `app/admin/companies/[companyId]/*` e `components/admin/*`, e `tests/unit/b168-5-gen3-consolidation.test.ts` sono tutti invariati.
+
+**Non sovrastima la readiness di KORA Link** — questo sprint è interamente scollegato da KORA Link; nessun flag `KORA_LINK_*` è stato toccato o menzionato nel codice nuovo.
+
+---
+
 ## PHASE2-PRIVACY-THRESHOLD-DESIGN-01 — Draft Suppression Model for Activation Intelligence
 
 **Data:** 2026-07-14

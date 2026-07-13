@@ -205,9 +205,9 @@ export async function POST(request: NextRequest) {
           tenantCode,
           tenantCreated,
           error:    `Provisioning utente fallito: ${createErr?.message ?? 'unknown'}`,
-          recovery: `Tenant ${tenantCode} è attivo (${tenantId}). Aggiungere l'utente manualmente da /admin/company-users.`,
+          recovery: `Tenant ${tenantCode} è attivo (${tenantId}). Aggiungere l'utente manualmente da /admin/company-users-live.`,
           links: {
-            manageUsers: `/admin/company-users?tenantId=${encodeURIComponent(tenantId)}`,
+            manageUsers: `/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`,
           },
           warnings,
         }, { status: 207 });
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
   if (metaErr) {
     warnings.push(
       `app_metadata non aggiornato: ${metaErr.message}. ` +
-      'Aggiornare manualmente da /admin/company-users.',
+      'Aggiornare manualmente da /admin/company-users-live.',
     );
   }
 
@@ -247,8 +247,8 @@ export async function POST(request: NextRequest) {
     warnings,
     links: {
       companyConsole:   '/admin/companies',
-      manageUsers:      `/admin/company-users?tenantId=${encodeURIComponent(tenantId)}`,
-      companyWorkspace: `/admin/company-workspace?tenantId=${encodeURIComponent(tenantId)}`,
+      manageUsers:      `/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`,
+      companyWorkspace: `/admin/company-workspace-live?tenantId=${encodeURIComponent(tenantId)}`,
     },
   });
 }
