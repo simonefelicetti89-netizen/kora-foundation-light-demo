@@ -302,6 +302,9 @@ export default function PartnerActivityBookingsPage() {
         <Link href="/admin/kora-activation-layer" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
           KORA Activation Layer →
         </Link>
+        <Link href="/admin/activation-signal-pipeline" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+          Activation Signal Pipeline →
+        </Link>
       </div>
 
     </div>

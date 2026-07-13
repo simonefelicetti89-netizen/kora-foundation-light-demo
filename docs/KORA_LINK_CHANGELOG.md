@@ -6,6 +6,27 @@
 
 ---
 
+## ACTIVATION-SIGNAL-PIPELINE-01 — Phase 2 Aggregate Activation Signal Pipeline Shell
+
+**Data:** 2026-07-13
+**Tipo:** No-DB/no-computation UI + model shell — nessuna migration, nessuna Supabase call, nessuna RLS, nessuna RPC, nessun feature flag abilitato, nessuna decisione DPO/CTO/fiscale/legale presa, nessuna persistenza reale, nessuna aggregazione reale calcolata, nessun calcolo del KORA Index modificato. Dettaglio completo in `docs/ACTIVATION_SIGNAL_PIPELINE_01.md`.
+
+Segue `PARTNER-ACTIVITY-BOOKINGS-01` (prenotazioni), costruendo il quinto passo operativo di Fase 2: un'anteprima di come gli engagement Attività Partner completati/evasi possano in futuro diventare segnali di attivazione aggregati e privacy-safe per il KORA Index.
+
+- Creato `lib/partner-activities/activation-signals.ts` — modello statico puro (`ActivationSignalPreview`, 8 segnali mock derivati da catalog.ts/bookings.ts, coprono tutti e 7 i `signalType`, tutti e 5 gli `aggregationLevel`, e tutte le componenti KORA Index richieste in anteprima). Ogni segnale ha `companyVisibility: 'aggregate_only'`, `workerVisibilityBasis: 'worker_initiated_source_events'`, `contributionBoundary: 'not_contribution_source'`, `previewOnly: true` fissi. Riepiloghi/raggruppamenti derivati: `getActivationSignalSummary`, `groupActivationSignalsByPillar`, `groupActivationSignalsByFiscalCategory`, `groupActivationSignalsByIndexComponentPreview`.
+- Aggiunta `/admin/activation-signal-pipeline` — introduzione Fase 2, flusso end-to-end (Catalogo → Selezione → Discovery → Bookings → Engagement evasi → Segnali Aggregati → futuro KORA Index), mappa di trasformazione del segnale, tabella dei segnali aggregati, pannello soglie di privacy, pannello output azienda, pannello confine KORA Index, pannello confine Contribution, stato di implementazione, prossimo sprint raccomandato.
+- Aggiunta `/company/activity-signals` — anteprima aggregate-only opzionale per l'azienda (riepilogo, card dei segnali aggregati, pannello soglie di privacy).
+- Aggiunta voce di navigazione admin "Activation Signal Pipeline" sotto "Network & Content", e voce azienda "Segnali Attivazione" sotto "Intelligence".
+- Cross-link aggiunti in entrambe le direzioni con `/admin/kora-activation-layer`, `/partner/activity-catalog`, `/company/activity-selection`, `/worker/activity-discovery`, `/partner/activity-bookings`, `/company/kora-index`.
+
+Creato `tests/unit/activation-signal-pipeline-01.test.ts`: esistenza route/modello, framing Fase 2, flusso completo mostrato, riuso del catalogo/bookings statici, tutti e 7 i signal type, tutti e 5 gli aggregation level, tutte le componenti KORA Index richieste, calcolo KORA Index live dichiarato invariato e mai eseguito, soglie di privacy dichiarate non finali, azienda aggregate-only, visibilità partner worker-initiated, assenza di dati worker individuali nelle viste aggregate, confine Contribution, nessun import Supabase/RPC/env, nessuna `fetch`/`onClick`/`'use server'`/funzione di mutazione esportata, nessun feature flag, nessuna decisione DPO/CTO/fiscale/legale marcata risolta, navigazione e cross-link presenti, e invarianti 034/035/036/self-select/company-SELECT/KORA-Index-engine/ingestion/commons.
+
+**Nessun file toccato fuori da `lib/partner-activities/activation-signals.ts`, `app/admin/activation-signal-pipeline/page.tsx`, `app/company/activity-signals/page.tsx`, cross-link aggiunti a `app/admin/kora-activation-layer/page.tsx` e `app/partner/activity-bookings/page.tsx`, `lib/navigation/admin-nav-groups.ts` e `components/layout/Sidebar.tsx` (nav), il nuovo test file, e i due doc.** `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `lib/partner-activities/catalog.ts` e `lib/partner-activities/bookings.ts` (solo importati, mai modificati), e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro shell UI/modello, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## PARTNER-ACTIVITY-BOOKINGS-01 — Partner Worker-Initiated Bookings/Requests Shell
 
 **Data:** 2026-07-13

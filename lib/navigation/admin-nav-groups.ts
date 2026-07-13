@@ -64,6 +64,7 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { label: 'Partner Map',            href: '/admin/partners' },
       { label: 'Partner Ecosystem Model', href: '/admin/partner-ecosystem-model' },
       { label: 'KORA Activation Layer',  href: '/admin/kora-activation-layer' },
+      { label: 'Activation Signal Pipeline', href: '/admin/activation-signal-pipeline' },
     ],
   },
   {
