@@ -104,6 +104,7 @@ export function buildNavGroups(role: string, activeCompanyId?: string, isAdminPr
           { href: '/company/contribution', label: 'KORA Contribution™' },
           { href: '/company/pillars',      label: 'Pillar Analysis' },
           { href: '/company/activity-selection', label: 'Selezione Attività', description: 'Anteprima design — Fase 2 Activation Intelligence', preview: true },
+          { href: '/company/activity-signals', label: 'Segnali Attivazione', description: 'Anteprima design — segnali aggregati, Fase 2 Activation Intelligence', preview: true },
         ],
       },
       {

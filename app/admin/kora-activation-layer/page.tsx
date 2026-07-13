@@ -281,6 +281,9 @@ export default function KoraActivationLayerPage() {
         <Link href="/company/contribution" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
           KORA Contribution™ (per contrasto) →
         </Link>
+        <Link href="/admin/activation-signal-pipeline" style={{ fontSize: 12.5, fontWeight: 700, color: TOKENS.accent, textDecoration: 'none' }}>
+          Activation Signal Pipeline →
+        </Link>
       </div>
 
     </div>

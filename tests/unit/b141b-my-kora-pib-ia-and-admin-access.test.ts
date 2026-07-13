@@ -192,7 +192,7 @@ describe('B141-B2 — Sidebar KORA_ADMIN has Worker Preview links', () => {
   // isAdminRole check gates the KORA_ADMIN branch — we check for /my-kora links there.
   const adminNavStart = sidebarSrc.indexOf("if (isAdminRole(role");
   const adminNavSection = adminNavStart > -1
-    ? sidebarSrc.substring(adminNavStart, adminNavStart + 3000)
+    ? sidebarSrc.substring(adminNavStart, adminNavStart + 3500)
     : sidebarSrc;
 
   it('19. KORA_ADMIN sidebar contains link to /my-kora (Worker Preview)', () => {
