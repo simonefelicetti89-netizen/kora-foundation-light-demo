@@ -76,6 +76,12 @@ export default function KoraLinkControlTowerPage() {
           >
             Registro decisioni aperte — anteprima →
           </Link>
+          <Link
+            href="/admin/kora-link/pilot-readiness"
+            style={{ display: 'inline-flex', fontSize: 12.5, fontWeight: 700, color: TOKENS.ink, background: TOKENS.taupe, padding: '8px 14px', borderRadius: 8, textDecoration: 'none' }}
+          >
+            Checklist readiness pilota →
+          </Link>
         </div>
       </div>
 
