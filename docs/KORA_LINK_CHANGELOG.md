@@ -6,6 +6,26 @@
 
 ---
 
+## PHASE2-ACCESS-MATRIX-DRAFT-01 — Non-Authoritative Draft Access-Matrix Extension
+
+**Data:** 2026-07-14
+**Tipo:** Documentazione di design — bozza non autoritativa. Nessun codice modificato, nessuna voce `AccessResource` aggiunta, nessuna RLS, nessun SQL, nessuna modifica a middleware o layout, nessuna implementazione DB, nessuna integrazione con il KORA Index, nessun punteggio companion, nessuna decisione DPO/CTO/fiscale/legale risolta. Dettaglio completo in `docs/PHASE2_ACCESS_MATRIX_DRAFT_01.md`.
+
+Traduce la revisione read-only `PHASE2-RLS-DESIGN-RO` in una bozza concreta di estensione della matrice di accesso: riepilogo del modello canonico esistente, convenzione di naming bozza (12 risorse piatte `snake_case`, es. `phase2_partner_activity_booking`), catalogo bozza delle 12 risorse (scopo, classe di accesso, dipendenza DPO/CTO, tempistica, rischio), bozza di matrice ruolo/risorsa per KORA_ADMIN/COMPANY_ADMIN/WORKER/PARTNER/ADVISOR/SYSTEM-JOB, bozza di intento `canAccess()`, implicazioni per middleware/layout (nessuna modifica), note di allineamento RLS (nessun SQL), conversione documentale dei 16 test di confine da `PHASE2-RLS-DESIGN-RO`, undici decisioni aperte, ordine di implementazione a 10 passi, e cosa non implementare ancora.
+
+- Aggiunto `docs/PHASE2_ACCESS_MATRIX_DRAFT_01.md` — nessun SQL, nessun blocco di codice, nessuna istruzione DDL (`CREATE TABLE`/`CREATE POLICY`/`ALTER TABLE`/`GRANT`/`REVOKE` in forma di istruzione reale — verificato).
+- Nessuna modifica a `docs/access-matrix.md` (resta l'unica matrice autoritativa) né a `lib/auth/access-matrix.ts` (la union `AccessResource` resta invariata, 8 risorse note, nessuna aggiunta Phase 2).
+- Nessuna modifica a `middleware.ts` o ai guard di layout (`app/{admin,company,worker,partner,my-kora}/layout.tsx`).
+- Raccomanda `PHASE2-PRIVACY-THRESHOLD-DESIGN-01` come prossimo passo — la soglia di privacy "blocca il resto" più di ogni altra decisione aperta, e continuità/utilizzo ripetuto resta il rischio più alto segnalato in ogni revisione Phase 2 fin qui condotta.
+
+Creato `tests/unit/phase2-access-matrix-draft-01.test.ts` (43 assertion statiche): esistenza doc, stato bozza/non-autoritativo, assenza di modifiche a codice/RLS/SQL/migration/middleware/layout, principio "un solo KORA Index", riepilogo del modello canonico (incluse le 8 risorse esistenti), zero risorse Phase 2 canoniche, naming bozza piatto per tutte e 12 le risorse, catalogo risorse, matrice ruolo/risorsa con tutti i ruoli, ADVISOR deny-by-default, azienda aggregate-only e mai su risorse worker-level, partner mai bulk e sempre gated da consenso, worker limitato ai propri dati, KORA_ADMIN sempre auditato, intento `canAccess()`, implicazioni middleware/layout, allineamento RLS (incluso `FORCE ROW LEVEL SECURITY` e gli helper `kora.kora_role()`/`kora.tenant_id()`), tutti e 16 i test di confine, decisioni aperte, ordine di implementazione, cosa non implementare, una sola raccomandazione di prossimo passo, nessuna decisione DPO/CTO marcata risolta, e invarianti su `docs/access-matrix.md`/`lib/auth/access-matrix.ts`/034/035/036/migrations.
+
+**Nessun file toccato fuori da `docs/PHASE2_ACCESS_MATRIX_DRAFT_01.md`, il nuovo test file, e questo doc.** `docs/access-matrix.md`, `lib/auth/access-matrix.ts`, `middleware.ts`, tutti i layout guard, `lib/kora-engine/kora-index-engine.ts`, l'ingestion/UEF, `commons.post`/`commons.booking`/`commons.contribution_event`, `supabase/migrations/`, e `supabase/proposed/034/035/036` sono tutti invariati.
+
+**Gate status invariato:** nessun gate toccato — questo step è puro artefatto documentale, non tocca schema, RLS, RPC, calcolo KORA Index, o governance reale.
+
+---
+
 ## PHASE2-SCHEMA-DESIGN-01 — Docs-Only Data Model Design for Activation Intelligence
 
 **Data:** 2026-07-14
