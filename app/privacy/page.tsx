@@ -12,6 +12,8 @@ import {
   PRIVACY_SECTIONS,
   PRIVACY_DOCUMENT_VERSION,
   PRIVACY_LAST_UPDATED,
+  PRIVACY_PLATFORM_STATUS,
+  PRIVACY_UPDATE_COMMITMENT,
 } from '@/lib/legal/privacy-content';
 
 export const metadata = {
@@ -75,6 +77,34 @@ export default function PrivacyPage() {
           di vedere i dati individuali del lavoratore, descritte in dettaglio nella
           documentazione tecnica del progetto) — questa pagina è l&apos;informativa
           rivolta all&apos;esterno, non la loro descrizione tecnica interna.
+        </p>
+
+        <p
+          data-testid="privacy-platform-status"
+          style={{
+            fontSize: 13,
+            lineHeight: 1.7,
+            fontWeight: 600,
+            color: '#1E3A5F',
+            background: 'rgba(59,110,186,0.08)',
+            border: '1px solid rgba(59,110,186,0.25)',
+            borderRadius: 10,
+            padding: '14px 18px',
+            margin: '0 0 12px',
+          }}
+        >
+          {PRIVACY_PLATFORM_STATUS}
+        </p>
+        <p
+          data-testid="privacy-update-commitment"
+          style={{
+            fontSize: 12,
+            lineHeight: 1.7,
+            color: 'rgba(6,3,43,0.55)',
+            margin: '0 0 32px',
+          }}
+        >
+          {PRIVACY_UPDATE_COMMITMENT}
         </p>
 
         {PRIVACY_SECTIONS.map((section) => (

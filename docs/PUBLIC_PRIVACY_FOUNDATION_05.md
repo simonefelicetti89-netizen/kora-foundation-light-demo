@@ -1,13 +1,26 @@
 # Public Privacy Foundation 05
 
-**Sprint:** PUBLIC-PRIVACY-FOUNDATION-05
+**Sprint:** PUBLIC-PRIVACY-FOUNDATION-05 (+ 05A, 05B, 05C, 05D)
 **Date:** 2026-07-14
 **Preceded by:** SECURITY-RATE-LIMITING-04 (`docs/SECURITY_RATE_LIMITING_04.md`)
+**Status: publication-ready for the current pre-pilota demo/test phase** —
+publication gate green (0 placeholders), see PUBLIC-PRIVACY-FOUNDATION-05D
+below. **Not** publication-ready as-is for a pilot with real companies or
+workers — several sections are explicitly scoped to the demo/test phase and
+say so.
 
 Adds a public, code-and-doc-grounded `/privacy` page, a legal footer link on
 every core public page, and a verified technical inventory of data
 categories and subprocessors. Does not include Sentry runtime hardening
 (separate future sprint) and does not replace legal/DPO review.
+
+## Riepilogo dell'intera sequenza 05 → 05D
+
+1. **05** — pagina `/privacy` con 14 sezioni, 11 punti marcati esplicitamente come placeholder (dati non verificabili dal codice), footer legale.
+2. **05A** — pre-publication gate: fix di `/privacy` non raggiungibile da utenti autenticati (`middleware.ts`), classificazione dei placeholder, test automatico che blocca la pubblicazione finché restano placeholder.
+3. **05B** — il titolare ha confermato direttamente identità, indirizzo, contatto privacy, assenza di DPO, stato pre-pilota → 6 degli 11 placeholder risolti.
+4. **05C** — ricerca tecnica sui fornitori (pagine DPA pubbliche, regioni dichiarate) e proposta prudente (non pubblicata) di basi giuridiche e matrice di retention.
+5. **05D** — il titolare ha approvato le proposte di 05C (basi giuridiche demo/test, matrice retention, formulazione fornitori/trasferimenti) → **tutti gli 11 placeholder risolti**, gate verde, suite di test interamente verde (nessun fallimento intenzionale residuo).
 
 ## Distinzione: informativa pubblica vs. privacy boundary interna
 
@@ -103,32 +116,45 @@ esistente (`docs/PILOT_PRIVACY_GOVERNANCE.md`,
 - Autorità di controllo effettivamente competente (assunta italiana, da
   confermare in base alla sede legale reale).
 
-## Placeholder introdotti
+## Placeholder — stato finale (05D): tutti risolti
 
-Tutti i placeholder sono oggetti tipizzati distinti (`{ placeholder: true,
+Tutti i placeholder erano oggetti tipizzati distinti (`{ placeholder: true,
 label: string }`) in `lib/legal/privacy-content.ts`, mai stringhe di testo
-libere — il componente `components/legal/LegalSection.tsx` li rende sempre
+libere — il componente `components/legal/LegalSection.tsx` li rendeva sempre
 con un box evidenziato (bordo/sfondo ambra, prefisso "DA COMPLETARE PRIMA
-DELLA PUBBLICAZIONE") **senza alcuna condizione di ambiente**: sono visibili
-identicamente in sviluppo, review e — finché non sostituiti — anche in
-produzione. Undici placeholder introdotti, in 6 sezioni: Titolare (3),
-Contatti (2), Basi giuridiche (1), Destinatari e fornitori (1),
-Trasferimenti (2), Conservazione (1), Reclamo all'autorità (1).
+DELLA PUBBLICAZIONE") **senza alcuna condizione di ambiente**. Il meccanismo
+(funzione `ph()`) resta disponibile per un uso futuro: se un placeholder
+viene reintrodotto, il publication gate torna a fallire automaticamente.
 
-## Route e componenti creati/modificati
+Degli 11 placeholder originari (Titolare ×3, Contatti ×2, Basi giuridiche
+×1, Destinatari e fornitori ×1, Trasferimenti ×2, Conservazione ×1, Reclamo
+all'autorità ×1):
+- **6 risolti in 05B** con dati confermati direttamente dal titolare (identità, indirizzo, contatto, assenza DPO, giurisdizione).
+- **5 risolti in 05D** con decisioni approvate dal titolare su proposta 05C (basi giuridiche demo/test, formulazione fornitori/trasferimenti, matrice di retention).
+
+**Placeholder residui alla data di aggiornamento: 0.**
+
+## Route e componenti creati/modificati (intera sequenza 05 → 05D)
 
 **Creati:**
 - `app/privacy/page.tsx` — pagina pubblica, Server Component, metadata indicizzabili.
-- `lib/legal/privacy-content.ts` — contenuto tipizzato (14 sezioni + versione/data).
+- `lib/legal/privacy-content.ts` — contenuto tipizzato (14 sezioni + versione/data + costanti identità/stato piattaforma).
 - `components/legal/LegalSection.tsx` — rendering riutilizzabile sezione + placeholder.
-- `tests/unit/public-privacy-foundation-05.test.ts`.
+- `tests/unit/public-privacy-foundation-05.test.ts`
+- `tests/unit/public-privacy-foundation-05a-middleware.test.ts`
+- `tests/unit/public-privacy-foundation-05a-publication-gate.test.ts`
+- `tests/unit/public-privacy-foundation-05b-confirmed-identity.test.ts`
+- `tests/unit/public-privacy-foundation-05d-publication-ready.test.ts`
+- `docs/PUBLIC_PRIVACY_FOUNDATION_05A_LEGAL_INPUT_REQUIRED.md`
+- `docs/PUBLIC_PRIVACY_FOUNDATION_05C_PROVIDER_RETENTION_VERIFICATION.md`
 - Questo documento.
 
-**Modificati (solo aggiunta di un link, nessun redesign):**
+**Modificati:**
 - `components/landing/MarketingFooter.tsx` — link Privacy (copre `/` e `/pilot`).
 - `components/landing/marketing.module.css` — stile `.footLegal` (+ `:focus-visible`).
 - `app/login/page.tsx` — link Privacy nel footer testuale esistente.
 - `app/request-access/page.tsx` — link Privacy nel footer testuale esistente.
+- `middleware.ts` — aggiunta `ALWAYS_PUBLIC_PATHS = ['/privacy']` (05A), controllo centralizzato, nessuna wildcard, nessuna altra regola di accesso toccata.
 
 ## Struttura della pagina `/privacy`
 
@@ -147,45 +173,50 @@ nessuna pagina vuota/finta introdotta, per esplicita regola del brief). Gap
 documentato: se in futuro servono, andranno aggiunti allo stesso
 `MarketingFooter` component.
 
-## Limiti del documento e rischio residuo scoperto
+## Limiti del documento e rischio residuo
 
 - **Non è una DPIA.** È un inventario tecnico verificabile, non una
   valutazione d'impatto formale.
 - **Non sostituisce la revisione legale/DPO.** Esplicitamente dichiarato
-  sia nella pagina pubblica sia qui.
-- **Gap tecnico scoperto durante questo sprint, non risolto (fuori scope
-  esplicito — `middleware.ts` è vietato in questo sprint):** `/privacy` non
-  è presente in nessuna delle liste `*_ALLOWED_PREFIXES` di `middleware.ts`.
-  Un utente **già autenticato** come `COMPANY_ADMIN`, `WORKER`, `PARTNER` o
-  `DEMO_VIEWER` che visita `/privacy` direttamente verrebbe **rediretto**
-  al proprio workspace dal middleware, invece di vedere la pagina. Per un
-  visitatore anonimo (il caso testato e richiesto da questo sprint) la
-  pagina funziona correttamente. Raccomandazione per un futuro sprint
-  dedicato: aggiungere `/privacy` (ed eventualmente `/cookie`, `/termini`
-  quando esisteranno) a un piccolo insieme di path "sempre pubblici",
-  idealmente con un controllo dedicato vicino a quello già esistente per
-  `'/'` in cima a `middleware.ts`, invece di aggiungerlo a ciascuna delle
-  quattro allowlist per-ruolo separatamente.
-- Le informazioni sulla localizzazione dei fornitori e sui DPA non sono
-  verificabili dal solo codice sorgente — richiedono conferma diretta con
-  ciascun fornitore.
+  sia nella pagina pubblica sia qui — le basi giuridiche e la retention
+  approvate in 05D sono scelte prudenti del titolare per la sola fase
+  demo/test, non un parere legale.
+- **Gap del middleware — risolto in 05A.** `/privacy` è ora in
+  `ALWAYS_PUBLIC_PATHS` in `middleware.ts`, controllata centralmente prima
+  di qualunque redirect per ruolo — accessibile a visitatori anonimi e a
+  tutti i ruoli autenticati (KORA_ADMIN, COMPANY_ADMIN, WORKER, PARTNER,
+  DEMO_VIEWER). Verificato con test dedicati.
+- **Verifica contrattuale fornitori — ancora aperta.** DPA non confermati
+  come firmati, regioni server non verificate (tranne la dichiarazione
+  pubblica di Vercel), per nessuno dei fornitori — la pagina usa una
+  formulazione prudente che non afferma nulla di non verificato (v.
+  `docs/PUBLIC_PRIVACY_FOUNDATION_05C_PROVIDER_RETENTION_VERIFICATION.md`).
+- **Nessun job di cleanup automatico esiste ancora** per account/dati demo
+  o per l'audit log — i periodi di retention di 90 giorni/12 mesi sono una
+  policy organizzativa approvata, applicata oggi manualmente dal titolare.
+  Va implementato e testato prima di un pilota con utenti reali.
 
-## Checklist legale prima della pubblicazione definitiva
+## Checklist legale prima dell'apertura a un pilota con utenti reali
 
-- [ ] Titolare del trattamento (ragione sociale, sede legale, P.IVA) inserito.
-- [ ] Contatto privacy/DPO dedicato inserito, se applicabile.
-- [ ] Basi giuridiche confermate da un DPO/legale per ciascuna categoria di dati.
-- [ ] Regione/localizzazione di Supabase, Vercel, Sentry, Upstash confermata.
+*(La pagina attuale è pronta per la fase demo/test — questa checklist è per
+il passo successivo, non un blocco alla pubblicazione odierna.)*
+
+- [x] Titolare del trattamento (persona fisica, indirizzo) inserito — 05B.
+- [x] Contatto privacy inserito, stato DPO dichiarato — 05B.
+- [x] Basi giuridiche formulate per la fase demo/test — 05D (**da rivalutare per utenti reali**, esplicitamente dichiarato nel testo).
+- [x] Matrice di retention proposta e approvata per la fase demo/test — 05D.
+- [ ] Regione/localizzazione di Supabase, Vercel, Sentry, Upstash verificata sulle dashboard reali.
 - [ ] DPA sottoscritti con ciascun fornitore, o in corso di sottoscrizione.
-- [ ] Politica di conservazione definita e approvata da un DPO.
-- [ ] Autorità di controllo competente confermata.
-- [ ] Tutti gli 11 placeholder di `lib/legal/privacy-content.ts` sostituiti con dati confermati.
-- [ ] Revisione legale/DPO completa del testo pubblicato.
-- [ ] Gap del middleware (utenti autenticati rediretti da `/privacy`) risolto in uno sprint dedicato.
+- [ ] Basi giuridiche rivalutate con DPO/legale per un contesto con aziende/lavoratori reali.
+- [ ] Job di cleanup automatico per account/dati demo implementato e testato.
+- [ ] Autorità di controllo competente confermata in modo definitivo (oggi: Garante italiano, in base alla sede nota).
+- [ ] Revisione legale/DPO completa del testo, in vista dell'apertura reale.
 
 ## Conferma
 
 Questo documento e la pagina `/privacy` **non sostituiscono** una revisione
 legale. Ogni affermazione tecnica è verificata rispetto al codice esistente
-alla data indicata; ogni dato non verificabile è marcato esplicitamente
-come placeholder, mai inventato.
+alla data indicata; ogni dato non derivabile dal codice è stato confermato
+esplicitamente dal titolare (05B, 05D) o formulato in modo prudente e
+condizionale senza affermare fatti non verificati (fornitori/trasferimenti,
+05D) — nessun dato è stato inventato.

@@ -40,15 +40,10 @@ describe('/privacy — pagina pubblica, nessuna autenticazione richiesta', () =>
     expect(src).not.toContain("'use client'");
   });
 
-  it('non è presente in nessuna ALLOWED_PREFIXES di middleware.ts (nota: comportamento noto per utenti già autenticati — vedi doc)', () => {
+  it('è elencata in ALWAYS_PUBLIC_PATHS di middleware.ts (fix PUBLIC-PRIVACY-FOUNDATION-05A)', () => {
     const mw = read('middleware.ts');
-    // Documented gap: an authenticated COMPANY_ADMIN/WORKER/PARTNER/DEMO_VIEWER
-    // visiting /privacy directly would be redirected by middleware, since
-    // /privacy is not in any role's allowed-prefixes list. Out of scope to
-    // fix here (middleware is forbidden scope for this sprint) — this test
-    // documents the current, verified state rather than silently assuming
-    // it works for authenticated sessions too.
-    expect(mw).not.toMatch(/'\/privacy'/);
+    expect(mw).toContain('ALWAYS_PUBLIC_PATHS');
+    expect(mw).toMatch(/ALWAYS_PUBLIC_PATHS\s*=\s*\[\s*'\/privacy'/);
   });
 });
 
@@ -151,14 +146,17 @@ describe('/privacy — sezioni minime presenti', () => {
 });
 
 describe('/privacy — nessun placeholder presentato come dato reale', () => {
-  it('i placeholder sono oggetti tipizzati distinti dal testo verificato (non stringhe semplici)', () => {
-    let placeholderCount = 0;
-    for (const section of PRIVACY_SECTIONS) {
-      for (const p of section.paragraphs) {
-        if (isPlaceholder(p)) placeholderCount++;
-      }
-    }
-    expect(placeholderCount).toBeGreaterThan(0);
+  it('il tipo placeholder è un oggetto distinto dal testo verificato (non una stringa semplice) — verificato sul tipo, non sul contenuto attuale', () => {
+    // As of PUBLIC-PRIVACY-FOUNDATION-05D no placeholder remains in the real
+    // content (all 11 were resolved — see "0 placeholder residui" below).
+    // This test verifies the *mechanism* itself still works correctly using
+    // a synthetic example, independent of whether any section currently
+    // uses it — the publication gate depends on isPlaceholder() correctly
+    // distinguishing the two paragraph shapes whenever one is reintroduced.
+    const syntheticPlaceholder: PrivacyParagraph = { placeholder: true, label: 'esempio sintetico' };
+    const syntheticText: PrivacyParagraph = 'testo verificato di esempio';
+    expect(isPlaceholder(syntheticPlaceholder)).toBe(true);
+    expect(isPlaceholder(syntheticText)).toBe(false);
   });
 
   it('ogni placeholder ha un\'etichetta descrittiva non vuota', () => {
@@ -181,14 +179,29 @@ describe('/privacy — nessun placeholder presentato come dato reale', () => {
     expect(component).not.toContain('process.env');
   });
 
-  it('sezioni con dati non verificabili (titolare, basi giuridiche, conservazione, trasferimenti) contengono almeno un placeholder', () => {
-    const criticalSections = ['titolare', 'basi-giuridiche', 'conservazione', 'trasferimenti'];
-    for (const id of criticalSections) {
+  it('sezioni risolte in PUBLIC-PRIVACY-FOUNDATION-05D (basi giuridiche, conservazione, trasferimenti, DPA fornitori) non contengono più placeholder', () => {
+    const resolvedIn05D = ['basi-giuridiche', 'conservazione', 'trasferimenti', 'destinatari-fornitori'];
+    for (const id of resolvedIn05D) {
       const section = PRIVACY_SECTIONS.find((s) => s.id === id);
       expect(section).toBeDefined();
       const hasPlaceholder = section!.paragraphs.some(isPlaceholder);
-      expect(hasPlaceholder).toBe(true);
+      expect(hasPlaceholder).toBe(false);
     }
+  });
+
+  it('sezioni risolte in PUBLIC-PRIVACY-FOUNDATION-05B (titolare, contatti, reclamo autorità) non contengono più placeholder', () => {
+    const resolved = ['titolare', 'contatti', 'reclamo-autorita'];
+    for (const id of resolved) {
+      const section = PRIVACY_SECTIONS.find((s) => s.id === id);
+      expect(section).toBeDefined();
+      const hasPlaceholder = section!.paragraphs.some(isPlaceholder);
+      expect(hasPlaceholder).toBe(false);
+    }
+  });
+
+  it('GATE VERDE: zero placeholder in tutta la pagina — pubblicazione pronta per la fase demo/test attuale', () => {
+    const total = PRIVACY_SECTIONS.flatMap((s) => s.paragraphs).filter(isPlaceholder).length;
+    expect(total).toBe(0);
   });
 });
 

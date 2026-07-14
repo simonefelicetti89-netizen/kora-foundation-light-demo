@@ -20,6 +20,15 @@ import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 import { canAccess } from '@/lib/auth/access-matrix';
 
+// PUBLIC-PRIVACY-FOUNDATION-05A: paths that are always public, for every
+// role (anonymous, COMPANY_ADMIN, WORKER, PARTNER, DEMO_VIEWER, KORA_ADMIN)
+// — checked once, centrally, before any role-specific redirect logic below.
+// Exact-path match only, no prefix/wildcard — mirrors the existing '/'
+// exact-match rationale (a prefix match here would risk silently exempting
+// an unintended path in the future). Add a new entry here, not to each of
+// the four per-role ALLOWED_PREFIXES arrays separately.
+const ALWAYS_PUBLIC_PATHS = ['/privacy'];
+
 // Paths that authenticated COMPANY_ADMIN users are allowed to access.
 // B59: intelligence pages added so real sessions reach live-enabled pages.
 // B147: added all sidebar-linked pages missing from this list (routing bug fix).
@@ -141,8 +150,10 @@ export async function middleware(request: NextRequest) {
   // B117-E: Root landing '/' is always public — never role-redirected.
   // startsWith('/') would match every path, so exact match is required here.
   // /demo-guide and /pilot remain restricted to unauthenticated/demo users (by design).
+  // PUBLIC-PRIVACY-FOUNDATION-05A: ALWAYS_PUBLIC_PATHS (e.g. /privacy) get
+  // the same treatment — never role-redirected, for any authenticated role.
   const pathname = request.nextUrl.pathname;
-  if (pathname === '/') {
+  if (pathname === '/' || ALWAYS_PUBLIC_PATHS.includes(pathname)) {
     return supabaseResponse;
   }
 
