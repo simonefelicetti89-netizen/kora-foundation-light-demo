@@ -215,6 +215,8 @@ export default async function RequestAccessPage({
         {/* Footer */}
         <p style={{ fontSize: 10, color: 'rgba(6,3,43,0.28)', textAlign: 'center', marginTop: 20, lineHeight: 1.5 }}>
           KORA non registra utenti pubblici: attiva identita gia provisionate.
+          {' · '}
+          <Link href="/privacy" data-testid="request-access-privacy-link" style={{ color: 'inherit' }}>Privacy</Link>
         </p>
       </div>
     </div>
