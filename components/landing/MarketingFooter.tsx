@@ -19,6 +19,9 @@ export function MarketingFooter({ meth = DEFAULT_METH }: MarketingFooterProps) {
           <KoraLogo variant="on-light" className="h-[24px] w-auto opacity-60" />
         </Link>
         <p className={styles.footMeth}>{meth}</p>
+        <Link href="/privacy" data-testid="marketing-footer-privacy-link" className={styles.footLegal}>
+          Privacy
+        </Link>
       </div>
     </footer>
   );

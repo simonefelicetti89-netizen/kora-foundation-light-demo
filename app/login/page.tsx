@@ -305,6 +305,8 @@ function LoginForm() {
           lineHeight:  1.5,
         }}>
           KORA misura organizzazioni, non individui · I tuoi dati personali non sono visibili al datore di lavoro
+          {' · '}
+          <Link href="/privacy" data-testid="login-privacy-link" style={{ color: 'inherit' }}>Privacy</Link>
         </p>
       </div>
     </div>

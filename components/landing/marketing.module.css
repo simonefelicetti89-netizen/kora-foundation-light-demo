@@ -37,3 +37,6 @@
   flex-wrap: wrap; gap: 1.2rem;
 }
 .footMeth { font-size: 10.5px; font-weight: 600; letter-spacing: .06em; color: rgba(6,3,43,.42); line-height: 1.8; max-width: 60ch; text-transform: uppercase; }
+.footLegal { font-size: 12px; font-weight: 600; color: rgba(6,3,43,.55); text-decoration: none; }
+.footLegal:hover { color: rgba(6,3,43,.85); text-decoration: underline; }
+.footLegal:focus-visible { outline: 2px solid rgba(6,3,43,.55); outline-offset: 3px; }
