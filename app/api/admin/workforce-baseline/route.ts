@@ -19,8 +19,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

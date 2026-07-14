@@ -24,6 +24,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 type TenantRow = {
   id:                  string;
@@ -37,6 +38,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   // ── Auth ──────────────────────────────────────────────────────────────────
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;

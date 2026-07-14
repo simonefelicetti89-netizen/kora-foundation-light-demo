@@ -39,6 +39,7 @@ import {
 import { buildRowProvenance, summarizeProvenance } from '@/lib/data-intake/evidence-provenance';
 import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 import { mappingConfidenceService } from '@/services/mapping-confidence/MappingConfidenceService';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 // ── Limits ───────────────────────────────────────────────────────────────────
 
@@ -480,6 +481,9 @@ function buildMatchReviewSection(
 // ── POST handler ──────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

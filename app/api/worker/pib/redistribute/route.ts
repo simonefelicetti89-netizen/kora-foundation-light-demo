@@ -33,8 +33,12 @@ import {
   applyPillarRedistribution,
 } from '@/services/worker-iu-computation/WorkerIUComputationService';
 import type { WorkerPIBRowInsert } from '@/lib/types/domains/worker-pilot-schema';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   // ── Auth: solo WORKER JWT ─────────────────────────────────────────────────
   const workerResult = await requireWorkerUser(request);
   if (isKoraAuthError(workerResult)) {

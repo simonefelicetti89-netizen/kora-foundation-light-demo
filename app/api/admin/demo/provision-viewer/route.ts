@@ -15,10 +15,14 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const LIVE_ROLES = ['KORA_ADMIN', 'COMPANY_ADMIN', 'WORKER', 'PARTNER'] as const;
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
 

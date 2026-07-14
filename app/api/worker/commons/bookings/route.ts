@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { createBooking, listMyBookings } from '@/services/commons/BookingService';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = await requireWorkerUser(request);
@@ -37,6 +38,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireWorkerUser(request);
   if (isKoraAuthError(auth)) return NextResponse.json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 

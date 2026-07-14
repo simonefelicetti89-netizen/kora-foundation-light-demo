@@ -17,6 +17,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 // tenantCode: uppercase letters, digits, dash, 2–32 chars
 const TENANT_CODE_RE = /^[A-Z0-9-]{2,32}$/;
@@ -75,6 +76,9 @@ export async function GET(request: NextRequest) {
 // ── POST: create tenant ───────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

@@ -15,6 +15,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 interface InvitePartnerUserBody {
   email: string;
@@ -24,6 +25,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
 

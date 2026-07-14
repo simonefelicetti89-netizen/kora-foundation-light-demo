@@ -33,6 +33,7 @@ import {
   sanitizePayload,
   summarizePiiFindings,
 } from '@/lib/privacy/pii-guard';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const SYNTHETIC_WORKFORCE_DEFAULT = 50;
 
@@ -61,6 +62,9 @@ function auditEvent(params: {
 // ── POST: run full operator flow ─────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authError = await requireKoraAdmin(request);
   if (isKoraAuthError(authError)) return authError;
 

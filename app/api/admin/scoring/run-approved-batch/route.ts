@@ -21,6 +21,7 @@ import { runKoraPipeline } from '@/lib/kora-engine';
 import { persistKoraComputationResult } from '@/lib/live/persistence';
 import { persistDecisionPack } from '@/lib/live/decision-pack';
 import { buildScoringRecordsFromApprovedUef, type UefRowForScoring } from '@/lib/live/uef-to-scoring-records';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 function makeAudit(p: {
   tenantId: string; actorId: string; action: string;
@@ -52,6 +53,9 @@ const RunBatchSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
 
   // ── 1. Auth ─────────────────────────────────────────────────────────────────
   const authResult = await requireKoraAdmin(request);

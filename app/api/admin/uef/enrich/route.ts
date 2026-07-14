@@ -12,6 +12,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 // Valid taxonomy values
 const VALID_DOMAINS    = ['welfare','fringe_benefit','economic_relief','hr_learning','esg_volunteering','compliance_hse','previdenza_future','wellbeing_mental_health','unknown'];
@@ -58,6 +59,9 @@ function recomputeFinancialConfidence(
 }
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

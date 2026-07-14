@@ -16,6 +16,7 @@ import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { detectPiiInPayload } from '@/lib/privacy/pii-guard';
 import { randomUUID } from 'crypto';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const PII_TEXT_ERROR = 'Il testo contiene possibili dati personali. Rimuovi nomi, email, telefoni, codici fiscali o riferimenti individuali.';
 
@@ -87,6 +88,9 @@ export async function GET(request: NextRequest) {
 // ── POST — create draft submission (COMPANY_ADMIN only) ───────────────────────
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireCompanyUser(request);
   if (isKoraAuthError(auth)) return auth;
 

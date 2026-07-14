@@ -17,8 +17,12 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { createEvidenceAttachmentSignedUrl } from '@/lib/data-intake/evidence-attachment-storage';
 import { canGenerateSignedUrl } from '@/lib/data-intake/attachment-lifecycle';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

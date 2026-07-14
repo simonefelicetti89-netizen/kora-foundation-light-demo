@@ -62,6 +62,7 @@ interface UEFReviewRow {
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 function makeAudit(p: {
   tenantId: string; actorId: string; action: string;
@@ -209,6 +210,9 @@ export async function GET(request: NextRequest) {
 const VALID_ACTIONS = new Set(['approve', 'reject', 'needs_info']);
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

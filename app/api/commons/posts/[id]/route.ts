@@ -20,6 +20,7 @@ import {
 } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { geocodeAddress } from '@/lib/commons/geocoding';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const VALID_OPENING_GRADES = ['company_internal', 'company_extended', 'cross_company'] as const;
 type OpeningGrade = typeof VALID_OPENING_GRADES[number];
@@ -41,6 +42,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const { id: postId } = await params;
   const db = await getSupabaseServerClient();
 

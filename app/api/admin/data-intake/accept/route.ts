@@ -41,6 +41,7 @@ import type { RawUploadedRecord } from '@/lib/kora-engine/types';
 import type {
   BatchFinancialContext, FinancialSourceType, BudgetScope, EvidenceLevel,
 } from '@/lib/ingestion/raw-to-uef-interpreter';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 // ── B11.3: Financial metadata validation ─────────────────────────────────────
 // financialNotes is deliberately excluded — never persisted (privacy boundary).
@@ -263,6 +264,9 @@ async function parseAndValidateOneFile(params: {
 // ── POST handler ───────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
 
   // ── 1. Auth ─────────────────────────────────────────────────────────────────
   const authResult = await requireKoraAdmin(request);

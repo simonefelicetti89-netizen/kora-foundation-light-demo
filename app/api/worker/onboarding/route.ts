@@ -15,6 +15,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 export const CURRENT_PRIVACY_CONSENT_VERSION = 'B113-v1.0';
 
@@ -60,6 +61,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // ── POST /api/worker/onboarding ───────────────────────────────────────────────
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireWorkerUser(request);
   if (isKoraAuthError(auth)) return auth;
 

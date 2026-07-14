@@ -20,6 +20,7 @@ import {
   resolveLifecycleStatus, buildLifecycleUpdate, sanitizeLifecycleReason,
   type LifecycleAction,
 } from '@/lib/data-intake/attachment-lifecycle';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const VALID_ACTIONS: LifecycleAction[] = ['archive', 'restore', 'remove_metadata', 'remove_storage'];
 
@@ -31,6 +32,9 @@ const AUDIT_ACTIONS: Record<LifecycleAction, string> = {
 };
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

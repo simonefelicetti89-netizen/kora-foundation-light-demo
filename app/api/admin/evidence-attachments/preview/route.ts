@@ -14,6 +14,7 @@ import {
   type EvidenceAttachmentType,
   type EvidenceAttachmentScope,
 } from '@/lib/data-intake/evidence-attachment';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const VALID_ATTACHMENT_TYPES = new Set<EvidenceAttachmentType>([
   'invoice', 'provider_export', 'lms_report', 'policy_document', 'contract',
@@ -21,6 +22,9 @@ const VALID_ATTACHMENT_TYPES = new Set<EvidenceAttachmentType>([
 ]);
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 
