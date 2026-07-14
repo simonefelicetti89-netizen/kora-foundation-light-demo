@@ -121,6 +121,43 @@ lancia un errore all'avvio se `NODE_ENV=production` e il provider non è
 a: sviluppo locale single-process, test automatizzati (con clock iniettato).
 Mai l'unica protezione in produzione.
 
+### Comportamento esplicito per ogni scenario di misconfigurazione
+
+`assertRateLimit()` (il punto d'ingresso usato da ogni route) non lancia
+**mai** un'eccezione non gestita — nessuno scenario di misconfigurazione può
+far crashare una route o l'intero deploy. Ogni errore di configurazione o di
+costruzione dello store viene catturato e trattato con lo stesso fail mode
+documentato per la categoria (vedi tabella policy), esattamente come un
+errore runtime dello storage:
+
+| Scenario | Produzione | Fuori produzione |
+|---|---|---|
+| `SECURITY_RATE_LIMIT_PROVIDER` assente | Rifiutato da `assertRateLimitProductionSafe()` → fail mode della categoria (mai crash, mai fallback silenzioso a memory) | Default a `memory` |
+| Valore non riconosciuto (es. refuso) | Rifiutato (parsing fallisce) → fail mode della categoria | Rifiutato (parsing fallisce) → fail mode della categoria (stesso comportamento, nessuna distinzione per ambiente su un valore genuinamente invalido) |
+| `=memory` | Rifiutato da `assertRateLimitProductionSafe()` → fail mode della categoria | Store in-memory, comportamento normale |
+| `=disabled` | Rifiutato da `assertRateLimitProductionSafe()` → fail mode della categoria (**non** bypassa il guard come farebbe fuori produzione) | Bypassa sempre il guard (`return null`) |
+| `=upstash` ma credenziali assenti/incomplete | Rifiutato da `assertRateLimitProductionSafe()` → fail mode della categoria | Store "unavailable" concettuale: stessa gestione, fail mode della categoria |
+| `=upstash` con credenziali presenti ma Upstash irraggiungibile a runtime | `store.hit()` fallisce → fail mode della categoria (percorso già gestito da `checkRateLimit`, non da questa matrice di costruzione) | Idem |
+
+In tutti i casi "fail mode della categoria": **open** → la richiesta procede
+(`assertRateLimit` restituisce `null`); **closed** → la richiesta riceve
+`429` con `Retry-After` calcolato sulla finestra della policy (nessun
+dettaglio della misconfigurazione nel corpo della risposta). Verificato da
+17 test dedicati in `tests/unit/security-rate-limiting-04.test.ts`
+("misconfigurazione in produzione: mai un crash, mai una falsa
+disponibilità").
+
+**Nota:** `assertRateLimitProductionSafe()` non è agganciata a un hook di
+avvio (`instrumentation.ts` non esiste in questo progetto) — è invocata
+lazily al primo utilizzo dello store condiviso, non al boot del processo.
+Questo è intenzionale e replica lo stesso pattern già presente per
+`assertKoraLinkRateLimitProductionSafe()` in `lib/kora-link/rate-limit.ts`
+(anch'essa mai invocata a un hook di avvio in questo codebase): un errore di
+configurazione del rate limiter fa fallire solo le route che lo usano
+(secondo il fail mode di categoria), non l'intero processo Next.js al boot —
+scelta deliberata per limitare il blast radius di una misconfigurazione a un
+sottoinsieme di route, non all'intera applicazione.
+
 ## Identificazione del client (chiave)
 
 `${category}:actor:${actorId}` dove `actorId` è l'id opaco (UUID Supabase)

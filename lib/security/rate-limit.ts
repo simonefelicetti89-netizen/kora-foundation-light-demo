@@ -298,6 +298,14 @@ let sharedStore: RateLimitStore | null = null;
 function getSharedStore(env: SecurityRateLimitEnv = process.env): RateLimitStore {
   if (sharedStore) return sharedStore;
 
+  // In production this throws unless SECURITY_RATE_LIMIT_PROVIDER=upstash
+  // with valid credentials — never silently falls back to an in-memory
+  // store on this serverless/multi-instance deployment, whether the
+  // variable is unset, set to 'memory', or set to 'disabled'. The caller
+  // (assertRateLimit) catches this and applies the category's fail mode
+  // rather than letting it crash the route.
+  assertRateLimitProductionSafe(env);
+
   const provider = getRateLimitProvider(env) ?? 'memory';
 
   if (provider === 'upstash') {
@@ -323,25 +331,51 @@ export function __resetSharedRateLimitStoreForTests(): void {
 // immediately if it yields a Response, otherwise proceed. Never logs the
 // actor id, key, or any request detail.
 
+function tooManyRequestsResponse(retryAfterSeconds: number): NextResponse {
+  return NextResponse.json(
+    { error: 'Too Many Requests' },
+    { status: 429, headers: { 'Retry-After': String(retryAfterSeconds) } }
+  );
+}
+
 export async function assertRateLimit(
   category: RateLimitCategory,
   actorId: string,
   options?: { store?: RateLimitStore; now?: number; env?: SecurityRateLimitEnv }
 ): Promise<NextResponse | null> {
-  const provider = getRateLimitProvider(options?.env ?? process.env);
-  if (provider === 'disabled') return null;
-
-  const store = options?.store ?? getSharedStore(options?.env);
+  const env = options?.env ?? process.env;
+  // Programmer error (unknown category) — not an operational misconfiguration,
+  // intentionally not caught below; this must fail loud in development.
+  const policy = getRateLimitPolicy(category);
   const key = buildRateLimitKey({ category, actorId });
-  const decision = await checkRateLimit(category, key, store, options?.now);
 
+  let store: RateLimitStore;
+  try {
+    const provider = getRateLimitProvider(env);
+    // 'disabled' only bypasses the guard outside production — in production
+    // it is rejected by assertRateLimitProductionSafe() below (via
+    // getSharedStore), same as an unset or 'memory' provider, so a stray
+    // SECURITY_RATE_LIMIT_PROVIDER=disabled in a live environment cannot
+    // silently turn off protection on every request.
+    if (provider === 'disabled' && env.NODE_ENV !== 'production') return null;
+
+    store = options?.store ?? getSharedStore(env);
+  } catch {
+    // Any operational misconfiguration — an unrecognized
+    // SECURITY_RATE_LIMIT_PROVIDER value, a production-safety rejection
+    // (missing/invalid provider or Upstash credentials), or a genuine
+    // Upstash construction failure — is handled identically via the
+    // category's documented fail mode. This must never crash the route:
+    // a misconfiguration must never turn a fail-open category into an
+    // unhandled 500 on every request, and must never silently skip the
+    // limit on a fail-closed category either. Never logs the error (may
+    // contain connection details).
+    if (policy.failMode === 'open') return null;
+    return tooManyRequestsResponse(Math.ceil(policy.windowMs / 1000));
+  }
+
+  const decision = await checkRateLimit(category, key, store, options?.now);
   if (decision.allowed) return null;
 
-  return NextResponse.json(
-    { error: 'Too Many Requests' },
-    {
-      status: 429,
-      headers: { 'Retry-After': String(decision.retryAfterSeconds) },
-    }
-  );
+  return tooManyRequestsResponse(decision.retryAfterSeconds);
 }

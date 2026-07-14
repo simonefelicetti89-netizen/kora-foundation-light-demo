@@ -10,9 +10,14 @@ import {
   buildRateLimitKey,
   createMemoryRateLimitStore,
   getRateLimitPolicy,
+  getRateLimitProvider,
+  getUpstashEnvStatus,
+  assertRateLimitProductionSafe,
+  __resetSharedRateLimitStoreForTests,
   RATE_LIMIT_POLICIES,
   type RateLimitStore,
   type RateLimitCategory,
+  type SecurityRateLimitEnv,
 } from '@/lib/security/rate-limit';
 
 // A store that always throws — simulates a storage outage for fail-open/closed tests.
@@ -233,5 +238,147 @@ describe('comportamento locale vs multi-istanza (memory store)', () => {
     // would give in a multi-instance/serverless deployment.
     const stillAllowedOnB = await checkRateLimit('single_provisioning', 'actor-x', instanceB, 1_700_000_000_001);
     expect(stillAllowedOnB.allowed).toBe(true);
+  });
+});
+
+describe('getRateLimitProvider — parsing', () => {
+  it('restituisce null se SECURITY_RATE_LIMIT_PROVIDER è assente', () => {
+    expect(getRateLimitProvider({})).toBeNull();
+  });
+
+  it('lancia per un valore non riconosciuto', () => {
+    expect(() => getRateLimitProvider({ SECURITY_RATE_LIMIT_PROVIDER: 'redis-cluster-9000' })).toThrow();
+  });
+
+  it('accetta memory, upstash, disabled', () => {
+    expect(getRateLimitProvider({ SECURITY_RATE_LIMIT_PROVIDER: 'memory' })).toBe('memory');
+    expect(getRateLimitProvider({ SECURITY_RATE_LIMIT_PROVIDER: 'upstash' })).toBe('upstash');
+    expect(getRateLimitProvider({ SECURITY_RATE_LIMIT_PROVIDER: 'disabled' })).toBe('disabled');
+  });
+});
+
+describe('getUpstashEnvStatus', () => {
+  it('ready=false se mancano URL e/o TOKEN, senza mai riportarne il valore', () => {
+    const status = getUpstashEnvStatus({});
+    expect(status).toEqual({ hasUrl: false, hasToken: false, ready: false });
+  });
+
+  it('ready=true solo se entrambe sono presenti', () => {
+    const status = getUpstashEnvStatus({
+      UPSTASH_REDIS_REST_URL: 'https://example.upstash.io',
+      UPSTASH_REDIS_REST_TOKEN: 'x',
+    });
+    expect(status.ready).toBe(true);
+  });
+});
+
+describe('assertRateLimitProductionSafe — comportamento esplicito per ogni misconfigurazione', () => {
+  it('non fa nulla fuori produzione, qualunque sia la configurazione', () => {
+    expect(() => assertRateLimitProductionSafe({ NODE_ENV: 'development' })).not.toThrow();
+    expect(() => assertRateLimitProductionSafe({ NODE_ENV: 'test' })).not.toThrow();
+  });
+
+  it('produzione + SECURITY_RATE_LIMIT_PROVIDER assente → lancia', () => {
+    expect(() => assertRateLimitProductionSafe({ NODE_ENV: 'production' })).toThrow(/obbligatorio in production/);
+  });
+
+  it('produzione + SECURITY_RATE_LIMIT_PROVIDER=memory → lancia (non production-safe su serverless)', () => {
+    expect(() =>
+      assertRateLimitProductionSafe({ NODE_ENV: 'production', SECURITY_RATE_LIMIT_PROVIDER: 'memory' })
+    ).toThrow(/memory non consentito in production/);
+  });
+
+  it('produzione + SECURITY_RATE_LIMIT_PROVIDER=disabled → lancia', () => {
+    expect(() =>
+      assertRateLimitProductionSafe({ NODE_ENV: 'production', SECURITY_RATE_LIMIT_PROVIDER: 'disabled' })
+    ).toThrow(/disabled non consentito in production/);
+  });
+
+  it('produzione + upstash ma credenziali assenti → lancia senza esporne il valore', () => {
+    try {
+      assertRateLimitProductionSafe({ NODE_ENV: 'production', SECURITY_RATE_LIMIT_PROVIDER: 'upstash' });
+      expect.unreachable('doveva lanciare');
+    } catch (e) {
+      const msg = (e as Error).message;
+      expect(msg).toMatch(/UPSTASH_REDIS_REST_URL/);
+      expect(msg).toMatch(/UPSTASH_REDIS_REST_TOKEN/);
+    }
+  });
+
+  it('produzione + upstash + credenziali presenti → non lancia', () => {
+    expect(() =>
+      assertRateLimitProductionSafe({
+        NODE_ENV: 'production',
+        SECURITY_RATE_LIMIT_PROVIDER: 'upstash',
+        UPSTASH_REDIS_REST_URL: 'https://example.upstash.io',
+        UPSTASH_REDIS_REST_TOKEN: 'x',
+      })
+    ).not.toThrow();
+  });
+});
+
+describe('assertRateLimit — misconfigurazione in produzione: mai un crash, mai una falsa disponibilità', () => {
+  // These exercise the REAL route-level entry point (assertRateLimit), not
+  // just the lower-level assertRateLimitProductionSafe — this is what a
+  // route handler actually calls, so this is what proves the deploy
+  // cannot crash before serving a request and cannot silently fall back
+  // to an in-memory store in production.
+  const T0 = 1_700_000_000_000;
+
+  beforeEach(() => {
+    __resetSharedRateLimitStoreForTests();
+  });
+
+  it('produzione, provider assente: non lancia mai (nessun crash) — applica il fail mode della categoria', async () => {
+    const env: SecurityRateLimitEnv = { NODE_ENV: 'production' };
+
+    // costly_admin_operation è fail-open → deve restituire null (via libera), non lanciare
+    await expect(assertRateLimit('costly_admin_operation', 'actor-1', { now: T0, env })).resolves.toBeNull();
+
+    // destructive_admin_operation è fail-closed → deve restituire 429, non lanciare né restituire null
+    const res = await assertRateLimit('destructive_admin_operation', 'actor-1', { now: T0, env });
+    expect(res).not.toBeNull();
+    expect(res!.status).toBe(429);
+  });
+
+  it('produzione, valore non valido: non lancia mai (nessun crash) — applica il fail mode della categoria', async () => {
+    // getRateLimitProvider lancerebbe su un valore non riconosciuto se
+    // chiamato direttamente — assertRateLimit non deve mai propagare
+    // quell'eccezione al chiamante (la route non deve andare in 500).
+    const env = { NODE_ENV: 'production', SECURITY_RATE_LIMIT_PROVIDER: 'redis-cluster-9000' } as SecurityRateLimitEnv;
+
+    await expect(assertRateLimit('invite', 'actor-2', { now: T0, env })).resolves.toBeNull(); // invite è fail-open
+    const res = await assertRateLimit('bulk_provisioning', 'actor-2', { now: T0, env }); // fail-closed
+    expect(res!.status).toBe(429);
+  });
+
+  it('produzione, provider=upstash ma credenziali assenti: non lancia mai — applica il fail mode della categoria', async () => {
+    const env: SecurityRateLimitEnv = { NODE_ENV: 'production', SECURITY_RATE_LIMIT_PROVIDER: 'upstash' };
+
+    await expect(assertRateLimit('token_creation', 'actor-3', { now: T0, env })).resolves.toBeNull(); // fail-open
+    const res = await assertRateLimit('heavy_provisioning', 'actor-3', { now: T0, env }); // fail-closed
+    expect(res!.status).toBe(429);
+  });
+
+  it('produzione, provider=disabled: NON bypassa il guard (a differenza di fuori produzione) — applica il fail mode della categoria', async () => {
+    const env: SecurityRateLimitEnv = { NODE_ENV: 'production', SECURITY_RATE_LIMIT_PROVIDER: 'disabled' };
+
+    await expect(assertRateLimit('single_provisioning', 'actor-4', { now: T0, env })).resolves.toBeNull(); // fail-open
+    const res = await assertRateLimit('destructive_admin_operation', 'actor-4', { now: T0, env }); // fail-closed
+    expect(res!.status).toBe(429);
+  });
+
+  it('fuori produzione, provider=disabled: bypassa il guard come previsto (comportamento invariato)', async () => {
+    const env: SecurityRateLimitEnv = { NODE_ENV: 'development', SECURITY_RATE_LIMIT_PROVIDER: 'disabled' };
+    const res = await assertRateLimit('destructive_admin_operation', 'actor-5', { now: T0, env });
+    expect(res).toBeNull();
+  });
+
+  it('il 429 restituito per misconfigurazione non espone dettagli della configurazione o dell\'errore', async () => {
+    const env: SecurityRateLimitEnv = { NODE_ENV: 'production' };
+    const res = await assertRateLimit('destructive_admin_operation', 'actor-6', { now: T0, env });
+    const body = await res!.json();
+    expect(body).toEqual({ error: 'Too Many Requests' });
+    expect(JSON.stringify(body)).not.toMatch(/UPSTASH|SECURITY_RATE_LIMIT_PROVIDER|production/i);
   });
 });
