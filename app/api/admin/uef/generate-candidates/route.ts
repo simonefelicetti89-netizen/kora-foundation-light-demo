@@ -26,6 +26,7 @@ import {
   type BudgetScope,
 } from '@/lib/ingestion/raw-to-uef-interpreter';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 function makeAudit(p: {
   tenantId: string; actorId: string; action: string;
@@ -44,6 +45,9 @@ export async function POST(request: NextRequest) {
 
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
+
+  const rateLimitGuard = await assertRateLimit('costly_admin_operation', authResult.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: Record<string, unknown>;
   try { body = await request.json(); }

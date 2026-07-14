@@ -42,6 +42,7 @@ import type {
   BatchFinancialContext, FinancialSourceType, BudgetScope, EvidenceLevel,
 } from '@/lib/ingestion/raw-to-uef-interpreter';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 // ── B11.3: Financial metadata validation ─────────────────────────────────────
 // financialNotes is deliberately excluded — never persisted (privacy boundary).
@@ -271,6 +272,9 @@ export async function POST(request: NextRequest) {
   // ── 1. Auth ─────────────────────────────────────────────────────────────────
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
+
+  const rateLimitGuard = await assertRateLimit('costly_admin_operation', authResult.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   // ── 2. Parse multipart form ──────────────────────────────────────────────────
   let formData: FormData;

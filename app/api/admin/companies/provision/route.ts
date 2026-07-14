@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 // Canonical key — must match kora-session.ts and migration 006.
 const TENANT_META_KEY = 'kora_tenant_id' as const;
@@ -54,6 +55,9 @@ export async function POST(request: NextRequest) {
 
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  const rateLimitGuard = await assertRateLimit('heavy_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let rawBody: unknown;
   try {

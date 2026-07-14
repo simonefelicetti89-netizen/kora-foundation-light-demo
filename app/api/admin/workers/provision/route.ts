@@ -19,6 +19,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { insertWorkerIdentity } from '@/lib/supabase/worker-provisioning-service-key';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 const ProvisionWorkerSchema = z.object({
   tenantCode: z.string().min(1, 'tenantCode is required').max(32),
@@ -32,6 +33,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  const rateLimitGuard = await assertRateLimit('single_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let rawBody: unknown;
   try {

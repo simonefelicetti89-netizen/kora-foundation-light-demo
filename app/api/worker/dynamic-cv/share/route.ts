@@ -21,6 +21,7 @@ import {
   buildShareUrl,
 } from '@/lib/worker-cv/share-token';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const originGuard = assertSameOrigin(request);
@@ -31,6 +32,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // workerId and tenantId from session ONLY — request body is ignored for identity
   const { workerId, tenantId } = auth;
+
+  const rateLimitGuard = await assertRateLimit('token_creation', workerId);
+  if (rateLimitGuard) return rateLimitGuard;
 
   const rawToken  = generateShareToken();
   const tokenHash = hashShareToken(rawToken);

@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 interface InvitePartnerUserBody {
   email: string;
@@ -30,6 +31,9 @@ export async function POST(
 
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  const rateLimitGuard = await assertRateLimit('invite', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   const { id: partnerId } = await params;
 

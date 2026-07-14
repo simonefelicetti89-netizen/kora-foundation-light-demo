@@ -28,6 +28,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 // ── Tenant code generation ────────────────────────────────────────────────────
 // Generates uppercase slug from company name: "Acme S.p.A." → "ACME-S-P-A"
@@ -87,6 +88,9 @@ export async function POST(request: NextRequest) {
 
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  const rateLimitGuard = await assertRateLimit('heavy_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: Record<string, unknown>;
   try { body = await request.json(); }
