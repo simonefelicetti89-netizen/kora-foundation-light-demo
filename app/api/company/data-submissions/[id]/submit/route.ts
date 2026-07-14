@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { COMPANY_SUBMISSION_SOURCE_TYPE } from '../../route';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function logAudit(db: any, row: Record<string, unknown>): Promise<void> {
@@ -25,6 +26,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const { id: submissionId } = await params;
 
   const auth = await requireCompanyUser(request);

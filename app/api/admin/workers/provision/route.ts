@@ -18,6 +18,7 @@ import { z } from 'zod';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { insertWorkerIdentity } from '@/lib/supabase/worker-provisioning-service-key';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const ProvisionWorkerSchema = z.object({
   tenantCode: z.string().min(1, 'tenantCode is required').max(32),
@@ -26,6 +27,9 @@ const ProvisionWorkerSchema = z.object({
 });
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
 

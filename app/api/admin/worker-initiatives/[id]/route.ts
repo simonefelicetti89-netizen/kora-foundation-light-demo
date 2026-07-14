@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import type { WorkerInitiativeRow } from '@/lib/supabase/types';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const STATUSES: WorkerInitiativeRow['status'][] = ['draft', 'published', 'closed'];
 const PILLARS: WorkerInitiativeRow['pillar'][] = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'];
@@ -19,6 +20,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
 

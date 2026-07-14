@@ -38,6 +38,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { insertWorkerIdentity } from '@/lib/supabase/worker-provisioning-service-key';
 import { MAX_BULK_BATCH_SIZE, validateWorkerBatch, type ParsedWorkerInput } from '@/lib/admin/bulk-worker-parser';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const WorkerInputSchema = z.object({
   firstName: z.string().max(100).optional(),
@@ -64,6 +65,9 @@ interface BulkRowResult {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
 

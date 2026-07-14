@@ -27,6 +27,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 // ── Tenant code generation ────────────────────────────────────────────────────
 // Generates uppercase slug from company name: "Acme S.p.A." → "ACME-S-P-A"
@@ -81,6 +82,9 @@ async function logAuditMany(db: any, rows: Record<string, unknown>[]): Promise<v
 // ── POST ──────────────────────────────────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
 

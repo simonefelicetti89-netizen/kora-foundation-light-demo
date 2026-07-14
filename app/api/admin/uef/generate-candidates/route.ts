@@ -25,6 +25,7 @@ import {
   type EvidenceLevel,
   type BudgetScope,
 } from '@/lib/ingestion/raw-to-uef-interpreter';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 function makeAudit(p: {
   tenantId: string; actorId: string; action: string;
@@ -38,6 +39,9 @@ function makeAudit(p: {
 }
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

@@ -21,6 +21,7 @@ import {
   isKoraAuthError,
 } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const VALID_CATEGORIES    = ['announcement', 'initiative_update', 'opportunity', 'event', 'request', 'resource'] as const;
 const VALID_PILLARS       = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY', null] as const;
@@ -106,6 +107,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 // ── POST /api/commons/posts ───────────────────────────────────────────────────
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const db = await getSupabaseServerClient();
 
   let body: Record<string, unknown>;

@@ -16,6 +16,7 @@ import {
   activateKoraLinkForWorker,
   KORA_LINK_ACTIVATION_CONSENT_VERSION,
 } from '@/lib/kora-link/activation';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 function redirectWithOutcome(request: NextRequest, token: string, outcome: string): NextResponse {
   const url = new URL(`/link/${encodeURIComponent(token)}`, request.nextUrl.origin);
@@ -27,6 +28,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const { token } = await params;
 
   // Guard: activation feature flag — default false until Gate 2+3 closed

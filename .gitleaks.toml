@@ -1,0 +1,12 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known false positives — reviewed and confirmed safe"
+commits = [
+  "32393e88fb3674331c2ae898be5eb6abb714576c",
+]
+paths = [
+  '''tests/unit/b164-attendees-attribution\.test\.ts''',
+]
+condition = "AND"

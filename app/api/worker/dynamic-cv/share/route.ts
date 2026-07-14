@@ -20,8 +20,12 @@ import {
   buildExpiresAt,
   buildShareUrl,
 } from '@/lib/worker-cv/share-token';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireWorkerUser(request);
   if (isKoraAuthError(auth)) return auth;
 

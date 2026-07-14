@@ -22,6 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const COMPANY_ROLES = ['COMPANY_ADMIN'] as const;
 type CompanyRole = (typeof COMPANY_ROLES)[number];
@@ -98,6 +99,9 @@ export async function GET(request: NextRequest) {
 // ── POST: invite/assign company user ──────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 
@@ -247,6 +251,9 @@ export async function POST(request: NextRequest) {
 // ── PATCH: update user status ─────────────────────────────────────────────────
 
 export async function PATCH(request: NextRequest) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
 

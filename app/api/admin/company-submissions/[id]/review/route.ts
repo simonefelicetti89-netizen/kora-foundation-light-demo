@@ -24,6 +24,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { detectPiiInPayload } from '@/lib/privacy/pii-guard';
 import { COMPANY_SUBMISSION_SOURCE_TYPE } from '@/app/api/company/data-submissions/route';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 const PII_TEXT_ERROR = 'Il testo contiene possibili dati personali. Rimuovi nomi, email, telefoni, codici fiscali o riferimenti individuali.';
 
@@ -67,6 +68,9 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const { id: submissionId } = await params;
 
   const auth = await requireKoraAdmin(request);

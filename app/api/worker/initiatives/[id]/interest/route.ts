@@ -19,6 +19,7 @@ import { z } from 'zod';
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
 import type { WorkerParticipationRow } from '@/lib/supabase/types';
+import { assertSameOrigin } from '@/lib/security/origin';
 
 // attended is intentionally excluded — workers cannot self-declare attendance.
 // Attendance is set only by admin/system flows to prevent gaming.
@@ -40,6 +41,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ): Promise<NextResponse> {
+  const originGuard = assertSameOrigin(request);
+  if (originGuard) return originGuard;
+
   const auth = await requireWorkerUser(request);
   if (isKoraAuthError(auth)) return auth;
 
