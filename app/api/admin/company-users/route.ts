@@ -23,6 +23,7 @@ import { z } from 'zod';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 const COMPANY_ROLES = ['COMPANY_ADMIN'] as const;
 type CompanyRole = (typeof COMPANY_ROLES)[number];
@@ -104,6 +105,9 @@ export async function POST(request: NextRequest) {
 
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
+
+  const rateLimitGuard = await assertRateLimit('invite', authResult.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: Record<string, unknown>;
   try { body = await request.json(); }

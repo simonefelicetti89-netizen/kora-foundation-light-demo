@@ -39,6 +39,7 @@ import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { insertWorkerIdentity } from '@/lib/supabase/worker-provisioning-service-key';
 import { MAX_BULK_BATCH_SIZE, validateWorkerBatch, type ParsedWorkerInput } from '@/lib/admin/bulk-worker-parser';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 const WorkerInputSchema = z.object({
   firstName: z.string().max(100).optional(),
@@ -70,6 +71,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const auth = await requireKoraAdmin(request);
   if (isKoraAuthError(auth)) return auth;
+
+  const rateLimitGuard = await assertRateLimit('bulk_provisioning', auth.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let rawBody: unknown;
   try {

@@ -34,6 +34,7 @@ import {
   summarizePiiFindings,
 } from '@/lib/privacy/pii-guard';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 const SYNTHETIC_WORKFORCE_DEFAULT = 50;
 
@@ -67,6 +68,9 @@ export async function POST(request: NextRequest) {
 
   const authError = await requireKoraAdmin(request);
   if (isKoraAuthError(authError)) return authError;
+
+  const rateLimitGuard = await assertRateLimit('costly_admin_operation', authError.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   let body: {
     tenantCode?: string;

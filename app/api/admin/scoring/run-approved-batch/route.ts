@@ -22,6 +22,7 @@ import { persistKoraComputationResult } from '@/lib/live/persistence';
 import { persistDecisionPack } from '@/lib/live/decision-pack';
 import { buildScoringRecordsFromApprovedUef, type UefRowForScoring } from '@/lib/live/uef-to-scoring-records';
 import { assertSameOrigin } from '@/lib/security/origin';
+import { assertRateLimit } from '@/lib/security/rate-limit';
 
 function makeAudit(p: {
   tenantId: string; actorId: string; action: string;
@@ -60,6 +61,9 @@ export async function POST(request: NextRequest) {
   // ── 1. Auth ─────────────────────────────────────────────────────────────────
   const authResult = await requireKoraAdmin(request);
   if (isKoraAuthError(authResult)) return authResult;
+
+  const rateLimitGuard = await assertRateLimit('costly_admin_operation', authResult.id);
+  if (rateLimitGuard) return rateLimitGuard;
 
   // ── 2. Parse body ────────────────────────────────────────────────────────────
   let rawBody: unknown;
