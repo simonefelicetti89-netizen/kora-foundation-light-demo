@@ -15,7 +15,7 @@ function makeRequest(opts: {
 }): NextRequest {
   const headers: Record<string, string> = {};
   if (opts.origin !== undefined && opts.origin !== null) headers.origin = opts.origin;
-  if (opts.authorization) headers.authorization = opts.authorization;
+  if (opts.authorization !== undefined) headers.authorization = opts.authorization;
 
   return new NextRequest(opts.url ?? `${SELF}/api/worker/profile`, {
     method: opts.method ?? 'POST',
@@ -68,6 +68,24 @@ describe('checkOrigin — richieste consentite', () => {
     const result = checkOrigin(req);
     expect(result.allowed).toBe(true);
     expect(result.reason).toBe('bearer_auth');
+  });
+
+  it('Authorization presente ma senza schema "Bearer" NON aggira il guard (es. Basic auth)', () => {
+    const req = makeRequest({ origin: 'https://evil.example', authorization: 'Basic dXNlcjpwYXNz' });
+    const result = checkOrigin(req);
+    expect(result).toEqual({ allowed: false, reason: 'origin_denied' });
+  });
+
+  it('Authorization presente ma vuota NON aggira il guard', () => {
+    const req = makeRequest({ origin: 'https://evil.example', authorization: '' });
+    const result = checkOrigin(req);
+    expect(result).toEqual({ allowed: false, reason: 'origin_denied' });
+  });
+
+  it('Authorization presente ma senza il separatore di spazio dopo "Bearer" NON aggira il guard', () => {
+    const req = makeRequest({ origin: 'https://evil.example', authorization: 'Bearer:some-token' });
+    const result = checkOrigin(req);
+    expect(result).toEqual({ allowed: false, reason: 'origin_denied' });
   });
 
   it('metodo GET non è soggetto al guard, anche con Origin esterna', () => {
