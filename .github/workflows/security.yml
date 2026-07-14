@@ -1,0 +1,66 @@
+name: KORA Security
+
+# SECURITY-CI-CREDIBILITY-01: secret scanning + dependency audit gate.
+# Separate from ci.yml (KORA CI) on purpose — this workflow checks the
+# repository and its dependencies, not application correctness. It does not
+# build the app, does not run tests, and does not touch any secret,
+# environment variable, or deploy target. See docs/SECURITY_CI_STATUS.md.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  gitleaks:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Pinned CLI binary, not gitleaks/gitleaks-action — the CLI is MIT-licensed
+      # and free to use; the Marketplace action requires a paid license for
+      # organization-owned repositories. Version pinned for reproducibility.
+      - name: Install gitleaks v8.30.1
+        run: |
+          curl -sSfL -o gitleaks.tar.gz \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          chmod +x gitleaks
+
+      - name: Scan repository history for secrets
+        run: ./gitleaks detect --source . --redact --verbose
+
+  npm-audit:
+    name: Dependency audit (npm audit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Blocking gate: fails only on high/critical, so it catches real
+      # regressions without being tripped by the moderate findings already
+      # tracked in docs/SECURITY_CI_STATUS.md (none have a clean non-breaking
+      # fix today — see that doc before ever running `npm audit fix --force`).
+      - name: npm audit (blocking on high/critical)
+        run: npm audit --audit-level=high
+
+      # Full report for visibility, including moderate/low — never fails the
+      # job. Mirrors the report-only lint step in ci.yml.
+      - name: npm audit (full report, non-blocking)
+        run: npm audit || true
