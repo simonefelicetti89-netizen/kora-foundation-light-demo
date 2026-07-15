@@ -1,12 +1,22 @@
 [extend]
 useDefault = true
 
-[allowlist]
-description = "Known false positives — reviewed and confirmed safe"
+[[allowlists]]
+description = "b164-attendees-attribution.test.ts — synthetic HMAC fixture value, not a real credential"
 commits = [
   "32393e88fb3674331c2ae898be5eb6abb714576c",
 ]
 paths = [
   '''tests/unit/b164-attendees-attribution\.test\.ts''',
+]
+condition = "AND"
+
+[[allowlists]]
+description = "sentry-privacy-hardening-06.test.ts — synthetic 64-hex FAKE_TOKEN fixture, not a real credential"
+commits = [
+  "c5a295df1964685769ccfde86416e37170195d56",
+]
+paths = [
+  '''tests/unit/sentry-privacy-hardening-06\.test\.ts''',
 ]
 condition = "AND"
