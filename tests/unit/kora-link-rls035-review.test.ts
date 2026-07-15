@@ -65,7 +65,8 @@ const APPEND_ONLY_TABLES = [
 
 const SECDEF_FUNCTIONS = [
   { name: 'fn_public_lookup_link', args: 'text' },
-  { name: 'fn_activate_link_for_worker', args: 'text, uuid, text' },
+  // KORA-LINK-S08: p_worker_id removed — worker resolved from auth.uid() inside the function.
+  { name: 'fn_activate_link_for_worker', args: 'text, text' },
   { name: 'fn_revoke_link', args: 'uuid, text' },
   { name: 'fn_replace_link', args: 'uuid, uuid, text' },
   { name: 'fn_company_link_status_aggregate', args: 'uuid' },
@@ -191,11 +192,12 @@ describe('KORA-LINK-S3A — no company-facing direct SELECT table policy; aggreg
     expect(activePolicyBlocks).not.toMatch(/CREATE POLICY[\s\S]{0,300}COMPANY_ADMIN/);
   });
 
-  it('fn_company_link_status_aggregate is the only company-facing read path, and returns (status, count) only', () => {
+  it('fn_company_link_status_aggregate is the only company-facing read path, and returns (status, count, suppressed) only', () => {
     const fnStart = sql036.indexOf('CREATE OR REPLACE FUNCTION kora_link.fn_company_link_status_aggregate');
     expect(fnStart).toBeGreaterThan(-1);
     const fnBlock = sql036.slice(fnStart, sql036.indexOf('$$;', fnStart) + 3);
-    expect(fnBlock).toMatch(/RETURNS TABLE\s*\(\s*status\s+text,\s*count\s+bigint\s*\)/);
+    // KORA-LINK-S08: widened to include a per-bucket suppression flag.
+    expect(fnBlock).toMatch(/RETURNS TABLE\s*\(\s*status\s+text,\s*count\s+bigint,\s*suppressed\s+boolean\s*\)/);
     // Strip comment lines first — the function's own doc-comments legitimately
     // *mention* link_id/token_digest/worker_id as examples of what it must
     // never return; only the executable code matters for this check.
@@ -456,19 +458,66 @@ describe('KORA-LINK-S3B — Gate 3 (DPO/legal) BLOCKER items remain unresolved a
     }
   });
 
-  it('TODO-RLS-04 and TODO-RLS-05 in 035 are updated but explicitly not marked as resolving Gate 4', () => {
-    const idx04 = sql035.indexOf('[TODO-RLS-04]');
+  it('TODO-RLS-05 in 035 is updated but explicitly not marked as resolving Gate 4', () => {
     const idx05 = sql035.indexOf('[TODO-RLS-05]');
-    expect(idx04).toBeGreaterThan(-1);
     expect(idx05).toBeGreaterThan(-1);
-    expect(sql035.slice(idx04, idx04 + 500)).toMatch(/UPDATED by KORA-LINK-S3B/);
-    expect(sql035.slice(idx05, idx05 + 700)).toMatch(/UPDATED by KORA-LINK-S3B/);
-    // Tolerate the SQL comment line-wrap ("-- " prefix per line) between words.
-    expect(sql035.slice(idx05, idx05 + 700)).toMatch(/decision, not an engineering\s*\n?--\s*gap/);
+    expect(sql035.slice(idx05, idx05 + 1400)).toMatch(/UPDATED by KORA-LINK-S3B/);
+    // KORA-LINK-S08 narrowed what remains open: fn_activate_link_for_worker now writes
+    // audit_log itself; the other 3 SECDEF functions still don't — that's the residual scope.
+    expect(sql035.slice(idx05, idx05 + 1400)).toMatch(/KORA-LINK-S08 update/);
+    expect(sql035.slice(idx05, idx05 + 1400)).toMatch(/do NOT yet write\s*\n?--\s*to audit_log/);
+    expect(sql035.slice(idx05, idx05 + 1400)).toMatch(/Gate 4 is not\s*\n?--\s*closed by this update/);
   });
 
-  it('consent_version and privacy-threshold TODOs in 036 remain open (not resolved by S3A/S3B)', () => {
+  it('TODO-RLS-04 in 035 is now explicitly marked resolved by KORA-LINK-S08 (aggregation threshold)', () => {
+    const idx = sql035.indexOf('[RESOLVED KORA-LINK-S08] TODO-RLS-04');
+    expect(idx).toBeGreaterThan(-1);
+    // The literal "[TODO-RLS-04]" (unresolved marker) must no longer appear anywhere in 035.
+    expect(sql035).not.toMatch(/\[TODO-RLS-04\]/);
+  });
+
+  it('consent_version TODO in 036 remains open (not resolved by S3A/S3B/S08 — genuine DPO blocker)', () => {
     expect(sql036).toMatch(/\[TODO-RPC-03\] fn_activate_link_for_worker: consent_version whitelist\./);
-    expect(sql036).toMatch(/\[TODO-RPC-04\] fn_company_link_status_aggregate: privacy threshold\./);
+  });
+});
+
+// ── 17. KORA-LINK-S08 — worker identity + aggregation threshold hardening ──
+
+describe('KORA-LINK-S08 — TODO-RPC-02 (worker identity) and TODO-RPC-04 (aggregation threshold) resolved', () => {
+  it('TODO-RPC-02 is marked resolved, not merely mentioned', () => {
+    expect(sql036).toMatch(/\[RESOLVED KORA-LINK-S08\] TODO-RPC-02/);
+  });
+
+  it('TODO-RPC-04 is marked resolved, not merely mentioned', () => {
+    expect(sql036).toMatch(/\[RESOLVED KORA-LINK-S08\] TODO-RPC-04/);
+  });
+
+  it('fn_activate_link_for_worker no longer declares a uuid parameter anywhere in its signature', () => {
+    const fnStart = sql036.indexOf('CREATE OR REPLACE FUNCTION kora_link.fn_activate_link_for_worker(');
+    expect(fnStart).toBeGreaterThan(-1);
+    const signatureEnd = sql036.indexOf(')', fnStart);
+    const signature = sql036.slice(fnStart, signatureEnd + 1);
+    expect(signature).not.toMatch(/uuid/);
+    expect(signature).toMatch(/p_token_digest\s+text/);
+    expect(signature).toMatch(/p_consent_version\s+text/);
+  });
+
+  it('fn_activate_link_for_worker resolves the worker from auth.uid(), not from a parameter', () => {
+    const fnStart = sql036.indexOf('CREATE OR REPLACE FUNCTION kora_link.fn_activate_link_for_worker(');
+    const fnBlock = sql036.slice(fnStart, sql036.indexOf('$$;', fnStart) + 3);
+    expect(fnBlock).toMatch(/FROM personal\.worker_identity/);
+    expect(fnBlock).toMatch(/wi\.auth_user_id\s*=\s*auth\.uid\(\)/);
+  });
+
+  it('fn_activate_link_for_worker validates worker tenant against link tenant', () => {
+    const fnStart = sql036.indexOf('CREATE OR REPLACE FUNCTION kora_link.fn_activate_link_for_worker(');
+    const fnBlock = sql036.slice(fnStart, sql036.indexOf('$$;', fnStart) + 3);
+    expect(fnBlock).toMatch(/v_link_tenant_id\s+IS\s+DISTINCT\s+FROM\s+v_worker_tenant_id/);
+  });
+
+  it('fn_company_link_status_aggregate applies the canonical [1,9] suppression window', () => {
+    const fnStart = sql036.indexOf('CREATE OR REPLACE FUNCTION kora_link.fn_company_link_status_aggregate(');
+    const fnBlock = sql036.slice(fnStart, sql036.indexOf('$$;', fnStart) + 3);
+    expect(fnBlock).toMatch(/BETWEEN 1 AND 9/);
   });
 });

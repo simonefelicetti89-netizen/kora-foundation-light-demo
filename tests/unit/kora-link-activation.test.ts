@@ -217,13 +217,14 @@ describe('activateKoraLinkForWorker — RPC call shape', () => {
     expect(calls[0].args.p_token_digest).toBe(computeDigest(VALID_TOKEN, VALID_SECRET));
   });
 
-  it('sends the workerId as p_worker_id', async () => {
+  it('never sends p_worker_id — KORA-LINK-S08: the DB function resolves the worker from auth.uid()', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
       token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
-    expect(calls[0].args.p_worker_id).toBe(VALID_WORKER_ID);
+    expect(calls[0].args).not.toHaveProperty('p_worker_id');
+    expect(JSON.stringify(calls[0].args)).not.toContain(VALID_WORKER_ID);
   });
 
   it('sends the consentVersion as p_consent_version', async () => {
@@ -235,14 +236,14 @@ describe('activateKoraLinkForWorker — RPC call shape', () => {
     expect(calls[0].args.p_consent_version).toBe(VALID_CONSENT);
   });
 
-  it('the RPC call args object has exactly 3 keys — no extra fields leaked', async () => {
+  it('the RPC call args object has exactly 2 keys — no extra fields leaked, no worker id', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
       token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(Object.keys(calls[0].args).sort()).toEqual(
-      ['p_consent_version', 'p_token_digest', 'p_worker_id'].sort()
+      ['p_consent_version', 'p_token_digest'].sort()
     );
   });
 

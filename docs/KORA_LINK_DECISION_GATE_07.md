@@ -11,6 +11,15 @@
 
 **Risposta anticipata (dettagli in §9):** **HIDE FROM PILOT.** Il codice resta nel repository — è tecnicamente pulito, l'architettura è ragionevole e nessun dato reale viene oggi processato — ma non è ancora sicuro da esporre a utenti reali del pilota senza una sospensione esplicita a livello di navigazione, oltre ai tre flag di backend già presenti.
 
+> **Nota (2026-07-16, KORA-LINK-SECURITY-FOUNDATION-08):** i blocker tecnici #1 (identità
+> worker non verificata in `fn_activate_link_for_worker`) e #2 (assenza di soglia minima di
+> aggregazione in `fn_company_link_status_aggregate`) elencati in §9 sono stati affrontati con
+> una correzione engineering — vedi `docs/KORA_LINK_SECURITY_FOUNDATION_08.md`. Questo **non**
+> modifica retroattivamente il verdetto `HIDE FROM PILOT` sopra: i blocker #3, #4, #5, #6, #7,
+> #9, #10 restano aperti, e la chiusura dei blocker #1/#2 richiede ancora ratifica umana CTO
+> (non concessa da questa nota). Un nuovo decision gate resta necessario prima di qualunque
+> inclusione nel pilota.
+
 ---
 
 ## 0. Verifiche preliminari (eseguite prima di qualsiasi analisi)

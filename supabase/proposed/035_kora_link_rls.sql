@@ -8,6 +8,13 @@
 --              (v_tenant_batch_stats never built, superseded by 036's
 --              fn_company_link_status_aggregate RPC), updated TODO-RLS-04/05
 --              status; comment-only, no schema/logic change · 2026-07-12
+-- Amended:     KORA-LINK-SECURITY-FOUNDATION-08 — comment-only: the
+--              FUNCTION SPEC B historical signature and TODO-RLS-04 note
+--              below are updated to reflect 036's KORA-LINK-S08 changes
+--              (fn_activate_link_for_worker signature, aggregate threshold).
+--              This file's own tables/policies are unchanged — Gate 4 status
+--              (worker self-select, company-facing SELECT) is exactly as open
+--              as before this pass · 2026-07-16
 -- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
 --              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
 -- Gate:        This file (035) itself: Gate 2/4 OPEN, NOT reviewed, NOT applied to any database.
@@ -624,7 +631,7 @@ CREATE POLICY "kl_delivery_admin_update"
 -- PURPOSE: Atomically create link_assignments + link_consents after worker
 --   authenticates and explicitly accepts the KORA Link privacy notice.
 -- CALLER: Next.js API route (authenticated worker session, server-side only)
--- INPUTS:
+-- INPUTS (KORA-LINK-S08 — updated, no p_worker_id; see below):
 --   p_token_digest    text  — computed HMAC-SHA256 of the scanned token
 --   p_consent_version text  — DPO-approved privacy notice version string
 -- OUTPUTS:
@@ -637,14 +644,25 @@ CREATE POLICY "kl_delivery_admin_update"
 --   MUST atomically: INSERT link_assignments + link_consents + UPDATE links.status
 -- IMPLEMENTATION NOTES:
 --   worker_id resolved inside function from auth.uid() → personal.worker_identity
---   cross-schema join requires RLS on personal.worker_identity to allow SECDEF read
---   Uses SERIALIZABLE isolation or SELECT FOR UPDATE on links row to prevent races
+--   Cross-schema SELECT does not require any new GRANT: the function owner
+--   (postgres, superuser, BYPASSRLS — same mechanism as migration 015) reads
+--   personal.worker_identity regardless of its FORCE ROW LEVEL SECURITY.
+--   Uses SELECT ... FOR UPDATE NOWAIT on the links row to prevent races.
 --
 -- KORA-LINK-S3A: historical placeholder SQL removed/superseded by
 -- 036_kora_link_rpc_functions.sql (fn_activate_link_for_worker) — do not
 -- implement here. The purpose/inputs/outputs/privacy-constraint prose
 -- above remains the original design-rationale record; 036 is authoritative
 -- for the actual implementation.
+--
+-- KORA-LINK-S08: 036's fn_activate_link_for_worker signature is now
+-- (p_token_digest text, p_consent_version text) — the p_worker_id parameter
+-- this spec originally sketched is REMOVED, not merely validated. The
+-- "cross-schema JOIN in SECURITY DEFINER requires confirming RLS on personal
+-- schema allows it" concern this spec previously raised is resolved by the
+-- SECURITY DEFINER/superuser-owner mechanism noted above (already proven
+-- live by migration 020 and by migration 015 §SECURITY MECHANISM) — no RLS
+-- policy change on personal.worker_identity was needed or made.
 --
 -- ────────────────────────────────────────────────────────────────────────────
 -- FUNCTION SPEC C: fn_revoke_link
@@ -672,8 +690,11 @@ CREATE POLICY "kl_delivery_admin_update"
 --   Company NEVER sees individual links; only counts by status.
 -- CALLER: Next.js company route (authenticated COMPANY_ADMIN session)
 -- INPUTS: p_tenant_id uuid (validated against JWT kora.tenant_id())
--- OUTPUTS: TABLE (status text, count bigint) — no link_id, no token_digest
+-- OUTPUTS (KORA-LINK-S08 — updated): TABLE (status text, count bigint,
+--   suppressed boolean) — no link_id, no token_digest. count is NULL and
+--   suppressed is true for any bucket below safe_aggregation_threshold (10).
 -- PRIVACY: Validates tenant_id = kora.tenant_id() from JWT before query.
+--   Applies safe_aggregation_threshold = 10 per bucket (KORA-LINK-S08).
 --
 -- ────────────────────────────────────────────────────────────────────────────
 -- OPEN QUESTIONS FOR CTO REVIEW (RLS 035)
@@ -682,21 +703,32 @@ CREATE POLICY "kl_delivery_admin_update"
 --               (requires cross-schema join to personal.worker_identity)?
 -- [TODO-RLS-02] Approve fn_public_lookup_link return type and TTL logic.
 -- [TODO-RLS-03] Approve fn_activate_link_for_worker concurrency model (SERIALIZABLE vs FOR UPDATE).
--- [TODO-RLS-04] UPDATED by KORA-LINK-S3B (2026-07-12): the "v_tenant_batch_stats
---               view" this item originally referred to was never built and is
---               not planned — company aggregate visibility is already
---               implemented as fn_company_link_status_aggregate(uuid) in 036.
---               What remains open: CTO/DPO confirmation of whether a minimum
---               chip-count suppression threshold applies (mirrors [TODO-RPC-04]
---               in 036) — a decision, not an engineering gap.
+--               KORA-LINK-S08 note: 036 uses SELECT ... FOR UPDATE NOWAIT
+--               (fail-fast, not SERIALIZABLE) — unchanged by this sprint,
+--               still awaiting explicit CTO sign-off on this choice.
+-- [RESOLVED KORA-LINK-S08] TODO-RLS-04: the chip-count suppression threshold
+--               question (mirrors [TODO-RPC-04] in 036) is resolved as an
+--               engineering application of the already-canonical
+--               safe_aggregation_threshold = 10 (lib/constants/kora.ts,
+--               CLAUDE.md §13, migration 015 [G2] precedent) — not a new
+--               policy decision requiring fresh CTO/DPO sign-off, since the
+--               threshold value itself is already constitutional. Human CTO
+--               ratification of this specific application still recommended
+--               but this is no longer an open engineering gap.
 -- [TODO-RLS-05] UPDATED by KORA-LINK-S3B (2026-07-12): KORA-LINK-S3A added the
 --               explicit `GRANT SELECT, INSERT ON kora_link.audit_log TO
 --               service_role;` this item asked for (see §0b above). The
---               mechanical grant now exists. What remains open: CTO
---               confirmation that this service_role-write pattern is
---               sufficient, or whether a dedicated SECURITY DEFINER INSERT
---               function is still preferred — a decision, not an engineering
---               gap. Gate 4 is not closed by this update.
+--               mechanical grant now exists. KORA-LINK-S08 update: 036's
+--               fn_activate_link_for_worker now writes to audit_log directly
+--               as part of its own SECURITY DEFINER transaction (not via a
+--               separate app-layer service_role INSERT) — answering this
+--               item's question for that one function. fn_revoke_link,
+--               fn_replace_link, and fn_public_lookup_link do NOT yet write
+--               to audit_log (link_events covers their KORA_ADMIN-visible
+--               trail) — extending audit_log writes to those functions
+--               remains open, tracked as a residual gap in
+--               docs/KORA_LINK_SECURITY_FOUNDATION_08.md. Gate 4 is not
+--               closed by this update.
 -- [TODO-RLS-06] DPO break-glass read on audit_log: design and approve access procedure.
 -- [TODO-DPO-04] fn_activate_link_for_worker: DPO must approve consent_version validation list
 --               before this function can be deployed with real privacy notice text.
