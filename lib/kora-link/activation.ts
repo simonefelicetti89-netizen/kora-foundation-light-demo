@@ -5,7 +5,12 @@
 // INVARIANTS
 //   • KORA_LINK_ACTIVATION_ENABLED must be the exact string 'true' — default disabled
 //   • Token cleartext never sent to the DB — only computeDigest(token, secret) reaches the RPC
-//   • worker_id is used server-side only to call the RPC — never returned in any state here
+//   • workerId is required as a pre-flight guard (caller must be an authenticated worker) but,
+//     as of KORA-LINK-S08, is NEVER forwarded to the RPC — the DB function resolves worker
+//     identity itself from auth.uid() (personal.worker_identity), the same session cookie
+//     this function's own Supabase client call carries. This is Option A hardening: not
+//     "verify workerId", but "there is no parameter through which to pass one at all" — see
+//     supabase/proposed/036_kora_link_rpc_functions.sql fn_activate_link_for_worker.
 //   • The full digest is never returned to the caller
 //   • Any RPC/client/digest error → safe 'unavailable' or 'error' state, never an exception
 //   • No Impact Unit, no scoring, no KORA Index effect — activation only flips link/assignment state
@@ -21,13 +26,15 @@ export const KORA_LINK_ACTIVATION_CONSENT_VERSION = 'kora-link-consent-v1-draft'
 // Minimal interface for injection in tests — no vi.mock needed.
 // fn_activate_link_for_worker RETURNS jsonb (a single object), not a row set —
 // normalizeActivationRow() below accepts either shape defensively.
+// KORA-LINK-S08: no p_worker_id arg — the DB function resolves the worker from
+// auth.uid() itself, under the same session this RPC call runs under.
 
 export type KoraLinkActivationRpcRow = Record<string, unknown>;
 
 export type KoraLinkActivationRpcClient = {
   rpc(
     fn: 'fn_activate_link_for_worker',
-    args: { p_token_digest: string; p_worker_id: string; p_consent_version: string }
+    args: { p_token_digest: string; p_consent_version: string }
   ): Promise<{
     data: KoraLinkActivationRpcRow | KoraLinkActivationRpcRow[] | null;
     error: unknown | null;
@@ -56,6 +63,8 @@ export type KoraLinkActivationResult =
 
 export type ActivateKoraLinkForWorkerParams = {
   token: string;
+  // Pre-flight guard only (caller must be an authenticated worker) — NEVER forwarded to the
+  // RPC call. KORA-LINK-S08: the DB function resolves worker identity itself from auth.uid().
   workerId: string;
   consentVersion: string;
   secret: string;
@@ -64,7 +73,7 @@ export type ActivateKoraLinkForWorkerParams = {
 };
 
 /**
- * Calls fn_activate_link_for_worker for the given worker + token.
+ * Calls fn_activate_link_for_worker for the authenticated worker's session + the given token.
  * DEMO/RUNTIME PATH — feature-flagged behind KORA_LINK_ACTIVATION_ENABLED (default OFF).
  * Never throws. Never exposes the digest, the raw token, or the worker id in the result.
  */
@@ -83,8 +92,9 @@ export async function activateKoraLinkForWorker(
     return { state: 'invalid_token' };
   }
 
-  // workerId is required — resolved server-side from the authenticated session by the caller,
-  // never accepted from an unauthenticated client input.
+  // workerId is required as a pre-flight guard — caller must be an authenticated worker.
+  // KORA-LINK-S08: this value is NEVER forwarded to the RPC call below — the DB function
+  // resolves the real worker identity itself from auth.uid(), under the same session.
   if (!params.workerId) {
     return { state: 'invalid_token' };
   }
@@ -117,12 +127,12 @@ export async function activateKoraLinkForWorker(
     }
   }
 
-  // Call RPC — digest + worker id + consent version sent, never the raw token
+  // Call RPC — digest + consent version sent, never the raw token, never the worker id
+  // (KORA-LINK-S08: the DB function resolves worker identity from auth.uid() itself).
   let row: KoraLinkActivationRpcRow | null;
   try {
     const result = await client.rpc('fn_activate_link_for_worker', {
       p_token_digest: digest,
-      p_worker_id: params.workerId,
       p_consent_version: params.consentVersion,
     });
     if (result.error) {

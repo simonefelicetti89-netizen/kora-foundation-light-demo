@@ -4,22 +4,40 @@
 -- Author:      KORA Foundation Light · 2026-07-01
 -- Amended:     KORA-LINK-S3A — added service_role EXECUTE grants alongside each
 --              function's existing authenticated[/anon] grant · 2026-07-12
+-- Amended:     KORA-LINK-SECURITY-FOUNDATION-08 — fn_activate_link_for_worker
+--              no longer accepts a client-supplied p_worker_id; worker identity
+--              is derived from auth.uid() inside the function (mirrors the
+--              established pattern in migration 020,
+--              fn_redistribute_worker_pib). Adds the previously-missing
+--              worker-tenant ↔ link-tenant boundary check. fn_activate_link_
+--              for_worker and fn_company_link_status_aggregate now write to
+--              kora_link.audit_log. fn_company_link_status_aggregate now
+--              applies the canonical safe_aggregation_threshold (10, matches
+--              lib/constants/kora.ts and migration 015 [G2]) to every status
+--              bucket. See [RESOLVED KORA-LINK-S08] markers below and
+--              docs/KORA_LINK_SECURITY_FOUNDATION_08.md · 2026-07-16
 -- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
 --              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
 --              035_kora_link_rls.sql    (PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING — still open, Gate 4)
 -- Gate:        This file (036) itself: Gate 2 OPEN + Gate 3 OPEN, NOT reviewed, NOT applied.
 --              034's own engineering review closed at KL-19 — that does NOT extend to 036.
 --              KORA-LINK-S3A is a draft-only grant-hardening pass — it does NOT close
---              Gate 2 or Gate 3 for this file; every [TODO-RPC-0x] item remains open.
+--              Gate 2 or Gate 3 for this file. KORA-LINK-SECURITY-FOUNDATION-08 closes
+--              [TODO-RPC-02] and [TODO-RPC-04] as engineering fixes (see below) — it does
+--              NOT close Gate 2, Gate 3, or Gate 4; [TODO-RPC-01] and [TODO-RPC-03] remain
+--              open genuine CTO/DPO decisions, and this migration is still NOT applied to
+--              any database.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- STATUS: PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING
 -- ─────────────────────────────────────────────────────────────────────────────
 -- This file is a DESIGN DRAFT. Internal Engineering provisional — NOT CTO-approved.
 -- KL-19 (2026-07-04) reviewed and closed 034's own engineering TODOs — it did NOT
--- review or change the RPC functions in this file (the function bodies below are
--- unchanged; only 035's spec-comment names were reconciled to match these already-
--- implemented names — see 035 header).
+-- review or change the RPC functions in this file. KORA-LINK-SECURITY-FOUNDATION-08
+-- (2026-07-16) DID change two function bodies in this file — see amendment note above
+-- and [RESOLVED KORA-LINK-S08] markers — closing two concrete Gate 07 pilot-readiness
+-- blockers found in docs/KORA_LINK_DECISION_GATE_07.md. This remains a technical/
+-- engineering hardening pass: it does not constitute CTO ratification or DPO review.
 -- Do not apply until:
 --   (1) 034 formally approved by CTO (Gate 2 — engineering substance closed at KL-19,
 --       human CTO ratification still pending)
@@ -27,6 +45,9 @@
 --   (3) DPO review of consent model and public lookup response (Gate 3)
 --   (4) All GRANT decisions confirmed by CTO (especially anon access to public lookup)
 --   (5) Integration tests written and passing on staging
+--   (6) This file's own KORA-LINK-SECURITY-FOUNDATION-08 changes are reviewed by a
+--       human CTO — an engineering session hardened this file, a human has not yet
+--       ratified it
 --
 -- DO NOT run `supabase db push`.
 -- DO NOT run `supabase migration up`.
@@ -38,10 +59,15 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 --   fn_is_valid_token_digest(text)           — validation helper (IMMUTABLE, INVOKER)
 --   fn_public_lookup_link(text)              — public route lookup (SECURITY DEFINER)
---   fn_activate_link_for_worker(text,uuid,text) — worker activation (SECURITY DEFINER)
+--   fn_activate_link_for_worker(text,text)   — worker activation (SECURITY DEFINER)
+--                                               KORA-LINK-S08: signature changed from
+--                                               (text,uuid,text) — p_worker_id removed,
+--                                               worker resolved from auth.uid() instead.
 --   fn_revoke_link(uuid, text)               — admin revocation (SECURITY DEFINER)
 --   fn_replace_link(uuid, uuid, text)        — admin replacement (SECURITY DEFINER)
 --   fn_company_link_status_aggregate(uuid)   — company aggregate view (SECURITY DEFINER)
+--                                               KORA-LINK-S08: now applies
+--                                               safe_aggregation_threshold (10) per bucket.
 --
 -- SECURITY DEFINER RULES FOLLOWED
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -57,10 +83,13 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 --   fn_is_valid_token_digest   — standalone, no deps
 --   fn_public_lookup_link      → kora_link.links (SELECT via SECDEF)
---   fn_activate_link_for_worker → kora_link.links (SELECT + UPDATE via SECDEF)
+--   fn_activate_link_for_worker → personal.worker_identity (SELECT via SECDEF —
+--                                 resolves worker from auth.uid(), KORA-LINK-S08)
+--                               → kora_link.links (SELECT + UPDATE via SECDEF)
 --                               → kora_link.link_assignments (INSERT via SECDEF)
 --                               → kora_link.link_consents (INSERT via SECDEF)
 --                               → kora_link.link_events (INSERT via SECDEF)
+--                               → kora_link.audit_log (INSERT via SECDEF, KORA-LINK-S08)
 --   fn_revoke_link             → kora_link.links (UPDATE via SECDEF)
 --                               → kora_link.link_assignments (UPDATE via SECDEF)
 --                               → kora_link.revocations (INSERT via SECDEF)
@@ -79,7 +108,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 --   DROP FUNCTION IF EXISTS kora_link.fn_is_valid_token_digest(text) CASCADE;
 --   DROP FUNCTION IF EXISTS kora_link.fn_public_lookup_link(text) CASCADE;
---   DROP FUNCTION IF EXISTS kora_link.fn_activate_link_for_worker(text, uuid, text) CASCADE;
+--   DROP FUNCTION IF EXISTS kora_link.fn_activate_link_for_worker(text, text) CASCADE;
 --   DROP FUNCTION IF EXISTS kora_link.fn_revoke_link(uuid, text) CASCADE;
 --   DROP FUNCTION IF EXISTS kora_link.fn_replace_link(uuid, uuid, text) CASCADE;
 --   DROP FUNCTION IF EXISTS kora_link.fn_company_link_status_aggregate(uuid) CASCADE;
@@ -91,20 +120,52 @@
 --   Alternative: call via service_role from Next.js API route (bypasses RLS entirely).
 --   CTO should confirm: (a) anon GRANT or (b) service_role-only path in production.
 --
--- [TODO-RPC-02] fn_activate_link_for_worker: cross-schema validation.
---   p_worker_id is accepted as a parameter. In production, the caller (server-side route)
---   must verify p_worker_id = auth.uid() → personal.worker_identity cross-schema join.
---   Cross-schema JOIN in SECURITY DEFINER requires confirming RLS on personal schema allows it.
---   CTO + Gate 3: confirm the cross-schema validation path.
+-- [RESOLVED KORA-LINK-S08] TODO-RPC-02: fn_activate_link_for_worker cross-schema
+--   validation. The function no longer accepts p_worker_id as a parameter at
+--   all — the signature is now (p_token_digest text, p_consent_version text).
+--   Worker identity is resolved inside the function from auth.uid() via
+--   personal.worker_identity, exactly mirroring the established pattern in
+--   migration 020 (fn_redistribute_worker_pib: "Risolve worker_identity_id da
+--   auth.uid() — mai dal client"). This is Option A from
+--   docs/KORA_LINK_SECURITY_FOUNDATION_08.md (no client-controlled worker
+--   identifier at all), not Option B (verify-then-trust) — it is not merely
+--   "verified", it is structurally impossible to pass a different worker's id.
+--   The function also now checks the worker's tenant_id against the link's
+--   tenant_id — a check that did not exist at all before this resolution; a
+--   worker from tenant B could previously activate a tenant-A chip. Function
+--   owner is postgres (superuser, BYPASSRLS) — same security mechanism
+--   documented in migration 015 §SECURITY MECHANISM — so this cross-schema
+--   SELECT does not require any new GRANT on personal.worker_identity.
+--   Still requires: human CTO ratification of this engineering resolution
+--   (this note documents the fix, not a CTO sign-off).
 --
 -- [TODO-RPC-03] fn_activate_link_for_worker: consent_version whitelist.
 --   p_consent_version is validated against a hardcoded constant below.
 --   In production, the valid version list must be approved by DPO (Gate 3).
+--   NOT touched by KORA-LINK-S08 — remains a genuine DPO/Gate-3 blocker.
+--   KORA-LINK-S08 note: the current DB constant ('kora-link-privacy-v1.0')
+--   and the current application constant
+--   (lib/kora-link/activation.ts KORA_LINK_ACTIVATION_CONSENT_VERSION =
+--   'kora-link-consent-v1-draft') are two different strings. Both are
+--   explicitly provisional/pending-DPO placeholders, so KORA-LINK-S08
+--   deliberately does not pick a value to reconcile them — that would be
+--   making the DPO's copy/version decision by engineering default. Flagged
+--   as a residual risk in docs/KORA_LINK_SECURITY_FOUNDATION_08.md: whichever
+--   value DPO approves must be applied to BOTH sides consistently before this
+--   flow can ever succeed end-to-end, even after all gates close.
 --
--- [TODO-RPC-04] fn_company_link_status_aggregate: privacy threshold.
---   Should aggregate counts be suppressed if < N chips? (safe_aggregation_threshold)
---   Current draft: no minimum threshold (all counts returned for COMPANY_ADMIN).
---   CTO + DPO: decide whether threshold applies to chip counts.
+-- [RESOLVED KORA-LINK-S08] TODO-RPC-04: fn_company_link_status_aggregate
+--   privacy threshold. Applies the canonical safe_aggregation_threshold = 10
+--   (lib/constants/kora.ts SAFE_AGGREGATION_THRESHOLD, CLAUDE.md §13,
+--   already-applied precedent in migration 015
+--   analytics.fn_company_activation_summary [G2]) to every status bucket:
+--   counts in [1,9] return NULL with suppressed = true; counts = 0 never
+--   appear as a row; counts ≥ 10 are returned as-is with suppressed = false.
+--   This is an application of an already-constitutional, already-precedented
+--   threshold value — not a new CTO/DPO decision. RETURNS TABLE shape changed
+--   from (status text, count bigint) to (status text, count bigint,
+--   suppressed boolean) — see docs/KORA_LINK_SECURITY_FOUNDATION_08.md for
+--   the full before/after contract and the one caller this affects.
 --
 -- ═══════════════════════════════════════════════════════════════════════════════
 
@@ -266,48 +327,63 @@ COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
 -- PURPOSE
 -- Atomically associates a token with a worker after consent is accepted.
 -- Called ONLY from the Next.js activation API route (server-side, authenticated).
--- The route must have already authenticated the worker and obtained their worker_id.
 --
 -- CALLER
 -- Next.js activation API route:
 --   1. Worker scans NFC chip → fn_public_lookup_link returns 'ready'
---   2. Worker logs in or is already authenticated
---   3. Route calls fn_activate_link_for_worker with (token_digest, worker_id, consent_version)
---   4. Function validates, inserts consent + assignment, updates link status
+--   2. Worker logs in or is already authenticated (route resolves this via
+--      the caller's own session cookie — same session the RPC call below runs under)
+--   3. Route calls fn_activate_link_for_worker with (token_digest, consent_version)
+--   4. Function resolves the worker from auth.uid(), validates, inserts
+--      consent + assignment, updates link status
 --
 -- INPUTS
 --   p_token_digest    — HMAC-SHA256 digest (64-char hex); raw token NEVER accepted
---   p_worker_id       — worker UUID (from server-side session / worker_identity table)
 --   p_consent_version — DPO-approved privacy notice version (e.g. 'kora-link-privacy-v1.0')
+--
+-- WORKER IDENTITY (KORA-LINK-S08 — [RESOLVED] TODO-RPC-02)
+-- There is NO p_worker_id parameter. The worker is resolved exclusively from
+-- auth.uid() → personal.worker_identity, inside this function, exactly as
+-- migration 020's fn_redistribute_worker_pib already does ("Risolve
+-- worker_identity_id da auth.uid() — mai dal client"). It is therefore
+-- structurally impossible for a caller to activate a chip as a different
+-- worker — there is no parameter through which to attempt it. The function
+-- also validates worker.tenant_id = link.tenant_id (a check that did not
+-- exist before KORA-LINK-S08).
 --
 -- RETURN VALUES (jsonb)
 --   { "status": "activated" }       — success
 --   { "status": "already_active" }  — token already assigned to this worker
---   { "status": "unavailable" }     — token not in activatable state
+--   { "status": "unavailable" }     — token not in activatable state, OR
+--                                      worker/tenant identity check failed
+--                                      (deliberately the same response as
+--                                      "token not in activatable state" —
+--                                      no enumeration of WHY it failed)
 --   { "status": "consent_required", "reason": "invalid_version" }
+--   { "status": "error", "reason": "unauthenticated" }  — auth.uid() IS NULL
 --   { "status": "error", "reason": "invalid_input" }
 --   { "status": "error", "reason": "internal" }
 --
--- [TODO-RPC-02] Cross-schema validation: p_worker_id must match auth.uid() → personal.worker_identity.
--- This validation is NOT included in the v1 draft — the calling route must enforce it.
 -- [TODO-RPC-03] consent_version whitelist: hardcoded below as 'kora-link-privacy-v1.0'.
--- DPO must approve the valid version list before production use.
+-- DPO must approve the valid version list before production use. NOT touched by S08.
 
 CREATE OR REPLACE FUNCTION kora_link.fn_activate_link_for_worker(
   p_token_digest    text,
-  p_worker_id       uuid,
   p_consent_version text
 )
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = kora_link, kora, public
+SET search_path = kora_link, personal, kora, public
 AS $$
 DECLARE
   -- [TODO-RPC-03] DPO: approve valid consent_version strings before production.
   -- This constant must be updated when the DPO approves the actual notice text.
   c_valid_consent_version CONSTANT text := 'kora-link-privacy-v1.0';
 
+  v_worker_id                  uuid;
+  v_worker_tenant_id           uuid;
+  v_worker_status              text;
   v_link_id                    uuid;
   v_link_status                text;
   v_link_tenant_id             uuid;
@@ -320,8 +396,23 @@ BEGIN
     RETURN jsonb_build_object('status', 'error', 'reason', 'invalid_input');
   END IF;
 
-  IF p_worker_id IS NULL THEN
-    RETURN jsonb_build_object('status', 'error', 'reason', 'invalid_input');
+  -- ── Worker identity — resolved from auth.uid(), never from a parameter ─────
+  -- KORA-LINK-S08 (BLOCCO 1). See header note above and
+  -- docs/KORA_LINK_SECURITY_FOUNDATION_08.md.
+  IF auth.uid() IS NULL THEN
+    RETURN jsonb_build_object('status', 'error', 'reason', 'unauthenticated');
+  END IF;
+
+  SELECT wi.id, wi.tenant_id, wi.status
+  INTO v_worker_id, v_worker_tenant_id, v_worker_status
+  FROM personal.worker_identity wi
+  WHERE wi.auth_user_id = auth.uid()
+  LIMIT 1;
+
+  -- No worker_identity row for this session, or worker disabled: same generic
+  -- response as every other "cannot activate" path below — no enumeration.
+  IF v_worker_id IS NULL OR v_worker_status = 'disabled' THEN
+    RETURN jsonb_build_object('status', 'unavailable');
   END IF;
 
   -- [TODO-RPC-03] Validate consent_version against DPO-approved whitelist.
@@ -340,6 +431,21 @@ BEGIN
   LIMIT 1;
 
   IF NOT FOUND THEN
+    RETURN jsonb_build_object('status', 'unavailable');
+  END IF;
+
+  -- ── Tenant boundary — KORA-LINK-S08, previously MISSING entirely ───────────
+  -- Without this check a worker from tenant B could activate a chip
+  -- provisioned to tenant A. Generic 'unavailable' response — same as every
+  -- other rejection path, no enumeration.
+  IF v_link_tenant_id IS DISTINCT FROM v_worker_tenant_id THEN
+    INSERT INTO kora_link.audit_log (
+      link_id, tenant_id, actor_type, actor_id, action, result, token_digest_prefix, metadata
+    ) VALUES (
+      v_link_id, v_link_tenant_id, 'worker', auth.uid(), 'ACTIVATION_ATTEMPTED', 'forbidden',
+      left(p_token_digest, 8),
+      jsonb_build_object('event_category', 'activation', 'reason', 'tenant_mismatch')
+    );
     RETURN jsonb_build_object('status', 'unavailable');
   END IF;
 
@@ -362,7 +468,7 @@ BEGIN
     IF EXISTS (
       SELECT 1 FROM kora_link.link_assignments
       WHERE link_id = v_link_id
-        AND worker_id = p_worker_id
+        AND worker_id = v_worker_id
         AND status = 'active'
     ) THEN
       RETURN jsonb_build_object('status', 'already_active');
@@ -384,7 +490,7 @@ BEGIN
   INSERT INTO kora_link.link_consents (
     link_id, tenant_id, worker_id, consent_version, status, accepted_at
   ) VALUES (
-    v_link_id, v_link_tenant_id, p_worker_id, p_consent_version, 'accepted', now()
+    v_link_id, v_link_tenant_id, v_worker_id, p_consent_version, 'accepted', now()
   )
   ON CONFLICT (worker_id, link_id, consent_version) DO UPDATE
     SET status      = 'accepted',
@@ -396,7 +502,7 @@ BEGIN
   INSERT INTO kora_link.link_assignments (
     link_id, tenant_id, worker_id, status, assigned_at
   ) VALUES (
-    v_link_id, v_link_tenant_id, p_worker_id, 'active', now()
+    v_link_id, v_link_tenant_id, v_worker_id, 'active', now()
   )
   RETURNING id INTO v_assignment_id;
 
@@ -416,13 +522,22 @@ BEGIN
     link_id, tenant_id, worker_id, event_type, scan_context,
     actor_type, actor_id, result, metadata
   ) VALUES (
-    v_link_id, v_link_tenant_id, p_worker_id,
+    v_link_id, v_link_tenant_id, v_worker_id,
     'activation_completed', 'activation',
-    'worker', p_worker_id, 'ok',
+    'worker', v_worker_id, 'ok',
     jsonb_build_object(
       'event_category', 'activation',
       'consent_version', p_consent_version
     )
+  );
+
+  -- ── Audit log (KORA-LINK-S08, BLOCCO 6) ──────────────────────────────────
+  INSERT INTO kora_link.audit_log (
+    link_id, tenant_id, actor_type, actor_id, action, result, token_digest_prefix, metadata
+  ) VALUES (
+    v_link_id, v_link_tenant_id, 'worker', auth.uid(), 'ACTIVATION_COMPLETED', 'ok',
+    left(p_token_digest, 8),
+    jsonb_build_object('event_category', 'activation')
   );
 
   RETURN jsonb_build_object('status', 'activated');
@@ -438,16 +553,19 @@ EXCEPTION
 END;
 $$;
 
-REVOKE ALL ON FUNCTION kora_link.fn_activate_link_for_worker(text, uuid, text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION kora_link.fn_activate_link_for_worker(text, uuid, text) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) TO authenticated, service_role;
 
-COMMENT ON FUNCTION kora_link.fn_activate_link_for_worker(text, uuid, text) IS
-  'KL-18 — Atomic worker activation. '
-  'Accepts token_digest (NEVER raw token), worker_id, consent_version. '
+COMMENT ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) IS
+  'KL-18 — Atomic worker activation. KORA-LINK-S08 hardened. '
+  'Accepts token_digest (NEVER raw token) and consent_version only — '
+  'NO p_worker_id parameter. Worker resolved from auth.uid() via '
+  'personal.worker_identity, mirroring migration 020. Validates '
+  'worker.tenant_id = link.tenant_id (KORA-LINK-S08 — previously missing). '
   'Creates link_consents + link_assignments + updates links.status atomically. '
+  'Writes kora_link.audit_log on success and on tenant-mismatch rejection. '
   'FOR UPDATE NOWAIT on links row: prevents concurrent activation races. '
-  'Returns minimum jsonb — never returns token_digest, assignment_id, or tenant_id. '
-  '[TODO-RPC-02] Cross-schema worker validation deferred to production implementation. '
+  'Returns minimum jsonb — never returns token_digest, assignment_id, tenant_id, or worker_id. '
   '[TODO-RPC-03] consent_version whitelist: DPO must approve before production. '
   'SECURITY DEFINER. search_path explicit.';
 
@@ -765,18 +883,29 @@ COMMENT ON FUNCTION kora_link.fn_replace_link(uuid, uuid, text) IS
 --   p_tenant_id — must match JWT kora.tenant_id() for COMPANY_ADMIN
 --
 -- RETURN VALUES
---   TABLE (status text, count bigint) — one row per status bucket
---   Empty if tenant has no chips or role mismatch.
+--   TABLE (status text, count bigint, suppressed boolean) — one row per status
+--   bucket that has at least one chip. Empty if tenant has no chips or role mismatch.
 --
--- [TODO-RPC-04] Privacy threshold: decide if counts < N should be suppressed.
--- Current draft: no minimum threshold. All status counts returned for COMPANY_ADMIN.
+-- PRIVACY THRESHOLD (KORA-LINK-S08 — [RESOLVED] TODO-RPC-04)
+-- Applies the canonical safe_aggregation_threshold = 10 (lib/constants/kora.ts
+-- SAFE_AGGREGATION_THRESHOLD, CLAUDE.md §13) to EVERY status bucket
+-- independently, mirroring the already-applied precedent in migration 015
+-- analytics.fn_company_activation_summary [G2]:
+--   bucket count in [1, 9]  → count returned as NULL, suppressed = true
+--   bucket count = 0        → bucket never appears as a row (GROUP BY semantics)
+--   bucket count >= 10      → count returned as-is, suppressed = false
+-- No filter parameters exist on this function beyond p_tenant_id, so filter-
+-- combination inference does not apply here. A caller cannot recover a
+-- suppressed bucket's exact count by summing the other rows because no total
+-- count is ever returned by this function.
 
 CREATE OR REPLACE FUNCTION kora_link.fn_company_link_status_aggregate(
   p_tenant_id uuid
 )
 RETURNS TABLE (
-  status  text,
-  count   bigint
+  status      text,
+  count       bigint,
+  suppressed  boolean
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -803,22 +932,30 @@ BEGIN
   END IF;
 
   -- ── Aggregate query ───────────────────────────────────────────────────────
-  -- Returns counts per status bucket. Includes TTL-aware 'expired' count.
+  -- Returns counts per status bucket, threshold-suppressed (KORA-LINK-S08).
+  -- Includes TTL-aware 'expired' count.
   -- NEVER returns link_id, token_digest, worker_id, or any per-chip data.
   RETURN QUERY
+  WITH raw_counts AS (
+    SELECT
+      CASE
+        -- Effective expired: pre_activation_expires_at passed but status not yet updated
+        WHEN l.status IN ('generated','assigned_to_tenant','delivered','activation_pending')
+             AND l.pre_activation_expires_at IS NOT NULL
+             AND l.pre_activation_expires_at <= now()
+          THEN 'expired'
+        ELSE l.status
+      END AS status_bucket,
+      COUNT(*)::bigint AS raw_count
+    FROM kora_link.links l
+    WHERE l.tenant_id = p_tenant_id
+    GROUP BY 1
+  )
   SELECT
-    CASE
-      -- Effective expired: pre_activation_expires_at passed but status not yet updated
-      WHEN l.status IN ('generated','assigned_to_tenant','delivered','activation_pending')
-           AND l.pre_activation_expires_at IS NOT NULL
-           AND l.pre_activation_expires_at <= now()
-        THEN 'expired'
-      ELSE l.status
-    END AS status,
-    COUNT(*)::bigint AS count
-  FROM kora_link.links l
-  WHERE l.tenant_id = p_tenant_id
-  GROUP BY 1
+    rc.status_bucket,
+    CASE WHEN rc.raw_count BETWEEN 1 AND 9 THEN NULL ELSE rc.raw_count END,
+    rc.raw_count BETWEEN 1 AND 9
+  FROM raw_counts rc
   ORDER BY 1;
 
 END;
@@ -828,12 +965,14 @@ REVOKE ALL ON FUNCTION kora_link.fn_company_link_status_aggregate(uuid) FROM PUB
 GRANT EXECUTE ON FUNCTION kora_link.fn_company_link_status_aggregate(uuid) TO authenticated, service_role;
 
 COMMENT ON FUNCTION kora_link.fn_company_link_status_aggregate(uuid) IS
-  'KL-18 — Company-safe aggregate link counts by status. '
+  'KL-18 — Company-safe aggregate link counts by status. KORA-LINK-S08 hardened. '
   'COMPANY_ADMIN: p_tenant_id must match JWT tenant_id. '
   'KORA_ADMIN: can query any tenant. '
-  'Returns only (status, count) — no link_id, no token_digest, no worker_id. '
+  'Returns (status, count, suppressed) — no link_id, no token_digest, no worker_id. '
+  'Applies safe_aggregation_threshold = 10 per bucket: [1,9] -> NULL/suppressed=true, '
+  '0 -> row absent, >=10 -> count/suppressed=false. Matches migration 015 [G2] and '
+  'lib/constants/kora.ts SAFE_AGGREGATION_THRESHOLD. '
   'Includes TTL-aware expired reclassification. '
-  '[TODO-RPC-04] Privacy threshold: CTO/DPO to confirm if min count N applies. '
   'SECURITY DEFINER. search_path explicit.';
 
 
@@ -888,3 +1027,15 @@ COMMIT;
 --      AND routine_definition LIKE '%SELECT *%'
 --      AND routine_definition NOT LIKE '%--%SELECT *%';
 --    Expected: 0 rows.
+--
+-- 7. KORA-LINK-S08 — confirm fn_activate_link_for_worker has exactly 2 args
+--    (p_worker_id removed):
+--    SELECT pg_catalog.pg_get_function_identity_arguments(p.oid) AS args
+--    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+--    WHERE n.nspname = 'kora_link' AND p.proname = 'fn_activate_link_for_worker';
+--    Expected: 'p_token_digest text, p_consent_version text' (no uuid arg).
+--
+-- 8. KORA-LINK-S08 — confirm fn_company_link_status_aggregate never returns a
+--    bucket count in [1,9] unsuppressed (requires seeded test data):
+--    SELECT * FROM kora_link.fn_company_link_status_aggregate('<tenant with 1-9 chips>');
+--    Expected: count IS NULL AND suppressed = true for any bucket in that range.

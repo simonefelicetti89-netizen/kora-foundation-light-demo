@@ -60,7 +60,8 @@ describe('KORA Link privacy invariants — company-facing RPC cannot return indi
     expect(startIdx, 'fn_company_link_status_aggregate not found in 036').toBeGreaterThan(-1);
 
     const afterStart = sql.slice(startIdx);
-    expect(afterStart).toMatch(/RETURNS TABLE\s*\(\s*status\s+text,\s*count\s+bigint\s*\)/);
+    // KORA-LINK-S08: widened to include a per-bucket suppression flag.
+    expect(afterStart).toMatch(/RETURNS TABLE\s*\(\s*status\s+text,\s*count\s+bigint,\s*suppressed\s+boolean\s*\)/);
 
     // Check only the actual plpgsql body (`AS $$ ... $$;`), not the trailing
     // `COMMENT ON FUNCTION ... IS '...'` documentation string that follows it
