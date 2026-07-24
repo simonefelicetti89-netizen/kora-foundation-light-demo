@@ -18,9 +18,15 @@
 import { computeDigest, isValidTokenFormat } from './token';
 import { isKoraLinkActivationEnabled, type KoraLinkEnv } from './config';
 
-// ── Consent (provisional — final copy/version requires DPO/legal approval) ────
+// ── Activation notice version (ratified — KORA-LINK-DPO-DECISIONS-09, 2026-07-16) ──
+// Canonical value per docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 4. This is a
+// voluntary activation-notice acknowledgement, not GDPR Art. 6(1)(a) consent —
+// legal basis for the underlying treatment is Art. 6(1)(f) legitimate interest
+// (see docs/KORA_LINK_DPO_DECISIONS_09.md §5). The exported name and the RPC
+// parameter name (p_consent_version) are unchanged by this ratification —
+// only the value is; see supabase/proposed/036_kora_link_rpc_functions.sql.
 
-export const KORA_LINK_ACTIVATION_CONSENT_VERSION = 'kora-link-consent-v1-draft';
+export const KORA_LINK_ACTIVATION_CONSENT_VERSION = 'kora-link-activation-notice-v1.0';
 
 // ── RPC client interface ──────────────────────────────────────────────────────
 // Minimal interface for injection in tests — no vi.mock needed.
@@ -99,7 +105,7 @@ export async function activateKoraLinkForWorker(
     return { state: 'invalid_token' };
   }
 
-  // consentVersion must be present and match the current provisional version.
+  // consentVersion must be present and match the DPO-ratified activation notice version.
   if (!params.consentVersion || params.consentVersion !== KORA_LINK_ACTIVATION_CONSENT_VERSION) {
     return { state: 'consent_required' };
   }

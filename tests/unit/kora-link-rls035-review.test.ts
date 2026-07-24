@@ -47,7 +47,7 @@ const KORA_LINK_TABLES = [
   'link_batches',
   'links',
   'link_assignments',
-  'link_consents',
+  'link_activation_acknowledgements',
   'link_events',
   'revocations',
   'link_replacements',
@@ -56,7 +56,7 @@ const KORA_LINK_TABLES = [
 ] as const;
 
 const APPEND_ONLY_TABLES = [
-  'link_consents',
+  'link_activation_acknowledgements',
   'link_events',
   'revocations',
   'link_replacements',
@@ -113,7 +113,7 @@ describe('KORA-LINK-S3A — exactly the expected KORA_ADMIN policy set exists', 
     'kl_batches_admin_select', 'kl_batches_admin_insert', 'kl_batches_admin_update',
     'kl_links_admin_select', 'kl_links_admin_insert', 'kl_links_admin_update',
     'kl_assignments_admin_select', 'kl_assignments_admin_insert', 'kl_assignments_admin_update',
-    'kl_consents_admin_select', 'kl_consents_admin_insert',
+    'kl_activation_acks_admin_select', 'kl_activation_acks_admin_insert',
     'kl_events_admin_select', 'kl_events_admin_insert',
     'kl_revocations_admin_select', 'kl_revocations_admin_insert',
     'kl_replacements_admin_select', 'kl_replacements_admin_insert',
@@ -433,29 +433,42 @@ describe('KORA-LINK-S3B — re-confirms the two Gate 4 boundaries S3B did not to
   });
 });
 
-// ── 16. Gate 3 BLOCKER items remain present and clearly marked, untouched ──
+// ── 16. Gate 3 BLOCKER items — ratified by KORA-LINK-DPO-DECISIONS-09 ──────
+// KORA-LINK-S3B verified these 4 items were genuine, unresolved DPO blockers.
+// KORA-LINK-DPO-DECISIONS-09 (2026-07-16) is the titolare's ratification of
+// all 4 — this section now guards that they are marked RESOLVED, not that
+// they remain open. Gate 3 OVERALL still remains open (DPIA, worker
+// self-service deactivation, Gate 4 RLS) — see docs/KORA_LINK_DPO_DECISIONS_09.md.
 
-describe('KORA-LINK-S3B — Gate 3 (DPO/legal) BLOCKER items remain unresolved and clearly marked', () => {
+describe('KORA-LINK-DPO-DECISIONS-09 — the 4 Gate 3 BLOCKER items are now ratified/resolved', () => {
   const GATE_3_BLOCKERS = [
-    'BLOCKER TODO-CTO-05 / GATE-3',
-    'BLOCKER TODO-DPO-01 / GATE-3',
-    'BLOCKER TODO-DPO-02 / GATE-3',
-    'BLOCKER TODO-DPO-03 / GATE-3',
+    'TODO-CTO-05 / GATE-3',
+    'TODO-DPO-01 / GATE-3',
+    'TODO-DPO-02 / GATE-3',
+    'TODO-DPO-03 / GATE-3',
   ] as const;
 
   for (const blocker of GATE_3_BLOCKERS) {
-    it(`034 still contains "${blocker}"`, () => {
+    it(`034 still references "${blocker}"`, () => {
       expect(sql034).toContain(blocker);
     });
   }
 
-  it('none of the 4 Gate 3 BLOCKER items are marked RESOLVED', () => {
+  it('all 4 Gate 3 blocker items are marked RESOLVED KORA-LINK-DPO-DECISIONS-09', () => {
     for (const blocker of GATE_3_BLOCKERS) {
       const idx = sql034.indexOf(blocker);
       expect(idx).toBeGreaterThan(-1);
-      const line = sql034.slice(Math.max(0, idx - 20), idx);
-      expect(line).not.toMatch(/RESOLVED/);
+      const line = sql034.slice(Math.max(0, idx - 60), idx);
+      expect(line).toMatch(/RESOLVED KORA-LINK-DPO-DECISIONS-09/);
     }
+  });
+
+  it('034 no longer declares Gate 3 fully blocking — the 4 ratified items are not literal "BLOCKER" markers anymore', () => {
+    expect(sql034).not.toMatch(/BLOCKER TODO-(CTO-05|DPO-01|DPO-02|DPO-03) \/ GATE-3/);
+  });
+
+  it('Gate 3 overall still declared open (DPIA/Gate 4/deactivation remain) even though the 4 blockers are ratified', () => {
+    expect(sql034).toMatch(/Gate 3 overall/i);
   });
 
   it('TODO-RLS-05 in 035 is updated but explicitly not marked as resolving Gate 4', () => {
@@ -476,8 +489,9 @@ describe('KORA-LINK-S3B — Gate 3 (DPO/legal) BLOCKER items remain unresolved a
     expect(sql035).not.toMatch(/\[TODO-RLS-04\]/);
   });
 
-  it('consent_version TODO in 036 remains open (not resolved by S3A/S3B/S08 — genuine DPO blocker)', () => {
-    expect(sql036).toMatch(/\[TODO-RPC-03\] fn_activate_link_for_worker: consent_version whitelist\./);
+  it('consent_version TODO-RPC-03 in 036 is now ratified by KORA-LINK-DPO-DECISIONS-09', () => {
+    expect(sql036).toMatch(/\[RESOLVED KORA-LINK-DPO-DECISIONS-09\] TODO-RPC-03: fn_activate_link_for_worker/);
+    expect(sql036).toContain('kora-link-activation-notice-v1.0');
   });
 });
 

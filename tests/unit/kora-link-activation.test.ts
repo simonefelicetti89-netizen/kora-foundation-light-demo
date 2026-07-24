@@ -415,6 +415,9 @@ describe('activateKoraLinkForWorker — result safety', () => {
 });
 
 // ── 8. KORA_LINK_ACTIVATION_CONSENT_VERSION ───────────────────────────────────
+// KORA-LINK-DPO-DECISIONS-09 (2026-07-16): titolare ratified the canonical
+// activation-notice version. Per docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 4
+// governance rule, a ratified version string must never contain "draft".
 
 describe('KORA_LINK_ACTIVATION_CONSENT_VERSION', () => {
 
@@ -423,8 +426,9 @@ describe('KORA_LINK_ACTIVATION_CONSENT_VERSION', () => {
     expect(KORA_LINK_ACTIVATION_CONSENT_VERSION.length).toBeGreaterThan(0);
   });
 
-  it('is marked as a draft version (provisional, pending DPO approval)', () => {
-    expect(KORA_LINK_ACTIVATION_CONSENT_VERSION).toContain('draft');
+  it('is the DPO-ratified canonical activation-notice version, not a draft placeholder', () => {
+    expect(KORA_LINK_ACTIVATION_CONSENT_VERSION).toBe('kora-link-activation-notice-v1.0');
+    expect(KORA_LINK_ACTIVATION_CONSENT_VERSION).not.toContain('draft');
   });
 
 });

@@ -16,17 +16,30 @@
 --              lib/constants/kora.ts and migration 015 [G2]) to every status
 --              bucket. See [RESOLVED KORA-LINK-S08] markers below and
 --              docs/KORA_LINK_SECURITY_FOUNDATION_08.md · 2026-07-16
--- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
---              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
+-- Amended:     KORA-LINK-DPO-DECISIONS-09 — titolare ratified the consent_
+--              version whitelist decision ([TODO-RPC-03]): canonical value
+--              'kora-link-activation-notice-v1.0' (not consent, Art. 6(1)(f)
+--              legitimate interest — see docs/KORA_LINK_DPO_DECISIONS_09.md
+--              section 5/BLOCCO 4). fn_activate_link_for_worker now writes
+--              to the renamed kora_link.link_activation_acknowledgements
+--              table (activation_notice_version/acknowledged_at columns,
+--              status 'acknowledged') instead of kora_link.link_consents —
+--              see 034 section 4. The RPC's own external signature/parameter
+--              names (p_token_digest, p_consent_version) are UNCHANGED —
+--              only the underlying table/column names and the whitelisted
+--              value changed · 2026-07-16
+-- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED;
+--              KORA-LINK-DPO-DECISIONS-09, 2026-07-16: the 4 genuine Gate 3/DPO
+--              blockers ratified — see 034 header. Gate 3 overall still open.)
 --              035_kora_link_rls.sql    (PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING — still open, Gate 4)
 -- Gate:        This file (036) itself: Gate 2 OPEN + Gate 3 OPEN, NOT reviewed, NOT applied.
 --              034's own engineering review closed at KL-19 — that does NOT extend to 036.
 --              KORA-LINK-S3A is a draft-only grant-hardening pass — it does NOT close
 --              Gate 2 or Gate 3 for this file. KORA-LINK-SECURITY-FOUNDATION-08 closes
---              [TODO-RPC-02] and [TODO-RPC-04] as engineering fixes (see below) — it does
---              NOT close Gate 2, Gate 3, or Gate 4; [TODO-RPC-01] and [TODO-RPC-03] remain
---              open genuine CTO/DPO decisions, and this migration is still NOT applied to
---              any database.
+--              [TODO-RPC-02] and [TODO-RPC-04] as engineering fixes (see below); KORA-LINK-
+--              DPO-DECISIONS-09 closes [TODO-RPC-03] as a ratified DPO decision. None of
+--              these close Gate 2, Gate 3, or Gate 4 overall; [TODO-RPC-01] remains an open
+--              CTO decision, and this migration is still NOT applied to any database.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- STATUS: PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING
@@ -87,7 +100,8 @@
 --                                 resolves worker from auth.uid(), KORA-LINK-S08)
 --                               → kora_link.links (SELECT + UPDATE via SECDEF)
 --                               → kora_link.link_assignments (INSERT via SECDEF)
---                               → kora_link.link_consents (INSERT via SECDEF)
+--                               → kora_link.link_activation_acknowledgements (INSERT via
+--                                 SECDEF; renamed from link_consents, KORA-LINK-DPO-DECISIONS-09)
 --                               → kora_link.link_events (INSERT via SECDEF)
 --                               → kora_link.audit_log (INSERT via SECDEF, KORA-LINK-S08)
 --   fn_revoke_link             → kora_link.links (UPDATE via SECDEF)
@@ -139,20 +153,17 @@
 --   Still requires: human CTO ratification of this engineering resolution
 --   (this note documents the fix, not a CTO sign-off).
 --
--- [TODO-RPC-03] fn_activate_link_for_worker: consent_version whitelist.
---   p_consent_version is validated against a hardcoded constant below.
---   In production, the valid version list must be approved by DPO (Gate 3).
---   NOT touched by KORA-LINK-S08 — remains a genuine DPO/Gate-3 blocker.
---   KORA-LINK-S08 note: the current DB constant ('kora-link-privacy-v1.0')
---   and the current application constant
---   (lib/kora-link/activation.ts KORA_LINK_ACTIVATION_CONSENT_VERSION =
---   'kora-link-consent-v1-draft') are two different strings. Both are
---   explicitly provisional/pending-DPO placeholders, so KORA-LINK-S08
---   deliberately does not pick a value to reconcile them — that would be
---   making the DPO's copy/version decision by engineering default. Flagged
---   as a residual risk in docs/KORA_LINK_SECURITY_FOUNDATION_08.md: whichever
---   value DPO approves must be applied to BOTH sides consistently before this
---   flow can ever succeed end-to-end, even after all gates close.
+-- [RESOLVED KORA-LINK-DPO-DECISIONS-09] TODO-RPC-03: fn_activate_link_for_worker
+--   consent_version whitelist. p_consent_version (external parameter name
+--   unchanged) is validated against c_valid_consent_version below, now set to
+--   the titolare-ratified canonical value 'kora-link-activation-notice-v1.0'.
+--   This same value is applied consistently to lib/kora-link/activation.ts
+--   KORA_LINK_ACTIVATION_CONSENT_VERSION — the two-string mismatch
+--   KORA-LINK-S08 flagged as a residual risk is resolved. The proposed
+--   activation-notice text is in docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 3;
+--   legal basis is Art. 6(1)(f) legitimate interest, not consent (§5). Gate 3
+--   overall is NOT closed by this — see docs/KORA_LINK_DPO_DECISIONS_09.md §9/§24
+--   for what remains (DPIA, worker self-service deactivation, Gate 4 RLS).
 --
 -- [RESOLVED KORA-LINK-S08] TODO-RPC-04: fn_company_link_status_aggregate
 --   privacy threshold. Applies the canonical safe_aggregation_threshold = 10
@@ -335,11 +346,13 @@ COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
 --      the caller's own session cookie — same session the RPC call below runs under)
 --   3. Route calls fn_activate_link_for_worker with (token_digest, consent_version)
 --   4. Function resolves the worker from auth.uid(), validates, inserts
---      consent + assignment, updates link status
+--      activation acknowledgement + assignment, updates link status
 --
 -- INPUTS
 --   p_token_digest    — HMAC-SHA256 digest (64-char hex); raw token NEVER accepted
---   p_consent_version — DPO-approved privacy notice version (e.g. 'kora-link-privacy-v1.0')
+--   p_consent_version — DPO-ratified activation notice version (KORA-LINK-DPO-DECISIONS-09:
+--                       'kora-link-activation-notice-v1.0'). Parameter name unchanged;
+--                       stores into link_activation_acknowledgements.activation_notice_version.
 --
 -- WORKER IDENTITY (KORA-LINK-S08 — [RESOLVED] TODO-RPC-02)
 -- There is NO p_worker_id parameter. The worker is resolved exclusively from
@@ -364,8 +377,8 @@ COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
 --   { "status": "error", "reason": "invalid_input" }
 --   { "status": "error", "reason": "internal" }
 --
--- [TODO-RPC-03] consent_version whitelist: hardcoded below as 'kora-link-privacy-v1.0'.
--- DPO must approve the valid version list before production use. NOT touched by S08.
+-- [RESOLVED KORA-LINK-DPO-DECISIONS-09] consent_version whitelist: ratified
+-- value below is 'kora-link-activation-notice-v1.0'.
 
 CREATE OR REPLACE FUNCTION kora_link.fn_activate_link_for_worker(
   p_token_digest    text,
@@ -377,9 +390,9 @@ SECURITY DEFINER
 SET search_path = kora_link, personal, kora, public
 AS $$
 DECLARE
-  -- [TODO-RPC-03] DPO: approve valid consent_version strings before production.
-  -- This constant must be updated when the DPO approves the actual notice text.
-  c_valid_consent_version CONSTANT text := 'kora-link-privacy-v1.0';
+  -- [RESOLVED KORA-LINK-DPO-DECISIONS-09] Titolare-ratified canonical
+  -- activation-notice version — docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 4.
+  c_valid_consent_version CONSTANT text := 'kora-link-activation-notice-v1.0';
 
   v_worker_id                  uuid;
   v_worker_tenant_id           uuid;
@@ -389,7 +402,7 @@ DECLARE
   v_link_tenant_id             uuid;
   v_pre_activation_expires_at  timestamptz;
   v_assignment_id              uuid;
-  v_consent_id                 uuid;
+  v_ack_id                     uuid;
 BEGIN
   -- ── Input validation ──────────────────────────────────────────────────────
   IF NOT kora_link.fn_is_valid_token_digest(p_token_digest) THEN
@@ -484,18 +497,19 @@ BEGIN
     RETURN jsonb_build_object('status', 'unavailable');
   END IF;
 
-  -- ── Consent record ────────────────────────────────────────────────────────
-  -- INSERT consent. ON CONFLICT: update to 'accepted' if a pending record exists.
-  -- UNIQUE constraint: (worker_id, link_id, consent_version).
-  INSERT INTO kora_link.link_consents (
-    link_id, tenant_id, worker_id, consent_version, status, accepted_at
+  -- ── Activation acknowledgement record (renamed from "consent record",
+  --    table renamed from link_consents — KORA-LINK-DPO-DECISIONS-09) ────────
+  -- INSERT acknowledgement. ON CONFLICT: update to 'acknowledged' if a pending record exists.
+  -- UNIQUE constraint: (worker_id, link_id, activation_notice_version).
+  INSERT INTO kora_link.link_activation_acknowledgements (
+    link_id, tenant_id, worker_id, activation_notice_version, status, acknowledged_at
   ) VALUES (
-    v_link_id, v_link_tenant_id, v_worker_id, p_consent_version, 'accepted', now()
+    v_link_id, v_link_tenant_id, v_worker_id, p_consent_version, 'acknowledged', now()
   )
-  ON CONFLICT (worker_id, link_id, consent_version) DO UPDATE
-    SET status      = 'accepted',
-        accepted_at = now()
-  RETURNING id INTO v_consent_id;
+  ON CONFLICT (worker_id, link_id, activation_notice_version) DO UPDATE
+    SET status          = 'acknowledged',
+        acknowledged_at = now()
+  RETURNING id INTO v_ack_id;
 
   -- ── Assignment record ─────────────────────────────────────────────────────
   -- uq_assignment_link_active partial unique index prevents duplicate active assignments.
@@ -506,10 +520,10 @@ BEGIN
   )
   RETURNING id INTO v_assignment_id;
 
-  -- Back-fill assignment_id on consent record (FK nullable until now)
-  UPDATE kora_link.link_consents
+  -- Back-fill assignment_id on the activation-acknowledgement record (FK nullable until now)
+  UPDATE kora_link.link_activation_acknowledgements
   SET assignment_id = v_assignment_id
-  WHERE id = v_consent_id;
+  WHERE id = v_ack_id;
 
   -- ── Link status transition ────────────────────────────────────────────────
   UPDATE kora_link.links
@@ -527,7 +541,7 @@ BEGIN
     'worker', v_worker_id, 'ok',
     jsonb_build_object(
       'event_category', 'activation',
-      'consent_version', p_consent_version
+      'activation_notice_version', p_consent_version
     )
   );
 
@@ -557,16 +571,19 @@ REVOKE ALL ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) FROM PU
 GRANT EXECUTE ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) TO authenticated, service_role;
 
 COMMENT ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) IS
-  'KL-18 — Atomic worker activation. KORA-LINK-S08 hardened. '
+  'KL-18 — Atomic worker activation. KORA-LINK-S08 hardened, '
+  'KORA-LINK-DPO-DECISIONS-09 ratified. '
   'Accepts token_digest (NEVER raw token) and consent_version only — '
   'NO p_worker_id parameter. Worker resolved from auth.uid() via '
   'personal.worker_identity, mirroring migration 020. Validates '
   'worker.tenant_id = link.tenant_id (KORA-LINK-S08 — previously missing). '
-  'Creates link_consents + link_assignments + updates links.status atomically. '
+  'Creates link_activation_acknowledgements (renamed from link_consents) + '
+  'link_assignments + updates links.status atomically. '
   'Writes kora_link.audit_log on success and on tenant-mismatch rejection. '
   'FOR UPDATE NOWAIT on links row: prevents concurrent activation races. '
   'Returns minimum jsonb — never returns token_digest, assignment_id, tenant_id, or worker_id. '
-  '[TODO-RPC-03] consent_version whitelist: DPO must approve before production. '
+  'consent_version whitelist ratified (KORA-LINK-DPO-DECISIONS-09): '
+  'kora-link-activation-notice-v1.0 — not GDPR consent, Art. 6(1)(f) legitimate interest. '
   'SECURITY DEFINER. search_path explicit.';
 
 
