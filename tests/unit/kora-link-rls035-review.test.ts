@@ -513,7 +513,7 @@ describe('KORA-LINK-S08 — TODO-RPC-02 (worker identity) and TODO-RPC-04 (aggre
     const signature = sql036.slice(fnStart, signatureEnd + 1);
     expect(signature).not.toMatch(/uuid/);
     expect(signature).toMatch(/p_token_digest\s+text/);
-    expect(signature).toMatch(/p_consent_version\s+text/);
+    expect(signature).toMatch(/p_activation_notice_version\s+text/);
   });
 
   it('fn_activate_link_for_worker resolves the worker from auth.uid(), not from a parameter', () => {

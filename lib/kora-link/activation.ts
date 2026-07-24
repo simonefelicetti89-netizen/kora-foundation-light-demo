@@ -23,10 +23,10 @@ import { isKoraLinkActivationEnabled, type KoraLinkEnv } from './config';
 // voluntary activation-notice acknowledgement, not GDPR Art. 6(1)(a) consent —
 // legal basis for the underlying treatment is Art. 6(1)(f) legitimate interest
 // (see docs/KORA_LINK_DPO_DECISIONS_09.md §5). The exported name and the RPC
-// parameter name (p_consent_version) are unchanged by this ratification —
-// only the value is; see supabase/proposed/036_kora_link_rpc_functions.sql.
+// parameter name are renamed accordingly (p_activation_notice_version) — see
+// supabase/proposed/036_kora_link_rpc_functions.sql.
 
-export const KORA_LINK_ACTIVATION_CONSENT_VERSION = 'kora-link-activation-notice-v1.0';
+export const KORA_LINK_ACTIVATION_NOTICE_VERSION = 'kora-link-activation-notice-v1.0';
 
 // ── RPC client interface ──────────────────────────────────────────────────────
 // Minimal interface for injection in tests — no vi.mock needed.
@@ -40,7 +40,7 @@ export type KoraLinkActivationRpcRow = Record<string, unknown>;
 export type KoraLinkActivationRpcClient = {
   rpc(
     fn: 'fn_activate_link_for_worker',
-    args: { p_token_digest: string; p_consent_version: string }
+    args: { p_token_digest: string; p_activation_notice_version: string }
   ): Promise<{
     data: KoraLinkActivationRpcRow | KoraLinkActivationRpcRow[] | null;
     error: unknown | null;
@@ -61,7 +61,7 @@ function normalizeActivationRow(
 export type KoraLinkActivationResult =
   | { state: 'disabled' }
   | { state: 'invalid_token' }
-  | { state: 'consent_required' }
+  | { state: 'activation_notice_required' }
   | { state: 'already_active' }
   | { state: 'activated' }
   | { state: 'unavailable' }
@@ -72,7 +72,7 @@ export type ActivateKoraLinkForWorkerParams = {
   // Pre-flight guard only (caller must be an authenticated worker) — NEVER forwarded to the
   // RPC call. KORA-LINK-S08: the DB function resolves worker identity itself from auth.uid().
   workerId: string;
-  consentVersion: string;
+  activationNoticeVersion: string;
   secret: string;
   env?: KoraLinkEnv;
   rpcClientOverride?: KoraLinkActivationRpcClient;
@@ -105,9 +105,9 @@ export async function activateKoraLinkForWorker(
     return { state: 'invalid_token' };
   }
 
-  // consentVersion must be present and match the DPO-ratified activation notice version.
-  if (!params.consentVersion || params.consentVersion !== KORA_LINK_ACTIVATION_CONSENT_VERSION) {
-    return { state: 'consent_required' };
+  // activationNoticeVersion must be present and match the DPO-ratified activation notice version.
+  if (!params.activationNoticeVersion || params.activationNoticeVersion !== KORA_LINK_ACTIVATION_NOTICE_VERSION) {
+    return { state: 'activation_notice_required' };
   }
 
   // Compute digest — only the digest is sent to the DB, never the raw token
@@ -133,13 +133,13 @@ export async function activateKoraLinkForWorker(
     }
   }
 
-  // Call RPC — digest + consent version sent, never the raw token, never the worker id
+  // Call RPC — digest + activation notice version sent, never the raw token, never the worker id
   // (KORA-LINK-S08: the DB function resolves worker identity from auth.uid() itself).
   let row: KoraLinkActivationRpcRow | null;
   try {
     const result = await client.rpc('fn_activate_link_for_worker', {
       p_token_digest: digest,
-      p_consent_version: params.consentVersion,
+      p_activation_notice_version: params.activationNoticeVersion,
     });
     if (result.error) {
       return { state: 'unavailable' };
@@ -157,8 +157,8 @@ export async function activateKoraLinkForWorker(
     case 'activated':
     case 'already_active':
       return { state: row.status };
-    case 'consent_required':
-      return { state: 'consent_required' };
+    case 'activation_notice_required':
+      return { state: 'activation_notice_required' };
     case 'unavailable':
       return { state: 'unavailable' };
     case 'error':
@@ -186,7 +186,7 @@ export type KoraLinkActivationOutcome =
   | 'activated'
   | 'unavailable'
   | 'error'
-  | 'consent_required';
+  | 'activation_notice_required';
 
 export type BuildKoraLinkActivationStateParams = {
   activationEnabled: boolean;
@@ -220,7 +220,7 @@ export function buildKoraLinkActivationState(
     case 'unavailable':
       return 'unavailable';
     case 'error':
-    case 'consent_required':
+    case 'activation_notice_required':
       return 'error';
     default:
       return 'ready';

@@ -24,10 +24,18 @@
 --              to the renamed kora_link.link_activation_acknowledgements
 --              table (activation_notice_version/acknowledged_at columns,
 --              status 'acknowledged') instead of kora_link.link_consents —
---              see 034 section 4. The RPC's own external signature/parameter
---              names (p_token_digest, p_consent_version) are UNCHANGED —
---              only the underlying table/column names and the whitelisted
---              value changed · 2026-07-16
+--              see 034 section 4 · 2026-07-16
+-- Amended:     KORA-LINK-DPO-DECISIONS-09 (terminology cleanup pass) — the RPC
+--              parameter itself is now also renamed: p_consent_version →
+--              p_activation_notice_version, and the local whitelist constant
+--              c_valid_consent_version → c_valid_activation_notice_version.
+--              Since 034-036 have never been applied to any database and have
+--              no real consumer in staging/production, the external
+--              signature is renamed too — no longer left as "consent" once
+--              a real, non-consent legal basis was ratified. The 'consent_
+--              required' status literal is renamed to 'activation_notice_
+--              required' to match. No behavior change, no migration applied
+--              · 2026-07-24
 -- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED;
 --              KORA-LINK-DPO-DECISIONS-09, 2026-07-16: the 4 genuine Gate 3/DPO
 --              blockers ratified — see 034 header. Gate 3 overall still open.)
@@ -55,7 +63,7 @@
 --   (1) 034 formally approved by CTO (Gate 2 — engineering substance closed at KL-19,
 --       human CTO ratification still pending)
 --   (2) 035 RLS applied and smoke-tested on staging
---   (3) DPO review of consent model and public lookup response (Gate 3)
+--   (3) DPO review of activation-acknowledgement model and public lookup response (Gate 3)
 --   (4) All GRANT decisions confirmed by CTO (especially anon access to public lookup)
 --   (5) Integration tests written and passing on staging
 --   (6) This file's own KORA-LINK-SECURITY-FOUNDATION-08 changes are reviewed by a
@@ -136,7 +144,9 @@
 --
 -- [RESOLVED KORA-LINK-S08] TODO-RPC-02: fn_activate_link_for_worker cross-schema
 --   validation. The function no longer accepts p_worker_id as a parameter at
---   all — the signature is now (p_token_digest text, p_consent_version text).
+--   all — the signature at the time was (p_token_digest text, p_consent_version
+--   text); it is now (p_token_digest text, p_activation_notice_version text)
+--   after the KORA-LINK-DPO-DECISIONS-09 terminology cleanup below.
 --   Worker identity is resolved inside the function from auth.uid() via
 --   personal.worker_identity, exactly mirroring the established pattern in
 --   migration 020 (fn_redistribute_worker_pib: "Risolve worker_identity_id da
@@ -154,11 +164,13 @@
 --   (this note documents the fix, not a CTO sign-off).
 --
 -- [RESOLVED KORA-LINK-DPO-DECISIONS-09] TODO-RPC-03: fn_activate_link_for_worker
---   consent_version whitelist. p_consent_version (external parameter name
---   unchanged) is validated against c_valid_consent_version below, now set to
---   the titolare-ratified canonical value 'kora-link-activation-notice-v1.0'.
---   This same value is applied consistently to lib/kora-link/activation.ts
---   KORA_LINK_ACTIVATION_CONSENT_VERSION — the two-string mismatch
+--   activation_notice_version whitelist. p_activation_notice_version (renamed
+--   from p_consent_version in the terminology cleanup pass, since 034-036 have
+--   no real consumer and were never applied) is validated against
+--   c_valid_activation_notice_version below, set to the titolare-ratified
+--   canonical value 'kora-link-activation-notice-v1.0'. This same value is
+--   applied consistently to lib/kora-link/activation.ts
+--   KORA_LINK_ACTIVATION_NOTICE_VERSION — the two-string mismatch
 --   KORA-LINK-S08 flagged as a residual risk is resolved. The proposed
 --   activation-notice text is in docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 3;
 --   legal basis is Art. 6(1)(f) legitimate interest, not consent (§5). Gate 3
@@ -336,7 +348,7 @@ COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- PURPOSE
--- Atomically associates a token with a worker after consent is accepted.
+-- Atomically associates a token with a worker after the activation notice is acknowledged.
 -- Called ONLY from the Next.js activation API route (server-side, authenticated).
 --
 -- CALLER
@@ -344,15 +356,16 @@ COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
 --   1. Worker scans NFC chip → fn_public_lookup_link returns 'ready'
 --   2. Worker logs in or is already authenticated (route resolves this via
 --      the caller's own session cookie — same session the RPC call below runs under)
---   3. Route calls fn_activate_link_for_worker with (token_digest, consent_version)
+--   3. Route calls fn_activate_link_for_worker with (token_digest, activation_notice_version)
 --   4. Function resolves the worker from auth.uid(), validates, inserts
 --      activation acknowledgement + assignment, updates link status
 --
 -- INPUTS
---   p_token_digest    — HMAC-SHA256 digest (64-char hex); raw token NEVER accepted
---   p_consent_version — DPO-ratified activation notice version (KORA-LINK-DPO-DECISIONS-09:
---                       'kora-link-activation-notice-v1.0'). Parameter name unchanged;
---                       stores into link_activation_acknowledgements.activation_notice_version.
+--   p_token_digest              — HMAC-SHA256 digest (64-char hex); raw token NEVER accepted
+--   p_activation_notice_version — DPO-ratified activation notice version
+--                                 (KORA-LINK-DPO-DECISIONS-09: 'kora-link-activation-notice-v1.0').
+--                                 Stores into
+--                                 link_activation_acknowledgements.activation_notice_version.
 --
 -- WORKER IDENTITY (KORA-LINK-S08 — [RESOLVED] TODO-RPC-02)
 -- There is NO p_worker_id parameter. The worker is resolved exclusively from
@@ -372,17 +385,17 @@ COMMENT ON FUNCTION kora_link.fn_public_lookup_link(text) IS
 --                                      (deliberately the same response as
 --                                      "token not in activatable state" —
 --                                      no enumeration of WHY it failed)
---   { "status": "consent_required", "reason": "invalid_version" }
+--   { "status": "activation_notice_required", "reason": "invalid_version" }
 --   { "status": "error", "reason": "unauthenticated" }  — auth.uid() IS NULL
 --   { "status": "error", "reason": "invalid_input" }
 --   { "status": "error", "reason": "internal" }
 --
--- [RESOLVED KORA-LINK-DPO-DECISIONS-09] consent_version whitelist: ratified
--- value below is 'kora-link-activation-notice-v1.0'.
+-- [RESOLVED KORA-LINK-DPO-DECISIONS-09] activation_notice_version whitelist:
+-- ratified value below is 'kora-link-activation-notice-v1.0'.
 
 CREATE OR REPLACE FUNCTION kora_link.fn_activate_link_for_worker(
-  p_token_digest    text,
-  p_consent_version text
+  p_token_digest              text,
+  p_activation_notice_version text
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -392,7 +405,7 @@ AS $$
 DECLARE
   -- [RESOLVED KORA-LINK-DPO-DECISIONS-09] Titolare-ratified canonical
   -- activation-notice version — docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 4.
-  c_valid_consent_version CONSTANT text := 'kora-link-activation-notice-v1.0';
+  c_valid_activation_notice_version CONSTANT text := 'kora-link-activation-notice-v1.0';
 
   v_worker_id                  uuid;
   v_worker_tenant_id           uuid;
@@ -428,9 +441,9 @@ BEGIN
     RETURN jsonb_build_object('status', 'unavailable');
   END IF;
 
-  -- [TODO-RPC-03] Validate consent_version against DPO-approved whitelist.
-  IF p_consent_version IS NULL OR p_consent_version <> c_valid_consent_version THEN
-    RETURN jsonb_build_object('status', 'consent_required', 'reason', 'invalid_version');
+  -- Validate activation_notice_version against the DPO-ratified whitelist.
+  IF p_activation_notice_version IS NULL OR p_activation_notice_version <> c_valid_activation_notice_version THEN
+    RETURN jsonb_build_object('status', 'activation_notice_required', 'reason', 'invalid_version');
   END IF;
 
   -- ── Token lookup ─────────────────────────────────────────────────────────
@@ -504,7 +517,7 @@ BEGIN
   INSERT INTO kora_link.link_activation_acknowledgements (
     link_id, tenant_id, worker_id, activation_notice_version, status, acknowledged_at
   ) VALUES (
-    v_link_id, v_link_tenant_id, v_worker_id, p_consent_version, 'acknowledged', now()
+    v_link_id, v_link_tenant_id, v_worker_id, p_activation_notice_version, 'acknowledged', now()
   )
   ON CONFLICT (worker_id, link_id, activation_notice_version) DO UPDATE
     SET status          = 'acknowledged',
@@ -541,7 +554,7 @@ BEGIN
     'worker', v_worker_id, 'ok',
     jsonb_build_object(
       'event_category', 'activation',
-      'activation_notice_version', p_consent_version
+      'activation_notice_version', p_activation_notice_version
     )
   );
 
@@ -572,8 +585,8 @@ GRANT EXECUTE ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) TO a
 
 COMMENT ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) IS
   'KL-18 — Atomic worker activation. KORA-LINK-S08 hardened, '
-  'KORA-LINK-DPO-DECISIONS-09 ratified. '
-  'Accepts token_digest (NEVER raw token) and consent_version only — '
+  'KORA-LINK-DPO-DECISIONS-09 ratified (incl. terminology cleanup pass). '
+  'Accepts token_digest (NEVER raw token) and activation_notice_version only — '
   'NO p_worker_id parameter. Worker resolved from auth.uid() via '
   'personal.worker_identity, mirroring migration 020. Validates '
   'worker.tenant_id = link.tenant_id (KORA-LINK-S08 — previously missing). '
@@ -582,7 +595,7 @@ COMMENT ON FUNCTION kora_link.fn_activate_link_for_worker(text, text) IS
   'Writes kora_link.audit_log on success and on tenant-mismatch rejection. '
   'FOR UPDATE NOWAIT on links row: prevents concurrent activation races. '
   'Returns minimum jsonb — never returns token_digest, assignment_id, tenant_id, or worker_id. '
-  'consent_version whitelist ratified (KORA-LINK-DPO-DECISIONS-09): '
+  'activation_notice_version whitelist ratified (KORA-LINK-DPO-DECISIONS-09): '
   'kora-link-activation-notice-v1.0 — not GDPR consent, Art. 6(1)(f) legitimate interest. '
   'SECURITY DEFINER. search_path explicit.';
 
@@ -1050,7 +1063,7 @@ COMMIT;
 --    SELECT pg_catalog.pg_get_function_identity_arguments(p.oid) AS args
 --    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
 --    WHERE n.nspname = 'kora_link' AND p.proname = 'fn_activate_link_for_worker';
---    Expected: 'p_token_digest text, p_consent_version text' (no uuid arg).
+--    Expected: 'p_token_digest text, p_activation_notice_version text' (no uuid arg).
 --
 -- 8. KORA-LINK-S08 — confirm fn_company_link_status_aggregate never returns a
 --    bucket count in [1,9] unsuppressed (requires seeded test data):

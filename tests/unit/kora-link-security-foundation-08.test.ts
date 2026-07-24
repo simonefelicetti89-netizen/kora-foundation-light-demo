@@ -87,7 +87,7 @@ describe('BLOCCO 1 — worker identity: no client-controlled p_worker_id [STATIC
     const sigEnd = sql036.indexOf(')', sigStart);
     const signature = sql036.slice(sigStart, sigEnd + 1);
     expect(signature).toContain('p_token_digest');
-    expect(signature).toContain('p_consent_version');
+    expect(signature).toContain('p_activation_notice_version');
     expect(signature).not.toMatch(/p_worker_id/);
     expect(signature).not.toMatch(/uuid/);
   });

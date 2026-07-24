@@ -15,8 +15,16 @@
 --              This file's own tables/policies are unchanged — Gate 4 status
 --              (worker self-select, company-facing SELECT) is exactly as open
 --              as before this pass · 2026-07-16
--- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
---              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
+-- Amended:     KORA-LINK-DPO-DECISIONS-09 — comment-only: table/column
+--              renames (link_consents → link_activation_acknowledgements)
+--              and, in a follow-on terminology cleanup pass, the
+--              p_consent_version → p_activation_notice_version parameter
+--              rename reflected in the FUNCTION SPEC B prose and TODO-DPO-04
+--              note below. This file's own tables/policies/grants are
+--              unchanged — Gate 4 status is exactly as open as before ·
+--              2026-07-16 / 2026-07-24
+-- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED;
+--              KORA-LINK-DPO-DECISIONS-09: the 4 genuine Gate 3/DPO blockers ratified — see 034 header)
 -- Gate:        This file (035) itself: Gate 2/4 OPEN, NOT reviewed, NOT applied to any database.
 --              Its dependency (034) closed its own engineering review at KL-19 — that does
 --              NOT extend to 035's own RLS design, which remains its own, separate review.
@@ -36,7 +44,7 @@
 -- Do not apply until:
 --   (1) 034_kora_link_schema.sql is formally approved by CTO (Gate 2 — engineering
 --       substance closed at KL-19, human CTO ratification still pending)
---   (2) DPO review of consent + delivery record model (Gate 3)
+--   (2) DPO review of activation-acknowledgement + delivery record model (Gate 3)
 --   (3) fn_public_lookup_link + fn_activate_link_for_worker routes are tested
 --   (4) Gate 2 and Gate 3 formally closed, and this file's own Gate 4 review completed
 --
@@ -639,15 +647,16 @@ CREATE POLICY "kl_delivery_admin_update"
 --   (renamed from link_consents, KORA-LINK-DPO-DECISIONS-09) after worker
 --   authenticates and explicitly acknowledges the KORA Link activation notice.
 -- CALLER: Next.js API route (authenticated worker session, server-side only)
--- INPUTS (KORA-LINK-S08 — updated, no p_worker_id; see below):
---   p_token_digest    text  — computed HMAC-SHA256 of the scanned token
---   p_consent_version text  — DPO-approved privacy notice version string
+-- INPUTS (KORA-LINK-S08 — updated, no p_worker_id; KORA-LINK-DPO-DECISIONS-09
+-- terminology cleanup — parameter renamed from p_consent_version; see below):
+--   p_token_digest              text  — computed HMAC-SHA256 of the scanned token
+--   p_activation_notice_version text  — DPO-ratified activation notice version string
 -- OUTPUTS:
 --   jsonb: { success: bool, link_id: uuid, error_code: text|null }
 -- PRIVACY CONSTRAINTS:
 --   MUST validate: authenticated worker's auth.uid() → worker_identity → tenant match
 --   MUST validate: token's tenant_id = worker's tenant_id (cross-tenant guard)
---   MUST validate: p_consent_version is a known DPO-approved string
+--   MUST validate: p_activation_notice_version is a known DPO-ratified string
 --   MUST NOT: return token_digest, batch_id, or assignment_id to client
 --   MUST atomically: INSERT link_assignments + link_activation_acknowledgements + UPDATE links.status
 -- IMPLEMENTATION NOTES:
@@ -664,8 +673,10 @@ CREATE POLICY "kl_delivery_admin_update"
 -- for the actual implementation.
 --
 -- KORA-LINK-S08: 036's fn_activate_link_for_worker signature is now
--- (p_token_digest text, p_consent_version text) — the p_worker_id parameter
--- this spec originally sketched is REMOVED, not merely validated. The
+-- (p_token_digest text, p_activation_notice_version text — renamed from
+-- p_consent_version by the KORA-LINK-DPO-DECISIONS-09 terminology cleanup
+-- pass) — the p_worker_id parameter this spec originally sketched is
+-- REMOVED, not merely validated. The
 -- "cross-schema JOIN in SECURITY DEFINER requires confirming RLS on personal
 -- schema allows it" concern this spec previously raised is resolved by the
 -- SECURITY DEFINER/superuser-owner mechanism noted above (already proven
@@ -739,9 +750,11 @@ CREATE POLICY "kl_delivery_admin_update"
 --               closed by this update.
 -- [TODO-RLS-06] DPO break-glass read on audit_log: design and approve access procedure.
 -- [RESOLVED KORA-LINK-DPO-DECISIONS-09] TODO-DPO-04: fn_activate_link_for_worker
---               consent_version (now activation_notice_version) validation list —
---               canonical value ratified: 'kora-link-activation-notice-v1.0'.
---               See 036 c_valid_consent_version and docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 4.
+--               activation_notice_version (renamed from consent_version)
+--               validation list — canonical value ratified:
+--               'kora-link-activation-notice-v1.0'. See 036
+--               c_valid_activation_notice_version and
+--               docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 4.
 
 
 NOTIFY pgrst, 'reload schema';

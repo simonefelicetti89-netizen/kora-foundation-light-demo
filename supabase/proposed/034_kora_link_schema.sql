@@ -26,6 +26,17 @@
 --              remaining items (DPIA prudential recommendation, worker
 --              self-service deactivation RPC, Gate 4 RLS) are tracked in
 --              docs/KORA_LINK_DPO_DECISIONS_09.md §9/§24.
+-- Amended:     KORA-LINK-DPO-DECISIONS-09 (terminology cleanup pass) —
+--              remaining "consent"-flavored identifiers not covered by the
+--              table/column rename above are also renamed, since 034-036
+--              have never been applied and have no real consumer:
+--              link_events.event_type value 'consent_accepted' →
+--              'activation_acknowledged'; residual prose ("explicit
+--              consent", "consent, and audit", status-comment wording on
+--              links/link_assignments) reworded to "activation
+--              acknowledgement" terminology. No schema/logic behavior
+--              change — comments and one CHECK-constrained enum literal
+--              only · 2026-07-24
 -- Gate:        Gate 2 SUBSTANTIVELY CLOSED (engineering) + Gate 3 DPO blockers
 --              RATIFIED 2026-07-16 (KORA-LINK-DPO-DECISIONS-09), Gate 3 overall
 --              NOT fully closed (see docs/KORA_LINK_DPO_DECISIONS_09.md)
@@ -128,7 +139,7 @@
 --   • Token format: kl1_<48 chars base62> — version prefix kl1_
 --   • TTL: pre_activation_expires_at = created_at + INTERVAL '180 days'
 --   • No TTL post-activation in v1 — only manual revocation
---   • Association token↔worker: server-side only, post login + explicit consent
+--   • Association token↔worker: server-side only, post login + explicit voluntary activation acknowledgement
 --   • Company visibility: aggregate counts only — never individual worker activity
 --   • Secret rotation: v1 uses stable secret. No key_version column.
 --     Emergency procedure: revoke all tokens + re-issue chips. See KL-16 docs.
@@ -168,7 +179,7 @@ CREATE SCHEMA IF NOT EXISTS kora_link;
 COMMENT ON SCHEMA kora_link IS
   'KL-05 — KORA Link physical-digital bridge schema. '
   'Isolated schema for NFC chip lifecycle, token digest storage, worker activation, '
-  'consent, and audit. '
+  'activation acknowledgement, and audit. '
   'partner_scans deferred to migration 036. '
   'RLS policies and SECURITY DEFINER functions are in 035_kora_link_rls.sql. '
   'KL-16 amended, KL-19 Gate 2 technically reviewed. Gate 2 substantively closed (engineering); Gate 3 (DPO) open. NOT applied to any database.';
@@ -326,8 +337,8 @@ CREATE TABLE IF NOT EXISTS kora_link.links (
                                               'generated',          -- token created, chip not yet in production
                                               'assigned_to_tenant', -- tenant assigned, chip in production
                                               'delivered',          -- chip physically handed to company
-                                              'activation_pending', -- worker scanning, consent not yet completed
-                                              'active',             -- worker activated + consent accepted
+                                              'activation_pending', -- worker scanning, activation notice not yet acknowledged
+                                              'active',             -- worker activated + activation notice acknowledged
                                               'suspended',          -- temporarily disabled by KORA_ADMIN
                                               'revoked',            -- permanently invalidated (lost/stolen/offboarding)
                                               'replaced',           -- superseded by a new token (see link_replacements)
@@ -450,7 +461,7 @@ CREATE TABLE IF NOT EXISTS kora_link.link_assignments (
   -- Assignment lifecycle state.
   status                text          NOT NULL DEFAULT 'pending'
                                       CHECK (status IN (
-                                        'pending',   -- consent started, not yet confirmed
+                                        'pending',   -- activation started, notice not yet acknowledged
                                         'active',    -- fully activated — worker can use the link
                                         'revoked',   -- worker or admin revoked the assignment
                                         'replaced',  -- assignment ended due to token replacement
@@ -662,7 +673,7 @@ CREATE TABLE IF NOT EXISTS kora_link.link_events (
                                   'delivered_to_company',
                                   'activation_attempted',
                                   'activation_completed',
-                                  'consent_accepted',
+                                  'activation_acknowledged',
                                   'quick_access',
                                   'revoked',
                                   'replaced',

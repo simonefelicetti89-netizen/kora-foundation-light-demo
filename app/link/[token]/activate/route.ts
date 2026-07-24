@@ -14,7 +14,7 @@ import { getKoraLinkReadiness, isKoraLinkActivationEnabled } from '@/lib/kora-li
 import { isValidTokenFormat } from '@/lib/kora-link/token';
 import {
   activateKoraLinkForWorker,
-  KORA_LINK_ACTIVATION_CONSENT_VERSION,
+  KORA_LINK_ACTIVATION_NOTICE_VERSION,
 } from '@/lib/kora-link/activation';
 import { assertSameOrigin } from '@/lib/security/origin';
 
@@ -55,25 +55,15 @@ export async function POST(
     return redirectWithOutcome(request, token, 'unauthenticated');
   }
 
-  // Consent confirmation — required checkbox in the activation form
-  let consentConfirmed = false;
-  try {
-    const form = await request.formData();
-    consentConfirmed = form.get('consent_confirmed') === 'true';
-  } catch {
-    return redirectWithOutcome(request, token, 'error');
-  }
-
-  if (!consentConfirmed) {
-    return redirectWithOutcome(request, token, 'consent_required');
-  }
-
+  // No separate checkbox confirmation — activation is a single voluntary action
+  // (submitting this form after reading the activation notice on the page).
+  // KORA-LINK-DPO-DECISIONS-09: a checkbox was considered and expressly excluded.
   const secret = process.env['KORA_LINK_TOKEN_SECRET'] ?? '';
 
   const result = await activateKoraLinkForWorker({
     token,
     workerId: worker.workerId,
-    consentVersion: KORA_LINK_ACTIVATION_CONSENT_VERSION,
+    activationNoticeVersion: KORA_LINK_ACTIVATION_NOTICE_VERSION,
     secret,
   });
 
@@ -86,7 +76,7 @@ export async function POST(
     case 'unavailable':
       return redirectWithOutcome(request, token, 'unavailable');
     case 'invalid_token':
-    case 'consent_required':
+    case 'activation_notice_required':
     case 'error':
       return redirectWithOutcome(request, token, 'error');
   }
