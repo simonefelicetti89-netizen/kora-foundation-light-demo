@@ -55,7 +55,7 @@ const OPEN_DECISIONS: OpenDecision[] = [
   },
   {
     id: 'request-fingerprint-hashing',
-    question: 'Meccanismo di hashing per request_fingerprint (algoritmo, salt, rotazione)',
+    question: 'Meccanismo di hashing per request_fingerprint — colonna rimossa in KORA-LINK-DPO-DECISIONS-09, v. docs/KORA_LINK_DPO_DECISIONS_09.md; badge invariato in attesa di risoluzione formale nel registro',
     owner: 'CTO',
     blockedGate: 'Gate 2',
   },
@@ -67,7 +67,7 @@ const OPEN_DECISIONS: OpenDecision[] = [
   },
   {
     id: 'delivered-to-label-semantics',
-    question: 'Semantica esatta del campo delivered_to_label (cosa rappresenta, chi lo popola, chi lo vede)',
+    question: 'Semantica esatta del campo delivery_channel (già delivered_to_label) — sostituito con enum ristretto in KORA-LINK-DPO-DECISIONS-09, v. docs/KORA_LINK_DPO_DECISIONS_09.md; badge invariato in attesa di risoluzione formale nel registro',
     owner: 'CTO',
     blockedGate: 'Gate 2',
   },

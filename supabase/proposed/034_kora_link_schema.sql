@@ -7,7 +7,39 @@
 -- Amended:     KORA-LINK-S3B — corrected stale RLS-035-K aggregate-view
 --              wording (superseded by 036's fn_company_link_status_aggregate
 --              RPC); comment-only, no schema/logic change · 2026-07-12
--- Gate:        Gate 2 SUBSTANTIVELY CLOSED (engineering) + Gate 3 OPEN (DPO/legal)
+-- Ratified:    KORA-LINK-DPO-DECISIONS-09 — titolare approved all 4 genuine
+--              Gate 3 (DPO) blockers · 2026-07-16. Changes: request_fingerprint
+--              column removed (deemed unnecessary — existing controls
+--              sufficient, see docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 2);
+--              kora_link.link_consents renamed to
+--              kora_link.link_activation_acknowledgements — consent_version →
+--              activation_notice_version, accepted_at → acknowledged_at,
+--              withdrawn_at → deactivated_at, status values 'accepted'/
+--              'withdrawn' → 'acknowledged'/'deactivated' (terminology
+--              alignment: this is a voluntary activation acknowledgement, not
+--              GDPR Art. 6(1)(a) consent — see docs/KORA_LINK_DPO_DECISIONS_09.md
+--              §5 and BLOCCO 3); link_delivery_records.delivered_to_label
+--              replaced by a structured delivery_channel enum (BLOCCO 5);
+--              category-based audit_log retention documented (BLOCCO 1).
+--              Legal basis: Art. 6(1)(f) legitimate interest (primary), not
+--              consent. Gate 3 is NOT fully closed by this ratification —
+--              remaining items (DPIA prudential recommendation, worker
+--              self-service deactivation RPC, Gate 4 RLS) are tracked in
+--              docs/KORA_LINK_DPO_DECISIONS_09.md §9/§24.
+-- Amended:     KORA-LINK-DPO-DECISIONS-09 (terminology cleanup pass) —
+--              remaining "consent"-flavored identifiers not covered by the
+--              table/column rename above are also renamed, since 034-036
+--              have never been applied and have no real consumer:
+--              link_events.event_type value 'consent_accepted' →
+--              'activation_acknowledged'; residual prose ("explicit
+--              consent", "consent, and audit", status-comment wording on
+--              links/link_assignments) reworded to "activation
+--              acknowledgement" terminology. No schema/logic behavior
+--              change — comments and one CHECK-constrained enum literal
+--              only · 2026-07-24
+-- Gate:        Gate 2 SUBSTANTIVELY CLOSED (engineering) + Gate 3 DPO blockers
+--              RATIFIED 2026-07-16 (KORA-LINK-DPO-DECISIONS-09), Gate 3 overall
+--              NOT fully closed (see docs/KORA_LINK_DPO_DECISIONS_09.md)
 --              — PROPOSED, NOT APPLIED TO ANY DATABASE.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
@@ -18,15 +50,21 @@
 -- resolved with documented rationale (see §OPEN TODOS below — "RESOLVED BY
 -- KL-19"). This is an engineering technical-review pass; a human CTO should
 -- still ratify these resolutions before promotion, but no further schema
--- engineering work blocks that ratification. Three items remain genuine
--- Gate 3 (DPO/legal) blockers — those cannot be resolved by engineering
--- judgment and are marked BLOCKER, not resolved, below.
+-- engineering work blocks that ratification. The 4 items that were genuine
+-- Gate 3 (DPO/legal) blockers have since been ratified by the titolare —
+-- KORA-LINK-DPO-DECISIONS-09, 2026-07-16 — see §OPEN TODOS below
+-- ("RESOLVED BY KORA-LINK-DPO-DECISIONS-09").
 -- The file remains PROPOSED. Do not promote to supabase/migrations/ until:
 --   (1) Human CTO ratifies the KL-19 resolutions below (formality — no open
 --       engineering questions remain)
---   (2) DPO review of privacy boundary and consent model (3 BLOCKER items)
+--   (2) [RATIFIED — KORA-LINK-DPO-DECISIONS-09] DPO review of privacy
+--       boundary and activation-acknowledgement model — the 4 items that
+--       were genuine BLOCKERs are ratified; Gate 3 overall remains open
+--       (DPIA prudential recommendation, worker self-service deactivation,
+--       Gate 4 RLS) — see docs/KORA_LINK_DPO_DECISIONS_09.md
 --   (3) Gate 2 formal sign-off (technical substance complete as of KL-19)
---   (4) Gate 3 closure (legal/privacy for real worker data)
+--   (4) Gate 3 closure (legal/privacy for real worker data — remaining items
+--       above, not the 4 ratified BLOCKERs)
 --
 -- DO NOT run `supabase db push`.
 -- DO NOT run `supabase migration up`.
@@ -52,14 +90,22 @@
 --   A-09:      Removed redundant idx_links_token_digest index
 --              (UNIQUE constraint already creates the btree index).
 --   A-10:      link_delivery_records kept with DPO note on delivered_to_label.
+--              [SUPERSEDED — KORA-LINK-DPO-DECISIONS-09] delivered_to_label
+--              replaced by a structured delivery_channel enum (see §9 below).
 --   A-11:      link_consents clarified as append-only consent events.
+--              [SUPERSEDED — KORA-LINK-DPO-DECISIONS-09] table renamed to
+--              link_activation_acknowledgements — this is a voluntary
+--              activation acknowledgement, not GDPR Art. 6(1)(a) consent
+--              (see §4 below and docs/KORA_LINK_DPO_DECISIONS_09.md §5/BLOCCO 3).
 --   A-12:      partner_scans deferred to migration 036 (see A-03).
 --
 -- Table set v1 after amendments: 9 tables (was 11)
 --   Removed:  public_lookup_attempts
 --   Deferred: partner_scans (→ 036), link_delivery_records (→ 036 if not needed)
---   Core 8:   link_batches, links, link_assignments, link_consents,
---             link_events, revocations, link_replacements, audit_log
+--   Core 8:   link_batches, links, link_assignments,
+--             link_activation_acknowledgements (KORA-LINK-DPO-DECISIONS-09,
+--             renamed from link_consents), link_events, revocations,
+--             link_replacements, audit_log
 --   Plus:     link_delivery_records (kept for pilot logistics)
 --
 -- DEPENDENCY
@@ -93,7 +139,7 @@
 --   • Token format: kl1_<48 chars base62> — version prefix kl1_
 --   • TTL: pre_activation_expires_at = created_at + INTERVAL '180 days'
 --   • No TTL post-activation in v1 — only manual revocation
---   • Association token↔worker: server-side only, post login + explicit consent
+--   • Association token↔worker: server-side only, post login + explicit voluntary activation acknowledgement
 --   • Company visibility: aggregate counts only — never individual worker activity
 --   • Secret rotation: v1 uses stable secret. No key_version column.
 --     Emergency procedure: revoke all tokens + re-issue chips. See KL-16 docs.
@@ -133,7 +179,7 @@ CREATE SCHEMA IF NOT EXISTS kora_link;
 COMMENT ON SCHEMA kora_link IS
   'KL-05 — KORA Link physical-digital bridge schema. '
   'Isolated schema for NFC chip lifecycle, token digest storage, worker activation, '
-  'consent, and audit. '
+  'activation acknowledgement, and audit. '
   'partner_scans deferred to migration 036. '
   'RLS policies and SECURITY DEFINER functions are in 035_kora_link_rls.sql. '
   'KL-16 amended, KL-19 Gate 2 technically reviewed. Gate 2 substantively closed (engineering); Gate 3 (DPO) open. NOT applied to any database.';
@@ -291,8 +337,8 @@ CREATE TABLE IF NOT EXISTS kora_link.links (
                                               'generated',          -- token created, chip not yet in production
                                               'assigned_to_tenant', -- tenant assigned, chip in production
                                               'delivered',          -- chip physically handed to company
-                                              'activation_pending', -- worker scanning, consent not yet completed
-                                              'active',             -- worker activated + consent accepted
+                                              'activation_pending', -- worker scanning, activation notice not yet acknowledged
+                                              'active',             -- worker activated + activation notice acknowledged
                                               'suspended',          -- temporarily disabled by KORA_ADMIN
                                               'revoked',            -- permanently invalidated (lost/stolen/offboarding)
                                               'replaced',           -- superseded by a new token (see link_replacements)
@@ -384,7 +430,8 @@ COMMENT ON COLUMN kora_link.links.tenant_id IS
 -- Server-side association between a token and a worker, created ONLY after:
 --   (1) Worker has an active session (authenticated)
 --   (2) Worker's tenant matches the token's batch tenant
---   (3) Worker has accepted the KORA Link privacy notice (link_consents record)
+--   (3) Worker has acknowledged the KORA Link activation notice
+--       (link_activation_acknowledgements record — KORA-LINK-DPO-DECISIONS-09)
 --
 -- PRIVACY INVARIANT — NEVER RELAX
 -- This table is the most sensitive in the schema.
@@ -414,7 +461,7 @@ CREATE TABLE IF NOT EXISTS kora_link.link_assignments (
   -- Assignment lifecycle state.
   status                text          NOT NULL DEFAULT 'pending'
                                       CHECK (status IN (
-                                        'pending',   -- consent started, not yet confirmed
+                                        'pending',   -- activation started, notice not yet acknowledged
                                         'active',    -- fully activated — worker can use the link
                                         'revoked',   -- worker or admin revoked the assignment
                                         'replaced',  -- assignment ended due to token replacement
@@ -463,7 +510,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_assignment_link_active
 
 COMMENT ON TABLE kora_link.link_assignments IS
   'KL-05 — Server-side token↔worker association. '
-  'Created ONLY after: authenticated worker session + tenant match + explicit consent. '
+  'Created ONLY after: authenticated worker session + tenant match + explicit activation acknowledgement. '
   'PRIVACY INVARIANT: NEVER accessible to company roles via any RLS path. '
   'RLS (035): SELECT only for kora_admin OR worker self. '
   'KL-16 amended, KL-19 Gate 2 technically reviewed. Gate 2 substantively closed (engineering); Gate 3 (DPO) open. NOT applied.';
@@ -478,91 +525,110 @@ COMMENT ON COLUMN kora_link.link_assignments.tenant_id IS
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 4. kora_link.link_consents
+-- 4. kora_link.link_activation_acknowledgements
 -- ═══════════════════════════════════════════════════════════════════════════════
+-- [RENAMED — KORA-LINK-DPO-DECISIONS-09, 2026-07-16] Formerly
+-- kora_link.link_consents. Terminology alignment, not a behavior change: the
+-- titolare ratified that this table records a voluntary confirmation of
+-- having read the KORA Link activation notice, NOT GDPR Art. 6(1)(a) consent
+-- (which the platform already does not use as a general/residual legal basis
+-- — see lib/legal/privacy-content.ts §5). Legal basis for the underlying
+-- treatments is Art. 6(1)(f) legitimate interest. See
+-- docs/KORA_LINK_DPO_DECISIONS_09.md §5 and BLOCCO 3.
 --
 -- PURPOSE
--- Records explicit worker consent to the KORA Link privacy notice.
--- A consent record must exist (status = 'accepted') before link_assignments
--- can be created. Withdrawal of consent triggers revocation of the assignment.
+-- Records the worker's explicit acknowledgement of the KORA Link activation
+-- notice. An acknowledgement record must exist (status = 'acknowledged')
+-- before link_assignments can be created. Deactivation ends the assignment.
 --
 -- APPEND-ONLY SEMANTICS (A-11)
--- Consent records are append-only events. Each state transition (pending →
--- accepted, accepted → withdrawn, etc.) should be modeled as a new record
--- in a future v2 event-sourced design. In v1, a single mutable record per
--- (worker, link, consent_version) is used for simplicity, with accepted_at
--- and withdrawn_at capturing the key timestamps.
--- The UNIQUE constraint prevents duplicate consent for the same combination.
+-- Acknowledgement records are append-only events. Each state transition
+-- (pending → acknowledged, acknowledged → deactivated, etc.) should be
+-- modeled as a new record in a future v2 event-sourced design. In v1, a
+-- single mutable record per (worker, link, activation_notice_version) is
+-- used for simplicity, with acknowledged_at and deactivated_at capturing the
+-- key timestamps. The UNIQUE constraint prevents duplicate records for the
+-- same combination.
 --
--- GDPR NOTE
--- consent_version must reference the exact version of the privacy notice
--- shown to the worker (text content approved by DPO before activation goes live).
--- Retention policy: to be defined with DPO (Gate 3).
+-- GDPR NOTE [RESOLVED — KORA-LINK-DPO-DECISIONS-09]
+-- activation_notice_version must reference the exact version of the
+-- activation notice shown to the worker. Canonical value ratified:
+-- 'kora-link-activation-notice-v1.0' (docs/KORA_LINK_DPO_DECISIONS_09.md
+-- BLOCCO 4). Retention: durata dell'assegnazione attiva + 24 mesi dopo la
+-- cessazione (docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 1, categoria 5/7).
+-- Retention enforcement job is not implemented by this schema — see
+-- audit_log RETENTION POLICY note below for the same caveat.
 
-CREATE TABLE IF NOT EXISTS kora_link.link_consents (
+CREATE TABLE IF NOT EXISTS kora_link.link_activation_acknowledgements (
   id                  uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
 
-  -- The token this consent relates to.
+  -- The token this acknowledgement relates to.
   link_id             uuid          NOT NULL
                                     REFERENCES kora_link.links (id)
                                     ON DELETE RESTRICT,
 
-  -- The assignment created as a result of this consent. Nullable until assignment committed.
+  -- The assignment created as a result of this acknowledgement. Nullable until assignment committed.
   assignment_id       uuid          NULL
                                     REFERENCES kora_link.link_assignments (id)
                                     ON DELETE SET NULL,
 
-  -- Tenant of the consenting worker.
+  -- Tenant of the acknowledging worker.
   tenant_id           uuid          NOT NULL,
 
-  -- Worker who gave or withdrew consent.
+  -- Worker who acknowledged or deactivated.
   -- FK POLICY (A-01/D-01): no FK in v1. Enforced by fn_kora_link_activate (035).
   -- Canonical target: personal.worker_identity(id).
   worker_id           uuid          NOT NULL,
 
-  -- Version identifier of the privacy notice shown to the worker.
-  -- Must match a known, DPO-approved version string (e.g., "kora-link-privacy-v1.0").
-  consent_version     text          NOT NULL CHECK (length(consent_version) > 0),
+  -- Version identifier of the activation notice shown to the worker.
+  -- Must match a known, DPO-ratified version string
+  -- (ratified: "kora-link-activation-notice-v1.0").
+  activation_notice_version  text   NOT NULL CHECK (length(activation_notice_version) > 0),
 
-  -- Consent lifecycle.
+  -- Acknowledgement lifecycle.
   status              text          NOT NULL DEFAULT 'pending'
                                     CHECK (status IN (
-                                      'pending',     -- worker initiated activation, notice not yet accepted
-                                      'accepted',    -- worker accepted — assignment can proceed
-                                      'withdrawn',   -- worker withdrew consent — assignment revoked
-                                      'superseded'   -- superseded by a newer consent version (re-consent flow)
+                                      'pending',       -- worker initiated activation, notice not yet acknowledged
+                                      'acknowledged',  -- worker acknowledged — assignment can proceed
+                                      'deactivated',   -- worker deactivated — assignment revoked
+                                      'superseded'     -- superseded by a newer notice version (re-acknowledgement flow)
                                     )),
 
-  accepted_at         timestamptz   NULL,
-  withdrawn_at        timestamptz   NULL,
+  acknowledged_at     timestamptz   NULL,
+  deactivated_at      timestamptz   NULL,
 
   created_at          timestamptz   NOT NULL DEFAULT now(),
 
-  -- One consent record per (worker, link, version) to prevent duplicates.
+  -- One acknowledgement record per (worker, link, version) to prevent duplicates.
   -- In v1: single mutable record per combination. v2: append-only event log.
-  CONSTRAINT uq_link_consent UNIQUE (worker_id, link_id, consent_version)
+  CONSTRAINT uq_link_activation_ack UNIQUE (worker_id, link_id, activation_notice_version)
 );
 
-CREATE INDEX IF NOT EXISTS idx_consents_link_id
-  ON kora_link.link_consents (link_id);
+CREATE INDEX IF NOT EXISTS idx_activation_acks_link_id
+  ON kora_link.link_activation_acknowledgements (link_id);
 
-CREATE INDEX IF NOT EXISTS idx_consents_worker_id
-  ON kora_link.link_consents (worker_id);
+CREATE INDEX IF NOT EXISTS idx_activation_acks_worker_id
+  ON kora_link.link_activation_acknowledgements (worker_id);
 
-COMMENT ON TABLE kora_link.link_consents IS
-  'KL-05 — Worker consent to KORA Link privacy notice. '
+COMMENT ON TABLE kora_link.link_activation_acknowledgements IS
+  'KL-05 — Worker acknowledgement of the KORA Link activation notice. '
+  'Renamed from link_consents by KORA-LINK-DPO-DECISIONS-09 (2026-07-16): this '
+  'is a voluntary activation acknowledgement, NOT GDPR Art. 6(1)(a) consent. '
+  'Legal basis for the underlying treatment: Art. 6(1)(f) legitimate interest. '
   'Required before link_assignments can be created. '
   'A-11: v1 uses single mutable record per (worker,link,version); v2 target: append-only events. '
-  'GDPR: consent_version must reference DPO-approved notice text. '
-  'Retention policy: define with DPO (Gate 3) before production apply. '
-  'KL-16 amended, KL-19 Gate 2 technically reviewed. Gate 2 substantively closed (engineering); Gate 3 (DPO) open. NOT applied.';
+  'activation_notice_version ratified value: kora-link-activation-notice-v1.0. '
+  'Retention: active assignment duration + 24 months post-cessation (see '
+  'docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 1) — enforcement job not yet implemented. '
+  'KL-16 amended, KL-19 Gate 2 technically reviewed, KORA-LINK-DPO-DECISIONS-09 ratified. '
+  'Gate 2 substantively closed (engineering); Gate 3 (DPO) overall still open (DPIA, Gate 4). NOT applied.';
 
-COMMENT ON COLUMN kora_link.link_consents.consent_version IS
-  'Version string of the privacy notice shown to the worker. '
-  'Must match a known, DPO-approved version (e.g. kora-link-privacy-v1.0). '
-  'Gate 3: DPO must approve notice text before this field can be populated in production.';
+COMMENT ON COLUMN kora_link.link_activation_acknowledgements.activation_notice_version IS
+  'Version string of the activation notice shown to the worker. '
+  'Ratified canonical value (KORA-LINK-DPO-DECISIONS-09): kora-link-activation-notice-v1.0. '
+  'Immutable once published — any substantive text change requires a new version string, never a silent edit.';
 
-COMMENT ON COLUMN kora_link.link_consents.worker_id IS
+COMMENT ON COLUMN kora_link.link_activation_acknowledgements.worker_id IS
   'FK POLICY (D-01): no FK in v1 — canonical target: personal.worker_identity(id). '
   'Enforced by fn_kora_link_activate (035).';
 
@@ -607,7 +673,7 @@ CREATE TABLE IF NOT EXISTS kora_link.link_events (
                                   'delivered_to_company',
                                   'activation_attempted',
                                   'activation_completed',
-                                  'consent_accepted',
+                                  'activation_acknowledged',
                                   'quick_access',
                                   'revoked',
                                   'replaced',
@@ -887,19 +953,36 @@ COMMENT ON COLUMN kora_link.link_replacements.worker_id IS
 --   • actor_id is stored as-is (UUID) — application layer is responsible for
 --     minimizing what is logged (avoid logging UUIDs that are unnecessary)
 --   • token_digest_prefix: first 8 chars of token_digest for correlation, not lookup
---   • request_fingerprint: hash of IP + user-agent, NOT raw IP (GDPR)
 --   • metadata JSONB: structured audit data — no PII beyond minimum necessary
 --   • Append-only enforced by RLS INSERT-only policy in 035
 --
--- RETENTION POLICY (A-05/D-05)
--- Retention policy: NOT defined in this schema. Duration must be approved by DPO (Gate 3).
--- Mechanism options: pg_cron, Supabase Edge Function scheduled, external archive.
--- INSERT-only enforced by RLS (035). No UPDATE, no DELETE policy in this file.
--- Implement retention job in a separate migration or Edge Function after Gate 3.
+-- RETENTION POLICY [RATIFIED — KORA-LINK-DPO-DECISIONS-09] (A-05/D-05)
+-- Category-based retention ratified by the titolare
+-- (docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 1) — NOT a single duration:
+--   • Security/anomaly events (ADMIN_OVERRIDE, BREAK_GLASS_ACCESS, forbidden/failed): 12 months
+--   • Creation events (BATCH_CREATED, TOKEN_GENERATED): 24 months
+--   • Delivery events: 12 months from delivery
+--   • Activation/rejection/revocation/replacement events: active assignment
+--     duration + 24 months post-cessation
+--   • Expiry events (never-activated chip): 6 months
+-- Mechanism: Supabase Edge Function scheduled (not pg_cron — avoids an extra
+-- Postgres extension for a pilot-scale table). Enforcement job is NOT
+-- implemented by this schema — see docs/KORA_LINK_DPO_DECISIONS_09.md §26
+-- for the pre-staging plan. INSERT-only enforced by RLS (035). No UPDATE,
+-- no DELETE policy in this file.
 --
--- DPO NOTE ON request_fingerprint
--- request_fingerprint field is nullable. Do not populate in production until DPO
--- confirms IP hashing strategy and GDPR legal basis for storing fingerprints.
+-- request_fingerprint [REMOVED — KORA-LINK-DPO-DECISIONS-09]
+-- The column previously specified here (nullable hash of IP+user-agent,
+-- never populated) has been removed. The necessity test in
+-- docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 2 found the existing controls
+-- (HMAC token space, Upstash rate limiting, TTL, origin guard, mandatory
+-- authentication, uniform not-found/unusable response) sufficient for a
+-- pilot of this scale — the same rationale A-06/D-06 already applied to
+-- removing public_lookup_attempts. If a future need for device-level
+-- anomaly detection emerges, introduce it as a NEW migration with: HMAC +
+-- server-side secret (never a naive hash), explicit tenant/purpose scope, key
+-- rotation, retention capped at the security category (12 months), and no
+-- application-facing exposure to any role.
 
 CREATE TABLE IF NOT EXISTS kora_link.audit_log (
   id                      uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -925,17 +1008,13 @@ CREATE TABLE IF NOT EXISTS kora_link.audit_log (
 
   -- Audit action description (enum-like text).
   -- Suggested values: BATCH_CREATED, TOKEN_GENERATED, ACTIVATION_ATTEMPTED,
-  --   ACTIVATION_COMPLETED, CONSENT_ACCEPTED, CONSENT_WITHDRAWN,
+  --   ACTIVATION_COMPLETED, ACTIVATION_ACKNOWLEDGED, ACTIVATION_DEACTIVATED,
   --   TOKEN_REVOKED, TOKEN_SUSPENDED, TOKEN_REPLACED, QUICK_ACCESS,
   --   BREAK_GLASS_ACCESS, ADMIN_OVERRIDE.
   action                  text          NOT NULL CHECK (length(action) > 0),
 
   -- Outcome category. E.g., 'ok', 'failed', 'not_found', 'forbidden'.
   result                  text          NULL,
-
-  -- Privacy-safe request fingerprint (hash of IP+UA, never raw IP).
-  -- NULL until DPO confirms hashing strategy and GDPR basis (Gate 3).
-  request_fingerprint     text          NULL,
 
   -- First 8 chars of token_digest for correlation. NOT the full digest.
   -- Useful for correlating audit events without storing full lookup key.
@@ -969,15 +1048,14 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_action
 COMMENT ON TABLE kora_link.audit_log IS
   'KL-05 — Privacy-safe append-only audit trail for KORA Link. '
   'Accessible only to KORA_ADMIN and DPO (via 035 RLS). '
-  'A-05/D-05: retention policy NOT in this schema. Duration: DPO Gate 3. '
-  'Mechanism: pg_cron or Edge Function, post-Gate-3. No DELETE in 034. '
+  'A-05/D-05 [RATIFIED KORA-LINK-DPO-DECISIONS-09]: category-based retention '
+  '(12/24 months by event category, see table-level note above), not a single '
+  'duration. Mechanism: Edge Function, post-Gate-3. No DELETE in 034. '
+  'request_fingerprint column REMOVED (KORA-LINK-DPO-DECISIONS-09, BLOCCO 2). '
   'INSERT-only: no UPDATE, no DELETE — enforced by 035 RLS. '
   'No FK on link_id: audit survives token deletion. '
-  'KL-16 amended, KL-19 Gate 2 technically reviewed. Gate 2 substantively closed (engineering); Gate 3 (DPO) open. NOT applied.';
-
-COMMENT ON COLUMN kora_link.audit_log.request_fingerprint IS
-  'Privacy-safe hash of IP+UA. NEVER raw IP. '
-  'NULL until DPO confirms hashing strategy (Gate 3).';
+  'KL-16 amended, KL-19 Gate 2 technically reviewed, KORA-LINK-DPO-DECISIONS-09 ratified. '
+  'Gate 2 substantively closed (engineering); Gate 3 (DPO) overall still open (DPIA, Gate 4). NOT applied.';
 
 COMMENT ON COLUMN kora_link.audit_log.token_digest_prefix IS
   'First 8 chars of token_digest — correlation only, not a lookup key. '
@@ -1006,16 +1084,20 @@ COMMENT ON COLUMN kora_link.audit_log.token_digest_prefix IS
 -- Optional record of chip physical delivery from KORA/batch to company,
 -- and from company to a team member, WITHOUT associating to a specific worker.
 -- Used for: batch fulfillment tracking, company operational reporting.
--- The delivery record uses 'delivered_to_label' (e.g., "HR Team", "Office Manager")
--- instead of a worker identity, to avoid creating an employer-visible
--- token↔worker mapping before the worker has activated and consented.
+-- The delivery record uses a structured 'delivery_channel' enum (e.g.
+-- 'hr_admin', 'office_reception') instead of a worker identity or free text,
+-- to avoid creating an employer-visible token↔worker mapping before the
+-- worker has activated and acknowledged the notice.
 --
--- DPO NOTE (A-10)
--- delivered_to_label MUST be a role/team label only (e.g., "HR Manager", "Office Reception").
--- NEVER a person's name, worker_id, or email.
+-- DPO NOTE (A-10) [RESOLVED — KORA-LINK-DPO-DECISIONS-09, BLOCCO 5]
+-- The free-text 'delivered_to_label' column (unbounded, risked site/role
+-- detail re-identifying an individual in a small office) has been replaced
+-- by 'delivery_channel', a restricted enum: 'hr_admin' | 'office_reception' |
+-- 'site_admin' | 'other'. This eliminates the re-identification risk at the
+-- schema level instead of relying on a procedural convention. NEVER a
+-- person's name, worker_id, or email — structurally impossible now, since
+-- the column only accepts one of 4 fixed values.
 -- This column MUST NOT be used to derive a token↔worker association.
--- DPO must approve the semantics of delivered_to_label before production use.
--- If this table is not needed for pilot logistics, defer to migration 036.
 
 CREATE TABLE IF NOT EXISTS kora_link.link_delivery_records (
   id                  uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1037,12 +1119,17 @@ CREATE TABLE IF NOT EXISTS kora_link.link_delivery_records (
   -- Admin who coordinated the delivery. Nullable for system-generated records.
   delivered_by        uuid          NULL REFERENCES auth.users (id) ON DELETE SET NULL,
 
-  -- Non-identifying label for the delivery recipient (e.g., "HR Manager", "Office Reception").
-  -- NEVER a worker name, worker ID, or email — this record must not create an
-  -- employer-visible token↔worker mapping before activation and consent.
-  -- DPO APPROVAL REQUIRED before populating in production (see table comment).
-  delivered_to_label  text          NULL
-                                    CHECK (delivered_to_label IS NULL OR length(delivered_to_label) < 200),
+  -- Structured, non-identifying delivery channel — restricted enum, not free
+  -- text (KORA-LINK-DPO-DECISIONS-09, BLOCCO 5). NEVER a worker name, worker
+  -- ID, or email — this record must not create an employer-visible
+  -- token↔worker mapping before activation and acknowledgement.
+  delivery_channel    text          NULL
+                                    CHECK (delivery_channel IS NULL OR delivery_channel IN (
+                                      'hr_admin',
+                                      'office_reception',
+                                      'site_admin',
+                                      'other'
+                                    )),
 
   delivered_at        timestamptz   NULL,
 
@@ -1059,16 +1146,19 @@ CREATE INDEX IF NOT EXISTS idx_delivery_records_tenant_id
 COMMENT ON TABLE kora_link.link_delivery_records IS
   'KL-05 — Optional chip physical delivery log. '
   'A-10: kept for pilot logistics; defer to 036 if not needed. '
-  'delivered_to_label: NEVER a worker name or ID — use role labels only. '
-  'DPO must approve delivered_to_label semantics before production use. '
-  'Prevents employer-visible token↔worker mapping before activation + consent. '
-  'KL-16 amended, KL-19 Gate 2 technically reviewed. Gate 2 substantively closed (engineering); Gate 3 (DPO) open. NOT applied.';
+  'delivery_channel is a restricted enum (KORA-LINK-DPO-DECISIONS-09, replacing '
+  'the free-text delivered_to_label): NEVER a worker name or ID. '
+  'Prevents employer-visible token↔worker mapping before activation + acknowledgement. '
+  'Retention: 12 months from delivery (docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 1, categoria 3). '
+  'KL-16 amended, KL-19 Gate 2 technically reviewed, KORA-LINK-DPO-DECISIONS-09 ratified. '
+  'Gate 2 substantively closed (engineering); Gate 3 (DPO) overall still open (DPIA, Gate 4). NOT applied.';
 
-COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
-  'Non-identifying role/team label ONLY (e.g., "HR Manager"). '
-  'NEVER worker name, worker ID, or email. '
-  'This column MUST NOT be used to derive token↔worker association. '
-  'DPO approval required before production use.';
+COMMENT ON COLUMN kora_link.link_delivery_records.delivery_channel IS
+  'Restricted enum: hr_admin | office_reception | site_admin | other. '
+  'Replaces the free-text delivered_to_label (KORA-LINK-DPO-DECISIONS-09, BLOCCO 5) — '
+  'eliminates the re-identification risk structurally, not just procedurally. '
+  'NEVER worker name, worker ID, or email — not representable by this column. '
+  'This column MUST NOT be used to derive token↔worker association.';
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -1099,7 +1189,8 @@ COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
 --   • COMPANY_ADMIN: NO ACCESS (zero tolerance — constitutional guarantee)
 --   • Others: deny-by-default
 --
--- [RLS-035-E] link_consents:
+-- [RLS-035-E] link_activation_acknowledgements (renamed from link_consents,
+--   KORA-LINK-DPO-DECISIONS-09):
 --   • KORA_ADMIN: SELECT
 --   • WORKER: SELECT + INSERT WHERE worker_id = kora.current_worker_id()
 --   • v1: single mutable record per (worker,link,version); INSERT + UPDATE status
@@ -1169,7 +1260,8 @@ COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
 --   fn_kora_link_activate(p_token_digest text, p_worker_id uuid, p_consent_version text)
 --     RETURNS jsonb
 --     — validates token, tenant match (explicit check — no FK), creates
---       link_assignments + link_consents atomically.
+--       link_assignments + link_activation_acknowledgements atomically
+--       (table renamed by KORA-LINK-DPO-DECISIONS-09).
 --
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- OPEN TODOS (updated post KL-19 Gate 2 technical review closure)
@@ -1241,37 +1333,39 @@ COMMENT ON COLUMN kora_link.link_delivery_records.delivered_to_label IS
 --   floor that mattered for the now-eliminated `UNIQUE NULLS NOT DISTINCT`
 --   construct (A-02). Confirmed via config, not by applying this migration.
 --
--- STILL OPEN — GENUINE GATE 3 (DPO/LEGAL) BLOCKERS, NOT ENGINEERING DECISIONS:
--- These cannot be resolved by a technical/CTO review — they require a DPO or
--- legal decision-maker. Do not attempt to resolve these with an engineering
--- default; doing so would be making a privacy/legal call without authority.
+-- RATIFIED BY KORA-LINK-DPO-DECISIONS-09 (2026-07-16) — FORMERLY GENUINE
+-- GATE 3 (DPO/LEGAL) BLOCKERS, NOT ENGINEERING DECISIONS:
+-- These could not be resolved by a technical/CTO review — they required a
+-- DPO/titolare decision. The titolare has now ratified all 4. Gate 3
+-- OVERALL remains open (DPIA prudential recommendation, worker self-service
+-- deactivation RPC, Gate 4 RLS) — see docs/KORA_LINK_DPO_DECISIONS_09.md §9/§24.
 --
--- [BLOCKER TODO-CTO-05 / GATE-3] audit_log retention duration: NOT resolved.
---   CTO's engineering portion of this TODO IS resolved — mechanism should be
---   a Supabase Edge Function on a schedule (Supabase's supported pattern),
---   not pg_cron (avoids enabling an extra Postgres extension for a pilot-
---   scale table). What remains genuinely blocked: the retention DURATION
---   itself is a GDPR data-minimization decision, not an engineering one.
---   DECISION NEEDED: how long may kora_link.audit_log rows be retained
---   before deletion/archival, and does that duration differ for different
---   actor_type/action values? Owner: DPO. Gate: 3.
+-- [RESOLVED KORA-LINK-DPO-DECISIONS-09] TODO-CTO-05 / GATE-3: audit_log
+--   retention duration. Category-based retention ratified (not a single
+--   duration) — see RETENTION POLICY note on kora_link.audit_log above and
+--   docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 1. Mechanism: Supabase Edge
+--   Function on a schedule. Enforcement job itself is not implemented by
+--   this schema — tracked in docs/KORA_LINK_DPO_DECISIONS_09.md §26.
 --
--- [BLOCKER TODO-DPO-01 / GATE-3] request_fingerprint hashing strategy:
---   DECISION NEEDED: confirm the IP+UA hashing approach (algorithm, salt
---   source, rotation) and the GDPR legal basis for storing it at all, before
---   this nullable column is ever populated in production. Owner: DPO. Gate: 3.
+-- [RESOLVED KORA-LINK-DPO-DECISIONS-09] TODO-DPO-01 / GATE-3:
+--   request_fingerprint hashing strategy. Resolved by REMOVING the column
+--   (necessity test found existing controls sufficient — see
+--   docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 2). Not populated, not needed.
 --
--- [BLOCKER TODO-DPO-02 / GATE-3] link_consents.consent_version content:
---   DECISION NEEDED: the actual privacy notice text for consent_version
---   'kora-link-privacy-v1.0' (already hardcoded as the sole valid value in
---   036's fn_activate_link_for_worker) must be drafted and approved before
---   any real worker can activate a chip. Owner: DPO/Legal. Gate: 3.
+-- [RESOLVED KORA-LINK-DPO-DECISIONS-09] TODO-DPO-02 / GATE-3:
+--   link_activation_acknowledgements.activation_notice_version content
+--   (formerly link_consents.consent_version). Canonical version string
+--   ratified: 'kora-link-activation-notice-v1.0' — the proposed notice text
+--   is in docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 3. Legal basis: Art.
+--   6(1)(f) legitimate interest, not consent (§5).
 --
--- [BLOCKER TODO-DPO-03 / GATE-3] link_delivery_records.delivered_to_label
---   semantics: DECISION NEEDED — DPO must approve the precise definition of
---   "non-identifying label" (e.g. is "HR Manager — Milan office" acceptable,
---   or does site-level detail risk re-identification in a small office?).
---   Owner: DPO. Gate: 3.
+-- [RESOLVED KORA-LINK-DPO-DECISIONS-09] TODO-DPO-03 / GATE-3:
+--   link_delivery_records delivery-recipient semantics (formerly
+--   delivered_to_label free text). Resolved by replacing the free-text
+--   column with a restricted enum (delivery_channel: hr_admin |
+--   office_reception | site_admin | other) — eliminates the
+--   re-identification risk structurally instead of relying on a procedural
+--   convention. See docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 5.
 --
 -- ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1291,10 +1385,25 @@ COMMIT;
 -- 2. Confirm all 9 tables created:
 --    SELECT table_name FROM information_schema.tables
 --    WHERE table_schema = 'kora_link' ORDER BY table_name;
---    Expected: audit_log, link_assignments, link_batches, link_consents,
---              link_delivery_records, link_events, link_replacements,
---              links, revocations
---    NOT expected: partner_scans (deferred to 036), public_lookup_attempts (removed)
+--    Expected: audit_log, link_activation_acknowledgements, link_assignments,
+--              link_batches, link_delivery_records, link_events,
+--              link_replacements, links, revocations
+--    NOT expected: partner_scans (deferred to 036), public_lookup_attempts (removed),
+--              link_consents (renamed to link_activation_acknowledgements,
+--              KORA-LINK-DPO-DECISIONS-09)
+--
+-- 2b. Confirm request_fingerprint no longer exists (KORA-LINK-DPO-DECISIONS-09):
+--    SELECT column_name FROM information_schema.columns
+--    WHERE table_schema = 'kora_link' AND table_name = 'audit_log'
+--      AND column_name = 'request_fingerprint';
+--    Expected: 0 rows.
+--
+-- 2c. Confirm delivered_to_label no longer exists and delivery_channel does
+--    (KORA-LINK-DPO-DECISIONS-09):
+--    SELECT column_name FROM information_schema.columns
+--    WHERE table_schema = 'kora_link' AND table_name = 'link_delivery_records'
+--      AND column_name IN ('delivered_to_label', 'delivery_channel');
+--    Expected: 1 row — delivery_channel only.
 --
 -- 3. Confirm UNIQUE(token_digest) on kora_link.links:
 --    SELECT indexname FROM pg_indexes

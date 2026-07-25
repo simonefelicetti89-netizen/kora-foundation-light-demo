@@ -15,8 +15,16 @@
 --              This file's own tables/policies are unchanged — Gate 4 status
 --              (worker self-select, company-facing SELECT) is exactly as open
 --              as before this pass · 2026-07-16
--- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED
---              — engineering TODOs resolved, 3 Gate 3/DPO blockers remain; see 034 header)
+-- Amended:     KORA-LINK-DPO-DECISIONS-09 — comment-only: table/column
+--              renames (link_consents → link_activation_acknowledgements)
+--              and, in a follow-on terminology cleanup pass, the
+--              p_consent_version → p_activation_notice_version parameter
+--              rename reflected in the FUNCTION SPEC B prose and TODO-DPO-04
+--              note below. This file's own tables/policies/grants are
+--              unchanged — Gate 4 status is exactly as open as before ·
+--              2026-07-16 / 2026-07-24
+-- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED;
+--              KORA-LINK-DPO-DECISIONS-09: the 4 genuine Gate 3/DPO blockers ratified — see 034 header)
 -- Gate:        This file (035) itself: Gate 2/4 OPEN, NOT reviewed, NOT applied to any database.
 --              Its dependency (034) closed its own engineering review at KL-19 — that does
 --              NOT extend to 035's own RLS design, which remains its own, separate review.
@@ -36,7 +44,7 @@
 -- Do not apply until:
 --   (1) 034_kora_link_schema.sql is formally approved by CTO (Gate 2 — engineering
 --       substance closed at KL-19, human CTO ratification still pending)
---   (2) DPO review of consent + delivery record model (Gate 3)
+--   (2) DPO review of activation-acknowledgement + delivery record model (Gate 3)
 --   (3) fn_public_lookup_link + fn_activate_link_for_worker routes are tested
 --   (4) Gate 2 and Gate 3 formally closed, and this file's own Gate 4 review completed
 --
@@ -50,7 +58,8 @@
 -- Requires 034_kora_link_schema.sql to be applied first.
 -- 034 must have created:
 --   kora_link.link_batches, kora_link.links, kora_link.link_assignments,
---   kora_link.link_consents, kora_link.link_events, kora_link.revocations,
+--   kora_link.link_activation_acknowledgements (renamed from link_consents,
+--   KORA-LINK-DPO-DECISIONS-09), kora_link.link_events, kora_link.revocations,
 --   kora_link.link_replacements, kora_link.audit_log, kora_link.link_delivery_records
 -- (9 tables — partner_scans and public_lookup_attempts NOT present)
 --
@@ -103,7 +112,7 @@
 --   ALTER TABLE kora_link.link_batches       DISABLE ROW LEVEL SECURITY;
 --   ALTER TABLE kora_link.links              DISABLE ROW LEVEL SECURITY;
 --   ALTER TABLE kora_link.link_assignments   DISABLE ROW LEVEL SECURITY;
---   ALTER TABLE kora_link.link_consents      DISABLE ROW LEVEL SECURITY;
+--   ALTER TABLE kora_link.link_activation_acknowledgements DISABLE ROW LEVEL SECURITY;
 --   ALTER TABLE kora_link.link_events        DISABLE ROW LEVEL SECURITY;
 --   ALTER TABLE kora_link.revocations        DISABLE ROW LEVEL SECURITY;
 --   ALTER TABLE kora_link.link_replacements  DISABLE ROW LEVEL SECURITY;
@@ -163,7 +172,7 @@ GRANT USAGE ON SCHEMA kora_link TO service_role;
 GRANT SELECT, INSERT, UPDATE ON kora_link.link_batches          TO service_role;
 GRANT SELECT, INSERT, UPDATE ON kora_link.links                 TO service_role;
 GRANT SELECT, INSERT, UPDATE ON kora_link.link_assignments      TO service_role;
-GRANT SELECT, INSERT         ON kora_link.link_consents         TO service_role;
+GRANT SELECT, INSERT         ON kora_link.link_activation_acknowledgements TO service_role;
 GRANT SELECT, INSERT         ON kora_link.link_events           TO service_role;
 GRANT SELECT, INSERT         ON kora_link.revocations           TO service_role;
 GRANT SELECT, INSERT         ON kora_link.link_replacements     TO service_role;
@@ -357,37 +366,40 @@ CREATE POLICY "kl_assignments_admin_update"
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 5. kora_link.link_consents
+-- 5. kora_link.link_activation_acknowledgements
 -- ═══════════════════════════════════════════════════════════════════════════════
+-- [RENAMED — KORA-LINK-DPO-DECISIONS-09] Formerly kora_link.link_consents.
+-- Terminology alignment only (see 034 §4): this records a voluntary
+-- activation-notice acknowledgement, not GDPR Art. 6(1)(a) consent.
 --
--- Consent records created only via activation function (future).
+-- Acknowledgement records created only via activation function.
 -- KORA_ADMIN: SELECT (for governance and DPO audit).
 -- Worker direct INSERT: NOT allowed in v1 — must go via fn_activate_link_for_worker.
 -- No UPDATE, no DELETE from any authenticated path.
 
-ALTER TABLE kora_link.link_consents ENABLE ROW LEVEL SECURITY;
-ALTER TABLE kora_link.link_consents FORCE ROW LEVEL SECURITY;
+ALTER TABLE kora_link.link_activation_acknowledgements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kora_link.link_activation_acknowledgements FORCE ROW LEVEL SECURITY;
 
-GRANT SELECT, INSERT ON kora_link.link_consents TO authenticated;
-REVOKE UPDATE, DELETE ON kora_link.link_consents FROM PUBLIC;
+GRANT SELECT, INSERT ON kora_link.link_activation_acknowledgements TO authenticated;
+REVOKE UPDATE, DELETE ON kora_link.link_activation_acknowledgements FROM PUBLIC;
 
-DROP POLICY IF EXISTS "kl_consents_admin_select" ON kora_link.link_consents;
-CREATE POLICY "kl_consents_admin_select"
-  ON kora_link.link_consents
+DROP POLICY IF EXISTS "kl_activation_acks_admin_select" ON kora_link.link_activation_acknowledgements;
+CREATE POLICY "kl_activation_acks_admin_select"
+  ON kora_link.link_activation_acknowledgements
   FOR SELECT
   TO authenticated
   USING (kora_link.is_kora_admin());
 
-DROP POLICY IF EXISTS "kl_consents_admin_insert" ON kora_link.link_consents;
-CREATE POLICY "kl_consents_admin_insert"
-  ON kora_link.link_consents
+DROP POLICY IF EXISTS "kl_activation_acks_admin_insert" ON kora_link.link_activation_acknowledgements;
+CREATE POLICY "kl_activation_acks_admin_insert"
+  ON kora_link.link_activation_acknowledgements
   FOR INSERT
   TO authenticated
   WITH CHECK (kora_link.is_kora_admin());
 
 -- APPEND-ONLY ENFORCEMENT
--- No UPDATE policy: existing consent records cannot be modified by any role.
--- Withdrawal is modeled as a new row (future v2 event-sourced design) or a status
+-- No UPDATE policy: existing acknowledgement records cannot be modified by any role.
+-- Deactivation is modeled as a new row (future v2 event-sourced design) or a status
 -- update via SECURITY DEFINER fn_revoke_link (which also updates link_assignments).
 -- Direct UPDATE is NOT allowed from any authenticated path in v1.
 --
@@ -536,7 +548,8 @@ CREATE POLICY "kl_audit_admin_insert"
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
 -- Optional pilot logistics table. KORA_ADMIN only.
--- DPO must approve delivered_to_label semantics before production use.
+-- delivery_channel is a restricted enum, ratified by KORA-LINK-DPO-DECISIONS-09
+-- (replaces the former free-text delivered_to_label — see 034 §9).
 -- No worker, no company direct access.
 
 ALTER TABLE kora_link.link_delivery_records ENABLE ROW LEVEL SECURITY;
@@ -567,8 +580,10 @@ CREATE POLICY "kl_delivery_admin_update"
   USING (kora_link.is_kora_admin())
   WITH CHECK (kora_link.is_kora_admin());
 
--- DPO GATE NOTE: Before populating delivered_to_label in production, DPO must
--- confirm that the label values used are non-identifying per GDPR Art. 4(1).
+-- DPO GATE NOTE [RESOLVED — KORA-LINK-DPO-DECISIONS-09]: delivery_channel is
+-- a restricted enum (hr_admin | office_reception | site_admin | other) — the
+-- non-identifying property is now enforced structurally, not by a
+-- pre-production DPO content review of free text.
 
 
 -- ═══════════════════════════════════════════════════════════════════════════════
@@ -628,20 +643,22 @@ CREATE POLICY "kl_delivery_admin_update"
 -- ────────────────────────────────────────────────────────────────────────────
 -- FUNCTION SPEC B: fn_activate_link_for_worker
 -- ────────────────────────────────────────────────────────────────────────────
--- PURPOSE: Atomically create link_assignments + link_consents after worker
---   authenticates and explicitly accepts the KORA Link privacy notice.
+-- PURPOSE: Atomically create link_assignments + link_activation_acknowledgements
+--   (renamed from link_consents, KORA-LINK-DPO-DECISIONS-09) after worker
+--   authenticates and explicitly acknowledges the KORA Link activation notice.
 -- CALLER: Next.js API route (authenticated worker session, server-side only)
--- INPUTS (KORA-LINK-S08 — updated, no p_worker_id; see below):
---   p_token_digest    text  — computed HMAC-SHA256 of the scanned token
---   p_consent_version text  — DPO-approved privacy notice version string
+-- INPUTS (KORA-LINK-S08 — updated, no p_worker_id; KORA-LINK-DPO-DECISIONS-09
+-- terminology cleanup — parameter renamed from p_consent_version; see below):
+--   p_token_digest              text  — computed HMAC-SHA256 of the scanned token
+--   p_activation_notice_version text  — DPO-ratified activation notice version string
 -- OUTPUTS:
 --   jsonb: { success: bool, link_id: uuid, error_code: text|null }
 -- PRIVACY CONSTRAINTS:
 --   MUST validate: authenticated worker's auth.uid() → worker_identity → tenant match
 --   MUST validate: token's tenant_id = worker's tenant_id (cross-tenant guard)
---   MUST validate: p_consent_version is a known DPO-approved string
+--   MUST validate: p_activation_notice_version is a known DPO-ratified string
 --   MUST NOT: return token_digest, batch_id, or assignment_id to client
---   MUST atomically: INSERT link_assignments + link_consents + UPDATE links.status
+--   MUST atomically: INSERT link_assignments + link_activation_acknowledgements + UPDATE links.status
 -- IMPLEMENTATION NOTES:
 --   worker_id resolved inside function from auth.uid() → personal.worker_identity
 --   Cross-schema SELECT does not require any new GRANT: the function owner
@@ -656,8 +673,10 @@ CREATE POLICY "kl_delivery_admin_update"
 -- for the actual implementation.
 --
 -- KORA-LINK-S08: 036's fn_activate_link_for_worker signature is now
--- (p_token_digest text, p_consent_version text) — the p_worker_id parameter
--- this spec originally sketched is REMOVED, not merely validated. The
+-- (p_token_digest text, p_activation_notice_version text — renamed from
+-- p_consent_version by the KORA-LINK-DPO-DECISIONS-09 terminology cleanup
+-- pass) — the p_worker_id parameter this spec originally sketched is
+-- REMOVED, not merely validated. The
 -- "cross-schema JOIN in SECURITY DEFINER requires confirming RLS on personal
 -- schema allows it" concern this spec previously raised is resolved by the
 -- SECURITY DEFINER/superuser-owner mechanism noted above (already proven
@@ -730,8 +749,12 @@ CREATE POLICY "kl_delivery_admin_update"
 --               docs/KORA_LINK_SECURITY_FOUNDATION_08.md. Gate 4 is not
 --               closed by this update.
 -- [TODO-RLS-06] DPO break-glass read on audit_log: design and approve access procedure.
--- [TODO-DPO-04] fn_activate_link_for_worker: DPO must approve consent_version validation list
---               before this function can be deployed with real privacy notice text.
+-- [RESOLVED KORA-LINK-DPO-DECISIONS-09] TODO-DPO-04: fn_activate_link_for_worker
+--               activation_notice_version (renamed from consent_version)
+--               validation list — canonical value ratified:
+--               'kora-link-activation-notice-v1.0'. See 036
+--               c_valid_activation_notice_version and
+--               docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 4.
 
 
 NOTIFY pgrst, 'reload schema';
@@ -757,9 +780,9 @@ COMMIT;
 --    ORDER BY tablename;
 --    Expected:
 --      audit_log            → 2 (admin_select, admin_insert)
+--      link_activation_acknowledgements → 2 (admin_select, admin_insert)
 --      link_assignments     → 3 (admin_select, admin_insert, admin_update)
 --      link_batches         → 3 (admin_select, admin_insert, admin_update)
---      link_consents        → 2 (admin_select, admin_insert)
 --      link_delivery_records → 3 (admin_select, admin_insert, admin_update)
 --      link_events          → 2 (admin_select, admin_insert)
 --      link_replacements    → 2 (admin_select, admin_insert)
@@ -776,7 +799,7 @@ COMMIT;
 --    SELECT tablename, cmd
 --    FROM pg_policies
 --    WHERE schemaname = 'kora_link'
---      AND tablename IN ('audit_log','link_events','revocations','link_replacements','link_consents')
+--      AND tablename IN ('audit_log','link_events','revocations','link_replacements','link_activation_acknowledgements')
 --      AND cmd = 'UPDATE';
 --    Expected: 0 rows.
 --

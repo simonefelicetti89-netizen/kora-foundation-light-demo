@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import {
   activateKoraLinkForWorker,
   buildKoraLinkActivationState,
-  KORA_LINK_ACTIVATION_CONSENT_VERSION,
+  KORA_LINK_ACTIVATION_NOTICE_VERSION,
   type KoraLinkActivationRpcClient,
   type KoraLinkActivationRpcRow,
 } from '@/lib/kora-link/activation';
@@ -19,7 +19,7 @@ import type { KoraLinkEnv } from '@/lib/kora-link/config';
 const VALID_SECRET = 'a'.repeat(KORA_LINK_SECRET_MIN_LENGTH);
 const VALID_TOKEN = 'kl1_' + 'A'.repeat(48);
 const VALID_WORKER_ID = '11111111-1111-4111-8111-111111111111';
-const VALID_CONSENT = KORA_LINK_ACTIVATION_CONSENT_VERSION;
+const VALID_CONSENT = KORA_LINK_ACTIVATION_NOTICE_VERSION;
 
 const ENABLED_ENV: KoraLinkEnv = { KORA_LINK_ACTIVATION_ENABLED: 'true' };
 const DISABLED_ENV: KoraLinkEnv = {};
@@ -80,7 +80,7 @@ describe('activateKoraLinkForWorker — activation flag', () => {
 
   it('returns disabled when KORA_LINK_ACTIVATION_ENABLED is absent', async () => {
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: DISABLED_ENV,
     });
     expect(result).toEqual({ state: 'disabled' });
@@ -89,7 +89,7 @@ describe('activateKoraLinkForWorker — activation flag', () => {
   it('never calls the RPC when activation is disabled', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: DISABLED_ENV, rpcClientOverride: client,
     });
     expect(calls.length).toBe(0);
@@ -97,7 +97,7 @@ describe('activateKoraLinkForWorker — activation flag', () => {
 
   it('is enabled only with the exact string "true" (not "1")', async () => {
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: { KORA_LINK_ACTIVATION_ENABLED: '1' },
     });
     expect(result).toEqual({ state: 'disabled' });
@@ -111,7 +111,7 @@ describe('activateKoraLinkForWorker — token validation', () => {
 
   it('returns invalid_token for a malformed token', async () => {
     const result = await activateKoraLinkForWorker({
-      token: 'not-a-real-token', workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: 'not-a-real-token', workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV,
     });
     expect(result).toEqual({ state: 'invalid_token' });
@@ -120,7 +120,7 @@ describe('activateKoraLinkForWorker — token validation', () => {
   it('never calls the RPC when the token is malformed', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: 'bad', workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: 'bad', workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(calls.length).toBe(0);
@@ -128,7 +128,7 @@ describe('activateKoraLinkForWorker — token validation', () => {
 
   it('returns invalid_token for an empty token', async () => {
     const result = await activateKoraLinkForWorker({
-      token: '', workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: '', workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV,
     });
     expect(result).toEqual({ state: 'invalid_token' });
@@ -136,7 +136,7 @@ describe('activateKoraLinkForWorker — token validation', () => {
 
   it('returns invalid_token when workerId is empty', async () => {
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: '', consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: '', activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV,
     });
     expect(result).toEqual({ state: 'invalid_token' });
@@ -145,7 +145,7 @@ describe('activateKoraLinkForWorker — token validation', () => {
   it('never calls the RPC when workerId is empty', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: '', consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: '', activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(calls.length).toBe(0);
@@ -153,30 +153,30 @@ describe('activateKoraLinkForWorker — token validation', () => {
 
 });
 
-// ── 4. activateKoraLinkForWorker — consent validation ─────────────────────────
+// ── 4. activateKoraLinkForWorker — activation notice version validation ───────
 
-describe('activateKoraLinkForWorker — consent validation', () => {
+describe('activateKoraLinkForWorker — activation notice version validation', () => {
 
-  it('returns consent_required when consentVersion is missing', async () => {
+  it('returns activation_notice_required when activationNoticeVersion is missing', async () => {
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: '',
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: '',
       secret: VALID_SECRET, env: ENABLED_ENV,
     });
-    expect(result).toEqual({ state: 'consent_required' });
+    expect(result).toEqual({ state: 'activation_notice_required' });
   });
 
-  it('returns consent_required when consentVersion does not match the current provisional version', async () => {
+  it('returns activation_notice_required when activationNoticeVersion does not match the ratified canonical version', async () => {
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: 'some-other-version',
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: 'some-other-version',
       secret: VALID_SECRET, env: ENABLED_ENV,
     });
-    expect(result).toEqual({ state: 'consent_required' });
+    expect(result).toEqual({ state: 'activation_notice_required' });
   });
 
-  it('never calls the RPC when consent is missing', async () => {
+  it('never calls the RPC when activationNoticeVersion is missing', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: '',
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: '',
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(calls.length).toBe(0);
@@ -191,7 +191,7 @@ describe('activateKoraLinkForWorker — RPC call shape', () => {
   it('calls fn_activate_link_for_worker exactly once with a valid request', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(calls.length).toBe(1);
@@ -201,7 +201,7 @@ describe('activateKoraLinkForWorker — RPC call shape', () => {
   it('never sends the raw token to the RPC — only the digest', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(calls[0].args.p_token_digest).not.toBe(VALID_TOKEN);
@@ -211,7 +211,7 @@ describe('activateKoraLinkForWorker — RPC call shape', () => {
   it('sends the exact HMAC digest of the token', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(calls[0].args.p_token_digest).toBe(computeDigest(VALID_TOKEN, VALID_SECRET));
@@ -220,30 +220,30 @@ describe('activateKoraLinkForWorker — RPC call shape', () => {
   it('never sends p_worker_id — KORA-LINK-S08: the DB function resolves the worker from auth.uid()', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(calls[0].args).not.toHaveProperty('p_worker_id');
     expect(JSON.stringify(calls[0].args)).not.toContain(VALID_WORKER_ID);
   });
 
-  it('sends the consentVersion as p_consent_version', async () => {
+  it('sends the activationNoticeVersion as p_activation_notice_version', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
-    expect(calls[0].args.p_consent_version).toBe(VALID_CONSENT);
+    expect(calls[0].args.p_activation_notice_version).toBe(VALID_CONSENT);
   });
 
   it('the RPC call args object has exactly 2 keys — no extra fields leaked, no worker id', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(Object.keys(calls[0].args).sort()).toEqual(
-      ['p_consent_version', 'p_token_digest'].sort()
+      ['p_activation_notice_version', 'p_token_digest'].sort()
     );
   });
 
@@ -256,7 +256,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('maps RPC status "activated" to state activated', async () => {
     const { client } = makeSpyClient({ data: { status: 'activated' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'activated' });
@@ -265,7 +265,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('maps RPC status "already_active" to state already_active', async () => {
     const { client } = makeSpyClient({ data: { status: 'already_active' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'already_active' });
@@ -274,7 +274,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('maps RPC status "unavailable" to state unavailable', async () => {
     const { client } = makeSpyClient({ data: { status: 'unavailable' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'unavailable' });
@@ -283,25 +283,25 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('maps RPC status "error" to state error', async () => {
     const { client } = makeSpyClient({ data: { status: 'error', reason: 'internal' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'error' });
   });
 
-  it('maps RPC status "consent_required" to state consent_required', async () => {
-    const { client } = makeSpyClient({ data: { status: 'consent_required' }, error: null });
+  it('maps RPC status "activation_notice_required" to state activation_notice_required', async () => {
+    const { client } = makeSpyClient({ data: { status: 'activation_notice_required' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
-    expect(result).toEqual({ state: 'consent_required' });
+    expect(result).toEqual({ state: 'activation_notice_required' });
   });
 
   it('maps an unrecognised RPC status to the safe unavailable fallback', async () => {
     const { client } = makeSpyClient({ data: { status: 'something_new' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'unavailable' });
@@ -310,7 +310,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('maps an RPC error to state unavailable', async () => {
     const { client } = makeSpyClient({ data: null, error: { message: 'db error' } });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'unavailable' });
@@ -319,7 +319,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('maps a null RPC data payload to state unavailable', async () => {
     const { client } = makeSpyClient({ data: null, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'unavailable' });
@@ -328,7 +328,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('maps an empty RPC row array to state unavailable', async () => {
     const { client } = makeSpyClient({ data: [], error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'unavailable' });
@@ -337,7 +337,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('accepts a row-array RPC response shape (normalizes to the first row)', async () => {
     const { client } = makeSpyClient({ data: [{ status: 'activated' }], error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'activated' });
@@ -345,7 +345,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
 
   it('returns unavailable when the RPC client throws', async () => {
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: throwingClient(),
     });
     expect(result).toEqual({ state: 'unavailable' });
@@ -354,7 +354,7 @@ describe('activateKoraLinkForWorker — RPC response handling', () => {
   it('returns unavailable when the digest computation fails (empty secret)', async () => {
     const { client, calls } = makeSpyClient({ data: { status: 'activated' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: '', env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(result).toEqual({ state: 'unavailable' });
@@ -370,7 +370,7 @@ describe('activateKoraLinkForWorker — result safety', () => {
   it('the result never includes the token secret value', async () => {
     const { client } = makeSpyClient({ data: { status: 'activated' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(JSON.stringify(result)).not.toContain(VALID_SECRET);
@@ -379,7 +379,7 @@ describe('activateKoraLinkForWorker — result safety', () => {
   it('the result never includes the raw token', async () => {
     const { client } = makeSpyClient({ data: { status: 'activated' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(JSON.stringify(result)).not.toContain(VALID_TOKEN);
@@ -388,7 +388,7 @@ describe('activateKoraLinkForWorker — result safety', () => {
   it('the result never includes the digest', async () => {
     const { client } = makeSpyClient({ data: { status: 'activated' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(JSON.stringify(result)).not.toContain(computeDigest(VALID_TOKEN, VALID_SECRET));
@@ -397,7 +397,7 @@ describe('activateKoraLinkForWorker — result safety', () => {
   it('the result never includes the worker id', async () => {
     const { client } = makeSpyClient({ data: { status: 'activated' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(JSON.stringify(result)).not.toContain(VALID_WORKER_ID);
@@ -406,7 +406,7 @@ describe('activateKoraLinkForWorker — result safety', () => {
   it('the result object only ever has a "state" key (and nothing else)', async () => {
     const { client } = makeSpyClient({ data: { status: 'activated' }, error: null });
     const result = await activateKoraLinkForWorker({
-      token: VALID_TOKEN, workerId: VALID_WORKER_ID, consentVersion: VALID_CONSENT,
+      token: VALID_TOKEN, workerId: VALID_WORKER_ID, activationNoticeVersion: VALID_CONSENT,
       secret: VALID_SECRET, env: ENABLED_ENV, rpcClientOverride: client,
     });
     expect(Object.keys(result)).toEqual(['state']);
@@ -414,17 +414,21 @@ describe('activateKoraLinkForWorker — result safety', () => {
 
 });
 
-// ── 8. KORA_LINK_ACTIVATION_CONSENT_VERSION ───────────────────────────────────
+// ── 8. KORA_LINK_ACTIVATION_NOTICE_VERSION ───────────────────────────────────
+// KORA-LINK-DPO-DECISIONS-09 (2026-07-16): titolare ratified the canonical
+// activation-notice version. Per docs/KORA_LINK_DPO_DECISIONS_09.md BLOCCO 4
+// governance rule, a ratified version string must never contain "draft".
 
-describe('KORA_LINK_ACTIVATION_CONSENT_VERSION', () => {
+describe('KORA_LINK_ACTIVATION_NOTICE_VERSION', () => {
 
   it('is a non-empty string', () => {
-    expect(typeof KORA_LINK_ACTIVATION_CONSENT_VERSION).toBe('string');
-    expect(KORA_LINK_ACTIVATION_CONSENT_VERSION.length).toBeGreaterThan(0);
+    expect(typeof KORA_LINK_ACTIVATION_NOTICE_VERSION).toBe('string');
+    expect(KORA_LINK_ACTIVATION_NOTICE_VERSION.length).toBeGreaterThan(0);
   });
 
-  it('is marked as a draft version (provisional, pending DPO approval)', () => {
-    expect(KORA_LINK_ACTIVATION_CONSENT_VERSION).toContain('draft');
+  it('is the DPO-ratified canonical activation-notice version, not a draft placeholder', () => {
+    expect(KORA_LINK_ACTIVATION_NOTICE_VERSION).toBe('kora-link-activation-notice-v1.0');
+    expect(KORA_LINK_ACTIVATION_NOTICE_VERSION).not.toContain('draft');
   });
 
 });
@@ -486,10 +490,10 @@ describe('buildKoraLinkActivationState', () => {
     expect(state).toBe('error');
   });
 
-  it('returns error when the outcome is consent_required', () => {
+  it('returns error when the outcome is activation_notice_required', () => {
     const state = buildKoraLinkActivationState({
       activationEnabled: true, lookupReady: true, workerAuthenticated: true,
-      activationOutcome: 'consent_required',
+      activationOutcome: 'activation_notice_required',
     });
     expect(state).toBe('error');
   });
@@ -517,8 +521,8 @@ describe('buildKoraLinkActivationState', () => {
   });
 
   it('is a pure function — never throws for any boolean/outcome combination', () => {
-    const outcomes: Array<'activating' | 'activated' | 'unavailable' | 'error' | 'consent_required' | undefined> =
-      [undefined, 'activating', 'activated', 'unavailable', 'error', 'consent_required'];
+    const outcomes: Array<'activating' | 'activated' | 'unavailable' | 'error' | 'activation_notice_required' | undefined> =
+      [undefined, 'activating', 'activated', 'unavailable', 'error', 'activation_notice_required'];
     for (const activationEnabled of [true, false]) {
       for (const lookupReady of [true, false]) {
         for (const workerAuthenticated of [true, false]) {

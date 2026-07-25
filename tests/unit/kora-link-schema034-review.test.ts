@@ -39,9 +39,9 @@ describe('KORA Link schema034 review — 034/035 table references stay consisten
     expect(tablesIn034.sort()).toEqual(
       [
         'audit_log',
+        'link_activation_acknowledgements',
         'link_assignments',
         'link_batches',
-        'link_consents',
         'link_delivery_records',
         'link_events',
         'link_replacements',

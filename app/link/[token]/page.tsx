@@ -25,7 +25,7 @@ const ACTIVATION_OUTCOMES: readonly KoraLinkActivationOutcome[] = [
   'activated',
   'unavailable',
   'error',
-  'consent_required',
+  'activation_notice_required',
 ];
 
 function parseActivationOutcome(raw: string | string[] | undefined): KoraLinkActivationOutcome | null {
@@ -298,7 +298,7 @@ function ActivationPanel({
       return (
         <div style={boxStyle} data-testid="kora-link-activation-error">
           <p style={{ ...noteStyle, color: '#B3261E' }}>
-            Non è stato possibile completare l&apos;attivazione. Verifica il consenso e riprova.
+            Non è stato possibile completare l&apos;attivazione. Riprova più tardi.
           </p>
         </div>
       );
@@ -319,16 +319,11 @@ function ActivationPanel({
           style={boxStyle}
           data-testid="kora-link-activation-ready"
         >
-          <p style={{ ...noteStyle, marginBottom: 10 }}>
+          <p style={{ ...noteStyle, marginBottom: 14 }}>
             Confermando, autorizzi l&apos;associazione di questo KORA Link al tuo profilo worker KORA.
+            Nessuna casella di conferma separata è richiesta: l&apos;invio di questo modulo è
+            l&apos;azione volontaria di attivazione.
           </p>
-          <p style={{ fontSize: 10.5, color: 'rgba(6,3,43,0.38)', margin: '0 0 12px', lineHeight: 1.5 }}>
-            Nota: il testo definitivo del consenso richiede approvazione DPO/legal.
-          </p>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: 'rgba(6,3,43,0.65)', marginBottom: 14 }}>
-            <input type="checkbox" name="consent_confirmed" value="true" required />
-            Ho letto e confermo il consenso
-          </label>
           <button
             type="submit"
             style={{

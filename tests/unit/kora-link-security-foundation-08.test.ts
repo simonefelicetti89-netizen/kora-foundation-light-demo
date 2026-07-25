@@ -87,7 +87,7 @@ describe('BLOCCO 1 — worker identity: no client-controlled p_worker_id [STATIC
     const sigEnd = sql036.indexOf(')', sigStart);
     const signature = sql036.slice(sigStart, sigEnd + 1);
     expect(signature).toContain('p_token_digest');
-    expect(signature).toContain('p_consent_version');
+    expect(signature).toContain('p_activation_notice_version');
     expect(signature).not.toMatch(/p_worker_id/);
     expect(signature).not.toMatch(/uuid/);
   });
@@ -331,11 +331,12 @@ describe('BLOCCO 3 — replacement chain [STATIC — unchanged by S08, re-verifi
   });
 });
 
-describe('BLOCCO 3 — retention gap remains explicitly documented, not silently resolved [STATIC]', () => {
-  it('034 still marks audit_log retention duration as a DPO/Gate-3 blocker (unchanged — not this sprint\'s scope)', () => {
-    expect(sql034).toContain('BLOCKER TODO-CTO-05 / GATE-3');
-    const idx = sql034.indexOf('BLOCKER TODO-CTO-05 / GATE-3');
-    expect(sql034.slice(idx, idx + 700)).toMatch(/retention DURATION[\s\S]*Owner: DPO\. Gate: 3\./);
+describe('BLOCCO 3 — retention decision — ratified by KORA-LINK-DPO-DECISIONS-09, not this sprint\'s scope to re-litigate [STATIC]', () => {
+  it('034 marks audit_log retention duration as resolved by KORA-LINK-DPO-DECISIONS-09 (category-based, not a single duration)', () => {
+    expect(sql034).toContain('TODO-CTO-05 / GATE-3');
+    const idx = sql034.indexOf('TODO-CTO-05 / GATE-3');
+    expect(sql034.slice(Math.max(0, idx - 60), idx)).toMatch(/RESOLVED KORA-LINK-DPO-DECISIONS-09/);
+    expect(sql034.slice(idx, idx + 700)).toMatch(/Category-based retention ratified/);
   });
 });
 
@@ -442,7 +443,7 @@ describe('BLOCCO 5 — no PUBLIC EXECUTE anywhere in 036 (unchanged invariant, r
 
 describe('BLOCCO 5 — RLS on all 9 tables unaffected by S08 (035 not touched at the table/policy level) [STATIC]', () => {
   const tables = [
-    'link_batches', 'links', 'link_assignments', 'link_consents',
+    'link_batches', 'links', 'link_assignments', 'link_activation_acknowledgements',
     'link_events', 'revocations', 'link_replacements', 'audit_log', 'link_delivery_records',
   ] as const;
 
