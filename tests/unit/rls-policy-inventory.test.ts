@@ -387,8 +387,33 @@ describe('RLS-02 — non-canonical worker-identity resolution (informational)', 
   });
 });
 
+// KORA Link RPC-only worker tables — named allowlist (Gate 4 §10).
+//
+// Gate 4 (KORA-LINK-RLS-LIVE-VALIDATION-11, docs/KORA_LINK_GATE_4_FINAL_REPORT.md
+// §10) validated LIVE against staging that these exact 5 kora_link tables have
+// a worker_id-shaped column but deliberately carry NO direct worker-self-select
+// RLS policy: worker access is routed exclusively through the kora_link.fn_*
+// SECURITY DEFINER RPC functions (supabase/migrations/036_kora_link_rpc_functions.sql),
+// which authenticate the caller via auth.uid() resolved against
+// personal.worker_identity before returning any row. This is a validated,
+// intentional design choice, not a gap.
+//
+// This allowlist names each table explicitly — it does NOT exclude the
+// kora_link schema wholesale — so any FUTURE worker-owned table (in kora_link
+// or any other schema) still fails the check below unless it is deliberately
+// added here with the same kind of documented justification.
+const KORA_LINK_RPC_ONLY_WORKER_TABLES = new Set([
+  'kora_link.link_activation_acknowledgements',
+  'kora_link.link_assignments',
+  'kora_link.link_events',
+  'kora_link.link_replacements',
+  'kora_link.revocations',
+]);
+
 describe('RLS-02 — worker-scoped tables have a worker-ownership-aware policy', () => {
-  const workerScoped = tableList.filter((t) => t.hasWorkerOwnershipColumn && t.policies.length > 0);
+  const workerScoped = tableList.filter(
+    (t) => t.hasWorkerOwnershipColumn && t.policies.length > 0 && !KORA_LINK_RPC_ONLY_WORKER_TABLES.has(t.table),
+  );
 
   it('sanity: at least one worker-scoped table was found', () => {
     expect(workerScoped.length).toBeGreaterThan(0);
@@ -403,6 +428,42 @@ describe('RLS-02 — worker-scoped tables have a worker-ownership-aware policy',
       ).toBe(true);
     });
   }
+});
+
+describe('RLS-02 — KORA Link RPC-only worker tables (named allowlist, Gate 4 §10)', () => {
+  const rpcFunctionsSrc = readFileSync(resolve(root, 'supabase/migrations/036_kora_link_rpc_functions.sql'), 'utf-8');
+
+  it('sanity: the allowlist names exactly the 5 tables Gate 4 §10 validated', () => {
+    expect(KORA_LINK_RPC_ONLY_WORKER_TABLES.size).toBe(5);
+  });
+
+  it('every allowlisted table still exists in the migration inventory with a worker ownership column', () => {
+    for (const table of KORA_LINK_RPC_ONLY_WORKER_TABLES) {
+      const t = inventory.get(table);
+      expect(t, `${table} not found in migration inventory — allowlist entry is stale`).toBeTruthy();
+      expect(
+        t?.hasWorkerOwnershipColumn,
+        `${table} no longer has a worker ownership column — allowlist entry is stale`,
+      ).toBe(true);
+    }
+  });
+
+  it('every allowlisted table still has zero direct worker-ownership-aware RLS policy (Gate 4 finding still holds)', () => {
+    for (const table of KORA_LINK_RPC_ONLY_WORKER_TABLES) {
+      const t = inventory.get(table);
+      if (!t) continue;
+      const anyWorkerAware = t.policies.some((p) => p.referencesWorkerOwnership);
+      expect(
+        anyWorkerAware,
+        `${table} now has a direct worker-ownership policy — if this is an intentional new design, remove it from KORA_LINK_RPC_ONLY_WORKER_TABLES instead of leaving both a policy and this exception in place`,
+      ).toBe(false);
+    }
+  });
+
+  it('kora_link.fn_* RPC functions authenticate the caller via auth.uid() resolved against personal.worker_identity', () => {
+    expect(rpcFunctionsSrc).toMatch(/auth\.uid\(\)/);
+    expect(rpcFunctionsSrc).toMatch(/personal\.worker_identity/);
+  });
 });
 
 // ── 5. Blanket-admin / USING(true) detector (informational — reported, not failed)

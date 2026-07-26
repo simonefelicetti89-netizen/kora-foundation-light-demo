@@ -38,38 +38,41 @@
 --              change — comments and one CHECK-constrained enum literal
 --              only · 2026-07-24
 -- Gate:        Gate 2 SUBSTANTIVELY CLOSED (engineering) + Gate 3 DPO blockers
---              RATIFIED 2026-07-16 (KORA-LINK-DPO-DECISIONS-09), Gate 3 overall
---              NOT fully closed (see docs/KORA_LINK_DPO_DECISIONS_09.md)
---              — PROPOSED, NOT APPLIED TO ANY DATABASE.
+--              RATIFIED 2026-07-16 (KORA-LINK-DPO-DECISIONS-09) + Gate 4 (RLS,
+--              privilege, lifecycle, concurrency) VALIDATED LIVE against
+--              staging on 2026-07-26 (KORA-LINK-RLS-LIVE-VALIDATION-11, see
+--              docs/KORA_LINK_GATE_4_FINAL_REPORT.md — C1-C10, 400 behavioral
+--              assertions + 30 local concurrency iterations + 3 live races +
+--              1 rollback-recovery test, all PASS). Promoted to
+--              supabase/migrations/ by KORA-LINK-MIGRATION-FORMALIZATION-12.
+--              Gate 3 overall remains open (DPIA prudential recommendation,
+--              worker self-service deactivation RPC — see
+--              docs/KORA_LINK_DPO_DECISIONS_09.md) — this does not block the
+--              schema promotion below, which is a technical/history action.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- STATUS: PROPOSED_GATE2_TECHNICALLY_REVIEWED
+-- STATUS: CANONICAL_APPLIED
 -- ─────────────────────────────────────────────────────────────────────────────
--- KL-19 closes the ENGINEERING/technical portion of Gate 2 review: every
--- TODO-CTO item that was a pure engineering/architecture tradeoff has been
--- resolved with documented rationale (see §OPEN TODOS below — "RESOLVED BY
--- KL-19"). This is an engineering technical-review pass; a human CTO should
--- still ratify these resolutions before promotion, but no further schema
--- engineering work blocks that ratification. The 4 items that were genuine
--- Gate 3 (DPO/legal) blockers have since been ratified by the titolare —
--- KORA-LINK-DPO-DECISIONS-09, 2026-07-16 — see §OPEN TODOS below
--- ("RESOLVED BY KORA-LINK-DPO-DECISIONS-09").
--- The file remains PROPOSED. Do not promote to supabase/migrations/ until:
---   (1) Human CTO ratifies the KL-19 resolutions below (formality — no open
---       engineering questions remain)
---   (2) [RATIFIED — KORA-LINK-DPO-DECISIONS-09] DPO review of privacy
---       boundary and activation-acknowledgement model — the 4 items that
---       were genuine BLOCKERs are ratified; Gate 3 overall remains open
---       (DPIA prudential recommendation, worker self-service deactivation,
---       Gate 4 RLS) — see docs/KORA_LINK_DPO_DECISIONS_09.md
---   (3) Gate 2 formal sign-off (technical substance complete as of KL-19)
---   (4) Gate 3 closure (legal/privacy for real worker data — remaining items
---       above, not the 4 ratified BLOCKERs)
---
--- DO NOT run `supabase db push`.
--- DO NOT run `supabase migration up`.
--- DO NOT apply to staging or production.
--- DO NOT copy to supabase/migrations/ without CTO + DPO sign-off.
+-- This migration is promoted and canonical. It was already live on staging
+-- (haqf****jl) before this promotion — KORA-LINK-MIGRATION-FORMALIZATION-12
+-- reconciles supabase/migrations/ and the remote migration history
+-- (`supabase migration repair --status applied 034`) with that already-applied
+-- state; it does not re-run this DDL. KL-19 closed the engineering/technical
+-- portion of Gate 2 review (see §OPEN TODOS below — "RESOLVED BY KL-19"). The
+-- 4 items that were genuine Gate 3 (DPO/legal) blockers were ratified by the
+-- titolare — KORA-LINK-DPO-DECISIONS-09, 2026-07-16 — see §OPEN TODOS below
+-- ("RESOLVED BY KORA-LINK-DPO-DECISIONS-09"). Gate 4 (this file's own RLS/
+-- privilege/lifecycle/concurrency behavior) was validated live against
+-- staging by KORA-LINK-RLS-LIVE-VALIDATION-11 — see
+-- docs/KORA_LINK_GATE_4_FINAL_REPORT.md for full evidence. Remaining open
+-- items, tracked independently of this promotion:
+--   (1) Gate 3 overall closure (DPIA prudential recommendation, worker
+--       self-service deactivation RPC) — see docs/KORA_LINK_DPO_DECISIONS_09.md
+--   (2) Migration formalization follow-through for 032/033 (already-applied,
+--       previously unregistered canonical migrations reconciled in the same
+--       sprint as this file's promotion — see
+--       docs/KORA_LINK_GATE_4_FINAL_REPORT.md and the KORA-LINK-MIGRATION-
+--       FORMALIZATION-12 plan)
 --
 -- KL-16 AMENDMENTS APPLIED (internal Engineering provisional)
 -- ─────────────────────────────────────────────────────────────────────────────

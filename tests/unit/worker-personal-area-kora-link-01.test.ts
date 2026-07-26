@@ -143,12 +143,15 @@ describe('15-16. no KORA Link flags modified', () => {
   });
 });
 
+// Promoted by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): 034/035/036
+// now live under supabase/migrations/, not supabase/proposed/ — see
+// docs/KORA_LINK_GATE_4_FINAL_REPORT.md.
 describe('17-19. 034/035/036 and migrations remain untouched', () => {
-  it('034/035/036 proposed SQL files still exist and are still documented as proposed', () => {
+  it('034/035/036 canonical SQL files still exist under supabase/migrations/', () => {
     for (const file of [
-      'supabase/proposed/034_kora_link_schema.sql',
-      'supabase/proposed/035_kora_link_rls.sql',
-      'supabase/proposed/036_kora_link_rpc_functions.sql',
+      'supabase/migrations/034_kora_link_schema.sql',
+      'supabase/migrations/035_kora_link_rls.sql',
+      'supabase/migrations/036_kora_link_rpc_functions.sql',
     ]) {
       expect(() => readSource(file)).not.toThrow();
     }

@@ -296,22 +296,22 @@ describe('Partner Activity Catalog 01 — navigation registers the catalog under
 describe('Partner Activity Catalog 01 — proposed SQL remains untouched, unapplied, and privacy-invariant', () => {
   it('034/035/036 are still readable under supabase/proposed/', () => {
     for (const file of [
-      'supabase/proposed/034_kora_link_schema.sql',
-      'supabase/proposed/035_kora_link_rls.sql',
-      'supabase/proposed/036_kora_link_rpc_functions.sql',
+      'supabase/migrations/034_kora_link_schema.sql',
+      'supabase/migrations/035_kora_link_rls.sql',
+      'supabase/migrations/036_kora_link_rpc_functions.sql',
     ]) {
       expect(() => readSource(file)).not.toThrow();
     }
   });
 
   it('worker self-select on link_assignments remains commented out (inactive)', () => {
-    const rls = readSource('supabase/proposed/035_kora_link_rls.sql');
+    const rls = readSource('supabase/migrations/035_kora_link_rls.sql');
     expect(rls).toMatch(/Worker SELECT self-only — BLOCKED until activation function is ready/);
     expect(rls).toMatch(/-- CREATE POLICY "kl_assignments_worker_self_select"/);
   });
 
   it('no direct company-facing table SELECT policy exists or is planned', () => {
-    const rls = readSource('supabase/proposed/035_kora_link_rls.sql');
+    const rls = readSource('supabase/migrations/035_kora_link_rls.sql');
     expect(rls).toMatch(/No\s*\n?-- direct company table SELECT policy exists here or is planned/);
   });
 });

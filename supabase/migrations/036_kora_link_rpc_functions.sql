@@ -10,12 +10,26 @@
 --              established pattern in migration 020,
 --              fn_redistribute_worker_pib). Adds the previously-missing
 --              worker-tenant ↔ link-tenant boundary check. fn_activate_link_
---              for_worker and fn_company_link_status_aggregate now write to
---              kora_link.audit_log. fn_company_link_status_aggregate now
+--              for_worker now writes to kora_link.audit_log, on its success and
+--              tenant-mismatch paths only (not on unauthenticated or generic
+--              unavailable exits). fn_company_link_status_aggregate now
 --              applies the canonical safe_aggregation_threshold (10, matches
 --              lib/constants/kora.ts and migration 015 [G2]) to every status
 --              bucket. See [RESOLVED KORA-LINK-S08] markers below and
 --              docs/KORA_LINK_SECURITY_FOUNDATION_08.md · 2026-07-16
+-- Corrected:   KORA-LINK-MIGRATION-FORMALIZATION-12 — documentation drift fix
+--              (comment-only, no behavior change): the line above previously
+--              also claimed fn_company_link_status_aggregate writes to
+--              kora_link.audit_log. It does not, on any path (success or
+--              denial) — confirmed by direct code review and by live
+--              behavioral testing in KORA-LINK-RLS-LIVE-VALIDATION-11 (Gate 4,
+--              C8.16/C9, see docs/KORA_LINK_GATE_4_FINAL_REPORT.md §11 and
+--              §10 finding 7). Gate 4 validated the function's behavior
+--              exactly as implemented, without audit_log — adding that write
+--              now would change already-validated logic, so the header claim
+--              is corrected instead of the code. See
+--              docs/KORA_LINK_GATE_4_FINAL_REPORT.md §14.C for the decision
+--              record · 2026-07-26
 -- Amended:     KORA-LINK-DPO-DECISIONS-09 — titolare ratified the consent_
 --              version whitelist decision ([TODO-RPC-03]): canonical value
 --              'kora-link-activation-notice-v1.0' (not consent, Art. 6(1)(f)
@@ -40,41 +54,46 @@
 --              KORA-LINK-DPO-DECISIONS-09, 2026-07-16: the 4 genuine Gate 3/DPO
 --              blockers ratified — see 034 header. Gate 3 overall still open.)
 --              035_kora_link_rls.sql    (PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING — still open, Gate 4)
--- Gate:        This file (036) itself: Gate 2 OPEN + Gate 3 OPEN, NOT reviewed, NOT applied.
---              034's own engineering review closed at KL-19 — that does NOT extend to 036.
---              KORA-LINK-S3A is a draft-only grant-hardening pass — it does NOT close
---              Gate 2 or Gate 3 for this file. KORA-LINK-SECURITY-FOUNDATION-08 closes
---              [TODO-RPC-02] and [TODO-RPC-04] as engineering fixes (see below); KORA-LINK-
---              DPO-DECISIONS-09 closes [TODO-RPC-03] as a ratified DPO decision. None of
---              these close Gate 2, Gate 3, or Gate 4 overall; [TODO-RPC-01] remains an open
---              CTO decision, and this migration is still NOT applied to any database.
+-- Gate:        This file (036) — Gate 4 (all 7 functions: is_kora_admin,
+--              fn_is_valid_token_digest, fn_public_lookup_link,
+--              fn_activate_link_for_worker, fn_revoke_link, fn_replace_link,
+--              fn_company_link_status_aggregate) VALIDATED LIVE against
+--              staging on 2026-07-26 (KORA-LINK-RLS-LIVE-VALIDATION-11, see
+--              docs/KORA_LINK_GATE_4_FINAL_REPORT.md). KORA-LINK-SECURITY-
+--              FOUNDATION-08 closed [TODO-RPC-02] and [TODO-RPC-04] as
+--              engineering fixes; KORA-LINK-DPO-DECISIONS-09 closed
+--              [TODO-RPC-03] as a ratified DPO decision. [TODO-RPC-01] (anon
+--              GRANT on fn_public_lookup_link vs. service-role-only path) was
+--              exercised as anon-granted during Gate 4 (C1) and found
+--              privacy-safe as implemented — this promotion does not revisit
+--              that CTO-level product decision, only confirms the currently
+--              implemented behavior was validated. Promoted to
+--              supabase/migrations/ by KORA-LINK-MIGRATION-FORMALIZATION-12.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- STATUS: PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING
+-- STATUS: CANONICAL_APPLIED
 -- ─────────────────────────────────────────────────────────────────────────────
--- This file is a DESIGN DRAFT. Internal Engineering provisional — NOT CTO-approved.
--- KL-19 (2026-07-04) reviewed and closed 034's own engineering TODOs — it did NOT
--- review or change the RPC functions in this file. KORA-LINK-SECURITY-FOUNDATION-08
--- (2026-07-16) DID change two function bodies in this file — see amendment note above
--- and [RESOLVED KORA-LINK-S08] markers — closing two concrete Gate 07 pilot-readiness
--- blockers found in docs/KORA_LINK_DECISION_GATE_07.md. This remains a technical/
--- engineering hardening pass: it does not constitute CTO ratification or DPO review.
--- Do not apply until:
---   (1) 034 formally approved by CTO (Gate 2 — engineering substance closed at KL-19,
---       human CTO ratification still pending)
---   (2) 035 RLS applied and smoke-tested on staging
---   (3) DPO review of activation-acknowledgement model and public lookup response (Gate 3)
---   (4) All GRANT decisions confirmed by CTO (especially anon access to public lookup)
---   (5) Integration tests written and passing on staging
---   (6) This file's own KORA-LINK-SECURITY-FOUNDATION-08 changes are reviewed by a
---       human CTO — an engineering session hardened this file, a human has not yet
---       ratified it
---
--- DO NOT run `supabase db push`.
--- DO NOT run `supabase migration up`.
--- DO NOT copy to supabase/migrations/ without CTO + DPO sign-off.
--- DO NOT apply to staging or production.
--- DO NOT call these functions from runtime routes until all gates are closed.
+-- This migration is promoted and canonical. It was already live on staging
+-- (haqf****jl) before this promotion — KORA-LINK-MIGRATION-FORMALIZATION-12
+-- reconciles supabase/migrations/ and the remote migration history
+-- (`supabase migration repair --status applied 036`) with that already-applied
+-- state; it does not re-run this DDL. KL-19 (2026-07-04) reviewed and closed
+-- 034's own engineering TODOs. KORA-LINK-SECURITY-FOUNDATION-08 (2026-07-16)
+-- changed two function bodies in this file — see amendment note above and
+-- [RESOLVED KORA-LINK-S08] markers — closing two concrete Gate 07 pilot-
+-- readiness blockers found in docs/KORA_LINK_DECISION_GATE_07.md. All 7
+-- functions in this file were exercised behaviorally and live by
+-- KORA-LINK-RLS-LIVE-VALIDATION-11 across every role (anon, WORKER,
+-- COMPANY_ADMIN, COMPANY_VIEWER, PARTNER, KORA_ADMIN, service_role) — see
+-- docs/KORA_LINK_GATE_4_FINAL_REPORT.md for full evidence. Remaining open
+-- items, tracked independently of this promotion:
+--   (1) Gate 3 overall closure (DPIA prudential recommendation, worker
+--       self-service deactivation RPC) — see docs/KORA_LINK_DPO_DECISIONS_09.md
+--   (2) fn_revoke_link/fn_replace_link do not write audit_log on denied
+--       attempts (Gate 4 finding, not a defect — see
+--       docs/KORA_LINK_GATE_4_FINAL_REPORT.md §10 findings 5/6); left as a
+--       future decision (§14.D of that report), not addressed by this
+--       promotion
 --
 -- FUNCTIONS DEFINED IN THIS FILE
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -197,10 +216,10 @@ BEGIN;
 DO $$
 BEGIN
   RAISE NOTICE
-    '036_kora_link_rpc_functions: PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING. '
-    'APPLY ONLY after: Gate 2 CTO sign-off + Gate 3 DPO review + '
-    '034 applied + 035 applied and tested on staging. '
-    'DO NOT call these functions from runtime routes before all gates are closed.';
+    '036_kora_link_rpc_functions: CANONICAL_APPLIED. Gate 4 validated live '
+    'against staging by KORA-LINK-RLS-LIVE-VALIDATION-11 — see '
+    'docs/KORA_LINK_GATE_4_FINAL_REPORT.md. Gate 3 overall (DPIA, worker '
+    'self-service deactivation) remains open independently of this apply.';
 END;
 $$;
 

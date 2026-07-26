@@ -152,11 +152,14 @@ describe('23-24. no KORA Link flags or gates 034/035/036 touched', () => {
     expect(source).not.toMatch(/KORA_LINK_DB_LOOKUP_ENABLED\s*=\s*(?:true|'true'|"true")/);
     expect(source).not.toMatch(/KORA_LINK_ACTIVATION_ENABLED\s*=\s*(?:true|'true'|"true")/);
   });
-  it('034/035/036 proposed SQL files still exist, untouched in scope', () => {
+  // Promoted by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): 034/035/036
+  // now live under supabase/migrations/, not supabase/proposed/ — see
+  // docs/KORA_LINK_GATE_4_FINAL_REPORT.md. Untouched in scope still holds.
+  it('034/035/036 canonical SQL files still exist, untouched in scope', () => {
     for (const file of [
-      'supabase/proposed/034_kora_link_schema.sql',
-      'supabase/proposed/035_kora_link_rls.sql',
-      'supabase/proposed/036_kora_link_rpc_functions.sql',
+      'supabase/migrations/034_kora_link_schema.sql',
+      'supabase/migrations/035_kora_link_rls.sql',
+      'supabase/migrations/036_kora_link_rpc_functions.sql',
     ]) {
       expect(() => readSource(file)).not.toThrow();
     }

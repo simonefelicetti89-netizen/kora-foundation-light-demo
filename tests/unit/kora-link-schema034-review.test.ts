@@ -23,9 +23,13 @@ function readSource(relativePath: string): string {
   return readFileSync(join(REPO_ROOT, relativePath), 'utf8');
 }
 
-const SQL_034 = 'supabase/proposed/034_kora_link_schema.sql';
-const SQL_035 = 'supabase/proposed/035_kora_link_rls.sql';
-const SQL_036 = 'supabase/proposed/036_kora_link_rpc_functions.sql';
+// Promoted by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): these three
+// files now live under supabase/migrations/, not supabase/proposed/ — see
+// docs/KORA_LINK_GATE_4_FINAL_REPORT.md. The cross-file consistency checks
+// below are unaffected by the promotion (no schema/logic content changed).
+const SQL_034 = 'supabase/migrations/034_kora_link_schema.sql';
+const SQL_035 = 'supabase/migrations/035_kora_link_rls.sql';
+const SQL_036 = 'supabase/migrations/036_kora_link_rpc_functions.sql';
 
 // ── 1. Table references stay consistent across 034 → 035 ─────────────────────
 
@@ -151,8 +155,15 @@ describe('KORA Link schema034 review — gate-status headers are internally cons
   const rls035 = readSource(SQL_035);
   const rpc036 = readSource(SQL_036);
 
-  it('034 declares itself technically reviewed at Gate 2 (KL-19)', () => {
-    expect(schema034).toContain('PROPOSED_GATE2_TECHNICALLY_REVIEWED');
+  it('034 declares itself technically reviewed at Gate 2 (KL-19) and canonically promoted', () => {
+    // Pre-promotion this checked for the literal STATUS marker
+    // 'PROPOSED_GATE2_TECHNICALLY_REVIEWED'. KORA-LINK-MIGRATION-
+    // FORMALIZATION-12 promoted the file to CANONICAL_APPLIED — the KL-19
+    // Gate 2 closure this test guards is still declared, just in the new
+    // canonical vocabulary.
+    expect(schema034).toContain('CANONICAL_APPLIED');
+    expect(schema034).toContain('KL-19');
+    expect(schema034).not.toMatch(/PROPOSED,? NOT APPLIED/);
   });
 
   it('034 still declares Gate 3 (DPO) open — KL-19 does not close Gate 3', () => {

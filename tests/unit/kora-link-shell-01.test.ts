@@ -269,12 +269,16 @@ describe('KORA Link shell polish 01 — worker DPO-pending consent placeholder s
   });
 });
 
-describe('KORA Link shell 01 — proposed SQL remains untouched and unapplied', () => {
-  it('034/035/036 are still explicitly documented as proposed, not applied', () => {
+// Promoted by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): 034/035/036
+// now live under supabase/migrations/, not supabase/proposed/ — see
+// docs/KORA_LINK_GATE_4_FINAL_REPORT.md. The admin control tower page below
+// was not touched by the promotion and still displays its prior copy.
+describe('KORA Link shell 01 — canonical SQL remains untouched', () => {
+  it('034/035/036 are canonical files, present under supabase/migrations/', () => {
     for (const file of [
-      'supabase/proposed/034_kora_link_schema.sql',
-      'supabase/proposed/035_kora_link_rls.sql',
-      'supabase/proposed/036_kora_link_rpc_functions.sql',
+      'supabase/migrations/034_kora_link_schema.sql',
+      'supabase/migrations/035_kora_link_rls.sql',
+      'supabase/migrations/036_kora_link_rpc_functions.sql',
     ]) {
       expect(() => readSource(file)).not.toThrow();
     }
