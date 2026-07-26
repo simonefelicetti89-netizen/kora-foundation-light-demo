@@ -9,7 +9,7 @@
  * re-verified, organized by the sprint's own BLOCCO 1-6 structure.
  *
  * IMPORTANT — test taxonomy (do not blur these):
- *   STATIC   — reads supabase/proposed/*.sql as text and asserts structural
+ *   STATIC   — reads supabase/migrations/*.sql as text and asserts structural
  *              properties (a function contains a check, a table has RLS
  *              enabled, a signature has no uuid param, etc). This proves the
  *              SQL text says what we intend. It does NOT prove the SQL
@@ -34,9 +34,13 @@ function readSource(relativePath: string): string {
   return readFileSync(join(REPO_ROOT, relativePath), 'utf8');
 }
 
-const SQL_034_PATH = 'supabase/proposed/034_kora_link_schema.sql';
-const SQL_035_PATH = 'supabase/proposed/035_kora_link_rls.sql';
-const SQL_036_PATH = 'supabase/proposed/036_kora_link_rpc_functions.sql';
+// Promoted by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): these three
+// files now live under supabase/migrations/, not supabase/proposed/ — see
+// docs/KORA_LINK_GATE_4_FINAL_REPORT.md. The function-body content this file
+// checks was not modified by the promotion.
+const SQL_034_PATH = 'supabase/migrations/034_kora_link_schema.sql';
+const SQL_035_PATH = 'supabase/migrations/035_kora_link_rls.sql';
+const SQL_036_PATH = 'supabase/migrations/036_kora_link_rpc_functions.sql';
 
 const sql034 = readSource(SQL_034_PATH);
 const sql035 = readSource(SQL_035_PATH);

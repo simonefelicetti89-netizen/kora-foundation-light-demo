@@ -25,33 +25,40 @@
 --              2026-07-16 / 2026-07-24
 -- Depends on:  034_kora_link_schema.sql (KL-19, 2026-07-04: PROPOSED_GATE2_TECHNICALLY_REVIEWED;
 --              KORA-LINK-DPO-DECISIONS-09: the 4 genuine Gate 3/DPO blockers ratified — see 034 header)
--- Gate:        This file (035) itself: Gate 2/4 OPEN, NOT reviewed, NOT applied to any database.
---              Its dependency (034) closed its own engineering review at KL-19 — that does
---              NOT extend to 035's own RLS design, which remains its own, separate review.
---              KORA-LINK-S3A is a draft-only hardening pass (grants/consistency/cleanup) —
---              it does NOT close Gate 4; worker self-select and company-facing SELECT
---              remain exactly as open as before this pass. KORA-LINK-S3B is a comment/
---              wording-only cleanup — same Gate 4 status, same non-closure.
+-- Gate:        This file (035) — Gate 4 (RLS, privilege, lifecycle, concurrency)
+--              VALIDATED LIVE against staging on 2026-07-26
+--              (KORA-LINK-RLS-LIVE-VALIDATION-11, see
+--              docs/KORA_LINK_GATE_4_FINAL_REPORT.md — C1-C10, 400 behavioral
+--              assertions + 30 local concurrency iterations + 3 live races +
+--              1 rollback-recovery test, all PASS: 9 tables, 22 active
+--              policies, RLS ENABLE+FORCE on 9/9). Promoted to
+--              supabase/migrations/ by KORA-LINK-MIGRATION-FORMALIZATION-12.
+--              The worker-self-select policy and company-facing SELECT policy
+--              remain exactly as commented-out/spec-only as before this
+--              promotion — their absence was validated as the intended
+--              current-scope behavior, not an oversight; adding either is a
+--              future, separately-gated change, not part of this promotion.
 -- ═══════════════════════════════════════════════════════════════════════════════
 --
--- STATUS: PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING
+-- STATUS: CANONICAL_APPLIED
 -- ─────────────────────────────────────────────────────────────────────────────
--- This file is a DESIGN DRAFT. Internal Engineering provisional — NOT CTO-approved.
--- KL-19 (2026-07-04) reviewed and closed 034's own engineering TODOs — it did NOT
--- review or change anything in this file. 035 remains its own, separate, still-open
--- review (Gate 4 per docs/KORA_LINK_GATE_REPORT.md): the worker-self-select policy
--- and the SECURITY DEFINER function grants below are still commented out/spec-only.
--- Do not apply until:
---   (1) 034_kora_link_schema.sql is formally approved by CTO (Gate 2 — engineering
---       substance closed at KL-19, human CTO ratification still pending)
---   (2) DPO review of activation-acknowledgement + delivery record model (Gate 3)
---   (3) fn_public_lookup_link + fn_activate_link_for_worker routes are tested
---   (4) Gate 2 and Gate 3 formally closed, and this file's own Gate 4 review completed
---
--- DO NOT run `supabase db push`.
--- DO NOT run `supabase migration up`.
--- DO NOT copy to supabase/migrations/ without CTO + DPO sign-off.
--- DO NOT apply to staging or production.
+-- This migration is promoted and canonical. It was already live on staging
+-- (haqf****jl) before this promotion — KORA-LINK-MIGRATION-FORMALIZATION-12
+-- reconciles supabase/migrations/ and the remote migration history
+-- (`supabase migration repair --status applied 035`) with that already-applied
+-- state; it does not re-run this DDL. KL-19 (2026-07-04) reviewed and closed
+-- 034's own engineering TODOs. This file's own RLS design (policies, grants,
+-- SECURITY DEFINER function stubs) was validated behaviorally and live by
+-- KORA-LINK-RLS-LIVE-VALIDATION-11 — see docs/KORA_LINK_GATE_4_FINAL_REPORT.md
+-- for full evidence, including the C7 (KORA_ADMIN), C8 (service_role), and C9
+-- (safe-aggregation-threshold) scenarios that directly exercise the policies
+-- and grants defined below. Remaining open items, tracked independently of
+-- this promotion:
+--   (1) Gate 3 overall closure (DPIA prudential recommendation, worker
+--       self-service deactivation RPC) — see docs/KORA_LINK_DPO_DECISIONS_09.md
+--   (2) Worker self-select and company-facing SELECT policies remain
+--       intentionally out of scope (commented out / absent) — not required by
+--       any validated behavior, not part of this promotion
 --
 -- DEPENDENCY ON 034
 -- ─────────────────────────────────────────────────────────────────────────────
@@ -128,10 +135,10 @@ BEGIN;
 DO $$
 BEGIN
   RAISE NOTICE
-    '035_kora_link_rls: PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING. '
-    'APPLY ONLY after: Gate 2 CTO sign-off on 034 + Gate 3 DPO review + '
-    'fn_public_lookup_link and fn_activate_link_for_worker tested on staging. '
-    'DO NOT apply to production before all gates are closed.';
+    '035_kora_link_rls: CANONICAL_APPLIED. Gate 4 validated live against '
+    'staging by KORA-LINK-RLS-LIVE-VALIDATION-11 — see '
+    'docs/KORA_LINK_GATE_4_FINAL_REPORT.md. Gate 3 overall (DPIA, worker '
+    'self-service deactivation) remains open independently of this apply.';
 END;
 $$;
 

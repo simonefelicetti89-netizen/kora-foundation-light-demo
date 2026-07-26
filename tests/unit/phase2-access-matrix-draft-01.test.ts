@@ -372,13 +372,13 @@ describe('Phase 2 Access Matrix Draft 01 — does not modify lib/auth/access-mat
 describe('Phase 2 Access Matrix Draft 01 — does not touch supabase/migrations or supabase/proposed', () => {
   it('034/035/036 remain readable and unchanged under supabase/proposed/', () => {
     for (const file of [
-      'supabase/proposed/034_kora_link_schema.sql',
-      'supabase/proposed/035_kora_link_rls.sql',
-      'supabase/proposed/036_kora_link_rpc_functions.sql',
+      'supabase/migrations/034_kora_link_schema.sql',
+      'supabase/migrations/035_kora_link_rls.sql',
+      'supabase/migrations/036_kora_link_rpc_functions.sql',
     ]) {
       expect(() => readSource(file)).not.toThrow();
     }
-    const rls = readSource('supabase/proposed/035_kora_link_rls.sql');
+    const rls = readSource('supabase/migrations/035_kora_link_rls.sql');
     expect(rls).toMatch(/Worker SELECT self-only — BLOCKED until activation function is ready/);
   });
 

@@ -25,7 +25,7 @@
  * database, does not apply anything. See docs/KORA_LINK_GATE_REPORT.md.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -35,9 +35,14 @@ function readSource(relativePath: string): string {
   return readFileSync(join(REPO_ROOT, relativePath), 'utf8');
 }
 
-const SQL_034_PATH = 'supabase/proposed/034_kora_link_schema.sql';
-const SQL_035_PATH = 'supabase/proposed/035_kora_link_rls.sql';
-const SQL_036_PATH = 'supabase/proposed/036_kora_link_rpc_functions.sql';
+// Promoted by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): these three
+// files now live under supabase/migrations/, not supabase/proposed/ — see
+// docs/KORA_LINK_GATE_4_FINAL_REPORT.md. None of the structural checks below
+// (RLS, policies, SECURITY DEFINER hygiene, grants) changed — only the file
+// location and header status wording changed.
+const SQL_034_PATH = 'supabase/migrations/034_kora_link_schema.sql';
+const SQL_035_PATH = 'supabase/migrations/035_kora_link_rls.sql';
+const SQL_036_PATH = 'supabase/migrations/036_kora_link_rpc_functions.sql';
 
 const sql034 = readSource(SQL_034_PATH);
 const sql035 = readSource(SQL_035_PATH);
@@ -72,23 +77,98 @@ const SECDEF_FUNCTIONS = [
   { name: 'fn_company_link_status_aggregate', args: 'uuid' },
 ] as const;
 
-// ── 1. Proposed files exist and remain unapplied ───────────────────────────
+// ── 1. Canonical files exist under migrations/, no longer under proposed/ ──
+// Transformed by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): this
+// block previously guarded the pre-promotion state (proposed/, not
+// migrations/). It now guards the opposite, post-promotion state — see
+// docs/KORA_LINK_GATE_4_FINAL_REPORT.md for the validation evidence that
+// authorized this promotion.
 
-describe('KORA-LINK-S3A — proposed files exist and stay in supabase/proposed/', () => {
+describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — canonical files exist under supabase/migrations/, not supabase/proposed/', () => {
   for (const relPath of [SQL_034_PATH, SQL_035_PATH, SQL_036_PATH]) {
     it(`${relPath} exists`, () => {
       expect(() => readSource(relPath)).not.toThrow();
     });
-    it(`${relPath} lives under supabase/proposed/, not supabase/migrations/`, () => {
-      expect(relPath.startsWith('supabase/proposed/')).toBe(true);
+    it(`${relPath} lives under supabase/migrations/, not supabase/proposed/`, () => {
+      expect(relPath.startsWith('supabase/migrations/')).toBe(true);
     });
   }
 
-  it('none of the 3 files exist under supabase/migrations/ (not promoted/applied)', () => {
-    expect(() => readSource('supabase/migrations/034_kora_link_schema.sql')).toThrow();
-    expect(() => readSource('supabase/migrations/035_kora_link_rls.sql')).toThrow();
-    expect(() => readSource('supabase/migrations/036_kora_link_rpc_functions.sql')).toThrow();
+  it('none of the 3 files exist under supabase/proposed/ anymore (single source of truth)', () => {
+    expect(() => readSource('supabase/proposed/034_kora_link_schema.sql')).toThrow();
+    expect(() => readSource('supabase/proposed/035_kora_link_rls.sql')).toThrow();
+    expect(() => readSource('supabase/proposed/036_kora_link_rpc_functions.sql')).toThrow();
   });
+});
+
+// ── 1b. Promotion invariants: order, dependencies, feature flag, isolation ──
+// KORA-LINK-MIGRATION-FORMALIZATION-12 — consolidated checks that don't
+// belong to any single pre-existing file: migration numbering stays in the
+// canonical linear order (033 unrelated-but-adjacent, then 034→035→036 in
+// their declared dependency direction), the KORA_LINK_ENABLED feature flag
+// is still off by default post-promotion (promotion is a repository/schema
+// change only — it must not flip runtime activation), and the main
+// scoring/ingestion "golden path" services never import KORA Link (KORA
+// Link stays an isolated, optional module per CLAUDE.md §10/§11 scope).
+
+describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — migration order and dependency declarations', () => {
+  const MIGRATIONS_DIR = join(REPO_ROOT, 'supabase', 'migrations');
+
+  it('033, 034, 035, 036 all exist in supabase/migrations/ with no gap in the sequence', () => {
+    const files = readdirSync(MIGRATIONS_DIR).filter((f: string) => f.endsWith('.sql'));
+    for (const prefix of ['033', '034', '035', '036']) {
+      expect(files.some((f: string) => f.startsWith(`${prefix}_`)), `no migration file starting with ${prefix}_`).toBe(
+        true,
+      );
+    }
+  });
+
+  it('034, 035, 036 sort strictly after 033 in filename order (canonical apply order)', () => {
+    const files = readdirSync(MIGRATIONS_DIR).filter((f: string) => f.endsWith('.sql')).sort();
+    const idx033 = files.findIndex((f: string) => f.startsWith('033_'));
+    const idx034 = files.findIndex((f: string) => f.startsWith('034_'));
+    const idx035 = files.findIndex((f: string) => f.startsWith('035_'));
+    const idx036 = files.findIndex((f: string) => f.startsWith('036_'));
+    expect(idx033).toBeGreaterThan(-1);
+    expect(idx034).toBeGreaterThan(idx033);
+    expect(idx035).toBeGreaterThan(idx034);
+    expect(idx036).toBeGreaterThan(idx035);
+  });
+
+  it('035 and 036 both declare a dependency on 034_kora_link_schema.sql', () => {
+    expect(sql035).toMatch(/Depends on:\s*034_kora_link_schema\.sql/);
+    expect(sql036).toMatch(/Depends on:\s*034_kora_link_schema\.sql/);
+  });
+});
+
+describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — KORA_LINK_ENABLED remains off by default', () => {
+  it('.env.local.example declares KORA_LINK_ENABLED=false', () => {
+    const envExample = readSource('.env.local.example');
+    expect(envExample).toMatch(/^KORA_LINK_ENABLED=false$/m);
+  });
+
+  it('lib/kora-link/config.ts treats any value other than the literal string "true" as disabled', () => {
+    const config = readSource('lib/kora-link/config.ts');
+    expect(config).toMatch(/KORA_LINK_ENABLED\s*===\s*'true'/);
+  });
+});
+
+describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — golden-path services never import KORA Link', () => {
+  const goldenPathServiceFiles = [
+    'services/scoring-simulator/ScoringSimulatorService.ts',
+    'services/ingestion-simulator/IngestionSimulatorService.ts',
+    'services/ingestion-normalizer/IngestionNormalizerService.ts',
+    'services/ingestion-pipeline/IngestionPipelineService.ts',
+    'services/dynamic-scoring/DynamicScoringPreviewService.ts',
+    'lib/methodology-config/v0.1.ts',
+  ];
+
+  for (const file of goldenPathServiceFiles) {
+    it(`${file} does not import from kora-link`, () => {
+      const source = readSource(file);
+      expect(source).not.toMatch(/kora-link|kora_link/);
+    });
+  }
 });
 
 // ── 2. RLS enabled + forced on all 9 tables ─────────────────────────────────
@@ -313,48 +393,66 @@ describe('KORA-LINK-S3A — service_role grants exist (schema, tables, functions
   });
 });
 
-// ── 11. No "db push" without a DO NOT warning context ───────────────────────
+// ── 11. Apply-forbidding warnings are gone now that the files are canonical ─
+// Transformed by KORA-LINK-MIGRATION-FORMALIZATION-12: pre-promotion, every
+// "supabase db push" mention had to be paired with a "DO NOT run" warning —
+// these files were never meant to be applied via the normal migration flow.
+// Now that they are canonical, applying them via `supabase db push` (or
+// `migration up`) is exactly the correct, intended path — the warnings were
+// removed from the header, not merely un-paired. This block guards that
+// removal instead of the opposite (pre-promotion) invariant.
 
-describe('KORA-LINK-S3A — apply commands are always framed as forbidden', () => {
+describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — apply-forbidding warnings removed now the files are canonical', () => {
   for (const [label, src] of [['034', sql034], ['035', sql035], ['036', sql036]] as const) {
-    it(`${label} never mentions "supabase db push" without "DO NOT run" immediately before it`, () => {
-      const occurrences = [...src.matchAll(/supabase db push/g)];
-      expect(occurrences.length).toBeGreaterThan(0);
-      for (const match of occurrences) {
-        const idx = match.index ?? 0;
-        const before = src.slice(Math.max(0, idx - 40), idx);
-        expect(before).toMatch(/DO NOT run/);
-      }
+    it(`${label} no longer contains a "DO NOT run \`supabase db push\`" warning`, () => {
+      expect(src).not.toMatch(/DO NOT run `supabase db push`/);
+    });
+    it(`${label} no longer contains a "DO NOT copy to supabase\\/migrations\\/" warning`, () => {
+      expect(src).not.toMatch(/DO NOT copy to supabase\/migrations\//);
     });
   }
 });
 
-// ── 12. Files remain unapplied/proposed by header wording ──────────────────
+// ── 12. Header wording now declares these files canonical/applied ──────────
+// Transformed by KORA-LINK-MIGRATION-FORMALIZATION-12: this block previously
+// guarded the pre-promotion "PROPOSED, NOT APPLIED" wording. It now guards
+// the promoted wording — CANONICAL_APPLIED, with an explicit pointer to the
+// Gate 4 live-validation evidence that authorized the promotion — and that
+// the old PROPOSED/NOT-APPLIED wording is fully gone (not left stale
+// alongside the new wording).
 
-describe('KORA-LINK-S3A — header wording still declares these files proposed and unapplied', () => {
-  it('034 header declares PROPOSED status', () => {
-    expect(sql034).toMatch(/PROPOSED/);
-    expect(sql034).toMatch(/NOT APPLIED TO ANY DATABASE/);
+describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — header wording declares these files canonical and applied', () => {
+  it('034 header declares CANONICAL_APPLIED status and no longer says PROPOSED/NOT APPLIED', () => {
+    expect(sql034).toContain('STATUS: CANONICAL_APPLIED');
+    expect(sql034).not.toMatch(/PROPOSED,? NOT APPLIED/);
+    expect(sql034).toMatch(/KORA_LINK_GATE_4_FINAL_REPORT\.md/);
   });
 
-  it('035 header declares PROPOSED_RLS_DRAFT status and Gate 4 open', () => {
-    expect(sql035).toContain('STATUS: PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING');
-    expect(sql035).toMatch(/NOT applied to any database/);
+  it('035 header declares CANONICAL_APPLIED status and references live Gate 4 validation', () => {
+    expect(sql035).toContain('STATUS: CANONICAL_APPLIED');
+    expect(sql035).not.toContain('STATUS: PROPOSED_RLS_DRAFT_INTERNAL_ENGINEERING');
+    expect(sql035).toMatch(/VALIDATED LIVE/);
+    expect(sql035).toMatch(/KORA-LINK-RLS-LIVE-VALIDATION-11/);
   });
 
-  it('036 header declares PROPOSED_RPC_FUNCTIONS_DRAFT status', () => {
-    expect(sql036).toContain('STATUS: PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING');
-    expect(sql036).toMatch(/NOT reviewed, NOT applied/);
+  it('036 header declares CANONICAL_APPLIED status and references live Gate 4 validation', () => {
+    expect(sql036).toContain('STATUS: CANONICAL_APPLIED');
+    expect(sql036).not.toContain('STATUS: PROPOSED_RPC_FUNCTIONS_DRAFT_INTERNAL_ENGINEERING');
+    expect(sql036).toMatch(/VALIDATED LIVE/);
+    expect(sql036).toMatch(/KORA-LINK-RLS-LIVE-VALIDATION-11/);
   });
 
-  it('035 header documents the KORA-LINK-S3A amendment without claiming Gate 4 closure', () => {
+  it('035 header still documents the historical KORA-LINK-S3A amendment (unchanged, pre-promotion history)', () => {
     expect(sql035).toMatch(/Amended:\s+KORA-LINK-S3A/);
-    expect(sql035).toMatch(/does NOT close Gate 4/);
   });
 
-  it('036 header documents the KORA-LINK-S3A amendment without claiming Gate 2/3 closure', () => {
+  it('036 header still documents the historical KORA-LINK-S3A amendment (unchanged, pre-promotion history)', () => {
     expect(sql036).toMatch(/Amended:\s+KORA-LINK-S3A/);
-    expect(sql036).toMatch(/does NOT close\s*\n?--\s*Gate 2 or Gate 3/);
+  });
+
+  it('036 documents the fn_company_link_status_aggregate audit_log documentation-drift correction', () => {
+    expect(sql036).toMatch(/Corrected:\s+KORA-LINK-MIGRATION-FORMALIZATION-12/);
+    expect(sql036).toMatch(/documentation drift fix/);
   });
 });
 

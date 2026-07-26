@@ -34,11 +34,14 @@ function readSource(relativePath: string): string {
 const FORBIDDEN_COLUMNS = ['token_value', 'nfc_url', 'full_token', 'worker_name', 'worker_email'];
 const SQL_COLUMN_TYPES = 'text|uuid|boolean|integer|bigint|timestamptz|jsonb|numeric|citext';
 
-describe('KORA Link privacy invariants — proposed SQL never defines forbidden personal-data columns', () => {
+// Promoted by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): these three
+// files now live under supabase/migrations/, not supabase/proposed/ — see
+// docs/KORA_LINK_GATE_4_FINAL_REPORT.md. No column/function content changed.
+describe('KORA Link privacy invariants — canonical SQL never defines forbidden personal-data columns', () => {
   const sqlFiles = [
-    'supabase/proposed/034_kora_link_schema.sql',
-    'supabase/proposed/035_kora_link_rls.sql',
-    'supabase/proposed/036_kora_link_rpc_functions.sql',
+    'supabase/migrations/034_kora_link_schema.sql',
+    'supabase/migrations/035_kora_link_rls.sql',
+    'supabase/migrations/036_kora_link_rpc_functions.sql',
   ];
 
   for (const file of sqlFiles) {
@@ -54,7 +57,7 @@ describe('KORA Link privacy invariants — proposed SQL never defines forbidden 
 
 describe('KORA Link privacy invariants — company-facing RPC cannot return individual data', () => {
   it('fn_company_link_status_aggregate returns only aggregate (status, count) rows', () => {
-    const sql = readSource('supabase/proposed/036_kora_link_rpc_functions.sql');
+    const sql = readSource('supabase/migrations/036_kora_link_rpc_functions.sql');
     const startMarker = 'CREATE OR REPLACE FUNCTION kora_link.fn_company_link_status_aggregate';
     const startIdx = sql.indexOf(startMarker);
     expect(startIdx, 'fn_company_link_status_aggregate not found in 036').toBeGreaterThan(-1);

@@ -141,11 +141,15 @@ describe('19-20. no claim KORA Link feeds KORA Index or Contribution is automati
 });
 
 describe('21-23. migrations, proposed SQL, and 034/035/036 untouched', () => {
-  it('034/035/036 proposed SQL files still exist, unmodified in scope', () => {
+  // Promoted by KORA-LINK-MIGRATION-FORMALIZATION-12 (2026-07-26): 034/035/036
+  // now live under supabase/migrations/, not supabase/proposed/ — see
+  // docs/KORA_LINK_GATE_4_FINAL_REPORT.md. Unmodified in scope still holds:
+  // no schema/logic content changed by the promotion.
+  it('034/035/036 canonical SQL files still exist, unmodified in scope', () => {
     for (const file of [
-      'supabase/proposed/034_kora_link_schema.sql',
-      'supabase/proposed/035_kora_link_rls.sql',
-      'supabase/proposed/036_kora_link_rpc_functions.sql',
+      'supabase/migrations/034_kora_link_schema.sql',
+      'supabase/migrations/035_kora_link_rls.sql',
+      'supabase/migrations/036_kora_link_rpc_functions.sql',
     ]) {
       expect(() => readSource(file)).not.toThrow();
     }
