@@ -418,9 +418,14 @@ describe('13B.15 — a stale-but-unexpired JWT is still blocked once the mapping
   });
 });
 
-describe('13B.15 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('a live call with a JWT issued before disabling the mapping is denied immediately after UPDATE ... SET status = \'disabled\' — deferred to 13C');
-});
+// 13B.15 BEHAVIORAL-MISSING item IMPLEMENTED by KORA-LINK-HARDENING-
+// AUTOMATION-13C: scripts/kora-link/run-behavioral-suite.ts C5.3/C5.4 create
+// a company_identity row, confirm access, then flip status to 'disabled'
+// (no JWT change) and confirm the aggregate RPC immediately returns empty —
+// the same claim-not-refreshed scenario, proven directly against a real
+// database. Also already exercised once, manually, live against staging
+// during KORA-LINK-HARDENING-AUTOMATION-13B's own FASE 7 validation. See
+// docs/KORA_LINK_AUTOMATED_TESTING.md.
 
 // ── 13B.16 — no direct table access introduced ────────────────────────────────
 
