@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════════════════════
--- Migration:   038_initiative_adoption_source_model
+-- Migration:   041_initiative_adoption_source_model
 -- Feature:     B168-ext — commons.initiative_adoption — Company Adoption /
 --              Sponsorship Source Model for KORA Contribution V2
 -- Author:      KORA Foundation Light · 2026-06-24
@@ -9,8 +9,16 @@
 --              033_personal_worker_identity_service_role_grant.sql was applied
 --              on 2026-07-09, reusing 033 without checking this directory.
 --              034/035/036 are already reserved by the proposed KORA Link
---              migrations, so 038 is the next free number after 037
---              (037_contribution_atomic_attribution.sql, same repair). Before
+--              migrations, so 038 was the next free number after 037
+--              (037_contribution_atomic_attribution.sql, same repair).
+--              Renumbered again to 041 (KORA-LINK-HARDENING-AUTOMATION-13A
+--              out-of-order-risk fix) because 039_kora_link_audit_hardening.sql
+--              was created directly in supabase/migrations/, and leaving this
+--              file at 038 would have meant a future promotion landing
+--              chronologically before the already-canonical 039 — same repair
+--              applied to 037 → 040 (see 040_contribution_atomic_attribution.sql)
+--              — see tests/unit/b173-migration-numbering-guard.test.ts for the
+--              guard preventing this class of collision from recurring. Before
 --              promoting this file into supabase/migrations/, re-check BOTH
 --              supabase/migrations/ and supabase/proposed/ for the next free
 --              number — do not assume either directory alone reflects the
@@ -80,19 +88,19 @@
 --      M025-6 fields: source_type, event_type, contribution_component_hint, aggregate_count,
 --        privacy_threshold_met, is_cross_company, is_kora_originated, is_kora_enabled, adoption_type
 --      M025-7 constraint: uq_contribution_external must be (tenant_id, source_post_id,
---        contribution_kind, role, reporting_period) — the 5-column form. The 038 attribution
+--        contribution_kind, role, reporting_period) — the 5-column form. The 041 attribution
 --        function uses ON CONFLICT ON CONSTRAINT uq_contribution_external DO NOTHING and
---        inserts all 5 constraint columns. Apply migration 025 REVISED (M025-7) before 038.
+--        inserts all 5 constraint columns. Apply migration 025 REVISED (M025-7) before 041.
 --   5. kora.kora_role() and kora.tenant_id() must exist (migration 006)
 --   6. set_updated_at() must exist (migration 001)
---   7. migration 037 (attribute_contribution_for_booking_atomic) should be
---      applied before or after 038 — no ordering dependency between 037 and 038
+--   7. migration 040 (attribute_contribution_for_booking_atomic) should be
+--      applied before or after 041 — no ordering dependency between 040 and 041
 --
 -- APPLY ORDER
 -- ───────────
---   025 (REVISED) → 037 → 038      [canonical pre-Pilot apply sequence]
---   or: 025 (REVISED) → 038 → 037  [038 does not depend on 037]
--- Both 037 and 038 depend on 025. 037 and 038 are independent of each other.
+--   025 (REVISED) → 040 → 041      [canonical pre-Pilot apply sequence]
+--   or: 025 (REVISED) → 041 → 040  [041 does not depend on 040]
+-- Both 040 and 041 depend on 025. 040 and 041 are independent of each other.
 --
 -- GATE STATUS
 -- ───────────
@@ -412,7 +420,7 @@ COMMENT ON FUNCTION commons.create_initiative_adoption IS
   'SECURITY DEFINER: COMPANY_ADMIN may create proposed adoptions for own tenant; '
   'KORA_ADMIN may create any status. '
   'ON CONFLICT DO NOTHING — idempotent for (initiative_id, tenant, adoption_type). '
-  'Gate 3 OPEN: not callable until migration 038 is applied.';
+  'Gate 3 OPEN: not callable until migration 041 is applied.';
 
 
 -- ── 4. SECURITY DEFINER function — attribution from adoption ──────────────────
@@ -442,7 +450,7 @@ COMMENT ON FUNCTION commons.create_initiative_adoption IS
 --   two rows are created:
 --     Row 1: adopting_company_tenant_id, role=adopter/sponsor/etc., weight=1.0000
 --     Row 2: origin_company_tenant_id,   role=promoter,              weight=0.5000
---   This mirrors the booking attribution pattern from migration 037.
+--   This mirrors the booking attribution pattern from migration 040.
 --
 -- PRIVACY INVARIANTS:
 --   • worker_identity_id NEVER written to contribution_event
@@ -575,7 +583,7 @@ BEGIN
   GET DIAGNOSTICS v_written = ROW_COUNT;
 
   -- INSERT promoter row if cross-company and origin company exists.
-  -- Mirrors booking attribution pattern (migration 037): origin company gets
+  -- Mirrors booking attribution pattern (migration 040): origin company gets
   -- a contribution credit for having their initiative adopted elsewhere.
   IF v_adoption.is_cross_company = true
      AND v_adoption.origin_company_tenant_id IS NOT NULL
@@ -641,7 +649,7 @@ COMMENT ON FUNCTION commons.attribute_contribution_for_adoption IS
   'Cross-company adoptions generate two rows: adopter + promoter (like booking attribution). '
   'privacy_threshold_met=false at INSERT — updated by separate RPC when N≥10 booking data confirmed. '
   'CONSTITUTIONAL: no worker_identity_id, no individual participation data. '
-  'Gate 3 OPEN: not callable until migrations 025 and 038 are applied.';
+  'Gate 3 OPEN: not callable until migrations 025 and 041 are applied.';
 
 
 -- ── 5. Grants ─────────────────────────────────────────────────────────────────
@@ -673,7 +681,7 @@ NOTIFY pgrst, 'reload schema';
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- POST-APPLY CALLER UPDATES
 -- ═══════════════════════════════════════════════════════════════════════════════
--- After migration 038 is applied, update service layer:
+-- After migration 041 is applied, update service layer:
 --
 -- 1. KoraContributionService.computeContributionV2() (or equivalent live path):
 --    Add adoption row filter alongside existing cross/external filters:

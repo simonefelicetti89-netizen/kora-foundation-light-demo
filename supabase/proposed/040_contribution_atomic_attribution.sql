@@ -1,4 +1,4 @@
--- supabase/proposed/037_contribution_atomic_attribution.sql
+-- supabase/proposed/040_contribution_atomic_attribution.sql
 -- PROPOSED MIGRATION — NOT APPLIED TO ANY DATABASE.
 -- Purpose: atomic KORA Contribution attribution for cross-company bookings.
 --
@@ -7,7 +7,13 @@
 -- Renumbered again to 037 (B173-FIX-01) because active migrations
 -- 032_network_schema_grants.sql and 033_personal_worker_identity_service_role_grant.sql
 -- were applied on 2026-07-09, reusing 032/033 without checking this directory.
--- 034/035/036 are already reserved by the proposed KORA Link migrations, so 037
+-- Renumbered again to 040 (KORA-LINK-HARDENING-AUTOMATION-13A out-of-order-risk
+-- fix) because 039_kora_link_audit_hardening.sql was created directly in
+-- supabase/migrations/, and leaving this file at 037 would have meant a future
+-- promotion landing chronologically before the already-canonical 039 — see
+-- tests/unit/b173-migration-numbering-guard.test.ts for the guard preventing
+-- this class of collision from recurring.
+-- 034/035/036/039 are already reserved by canonical migrations, so 040
 -- is the next free number across both supabase/migrations/ and supabase/proposed/.
 -- Before promoting this file (or any proposed file) into supabase/migrations/,
 -- re-check BOTH directories for the next free number — do not assume either

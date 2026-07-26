@@ -434,10 +434,16 @@ describe('gate2-3-030 — migration file count', () => {
     expect(new Set(numbers).size).toBe(numbers.length);
   });
 
-  it('supabase/migrations/ numbering is contiguous from 001 to the highest file, with only the known 029 gap', () => {
+  it('supabase/migrations/ numbering is contiguous from 001 to the highest file, with only the known retired numbers', () => {
+    // 029 quarantined (supabase/rollback/). 037/038 permanently retired by
+    // B173-FIX-02 (renumbered to 040/041 — see
+    // tests/unit/b173-migration-numbering-guard.test.ts and the matching
+    // rationale in tests/unit/p0-commercial-credibility.test.ts): those
+    // numbers will never be promoted into supabase/migrations/ again.
     const numbers = migrationNumbers();
     const highest = numbers[numbers.length - 1];
-    const expected = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => n !== 29);
+    const RETIRED_NUMBERS = new Set([29, 37, 38]);
+    const expected = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => !RETIRED_NUMBERS.has(n));
     expect(numbers).toEqual(expected);
   });
 
