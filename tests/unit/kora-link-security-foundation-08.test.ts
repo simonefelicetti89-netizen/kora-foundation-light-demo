@@ -197,12 +197,22 @@ describe('BLOCCO 1 — cross-schema access uses the established migration 020 pa
   });
 });
 
-describe('BLOCCO 1 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('item 1: worker corretto + token valido → activation succeeds end-to-end against a real DB');
-  it.todo('item 6: N/A by construction — p_worker_id no longer exists as a parameter to manipulate');
-  it.todo('item 8: real concurrent transactions racing on FOR UPDATE NOWAIT (this file only asserts the SQL clause exists)');
-  it.todo('items 2/3/4/5/9/10: real Postgres execution of every branch above against seeded personal.worker_identity + kora_link.links rows');
-});
+// BLOCCO 1 BEHAVIORAL-MISSING items — reclassified by KORA-LINK-HARDENING-
+// AUTOMATION-13C:
+//   item 1  (activation succeeds end-to-end) — IMPLEMENTED: run-behavioral-
+//           suite.ts C2.1/C3.1.
+//   item 6  (p_worker_id no longer exists) — REMOVED (obsolete): the item's
+//           own text already says "N/A by construction" — there is no
+//           behavioral gap here to track, it described a parameter that no
+//           longer exists at all.
+//   item 8  (real concurrent transactions on FOR UPDATE NOWAIT) —
+//           IMPLEMENTED: run-behavioral-suite.ts C10 (raceScenario, all
+//           three shapes) — two real PostgreSQL connections, genuine lock
+//           contention.
+//   items 2/3/4/5/9/10 (every branch against real seeded rows) —
+//           IMPLEMENTED: run-behavioral-suite.ts C2.1-C2.6, C3.1-C3.10.
+// Run via `npm run test:kora-link:behavioral` — see
+// docs/KORA_LINK_AUTOMATED_TESTING.md.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BLOCCO 2 — Aggregation threshold (test matrix items 11-18)
@@ -267,11 +277,17 @@ describe('BLOCCO 2 — item 18: no individual data ever in the aggregate RPC bod
   });
 });
 
-describe('BLOCCO 2 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('items 11-13: seed 0/1/9/10/11-chip tenants and assert exact (count, suppressed) rows against a real DB');
-  it.todo('item 14: N/A for this RPC — no filter parameters exist beyond p_tenant_id (see static test above)');
-  it.todo('item 16: two real tenants, confirm COMPANY_ADMIN of tenant A gets 0 rows for tenant B');
-});
+// BLOCCO 2 BEHAVIORAL-MISSING items — reclassified by KORA-LINK-HARDENING-
+// AUTOMATION-13C:
+//   items 11-13 (9/10/11-chip exact count/suppressed) — IMPLEMENTED:
+//           run-behavioral-suite.ts C9.1-C9.3.
+//   item 14 (no filter parameters beyond p_tenant_id) — REMOVED (obsolete):
+//           the item's own text already says "N/A for this RPC" — nothing
+//           behavioral to track.
+//   item 16 (tenant A admin gets 0 rows for tenant B) — IMPLEMENTED:
+//           run-behavioral-suite.ts C9.5 (tenant scope) and C5.5 (tenant
+//           mismatch denial).
+// See docs/KORA_LINK_AUTOMATED_TESTING.md.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BLOCCO 3 — Revocation and expiry (test matrix items 19-26)
@@ -344,11 +360,25 @@ describe('BLOCCO 3 — retention decision — ratified by KORA-LINK-DPO-DECISION
   });
 });
 
+// BLOCCO 3 BEHAVIORAL-MISSING items — reclassified by KORA-LINK-HARDENING-
+// AUTOMATION-13C:
+//   item 19 (real KORA_ADMIN revokes a real active link) — IMPLEMENTED:
+//           run-behavioral-suite.ts C4.3.
+//   item 20 (cross-tenant revoke by KORA_ADMIN, bounded-admin pattern) —
+//           IMPLEMENTED: run-behavioral-suite.ts C7.2.
+//   items 23/24 (exact-boundary now() comparisons) — IMPLEMENTED:
+//           run-behavioral-suite.ts C3.3 (expired pre-activation TTL) and
+//           C4.9 (explicit revoke of an already-expired link).
+// See docs/KORA_LINK_AUTOMATED_TESTING.md.
 describe('BLOCCO 3 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('item 19: real KORA_ADMIN session revokes a real active link end-to-end');
-  it.todo('item 20: cross-tenant revoke by KORA_ADMIN — confirm this is the documented bounded-admin-access pattern, not a new gap');
-  it.todo('item 22: real concurrent revoke + activate race against the same link row');
-  it.todo('items 23/24: exact-boundary now() comparisons against real timestamptz values in a real transaction');
+  // item 22 is intentionally NOT reclassified as implemented: it describes a
+  // race BETWEEN two DIFFERENT operations (revoke vs. activate on the same
+  // link), which is a broader scenario than the original Gate 4 C10 matrix
+  // (activate-vs-activate only — A1 vs A2, A1 vs A1, A1 vs B1). Whether to
+  // expand C10's scope to cover mixed-operation races is a genuine open
+  // design question, not yet decided — kept as an explicit future decision
+  // rather than silently folded into 13C's activate-vs-activate coverage.
+  it.todo('item 22: real concurrent revoke + activate race against the same link row — requires a decision on whether to expand the C10 scenario matrix beyond activate-vs-activate');
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -384,9 +414,23 @@ describe('BLOCCO 4 — token digest model re-verified after S08 changes [STATIC]
 });
 
 describe('BLOCCO 4 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('real HMAC digest generation entropy / collision resistance under production KORA_LINK_TOKEN_SECRET');
-  it.todo('real database round-trip confirming no token_value column can ever be populated (schema-level guarantee, not just absence-of-column-definition)');
+  // Kept, out of scope for behavioral test automation: entropy/collision
+  // resistance of a production secret is a cryptographic research question,
+  // not something a CI-run test scenario can meaningfully assert — there is
+  // no pass/fail condition a repeatable test could check beyond re-deriving
+  // the same well-known HMAC-SHA256 security properties. Would need a
+  // dedicated crypto-review task, not a KORA-LINK-HARDENING-AUTOMATION-13C
+  // scenario.
+  it.todo('real HMAC digest generation entropy / collision resistance under production KORA_LINK_TOKEN_SECRET — requires a dedicated crypto-review task, not a behavioral test scenario');
 });
+// The second BEHAVIORAL-MISSING item previously here ("real database round-
+// trip confirming no token_value column can ever be populated") is REMOVED
+// (obsolete): the schema-level guarantee is already fully proven by the
+// STATIC test above (CREATE TABLE definition has no token_value column at
+// all). A "live" version would only ever produce a generic
+// "column does not exist" Postgres error unrelated to any real security
+// property — it adds no evidence beyond what the static check already
+// proves.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BLOCCO 5 — RLS and grants (test matrix items 27-33)
@@ -467,11 +511,21 @@ describe('BLOCCO 5 — RLS on all 9 tables unaffected by S08 (035 not touched at
   });
 });
 
-describe('BLOCCO 5 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('cross-tenant RLS enforcement under real JWTs (Company A cannot SELECT Company B rows) — this repo has no DB test harness for kora_link');
-  it.todo('anon cannot enumerate links via any RLS-bypassing path on a real Postgres instance');
-  it.todo('service_role grants behave as documented against a real Supabase project (grants exist in SQL text; not applied anywhere)');
-});
+// BLOCCO 5 BEHAVIORAL-MISSING items — reclassified by KORA-LINK-HARDENING-
+// AUTOMATION-13C (this repo now HAS a DB test harness for kora_link — the
+// premise of the first item below no longer holds):
+//   cross-tenant RLS under real JWTs — IMPLEMENTED: run-behavioral-suite.ts
+//           C6.7 (no direct table access) plus the tenant-scoped denials in
+//           C5 (company_identity tenant mismatch) and C9.5 (aggregate
+//           tenant scope) collectively prove this at the RPC layer; direct-
+//           table RLS is proven by C1.1/C6.7.
+//   anon cannot enumerate links — IMPLEMENTED: run-behavioral-suite.ts
+//           C1.1-C1.4 (deny-by-default on all 9 tables + the 2 documented
+//           public exceptions).
+//   service_role grants behave as documented — IMPLEMENTED: run-behavioral-
+//           suite.ts C8.1-C8.5, plus already re-validated live against
+//           staging during KORA-LINK-RLS-LIVE-VALIDATION-11 (Gate 4, C8).
+// See docs/KORA_LINK_AUTOMATED_TESTING.md.
 
 // ═══════════════════════════════════════════════════════════════════════════
 // BLOCCO 6 — Audit (test matrix item 26 + governance review)
@@ -523,12 +577,21 @@ describe('BLOCCO 6 — audit_log schema still forbids PII columns (unchanged, re
   });
 });
 
-describe('BLOCCO 6 — residual gap: fn_revoke_link, fn_replace_link, fn_public_lookup_link do not yet write audit_log [documents the gap, does not close it]', () => {
-  it('fn_revoke_link has no audit_log INSERT (link_events + revocations cover it today; residual gap, not silently claimed closed)', () => {
+// NOTE (KORA-LINK-HARDENING-AUTOMATION-13A, 2026-07-26): this describe block
+// checks 036_kora_link_rpc_functions.sql's OWN historical content, which is
+// still accurate as a statement about that specific file — 036 itself was
+// never edited. It is IMPORTANT not to read this describe's title as a
+// statement about the CURRENT LIVE system: migration 039 (a later file,
+// CREATE OR REPLACE FUNCTION) added kora_link.audit_log writes to
+// fn_revoke_link and fn_replace_link for their success and forbidden-denial
+// branches — see tests/unit/kora-link-audit-hardening-13a.test.ts. Only
+// fn_public_lookup_link remains a genuine residual gap today.
+describe('BLOCCO 6 — 036\'s own text: fn_revoke_link/fn_replace_link/fn_public_lookup_link do not write audit_log there (closed for the first two by migration 039 — see kora-link-audit-hardening-13a.test.ts)', () => {
+  it('036 itself (unmodified) has no audit_log INSERT in fn_revoke_link — the gap 039 later closed via CREATE OR REPLACE FUNCTION', () => {
     expect(revokeFn).not.toMatch(/INSERT INTO kora_link\.audit_log/);
   });
 
-  it('fn_replace_link has no audit_log INSERT (residual gap, not silently claimed closed)', () => {
+  it('036 itself (unmodified) has no audit_log INSERT in fn_replace_link — the gap 039 later closed via CREATE OR REPLACE FUNCTION', () => {
     expect(replaceFn).not.toMatch(/INSERT INTO kora_link\.audit_log/);
   });
 
@@ -538,7 +601,15 @@ describe('BLOCCO 6 — residual gap: fn_revoke_link, fn_replace_link, fn_public_
   });
 });
 
+// BLOCCO 6 BEHAVIORAL-MISSING items — reclassified by KORA-LINK-HARDENING-
+// AUTOMATION-13C:
+//   real audit_log rows written/read back by KORA_ADMIN — IMPLEMENTED:
+//           run-behavioral-suite.ts C4.4 (audit row written and read back
+//           after a real revoke) and C7.6 (KORA_ADMIN reads audit rows,
+//           confirms no raw token).
 describe('BLOCCO 6 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('real audit_log rows written and read back by a KORA_ADMIN session, confirming RLS + content shape end-to-end');
-  it.todo('DPO break-glass read procedure ([TODO-RLS-06]) — design not yet started, out of this sprint\'s scope');
+  // Kept, explicit future decision: design for the DPO break-glass read
+  // procedure has not started at all — there is nothing to automate yet,
+  // this is not a gap in test coverage of existing behavior.
+  it.todo('DPO break-glass read procedure ([TODO-RLS-06]) — design not yet started, out of scope for behavioral test automation');
 });

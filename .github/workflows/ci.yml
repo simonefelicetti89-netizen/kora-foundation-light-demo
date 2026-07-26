@@ -45,3 +45,68 @@ jobs:
       # and lint is meant to gate merges.
       - name: Lint (report-only, non-blocking)
         run: npm run lint || true
+
+  # KORA-LINK-HARDENING-AUTOMATION-13C — local integration job.
+  # Runs the C1-C10 behavioral suite against an ephemeral LOCAL Supabase/
+  # Postgres stack (Docker) — never staging, never production, no repository
+  # secrets referenced. See docs/KORA_LINK_AUTOMATED_TESTING.md.
+  # This job is separate from `ci` above so a Docker/Supabase CLI outage
+  # cannot block the fast static/unit gate; it still runs on every PR/push,
+  # since GitHub-hosted ubuntu-latest runners always have Docker available.
+  kora-link-local-integration:
+    name: KORA Link — local behavioral suite (Docker/Supabase CLI)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Docker availability
+        id: docker_check
+        run: |
+          if docker info > /dev/null 2>&1; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Docker is not available on this runner — skipping the KORA Link local integration suite (see docs/KORA_LINK_AUTOMATED_TESTING.md)."
+          fi
+
+      - name: Install Supabase CLI
+        if: steps.docker_check.outputs.available == 'true'
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase stack
+        if: steps.docker_check.outputs.available == 'true'
+        run: supabase start
+
+      - name: Run KORA Link behavioral suite (C1-C10)
+        if: steps.docker_check.outputs.available == 'true'
+        env:
+          KORA_LINK_SKIP_DB_RESET: '1' # supabase start already applied 001-042 fresh
+        run: npm run test:kora-link:behavioral > kora-link-behavioral-report.json
+
+      - name: Upload behavioral suite report
+        if: always() && steps.docker_check.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: kora-link-behavioral-report
+          path: kora-link-behavioral-report.json
+          retention-days: 30
+
+      # Cleanup runs even if the suite above failed, so no local Supabase
+      # container is ever left running on the runner.
+      - name: Stop local Supabase stack
+        if: always() && steps.docker_check.outputs.available == 'true'
+        run: supabase stop

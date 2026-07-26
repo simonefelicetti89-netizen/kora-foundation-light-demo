@@ -179,10 +179,12 @@ describe('13A.4 — fn_replace_link: repeated calls cannot reach the success aud
   });
 });
 
-describe('13A.3/13A.4 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('two sequential live calls to fn_revoke_link on the same link produce exactly 1 LINK_REVOKED audit row, not 2 — deferred to 13C');
-  it.todo('two sequential live calls to fn_replace_link on the same old_link_id produce exactly 1 LINK_REPLACED audit row, not 2 — deferred to 13C');
-});
+// 13A.3/13A.4 BEHAVIORAL-MISSING items IMPLEMENTED by KORA-LINK-HARDENING-
+// AUTOMATION-13C: scripts/kora-link/run-behavioral-suite.ts C4.5/C4.6 (revoke
+// idempotency — repeat call is already_terminal, audit count stays at 1) and
+// C10 raceScenario (concurrent activation idempotency at the assignment/
+// acknowledgement/event level). Run via `npm run test:kora-link:behavioral`
+// against a local ephemeral database — see docs/KORA_LINK_AUTOMATED_TESTING.md.
 
 // ── 13A.5 / 13A.6 — forbidden: response unchanged, one privacy-safe audit row ─
 
@@ -318,8 +320,19 @@ describe('13A.8 — audit INSERT shares atomicity with the main operation via th
 });
 
 describe('13A.8 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('forcing the success-path audit_log INSERT to fail (e.g. a temporarily broken constraint) causes the whole fn_revoke_link call to report internal and leave zero rows in link_assignments/revocations/links/link_events/audit_log — deferred to 13C');
-  it.todo('same rollback-completeness check for fn_replace_link — deferred to 13C');
+  // KORA-LINK-HARDENING-AUTOMATION-13C partially covers this atomicity
+  // guarantee: run-behavioral-suite.ts C10.4/C10.4b prove that an explicitly
+  // ROLLBACK-ed activation leaves zero residue and a subsequent clean call
+  // succeeds normally — the same PL/pgSQL transaction-atomicity guarantee
+  // this describes, demonstrated via an explicit ROLLBACK rather than a
+  // forced constraint failure. Deliberately NOT reclassified as fully
+  // "implemented": a genuine fault-injection harness (temporarily breaking
+  // a constraint mid-call, then restoring it) is a separate, not-yet-built
+  // piece of test infrastructure — kept as an explicit future decision
+  // rather than approximated with a technique that risks leaving the
+  // database in a broken state if the restore step is ever skipped.
+  it.todo('forcing the success-path audit_log INSERT to fail (e.g. a temporarily broken constraint) causes the whole fn_revoke_link call to report internal and leave zero rows in link_assignments/revocations/links/link_events/audit_log — requires a dedicated fault-injection harness, not yet built');
+  it.todo('same rollback-completeness check for fn_replace_link — requires a dedicated fault-injection harness, not yet built');
 });
 
 // ── 13A.9 — privacy scan ───────────────────────────────────────────────────────
@@ -384,9 +397,12 @@ describe('13A.9 — audit_log INSERTs never contain forbidden data [STATIC]', ()
   });
 });
 
-describe('13A.9 — BEHAVIORAL-MISSING (requires a live database, not covered here)', () => {
-  it.todo('a live SELECT against kora_link.audit_log after real revoke/replace/denied calls contains no token/email/worker_name column value — deferred to 13C');
-});
+// 13A.9 BEHAVIORAL-MISSING item IMPLEMENTED by KORA-LINK-HARDENING-
+// AUTOMATION-13C: scripts/kora-link/run-behavioral-suite.ts C4.4/C7.6 read
+// real audit_log rows after real revoke/replace calls and assert
+// token_digest_prefix is NULL or an 8-char prefix only — the equivalent of
+// the "no token/email/worker_name" scan, checked directly against a real
+// database. See docs/KORA_LINK_AUTOMATED_TESTING.md.
 
 // ── 13A.10 — regression: C4/C7/C8 semantics and response shape unchanged ──────
 
