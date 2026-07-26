@@ -452,15 +452,16 @@ describe('hardening — 14. No individual activity to company', () => {
 // ── 15. Transaction safety documented for booking attribution ─────────────────
 
 describe('hardening — 15. Transaction safety (C-9)', () => {
-  it('proposed migration 037 exists (renumbered 026 → 032 → 037; B173-FIX-01: 032 taken by active migration)', () => {
-    expect(exists('supabase/proposed/037_contribution_atomic_attribution.sql')).toBe(true);
-    // Both prior conflicting numbers must be gone
+  it('proposed migration 040 exists (renumbered 026 → 032 → 037 → 040; B173-FIX-01 then out-of-order-risk fix)', () => {
+    expect(exists('supabase/proposed/040_contribution_atomic_attribution.sql')).toBe(true);
+    // All three prior superseded numbers must be gone
     expect(exists('supabase/proposed/026_contribution_atomic_attribution.sql')).toBe(false);
     expect(exists('supabase/proposed/032_contribution_atomic_attribution.sql')).toBe(false);
+    expect(exists('supabase/proposed/037_contribution_atomic_attribution.sql')).toBe(false);
   });
 
-  it('migration 037 is NOT in forward migrations pipeline (Gate 3 open)', () => {
-    expect(exists('supabase/migrations/037_contribution_atomic_attribution.sql')).toBe(false);
+  it('migration 040 is NOT in forward migrations pipeline (Gate 3 open)', () => {
+    expect(exists('supabase/migrations/040_contribution_atomic_attribution.sql')).toBe(false);
     // Applied 026 and 032 are different migrations (company route RLS gaps; network schema grants)
     expect(exists('supabase/migrations/026_company_route_rls_gaps.sql')).toBe(true);
     expect(exists('supabase/migrations/032_network_schema_grants.sql')).toBe(true);
@@ -476,15 +477,15 @@ describe('hardening — 15. Transaction safety (C-9)', () => {
     expect(src).toMatch(/032_contribution_atomic|026_contribution_atomic|attribute_contribution_for_booking_atomic/i);
   });
 
-  it('proposed migration 037: SECURITY DEFINER atomic function defined', () => {
-    const sql = read('supabase/proposed/037_contribution_atomic_attribution.sql');
+  it('proposed migration 040: SECURITY DEFINER atomic function defined', () => {
+    const sql = read('supabase/proposed/040_contribution_atomic_attribution.sql');
     expect(sql).toContain('attribute_contribution_for_booking_atomic');
     expect(sql).toContain('SECURITY DEFINER');
     expect(sql).toContain('NOT APPLIED TO ANY DATABASE');
   });
 
-  it('proposed migration 037: uses ON CONFLICT idempotence (no duplicate risk)', () => {
-    const sql = read('supabase/proposed/037_contribution_atomic_attribution.sql');
+  it('proposed migration 040: uses ON CONFLICT idempotence (no duplicate risk)', () => {
+    const sql = read('supabase/proposed/040_contribution_atomic_attribution.sql');
     expect(sql).toContain('ON CONFLICT ON CONSTRAINT uq_contribution_booking DO NOTHING');
   });
 });
@@ -604,16 +605,18 @@ describe('hardening — 18. Gate 3 remains open', () => {
     expect(doc).toContain('REVISE_BEFORE_APPLY');
   });
 
-  it('proposed migration 026 renamed 026 → 032 → 037 (numbering conflicts resolved twice)', () => {
+  it('proposed migration 026 renamed 026 → 032 → 037 → 040 (numbering conflicts resolved three times)', () => {
     // Applied migration 026 exists (company route RLS gaps)
     expect(exists('supabase/migrations/026_company_route_rls_gaps.sql')).toBe(true);
-    // Proposed atomic attribution must NOT use conflicting number 026
+    // Proposed atomic attribution must NOT use any conflicting/superseded number
     expect(exists('supabase/proposed/026_contribution_atomic_attribution.sql')).toBe(false);
+    expect(exists('supabase/proposed/032_contribution_atomic_attribution.sql')).toBe(false);
+    expect(exists('supabase/proposed/037_contribution_atomic_attribution.sql')).toBe(false);
     // Correct renumbered version must exist
-    expect(exists('supabase/proposed/037_contribution_atomic_attribution.sql')).toBe(true);
+    expect(exists('supabase/proposed/040_contribution_atomic_attribution.sql')).toBe(true);
     // New file must reference correct number in header
-    const mig037 = read('supabase/proposed/037_contribution_atomic_attribution.sql');
-    expect(mig037).toContain('037_contribution_atomic_attribution');
+    const mig037 = read('supabase/proposed/040_contribution_atomic_attribution.sql');
+    expect(mig037).toContain('040_contribution_atomic_attribution');
     expect(mig037).toContain('026_company_route_rls_gaps');
   });
 });
@@ -849,28 +852,28 @@ describe('hardening — 19. Migration 025 revision sprint (M025-1 through M025-6
     expect(ceBlock).not.toContain('worker_id');
   });
 
-  // Migration 037 compatibility after M025-6 schema expansion
-  it('migration 037 populates source_type field in both INSERTs', () => {
-    const sql = read('supabase/proposed/037_contribution_atomic_attribution.sql');
+  // Migration 040 compatibility after M025-6 schema expansion
+  it('migration 040 populates source_type field in both INSERTs', () => {
+    const sql = read('supabase/proposed/040_contribution_atomic_attribution.sql');
     expect(sql).toContain("source_type, event_type, contribution_component_hint");
     expect(sql).toContain("'booking', 'attendance_marked', 'activation_depth'");
   });
 
-  it('migration 037 sets is_cross_company = true on both INSERTs', () => {
-    const sql = read('supabase/proposed/037_contribution_atomic_attribution.sql');
+  it('migration 040 sets is_cross_company = true on both INSERTs', () => {
+    const sql = read('supabase/proposed/040_contribution_atomic_attribution.sql');
     const count = (sql.match(/is_cross_company/g) || []).length;
     expect(count).toBeGreaterThanOrEqual(2); // at least in column list + value
   });
 
-  it('migration 037 sets privacy_threshold_met = false at INSERT time (runtime threshold enforced by RPC)', () => {
-    const sql = read('supabase/proposed/037_contribution_atomic_attribution.sql');
+  it('migration 040 sets privacy_threshold_met = false at INSERT time (runtime threshold enforced by RPC)', () => {
+    const sql = read('supabase/proposed/040_contribution_atomic_attribution.sql');
     expect(sql).toContain('privacy_threshold_met');
     expect(sql).toContain('false');
   });
 
-  it('migration 037 is NOT in forward pipeline (Gate 3 open)', () => {
-    expect(exists('supabase/migrations/037_contribution_atomic_attribution.sql')).toBe(false);
-    expect(exists('supabase/proposed/037_contribution_atomic_attribution.sql')).toBe(true);
+  it('migration 040 is NOT in forward pipeline (Gate 3 open)', () => {
+    expect(exists('supabase/migrations/040_contribution_atomic_attribution.sql')).toBe(false);
+    expect(exists('supabase/proposed/040_contribution_atomic_attribution.sql')).toBe(true);
   });
 
   // Pre-pilot plan doc updated with revision status
@@ -896,10 +899,10 @@ describe('hardening — 19. Migration 025 revision sprint (M025-1 through M025-6
     expect(read(MIG025)).toMatch(/NOT applied/i);
   });
 
-  it('migration 037 is not applied (in proposed/, not in applied pipeline)', () => {
-    expect(exists('supabase/proposed/037_contribution_atomic_attribution.sql')).toBe(true);
-    expect(exists('supabase/migrations/037_contribution_atomic_attribution.sql')).toBe(false);
-    expect(read('supabase/proposed/037_contribution_atomic_attribution.sql')).toContain('NOT APPLIED');
+  it('migration 040 is not applied (in proposed/, not in applied pipeline)', () => {
+    expect(exists('supabase/proposed/040_contribution_atomic_attribution.sql')).toBe(true);
+    expect(exists('supabase/migrations/040_contribution_atomic_attribution.sql')).toBe(false);
+    expect(read('supabase/proposed/040_contribution_atomic_attribution.sql')).toContain('NOT APPLIED');
   });
 
   it('KORA Contribution remains outside KORA Index after revision sprint', async () => {
@@ -918,27 +921,32 @@ describe('hardening — 19. Migration 025 revision sprint (M025-1 through M025-6
   });
 });
 
-// ── 20. Migration 038 — Initiative Adoption Source Model ─────────────────────
+// ── 20. Migration 041 — Initiative Adoption Source Model ─────────────────────
 
-describe('hardening — 20. Migration 038 initiative adoption source model', () => {
-  const MIG038 = 'supabase/proposed/038_initiative_adoption_source_model.sql';
+describe('hardening — 20. Migration 041 initiative adoption source model', () => {
+  const MIG038 = 'supabase/proposed/041_initiative_adoption_source_model.sql';
   const MIG025 = 'supabase/migrations/025_commons_booking_contribution.sql';
 
   // File location
-  it('migration 038 exists in supabase/proposed/ (design only, not in forward pipeline)', () => {
+  it('migration 041 exists in supabase/proposed/ (design only, not in forward pipeline)', () => {
     expect(exists(MIG038)).toBe(true);
   });
 
-  it('migration 038 is NOT in supabase/migrations/ (not applied)', () => {
-    expect(exists('supabase/migrations/038_initiative_adoption_source_model.sql')).toBe(false);
+  it('migration 041 is NOT in supabase/migrations/ (not applied)', () => {
+    expect(exists('supabase/migrations/041_initiative_adoption_source_model.sql')).toBe(false);
   });
 
-  it('migration 038 carries NOT APPLIED marker', () => {
+  it('superseded numbers (033, 038) no longer exist in supabase/proposed/', () => {
+    expect(exists('supabase/proposed/033_initiative_adoption_source_model.sql')).toBe(false);
+    expect(exists('supabase/proposed/038_initiative_adoption_source_model.sql')).toBe(false);
+  });
+
+  it('migration 041 carries NOT APPLIED marker', () => {
     expect(read(MIG038)).toMatch(/NOT APPLIED/i);
   });
 
   // Table definition
-  it('migration 038 creates commons.initiative_adoption table', () => {
+  it('migration 041 creates commons.initiative_adoption table', () => {
     const sql = read(MIG038);
     expect(sql).toContain('CREATE TABLE IF NOT EXISTS commons.initiative_adoption');
   });
@@ -1031,25 +1039,25 @@ describe('hardening — 20. Migration 038 initiative adoption source model', () 
   });
 
   // evidence_status alignment with migration 025 M025-2
-  it('evidence_status in 038 includes self_declared (aligned with mig 025 M025-2)', () => {
+  it('evidence_status in 041 includes self_declared (aligned with mig 025 M025-2)', () => {
     expect(read(MIG038)).toContain("'self_declared'");
   });
 
-  it('evidence_status in 038 includes verified (aligned with mig 025 M025-2)', () => {
+  it('evidence_status in 041 includes verified (aligned with mig 025 M025-2)', () => {
     const sql = read(MIG038);
     // Check within the initiative_adoption table block (not contribution_event)
     expect(sql).toContain("'verified'");
   });
 
-  it('evidence_status in 038 includes partner_verified (aligned with mig 025 M025-2)', () => {
+  it('evidence_status in 041 includes partner_verified (aligned with mig 025 M025-2)', () => {
     expect(read(MIG038)).toContain("'partner_verified'");
   });
 
-  it('evidence_status in 038 includes advisor_verified (aligned with mig 025 M025-2)', () => {
+  it('evidence_status in 041 includes advisor_verified (aligned with mig 025 M025-2)', () => {
     expect(read(MIG038)).toContain("'advisor_verified'");
   });
 
-  it('evidence_status in 038 includes system_verified (aligned with mig 025 M025-2)', () => {
+  it('evidence_status in 041 includes system_verified (aligned with mig 025 M025-2)', () => {
     expect(read(MIG038)).toContain("'system_verified'");
   });
 
@@ -1150,8 +1158,8 @@ describe('hardening — 20. Migration 038 initiative adoption source model', () 
     expect(read(MIG038)).toContain("'kora_enabled_adoption'");
   });
 
-  // All contribution_kind values used in 038 exist in 025 CHECK constraint
-  it('all 038 contribution_kinds are present in migration 025 M025-1 CHECK', () => {
+  // All contribution_kind values used in 041 exist in 025 CHECK constraint
+  it('all 041 contribution_kinds are present in migration 025 M025-1 CHECK', () => {
     const sql025 = read(MIG025);
     expect(sql025).toContain("'company_adoption'");
     expect(sql025).toContain("'company_sponsorship'");
@@ -1161,8 +1169,8 @@ describe('hardening — 20. Migration 038 initiative adoption source model', () 
     expect(sql025).toContain("'kora_enabled_adoption'");
   });
 
-  // All role values used in 038 exist in 025 M025-3 CHECK
-  it('all 038 role values are present in migration 025 M025-3 CHECK', () => {
+  // All role values used in 041 exist in 025 M025-3 CHECK
+  it('all 041 role values are present in migration 025 M025-3 CHECK', () => {
     const sql025 = read(MIG025);
     expect(sql025).toContain("'adopter'");
     expect(sql025).toContain("'sponsor'");
@@ -1195,16 +1203,16 @@ describe('hardening — 20. Migration 038 initiative adoption source model', () 
   });
 
   // Apply order documented
-  it('migration 038 documents apply order 025 → 037 → 038', () => {
+  it('migration 041 documents apply order 025 → 040 → 041', () => {
     const sql = read(MIG038);
     expect(sql).toContain('025');
-    expect(sql).toContain('037');
-    expect(sql).toContain('038');
-    expect(sql).toMatch(/025.*037.*038|APPLY ORDER/);
+    expect(sql).toContain('040');
+    expect(sql).toContain('041');
+    expect(sql).toMatch(/025.*040.*041|APPLY ORDER/);
   });
 
   // Gate 3 dependency documented
-  it('migration 038 documents Gate 3 dependency', () => {
+  it('migration 041 documents Gate 3 dependency', () => {
     expect(read(MIG038)).toContain('Gate 3');
   });
 
@@ -1235,33 +1243,33 @@ describe('hardening — 20. Migration 038 initiative adoption source model', () 
   });
 
   // Migration status
-  it('migration 038 is NOT applied — not in forward migration pipeline', () => {
-    expect(exists('supabase/migrations/038_initiative_adoption_source_model.sql')).toBe(false);
-    expect(exists('supabase/proposed/038_initiative_adoption_source_model.sql')).toBe(true);
+  it('migration 041 is NOT applied — not in forward migration pipeline', () => {
+    expect(exists('supabase/migrations/041_initiative_adoption_source_model.sql')).toBe(false);
+    expect(exists('supabase/proposed/041_initiative_adoption_source_model.sql')).toBe(true);
   });
 
-  it('migration 025 is still NOT applied (unchanged by 038 design sprint)', () => {
+  it('migration 025 is still NOT applied (unchanged by 041 design sprint)', () => {
     expect(read(MIG025)).toMatch(/NOT applied/i);
     expect(exists('supabase/migrations/025_commons_booking_contribution.sql')).toBe(true);
   });
 
-  it('migration 037 is still NOT applied (unchanged by 038 design sprint)', () => {
-    expect(exists('supabase/proposed/037_contribution_atomic_attribution.sql')).toBe(true);
-    expect(exists('supabase/migrations/037_contribution_atomic_attribution.sql')).toBe(false);
+  it('migration 040 is still NOT applied (unchanged by 041 design sprint)', () => {
+    expect(exists('supabase/proposed/040_contribution_atomic_attribution.sql')).toBe(true);
+    expect(exists('supabase/migrations/040_contribution_atomic_attribution.sql')).toBe(false);
   });
 
   // Global doctrine
-  it('KORA Contribution remains outside KORA Index after 038 design sprint', async () => {
+  it('KORA Contribution remains outside KORA Index after 041 design sprint', async () => {
     const { CONTRIBUTION_IS_KORA_INDEX_COMPONENT } = await import('@/lib/kora-contribution/contribution-methodology');
     expect(CONTRIBUTION_IS_KORA_INDEX_COMPONENT).toBe(false);
   });
 
-  it('no worker ranking introduced by 038 design sprint', async () => {
+  it('no worker ranking introduced by 041 design sprint', async () => {
     const { CONTRIBUTION_NO_RANKING } = await import('@/lib/kora-contribution/contribution-methodology');
     expect(CONTRIBUTION_NO_RANKING).toBe(true);
   });
 
-  it('no individual contribution score introduced by 038 design sprint', async () => {
+  it('no individual contribution score introduced by 041 design sprint', async () => {
     const { CONTRIBUTION_NO_INDIVIDUAL_SCORE } = await import('@/lib/kora-contribution/contribution-methodology');
     expect(CONTRIBUTION_NO_INDIVIDUAL_SCORE).toBe(true);
   });
@@ -1271,8 +1279,8 @@ describe('hardening — 20. Migration 038 initiative adoption source model', () 
 
 describe('hardening — 21. Contribution event idempotency / reporting period (M025-7)', () => {
   const MIG025 = 'supabase/migrations/025_commons_booking_contribution.sql';
-  const MIG037 = 'supabase/proposed/037_contribution_atomic_attribution.sql';
-  const MIG038 = 'supabase/proposed/038_initiative_adoption_source_model.sql';
+  const MIG037 = 'supabase/proposed/040_contribution_atomic_attribution.sql';
+  const MIG038 = 'supabase/proposed/041_initiative_adoption_source_model.sql';
 
   // ── Constraint design ──────────────────────────────────────────────────────
 
@@ -1377,20 +1385,20 @@ describe('hardening — 21. Contribution event idempotency / reporting period (M
     // They coexist because contribution_kind is part of the constraint
   });
 
-  // ── Migration 037 compatibility ────────────────────────────────────────────
+  // ── Migration 040 compatibility ────────────────────────────────────────────
 
-  it('migration 037 uses uq_contribution_booking (not uq_contribution_external)', () => {
+  it('migration 040 uses uq_contribution_booking (not uq_contribution_external)', () => {
     const sql = read(MIG037);
     const conflicts = (sql.match(/ON CONFLICT ON CONSTRAINT \S+/g) || []);
     expect(conflicts.every(c => c.includes('uq_contribution_booking'))).toBe(true);
     expect(sql).not.toContain('ON CONFLICT ON CONSTRAINT uq_contribution_external');
   });
 
-  it('migration 037 M025-7 compatibility note present', () => {
+  it('migration 040 M025-7 compatibility note present', () => {
     expect(read(MIG037)).toContain('M025-7');
   });
 
-  it('migration 037 ON CONFLICT targets are valid against revised migration 025 constraints', () => {
+  it('migration 040 ON CONFLICT targets are valid against revised migration 025 constraints', () => {
     // uq_contribution_booking exists in migration 025 and is UNCHANGED by M025-7
     const sql025 = read(MIG025);
     const sql037 = read(MIG037);
@@ -1398,31 +1406,31 @@ describe('hardening — 21. Contribution event idempotency / reporting period (M
     expect(sql037).toContain('ON CONFLICT ON CONSTRAINT uq_contribution_booking DO NOTHING');
   });
 
-  // ── Migration 038 compatibility ────────────────────────────────────────────
+  // ── Migration 041 compatibility ────────────────────────────────────────────
 
-  it('migration 038 uses uq_contribution_external for contribution_event inserts', () => {
+  it('migration 041 uses uq_contribution_external for contribution_event inserts', () => {
     const sql = read(MIG038);
     // Both adopter and promoter rows use uq_contribution_external
     const count = (sql.match(/ON CONFLICT ON CONSTRAINT uq_contribution_external/g) || []).length;
     expect(count).toBeGreaterThanOrEqual(2);
   });
 
-  it('migration 038 attribution INSERT includes tenant_id (constraint column 1)', () => {
+  it('migration 041 attribution INSERT includes tenant_id (constraint column 1)', () => {
     const sql = read(MIG038);
     expect(sql).toContain('tenant_id,');
   });
 
-  it('migration 038 attribution INSERT includes source_post_id (constraint column 2)', () => {
+  it('migration 041 attribution INSERT includes source_post_id (constraint column 2)', () => {
     const sql = read(MIG038);
     expect(sql).toContain('source_post_id,');
   });
 
-  it('migration 038 attribution INSERT includes contribution_kind (constraint column 3)', () => {
+  it('migration 041 attribution INSERT includes contribution_kind (constraint column 3)', () => {
     const sql = read(MIG038);
     expect(sql).toContain('contribution_kind,');
   });
 
-  it('migration 038 attribution INSERT includes role (constraint column 4 — M025-7)', () => {
+  it('migration 041 attribution INSERT includes role (constraint column 4 — M025-7)', () => {
     // role is set via v_adopter_role and 'promoter' in both INSERTs
     const sql = read(MIG038);
     expect(sql).toContain('role,');
@@ -1430,14 +1438,14 @@ describe('hardening — 21. Contribution event idempotency / reporting period (M
     expect(sql).toContain("'promoter'");
   });
 
-  it('migration 038 attribution INSERT includes reporting_period (constraint column 5 — M025-7)', () => {
+  it('migration 041 attribution INSERT includes reporting_period (constraint column 5 — M025-7)', () => {
     // p_reporting_period is passed to both INSERTs
     const sql = read(MIG038);
     expect(sql).toContain('reporting_period,');
     expect(sql).toContain('p_reporting_period,');
   });
 
-  it('migration 038 prerequisites note updated for M025-7 constraint requirement', () => {
+  it('migration 041 prerequisites note updated for M025-7 constraint requirement', () => {
     expect(read(MIG038)).toContain('M025-7');
     expect(read(MIG038)).toContain('5-column');
   });
@@ -1486,14 +1494,14 @@ describe('hardening — 21. Contribution event idempotency / reporting period (M
     expect(read(MIG025)).toMatch(/NOT applied/i);
   });
 
-  it('migration 037 is NOT applied after idempotency sprint', () => {
-    expect(exists('supabase/proposed/037_contribution_atomic_attribution.sql')).toBe(true);
-    expect(exists('supabase/migrations/037_contribution_atomic_attribution.sql')).toBe(false);
+  it('migration 040 is NOT applied after idempotency sprint', () => {
+    expect(exists('supabase/proposed/040_contribution_atomic_attribution.sql')).toBe(true);
+    expect(exists('supabase/migrations/040_contribution_atomic_attribution.sql')).toBe(false);
   });
 
-  it('migration 038 is NOT applied after idempotency sprint', () => {
-    expect(exists('supabase/proposed/038_initiative_adoption_source_model.sql')).toBe(true);
-    expect(exists('supabase/migrations/038_initiative_adoption_source_model.sql')).toBe(false);
+  it('migration 041 is NOT applied after idempotency sprint', () => {
+    expect(exists('supabase/proposed/041_initiative_adoption_source_model.sql')).toBe(true);
+    expect(exists('supabase/migrations/041_initiative_adoption_source_model.sql')).toBe(false);
   });
 
   // ── Global doctrine ────────────────────────────────────────────────────────
