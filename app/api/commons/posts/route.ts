@@ -168,7 +168,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data, error } = await db
       .schema('commons')
       .from('post')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .insert({
         tenant_id:      tenantId,
         author_user_id: adminAuth.id,
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const { data, error } = await db
       .schema('commons')
       .from('post')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       .insert({
         tenant_id:      tenantId,
         author_user_id: companyAuth.id,

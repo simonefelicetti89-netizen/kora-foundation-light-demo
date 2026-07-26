@@ -32,7 +32,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (error) return NextResponse.json({ error: 'Impossibile recuperare i dati.' }, { status: 500 });
 
   // Function returns a TABLE — data is an array of one element
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const row = (Array.isArray(data) ? data[0] : data) as Record<string, unknown> | null ?? {};
 
   return NextResponse.json({

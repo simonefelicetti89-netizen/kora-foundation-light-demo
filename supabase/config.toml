@@ -10,7 +10,16 @@ enabled = true
 port = 54321
 # Schemas to expose in your API. Tables, views and stored procedures in this schema will get API
 # endpoints. `public` and `graphql_public` schemas are included by default.
-schemas = ["public", "graphql_public"]
+# PILOT-TRUST-01 (F-08): analytics/personal/commons/network/audit are already
+# exposed on the real staging/production project (via the Supabase dashboard's
+# API settings), matching every `.schema('...')` call actually used in this
+# app's code (grep-verified) — this local config was simply never updated to
+# match, which silently broke any local PostgREST-backed query against these
+# schemas (PGRST106 "Invalid schema") without ever affecting staging/
+# production. RLS remains the actual access boundary in every case — exposing
+# a schema to PostgREST only makes its tables reachable at all; every table
+# in every schema below still has RLS enabled and FORCEd (see supabase/migrations).
+schemas = ["public", "graphql_public", "analytics", "personal", "commons", "network", "audit"]
 # Extra schemas to add to the search_path of every request.
 extra_search_path = ["public", "extensions"]
 # The maximum number of rows returns from a view, table, or stored procedure. Limits payload size

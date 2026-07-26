@@ -132,7 +132,7 @@ export default async function CVSharePage({
     LIFE: 0, GROWTH: 0, CONNECTION: 0, IMPACT: 0, LEGACY: 0,
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   const experiences: Array<{ title: string; pillar: PillarCode; statusLabel: string; date: string }> = [];
 
   for (const row of participations) {

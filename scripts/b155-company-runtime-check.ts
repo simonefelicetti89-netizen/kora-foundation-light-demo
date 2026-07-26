@@ -134,7 +134,7 @@ async function checkPage(page: string, cookie: string): Promise<PageResult> {
   try {
     // Follow up to 5 redirects, track them
     let currentUrl = url;
-    let redirectChain: string[] = [];
+    const redirectChain: string[] = [];
     let response: Response | null = null;
     let hops = 0;
 

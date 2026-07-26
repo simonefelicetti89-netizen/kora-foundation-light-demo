@@ -368,7 +368,7 @@ describe('Regression — constraints from sprint', () => {
       .sort((a: number, b: number) => a - b);
     expect(new Set(migNumbers).size).toBe(migNumbers.length); // no duplicate numbering
     const highest = migNumbers[migNumbers.length - 1];
-    const RETIRED_NUMBERS = new Set([29, 37, 38, 40, 41]);
+    const RETIRED_NUMBERS = new Set([29, 37, 38, 40, 41, 43, 44]);
     const expectedNumbers = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => !RETIRED_NUMBERS.has(n));
     expect(migNumbers).toEqual(expectedNumbers); // contiguous except the retired numbers
   });

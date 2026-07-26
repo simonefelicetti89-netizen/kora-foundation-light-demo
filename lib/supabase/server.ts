@@ -35,9 +35,43 @@ export async function getSupabaseServerClient() {
 }
 
 /**
- * Service-role client — bypasses RLS.
- * Use ONLY in trusted server contexts: audit log writes, admin batch operations.
- * NEVER expose service role key to the browser.
+ * Service-role client — bypasses RLS entirely (not just its own row checks —
+ * every policy on every table, for every query made with this client).
+ * NEVER expose the service role key to the browser.
+ *
+ * PILOT-TRUST-01 (F-02): running inside a Next.js Server Component or Route
+ * Handler is NOT, by itself, a safe reason to reach for this client. A server
+ * component still executes on behalf of one specific signed-in user — the
+ * correct default for a page that reads/writes that user's own or their
+ * tenant's data is {@link getSupabaseServerClient}, which forwards the real
+ * session and lets Postgres RLS do the actual authorization. "Server-side" is
+ * not a synonym for "trusted to bypass RLS" — it only means the service key
+ * *can* be used here without leaking to a browser; whether it *should* be is
+ * a separate question, and the answer is almost always no for a page a
+ * signed-in worker/company/partner user is looking at.
+ *
+ * ALLOWED here (see tests/unit/pilot-trust-01-service-role-guard.test.ts for
+ * the enforced allowlist):
+ *   - KORA_ADMIN-only admin workspace pages/routes (app/admin/**, app/api/admin/**)
+ *     — internal operator tooling, not a tenant-facing self-service surface.
+ *   - Documented server-only utilities: audit log writes, batch/pipeline
+ *     persistence (e.g. scoring results), private Storage bucket signed URLs,
+ *     Supabase Auth Admin API calls (auth.users administration has no RLS
+ *     equivalent), worker/company provisioning.
+ *   - A structurally-justified public/anonymous route with no session at all
+ *     to key an RLS policy off (e.g. a hashed-token share link) — narrow and
+ *     rare, must be individually justified, not a default escape hatch.
+ *
+ * FORBIDDEN here:
+ *   - Any page a WORKER, COMPANY_ADMIN/COMPANY_VIEWER, or PARTNER reaches as
+ *     their own workspace/self-service surface. If a query returns nothing
+ *     under the session client because a policy is missing, the fix is a new,
+ *     narrowly-scoped RLS policy (a real migration, reviewed and tested) —
+ *     never reaching for this client to route around the gap.
+ *
+ * If you're unsure which one to use: start with getSupabaseServerClient(). If
+ * a query legitimately returns fewer rows than expected, that is RLS working
+ * — go add the missing policy, don't swap clients.
  */
 export function getSupabaseServiceClient() {
   const url  = process.env.NEXT_PUBLIC_SUPABASE_URL!;

@@ -166,11 +166,13 @@ See `docs/GATE2_STATUS.md` for the full canonical Gate 2 status and conditions.
 cp .env.local.example .env.local   # add Supabase URL + anon key
 npm install
 npm run dev                        # development server
-npx tsc --noEmit                   # TypeScript check
-npm run lint                       # ESLint check
+npm run typecheck                  # TypeScript check (tsc --noEmit)
+npm run lint                       # ESLint check — blocking in CI; see eslint-suppressions.json for the pre-existing-debt baseline
 npm run test                       # Vitest unit + integration tests
 npm run build                      # Next.js production build
 ```
+
+> **Health check:** `GET /api/health` returns `{ status, service, database, timestamp }` (200 if the DB is reachable, 503 otherwise) — no auth required, no sensitive data returned.
 
 > **Modalità demo (nessun DB richiesto):** se vuoi solo esplorare l'UI con dati sintetici, i
 > placeholder di `.env.local.example` sono sufficienti — `npm install && npm run dev` è tutto
@@ -200,7 +202,9 @@ supabase start
 
 # 2. Applica tutte le migration su un DB pulito
 supabase db reset
-# → applica tutti i file in supabase/migrations/ in ordine (001–028, 030–031; non esiste 029)
+# → applica tutti i file in supabase/migrations/ in ordine (001–045; numeri ritirati
+#   e mai riutilizzati: 029, 037, 038, 040, 041, 043, 044 — vedi
+#   tests/unit/b173-migration-numbering-guard.test.ts)
 
 # 3. Compila .env.local con le credenziali locali
 cp .env.local.example .env.local

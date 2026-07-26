@@ -1,0 +1,197 @@
+{
+  "app/admin/commons/page.tsx": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "app/admin/companies/[companyId]/page.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "app/admin/companies/new/_components/CreateLiveCompanyForm.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "app/admin/company-users-live/_components/CompanyUsersPanel.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "app/admin/company-workspace-live/_components/CompanyWorkspacePanel.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "app/admin/impact-units/_components/ImpactUnitsExplorer.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "app/admin/trial-control-center/page.tsx": {
+    "@typescript-eslint/ban-ts-comment": {
+      "count": 1
+    }
+  },
+  "app/api/admin/company-console/route.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "app/api/admin/company-submissions/route.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "app/api/commons/posts/[id]/route.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "app/api/commons/posts/route.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "app/api/worker/commons/bookings/route.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "app/commons/page.tsx": {
+    "react-hooks/preserve-manual-memoization": {
+      "count": 1
+    }
+  },
+  "app/worker/dynamic-cv/_components/DynamicCVClient.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/admin/AdminSubmissionQueue.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/admin/CompanyWorkspacePanel.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/commons/AdminBookingModerationSection.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "components/layout/Sidebar.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "lib/commons/cross-company-attribution.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 3
+    }
+  },
+  "lib/decision-pack/pdf-data.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 9
+    }
+  },
+  "lib/ingestion/attendees-interpreter.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 2
+    }
+  },
+  "lib/live/office-attribution.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 4
+    }
+  },
+  "lib/live/persistence.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "scripts/kora-link/run-behavioral-suite.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 5
+    }
+  },
+  "scripts/kora-link/run-live-staging-suite.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "services/commons/BookingService.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 26
+    }
+  },
+  "services/commons/CommonsService.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "services/kora-contribution/KoraContributionService.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 14
+    }
+  },
+  "tests/unit/b129-demo-foundation.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 2
+    }
+  },
+  "tests/unit/b132a-demo-boundary.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 2
+    }
+  },
+  "tests/unit/b138c-normative-mapping-pdf-integration.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 2
+    }
+  },
+  "tests/unit/b167-contribution-dashboard.test.ts": {
+    "@typescript-eslint/no-explicit-any": {
+      "count": 1
+    }
+  },
+  "tests/unit/b95c-workforce-navigation.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 6
+    }
+  },
+  "tests/unit/b99-provision-credentials.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 2
+    }
+  },
+  "tests/unit/gate2-3-final-closure-audit.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 3
+    }
+  },
+  "tests/unit/gate2-3-migration-030-preparation.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 1
+    }
+  },
+  "tests/unit/gate2-review-pack.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 4
+    }
+  },
+  "tests/unit/p0-commercial-credibility.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 1
+    }
+  },
+  "tests/unit/p0-hotfix-navigation-contrast.test.ts": {
+    "@typescript-eslint/no-require-imports": {
+      "count": 2
+    }
+  }
+}

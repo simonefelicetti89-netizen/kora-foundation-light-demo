@@ -13,7 +13,7 @@ on:
 
 jobs:
   ci:
-    name: TypeScript, tests, build, lint (report-only)
+    name: TypeScript, tests, build, lint (blocking)
     runs-on: ubuntu-latest
 
     steps:
@@ -38,23 +38,32 @@ jobs:
       - name: Build
         run: npm run build
 
-      # Lint is report-only for now: the repo has known pre-existing ESLint
-      # debt (mostly in tests/unit/*, e.g. no-require-imports/no-unused-vars).
-      # `|| true` keeps this step visible in the CI log without failing the
-      # PR check. Remove `|| true` once the existing lint debt is reduced
-      # and lint is meant to gate merges.
-      - name: Lint (report-only, non-blocking)
-        run: npm run lint || true
+      # PILOT-TRUST-01 (F-01): lint is a real, blocking gate. Historical
+      # ESLint debt present before this sprint (114 pre-existing errors,
+      # mostly @typescript-eslint/no-explicit-any and no-require-imports in
+      # tests/unit/*) is captured as an exact-count baseline in
+      # eslint-suppressions.json (ESLint's own native --suppress-all
+      # mechanism, generated once, committed to the repo). A NEW violation —
+      # in a new file, or one more than the recorded count in an existing
+      # file — is NOT covered by the baseline and fails this step for real.
+      # This step must run the bare command with no failure-masking suffix
+      # and no error-tolerant step option — see
+      # tests/unit/pilot-trust-01-lint-gate.test.ts for the guard that keeps
+      # it that way.
+      - name: Lint (blocking)
+        run: npm run lint
 
-  # KORA-LINK-HARDENING-AUTOMATION-13C — local integration job.
-  # Runs the C1-C10 behavioral suite against an ephemeral LOCAL Supabase/
+  # KORA-LINK-HARDENING-AUTOMATION-13C / PILOT-TRUST-01 (F-04) — mandatory
+  # DB-backed integration job. Runs against an ephemeral LOCAL Supabase/
   # Postgres stack (Docker) — never staging, never production, no repository
   # secrets referenced. See docs/KORA_LINK_AUTOMATED_TESTING.md.
-  # This job is separate from `ci` above so a Docker/Supabase CLI outage
-  # cannot block the fast static/unit gate; it still runs on every PR/push,
-  # since GitHub-hosted ubuntu-latest runners always have Docker available.
+  # This job is separate from `ci` above so its longer runtime (real Postgres,
+  # real RLS) doesn't slow down the fast static/unit gate — but it is NOT
+  # optional: DB unavailability, a skipped suite, or an RLS regression all
+  # fail this job for real. GitHub-hosted ubuntu-latest runners always have
+  # Docker available, so this is a hard prerequisite, not a soft check.
   kora-link-local-integration:
-    name: KORA Link — local behavioral suite (Docker/Supabase CLI)
+    name: DB-backed gate — RLS-03/05/06 + KORA Link behavioral suite (Docker/Supabase CLI, mandatory)
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -71,42 +80,100 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check Docker availability
-        id: docker_check
+      # F-04: DB availability is mandatory for this job — no silent skip.
+      # A missing Docker daemon fails the job outright instead of the
+      # previous soft warning-and-continue behavior.
+      - name: Check Docker availability (mandatory)
         run: |
-          if docker info > /dev/null 2>&1; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Docker is not available on this runner — skipping the KORA Link local integration suite (see docs/KORA_LINK_AUTOMATED_TESTING.md)."
+          if ! docker info > /dev/null 2>&1; then
+            echo "::error::Docker is not available on this runner. RLS-03/05/06 and the KORA Link behavioral suite require a real local Postgres — this job cannot silently skip them (F-04)."
+            exit 1
           fi
 
       - name: Install Supabase CLI
-        if: steps.docker_check.outputs.available == 'true'
         uses: supabase/setup-cli@v1
         with:
           version: latest
 
-      - name: Start local Supabase stack
-        if: steps.docker_check.outputs.available == 'true'
+      # `supabase start` blocks until every service (including Postgres) has
+      # passed its own health check before returning — this is the real
+      # readiness wait, not a fixed sleep. Applies migrations 001-042 fresh.
+      - name: Start local Supabase stack (applies migrations 001-042 fresh)
         run: supabase start
 
+      # Explicit, additional readiness proof beyond `supabase start`
+      # returning: a real query must succeed before any suite below runs.
+      # Uses the `pg` driver already installed by `npm ci` above — no extra
+      # Docker image pulled just for this check.
+      - name: Verify Postgres is actually reachable
+        run: |
+          node -e "
+            const { Client } = require('pg');
+            const c = new Client({ connectionString: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' });
+            c.connect()
+              .then(() => c.query('SELECT 1'))
+              .then(() => { console.log('Postgres reachable.'); return c.end(); })
+              .catch((e) => { console.error('::error::Postgres not reachable:', e.message); process.exit(1); });
+          "
+
+      # F-04: RLS-03 (two-tenant negative), RLS-05 (worker-vs-worker
+      # negative), RLS-06 (KORA_ADMIN positive control) — real assertions
+      # against the real local Postgres above, not the static/skip-safe
+      # default. RLS0{3,5,6}_ALLOW_RUN=true is the explicit, deliberate
+      # opt-in these suites require by design (see each file's own header) —
+      # only ever set here, against the ephemeral local DB started above,
+      # never against staging/production.
+      - name: Run RLS integration suites (RLS-03/05/06 — mandatory, no skip)
+        env:
+          RLS03_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS03_ALLOW_RUN: 'true'
+          RLS05_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS05_ALLOW_RUN: 'true'
+          RLS06_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS06_ALLOW_RUN: 'true'
+          RLS07_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS07_ALLOW_RUN: 'true'
+        run: |
+          npx vitest run \
+            tests/integration/rls-two-tenant-negative.test.ts \
+            tests/integration/rls-worker-isolation.test.ts \
+            tests/integration/rls-kora-admin-control.test.ts \
+            tests/integration/rls-worker-own-initiative-participation.test.ts \
+            --reporter=json --outputFile=rls-integration-report.json
+
+      # F-04: machine-readable assertion — fails the job if any RLS test
+      # failed, or if the skipped count is anything other than exactly 0
+      # (a skipped suite here would mean describe.skipIf(!ready) silently
+      # didn't run — e.g. a typo'd env var — which must be a hard failure,
+      # not a quiet pass).
+      - name: Assert 0 RLS tests skipped and 0 failed
+        if: always()
+        run: |
+          node -e "
+            const r = require('./rls-integration-report.json');
+            console.log('RLS suite — total:', r.numTotalTests, 'passed:', r.numPassedTests, 'failed:', r.numFailedTests, 'skipped:', r.numPendingTests);
+            if (r.numTotalTests === 0) { console.error('::error::RLS integration suite ran 0 tests — the suite did not execute at all.'); process.exit(1); }
+            if (r.numPendingTests !== 0) { console.error('::error::' + r.numPendingTests + ' RLS test(s) were skipped — describe.skipIf(!ready) did not resolve to ready. F-04 requires 0 skipped in this job.'); process.exit(1); }
+            if (r.numFailedTests !== 0) { console.error('::error::' + r.numFailedTests + ' RLS test(s) failed — a cross-tenant/cross-worker isolation or KORA_ADMIN control regression.'); process.exit(1); }
+          "
+
       - name: Run KORA Link behavioral suite (C1-C10)
-        if: steps.docker_check.outputs.available == 'true'
         env:
           KORA_LINK_SKIP_DB_RESET: '1' # supabase start already applied 001-042 fresh
         run: npm run test:kora-link:behavioral > kora-link-behavioral-report.json
 
-      - name: Upload behavioral suite report
-        if: always() && steps.docker_check.outputs.available == 'true'
+      - name: Upload suite reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: kora-link-behavioral-report
-          path: kora-link-behavioral-report.json
+          name: db-backed-gate-reports
+          path: |
+            rls-integration-report.json
+            kora-link-behavioral-report.json
           retention-days: 30
 
-      # Cleanup runs even if the suite above failed, so no local Supabase
+      # Cleanup runs even if a suite above failed, so no local Supabase
       # container is ever left running on the runner.
       - name: Stop local Supabase stack
-        if: always() && steps.docker_check.outputs.available == 'true'
+        if: always()
         run: supabase stop
