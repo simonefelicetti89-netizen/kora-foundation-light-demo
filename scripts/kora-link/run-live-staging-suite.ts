@@ -138,6 +138,8 @@ const createdTenantIds: string[] = [];
 const createdBatchCodes: string[] = [];
 const createdWorkerAuthUserIds: string[] = [];
 const createdCompanyIdentityAuthUserIds: string[] = [];
+const createdPartnerProfileNames: string[] = [];
+const createdPartnerIdentityAuthUserIds: string[] = [];
 
 async function claimAs(client: Client, sub: string, role: string, tenantId?: string | null) {
   await client.query(`SELECT set_config('request.jwt.claims', $1, false);`, [
@@ -259,6 +261,28 @@ async function smokeC5Company(client: Client, tenant: string) {
   assertTrue('C5.smoke.valid', 'C5', 'valid company_identity mapping allowed on real staging infra', allowed.length >= 0); // 0 rows is valid if no links; presence of the call succeeding (no exception) is what matters here
 }
 
+async function smokeC6Partner(client: Client) {
+  const partnerName = `${FIXTURE_PREFIX}SMOKE_C6_PARTNER`;
+  await client.query(`INSERT INTO network.partner_profile (name, pillar, status) VALUES ($1, 'GROWTH', 'draft') ON CONFLICT DO NOTHING;`, [partnerName]);
+  createdPartnerProfileNames.push(partnerName);
+  const partnerId = (await client.query(`SELECT id FROM network.partner_profile WHERE name = $1;`, [partnerName])).rows[0].id as string;
+
+  const partnerAuthNoMapping = randomUUID();
+  await claimAs(client, partnerAuthNoMapping, 'PARTNER', null);
+  const noMapping = (await client.query(`SELECT kora_link.is_provisioned_partner($1) AS ok;`, [partnerId])).rows[0].ok;
+  assertTrue('C6.smoke.missing', 'C6', 'is_provisioned_partner() false when no mapping exists, on real staging infra', noMapping === false);
+
+  const partnerAuthValid = randomUUID();
+  await client.query(
+    `INSERT INTO network.partner_identity (partner_id, auth_user_id, email, status) VALUES ($1, $2, $3, 'active');`,
+    [partnerId, partnerAuthValid, `${FIXTURE_PREFIX.toLowerCase()}valid@automation.test`],
+  );
+  createdPartnerIdentityAuthUserIds.push(partnerAuthValid);
+  await claimAs(client, partnerAuthValid, 'PARTNER', null);
+  const validMapping = (await client.query(`SELECT kora_link.is_provisioned_partner($1) AS ok;`, [partnerId])).rows[0].ok;
+  assertTrue('C6.smoke.valid', 'C6', 'is_provisioned_partner() true for a temporary valid mapping, on real staging infra', validMapping === true);
+}
+
 async function smokeC10Concurrency(dbUrl: string, tenant: string, batchId: string, client: Client) {
   const link = await createLink(client, batchId, tenant, `${FIXTURE_PREFIX}SMOKE_C10_${randomUUID().slice(0, 8)}`);
   const worker1 = await createWorker(client, tenant);
@@ -308,6 +332,12 @@ async function cleanup(client: Client) {
   if (createdCompanyIdentityAuthUserIds.length > 0) {
     await client.query(`DELETE FROM analytics.company_identity WHERE auth_user_id = ANY($1::uuid[]);`, [createdCompanyIdentityAuthUserIds]);
   }
+  if (createdPartnerIdentityAuthUserIds.length > 0) {
+    await client.query(`DELETE FROM network.partner_identity WHERE auth_user_id = ANY($1::uuid[]);`, [createdPartnerIdentityAuthUserIds]);
+  }
+  for (const name of createdPartnerProfileNames) {
+    await client.query(`DELETE FROM network.partner_profile WHERE name = $1;`, [name]);
+  }
   if (createdWorkerAuthUserIds.length > 0) {
     await client.query(`DELETE FROM personal.worker_identity WHERE auth_user_id = ANY($1::uuid[]);`, [createdWorkerAuthUserIds]);
   }
@@ -338,6 +368,7 @@ async function main() {
     await smokeC2C3Worker(client, tenant);
     await smokeC4Revocation(client, tenant);
     await smokeC5Company(client, tenant);
+    await smokeC6Partner(client);
     await smokeC10Concurrency(dbUrl, tenant, batch, client);
   } finally {
     await clearClaims(client);
