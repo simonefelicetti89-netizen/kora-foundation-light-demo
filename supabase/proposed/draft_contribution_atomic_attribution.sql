@@ -1,23 +1,39 @@
--- supabase/proposed/040_contribution_atomic_attribution.sql
--- PROPOSED MIGRATION — NOT APPLIED TO ANY DATABASE.
+-- supabase/proposed/draft_contribution_atomic_attribution.sql
+-- DRAFT / PROPOSED — migration number not assigned. NOT APPLIED TO ANY DATABASE.
 -- Purpose: atomic KORA Contribution attribution for cross-company bookings.
 --
--- NUMBERING: was previously proposed as 026 — renumbered to 032 (2026-06-24) to
--- avoid conflict with applied migration 026_company_route_rls_gaps.sql.
--- Renumbered again to 037 (B173-FIX-01) because active migrations
+-- NUMBERING HISTORY (retired/never-to-be-reused numbers this file has held):
+-- was previously proposed as 026 — renumbered to 032 (2026-06-24) to avoid
+-- conflict with applied migration 026_company_route_rls_gaps.sql. Renumbered
+-- again to 037 (B173-FIX-01) because active migrations
 -- 032_network_schema_grants.sql and 033_personal_worker_identity_service_role_grant.sql
--- were applied on 2026-07-09, reusing 032/033 without checking this directory.
--- Renumbered again to 040 (KORA-LINK-HARDENING-AUTOMATION-13A out-of-order-risk
--- fix) because 039_kora_link_audit_hardening.sql was created directly in
--- supabase/migrations/, and leaving this file at 037 would have meant a future
--- promotion landing chronologically before the already-canonical 039 — see
--- tests/unit/b173-migration-numbering-guard.test.ts for the guard preventing
--- this class of collision from recurring.
--- 034/035/036/039 are already reserved by canonical migrations, so 040
--- is the next free number across both supabase/migrations/ and supabase/proposed/.
--- Before promoting this file (or any proposed file) into supabase/migrations/,
--- re-check BOTH directories for the next free number — do not assume either
--- directory alone reflects the full reserved range.
+-- were applied on 2026-07-09, reusing 032/033 without checking this
+-- directory. Renumbered again to 040 (B173-FIX-02, KORA-LINK-HARDENING-
+-- AUTOMATION-13A) because 039_kora_link_audit_hardening.sql was created
+-- directly in supabase/migrations/. Renumbered again to 043 (B173-FIX-03,
+-- KORA-LINK-HARDENING-AUTOMATION-13B) because
+-- 042_kora_link_company_partner_provisioning.sql was, in turn, created
+-- directly in supabase/migrations/ — the same recurring risk class, three
+-- times.
+--
+-- B173-FIX-04 (KORA-LINK-HARDENING-AUTOMATION-13B, governance correction):
+-- carrying a canonical-looking 3-digit number on an unapplied, un-gated
+-- proposed file is what caused all three prior renumberings — every new
+-- canonical migration created directly in supabase/migrations/ (a normal,
+-- expected event in this repo's workflow) coincidentally invalidated
+-- whatever number this file happened to hold. This file is now named
+-- WITHOUT a number at all (draft_*.sql), removing the coupling entirely.
+-- It will receive its FIRST real migration number only at promotion time,
+-- computed as the next free number after the then-current highest
+-- canonical migration in supabase/migrations/ — never before. See
+-- tests/unit/b173-migration-numbering-guard.test.ts for the guard enforcing
+-- this convention (no supabase/proposed/ file may start with 3 digits) and
+-- retiring 029/037/038/040/041/043/044 permanently.
+--
+-- Before promoting this file into supabase/migrations/, check that
+-- directory for the next free number — do not assume any number this file
+-- has ever historically held above is still, or was ever meant to be,
+-- available.
 --
 -- PROBLEM (C-9): attributeContributionForBooking() in lib/commons/cross-company-attribution.ts
 -- writes 2 rows to commons.contribution_event sequentially without a transaction wrapper.

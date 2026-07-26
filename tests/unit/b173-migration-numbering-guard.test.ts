@@ -1,5 +1,6 @@
 /**
- * B173-FIX-01 / B173-FIX-02 — Migration numbering collision guard.
+ * B173-FIX-01 / B173-FIX-02 / B173-FIX-03 / B173-FIX-04 — Migration numbering
+ * collision guard.
  *
  * B173-FIX-01: B173-RO found that
  * supabase/proposed/032_contribution_atomic_attribution.sql and
@@ -16,21 +17,48 @@
  * chronologically BEHIND the already-canonical 039 — a future promotion of
  * 037/038 would then require out-of-order handling (--include-all) instead
  * of a clean linear apply. Fixed by renumbering 037 → 040 and 038 → 041,
- * ahead of 039, so any future promotion stays linear.
+ * ahead of 039, so any future promotion stays linear. The out-of-order guard
+ * (below) was added at this point specifically to catch recurrences of this
+ * exact class automatically.
+ *
+ * B173-FIX-03 (KORA-LINK-HARDENING-AUTOMATION-13B): the guard added in
+ * B173-FIX-02 fired again — 042_kora_link_company_partner_provisioning.sql
+ * was, in turn, created directly in supabase/migrations/, leaving 040/041
+ * chronologically BEHIND the new highest canonical migration (42). Fixed the
+ * same way: renumbered 040 → 043 and 041 → 044, ahead of 042. This
+ * demonstrates the guard doing exactly what it was built for — catching the
+ * same risk class against the test author's OWN new migration, not just
+ * historical ones.
+ *
+ * B173-FIX-04 (KORA-LINK-HARDENING-AUTOMATION-13B, governance correction —
+ * same sprint as B173-FIX-03, applied immediately after it): three
+ * renumberings in a row is a structural problem, not three unrelated
+ * incidents — carrying ANY canonical-looking 3-digit number on an unapplied
+ * proposed file guarantees another renumbering the next time a new canonical
+ * migration is created (a normal, frequent event). Root-fixed by removing
+ * numbers from supabase/proposed/ filenames entirely: 043 → draft_
+ * contribution_atomic_attribution.sql, 044 → draft_initiative_adoption_
+ * source_model.sql. A draft file gets its first real number only at
+ * promotion time (computed then, as the next free number after whatever the
+ * highest canonical migration is AT THAT MOMENT) — there is no longer a
+ * number for a new canonical migration to invalidate. This supersedes the
+ * B173-FIX-02 numeric "proposed number > highest canonical" comparison
+ * (nothing to compare once proposed files carry no number) with a simpler,
+ * permanent structural rule: no file in supabase/proposed/ may start with
+ * three digits, ever.
  *
  * Deliberately does not hardcode a total file count or a maximum migration
  * number — those are expected to grow over time. It only asserts structural
- * properties: no duplicate numeric prefixes, no overlap between the two
- * directories, the specific file-level facts fixed by these repairs, and
- * (B173-FIX-02) that no future proposed migration can reuse a number at or
- * below the highest canonical migration — the exact class of risk that
- * necessitated this second renumbering.
+ * properties: no duplicate numeric prefixes within supabase/migrations/, no
+ * 3-digit-prefixed file in supabase/proposed/, the specific file-level facts
+ * fixed by these repairs, and that every retired number (029, 037, 038, 040,
+ * 041, 043, 044) never reappears in either directory.
  *
  * No SQL executed. No DB touched. No migration applied.
  */
 
 import { describe, it, expect } from 'vitest';
-import { readdirSync, existsSync } from 'fs';
+import { readdirSync, existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 
 const root = resolve(process.cwd());
@@ -82,17 +110,17 @@ describe('B173-FIX-01 — 029 remains quarantined', () => {
   });
 });
 
-describe('B173-FIX-02 — renamed proposed files present at their new numbers', () => {
-  it('040_contribution_atomic_attribution.sql exists in supabase/proposed/', () => {
-    expect(existsSync(resolve(root, 'supabase/proposed/040_contribution_atomic_attribution.sql'))).toBe(true);
+describe('B173-FIX-04 — unnumbered draft files present at their permanent (numberless) names', () => {
+  it('draft_contribution_atomic_attribution.sql exists in supabase/proposed/', () => {
+    expect(existsSync(resolve(root, 'supabase/proposed/draft_contribution_atomic_attribution.sql'))).toBe(true);
   });
 
-  it('041_initiative_adoption_source_model.sql exists in supabase/proposed/', () => {
-    expect(existsSync(resolve(root, 'supabase/proposed/041_initiative_adoption_source_model.sql'))).toBe(true);
+  it('draft_initiative_adoption_source_model.sql exists in supabase/proposed/', () => {
+    expect(existsSync(resolve(root, 'supabase/proposed/draft_initiative_adoption_source_model.sql'))).toBe(true);
   });
 });
 
-describe('B173-FIX-01/02 — every superseded proposed filename no longer exists', () => {
+describe('B173-FIX-01/02/03 — every superseded NUMBERED proposed filename no longer exists', () => {
   it('032_contribution_atomic_attribution.sql is absent from supabase/proposed/ (B173-FIX-01)', () => {
     expect(existsSync(resolve(root, 'supabase/proposed/032_contribution_atomic_attribution.sql'))).toBe(false);
   });
@@ -108,6 +136,22 @@ describe('B173-FIX-01/02 — every superseded proposed filename no longer exists
   it('038_initiative_adoption_source_model.sql is absent from supabase/proposed/ (B173-FIX-02)', () => {
     expect(existsSync(resolve(root, 'supabase/proposed/038_initiative_adoption_source_model.sql'))).toBe(false);
   });
+
+  it('040_contribution_atomic_attribution.sql is absent from supabase/proposed/ (B173-FIX-03)', () => {
+    expect(existsSync(resolve(root, 'supabase/proposed/040_contribution_atomic_attribution.sql'))).toBe(false);
+  });
+
+  it('041_initiative_adoption_source_model.sql is absent from supabase/proposed/ (B173-FIX-03)', () => {
+    expect(existsSync(resolve(root, 'supabase/proposed/041_initiative_adoption_source_model.sql'))).toBe(false);
+  });
+
+  it('043_contribution_atomic_attribution.sql is absent from supabase/proposed/ (B173-FIX-04 — renamed to draft, no number)', () => {
+    expect(existsSync(resolve(root, 'supabase/proposed/043_contribution_atomic_attribution.sql'))).toBe(false);
+  });
+
+  it('044_initiative_adoption_source_model.sql is absent from supabase/proposed/ (B173-FIX-04 — renamed to draft, no number)', () => {
+    expect(existsSync(resolve(root, 'supabase/proposed/044_initiative_adoption_source_model.sql'))).toBe(false);
+  });
 });
 
 describe('B173-FIX-01 — active migrations 032/033 untouched by this repair', () => {
@@ -120,7 +164,7 @@ describe('B173-FIX-01 — active migrations 032/033 untouched by this repair', (
   });
 });
 
-describe('B173-FIX-02 — canonical migrations 034-036/039 untouched by this repair', () => {
+describe('B173-FIX-02/03 — canonical migrations 034-036/039/042 untouched by these repairs', () => {
   it('036_kora_link_rpc_functions.sql still exists in supabase/migrations/', () => {
     expect(existsSync(resolve(root, 'supabase/migrations/036_kora_link_rpc_functions.sql'))).toBe(true);
   });
@@ -128,21 +172,62 @@ describe('B173-FIX-02 — canonical migrations 034-036/039 untouched by this rep
   it('039_kora_link_audit_hardening.sql still exists in supabase/migrations/', () => {
     expect(existsSync(resolve(root, 'supabase/migrations/039_kora_link_audit_hardening.sql'))).toBe(true);
   });
+
+  it('042_kora_link_company_partner_provisioning.sql still exists in supabase/migrations/', () => {
+    expect(existsSync(resolve(root, 'supabase/migrations/042_kora_link_company_partner_provisioning.sql'))).toBe(true);
+  });
 });
 
-describe('B173-FIX-02 — no future proposed migration reuses a number at or below the highest canonical migration', () => {
-  it('every number in supabase/proposed/ is strictly greater than the highest number in supabase/migrations/', () => {
-    const canonicalNumbers = migrationNumbers('supabase/migrations');
-    const proposedNumbers = migrationNumbers('supabase/proposed');
-    expect(canonicalNumbers.length).toBeGreaterThan(0);
-    expect(proposedNumbers.length).toBeGreaterThan(0);
-    const highestCanonical = Math.max(...canonicalNumbers);
-    const outOfOrder = proposedNumbers.filter((n) => n <= highestCanonical);
+// B173-FIX-04 superseded the B173-FIX-02 numeric out-of-order check above: a
+// number is no longer assigned to a proposed file until promotion, so there
+// is no "proposed number vs. highest canonical number" comparison left to
+// make — the class of risk B173-FIX-02 targeted is now structurally
+// impossible rather than merely detected after the fact. The checks below
+// enforce the replacement convention directly.
+
+describe('B173-FIX-04 — no file in supabase/proposed/ starts with a 3-digit canonical-looking number', () => {
+  it('every filename in supabase/proposed/ fails the canonical NNN_ pattern', () => {
+    const files = readdirSync(resolve(root, 'supabase/proposed')).filter((f) => f.endsWith('.sql'));
+    expect(files.length).toBeGreaterThan(0);
+    const numbered = files.filter((f) => /^\d{3}_/.test(f));
     expect(
-      outOfOrder,
-      `supabase/proposed/ contains number(s) ${outOfOrder.join(', ')} at or below the highest canonical migration ` +
-        `(${highestCanonical}) — this is exactly the out-of-order risk B173-FIX-02 closed. Any new proposed ` +
-        `migration must use a number strictly greater than the current highest canonical migration.`,
+      numbered,
+      `supabase/proposed/ contains file(s) with a canonical-looking 3-digit prefix: ${numbered.join(', ')} — ` +
+        `unnumbered proposed files (draft_*.sql) must never be renamed back to a numbered form until the ` +
+        `moment of promotion into supabase/migrations/, per B173-FIX-04.`,
     ).toEqual([]);
+  });
+
+  it('every filename in supabase/proposed/ uses the draft_ prefix', () => {
+    const files = readdirSync(resolve(root, 'supabase/proposed')).filter((f) => f.endsWith('.sql'));
+    for (const f of files) {
+      expect(f.startsWith('draft_'), `${f} does not start with draft_`).toBe(true);
+    }
+  });
+});
+
+describe('B173-FIX-04 — draft files document the promotion-time numbering rule, not a pre-assigned one', () => {
+  it('both draft files declare "migration number not assigned" and describe next-free-number promotion', () => {
+    const draft1 = readFileSync(resolve(root, 'supabase/proposed/draft_contribution_atomic_attribution.sql'), 'utf8');
+    const draft2 = readFileSync(resolve(root, 'supabase/proposed/draft_initiative_adoption_source_model.sql'), 'utf8');
+    for (const draft of [draft1, draft2]) {
+      expect(draft).toMatch(/DRAFT \/ PROPOSED — migration number not assigned/);
+      expect(draft).toMatch(/next free number after the then-current\s+highest/);
+    }
+  });
+});
+
+describe('B173-FIX-01/02/03/04 — retired numbers never reappear in either directory', () => {
+  it('029, 037, 038, 040, 041, 043, 044 are absent from both supabase/migrations/ and supabase/proposed/', () => {
+    const RETIRED_NUMBERS = [29, 37, 38, 40, 41, 43, 44];
+    const allFiles = [
+      ...readdirSync(resolve(root, 'supabase/migrations')).filter((f) => f.endsWith('.sql')),
+      ...readdirSync(resolve(root, 'supabase/proposed')).filter((f) => f.endsWith('.sql')),
+    ];
+    for (const n of RETIRED_NUMBERS) {
+      const padded = String(n).padStart(3, '0');
+      const collisions = allFiles.filter((f) => f.startsWith(`${padded}_`));
+      expect(collisions, `retired number ${padded} reappeared in: ${collisions.join(', ')}`).toEqual([]);
+    }
   });
 });
