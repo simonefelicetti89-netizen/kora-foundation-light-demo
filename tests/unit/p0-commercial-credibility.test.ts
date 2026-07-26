@@ -344,19 +344,19 @@ describe('P0-4 — KORA Space commercial credibility', () => {
 // ── Regression guards ─────────────────────────────────────────────────────────
 
 describe('Regression — constraints from sprint', () => {
-  it('Migration directory contains expected files (contiguous numbering; 029, 037, 038 retired)', () => {
+  it('Migration directory contains expected files (contiguous numbering; 029, 037, 038, 040, 041 retired)', () => {
     // Not a frozen upper bound — later gates legitimately add further migrations
-    // beyond 031 (e.g. 032, 033, 039). What must always hold: no duplicate
+    // beyond 031 (e.g. 032, 033, 039, 042). What must always hold: no duplicate
     // numbers, no unexplained gaps other than the deliberately quarantined 029
     // and numbers permanently retired by a renumbering.
     // 029 remains quarantined in supabase/rollback/ — not in migrations/.
-    // 037/038 were reserved by supabase/proposed/037_contribution_atomic_
-    // attribution.sql and 038_initiative_adoption_source_model.sql, but those
-    // files were renumbered to 040/041 by B173-FIX-02 (KORA-LINK-HARDENING-
-    // AUTOMATION-13A out-of-order-risk fix — see
-    // tests/unit/b173-migration-numbering-guard.test.ts) precisely so no
-    // future promotion would land at 037/038, chronologically behind the
-    // already-canonical 039. 037/038 are therefore permanently retired
+    // 037/038 were renumbered to 040/041 by B173-FIX-02 (KORA-LINK-HARDENING-
+    // AUTOMATION-13A out-of-order-risk fix), then 040/041 were themselves
+    // renumbered to 043/044 by B173-FIX-03 (KORA-LINK-HARDENING-AUTOMATION-13B,
+    // same recurring risk class — see
+    // tests/unit/b173-migration-numbering-guard.test.ts) after
+    // 042_kora_link_company_partner_provisioning.sql was created directly in
+    // supabase/migrations/. 037/038/040/041 are therefore permanently retired
     // numbers in supabase/migrations/, the same category as 029 — nothing
     // will ever be promoted using those exact numbers again.
     const { readdirSync } = require('fs');
@@ -368,7 +368,7 @@ describe('Regression — constraints from sprint', () => {
       .sort((a: number, b: number) => a - b);
     expect(new Set(migNumbers).size).toBe(migNumbers.length); // no duplicate numbering
     const highest = migNumbers[migNumbers.length - 1];
-    const RETIRED_NUMBERS = new Set([29, 37, 38]);
+    const RETIRED_NUMBERS = new Set([29, 37, 38, 40, 41]);
     const expectedNumbers = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => !RETIRED_NUMBERS.has(n));
     expect(migNumbers).toEqual(expectedNumbers); // contiguous except the retired numbers
   });
