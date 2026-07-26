@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 };
 import { canAccess }                                        from '@/lib/auth/access-matrix';
 import { logServiceAccess }                                 from '@/lib/audit/log-access';
-import { getSupabaseServiceClient }                         from '@/lib/supabase/server';
+import { getSupabaseServerClient }                          from '@/lib/supabase/server';
 import { CompanySessionProvider }                           from './_providers/CompanySessionProvider';
 import { PrivilegedAccessBanner }                           from '@/components/auth/PrivilegedAccessBanner';
 import type { KoraEnvironment }                             from '@/lib/auth/access-matrix';
@@ -43,7 +43,7 @@ export default async function CompanyLayout({ children }: { children: React.Reac
   if (!isKoraAuthError(auth)) {
     let companyName: string | null = null;
     try {
-      const db = getSupabaseServiceClient();
+      const db = await getSupabaseServerClient();
       const { data } = await db
         .schema('analytics')
         .from('tenant')
@@ -102,7 +102,7 @@ export default async function CompanyLayout({ children }: { children: React.Reac
 
     let companyName: string | null = null;
     try {
-      const db = getSupabaseServiceClient();
+      const db = await getSupabaseServerClient();
       const { data } = await db
         .schema('analytics')
         .from('tenant')

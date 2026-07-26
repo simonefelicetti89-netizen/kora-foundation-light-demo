@@ -41,7 +41,7 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
   });
 
   it('CompanyTabNav has Workforce tab with slug workforce', () => {
-    /* eslint-disable @typescript-eslint/no-var-requires */
+
     const src = require('fs').readFileSync(
       require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
       'utf-8',
@@ -79,7 +79,7 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
 describe('B95-C Task 2 — Workforce via CompanyTabNav drill-in (B169)', () => {
 
   it('workforce route /admin/companies/[companyId]/workforce is a tab in CompanyTabNav', () => {
-    /* eslint-disable @typescript-eslint/no-var-requires */
+
     const src = require('fs').readFileSync(
       require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
       'utf-8',
@@ -89,7 +89,7 @@ describe('B95-C Task 2 — Workforce via CompanyTabNav drill-in (B169)', () => {
   });
 
   it('workforce route pattern is /admin/companies/[companyId]/workforce (slug-based tab)', () => {
-    /* eslint-disable @typescript-eslint/no-var-requires */
+
     const src = require('fs').readFileSync(
       require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
       'utf-8',

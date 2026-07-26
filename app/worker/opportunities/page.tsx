@@ -14,7 +14,7 @@
 
 import { getCurrentWorkerUser, requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { SessionBar } from '@/components/auth/SessionBar';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PartnerCatalogClient } from './_components/PartnerCatalogClient';
 
@@ -38,7 +38,7 @@ export default async function WorkerOpportunitiesPage() {
     redirect('/login');
   }
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   // Fetch published partners — app layer enforces status = 'published'
   const { data: rawPartners } = await db

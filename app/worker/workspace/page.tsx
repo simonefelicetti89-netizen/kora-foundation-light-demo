@@ -6,7 +6,7 @@
 
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
 import { SessionBar } from '@/components/auth/SessionBar';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { WorkerInitiativeRow, WorkerParticipationRow } from '@/lib/supabase/types';
 import { InitiativeCardsClient } from './_components/InitiativeCardsClient';
@@ -30,7 +30,7 @@ export default async function WorkerWorkspacePage() {
   const worker = await getCurrentWorkerUser();
   if (!worker) redirect('/login');
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   // Fetch worker identity — own row only (workerId from session)
   const { data: wiRow } = await db.schema('personal').from('worker_identity')

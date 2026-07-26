@@ -14,7 +14,7 @@
 export const runtime = 'nodejs';
 
 import { requireWorkerUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PrintButton } from './_print-button';
 
@@ -41,7 +41,7 @@ export default async function DynamicCVPrintPage() {
   if (isKoraAuthError(auth)) redirect('/login');
 
   const { workerId, tenantId } = auth;
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   const [{ data: profRow }, { data: tenantRow }, { data: participationRows }] = await Promise.all([
     db.schema('personal').from('worker_profile_private')

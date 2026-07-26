@@ -45,3 +45,7 @@ next-env.d.ts
 
 # temporary local scripts (never committed)
 .tmp/
+
+# CI-generated test reports (never committed — see .github/workflows/ci.yml)
+/rls-integration-report.json
+/kora-link-behavioral-report.json

@@ -443,7 +443,7 @@ describe('gate2-3-030 — migration file count', () => {
     // these numbers will ever be promoted into supabase/migrations/ again.
     const numbers = migrationNumbers();
     const highest = numbers[numbers.length - 1];
-    const RETIRED_NUMBERS = new Set([29, 37, 38, 40, 41]);
+    const RETIRED_NUMBERS = new Set([29, 37, 38, 40, 41, 43, 44]);
     const expected = Array.from({ length: highest }, (_, i) => i + 1).filter((n) => !RETIRED_NUMBERS.has(n));
     expect(numbers).toEqual(expected);
   });

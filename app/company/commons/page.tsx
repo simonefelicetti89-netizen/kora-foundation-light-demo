@@ -13,7 +13,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CommonsCreateForm } from '@/components/commons/CommonsCreateForm';
@@ -56,7 +56,7 @@ export default async function CompanyCommonsPage() {
   }
 
   const { tenantId } = auth;
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   const { data: posts } = await db
     .schema('commons')

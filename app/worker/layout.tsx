@@ -23,8 +23,19 @@ export const metadata: Metadata = {
 export default async function WorkerLayout({ children }: { children: React.ReactNode }) {
   // B168-P3: Hard block for KORA_ADMIN — explicit error, not a redirect.
   // canAccess('KORA_ADMIN', 'worker_individual_pib', *) is DENY in all environments.
+  //
+  // PILOT-TRUST-01 (F-08): getCurrentKoraUser() returns a truthy object for
+  // ANY authenticated role (it only checks that app_metadata.kora_role is
+  // present, not that it equals 'KORA_ADMIN' — the returned koraRole field is
+  // merely type-cast to 'KORA_ADMIN' for callers, not verified). The bare
+  // `if (koraAdmin)` below therefore hard-blocked every WORKER from their own
+  // workspace, not just KORA_ADMIN — discovered while building the golden-path
+  // E2E smoke, fixed here with the same explicit role check every other
+  // caller of getCurrentKoraUser() outside this file already uses (see
+  // app/partner/layout.tsx, app/company/workspace/layout.tsx,
+  // app/admin/workers/page.tsx).
   const koraAdmin = await getCurrentKoraUser();
-  if (koraAdmin) {
+  if (koraAdmin?.koraRole === 'KORA_ADMIN') {
     return (
       <div className="max-w-lg mx-auto mt-20 p-8 border border-red-200 rounded-xl bg-red-50 shadow-sm space-y-4">
         <div className="space-y-2">

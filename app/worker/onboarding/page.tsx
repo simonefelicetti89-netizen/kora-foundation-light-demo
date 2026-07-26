@@ -10,7 +10,7 @@
 
 import { redirect } from 'next/navigation';
 import { getCurrentWorkerUser } from '@/lib/auth/kora-session';
-import { getSupabaseServiceClient } from '@/lib/supabase/server';
+import { getSupabaseServerClient } from '@/lib/supabase/server';
 import { OnboardingFlow } from './_flow';
 import { SessionBar } from '@/components/auth/SessionBar';
 
@@ -22,7 +22,7 @@ export default async function WorkerOnboardingPage({ searchParams }: PageProps) 
   const worker = await getCurrentWorkerUser();
   if (!worker) redirect('/login');
 
-  const db = getSupabaseServiceClient();
+  const db = await getSupabaseServerClient();
 
   const { data: profRow } = await db
     .schema('personal')
