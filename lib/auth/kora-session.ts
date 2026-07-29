@@ -310,6 +310,16 @@ export interface KoraWorkerUser {
 }
 
 // ── requireWorkerUser — returns KoraWorkerUser or a 401/403 NextResponse ──────
+//
+// PILOT-TRUST-04: also validates, server-side, that the worker's mapping
+// (personal.worker_identity) exists, is active, and belongs to the claimed
+// tenant, and that the tenant itself exists and is active — the same
+// guarantee requireCompanyUser() already provides for COMPANY_ADMIN. Before
+// this, a worker whose employer had been suspended (analytics.tenant.is_active
+// = false) kept full access, since nothing besides the JWT claims themselves
+// was ever checked. Fail-closed: any missing/inactive/mismatched row denies
+// access with one generic message — the reason (suspended tenant vs. disabled
+// mapping vs. cross-tenant mismatch) is never disclosed to the caller.
 
 export async function requireWorkerUser(request?: NextRequest): Promise<KoraWorkerUser | NextResponse> {
   const user = await resolveUser(request);
@@ -341,6 +351,37 @@ export async function requireWorkerUser(request?: NextRequest): Promise<KoraWork
   const workerStatus = (appMeta?.kora_status as string | undefined) ?? 'invited';
   if (workerStatus === 'disabled') {
     return NextResponse.json({ error: 'Account disabilitato. Contatta il tuo amministratore.' }, { status: 403 });
+  }
+
+  const genericDenied = NextResponse.json({ error: 'Accesso non disponibile. Contatta il tuo amministratore.' }, { status: 403 });
+
+  try {
+    const db = getSupabaseServiceClient();
+
+    const { data: workerRow } = await db
+      .schema('personal').from('worker_identity')
+      .select('id, tenant_id, status')
+      .eq('id', workerId)
+      .maybeSingle();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wi = workerRow as any;
+    if (!wi || wi.tenant_id !== tenantId || wi.status === 'disabled') {
+      return genericDenied;
+    }
+
+    const { data: tenantRow } = await db
+      .schema('analytics').from('tenant')
+      .select('id, is_active')
+      .eq('id', tenantId)
+      .maybeSingle();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!tenantRow || !(tenantRow as any).is_active) {
+      return genericDenied;
+    }
+  } catch {
+    return NextResponse.json({ error: 'Errore verifica accesso.' }, { status: 500 });
   }
 
   return {
