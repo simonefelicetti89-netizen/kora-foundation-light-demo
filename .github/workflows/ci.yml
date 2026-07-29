@@ -123,7 +123,14 @@ jobs:
       # opt-in these suites require by design (see each file's own header) —
       # only ever set here, against the ephemeral local DB started above,
       # never against staging/production.
-      - name: Run RLS integration suites (RLS-03/05/06 — mandatory, no skip)
+      # RLS-08 (PILOT-TRUST-03): UEF SECURITY DEFINER authorization bypass
+      # regression guard — added alongside RLS-03/05/06/07, same mandatory
+      # no-skip treatment. RLS08_SUPABASE_URL/ANON_KEY/SERVICE_ROLE_KEY are
+      # intentionally NOT set here — the one real-PostgREST end-to-end test
+      # in that suite is optional/skip-safe and not required for this gate;
+      # every other assertion in RLS-08 already runs for real against the
+      # local Postgres above regardless.
+      - name: Run RLS integration suites (RLS-03/05/06/07/08 — mandatory, no skip)
         env:
           RLS03_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS03_ALLOW_RUN: 'true'
@@ -133,12 +140,15 @@ jobs:
           RLS06_ALLOW_RUN: 'true'
           RLS07_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS07_ALLOW_RUN: 'true'
+          RLS08_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS08_ALLOW_RUN: 'true'
         run: |
           npx vitest run \
             tests/integration/rls-two-tenant-negative.test.ts \
             tests/integration/rls-worker-isolation.test.ts \
             tests/integration/rls-kora-admin-control.test.ts \
             tests/integration/rls-worker-own-initiative-participation.test.ts \
+            tests/integration/rls-08-uef-security-definer.test.ts \
             --reporter=json --outputFile=rls-integration-report.json
 
       # F-04: machine-readable assertion — fails the job if any RLS test
