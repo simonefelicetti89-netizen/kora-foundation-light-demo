@@ -283,16 +283,23 @@ describe.skipIf(!ready)(
     // their own row. DELETE has no GRANT to `authenticated` at all (table
     // privilege denial, before RLS is even evaluated).
     //
-    // OUT-OF-SCOPE FINDING (documented, NOT fixed in this sprint — see
-    // docs/PILOT_TRUST_04_WORKER_TENANT_SUSPENSION_REPORT.md §Limiti):
-    // because `with_check` on that policy only re-verifies row ownership
-    // (auth_user_id = auth.uid()), not which COLUMNS changed, a worker whose
-    // mapping has been disabled could UPDATE their own `status` column back
-    // to 'active' directly (e.g. via a raw PostgREST PATCH call, bypassing
-    // the Next.js app entirely) — this test proves and documents that risk
-    // rather than silently asserting the wrong (safe-looking) behavior.
+    // FIXED in migration 048 (PILOT-TRUST-05, after this file — RLS-09 —
+    // first discovered and documented it as an out-of-scope finding under
+    // PILOT-TRUST-04's mandate). `with_check` on this policy only
+    // re-verifies row ownership (auth_user_id = auth.uid()), not which
+    // COLUMNS changed — a worker whose mapping had been disabled could
+    // UPDATE their own `status` column back to 'active' directly (e.g. via
+    // a raw PostgREST PATCH call, bypassing the Next.js app entirely).
+    // Migration 048 added a BEFORE UPDATE trigger
+    // (personal.enforce_worker_identity_lifecycle_protection) that blocks
+    // this and every other non-onboarding status transition, plus
+    // tenant_id/auth_user_id/worker_ref/created_at changes, for WORKER-role
+    // callers only. Comprehensive coverage of the fix lives in
+    // tests/integration/rls-10-worker-identity-lifecycle.test.ts — this
+    // test now only re-confirms the specific scenario RLS-09 originally
+    // flagged is closed, not the full contract.
 
-    it('6. scrittura: WORKER PUÒ aggiornare la propria riga worker_identity (policy own_update reale, confermata via pg_policies)', async () => {
+    it('6. scrittura: WORKER PUÒ aggiornare la propria riga worker_identity per la transizione self-service prevista (policy own_update reale, confermata via pg_policies)', async () => {
       await client.query('BEGIN');
       try {
         await client.query('SET LOCAL ROLE authenticated');
@@ -300,13 +307,13 @@ describe.skipIf(!ready)(
           JSON.stringify({ sub: WORKER_A_AUTH_UID, app_metadata: { kora_role: 'WORKER', kora_tenant_id: tenantActiveId } }),
         ]);
         const result = await client.query(`UPDATE personal.worker_identity SET status = 'active' WHERE id = $1`, [workerActiveId]);
-        expect(result.rowCount).toBe(1);
+        expect(result.rowCount).toBe(1); // no-op transition (already 'active') — trigger only restricts an actual status change
       } finally {
         await client.query('ROLLBACK'); // never persisted — this is a read-proof, not a real mutation
       }
     });
 
-    it('6b. OUT-OF-SCOPE FINDING (documented, not fixed): un worker con mapping disabilitato può auto-riattivarsi (status → active) tramite UPDATE diretto, bypassando l\'auth guard applicativo', async () => {
+    it('6b. FIXED (migration 048, PILOT-TRUST-05): un worker con mapping disabilitato NON può più auto-riattivarsi (status → active) tramite UPDATE diretto', async () => {
       await client.query('BEGIN');
       try {
         await client.query('SET LOCAL ROLE authenticated');
@@ -316,11 +323,19 @@ describe.skipIf(!ready)(
         const before = await client.query(`SELECT status FROM personal.worker_identity WHERE id = $1`, [workerDisabledMappingId]);
         expect(before.rows[0].status).toBe('disabled');
 
-        const upd = await client.query(`UPDATE personal.worker_identity SET status = 'active' WHERE id = $1`, [workerDisabledMappingId]);
-        expect(upd.rowCount).toBe(1); // succeeds — documented gap, not asserted-away
+        let blocked = false;
+        await client.query('SAVEPOINT sp_6b');
+        try {
+          await client.query(`UPDATE personal.worker_identity SET status = 'active' WHERE id = $1`, [workerDisabledMappingId]);
+        } catch (e) {
+          blocked = /not worker-writable/i.test((e as Error).message);
+          await client.query('ROLLBACK TO SAVEPOINT sp_6b');
+        }
+        await client.query('RELEASE SAVEPOINT sp_6b');
+        expect(blocked).toBe(true);
 
         const after = await client.query(`SELECT status FROM personal.worker_identity WHERE id = $1`, [workerDisabledMappingId]);
-        expect(after.rows[0].status).toBe('active');
+        expect(after.rows[0].status).toBe('disabled'); // unchanged
       } finally {
         await client.query('ROLLBACK'); // never persisted — proof only, no real mutation survives this test
       }
