@@ -181,16 +181,19 @@ Production SQL generation remains blocked until Gate 2 (CTO review) is passed.
 
 ## 8. Authority Hierarchy
 
+> **Master Plan precedence (effective 2026-08-26):** `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md` ("KORA — OFFICIAL IMPLEMENTATION MASTER PLAN v2.0") is the current architectural truth for domain ontology (Program/Investment/Decision layer), the Architecture Registry, the constitutional invariants (I1–I14), consolidation/new-block sequencing, the dependency graph, the Claude Code execution protocol, and the Definition of Done. **The repository is the operational truth.** Where the Master Plan and the repository disagree, do not silently pick one or reconcile on your own judgment — follow the Master Plan's own Read-Before-Write protocol (§31), report `STATE_MATCH = NO`, describe the mismatch, and stop for human review. This precedence does not touch product positioning, the five pillars, KORA Index v3 component definitions, the 14-stage algorithm, the IU formula, Italian-first language policy, or privacy rules below — those remain governed as stated in this hierarchy.
+
 When documents conflict, resolve in this order:
 
-1. **doc 21** (D-01–D-21 founder decisions) — overrides all
-2. **`docs/kora-canonical-product-architecture-v1.md`** — canonical product architecture, overrides all product, positioning, scope, and capability decisions
-3. **doc 10** (Architecture v3) — overrides all schema decisions
-4. **doc 12** (Technical Data Model) — authoritative for schema, after Gate 2
-5. **doc 22A** (build cutline) — overrides all scope decisions
-6. **doc 21b** (methodology governance) — overrides all output display decisions
-7. **docs 24, 25, 26** — demo build details
-8. **Appendix B, WhitePaper v3/v4 PDF** — historical only; do not use for implementation
+1. **doc 21** (D-01–D-21 founder decisions) — overrides all. A founder decision dated after 2026-08-26 overrides the Master Plan only where it says so explicitly.
+2. **`docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md`** — target architecture, domain ontology, Architecture Registry, constitutional invariants, execution governance, and the Claude Code protocol described above
+3. **`docs/kora-canonical-product-architecture-v1.md`** — canonical product architecture; overrides all product, positioning, scope, and capability decisions not superseded by the Master Plan above. For target architecture/ontology matters it is current-state/historical evidence, not the governing source.
+4. **doc 10** (Architecture v3) — overrides all schema and methodology decisions (14-stage algorithm, IU formula, 10-component KORA Index)
+5. **doc 12** (Technical Data Model) — authoritative for schema, after Gate 2
+6. **doc 22A** (build cutline) — overrides all scope decisions
+7. **doc 21b** (methodology governance) — overrides all output display decisions
+8. **docs 24, 25, 26** — demo build details
+9. **Appendix B, WhitePaper v3/v4 PDF** — historical only; do not use for implementation
 
 Old formula names are superseded. Never use: ES, EF, RF, SQ, PA, EQT, CT, EC, GF.
 Use canonical names: EV, NM, AGF, NI, AR, MAR, EQ, VR, CO, CS, Activation Safeguard.
@@ -485,13 +488,25 @@ Absolute. No exception, no workaround, no "just for demo" bypass.
 
 ## 18. Mandatory Session Rule
 
-**Before any coding or product documentation work, read `docs/kora-canonical-product-architecture-v1.md` first.**
+**Before any architectural or implementation-significant work, read in this order:**
 
-If a future prompt conflicts with that document, stop and ask for correction before execution. Do not proceed with a build, edit, or documentation task that contradicts the canonical architecture.
+1. Applicable founder decisions (doc 21, and any later founder decision that explicitly amends the Master Plan)
+2. `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md` — architectural truth for target architecture, domain ontology, and execution governance
+3. `docs/kora-canonical-product-architecture-v1.md` and other pertinent canonical/current-state documentation — product positioning, methodology, privacy, scope
+4. The real repository — operational truth
+
+**MASTER PLAN = ARCHITECTURAL TRUTH. REPOSITORY = OPERATIONAL TRUTH.**
+
+**READ BEFORE WRITE.** No significant implementation may begin on the strength of the prompt alone — verify the real state of the repository first.
+
+If the Master Plan and the repository (or the Master Plan and existing documentation) do not coincide: do not choose between them, do not silently correct either one, do not reinterpret. Report `STATE_MATCH = NO`, describe the mismatch, and stop for the human gate.
+
+For work not touched by the Master Plan (product positioning, pillars, language policy, methodology definitions, privacy rules), read `docs/kora-canonical-product-architecture-v1.md` first as before. If a future prompt conflicts with either document, stop and ask for correction before execution. Do not proceed with a build, edit, or documentation task that contradicts either the Master Plan or the canonical architecture.
 
 ---
 
-**Document version:** v2.1 — Phase 1M-B Aligned
-**Date:** 2026-05-19
+**Document version:** v2.2 — Master Plan v2.0 governance alignment
+**Date:** 2026-08-27
 **Gate status:** Gate 1 CLOSED · Gate 2 OPEN (blocks SQL) · Gate 3 OPEN · Gate 5 OPEN
-**Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) — read before every session
+**Master Plan:** `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md` — architectural truth for target architecture, effective 2026-08-26; read before any architecturally significant session
+**Canonical reference:** `docs/kora-canonical-product-architecture-v1.md` (v1.1) — product positioning/methodology/privacy truth; read before every session
