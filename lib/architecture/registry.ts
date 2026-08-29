@@ -1,0 +1,239 @@
+// lib/architecture/registry.ts
+// CC-003 / B-REG — KORA Architecture Registry (typed, single source of truth).
+//
+// GOVERNANCE (read before editing):
+//   - MASTER PLAN (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md) = architectural truth.
+//   - This file = REPOSITORY = operational truth, describing the CODE as it exists today.
+//   - The Architecture Registry (this file, section A) describes CODE COMPONENTS.
+//   - The Target Ontology Map (this file, section B) describes DOMAIN OBJECTS the
+//     Master Plan's target ontology defines. These are NOT the same thing and must
+//     never be conflated — a domain object with no code yet has no registry entry
+//     in section A; it only appears in section B as TO_BUILD.
+//
+// This file DESCRIBES. It does not consolidate, refactor, or delete anything it
+// registers. Classifications here are inherited from CC-001 + CC-001R (verified,
+// not re-audited from scratch) and do not anticipate any decision reserved for a
+// future CC/D-letter (D-A Confidence, D-B Decision Pack, D-C One Truth, D-D worker
+// surfaces). Where CC-001R found two competing implementations, both are listed
+// with matching `competingWith` and the SAME `decisionRef` — neither is elevated.
+//
+// docs/ARCHITECTURE_REGISTRY.md is GENERATED from this file by
+// scripts/generate-architecture-doc.ts. Never hand-edit that Markdown file.
+
+// ── A. ARCHITECTURE REGISTRY — code components ──────────────────────────────────
+
+export type ArchitectureStatus =
+  | 'CANONICAL'
+  | 'CONSOLIDATE'
+  | 'COMPLETE'
+  | 'FROZEN'
+  | 'FUTURE_CORE'
+  | 'LEGACY'
+  | 'DEAD'
+  | 'INVESTIGATE';
+
+export interface ArchitectureComponent {
+  /** Unique, stable identifier. Convention: "<kind>.<name>", e.g. "svc.tenant". */
+  id: string;
+  /** Domain grouping, e.g. "Worker", "Methodology", "Reporting". */
+  domain: string;
+  /** Primary code path this entry describes. Required for every code-level entry. */
+  primaryPath: string;
+  /** One-line purpose. */
+  purpose: string;
+  status: ArchitectureStatus;
+  /** True if the Master Plan (§33 Do-Not-Delete / Future Core) explicitly preserves this. */
+  futureCore: boolean;
+  /** Other registry ids this component depends on (best-effort, not exhaustive). */
+  dependencies: string[];
+  /** Other registry ids this component competes with (same capability, different implementation). */
+  competingWith: string[];
+  /** Future CC/D-letter that owns the resolution decision, if any (e.g. "CC-004 / D-A"). Null if none reserved. */
+  decisionRef: string | null;
+  /** Free-form context: verification method, caller counts, caveats. */
+  notes: string;
+  /** Required (non-null) when status === 'DEAD': the condition under which deletion becomes safe. */
+  deletableWhen: string | null;
+}
+
+// ── Validation ───────────────────────────────────────────────────────────────
+// Pure functions — used by tests/unit/cc003-i10-registry-completeness.test.ts.
+// Not run automatically at import time: a bad entry should fail a test, not
+// crash every page that happens to import this module.
+
+export interface RegistryViolation {
+  id: string;
+  rule: string;
+  detail: string;
+}
+
+export function validateArchitectureRegistry(components: ArchitectureComponent[]): RegistryViolation[] {
+  const violations: RegistryViolation[] = [];
+  const seenIds = new Set<string>();
+
+  for (const c of components) {
+    if (seenIds.has(c.id)) {
+      violations.push({ id: c.id, rule: 'UNIQUE_ID', detail: `Duplicate id "${c.id}".` });
+    }
+    seenIds.add(c.id);
+
+    if (!c.primaryPath || c.primaryPath.trim().length === 0) {
+      violations.push({ id: c.id, rule: 'PATH_REQUIRED', detail: 'Code-level entry must have a non-empty primaryPath.' });
+    }
+
+    if (c.status === 'DEAD') {
+      if (!c.deletableWhen || c.deletableWhen.trim().length === 0) {
+        violations.push({ id: c.id, rule: 'DEAD_REQUIRES_DELETABLE_WHEN', detail: 'status=DEAD requires a non-empty deletableWhen.' });
+      }
+      if (!c.decisionRef || c.decisionRef.trim().length === 0) {
+        violations.push({ id: c.id, rule: 'DEAD_REQUIRES_DECISION_REF', detail: 'status=DEAD requires a non-empty decisionRef.' });
+      }
+      if (c.futureCore) {
+        violations.push({ id: c.id, rule: 'FUTURE_CORE_NOT_DEAD', detail: 'futureCore=true cannot be paired with status=DEAD.' });
+      }
+    }
+
+    if (c.futureCore && c.status === 'DEAD') {
+      violations.push({ id: c.id, rule: 'FUTURE_CORE_NOT_DEAD', detail: 'futureCore=true cannot be paired with status=DEAD.' });
+    }
+  }
+
+  return violations;
+}
+
+// ── Registry data ──────────────────────────────────────────────────────────────
+// Granularity per Master Plan §8: domain-level components, not every helper.
+// Purpose/caller evidence inherited from CC-001R (services/*: 55 directories,
+// each individually caller-verified this session and in CC-001R).
+
+export const ARCHITECTURE_REGISTRY: ArchitectureComponent[] = [
+  // ── Services (55 services/* directories + 1 sub-entry) ────────────────────────
+  { id: 'svc.access-control', domain: 'Demo/Access', primaryPath: 'services/access-control/AccessControlService.ts', purpose: 'Demo user registry, session-only, no real auth.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'B-TRUTH', notes: 'Zero callers repo-wide (verified). Master Plan §32 names it for removal at end of B-TRUTH alongside demo-data/scoring-simulator.', deletableWhen: null },
+  { id: 'svc.account', domain: 'Admin', primaryPath: 'services/account/AccountProvisioningService.ts', purpose: 'Account provisioning logic.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '13 real callers.', deletableWhen: null },
+  { id: 'svc.activation-opportunity', domain: 'Worker', primaryPath: 'services/activation-opportunity/ActivationOpportunityService.ts', purpose: 'Rule-based activation opportunity engine, no LLM.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: ['svc.worker-opportunity'], decisionRef: null, notes: '3 callers. Overlap with worker-opportunity not resolved.', deletableWhen: null },
+  { id: 'svc.activation-safeguard', domain: 'Methodology', primaryPath: 'services/activation-safeguard/ActivationSafeguardService.ts', purpose: 'CLEAR/WARNING/FLAGGED thresholds per D-21.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '6 callers. Matches CLAUDE.md thresholds exactly.', deletableWhen: null },
+  { id: 'svc.admin-preview', domain: 'Admin/Demo', primaryPath: 'services/admin-preview/AdminPreviewService.ts', purpose: 'Admin-side demo preview seed shaping.', status: 'FROZEN', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '7 callers, demo-only.', deletableWhen: null },
+  { id: 'svc.advisor-evidence-review', domain: 'Advisor', primaryPath: 'services/advisor-evidence-review/AdvisorEvidenceReviewService.ts', purpose: 'Evidence review workflow (B86-B).', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Demo-only caller (app/demo/advisor); no live /advisor workspace route exists despite CLAUDE.md documenting one.', deletableWhen: null },
+  { id: 'svc.booking-request', domain: 'Commons (legacy)', primaryPath: 'services/booking-request/BookingRequestService.ts', purpose: 'Request/confirm stub — all methods return [] / null unconditionally.', status: 'DEAD', futureCore: false, dependencies: [], competingWith: ['svc.commons.booking'], decisionRef: 'Master Plan §32 Safe Deletion Plan', notes: 'Verified: 24 lines, zero callers anywhere (no import, no dynamic/string reference, no test), no backing DB table. Master Plan §32 independently confirms: "24 L, ritorna []/null [VERIFIED]" — commons/BookingService resta.', deletableWhen: 'After B-REG registry is live and a repo-wide re-grep at CC-003+ time confirms still zero references.' },
+  { id: 'svc.bti-intelligence', domain: 'Financial', primaryPath: 'services/bti-intelligence/BTIIntelligenceService.ts', purpose: 'Rule-based narrative interpretation layer on top of BTI records (over/under/balanced pillar investment classification).', status: 'COMPLETE', futureCore: false, dependencies: ['svc.budget-to-human-impact'], competingWith: [], decisionRef: null, notes: '1 caller. Confirmed distinct responsibility from budget-to-human-impact (imports only its result type, not the service) — not a duplicate.', deletableWhen: null },
+  { id: 'svc.budget-to-human-impact', domain: 'Financial', primaryPath: 'services/budget-to-human-impact/BudgetToHumanImpactService.ts', purpose: 'Core Budget-to-Human-Impact computation.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '5 callers.', deletableWhen: null },
+  { id: 'svc.care-economy', domain: 'Intelligence', primaryPath: 'services/care-economy/CareEconomyIntelligenceService.ts', purpose: 'Care-economy LIFE-pillar interpretation.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '3 callers.', deletableWhen: null },
+  { id: 'svc.commons', domain: 'Commons', primaryPath: 'services/commons/CommonsService.ts', purpose: 'Commons / collective initiative surface (synthetic + live DB reads).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '7 callers.', deletableWhen: null },
+  { id: 'svc.commons.booking', domain: 'Commons', primaryPath: 'services/commons/BookingService.ts', purpose: 'Live cross-tenant booking (worker_tenant_id × post_tenant_id pattern).', status: 'CANONICAL', futureCore: true, dependencies: [], competingWith: ['svc.booking-request'], decisionRef: null, notes: 'Master Plan §33 Do-Not-Delete: "vivo e canonico" [VERIFIED]. 5 live API routes, SECURITY DEFINER cross-tenant boundary check (migration 025).', deletableWhen: null },
+  { id: 'svc.company-data-intake', domain: 'Ingestion', primaryPath: 'services/company-data-intake/CompanyDataIntakeService.ts', purpose: 'Company raw-data batch/row intake.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '6 callers.', deletableWhen: null },
+  { id: 'svc.company-intelligence', domain: 'Admin', primaryPath: 'services/company-intelligence/CompanyIntelligenceService.ts', purpose: 'Cross-service company insight aggregation.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '1 caller.', deletableWhen: null },
+  { id: 'svc.company-onboarding', domain: 'Company', primaryPath: 'services/company-onboarding/CompanyOnboardingService.ts', purpose: 'Company onboarding flow logic.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: ['svc.company-setup'], decisionRef: null, notes: '2 callers. Possible overlap with company-setup, not resolved.', deletableWhen: null },
+  { id: 'svc.company-setup', domain: 'Company', primaryPath: 'services/company-setup/CompanySetupService.ts', purpose: 'Company tenant setup flow.', status: 'INVESTIGATE', futureCore: false, dependencies: [], competingWith: ['svc.company-onboarding'], decisionRef: null, notes: 'Zero real callers (only route-string literals reference it). Master Plan §32/§33 state explicitly, twice: "company-setup e report-generator restano INVESTIGATE".', deletableWhen: null },
+  { id: 'svc.confidence-score', domain: 'Methodology', primaryPath: 'services/confidence-score/ConfidenceScoreService.ts', purpose: 'Confidence Score computation, class-based, weights 40/30/20/10.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: ['lib.kora-engine (confidence-engine.ts)'], decisionRef: 'CC-004 / D-A', notes: 'Zero production callers (only itself + 1 test). Neutral status — not declared a loser ahead of D-A.', deletableWhen: null },
+  { id: 'svc.demo-data', domain: 'Demo', primaryPath: 'services/demo-data/DemoDataService.ts', purpose: 'Central synthetic seed reader.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'B-TRUTH', notes: 'One test-only caller; most demo pages import data/synthetic/*.json directly instead. Master Plan §32 names it for removal at end of B-TRUTH.', deletableWhen: null },
+  { id: 'svc.dynamic-cv', domain: 'Worker', primaryPath: 'services/dynamic-cv/DynamicCVService.ts', purpose: 'Worker-self-only Dynamic Impact CV.', status: 'FUTURE_CORE', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: 'Master Plan §33 Do-Not-Delete list. 5 callers.', deletableWhen: null },
+  { id: 'svc.dynamic-scoring', domain: 'Scoring', primaryPath: 'services/dynamic-scoring/DynamicScoringPreviewService.ts', purpose: 'Proxy macroblock estimate from live IU batches — explicitly "not authoritative" per own header.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '6 callers, narrow documented use (PreviewScoringAdapter, ReportGeneratorService).', deletableWhen: null },
+  { id: 'svc.eligibility-gate', domain: 'Ingestion', primaryPath: 'services/eligibility-gate/EligibilityGateService.ts', purpose: 'Taxonomy/preprocessing classifier — explicitly NOT the live scoring eligibility engine (own header).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '4 callers.', deletableWhen: null },
+  { id: 'svc.equity-access', domain: 'Intelligence', primaryPath: 'services/equity-access/EquityAccessIntelligenceService.ts', purpose: 'EQ-family component explainability.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '6 callers.', deletableWhen: null },
+  { id: 'svc.evidence-reliability', domain: 'Intelligence', primaryPath: 'services/evidence-reliability/EvidenceReliabilityIntelligenceService.ts', purpose: 'CS/VR evidence-gap explainability.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '8 callers.', deletableWhen: null },
+  { id: 'svc.executive-intelligence', domain: 'Admin', primaryPath: 'services/executive-intelligence/ExecutiveIntelligenceService.ts', purpose: 'Executive-layer synthesis (B77-B).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '4 real callers (functional export computeExecutiveIntelligence — company/kora-index page, decision-pack pdf-data, ExecutiveIntelligencePanel, test).', deletableWhen: null },
+  { id: 'svc.explainability', domain: 'Methodology', primaryPath: 'services/explainability/ExplainabilityService.ts', purpose: 'Formula trace / explanation generation.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '3 callers.', deletableWhen: null },
+  { id: 'svc.financial-governance', domain: 'Financial', primaryPath: 'services/financial-governance/FinancialGovernanceService.ts', purpose: 'Informational-only financial governance — no payment execution, no Index feed.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '1 caller.', deletableWhen: null },
+  { id: 'svc.founder-validation', domain: 'Admin', primaryPath: 'services/founder-validation/FounderValidationService.ts', purpose: 'Internal founder validation tool, tracks pilot validation signals.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '2 callers. CLAUDE.md-mandated internal/admin-only.', deletableWhen: null },
+  { id: 'svc.ingestion-normalizer', domain: 'Ingestion', primaryPath: 'services/ingestion-normalizer/IngestionNormalizerService.ts', purpose: 'Raw row → structured normalization.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '2 callers. Confirmed real chain: consumed by ingestion-pipeline.', deletableWhen: null },
+  { id: 'svc.ingestion-pipeline', domain: 'Ingestion', primaryPath: 'services/ingestion-pipeline/IngestionPipelineService.ts', purpose: 'Orchestrates ingestion normalization, feeds UEF/IU/reporting.', status: 'CANONICAL', futureCore: false, dependencies: ['svc.ingestion-normalizer'], competingWith: [], decisionRef: null, notes: '6 callers (UEFReviewService, IUComputationService, ReportGeneratorService, +).', deletableWhen: null },
+  { id: 'svc.ingestion-simulator', domain: 'Ingestion', primaryPath: 'services/ingestion-simulator/IngestionSimulatorService.ts', purpose: 'Rule-based BCM classifier, no LLM — parallel entry point, not chained to ingestion-pipeline.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '5 callers. CC-002 ingestion-cluster finding: MIXED — partial pipeline layering coexists with parallel entry points.', deletableWhen: null },
+  { id: 'svc.iu-computation', domain: 'Methodology', primaryPath: 'services/iu-computation/IUComputationService.ts', purpose: 'Canonical IU formula implementation (NM×BC×CQ×EV×CF×AGF), demo + live pipeline paths.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: ['svc.worker-iu-computation'], decisionRef: null, notes: '16 callers. This is the CC-002 I7 golden-case protected component. Overlap with worker-iu-computation not resolved.', deletableWhen: null },
+  { id: 'svc.kora-contribution', domain: 'Contribution', primaryPath: 'services/kora-contribution/KoraContributionService.ts', purpose: 'KORA Contribution computation — companion indicator, kept separate from KORA Index.', status: 'CANONICAL', futureCore: true, dependencies: [], competingWith: ['lib.kora-contribution'], decisionRef: null, notes: '14 callers. Master Plan §33 Do-Not-Delete. Confirmed genuinely disconnected from lib/kora-contribution/contribution-methodology.ts (neither imports the other) — real fragmentation, not layering.', deletableWhen: null },
+  { id: 'svc.life-diversity', domain: 'Intelligence', primaryPath: 'services/life-diversity/LifeDiversityService.ts', purpose: 'LIFE pillar subcategory diversity interpretation.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '8 callers.', deletableWhen: null },
+  { id: 'svc.lifecycle', domain: 'Admin', primaryPath: 'services/lifecycle/LifecycleService.ts', purpose: 'Session-only demo audit log shadow.', status: 'FROZEN', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '2 callers. Real audit.audit_log table is a separate, live mechanism.', deletableWhen: null },
+  { id: 'svc.mapping-confidence', domain: 'Ingestion', primaryPath: 'services/mapping-confidence/MappingConfidenceService.ts', purpose: 'AI-ingestion column-mapping confidence — distinct concept from KORA Index Confidence Score.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '2 callers.', deletableWhen: null },
+  { id: 'svc.my-kora-preview', domain: 'Worker', primaryPath: 'services/my-kora-preview/MyKoraPreviewService.ts', purpose: 'Worker preview-mode (PREVIEW surface) data.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'CC-024 / D-D (at the app-surface level, not this service)', notes: '14 callers.', deletableWhen: null },
+  { id: 'svc.pib-aggregation', domain: 'PIB', primaryPath: 'services/pib-aggregation/PIBAggregationService.ts', purpose: 'Stage 11 of the 14-stage algorithm: PIB = ΣIU per worker.', status: 'CANONICAL', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: '3 callers. Master Plan §33: prerequisite for canonical CF.', deletableWhen: null },
+  { id: 'svc.privacy-visibility', domain: 'Privacy', primaryPath: 'services/privacy-visibility/PrivacyVisibilityService.ts', purpose: 'Suppression / N≥10 gatekeeper.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'after B-INV', notes: '1 caller. Master Plan §32: "dopo B-INV, I2 copre lo strato canonico" — scheduled for likely removal once I2 canonically covers this, per the Master Plan itself.', deletableWhen: null },
+  { id: 'svc.report-factory', domain: 'Reporting', primaryPath: 'services/report-factory/ReportFactoryService.ts', purpose: 'Report orchestration — versions, metadata, export, comparison. Declared target-architecture role in its own header.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: ['svc.report-generator', 'lib.decision-pack'], decisionRef: 'CC-005 / D-B', notes: '3 real callers (app/admin/pipeline, app/admin/companies/[companyId]). Also imports demo seed (decision-pack-versions.json) directly. Neutral status — not declared winner ahead of D-B.', deletableWhen: null },
+  { id: 'svc.report-generator', domain: 'Reporting', primaryPath: 'services/report-generator/ReportGeneratorService.ts', purpose: 'Report content generation — Decision Pack body, sections, metrics, insights, recommendations.', status: 'INVESTIGATE', futureCore: false, dependencies: [], competingWith: ['svc.report-factory', 'lib.decision-pack'], decisionRef: null, notes: '3 real callers (services/scoring/IScoringService.ts, PreviewScoringAdapter.ts, +1 test) — NOT app/company/reports/page.tsx (that direct import was removed; the file\'s own header comment describing it is stale, confirmed by CC-002). Master Plan §32/§33 state explicitly, twice: "restano INVESTIGATE".', deletableWhen: null },
+  { id: 'svc.role-permission', domain: 'Privacy', primaryPath: 'services/role-permission/RolePermissionService.ts', purpose: 'Role-based access gatekeeper, CLAUDE.md-mandated.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '2 callers — low relative to "mandatory gatekeeper" status, worth CC-002/I1 follow-up scrutiny.', deletableWhen: null },
+  { id: 'svc.scenario', domain: 'Demo', primaryPath: 'services/scenario/ScenarioService.ts', purpose: 'S1–S4 demo scenario switching.', status: 'FROZEN', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '4 callers, demo-only.', deletableWhen: null },
+  { id: 'svc.scoring-simulator', domain: 'Scoring', primaryPath: 'services/scoring-simulator/ScoringSimulatorService.ts', purpose: 'Demo-path scoring — reads precomputed synthetic seed.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'B-TRUTH', notes: '21 callers (highest usage in this registry) yet Master Plan §32 explicitly schedules removal at end of B-TRUTH — high current usage does not make it the architectural target.', deletableWhen: null },
+  { id: 'svc.scoring.facade', domain: 'Scoring', primaryPath: 'services/scoring/IScoringService.ts', purpose: 'Demo/Preview/Live scoring adapter contract — the enforced single interface behind lib/scoring-result.', status: 'CANONICAL', futureCore: false, dependencies: ['svc.scoring-simulator', 'svc.dynamic-scoring'], competingWith: [], decisionRef: null, notes: 'Consumed only via lib/scoring-result/index.ts (useScoringResult). CC-002 found 6 real bypasses of this facade — see I5/M-02 notes, not fixed in CC-002/CC-003.', deletableWhen: null },
+  { id: 'svc.submission-feedback', domain: 'Demo', primaryPath: 'services/submission-feedback/SubmissionFeedbackService.ts', purpose: 'Mock aggregate feedback, demo only (own header: "Gate 2 open — no real DB access").', status: 'FROZEN', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '3 callers.', deletableWhen: null },
+  { id: 'svc.tenant', domain: 'Core', primaryPath: 'services/tenant/TenantService.ts', purpose: 'Tenant / organization record access.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '24 callers — highest caller count of any service.', deletableWhen: null },
+  { id: 'svc.uef-review', domain: 'Methodology', primaryPath: 'services/uef-review/UEFReviewService.ts', purpose: 'UEF human review queue.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '3 callers.', deletableWhen: null },
+  { id: 'svc.worker-achievements', domain: 'Worker', primaryPath: 'services/worker-achievements/WorkerAchievementService.ts', purpose: 'Worker recognition layer, worker-private.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '3 callers.', deletableWhen: null },
+  { id: 'svc.worker-attribution', domain: 'Worker', primaryPath: 'services/worker-attribution/WorkerAttributionService.ts', purpose: 'Pure explainability classification, no DB.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '6 callers.', deletableWhen: null },
+  { id: 'svc.worker-iu-computation', domain: 'Worker/Methodology', primaryPath: 'services/worker-iu-computation/WorkerIUComputationService.ts', purpose: 'Per-worker IU calculation, functional exports (B161).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: ['svc.iu-computation'], decisionRef: null, notes: '7 real callers (functional exports — computeBaseWorkerPIBRows, etc.). Overlap with iu-computation not resolved.', deletableWhen: null },
+  { id: 'svc.worker-opportunity', domain: 'Worker', primaryPath: 'services/worker-opportunity/WorkerOpportunityService.ts', purpose: 'Rule-based opportunity suggestions, no LLM.', status: 'FUTURE_CORE', futureCore: true, dependencies: [], competingWith: ['svc.activation-opportunity'], decisionRef: null, notes: 'Master Plan §33: "base tecnica di Exposure". 4 callers.', deletableWhen: null },
+  { id: 'svc.worker-pib', domain: 'PIB', primaryPath: 'services/worker-pib/WorkerPIBService.ts', purpose: 'Worker-self PIB read/aggregate.', status: 'FUTURE_CORE', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: 'Master Plan §33: prerequisite for canonical CF. 13 callers. Isolation independently verified (SECURITY DEFINER-only access, migration 027).', deletableWhen: null },
+  { id: 'svc.worker-pillar-adoption', domain: 'Worker', primaryPath: 'services/worker-pillar-adoption/WorkerPillarAdoptionService.ts', purpose: 'Company-level pillar distribution only — privacy-safe aggregate-only design.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '2 callers. CC-002 fixed a local N≥10 threshold duplicate here (I2).', deletableWhen: null },
+  { id: 'svc.worker-provisioning', domain: 'Worker', primaryPath: 'services/worker-provisioning/WorkerProvisioningService.ts', purpose: 'Worker identity/account/roster provisioning.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '16 callers. Matches current branch\'s own work (worker identity lifecycle sprint).', deletableWhen: null },
+  { id: 'svc.worker-space', domain: 'Worker', primaryPath: 'services/worker-space/WorkerSpaceCapabilityService.ts', purpose: 'Determines worker space capability per tenant (NOT_ENABLED / ENABLED / PILOT_READY).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '8 callers.', deletableWhen: null },
+  { id: 'svc.workforce-baseline', domain: 'Company', primaryPath: 'services/workforce-baseline/WorkforceBaselineService.ts', purpose: 'Baseline workforce metrics.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '1 caller.', deletableWhen: null },
+
+  // ── lib/* domain aggregates ─────────────────────────────────────────────────
+  { id: 'lib.kora-engine', domain: 'Methodology', primaryPath: 'lib/kora-engine/', purpose: '14-stage IU/Index/BTI/Confidence/Equity computation engine (25 files) — the CC-002 I6/I7-protected core.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Matches doc 10 methodology. run-kora-pipeline.ts orchestrates; consumed by LiveScoringAdapter.', deletableWhen: null },
+  { id: 'lib.decision-pack', domain: 'Reporting', primaryPath: 'lib/decision-pack/', purpose: 'Live Decision Pack PDF/HTML generation (4 files: pdf-data, pdf-runtime, pdf-strategy, html-template).', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: ['svc.report-factory', 'svc.report-generator'], decisionRef: 'CC-005 / D-B', notes: 'Confirmed single implementation of the live PDF layer itself (2 independent passes found no second PDF generator) — the "three Decision Pack" the Master Plan refers to (§32) are this + report-factory + report-generator, at the domain level.', deletableWhen: null },
+  { id: 'lib.kora-link', domain: 'KORA Link', primaryPath: 'lib/kora-link/', purpose: 'Identity/token-based worker activation channel (8 files).', status: 'FUTURE_CORE', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: 'Master Plan §33: "FUTURE CORE, gap DG-07 chiusi [VERIFIED]". Flag-gated off (KORA_LINK_ENABLED=false) but functionally complete; RLS-dense (migration 035 alone ~23 policies).', deletableWhen: null },
+  { id: 'lib.kora-contribution', domain: 'Contribution', primaryPath: 'lib/kora-contribution/contribution-methodology.ts', purpose: 'Contribution methodology helper functions.', status: 'INVESTIGATE', futureCore: false, dependencies: [], competingWith: ['svc.kora-contribution'], decisionRef: null, notes: 'BACKLOG — HUMAN TRIAGE. Consumed by lib/partner-activities + lib/live/contribution-lineage.ts — a genuinely different downstream from services/kora-contribution/KoraContributionService.ts, which reads the demo seed directly. Neither imports the other: real fragmentation, no CC-ID assigned by the Master Plan for this specific pairing.', deletableWhen: null },
+  { id: 'lib.scoring-result', domain: 'Scoring', primaryPath: 'lib/scoring-result/index.ts', purpose: 'Enforced single scoring consumption hook (useScoringResult).', status: 'CANONICAL', futureCore: false, dependencies: ['svc.scoring.facade'], competingWith: [], decisionRef: null, notes: 'In-code contract: app/components must never import ScoringSimulatorService/DynamicScoringPreviewService/run-kora-pipeline directly. CC-002 found 6 real violations of this contract (not fixed — CC-010/B-TRUTH scope).', deletableWhen: null },
+  { id: 'lib.methodology-config', domain: 'Methodology', primaryPath: 'lib/methodology-config/v0.1.ts', purpose: 'Versioned weights/thresholds loader.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Matches CLAUDE.md\'s "v0.1.ts" filename requirement. Consumed by report-factory, kora-engine, scoring.', deletableWhen: null },
+  { id: 'lib.privacy', domain: 'Privacy', primaryPath: 'lib/privacy/group-threshold.ts', purpose: 'N≥10 privacy suppression module — pure functions (suppressSmallGroups, validateNoSmallGroups, etc.).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'CC-002: DEFAULT_MIN_GROUP_SIZE now re-exports the canonical lib/constants/kora.ts value (I2). Added detectGroupTotalReconciliationRisk() (I5) — proves but does not fix a live differencing risk (see CC-002 report §14 remaining risks).', deletableWhen: null },
+  { id: 'lib.permissions', domain: 'Privacy', primaryPath: 'lib/permissions/index.ts', purpose: 'Access-matrix / route-list resolution (getAccessibleRoutes vs getDemoNavigationRoutes).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: ['svc.role-permission', 'svc.access-control'], decisionRef: null, notes: '10 callers.', deletableWhen: null },
+  { id: 'lib.auth', domain: 'Auth', primaryPath: 'lib/auth/access-matrix.ts', purpose: 'Real Supabase auth helpers, canAccess() authorization gate — the live, wired-in authorization mechanism.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Imported directly by middleware.ts.', deletableWhen: null },
+  { id: 'lib.worker-identity', domain: 'Worker', primaryPath: 'lib/worker-identity/', purpose: 'Core worker identity lifecycle helpers (2 files).', status: 'CANONICAL', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: 'Matches current branch HEAD (worker identity lifecycle protection, migration 048).', deletableWhen: null },
+  { id: 'lib.live', domain: 'Live data', primaryPath: 'lib/live/', purpose: 'Non-demo Supabase-backed data mapping and persistence layer (10 files).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Includes contribution-lineage.ts, which carries its own in-code "NAMING DISAMBIGUATION (C-6)" note acknowledging a naming collision between its ContributionRole concept and KORA Contribution — self-flagged, unresolved debt, not fixed here.', deletableWhen: null },
+  { id: 'lib.types.domains.evidence', domain: 'Evidence', primaryPath: 'lib/types/domains/evidence.ts', purpose: 'Type scaffold for a first-class Evidence entity — types only, no persistence, explicitly for Pilot+.', status: 'FUTURE_CORE', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: 'Own header: "No persistence in KORA Foundation Light: types only... Pilot+ engineer: implement EvidenceRepository." Verified by direct read (CC-002).', deletableWhen: null },
+  { id: 'lib.ingestion-cluster', domain: 'Ingestion', primaryPath: 'lib/data-intake/', purpose: 'Parsing/upload/interpretation helper cluster (lib/data-intake, roster-import, upload, ingestion — 23 files total).', status: 'INVESTIGATE', futureCore: false, dependencies: [], competingWith: ['svc.ingestion-normalizer', 'svc.ingestion-pipeline', 'svc.ingestion-simulator', 'svc.company-data-intake'], decisionRef: null, notes: 'BACKLOG — HUMAN TRIAGE. CC-002 traced part of this cluster: ingestion-normalizer→ingestion-pipeline is a real 2-stage chain; ingestion-simulator and company-data-intake are separate parallel entry points. The four lib/ sub-directories themselves were not individually caller-traced. Finding: MIXED.', deletableWhen: null },
+
+  // ── App surfaces (top-level aggregates) ────────────────────────────────────────
+  { id: 'app-surface.worker', domain: 'Worker', primaryPath: 'app/worker/', purpose: 'Live worker workspace, real Supabase JWT session (12 routes).', status: 'COMPLETE', futureCore: true, dependencies: ['svc.worker-provisioning', 'svc.worker-pib'], competingWith: ['app-surface.my-kora'], decisionRef: 'CC-024 / D-D', notes: 'Neutral status — CC-024\'s 12-dimension architecture matrix owns the consolidation decision, not a line-count comparison.', deletableWhen: null },
+  { id: 'app-surface.my-kora', domain: 'Worker', primaryPath: 'app/my-kora/', purpose: 'Preview worker workspace, demo-state session (9 routes) — self-documented in-file as PREVIEW mode.', status: 'COMPLETE', futureCore: true, dependencies: ['svc.my-kora-preview'], competingWith: ['app-surface.worker'], decisionRef: 'CC-024 / D-D', notes: 'Neutral status. Master Plan §19 B-WORKER row states "/my-kora gira su AccessControlService" — CC-001R verified this claim does NOT match current code (app/my-kora/page.tsx does not import AccessControlService); flagged as an untagged (no [VERIFIED]) Master Plan claim, not corrected here.', deletableWhen: null },
+  { id: 'app-surface.admin', domain: 'Admin', primaryPath: 'app/admin/', purpose: 'Admin/governance/diagnostics workspace (30 subdirectories, mixed live + synthetic).', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Not individually traced per-subdirectory. Includes diagnostic-only tooling (kora-link-lab, live-spine-diagnostics, provisioning-diagnostics) that a future pass may want to split out separately.', deletableWhen: null },
+  { id: 'app-surface.demo', domain: 'Demo', primaryPath: 'app/demo/', purpose: 'Standalone demo/pitch surfaces (10 subdirectories: advisor, ai-onboarding, benchmarks, future-vision, gtm, guide, index-registry, network, partner, portfolio).', status: 'CONSOLIDATE', futureCore: false, dependencies: ['svc.demo-data', 'svc.scoring-simulator', 'svc.access-control'], competingWith: [], decisionRef: 'B-TRUTH / D-C', notes: 'Master Plan §31 explicitly names this cluster: "11 pagine /demo con ruolo DEMO_VIEWER, synth-only [DECISION REQUIRED D-C]".', deletableWhen: null },
+
+  // ── Dead route (not a service) ──────────────────────────────────────────────
+  { id: 'app.company-reports-board-pack', domain: 'Reporting (dead route)', primaryPath: 'app/company/reports/board-pack/page.tsx', purpose: '13-line redirect-only page to /api/company/decision-pack — no content renders.', status: 'DEAD', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'Master Plan §32 Safe Deletion Plan', notes: 'Verified: pure redirect() call, no logic. Master Plan §32: "13 L, solo redirect [VERIFIED]". Referenced by 2 files (app/company/status/page.tsx, lib/feature-discovery/index.ts) and 4 tests exercising the redirect itself — those link targets would need updating on deletion.', deletableWhen: 'After B-REG, once the 2 referencing files are repointed directly at /api/company/decision-pack and the 4 redirect-behavior tests are updated or removed.' },
+
+  // ── DB / schema capability (only where genuinely architectural) ────────────────
+  { id: 'db.commons-booking-schema', domain: 'Commons', primaryPath: 'supabase/migrations/025_commons_booking_contribution.sql', purpose: 'commons.booking table — dual tenant_id (worker_tenant_id, post_tenant_id) cross-tenant pattern.', status: 'CANONICAL', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: 'Master Plan §33 [VERIFIED]. SECURITY DEFINER function booking_aggregate_for_promoter() enforces the cross-tenant boundary. This is the concrete evidence behind the Master Plan\'s Program/Participation/Case ontology correction (§3.0).', deletableWhen: null },
+  { id: 'db.kora-link-schema', domain: 'KORA Link', primaryPath: 'supabase/migrations/034_kora_link_schema.sql', purpose: 'kora_link.* schema (links, link_assignments, link_batches, link_delivery_records, link_events, link_replacements, link_activation_acknowledgements, revocations, audit_log).', status: 'FUTURE_CORE', futureCore: true, dependencies: ['lib.kora-link'], competingWith: [], decisionRef: null, notes: 'Hardened through migrations 035/036/039/042. auth.uid()-based identity resolution confirmed inside SECURITY DEFINER RPC bodies (I4).', deletableWhen: null },
+  { id: 'db.worker-pib-schema', domain: 'PIB', primaryPath: 'supabase/migrations/018_worker_pib.sql', purpose: 'personal.worker_pib — isolated PIB storage, SECURITY DEFINER-only access.', status: 'FUTURE_CORE', futureCore: true, dependencies: ['svc.worker-pib', 'svc.pib-aggregation'], competingWith: [], decisionRef: null, notes: 'I3 confirmed: zero application-role policies on this table (migration 027 refactor). Never employer-visible.', deletableWhen: null },
+];
+
+// ── B. TARGET ONTOLOGY IMPLEMENTATION MAP — domain objects ─────────────────────
+// Describes the DOMAIN, not the code. An object with no code yet has no
+// ARCHITECTURE_REGISTRY entry — it only appears here as TO_BUILD.
+
+export type OntologyImplementationStatus = 'EXISTS' | 'PARTIAL' | 'TO_BUILD' | 'UNCERTAIN';
+
+export interface OntologyObject {
+  id: string;
+  status: OntologyImplementationStatus;
+  currentRepresentation: string;
+  /** Code/schema paths that back the current representation, if any. */
+  primaryPaths: string[];
+  /** Future CC/block that would build or complete this object, if known. */
+  implementationBlock: string | null;
+  notes: string;
+}
+
+export const TARGET_ONTOLOGY: OntologyObject[] = [
+  { id: 'Organization', status: 'EXISTS', currentRepresentation: 'analytics.tenant table + TenantService.', primaryPaths: ['supabase/migrations/001_live_v1_foundation.sql', 'services/tenant/TenantService.ts'], implementationBlock: null, notes: 'No gap.' },
+  { id: 'ProgramDefinition', status: 'TO_BUILD', currentRepresentation: 'Flat programs.json (data/synthetic/programs.json), company_id-scoped, no owner-type split (company/partner/territory) — a data-shape analog only, not code implementing this object.', primaryPaths: [], implementationBlock: 'N1', notes: 'Zero code hits for the term "ProgramDefinition" anywhere in the repo (confirmed by exhaustive grep, CC-001R + CC-001 both independently).' },
+  { id: 'ProgramParticipation', status: 'TO_BUILD', currentRepresentation: 'Not separated from ProgramDefinition.', primaryPaths: [], implementationBlock: 'N1', notes: 'Same gap as ProgramDefinition.' },
+  { id: 'InvestmentCase', status: 'TO_BUILD', currentRepresentation: 'No representation found.', primaryPaths: [], implementationBlock: 'N2', notes: 'Zero code hits.' },
+  { id: 'EvidencePlan', status: 'TO_BUILD', currentRepresentation: 'No representation found.', primaryPaths: [], implementationBlock: null, notes: 'Zero code hits, distinct from the Evidence type scaffold (see Evidence entry below).' },
+  { id: 'DecisionRule', status: 'TO_BUILD', currentRepresentation: 'No representation found — distinct from the runtime eligibility-gate.ts classifier.', primaryPaths: [], implementationBlock: null, notes: 'Zero code hits.' },
+  { id: 'Delivery / Opportunity', status: 'PARTIAL', currentRepresentation: 'Fragmented across 3 independent "opportunity" surfaces plus the Commons cross-tenant booking pattern.', primaryPaths: ['services/worker-opportunity/', 'app/worker/opportunities/', 'app/company/opportunities/', 'app/my-kora/opportunities/', 'supabase/migrations/025_commons_booking_contribution.sql'], implementationBlock: null, notes: 'Not unified under one Delivery object tied to a ProgramDefinition.' },
+  { id: 'Observation', status: 'TO_BUILD', currentRepresentation: 'Closest analog is the UEF record (services/uef-review/) — not formally typed as an Observation with an eligible/exposed/aware/activated state chain, so not counted as implementing code for this object.', primaryPaths: [], implementationBlock: null, notes: 'No append-only eligible/exposed/aware/activated event table found in any of the 48 migrations.' },
+  { id: 'Measurement', status: 'PARTIAL', currentRepresentation: 'IU, KORA Index, Confidence, Contribution all exist as computed outputs, but not unified under one lineage_id / snapshot model.', primaryPaths: ['lib/kora-engine/'], implementationBlock: 'B-LIN', notes: 'No kora.calculation_lineage table found.' },
+  { id: 'InvestmentReview', status: 'TO_BUILD', currentRepresentation: 'No representation found.', primaryPaths: [], implementationBlock: 'N7', notes: 'Zero code hits.' },
+  { id: 'DecisionEvent', status: 'TO_BUILD', currentRepresentation: 'No append-only, trigger-enforced table or type found anywhere.', primaryPaths: [], implementationBlock: 'N8', notes: 'Confirms I13 "assente" — zero CREATE TRIGGER for any decision/event table across all 48 migrations.' },
+  { id: 'SubsequentObservation', status: 'TO_BUILD', currentRepresentation: 'No representation — Master Plan itself notes this is expected pre-second-cycle (time-limited, not code-limited).', primaryPaths: [], implementationBlock: null, notes: 'Master Plan: "si popola al secondo ciclo reale".' },
+  { id: 'Worker', status: 'EXISTS', currentRepresentation: 'personal.worker_identity + lib/worker-identity/*.', primaryPaths: ['supabase/migrations/007_worker_provisioning.sql', 'supabase/migrations/048_worker_identity_lifecycle_protection.sql', 'lib/worker-identity/'], implementationBlock: null, notes: 'Mature, actively hardened — matches current branch HEAD.' },
+  { id: 'PIB', status: 'EXISTS', currentRepresentation: 'personal.worker_pib, SECURITY DEFINER-only aggregation.', primaryPaths: ['supabase/migrations/018_worker_pib.sql', 'supabase/migrations/027_worker_individual_rls_refactor.sql', 'services/worker-pib/', 'services/pib-aggregation/'], implementationBlock: null, notes: 'Isolation independently confirmed — zero application-role policies (I3).' },
+  { id: 'Partner', status: 'EXISTS', currentRepresentation: 'network.partner_identity / partner_profile.', primaryPaths: ['supabase/migrations/010_partner_profile.sql', 'supabase/migrations/012_partner_identity.sql'], implementationBlock: null, notes: 'No gap found.' },
+  { id: 'Advisor', status: 'PARTIAL', currentRepresentation: 'Service exists, demo-only surface (app/demo/advisor) — no live /advisor workspace route despite CLAUDE.md documenting one.', primaryPaths: ['services/advisor-evidence-review/'], implementationBlock: null, notes: 'Gap is vs CLAUDE.md\'s own documented app structure, not vs the Master Plan.' },
+  { id: 'Territory / Local Entity', status: 'PARTIAL', currentRepresentation: 'Untyped string field (territory) on collective-initiatives.json — real form, not a typed entity.', primaryPaths: ['data/synthetic/collective-initiatives.json'], implementationBlock: null, notes: 'Master Plan §1 [VERIFIED]: "territorio ... non ancora tipizzate".' },
+  { id: 'Evidence', status: 'PARTIAL', currentRepresentation: 'Fields on UEF/ImpactUnit records; a types-only scaffold for a first-class entity exists but is not implemented.', primaryPaths: ['lib/types/domains/evidence.ts'], implementationBlock: 'Gate 2 (per the scaffold\'s own header)', notes: 'Verified by direct read (CC-002): "No persistence in KORA Foundation Light: types only."' },
+  { id: 'Benchmark Cohort / Memory', status: 'TO_BUILD', currentRepresentation: 'Only as disclaimed narrative copy / demo mockup (app/demo/benchmarks) — a UI placeholder, not code implementing this object.', primaryPaths: [], implementationBlock: 'N9', notes: 'Matches Master Plan\'s own "Stage 0" expectation until ≥10 companies.' },
+  { id: 'MethodologySnapshot', status: 'PARTIAL', currentRepresentation: 'methodology_version_id / calibration_status columns exist on ≥4 tables since migration 001/005, but not unified — 4 different naming schemes per the Master Plan.', primaryPaths: ['supabase/migrations/001_live_v1_foundation.sql', 'supabase/migrations/005_impact_unit_trace_layer.sql'], implementationBlock: 'B-SNAP', notes: 'Master Plan §11: "001:70 usa \'KORA Methodology v0.1\', 005:45 usa \'KORA-METHOD-v1.0\' — quattro nomi per una cosa sola."' },
+  { id: 'Data Lineage', status: 'TO_BUILD', currentRepresentation: 'No canonical lineage reconstruction path found.', primaryPaths: [], implementationBlock: 'B-LIN', notes: 'Confirms I12 "assente" — zero lineage_id hits repo-wide (2 independent exhaustive greps).' },
+  { id: 'KORA Link', status: 'EXISTS', currentRepresentation: 'Full schema, RLS, RPC — flag-disabled (KORA_LINK_ENABLED=false) but functionally complete.', primaryPaths: ['lib/kora-link/', 'supabase/migrations/034_kora_link_schema.sql'], implementationBlock: null, notes: 'Master Plan §33 [VERIFIED]: "gap DG-07 chiusi".' },
+  { id: 'KORA Contribution', status: 'EXISTS', currentRepresentation: 'Service + live API, correctly kept separate from KORA Index — but split across two non-communicating implementations (lib/ vs services/).', primaryPaths: ['services/kora-contribution/KoraContributionService.ts', 'lib/kora-contribution/contribution-methodology.ts'], implementationBlock: null, notes: 'CC-002 confirmed: genuine fragmentation, not a methodology/orchestration layering as previously hypothesized.' },
+];

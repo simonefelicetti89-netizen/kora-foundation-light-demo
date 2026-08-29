@@ -6,6 +6,7 @@
 // No individual worker resolution at any path.
 
 import aggregatesRaw from '@/data/synthetic/company-aggregates.json';
+import { SAFE_AGGREGATION_THRESHOLD } from '@/lib/constants/kora';
 
 const PILLARS = ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY'] as const;
 type Pillar = typeof PILLARS[number];
@@ -43,7 +44,9 @@ export interface PillarAdoptionResult {
   scenarioId: string;
 }
 
-const SAFE_THRESHOLD = 10;
+// CC-002 / I2: threshold imported from the single canonical source
+// (lib/constants/kora.ts) — do not redefine locally.
+const SAFE_THRESHOLD = SAFE_AGGREGATION_THRESHOLD;
 
 class WorkerPillarAdoptionService {
   // Returns aggregate pillar distribution for a company.

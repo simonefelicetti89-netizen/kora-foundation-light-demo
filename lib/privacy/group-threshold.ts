@@ -19,8 +19,14 @@
 //   (this module) is the correct layer. The DB schema already has privacy_threshold_applied
 //   and minimum_group_size columns to document the intent. A DB trigger would duplicate
 //   this logic without adding meaningful safety given service_role bypass semantics.
+//
+// CC-002 / I2 invariant: the numeric value is sourced from the single canonical
+// constant (lib/constants/kora.ts) — never redefined here — so every N≥10 check
+// in the repository shares one source of truth. Re-exported under this module's
+// own name for backward compatibility with existing callers.
+import { SAFE_AGGREGATION_THRESHOLD } from '@/lib/constants/kora';
 
-export const DEFAULT_MIN_GROUP_SIZE = 10;
+export const DEFAULT_MIN_GROUP_SIZE = SAFE_AGGREGATION_THRESHOLD;
 
 // Key used for the safe aggregation bucket — never a real group name.
 export const SUPPRESSED_BUCKET_KEY = '_suppressed';
@@ -154,5 +160,71 @@ export function summarizeSuppression(
     suppressedTotal: result.suppressedTotal,
     hasSuppressedBucket: result.hasSuppressedBucket,
     minGroupSize,
+  };
+}
+
+// ── Differencing risk detector (CC-002 / I5) ──────────────────────────────────
+//
+// A suppressed breakdown (from suppressSmallGroups) is, on its own, safe: any
+// group below minGroupSize is either bucketed into `_suppressed` (only if that
+// bucket itself is >= minGroupSize) or dropped entirely with no trace.
+//
+// The risk is NOT in this module — it is in any CALLER that exposes both (a)
+// this suppressed breakdown and (b) an unsuppressed grand total that equals
+// the true sum of all groups including the hidden ones, in the same
+// response/view. When suppression happened but the `_suppressed` bucket was
+// omitted (bucket itself < minGroupSize), `trueTotal - sum(safe values)`
+// reconstructs the exact hidden headcount — and if the dimension's full set
+// of group names is publicly known (e.g. a fixed department list), the
+// specific suppressed group is identifiable by elimination.
+//
+// CONFIRMED LIVE INSTANCE (CC-002 audit): lib/live/persistence.ts persists
+// `department_activation: deptSuppressionResult.safe` and the true, unsuppressed
+// `active_worker_count` / `total_workers` in the SAME activation_result row.
+// app/company/activation/page.tsx renders both `aggregate.active_worker_count`
+// and `aggregate.department_activation` (fixed 5-department DEPT_LABELS) on
+// the same page to the same COMPANY_ADMIN viewer. This detector proves the
+// reconstruction is possible; it does not change persistence.ts or the page —
+// remediation requires deciding what to change in that public response shape
+// (a data-model / public-contract decision reserved outside CC-002's minimal
+// scope). See CC-002 report, I5 section: INVARIANT BLOCKED — REMEDIATION REQUIRED.
+
+export interface DifferencingRiskResult {
+  atRisk: boolean;
+  reconstructedCount: number | null;
+  reason: string;
+}
+
+export function detectGroupTotalReconciliationRisk(
+  trueTotal: number,
+  suppression: SuppressionResult,
+): DifferencingRiskResult {
+  if (suppression.allSafe) {
+    return { atRisk: false, reconstructedCount: null, reason: 'no suppression occurred — nothing to reconstruct' };
+  }
+  if (suppression.hasSuppressedBucket) {
+    return {
+      atRisk: false,
+      reconstructedCount: null,
+      reason: '_suppressed bucket is already visible and accounts for the full remainder — no additional information leaks from the total',
+    };
+  }
+  const visibleSum = Object.values(suppression.safe).reduce((s, v) => s + v, 0);
+  const reconstructed = trueTotal - visibleSum;
+  if (reconstructed !== suppression.suppressedTotal) {
+    // trueTotal does not match this breakdown's universe — cannot conclude risk from these two numbers alone.
+    return {
+      atRisk: false,
+      reconstructedCount: null,
+      reason: 'trueTotal does not reconcile with this breakdown\'s suppressed groups — not the same population',
+    };
+  }
+  return {
+    atRisk: true,
+    reconstructedCount: reconstructed,
+    reason:
+      'suppression occurred with no visible _suppressed bucket (bucket itself < minGroupSize), and an unsuppressed ' +
+      'grand total for the same population is available: trueTotal - sum(visible safe groups) exactly reconstructs ' +
+      'the hidden headcount.',
   };
 }
