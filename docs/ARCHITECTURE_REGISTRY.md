@@ -9,7 +9,7 @@ Regenerate with: `npx tsx scripts/generate-architecture-doc.ts`.
 
 - **This document (Architecture Registry)** describes the **CODE** — real components that exist in the repository today, classified by `ArchitectureStatus`.
 - **The Target Ontology Implementation section below** describes the **target DOMAIN MODEL** the Master Plan defines — objects that may or may not have code behind them yet. These are two different axes and must never be conflated: a domain object can be `TO_BUILD` while unrelated code implementing a different capability is `CANONICAL`.
-- **`docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md` is the architectural truth.** This registry — like the rest of the repository — is the **operational truth**: what actually exists, not what should exist. Where they disagree, the Master Plan's own Read-Before-Write protocol governs (report `STATE_MATCH = NO`, do not silently reconcile).
+- **`docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md` is the architectural truth.** This registry — like the rest of the repository — is the **operational truth**: what actually exists, not what should exist. Where they disagree, the Master Plan's own Read-Before-Write protocol governs (report `STATE_MATCH = NO`, do not silently reconcile).
 - Classifications here do not anticipate any decision reserved for a future CC block or D-letter (D-A Confidence, D-B Decision Pack, D-C One Truth, D-D worker surfaces). Where two components compete, both carry the same `decisionRef` and neither is elevated.
 
 ---

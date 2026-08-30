@@ -2,7 +2,7 @@
 // CC-003 / B-REG — KORA Architecture Registry (typed, single source of truth).
 //
 // GOVERNANCE (read before editing):
-//   - MASTER PLAN (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md) = architectural truth.
+//   - MASTER PLAN (docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md) = architectural truth.
 //   - This file = REPOSITORY = operational truth, describing the CODE as it exists today.
 //   - The Architecture Registry (this file, section A) describes CODE COMPONENTS.
 //   - The Target Ontology Map (this file, section B) describes DOMAIN OBJECTS the
