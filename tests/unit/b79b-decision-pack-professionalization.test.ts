@@ -150,6 +150,7 @@ function makeFixture(overrides?: Partial<PdfData>): PdfData {
   return {
     meta:               FIXTURE_META,
     koraIndex:          FIXTURE_KORA_INDEX,
+    methodologySnapshot: null, // B-SNAP (CC-015): this fixture predates the Methodology Snapshot contract
     components:         FIXTURE_COMPONENTS,
     macroblocks:        FIXTURE_MACROBLOCKS,
     pillarDistribution: FIXTURE_PILLAR,

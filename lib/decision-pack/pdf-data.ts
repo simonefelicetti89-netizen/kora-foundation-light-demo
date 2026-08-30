@@ -78,6 +78,18 @@ export interface PdfData {
     createdAt: string;
     componentCount: number;
   };
+  // B-SNAP (CC-015): the immutable Methodology Snapshot this calculation
+  // referenced, read as-persisted — never invented, never a stale fallback.
+  // Null for any result computed before B-SNAP (methodology_snapshot_id was
+  // added nullable specifically so historical rows require no rewrite).
+  methodologySnapshot: {
+    methodologyVersion: string;
+    pipelineVersion: string;
+    configHash: string;
+    factorStatuses: Record<string, string>;
+    provenance: string;
+    calculationTimestamp: string;
+  } | null;
   // v1.0: 10 diagnostic components and 4 macroblocks from persisted kora_index_result
   components: PdfComponent[] | null;
   macroblocks: PdfMacroblock[] | null;
@@ -234,7 +246,7 @@ export async function fetchPdfData(
   if (!tenant) return null;
 
   const { data: ki } = await db.schema('analytics').from('kora_index_result')
-    .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*)')
+    .select('*, confidence_result:confidence_result_id(*), activation_result:activation_result_id(*), methodology_snapshot:methodology_snapshot_id(*)')
     .eq('tenant_id', (tenant as { id: string }).id)
     .eq('reporting_period', reportingPeriod)
     .eq('is_current', true)
@@ -265,6 +277,21 @@ export async function fetchPdfData(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const confRow = (ki as any).confidence_result as {
     confidence_score?: number;
+  } | null;
+
+  // B-SNAP (CC-015): read-only join — never invented, never a stale fallback.
+  // NULL for any result persisted before B-SNAP (methodology_snapshot_id was
+  // nullable specifically so historical rows require no rewrite) — the
+  // Decision Pack renders without this block in that case, exactly as it
+  // already renders without bti/enrichment/etc. when those are unavailable.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const snapshotRow = (ki as any).methodology_snapshot as {
+    methodology_version?: string;
+    pipeline_version?: string;
+    config_hash?: string;
+    factor_statuses?: Record<string, string>;
+    provenance?: string;
+    calculation_timestamp?: string;
   } | null;
 
   // Pillar distribution — from activation_result.pillar_distribution (Record<PillarCode, number>)
@@ -647,6 +674,16 @@ export async function fetchPdfData(
       notCertification: true,
       methodologyNote: 'KORA KORA Foundation Light — pre-empirical calibration. Output diagnostico pilota. Non certificato, non regulatory-grade.',
     },
+    methodologySnapshot: snapshotRow
+      ? {
+          methodologyVersion:    snapshotRow.methodology_version ?? '',
+          pipelineVersion:       snapshotRow.pipeline_version ?? '',
+          configHash:            snapshotRow.config_hash ?? '',
+          factorStatuses:        snapshotRow.factor_statuses ?? {},
+          provenance:            snapshotRow.provenance ?? 'AS_ORIGINALLY_CALCULATED',
+          calculationTimestamp:  snapshotRow.calculation_timestamp ?? '',
+        }
+      : null,
     components,
     macroblocks,
     pillarDistribution,

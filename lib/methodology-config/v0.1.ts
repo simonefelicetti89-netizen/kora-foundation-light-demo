@@ -1,4 +1,8 @@
-import type { MethodologyConfig, MacroblockConfig, MacroblockCode, ActionFamily } from '@/lib/types';
+import { createHash } from 'crypto';
+import type {
+  MethodologyConfig, MacroblockConfig, MacroblockCode, ActionFamily,
+  FactorStatus, MethodologyProvenance, MethodologySnapshot,
+} from '@/lib/types';
 import { MACROBLOCK_COMPONENTS, COMPONENT_EXTERNAL } from '@/lib/constants/kora';
 import rawConfig from '@/data/methodology/methodology-config.json';
 
@@ -9,7 +13,24 @@ const config: MethodologyConfig = rawConfig as MethodologyConfig;
 // Existing historical records may contain older methodology_version_id values
 // (e.g. "KORA Index v2.0"). This function defines the label for newly generated
 // outputs only — no backfill of already-persisted rows.
+/**
+ * LEGACY / PRODUCT LABEL — despite the name, this returns the PRODUCT label
+ * ("KORA Index v1.0"), not the true methodology version. It exists under this
+ * name because activation_result/confidence_result/kora_index_result's
+ * methodology_version_id columns and impact_unit.methodology_version were
+ * already writing this value before B-SNAP (D-F), and those legacy columns
+ * are NOT rewritten (historical preservation rule) — this getter remains
+ * their compatibility source. For the true methodology version, use
+ * getCanonicalMethodologyVersion() / getMethodologySnapshot().methodology_version
+ * ("1.0"). For explicit product-label call sites, prefer getProductVersion()
+ * (same value, honest name).
+ */
 export function getMethodologyVersion(): string {
+  return config.version;
+}
+
+/** Product label ("KORA Index v1.0") — same underlying config field as getMethodologyVersion(), honestly named. */
+export function getProductVersion(): string {
   return config.version;
 }
 
@@ -156,6 +177,145 @@ export function getBCByActionFamily(): Record<ActionFamily, number> {
     }
   }
   return bc;
+}
+
+// ── B-SNAP (CC-015 / D-F) — Methodology Snapshot ────────────────────────────────
+
+/**
+ * The TRUE methodology version ("1.0") — D-F: separate from getMethodologyVersion()
+ * / getProductVersion() ("KORA Index v1.0", the product label). Single
+ * authority for MethodologySnapshot.methodology_version; never hardcode "1.0"
+ * directly in a call site.
+ */
+export function getCanonicalMethodologyVersion(): string {
+  return config.methodology_version ?? '1.0';
+}
+
+/** BC's own calibration provenance label — describes maturity, never overclaims. */
+export function getBCCalibrationVersion(): string {
+  return config.bc_calibration_version ?? 'pre_empirical_v1';
+}
+
+/** Action taxonomy (9 families / 79 actions) version — distinct namespace from need_taxonomy_version. */
+export function getTaxonomyVersion(): string {
+  return config.taxonomy_version ?? 'KORA Action Taxonomy v0.1';
+}
+
+// Master Plan §10's own methodology table — these reflect ARCHITECTURAL FACTS
+// about which factors are implemented (canonical/provisional/proxy) vs not yet
+// active (DF, EXF, SF), not tunable config numbers. Update only when a
+// factor's real implementation status changes — e.g. B-BC promoted BC from a
+// hardcoded literal to config-owned provisional; DF/EXF/SF stay not_active
+// until their own implementation blocks land (D-E is not decided here).
+const FACTOR_STATUSES: Record<'NM' | 'BC' | 'CQ' | 'EV' | 'CF' | 'AGF' | 'DF' | 'EXF' | 'SF', FactorStatus> = {
+  NM:  'canonical',
+  BC:  'provisional',
+  CQ:  'provisional',
+  EV:  'provisional',
+  CF:  'proxy',
+  AGF: 'canonical',
+  DF:  'not_active',
+  EXF: 'not_active',
+  SF:  'not_active',
+};
+
+/** Current implementation status of every IU formula factor, per Master Plan §10. */
+export function getFactorStatuses(): Record<'NM' | 'BC' | 'CQ' | 'EV' | 'CF' | 'AGF' | 'DF' | 'EXF' | 'SF', FactorStatus> {
+  return { ...FACTOR_STATUSES };
+}
+
+// need_taxonomy_version: the Needs domain (Worker Listening / Needs Map,
+// NB-1/NB-2) is not built — no Need Taxonomy is in effect for any calculation
+// today. The Master Plan gives no explicit "not yet active" representation
+// for THIS field specifically (§23's DEFINED/NOT ACTIVE vocabulary is scoped
+// to scoring factors; "NOT DETERMINABLE" is scoped to NB-3's case-D
+// classification) — and §16 uses this field as a plain identifier composing
+// need_signature, so a structured status object would not even fit that
+// future usage. null follows the Master Plan's own independent convention for
+// "not yet applicable" (NeedObservation.related_program_definition_id,
+// ProgramBrief.resulting_program_definition_id — both explicitly nullable).
+// Never fabricate a version for a domain that does not exist yet.
+function getNeedTaxonomyVersionField(): string | null {
+  return null;
+}
+
+// contribution_config_version: the REAL, already-existing version from the
+// active Contribution config model (getContributionConfigV2, "Active public
+// model" per its own header) — not fabricated. CC-054 (Contribution
+// runtime-policy consolidation) is separate, unstarted work; capturing this
+// version string does not imply CC-054 is complete.
+function getContributionConfigVersionField(): string {
+  return getContributionConfigV2().version;
+}
+
+// Deterministic, stable serialization — recursively sorted object keys — so
+// the hash below never depends on JSON key insertion order, only on values.
+function sortedStringify(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(sortedStringify).join(',')}]`;
+  }
+  if (value !== null && typeof value === 'object') {
+    const keys = Object.keys(value as Record<string, unknown>).sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${sortedStringify((value as Record<string, unknown>)[k])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/**
+ * Deterministic sha256 over the methodology-config subset that actually
+ * drives a calculation: macroblock + within-macroblock weights, BC, NM
+ * functions, shrinkage, PIB config, calibration status. Explicitly excludes
+ * timestamps, tenant identity, calculation results, and UI state. The same
+ * config always produces the same hash; changing any hashed value changes it.
+ */
+export function computeConfigHash(): string {
+  const hashInput = {
+    macroblock_weights:        getMacroblockWeights(),
+    quality_component_weights: getQualityComponentWeights(),
+    equity_component_weights:  getEquityComponentWeights(),
+    bc_by_action_family:       getBCByActionFamily(),
+    nm_functions:               getNMFunctionsConfig(),
+    shrinkage:                  getShrinkageConfig(),
+    pib:                        getPIBConfig(),
+    calibration_status:         getCalibrationStatus(),
+  };
+  return createHash('sha256').update(sortedStringify(hashInput)).digest('hex');
+}
+
+/**
+ * Single construction authority for MethodologySnapshot (SNAPSHOT_RUNTIME_
+ * AUTHORITIES = 1). Callers pass their own already-canonical pipelineVersion
+ * (e.g. lib/kora-engine/run-kora-pipeline.ts's KORA_PIPELINE_VERSION) rather
+ * than this module importing from lib/kora-engine, which would create a
+ * circular dependency — lib/kora-engine already depends on
+ * lib/methodology-config, never the reverse.
+ */
+export function getMethodologySnapshot(params?: {
+  pipelineVersion?: string;
+  provenance?: MethodologyProvenance;
+  restatedFromSnapshotId?: string;
+}): MethodologySnapshot {
+  const provenance = params?.provenance ?? 'AS_ORIGINALLY_CALCULATED';
+  if (provenance === 'RESTATED_UNDER_METHODOLOGY' && !params?.restatedFromSnapshotId) {
+    throw new Error(
+      'getMethodologySnapshot: provenance=RESTATED_UNDER_METHODOLOGY requires restatedFromSnapshotId ' +
+      '— a restatement must always reference the snapshot it supersedes.',
+    );
+  }
+  return {
+    methodology_family:          'KORA Methodology',
+    methodology_version:         getCanonicalMethodologyVersion(),
+    taxonomy_version:            getTaxonomyVersion(),
+    need_taxonomy_version:       getNeedTaxonomyVersionField(),
+    bc_calibration_version:      getBCCalibrationVersion(),
+    contribution_config_version: getContributionConfigVersionField(),
+    factor_statuses:             getFactorStatuses(),
+    pipeline_version:            params?.pipelineVersion ?? 'unknown_pipeline_version',
+    config_hash:                 computeConfigHash(),
+    calculation_timestamp:       new Date().toISOString(),
+    provenance,
+    restated_from_snapshot_id:   params?.restatedFromSnapshotId ?? null,
+  };
 }
 
 export function getShrinkageConfig() {
