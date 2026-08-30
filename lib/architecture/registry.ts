@@ -19,6 +19,47 @@
 //
 // docs/ARCHITECTURE_REGISTRY.md is GENERATED from this file by
 // scripts/generate-architecture-doc.ts. Never hand-edit that Markdown file.
+//
+// ── CC-010 CLOSEOUT / D-C RESOLUTION (2026-08-31) ───────────────────────────────
+//
+// CC-010 — "Audit One Truth esteso" (Master Plan §30, line 863; A-audit type,
+// block B-TRUTH, prereq CC-003, gate "Sì → D-C") — STATUS: COMPLETE (audit
+// only; remediation is separate, see below).
+//
+// The audit's required deliverable — a verified inventory of what violates
+// One Product / One Truth, surfacing any decision points — already exists:
+// Master Plan §13 "ONE PRODUCT / ONE TRUTH" lists the items to eliminate or
+// consolidate, marked [tutti VERIFIED], and names exactly one open decision
+// point (the 11 synth-only /demo pages — see app-surface.demo below, D-C).
+// That inventory has since been substantively extended by real, repo-verified
+// B-TRUTH audit work: the Tenant Identity read-path audit (svc.tenant), the
+// Demo/Orphan Chain Audit (svc.company-intelligence, svc.company-onboarding,
+// svc.report-factory, svc.report-generator), Root Control Room Waves 1–3 +
+// Hardening (svc.lifecycle retired, svc.tenant/svc.company-data-intake/etc.
+// caller graphs corrected), the synthetic BTI orphan-chain retirement
+// (svc.budget-to-human-impact deleted), and the Ingestion/UEF DEMO_RUNTIME
+// classification (svc.ingestion-pipeline, svc.uef-review corrected to
+// FROZEN). This closes CC-010's own scope: producing and maintaining a
+// verified One-Truth inventory. It does NOT mean B-TRUTH remediation itself
+// is complete — the §13 list's remediation items (ScoringSimulatorService,
+// DemoDataService, DemoScoringAdapter, AccessControlService, CommonsService's
+// dual discovery path, KoraContributionService's 2 remaining seeds, the I9
+// allowlist at 24/28) remain open. That remediation is CC-018–023's job, not
+// CC-010's.
+//
+// D-C — Master Plan §13's open decision: disposition of the 11 synth-only
+// /demo pages (role DEMO_VIEWER) under One Truth — RESOLVED by founder
+// decision (2026-08-31). See app-surface.demo below for the resolution text
+// and its governing invariant.
+//
+// CC-018–023 sequence (Master Plan §29 day-by-day schedule reconciled against
+// §30's coarse "018-023: One Truth per gruppo di seed" index row, using the
+// same main+adversarial composite-label convention §30 already applies to
+// 011-012, 013-014, and 041-042): CC-018 = seed-group migration #1 (COMPLETE
+// — see svc.worker-pillar-adoption), CC-019/020/021 = seed-group migrations
+// #2/#3/#4 (not started), CC-022 = B-TRUTH closure gate (demo=live, I9=0 —
+// not started), CC-023 = adversarial validation + remedies (not started).
+// CC-022/023 are NOT additional seed-group migrations.
 
 // ── A. ARCHITECTURE REGISTRY — code components ──────────────────────────────────
 
@@ -184,7 +225,7 @@ export const ARCHITECTURE_REGISTRY: ArchitectureComponent[] = [
   { id: 'app-surface.worker', domain: 'Worker', primaryPath: 'app/worker/', purpose: 'Live worker workspace, real Supabase JWT session (12 routes).', status: 'COMPLETE', futureCore: true, dependencies: ['svc.worker-provisioning', 'svc.worker-pib'], competingWith: ['app-surface.my-kora'], decisionRef: 'CC-024 / D-D', notes: 'Neutral status — CC-024\'s 12-dimension architecture matrix owns the consolidation decision, not a line-count comparison.', deletableWhen: null },
   { id: 'app-surface.my-kora', domain: 'Worker', primaryPath: 'app/my-kora/', purpose: 'Preview worker workspace, demo-state session (9 routes) — self-documented in-file as PREVIEW mode.', status: 'COMPLETE', futureCore: true, dependencies: ['svc.my-kora-preview'], competingWith: ['app-surface.worker'], decisionRef: 'CC-024 / D-D', notes: 'Neutral status. Master Plan §19 B-WORKER row states "/my-kora gira su AccessControlService" — CC-001R verified this claim does NOT match current code (app/my-kora/page.tsx does not import AccessControlService); flagged as an untagged (no [VERIFIED]) Master Plan claim, not corrected here.', deletableWhen: null },
   { id: 'app-surface.admin', domain: 'Admin', primaryPath: 'app/admin/', purpose: 'Admin/governance/diagnostics workspace (30 subdirectories, mixed live + synthetic).', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Not individually traced per-subdirectory. Includes diagnostic-only tooling (kora-link-lab, live-spine-diagnostics, provisioning-diagnostics) that a future pass may want to split out separately.', deletableWhen: null },
-  { id: 'app-surface.demo', domain: 'Demo', primaryPath: 'app/demo/', purpose: 'Standalone demo/pitch surfaces (10 subdirectories: advisor, ai-onboarding, benchmarks, future-vision, gtm, guide, index-registry, network, partner, portfolio).', status: 'CONSOLIDATE', futureCore: false, dependencies: ['svc.demo-data', 'svc.scoring-simulator', 'svc.access-control'], competingWith: [], decisionRef: 'B-TRUTH / D-C', notes: 'Master Plan §31 explicitly names this cluster: "11 pagine /demo con ruolo DEMO_VIEWER, synth-only [DECISION REQUIRED D-C]".', deletableWhen: null },
+  { id: 'app-surface.demo', domain: 'Demo', primaryPath: 'app/demo/', purpose: 'Standalone demo/pitch surfaces (10 subdirectories: advisor, ai-onboarding, benchmarks, future-vision, gtm, guide, index-registry, network, partner, portfolio).', status: 'CONSOLIDATE', futureCore: false, dependencies: ['svc.demo-data', 'svc.scoring-simulator', 'svc.access-control'], competingWith: [], decisionRef: 'B-TRUTH / D-C', notes: 'Master Plan §13 explicitly names this cluster: "11 pagine /demo con ruolo DEMO_VIEWER, synth-only [DECISION REQUIRED D-C]" — count independently verified (exactly 11 page.tsx files under app/demo/). D-C RESOLVED (founder decision, 2026-08-31): these 11 pages are intentionally retained as DEMO_RUNTIME, classified the same way as the Ingestion/UEF chain (see svc.ingestion-pipeline, svc.uef-review) — NOT required to be retired merely to satisfy One Product/One Truth. Governing invariant: DEMO MAY USE SYNTHETIC DATA; LIVE MUST NEVER FALL BACK TO DEMO OR SYNTHETIC DATA. Retention is conditional, not unconditional: acceptable only while (1) these pages remain clearly identifiable as demo experiences, (2) they do not masquerade as live company data, (3) live authenticated company surfaces never depend on or fall back to them, (4) demo/live separation remains structurally testable, (5) they are excluded from canonical analytical truth. This resolution does not authorize synthetic data in any canonical live path — status remains CONSOLIDATE (not CANONICAL, not FROZEN) pending the still-open remediation items this cluster depends on (svc.demo-data, svc.scoring-simulator, svc.access-control — all still CANONICAL/unretired per Master Plan §32).', deletableWhen: null },
 
   // ── Dead route (not a service) ──────────────────────────────────────────────
   { id: 'app.company-reports-board-pack', domain: 'Reporting (dead route)', primaryPath: 'app/company/reports/board-pack/page.tsx', purpose: '13-line redirect-only page to /api/company/decision-pack — no content renders.', status: 'DEAD', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'Master Plan §32 Safe Deletion Plan', notes: 'Verified: pure redirect() call, no logic. Master Plan §32: "13 L, solo redirect [VERIFIED]". Referenced by 2 files (app/company/status/page.tsx, lib/feature-discovery/index.ts) and 4 tests exercising the redirect itself — those link targets would need updating on deletion.', deletableWhen: 'After B-REG, once the 2 referencing files are repointed directly at /api/company/decision-pack and the 4 redirect-behavior tests are updated or removed.' },
