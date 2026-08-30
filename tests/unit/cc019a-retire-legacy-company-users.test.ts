@@ -103,9 +103,11 @@ describe('CC-019A — the legacy synthetic subsystem was not migrated into the l
 describe('CC-019A — TenantService and AccountProvisioningService implementations were not touched', () => {
   it('TenantService.ts still exists with its other callers intact', () => {
     expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(true);
-    // Other confirmed callers untouched by this slice.
+    // Other confirmed callers untouched by CC-019A. layout.tsx is NOT listed
+    // here — it was untouched by CC-019A specifically, but CC-019B (a later,
+    // separate sub-slice) has since canonicalized it; see
+    // tests/unit/cc019b-canonicalize-gen3-tenant-identity.test.ts.
     for (const file of [
-      'app/admin/companies/[companyId]/layout.tsx',
       'app/admin/pipeline/page.tsx',
       'app/admin/companies/workforce-baseline/page.tsx',
       'components/admin/WorkforceQuickAccessPanel.tsx',
@@ -124,10 +126,8 @@ describe('CC-019A — TenantService and AccountProvisioningService implementatio
   });
 });
 
-describe('CC-019A — CC-019B (layout.tsx company_name resolution) remains untouched', () => {
-  it('layout.tsx still calls tenantService.getTenant for company_name — deferred to CC-019B, not this slice', () => {
-    const src = read('app/admin/companies/[companyId]/layout.tsx');
-    expect(src).toContain("import { tenantService } from '@/services/tenant/TenantService'");
-    expect(src).toContain('tenantService.getTenant(companyId)');
-  });
-});
+// CC-019A's own "layout.tsx deferred to CC-019B" assertion was SUPERSEDED the
+// same week by CC-019B itself landing — see
+// tests/unit/cc019b-canonicalize-gen3-tenant-identity.test.ts for the current,
+// correct state (layout.tsx now queries analytics.tenant directly, no
+// TenantService import).

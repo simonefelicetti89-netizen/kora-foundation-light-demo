@@ -87,12 +87,14 @@ describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers ar
   // TenantService dependency at all.
   // CC-019A (2026-08-31): users/page.tsx was ALSO retired outright — real,
   // more capable replacement (app/admin/company-users-live) already existed.
-  // layout.tsx remains — its single company_name display call is CC-019B,
-  // deferred. ReportFactoryService/CompanyIntelligenceService remain
-  // entangled pending their own separate decisions. See
-  // lib/architecture/registry.ts svc.tenant notes.
+  // CC-019B (2026-08-31): layout.tsx's own company_name display call was
+  // ALSO canonicalized — it now queries analytics.tenant by tenant_code,
+  // same as the Gen3 children, with no TenantService dependency at all. See
+  // tests/unit/cc019b-canonicalize-gen3-tenant-identity.test.ts.
+  // ReportFactoryService/CompanyIntelligenceService remain entangled pending
+  // their own separate decisions. See lib/architecture/registry.ts svc.tenant
+  // notes.
   const ENTANGLED_CALLERS = [
-    'app/admin/companies/[companyId]/layout.tsx',
     'services/report-factory/ReportFactoryService.ts',
     'services/company-intelligence/CompanyIntelligenceService.ts',
   ];
@@ -165,10 +167,11 @@ describe('B-TRUTH Gen 3 route identity activation — workspace/preview/evidence
     });
   }
 
-  it('these four routes are removed from the entangled-caller list (moved to Gen 3)', () => {
+  it('layout.tsx itself is ALSO now canonical (CC-019B) — no TenantService dependency remains', () => {
     const layout = read('app/admin/companies/[companyId]/layout.tsx');
-    // layout.tsx itself remains entangled (cosmetic company-name header only) — unchanged in this task.
-    expect(layout).toContain('tenantService');
+    expect(layout).not.toContain('tenantService');
+    expect(layout).toContain("schema('analytics').from('tenant')");
+    expect(layout).toContain("eq('tenant_code', companyId)");
   });
 });
 
