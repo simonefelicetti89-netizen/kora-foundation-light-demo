@@ -4,11 +4,6 @@
       "count": 1
     }
   },
-  "app/admin/companies/[companyId]/page.tsx": {
-    "react-hooks/set-state-in-effect": {
-      "count": 1
-    }
-  },
   "app/admin/companies/new/_components/CreateLiveCompanyForm.tsx": {
     "react-hooks/set-state-in-effect": {
       "count": 1
@@ -159,11 +154,6 @@
       "count": 1
     }
   },
-  "tests/unit/b95c-workforce-navigation.test.ts": {
-    "@typescript-eslint/no-require-imports": {
-      "count": 6
-    }
-  },
   "tests/unit/b99-provision-credentials.test.ts": {
     "@typescript-eslint/no-require-imports": {
       "count": 2
@@ -187,11 +177,6 @@
   "tests/unit/p0-commercial-credibility.test.ts": {
     "@typescript-eslint/no-require-imports": {
       "count": 1
-    }
-  },
-  "tests/unit/p0-hotfix-navigation-contrast.test.ts": {
-    "@typescript-eslint/no-require-imports": {
-      "count": 2
     }
   }
 }
