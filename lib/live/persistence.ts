@@ -13,6 +13,7 @@
 
 import { getSupabaseServiceClient, type ServiceDb } from '@/lib/supabase/server';
 import type { KoraComputationResult, KoraIndexMacroblocks } from '@/lib/kora-engine/types';
+import { normalizeConfidenceScore, getConfidenceBand } from '@/lib/kora-engine/confidence-engine';
 import { triggerOfficeAttribution } from '@/lib/live/office-attribution';
 import type { Json } from '@/lib/supabase/types';
 import type { KoraIndexComponent, MacroblockScore, MacroblockCode } from '@/lib/types';
@@ -56,7 +57,7 @@ function buildComponentArray(
   const pbValue   = d?.pbStatus   === 'computed' ? d.pb / 100 : 0;  // 0–100 → 0–1
 
   // CS = Data Reliability Index — external to KORA Index, weight always 0.
-  const csValue = confidence.score / 100;
+  const csValue = normalizeConfidenceScore(confidence.score);
 
   const w = weights;
 
@@ -161,10 +162,21 @@ export async function persistKoraComputationResult(params: {
   const activationResultId = actData.id as string;
 
   // ── 2. confidence_result ────────────────────────────────────────────────────
-  // Engine produces score 0–100; DB stores as numeric(5,4) → divide by 100.
+  // Scale and banding are owned by the canonical Confidence contract
+  // (lib/kora-engine/confidence-engine.ts) — persistence only serializes.
 
-  const cs01 = result.confidence.score / 100;
-  const confidenceLevel = cs01 >= 0.70 ? 'high' : cs01 >= 0.40 ? 'medium' : 'low';
+  const cs01 = normalizeConfidenceScore(result.confidence.score);
+  const confidenceLevel = getConfidenceBand(cs01);
+
+  // CC-011 / D-A legacy compatibility mapping — NOT a generic evidence-quality
+  // computation. `analytics.confidence_result.evidence_quality` is a legacy
+  // physical column name retained for backward compatibility (no migration in
+  // CC-011); its canonical semantic meaning is BUDGET evidence quality, and it
+  // is sourced from ConfidenceResult.budgetEvidenceConfidence — the same value
+  // as before this refactor, unchanged. A genuinely generic evidence-quality
+  // metric would require a separate methodology decision (out of scope here).
+  // See CC-011 report, "EVIDENCE QUALITY — BLOCKER" / human decision.
+  const legacyEvidenceQualityColumn = result.confidence.budgetEvidenceConfidence;
 
   const { data: confData, error: confErr } = await db
     .schema('analytics')
@@ -175,7 +187,7 @@ export async function persistKoraComputationResult(params: {
       confidence_score:      cs01,
       confidence_level:      confidenceLevel,
       data_completeness:     result.confidence.dataCompleteness,
-      evidence_quality:      result.confidence.budgetEvidenceConfidence,
+      evidence_quality:      legacyEvidenceQualityColumn,
       mapping_confidence:    result.confidence.mappingConfidence,
       verification_weight:   result.confidence.verificationConfidence,
       source_coverage:       {},

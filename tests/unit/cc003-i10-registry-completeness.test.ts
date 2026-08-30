@@ -154,15 +154,18 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
   });
 
   describe('no anticipated decisions', () => {
-    it('both Confidence implementations are CONSOLIDATE with the same decisionRef (CC-004 / D-A) — neither is elevated', () => {
+    it('D-A resolved (CC-011): lib.kora-engine (confidence-engine.ts) is canonical; svc.confidence-score is CONSOLIDATE, retained but non-canonical, not DEAD', () => {
       const engine = ARCHITECTURE_REGISTRY.find((c) => c.id === 'lib.kora-engine');
       const service = ARCHITECTURE_REGISTRY.find((c) => c.id === 'svc.confidence-score');
       // lib.kora-engine is the 25-file aggregate (confidence-engine.ts lives inside it);
-      // its own status reflects the aggregate, not a D-A pick — the competing
-      // confidence-score service is explicitly CONSOLIDATE, not a declared loser.
-      expect(engine?.status).toBe('CANONICAL'); // aggregate status, unrelated to the D-A question
+      // its own status reflects the aggregate. D-A (CC-004/CC-011) resolved the
+      // competing-implementation question: confidence-engine.ts is canonical.
+      // svc.confidence-score is retained as CONSOLIDATE — zero callers does not
+      // mean DEAD (Master Plan discipline) — pending a formal retirement decision.
+      expect(engine?.status).toBe('CANONICAL');
       expect(service?.status).toBe('CONSOLIDATE');
-      expect(service?.decisionRef).toBe('CC-004 / D-A');
+      expect(service?.status).not.toBe('DEAD');
+      expect(service?.decisionRef).toBe('CC-011 / D-A');
     });
 
     it('report-factory, report-generator, and lib.decision-pack share the D-B decision, none is CANONICAL over the others', () => {

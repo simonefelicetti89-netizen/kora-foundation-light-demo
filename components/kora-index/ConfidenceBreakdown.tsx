@@ -54,7 +54,10 @@ export function ConfidenceBreakdown({ record }: ConfidenceBreakdownProps) {
         <>
           <div className="space-y-3">
             <SubFactor label="Completezza Dati"       value={record.data_completeness} />
-            <SubFactor label="Qualità Evidenze"        value={record.evidence_quality} />
+            {/* CC-011 / D-A: this field is the legacy `evidence_quality` DB column,
+                whose canonical meaning is budget evidence quality (sourced from
+                ConfidenceResult.budgetEvidenceConfidence) — labeled accordingly. */}
+            <SubFactor label="Qualità evidenze budget" value={record.evidence_quality} />
             <SubFactor label="Confidenza Mapping"      value={record.mapping_confidence} />
             <SubFactor label="Peso Verifica"           value={record.verification_weight} />
           </div>

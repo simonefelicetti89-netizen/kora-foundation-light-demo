@@ -10,7 +10,10 @@ export { runKoraPipeline, KORA_PIPELINE_VERSION } from './run-kora-pipeline';
 
 // ── Individual engines ────────────────────────────────────────────────────────
 export { computeKoraIndex, KORA_INDEX_ENGINE_VERSION } from './kora-index-engine';
-export { computeConfidence, CONFIDENCE_ENGINE_VERSION } from './confidence-engine';
+export {
+  computeConfidence, CONFIDENCE_ENGINE_VERSION,
+  normalizeConfidenceScore, getConfidenceBand, type ConfidenceBand,
+} from './confidence-engine';
 export { buildExplainabilityTrace, EXPLAINABILITY_ENGINE_VERSION } from './explainability';
 export { computeActivation, computeActivationFromRecords, ACTIVATION_ENGINE_VERSION } from './activation-engine';
 export { computeBTI, computeBTIFromRecords, BTI_ENGINE_VERSION } from './bti-engine';
