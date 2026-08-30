@@ -29,7 +29,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 
 const root = resolve(process.cwd());
@@ -192,8 +192,17 @@ describe('B-TRUTH Demo/Orphan Chain Audit — reserved large group untouched (Ma
     expect(registry.slice(idx, nextIdx)).toContain('Master Plan §32');
   });
 
-  it('BudgetToHumanImpactService core computation is untouched (still CANONICAL, still synthetic-backed)', () => {
-    const svc = read('services/budget-to-human-impact/BudgetToHumanImpactService.ts');
-    expect(svc).toContain('data/synthetic');
+  it('BudgetToHumanImpactService — SUPERSEDED same day by the synthetic BTI chain retirement: the file no longer exists', () => {
+    // This assertion originally proved the service was left untouched
+    // (still CANONICAL, still synthetic-backed) during the Demo/Orphan Chain
+    // cleanup. A later same-day audit found its 3 remaining callers
+    // (DynamicScoringPreviewService, ReportGeneratorService,
+    // CompanyIntelligenceService) were ALL themselves unreachable from any
+    // app/ entry point, and the real BTI path (analytics.bti_result, read
+    // directly by the Gen 3 workspace API) was already live and verified —
+    // satisfying Master Plan §32's own condition for retiring a synthetic
+    // path. See tests/unit/b-truth-retire-synthetic-bti.test.ts for the
+    // current, correct state.
+    expect(existsSync(resolve(root, 'services/budget-to-human-impact/BudgetToHumanImpactService.ts'))).toBe(false);
   });
 });

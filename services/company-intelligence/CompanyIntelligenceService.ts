@@ -1,9 +1,8 @@
-import type { ScenarioId } from '@/lib/types';
+import type { ScenarioId, BudgetToHumanImpactRecord } from '@/lib/types';
 import { tenantService } from '@/services/tenant/TenantService';
 import { companyDataIntakeService } from '@/services/company-data-intake/CompanyDataIntakeService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
-import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { companyOnboardingService } from '@/services/company-onboarding/CompanyOnboardingService';
 
 export type CompanyRiskLevel = 'ready' | 'monitor' | 'action_required' | 'blocked';
@@ -107,11 +106,10 @@ export class CompanyIntelligenceService {
     }
     const koraIndexAvailable = koraIndex !== null;
 
-    // BTI: KORA_ADMIN has access to all tenants
-    const btiResult = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(
-      companyId, 'S1', 'KORA_ADMIN',
-    );
-    const btiRecord = btiResult.allowed ? btiResult.record : undefined;
+    // BTI: retired synthetic chain (B-TRUTH) — no reachable runtime source remains.
+    // Real BTI lives in analytics.bti_result, read directly by the Gen 3
+    // workspace API — this service (0 reachable callers) never consumed that.
+    const btiRecord = undefined as BudgetToHumanImpactRecord | undefined;
 
     // Privacy suppressed clusters
     let privacySuppressedClusters = workerSummary.suppressed_clusters_count > 0 ? 1 : 0;
