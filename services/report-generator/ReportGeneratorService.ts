@@ -52,7 +52,6 @@ import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSim
 import { dynamicScoringPreviewService } from '@/services/dynamic-scoring/DynamicScoringPreviewService';
 import { uefReviewService } from '@/services/uef-review/UEFReviewService';
 import { iuComputationService } from '@/services/iu-computation/IUComputationService';
-import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { financialGovernanceService } from '@/services/financial-governance/FinancialGovernanceService';
 import { ingestionPipelineService } from '@/services/ingestion-pipeline/IngestionPipelineService';
 import { explainabilityService } from '@/services/explainability/ExplainabilityService';
@@ -911,13 +910,11 @@ export class ReportGeneratorService implements IReportGeneratorService {
     const confidenceRec   = scoringSimulatorService.getConfidenceRecord(companyId, scenarioId);
     const confidenceScore = currentOutput.confidence_score;
 
-    // BTI
-    const btiS1Access = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(companyId, 'S1', 'COMPANY_ADMIN');
-    const btiS2Access = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(companyId, 'S2', 'COMPANY_ADMIN');
-    const btiRecs     = budgetToHumanImpactService.getRecommendations(companyId, scenarioId, 'COMPANY_ADMIN');
-    const btiRecord   = scenarioId === 'S2'
-      ? (btiS2Access.allowed && btiS2Access.record ? btiS2Access.record : null)
-      : (btiS1Access.allowed && btiS1Access.record ? btiS1Access.record : null);
+    // BTI — retired synthetic chain (B-TRUTH). No reachable runtime source
+    // remains (this service has 0 production callers); real BTI lives in
+    // analytics.bti_result, read directly by the Gen 3 workspace API.
+    const btiRecs: BudgetToHumanImpactRecommendation[] = [];
+    const btiRecord: BudgetToHumanImpactRecord | null = null;
 
     // Financial governance
     const rawPillarBudget = financialGovernanceService.getPillarBudget(companyId, scenarioId, 'COMPANY_ADMIN');
@@ -1011,8 +1008,8 @@ export class ReportGeneratorService implements IReportGeneratorService {
       activation_safeguard: safeguard,
       confidence_record: confidenceRec,
       confidence_score:  confidenceScore,
-      bti_record_s1:     btiS1Access.allowed && btiS1Access.record ? btiS1Access.record : null,
-      bti_record_s2:     btiS2Access.allowed && btiS2Access.record ? btiS2Access.record : null,
+      bti_record_s1:     null,
+      bti_record_s2:     null,
       bti_recommendations: btiRecs,
       eligibility_gate:  eligibilityGate,
       explanation,

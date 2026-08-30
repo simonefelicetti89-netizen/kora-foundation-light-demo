@@ -49,7 +49,7 @@ Regenerate with: `npx tsx scripts/generate-architecture-doc.ts`.
 | `svc.advisor-evidence-review` | Advisor | `services/advisor-evidence-review/AdvisorEvidenceReviewService.ts` | COMPLETE | — | — | Demo-only caller (app/demo/advisor); no live /advisor workspace route exists despite CLAUDE.md documenting one. |
 | `svc.booking-request` | Commons (legacy) | `services/booking-request/BookingRequestService.ts` | DEAD | — | Master Plan §32 Safe Deletion Plan | Verified: 24 lines, zero callers anywhere (no import, no dynamic/string reference, no test), no backing DB table. Master Plan §32 independently confirms: "24 L, ritorna []/null [VERIFIED]" — commons/BookingService resta. |
 | `svc.bti-intelligence` | Financial | `services/bti-intelligence/BTIIntelligenceService.ts` | COMPLETE | — | — | 1 caller. Confirmed distinct responsibility from budget-to-human-impact (imports only its result type, not the service) — not a duplicate. |
-| `svc.budget-to-human-impact` | Financial | `services/budget-to-human-impact/BudgetToHumanImpactService.ts` | CANONICAL | — | — | 5 callers. |
+| `svc.budget-to-human-impact` | Financial | `services/budget-to-human-impact/BudgetToHumanImpactService.ts` | DEAD | — | B-TRUTH Retire Orphan Synthetic BTI Chain (2026-08-31) | DELETED (file no longer exists at primaryPath, kept here only as historical record). Its 3 remaining callers — DynamicScoringPreviewService, ReportGeneratorService, CompanyIntelligenceService — were each independently confirmed to have zero reachable callers from any app/ entry point (ReportGeneratorService and CompanyIntelligenceService were already established as orphaned in prior B-TRUTH work this same week; DynamicScoringPreviewService's only caller is the orphaned ReportGeneratorService). The real, live BTI path already exists and is independently verified: analytics.bti_result, read directly by app/api/admin/company-workspace/route.ts. Its sole seed file (data/synthetic/budget-to-human-impact.json) was deleted alongside it — zero remaining consumers, proven before deletion. The 3 consumers were trimmed (BTI-specific calls removed, replaced with null-safe equivalents matching their own pre-existing null-handling branches) and left otherwise unredesigned and unretired — their overall registry fate remains a separate, still-open decision (svc.report-generator and svc.company-intelligence stay INVESTIGATE). One previously-unlisted reference was found and fixed: components/kora-index/EconomicReliefPanel.tsx held a type-only import of EconomicReliefSummary, copied locally into the component (plain data shape, no behavior) rather than relocated — the component remains orphaned and otherwise untouched. I9 reduced 25->24 files (37->36 imports) — the first genuine I9 reduction since Root Control Room Wave 2. |
 | `svc.care-economy` | Intelligence | `services/care-economy/CareEconomyIntelligenceService.ts` | COMPLETE | — | — | 3 callers. |
 | `svc.commons` | Commons | `services/commons/CommonsService.ts` | CANONICAL | — | — | 7 callers. |
 | `svc.commons.booking` | Commons | `services/commons/BookingService.ts` | CANONICAL | Y | — | Master Plan §33 Do-Not-Delete: "vivo e canonico" [VERIFIED]. 5 live API routes, SECURITY DEFINER cross-tenant boundary check (migration 025). |
@@ -104,13 +104,13 @@ Regenerate with: `npx tsx scripts/generate-architecture-doc.ts`.
 
 | Status | Count |
 |---|---|
-| CANONICAL | 35 |
+| CANONICAL | 34 |
 | CONSOLIDATE | 9 |
 | COMPLETE | 14 |
 | FROZEN | 3 |
 | FUTURE_CORE | 7 |
 | LEGACY | 0 |
-| DEAD | 3 |
+| DEAD | 4 |
 | INVESTIGATE | 6 |
 
 ---
@@ -120,6 +120,7 @@ Regenerate with: `npx tsx scripts/generate-architecture-doc.ts`.
 | ID | Path | Replacement | Deletable When | Decision Ref |
 |---|---|---|---|---|
 | `svc.booking-request` | `services/booking-request/BookingRequestService.ts` | `svc.commons.booking` | After B-REG registry is live and a repo-wide re-grep at CC-003+ time confirms still zero references. | Master Plan §32 Safe Deletion Plan |
+| `svc.budget-to-human-impact` | `services/budget-to-human-impact/BudgetToHumanImpactService.ts` | — | Already deleted — this entry is the historical record of that deletion. | B-TRUTH Retire Orphan Synthetic BTI Chain (2026-08-31) |
 | `svc.lifecycle` | `services/lifecycle/LifecycleService.ts` | — | Already deleted — this entry is the historical record of that deletion. | B-TRUTH Root Control Room Wave 2 (2026-08-30) |
 | `app.company-reports-board-pack` | `app/company/reports/board-pack/page.tsx` | — | After B-REG, once the 2 referencing files are repointed directly at /api/company/decision-pack and the 4 redirect-behavior tests are updated or removed. | Master Plan §32 Safe Deletion Plan |
 

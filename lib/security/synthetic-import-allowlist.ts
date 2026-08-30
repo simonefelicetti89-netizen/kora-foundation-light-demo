@@ -14,11 +14,21 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 25 files / 37 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 24 files / 36 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH Retire Orphan Synthetic BTI Chain (2026-08-31): removed
+// services/budget-to-human-impact/BudgetToHumanImpactService.ts (and its
+// sole seed file, data/synthetic/budget-to-human-impact.json) — its 3
+// remaining callers (DynamicScoringPreviewService, ReportGeneratorService,
+// CompanyIntelligenceService) were each confirmed to have zero reachable
+// callers from any app/ entry point, and the real BTI path
+// (analytics.bti_result, read directly by the Gen 3 workspace API) was
+// already live and verified. First genuine I9 reduction since Root Control
+// Room Wave 2 (26->25); this pass: 25->24 files, 37->36 imports.
 //
 // CC-018 / B-TRUTH SEED GROUP #1 (2026-08-30): removed
 // services/worker-pillar-adoption/WorkerPillarAdoptionService.ts — company
@@ -51,7 +61,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.' },
   { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).' },
   { file: 'services/admin-preview/AdminPreviewService.ts', reason: 'Admin demo preview shaping — companies, KORA Index outputs, source batches.' },
-  { file: 'services/budget-to-human-impact/BudgetToHumanImpactService.ts', reason: 'Core BTI computation reads synthetic BTI records (Foundation Light demo data).' },
   { file: 'services/commons/CommonsService.ts', reason: 'Commons demo-seeded initiatives (live DB path also exists, coexists).' },
   { file: 'services/company-data-intake/CompanyDataIntakeService.ts', reason: 'Company raw-data batch/row intake demo seed (fiscal plans, batches, rows).' },
   { file: 'services/company-onboarding/CompanyOnboardingService.ts', reason: 'Demo onboarding flow seed data.' },

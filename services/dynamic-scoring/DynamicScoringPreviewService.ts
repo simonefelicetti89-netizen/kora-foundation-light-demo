@@ -13,7 +13,6 @@ import { iuComputationService } from '@/services/iu-computation/IUComputationSer
 import { uefReviewService } from '@/services/uef-review/UEFReviewService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { activationSafeguardService } from '@/services/activation-safeguard/ActivationSafeguardService';
-import { budgetToHumanImpactService } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
 import { getMethodologyVersion, getCalibrationStatus, getMacroblockWeights } from '@/lib/methodology-config/v0.1';
 import { MACROBLOCK_CODES, MACROBLOCK_LABELS } from '@/lib/constants/kora';
 
@@ -244,13 +243,8 @@ export class DynamicScoringPreviewService implements IDynamicScoringPreviewServi
     const agg = deriveAggregationPreview(input);
 
     // Step 3 — BTI from canonical seed (no dynamic BTI computation from IU batch)
-    const btiAccess = budgetToHumanImpactService.getBudgetToHumanImpactByScenario(
-      companyId, scenarioId, 'COMPANY_ADMIN',
-    );
     const canonicalMacroblocks = scoringSimulatorService.getMacroblockScores(companyId, scenarioId);
-    const btiScore = btiAccess.allowed && btiAccess.record
-      ? btiAccess.record.bti_score
-      : canonicalMacroblocks.find((m) => m.code === 'BTI')?.score ?? 0;
+    const btiScore = canonicalMacroblocks.find((m) => m.code === 'BTI')?.score ?? 0;
 
     // Step 4 — macroblock previews
     const macroblocks = deriveMacroblockPreviews(agg, btiScore, canonicalMacroblocks);

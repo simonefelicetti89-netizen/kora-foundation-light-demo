@@ -1,7 +1,17 @@
 'use client';
 
 import { TOKENS } from '@/lib/design/kora-design-tokens';
-import type { EconomicReliefSummary } from '@/services/budget-to-human-impact/BudgetToHumanImpactService';
+
+interface EconomicReliefSummary {
+  economic_relief_spend: number;
+  economic_relief_share: number;
+  deep_activation_spend: number;
+  deep_activation_share: number;
+  total_used_budget: number;
+  currency: string;
+  /** Canonical BTI doctrine — never paraphrase. */
+  interpretation_it: string;
+}
 
 interface EconomicReliefPanelProps {
   s1?: EconomicReliefSummary | null;
