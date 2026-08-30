@@ -63,9 +63,10 @@
     "postcss": "8.5.19",
     "uuid": "11.1.1",
     "sharp": "0.35.0",
-    "fast-uri": "3.1.4",
-    "brace-expansion": "5.0.8",
+    "fast-uri": "3.1.6",
+    "brace-expansion": "5.0.9",
     "archiver": "8.0.0",
-    "@eslint/config-array": "0.23.5"
+    "@eslint/config-array": "0.23.5",
+    "minimatch": "10.2.6"
   }
 }

@@ -195,7 +195,7 @@ export default function CompanyUsersPage({ params }: { params: Promise<{ company
       <div className="border-t border-[rgba(6,3,43,0.06)] pt-4 flex flex-wrap gap-4 text-xs">
         <Link href="/admin/pipeline"                        className="text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">← Pilot Lifecycle</Link>
         <Link href={`/admin/companies/${companyId}`}        className="text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">Company Control Room</Link>
-        <Link href={`/admin/companies/${companyId}/workforce`} className="text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">Workforce Management →</Link>
+        <Link href="/admin/workers" className="text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">Worker Provisioning (live) →</Link>
       </div>
 
       <p className="text-[9px] font-mono text-[rgba(6,3,43,0.25)]">

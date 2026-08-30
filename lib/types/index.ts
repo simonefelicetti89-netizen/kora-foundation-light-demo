@@ -813,6 +813,23 @@ export interface MethodologyConfig {
     prs_threshold_theta:       number;
     pillar_targets_default:    Record<string, number>;
   };
+  // B-BC (CC-009): BC per action family — IU formula (NM × BC × CQ × EV × CF × AGF).
+  // Single source of truth; services/iu-computation/IUComputationService.ts reads
+  // this via getBCByActionFamily() and must never hardcode these values.
+  // REQUIRED (not optional): getBCByActionFamily() fails fast if this or any of
+  // its 9 action-family entries is missing — no duplicate fallback table.
+  bc_by_action_family: Record<ActionFamily, number>;
+  // B-SNAP (CC-015 / D-F): the TRUE methodology version ("1.0"), separate
+  // from `version` above (the "KORA Index v1.0" PRODUCT label). Single
+  // authority for MethodologySnapshot.methodology_version — never hardcode
+  // "1.0" directly; read via getCanonicalMethodologyVersion().
+  methodology_version?: string;
+  // B-SNAP (CC-015 / D-F): BC's own calibration provenance label — describes
+  // maturity, never overclaims empirical calibration that has not occurred.
+  bc_calibration_version?: string;
+  // B-SNAP (CC-015 / D-F): action taxonomy (9 families / 79 actions) version —
+  // distinct namespace from need_taxonomy_version (Needs domain, not yet built).
+  taxonomy_version?: string;
   safeguard_thresholds: {
     CLEAR: { AR: number; MAR: number };
     WARNING: { AR_min: number; AR_max: number; MAR_min: number; MAR_max: number };
@@ -836,6 +853,61 @@ export interface MethodologyConfig {
     shrinkage_k: number;
     shrinkage_prior: number;
   };
+}
+
+// ── Methodology Snapshot (B-SNAP / CC-015, D-F Option C) ────────────────────────
+// Master Plan v2.1 §11: "Immutabile, per ogni risultato persistito." The
+// human-readable methodology_version is NOT sufficient for reproducibility —
+// config_hash is the authoritative anchor. See lib/methodology-config/v0.1.ts
+// (getMethodologySnapshot, computeConfigHash) for the single runtime authority.
+
+// Master Plan §10's exact vocabulary ("Stati metodologici: canonical ·
+// provisional · proxy · fallback") plus §23's "NOT ACTIVE" for factors that
+// are defined but not yet implemented (DF, EXF, SF).
+export type FactorStatus = 'canonical' | 'provisional' | 'proxy' | 'fallback' | 'not_active';
+
+// D-F historical preservation rule: results are AS_ORIGINALLY_CALCULATED by
+// default; a later correction produces a NEW snapshot marked
+// RESTATED_UNDER_METHODOLOGY, referencing the snapshot it supersedes — the
+// original snapshot and the results that reference it are never rewritten.
+export type MethodologyProvenance = 'AS_ORIGINALLY_CALCULATED' | 'RESTATED_UNDER_METHODOLOGY';
+
+export interface MethodologySnapshot {
+  // D-F approved contract: family name, separate from methodology_version and
+  // from the "KORA Index v1.0" product label. Not itself a Master Plan §11
+  // field, but part of the founder-approved D-F naming decision this snapshot
+  // implements.
+  methodology_family: string;                                     // "KORA Methodology"
+  // Master Plan §11 required fields, exact names.
+  methodology_version: string;                                    // e.g. "1.0" — separate from the "KORA Index v1.0" product label (D-F)
+  taxonomy_version: string;
+  // Needs domain (NB-2) is not built. The Master Plan gives no explicit legal
+  // representation for THIS field before it exists — §23's DEFINED/NOT ACTIVE
+  // vocabulary is scoped to scoring FACTORS (NM/BC/CQ/EV/CF/AGF/DF/EXF/SF), not
+  // snapshot fields, and "NOT DETERMINABLE" is scoped to NB-3's case-D
+  // classification — neither is textually authorized here. §16 explicitly
+  // uses need_taxonomy_version as a plain identifier composing need_signature
+  // (need_taxonomy_version + need_category_code + ...), so a structured status
+  // object would not even fit that future usage. The one representation the
+  // Master Plan's own schema conventions DO support independently is
+  // nullable-for-"not yet applicable" — the same pattern already used for
+  // NeedObservation.related_program_definition_id and
+  // ProgramBrief.resulting_program_definition_id (both explicitly nullable).
+  // null here means exactly that: no Need Taxonomy is in effect for this
+  // calculation, not an error, not a fabricated version.
+  need_taxonomy_version: string | null;
+  bc_calibration_version: string;
+  contribution_config_version: string;
+  factor_statuses: Record<'NM' | 'BC' | 'CQ' | 'EV' | 'CF' | 'AGF' | 'DF' | 'EXF' | 'SF', FactorStatus>;
+  pipeline_version: string;
+  config_hash: string;
+  calculation_timestamp: string;                                  // ISO 8601
+
+  // Historical/restatement provenance — not part of §11's own field list, but
+  // required by the D-F historical preservation rule to make silent rewriting
+  // structurally impossible.
+  provenance: MethodologyProvenance;
+  restated_from_snapshot_id?: string | null;
 }
 
 // ── Dynamic Scoring Preview (Block 3) ───────────────────────────────────────────

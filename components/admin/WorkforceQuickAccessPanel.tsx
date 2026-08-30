@@ -91,13 +91,15 @@ export function WorkforceQuickAccessPanel() {
                   </span>
                 </div>
 
-                {/* CTA */}
+                {/* CTA — B-TRUTH Gen 0/1 Retirement Wave 1: the per-tenant demo
+                    workforce page was retired; points to the real, global
+                    (not tenant-scoped) worker provisioning admin surface. */}
                 <Link
-                  href={`/admin/companies/${tenant.company_id}/workforce`}
+                  href="/admin/workers"
                   data-testid={`gestisci-workforce-${tenant.company_id}`}
                   className="mt-auto block rounded-md bg-[#06032B] px-3 py-2 text-center text-[11px] font-semibold text-white hover:bg-[rgba(6,3,43,0.82)] transition-colors"
                 >
-                  Gestisci workforce →
+                  Worker Provisioning (live) →
                 </Link>
               </div>
             );

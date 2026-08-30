@@ -220,4 +220,35 @@ function round3(n: number): number {
   return Math.round(n * 1000) / 1000;
 }
 
+// ── Canonical contract — scale + banding (CC-011 / D-A) ────────────────────────
+//
+// Engine A's own native output (ConfidenceResult.score) is 0–100 — unchanged.
+// Everywhere a normalized 0–1 representation is needed (persistence, UI), it
+// must go through normalizeConfidenceScore rather than an inline `/ 100`, and
+// every band label must go through getConfidenceBand rather than a locally
+// re-implemented threshold. This does not change any number Engine A already
+// produces — it centralizes the ONE existing live threshold (persistence.ts's
+// pre-CC-011 inline 0.70/0.40 rule, the only one that was ever actually
+// tenant-visible) so no second copy can silently drift from it again.
+
+export type ConfidenceBand = 'high' | 'medium' | 'low';
+
+/** Engine A's native 0–100 score → the canonical persisted/UI 0–1 representation. */
+export function normalizeConfidenceScore(score: number): number {
+  return Math.max(0, Math.min(1, score / 100));
+}
+
+/**
+ * Canonical live band for a normalized (0–1) Confidence value.
+ * Thresholds match the rule that was already live in lib/live/persistence.ts
+ * before CC-011 — centralized here, not changed. Demo's separate `moderate`
+ * vocabulary and Service B's dormant 0.45 threshold are explicitly NOT used;
+ * neither was ever tenant-visible for a live-computed value.
+ */
+export function getConfidenceBand(normalizedScore: number): ConfidenceBand {
+  if (normalizedScore >= 0.70) return 'high';
+  if (normalizedScore >= 0.40) return 'medium';
+  return 'low';
+}
+
 export { ENGINE_SOURCE as CONFIDENCE_ENGINE_VERSION };

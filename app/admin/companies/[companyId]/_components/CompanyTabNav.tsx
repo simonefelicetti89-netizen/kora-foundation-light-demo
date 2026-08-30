@@ -5,15 +5,19 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+// B-TRUTH Gen 0/1 Retirement Wave 1 (2026-08-30): removed the Workforce,
+// Data Intake, and Onboarding tabs — those pages were 100% synthetic
+// (TenantService/tenants.json-rooted) demo dashboards with no unique
+// capability beyond what real live surfaces already provide (real upload:
+// /admin/data-intake; real worker provisioning: /admin/workers; real
+// per-tenant status: the Workspace tab). Root Control Room and Users remain
+// — see lib/architecture/registry.ts svc.tenant notes for the remaining gaps.
 const TABS = [
   { label: 'Workspace',   slug: 'workspace'   },
   { label: 'Preview',     slug: 'preview'     },
   { label: 'Submissions', slug: 'submissions' },
   { label: 'Evidence',    slug: 'evidence'    },
   { label: 'Users',       slug: 'users'       },
-  { label: 'Workforce',   slug: 'workforce'   },
-  { label: 'Data Intake', slug: 'data-intake' },
-  { label: 'Onboarding',  slug: 'onboarding'  },
 ] as const;
 
 interface Props {

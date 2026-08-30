@@ -49,7 +49,7 @@ import { computeKoraIndex } from './kora-index-engine';
 import { computeConfidence } from './confidence-engine';
 import { buildExplainabilityTrace } from './explainability';
 import { computeReachSemantics } from './reach-semantics';
-import { getMacroblockWeights, getMCConfig } from '@/lib/methodology-config/v0.1';
+import { getMacroblockWeights, getMCConfig, getMethodologyVersion } from '@/lib/methodology-config/v0.1';
 import { pibAggregationService } from '@/services/pib-aggregation/PIBAggregationService';
 import { computeMonteCarlo } from './monte-carlo-engine';
 
@@ -119,7 +119,7 @@ function buildInsufficientDataResult(
     value: 0,
     macroblocks: { activationReach: 0, activationQuality: 0, distributionEquity: 0, budgetToHumanImpact: 0 },
     weights: getMacroblockWeights(),
-    methodologyVersion: 'KORA-METHOD-v1.0',
+    methodologyVersion: getMethodologyVersion(),
     calibrationStatus: 'pre_empirical_calibration',
     productionReady: false,
     confidenceExternal: 0,
@@ -155,7 +155,7 @@ function buildInsufficientDataResult(
     estimationBasis: 'aggregate_estimate',
     estimationNote: 'insufficient_data: no records to aggregate.',
     calibrationStatus: 'pre_empirical_calibration',
-    methodologyVersion: 'KORA-METHOD-v1.0',
+    methodologyVersion: getMethodologyVersion(),
     warnings: ['Nessun record: PIB aggregation non calcolabile.'],
   };
 

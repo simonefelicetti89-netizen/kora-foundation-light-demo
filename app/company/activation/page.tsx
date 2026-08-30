@@ -7,7 +7,7 @@
 import { useScoringResult }             from '@/lib/scoring-result';
 import { useCompanySession }            from '../_providers/CompanySessionProvider';
 import { activationSafeguardService }   from '@/services/activation-safeguard/ActivationSafeguardService';
-import { PILLAR_CODES }                 from '@/lib/constants/kora';
+import { PILLAR_CODES, SAFE_AGGREGATION_THRESHOLD } from '@/lib/constants/kora';
 import { PrivacyBoundaryNotice }        from '@/components/privacy/PrivacyBoundaryNotice';
 import { PageMasthead }                 from '@/components/ui/PageMasthead';
 import { DecisionContext }              from '@/components/ui/DecisionContext';
@@ -21,7 +21,8 @@ import { DataBar }                      from '@/components/ui/DataBar';
 import { Explainer }                    from '@/components/ui/Explainer';
 import type { PillarCode }              from '@/lib/types';
 
-const SAFE_AGGREGATION_THRESHOLD = 10;
+// CC-002 / I2: SAFE_AGGREGATION_THRESHOLD imported from the single canonical
+// source (lib/constants/kora.ts) — do not redefine locally.
 
 const DEPT_LABELS: Record<string, string> = {
   'dept-operations':          'Operations',

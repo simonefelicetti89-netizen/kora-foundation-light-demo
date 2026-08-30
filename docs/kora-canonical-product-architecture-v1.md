@@ -9,6 +9,10 @@
 
 ---
 
+> **Precedence note (added 2026-08-27, updated 2026-08-30, does not modify this document's original content):** As of 2026-08-30, `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md` is the current architectural truth for target architecture — domain ontology (Program/Investment/Decision/Survey/Needs layer), the Architecture Registry, constitutional invariants, and execution governance. It supersedes `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.0.md`, which remains as historical baseline. Where this document's authority claims below (§1, §34) address those specific matters, the Master Plan now governs instead. This document remains authoritative, unchanged, for everything else it defines: product positioning, the five pillars, capability scope, language policy, boundary rules, and current-state product architecture. See `CLAUDE.md` §8 for the full hierarchy.
+
+---
+
 ## 1. Purpose and Authority of This Document
 
 Questo documento è il riferimento canonico dell'architettura di prodotto KORA. Ogni sessione futura — di codice, product, UX, pitch, demo, metodologia, marketing, commerciale o documentazione — deve leggerlo prima di agire e non deve contraddirlo.

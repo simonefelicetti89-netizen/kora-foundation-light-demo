@@ -6,10 +6,17 @@
 // ICU build and the browser's Intl implementation (and across the render/
 // hydration wall-clock gap), producing a React hydration mismatch.
 //
-// Pure fs.readFileSync — no runtime, no DOM, no Supabase. Consistent with
-// this codebase's existing convention for static boundary/regression guards
-// (see tests/unit/b133-company-live-residual-cleanup.test.ts,
-// tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts).
+// B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30): the page this
+// guarded was retired outright — it is now a server-only redirect
+// (requireKoraAdmin → redirect to the Gen 3 workspace tab), with no client
+// component, no JSX render, and therefore no hydration surface at all. The
+// original risk (client-only date formatting racing server/browser ICU) is
+// structurally impossible now, not just fixed — there is nothing left to
+// mount-gate. This file is updated, not deleted, to keep the historical
+// record and to re-fail loudly if a future change reintroduces client-side
+// date rendering on this route.
+//
+// Pure fs.readFileSync — no runtime, no DOM, no Supabase.
 
 import { describe, it, expect } from 'vitest';
 import * as fs from 'fs';
@@ -22,42 +29,30 @@ function read(relPath: string): string {
   return fs.readFileSync(path.join(ROOT, relPath), 'utf-8');
 }
 
-describe('B175 — no direct new Date() rendered in JSX render path', () => {
+describe('B175 — retired route has no client-side date rendering at all (Wave 3 Hardening)', () => {
   const src = read(PAGE);
 
-  it('does not render new Date().toLocaleDateString(...) directly', () => {
-    expect(src).not.toMatch(/\{\s*new Date\(\)\.toLocaleDateString/);
+  it('is a server component (no "use client")', () => {
+    expect(src).not.toContain("'use client'");
   });
 
-  it('does not contain the bare unguarded expression anywhere in the file', () => {
-    // The only date-formatting call in the file must be inside the useEffect
-    // callback (mount-gated), never spliced straight into JSX.
-    const occurrences = src.match(/new Date\(\)\.toLocaleDateString\('it-IT'\)/g) ?? [];
-    expect(occurrences.length).toBe(1);
+  it('does not render new Date().toLocaleDateString(...) anywhere', () => {
+    expect(src).not.toMatch(/new Date\(\)\.toLocaleDateString/);
+  });
+
+  it('no longer uses useState/useEffect for a mounted-date pattern (nothing to mount-gate)', () => {
+    expect(src).not.toContain('useState');
+    expect(src).not.toContain('useEffect');
+    expect(src).not.toContain('todayLabel');
+  });
+
+  it('is a thin redirect: requireKoraAdmin then redirect to the Gen 3 workspace tab', () => {
+    expect(src).toContain('requireKoraAdmin');
+    expect(src).toContain('redirect(`/admin/companies/${companyId}/workspace`)');
   });
 });
 
-describe('B175 — safe mounted-date state pattern is present', () => {
-  const src = read(PAGE);
-
-  it('imports useEffect', () => {
-    expect(src).toMatch(/import\s*\{[^}]*useEffect[^}]*\}\s*from\s*'react'/);
-  });
-
-  it('declares a todayLabel state initialized to null', () => {
-    expect(src).toContain("const [todayLabel, setTodayLabel] = useState<string | null>(null);");
-  });
-
-  it('sets todayLabel inside a mount-only useEffect (empty dependency array)', () => {
-    expect(src).toMatch(/useEffect\(\(\) => \{\s*setTodayLabel\(new Date\(\)\.toLocaleDateString\('it-IT'\)\);\s*\}, \[\]\);/);
-  });
-
-  it('renders todayLabel with a stable pre-mount placeholder', () => {
-    expect(src).toContain("{todayLabel ?? '—'}");
-  });
-});
-
-describe('B175 — no other new-Date/random/browser-only patterns introduced in this file', () => {
+describe('B175 — no other new-Date/random/browser-only patterns present', () => {
   const src = read(PAGE);
 
   it('Date.now() is not used', () => {
@@ -73,7 +68,7 @@ describe('B175 — no other new-Date/random/browser-only patterns introduced in 
     expect(src).not.toContain('sessionStorage');
   });
 
-  it('window/navigator are not referenced during render', () => {
+  it('window/navigator are not referenced', () => {
     expect(src).not.toContain('window.');
     expect(src).not.toContain('navigator.');
   });

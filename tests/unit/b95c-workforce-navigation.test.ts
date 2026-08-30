@@ -8,11 +8,15 @@
 // Privacy invariants confirmed: no individual PIB, no employer-visible worker data.
 
 import { describe, it, expect } from 'vitest';
+import { readFileSync, existsSync } from 'fs';
+import { resolve, join } from 'path';
 import { buildNavGroups } from '../../components/layout/Sidebar';
 import { ADMIN_QUICKSTART_STEPS } from '../../lib/feature-discovery/index';
 import {
   LIFECYCLE_STEPS,
 } from '../../lib/admin-lifecycle/lifecycle-rules';
+
+const COMPANY_TAB_NAV_PATH = 'app/admin/companies/[companyId]/_components/CompanyTabNav.tsx';
 
 // ── Task 1: Sidebar — Workforce navigation post-B169 ─────────────────────────
 // B169 FASE 2: Workforce Management moved from sidebar to CompanyTabNav.
@@ -40,14 +44,10 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
     expect(opsGroup?.items.find((i) => i.href === '/admin/workers')).toBeDefined();
   });
 
-  it('CompanyTabNav has Workforce tab with slug workforce', () => {
-
-    const src = require('fs').readFileSync(
-      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
-      'utf-8',
-    );
-    expect(src).toContain("slug: 'workforce'");
-    expect(src).toContain("label: 'Workforce'");
+  it('CompanyTabNav no longer has a Workforce tab (retired — B-TRUTH Gen 0/1 Retirement Wave 1)', () => {
+    const src = readFileSync(resolve(process.cwd(), COMPANY_TAB_NAV_PATH), 'utf-8');
+    expect(src).not.toContain("slug: 'workforce'");
+    expect(src).not.toContain("label: 'Workforce'");
   });
 
   it('non-admin roles do not have Workforce Management in sidebar', () => {
@@ -73,30 +73,30 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
   });
 });
 
-// ── Task 2: Workforce accessible via CompanyTabNav drill-in ──────────────────
-// B169 FASE 2: CompanyTabNav at /admin/companies/[companyId] renders Workforce tab.
+// ── Task 2: Workforce tab retired (B-TRUTH Gen 0/1 Retirement Wave 1) ────────
+// B169 FASE 2 originally put Workforce in CompanyTabNav as a demo drill-in tab.
+// 2026-08-30: that page was 100% synthetic (TenantService/tenants.json-rooted)
+// with no unique capability beyond real /admin/workers (B104, live) — retired.
+// See lib/architecture/registry.ts svc.tenant notes.
 
-describe('B95-C Task 2 — Workforce via CompanyTabNav drill-in (B169)', () => {
+describe('B-TRUTH Gen 0/1 Retirement Wave 1 — Workforce tab removed from CompanyTabNav', () => {
 
-  it('workforce route /admin/companies/[companyId]/workforce is a tab in CompanyTabNav', () => {
-
-    const src = require('fs').readFileSync(
-      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
-      'utf-8',
-    );
-    expect(src).toContain("slug: 'workforce'");
-    expect(src).toContain('/admin/companies/');
+  it('CompanyTabNav no longer has a workforce tab', () => {
+    const src = readFileSync(resolve(process.cwd(), COMPANY_TAB_NAV_PATH), 'utf-8');
+    expect(src).not.toContain("slug: 'workforce'");
   });
 
-  it('workforce route pattern is /admin/companies/[companyId]/workforce (slug-based tab)', () => {
+  it('the retired workforce drill-in page no longer exists', () => {
+    expect(existsSync(join(process.cwd(), 'app/admin/companies/[companyId]/workforce/page.tsx'))).toBe(false);
+  });
 
-    const src = require('fs').readFileSync(
-      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
-      'utf-8',
-    );
-    // CompanyTabNav builds href via: `/admin/companies/${companyId}/${slug}` with slug 'workforce'
-    expect(src).toContain('/admin/companies/');
-    expect(src).toContain("slug: 'workforce'");
+  it('CompanyTabNav retains exactly the 5 Gen 3 + Users tabs', () => {
+    const src = readFileSync(resolve(process.cwd(), COMPANY_TAB_NAV_PATH), 'utf-8');
+    for (const slug of ['workspace', 'preview', 'submissions', 'evidence', 'users']) {
+      expect(src).toContain(`slug: '${slug}'`);
+    }
+    expect(src).not.toContain("slug: 'data-intake'");
+    expect(src).not.toContain("slug: 'onboarding'");
   });
 });
 

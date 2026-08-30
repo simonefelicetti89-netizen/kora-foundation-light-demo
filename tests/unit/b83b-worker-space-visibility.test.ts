@@ -75,8 +75,16 @@ describe('B83-B Task 2 — WorkerAdoptionPanel created', () => {
     expect(panel).toContain('workerProvisioningService');
   });
 
-  it('imports workerPillarAdoptionService', () => {
-    expect(panel).toContain('workerPillarAdoptionService');
+  it('CC-018/B-TRUTH: fetches pillar adoption from the live API (no direct synchronous service call)', () => {
+    // Superseded B83-B assertion — the panel used to call workerPillarAdoptionService
+    // synchronously with a synthetic-backed demo companyId. CC-018 moved pillar
+    // adoption to a session-authenticated live read (analytics.activation_result);
+    // a client component cannot hold a service-role DB client, so the panel now
+    // fetches the API route instead of calling the singleton service directly.
+    // A type-only import of PillarAdoptionResult is still legitimate (shape only).
+    expect(panel).toContain("fetch('/api/company/pillar-adoption'");
+    expect(panel).not.toContain('workerPillarAdoptionService.getCompanyPillarAdoption');
+    expect(panel).not.toContain("import { workerPillarAdoptionService }");
   });
 
   it('shows roster count tile', () => {
@@ -124,8 +132,12 @@ describe('B83-B Task 3 — WorkerPillarAdoptionService', () => {
     expect(exists('services/worker-pillar-adoption/WorkerPillarAdoptionService.ts')).toBe(true);
   });
 
-  it('reads from company-aggregates.json', () => {
-    expect(svc).toContain('company-aggregates.json');
+  it('CC-018/B-TRUTH: no longer reads from company-aggregates.json (canonical source: analytics.activation_result)', () => {
+    // Superseded B83-B assertion — CC-018 (B-TRUTH seed group #1) moved this
+    // service off the synthetic demo seed onto the same canonical column
+    // already used by the Decision Pack (lib/decision-pack/pdf-data.ts, B-PACK).
+    expect(svc).not.toContain("from '@/data/synthetic/company-aggregates.json'");
+    expect(svc).toContain("from('activation_result')");
   });
 
   it('defines N≥10 safe threshold', () => {
@@ -267,9 +279,13 @@ describe('B83-B invariants — no auth, no onboarding, no DB, no invitations', (
     expect(panel).not.toContain('requireCompanyUser');
   });
 
-  it('WorkerPillarAdoptionService contains no DB calls', () => {
+  it('CC-018/B-TRUTH: WorkerPillarAdoptionService now reads the canonical live DB (superseded B83-B "no DB calls" invariant)', () => {
+    // B83-B wrote this service as pure-demo-JSON by design; CC-018/B-TRUTH's
+    // entire mandate is to remove exactly that kind of parallel truth. The
+    // service never uses Prisma or raw DDL — it goes through the same
+    // ServiceDb/Supabase read pattern as every other lib/live/* canonical source.
     const svc = read('services/worker-pillar-adoption/WorkerPillarAdoptionService.ts');
-    expect(svc).not.toContain('supabase');
+    expect(svc).toContain('ServiceDb');
     expect(svc).not.toContain('prisma');
     expect(svc).not.toContain('CREATE TABLE');
   });

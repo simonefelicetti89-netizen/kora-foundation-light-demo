@@ -9,24 +9,14 @@ import type {
   ImpactUnitFactorTrace,
 } from '@/lib/types';
 import type { PipelineAnalyzedRow } from '@/services/ingestion-pipeline/IngestionPipelineService';
-import { getMethodologyVersion, getCalibrationStatus, getNMFunctionsConfig } from '@/lib/methodology-config/v0.1';
+import { getMethodologyVersion, getCalibrationStatus, getNMFunctionsConfig, getBCByActionFamily } from '@/lib/methodology-config/v0.1';
 
-// ── Foundation Light factor defaults — BC by action family ──────────────────────
-// Conservative pre-empirical values. Requires Delphi Study calibration post-pilot.
-const BC_BY_FAMILY: Record<ActionFamily, number> = {
-  family_and_care:              1.2,
-  health_and_wellbeing:         1.2,
-  professional_growth:          1.1,
-  future_and_legacy:            1.1,
-  inclusion_and_connection:     1.0,
-  territorial_impact:           1.0,
-  // Structural org policies: high additionality, broad coverage, structural continuity.
-  // 1.15 = above neutral (1.0) but below consumed welfare services (1.2).
-  // Subject to Delphi Study calibration post-pilot.
-  trust_and_flexibility_policy: 1.15,
-  economic_relief:              0,    // AGF=0 anyway; explicit for traceability
-  blocked_compliance:           0,    // AGF=0 anyway; explicit for traceability
-};
+// ── BC by action family — B-BC (CC-009) ──────────────────────────────────────────
+// Single source of truth: lib/methodology-config/v0.1.ts (getBCByActionFamily()),
+// backed by data/methodology/methodology-config.json. Conservative pre-empirical
+// values, requires Delphi Study calibration post-pilot. Do not hardcode here —
+// economic_relief/blocked_compliance are 0 (AGF=0 anyway; explicit for traceability).
+const BC_BY_FAMILY: Record<ActionFamily, number> = getBCByActionFamily();
 
 // EV by evidence_type from ingestion seed field.
 // Maps source-level evidence codes to evidence verification weights (IU formula EV factor).

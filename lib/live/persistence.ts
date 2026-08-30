@@ -13,6 +13,8 @@
 
 import { getSupabaseServiceClient, type ServiceDb } from '@/lib/supabase/server';
 import type { KoraComputationResult, KoraIndexMacroblocks } from '@/lib/kora-engine/types';
+import { normalizeConfidenceScore, getConfidenceBand } from '@/lib/kora-engine/confidence-engine';
+import { KORA_PIPELINE_VERSION } from '@/lib/kora-engine/run-kora-pipeline';
 import { triggerOfficeAttribution } from '@/lib/live/office-attribution';
 import type { Json } from '@/lib/supabase/types';
 import type { KoraIndexComponent, MacroblockScore, MacroblockCode } from '@/lib/types';
@@ -20,6 +22,7 @@ import {
   getMethodologyVersion,
   getCalibrationStatus,
   getAllComponentEffectiveWeights,
+  getMethodologySnapshot,
 } from '@/lib/methodology-config/v0.1';
 import { COMPONENT_LABELS, MACROBLOCK_LABELS } from '@/lib/constants/kora';
 import {
@@ -56,7 +59,7 @@ function buildComponentArray(
   const pbValue   = d?.pbStatus   === 'computed' ? d.pb / 100 : 0;  // 0–100 → 0–1
 
   // CS = Data Reliability Index — external to KORA Index, weight always 0.
-  const csValue = confidence.score / 100;
+  const csValue = normalizeConfidenceScore(confidence.score);
 
   const w = weights;
 
@@ -91,14 +94,15 @@ export interface SegmentSuppressionMeta {
 }
 
 export interface PersistenceResult {
-  activationResultId:    string;
-  confidenceResultId:    string;
-  btiResultId:           string;
-  koraIndexResultId:     string;
-  iuCount:               number;   // number of impact_unit rows persisted (0 if none)
+  activationResultId:      string;
+  confidenceResultId:      string;
+  btiResultId:             string;
+  koraIndexResultId:       string;
+  methodologySnapshotId:   string;  // B-SNAP / CC-015 — shared across every result table for this calculation
+  iuCount:                 number;   // number of impact_unit rows persisted (0 if none)
   // N≥10 suppression applied to department_activation before persist.
   // Caller should write audit events using this metadata.
-  segmentSuppression:    SegmentSuppressionMeta[];
+  segmentSuppression:      SegmentSuppressionMeta[];
 }
 
 // ── persistKoraComputationResult ──────────────────────────────────────────────
@@ -114,8 +118,51 @@ export async function persistKoraComputationResult(params: {
 
   const db: ServiceDb = getSupabaseServiceClient();
 
+  // LEGACY COMPATIBILITY METADATA (D-F / B-SNAP, CC-015 hardening) — these two
+  // values feed the pre-existing methodology_version_id / calibration_status
+  // columns on activation_result, confidence_result, kora_index_result, and
+  // methodology_version / calibration_status on impact_unit. They are NOT
+  // rewritten to any new value here (historical preservation rule) —
+  // methodologyVersion keeps writing the PRODUCT label ("KORA Index v1.0", via
+  // getMethodologyVersion()), exactly as every row before B-SNAP already did.
+  // The AUTHORITATIVE methodology version for any NEW calculation is
+  // methodology_snapshot_id → methodology_snapshot.methodology_version
+  // ("1.0", via getCanonicalMethodologyVersion()/getMethodologySnapshot()) —
+  // never these legacy columns.
   const methodologyVersion = getMethodologyVersion();
   const calibrationStatus  = getCalibrationStatus();
+
+  // ── 0. methodology_snapshot — B-SNAP / CC-015 ───────────────────────────────
+  // One shared, immutable row per calculation, referenced by every result
+  // table below via methodology_snapshot_id. Single construction authority:
+  // getMethodologySnapshot() (lib/methodology-config/v0.1.ts) — this file only
+  // serializes, exactly like the Confidence scale/banding contract (CC-011).
+  // Existing methodology_version_id/calibration_status columns on every table
+  // are NOT removed — historical rows and the pre-CC-015 contract stay intact.
+
+  const snapshot = getMethodologySnapshot({ pipelineVersion: KORA_PIPELINE_VERSION });
+
+  const { data: snapData, error: snapErr } = await db
+    .schema('analytics')
+    .from('methodology_snapshot')
+    .insert({
+      methodology_version:          snapshot.methodology_version,
+      taxonomy_version:             snapshot.taxonomy_version,
+      need_taxonomy_version:        snapshot.need_taxonomy_version,
+      bc_calibration_version:       snapshot.bc_calibration_version,
+      contribution_config_version:  snapshot.contribution_config_version,
+      factor_statuses:              snapshot.factor_statuses,
+      pipeline_version:             snapshot.pipeline_version,
+      config_hash:                  snapshot.config_hash,
+      calculation_timestamp:        snapshot.calculation_timestamp,
+      provenance:                   snapshot.provenance,
+      restated_from_snapshot_id:    snapshot.restated_from_snapshot_id,
+    })
+    .select('id')
+    .single();
+
+  if (snapErr || !snapData) throw new Error(`[KORA persist] methodology_snapshot: ${snapErr?.message ?? 'no data'}`);
+  const methodologySnapshotId = snapData.id as string;
 
   // ── 1. activation_result ────────────────────────────────────────────────────
   // N≥10 enforcement: suppress any department/site segment with count < 10
@@ -153,6 +200,7 @@ export async function persistKoraComputationResult(params: {
       privacy_threshold_met:          true,
       methodology_version_id:         methodologyVersion,
       calibration_status:             calibrationStatus,
+      methodology_snapshot_id:        methodologySnapshotId,
     })
     .select('id')
     .single();
@@ -161,10 +209,21 @@ export async function persistKoraComputationResult(params: {
   const activationResultId = actData.id as string;
 
   // ── 2. confidence_result ────────────────────────────────────────────────────
-  // Engine produces score 0–100; DB stores as numeric(5,4) → divide by 100.
+  // Scale and banding are owned by the canonical Confidence contract
+  // (lib/kora-engine/confidence-engine.ts) — persistence only serializes.
 
-  const cs01 = result.confidence.score / 100;
-  const confidenceLevel = cs01 >= 0.70 ? 'high' : cs01 >= 0.40 ? 'medium' : 'low';
+  const cs01 = normalizeConfidenceScore(result.confidence.score);
+  const confidenceLevel = getConfidenceBand(cs01);
+
+  // CC-011 / D-A legacy compatibility mapping — NOT a generic evidence-quality
+  // computation. `analytics.confidence_result.evidence_quality` is a legacy
+  // physical column name retained for backward compatibility (no migration in
+  // CC-011); its canonical semantic meaning is BUDGET evidence quality, and it
+  // is sourced from ConfidenceResult.budgetEvidenceConfidence — the same value
+  // as before this refactor, unchanged. A genuinely generic evidence-quality
+  // metric would require a separate methodology decision (out of scope here).
+  // See CC-011 report, "EVIDENCE QUALITY — BLOCKER" / human decision.
+  const legacyEvidenceQualityColumn = result.confidence.budgetEvidenceConfidence;
 
   const { data: confData, error: confErr } = await db
     .schema('analytics')
@@ -175,7 +234,7 @@ export async function persistKoraComputationResult(params: {
       confidence_score:      cs01,
       confidence_level:      confidenceLevel,
       data_completeness:     result.confidence.dataCompleteness,
-      evidence_quality:      result.confidence.budgetEvidenceConfidence,
+      evidence_quality:      legacyEvidenceQualityColumn,
       mapping_confidence:    result.confidence.mappingConfidence,
       verification_weight:   result.confidence.verificationConfidence,
       source_coverage:       {},
@@ -183,6 +242,7 @@ export async function persistKoraComputationResult(params: {
       limitations:           result.confidence.warnings.join('; ').slice(0, 500) || 'pre_empirical_calibration',
       methodology_version_id: methodologyVersion,
       calibration_status:    calibrationStatus,
+      methodology_snapshot_id: methodologySnapshotId,
     })
     .select('id')
     .single();
@@ -212,6 +272,7 @@ export async function persistKoraComputationResult(params: {
       bti_score:                   result.bti.btiScore,
       cost_per_impact_unit:        null,
       payload:                     { scoring_batch_id: batchId, warnings: result.bti.warnings.slice(0, 5) },
+      methodology_snapshot_id:     methodologySnapshotId,
     })
     .select('id')
     .single();
@@ -251,6 +312,7 @@ export async function persistKoraComputationResult(params: {
       confidence_result_id:   confidenceResultId,
       activation_result_id:   activationResultId,
       is_current:             true,
+      methodology_snapshot_id: methodologySnapshotId,
     })
     .select('id')
     .single();
@@ -286,6 +348,7 @@ export async function persistKoraComputationResult(params: {
       factor_trace:        r.formula_trace as unknown as Json,
       methodology_version: r.methodology_version,
       calibration_status:  r.calibration_status,
+      methodology_snapshot_id: methodologySnapshotId,
     }));
 
     const { error: iuErr } = await (db as any)
@@ -323,5 +386,5 @@ export async function persistKoraComputationResult(params: {
     });
   }
 
-  return { activationResultId, confidenceResultId, btiResultId, koraIndexResultId, iuCount, segmentSuppression };
+  return { activationResultId, confidenceResultId, btiResultId, koraIndexResultId, methodologySnapshotId, iuCount, segmentSuppression };
 }

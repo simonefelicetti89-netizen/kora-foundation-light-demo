@@ -366,13 +366,16 @@ describe('Privacy invariants', () => {
 // ── 7. Navigation helper ──────────────────────────────────────────────────────
 
 describe('getWorkforceRoute', () => {
-  it('returns correct route for a known company', () => {
-    expect(getWorkforceRoute('meridiana-group')).toBe('/admin/companies/meridiana-group/workforce');
+  // B-TRUTH Gen 0/1 Retirement Wave 1 (2026-08-30): the per-company demo
+  // workforce page was retired; this now always points at the real, live,
+  // non-tenant-scoped worker provisioning admin surface (/admin/workers, B104).
+  it('returns the real live worker provisioning route regardless of companyId', () => {
+    expect(getWorkforceRoute('meridiana-group')).toBe('/admin/workers');
   });
 
-  it('correctly interpolates arbitrary companyId', () => {
-    expect(getWorkforceRoute('alba-manufacturing')).toBe('/admin/companies/alba-manufacturing/workforce');
-    expect(getWorkforceRoute('test-co-123')).toBe('/admin/companies/test-co-123/workforce');
+  it('correctly ignores companyId (destination is not tenant-scoped)', () => {
+    expect(getWorkforceRoute('alba-manufacturing')).toBe('/admin/workers');
+    expect(getWorkforceRoute('test-co-123')).toBe('/admin/workers');
   });
 
   it('route is under /admin (admin-only guard applies)', () => {

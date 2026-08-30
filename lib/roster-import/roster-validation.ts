@@ -15,6 +15,7 @@ import type {
   RowValidationResult,
   SegmentSizeWarning,
 } from './types';
+import { SAFE_AGGREGATION_THRESHOLD } from '@/lib/constants/kora';
 
 // ── Boolean normalization ─────────────────────────────────────────────────────
 
@@ -34,8 +35,10 @@ function normalizeBoolean(raw: string): {
 }
 
 // ── Privacy threshold ─────────────────────────────────────────────────────────
+// CC-002 / I2: imported from the single canonical source (lib/constants/kora.ts)
+// — do not redefine locally.
 
-const PRIVACY_THRESHOLD = 10;
+const PRIVACY_THRESHOLD = SAFE_AGGREGATION_THRESHOLD;
 
 // ── Main validation function ──────────────────────────────────────────────────
 

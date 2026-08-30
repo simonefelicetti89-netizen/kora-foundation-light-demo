@@ -20,6 +20,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireCompanyUser, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServerClient } from '@/lib/supabase/server';
+import { SAFE_AGGREGATION_THRESHOLD } from '@/lib/constants/kora';
 
 type PillarBreakdownItem = {
   pillar: string;
@@ -56,7 +57,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const fn = (data ?? {}) as ActivationSummaryFn;
-  const threshold = fn.safe_aggregation_threshold ?? 10;
+  // CC-002 / I2: fallback sourced from the single canonical constant, not a local literal.
+  const threshold = fn.safe_aggregation_threshold ?? SAFE_AGGREGATION_THRESHOLD;
 
   // participation_summary: suppression comes from SQL (total_engagements_suppressed)
   const participationSummary = fn.total_engagements_suppressed
