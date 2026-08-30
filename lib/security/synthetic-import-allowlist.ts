@@ -20,6 +20,21 @@
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
 //
+// B-TRUTH Ingestion/UEF Classification (2026-08-31): a follow-on retirement
+// attempt (feature/b-truth-retire-ingestion-uef) for
+// services/ingestion-pipeline/IngestionPipelineService.ts and
+// services/uef-review/UEFReviewService.ts was STOPPED after finding
+// tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts — a
+// pre-existing, deliberately authored, currently-passing regression guard
+// that explicitly protects this chain as an isolated demo/preview data
+// source (DynamicScoringPreviewService, ReportGeneratorService) while
+// proving the live UEF path (analytics.uef_record) never falls back to it.
+// Classification: DEMO_RUNTIME, not RETIRE. No files deleted, no imports
+// changed — this pass corrected stale CANONICAL status/caller-count notes
+// in lib/architecture/registry.ts and this file's reason text only. Count
+// unchanged: still 24 files / 36 imports. Invariant recorded: LIVE MUST
+// NEVER FALL BACK TO DEMO UEF DATA.
+//
 // B-TRUTH Retire Orphan Synthetic BTI Chain (2026-08-31): removed
 // services/budget-to-human-impact/BudgetToHumanImpactService.ts (and its
 // sole seed file, data/synthetic/budget-to-human-impact.json) — its 3
@@ -69,7 +84,7 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/explainability/ExplainabilityService.ts', reason: 'Reads synthetic explainability records for demo formula traces.' },
   { file: 'services/financial-governance/FinancialGovernanceService.ts', reason: 'Informational-only financial governance demo data.' },
   { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
-  { file: 'services/ingestion-pipeline/IngestionPipelineService.ts', reason: 'Demo ingestion pipeline reads synthetic ingestion samples.' },
+  { file: 'services/ingestion-pipeline/IngestionPipelineService.ts', reason: 'B-TRUTH Ingestion/UEF Classification (2026-08-31): DEMO_RUNTIME, not RETIRE. Isolated demo ingestion pipeline feeding the demo UEF review path only (svc.uef-review); the live UEF path (analytics.uef_record, lib/kora-engine/run-kora-pipeline.ts) never falls back to this data. Deliberately kept per tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts. See lib/architecture/registry.ts svc.ingestion-pipeline / svc.uef-review.' },
   { file: 'services/ingestion-simulator/IngestionSimulatorService.ts', reason: 'Rule-based BCM classifier demo path — source batches + ingestion samples.' },
   { file: 'services/kora-contribution/KoraContributionService.ts', reason: 'KORA Contribution computation reads synthetic contribution outputs + collective initiatives.' },
   { file: 'services/report-factory/ReportFactoryService.ts', reason: 'Reads synthetic Decision Pack version seed alongside live orchestration.' },
