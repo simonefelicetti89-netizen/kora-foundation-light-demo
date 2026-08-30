@@ -147,7 +147,12 @@ describe('Tenant Isolation — company routes: filtro tenant_id nelle query', ()
         code.includes('getAggregateForPromoter') ||
         // Service con tenantId da auth
         /tenantId:\s*auth\.tenantId/.test(codeNC) ||
-        /getContributionLive/.test(code);
+        /getContributionLive/.test(code) ||
+        // CC-018/B-TRUTH: WorkerPillarAdoptionService.getCompanyPillarAdoption(db, tenantId)
+        // — tenantId is the same session-sourced value destructured above (see check
+        // #3, pattern A); the .eq('tenant_id', tenantId) filter lives inside the
+        // service, not the route (services/worker-pillar-adoption/WorkerPillarAdoptionService.ts).
+        /getCompanyPillarAdoption/.test(code);
 
       expect(hasTenantFilter, `${route}: nessun filtro tenant_id trovato`).toBe(true);
     });
@@ -300,9 +305,10 @@ describe('Tenant Isolation — commons/posts: contratto tenant per ruolo', () =>
 // ── 10. Sanity check: count delle route coperte ───────────────────────────────
 
 describe('Tenant Isolation — copertura routes', () => {
-  it('copre tutte le 17 company routes', () => {
+  it('copre tutte le 18 company routes', () => {
     // P1 sprint added: /api/company/data-submissions/history, /api/company/initiatives/explainability
-    expect(COMPANY_ROUTES.length).toBe(17);
+    // CC-018/B-TRUTH added: /api/company/pillar-adoption (seed group #1)
+    expect(COMPANY_ROUTES.length).toBe(18);
   });
 
   it('copre tutte le admin routes (baseline: ≥45)', () => {

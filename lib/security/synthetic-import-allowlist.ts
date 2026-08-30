@@ -14,11 +14,17 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 27 files / 39 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 26 files / 38 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// CC-018 / B-TRUTH SEED GROUP #1 (2026-08-30): removed
+// services/worker-pillar-adoption/WorkerPillarAdoptionService.ts — company
+// pillar distribution now reads analytics.activation_result.pillar_distribution
+// (live) instead of data/synthetic/company-aggregates.json. First seed-group
+// migration under B-TRUTH; 25 groups remain (CC-019–023).
 //
 // Each entry's `reason` records WHY the import exists today, for B-TRUTH
 // triage — not a judgment that it should stay.
@@ -53,7 +59,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/tenant/TenantService.ts', reason: 'Reads synthetic tenant records for the demo tenant list.' },
   { file: 'services/worker-achievements/WorkerAchievementService.ts', reason: 'Worker-private demo achievements seed.' },
-  { file: 'services/worker-pillar-adoption/WorkerPillarAdoptionService.ts', reason: 'Company-level pillar distribution demo seed (privacy-safe aggregate-only).' },
   { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.' },
   { file: 'services/workforce-baseline/WorkforceBaselineService.ts', reason: 'Baseline workforce metrics demo seed.' },
 ];

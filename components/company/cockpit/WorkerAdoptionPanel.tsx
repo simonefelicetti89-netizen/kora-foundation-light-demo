@@ -2,12 +2,19 @@
 // B83-B: Worker Space adoption panel — company-facing, aggregate-safe.
 // Shows Worker Space status, adoption metrics, pillar distribution, privacy notice.
 // No individual worker data at any path. employer_can_view_individual_pib = false enforced.
+//
+// CC-018 / B-TRUTH: pillar distribution is fetched from /api/company/pillar-adoption
+// (live, session-authenticated — tenant resolved server-side, never from a
+// client-supplied companyId) instead of being read synchronously from the
+// synthetic-backed WorkerPillarAdoptionService. capability/summary below are
+// unrelated worker-identity seed groups, out of CC-018 scope (deferred to B-WORKER).
 
+import { useEffect, useState } from 'react';
 import { TOKENS } from '@/lib/design/kora-design-tokens';
 import { BoundaryBadge } from '@/components/ui/BoundaryBadge';
 import { workerSpaceCapabilityService } from '@/services/worker-space/WorkerSpaceCapabilityService';
 import { workerProvisioningService } from '@/services/worker-provisioning/WorkerProvisioningService';
-import { workerPillarAdoptionService } from '@/services/worker-pillar-adoption/WorkerPillarAdoptionService';
+import type { PillarAdoptionResult } from '@/services/worker-pillar-adoption/WorkerPillarAdoptionService';
 
 const FONT = 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif';
 const MONO = 'ui-monospace, monospace';
@@ -91,13 +98,44 @@ function MetricTile({ label, value, sub }: MetricTileProps) {
 
 interface Props {
   companyId: string;
-  scenarioId?: string;
 }
 
-export function WorkerAdoptionPanel({ companyId, scenarioId }: Props) {
+export function WorkerAdoptionPanel({ companyId }: Props) {
   const capability = workerSpaceCapabilityService.getCapabilityByCompanyId(companyId);
   const summary    = workerProvisioningService.getWorkerProvisioningSummary(companyId);
-  const pillarData = workerPillarAdoptionService.getCompanyPillarAdoption(companyId, scenarioId);
+
+  const [pillarData, setPillarData] = useState<PillarAdoptionResult | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/company/pillar-adoption', { credentials: 'include' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((body: (PillarAdoptionResult & { ok: boolean }) | null) => {
+        if (cancelled) return;
+        setPillarData(body?.ok ? body : {
+          data: [],
+          suppressed: true,
+          suppressionReason: 'Dati per pilastro non disponibili al momento.',
+          activeWorkerCount: 0,
+          totalWorkers: 0,
+          privacyThresholdMet: false,
+          reportingPeriod: '',
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPillarData({
+          data: [],
+          suppressed: true,
+          suppressionReason: 'Dati per pilastro non disponibili al momento.',
+          activeWorkerCount: 0,
+          totalWorkers: 0,
+          privacyThresholdMet: false,
+          reportingPeriod: '',
+        });
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div style={{
@@ -157,7 +195,11 @@ export function WorkerAdoptionPanel({ companyId, scenarioId }: Props) {
         </div>
 
         {/* ── Pillar adoption distribution ── */}
-        {!pillarData.suppressed ? (
+        {pillarData === null ? (
+          <div style={{ background: TOKENS.taupe, border: TOKENS.cardBorder, borderRadius: TOKENS.cardRadiusSm, padding: '12px 14px', marginBottom: 20 }}>
+            <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 600, color: TOKENS.inkSecondary }}>Caricamento distribuzione per pilastro…</p>
+          </div>
+        ) : !pillarData.suppressed ? (
           <div style={{ marginBottom: 20 }}>
             <p style={{ fontFamily: FONT, fontSize: '10px', fontWeight: 600, color: TOKENS.inkHint, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>
               Distribuzione per pilastro · aggregato aziendale
