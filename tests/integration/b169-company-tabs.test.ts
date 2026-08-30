@@ -20,27 +20,27 @@ function exists(rel: string): boolean {
 
 // ── CompanyTabNav structure ───────────────────────────────────────────────────
 
-describe('CompanyTabNav — 5 tabs (B-TRUTH Gen 0/1 Retirement Wave 1, 2026-08-30)', () => {
+describe('CompanyTabNav — 4 tabs (B-TRUTH Gen 0/1 Retirement Wave 1 + CC-019A, 2026-08-31)', () => {
   const src = read('app/admin/companies/[companyId]/_components/CompanyTabNav.tsx');
 
   it('is a client component', () => {
     expect(src).toContain("'use client'");
   });
 
-  it('has exactly 5 tab slugs (workforce, data-intake, onboarding retired)', () => {
+  it('has exactly 4 tab slugs (workforce, data-intake, onboarding, users retired)', () => {
     const slugMatches = src.match(/slug:\s*'[^']+'/g) ?? [];
-    expect(slugMatches).toHaveLength(5);
+    expect(slugMatches).toHaveLength(4);
   });
 
-  it('contains all 5 remaining tab slugs', () => {
+  it('contains all 4 remaining tab slugs', () => {
     expect(src).toContain("slug: 'workspace'");
     expect(src).toContain("slug: 'preview'");
     expect(src).toContain("slug: 'submissions'");
     expect(src).toContain("slug: 'evidence'");
-    expect(src).toContain("slug: 'users'");
     expect(src).not.toContain("slug: 'workforce'");
     expect(src).not.toContain("slug: 'data-intake'");
     expect(src).not.toContain("slug: 'onboarding'");
+    expect(src).not.toContain("slug: 'users'");
   });
 
   it('uses usePathname for active tab detection', () => {
@@ -92,14 +92,11 @@ describe('Company drill-in sub-pages exist', () => {
     expect(exists(`${base}/preview/page.tsx`)).toBe(true);
   });
 
-  it('users page exists', () => {
-    expect(exists(`${base}/users/page.tsx`)).toBe(true);
-  });
-
-  it('workforce, data-intake, onboarding pages no longer exist (retired — B-TRUTH Gen 0/1 Retirement Wave 1)', () => {
+  it('workforce, data-intake, onboarding, users pages no longer exist (retired — B-TRUTH Gen 0/1 Retirement Wave 1 + CC-019A)', () => {
     expect(exists(`${base}/workforce/page.tsx`)).toBe(false);
     expect(exists(`${base}/data-intake/page.tsx`)).toBe(false);
     expect(exists(`${base}/onboarding/page.tsx`)).toBe(false);
+    expect(exists(`${base}/users/page.tsx`)).toBe(false);
   });
 
   it('CompanyTabNav component file exists', () => {

@@ -292,10 +292,13 @@ export default function PilotLifecyclePage() {
               Room" quick link removed — that route now redirects to the Gen 3
               workspace tab, which honestly 404s for DEMO_COMPANY_ID (not a real
               tenant_code) instead of rendering fabricated data. A link that
-              always 404s is not a legitimate quick action. */}
+              always 404s is not a legitimate quick action.
+              CC-019A (2026-08-31): "Utenti Aziendali" quick link removed for the
+              same reason — its target, [companyId]/users, was retired (see
+              CompanyTabNav.tsx); company-users-live is keyed by a real tenantId
+              UUID, which DEMO_COMPANY_ID does not have. */}
           {[
             { label: 'Worker Provisioning (live)',                href: '/admin/workers' },
-            { label: 'Utenti Aziendali',                          href: `/admin/companies/${DEMO_COMPANY_ID}/users` },
             { label: 'Submission Queue',        href: '/admin/company-submissions' },
             { label: 'UEF Review & Scoring',    href: '/admin/uef-review' },
           ].map(({ label, href }) => (
