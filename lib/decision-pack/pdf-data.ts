@@ -1,5 +1,32 @@
 // lib/decision-pack/pdf-data.ts
-// Server-side data contract for Decision Pack PDF.
+//
+// ── CANONICAL DECISION PACK DOMAIN BUILDER (CC-013 / D-B) ───────────────────────
+//
+// D-B resolved: lib/decision-pack/* is the canonical KORA Decision Pack
+// implementation. Within it, responsibilities are already cleanly separated
+// by file — this is a documentation of that existing seam, not a new one:
+//
+//   pdf-data.ts (this file)      — DOMAIN BUILDER: owns retrieval of canonical
+//                                   persisted KORA results and assembly of the
+//                                   Decision Pack content model (PdfData).
+//   html-template.ts             — HTML RENDERER: pure function of PdfData,
+//                                   zero DB access, zero Supabase imports.
+//   pdf-runtime.ts                — PDF RUNTIME: HTML -> PDF export only.
+//
+// This file never recomputes KORA Index, Confidence, or BTI — every number in
+// PdfData is read directly from already-persisted analytics.kora_index_result
+// (joined confidence_result/activation_result) and analytics.bti_result rows,
+// the same tables lib/live/persistence.ts writes. Evidence-gap/area
+// aggregation (B18/B19) IS legitimately owned here as local derivation over
+// already-approved uef_record rows — not a competing source of truth for
+// KORA Index/Confidence/BTI, and not extracted into a separate service per
+// CC-013's own instruction not to create new abstractions for their own sake.
+//
+// services/report-factory/ReportFactoryService.ts (admin metadata/status/
+// comparison, synthetic-backed today) and services/report-generator/
+// ReportGeneratorService.ts (zero production callers) are explicitly NOT
+// canonical — see lib/architecture/registry.ts for their recorded status.
+//
 // Reads persisted scoring results from Supabase for any tenant — NO scoring recalculation.
 // Uses service_role server-side only (never exposed to client).
 // isLiveData = true for all non-OP-001 tenants (OP-001 is synthetic demo only).

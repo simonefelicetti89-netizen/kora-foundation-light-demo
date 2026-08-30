@@ -168,13 +168,18 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       expect(service?.decisionRef).toBe('CC-011 / D-A');
     });
 
-    it('report-factory, report-generator, and lib.decision-pack share the D-B decision, none is CANONICAL over the others', () => {
+    it('D-B resolved (CC-013): lib.decision-pack is canonical; report-factory and report-generator are not, neither is DEAD', () => {
       const factory = ARCHITECTURE_REGISTRY.find((c) => c.id === 'svc.report-factory');
       const generator = ARCHITECTURE_REGISTRY.find((c) => c.id === 'svc.report-generator');
       const pack = ARCHITECTURE_REGISTRY.find((c) => c.id === 'lib.decision-pack');
+      expect(pack?.status).toBe('CANONICAL');
       expect(factory?.status).not.toBe('CANONICAL');
+      expect(factory?.status).not.toBe('DEAD');
       expect(generator?.status).not.toBe('CANONICAL');
-      expect(pack?.status).not.toBe('CANONICAL');
+      expect(generator?.status).not.toBe('DEAD');
+      expect(factory?.decisionRef).toBe('CC-013 / D-B');
+      expect(generator?.decisionRef).toBe('CC-013 / D-B');
+      expect(pack?.decisionRef).toBe('CC-013 / D-B');
     });
 
     it('/worker and /my-kora surfaces carry the same CC-024 / D-D decisionRef, neither is CANONICAL over the other', () => {
