@@ -1,4 +1,4 @@
-import type { MethodologyConfig, MacroblockConfig, MacroblockCode } from '@/lib/types';
+import type { MethodologyConfig, MacroblockConfig, MacroblockCode, ActionFamily } from '@/lib/types';
 import { MACROBLOCK_COMPONENTS, COMPONENT_EXTERNAL } from '@/lib/constants/kora';
 import rawConfig from '@/data/methodology/methodology-config.json';
 
@@ -119,6 +119,43 @@ export function getNMFunctionsConfig() {
     saturation_floor_default:     0.60,
     saturation_floor_therapeutic: 0.80,
   };
+}
+
+// Action families BC must cover — used only to validate completeness, carries
+// no numeric values. The single numeric authority is
+// data/methodology/methodology-config.json's bc_by_action_family key.
+const REQUIRED_BC_FAMILIES: ActionFamily[] = [
+  'family_and_care', 'health_and_wellbeing', 'professional_growth', 'future_and_legacy',
+  'inclusion_and_connection', 'territorial_impact', 'trust_and_flexibility_policy',
+  'economic_relief', 'blocked_compliance',
+];
+
+/**
+ * Returns BC (Base Contribution) per action family — B-BC (CC-009).
+ * IU formula: NM × BC × CQ × EV × CF × AGF.
+ * `data/methodology/methodology-config.json`'s `bc_by_action_family` key is the
+ * SOLE runtime authority for these values — no fallback table exists anywhere
+ * else. A missing or malformed config fails fast (explicit error) rather than
+ * silently substituting a second, duplicate numeric table.
+ * services/iu-computation/IUComputationService.ts must never hardcode these values.
+ */
+export function getBCByActionFamily(): Record<ActionFamily, number> {
+  const bc = config.bc_by_action_family;
+  if (!bc || typeof bc !== 'object') {
+    throw new Error(
+      'Methodology config missing bc_by_action_family — ' +
+      'data/methodology/methodology-config.json must define BC for every action family (B-BC / CC-009).',
+    );
+  }
+  for (const family of REQUIRED_BC_FAMILIES) {
+    if (typeof bc[family] !== 'number') {
+      throw new Error(
+        `Methodology config bc_by_action_family missing or malformed value for "${family}" — ` +
+        'data/methodology/methodology-config.json must define a numeric BC for every action family (B-BC / CC-009).',
+      );
+    }
+  }
+  return bc;
 }
 
 export function getShrinkageConfig() {

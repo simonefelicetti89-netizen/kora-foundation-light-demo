@@ -813,6 +813,12 @@ export interface MethodologyConfig {
     prs_threshold_theta:       number;
     pillar_targets_default:    Record<string, number>;
   };
+  // B-BC (CC-009): BC per action family — IU formula (NM × BC × CQ × EV × CF × AGF).
+  // Single source of truth; services/iu-computation/IUComputationService.ts reads
+  // this via getBCByActionFamily() and must never hardcode these values.
+  // REQUIRED (not optional): getBCByActionFamily() fails fast if this or any of
+  // its 9 action-family entries is missing — no duplicate fallback table.
+  bc_by_action_family: Record<ActionFamily, number>;
   safeguard_thresholds: {
     CLEAR: { AR: number; MAR: number };
     WARNING: { AR_min: number; AR_max: number; MAR_min: number; MAR_max: number };
