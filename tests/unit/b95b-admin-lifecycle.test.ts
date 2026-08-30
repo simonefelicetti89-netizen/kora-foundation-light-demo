@@ -443,10 +443,10 @@ describe('company users page — file structure', () => {
     expect(content).toContain('accountProvisioningService');
   });
 
-  it('page links to workforce management', () => {
+  it('page links to worker provisioning (B-TRUTH Gen 0/1 Retirement Wave 1: /admin/workers, live, replaces the retired per-company demo workforce tab)', () => {
     const path = join(process.cwd(), 'app', 'admin', 'companies', '[companyId]', 'users', 'page.tsx');
     const content = readFileSync(path, 'utf-8');
-    expect(content).toContain('workforce');
+    expect(content).toContain('/admin/workers');
   });
 
   it('page links back to Pilot Lifecycle orchestrator', () => {

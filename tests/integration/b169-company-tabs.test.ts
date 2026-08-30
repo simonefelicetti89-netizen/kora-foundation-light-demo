@@ -20,27 +20,27 @@ function exists(rel: string): boolean {
 
 // ── CompanyTabNav structure ───────────────────────────────────────────────────
 
-describe('CompanyTabNav — 8 tabs', () => {
+describe('CompanyTabNav — 5 tabs (B-TRUTH Gen 0/1 Retirement Wave 1, 2026-08-30)', () => {
   const src = read('app/admin/companies/[companyId]/_components/CompanyTabNav.tsx');
 
   it('is a client component', () => {
     expect(src).toContain("'use client'");
   });
 
-  it('has exactly 8 tab slugs', () => {
+  it('has exactly 5 tab slugs (workforce, data-intake, onboarding retired)', () => {
     const slugMatches = src.match(/slug:\s*'[^']+'/g) ?? [];
-    expect(slugMatches).toHaveLength(8);
+    expect(slugMatches).toHaveLength(5);
   });
 
-  it('contains all 8 expected tab slugs', () => {
+  it('contains all 5 remaining tab slugs', () => {
     expect(src).toContain("slug: 'workspace'");
     expect(src).toContain("slug: 'preview'");
     expect(src).toContain("slug: 'submissions'");
     expect(src).toContain("slug: 'evidence'");
     expect(src).toContain("slug: 'users'");
-    expect(src).toContain("slug: 'workforce'");
-    expect(src).toContain("slug: 'data-intake'");
-    expect(src).toContain("slug: 'onboarding'");
+    expect(src).not.toContain("slug: 'workforce'");
+    expect(src).not.toContain("slug: 'data-intake'");
+    expect(src).not.toContain("slug: 'onboarding'");
   });
 
   it('uses usePathname for active tab detection', () => {
@@ -96,8 +96,10 @@ describe('Company drill-in sub-pages exist', () => {
     expect(exists(`${base}/users/page.tsx`)).toBe(true);
   });
 
-  it('workforce page exists', () => {
-    expect(exists(`${base}/workforce/page.tsx`)).toBe(true);
+  it('workforce, data-intake, onboarding pages no longer exist (retired — B-TRUTH Gen 0/1 Retirement Wave 1)', () => {
+    expect(exists(`${base}/workforce/page.tsx`)).toBe(false);
+    expect(exists(`${base}/data-intake/page.tsx`)).toBe(false);
+    expect(exists(`${base}/onboarding/page.tsx`)).toBe(false);
   });
 
   it('CompanyTabNav component file exists', () => {
@@ -115,10 +117,9 @@ describe('Workforce — sidebar removed, CompanyTabNav added (B169)', () => {
     expect(operationsMatch).not.toContain('/admin/workforce');
   });
 
-  it('CompanyTabNav has workforce tab linking into [companyId] namespace', () => {
+  it('CompanyTabNav no longer has a workforce tab (retired — real worker provisioning is /admin/workers, live, B104)', () => {
     const src = read('app/admin/companies/[companyId]/_components/CompanyTabNav.tsx');
-    expect(src).toContain("slug: 'workforce'");
-    // verify it builds path within [companyId] namespace, not a flat /admin/workforce
+    expect(src).not.toContain("slug: 'workforce'");
     expect(src).not.toContain("href: '/admin/workforce'");
   });
 });

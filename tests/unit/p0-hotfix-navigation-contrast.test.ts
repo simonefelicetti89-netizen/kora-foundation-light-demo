@@ -67,9 +67,15 @@ describe('/company/status — contrast fix', () => {
   });
 });
 
-// ── Task 3+4: Workforce resolution ───────────────────────────────────────────
+// ── Task 3+4: Workforce resolution (retired — B-TRUTH Gen 0/1 Retirement Wave 1) ──
+// The synthetic per-company workforce page this block tested (including its
+// hardcoded 'meridiana-group' fallback — a known hidden-fallback bug flagged
+// by the earlier Tenant Identity audit) was retired 2026-08-30. TenantService
+// itself is untouched and still resolves the same synthetic fixture — only
+// the page that consumed it for a live-looking "Gestisci workforce" flow is
+// gone. Real worker provisioning is /admin/workers (B104, live).
 
-describe('Workforce resolution', () => {
+describe('Workforce resolution (TenantService fixture, unaffected by retirement)', () => {
   it('tenantService resolves meridiana-group by company_id', () => {
     const tenant = tenantService.getTenant('meridiana-group');
     expect(tenant).not.toBeNull();
@@ -86,17 +92,9 @@ describe('Workforce resolution', () => {
     expect(tenantService.getTenants().length).toBeGreaterThan(0);
   });
 
-  it('workforce page has multi-field resolution logic', () => {
-    const workforcePage = readFile('app/admin/companies/[companyId]/workforce/page.tsx');
-    expect(workforcePage).toContain('getTenantByTenantId');
-    expect(workforcePage).toContain('meridiana-group');
-  });
-
-  it('workforce not-found shows company selector, not dead screen', () => {
-    const workforcePage = readFile('app/admin/companies/[companyId]/workforce/page.tsx');
-    expect(workforcePage).toContain('getTenants()');
-    expect(workforcePage).toContain('Aziende disponibili nel portfolio demo');
-    expect(workforcePage).toContain('Gestisci →');
+  it('the retired workforce page no longer exists (hidden meridiana-group fallback gone with it)', () => {
+    const { existsSync } = require('fs');
+    expect(existsSync(join(ROOT, 'app/admin/companies/[companyId]/workforce/page.tsx'))).toBe(false);
   });
 });
 

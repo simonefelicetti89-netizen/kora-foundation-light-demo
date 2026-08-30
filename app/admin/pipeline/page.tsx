@@ -290,7 +290,7 @@ export default function PilotLifecyclePage() {
         <div className="flex flex-wrap gap-2">
           {[
             { label: 'Company Control Room',                      href: `/admin/companies/${DEMO_COMPANY_ID}` },
-            { label: 'Workforce Management · DEMO · Meridiana',   href: `/admin/companies/${DEMO_COMPANY_ID}/workforce` },
+            { label: 'Worker Provisioning (live)',                href: '/admin/workers' },
             { label: 'Utenti Aziendali',                          href: `/admin/companies/${DEMO_COMPANY_ID}/users` },
             { label: 'Submission Queue',        href: '/admin/company-submissions' },
             { label: 'UEF Review & Scoring',    href: '/admin/uef-review' },

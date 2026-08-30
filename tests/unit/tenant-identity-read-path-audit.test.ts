@@ -78,13 +78,16 @@ describe('B-TRUTH Tenant Identity — mutation methods remain pure demo stubs (P
 });
 
 describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers are still entangled', () => {
+  // B-TRUTH Gen 0/1 Retirement Wave 1 (2026-08-30): data-intake, onboarding,
+  // and workforce were retired outright (deleted — no unique capability
+  // beyond real live surfaces). layout.tsx, page.tsx (root Control Room),
+  // and users/page.tsx remain — required capabilities (BTI display, user
+  // mutations, Decision Pack comparison, lifecycle audit) still have no
+  // canonical replacement. See lib/architecture/registry.ts svc.tenant notes.
   const ENTANGLED_CALLERS = [
     'app/admin/companies/[companyId]/layout.tsx',
-    'app/admin/companies/[companyId]/data-intake/page.tsx',
-    'app/admin/companies/[companyId]/onboarding/page.tsx',
     'app/admin/companies/[companyId]/users/page.tsx',
     'app/admin/companies/[companyId]/page.tsx',
-    'app/admin/companies/[companyId]/workforce/page.tsx',
     'services/report-factory/ReportFactoryService.ts',
     'services/company-intelligence/CompanyIntelligenceService.ts',
   ];
@@ -102,11 +105,10 @@ describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers ar
     expect(code).toContain('tenantService.getTenant(DEMO_COMPANY_ID)');
   });
 
-  it('app/admin/companies/[companyId]/workforce/page.tsx still falls back to a hardcoded demo tenant on lookup miss', () => {
-    // Pre-existing hidden fallback (not introduced here) — flagged, not fixed,
-    // since fixing it means resolving the same [companyId]-identity ambiguity.
-    const code = read('app/admin/companies/[companyId]/workforce/page.tsx');
-    expect(code).toContain("tenantService.getTenant('meridiana-group')");
+  it('the retired data-intake, onboarding, and workforce pages no longer exist', () => {
+    expect(existsSync(resolve(root, 'app/admin/companies/[companyId]/data-intake/page.tsx'))).toBe(false);
+    expect(existsSync(resolve(root, 'app/admin/companies/[companyId]/onboarding/page.tsx'))).toBe(false);
+    expect(existsSync(resolve(root, 'app/admin/companies/[companyId]/workforce/page.tsx'))).toBe(false);
   });
 });
 

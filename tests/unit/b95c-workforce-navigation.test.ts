@@ -40,14 +40,13 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
     expect(opsGroup?.items.find((i) => i.href === '/admin/workers')).toBeDefined();
   });
 
-  it('CompanyTabNav has Workforce tab with slug workforce', () => {
-
+  it('CompanyTabNav no longer has a Workforce tab (retired — B-TRUTH Gen 0/1 Retirement Wave 1)', () => {
     const src = require('fs').readFileSync(
       require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
       'utf-8',
     );
-    expect(src).toContain("slug: 'workforce'");
-    expect(src).toContain("label: 'Workforce'");
+    expect(src).not.toContain("slug: 'workforce'");
+    expect(src).not.toContain("label: 'Workforce'");
   });
 
   it('non-admin roles do not have Workforce Management in sidebar', () => {
@@ -73,30 +72,38 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
   });
 });
 
-// ── Task 2: Workforce accessible via CompanyTabNav drill-in ──────────────────
-// B169 FASE 2: CompanyTabNav at /admin/companies/[companyId] renders Workforce tab.
+// ── Task 2: Workforce tab retired (B-TRUTH Gen 0/1 Retirement Wave 1) ────────
+// B169 FASE 2 originally put Workforce in CompanyTabNav as a demo drill-in tab.
+// 2026-08-30: that page was 100% synthetic (TenantService/tenants.json-rooted)
+// with no unique capability beyond real /admin/workers (B104, live) — retired.
+// See lib/architecture/registry.ts svc.tenant notes.
 
-describe('B95-C Task 2 — Workforce via CompanyTabNav drill-in (B169)', () => {
+describe('B-TRUTH Gen 0/1 Retirement Wave 1 — Workforce tab removed from CompanyTabNav', () => {
 
-  it('workforce route /admin/companies/[companyId]/workforce is a tab in CompanyTabNav', () => {
-
+  it('CompanyTabNav no longer has a workforce tab', () => {
     const src = require('fs').readFileSync(
       require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
       'utf-8',
     );
-    expect(src).toContain("slug: 'workforce'");
-    expect(src).toContain('/admin/companies/');
+    expect(src).not.toContain("slug: 'workforce'");
   });
 
-  it('workforce route pattern is /admin/companies/[companyId]/workforce (slug-based tab)', () => {
+  it('the retired workforce drill-in page no longer exists', () => {
+    const { existsSync } = require('fs');
+    const { join } = require('path');
+    expect(existsSync(join(process.cwd(), 'app/admin/companies/[companyId]/workforce/page.tsx'))).toBe(false);
+  });
 
+  it('CompanyTabNav retains exactly the 5 Gen 3 + Users tabs', () => {
     const src = require('fs').readFileSync(
       require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
       'utf-8',
     );
-    // CompanyTabNav builds href via: `/admin/companies/${companyId}/${slug}` with slug 'workforce'
-    expect(src).toContain('/admin/companies/');
-    expect(src).toContain("slug: 'workforce'");
+    for (const slug of ['workspace', 'preview', 'submissions', 'evidence', 'users']) {
+      expect(src).toContain(`slug: '${slug}'`);
+    }
+    expect(src).not.toContain("slug: 'data-intake'");
+    expect(src).not.toContain("slug: 'onboarding'");
   });
 });
 

@@ -244,10 +244,10 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">D — Data Intake — Pre-Ingestion</p>
           <Link
-            href={`/admin/companies/${companyId}/data-intake`}
+            href="/admin/data-intake"
             className="rounded-md bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-700 transition-colors"
           >
-            Apri Data Intake →
+            Apri Data Intake (live) →
           </Link>
         </div>
         <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-4 space-y-3">
@@ -667,10 +667,10 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
           <p className="text-[10px] text-[#8A5A00] font-medium">{workerSummary.next_action}</p>
           <div className="pt-1">
             <Link
-              href={`/admin/companies/${companyId}/workforce`}
+              href="/admin/workers"
               className="inline-flex items-center gap-1.5 rounded border border-[rgba(6,3,43,0.14)] bg-white px-3 py-1.5 text-[10px] font-semibold text-[rgba(6,3,43,0.72)] hover:bg-[rgba(6,3,43,0.03)] transition-colors"
             >
-              Gestione Workforce →
+              Worker Provisioning (live) →
             </Link>
           </div>
         </div>
@@ -766,14 +766,14 @@ export default function AdminCompanyControlRoom({ params }: { params: { companyI
         <Link href="/admin/companies" className="text-xs text-[rgba(6,3,43,0.40)] hover:text-[rgba(6,3,43,0.62)] underline underline-offset-2">
           ← Company Mission Control
         </Link>
-        <Link href={`/admin/companies/${companyId}/data-intake`} className="text-xs text-violet-600 hover:text-violet-800 underline underline-offset-2">
-          Data Intake →
+        <Link href="/admin/data-intake" className="text-xs text-violet-600 hover:text-violet-800 underline underline-offset-2">
+          Data Intake (live) →
         </Link>
-        <Link href={`/admin/companies/${companyId}/onboarding`} className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
-          Onboarding Operativo →
+        <Link href={`/admin/companies/${companyId}/workspace`} className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
+          Pipeline Status (live) →
         </Link>
-        <Link href={`/admin/companies/${companyId}/workforce`} className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
-          Workforce Management →
+        <Link href="/admin/workers" className="text-xs text-[rgba(6,3,43,0.52)] hover:text-[rgba(6,3,43,0.72)] underline underline-offset-2">
+          Worker Provisioning (live) →
         </Link>
       </div>
 

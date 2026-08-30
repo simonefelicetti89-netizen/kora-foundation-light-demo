@@ -82,6 +82,10 @@ export const COMPANY_CANNOT_SEE = [
 
 // ── Worker roster navigation ──────────────────────────────────────────────────
 
-export function getWorkforceRoute(companyId: string): string {
-  return `/admin/companies/${companyId}/workforce`;
+// B-TRUTH Gen 0/1 Retirement Wave 1 (2026-08-30): /admin/companies/{companyId}/workforce
+// (the synthetic demo roster page) was retired — real worker provisioning is
+// /admin/workers (B104, live, not tenant-scoped). companyId is kept in the
+// signature for call-site stability even though the destination doesn't use it.
+export function getWorkforceRoute(_companyId: string): string {
+  return '/admin/workers';
 }
