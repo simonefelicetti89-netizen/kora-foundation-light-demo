@@ -286,14 +286,27 @@ export async function GET(request: NextRequest) {
 
     const subs = submissionsByTenant[tenantId] ?? { total: 0, pending: 0, needsClarification: 0, accepted: 0 };
 
+    // B-TRUTH Gen 3 route identity activation (2026-08-30): viewWorkspace,
+    // evidenceArchive, livePreview, and submissions previously pointed at
+    // five flat routes removed by B171 (app/admin/company-workspace,
+    // company-evidence-archive, company-live-preview, company-submissions,
+    // company-users) — a confirmed, long-standing broken-link regression.
+    // Their B171 consolidation target is app/admin/companies/[companyId]/*
+    // (Gen 3, now DB-backed by tenant_code — see workspace/page.tsx). Fixed
+    // here since the canonical destination is unambiguous. manageUsers,
+    // dataIntake, and uefReview are left untouched: manageUsers' canonical
+    // destination is still architecturally unresolved (see the B-TRUTH Admin
+    // Route Convergence audit), and dataIntake/uefReview point at real pages
+    // that do not yet support tenant-code scoping at all.
+    const tcPath = encodeURIComponent(tenantCode);
     const quickActions = {
-      viewWorkspace:   `/admin/company-workspace?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
+      viewWorkspace:   `/admin/companies/${tcPath}/workspace`,
       manageUsers:     `/admin/company-users?tenantId=${encodeURIComponent(tenantId)}`,
-      evidenceArchive: `/admin/company-evidence-archive?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
-      livePreview:     `/admin/company-live-preview?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
+      evidenceArchive: `/admin/companies/${tcPath}/evidence`,
+      livePreview:     `/admin/companies/${tcPath}/preview`,
       dataIntake:      !ki ? `/admin/data-intake?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}` : null,
       uefReview:       (uef && uef.pendingReview > 0) ? `/admin/uef-review` : null,
-      submissions:     subs.total > 0 ? `/admin/company-submissions?tenantId=${encodeURIComponent(tenantId)}` : null,
+      submissions:     subs.total > 0 ? `/admin/companies/${tcPath}/submissions` : null,
     };
 
     // Summary counters

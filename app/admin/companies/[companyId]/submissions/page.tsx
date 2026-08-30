@@ -1,11 +1,14 @@
 // /admin/companies/[companyId]/submissions — B168.5 Phase 2.2
 // Drill-in: Admin Submission Queue filtrata per company specifica.
 // Componente sorgente: AdminSubmissionQueue (Gen 1 live — dati Supabase reali).
+//
+// B-TRUTH Gen 3 route identity activation (2026-08-30): [companyId] here is
+// analytics.tenant.tenant_code — see workspace/page.tsx for the full note.
 
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { AdminSubmissionQueue } from '@/components/admin/AdminSubmissionQueue';
 import { redirect, notFound } from 'next/navigation';
-import { tenantService } from '@/services/tenant/TenantService';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
 export default async function CompanySubmissionsDrillInPage({ params }: { params: Promise<{ companyId: string }> }) {
   const { companyId } = await params;
@@ -13,7 +16,10 @@ export default async function CompanySubmissionsDrillInPage({ params }: { params
   const auth = await requireKoraAdmin();
   if (isKoraAuthError(auth)) redirect('/admin/login');
 
-  const tenant = tenantService.getTenant(companyId);
+  const db = getSupabaseServiceClient();
+  const { data: tenant, error } = await db.schema('analytics').from('tenant')
+    .select('id').eq('tenant_code', companyId).eq('is_active', true).maybeSingle();
+  if (error) throw new Error(`[KORA] tenant lookup failed: ${error.message}`);
   if (!tenant) notFound();
 
   return (
