@@ -14,7 +14,7 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 26 files / 38 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 25 files / 37 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
@@ -25,6 +25,15 @@
 // pillar distribution now reads analytics.activation_result.pillar_distribution
 // (live) instead of data/synthetic/company-aggregates.json. First seed-group
 // migration under B-TRUTH; 25 groups remain (CC-019–023).
+//
+// B-TRUTH Root Control Room Wave 2 (2026-08-30): removed
+// services/lifecycle/LifecycleService.ts (and data/synthetic/lifecycle-audit.json,
+// its only consumer) — its sole runtime caller (Root Control Room Section J)
+// was retired; Lifecycle/Audit now reads real audit.audit_log, tenant-scoped,
+// on the Gen 3 workspace tab instead. Zero remaining runtime callers, live
+// migration verified complete — deleted per Master Plan §32's own rule that a
+// synthetic path may be removed once its live migration is complete and
+// verified (not before).
 //
 // Each entry's `reason` records WHY the import exists today, for B-TRUTH
 // triage — not a judgment that it should stay.
@@ -54,7 +63,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/ingestion-pipeline/IngestionPipelineService.ts', reason: 'Demo ingestion pipeline reads synthetic ingestion samples.' },
   { file: 'services/ingestion-simulator/IngestionSimulatorService.ts', reason: 'Rule-based BCM classifier demo path — source batches + ingestion samples.' },
   { file: 'services/kora-contribution/KoraContributionService.ts', reason: 'KORA Contribution computation reads synthetic contribution outputs + collective initiatives.' },
-  { file: 'services/lifecycle/LifecycleService.ts', reason: 'Session-only demo audit log shadow (real audit.audit_log is a separate live table).' },
   { file: 'services/report-factory/ReportFactoryService.ts', reason: 'Reads synthetic Decision Pack version seed alongside live orchestration.' },
   { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/tenant/TenantService.ts', reason: 'Reads synthetic tenant records for the demo tenant list.' },

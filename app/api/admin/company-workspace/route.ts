@@ -130,6 +130,26 @@ export async function GET(request: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const dp = ((dpRows ?? []) as any[])[0];
 
+  // ── 6b. Latest BTI result (B-TRUTH Root Control Room Wave 2, 2026-08-30) ───
+  // Persisted read only — no recomputation. Fields not present on
+  // analytics.bti_result (cost_per_activated_worker, reallocation_opportunity_eur)
+  // are not fabricated; the UI shows an honest "not available" state for them.
+  const { data: btiRows } = await db.schema('analytics').from('bti_result')
+    .select('id, total_people_welfare_budget, deep_activation_spend, economic_relief_spend, deep_activation_share, budget_evidence_quality, bti_score, cost_per_impact_unit, activation_debt_eur, methodology_snapshot_id, created_at')
+    .eq('tenant_id', tenantId).eq('reporting_period', reportingPeriod)
+    .order('created_at', { ascending: false }).limit(1);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const bti = ((btiRows ?? []) as any[])[0];
+
+  // ── 6c. Recent lifecycle/audit events for this tenant (B-TRUTH Wave 2) ─────
+  // Real audit.audit_log, tenant-scoped by the same real tenantId resolved
+  // above — never the synthetic root identity. Same query shape already used
+  // by lib/decision-pack/pdf-data.ts (auditSummary).
+  const { data: auditRows } = await db.schema('audit').from('audit_log')
+    .select('action, resource_type, actor_role, created_at')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false }).limit(10);
+
   // ── 7. Derive pilot status & recommended next action ──────────────────────
   const pilotStatus = derivePilotStatus(
     !!latestBatch,
@@ -192,6 +212,28 @@ export async function GET(request: NextRequest) {
       previewUrl: `/api/admin/decision-pack/preview?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
       pdfUrl:     `/api/admin/decision-pack/pdf?tenantCode=${tcEnc}&reportingPeriod=${rpEnc}`,
     } : null,
+    bti: bti ? {
+      totalWelfareBudget:   bti.total_people_welfare_budget as number,
+      deepActivationSpend:  bti.deep_activation_spend as number,
+      economicReliefSpend:  bti.economic_relief_spend as number,
+      deepActivationShare:  bti.deep_activation_share as number,
+      budgetEvidenceQuality: bti.budget_evidence_quality as number,
+      btiScore:             bti.bti_score as number,
+      costPerImpactUnit:    bti.cost_per_impact_unit as number | null,
+      activationDebtEur:    bti.activation_debt_eur as number,
+      methodologySnapshotId: bti.methodology_snapshot_id as string | null,
+      createdAt:            bti.created_at as string,
+    } : null,
+    recentAuditEvents: (auditRows ?? []).map((row) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      action:       (row as any).action as string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      resourceType: (row as any).resource_type as string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      actorRole:    (row as any).actor_role as string,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      createdAt:    (row as any).created_at as string,
+    })),
     pilotStatus,
     recommendedNextAction: NEXT_ACTION[pilotStatus],
   });

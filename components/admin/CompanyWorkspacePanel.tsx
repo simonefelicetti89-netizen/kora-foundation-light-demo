@@ -21,6 +21,16 @@ interface WorkspaceData {
   uef:                 { total: number; pendingReview: number; approved: number; rejected: number; needsInfo: number; needsEnrichment: number } | null;
   scoring:             { hasResult: boolean; koraIndex: number; confidenceScore: number; safeguard: string; activationRate: number | null } | null;
   decisionPack:        { versionId: string; status: string; createdAt: string; previewUrl: string; pdfUrl: string } | null;
+  // B-TRUTH Root Control Room Wave 2 (2026-08-30): persisted analytics.bti_result
+  // read only — no recomputation. Fields with no real column
+  // (cost-per-activated-worker, reallocation opportunity) are intentionally absent.
+  bti: {
+    totalWelfareBudget: number; deepActivationSpend: number; economicReliefSpend: number;
+    deepActivationShare: number; budgetEvidenceQuality: number; btiScore: number;
+    costPerImpactUnit: number | null; activationDebtEur: number;
+    methodologySnapshotId: string | null; createdAt: string;
+  } | null;
+  recentAuditEvents: Array<{ action: string; resourceType: string; actorRole: string; createdAt: string }>;
   pilotStatus:         string;
   recommendedNextAction: { label: string; href: string } | null;
   error?:              string;
@@ -73,6 +83,14 @@ function ts(s: string) {
   try { return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'short', year: 'numeric' }); }
   catch { return s; }
 }
+
+function tsFull(s: string) {
+  try { return new Date(s).toLocaleString('it-IT', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+  catch { return s; }
+}
+
+function eur(v: number) { return `€${v.toLocaleString('it-IT')}`; }
+function pct(v: number) { return `${(v * 100).toFixed(0)}%`; }
 
 // ── Step card ─────────────────────────────────────────────────────────────────
 
@@ -537,6 +555,63 @@ export function CompanyWorkspacePanel({ userEmail, userRole, initialTenantCode }
               </a>
             </StepCard>
 
+          </div>
+
+          {/* Budget-to-Human-Impact — B-TRUTH Root Control Room Wave 2 (2026-08-30).
+              Persisted analytics.bti_result only — no recomputation. */}
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3.5 space-y-2">
+            <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">Budget-to-Human-Impact</p>
+            {w.bti ? (
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Budget welfare totale</p>
+                  <p className="text-[rgba(6,3,43,0.90)] font-bold text-sm mt-0.5">{eur(w.bti.totalWelfareBudget)}</p>
+                </div>
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Deep Activation</p>
+                  <p className="text-[rgba(6,3,43,0.72)] font-bold text-sm mt-0.5">{pct(w.bti.deepActivationShare)}</p>
+                </div>
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">BTI Score</p>
+                  <p className="text-[rgba(6,3,43,0.88)] font-bold text-sm mt-0.5">{w.bti.btiScore.toFixed(1)}</p>
+                </div>
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Activation Debt</p>
+                  <p className={`font-bold text-sm mt-0.5 ${w.bti.activationDebtEur > 0 ? 'text-[#8A5A00]' : 'text-[rgba(6,3,43,0.40)]'}`}>{eur(w.bti.activationDebtEur)}</p>
+                </div>
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Costo per Impact Unit</p>
+                  <p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{w.bti.costPerImpactUnit !== null ? eur(w.bti.costPerImpactUnit) : 'N/D'}</p>
+                </div>
+                <div>
+                  <p className="text-[rgba(6,3,43,0.40)]">Qualità evidenza budget</p>
+                  <p className="text-[rgba(6,3,43,0.78)] font-bold text-sm mt-0.5">{pct(w.bti.budgetEvidenceQuality)}</p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">BTI non disponibile — richiede dati di programma e KORA Index completati per questo periodo.</p>
+            )}
+          </div>
+
+          {/* Lifecycle / Audit — B-TRUTH Root Control Room Wave 2 (2026-08-30).
+              Real audit.audit_log, tenant-scoped by the resolved tenantId. */}
+          <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] px-4 py-3.5 space-y-2">
+            <p className="text-[10px] font-bold text-[rgba(6,3,43,0.40)] uppercase tracking-wide">
+              Lifecycle / Audit — {w.recentAuditEvents.length} eventi recenti
+            </p>
+            {w.recentAuditEvents.length === 0 ? (
+              <p className="text-[10px] text-[rgba(6,3,43,0.40)]">Nessun evento registrato per questo tenant.</p>
+            ) : (
+              <div className="divide-y divide-[rgba(6,3,43,0.05)]">
+                {w.recentAuditEvents.map((evt, i) => (
+                  <div key={i} className="flex items-start gap-3 py-1.5">
+                    <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)] w-32 shrink-0">{tsFull(evt.createdAt)}</p>
+                    <p className="text-[10px] text-[rgba(6,3,43,0.78)] flex-1">{evt.action}</p>
+                    <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)]">{evt.actorRole}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Pilot complete banner (P7) */}
