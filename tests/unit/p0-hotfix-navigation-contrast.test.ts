@@ -3,7 +3,7 @@
 // Verifies: contrast fix, workforce resolution, Commons sidebar, nav style rules.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { buildNavGroups } from '../../components/layout/Sidebar';
 import { tenantService } from '../../services/tenant/TenantService';
@@ -61,8 +61,6 @@ describe('/company/status — contrast fix', () => {
   });
 
   it('B171 — app/demo/company/status/page.tsx rimossa (RIDONDANTE, #C76F3D con essa)', () => {
-    const { existsSync } = require('fs');
-    const { join } = require('path');
     expect(existsSync(join(process.cwd(), 'app/demo/company/status/page.tsx'))).toBe(false);
   });
 });
@@ -93,7 +91,6 @@ describe('Workforce resolution (TenantService fixture, unaffected by retirement)
   });
 
   it('the retired workforce page no longer exists (hidden meridiana-group fallback gone with it)', () => {
-    const { existsSync } = require('fs');
     expect(existsSync(join(ROOT, 'app/admin/companies/[companyId]/workforce/page.tsx'))).toBe(false);
   });
 });

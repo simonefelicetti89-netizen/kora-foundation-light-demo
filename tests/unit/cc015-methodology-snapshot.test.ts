@@ -257,8 +257,12 @@ let nextId = 0;
 function makeInsertResult(id: string) {
   return { select: () => ({ single: async () => ({ data: { id }, error: null }) }) };
 }
-function makeChainableUpdate() {
-  const chain: any = { eq: () => chain, then: (resolve: (v: QueryResult) => void) => resolve({ data: null, error: null }) };
+interface ChainableUpdate {
+  eq: () => ChainableUpdate;
+  then: (resolve: (v: QueryResult) => void) => void;
+}
+function makeChainableUpdate(): ChainableUpdate {
+  const chain: ChainableUpdate = { eq: () => chain, then: (resolve) => resolve({ data: null, error: null }) };
   return chain;
 }
 function recordInsert(table: string, payload: Record<string, unknown>) {
@@ -450,11 +454,20 @@ vi.mock('@supabase/supabase-js', () => ({
 type PdfQueryResult = { data: unknown; error: { message: string } | null };
 let pdfDataTables: Record<string, PdfQueryResult> = {};
 
-function makePdfBuilder(result: PdfQueryResult) {
-  const builder: any = {
+interface PdfQueryBuilder {
+  select: () => PdfQueryBuilder;
+  eq: () => PdfQueryBuilder;
+  order: () => PdfQueryBuilder;
+  limit: () => PdfQueryBuilder;
+  maybeSingle: () => Promise<PdfQueryResult>;
+  then: (resolve: (v: PdfQueryResult) => void) => void;
+}
+
+function makePdfBuilder(result: PdfQueryResult): PdfQueryBuilder {
+  const builder: PdfQueryBuilder = {
     select: () => builder, eq: () => builder, order: () => builder, limit: () => builder,
     maybeSingle: async () => result,
-    then: (resolve: (v: PdfQueryResult) => void) => resolve(result),
+    then: (resolve) => resolve(result),
   };
   return builder;
 }

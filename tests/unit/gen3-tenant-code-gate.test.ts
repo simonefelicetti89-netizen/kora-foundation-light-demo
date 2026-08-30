@@ -20,8 +20,13 @@ let mockRow: { id: string } | null = null;
 let mockError: { message: string } | null = null;
 const capturedFilters: Array<{ column: string; value: unknown }> = [];
 
-function makeChain() {
-  const chain: any = {
+interface MockChain {
+  eq: (column: string, value: unknown) => MockChain;
+  maybeSingle: () => Promise<{ data: { id: string } | null; error: { message: string } | null }>;
+}
+
+function makeChain(): MockChain {
+  const chain: MockChain = {
     eq: (column: string, value: unknown) => {
       capturedFilters.push({ column, value });
       return chain;

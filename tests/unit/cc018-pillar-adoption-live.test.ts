@@ -43,8 +43,15 @@ let mockRow: Record<string, unknown> | null = null;
 let mockError: { message: string } | null = null;
 const capturedFilters: Array<{ column: string; value: unknown }> = [];
 
-function makeChain() {
-  const chain: any = {
+interface MockChain {
+  eq: (column: string, value: unknown) => MockChain;
+  order: () => MockChain;
+  limit: () => MockChain;
+  maybeSingle: () => Promise<{ data: Record<string, unknown> | null; error: { message: string } | null }>;
+}
+
+function makeChain(): MockChain {
+  const chain: MockChain = {
     eq: (column: string, value: unknown) => {
       capturedFilters.push({ column, value });
       return chain;

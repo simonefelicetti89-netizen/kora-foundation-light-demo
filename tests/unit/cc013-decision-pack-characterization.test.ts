@@ -19,14 +19,23 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 type QueryResult = { data: unknown; error: { message: string } | null };
 
-function makeBuilder(result: QueryResult) {
-  const builder: any = {
+interface QueryBuilder {
+  select: () => QueryBuilder;
+  eq: () => QueryBuilder;
+  order: () => QueryBuilder;
+  limit: () => QueryBuilder;
+  maybeSingle: () => Promise<QueryResult>;
+  then: (resolve: (v: QueryResult) => void) => void;
+}
+
+function makeBuilder(result: QueryResult): QueryBuilder {
+  const builder: QueryBuilder = {
     select: () => builder,
     eq: () => builder,
     order: () => builder,
     limit: () => builder,
     maybeSingle: async () => result,
-    then: (resolve: (v: QueryResult) => void) => resolve(result),
+    then: (resolve) => resolve(result),
   };
   return builder;
 }

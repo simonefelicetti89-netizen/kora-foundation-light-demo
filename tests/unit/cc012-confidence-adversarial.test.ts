@@ -224,11 +224,16 @@ function makeInsertResult(id: string) {
   return { select: () => ({ single: async () => ({ data: { id }, error: null }) }) };
 }
 
-function makeChainableUpdate() {
+interface ChainableUpdate {
+  eq: () => ChainableUpdate;
+  then: (resolve: (v: { data: null; error: null }) => void) => void;
+}
+
+function makeChainableUpdate(): ChainableUpdate {
   // Mimics Supabase's thenable query builder: .eq().eq().eq() then awaited.
-  const chain: any = {
+  const chain: ChainableUpdate = {
     eq: () => chain,
-    then: (resolve: (v: { data: null; error: null }) => void) => resolve({ data: null, error: null }),
+    then: (resolve) => resolve({ data: null, error: null }),
   };
   return chain;
 }

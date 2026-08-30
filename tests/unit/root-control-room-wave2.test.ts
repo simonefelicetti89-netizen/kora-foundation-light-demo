@@ -141,8 +141,17 @@ describe('B-TRUTH Root Control Room Wave 2 — Gen 3 workspace gained BTI + Life
 let mockTenantRow: { id: string; tenant_code: string; company_name: string; onboarding_status: string } | null = null;
 const capturedEqCalls: Array<{ table: string; column: string; value: unknown }> = [];
 
-function makeChain(table: string) {
-  const chain: any = {
+interface MockChain {
+  select: () => MockChain;
+  eq: (column: string, value: unknown) => MockChain;
+  neq: () => MockChain;
+  order: () => MockChain;
+  limit: () => Promise<{ data: unknown[]; error: null }>;
+  maybeSingle: () => Promise<{ data: typeof mockTenantRow; error: null }>;
+}
+
+function makeChain(table: string): MockChain {
+  const chain: MockChain = {
     select: () => chain,
     eq: (column: string, value: unknown) => {
       capturedEqCalls.push({ table, column, value });

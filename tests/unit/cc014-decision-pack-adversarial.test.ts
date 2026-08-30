@@ -26,14 +26,23 @@ function src(relPath: string): string {
 
 type QueryResult = { data: unknown; error: { message: string } | null };
 
-function makeBuilder(result: QueryResult) {
-  const builder: any = {
+interface QueryBuilder {
+  select: () => QueryBuilder;
+  eq: () => QueryBuilder;
+  order: () => QueryBuilder;
+  limit: () => QueryBuilder;
+  maybeSingle: () => Promise<QueryResult>;
+  then: (resolve: (v: QueryResult) => void) => void;
+}
+
+function makeBuilder(result: QueryResult): QueryBuilder {
+  const builder: QueryBuilder = {
     select: () => builder,
     eq: () => builder,
     order: () => builder,
     limit: () => builder,
     maybeSingle: async () => result,
-    then: (resolve: (v: QueryResult) => void) => resolve(result),
+    then: (resolve) => resolve(result),
   };
   return builder;
 }
@@ -64,7 +73,8 @@ const mockRequireKoraAdmin = vi.fn();
 vi.mock('@/lib/auth/kora-session', () => ({
   requireCompanyUser: (...args: unknown[]) => mockRequireCompanyUser(...args),
   requireKoraAdmin: (...args: unknown[]) => mockRequireKoraAdmin(...args),
-  isKoraAuthError: (v: unknown) => v && typeof v === 'object' && 'status' in (v as any) && typeof (v as any).json === 'function',
+  isKoraAuthError: (v: unknown) =>
+    typeof v === 'object' && v !== null && 'status' in v && typeof (v as Record<string, unknown>).json === 'function',
 }));
 
 beforeEach(() => {

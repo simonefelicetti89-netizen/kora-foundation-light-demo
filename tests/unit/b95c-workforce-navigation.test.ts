@@ -8,11 +8,15 @@
 // Privacy invariants confirmed: no individual PIB, no employer-visible worker data.
 
 import { describe, it, expect } from 'vitest';
+import { readFileSync, existsSync } from 'fs';
+import { resolve, join } from 'path';
 import { buildNavGroups } from '../../components/layout/Sidebar';
 import { ADMIN_QUICKSTART_STEPS } from '../../lib/feature-discovery/index';
 import {
   LIFECYCLE_STEPS,
 } from '../../lib/admin-lifecycle/lifecycle-rules';
+
+const COMPANY_TAB_NAV_PATH = 'app/admin/companies/[companyId]/_components/CompanyTabNav.tsx';
 
 // ── Task 1: Sidebar — Workforce navigation post-B169 ─────────────────────────
 // B169 FASE 2: Workforce Management moved from sidebar to CompanyTabNav.
@@ -41,10 +45,7 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
   });
 
   it('CompanyTabNav no longer has a Workforce tab (retired — B-TRUTH Gen 0/1 Retirement Wave 1)', () => {
-    const src = require('fs').readFileSync(
-      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
-      'utf-8',
-    );
+    const src = readFileSync(resolve(process.cwd(), COMPANY_TAB_NAV_PATH), 'utf-8');
     expect(src).not.toContain("slug: 'workforce'");
     expect(src).not.toContain("label: 'Workforce'");
   });
@@ -81,24 +82,16 @@ describe('B95-C Task 1 — Sidebar: Workforce nav post-B169 (CompanyTabNav)', ()
 describe('B-TRUTH Gen 0/1 Retirement Wave 1 — Workforce tab removed from CompanyTabNav', () => {
 
   it('CompanyTabNav no longer has a workforce tab', () => {
-    const src = require('fs').readFileSync(
-      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
-      'utf-8',
-    );
+    const src = readFileSync(resolve(process.cwd(), COMPANY_TAB_NAV_PATH), 'utf-8');
     expect(src).not.toContain("slug: 'workforce'");
   });
 
   it('the retired workforce drill-in page no longer exists', () => {
-    const { existsSync } = require('fs');
-    const { join } = require('path');
     expect(existsSync(join(process.cwd(), 'app/admin/companies/[companyId]/workforce/page.tsx'))).toBe(false);
   });
 
   it('CompanyTabNav retains exactly the 5 Gen 3 + Users tabs', () => {
-    const src = require('fs').readFileSync(
-      require('path').resolve(__dirname, '../../app/admin/companies/[companyId]/_components/CompanyTabNav.tsx'),
-      'utf-8',
-    );
+    const src = readFileSync(resolve(process.cwd(), COMPANY_TAB_NAV_PATH), 'utf-8');
     for (const slug of ['workspace', 'preview', 'submissions', 'evidence', 'users']) {
       expect(src).toContain(`slug: '${slug}'`);
     }
