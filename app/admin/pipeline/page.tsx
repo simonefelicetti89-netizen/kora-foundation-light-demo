@@ -288,8 +288,12 @@ export default function PilotLifecyclePage() {
           Accesso diretto — {tenant?.company_name ?? DEMO_COMPANY_ID}
         </p>
         <div className="flex flex-wrap gap-2">
+          {/* B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30): "Company Control
+              Room" quick link removed — that route now redirects to the Gen 3
+              workspace tab, which honestly 404s for DEMO_COMPANY_ID (not a real
+              tenant_code) instead of rendering fabricated data. A link that
+              always 404s is not a legitimate quick action. */}
           {[
-            { label: 'Company Control Room',                      href: `/admin/companies/${DEMO_COMPANY_ID}` },
             { label: 'Worker Provisioning (live)',                href: '/admin/workers' },
             { label: 'Utenti Aziendali',                          href: `/admin/companies/${DEMO_COMPANY_ID}/users` },
             { label: 'Submission Queue',        href: '/admin/company-submissions' },

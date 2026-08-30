@@ -71,17 +71,17 @@ describe('B-TRUTH Root Control Room Wave 2 — removed capabilities have no synt
     expect(src).not.toContain('deleteDemoWorker');
   });
 
-  it('links to the retained /users tab instead of embedding a duplicate account list', () => {
-    expect(src).toContain('/admin/companies/${companyId}/users');
+  it('Section H\'s link to /users, and the worker aggregate summary tiles, were themselves superseded by the Root Control Room Wave 3 Hardening pass — the whole page is now a redirect. See root-control-room-wave3-hardening.test.ts', () => {
+    expect(src).not.toContain('/admin/companies/${companyId}/users');
+    expect(src).not.toContain('workerSummary');
   });
 
-  it('still retains the worker aggregate summary tiles (informational, not mutation UI)', () => {
-    expect(src).toContain('workerSummary.total_workers');
-    expect(src).toContain('workerSummary.my_kora_enabled_count');
-  });
-
-  it('still retains company data intake summary (Section D unchanged this wave)', () => {
-    expect(src).toContain('companyDataIntakeService.getDataReadinessSummary');
+  it('Section D (Data Intake summary) was itself removed in Wave 3 — see root-control-room-wave3.test.ts', () => {
+    // Superseded by Wave 3: Section D was REMOVE_DUPLICATE against the Gen 3
+    // workspace tab's latestBatch/uef fields. Kept here only as a pointer so
+    // this file's history stays legible — the real assertion lives in Wave 3's
+    // own test file.
+    expect(src).not.toContain('companyDataIntakeService.getDataReadinessSummary');
   });
 });
 

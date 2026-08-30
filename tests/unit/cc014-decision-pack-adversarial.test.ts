@@ -466,17 +466,22 @@ describe('CC-014 Phase 8 — ReportFactoryService stays outside the canonical do
     }
   });
 
-  it('the known divergence (admin metadata pages -> ReportFactoryService -> synthetic seed) is still present, unfixed, and correctly scoped to admin metadata only', () => {
+  it('the known divergence (admin metadata pages -> ReportFactoryService -> synthetic seed) is still present, unfixed, and now scoped to exactly one real caller', () => {
     const factory = src('services/report-factory/ReportFactoryService.ts');
     expect(factory).toContain('data/synthetic/decision-pack-versions.json');
     const pipeline = src('app/admin/pipeline/page.tsx');
     const companies = src('app/admin/companies/[companyId]/page.tsx');
     expect(pipeline).toContain('reportFactoryService');
-    expect(companies).toContain('reportFactoryService');
+    // B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30): root Control
+    // Room was retired (now a redirect to the Gen 3 workspace tab) — it no
+    // longer calls ReportFactoryService. pipeline remains the sole caller.
+    expect(companies).not.toContain('reportFactoryService');
   });
 });
 
 // REPORT_FACTORY_SYNTHETIC_DIVERGENCE = OPEN / B-TRUTH — see CC-014 report.
+// Narrowed by B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30): the
+// divergence's sole remaining runtime surface is app/admin/pipeline/page.tsx.
 
 // ═════════════════════════════════════════════════════════════════════════════
 // PHASE 9 — REPORT GENERATOR RE-ENTRY GUARD (strengthened from CC-013)

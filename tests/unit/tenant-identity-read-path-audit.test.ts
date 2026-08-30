@@ -80,14 +80,16 @@ describe('B-TRUTH Tenant Identity — mutation methods remain pure demo stubs (P
 describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers are still entangled', () => {
   // B-TRUTH Gen 0/1 Retirement Wave 1 (2026-08-30): data-intake, onboarding,
   // and workforce were retired outright (deleted — no unique capability
-  // beyond real live surfaces). layout.tsx, page.tsx (root Control Room),
-  // and users/page.tsx remain — required capabilities (BTI display, user
-  // mutations, Decision Pack comparison, lifecycle audit) still have no
-  // canonical replacement. See lib/architecture/registry.ts svc.tenant notes.
+  // beyond real live surfaces).
+  // B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30): page.tsx (root
+  // Control Room) was ALSO retired — it is now a thin redirect
+  // (requireKoraAdmin → redirect to the Gen 3 workspace tab) with no
+  // TenantService dependency at all. layout.tsx and users/page.tsx remain —
+  // required capabilities (user mutations, still-unresolved lifecycle) still
+  // have no canonical replacement. See lib/architecture/registry.ts svc.tenant notes.
   const ENTANGLED_CALLERS = [
     'app/admin/companies/[companyId]/layout.tsx',
     'app/admin/companies/[companyId]/users/page.tsx',
-    'app/admin/companies/[companyId]/page.tsx',
     'services/report-factory/ReportFactoryService.ts',
     'services/company-intelligence/CompanyIntelligenceService.ts',
   ];
@@ -98,6 +100,12 @@ describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers ar
       expect(read(file)).toContain('tenantService');
     });
   }
+
+  it('app/admin/companies/[companyId]/page.tsx (root Control Room) no longer calls tenantService — retired to a redirect', () => {
+    const code = read('app/admin/companies/[companyId]/page.tsx');
+    expect(code).not.toContain('tenantService');
+    expect(code).toContain("redirect(`/admin/companies/${companyId}/workspace`)");
+  });
 
   it('app/admin/pipeline/page.tsx still resolves tenant identity via a hardcoded DEMO_COMPANY_ID, not a real tenant id', () => {
     const code = read('app/admin/pipeline/page.tsx');

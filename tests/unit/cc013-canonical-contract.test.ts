@@ -150,10 +150,10 @@ describe('CC-013 — ReportFactoryService remains explicitly non-canonical, synt
     expect(factory).toContain('data/synthetic/decision-pack-versions.json');
   });
 
-  it('the two admin pages that call it are unchanged (no new callers introduced)', () => {
+  it('exactly one real caller remains — pipeline (root Control Room was retired by B-TRUTH Root Control Room Wave 3 Hardening, 2026-08-30 — no new callers introduced elsewhere)', () => {
     const pipeline = src('app/admin/pipeline/page.tsx');
     const companies = src('app/admin/companies/[companyId]/page.tsx');
     expect(pipeline).toContain('reportFactoryService');
-    expect(companies).toContain('reportFactoryService');
+    expect(companies).not.toContain('reportFactoryService');
   });
 });
