@@ -10,14 +10,21 @@ import { usePathname } from 'next/navigation';
 // (TenantService/tenants.json-rooted) demo dashboards with no unique
 // capability beyond what real live surfaces already provide (real upload:
 // /admin/data-intake; real worker provisioning: /admin/workers; real
-// per-tenant status: the Workspace tab). Root Control Room and Users remain
-// — see lib/architecture/registry.ts svc.tenant notes for the remaining gaps.
+// per-tenant status: the Workspace tab).
+//
+// CC-019A (2026-08-31): removed the Users tab — [companyId]/users was the
+// same kind of 100% synthetic, read-only demo dashboard (TenantService +
+// AccountProvisioningService), and app/admin/company-users-live already
+// covers the same capability against real Supabase data (plus real
+// invite/status mutation the legacy page never had). Not relinked here:
+// company-users-live is keyed by tenantId (analytics.tenant.id, a UUID),
+// while this component only has tenant_code (companyId) — bridging the two
+// would require a new lookup, which is out of scope for a tab-nav cleanup.
 const TABS = [
   { label: 'Workspace',   slug: 'workspace'   },
   { label: 'Preview',     slug: 'preview'     },
   { label: 'Submissions', slug: 'submissions' },
   { label: 'Evidence',    slug: 'evidence'    },
-  { label: 'Users',       slug: 'users'       },
 ] as const;
 
 interface Props {

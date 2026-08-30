@@ -84,12 +84,15 @@ describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers ar
   // B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30): page.tsx (root
   // Control Room) was ALSO retired — it is now a thin redirect
   // (requireKoraAdmin → redirect to the Gen 3 workspace tab) with no
-  // TenantService dependency at all. layout.tsx and users/page.tsx remain —
-  // required capabilities (user mutations, still-unresolved lifecycle) still
-  // have no canonical replacement. See lib/architecture/registry.ts svc.tenant notes.
+  // TenantService dependency at all.
+  // CC-019A (2026-08-31): users/page.tsx was ALSO retired outright — real,
+  // more capable replacement (app/admin/company-users-live) already existed.
+  // layout.tsx remains — its single company_name display call is CC-019B,
+  // deferred. ReportFactoryService/CompanyIntelligenceService remain
+  // entangled pending their own separate decisions. See
+  // lib/architecture/registry.ts svc.tenant notes.
   const ENTANGLED_CALLERS = [
     'app/admin/companies/[companyId]/layout.tsx',
-    'app/admin/companies/[companyId]/users/page.tsx',
     'services/report-factory/ReportFactoryService.ts',
     'services/company-intelligence/CompanyIntelligenceService.ts',
   ];

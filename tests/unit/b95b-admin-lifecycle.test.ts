@@ -4,7 +4,7 @@
 //        privacy invariants, no-auth/no-email guarantees.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import {
   LIFECYCLE_STEPS,
@@ -412,47 +412,27 @@ describe('privacy invariants — no auth/email/PIB behavior', () => {
     expect(content).not.toContain('supabase.from(');
   });
 
-  it('company users page does not send email', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'companies', '[companyId]', 'users', 'page.tsx');
-    const content = readFileSync(path, 'utf-8');
-    expect(content).not.toContain('sendEmail');
-    expect(content).not.toContain('nodemailer');
-    expect(content).not.toContain('smtp');
-  });
-
-  it('company users page shows Foundation Light access note (no real auth)', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'companies', '[companyId]', 'users', 'page.tsx');
-    const content = readFileSync(path, 'utf-8');
-    expect(content).toContain('Foundation Light');
-    expect(content).toContain('no_email_sending');
-  });
 });
 
-// ── Company users page structure ──────────────────────────────────────────────
+// ── Company users page — retired (CC-019A, 2026-08-31) ────────────────────────
+//
+// The synthetic per-company users page (this describe block previously
+// characterized its no-email/Foundation-Light-note/accountProvisioningService
+// content) was retired outright: a real, more capable, already-live
+// replacement exists at app/admin/company-users-live (Supabase-backed
+// /api/admin/company-users — real read + real invite/status mutation the
+// legacy page never had). See tests/unit/cc019a-retire-legacy-company-users.test.ts
+// for the full retirement guard.
 
 describe('company users page — file structure', () => {
-  it('file exists at expected path', () => {
+  it('the legacy per-company page no longer exists (retired, CC-019A)', () => {
     const path = join(process.cwd(), 'app', 'admin', 'companies', '[companyId]', 'users', 'page.tsx');
-    const content = readFileSync(path, 'utf-8');
-    expect(content.length).toBeGreaterThan(100);
+    expect(existsSync(path)).toBe(false);
   });
 
-  it('page uses accountProvisioningService', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'companies', '[companyId]', 'users', 'page.tsx');
-    const content = readFileSync(path, 'utf-8');
-    expect(content).toContain('accountProvisioningService');
-  });
-
-  it('page links to worker provisioning (B-TRUTH Gen 0/1 Retirement Wave 1: /admin/workers, live, replaces the retired per-company demo workforce tab)', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'companies', '[companyId]', 'users', 'page.tsx');
-    const content = readFileSync(path, 'utf-8');
-    expect(content).toContain('/admin/workers');
-  });
-
-  it('page links back to Pilot Lifecycle orchestrator', () => {
-    const path = join(process.cwd(), 'app', 'admin', 'companies', '[companyId]', 'users', 'page.tsx');
-    const content = readFileSync(path, 'utf-8');
-    expect(content).toContain('/admin/pipeline');
+  it('the canonical live replacement exists', () => {
+    const path = join(process.cwd(), 'app', 'admin', 'company-users-live', 'page.tsx');
+    expect(existsSync(path)).toBe(true);
   });
 });
 

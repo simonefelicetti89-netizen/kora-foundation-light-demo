@@ -90,13 +90,14 @@ describe('B-TRUTH Gen 0/1 Retirement Wave 1 — Workforce tab removed from Compa
     expect(existsSync(join(process.cwd(), 'app/admin/companies/[companyId]/workforce/page.tsx'))).toBe(false);
   });
 
-  it('CompanyTabNav retains exactly the 5 Gen 3 + Users tabs', () => {
+  it('CompanyTabNav retains exactly the 4 Gen 3 tabs (Users retired, CC-019A)', () => {
     const src = readFileSync(resolve(process.cwd(), COMPANY_TAB_NAV_PATH), 'utf-8');
-    for (const slug of ['workspace', 'preview', 'submissions', 'evidence', 'users']) {
+    for (const slug of ['workspace', 'preview', 'submissions', 'evidence']) {
       expect(src).toContain(`slug: '${slug}'`);
     }
     expect(src).not.toContain("slug: 'data-intake'");
     expect(src).not.toContain("slug: 'onboarding'");
+    expect(src).not.toContain("slug: 'users'");
   });
 });
 
