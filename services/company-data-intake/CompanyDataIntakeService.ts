@@ -3,7 +3,6 @@ import type {
   CompanyRawDataBatch,
   CompanyRawDataRow,
   CompanyDataReadinessSummary,
-  FiscalPerimeterAllocation,
   CompanyDataIntakeStatus,
 } from '@/lib/types';
 
@@ -26,20 +25,24 @@ const FRINGE_KEYWORDS = [
   'voucher', 'fringe', 'buono spesa', 'rimborso generico',
 ];
 
+// B-TRUTH Demo/Orphan Chain Audit (2026-08-30): reduced to the pipeline-only
+// Data Intake synthetic summary. The only reachable runtime call anywhere in
+// the repo is getDataReadinessSummary(), reached from
+// app/admin/pipeline/page.tsx (demo caller) and, transitively, from
+// ReportFactoryService (demo caller) and CompanyIntelligenceService
+// (orphaned — 0 reachable callers itself, see lib/architecture/registry.ts
+// svc.company-intelligence). Twelve other public methods
+// (getAvailableCompanies, getFiscalPerimeterSummary, getRawDataRowsForBatch,
+// getRowsReadyForIngestion, getEligibleCandidates, getLimitedCandidates,
+// getBlockedCandidates, getStructuralPolicyRows, getReviewRequiredRows,
+// getRowsWithMissingFields, validateRawDataBatch, getPipelineLinks) had zero
+// callers anywhere — not pipeline, not ReportFactoryService, not
+// CompanyIntelligenceService, not any test — verified by an exact per-method
+// repo-wide search before removal. Removed rather than kept as unreachable
+// surface (Master Plan §32 / this audit's own reachability discipline).
 class CompanyDataIntakeService {
-  getAvailableCompanies(): string[] {
-    return [...new Set([
-      ...FISCAL_PLANS.map((p) => p.company_id),
-      ...RAW_BATCHES.map((b) => b.company_id),
-    ])];
-  }
-
   getBudgetFiscalPlan(companyId: string): CompanyBudgetFiscalPlan | null {
     return FISCAL_PLANS.find((p) => p.company_id === companyId) ?? null;
-  }
-
-  getFiscalPerimeterSummary(companyId: string): FiscalPerimeterAllocation[] {
-    return this.getBudgetFiscalPlan(companyId)?.fiscal_perimeters ?? [];
   }
 
   getRawDataBatches(companyId: string): CompanyRawDataBatch[] {
@@ -50,63 +53,25 @@ class CompanyDataIntakeService {
     return RAW_ROWS.filter((r) => r.company_id === companyId);
   }
 
-  getRawDataRowsForBatch(companyId: string, batchId: string): CompanyRawDataRow[] {
-    return RAW_ROWS.filter((r) => r.company_id === companyId && r.batch_id === batchId);
-  }
+  getNextAction(companyId: string): string {
+    const plan  = this.getBudgetFiscalPlan(companyId);
+    const rows  = this.getRawDataRows(companyId);
 
-  getRowsReadyForIngestion(companyId: string): CompanyRawDataRow[] {
-    return this.getRawDataRows(companyId).filter((r) => r.ready_for_ingestion);
-  }
+    if (!plan || plan.fiscal_perimeters.length === 0) {
+      return 'Definire il perimetro fiscale e il budget people/welfare';
+    }
+    if (rows.length === 0) {
+      return 'Caricare il primo batch di dati programmi';
+    }
 
-  getEligibleCandidates(companyId: string): CompanyRawDataRow[] {
-    return this.getRawDataRows(companyId).filter((r) => this._isEligible(r));
-  }
+    const missing  = rows.filter((r) => r.missing_fields.length > 0).length;
+    const review   = rows.filter((r) => this._isReviewRequired(r) && !r.ready_for_ingestion).length;
+    const ready    = rows.filter((r) => r.ready_for_ingestion).length;
 
-  getLimitedCandidates(companyId: string): CompanyRawDataRow[] {
-    return this.getRawDataRows(companyId).filter((r) => this._isLimited(r));
-  }
-
-  getBlockedCandidates(companyId: string): CompanyRawDataRow[] {
-    return this.getRawDataRows(companyId).filter((r) => this._isBlocked(r));
-  }
-
-  getStructuralPolicyRows(companyId: string): CompanyRawDataRow[] {
-    return this.getRawDataRows(companyId).filter((r) => this._isStructuralPolicy(r));
-  }
-
-  getReviewRequiredRows(companyId: string): CompanyRawDataRow[] {
-    return this.getRawDataRows(companyId).filter((r) => this._isReviewRequired(r));
-  }
-
-  getRowsWithMissingFields(companyId: string): CompanyRawDataRow[] {
-    return this.getRawDataRows(companyId).filter((r) => r.missing_fields.length > 0);
-  }
-
-  validateRawDataBatch(companyId: string, batchId: string): {
-    total: number;
-    ready: number;
-    blocked: number;
-    limited: number;
-    structural: number;
-    review_required: number;
-    missing_fields: number;
-    warnings: string[];
-  } {
-    const rows = this.getRawDataRowsForBatch(companyId, batchId);
-    const warnings: string[] = [];
-
-    const ready     = rows.filter((r) => r.ready_for_ingestion).length;
-    const blocked   = rows.filter((r) => this._isBlocked(r)).length;
-    const limited   = rows.filter((r) => this._isLimited(r)).length;
-    const structural = rows.filter((r) => this._isStructuralPolicy(r)).length;
-    const review    = rows.filter((r) => this._isReviewRequired(r)).length;
-    const missing   = rows.filter((r) => r.missing_fields.length > 0).length;
-
-    if (review > 0) warnings.push(`${review} righe richiedono revisione prima dell'ingestion`);
-    if (missing > 0) warnings.push(`${missing} righe con campi obbligatori mancanti`);
-    if (blocked > 0) warnings.push(`${blocked} righe bloccate per design — compliance 0 IU`);
-
-    return { total: rows.length, ready, blocked, limited, structural, review_required: review, missing_fields: missing, warnings };
+    if (missing > 0) return `Completare ${missing} righe con campi mancanti`;
+    if (review > 0)  return `Revisionare ${review} righe prima dell'ingestion`;
+    if (ready > 0)   return 'Approvare batch e avviare AI Ingestion';
+    return 'Nessuna azione richiesta — pipeline pronta';
   }
 
   getDataReadinessSummary(companyId: string): CompanyDataReadinessSummary {
@@ -162,63 +127,6 @@ class CompanyDataIntakeService {
         'pre_empirical_calibration · synthetic_demo_data: true',
       ],
     };
-  }
-
-  getPipelineLinks(companyId: string): Array<{ stage: string; label: string; href: string; available: boolean; note: string }> {
-    const summary = this.getDataReadinessSummary(companyId);
-    return [
-      {
-        stage: 'ingestion',
-        label: 'AI Ingestion',
-        href:  '/company/ingestion',
-        available: summary.ready_for_ingestion_rows > 0,
-        note: summary.ready_for_ingestion_rows > 0
-          ? `${summary.ready_for_ingestion_rows} righe pronte`
-          : 'Nessuna riga pronta — completare data intake',
-      },
-      {
-        stage: 'uef_review',
-        label: 'UEF Review',
-        href:  '/company/uef-review',
-        available: summary.eligible_candidate_rows > 0,
-        note: 'Revisione umana post-ingestion',
-      },
-      {
-        stage: 'scoring',
-        label: 'Scoring Preview',
-        href:  '/company/scoring',
-        available: summary.kora_index_available,
-        note: summary.kora_index_available ? 'Disponibile' : 'Richiede dati sufficienti',
-      },
-      {
-        stage: 'decision_pack',
-        label: 'Decision Pack',
-        href:  '/company/reports',
-        available: summary.decision_pack_available,
-        note: summary.decision_pack_available ? 'Disponibile' : 'Richiede revisione dati completa',
-      },
-    ];
-  }
-
-  getNextAction(companyId: string): string {
-    const plan  = this.getBudgetFiscalPlan(companyId);
-    const rows  = this.getRawDataRows(companyId);
-
-    if (!plan || plan.fiscal_perimeters.length === 0) {
-      return 'Definire il perimetro fiscale e il budget people/welfare';
-    }
-    if (rows.length === 0) {
-      return 'Caricare il primo batch di dati programmi';
-    }
-
-    const missing  = rows.filter((r) => r.missing_fields.length > 0).length;
-    const review   = rows.filter((r) => this._isReviewRequired(r) && !r.ready_for_ingestion).length;
-    const ready    = rows.filter((r) => r.ready_for_ingestion).length;
-
-    if (missing > 0) return `Completare ${missing} righe con campi mancanti`;
-    if (review > 0)  return `Revisionare ${review} righe prima dell'ingestion`;
-    if (ready > 0)   return 'Approvare batch e avviare AI Ingestion';
-    return 'Nessuna azione richiesta — pipeline pronta';
   }
 
   // ── Private classification helpers ──────────────────────────────────────────
