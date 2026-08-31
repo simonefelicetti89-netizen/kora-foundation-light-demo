@@ -151,3 +151,16 @@ export const PILLAR_COMMONS_LABELS: Record<string, string> = {
   IMPACT:     'IMPACT — Impatto',
   LEGACY:     'LEGACY — Legacy',
 };
+
+// commons.post.category — shared label map (was previously duplicated
+// locally in app/company/commons/page.tsx; also used by the CC-052 live
+// discovery view, which has no equivalent to the retired synthetic
+// initiative_type taxonomy and uses category as the live discovery axis).
+export const CATEGORY_LABELS: Record<string, string> = {
+  announcement:      'Annuncio',
+  initiative_update: 'Aggiornamento iniziativa',
+  opportunity:       'Opportunità',
+  event:             'Evento',
+  request:           'Richiesta',
+  resource:          'Risorsa',
+};

@@ -27,6 +27,7 @@
 //
 // Privacy invariants: unchanged. PIB never shown to employer. All rules from B81-B still active.
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRole, useScenario, usePersona } from '@/lib/demo-state';
 import { myKoraPreviewService } from '@/services/my-kora-preview/MyKoraPreviewService';
@@ -34,7 +35,6 @@ import { workerPIBService } from '@/services/worker-pib/WorkerPIBService';
 import { workerOpportunityService } from '@/services/worker-opportunity/WorkerOpportunityService';
 import { scoringSimulatorService } from '@/services/scoring-simulator/ScoringSimulatorService';
 import { accountProvisioningService } from '@/services/account/AccountProvisioningService';
-import { commonsService } from '@/services/commons/CommonsService';
 import { workerAchievementService } from '@/services/worker-achievements/WorkerAchievementService';
 import { STATUS_LABELS as ACHIEVEMENT_STATUS_LABELS } from '@/lib/worker-achievements/types';
 import { computeNextAction } from '@/lib/my-kora/nextActionLogic';
@@ -91,6 +91,30 @@ export default function MyKoraHome() {
   const { activeScenario } = useScenario();
   const { activePersona } = usePersona();
 
+  // CC-052 (2026-08-31): Commons widget reads canonical live discovery
+  // (same /api/commons/initiatives a real session uses) instead of the
+  // retired synthetic Commons service. This page's own session is demo-state
+  // (no live JWT — see this file's own B81-B header note), so the request
+  // has no way to authenticate today and the widget correctly shows an
+  // empty state until Pilot+ resolves a real worker session here — not a
+  // synthetic fallback, an honest reflection of "no live session yet."
+  const [commonsPreview, setCommonsPreview] = useState<{ pillars: string[]; count: number }>({ pillars: [], count: 0 });
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/commons/initiatives')
+      .then((res) => (res.ok ? res.json() : { initiatives: [] }))
+      .then((data: { initiatives?: Array<{ pillar: string | null }> }) => {
+        if (cancelled) return;
+        const rows = data.initiatives ?? [];
+        const pillars = [...new Set(rows.map((r) => r.pillar).filter((p): p is string => p !== null))];
+        setCommonsPreview({ pillars, count: rows.length });
+      })
+      .catch(() => {
+        if (!cancelled) setCommonsPreview({ pillars: [], count: 0 });
+      });
+    return () => { cancelled = true; };
+  }, []);
+
   if (!myKoraPreviewService.canAccess(activeRole)) {
     return <AccessDenied role={activeRole} />;
   }
@@ -132,10 +156,6 @@ export default function MyKoraHome() {
   // Achievement data — worker-private recognition layer
   const achievementStats  = workerAchievementService.getAchievementStats();
   const recentAchievements = workerAchievementService.getRecentAchievements(3);
-
-  // Featured commons initiatives
-  const featuredCommons = commonsService.getFeaturedInitiatives().slice(0, 2);
-  const commonsPillars  = [...new Set(featuredCommons.map((i) => i.pillar))];
 
   return (
     <div className="space-y-6" data-testid="my-kora-home">
@@ -490,9 +510,9 @@ export default function MyKoraHome() {
               KORA Space mostra opportunità di attivazione nel network KORA.
             </p>
           </div>
-          {commonsPillars.length > 0 && (
+          {commonsPreview.pillars.length > 0 && (
             <div className="flex flex-wrap gap-1" data-testid="commons-pillars">
-              {commonsPillars.map((p) => (
+              {commonsPreview.pillars.map((p) => (
                 <span key={p} className={cn('rounded border px-1.5 py-0.5 text-[10px] font-mono',
                   PILLAR_LIGHT[p] ?? 'bg-[rgba(6,3,43,0.05)] text-[rgba(6,3,43,0.60)] border-[rgba(6,3,43,0.08)]',
                 )}>
@@ -500,7 +520,7 @@ export default function MyKoraHome() {
                 </span>
               ))}
               <span className="text-[10px] text-[rgba(6,3,43,0.40)] self-center ml-1" style={{ fontFamily: 'Plus Jakarta Sans, var(--font-jakarta), system-ui, sans-serif' }}>
-                {featuredCommons.length} iniziative in evidenza
+                {commonsPreview.count} iniziative in evidenza
               </span>
             </div>
           )}

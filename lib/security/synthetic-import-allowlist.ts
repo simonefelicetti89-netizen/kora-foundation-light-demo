@@ -14,11 +14,26 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 24 files / 36 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 23 files / 35 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// CC-052 — Retire Commons Synthetic Discovery Path (2026-08-31): removed
+// services/commons/CommonsService.ts's synthetic class (getInitiatives,
+// getFeaturedInitiatives, getByPillar/getByType already removed earlier
+// this same day, getNetworkStats) and its sole import of
+// data/synthetic/commons-initiatives.json (file deleted). Master Plan §13's
+// "due percorsi di scoperta nello stesso servizio" defect is resolved: the
+// file now contains only the live getPublishedInitiatives/
+// getPublishedInitiativesAdmin path. The two remaining runtime callers
+// (app/commons/page.tsx, app/my-kora/page.tsx's Commons widget) were
+// migrated onto canonical live discovery (commons.post via RLS, tenant
+// company_name/industry_code join, commons.booking_aggregate_for_promoter()
+// for participant counts) — no schema change was required. First genuine
+// I9 reduction since the BTI/orphan-chain retirements: 24->23 files
+// (36->35 imports).
 //
 // CC-020A — Company Intelligence Capability Retirement, NARROWED (2026-08-31):
 // removed services/company-intelligence/CompanyIntelligenceService.ts (0
@@ -96,7 +111,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/account/AccountProvisioningService.ts', reason: 'Demo account registry — reads synthetic user accounts.' },
   { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).' },
   { file: 'services/admin-preview/AdminPreviewService.ts', reason: 'Admin demo preview shaping — companies, KORA Index outputs, source batches.' },
-  { file: 'services/commons/CommonsService.ts', reason: 'Commons demo-seeded initiatives (live DB path also exists, coexists).' },
   { file: 'services/company-data-intake/CompanyDataIntakeService.ts', reason: 'Company raw-data batch/row intake demo seed (fiscal plans, batches, rows).' },
   { file: 'services/company-onboarding/CompanyOnboardingService.ts', reason: 'CC-020A (2026-08-31, narrowed): restored after an incorrect same-day deletion. Remains an explicitly unresolved competing implementation of svc.company-setup (Master Plan §33 keeps company-setup permanently INVESTIGATE) — retirement would have silently resolved a decision the Master Plan has not made. See lib/architecture/registry.ts svc.company-onboarding.' },
   { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },

@@ -54,11 +54,6 @@
       "count": 2
     }
   },
-  "app/commons/page.tsx": {
-    "react-hooks/preserve-manual-memoization": {
-      "count": 1
-    }
-  },
   "app/worker/dynamic-cv/_components/DynamicCVClient.tsx": {
     "react-hooks/set-state-in-effect": {
       "count": 1
@@ -122,11 +117,6 @@
   "services/commons/BookingService.ts": {
     "@typescript-eslint/no-explicit-any": {
       "count": 26
-    }
-  },
-  "services/commons/CommonsService.ts": {
-    "@typescript-eslint/no-explicit-any": {
-      "count": 1
     }
   },
   "services/kora-contribution/KoraContributionService.ts": {
