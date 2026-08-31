@@ -107,12 +107,15 @@ describe('CC-019A — TenantService and AccountProvisioningService implementatio
     // here — it was untouched by CC-019A specifically, but CC-019B (a later,
     // separate sub-slice) has since canonicalized it; see
     // tests/unit/cc019b-canonicalize-gen3-tenant-identity.test.ts.
+    // services/company-intelligence/CompanyIntelligenceService.ts is ALSO
+    // not listed here — it was untouched by CC-019A, but CC-020A (a later,
+    // unrelated sub-slice) has since retired it entirely; see
+    // tests/unit/cc020a-retire-company-intelligence.test.ts.
     for (const file of [
       'app/admin/pipeline/page.tsx',
       'app/admin/companies/workforce-baseline/page.tsx',
       'components/admin/WorkforceQuickAccessPanel.tsx',
       'services/report-factory/ReportFactoryService.ts',
-      'services/company-intelligence/CompanyIntelligenceService.ts',
     ]) {
       expect(read(file)).toContain('tenantService');
     }
