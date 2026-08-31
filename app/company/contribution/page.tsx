@@ -21,7 +21,7 @@ import Link from 'next/link';
 import {
   getContributionPromoterView,
   getContributionOriginEmployerView,
-  koraContributionService,
+  getContributionV2Live,
 } from '@/services/kora-contribution/KoraContributionService';
 import type { ContributionSummary } from '@/services/kora-contribution/KoraContributionService';
 import { getCalibrationStatus } from '@/lib/methodology-config/v0.1';
@@ -188,11 +188,14 @@ export default async function KoraContributionPage() {
 
   const isPilot = promoterView !== null;
 
-  // Foundation Light preview: seed-derived summary for methodology demonstration.
-  // Called only when production_ready=false. Uses synthetic initiative data (scenario S1).
+  // Pre-pilot preview: DB-backed V2 methodology preview computed from this
+  // tenant's own real commons.contribution_event rows (B-TRUTH Contribution
+  // port, 2026-09-01) — not synthetic data. Shown only when production_ready
+  // is false; a tenant with zero real events correctly yields
+  // insufficientSignal=true rather than a fabricated fallback.
   const flPreview: ContributionSummary | null = isPilot
     ? null
-    : koraContributionService.getSummaryV2(auth.tenantId, 'S1');
+    : await getContributionV2Live({ db, tenantId: auth.tenantId });
 
   return (
     <div
@@ -308,7 +311,7 @@ export default async function KoraContributionPage() {
               PRE-PILOT PREVIEW
             </span>
             <span style={{ fontSize: 10, color: TOKENS.inkHint }}>
-              Anteprima metodologica · Dati sintetici dimostrativi · Non live
+              Anteprima metodologica · Calcolata sui tuoi eventi di contribuzione reali · Non è la dashboard live
             </span>
           </div>
 
@@ -325,9 +328,9 @@ export default async function KoraContributionPage() {
               lineHeight:   1.6,
             }}
           >
-            Questa è un&apos;anteprima metodologica calcolata su iniziative collettive sintetiche.
-            I valori illustrano come sarà visualizzato KORA Contribution™ quando gli eventi di contribuzione
-            reali saranno disponibili (fase Pilot+). <strong>Non rappresentano dati reali della tua organizzazione.</strong>
+            Questa è un&apos;anteprima metodologica calcolata sui tuoi eventi di contribuzione reali già registrati.
+            La dashboard completa a due sezioni (promoter / origin employer) si attiva al passaggio a Pilot+.
+            <strong> Con pochi o nessun evento registrato, i segnali possono risultare ancora insufficienti per una banda di maturità.</strong>
           </div>
 
           {flPreview && (

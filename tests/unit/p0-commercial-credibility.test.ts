@@ -37,9 +37,8 @@ function exists(rel: string): boolean {
 describe('P0-1 — Contribution Foundation Light fallback', () => {
   const contribPage = read('app/company/contribution/page.tsx');
 
-  it('Foundation Light path uses getSummaryV2 (not just empty shell)', () => {
-    expect(contribPage).toContain('getSummaryV2');
-    expect(contribPage).toContain('koraContributionService');
+  it('Foundation Light path uses getContributionV2Live, DB-backed (not just empty shell) — getSummaryV2 retired by the B-TRUTH Contribution port, 2026-09-01', () => {
+    expect(contribPage).toContain('getContributionV2Live');
   });
 
   it('FL preview has a testid (not hidden or dead)', () => {
@@ -60,9 +59,13 @@ describe('P0-1 — Contribution Foundation Light fallback', () => {
     expect(contribPage).toContain('PRE-PILOT PREVIEW');
   });
 
-  it('FL preview declares synthetic/demo data', () => {
-    // Must be honest about data source
-    expect(contribPage).toContain('sintetici');
+  it('FL preview is honest about being DB-backed real data, not synthetic (B-TRUTH port, 2026-09-01)', () => {
+    // Must be honest about data source — the preview is computed from this
+    // tenant's own real commons.contribution_event rows, so it must not claim
+    // synthetic/demo data.
+    expect(contribPage).toContain('eventi di contribuzione reali');
+    expect(contribPage).not.toContain('Dati sintetici dimostrativi');
+    expect(contribPage).not.toContain('iniziative collettive sintetiche');
   });
 
   it('Pilot+ live path remains intact (isPilot conditional)', () => {
@@ -81,16 +84,17 @@ describe('P0-1 — Contribution Foundation Light fallback', () => {
     expect(contribPage).toContain('contribution-methodology-notice');
   });
 
-  it('KoraContributionService getSummaryV2 exists', () => {
+  it('KoraContributionService getContributionV2Live exists (B-TRUTH Contribution port, 2026-09-01)', () => {
     const svc = read('services/kora-contribution/KoraContributionService.ts');
-    expect(svc).toContain('getSummaryV2');
+    expect(svc).toContain('export async function getContributionV2Live');
   });
 
-  it('getSummaryV2 uses collective initiatives seed (not empty)', () => {
+  it('getContributionV2Live is DB-backed (real commons.contribution_event rows, not empty), through the unchanged methodology authority', () => {
     const svc = read('services/kora-contribution/KoraContributionService.ts');
-    expect(svc).toContain('filterInitiativesByScenario');
-    expect(svc).toContain('kora_contribution_relevant');
-    expect(svc).toContain('computeProvisionalScore');
+    const fn = svc.split('export async function getContributionV2Live')[1]?.split('export async function')[0] ?? '';
+    expect(fn).toContain("from('contribution_event')");
+    expect(fn).toContain('buildContributionPipelineInputs');
+    expect(fn).toContain('computeFromPipelineResult');
   });
 
   it('FL preview shows next steps for activating live path', () => {
@@ -99,8 +103,8 @@ describe('P0-1 — Contribution Foundation Light fallback', () => {
 
   it('Contribution is never merged into KORA Index (no is_kora_index_component: true)', () => {
     const svc = read('services/kora-contribution/KoraContributionService.ts');
-    expect(svc).toContain('is_kora_index_component: false');
-    expect(svc).not.toContain('is_kora_index_component: true');
+    expect(svc).toMatch(/is_kora_index_component:\s*false/);
+    expect(svc).not.toMatch(/is_kora_index_component:\s*true/);
   });
 });
 

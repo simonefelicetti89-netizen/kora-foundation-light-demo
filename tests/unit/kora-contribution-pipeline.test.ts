@@ -176,9 +176,12 @@ describe('computeFromPipelineResult — architecture invariants', () => {
     expect(result.methodologyStatus).toBe('pre_empirical_calibration');
   });
 
-  it('synthetic_demo_data is true', () => {
+  it('synthetic_demo_data is not stamped by computeFromPipelineResult (B-TRUTH port, 2026-09-01) — provenance is caller-agnostic, not assumed synthetic', () => {
+    // computeFromPipelineResult had zero real callers before this port other
+    // than the retired synthetic getSummaryV2(); its real caller now is the
+    // DB-backed getContributionV2Live(), so it must not force this label true.
     const result = service.computeFromPipelineResult('meridiana-group', 'S1', [makeInput()]);
-    expect(result.synthetic_demo_data).toBe(true);
+    expect(result.synthetic_demo_data).toBeUndefined();
   });
 
   it('dataSource is pipeline', () => {
@@ -291,49 +294,96 @@ describe('KORA Index independence', () => {
   });
 });
 
-// ── 8. Seed fallback — getSummaryV2 ─────────────────────────────────────────
+// ── 8. DB-backed pipeline input construction (B-TRUTH Contribution port, 2026-09-01) ──
+// getSummaryV2() (synthetic JSON seed fallback, synthesizing ContributionPipelineInput[]
+// from data/synthetic/collective-initiatives.json) was retired in favor of
+// getContributionV2Live() — an async function reading real commons.contribution_event
+// + commons.post rows. getContributionV2Live itself takes a live Supabase client and
+// cannot be unit-tested directly; these tests exercise the same two building blocks it
+// composes — buildContributionPipelineInputs() (lib/kora-contribution/
+// contribution-pipeline-input.ts) feeding the SAME, unmodified computeFromPipelineResult()
+// authority every other path (pipeline, live views) already uses. See also
+// tests/unit/btruth-contribution-pipeline-input.test.ts for the mapper's own unit coverage.
 
-describe('getSummaryV2 — seed fallback preserved', () => {
+describe('DB-backed pipeline input (buildContributionPipelineInputs) feeding computeFromPipelineResult', () => {
   const service = new KoraContributionService();
 
-  it('returns a ContributionSummary without throwing', () => {
-    const result = service.getSummaryV2('meridiana-group', 'S1');
+  function dbInputFromRow(overrides: {
+    contribution_kind?: string;
+    impact_weight?: number;
+    evidence_status?: string;
+    is_cross_company?: boolean;
+    is_kora_originated?: boolean;
+    is_kora_enabled?: boolean;
+    pillar?: string | null;
+  } = {}) {
+    const row = {
+      source_post_id:     'post-x',
+      contribution_kind:  overrides.contribution_kind  ?? 'cross_company_participation',
+      impact_weight:      overrides.impact_weight      ?? 0.80,
+      evidence_status:    overrides.evidence_status    ?? 'verified',
+      is_cross_company:   overrides.is_cross_company   ?? true,
+      is_kora_originated: overrides.is_kora_originated ?? false,
+      is_kora_enabled:    overrides.is_kora_enabled    ?? false,
+    };
+    const pillarByPostId = new Map([['post-x', overrides.pillar ?? 'IMPACT']]);
+    return { row, pillarByPostId };
+  }
+
+  it('a DB row shaped like a real commons.contribution_event produces a ContributionSummary without throwing', async () => {
+    const { buildContributionPipelineInputs } = await import('@/lib/kora-contribution/contribution-pipeline-input');
+    const { row, pillarByPostId } = dbInputFromRow();
+    const inputs = buildContributionPipelineInputs([row], pillarByPostId);
+    const result = service.computeFromPipelineResult('meridiana-group', 'S1', inputs);
     expect(result).toBeDefined();
     expect(result.notKoraIndexComponent).toBe(true);
-    expect(result.dataSource).toBe('seed_derived');
+    expect(result.dataSource).toBe('pipeline');
   });
 
-  it('returns notKoraIndexComponent: true', () => {
-    expect(service.getSummaryV2('meridiana-group', 'S1').notKoraIndexComponent).toBe(true);
-    expect(service.getSummaryV2('meridiana-group', 'S2').notKoraIndexComponent).toBe(true);
+  it('score is within 0–100', async () => {
+    const { buildContributionPipelineInputs } = await import('@/lib/kora-contribution/contribution-pipeline-input');
+    const { row, pillarByPostId } = dbInputFromRow();
+    const inputs = buildContributionPipelineInputs([row], pillarByPostId);
+    const result = service.computeFromPipelineResult('meridiana-group', 'S1', inputs);
+    expect(result.contributionScore).toBeGreaterThanOrEqual(0);
+    expect(result.contributionScore).toBeLessThanOrEqual(100);
   });
 
-  it('score is within 0–100', () => {
-    const s1 = service.getSummaryV2('meridiana-group', 'S1');
-    const s2 = service.getSummaryV2('meridiana-group', 'S2');
-    expect(s1.contributionScore).toBeGreaterThanOrEqual(0);
-    expect(s1.contributionScore).toBeLessThanOrEqual(100);
-    expect(s2.contributionScore).toBeGreaterThanOrEqual(0);
-    expect(s2.contributionScore).toBeLessThanOrEqual(100);
+  it('more eligible DB rows yield equal-or-higher score than fewer', async () => {
+    const { buildContributionPipelineInputs } = await import('@/lib/kora-contribution/contribution-pipeline-input');
+    const { row, pillarByPostId } = dbInputFromRow();
+    const one = service.computeFromPipelineResult('meridiana-group', 'S1', buildContributionPipelineInputs([row], pillarByPostId));
+    const two = service.computeFromPipelineResult('meridiana-group', 'S1', buildContributionPipelineInputs([row, { ...row, source_post_id: 'post-y' }], new Map([['post-x', 'IMPACT'], ['post-y', 'CONNECTION']])));
+    expect(two.contributionScore).toBeGreaterThanOrEqual(one.contributionScore);
   });
 
-  it('S2 has equal or higher score than S1 (more scenarios active)', () => {
-    const s1 = service.getSummaryV2('meridiana-group', 'S1');
-    const s2 = service.getSummaryV2('meridiana-group', 'S2');
-    expect(s2.contributionScore).toBeGreaterThanOrEqual(s1.contributionScore);
-  });
+  it('PARITY: a DB-derived input and a JSON-equivalent-scenario input, carrying the same effective signal, produce identical v2 output through the unchanged computeContributionV2/computeFromPipelineResult authority', async () => {
+    const { buildContributionPipelineInputs } = await import('@/lib/kora-contribution/contribution-pipeline-input');
 
-  it('legacy getContributionSummary still works (backwards compat)', () => {
-    const legacy = service.getContributionSummary('meridiana-group', 'S1');
-    expect(legacy).not.toBeNull();
-    expect(legacy?.is_kora_index_component).toBe(false);
-    expect(legacy?.contribution_score).toBeGreaterThanOrEqual(0);
-  });
+    // JSON-equivalent-scenario input, shaped the way the retired synthetic
+    // builder used to construct it: action_family present, PLUS event_nature
+    // (the old getSummaryV2 builder derived this too, via its own
+    // hand-rolled switch, for a cross-company collective initiative).
+    const jsonEquivalentInput: ContributionPipelineInput = makeInput({ event_nature: 'collective_initiative' });
 
-  it('legacy getContributionScore still works', () => {
-    const score = service.getContributionScore('meridiana-group', 'S1');
-    expect(typeof score).toBe('number');
-    expect(score).toBeGreaterThanOrEqual(0);
+    // DB-derived-equivalent input for the SAME underlying event: action_family
+    // absent by design (see contribution-pipeline-input.ts header), relying on
+    // event_nature alone for eligibility — 'verified' evidence_status maps to
+    // the same 0.90 EV the JSON builder used for a verified record.
+    const { row, pillarByPostId } = dbInputFromRow({
+      impact_weight:   jsonEquivalentInput.impact_units_total,
+      evidence_status: 'verified',
+      pillar:          jsonEquivalentInput.primary_pillar,
+    });
+    const dbEquivalentInput = buildContributionPipelineInputs([row], pillarByPostId)[0];
+
+    const jsonResult = service.computeFromPipelineResult('parity-co', 'S1', [jsonEquivalentInput]);
+    const dbResult   = service.computeFromPipelineResult('parity-co', 'S1', [dbEquivalentInput]);
+
+    // Same methodology authority, same effective signal → identical v2 output.
+    expect(dbResult.v2).toEqual(jsonResult.v2);
+    expect(dbResult.contributionScore).toEqual(jsonResult.contributionScore);
+    expect(dbResult.totalContributionIU).toEqual(jsonResult.totalContributionIU);
   });
 });
 
@@ -343,7 +393,7 @@ describe('Company view — aggregate only', () => {
   const service = new KoraContributionService();
 
   it('ContributionSummary has no worker-level fields', () => {
-    const result = service.getSummaryV2('meridiana-group', 'S1');
+    const result = service.computeFromPipelineResult('meridiana-group', 'S1', [makeInput()]);
     // No worker IDs, no per-worker IU, no individual names
     expect((result as unknown as Record<string, unknown>)['worker_id']).toBeUndefined();
     expect((result as unknown as Record<string, unknown>)['worker_pib']).toBeUndefined();
@@ -352,7 +402,7 @@ describe('Company view — aggregate only', () => {
   });
 
   it('evidenceDistribution is aggregate counts, not per-worker', () => {
-    const result = service.getSummaryV2('meridiana-group', 'S1');
+    const result = service.computeFromPipelineResult('meridiana-group', 'S1', [makeInput()]);
     const dist   = result.evidenceDistribution;
     expect(typeof dist.verified).toBe('number');
     expect(typeof dist.partial).toBe('number');
@@ -364,13 +414,17 @@ describe('Company view — aggregate only', () => {
   });
 });
 
-// ── 10. Worker collective preview — synthetic only ───────────────────────────
+// ── 10. Pre-pilot preview data provenance (B-TRUTH port, 2026-09-01) ─────────
+// getSummaryV2's retired synthetic seed path always stamped synthetic_demo_data:
+// true. The DB-backed replacement (getContributionV2Live) reads real
+// commons.contribution_event rows, so computeFromPipelineResult correctly never
+// sets this flag — asserting its absence, not weakening the field's meaning.
 
-describe('Worker collective preview — synthetic only', () => {
-  it('getSummaryV2 synthetic_demo_data is always true', () => {
+describe('Pre-pilot preview data provenance', () => {
+  it('computeFromPipelineResult does not stamp synthetic_demo_data — Contribution preview is DB-backed real data, not synthetic', () => {
     const service = new KoraContributionService();
-    expect(service.getSummaryV2('meridiana-group', 'S1').synthetic_demo_data).toBe(true);
-    expect(service.getSummaryV2('meridiana-group', 'S2').synthetic_demo_data).toBe(true);
+    const result = service.computeFromPipelineResult('meridiana-group', 'S1', [makeInput()]);
+    expect(result.synthetic_demo_data).toBeUndefined();
   });
 });
 
@@ -392,9 +446,20 @@ describe('Service boundaries', () => {
     expect(r1b.totalContributionIU).toEqual(r1.totalContributionIU);
   });
 
-  it('getSummaryV2 returns consistently for same inputs', () => {
-    const a = service.getSummaryV2('meridiana-group', 'S1');
-    const b = service.getSummaryV2('meridiana-group', 'S1');
+  it('buildContributionPipelineInputs + computeFromPipelineResult returns consistently for the same DB rows', async () => {
+    const { buildContributionPipelineInputs } = await import('@/lib/kora-contribution/contribution-pipeline-input');
+    const rows = [{
+      source_post_id: 'post-consist',
+      contribution_kind: 'cross_company_participation',
+      impact_weight: 0.80,
+      evidence_status: 'verified',
+      is_cross_company: true,
+      is_kora_originated: false,
+      is_kora_enabled: false,
+    }];
+    const pillarByPostId = new Map([['post-consist', 'IMPACT']]);
+    const a = service.computeFromPipelineResult('meridiana-group', 'S1', buildContributionPipelineInputs(rows, pillarByPostId));
+    const b = service.computeFromPipelineResult('meridiana-group', 'S1', buildContributionPipelineInputs(rows, pillarByPostId));
     expect(a.contributionScore).toEqual(b.contributionScore);
     expect(a.totalContributionIU).toEqual(b.totalContributionIU);
   });

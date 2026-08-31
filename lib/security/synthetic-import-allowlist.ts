@@ -14,11 +14,28 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 22 files / 34 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 21 files / 32 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH Contribution Protected Port (2026-09-01): removed
+// services/kora-contribution/KoraContributionService.ts's two synthetic
+// imports (data/synthetic/kora-contribution-outputs.json,
+// data/synthetic/collective-initiatives.json, both files deleted). The
+// synthetic methods they fed (getContribution, getContributionSummary,
+// getContributionScore, getCollectiveInitiatives, getContributionInitiatives,
+// getSummaryV2) are retired; getSummaryV2's sole real caller
+// (app/company/contribution/page.tsx) is rewired onto a new async,
+// DB-backed function, getContributionV2Live(), reading real
+// commons.contribution_event + commons.post rows via
+// lib/kora-contribution/contribution-pipeline-input.ts. The protected
+// methodology authority (computeContributionV2 / computeProvisionalScore /
+// computeFromPipelineResult) is unchanged — only its input source moved.
+// See lib/architecture/registry.ts svc.kora-contribution and
+// tests/unit/btruth-contribution-pipeline-input.test.ts. Third genuine I9
+// reduction via a real caller migration: 22->21 files (34->32 imports).
 //
 // B-TRUTH First Canonical Seed Group (2026-08-31): WorkforceBaselineService.ts
 // deleted entirely, along with its sole import of
@@ -138,7 +155,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
   { file: 'services/ingestion-pipeline/IngestionPipelineService.ts', reason: 'B-TRUTH Ingestion/UEF Classification (2026-08-31): DEMO_RUNTIME, not RETIRE. Isolated demo ingestion pipeline feeding the demo UEF review path only (svc.uef-review); the live UEF path (analytics.uef_record, lib/kora-engine/run-kora-pipeline.ts) never falls back to this data. Deliberately kept per tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts. See lib/architecture/registry.ts svc.ingestion-pipeline / svc.uef-review.' },
   { file: 'services/ingestion-simulator/IngestionSimulatorService.ts', reason: 'Rule-based BCM classifier demo path — source batches + ingestion samples.' },
-  { file: 'services/kora-contribution/KoraContributionService.ts', reason: 'KORA Contribution computation reads synthetic contribution outputs + collective initiatives.' },
   { file: 'services/report-factory/ReportFactoryService.ts', reason: 'Reads synthetic Decision Pack version seed alongside live orchestration.' },
   { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/tenant/TenantService.ts', reason: 'Reads synthetic tenant records for the demo tenant list.' },

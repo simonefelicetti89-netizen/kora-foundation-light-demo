@@ -53,7 +53,11 @@ describe('KORA Contribution — companion indicator framing', () => {
   });
 
   test('3. KoraContributionService has is_kora_index_component: false literal', () => {
-    expect(service).toContain('is_kora_index_component: false');
+    // Formatting-tolerant as of the B-TRUTH Contribution port (2026-09-01):
+    // the single-space literal previously matched here lived in the
+    // now-retired getContribution() synthetic method; the invariant is still
+    // stated in getContributionLive()'s return object (aligned formatting).
+    expect(service).toMatch(/is_kora_index_component:\s*false/);
   });
 
   test('4. ContributionSummary interface has notKoraIndexComponent: true', () => {
@@ -256,9 +260,9 @@ describe('KORA Contribution — UI labeling consistency (micro-fix smoke)', () =
     expect(service).toContain("scorePresentationMode:  'provisional_demo_only'");
   });
 
-  test('26. Contribution page synthetic/demo-only framing visible via PRE-PILOT PREVIEW badge', () => {
+  test('26. Contribution page pre-pilot preview framing visible via PRE-PILOT PREVIEW badge, honestly labeled as real (not synthetic) data as of the B-TRUTH port (2026-09-01)', () => {
     expect(page).toContain('PRE-PILOT PREVIEW');
-    expect(page).toContain('Dati sintetici dimostrativi');
-    expect(page).toContain('Non rappresentano dati reali');
+    expect(page).toContain('eventi di contribuzione reali');
+    expect(page).not.toContain('Dati sintetici dimostrativi');
   });
 });

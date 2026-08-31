@@ -1,119 +1,13 @@
 import type { ScenarioId } from '@/lib/types';
-import { getMethodologyVersion, getCalibrationStatus, getContributionConfig, getContributionConfigV2 } from '@/lib/methodology-config/v0.1';
-import contributionOutputsRaw from '@/data/synthetic/kora-contribution-outputs.json';
-import collectiveInitiativesRaw from '@/data/synthetic/collective-initiatives.json';
+import { getMethodologyVersion, getContributionConfig, getContributionConfigV2 } from '@/lib/methodology-config/v0.1';
 import {
   isContributionEligibleEvent,
   CONTRIBUTION_ACTION_FAMILIES,
   CONTRIBUTION_PILLARS,
 } from '@/lib/kora-engine/contribution-family-detector';
+import { buildContributionPipelineInputs } from '@/lib/kora-contribution/contribution-pipeline-input';
 
 // KORA Contribution is a companion indicator — never a KORA Index component (CLAUDE.md §12.7)
-
-interface SeedContributionRecord {
-  id: string;
-  company_id: string;
-  scenario_id: string;
-  reporting_period: string;
-  methodology_version_id: string;
-  calibration_status: string;
-  is_kora_index_component: false;
-  companion_label: string;
-  contribution_score: number;
-  contribution_level: string;
-  collective_initiatives_count: number;
-  active_initiatives_count: number;
-  planning_initiatives_count: number;
-  completed_initiatives_count: number;
-  verified_initiative_participations: number;
-  cross_company_initiatives_count: number;
-  ecosystem_partners_active: number;
-  referenced_collective_initiative_ids: string[];
-  contribution_explanation: string;
-  limitations_text: string;
-}
-
-interface SeedInitiativeRecord {
-  id: string;
-  scenario_id: string;
-  name: string;
-  initiative_type: string;
-  pillar: string;
-  pillar_secondary: string | null;
-  territory: string;
-  companies_involved: string[];
-  partner_id: string | null;
-  partner_name: string | null;
-  status: string;
-  aggregate_participation_count: number;
-  aggregate_target_participants: number;
-  aggregate_completed_participants: number;
-  privacy_threshold_met: boolean;
-  verification_status: string;
-  advisor_validation_status: string;
-  kora_contribution_relevant: boolean;
-  evidence_status: string;
-  start_date: string;
-  end_date: string;
-  description: string;
-  employer_privacy_notice: string;
-  not_kora_index_component: true;
-}
-
-export interface CollectiveInitiative {
-  id: string;
-  name: string;
-  initiative_type: string;
-  pillar: string;
-  pillar_secondary: string | null;
-  territory: string;
-  companies_involved: string[];
-  partner_name: string | null;
-  status: string;
-  aggregate_participation_count: number;
-  aggregate_target_participants: number;
-  verification_status: string;
-  advisor_validation_status: string;
-  kora_contribution_relevant: boolean;
-  start_date: string;
-  end_date: string;
-  description: string;
-  employer_privacy_notice: string;
-}
-
-export interface KoraContributionSummary {
-  company_id: string;
-  scenario_id: ScenarioId;
-  reporting_period: string;
-  contribution_score: number;
-  contribution_level: string;
-  collective_initiatives_count: number;
-  active_initiatives_count: number;
-  completed_initiatives_count: number;
-  verified_initiative_participations: number;
-  cross_company_initiatives_count: number;
-  ecosystem_partners_active: number;
-  contribution_explanation: string;
-  limitations_text: string;
-  /** Always false — KORA Contribution is never a KORA Index component */
-  is_kora_index_component: false;
-  companion_label: string;
-  methodology_version_id: string;
-  calibration_status: string;
-  synthetic_demo_data: true;
-}
-
-// Legacy output type — preserved for backwards compat with existing consumers
-export interface KoraContributionOutput {
-  company_id: string;
-  scenario_id: ScenarioId;
-  contribution_score: number;
-  collective_initiatives: Array<{ id: string; name: string; participation_count: number }>;
-  ecosystem_reach: number;
-  methodology_version_id: string;
-  calibration_status: string;
-  synthetic_demo_data: true;
-}
 
 // ── Pipeline input contract ───────────────────────────────────────────────────
 // Structural subset of ImpactUnitComputationResult — accepts real IU results from
@@ -129,7 +23,7 @@ export interface ContributionPipelineInput {
 }
 
 // ── ContributionSummary — pipeline-computed companion indicator output ────────
-// Replaces seed-only approach. Supports both pipeline and seed-derived paths.
+// Replaces seed-only approach. Supports both pipeline and DB-backed paths.
 
 export interface ContributionSummary {
   company_id: string;
@@ -157,9 +51,9 @@ export interface ContributionSummary {
   noRanking: true;
   noRewards: true;
   noLeaderboard: true;
-  dataSource: 'pipeline' | 'seed_derived';
-  synthetic_demo_data: true;
-  // Legacy narrative fields (from seed, optional)
+  dataSource: 'pipeline' | 'live_db';
+  synthetic_demo_data?: boolean;
+  // Legacy narrative fields (optional)
   contribution_explanation?: string;
   limitations_text?: string;
   companion_label?: string;
@@ -214,6 +108,12 @@ export interface ContributionV2Result {
 // Reads all weights/thresholds from config — none hardcoded.
 // Available data from ContributionPipelineInput[]:
 //   action_family, primary_pillar, impact_units_total, evidence_verification_ev, computed, event_nature
+//
+// PROTECTED METHODOLOGY — B-TRUTH Contribution port (2026-09-01): this function
+// is byte-for-byte unchanged by the port. Only its INPUT construction changed
+// (see lib/kora-contribution/contribution-pipeline-input.ts for the new
+// DB-backed builder, replacing the retired synthetic-JSON builder previously
+// inline in getSummaryV2()).
 
 function computeContributionV2(inputs: ContributionPipelineInput[]): ContributionV2Result {
   const cfg = getContributionConfigV2();
@@ -353,6 +253,7 @@ function computeContributionV2(inputs: ContributionPipelineInput[]): Contributio
 // Replaced by Version B (computeContributionV2) as the public model.
 // Retained for backward compatibility with existing tests and consumers.
 // Weights are read from methodology-config via getContributionConfig() — never hardcoded here.
+// PROTECTED METHODOLOGY — unchanged by the B-TRUTH Contribution port.
 
 function computeProvisionalScore(inputs: ContributionPipelineInput[]): {
   score: number;
@@ -439,191 +340,43 @@ function computeProvisionalScore(inputs: ContributionPipelineInput[]): {
   };
 }
 
-// ── Seed-to-pipeline mapper ──────────────────────────────────────────────────
-// Converts collective initiative seed records into ContributionPipelineInput[]
-// for use in getSummaryV2 (demo path). IU values are estimates for display only.
-
-const INITIATIVE_TYPE_TO_FAMILY: Record<string, string> = {
-  cross_company_volunteering:    'territorial_impact',
-  partner_collective_event:      'territorial_impact',
-  collective_community_event:    'inclusion_and_connection',
-  internal_mentoring_collective: 'future_and_legacy',
-  // collective_upskilling → professional_growth (NOT a contribution action family).
-  // These events are NOT contribution-eligible via action_family alone.
-  // If partner-led (init.partner_id set), getSummaryV2 assigns event_nature='partner_service'
-  // so they become eligible via event_nature — partner-led upskilling IS ecosystem activation.
-  // Non-partner collective upskilling → no event_nature fallback → not eligible. Correct.
-  collective_upskilling:         'professional_growth',
-};
-
-const VERIFICATION_TO_EV: Record<string, number> = {
-  verified:    0.90,
-  partial:     0.75,
-  pending:     0.60,
-  not_started: 0.50,
-};
-
-const PILLAR_TO_BC: Record<string, number> = {
-  IMPACT:     1.00,
-  CONNECTION: 1.00,
-  LEGACY:     1.10,
-  GROWTH:     1.10,
-  LIFE:       1.20,
-};
-
 export interface IKoraContributionService {
-  getContribution(companyId: string, scenarioId: ScenarioId): KoraContributionOutput;
-  getContributionSummary(companyId: string, scenarioId: ScenarioId): KoraContributionSummary | null;
-  getContributionScore(companyId: string, scenarioId: ScenarioId): number;
-  getCollectiveInitiatives(companyId: string, scenarioId: ScenarioId): CollectiveInitiative[];
-  getContributionInitiatives(companyId: string, scenarioId: ScenarioId): CollectiveInitiative[];
   /** Pipeline-computed path: accepts IU results from run-kora-pipeline, returns ContributionSummary */
   computeFromPipelineResult(
     companyId: string,
     scenarioId: ScenarioId,
     iuResults: ContributionPipelineInput[],
   ): ContributionSummary;
-  /** Demo/seed path: synthesizes ContributionSummary from collective-initiatives seed data */
-  getSummaryV2(companyId: string, scenarioId: ScenarioId): ContributionSummary;
 }
 
 export class KoraContributionService implements IKoraContributionService {
-  private readonly contributions = (
-    contributionOutputsRaw as { data: SeedContributionRecord[] }
-  ).data;
-  private readonly initiatives = (
-    collectiveInitiativesRaw as { data: SeedInitiativeRecord[] }
-  ).data;
-
-  private findContribution(
-    companyId: string,
-    scenarioId: ScenarioId,
-  ): SeedContributionRecord | null {
-    return (
-      this.contributions.find(
-        (r) => r.company_id === companyId && r.scenario_id === scenarioId,
-      ) ?? null
-    );
-  }
-
-  /** Returns initiatives visible for the given scenario (scenario match or "all") */
-  private filterInitiativesByScenario(scenarioId: ScenarioId): SeedInitiativeRecord[] {
-    return this.initiatives.filter(
-      (r) => r.scenario_id === scenarioId || r.scenario_id === 'all',
-    );
-  }
-
-  private mapInitiative(r: SeedInitiativeRecord): CollectiveInitiative {
-    return {
-      id: r.id,
-      name: r.name,
-      initiative_type: r.initiative_type,
-      pillar: r.pillar,
-      pillar_secondary: r.pillar_secondary,
-      territory: r.territory,
-      companies_involved: r.companies_involved,
-      partner_name: r.partner_name,
-      status: r.status,
-      aggregate_participation_count: r.aggregate_participation_count,
-      aggregate_target_participants: r.aggregate_target_participants,
-      verification_status: r.verification_status,
-      advisor_validation_status: r.advisor_validation_status,
-      kora_contribution_relevant: r.kora_contribution_relevant,
-      start_date: r.start_date,
-      end_date: r.end_date,
-      description: r.description,
-      employer_privacy_notice: r.employer_privacy_notice,
-    };
-  }
-
-  /** Legacy method — preserved for backwards compatibility */
-  getContribution(companyId: string, scenarioId: ScenarioId): KoraContributionOutput {
-    const rec = this.findContribution(companyId, scenarioId);
-    const initiatives = this.filterInitiativesByScenario(scenarioId)
-      .filter((r) => r.kora_contribution_relevant)
-      .map((r) => ({ id: r.id, name: r.name, participation_count: r.aggregate_participation_count }));
-
-    return {
-      company_id: companyId,
-      scenario_id: scenarioId,
-      contribution_score: rec?.contribution_score ?? 0,
-      collective_initiatives: initiatives,
-      ecosystem_reach: rec?.ecosystem_partners_active ?? 0,
-      methodology_version_id: getMethodologyVersion(),
-      calibration_status: getCalibrationStatus(),
-      synthetic_demo_data: true,
-    };
-  }
-
-  getContributionSummary(
-    companyId: string,
-    scenarioId: ScenarioId,
-  ): KoraContributionSummary | null {
-    const rec = this.findContribution(companyId, scenarioId);
-    if (!rec) return null;
-    return {
-      company_id: rec.company_id,
-      scenario_id: scenarioId,
-      reporting_period: rec.reporting_period,
-      contribution_score: rec.contribution_score,
-      contribution_level: rec.contribution_level,
-      collective_initiatives_count: rec.collective_initiatives_count,
-      active_initiatives_count: rec.active_initiatives_count,
-      completed_initiatives_count: rec.completed_initiatives_count,
-      verified_initiative_participations: rec.verified_initiative_participations,
-      cross_company_initiatives_count: rec.cross_company_initiatives_count,
-      ecosystem_partners_active: rec.ecosystem_partners_active,
-      contribution_explanation: rec.contribution_explanation,
-      limitations_text: rec.limitations_text,
-      is_kora_index_component: false,
-      companion_label: rec.companion_label,
-      methodology_version_id: rec.methodology_version_id,
-      calibration_status: rec.calibration_status,
-      synthetic_demo_data: true,
-    };
-  }
-
-  getContributionScore(companyId: string, scenarioId: ScenarioId): number {
-    return this.findContribution(companyId, scenarioId)?.contribution_score ?? 0;
-  }
-
-  /** All collective initiatives visible for this scenario (used by C-03, C-05) */
-  getCollectiveInitiatives(companyId: string, scenarioId: ScenarioId): CollectiveInitiative[] {
-    void companyId; // initiatives are not yet company-scoped in the seed
-    return this.filterInitiativesByScenario(scenarioId).map(this.mapInitiative);
-  }
-
-  /** Only initiatives that are contribution-relevant (active in KORA Contribution) */
-  getContributionInitiatives(companyId: string, scenarioId: ScenarioId): CollectiveInitiative[] {
-    void companyId;
-    return this.filterInitiativesByScenario(scenarioId)
-      .filter((r) => r.kora_contribution_relevant)
-      .map(this.mapInitiative);
-  }
-
   /**
-   * Pipeline-computed path: accepts IU results from run-kora-pipeline.
-   * Merges pipeline data with seed narrative fields (explanation, limitations).
-   * is_kora_index_component is always false — enforced here, not at call site.
+   * Pipeline-computed path: accepts IU results from run-kora-pipeline (or,
+   * as of the B-TRUTH Contribution port, from
+   * lib/kora-contribution/contribution-pipeline-input.ts's DB-backed
+   * builder). is_kora_index_component is always false — enforced here, not
+   * at call site. seedRec (narrative fields) is always null now that the
+   * synthetic seed lookup is retired — contribution_explanation/
+   * limitations_text/companion_label are simply absent for a real tenant,
+   * not fabricated.
    */
   computeFromPipelineResult(
     companyId: string,
     scenarioId: ScenarioId,
     iuResults: ContributionPipelineInput[],
   ): ContributionSummary {
-    const seedRec  = this.findContribution(companyId, scenarioId);
     const computed = computeProvisionalScore(iuResults);
     const v2       = computeContributionV2(iuResults);
 
     return {
       company_id:             companyId,
       scenario_id:            scenarioId,
-      reporting_period:       seedRec?.reporting_period ?? scenarioId,
+      reporting_period:       scenarioId,
       contributionScore:      computed.score,
       scorePresentationMode:  'provisional_demo_only',
       contributionLevel:      computed.level,
       initiativesCount:       computed.initiativesCount,
-      ecosystemPartners:      seedRec?.ecosystem_partners_active ?? 0,
+      ecosystemPartners:      0,
       territorialBreadth:     computed.territorialBreadth,
       contributionFamilies:   computed.familiesPresent,
       evidenceDistribution:   computed.evidenceDistribution,
@@ -635,64 +388,12 @@ export class KoraContributionService implements IKoraContributionService {
       noRewards:              true,
       noLeaderboard:          true,
       dataSource:             'pipeline',
-      synthetic_demo_data:    true,
-      contribution_explanation: seedRec?.contribution_explanation,
-      limitations_text:         seedRec?.limitations_text,
-      companion_label:          seedRec?.companion_label,
+      // No synthetic_demo_data stamp here (B-TRUTH Contribution port,
+      // 2026-09-01): computeFromPipelineResult's only real caller used to be
+      // the retired synthetic getSummaryV2(); its only real caller now is
+      // getContributionV2Live(), which is DB-backed. Provenance is honestly
+      // caller-agnostic — this orchestrator no longer assumes synthetic input.
       v2,
-    };
-  }
-
-  /**
-   * Demo/seed path: synthesizes ContributionSummary from collective-initiatives seed data.
-   * Builds ContributionPipelineInput[] from initiative participation counts and evidence quality,
-   * then runs them through computeProvisionalScore — same computation path as pipeline mode.
-   */
-  getSummaryV2(companyId: string, scenarioId: ScenarioId): ContributionSummary {
-    const seedRec   = this.findContribution(companyId, scenarioId);
-    const contribIs = this.filterInitiativesByScenario(scenarioId)
-      .filter((r) => r.kora_contribution_relevant);
-
-    // Synthesize one ContributionPipelineInput per initiative.
-    // IU estimate: participation_count × NM(0.8) × BC(pillar) × EV(evidence) — demo approximation.
-    // 'computed' = true only if evidence_status allows (not 'not_started' or 'na').
-    const pipelineInputs: ContributionPipelineInput[] = contribIs.map((init) => {
-      const actionFamily = INITIATIVE_TYPE_TO_FAMILY[init.initiative_type] ?? 'territorial_impact';
-      const pillar       = init.pillar;
-      const ev           = VERIFICATION_TO_EV[init.verification_status] ?? 0.60;
-      const bc           = PILLAR_TO_BC[pillar] ?? 1.00;
-      const nm           = 0.80;
-      // IU total = participation_count × NM × BC × EV (simplified; CQ/CF/AGF omitted for demo)
-      const iuEstimate   = +(init.aggregate_participation_count * nm * bc * ev * 0.10).toFixed(3);
-      const isComputed   = init.status !== 'archived' && iuEstimate > 0;
-      // Derive event_nature from initiative_type — used by isContributionEligibleEvent().
-      // Do NOT use 'collective_initiative' as a blanket default: collective_upskilling
-      // without a partner would incorrectly become contribution-eligible via event_nature.
-      // Partner-led upskilling uses 'partner_service' — ecosystem activation is legitimate.
-      const event_nature: string | undefined =
-        init.initiative_type === 'cross_company_volunteering'  ? 'collective_initiative'
-        : init.initiative_type === 'partner_collective_event'  ? 'partner_service'
-        : init.initiative_type === 'collective_community_event'? 'collective_initiative'
-        : init.initiative_type === 'internal_mentoring_collective' ? 'collective_initiative'
-        : init.initiative_type === 'collective_upskilling' && init.partner_id ? 'partner_service'
-        : undefined;  // non-partner upskilling → no event_nature → relies on action_family only
-
-      return {
-        action_family:            actionFamily,
-        primary_pillar:           pillar,
-        impact_units_total:       isComputed ? iuEstimate : 0,
-        evidence_verification_ev: ev,
-        computed:                 isComputed,
-        event_nature,
-      };
-    });
-
-    const summary = this.computeFromPipelineResult(companyId, scenarioId, pipelineInputs);
-    // Override ecosystemPartners from seed (richer source for demo)
-    return {
-      ...summary,
-      ecosystemPartners: seedRec?.ecosystem_partners_active ?? summary.ecosystemPartners,
-      dataSource:        'seed_derived',
     };
   }
 }
@@ -716,10 +417,87 @@ export const koraContributionService = new KoraContributionService();
 //
 // STATUS (2026-06-21): deferred — nessun tenant ha production_ready=true in DB.
 //   Il dashboard aziendale mostra la shell sintetica PRE-PILOT PREVIEW per tutti i tenant FL.
+//
+// getContributionV2Live() below is the ONE exception to "gated on
+// production_ready" in this section — see its own header comment.
 
 import type { LiveContributionSummary } from '@/lib/commons/booking-types';
 import type { ContributionPromoterView, ContributionOriginEmployerView } from '@/lib/commons/contribution-views';
 import { buildPromoterNarrative, buildOriginEmployerNarrative } from '@/lib/commons/contribution-narrative';
+
+// ── B-TRUTH Contribution protected port (2026-09-01) — DB-backed V2 preview ──
+//
+// Replaces KoraContributionService.getSummaryV2() (retired — synthesized
+// ContributionPipelineInput[] from data/synthetic/collective-initiatives.json).
+// Builds the same input contract from real commons.contribution_event +
+// commons.post rows via lib/kora-contribution/contribution-pipeline-input.ts,
+// then calls computeFromPipelineResult() — the exact same, unmodified
+// methodology authority every other path already uses. No second
+// implementation of computeContributionV2 exists.
+//
+// Deliberately NOT gated on production_ready (matches the retired
+// getSummaryV2's own behavior, per tests/unit/worker-experience-consolidation
+// .test.ts: "preview path does not gate on production_ready — always
+// available for FL tenants"). This is a product-state distinction
+// (pre-pilot preview vs. Pilot+ dashboard), not a tenant_kind distinction —
+// app/company/contribution/page.tsx alone decides which view to render,
+// based on the SAME production_ready flag for a LIVE or a DEMO-kind tenant.
+// A tenant with zero real contribution_event rows correctly yields
+// insufficientSignal=true — an honest empty state, not a synthetic fallback.
+
+export async function getContributionV2Live(params: {
+  db:       any;   // Supabase server client con JWT tenant
+  tenantId: string;
+  period?:  string;
+}): Promise<ContributionSummary> {
+  const { db, tenantId, period } = params;
+
+  let query = (db as any)
+    .schema('commons')
+    .from('contribution_event')
+    .select('source_post_id, contribution_kind, impact_weight, evidence_status, is_cross_company, is_kora_originated, is_kora_enabled, reporting_period')
+    .eq('tenant_id', tenantId);
+
+  if (period) query = query.eq('reporting_period', period);
+
+  const { data: events, error } = await query.limit(500);
+
+  if (error) {
+    console.error('[getContributionV2Live] fetch error:', error.message);
+    return koraContributionService.computeFromPipelineResult(tenantId, 'S1', buildContributionPipelineInputs([], new Map()));
+  }
+
+  const rows = (events as Array<{
+    source_post_id:     string;
+    contribution_kind:  string;
+    impact_weight:      number;
+    evidence_status:    string;
+    is_cross_company:   boolean;
+    is_kora_originated: boolean;
+    is_kora_enabled:    boolean;
+    reporting_period:   string;
+  }> | null) ?? [];
+
+  const distinctPostIds = [...new Set(rows.map((r) => r.source_post_id))];
+  const pillarByPostId = new Map<string, string | null>();
+  if (distinctPostIds.length > 0) {
+    const { data: posts } = await (db as any)
+      .schema('commons')
+      .from('post')
+      .select('id, pillar')
+      .in('id', distinctPostIds);
+    for (const p of (posts as Array<{ id: string; pillar: string | null }> | null) ?? []) {
+      pillarByPostId.set(p.id, p.pillar);
+    }
+  }
+
+  const pipelineInputs = buildContributionPipelineInputs(rows, pillarByPostId);
+
+  const reportingPeriod = period ?? (rows[0]?.reporting_period ?? '');
+  const summary = koraContributionService.computeFromPipelineResult(tenantId, 'S1', pipelineInputs);
+
+  return { ...summary, reporting_period: reportingPeriod, dataSource: 'live_db' };
+}
 
 export async function getContributionLive(params: {
   db:             any;   // Supabase server client con JWT tenant

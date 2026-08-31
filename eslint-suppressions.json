@@ -121,7 +121,7 @@
   },
   "services/kora-contribution/KoraContributionService.ts": {
     "@typescript-eslint/no-explicit-any": {
-      "count": 14
+      "count": 17
     }
   },
   "tests/unit/b129-demo-foundation.test.ts": {
