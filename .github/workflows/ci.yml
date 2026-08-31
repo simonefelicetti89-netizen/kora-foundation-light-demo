@@ -300,10 +300,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Node 22, not 20 like the other jobs in this workflow — @supabase/
+      # supabase-js's createClient() (used by scripts/e2e/seed-local-golden-path.ts)
+      # unconditionally constructs a Realtime client that requires native
+      # WebSocket support; Node < 22 throws "Node.js 20 detected without
+      # native WebSocket support" at createClient() time unless a `ws`
+      # transport is explicitly supplied. Node 22 has native WebSocket, so
+      # this is the narrower fix — bump only this job, not the whole
+      # workflow, and don't add a new dependency to test infrastructure for
+      # a gap a newer runtime already closes. Discovered on this PR's own
+      # first real CI run (no Docker locally to catch it sooner).
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
