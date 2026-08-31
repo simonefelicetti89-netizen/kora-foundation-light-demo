@@ -227,7 +227,17 @@ describe.skipIf(!ready)(
          WHERE tenant_id = $1`,
         [tenantId],
       );
-      const rows = eventsResult.rows as ContributionEventRow[];
+      // node-postgres returns `numeric` columns as strings by default (to
+      // avoid silent precision loss) — the real production path
+      // (getContributionV2Live, PostgREST via the Supabase JS client) instead
+      // serializes numeric columns as real JSON numbers, which is what
+      // buildContributionPipelineInputs()/computeContributionV2 expect.
+      // Coercing here matches that real runtime behavior; it is not a
+      // production code change.
+      const rows = (eventsResult.rows as ContributionEventRow[]).map((row) => ({
+        ...row,
+        impact_weight: Number(row.impact_weight),
+      }));
 
       const postIds = [...new Set(rows.map((r) => r.source_post_id))];
       const pillarByPostId = new Map<string, string | null>();
