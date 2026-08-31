@@ -4,10 +4,12 @@
 // GET  /api/admin/tenants            → list LIVE tenants (default)
 // GET  /api/admin/tenants?kind=DEMO  → list DEMO tenants (KORA_ADMIN explicit)
 // GET  /api/admin/tenants?kind=TEST|SANDBOX → other kinds
-// POST /api/admin/tenants            → create new LIVE tenant + workforce baseline
+// POST /api/admin/tenants            → create new tenant (default LIVE) + workforce baseline
 //
 // B9: enables creating a new company/tenant without operator-flow synthetic fixture.
 // B131: tenant_kind filtering — default LIVE, explicit ?kind= for non-live.
+// Synthetic-company foundation: POST body may include tenantKind (LIVE/DEMO/
+// TEST/SANDBOX, default LIVE) — every existing caller omitting it is unchanged.
 // Creates: analytics.tenant + personal.workforce_baseline.
 // Does NOT: create workers, worker login, scoring, Decision Pack.
 
@@ -97,6 +99,20 @@ export async function POST(request: NextRequest) {
   if (!companyName)     return NextResponse.json({ error: 'companyName is required.' }, { status: 400 });
   if (!reportingPeriod) return NextResponse.json({ error: 'reportingPeriod is required.' }, { status: 400 });
 
+  // Synthetic-company foundation: optional tenantKind, default LIVE — every
+  // existing caller that omits it keeps creating LIVE tenants unchanged.
+  // Reuses VALID_KINDS/TenantKind above (same values GET already filters by).
+  let tenantKind: TenantKind = 'LIVE';
+  if (body['tenantKind'] != null) {
+    const rawTenantKind = String(body['tenantKind']).trim().toUpperCase();
+    if (!(VALID_KINDS as readonly string[]).includes(rawTenantKind)) {
+      return NextResponse.json({
+        error: `tenantKind non valido: '${rawTenantKind}'. Valori ammessi: ${VALID_KINDS.join(', ')}.`,
+      }, { status: 400 });
+    }
+    tenantKind = rawTenantKind as TenantKind;
+  }
+
   if (!TENANT_CODE_RE.test(tenantCode)) {
     return NextResponse.json({
       error: `tenantCode must be 2–32 uppercase letters, digits or dashes. Received: '${tenantCode}'`,
@@ -140,7 +156,7 @@ export async function POST(request: NextRequest) {
       methodology_version_id: 'KORA Index v1.0',
       is_active:             true,
       deleted_at:            null,
-      tenant_kind:           'LIVE',
+      tenant_kind:           tenantKind,
     })
     .select('id')
     .single();
@@ -229,6 +245,7 @@ export async function POST(request: NextRequest) {
     ok:                      true,
     tenantId,
     tenantCode,
+    tenantKind,
     companyName,
     reportingPeriod,
     workforcePopulation,
