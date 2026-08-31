@@ -265,3 +265,166 @@ jobs:
           name: playwright-test-results
           path: test-results/
           retention-days: 14
+
+  # B-CI (E2E truth) — second slice. Wires
+  # tests/e2e/pilot-trust-01-golden-path-local-smoke.spec.ts into CI against
+  # a real ephemeral local Supabase/Postgres stack (Docker), seeded with real
+  # (synthetic, per-run, randomly-generated) Supabase Auth users via the
+  # pre-existing scripts/e2e/seed-local-golden-path.ts.
+  #
+  # Separate job from kora-link-local-integration above (which is the
+  # RLS/KORA-Link suite's own 15-minute budget) rather than appended to it —
+  # this reuses that job's exact, already-proven local-Supabase-startup
+  # pattern (Docker check, Supabase CLI, `supabase start`, real-query
+  # readiness proof) rather than inventing a new one, but keeps its own
+  # browser install + app startup + E2E runtime on its own runner/budget.
+  #
+  # Deliberately does NOT source the seed script's generated
+  # .env.e2e-local-golden-path.local file wholesale, and does NOT set
+  # E2E_GOLDEN_DATA_BEARING_ALLOW_RUN anywhere. Both the seed script's
+  # output and this job's own env block use the exact same credential env
+  # var names (E2E_KORA_ADMIN_EMAIL, E2E_COMPANY_A_EMAIL/PASSWORD/
+  # TENANT_CODE, E2E_WORKER_A_EMAIL/PASSWORD) that
+  # authenticated-smoke.spec.ts and golden-admin-company.spec.ts also read —
+  # those files are never invoked in this job (only
+  # pilot-trust-01-golden-path-local-smoke.spec.ts is passed to `playwright
+  # test`, so Playwright never even discovers them here), but the env is
+  # still scoped narrowly and deliberately rather than sourced wholesale, to
+  # keep that boundary explicit and not accidental.
+  e2e-golden-path-local:
+    name: E2E golden path (Playwright, local Supabase, seeded)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Node 22, not 20 like the other jobs in this workflow — @supabase/
+      # supabase-js's createClient() (used by scripts/e2e/seed-local-golden-path.ts)
+      # unconditionally constructs a Realtime client that requires native
+      # WebSocket support; Node < 22 throws "Node.js 20 detected without
+      # native WebSocket support" at createClient() time unless a `ws`
+      # transport is explicitly supplied. Node 22 has native WebSocket, so
+      # this is the narrower fix — bump only this job, not the whole
+      # workflow, and don't add a new dependency to test infrastructure for
+      # a gap a newer runtime already closes. Discovered on this PR's own
+      # first real CI run (no Docker locally to catch it sooner).
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Docker availability (mandatory)
+        run: |
+          if ! docker info > /dev/null 2>&1; then
+            echo "::error::Docker is not available on this runner. The golden-path E2E gate requires a real local Postgres/Supabase — this job cannot silently skip it."
+            exit 1
+          fi
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase stack (applies every migration fresh)
+        run: supabase start
+
+      - name: Verify Postgres is actually reachable
+        run: |
+          node -e "
+            const { Client } = require('pg');
+            const c = new Client({ connectionString: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres' });
+            c.connect()
+              .then(() => c.query('SELECT 1'))
+              .then(() => { console.log('Postgres reachable.'); return c.end(); })
+              .catch((e) => { console.error('::error::Postgres not reachable:', e.message); process.exit(1); });
+          "
+
+      # `-o json` is the Supabase CLI's own documented machine-readable
+      # status format. Parsed explicitly (rather than trusting `-o env`'s
+      # shell-assignment format to be safely append-able as-is, which risks
+      # embedded quoting breaking $GITHUB_ENV) into clean KEY=value lines.
+      # These are the well-known, non-secret local-only demo keys
+      # `supabase start` always issues (same for every project unless
+      # supabase/config.toml overrides them) — never a staging/production
+      # credential.
+      - name: Capture local Supabase URL/keys
+        run: |
+          node -e "
+            const raw = require('child_process').execSync('supabase status -o json').toString();
+            const s = JSON.parse(raw);
+            const fs = require('fs');
+            const lines = [
+              'API_URL=' + s.API_URL,
+              'ANON_KEY=' + s.ANON_KEY,
+              'SERVICE_ROLE_KEY=' + s.SERVICE_ROLE_KEY,
+            ];
+            for (const l of lines) {
+              if (l.endsWith('=undefined')) { console.error('::error::missing field in supabase status -o json: ' + l); process.exit(1); }
+            }
+            fs.appendFileSync(process.env.GITHUB_ENV, lines.join('\n') + '\n');
+          "
+
+      # Ephemeral, per-run, randomly-generated synthetic test identities only
+      # — no staging/production secret, no real user data. See that script's
+      # own header for its own independent loopback-only safety gates.
+      - name: Seed golden-path fixtures (KORA_ADMIN, COMPANY_ADMIN, WORKER)
+        env:
+          SUPABASE_URL: ${{ env.API_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SERVICE_ROLE_KEY }}
+          E2E_LOCAL_SEED_CONFIRM: 'YES'
+        run: npx tsx scripts/e2e/seed-local-golden-path.ts
+
+      - name: Install Playwright Chromium (with OS dependencies)
+        run: npx playwright install --with-deps chromium
+
+      # The app (spawned by playwright.config.ts's own webServer as a child
+      # of this step) and Playwright's test process both need env here — a
+      # child process inherits the parent step's environment by default, so
+      # setting it once on this step covers both. Only the exact vars this
+      # one spec file reads are set; nothing sourced wholesale from the seed
+      # script's generated env file.
+      #
+      # First real CI run of this job found a second bug beyond the Node
+      # version above: the seed script's generated env file's first line is
+      # E2E_BASE_URL=http://localhost:3000 — the SAME value
+      # playwright.config.ts already defaults to, but its mere PRESENCE (not
+      # its value) flips that config's `usingCustomBaseUrl` check to true,
+      # which disables its own webServer auto-start entirely (the config's
+      # own stated assumption: a custom E2E_BASE_URL means a server is
+      # already running elsewhere). Sourcing the file wholesale silently
+      # unset webServer, so no app was ever started — every test failed with
+      # ECONNREFUSED at localhost:3000. Unsetting E2E_BASE_URL alongside
+      # E2E_GOLDEN_DATA_BEARING_ALLOW_RUN restores the intended default:
+      # Playwright starts `next dev` itself and waits for it to be ready.
+      - name: Run Playwright local golden-path suite
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ env.API_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.SERVICE_ROLE_KEY }}
+          E2E_LOCAL_SUPABASE_URL: ${{ env.API_URL }}
+          E2E_LOCAL_SUPABASE_ANON_KEY: ${{ env.ANON_KEY }}
+        run: |
+          set -a
+          source .env.e2e-local-golden-path.local
+          set +a
+          unset E2E_GOLDEN_DATA_BEARING_ALLOW_RUN
+          unset E2E_BASE_URL
+          npx playwright test tests/e2e/pilot-trust-01-golden-path-local-smoke.spec.ts
+
+      - name: Upload Playwright traces/screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-golden-path-test-results
+          path: test-results/
+          retention-days: 14
+
+      - name: Stop local Supabase stack
+        if: always()
+        run: supabase stop

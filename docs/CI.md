@@ -33,7 +33,17 @@ No repository secret is referenced anywhere in this job; it runs entirely agains
 
 Added as part of B-CI's "E2E truth" hardening (2026-08-31). Runs `tests/e2e/kora-smoke.spec.ts` — 6 public-page checks (landing, login + both `role_hint` variants, request-access, demo) — against a real `next dev` server and real headless Chromium, with no external services and no credentials.
 
-This is the **only** one of the 6 spec files under `tests/e2e/` currently wired into CI. See [Not yet in CI](#not-yet-in-ci) below for why the other 5 aren't, and what closing that gap actually requires.
+### `ci.yml` — `e2e-golden-path-local` job (E2E, Playwright, local Supabase — blocking)
+
+Added as B-CI's second E2E slice (2026-08-31). Runs `tests/e2e/pilot-trust-01-golden-path-local-smoke.spec.ts` against a real, ephemeral local Supabase/Postgres stack — the same `supabase start` pattern the `kora-link-local-integration` job above uses, but as its own separate job/budget rather than appended to that one.
+
+1. Starts local Supabase the same way `kora-link-local-integration` does (Docker check, CLI install, `supabase start`, real-query readiness proof).
+2. Captures the local API URL/anon key/service-role key via `supabase status -o json` — the well-known, non-secret local-only demo keys `supabase start` always issues, never a staging/production credential.
+3. Seeds real, ephemeral, per-run, randomly-generated synthetic test identities (`KORA_ADMIN`, `COMPANY_ADMIN`, `WORKER`) via the pre-existing `scripts/e2e/seed-local-golden-path.ts` — no committed secret, no real user data.
+4. Installs Chromium and runs the spec, with the app (spawned as a child process by `playwright.config.ts`'s own `webServer`) and Playwright's test process both pointed at the local Supabase instance. `E2E_GOLDEN_DATA_BEARING_ALLOW_RUN` (part of the seed script's generated env file, relevant only to `golden-data-bearing.spec.ts`) is explicitly unset before running — this job only ever invokes `pilot-trust-01-golden-path-local-smoke.spec.ts` by exact path, so the other 4 credential-gated spec files are never discovered here regardless.
+5. Always stops the local Supabase stack in a cleanup step, even on failure.
+
+This is now 2 of the 6 spec files under `tests/e2e/` wired into CI. See [Not yet in CI](#not-yet-in-ci) below for the remaining 4.
 
 ### `security.yml` — `gitleaks` job (secret scan — blocking)
 
@@ -45,10 +55,8 @@ Scans full repository history with a pinned `gitleaks` CLI binary (not the Marke
 
 ## Not yet in CI
 
-- **5 of 6 Playwright spec files** (`authenticated-smoke.spec.ts`, `golden-admin-company.spec.ts`, `two-tenant-isolation.spec.ts`, `golden-data-bearing.spec.ts`, `pilot-trust-01-golden-path-local-smoke.spec.ts`) are not run automatically. Two different reasons, not one:
-  - `authenticated-smoke`, `golden-admin-company`, `two-tenant-isolation`, and `golden-data-bearing` all drive the real browser-side `/login` form. `next.config.ts`'s CSP `connect-src` only permits `https://*.supabase.co` — no `localhost`/`127.0.0.1` exception — so these can **only** ever complete against a real staging/production Supabase project, never a local one, regardless of credentials supplied. Wiring them means adding a genuinely staging-backed E2E job (deliberately out of scope for the local/ephemeral gate above) — see `PILOT-E2E-GOLDEN-PATH-01` in the backlog.
-  - `pilot-trust-01-golden-path-local-smoke.spec.ts` is designed to run against a **local** Supabase instance (it bypasses the CSP wall via a Node-side session helper, `tests/e2e/helpers/local-session.ts`) — but doing so for real requires starting local Supabase (the same Docker stack the `kora-link-local-integration` job already runs), seeding real Auth users via `scripts/e2e/seed-local-golden-path.ts`, and threading the resulting credentials through to both the Next.js app and Playwright. That's real, separately-scoped infrastructure work, not a CI-step addition — proven locally: without a reachable database, this file's unguarded health-check test returns a real `503` and fails outright (by design — a health check that can't fail isn't one), so it cannot be added to the blocking gate until that infrastructure exists.
-- **Anything against staging or Production** — no Supabase URL, anon key, service-role key, or other environment-specific secret is referenced anywhere in `ci.yml`.
+- **4 of 6 Playwright spec files** (`authenticated-smoke.spec.ts`, `golden-admin-company.spec.ts`, `two-tenant-isolation.spec.ts`, `golden-data-bearing.spec.ts`) all drive the real browser-side `/login` form. `next.config.ts`'s CSP `connect-src` only permits `https://*.supabase.co` — no `localhost`/`127.0.0.1` exception — so these can **only** ever complete against a real staging/production Supabase project, never a local one, regardless of credentials supplied. Wiring them means adding a genuinely staging-backed E2E job (deliberately out of scope for the local/ephemeral gates above) — see `PILOT-E2E-GOLDEN-PATH-01` in the backlog. This CSP boundary was not modified to make these tests reachable, on purpose.
+- **Anything against staging or Production** — no Supabase URL, anon key, service-role key, or other environment-specific secret is referenced anywhere in `ci.yml`. The `e2e-golden-path-local` job's Supabase credentials are the well-known local-only demo keys `supabase start` issues, captured fresh each run — never a repository secret.
 - **Deployment steps** — no Vercel deploy, no release tagging.
 
 ## Secrets
