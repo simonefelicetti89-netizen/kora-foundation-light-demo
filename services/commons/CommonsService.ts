@@ -1,69 +1,16 @@
 // services/commons/CommonsService.ts
-// B97-B — KORA Commons Service (synthetic data layer).
-// B165 — esteso con getPublishedInitiatives (live DB via server client).
+// B97-B — KORA Commons live discovery (B165: getPublishedInitiatives).
+// CC-052 (2026-08-31): retired the synthetic discovery path (data/synthetic/
+// commons-initiatives.json, the `commonsService` class and its
+// getInitiatives/getFeaturedInitiatives/getByPillar/getByType/getNetworkStats
+// methods). Every remaining caller reads live commons.post, RLS-scoped.
 // KORA Commons is a shared activation layer — NOT a social network.
 // No messaging, no likes, no comments, no worker tracking, no social mechanics.
 // Admin/Company/Worker roles can discover initiatives. No IU generation from this service.
 
-import rawInitiatives from '@/data/synthetic/commons-initiatives.json';
 import type { CommonsPostWorkerView } from '@/lib/commons/types';
 import { haversineDistanceKm } from '@/lib/commons/geocoding';
-import {
-  type CommonsInitiative,
-  type CommonsNetworkStats,
-  type InitiativeType,
-  type InitiativeStatus,
-} from '@/lib/commons/types';
-
-const ALL: CommonsInitiative[] = rawInitiatives as CommonsInitiative[];
-
-class CommonsService {
-
-  getInitiatives(filters?: {
-    pillar?:   string;
-    type?:     InitiativeType;
-    status?:   InitiativeStatus;
-  }): CommonsInitiative[] {
-    let result = ALL;
-    if (filters?.pillar) result = result.filter((i) => i.pillar === filters.pillar);
-    if (filters?.type)   result = result.filter((i) => i.initiative_type === filters.type);
-    if (filters?.status) result = result.filter((i) => i.status === filters.status);
-    return result;
-  }
-
-  getFeaturedInitiatives(): CommonsInitiative[] {
-    // Featured: open or upcoming, high activation_potential, sorted by start_date asc.
-    return ALL
-      .filter((i) => (i.status === 'open' || i.status === 'upcoming') && i.activation_potential === 'high')
-      .sort((a, b) => a.start_date.localeCompare(b.start_date))
-      .slice(0, 4);
-  }
-
-  getNetworkStats(): CommonsNetworkStats {
-    const open = ALL.filter((i) => i.status === 'open' || i.status === 'upcoming').length;
-    const orgs = new Set(ALL.map((i) => i.owner_organization)).size;
-    const totalParticipants = ALL.reduce((s, i) => s + i.participants_enrolled, 0);
-    const pillars = new Set(ALL.map((i) => i.pillar));
-
-    const pillarCounts: Record<string, number> = {};
-    for (const i of ALL) {
-      pillarCounts[i.pillar] = (pillarCounts[i.pillar] ?? 0) + 1;
-    }
-    const mostActivePillar = Object.entries(pillarCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'IMPACT';
-
-    return {
-      total_initiatives:    ALL.length,
-      open_initiatives:     open,
-      organizations_active: orgs,
-      total_participants:   totalParticipants,
-      pillars_covered:      pillars.size,
-      most_active_pillar:   mostActivePillar,
-      synthetic_demo_data:  true,
-    };
-  }
-}
-
-export const commonsService = new CommonsService();
+import type { CommonsDiscoveryRow } from '@/lib/commons/discovery-view';
 
 // ── B165: Live DB — getPublishedInitiatives ───────────────────────────────────
 // Restituisce i post pubblicati con opening_grade valorizzato (iniziative).
@@ -83,7 +30,7 @@ export interface GetPublishedInitiativesOpts {
   };
 }
 
-// Select fields inviati alla UI — nessun campo admin-only o PIB
+// Select fields inviati alla UI worker — nessun campo admin-only o PIB
 const INITIATIVE_SELECT_FIELDS = [
   'id', 'tenant_id', 'author_role', 'title', 'body', 'category', 'pillar',
   'published_at', 'created_at',
@@ -96,6 +43,7 @@ export async function getPublishedInitiatives(
   opts: GetPublishedInitiativesOpts = {},
 ): Promise<CommonsPostWorkerView[]> {
   // Fetch published initiatives (opening_grade IS NOT NULL)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (db as any)
     .schema('commons')
     .from('post')
@@ -119,4 +67,38 @@ export async function getPublishedInitiatives(
   }
 
   return rows;
+}
+
+// ── CC-052: Live DB — getPublishedInitiativesAdmin ────────────────────────────
+// Same query as getPublishedInitiatives, plus tenant_id (needed for the
+// cross-company owner-organization join in lib/commons/discovery-view.ts).
+// Reachable in practice only by KORA_ADMIN (app/commons/layout.tsx guard) —
+// commons_post_kora_admin_all (mig 013) grants full RLS access; a
+// COMPANY_ADMIN/WORKER session reaching this by mistake gets only what its
+// own RLS policies allow, same as getPublishedInitiatives above. No caller
+// or role check is duplicated here — RLS is the single source of truth,
+// per this file's own long-standing convention.
+
+const ADMIN_INITIATIVE_SELECT_FIELDS = [
+  'id', 'tenant_id', 'title', 'body', 'category', 'pillar',
+  'opening_grade', 'location_address', 'location_lat', 'location_lng',
+  'event_start_at', 'event_end_at', 'capacity_internal', 'capacity_cross',
+].join(', ');
+
+export async function getPublishedInitiativesAdmin(
+  db: { schema: (s: string) => { from: (t: string) => unknown } },
+): Promise<CommonsDiscoveryRow[]> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (db as any)
+    .schema('commons')
+    .from('post')
+    .select(ADMIN_INITIATIVE_SELECT_FIELDS)
+    .eq('status', 'published')
+    .not('opening_grade', 'is', null)
+    .order('event_start_at', { ascending: true, nullsFirst: false })
+    .limit(200);
+
+  if (error) throw new Error(`[CommonsService] getPublishedInitiativesAdmin: ${error.message}`);
+
+  return (data ?? []) as CommonsDiscoveryRow[];
 }

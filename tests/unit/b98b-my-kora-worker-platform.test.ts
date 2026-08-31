@@ -8,7 +8,8 @@ import { computeNextAction, type NextActionId } from '../../lib/my-kora/nextActi
 import type { PillarPreview } from '../../services/my-kora-preview/MyKoraPreviewService';
 import { myKoraPreviewService } from '../../services/my-kora-preview/MyKoraPreviewService';
 import { workerOpportunityService } from '../../services/worker-opportunity/WorkerOpportunityService';
-import { commonsService } from '../../services/commons/CommonsService';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
 // ── Next Action Logic — computeNextAction ─────────────────────────────────────
 
@@ -264,42 +265,28 @@ describe('WorkerOpportunityService — opportunity strip (top 3)', () => {
   });
 });
 
-// ── CommonsService — commons card ─────────────────────────────────────────────
+// ── Commons card — live discovery (CC-052, 2026-08-31) ────────────────────────
+// The Commons card used to read commonsService.getFeaturedInitiatives()
+// (synthetic) synchronously. It now fetches /api/commons/initiatives (the
+// same canonical live discovery a real session uses) and gracefully shows
+// an empty state on this page's own demo-state (no live JWT) session — see
+// app/my-kora/page.tsx's own header note. Pure derivation logic for the
+// live shape (deriveDiscoveryStatus, buildDiscoveryView) is covered by
+// tests/unit/cc052-commons-discovery-view.test.ts.
 
-describe('CommonsService — data for Commons card on My KORA home', () => {
-  it('getFeaturedInitiatives returns at most 4 items', () => {
-    const featured = commonsService.getFeaturedInitiatives();
-    expect(featured.length).toBeLessThanOrEqual(4);
+describe('Commons card — live discovery wiring (My KORA home)', () => {
+  const page = readFileSync(resolve(process.cwd(), 'app/my-kora/page.tsx'), 'utf-8');
+
+  it('no longer imports the retired synthetic commonsService', () => {
+    expect(page).not.toContain("from '@/services/commons/CommonsService'");
   });
 
-  it('all featured initiatives are open or upcoming', () => {
-    const featured = commonsService.getFeaturedInitiatives();
-    for (const i of featured) {
-      expect(['open', 'upcoming']).toContain(i.status);
-    }
+  it('fetches canonical live discovery instead', () => {
+    expect(page).toContain("fetch('/api/commons/initiatives')");
   });
 
-  it('all featured initiatives have high activation_potential', () => {
-    const featured = commonsService.getFeaturedInitiatives();
-    for (const i of featured) {
-      expect(i.activation_potential).toBe('high');
-    }
-  });
-
-  it('pillars can be derived from featured initiatives for the card', () => {
-    const featured = commonsService.getFeaturedInitiatives().slice(0, 2);
-    const pillars  = [...new Set(featured.map((i) => i.pillar))];
-    for (const p of pillars) {
-      expect(['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY']).toContain(p);
-    }
-  });
-
-  it('featured initiatives have no social mechanics (no likes, no comments)', () => {
-    const featured = commonsService.getFeaturedInitiatives();
-    for (const i of featured) {
-      expect((i as Record<string, unknown>)['likes']).toBeUndefined();
-      expect((i as Record<string, unknown>)['comments']).toBeUndefined();
-    }
+  it('has no synthetic fallback on fetch failure — degrades to an honest empty state', () => {
+    expect(page).toContain('setCommonsPreview({ pillars: [], count: 0 })');
   });
 });
 
@@ -404,9 +391,10 @@ describe('Page section structure — data is available for all 6 above-fold sect
     expect(cv.items.length).toBeGreaterThan(0);
   });
 
-  it('Section 5: Commons card — featured initiatives are available', () => {
-    const featured = commonsService.getFeaturedInitiatives();
-    expect(featured.length).toBeGreaterThan(0);
+  it('Section 5: Commons card — reads canonical live discovery, no synthetic data', () => {
+    const page = readFileSync(resolve(process.cwd(), 'app/my-kora/page.tsx'), 'utf-8');
+    expect(page).toContain("fetch('/api/commons/initiatives')");
+    expect(page).not.toContain('commonsService');
   });
 
   it('Section 6: Privacy snapshot — employer visibility is clearly defined', () => {

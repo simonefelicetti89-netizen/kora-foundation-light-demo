@@ -24,11 +24,15 @@ describe('KORA Space — operating model positioning', () => {
   let companyCommonsSrc: string;
   let spaceSrc: string;
   let commonsPageSrc: string;
+  let commonsBrowserSrc: string;
 
   beforeAll(() => {
     companyCommonsSrc = readFile('app/company/commons/page.tsx');
     spaceSrc          = readFile('app/my-kora/kora-space/page.tsx');
     commonsPageSrc    = readFile('app/commons/page.tsx');
+    // CC-052 (2026-08-31): app/commons/page.tsx became a thin server-component
+    // data loader; the rendered disclaimer copy moved to this component.
+    commonsBrowserSrc = readFile('components/commons/CommonsDiscoveryBrowser.tsx');
   });
 
   test('1. Company KORA Space describes Space as activation environment', () => {
@@ -44,6 +48,7 @@ describe('KORA Space — operating model positioning', () => {
     const hasNotSocial =
       companyCommonsSrc.includes('non è un social network') ||
       commonsPageSrc.includes('non è un social network') ||
+      commonsBrowserSrc.includes('non è un social network') ||
       spaceSrc.includes('non è un social network');
     expect(hasNotSocial).toBe(true);
   });

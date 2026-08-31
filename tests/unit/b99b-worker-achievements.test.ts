@@ -15,7 +15,6 @@ import {
   type AchievementVerificationLevel,
   type AchievementPillar,
 } from '../../lib/worker-achievements/types';
-import { commonsService } from '../../services/commons/CommonsService';
 
 function readFile(rel: string): string {
   return readFileSync(join(process.cwd(), rel), 'utf-8');
@@ -342,33 +341,18 @@ describe('My KORA page — achievement sections (Task 4, 5, 7, 9)', () => {
 
 // ── Commons integration (Task 8) ─────────────────────────────────────────────
 
-describe('Commons integration — recognition eligibility (Task 8)', () => {
-  it('Commons page shows recognition eligibility for each initiative', () => {
+// Commons "recognition eligibility" badge (Task 8) relied on the synthetic
+// verification_possible field, retired by CC-052 (2026-08-31): the field
+// was explicitly DEFERRED (no live commons.post column, no confirmed
+// product owner) rather than backed by a placeholder value. See
+// lib/commons/discovery-view.ts's own header for the full field
+// disposition. If a real evidence-verification concept is promoted into
+// canonical KORA Space scope later, it belongs on a fresh ticket, not a
+// revived synthetic flag.
+describe('Commons page — no synthetic verification_possible remnant', () => {
+  it('Commons page does not reference the retired verification_possible field', () => {
     const page = readFile('app/commons/page.tsx');
-    expect(page).toContain('Può generare un riconoscimento verificabile');
-    expect(page).toContain('Non genera riconoscimenti');
-  });
-
-  it('Commons page has data-testid for recognition eligibility', () => {
-    const page = readFile('app/commons/page.tsx');
-    expect(page).toContain('recognition-eligibility-');
-  });
-
-  it('CommonsService data has verification_possible field on all initiatives', () => {
-    const all = commonsService.getInitiatives();
-    for (const i of all) {
-      expect(typeof i.verification_possible).toBe('boolean');
-    }
-  });
-
-  it('some initiatives can generate verifiable recognition', () => {
-    const all = commonsService.getInitiatives();
-    expect(all.some((i) => i.verification_possible === true)).toBe(true);
-  });
-
-  it('some initiatives cannot generate recognition', () => {
-    const all = commonsService.getInitiatives();
-    expect(all.some((i) => i.verification_possible === false)).toBe(true);
+    expect(page).not.toContain('verification_possible');
   });
 });
 

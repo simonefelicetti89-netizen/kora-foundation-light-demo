@@ -284,24 +284,32 @@ describe('P0-3 — KORA Index naming alignment', () => {
 // ── P0-4: KORA Space commercial credibility ───────────────────────────────────
 
 describe('P0-4 — KORA Space commercial credibility', () => {
+  // CC-052 (2026-08-31): app/commons/page.tsx became a thin server-component
+  // data loader; the rendered UI (banner, labels, next-activation panel)
+  // moved to components/commons/CommonsDiscoveryBrowser.tsx.
   const commonsPage = read('app/commons/page.tsx');
+  const commonsBrowser = read('components/commons/CommonsDiscoveryBrowser.tsx');
 
-  it('Public commons page has pilot preview banner (not "COMMONS PREVIEW")', () => {
-    expect(commonsPage).toContain('commons-pilot-preview-banner');
+  it('Public commons page has a live-discovery notice banner (not "COMMONS PREVIEW")', () => {
+    expect(commonsBrowser).toContain('commons-live-notice');
     // Old embarrassing label must be gone
-    expect(commonsPage).not.toContain('>COMMONS PREVIEW<');
+    expect(commonsBrowser).not.toContain('>COMMONS PREVIEW<');
   });
 
-  it('Public commons page uses "KORA Space · Pilot Preview" not "COMMONS PREVIEW"', () => {
-    expect(commonsPage).toContain('KORA Space · Pilot Preview');
+  it('Public commons page uses "KORA Space · Live" not "COMMONS PREVIEW" or a synthetic pilot-preview label', () => {
+    expect(commonsBrowser).toContain('KORA Space · Live');
+    expect(commonsBrowser).not.toContain('Pilot Preview');
   });
 
   it('Network stats no longer says "NETWORK PREVIEW"', () => {
-    expect(commonsPage).not.toContain('NETWORK PREVIEW');
+    expect(commonsBrowser).not.toContain('NETWORK PREVIEW');
   });
 
-  it('Commons page is honest about synthetic data (Italian label)', () => {
-    expect(commonsPage).toContain('sintetici');
+  it('Commons page reads canonical live discovery, no synthetic data anywhere', () => {
+    expect(commonsPage).toContain('getPublishedInitiativesAdmin');
+    expect(commonsPage).not.toContain('sintetici');
+    expect(commonsBrowser).not.toContain('sintetici');
+    expect(commonsPage).not.toContain('commons-initiatives.json');
   });
 
   it('Commons page does not claim real booking/scoring integration', () => {
@@ -314,16 +322,16 @@ describe('P0-4 — KORA Space commercial credibility', () => {
   });
 
   it('CTA on commons page redirects to /company/commons (real KORA Space) not /commons/publish', () => {
-    expect(commonsPage).toContain('/company/commons');
+    expect(commonsBrowser).toContain('/company/commons');
   });
 
   it('Commons "next activation layer" panel exists', () => {
-    expect(commonsPage).toContain('commons-next-activation-layer');
+    expect(commonsBrowser).toContain('commons-next-activation-layer');
   });
 
   it('Commons page no longer has "nessuna persistenza in Foundation Light" as CTA text', () => {
     // This was in the old bottom CTA — it should not be in the main CTA text
-    expect(commonsPage).not.toContain('PREVIEW — nessuna persistenza in Foundation Light');
+    expect(commonsBrowser).not.toContain('PREVIEW — nessuna persistenza in Foundation Light');
   });
 
   it('Company KORA Space (/company/commons) reads from real DB (not synthetic)', () => {

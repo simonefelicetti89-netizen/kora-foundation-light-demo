@@ -7,7 +7,6 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { buildNavGroups } from '../../components/layout/Sidebar';
 import { tenantService } from '../../services/tenant/TenantService';
-import { commonsService } from '../../services/commons/CommonsService';
 
 const ROOT = join(process.cwd());
 
@@ -177,27 +176,23 @@ describe('Nav style rule — FUTURE_VISION vs PREVIEW', () => {
   });
 });
 
-// ── CommonsService smoke tests ────────────────────────────────────────────────
+// ── /commons live discovery smoke tests (CC-052, 2026-08-31) ──────────────────
+// commonsService (the synthetic class) was retired. /commons is now a server
+// component reading live commons.post via getPublishedInitiativesAdmin.
 
-describe('/commons route — CommonsService functional', () => {
-  it('commonsService.getInitiatives() returns data', () => {
-    const all = commonsService.getInitiatives();
-    expect(all.length).toBeGreaterThan(0);
-  });
-
-  it('commonsService.getFeaturedInitiatives() returns data', () => {
-    const featured = commonsService.getFeaturedInitiatives();
-    expect(featured.length).toBeGreaterThan(0);
-  });
-
-  it('commonsService.getNetworkStats() returns valid object', () => {
-    const stats = commonsService.getNetworkStats();
-    expect(stats.total_initiatives).toBeGreaterThan(0);
-    expect(stats.synthetic_demo_data).toBe(true);
-  });
-
-  it('/commons page file exists and imports commonsService', () => {
+describe('/commons route — live discovery, no synthetic remnant', () => {
+  it('/commons page exists and reads canonical live discovery', () => {
     const commonsPage = readFile('app/commons/page.tsx');
-    expect(commonsPage).toContain('commonsService');
+    expect(commonsPage).toContain('getPublishedInitiativesAdmin');
+    expect(commonsPage).not.toContain('commonsService');
+    expect(commonsPage).not.toContain('data/synthetic/commons-initiatives');
+  });
+
+  it('CommonsService.ts no longer exports the synthetic commonsService singleton', () => {
+    const service = readFile('services/commons/CommonsService.ts');
+    // The retired filename may still appear in a historical header comment
+    // documenting what was removed — only a live import statement matters.
+    expect(service).not.toContain("from '@/data/synthetic/commons-initiatives.json'");
+    expect(service).not.toContain('export const commonsService');
   });
 });
