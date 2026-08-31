@@ -1,6 +1,8 @@
 // app/api/admin/workforce-baseline/route.ts
 // Standalone workforce baseline upsert — KORA_ADMIN only.
 //
+// GET  /api/admin/workforce-baseline             → list tenant_ids with a baseline (existence check)
+// GET  /api/admin/workforce-baseline?tenantId=X   → full canonical view for one tenant
 // POST /api/admin/workforce-baseline
 //
 // Creates or updates personal.workforce_baseline for an existing tenant.
@@ -12,6 +14,13 @@
 //
 // N≥10 enforcement: delegated to persistWorkforceBaseline() in lib/live/workforce-baseline.ts.
 // Never write to personal.workforce_baseline directly — use that function.
+//
+// B-TRUTH first canonical seed group (2026-08-31): GET added to replace
+// services/workforce-baseline/WorkforceBaselineService.ts's synthetic
+// data/synthetic/workforce-baseline.json read on
+// app/admin/companies/workforce-baseline/page.tsx. See
+// lib/live/workforce-baseline-view.ts for the exact field disposition
+// (what's kept/derived vs. dropped as decorative/unbuilt).
 
 export const runtime = 'nodejs';
 
@@ -19,7 +28,52 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { getSupabaseServiceClient } from '@/lib/supabase/server';
 import { persistWorkforceBaseline } from '@/lib/live/workforce-baseline';
+import { buildWorkforceBaselineView, type WorkforceBaselineRow } from '@/lib/live/workforce-baseline-view';
 import { assertSameOrigin } from '@/lib/security/origin';
+
+export async function GET(request: NextRequest) {
+  const authResult = await requireKoraAdmin(request);
+  if (isKoraAuthError(authResult)) return authResult;
+
+  const tenantId = request.nextUrl.searchParams.get('tenantId');
+  const db = getSupabaseServiceClient();
+
+  if (!tenantId) {
+    // Existence check only — every tenant_id that has at least one baseline row.
+    const { data, error } = await db
+      .schema('personal').from('workforce_baseline')
+      .select('tenant_id');
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const tenantIds = [...new Set((data ?? []).map((r) => (r as { tenant_id: string }).tenant_id))];
+    return NextResponse.json({ ok: true, tenantIdsWithBaseline: tenantIds });
+  }
+
+  const { data: baselineRow, error: baselineErr } = await db
+    .schema('personal').from('workforce_baseline')
+    .select('tenant_id, reporting_period, total_workers, segment_breakdown, minimum_group_size, created_at, created_by')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (baselineErr) return NextResponse.json({ error: baselineErr.message }, { status: 500 });
+  if (!baselineRow) return NextResponse.json({ ok: true, baseline: null });
+
+  const { data: tenantRow, error: tenantErr } = await db
+    .schema('analytics').from('tenant')
+    .select('tenant_code, company_name')
+    .eq('id', tenantId)
+    .maybeSingle();
+  if (tenantErr) return NextResponse.json({ error: tenantErr.message }, { status: 500 });
+  if (!tenantRow) return NextResponse.json({ error: `Tenant not found: ${tenantId}` }, { status: 404 });
+
+  const view = buildWorkforceBaselineView(
+    baselineRow as unknown as WorkforceBaselineRow,
+    tenantRow as { tenant_code: string; company_name: string },
+  );
+
+  return NextResponse.json({ ok: true, baseline: view });
+}
 
 export async function POST(request: NextRequest) {
   const originGuard = assertSameOrigin(request);

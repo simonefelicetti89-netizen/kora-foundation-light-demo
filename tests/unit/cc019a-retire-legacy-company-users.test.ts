@@ -111,9 +111,14 @@ describe('CC-019A — TenantService and AccountProvisioningService implementatio
     // not listed here — it was untouched by CC-019A, but CC-020A (a later,
     // unrelated sub-slice) has since retired it entirely; see
     // tests/unit/cc020a-retire-company-intelligence.test.ts.
+    // app/admin/companies/workforce-baseline/page.tsx is NOT listed here —
+    // it was untouched by CC-019A, but B-TRUTH's first canonical seed group
+    // (2026-09-01) has since migrated it off tenantService entirely (its
+    // own workforce-baseline data source, plus its company selector); see
+    // tests/unit/btruth-workforce-baseline-route.test.ts and
+    // lib/architecture/registry.ts svc.workforce-baseline.
     for (const file of [
       'app/admin/pipeline/page.tsx',
-      'app/admin/companies/workforce-baseline/page.tsx',
       'components/admin/WorkforceQuickAccessPanel.tsx',
       'services/report-factory/ReportFactoryService.ts',
     ]) {

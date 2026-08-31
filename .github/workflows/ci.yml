@@ -138,7 +138,7 @@ jobs:
       # disabled mapping or change tenant_id/auth_user_id/worker_ref/
       # created_at via worker_identity_worker_own_update. Same mandatory
       # no-skip treatment.
-      - name: Run RLS integration suites (RLS-03/05/06/07/08/09/10/11/12 — mandatory, no skip)
+      - name: Run RLS integration suites (RLS-03/05/06/07/08/09/10/11/12/13 — mandatory, no skip)
         env:
           RLS03_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS03_ALLOW_RUN: 'true'
@@ -158,6 +158,8 @@ jobs:
           RLS11_ALLOW_RUN: 'true'
           RLS12_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS12_ALLOW_RUN: 'true'
+          RLS13_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS13_ALLOW_RUN: 'true'
         run: |
           npx vitest run \
             tests/integration/rls-two-tenant-negative.test.ts \
@@ -169,6 +171,7 @@ jobs:
             tests/integration/rls-10-worker-identity-lifecycle.test.ts \
             tests/integration/rls-11-commons-cross-company.test.ts \
             tests/integration/rls-12-tenant-kind-parity.test.ts \
+            tests/integration/rls-13-workforce-baseline-tenant-kind-parity.test.ts \
             --reporter=json --outputFile=rls-integration-report.json
 
       # F-04: machine-readable assertion — fails the job if any RLS test

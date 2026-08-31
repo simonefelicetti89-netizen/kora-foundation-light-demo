@@ -161,9 +161,12 @@ describe('CC-020A — no canonical Gen3 surface ever depended on either service'
 describe("CC-020A — CompanyIntelligenceService's other 4 former dependencies were left untouched", () => {
   it('TenantService.ts still exists with its other callers intact', () => {
     expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(true);
+    // app/admin/companies/workforce-baseline/page.tsx is NOT listed here —
+    // B-TRUTH's first canonical seed group (2026-09-01) migrated it off
+    // tenantService entirely. See lib/architecture/registry.ts
+    // svc.workforce-baseline.
     for (const file of [
       'app/admin/pipeline/page.tsx',
-      'app/admin/companies/workforce-baseline/page.tsx',
       'components/admin/WorkforceQuickAccessPanel.tsx',
       'services/report-factory/ReportFactoryService.ts',
     ]) {
