@@ -28,12 +28,19 @@ const TENANT_META_KEY = 'kora_tenant_id' as const;
 const VALID_ROLES: ReadonlyArray<string> = ['COMPANY_ADMIN'];
 type CompanyRole = 'COMPANY_ADMIN';
 
+// Canonical tenant classification (migration 014) — LIVE is the default for
+// every existing caller; only an explicit, valid non-LIVE value changes
+// behavior (see the operational-safety branch below).
+const TENANT_KIND_VALUES = ['LIVE', 'DEMO', 'TEST', 'SANDBOX'] as const;
+type TenantKind = (typeof TENANT_KIND_VALUES)[number];
+
 const ProvisionCompanySchema = z.object({
   company_name: z.string().min(1, 'company_name è obbligatorio.').max(200),
   tenant_code:  z.string().optional(),
   admin_email:  z.string().min(1, 'admin_email è obbligatorio.').email('admin_email non valido.'),
   admin_name:   z.string().max(128).optional().nullable(),
   admin_role:   z.string().optional(),
+  tenant_kind:  z.enum(TENANT_KIND_VALUES).optional(),
 });
 
 // ── Tenant code helpers ───────────────────────────────────────────────────────
@@ -80,6 +87,7 @@ export async function POST(request: NextRequest) {
   const adminEmail  = parsed.data.admin_email.trim().toLowerCase();
   const adminName   = parsed.data.admin_name?.trim() ?? null;
   const adminRole   = (parsed.data.admin_role?.trim().toUpperCase() ?? 'COMPANY_ADMIN') as CompanyRole;
+  const tenantKind: TenantKind = parsed.data.tenant_kind ?? 'LIVE';
 
   if (!VALID_ROLES.includes(adminRole)) {
     return NextResponse.json({
@@ -128,7 +136,7 @@ export async function POST(request: NextRequest) {
         decision_pack_status:   'not_ready',
         methodology_version_id: 'KORA Index v1.0',
         deleted_at:             null,
-        tenant_kind:            'LIVE',
+        tenant_kind:            tenantKind,
       })
       .select('id')
       .single();
@@ -148,24 +156,35 @@ export async function POST(request: NextRequest) {
   let adminUserId!: string;
   let inviteStatus: 'sent' | 'existing' | 'not_sent';
 
-  // Attempt invite — Supabase returns 422 / "already registered" if email exists.
-  const { data: inviteData, error: inviteErr } = await db.auth.admin.inviteUserByEmail(adminEmail, {
-    redirectTo: `${siteUrl}/auth/callback`,
-    data: { admin_name: adminName ?? '', company_name: companyName },
-  });
+  if (tenantKind !== 'LIVE') {
+    // ── Operational safety (synthetic-company foundation) ────────────────────
+    // Non-LIVE tenants (DEMO/TEST/SANDBOX) must never trigger a real external
+    // side effect. inviteUserByEmail is skipped entirely — createUser with
+    // email_confirm:true sends no email at all (it is the exact same
+    // no-email fallback the LIVE branch below already uses when SMTP is
+    // unavailable; here it is taken unconditionally, by tenant_kind, not by
+    // error). Product/session behavior (app_metadata shape, role, downstream
+    // canonical reads) is otherwise byte-for-byte identical to LIVE.
+    const { data: created, error: createErr } = await db.auth.admin.createUser({
+      email:         adminEmail,
+      email_confirm: true,
+    });
 
-  if (inviteData?.user) {
-    adminUserId = inviteData.user.id;
-    inviteStatus = 'sent';
-  } else {
-    // Check if user already exists (invite failed because email is taken).
-    const isAlreadyRegistered =
-      inviteErr?.status === 422 ||
-      inviteErr?.message?.toLowerCase().includes('already') ||
-      inviteErr?.message?.toLowerCase().includes('registered');
+    if (created?.user) {
+      adminUserId = created.user.id;
+      inviteStatus = 'not_sent';
+    } else {
+      const isAlreadyRegistered =
+        createErr?.status === 422 ||
+        createErr?.message?.toLowerCase().includes('already') ||
+        createErr?.message?.toLowerCase().includes('registered');
 
-    if (isAlreadyRegistered) {
-      // Find the existing user — listUsers is acceptable at demo/pilot scale.
+      if (!isAlreadyRegistered) {
+        return NextResponse.json({
+          error: `Creazione utente fallita: ${createErr?.message ?? 'unknown'}`,
+        }, { status: 500 });
+      }
+
       const { data: usersData, error: listErr } = await db.auth.admin.listUsers({
         page: 1, perPage: 1000,
       });
@@ -182,7 +201,6 @@ export async function POST(request: NextRequest) {
         }, { status: 500 });
       }
 
-      // Punto 1.6: Check cross-tenant conflict.
       const existingMeta = existing.app_metadata as Record<string, unknown> | undefined;
       if (existingMeta?.[TENANT_META_KEY] && existingMeta[TENANT_META_KEY] !== tenantId) {
         return NextResponse.json({
@@ -193,36 +211,85 @@ export async function POST(request: NextRequest) {
 
       adminUserId = existing.id;
       inviteStatus = 'existing';
+    }
+  } else {
+    // ── LIVE — unchanged from prior behavior ──────────────────────────────────
+    // Attempt invite — Supabase returns 422 / "already registered" if email exists.
+    const { data: inviteData, error: inviteErr } = await db.auth.admin.inviteUserByEmail(adminEmail, {
+      redirectTo: `${siteUrl}/auth/callback`,
+      data: { admin_name: adminName ?? '', company_name: companyName },
+    });
+
+    if (inviteData?.user) {
+      adminUserId = inviteData.user.id;
+      inviteStatus = 'sent';
     } else {
-      // SMTP not configured or other transient error — create without invite.
-      warnings.push(
-        `Invito email non inviato (${inviteErr?.message ?? 'SMTP non configurato'}). ` +
-        'Inviare manualmente il link di accesso da Supabase Dashboard.',
-      );
+      // Check if user already exists (invite failed because email is taken).
+      const isAlreadyRegistered =
+        inviteErr?.status === 422 ||
+        inviteErr?.message?.toLowerCase().includes('already') ||
+        inviteErr?.message?.toLowerCase().includes('registered');
 
-      const { data: created, error: createErr } = await db.auth.admin.createUser({
-        email:         adminEmail,
-        email_confirm: true,
-      });
+      if (isAlreadyRegistered) {
+        // Find the existing user — listUsers is acceptable at demo/pilot scale.
+        const { data: usersData, error: listErr } = await db.auth.admin.listUsers({
+          page: 1, perPage: 1000,
+        });
+        if (listErr) {
+          return NextResponse.json({
+            error: `Impossibile verificare utente esistente: ${listErr.message}`,
+          }, { status: 500 });
+        }
 
-      if (createErr || !created?.user) {
-        return NextResponse.json({
-          ok:                 false,
-          provisioningStatus: 'partial_failure',
-          tenantId,
-          tenantCode,
-          tenantCreated,
-          error:    `Provisioning utente fallito: ${createErr?.message ?? 'unknown'}`,
-          recovery: `Tenant ${tenantCode} è attivo (${tenantId}). Aggiungere l'utente manualmente da /admin/company-users-live.`,
-          links: {
-            manageUsers: `/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`,
-          },
-          warnings,
-        }, { status: 207 });
+        const existing = usersData?.users?.find((u) => u.email === adminEmail);
+        if (!existing) {
+          return NextResponse.json({
+            error: 'Utente non trovato dopo errore di registrazione duplicata.',
+          }, { status: 500 });
+        }
+
+        // Punto 1.6: Check cross-tenant conflict.
+        const existingMeta = existing.app_metadata as Record<string, unknown> | undefined;
+        if (existingMeta?.[TENANT_META_KEY] && existingMeta[TENANT_META_KEY] !== tenantId) {
+          return NextResponse.json({
+            error: `${adminEmail} è già assegnato al tenant ${existingMeta[TENANT_META_KEY]}. Usare un'email diversa o un nuovo indirizzo.`,
+            provisioningStatus: 'conflict',
+          }, { status: 409 });
+        }
+
+        adminUserId = existing.id;
+        inviteStatus = 'existing';
+      } else {
+        // SMTP not configured or other transient error — create without invite.
+        warnings.push(
+          `Invito email non inviato (${inviteErr?.message ?? 'SMTP non configurato'}). ` +
+          'Inviare manualmente il link di accesso da Supabase Dashboard.',
+        );
+
+        const { data: created, error: createErr } = await db.auth.admin.createUser({
+          email:         adminEmail,
+          email_confirm: true,
+        });
+
+        if (createErr || !created?.user) {
+          return NextResponse.json({
+            ok:                 false,
+            provisioningStatus: 'partial_failure',
+            tenantId,
+            tenantCode,
+            tenantCreated,
+            error:    `Provisioning utente fallito: ${createErr?.message ?? 'unknown'}`,
+            recovery: `Tenant ${tenantCode} è attivo (${tenantId}). Aggiungere l'utente manualmente da /admin/company-users-live.`,
+            links: {
+              manageUsers: `/admin/company-users-live?tenantId=${encodeURIComponent(tenantId)}`,
+            },
+            warnings,
+          }, { status: 207 });
+        }
+
+        adminUserId = created.user.id;
+        inviteStatus = 'not_sent';
       }
-
-      adminUserId = created.user.id;
-      inviteStatus = 'not_sent';
     }
   }
 
@@ -248,6 +315,7 @@ export async function POST(request: NextRequest) {
     provisioningStatus: 'provisioned',
     tenantId,
     tenantCode,
+    tenantKind,
     tenantCreated,
     adminUserId,
     adminRole,
