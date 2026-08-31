@@ -55,27 +55,34 @@ export const CONTRIBUTION_IS_AGGREGATE_ONLY = true as const;
 // ── FOUNDATION LIGHT vs PILOT+ ────────────────────────────────────────────────
 
 /**
- * Foundation Light (demo) path:
- *   - uses synthetic seed data (kora-contribution-outputs.json)
- *   - shows a provisional 0–100 score labeled 'provisional_demo_only'
- *   - score is for demonstration purposes only
+ * Pre-pilot preview path (production_ready = false), as of the B-TRUTH
+ * Contribution port (2026-09-01):
+ *   - reads real commons.contribution_event + commons.post rows for the
+ *     tenant (getContributionV2Live) — NOT synthetic seed data; a tenant
+ *     with zero events correctly yields an honest insufficient-signal state
+ *   - shows the Version B (v0.2) maturity-band + confidence public
+ *     presentation; internalScore is 0–100 but internal-only
  *   - not suitable for certified ESG claims or comparative benchmarking
  *
- * Pilot+ live path:
- *   - gated on analytics.tenant.production_ready = true
- *   - uses live commons.contribution_event records
+ * Pilot+ live path (production_ready = true):
+ *   - uses the SAME live commons.contribution_event records
  *   - NO single aggregate score (doctrine: contribution-views.ts)
  *   - shows ContributionPromoterView + ContributionOriginEmployerView side-by-side
  *   - narrative text from buildPromoterNarrative() / buildOriginEmployerNarrative()
+ *
+ * The pre-pilot/Pilot+ split is a product-state distinction (which
+ * presentation to render), not a demo-vs-live distinction — both paths read
+ * the same DB tables for a LIVE or a DEMO-kind tenant (Patch 03, ONE
+ * PRODUCT / NO DEMO RUNTIME).
  */
-export const CONTRIBUTION_FL_PATH = 'seed_derived' as const;
+export const CONTRIBUTION_FL_PATH = 'live_db' as const;
 export const CONTRIBUTION_PILOT_PATH = 'live_db' as const;
 
 // ── SIGNAL SOURCES ────────────────────────────────────────────────────────────
 
 /**
  * KORA Contribution is fed by:
- * - Initiatives created / promoted / supported (commons.post / collective-initiatives.json)
+ * - Initiatives created / promoted / supported (commons.post)
  * - Cross-company bookings (commons.booking → attended → commons.contribution_event)
  * - External participant events (attributeContributionForExternalParticipants)
  * - Partner/territory activation signals

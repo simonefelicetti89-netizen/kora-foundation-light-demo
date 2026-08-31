@@ -223,13 +223,10 @@ describe('WEC-4 — KORA Contribution production_ready not globally enabled', ()
     expect(occurrences).toBeGreaterThanOrEqual(4);
   });
 
-  it('preview path (getSummaryV2) does not gate on production_ready — always available for FL tenants', () => {
-    expect(service).toContain('getSummaryV2');
-    // getSummaryV2 must NOT have production_ready check
-    const summaryV2Block = service.slice(service.indexOf('getSummaryV2'));
-    const nextMethod = summaryV2Block.indexOf('\n  }');
-    const methodBody = summaryV2Block.slice(0, nextMethod);
-    expect(methodBody).not.toContain('production_ready');
+  it('preview path (getContributionV2Live, replacing getSummaryV2 as of the B-TRUTH Contribution port, 2026-09-01) does not gate on production_ready — always available for FL tenants', () => {
+    expect(service).toContain('export async function getContributionV2Live');
+    const fn = service.split('export async function getContributionV2Live')[1]?.split('export async function')[0] ?? '';
+    expect(fn).not.toContain('production_ready');
   });
 });
 
@@ -315,10 +312,14 @@ describe('WEC-6 — Regression: prior sprint artifacts still present', () => {
   });
 
   it('KORA Contribution is NOT a KORA Index component (companion indicator invariant)', () => {
+    // Formatting-tolerant as of the B-TRUTH Contribution port (2026-09-01):
+    // the exact single-space literal previously matched here lived in the
+    // now-retired getContribution() synthetic method; the invariant is still
+    // stated in getContributionLive()'s return object (aligned formatting).
     const service = read('services/kora-contribution/KoraContributionService.ts');
-    expect(service).toContain('is_kora_index_component: false');
-    expect(service).toContain('notKoraIndexComponent:  true');
-    expect(service).toContain('KORA Contribution è companion indicator — NON componente KORA Index');
+    expect(service).toMatch(/is_kora_index_component:\s*false/);
+    expect(service).toMatch(/notKoraIndexComponent:\s*true/);
+    expect(service).toContain('KORA Contribution is a companion indicator — never a KORA Index component');
   });
 
   it('methodology-config weights are read from versioned config, not hardcoded', () => {

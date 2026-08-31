@@ -55,13 +55,6 @@ describe('hardening — 1. KORA Contribution NOT a KORA Index component', () => 
     expect(result.notKoraIndexComponent).toBe(true);
   });
 
-  it('seed file: is_kora_index_component: false on all records', () => {
-    const raw = JSON.parse(read('data/synthetic/kora-contribution-outputs.json'));
-    for (const rec of raw.data) {
-      expect(rec.is_kora_index_component).toBe(false);
-    }
-  });
-
   it('contribution-views: ContributionPromoterView has no score field', () => {
     const src = read('lib/commons/contribution-views.ts');
     const promoterSection = src.split('ContributionPromoterView')[1]?.split('ContributionOriginEmployerView')[0] ?? '';
@@ -132,11 +125,11 @@ describe('hardening — 3. Score label is provisional_demo_only', () => {
     expect(result.scorePresentationMode).toBe('provisional_demo_only');
   });
 
-  it('getSummaryV2: scorePresentationMode = provisional_demo_only', async () => {
-    const { KoraContributionService } = await import('@/services/kora-contribution/KoraContributionService');
-    const svc = new KoraContributionService();
-    const result = svc.getSummaryV2('meridiana-group', 'S1');
-    expect(result.scorePresentationMode).toBe('provisional_demo_only');
+  it('getContributionV2Live (DB-backed pre-pilot preview, B-TRUTH port 2026-09-01) delegates to the single computeFromPipelineResult authority — same scorePresentationMode guarantee', () => {
+    const src = read('services/kora-contribution/KoraContributionService.ts');
+    const fn = src.split('export async function getContributionV2Live')[1]?.split('export async function')[0] ?? '';
+    expect(fn).toContain('computeFromPipelineResult');
+    expect(fn).not.toContain('production_ready');
   });
 
   it('doctrine: CONTRIBUTION_SCORE_PRESENTATION_MODE = provisional_demo_only', async () => {
@@ -357,11 +350,14 @@ describe('hardening — 11. Cross-company initiative eligible', () => {
     expect(result.notKoraIndexComponent).toBe(true);
   });
 
-  it('cross_company collective initiatives in seed S2 reference correct initiative ids', () => {
-    const raw = JSON.parse(read('data/synthetic/kora-contribution-outputs.json'));
-    const s2 = raw.data.find((r: { scenario_id: string }) => r.scenario_id === 'S2');
-    expect(s2.referenced_collective_initiative_ids).toContain('init-territorial-volunteer-crossco');
-    expect(s2.cross_company_initiatives_count).toBeGreaterThan(0);
+  it('DB-backed mapper (B-TRUTH port): cross_company_participation event_nature classifies as collective_initiative, so it stays eligible', async () => {
+    const { deriveEventNature } = await import('@/lib/kora-contribution/contribution-pipeline-input');
+    expect(deriveEventNature({
+      contribution_kind: 'cross_company_participation',
+      is_cross_company: true,
+      is_kora_originated: false,
+      is_kora_enabled: false,
+    })).toBe('collective_initiative');
   });
 });
 
@@ -384,9 +380,10 @@ describe('hardening — 12. KORA Space events as aggregate signals only', () => 
     expect((result as unknown as Record<string, unknown>)['worker_pib']).toBeUndefined();
   });
 
-  it('collective-initiatives seed: privacy_rule confirms no worker_id', () => {
-    const raw = JSON.parse(read('data/synthetic/collective-initiatives.json'));
-    expect(raw.privacy_rule).toMatch(/No worker_id|no worker_id/i);
+  it('DB-backed mapper (B-TRUTH port): ContributionEventRow / buildContributionPipelineInputs carry no worker identity field', () => {
+    const src = read('lib/kora-contribution/contribution-pipeline-input.ts');
+    expect(src).not.toContain('worker_id');
+    expect(src).not.toContain('worker_identity_id');
   });
 
   it('booking service: worker_identity_id removed from worker GET response', () => {
@@ -403,20 +400,20 @@ describe('hardening — 13. No worker ranking', () => {
     expect(CONTRIBUTION_NO_RANKING).toBe(true);
   });
 
-  it('ContributionSummary: noRanking is always true', async () => {
+  it('ContributionSummary: noRanking is always true, regardless of input', async () => {
     const { KoraContributionService } = await import('@/services/kora-contribution/KoraContributionService');
     const svc = new KoraContributionService();
     const r1 = svc.computeFromPipelineResult('test', 'S1', []);
-    const r2 = svc.getSummaryV2('meridiana-group', 'S2');
+    const r2 = svc.computeFromPipelineResult('test', 'S2', [{
+      action_family: 'territorial_impact',
+      primary_pillar: 'IMPACT',
+      impact_units_total: 1.2,
+      evidence_verification_ev: 0.90,
+      computed: true,
+      event_nature: 'collective_initiative',
+    }]);
     expect(r1.noRanking).toBe(true);
     expect(r2.noRanking).toBe(true);
-  });
-
-  it('seed data: no_ranking: true on all records', () => {
-    const raw = JSON.parse(read('data/synthetic/kora-contribution-outputs.json'));
-    for (const rec of raw.data) {
-      expect(rec.no_ranking).toBe(true);
-    }
   });
 });
 
@@ -492,20 +489,23 @@ describe('hardening — 15. Transaction safety (C-9)', () => {
   });
 });
 
-// ── 16. Seed wording uses KORA Methodology v0.1 ──────────────────────────────
+// ── 16. Methodology version wording (C-8) ─────────────────────────────────────
+// Originally asserted directly against data/synthetic/kora-contribution-outputs.json
+// (retired by the B-TRUTH Contribution port, 2026-09-01, along with the synthetic
+// runtime path it fed). The live-view functions' own use of getMethodologyVersion()
+// is the current, DB-backed equivalent of this invariant.
 
-describe('hardening — 16. Seed methodology version (C-8)', () => {
-  it('kora-contribution-outputs.json: all records use KORA Methodology v0.1', () => {
-    const raw = JSON.parse(read('data/synthetic/kora-contribution-outputs.json'));
-    for (const rec of raw.data) {
-      expect(rec.methodology_version_id).toBe('KORA Methodology v0.1');
-    }
+describe('hardening — 16. Live view methodology version (C-8)', () => {
+  it('getMethodologyVersion() resolves to the public product label KORA Index v1.0 (per KORA-INDEX-VERSION-02)', async () => {
+    const { getMethodologyVersion } = await import('@/lib/methodology-config/v0.1');
+    expect(getMethodologyVersion()).toBe('KORA Index v1.0');
   });
 
-  it('kora-contribution-outputs.json: no record uses KORA Index v1.0 as methodology_version_id', () => {
-    const raw = JSON.parse(read('data/synthetic/kora-contribution-outputs.json'));
-    for (const rec of raw.data) {
-      expect(rec.methodology_version_id).not.toBe('KORA Index v1.0');
+  it('all three live-view functions stamp methodology_version_id via getMethodologyVersion(), never a hardcoded literal', () => {
+    const src = read('services/kora-contribution/KoraContributionService.ts');
+    for (const fnName of ['getContributionLive', 'getContributionPromoterView', 'getContributionOriginEmployerView']) {
+      const fn = src.split(`export async function ${fnName}`)[1]?.split('export async function')[0] ?? '';
+      expect(fn).toContain('getMethodologyVersion()');
     }
   });
 });

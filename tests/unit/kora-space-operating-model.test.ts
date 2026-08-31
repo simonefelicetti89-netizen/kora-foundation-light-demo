@@ -244,7 +244,7 @@ describe('KORA Contribution — hierarchy and positioning', () => {
 
   test('28. Company Contribution page does not claim live scoring when production_ready=false', () => {
     expect(contributionSrc).toContain('PRE-PILOT PREVIEW');
-    expect(contributionSrc).toContain('Non live');
+    expect(contributionSrc).toContain('Non è la dashboard live');
     expect(contributionSrc).toContain('isPilot');
   });
 });

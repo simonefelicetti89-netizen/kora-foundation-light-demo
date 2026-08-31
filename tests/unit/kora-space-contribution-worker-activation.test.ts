@@ -110,7 +110,7 @@ describe('KORA Contribution — Space narrative and event surfacing', () => {
   test('13. UI does not claim live Contribution scoring when production_ready=false', () => {
     // Preview path must be clearly labeled
     expect(src).toContain('PRE-PILOT PREVIEW');
-    expect(src).toContain('Non live');
+    expect(src).toContain('Non è la dashboard live');
     // Live data block is gated by isPilot
     expect(src).toContain('isPilot');
     expect(src).toContain('contribution-foundation-light-preview');
