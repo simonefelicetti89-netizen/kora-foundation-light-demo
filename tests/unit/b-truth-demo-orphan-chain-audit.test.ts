@@ -121,15 +121,21 @@ describe('B-TRUTH Demo/Orphan Chain Audit — CompanyIntelligenceService: SUPERS
   });
 });
 
-describe('B-TRUTH Demo/Orphan Chain Audit — CompanyOnboardingService: SUPERSEDED by CC-020A retirement', () => {
+describe('B-TRUTH Demo/Orphan Chain Audit — CompanyOnboardingService: SUPERSEDED, restored, still not deleted', () => {
   // This describe block originally proved CompanyOnboardingService's only
   // caller repo-wide was the unreachable CompanyIntelligenceService, and was
   // correctly NOT deleted pending that service's own fate. CC-020A
-  // (2026-08-31) resolved that fate (RETIRE) and, as a direct consequence,
-  // proved CompanyOnboardingService a pure second-order orphan and retired
-  // it too. See tests/unit/cc020a-retire-company-intelligence.test.ts.
-  it('the file no longer exists', () => {
-    expect(existsSync(resolve(root, 'services/company-onboarding/CompanyOnboardingService.ts'))).toBe(false);
+  // (2026-08-31) resolved CompanyIntelligenceService's fate (RETIRE) — a
+  // first pass then ALSO deleted CompanyOnboardingService as a claimed
+  // second-order orphan, which was WRONG and has been reverted:
+  // CompanyOnboardingService is a Master-Plan-anchored competing
+  // implementation of svc.company-setup (§33 keeps company-setup
+  // permanently INVESTIGATE), not disposable on that basis. Restored. It is
+  // now a plain zero-caller orphan (its only caller no longer exists), kept
+  // deliberately, not migrated or deleted. See
+  // tests/unit/cc020a-retire-company-intelligence.test.ts.
+  it('the file exists again (restored, not retired)', () => {
+    expect(existsSync(resolve(root, 'services/company-onboarding/CompanyOnboardingService.ts'))).toBe(true);
   });
 });
 
