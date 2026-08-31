@@ -180,36 +180,9 @@ describe('CommonsService — getInitiatives() filtering', () => {
   });
 });
 
-// ── getByPillar ───────────────────────────────────────────────────────────────
-
-describe('CommonsService — getByPillar()', () => {
-  it('returns only initiatives matching the pillar', () => {
-    const result = commonsService.getByPillar('LIFE');
-    expect(result.length).toBeGreaterThan(0);
-    for (const i of result) {
-      expect(i.pillar).toBe('LIFE');
-    }
-  });
-
-  it('all 5 pillars have at least one initiative', () => {
-    for (const p of ['LIFE', 'GROWTH', 'CONNECTION', 'IMPACT', 'LEGACY']) {
-      const result = commonsService.getByPillar(p);
-      expect(result.length).toBeGreaterThan(0);
-    }
-  });
-});
-
-// ── getByType ─────────────────────────────────────────────────────────────────
-
-describe('CommonsService — getByType()', () => {
-  it('returns only initiatives matching the type', () => {
-    const result = commonsService.getByType('mentoring');
-    expect(result.length).toBeGreaterThan(0);
-    for (const i of result) {
-      expect(i.initiative_type).toBe('mentoring');
-    }
-  });
-});
+// getByPillar/getByType removed (CC-052, 2026-08-31): zero runtime callers,
+// dead code. Pillar/type filtering for legitimate callers is covered by
+// getInitiatives({ pillar, type }) above, already tested.
 
 // ── getFeaturedInitiatives ────────────────────────────────────────────────────
 
