@@ -134,6 +134,15 @@ describe('B-TRUTH Demo/Orphan Chain Audit — CompanyOnboardingService: SUPERSED
   // now a plain zero-caller orphan (its only caller no longer exists), kept
   // deliberately, not migrated or deleted. See
   // tests/unit/cc020a-retire-company-intelligence.test.ts.
+  //
+  // SUPERSEDED (2026-09-01): the B-TRUTH Company Onboarding
+  // Canonicalization task migrated its synthetic read onto analytics.tenant
+  // + personal.workforce_baseline and settled the CompanySetup/
+  // CompanyOnboarding "competing implementation" question (they are
+  // distinct responsibilities, not competitors) — see
+  // tests/unit/cc020a-retire-company-intelligence.test.ts and
+  // tests/unit/btruth-company-onboarding-view.test.ts for the current state.
+  // The file-existence assertion below is still true and unaffected.
   it('the file exists again (restored, not retired)', () => {
     expect(existsSync(resolve(root, 'services/company-onboarding/CompanyOnboardingService.ts'))).toBe(true);
   });

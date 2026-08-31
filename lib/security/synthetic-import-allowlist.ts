@@ -14,11 +14,33 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 21 files / 32 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 20 files / 31 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH Company Onboarding Canonicalization (2026-09-01): removed
+// services/company-onboarding/CompanyOnboardingService.ts's sole synthetic
+// import (data/synthetic/company-onboarding.json, deleted). Founder decision
+// (this task's own prompt) supersedes the CC-020A/Master-Plan-§33 "competing
+// implementation of svc.company-setup" framing: CompanySetup (pre-provisioning
+// wizard) and CompanyOnboarding (post-provisioning readiness/status logic)
+// are distinct responsibilities, not competing implementations — see
+// lib/architecture/registry.ts svc.company-onboarding / svc.company-setup.
+// The service's derived logic (isFoundationLightEligible, getPipelineReadiness,
+// getNextBestAction, getPrivacyThresholdWarnings) is preserved, now reading
+// analytics.tenant + personal.workforce_baseline (via the already-canonical
+// lib/live/workforce-baseline-view.ts) through a new pure view builder,
+// lib/live/company-onboarding-view.ts — see that file's header for the full
+// KEEP/DERIVE/DROP field disposition. 7 simple accessor methods with no
+// canonical equivalent and zero real callers (getCompanyProfile,
+// getWorkforceBaseline [old shape], getHRKPIContext, getRawProgramDataSummary,
+// getOnboardingCompanies, getCompanyOnboardingRecord,
+// getCurrentCompanyOnboardingRecord) were retired. Fourth genuine I9
+// reduction via a real caller migration (this service had zero real
+// callers, canonicalized anyway per this task's own explicit instruction):
+// 21->20 files (32->31 imports).
 //
 // B-TRUTH Contribution Protected Port (2026-09-01): removed
 // services/kora-contribution/KoraContributionService.ts's two synthetic
@@ -147,7 +169,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/activation-safeguard/ActivationSafeguardService.ts', reason: 'Reads pre-computed synthetic Activation Safeguard results (demo scoring path).' },
   { file: 'services/admin-preview/AdminPreviewService.ts', reason: 'Admin demo preview shaping — companies, KORA Index outputs, source batches.' },
   { file: 'services/company-data-intake/CompanyDataIntakeService.ts', reason: 'Company raw-data batch/row intake demo seed (fiscal plans, batches, rows).' },
-  { file: 'services/company-onboarding/CompanyOnboardingService.ts', reason: 'CC-020A (2026-08-31, narrowed): restored after an incorrect same-day deletion. Remains an explicitly unresolved competing implementation of svc.company-setup (Master Plan §33 keeps company-setup permanently INVESTIGATE) — retirement would have silently resolved a decision the Master Plan has not made. See lib/architecture/registry.ts svc.company-onboarding.' },
   { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/eligibility-gate/EligibilityGateService.ts', reason: 'Taxonomy/preprocessing classifier reads synthetic action taxonomy.' },
   { file: 'services/explainability/ExplainabilityService.ts', reason: 'Reads synthetic explainability records for demo formula traces.' },

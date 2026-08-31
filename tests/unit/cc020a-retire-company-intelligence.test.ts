@@ -1,6 +1,16 @@
 /**
  * CC-020A — Retire Orphan CompanyIntelligenceService (2026-08-31, narrowed).
  *
+ * SUPERSEDED IN PART (2026-09-01): the "CompanyOnboardingService is a
+ * competing implementation of svc.company-setup" framing below (and its
+ * data/synthetic/company-onboarding.json seed) was an accurate description
+ * of an unresolved question AT THE TIME. The B-TRUTH Company Onboarding
+ * Canonicalization task settled it by explicit founder decision: the two
+ * services are distinct responsibilities (pre-provisioning wizard vs.
+ * post-provisioning readiness/status logic), not competitors. The
+ * CompanyIntelligenceService retirement findings below are unaffected and
+ * remain the current, correct state.
+ *
  * Implementation sub-slice of CC-020 (One Truth Seed Group #3). Not a new
  * Master Plan CC number.
  *
@@ -110,34 +120,44 @@ describe('CC-020A — CompanyOnboardingService is restored, NOT retired', () => 
     expect(existsSync(resolve(root, 'services/company-onboarding/CompanyOnboardingService.ts'))).toBe(true);
   });
 
-  it('its seed file exists again', () => {
-    expect(existsSync(resolve(root, 'data/synthetic/company-onboarding.json'))).toBe(true);
-  });
+  // Its seed file (data/synthetic/company-onboarding.json) and the
+  // "competing implementation" framing below were both superseded by the
+  // B-TRUTH Company Onboarding Canonicalization (2026-09-01): an explicit
+  // founder decision (that task's own prompt) settled CompanySetup and
+  // CompanyOnboarding as distinct responsibilities, not competitors, and
+  // the service's synthetic import was retired in favor of
+  // lib/live/company-onboarding-view.ts. See
+  // tests/unit/btruth-company-onboarding-view.test.ts and
+  // tests/integration/rls-15-company-onboarding-tenant-kind-parity.test.ts
+  // for the current, correct state.
 
-  it('is listed again in the I9 synthetic import allowlist', () => {
+  it('is no longer listed in the I9 synthetic import allowlist — canonicalized, not deleted', () => {
     const allowlist = read('lib/security/synthetic-import-allowlist.ts');
-    expect(allowlist).toContain("'services/company-onboarding/CompanyOnboardingService.ts'");
+    expect(allowlist).not.toContain("'services/company-onboarding/CompanyOnboardingService.ts'");
   });
 
-  it('registry keeps it INVESTIGATE, not DEAD', () => {
+  it('registry marks it CANONICAL, not DEAD or INVESTIGATE — synthetic read retired, derived logic preserved', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'svc.company-onboarding'");
     expect(idx).toBeGreaterThan(-1);
     const nextIdx = registry.indexOf('{ id:', idx + 10);
     const entry = registry.slice(idx, nextIdx);
-    expect(entry).toContain("status: 'INVESTIGATE'");
+    expect(entry).toContain("status: 'CANONICAL'");
     expect(entry).not.toContain("status: 'DEAD'");
   });
 
-  it('the CompanySetup/CompanyOnboarding competing relationship remains intact in both directions', () => {
+  it('the CompanySetup/CompanyOnboarding competing claim is corrected in both directions — distinct responsibilities, not competitors', () => {
     const registry = read('lib/architecture/registry.ts');
     const onboardingIdx = registry.indexOf("id: 'svc.company-onboarding'");
     const onboardingEnd = registry.indexOf('{ id:', onboardingIdx + 10);
-    expect(registry.slice(onboardingIdx, onboardingEnd)).toContain("competingWith: ['svc.company-setup']");
+    expect(registry.slice(onboardingIdx, onboardingEnd)).toContain('competingWith: []');
 
     const setupIdx = registry.indexOf("id: 'svc.company-setup'");
     const setupEnd = registry.indexOf('{ id:', setupIdx + 10);
-    expect(registry.slice(setupIdx, setupEnd)).toContain("competingWith: ['svc.company-onboarding']");
+    expect(registry.slice(setupIdx, setupEnd)).toContain('competingWith: []');
+    // CompanySetup's own status (Master Plan §33 INVESTIGATE) is a separate
+    // axis from the competing-implementation claim and is untouched by this
+    // correction.
     expect(registry.slice(setupIdx, setupEnd)).toContain("status: 'INVESTIGATE'");
   });
 });
