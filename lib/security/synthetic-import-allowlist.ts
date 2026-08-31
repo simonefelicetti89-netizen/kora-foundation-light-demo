@@ -20,6 +20,26 @@
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
 //
+// CC-020A — Company Intelligence Capability Retirement, NARROWED (2026-08-31):
+// removed services/company-intelligence/CompanyIntelligenceService.ts (0
+// direct synthetic-data imports; not itself an allowlist entry) as an
+// explicit, capability-level founder decision (obsolete-capability
+// retirement, not a live migration — see lib/architecture/registry.ts
+// svc.company-intelligence for the full record). A same-day first pass
+// ALSO deleted services/company-onboarding/CompanyOnboardingService.ts,
+// reasoning it was a pure second-order orphan of CompanyIntelligenceService.
+// That was WRONG and has been reverted: CompanyOnboardingService is a
+// Master-Plan-anchored competing implementation of svc.company-setup
+// (§33 keeps company-setup permanently INVESTIGATE by name) — deleting it
+// would have silently resolved a decision the Master Plan has not made.
+// Restored, along with its sole seed file, data/synthetic/company-onboarding.json.
+// tenantService, companyDataIntakeService, workerProvisioningService, and
+// scoringSimulatorService — CompanyIntelligenceService's other 4 former
+// dependencies — all retain other confirmed callers and were untouched
+// throughout. Net I9 effect of this corrected slice: NONE — still 24
+// files, 36 imports (CompanyIntelligenceService.ts was never itself an
+// allowlist entry, so its retirement alone never moved this count).
+//
 // B-TRUTH Ingestion/UEF Classification (2026-08-31): a follow-on retirement
 // attempt (feature/b-truth-retire-ingestion-uef) for
 // services/ingestion-pipeline/IngestionPipelineService.ts and
@@ -78,7 +98,7 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/admin-preview/AdminPreviewService.ts', reason: 'Admin demo preview shaping — companies, KORA Index outputs, source batches.' },
   { file: 'services/commons/CommonsService.ts', reason: 'Commons demo-seeded initiatives (live DB path also exists, coexists).' },
   { file: 'services/company-data-intake/CompanyDataIntakeService.ts', reason: 'Company raw-data batch/row intake demo seed (fiscal plans, batches, rows).' },
-  { file: 'services/company-onboarding/CompanyOnboardingService.ts', reason: 'Demo onboarding flow seed data.' },
+  { file: 'services/company-onboarding/CompanyOnboardingService.ts', reason: 'CC-020A (2026-08-31, narrowed): restored after an incorrect same-day deletion. Remains an explicitly unresolved competing implementation of svc.company-setup (Master Plan §33 keeps company-setup permanently INVESTIGATE) — retirement would have silently resolved a decision the Master Plan has not made. See lib/architecture/registry.ts svc.company-onboarding.' },
   { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/eligibility-gate/EligibilityGateService.ts', reason: 'Taxonomy/preprocessing classifier reads synthetic action taxonomy.' },
   { file: 'services/explainability/ExplainabilityService.ts', reason: 'Reads synthetic explainability records for demo formula traces.' },

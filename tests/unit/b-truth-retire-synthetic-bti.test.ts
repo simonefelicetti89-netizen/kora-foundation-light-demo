@@ -95,28 +95,29 @@ describe('B-TRUTH — the 3 confirmed consumers were trimmed, not redesigned', (
     expect(src).toContain("BudgetToHumanImpactRecord,\n  BudgetToHumanImpactRecommendation,\n} from '@/lib/types'");
   });
 
-  it('CompanyIntelligenceService keeps btiRecord undefined, unaffected downstream fields still read optionally', () => {
-    const src = read('services/company-intelligence/CompanyIntelligenceService.ts');
-    expect(src).toContain('const btiRecord = undefined as BudgetToHumanImpactRecord | undefined;');
-    expect(src).not.toContain('budgetToHumanImpactService');
-    expect(src).toContain('btiRecord?.bti_score ?? null');
+  // CompanyIntelligenceService was the 3rd of these 3 confirmed consumers —
+  // this describe block originally proved its BTI-specific dependency was
+  // trimmed without touching the rest of the file. CC-020A (2026-08-31)
+  // later retired the entire file for an unrelated, explicit founder
+  // decision (no future canonical role for the orphaned aggregator itself).
+  // See tests/unit/cc020a-retire-company-intelligence.test.ts.
+  it('CompanyIntelligenceService.ts no longer exists (retired by CC-020A, unrelated to this BTI slice)', () => {
+    expect(existsSync(resolve(root, 'services/company-intelligence/CompanyIntelligenceService.ts'))).toBe(false);
   });
 
-  it('none of the 3 consumers had their ScoringSimulatorService dependency touched', () => {
+  it('the other 2 consumers had their ScoringSimulatorService dependency untouched', () => {
     for (const file of [
       'services/dynamic-scoring/DynamicScoringPreviewService.ts',
       'services/report-generator/ReportGeneratorService.ts',
-      'services/company-intelligence/CompanyIntelligenceService.ts',
     ]) {
       expect(read(file)).toContain('scoringSimulatorService');
     }
   });
 
-  it('none of the 3 consumers were deleted — only the BTI-specific dependency was removed', () => {
+  it('the other 2 consumers were not deleted — only the BTI-specific dependency was removed', () => {
     for (const file of [
       'services/dynamic-scoring/DynamicScoringPreviewService.ts',
       'services/report-generator/ReportGeneratorService.ts',
-      'services/company-intelligence/CompanyIntelligenceService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }

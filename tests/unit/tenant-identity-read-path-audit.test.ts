@@ -91,12 +91,14 @@ describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers ar
   // ALSO canonicalized — it now queries analytics.tenant by tenant_code,
   // same as the Gen3 children, with no TenantService dependency at all. See
   // tests/unit/cc019b-canonicalize-gen3-tenant-identity.test.ts.
-  // ReportFactoryService/CompanyIntelligenceService remain entangled pending
-  // their own separate decisions. See lib/architecture/registry.ts svc.tenant
-  // notes.
+  // CC-020A (2026-08-31): CompanyIntelligenceService's pending decision was
+  // resolved (founder: RETIRE, no future canonical role) and it was removed
+  // entirely — no longer entangled, no longer exists. See
+  // tests/unit/cc020a-retire-company-intelligence.test.ts. ReportFactoryService
+  // remains entangled pending its own separate decision. See
+  // lib/architecture/registry.ts svc.tenant notes.
   const ENTANGLED_CALLERS = [
     'services/report-factory/ReportFactoryService.ts',
-    'services/company-intelligence/CompanyIntelligenceService.ts',
   ];
 
   for (const file of ENTANGLED_CALLERS) {
@@ -105,6 +107,10 @@ describe('B-TRUTH Tenant Identity — remaining Gen 0/1 TenantService callers ar
       expect(read(file)).toContain('tenantService');
     });
   }
+
+  it('services/company-intelligence/CompanyIntelligenceService.ts no longer exists (CC-020A)', () => {
+    expect(existsSync(resolve(root, 'services/company-intelligence/CompanyIntelligenceService.ts'))).toBe(false);
+  });
 
   it('app/admin/companies/[companyId]/page.tsx (root Control Room) no longer calls tenantService — retired to a redirect', () => {
     const code = read('app/admin/companies/[companyId]/page.tsx');
