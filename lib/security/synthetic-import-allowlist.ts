@@ -14,11 +14,29 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 23 files / 35 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 22 files / 34 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH First Canonical Seed Group (2026-08-31): WorkforceBaselineService.ts
+// deleted entirely, along with its sole import of
+// data/synthetic/workforce-baseline.json. Its only real caller,
+// app/admin/companies/workforce-baseline/page.tsx, now reads live
+// personal.workforce_baseline via a new GET on
+// app/api/admin/workforce-baseline/route.ts (canonical write path,
+// lib/live/workforce-baseline.ts's persistWorkforceBaseline, already
+// existed and required no changes) and the live tenant registry via the
+// already-existing GET /api/admin/tenants — the same page a DEMO-kind and
+// a LIVE-kind tenant both traverse identically, no tenant_kind branch
+// anywhere. Several synthetic-only fields (upload-process stats, editorial
+// completeness score, warnings/limitations text, activation/equity
+// readiness flags) had no live source and are not shown — no schema was
+// added and no placeholder value was invented for any of them; see
+// lib/live/workforce-baseline-view.ts for the full field disposition.
+// Second genuine I9 reduction via a real caller migration (after CC-052's
+// Commons): 23->22 files (35->34 imports).
 //
 // CC-052 — Retire Commons Synthetic Discovery Path (2026-08-31): removed
 // services/commons/CommonsService.ts's synthetic class (getInitiatives,
@@ -126,5 +144,4 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/tenant/TenantService.ts', reason: 'Reads synthetic tenant records for the demo tenant list.' },
   { file: 'services/worker-achievements/WorkerAchievementService.ts', reason: 'Worker-private demo achievements seed.' },
   { file: 'services/worker-provisioning/WorkerProvisioningService.ts', reason: 'Demo worker roster seed for provisioning flows.' },
-  { file: 'services/workforce-baseline/WorkforceBaselineService.ts', reason: 'Baseline workforce metrics demo seed.' },
 ];

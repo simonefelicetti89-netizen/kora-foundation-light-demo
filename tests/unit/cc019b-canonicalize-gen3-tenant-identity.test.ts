@@ -99,9 +99,12 @@ describe('CC-019A retirement remains intact', () => {
 
 describe('CC-019B — intentional DEMO_RUNTIME TenantService consumers remain untouched', () => {
   it('demo surfaces still call tenantService, unchanged', () => {
+    // app/admin/companies/workforce-baseline/page.tsx is NOT listed here —
+    // B-TRUTH's first canonical seed group (2026-09-01) migrated it off
+    // tenantService (both its own data and its company selector now read
+    // live endpoints). See tests/unit/btruth-workforce-baseline-route.test.ts.
     for (const file of [
       'app/admin/pipeline/page.tsx',
-      'app/admin/companies/workforce-baseline/page.tsx',
       'components/admin/WorkforceQuickAccessPanel.tsx',
     ]) {
       expect(read(file)).toContain('tenantService');

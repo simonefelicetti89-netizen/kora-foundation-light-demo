@@ -2,16 +2,30 @@
 // A-01e: Workforce Baseline Admin — inserimento baseline workforce.
 // Scopo: caricare o verificare la baseline headcount/segmenti
 //        necessaria come fondamento per il calcolo KORA Index™.
+//
+// B-TRUTH first canonical seed group (2026-08-31): retired the synthetic
+// data path (WorkforceBaselineService, data/synthetic/workforce-baseline.json).
+// Now reads live personal.workforce_baseline via /api/admin/workforce-baseline
+// and the live tenant registry via /api/admin/tenants — the exact same live
+// path a DEMO-kind or LIVE-kind tenant both traverse identically. Several
+// synthetic-only fields (upload-process stats, editorial completeness score,
+// warnings/limitations text, activation/equity readiness flags) have no live
+// source and are not shown — see lib/live/workforce-baseline-view.ts for the
+// full field disposition. No placeholder values invented for any of them.
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import { workforceBaselineService } from '@/services/workforce-baseline/WorkforceBaselineService';
-import { DemoFlowBanner } from '@/components/admin/DemoFlowBanner';
-import { tenantService } from '@/services/tenant/TenantService';
-import type { WorkforceDimensionType } from '@/lib/types';
+import type { WorkforceBaselineView } from '@/lib/live/workforce-baseline-view';
 
-const DIMENSION_LABELS: Record<WorkforceDimensionType, string> = {
+interface LiveTenant {
+  id: string;
+  tenantCode: string;
+  companyName: string;
+  onboardingStatus: string;
+}
+
+const DIMENSION_LABELS: Record<string, string> = {
   site:              'Sede',
   department:        'Dipartimento',
   role_family:       'Famiglia professionale',
@@ -21,45 +35,56 @@ const DIMENSION_LABELS: Record<WorkforceDimensionType, string> = {
   other:             'Altro',
 };
 
-const DIMENSION_KEYS: WorkforceDimensionType[] = [
-  'site', 'department', 'role_family', 'seniority_band', 'contract_type', 'employment_status',
-];
-
-const UPLOAD_STATUS_LABELS: Record<string, string> = {
-  not_started:                  'Non avviato',
-  uploaded:                     'Caricato',
-  validated:                    'Validato',
-  needs_review:                 'Richiede revisione',
-  below_company_threshold:      'Sotto soglia aziendale',
-  privacy_suppression_required: 'Soppressione privacy richiesta',
-  ready_for_aggregation:        'Pronto per aggregazione',
-};
-
-const UPLOAD_STATUS_COLORS: Record<string, string> = {
-  not_started:                  'border-[rgba(6,3,43,0.08)] bg-[rgba(6,3,43,0.03)] text-[rgba(6,3,43,0.52)]',
-  uploaded:                     'border-blue-200 bg-blue-50 text-blue-700',
-  validated:                    'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
-  needs_review:                 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
-  below_company_threshold:      'border-[rgba(158,59,47,0.22)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]',
-  privacy_suppression_required: 'border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]',
-  ready_for_aggregation:        'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]',
-};
-
 // A-18: KORA Admin — Workforce Baseline
 export default function AdminWorkforceBaselinePage() {
-  const [activeDimension, setActiveDimension] = useState<WorkforceDimensionType>('department');
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('meridiana-group');
+  const [tenants, setTenants] = useState<LiveTenant[]>([]);
+  const [tenantIdsWithBaseline, setTenantIdsWithBaseline] = useState<Set<string>>(new Set());
+  const [selectedTenantId, setSelectedTenantId] = useState<string>('');
+  const [activeDimension, setActiveDimension] = useState<string>('department');
+  const [baseline, setBaseline] = useState<WorkforceBaselineView | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const tenants     = tenantService.getTenants();
-  const baselines   = workforceBaselineService.getAvailableWorkforceBaselines();
-  const baseline    = workforceBaselineService.getWorkforceBaseline(selectedCompanyId);
-  const batch       = workforceBaselineService.getUploadBatch(selectedCompanyId);
-  const readiness   = workforceBaselineService.getWorkforceBaselineReadiness(selectedCompanyId);
-  const validation  = workforceBaselineService.validateWorkforceBaseline(selectedCompanyId);
-  const visibleGroups = workforceBaselineService.getGroupsByDimension(selectedCompanyId, activeDimension);
-  const suppressed  = workforceBaselineService.getSuppressedGroups(selectedCompanyId);
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([
+      fetch('/api/admin/tenants').then((r) => (r.ok ? r.json() : { tenants: [] })),
+      fetch('/api/admin/workforce-baseline').then((r) => (r.ok ? r.json() : { tenantIdsWithBaseline: [] })),
+    ]).then(([tenantsRes, baselinesRes]) => {
+      if (cancelled) return;
+      const liveTenants: LiveTenant[] = tenantsRes.tenants ?? [];
+      setTenants(liveTenants);
+      setTenantIdsWithBaseline(new Set(baselinesRes.tenantIdsWithBaseline ?? []));
+      if (liveTenants.length > 0) setSelectedTenantId(liveTenants[0].id);
+      setLoading(false);
+    }).catch(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
-  const selectedTenant = tenants.find((t) => t.company_id === selectedCompanyId);
+  const fetchBaseline = useCallback((tenantId: string) => {
+    if (!tenantId) return;
+    fetch(`/api/admin/workforce-baseline?tenantId=${encodeURIComponent(tenantId)}`)
+      .then((r) => (r.ok ? r.json() : { baseline: null }))
+      .then((res) => setBaseline(res.baseline ?? null))
+      .catch(() => setBaseline(null));
+  }, []);
+
+  useEffect(() => {
+    if (selectedTenantId) fetchBaseline(selectedTenantId);
+  }, [selectedTenantId, fetchBaseline]);
+
+  const selectedTenant = tenants.find((t) => t.id === selectedTenantId);
+  const visibleGroups = (baseline?.aggregateGroups ?? []).filter((g) => g.dimension_type === activeDimension);
+  const dimensionKeys = [...new Set((baseline?.aggregateGroups ?? []).map((g) => g.dimension_type))];
+
+  if (loading) {
+    return (
+      <div className="space-y-6 max-w-5xl">
+        <p className="text-xs text-[rgba(6,3,43,0.40)]">Caricamento…</p>
+      </div>
+    );
+  }
 
   if (!baseline) {
     return (
@@ -72,11 +97,11 @@ export default function AdminWorkforceBaselinePage() {
           <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Azienda cliente</p>
           <div className="flex flex-wrap gap-2">
             {tenants.map((t) => {
-              const hasBaseline = baselines.some((b) => b.company_id === t.company_id);
+              const hasBaseline = tenantIdsWithBaseline.has(t.id);
               return (
-                <button key={t.company_id} type="button" onClick={() => setSelectedCompanyId(t.company_id)}
-                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedCompanyId === t.company_id ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'}`}>
-                  {t.company_name}{!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
+                <button key={t.id} type="button" onClick={() => setSelectedTenantId(t.id)}
+                  className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${selectedTenantId === t.id ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]' : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'}`}>
+                  {t.companyName}{!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
                 </button>
               );
             })}
@@ -84,8 +109,8 @@ export default function AdminWorkforceBaselinePage() {
         </div>
         <div className="rounded-lg border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] p-5 text-xs text-[#8A5A00] space-y-2">
           <p className="font-semibold">Baseline non ancora caricata</p>
-          <p>{selectedTenant?.company_name ?? selectedCompanyId} non ha ancora una workforce baseline.</p>
-          <p>Onboarding status: {selectedTenant?.onboarding_status?.replace(/_/g, ' ') ?? 'non avviato'}</p>
+          <p>{selectedTenant?.companyName ?? 'Azienda selezionata'} non ha ancora una workforce baseline.</p>
+          <p>Onboarding status: {selectedTenant?.onboardingStatus?.replace(/_/g, ' ') ?? 'non avviato'}</p>
         </div>
       </div>
     );
@@ -93,13 +118,6 @@ export default function AdminWorkforceBaselinePage() {
 
   return (
     <div className="space-y-8 max-w-5xl">
-
-      <DemoFlowBanner
-        title="Synthetic Demo Flow — Workforce Baseline"
-        description="Questo flusso legge dati sintetici da JSON seed. Non scrive nel database live. Per aggiornare la baseline reale usa l'API workforce-baseline."
-        canonicalHref="/admin/tenants"
-        canonicalLabel="Tenant Registry (crea/aggiorna baseline)"
-      />
 
       {/* ── Header ── */}
       <div>
@@ -129,19 +147,19 @@ export default function AdminWorkforceBaselinePage() {
         <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Azienda cliente</p>
         <div className="flex flex-wrap gap-2">
           {tenants.map((t) => {
-            const hasBaseline = baselines.some((b) => b.company_id === t.company_id);
+            const hasBaseline = tenantIdsWithBaseline.has(t.id);
             return (
               <button
-                key={t.company_id}
+                key={t.id}
                 type="button"
-                onClick={() => setSelectedCompanyId(t.company_id)}
+                onClick={() => setSelectedTenantId(t.id)}
                 className={`rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
-                  selectedCompanyId === t.company_id
+                  selectedTenantId === t.id
                     ? 'border-[rgba(6,3,43,0.14)] bg-[rgba(199,111,61,0.08)] text-[rgba(6,3,43,0.72)]'
                     : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]'
                 }`}
               >
-                {t.company_name}
+                {t.companyName}
                 {!hasBaseline && <span className="ml-1 text-[9px] text-[rgba(6,3,43,0.40)]">(nessuna baseline)</span>}
               </button>
             );
@@ -149,177 +167,100 @@ export default function AdminWorkforceBaselinePage() {
         </div>
       </div>
 
-      {/* ── Upload batch status ── */}
-      {batch && (
-        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Stato Upload Workforce</p>
-            <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
-              UPLOAD_STATUS_COLORS[batch.upload_status] ?? 'border-[rgba(6,3,43,0.08)] text-[rgba(6,3,43,0.52)]'
-            )}>
-              {UPLOAD_STATUS_LABELS[batch.upload_status] ?? batch.upload_status}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
-            {[
-              ['Record totali',   batch.total_rows],
-              ['Record validi',   batch.valid_rows],
-              ['Record non validi', batch.invalid_rows],
-              ['Duplicati',       batch.duplicate_rows],
-            ].map(([label, value]) => (
-              <div key={label as string}>
-                <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
-                <p className="text-[rgba(6,3,43,0.78)] font-semibold">{value}</p>
-              </div>
-            ))}
-          </div>
-          <div className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] text-blue-700 leading-relaxed">
-            Nessun dato individuale — solo aggregati. Cluster &lt; 10 lavoratori soppressi per privacy (N≥10).
-            KORA misura l&apos;organizzazione, non gli individui.
-          </div>
-        </div>
-      )}
-
       {/* ── Validation result ── */}
-      {validation && (
-        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Validazione</p>
-            <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
-              validation.minimum_company_threshold_met
-                ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]'
-                : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
-            )}>
-              {validation.minimum_company_threshold_met ? 'SOGLIA SODDISFATTA' : 'SOTTO SOGLIA'}
-            </span>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 text-[10px]">
-            {[
-              ['Lavoratori totali',   validation.total_workers],
-              ['Soglia minima',       validation.minimum_company_threshold],
-              ['Completezza baseline', `${(validation.baseline_completeness_score * 100).toFixed(0)}%`],
-              ['Cluster soppressi',   validation.suppressed_groups],
-            ].map(([label, value]) => (
-              <div key={label as string}>
-                <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
-                <p className="text-[rgba(6,3,43,0.78)] font-semibold">{value}</p>
-              </div>
-            ))}
-          </div>
-          {validation.warnings.length > 0 && (
-            <div className="space-y-1">
-              {validation.warnings.map((warning, i) => (
-                <div key={i} className="rounded px-3 py-2 text-[10px] bg-[rgba(217,154,43,0.08)] text-[#8A5A00]">
-                  {warning}
-                </div>
-              ))}
-            </div>
-          )}
-          {validation.limitations.length > 0 && (
-            <div className="space-y-1">
-              {validation.limitations.map((note, i) => (
-                <p key={i} className="text-[10px] text-[rgba(6,3,43,0.40)] leading-relaxed">{note}</p>
-              ))}
-            </div>
-          )}
+      <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Validazione</p>
+          <span className={cn('rounded border px-2 py-0.5 text-[10px] font-semibold',
+            baseline.minimumCompanyThresholdMet
+              ? 'border-[rgba(47,125,85,0.22)] bg-[rgba(47,125,85,0.08)] text-[#2F7D55]'
+              : 'border-[rgba(158,59,47,0.20)] bg-[rgba(158,59,47,0.06)] text-[#9E3B2F]'
+          )}>
+            {baseline.minimumCompanyThresholdMet ? 'SOGLIA SODDISFATTA' : 'SOTTO SOGLIA'}
+          </span>
         </div>
-      )}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[10px]">
+          {[
+            ['Lavoratori totali',   baseline.totalWorkers],
+            ['Soglia minima',       baseline.minimumCompanyThreshold],
+            ['Soglia gruppo (N≥)',  baseline.minimumGroupSize],
+          ].map(([label, value]) => (
+            <div key={label as string}>
+              <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
+              <p className="text-[rgba(6,3,43,0.78)] font-semibold">{value}</p>
+            </div>
+          ))}
+        </div>
+        <div className="rounded border border-blue-100 bg-blue-50 px-3 py-2 text-[10px] text-blue-700 leading-relaxed">
+          Nessun dato individuale — solo aggregati. Cluster &lt; {baseline.minimumGroupSize} lavoratori soppressi per privacy prima della scrittura.
+          KORA misura l&apos;organizzazione, non gli individui.
+        </div>
+      </div>
 
       {/* ── Aggregate groups by dimension ── */}
       <div className="space-y-4">
         <div>
           <p className="text-sm font-semibold text-[rgba(6,3,43,0.90)]">Gruppi Aggregati per Dimensione</p>
           <p className="text-xs text-[rgba(6,3,43,0.40)] mt-0.5">
-            Solo gruppi ≥ 10 lavoratori. Nessun dato individuale — aggregati per privacy.
+            Solo gruppi ≥ {baseline.minimumGroupSize} lavoratori. Nessun dato individuale — aggregati per privacy.
           </p>
         </div>
 
-        {/* Dimension tabs */}
-        <div className="flex flex-wrap gap-2">
-          {DIMENSION_KEYS.map((dim) => (
-            <button
-              key={dim}
-              type="button"
-              onClick={() => setActiveDimension(dim)}
-              className={cn(
-                'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                activeDimension === dim
-                  ? 'border-[rgba(6,3,43,0.35)] bg-[#06032B] text-white'
-                  : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]',
-              )}
-            >
-              {DIMENSION_LABELS[dim]}
-            </button>
-          ))}
-        </div>
-
-        {/* Groups grid */}
-        {visibleGroups.length > 0 ? (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleGroups.map((g) => (
-              <div key={g.group_id} className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[#F8F6F1] p-3 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{g.dimension_label}</p>
-                    <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)]">{g.dimension_type}</p>
-                  </div>
-                  <span className="text-lg font-bold text-[rgba(6,3,43,0.78)] shrink-0">{g.employee_count}</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.05)]">
-                  <div
-                    className="h-1.5 rounded-full bg-[#C76F3D]"
-                    style={{ width: `${Math.min(g.share_of_workforce * 100, 100)}%` }}
-                  />
-                </div>
-                <div className="flex items-center justify-between text-[9px] text-[rgba(6,3,43,0.40)]">
-                  <span>{(g.share_of_workforce * 100).toFixed(1)}% del totale</span>
-                  {!g.included_in_breakdown && (
-                    <span className="text-[#D99A2B] font-semibold">soppresso</span>
+        {dimensionKeys.length > 0 ? (
+          <>
+            {/* Dimension tabs */}
+            <div className="flex flex-wrap gap-2">
+              {dimensionKeys.map((dim) => (
+                <button
+                  key={dim}
+                  type="button"
+                  onClick={() => setActiveDimension(dim)}
+                  className={cn(
+                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                    activeDimension === dim
+                      ? 'border-[rgba(6,3,43,0.35)] bg-[#06032B] text-white'
+                      : 'border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] text-[rgba(6,3,43,0.62)] hover:border-[rgba(6,3,43,0.14)]',
                   )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-xs text-[rgba(6,3,43,0.40)] italic">Nessun gruppo visibile per questa dimensione.</p>
-        )}
+                >
+                  {DIMENSION_LABELS[dim] ?? dim}
+                </button>
+              ))}
+            </div>
 
-        {suppressed.length > 0 && (
-          <div className="rounded border border-[rgba(217,154,43,0.25)] bg-[rgba(217,154,43,0.08)] px-3 py-2 text-[10px] text-[#8A5A00]">
-            {suppressed.length} cluster sotto soglia privacy (N &lt; 10) — soppressi. Soglia: N≥10.
-          </div>
+            {/* Groups grid */}
+            {visibleGroups.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {visibleGroups.map((g) => (
+                  <div key={g.group_id} className="rounded-lg border border-[rgba(6,3,43,0.05)] bg-[#F8F6F1] p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-xs font-semibold text-[rgba(6,3,43,0.90)]">{g.group_label}</p>
+                        <p className="text-[9px] font-mono text-[rgba(6,3,43,0.40)]">{g.dimension_type}</p>
+                      </div>
+                      <span className="text-lg font-bold text-[rgba(6,3,43,0.78)] shrink-0">{g.employee_count}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-[rgba(6,3,43,0.05)]">
+                      <div
+                        className="h-1.5 rounded-full bg-[#C76F3D]"
+                        style={{ width: `${Math.min(g.share_of_workforce * 100, 100)}%` }}
+                      />
+                    </div>
+                    <div className="text-[9px] text-[rgba(6,3,43,0.40)]">
+                      {(g.share_of_workforce * 100).toFixed(1)}% del totale
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-[rgba(6,3,43,0.40)] italic">Nessun gruppo visibile per questa dimensione.</p>
+            )}
+          </>
+        ) : (
+          <p className="text-xs text-[rgba(6,3,43,0.40)] italic">
+            Nessuna suddivisione per dimensione registrata per questa baseline.
+          </p>
         )}
       </div>
-
-      {/* ── Readiness ── */}
-      {readiness && (
-        <div className="rounded-lg border border-[rgba(6,3,43,0.08)] bg-[#F8F6F1] p-5 space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-[rgba(6,3,43,0.40)]">Readiness Pipeline</p>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 text-[10px]">
-            {[
-              ['Company threshold N≥30',  validation?.minimum_company_threshold_met ? '✓ OK' : '✕ Non soddisfatta'],
-              ['Privacy per portale',      readiness.privacy_safe_for_company_view ? '✓ OK' : '✕ Verificare'],
-              ['Completezza baseline',     validation ? `${(validation.baseline_completeness_score * 100).toFixed(0)}%` : '—'],
-              ['Activation reach',         readiness.activation_reach_ready ? '✓ Pronto' : '✕ Non pronto'],
-              ['Equity distribuzione',     readiness.distribution_equity_ready ? '✓ Pronto' : '✕ Non pronto'],
-              ['Cluster soppressi',        validation ? `${validation.suppressed_groups}` : '—'],
-            ].map(([label, value]) => (
-              <div key={label as string}>
-                <p className="text-[rgba(6,3,43,0.40)]">{label}</p>
-                <p className={cn('text-[rgba(6,3,43,0.78)] font-semibold mt-0.5',
-                  (value as string).startsWith('✕') ? 'text-[rgba(158,59,47,0.90)]' :
-                  (value as string).startsWith('✓') ? 'text-[rgba(47,125,85,0.90)]' : ''
-                )}>
-                  {value}
-                </p>
-              </div>
-            ))}
-          </div>
-          {readiness.next_action && (
-            <p className="text-[10px] text-[rgba(6,3,43,0.40)] italic leading-relaxed">{readiness.next_action}</p>
-          )}
-        </div>
-      )}
 
       {/* ── Navigation ── */}
       <div className="border-t border-[rgba(6,3,43,0.05)] pt-4 flex items-center gap-4 flex-wrap">
