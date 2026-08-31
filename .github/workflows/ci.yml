@@ -389,6 +389,19 @@ jobs:
       # setting it once on this step covers both. Only the exact vars this
       # one spec file reads are set; nothing sourced wholesale from the seed
       # script's generated env file.
+      #
+      # First real CI run of this job found a second bug beyond the Node
+      # version above: the seed script's generated env file's first line is
+      # E2E_BASE_URL=http://localhost:3000 — the SAME value
+      # playwright.config.ts already defaults to, but its mere PRESENCE (not
+      # its value) flips that config's `usingCustomBaseUrl` check to true,
+      # which disables its own webServer auto-start entirely (the config's
+      # own stated assumption: a custom E2E_BASE_URL means a server is
+      # already running elsewhere). Sourcing the file wholesale silently
+      # unset webServer, so no app was ever started — every test failed with
+      # ECONNREFUSED at localhost:3000. Unsetting E2E_BASE_URL alongside
+      # E2E_GOLDEN_DATA_BEARING_ALLOW_RUN restores the intended default:
+      # Playwright starts `next dev` itself and waits for it to be ready.
       - name: Run Playwright local golden-path suite
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ env.API_URL }}
@@ -401,6 +414,7 @@ jobs:
           source .env.e2e-local-golden-path.local
           set +a
           unset E2E_GOLDEN_DATA_BEARING_ALLOW_RUN
+          unset E2E_BASE_URL
           npx playwright test tests/e2e/pilot-trust-01-golden-path-local-smoke.spec.ts
 
       - name: Upload Playwright traces/screenshots on failure
