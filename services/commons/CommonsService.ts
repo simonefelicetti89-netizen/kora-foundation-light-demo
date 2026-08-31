@@ -39,14 +39,6 @@ class CommonsService {
       .slice(0, 4);
   }
 
-  getByPillar(pillar: string): CommonsInitiative[] {
-    return ALL.filter((i) => i.pillar === pillar);
-  }
-
-  getByType(type: InitiativeType): CommonsInitiative[] {
-    return ALL.filter((i) => i.initiative_type === type);
-  }
-
   getNetworkStats(): CommonsNetworkStats {
     const open = ALL.filter((i) => i.status === 'open' || i.status === 'upcoming').length;
     const orgs = new Set(ALL.map((i) => i.owner_organization)).size;
