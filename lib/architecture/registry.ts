@@ -17,6 +17,10 @@
 // surfaces). Where CC-001R found two competing implementations, both are listed
 // with matching `competingWith` and the SAME `decisionRef` — neither is elevated.
 //
+// D-K (ratify Master Plan v2.1 §3 domain ontology, closing B-SPEC) is recorded
+// in docs/21-founder-gate-resolution-log.md §10, not here — that placement was
+// explicit founder direction, distinct from the D-A/D-B/D-C precedent above.
+//
 // docs/ARCHITECTURE_REGISTRY.md is GENERATED from this file by
 // scripts/generate-architecture-doc.ts. Never hand-edit that Markdown file.
 //

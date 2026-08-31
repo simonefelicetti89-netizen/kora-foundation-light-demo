@@ -700,6 +700,40 @@ Every canonical architectural decision established in docs 01–20 remains in fo
 
 ---
 
+## 10. Master Plan v2.1 Lettered Decisions (D-A–D-N scheme)
+
+**Scope note:** the decisions above (D-01 through D-21) are the closed, 21-item Gate 1 set defined by `docs/13-founder-cto-review-open-questions.md`. This section is a **separate, later-added** namespace — the D-A…D-N decision letters `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md` itself defines and reserves (e.g. D-A Confidence, D-B Decision Pack, D-C One Truth, D-D worker surfaces). Gate 1's own 21-decision count is unaffected — nothing here is the "22nd Gate 1 decision." D-A, D-B, and D-C were each already resolved and recorded via `decisionRef`/notes directly in `lib/architecture/registry.ts` (CC-011/CC-013/D-C governance closeout), not in this document. D-K is recorded here instead, at explicit founder direction — readers reconciling the two lettered-decision families should be aware both locations exist.
+
+---
+
+**D-K — Ratify Master Plan v2.1 §3 Domain Ontology**
+
+*Question:* Ratify the domain ontology in Master Plan v2.1 §3 ("KORA OFFICIAL DOMAIN ONTOLOGY" — `ProgramDefinition`, `ProgramParticipation`, `InvestmentCase`, `EvidencePlan`, `DecisionRule`, `Observation`, `Measurement`, `InvestmentReview`, `DecisionEvent`, `SurveyDefinition`, `SurveyVersion`, `SurveyQuestion`, `SurveyCampaign`, `SurveyAssignment`, `SurveyResponse`, `ListeningResult`, `NeedObservation`, `NeedsMapSnapshot`, `ProgramBrief`, and the cross-cutting actors table) as final and binding?
+
+**Decision: RATIFIED**
+
+*Rationale:*
+- The ontology is already substantively defined — every object carries explicit identity, tenancy, lifecycle, mutability, and privacy fields.
+- It has already been verified against the current repository where applicable (`[VERIFIED]` markers in §3 itself: `ORGANIZATION`/`analytics.tenant`, `WORKER`/`personal.worker_identity`, `PIB`/`personal.worker_pib`, `PARTNER`/`network.partner_*`, `KORA LINK`/`kora_link.*`, `KORA CONTRIBUTION`, `METHODOLOGY SNAPSHOT` partial).
+- No concrete contradiction or defect was identified in it.
+- N1–N14, NB-1–NB-4, the Fresh Tenant Test (§24), and the Contract Freeze (§21) already use this exact ontology as their foundation.
+- Ratification changes no runtime behavior — it is a governance sign-off, not an implementation act.
+
+*Effective date:* 2026-08-31
+
+*Blocks released:* **B-SPEC** ("ontologia + spec nel repo," Master Plan §19).
+
+*Explicit non-effects:*
+- Does **not** close B-TRUTH.
+- Does **not** authorize starting N1 while the B-TRUTH sequencing constraint (§29, "Sicuri": `N1…N6 ∥ qualunque consolidamento tranne B-TRUTH`) remains — B-TRUTH has not closed.
+- Does **not** change START / GOVERN / NETWORK.
+- Does **not** alter the KORA Index (REACH / QUALITY / EQUITY / BTI) or its components.
+- Does **not** alter the IU formula (`IU = NM × BC × CQ × EV × CF × AGF`).
+- Does **not** alter any privacy rule.
+- Does **not** edit the frozen Master Plan v2.1 document itself.
+
+---
+
 *Document authored: 2026-05-17*
 *Version: v1.0*
 *Status: Gate 1 CLOSED — Founder positions recorded on all 21 decisions*
@@ -707,3 +741,4 @@ Every canonical architectural decision established in docs 01–20 remains in fo
 *Gate authority: doc 13 Section 9*
 *Does not generate: SQL, migrations, Prisma models, Supabase tables, React components, API endpoints, or application code*
 *Next document: `docs/22-foundation-light-sql-schema-specification.md` — blocked until Gate 2 passed*
+*Section 10 added 2026-08-31: D-K (Master Plan v2.1 lettered decision scheme) — does not reopen or extend Gate 1's 21-item scope.*

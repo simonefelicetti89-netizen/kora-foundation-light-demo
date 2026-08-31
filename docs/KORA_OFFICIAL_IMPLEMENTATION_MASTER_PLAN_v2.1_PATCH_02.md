@@ -3,7 +3,7 @@
 **Status:** ACTIVE ADDENDUM — does not modify the frozen Master Plan
 **Date:** 2026-08-31
 **Applies to:** `docs/KORA_OFFICIAL_IMPLEMENTATION_MASTER_PLAN_v2.1.md` (FINAL FREEZE VERSION)
-**Trigger:** B-CI closure verification and N1 prerequisite recheck (CC-007, §19/§20/§29)
+**Trigger:** B-CI closure verification and N1 prerequisite recheck (CC-007, §19/§20/§29); updated same day to record D-K ratification and B-SPEC closure
 
 ---
 
@@ -38,10 +38,10 @@ The 4 remaining Playwright spec files under `tests/e2e/` (`authenticated-smoke.s
 Both B-SPEC and B-CI were independently verified in this task (§20, line 574: `N1 | ... | B-SPEC, B-CI | L | START`).
 
 - **B-CI — COMPLETE.** See above.
-- **B-SPEC — NOT COMPLETE.** §19 (line 564): `B-SPEC | ontologia + spec nel repo | D-K | S | blocca tutto Phase B`. B-SPEC's own prerequisite is founder decision **D-K**. The domain ontology content itself (Program/Investment/Decision/Survey/Needs three-level model) is substantively present in the frozen Master Plan's own §3, but D-K — the founder decision gating B-SPEC's formal closure — has not been resolved or recorded anywhere in this repository (checked `lib/architecture/registry.ts`, where D-A/D-B/D-C were each explicitly resolved and recorded this session with a `decisionRef`; checked `docs/21-founder-gate-resolution-log.md`, a distinct D-01–D-21 scheme; checked the Master Plan's own text for any resolution marker). No such record exists for D-K. Content existing is not the same as the block's own stated gate being satisfied — the same distinction this session already applied to CC-010/D-C before that gate was explicitly closed.
+- **B-SPEC — COMPLETE (updated 2026-08-31).** §19 (line 564): `B-SPEC | ontologia + spec nel repo | D-K | S | blocca tutto Phase B`. B-SPEC's own prerequisite, founder decision **D-K**, has now been formally ratified and recorded in `docs/21-founder-gate-resolution-log.md` §10 — the founder approved Master Plan v2.1 §3's domain ontology as final and binding, as drafted, with no revisions. B-SPEC's deliverable ("ontologia + spec nel repo") was always the Master Plan document itself; no separate artifact was required.
 
-**N1 is not pre-approved by this patch.** Beyond the B-SPEC gap, an independent sequencing constraint applies regardless of B-SPEC's status: §29 (line 842), the Master Plan's own "Sicuri" (safe-to-parallelize) list, states `N1…N6 ∥ qualunque consolidamento tranne B-TRUTH` — N1 through N6 are explicitly **not** listed as safe to run alongside B-TRUTH specifically (every other consolidation block, yes; B-TRUTH, no), and line 843's "Mai" (never) list separately states `B-TRUTH con qualunque codice` (B-TRUTH is never combined with any other code). B-TRUTH has not closed (I9 is not 0; CC-022/CC-023 have not run). This is a second, independent reason N1 cannot begin now, on top of the B-SPEC gap.
+**N1's two named prerequisites (B-SPEC, B-CI) are now both formally satisfied. N1 is still not pre-approved by this patch.** An independent sequencing constraint applies regardless of B-SPEC/B-CI status: §29 (line 842), the Master Plan's own "Sicuri" (safe-to-parallelize) list, states `N1…N6 ∥ qualunque consolidamento tranne B-TRUTH` — N1 through N6 are explicitly **not** listed as safe to run alongside B-TRUTH specifically (every other consolidation block, yes; B-TRUTH, no), and line 843's "Mai" (never) list separately states `B-TRUTH con qualunque codice` (B-TRUTH is never combined with any other code). B-TRUTH has not closed (I9 is not 0; CC-022/CC-023 have not run). Resolving D-K satisfies N1's named prerequisite row; it does not touch this separate, unaffected sequencing rule.
 
-`N1_TECHNICALLY_UNBLOCKED (prerequisite row alone) = NO — B-SPEC unmet`
+`N1_TECHNICALLY_UNBLOCKED (prerequisite row alone) = YES — B-SPEC and B-CI both now satisfied`
 
-`N1_CAN_START_NOW (full sequencing) = NO — B-SPEC unmet AND B-TRUTH open`
+`N1_CAN_START_NOW (full sequencing) = NO — B-TRUTH remains open; N1 must wait for its exclusive window to close`
