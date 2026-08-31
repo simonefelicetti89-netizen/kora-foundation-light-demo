@@ -201,3 +201,67 @@ jobs:
       - name: Stop local Supabase stack
         if: always()
         run: supabase stop
+
+  # B-CI (E2E truth) — first slice. Wires the ONE existing Playwright spec
+  # that needs zero external services (no Supabase, no seeded users, no
+  # credentials) into a real, blocking gate: tests/e2e/kora-smoke.spec.ts —
+  # 6 public-page checks (landing, login variants, request-access, demo)
+  # against a real `next dev` server, real Chromium.
+  #
+  # The other 5 spec files under tests/e2e/ are deliberately NOT run here:
+  #   - tests/e2e/pilot-trust-01-golden-path-local-smoke.spec.ts needs a
+  #     real local Supabase instance (Docker) plus seeded Auth users
+  #     (scripts/e2e/seed-local-golden-path.ts) for its 3 authenticated
+  #     tests, and its unguarded health-check test hard-fails (503, proven
+  #     locally) without one — wiring it requires real, separately-scoped
+  #     infrastructure work (extending the DB-backed job above with a seed
+  #     step and threading several env vars through to both the app and
+  #     Playwright), not just adding a CI step.
+  #   - tests/e2e/authenticated-smoke.spec.ts, golden-admin-company.spec.ts,
+  #     two-tenant-isolation.spec.ts, and golden-data-bearing.spec.ts all
+  #     drive the real browser-side /login form, which next.config.ts's own
+  #     CSP connect-src (https://*.supabase.co only, no localhost/127.0.0.1
+  #     exception) makes structurally incapable of reaching a local Supabase
+  #     instance regardless of credentials — these can only ever run against
+  #     a real staging/production Supabase project. Explicitly out of scope
+  #     ("local/ephemeral PR CI only" — no staging E2E in this gate). They
+  #     remain correctly skip-safe (verified: 0 failures) when their
+  #     credential env vars are absent, which is why this job intentionally
+  #     never sets any E2E_*_EMAIL/PASSWORD variable — setting any of them
+  #     would un-skip these CSP-incompatible tests and fail the gate for an
+  #     unrelated, unfixable-here reason.
+  e2e-smoke:
+    name: E2E smoke (Playwright, public pages)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium (with OS dependencies)
+        run: npx playwright install --with-deps chromium
+
+      # No E2E_* credential env vars are set here — see the job-level
+      # comment above for exactly why that's deliberate. playwright.config.ts's
+      # own webServer block starts `next dev` and waits for readiness; no
+      # separate build/start step is duplicated here.
+      - name: Run Playwright public-page smoke suite
+        run: npx playwright test tests/e2e/kora-smoke.spec.ts
+
+      - name: Upload Playwright traces/screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 14
