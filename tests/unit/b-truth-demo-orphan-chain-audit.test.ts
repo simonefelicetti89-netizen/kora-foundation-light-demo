@@ -29,26 +29,12 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
-import { resolve, join } from 'path';
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
 
 const root = resolve(process.cwd());
 function read(relPath: string): string {
   return readFileSync(resolve(root, relPath), 'utf-8');
-}
-
-function walkTs(dir: string): string[] {
-  const out: string[] = [];
-  let entries: string[];
-  try { entries = readdirSync(dir); } catch { return out; }
-  for (const entry of entries) {
-    const p = join(dir, entry);
-    let st;
-    try { st = statSync(p); } catch { continue; }
-    if (st.isDirectory()) out.push(...walkTs(p));
-    else if (/\.(ts|tsx)$/.test(entry)) out.push(p);
-  }
-  return out;
 }
 
 describe('B-TRUTH Demo/Orphan Chain Audit — pipeline is a labeled demo surface, not production', () => {
@@ -123,63 +109,33 @@ describe('B-TRUTH Demo/Orphan Chain Audit — CompanyDataIntakeService trimmed t
   });
 });
 
-describe('B-TRUTH Demo/Orphan Chain Audit — CompanyIntelligenceService reachability = NONE, not deleted', () => {
-  const RUNTIME_DIRS = ['app', 'services', 'lib', 'components'];
-  const SELF_FILE = 'services/company-intelligence/CompanyIntelligenceService.ts';
-
-  it('has zero reachable runtime callers repo-wide (file still exists, not deleted)', () => {
-    const offenders: string[] = [];
-    for (const dir of RUNTIME_DIRS) {
-      for (const file of walkTs(resolve(root, dir))) {
-        const relative = file.replace(root + '/', '');
-        if (relative === SELF_FILE) continue;
-        if (relative.endsWith('.test.ts') || relative.endsWith('.spec.ts')) continue;
-        const content = read(relative);
-        if (/companyIntelligenceService\s*\./.test(content) || /new\s+CompanyIntelligenceService\s*\(/.test(content)) {
-          offenders.push(relative);
-        }
-      }
-    }
-    expect(offenders).toEqual([]);
-  });
-
-  it('the file itself still exists — zero callers != DEAD, not deleted by this audit', () => {
-    expect(() => read(SELF_FILE)).not.toThrow();
-  });
-
-  it('registry status corrected to INVESTIGATE (was COMPLETE, which overstated it)', () => {
-    const registry = read('lib/architecture/registry.ts');
-    const idx = registry.indexOf("id: 'svc.company-intelligence'");
-    expect(idx).toBeGreaterThan(-1);
-    expect(registry.slice(idx, idx + 300)).toContain("status: 'INVESTIGATE'");
+describe('B-TRUTH Demo/Orphan Chain Audit — CompanyIntelligenceService: SUPERSEDED by CC-020A retirement', () => {
+  // This describe block originally proved CompanyIntelligenceService had
+  // zero reachable runtime callers and was correctly NOT deleted (zero
+  // callers != DEAD). CC-020A (2026-08-31) later found the same fact plus an
+  // explicit founder decision — "no future canonical role" — and retired it
+  // outright. See tests/unit/cc020a-retire-company-intelligence.test.ts for
+  // the current, correct state.
+  it('the file no longer exists', () => {
+    expect(existsSync(resolve(root, 'services/company-intelligence/CompanyIntelligenceService.ts'))).toBe(false);
   });
 });
 
-describe('B-TRUTH Demo/Orphan Chain Audit — CompanyOnboardingService is a second-order orphan, not deleted', () => {
-  const RUNTIME_DIRS = ['app', 'services', 'lib', 'components'];
-  const SELF_FILE = 'services/company-onboarding/CompanyOnboardingService.ts';
-
-  it('its only caller repo-wide is CompanyIntelligenceService (itself unreachable)', () => {
-    const callers: string[] = [];
-    for (const dir of RUNTIME_DIRS) {
-      for (const file of walkTs(resolve(root, dir))) {
-        const relative = file.replace(root + '/', '');
-        if (relative === SELF_FILE) continue;
-        if (relative.endsWith('.test.ts') || relative.endsWith('.spec.ts')) continue;
-        const content = read(relative);
-        if (/companyOnboardingService\s*\./.test(content) || /new\s+CompanyOnboardingService\s*\(/.test(content)) {
-          callers.push(relative);
-        }
-      }
-    }
-    expect(callers).toEqual(['services/company-intelligence/CompanyIntelligenceService.ts']);
-  });
-
-  it('registry status corrected to INVESTIGATE (was COMPLETE)', () => {
-    const registry = read('lib/architecture/registry.ts');
-    const idx = registry.indexOf("id: 'svc.company-onboarding'");
-    expect(idx).toBeGreaterThan(-1);
-    expect(registry.slice(idx, idx + 200)).toContain("status: 'INVESTIGATE'");
+describe('B-TRUTH Demo/Orphan Chain Audit — CompanyOnboardingService: SUPERSEDED, restored, still not deleted', () => {
+  // This describe block originally proved CompanyOnboardingService's only
+  // caller repo-wide was the unreachable CompanyIntelligenceService, and was
+  // correctly NOT deleted pending that service's own fate. CC-020A
+  // (2026-08-31) resolved CompanyIntelligenceService's fate (RETIRE) — a
+  // first pass then ALSO deleted CompanyOnboardingService as a claimed
+  // second-order orphan, which was WRONG and has been reverted:
+  // CompanyOnboardingService is a Master-Plan-anchored competing
+  // implementation of svc.company-setup (§33 keeps company-setup
+  // permanently INVESTIGATE), not disposable on that basis. Restored. It is
+  // now a plain zero-caller orphan (its only caller no longer exists), kept
+  // deliberately, not migrated or deleted. See
+  // tests/unit/cc020a-retire-company-intelligence.test.ts.
+  it('the file exists again (restored, not retired)', () => {
+    expect(existsSync(resolve(root, 'services/company-onboarding/CompanyOnboardingService.ts'))).toBe(true);
   });
 });
 

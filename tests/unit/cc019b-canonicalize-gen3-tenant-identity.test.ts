@@ -108,13 +108,13 @@ describe('CC-019B — intentional DEMO_RUNTIME TenantService consumers remain un
     }
   });
 
-  it('the two separately-classified pending-decision services still call tenantService, unchanged', () => {
-    for (const file of [
-      'services/report-factory/ReportFactoryService.ts',
-      'services/company-intelligence/CompanyIntelligenceService.ts',
-    ]) {
-      expect(read(file)).toContain('tenantService');
-    }
+  it('the remaining separately-classified pending-decision service still calls tenantService, unchanged', () => {
+    // CompanyIntelligenceService was the other pending-decision consumer at
+    // the time this test was written; CC-020A (2026-08-31, a later,
+    // unrelated sub-slice) resolved its fate (RETIRE) and removed it
+    // entirely. See tests/unit/cc020a-retire-company-intelligence.test.ts.
+    expect(read('services/report-factory/ReportFactoryService.ts')).toContain('tenantService');
+    expect(existsSync(resolve(root, 'services/company-intelligence/CompanyIntelligenceService.ts'))).toBe(false);
   });
 
   it('TenantService.ts implementation itself is untouched — still reads its own synthetic seed', () => {
