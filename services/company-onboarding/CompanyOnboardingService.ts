@@ -1,115 +1,116 @@
-import type {
-  CompanyOnboardingRecord,
-  CompanyProfile,
-  WorkforceBaseline,
-  HRKPIContextSummary,
-  RawProgramDataSummary,
-  OnboardingReadinessCheck,
-  OnboardingReadinessStatus,
-  PipelineStageLink,
-  WorkforceCluster,
-  CompanyOnboardingStatus,
-} from '@/lib/types';
-import onboardingData from '@/data/synthetic/company-onboarding.json';
+// services/company-onboarding/CompanyOnboardingService.ts
+// B-TRUTH Company Onboarding canonicalization (2026-09-01) — retires the
+// synthetic data/synthetic/company-onboarding.json read in favor of
+// lib/live/company-onboarding-view.ts's canonical analytics.tenant +
+// personal.workforce_baseline read. See that module's header for the full
+// KEEP/DERIVE/DROP field disposition.
+//
+// CompanySetup (services/company-setup/CompanySetupService.ts) and
+// CompanyOnboarding are NOT competing implementations — distinct
+// responsibilities (pre-provisioning wizard vs. post-provisioning
+// readiness/status logic). See lib/architecture/registry.ts svc.company-onboarding
+// / svc.company-setup for the corrected record.
+//
+// Zero real (non-test, non-registry) runtime callers exist for this service
+// as of this port (confirmed by repo-wide grep). Canonicalized anyway per
+// this task's explicit instruction — do not fabricate a caller; do
+// canonicalize; preserve the derived-logic value for whenever a caller is
+// wired up.
 
-const records = onboardingData as CompanyOnboardingRecord[];
+import {
+  buildCompanyOnboardingView,
+  PIPELINE_LINKS,
+  type CompanyOnboardingView,
+  type TenantOnboardingRow,
+} from '@/lib/live/company-onboarding-view';
+import type { WorkforceBaselineRow } from '@/lib/live/workforce-baseline-view';
+import type { OnboardingReadinessCheck, PipelineStageLink } from '@/lib/types';
 
 export interface ICompanyOnboardingService {
-  getOnboardingCompanies(): CompanyOnboardingRecord[];
-  getCompanyOnboardingRecord(companyId: string): CompanyOnboardingRecord | null;
-  getCurrentCompanyOnboardingRecord(): CompanyOnboardingRecord;
-  getCompanyProfile(companyId: string): CompanyProfile | null;
-  getWorkforceBaseline(companyId: string): WorkforceBaseline | null;
-  getHRKPIContext(companyId: string): HRKPIContextSummary | null;
-  getRawProgramDataSummary(companyId: string): RawProgramDataSummary | null;
-  getReadinessChecks(companyId: string): OnboardingReadinessCheck[];
-  getPipelineReadiness(companyId: string): { status: OnboardingReadinessStatus; blocking_checks: OnboardingReadinessCheck[] };
-  getNextBestAction(companyId: string): { action: string; detail: string };
-  isFoundationLightEligible(companyId: string): boolean;
-  getPrivacyThresholdWarnings(companyId: string): WorkforceCluster[];
-  getPipelineLinks(companyId: string): PipelineStageLink[];
+  getOnboardingState(params: { db: unknown; tenantCode: string }): Promise<CompanyOnboardingView | null>;
+  isFoundationLightEligible(params: { db: unknown; tenantCode: string }): Promise<boolean | null>;
+  getPrivacyThresholdWarnings(params: { db: unknown; tenantCode: string }): Promise<CompanyOnboardingView['privacyThresholdWarnings'] | null>;
+  getReadinessChecks(params: { db: unknown; tenantCode: string }): Promise<OnboardingReadinessCheck[] | null>;
+  getPipelineReadiness(params: { db: unknown; tenantCode: string }): Promise<CompanyOnboardingView['pipelineReadiness'] | null>;
+  getNextBestAction(params: { db: unknown; tenantCode: string }): Promise<{ action: string; detail: string }>;
+  getPipelineLinks(): PipelineStageLink[];
 }
 
 export class CompanyOnboardingService implements ICompanyOnboardingService {
-  getOnboardingCompanies(): CompanyOnboardingRecord[] {
-    return records;
-  }
+  /**
+   * Primary canonical entry point. Reads analytics.tenant by tenant_code
+   * (no tenant_kind branch — LIVE and DEMO-kind tenants read the exact same
+   * columns through the exact same query) and the most recent
+   * personal.workforce_baseline row for that tenant, then derives the full
+   * onboarding view via the pure builder in lib/live/company-onboarding-view.ts.
+   * Returns null for a nonexistent/soft-deleted tenant — honest not-found,
+   * never a synthetic fallback.
+   */
+  async getOnboardingState(params: { db: unknown; tenantCode: string }): Promise<CompanyOnboardingView | null> {
+    const { db, tenantCode } = params;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = db as any;
 
-  getCompanyOnboardingRecord(companyId: string): CompanyOnboardingRecord | null {
-    return records.find((r) => r.company_id === companyId) ?? null;
-  }
+    const { data: tenantRow, error: tenantErr } = await client
+      .schema('analytics').from('tenant')
+      .select('id, tenant_code, company_name, onboarding_status, data_readiness_status, decision_pack_status')
+      .eq('tenant_code', tenantCode)
+      .is('deleted_at', null)
+      .maybeSingle();
 
-  getCurrentCompanyOnboardingRecord(): CompanyOnboardingRecord {
-    return records[0];
-  }
+    if (tenantErr) {
+      console.error('[CompanyOnboardingService.getOnboardingState] tenant fetch error:', tenantErr.message);
+      return null;
+    }
+    if (!tenantRow) return null;
 
-  getCompanyProfile(companyId: string): CompanyProfile | null {
-    return this.getCompanyOnboardingRecord(companyId)?.profile ?? null;
-  }
+    const { data: baselineRow, error: baselineErr } = await client
+      .schema('personal').from('workforce_baseline')
+      .select('tenant_id, reporting_period, total_workers, segment_breakdown, minimum_group_size, created_at, created_by')
+      .eq('tenant_id', (tenantRow as { id: string }).id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
-  getWorkforceBaseline(companyId: string): WorkforceBaseline | null {
-    return this.getCompanyOnboardingRecord(companyId)?.workforce_baseline ?? null;
-  }
-
-  getHRKPIContext(companyId: string): HRKPIContextSummary | null {
-    return this.getCompanyOnboardingRecord(companyId)?.hr_kpi_context ?? null;
-  }
-
-  getRawProgramDataSummary(companyId: string): RawProgramDataSummary | null {
-    return this.getCompanyOnboardingRecord(companyId)?.program_data_summary ?? null;
-  }
-
-  getReadinessChecks(companyId: string): OnboardingReadinessCheck[] {
-    return this.getCompanyOnboardingRecord(companyId)?.readiness_checks ?? [];
-  }
-
-  getPipelineReadiness(companyId: string): { status: OnboardingReadinessStatus; blocking_checks: OnboardingReadinessCheck[] } {
-    const checks = this.getReadinessChecks(companyId);
-    const blockingFailed = checks.filter((c) => c.blocking && c.status !== 'ok');
-    if (blockingFailed.length > 0) return { status: 'blocked', blocking_checks: blockingFailed };
-    const hasWarnings = checks.some((c) => c.status === 'warning');
-    return { status: hasWarnings ? 'warning' : 'ok', blocking_checks: [] };
-  }
-
-  getNextBestAction(companyId: string): { action: string; detail: string } {
-    const record = this.getCompanyOnboardingRecord(companyId);
-    if (!record) return { action: 'Azienda non trovata', detail: '' };
-
-    if (!this.isFoundationLightEligible(companyId)) {
-      return {
-        action: 'Aumenta l\'organico prima di procedere',
-        detail: 'Foundation Light richiede almeno 30 lavoratori per garantire la soglia privacy N≥10 nei cluster.',
-      };
+    if (baselineErr) {
+      console.error('[CompanyOnboardingService.getOnboardingState] baseline fetch error:', baselineErr.message);
     }
 
-    const status = record.onboarding_status as CompanyOnboardingStatus;
-    const actions: Record<CompanyOnboardingStatus, { action: string; detail: string }> = {
-      not_started:                   { action: 'Completa il profilo aziendale', detail: 'Inserisci settore, sede e dati di contatto.' },
-      profile_complete:              { action: 'Carica la baseline workforce', detail: 'Definisci organico, siti e cluster per abilitare il breakdown.' },
-      workforce_baseline_complete:   { action: 'Carica i dati programmi', detail: 'Uploada welfare, formazione e attività collettive tramite AI Ingestion.' },
-      program_data_loaded:           { action: 'Aggiungi KPI HR di contesto', detail: 'I KPI HR arricchiscono l\'interpretazione senza entrare nel KORA Index.' },
-      hr_kpi_added:                  { action: 'Avvia i controlli di prontezza', detail: 'Verifica che tutti i check bloccanti siano superati prima della pipeline.' },
-      readiness_check_passed:        { action: 'Avvia la pipeline KORA', detail: 'Procedi con AI Ingestion Studio → UEF Review → Scoring → Decision Pack.' },
-      pipeline_active:               { action: 'Attendi il completamento della pipeline', detail: 'La pipeline è in esecuzione. Monitora UEF Review e Scoring.' },
-      decision_pack_ready:           { action: 'Consulta il Decision Pack', detail: 'Il KORA Company Decision Pack è pronto per la revisione.' },
-      blocked_insufficient_workforce:{ action: 'Aumenta l\'organico', detail: 'Foundation Light richiede almeno 30 lavoratori.' },
-    };
-
-    return actions[status] ?? { action: 'Procedi con l\'onboarding', detail: '' };
+    return buildCompanyOnboardingView(
+      tenantRow as TenantOnboardingRow,
+      (baselineRow as WorkforceBaselineRow | undefined) ?? null,
+    );
   }
 
-  isFoundationLightEligible(companyId: string): boolean {
-    const baseline = this.getWorkforceBaseline(companyId);
-    return (baseline?.total_employees ?? 0) >= 30;
+  async isFoundationLightEligible(params: { db: unknown; tenantCode: string }): Promise<boolean | null> {
+    const view = await this.getOnboardingState(params);
+    return view ? view.isFoundationLightEligible : null;
   }
 
-  getPrivacyThresholdWarnings(companyId: string): WorkforceCluster[] {
-    const baseline = this.getWorkforceBaseline(companyId);
-    return (baseline?.clusters ?? []).filter((c) => !c.privacy_threshold_met);
+  async getPrivacyThresholdWarnings(params: { db: unknown; tenantCode: string }): Promise<CompanyOnboardingView['privacyThresholdWarnings'] | null> {
+    const view = await this.getOnboardingState(params);
+    return view ? view.privacyThresholdWarnings : null;
   }
 
-  getPipelineLinks(companyId: string): PipelineStageLink[] {
-    return this.getCompanyOnboardingRecord(companyId)?.pipeline_links ?? [];
+  async getReadinessChecks(params: { db: unknown; tenantCode: string }): Promise<OnboardingReadinessCheck[] | null> {
+    const view = await this.getOnboardingState(params);
+    return view ? view.readinessChecks : null;
+  }
+
+  async getPipelineReadiness(params: { db: unknown; tenantCode: string }): Promise<CompanyOnboardingView['pipelineReadiness'] | null> {
+    const view = await this.getOnboardingState(params);
+    return view ? view.pipelineReadiness : null;
+  }
+
+  async getNextBestAction(params: { db: unknown; tenantCode: string }): Promise<{ action: string; detail: string }> {
+    const view = await this.getOnboardingState(params);
+    if (!view) return { action: 'Azienda non trovata', detail: '' };
+    return view.nextBestAction;
+  }
+
+  /** Static navigation metadata — no DB read, identical for every tenant. */
+  getPipelineLinks(): PipelineStageLink[] {
+    return PIPELINE_LINKS;
   }
 }
 

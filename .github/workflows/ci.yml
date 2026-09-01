@@ -144,7 +144,13 @@ jobs:
       # tenant through getContributionV2Live's underlying pure functions —
       # the same query, the same unchanged methodology authority, no
       # tenant_kind branch anywhere. Same mandatory no-skip treatment.
-      - name: Run RLS integration suites (RLS-03/05/06/07/08/09/10/11/12/13/14 — mandatory, no skip)
+      # RLS-15 (B-TRUTH Company Onboarding canonicalization, 2026-09-01):
+      # DB-level proof that analytics.tenant + personal.workforce_baseline
+      # feed an identical CompanyOnboardingView for a LIVE-kind and a
+      # DEMO-kind tenant through buildCompanyOnboardingView — the same
+      # query, the same derived-logic authority, no tenant_kind branch
+      # anywhere. Same mandatory no-skip treatment.
+      - name: Run RLS integration suites (RLS-03/05/06/07/08/09/10/11/12/13/14/15 — mandatory, no skip)
         env:
           RLS03_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS03_ALLOW_RUN: 'true'
@@ -168,6 +174,8 @@ jobs:
           RLS13_ALLOW_RUN: 'true'
           RLS14_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS14_ALLOW_RUN: 'true'
+          RLS15_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS15_ALLOW_RUN: 'true'
         run: |
           npx vitest run \
             tests/integration/rls-two-tenant-negative.test.ts \
@@ -181,6 +189,7 @@ jobs:
             tests/integration/rls-12-tenant-kind-parity.test.ts \
             tests/integration/rls-13-workforce-baseline-tenant-kind-parity.test.ts \
             tests/integration/rls-14-contribution-tenant-kind-parity.test.ts \
+            tests/integration/rls-15-company-onboarding-tenant-kind-parity.test.ts \
             --reporter=json --outputFile=rls-integration-report.json
 
       # F-04: machine-readable assertion — fails the job if any RLS test
