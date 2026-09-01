@@ -297,50 +297,45 @@ describe.skipIf(!ready)(
       const demoInputs = await fetchContributionInputs(demoTenantId);
       expect(Object.keys(liveInputs[0]).sort()).toEqual(Object.keys(demoInputs[0]).sort());
     });
-  },
-);
 
-/**
- * Negative tenant isolation — Ingestion dependency blockers PR (2026-09-02).
- *
- * A separate tenant pair and fixture set from the parity block above (kept
- * independent so this block's distinguishing per-tenant values can never be
- * confused with, or accidentally satisfy, the parity assertions above, and
- * vice versa). Proves the same query getContributionV2Live() runs
- * (`WHERE tenant_id = $1`, no cross-tenant join) genuinely isolates rows at
- * the DB level in both directions, and that the isolated per-tenant inputs
- * still flow through the SAME unchanged computeFromPipelineResult authority
- * — no separate/duplicated methodology path for either tenant.
- */
+    /**
+     * Negative tenant isolation — Ingestion dependency blockers PR (2026-09-02).
+     *
+     * Nested inside this same describe.skipIf block (not a second top-level
+     * one) deliberately: an earlier version used a separate top-level
+     * describe.skipIf(!ready) call for this block and it was consistently
+     * marked "skipped" in real CI even with its own independently
+     * recomputed readiness check, while this (proven-working) outer block's
+     * own tests always ran. Root cause not fully isolated (no local Docker
+     * in this sandbox to reproduce); nesting inside the already-passing
+     * outer skipIf avoids it entirely, regardless of cause.
+     *
+     * A separate tenant pair and fixture set from the parity tests above
+     * (kept independent so this block's distinguishing per-tenant values
+     * can never be confused with, or accidentally satisfy, the parity
+     * assertions above, and vice versa). Proves the same query
+     * getContributionV2Live() runs (`WHERE tenant_id = $1`, no cross-tenant
+     * join) genuinely isolates rows at the DB level in both directions, and
+     * that the isolated per-tenant inputs still flow through the SAME
+     * unchanged computeFromPipelineResult authority — no separate/
+     * duplicated methodology path for either tenant.
+     */
+    const RLS14_ISO_TENANT_CODES = ['RLS14-ISO-A', 'RLS14-ISO-B'] as const;
 
-const RLS14_ISO_TENANT_CODES = ['RLS14-ISO-A', 'RLS14-ISO-B'] as const;
+    describe('RLS-14 — negative tenant isolation: tenant A never receives tenant B contribution events, and vice versa', () => {
+      let isoClient: InstanceType<typeof Client>;
+      let tenantAId: string;
+      let tenantBId: string;
+      let postAId: string;
+      let postBId: string;
 
-// Deliberately independent from the parity block's `config`/`ready` above —
-// freshly re-read here rather than closing over the earlier module-level
-// consts, so this block's readiness can never be affected by anything the
-// first describe.skipIf block's evaluation order or state does.
-const isolationConfig = readRls14Config();
-const isolationReady = isolationConfig !== null && isRunExplicitlyAllowed();
+      beforeAll(async () => {
+        if (!config) throw new Error('unreachable: this describe block only runs when the outer describe.skipIf(!ready) has already passed');
 
-describe.skipIf(!isolationReady)(
-  'RLS-14 — negative tenant isolation: tenant A never receives tenant B contribution events, and vice versa',
-  () => {
-    let client: InstanceType<typeof Client>;
-    let tenantAId: string;
-    let tenantBId: string;
-    let postAId: string;
-    let postBId: string;
+        isoClient = new Client({ connectionString: config.pgUrl });
+        await isoClient.connect();
 
-    const service = new KoraContributionService();
-
-    beforeAll(async () => {
-      if (!isolationConfig) throw new Error('unreachable: beforeAll only runs when describe.skipIf(!isolationReady) has already passed');
-      assertLocalPostgresOnly(isolationConfig.pgUrl);
-
-      client = new Client({ connectionString: isolationConfig.pgUrl });
-      await client.connect();
-
-      const aResult = await client.query<{ id: string }>(
+        const aResult = await isoClient.query<{ id: string }>(
         `INSERT INTO analytics.tenant (tenant_code, company_name, tenant_kind)
          VALUES ($1, $2, 'LIVE')
          ON CONFLICT (tenant_code) DO UPDATE SET company_name = EXCLUDED.company_name, tenant_kind = 'LIVE'
@@ -361,7 +356,7 @@ describe.skipIf(!isolationReady)(
       await client.query(`DELETE FROM commons.contribution_event WHERE tenant_id = ANY($1)`, [[tenantAId, tenantBId]]);
       await client.query(`DELETE FROM commons.post WHERE tenant_id = ANY($1)`, [[tenantAId, tenantBId]]);
 
-      const postAResult = await client.query<{ id: string }>(
+      const postAResult = await isoClient.query<{ id: string }>(
         `INSERT INTO commons.post (tenant_id, author_role, title, body, category, pillar, status)
          VALUES ($1, 'COMPANY_ADMIN', 'RLS-14 isolation initiative (A)', 'RLS-14 fixture body', 'initiative_update', 'IMPACT', 'published')
          RETURNING id`,
@@ -369,7 +364,7 @@ describe.skipIf(!isolationReady)(
       );
       postAId = postAResult.rows[0].id;
 
-      const postBResult = await client.query<{ id: string }>(
+      const postBResult = await isoClient.query<{ id: string }>(
         `INSERT INTO commons.post (tenant_id, author_role, title, body, category, pillar, status)
          VALUES ($1, 'COMPANY_ADMIN', 'RLS-14 isolation initiative (B)', 'RLS-14 fixture body', 'initiative_update', 'CONNECTION', 'published')
          RETURNING id`,
@@ -383,7 +378,7 @@ describe.skipIf(!isolationReady)(
       // detectable rather than accidentally masked by identical fixtures.
       // Tenant A: two events, weights 0.40 + 0.60 = 1.00 total.
       for (const weight of [0.40, 0.60]) {
-        await client.query(
+        await isoClient.query(
           `INSERT INTO commons.contribution_event
              (tenant_id, source_post_id, role, contribution_kind, impact_weight, evidence_status,
               reporting_period, is_cross_company, is_kora_originated, is_kora_enabled)
@@ -394,7 +389,7 @@ describe.skipIf(!isolationReady)(
       }
       // Tenant B: one event, weight 9.99 — far outside tenant A's range, so
       // it could never be mistaken for a tenant A row's contribution.
-      await client.query(
+      await isoClient.query(
         `INSERT INTO commons.contribution_event
            (tenant_id, source_post_id, role, contribution_kind, impact_weight, evidence_status,
             reporting_period, is_cross_company, is_kora_originated, is_kora_enabled)
@@ -402,94 +397,95 @@ describe.skipIf(!isolationReady)(
                  'RLS14-ISO-PERIOD', true, false, false)`,
         [tenantBId, postBId],
       );
-    });
+      });
 
-    afterAll(async () => {
-      if (!client) return;
+      afterAll(async () => {
+        if (!isoClient) return;
 
-      const tenantRows = await client.query<{ id: string }>(
-        `SELECT id FROM analytics.tenant WHERE tenant_code = ANY($1)`,
-        [RLS14_ISO_TENANT_CODES as unknown as string[]],
-      );
-      const ids = tenantRows.rows.map((row) => row.id);
-
-      if (ids.length > 0) {
-        await client.query(`DELETE FROM commons.contribution_event WHERE tenant_id = ANY($1)`, [ids]);
-        await client.query(`DELETE FROM commons.post WHERE tenant_id = ANY($1)`, [ids]);
-        await client.query(`DELETE FROM analytics.tenant WHERE tenant_code = ANY($1)`, [
-          RLS14_ISO_TENANT_CODES as unknown as string[],
-        ]);
-      }
-
-      await client.end();
-    });
-
-    async function fetchIsolationInputs(tenantId: string): Promise<{
-      inputs: ReturnType<typeof buildContributionPipelineInputs>;
-      postIdsSeen: string[];
-    }> {
-      const eventsResult = await client.query(
-        `SELECT source_post_id, contribution_kind, impact_weight, evidence_status,
-                is_cross_company, is_kora_originated, is_kora_enabled
-         FROM commons.contribution_event
-         WHERE tenant_id = $1`,
-        [tenantId],
-      );
-      const rows = (eventsResult.rows as ContributionEventRow[]).map((row) => ({
-        ...row,
-        impact_weight: Number(row.impact_weight),
-      }));
-
-      const postIds = [...new Set(rows.map((r) => r.source_post_id))];
-      const pillarByPostId = new Map<string, string | null>();
-      if (postIds.length > 0) {
-        const postsResult = await client.query<{ id: string; pillar: string | null }>(
-          `SELECT id, pillar FROM commons.post WHERE id = ANY($1)`,
-          [postIds],
+        const tenantRows = await isoClient.query<{ id: string }>(
+          `SELECT id FROM analytics.tenant WHERE tenant_code = ANY($1)`,
+          [RLS14_ISO_TENANT_CODES as unknown as string[]],
         );
-        for (const p of postsResult.rows) pillarByPostId.set(p.id, p.pillar);
+        const ids = tenantRows.rows.map((row) => row.id);
+
+        if (ids.length > 0) {
+          await isoClient.query(`DELETE FROM commons.contribution_event WHERE tenant_id = ANY($1)`, [ids]);
+          await isoClient.query(`DELETE FROM commons.post WHERE tenant_id = ANY($1)`, [ids]);
+          await isoClient.query(`DELETE FROM analytics.tenant WHERE tenant_code = ANY($1)`, [
+            RLS14_ISO_TENANT_CODES as unknown as string[],
+          ]);
+        }
+
+        await isoClient.end();
+      });
+
+      async function fetchIsolationInputs(tenantId: string): Promise<{
+        inputs: ReturnType<typeof buildContributionPipelineInputs>;
+        postIdsSeen: string[];
+      }> {
+        const eventsResult = await isoClient.query(
+          `SELECT source_post_id, contribution_kind, impact_weight, evidence_status,
+                  is_cross_company, is_kora_originated, is_kora_enabled
+           FROM commons.contribution_event
+           WHERE tenant_id = $1`,
+          [tenantId],
+        );
+        const rows = (eventsResult.rows as ContributionEventRow[]).map((row) => ({
+          ...row,
+          impact_weight: Number(row.impact_weight),
+        }));
+
+        const postIds = [...new Set(rows.map((r) => r.source_post_id))];
+        const pillarByPostId = new Map<string, string | null>();
+        if (postIds.length > 0) {
+          const postsResult = await isoClient.query<{ id: string; pillar: string | null }>(
+            `SELECT id, pillar FROM commons.post WHERE id = ANY($1)`,
+            [postIds],
+          );
+          for (const p of postsResult.rows) pillarByPostId.set(p.id, p.pillar);
+        }
+
+        return { inputs: buildContributionPipelineInputs(rows, pillarByPostId), postIdsSeen: postIds };
       }
 
-      return { inputs: buildContributionPipelineInputs(rows, pillarByPostId), postIdsSeen: postIds };
-    }
+      it('tenant A receives only its own 2 contribution events — never tenant B\'s', async () => {
+        const { inputs, postIdsSeen } = await fetchIsolationInputs(tenantAId);
+        expect(inputs).toHaveLength(2);
+        expect(postIdsSeen).toEqual([postAId]);
+        expect(postIdsSeen).not.toContain(postBId);
+        const total = inputs.reduce((s, i) => s + i.impact_units_total, 0);
+        expect(total).toBeCloseTo(1.00, 6);
+        // Tenant B's distinguishing 9.99 value never appears in tenant A's data.
+        expect(inputs.map((i) => i.impact_units_total)).not.toContain(9.99);
+      });
 
-    it('tenant A receives only its own 2 contribution events — never tenant B\'s', async () => {
-      const { inputs, postIdsSeen } = await fetchIsolationInputs(tenantAId);
-      expect(inputs).toHaveLength(2);
-      expect(postIdsSeen).toEqual([postAId]);
-      expect(postIdsSeen).not.toContain(postBId);
-      const total = inputs.reduce((s, i) => s + i.impact_units_total, 0);
-      expect(total).toBeCloseTo(1.00, 6);
-      // Tenant B's distinguishing 9.99 value never appears in tenant A's data.
-      expect(inputs.map((i) => i.impact_units_total)).not.toContain(9.99);
-    });
+      it('tenant B receives only its own 1 contribution event — never tenant A\'s (reverse direction)', async () => {
+        const { inputs, postIdsSeen } = await fetchIsolationInputs(tenantBId);
+        expect(inputs).toHaveLength(1);
+        expect(postIdsSeen).toEqual([postBId]);
+        expect(postIdsSeen).not.toContain(postAId);
+        expect(inputs[0].impact_units_total).toBe(9.99);
+        // Tenant A's two distinguishing values never appear in tenant B's data.
+        expect(inputs.map((i) => i.impact_units_total)).not.toContain(0.40);
+        expect(inputs.map((i) => i.impact_units_total)).not.toContain(0.60);
+      });
 
-    it('tenant B receives only its own 1 contribution event — never tenant A\'s (reverse direction)', async () => {
-      const { inputs, postIdsSeen } = await fetchIsolationInputs(tenantBId);
-      expect(inputs).toHaveLength(1);
-      expect(postIdsSeen).toEqual([postBId]);
-      expect(postIdsSeen).not.toContain(postAId);
-      expect(inputs[0].impact_units_total).toBe(9.99);
-      // Tenant A's two distinguishing values never appear in tenant B's data.
-      expect(inputs.map((i) => i.impact_units_total)).not.toContain(0.40);
-      expect(inputs.map((i) => i.impact_units_total)).not.toContain(0.60);
-    });
+      it('both isolated per-tenant input sets flow through the same, single, unchanged computeFromPipelineResult authority — no duplicated methodology path', async () => {
+        const { inputs: inputsA } = await fetchIsolationInputs(tenantAId);
+        const { inputs: inputsB } = await fetchIsolationInputs(tenantBId);
 
-    it('both isolated per-tenant input sets flow through the same, single, unchanged computeFromPipelineResult authority — no duplicated methodology path', async () => {
-      const { inputs: inputsA } = await fetchIsolationInputs(tenantAId);
-      const { inputs: inputsB } = await fetchIsolationInputs(tenantBId);
+        const resultA = service.computeFromPipelineResult('RLS14-ISO-A', 'S1', inputsA);
+        const resultB = service.computeFromPipelineResult('RLS14-ISO-B', 'S1', inputsB);
 
-      const resultA = service.computeFromPipelineResult('RLS14-ISO-A', 'S1', inputsA);
-      const resultB = service.computeFromPipelineResult('RLS14-ISO-B', 'S1', inputsB);
-
-      expect(resultA.totalContributionIU).toBeCloseTo(1.00, 6);
-      expect(resultB.totalContributionIU).toBeCloseTo(9.99, 6);
-      // Distinct inputs correctly yield distinct outputs — proves the two
-      // tenants are not silently sharing or averaging a merged computation.
-      expect(resultA.totalContributionIU).not.toEqual(resultB.totalContributionIU);
-      // Both went through the identical authority — same doctrine flags.
-      expect(resultA.notKoraIndexComponent).toBe(true);
-      expect(resultB.notKoraIndexComponent).toBe(true);
+        expect(resultA.totalContributionIU).toBeCloseTo(1.00, 6);
+        expect(resultB.totalContributionIU).toBeCloseTo(9.99, 6);
+        // Distinct inputs correctly yield distinct outputs — proves the two
+        // tenants are not silently sharing or averaging a merged computation.
+        expect(resultA.totalContributionIU).not.toEqual(resultB.totalContributionIU);
+        // Both went through the identical authority — same doctrine flags.
+        expect(resultA.notKoraIndexComponent).toBe(true);
+        expect(resultB.notKoraIndexComponent).toBe(true);
+      });
     });
   },
 );
