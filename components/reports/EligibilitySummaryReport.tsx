@@ -1,4 +1,4 @@
-import type { EligibilityGateSummary } from '@/services/ingestion-simulator/IngestionSimulatorService';
+import type { EligibilityGateSummary } from '@/lib/types';
 
 interface Props {
   summary: EligibilityGateSummary;

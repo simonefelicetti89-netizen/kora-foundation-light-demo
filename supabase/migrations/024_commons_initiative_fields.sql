@@ -3,7 +3,10 @@
 -- Migration:   024_commons_initiative_fields
 -- Created:     2026-06-16
 -- Block:       B165 — KORA Space iniziative con gradi di apertura e mappa
--- Gate:        Gate 2 OPEN — written, NOT applied
+-- Gate:        Gate 2 OPEN — written, NOT applied to any remote/production DB
+--              (applied to local/CI ephemeral Postgres via the tracked
+--              migration ledger and the mandatory DB-backed CI gate — see
+--              CC-051/B-024 closeout, lib/architecture/registry.ts svc.commons)
 --              Applicabile insieme a 013 (commons.post) al pilot.
 -- ───────────────────────────────────────────────────────────────────────────────
 -- SCOPO

@@ -387,6 +387,86 @@ describe('DB-backed pipeline input (buildContributionPipelineInputs) feeding com
   });
 });
 
+describe('deriveActionFamily via the DB boundary does not change eligibility / strategicBreadth semantics (Ingestion dependency blockers PR, 2026-09-02)', () => {
+  const service = new KoraContributionService();
+
+  it('an eligible event (event_nature present) stays eligible through computeFromPipelineResult, whether or not its pillar yields a derived action_family', async () => {
+    const { buildContributionPipelineInputs } = await import('@/lib/kora-contribution/contribution-pipeline-input');
+
+    // pillar='IMPACT' -> deriveActionFamily derives 'territorial_impact' (real family)
+    const rowWithFamily = {
+      source_post_id: 'post-fam', contribution_kind: 'cross_company_participation',
+      impact_weight: 0.80, evidence_status: 'verified',
+      is_cross_company: true, is_kora_originated: false, is_kora_enabled: false,
+    };
+    // pillar='GROWTH' -> outside CONTRIBUTION_PILLARS, deriveActionFamily returns ''
+    // (event_nature alone still carries eligibility — no family is derived at all)
+    const rowNoFamily = { ...rowWithFamily, source_post_id: 'post-nofam' };
+
+    const inputsWithFamily = buildContributionPipelineInputs([rowWithFamily], new Map([['post-fam', 'IMPACT']]));
+    const inputsNoFamily   = buildContributionPipelineInputs([rowNoFamily],   new Map([['post-nofam', 'GROWTH']]));
+
+    expect(inputsWithFamily[0].action_family).toBe('territorial_impact');
+    expect(inputsNoFamily[0].action_family).toBe('');
+    // Both still carry event_nature — both remain eligible regardless of family derivation.
+    expect(inputsWithFamily[0].event_nature).toBe('collective_initiative');
+    expect(inputsNoFamily[0].event_nature).toBe('collective_initiative');
+
+    const resultWithFamily = service.computeFromPipelineResult('elig-co', 'S1', inputsWithFamily);
+    const resultNoFamily   = service.computeFromPipelineResult('elig-co', 'S1', inputsNoFamily);
+
+    // Eligibility (whether the event counts at all) is identical either way —
+    // both produce exactly 1 eligible event, confirmed via aggregateSignals.
+    expect(resultWithFamily.v2.aggregateSignals.totalEligibleEvents).toBe(1);
+    expect(resultNoFamily.v2.aggregateSignals.totalEligibleEvents).toBe(1);
+  });
+
+  it('an ineligible event (no event_nature, no real action_family signal) stays ineligible — deriveActionFamily never opens a backdoor eligibility path', async () => {
+    const { buildContributionPipelineInputs, deriveActionFamily } = await import('@/lib/kora-contribution/contribution-pipeline-input');
+
+    // aggregate_feedback with no is_kora_originated/is_kora_enabled flags ->
+    // deriveEventNature returns undefined (see contribution-pipeline-input.ts).
+    const ineligibleRow = {
+      source_post_id: 'post-inelig', contribution_kind: 'aggregate_feedback',
+      impact_weight: 0.80, evidence_status: 'verified',
+      is_cross_company: false, is_kora_originated: false, is_kora_enabled: false,
+    };
+    const inputs = buildContributionPipelineInputs([ineligibleRow], new Map([['post-inelig', 'IMPACT']]));
+
+    expect(inputs[0].event_nature).toBeUndefined();
+    // Confirms the guard directly: deriveActionFamily requires event_nature,
+    // so a real pillar alone (IMPACT) still yields no family.
+    expect(deriveActionFamily('IMPACT', inputs[0].event_nature)).toBe('');
+    expect(inputs[0].action_family).toBe('');
+
+    const result = service.computeFromPipelineResult('inelig-co', 'S1', inputs);
+    expect(result.v2.aggregateSignals.totalEligibleEvents).toBe(0);
+  });
+
+  it('multiple supported pillars (IMPACT/CONNECTION/LEGACY) each derive a distinct, valid action_family and strategicBreadth stays within [0,1]', async () => {
+    const { buildContributionPipelineInputs } = await import('@/lib/kora-contribution/contribution-pipeline-input');
+
+    const rows = ['IMPACT', 'CONNECTION', 'LEGACY'].map((pillar, i) => ({
+      source_post_id: `post-${i}`, contribution_kind: 'cross_company_participation',
+      impact_weight: 0.5, evidence_status: 'verified',
+      is_cross_company: true, is_kora_originated: false, is_kora_enabled: false,
+      _pillar: pillar,
+    }));
+    const pillarMap = new Map(rows.map((r) => [r.source_post_id, r._pillar]));
+    const inputs = buildContributionPipelineInputs(rows, pillarMap);
+
+    expect(inputs.map((i) => i.action_family)).toEqual([
+      'territorial_impact', 'inclusion_and_connection', 'future_and_legacy',
+    ]);
+
+    const result = service.computeFromPipelineResult('multi-pillar-co', 'S1', inputs);
+    expect(result.v2.components.strategicBreadth).toBeGreaterThanOrEqual(0);
+    expect(result.v2.components.strategicBreadth).toBeLessThanOrEqual(1);
+    // 3 distinct families + 3 distinct pillars present -> maximum diversity signal.
+    expect(result.v2.components.strategicBreadth).toBe(1);
+  });
+});
+
 // ── 9. Company view — aggregate only, no individual worker data ──────────────
 
 describe('Company view — aggregate only', () => {

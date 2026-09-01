@@ -1,5 +1,5 @@
 import type { BudgetToHumanImpactRecord, BudgetToHumanImpactRecommendation } from '@/lib/types';
-import type { EligibilityGateSummary } from '@/services/ingestion-simulator/IngestionSimulatorService';
+import type { EligibilityGateSummary } from '@/lib/types';
 
 interface Props {
   s1Record: BudgetToHumanImpactRecord | undefined;

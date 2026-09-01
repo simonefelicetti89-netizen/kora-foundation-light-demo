@@ -64,11 +64,55 @@ import type { ContributionPipelineInput } from '@/services/kora-contribution/Kor
 export interface ContributionEventRow {
   source_post_id: string;
   contribution_kind: string;
-  impact_weight: number;
+  // number: the PostgREST/Supabase JS client's real-world shape (RLS-15+
+  // integration paths, and getContributionV2Live's production caller) —
+  // numeric JSON columns serialize as JSON numbers.
+  // string: node-postgres's real-world shape for a Postgres `numeric`
+  // column (RLS-14 caught this for real, in CI, against live Postgres —
+  // node-pg returns `numeric` as a string by default to avoid silent
+  // precision loss). Both are legitimate forms produced by currently
+  // supported DB adapters — neither is fabricated to satisfy this type.
+  impact_weight: number | string;
   evidence_status: string;
   is_cross_company: boolean;
   is_kora_originated: boolean;
   is_kora_enabled: boolean;
+}
+
+/**
+ * Normalizes a raw impact_weight value (as handed across the DB adapter
+ * boundary — see ContributionEventRow.impact_weight) into a real, finite
+ * JS number. Never silently propagates a string or a non-finite value into
+ * computeContributionV2/computeProvisionalScore — those functions are the
+ * protected methodology authority and must only ever see clean numbers.
+ *
+ * Throws (does not silently default) on anything that is not a genuinely
+ * valid numeric form. commons.contribution_event.impact_weight is a
+ * `numeric(8,4) NOT NULL` column (migration 025) — null is never a valid
+ * value from the real DB contract, so it is rejected here too, not
+ * special-cased.
+ */
+export function normalizeImpactWeight(value: number | string): number {
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) {
+      throw new Error(`Invalid impact_weight: non-finite number (${value})`);
+    }
+    return value;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed === '') {
+      throw new Error('Invalid impact_weight: empty string');
+    }
+    const parsed = Number(trimmed);
+    if (!Number.isFinite(parsed)) {
+      throw new Error(`Invalid impact_weight: cannot parse "${value}" as a finite number`);
+    }
+    return parsed;
+  }
+  throw new Error(
+    `Invalid impact_weight: expected number or numeric string, got ${typeof value} (${JSON.stringify(value)})`,
+  );
 }
 
 // Live evidence_status enum (migration 025, M025-2) -> EV (0-1).
@@ -147,15 +191,16 @@ export function buildContributionPipelineInputs(
   pillarByPostId: Map<string, string | null>,
 ): ContributionPipelineInput[] {
   return rows.map((row) => {
+    const impactWeight = normalizeImpactWeight(row.impact_weight);
     const ev = EVIDENCE_STATUS_TO_EV[row.evidence_status] ?? 0.50;
     const pillar = pillarByPostId.get(row.source_post_id) ?? null;
     const eventNature = deriveEventNature(row);
     return {
       action_family: deriveActionFamily(pillar, eventNature),
       primary_pillar: pillar,
-      impact_units_total: row.impact_weight,
+      impact_units_total: impactWeight,
       evidence_verification_ev: ev,
-      computed: row.impact_weight > 0,
+      computed: impactWeight > 0,
       event_nature: eventNature,
     };
   });

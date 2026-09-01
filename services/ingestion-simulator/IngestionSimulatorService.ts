@@ -1,4 +1,4 @@
-import type { ScenarioId, IngestionDestination, IngestionReviewStatus } from '@/lib/types';
+import type { ScenarioId, IngestionDestination, IngestionReviewStatus, EligibilityGateSummary } from '@/lib/types';
 import sourceBatchesRaw from '@/data/synthetic/source-batches.json';
 import ingestionSamplesRaw from '@/data/synthetic/ingestion-samples.json';
 import { eligibilityGateService } from '@/services/eligibility-gate/EligibilityGateService';
@@ -8,6 +8,9 @@ export type SourceType = 'hr_system' | 'welfare_provider' | 'lms' | 'esg_initiat
 
 // Re-export for backward compatibility
 export type { IngestionDestination, IngestionReviewStatus };
+// EligibilityGateSummary moved to @/lib/types (F-04 dependency-blocker
+// resolution, 2026-09-02) — re-exported here for backward compatibility.
+export type { EligibilityGateSummary };
 
 export interface IngestionSample {
   id: string;
@@ -148,15 +151,6 @@ export interface EvidenceCoverageSummary {
   average_evidence_pct: number;
   sources_above_50pct: number;
   sources_below_50pct: number;
-}
-
-export interface EligibilityGateSummary {
-  blocked_count: number;
-  blocked_note: string;
-  limited_count: number;
-  limited_note: string;
-  eligible_row_count: number;
-  total_row_count: number;
 }
 
 export interface IIngestionSimulatorService {

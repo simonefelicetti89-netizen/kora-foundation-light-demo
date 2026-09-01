@@ -123,9 +123,9 @@ describe('B165 — migration 024 structure', () => {
     expect(sql).toContain('location_lng');
   });
 
-  it('Gate 2 annotation: written NOT applied', () => {
+  it('Gate 2 annotation: written, not applied to any remote/production DB (corrected 2026-09-02 — the bare "NOT applied" wording was stale: this migration IS applied to local/CI ephemeral Postgres via the tracked migration ledger, verified by the mandatory DB-backed CI gate)', () => {
     expect(sql).toContain('Gate 2 OPEN');
-    expect(sql).toContain('NOT applied');
+    expect(sql).toContain('NOT applied to any remote/production DB');
   });
 
   it('NOTIFY pgrst reload schema', () => {

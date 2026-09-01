@@ -4,21 +4,17 @@ import type {
   KoraReadyRecord,
   IngestionDestination,
   IngestionReviewStatus,
+  EligibilityClassificationResult,
+  PipelineAnalyzedRow,
 } from '@/lib/types';
 import { ingestionNormalizerService } from '@/services/ingestion-normalizer/IngestionNormalizerService';
 import { eligibilityGateService } from '@/services/eligibility-gate/EligibilityGateService';
-import type { EligibilityClassificationResult } from '@/services/eligibility-gate/EligibilityGateService';
 import ingestionSamplesRaw from '@/data/synthetic/ingestion-samples.json';
 
-export interface PipelineAnalyzedRow {
-  raw: RawIngestionRow;
-  normalized: NormalizedIngestionRow;
-  classification: EligibilityClassificationResult;
-  destination: IngestionDestination;
-  review_status: IngestionReviewStatus;
-  kora_ready: KoraReadyRecord;
-  missing_data_questions: string[];
-}
+// PipelineAnalyzedRow moved to @/lib/types (F-03 dependency-blocker
+// resolution, 2026-09-02) — re-exported here for backward compatibility
+// with its other existing importer (UEFReviewService.ts).
+export type { PipelineAnalyzedRow };
 
 export interface IngestionPipelineSummary {
   total: number;
