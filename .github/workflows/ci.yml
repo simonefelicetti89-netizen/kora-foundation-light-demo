@@ -153,7 +153,17 @@ jobs:
       # DEMO-kind tenant through buildCompanyOnboardingView — the same
       # query, the same derived-logic authority, no tenant_kind branch
       # anywhere. Same mandatory no-skip treatment.
-      - name: Run RLS integration suites (RLS-03/05/06/07/08/09/10/11/12/13/14/15 — mandatory, no skip)
+      # RLS-16 (B-TRUTH Ingestion/UEF PR1 — canonical synthetic-tenant
+      # runtime proof, 2026-09-02): DB-level proof that a canonical
+      # synthetic/example (DEMO-kind) tenant ingests deterministic fake data
+      # through the exact same Ingestion/UEF runtime (analytics.source_batch,
+      # personal.uploaded_record, analytics.uef_record) and the exact same
+      # runKoraPipeline authority a LIVE-kind tenant uses — same query
+      # shapes as app/api/admin/operator-flow/route.ts and
+      # app/api/admin/scoring/run-approved-batch/route.ts, no tenant_kind
+      # branch anywhere, plus negative tenant isolation. Same mandatory
+      # no-skip treatment.
+      - name: Run RLS integration suites (RLS-03/05/06/07/08/09/10/11/12/13/14/15/16 — mandatory, no skip)
         env:
           RLS03_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS03_ALLOW_RUN: 'true'
@@ -179,6 +189,8 @@ jobs:
           RLS14_ALLOW_RUN: 'true'
           RLS15_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
           RLS15_ALLOW_RUN: 'true'
+          RLS16_PG_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+          RLS16_ALLOW_RUN: 'true'
         run: |
           npx vitest run \
             tests/integration/rls-two-tenant-negative.test.ts \
@@ -193,6 +205,7 @@ jobs:
             tests/integration/rls-13-workforce-baseline-tenant-kind-parity.test.ts \
             tests/integration/rls-14-contribution-tenant-kind-parity.test.ts \
             tests/integration/rls-15-company-onboarding-tenant-kind-parity.test.ts \
+            tests/integration/rls-16-ingestion-tenant-kind-parity.test.ts \
             --reporter=json --outputFile=rls-integration-report.json
 
       # F-04: machine-readable assertion — fails the job if any RLS test
