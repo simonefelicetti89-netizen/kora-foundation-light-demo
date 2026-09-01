@@ -7,8 +7,8 @@ import type {
   ImpactUnitComputationResult,
   ImpactUnitComputationSummary,
   ImpactUnitFactorTrace,
+  PipelineAnalyzedRow,
 } from '@/lib/types';
-import type { PipelineAnalyzedRow } from '@/services/ingestion-pipeline/IngestionPipelineService';
 import { getMethodologyVersion, getCalibrationStatus, getNMFunctionsConfig, getBCByActionFamily } from '@/lib/methodology-config/v0.1';
 
 // ── BC by action family — B-BC (CC-009) ──────────────────────────────────────────

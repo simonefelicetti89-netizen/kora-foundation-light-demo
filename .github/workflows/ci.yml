@@ -97,8 +97,11 @@ jobs:
 
       # `supabase start` blocks until every service (including Postgres) has
       # passed its own health check before returning — this is the real
-      # readiness wait, not a fixed sleep. Applies migrations 001-042 fresh.
-      - name: Start local Supabase stack (applies migrations 001-042 fresh)
+      # readiness wait, not a fixed sleep. Applies every tracked migration
+      # fresh (001 through the current highest-numbered file in
+      # supabase/migrations/ — this comment intentionally names no fixed
+      # upper bound so it cannot go stale again as new migrations land).
+      - name: Start local Supabase stack (applies every tracked migration fresh)
         run: supabase start
 
       # Explicit, additional readiness proof beyond `supabase start`
@@ -210,7 +213,7 @@ jobs:
 
       - name: Run KORA Link behavioral suite (C1-C10)
         env:
-          KORA_LINK_SKIP_DB_RESET: '1' # supabase start already applied 001-042 fresh
+          KORA_LINK_SKIP_DB_RESET: '1' # supabase start already applied every tracked migration fresh
         run: npm run test:kora-link:behavioral > kora-link-behavioral-report.json
 
       - name: Upload suite reports

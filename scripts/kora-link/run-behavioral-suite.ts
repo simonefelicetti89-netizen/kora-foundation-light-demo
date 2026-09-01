@@ -20,9 +20,9 @@
  *     the stack itself — see docs/KORA_LINK_AUTOMATED_TESTING.md for why).
  *
  * By default the runner first runs `supabase db reset` to guarantee a clean,
- * fully-migrated (001-042) local database. Set KORA_LINK_SKIP_DB_RESET=1 to
- * skip this (e.g. if a CI step already did it, or to preserve manually
- * inspected state between runs).
+ * fully-migrated (every tracked migration in supabase/migrations/) local
+ * database. Set KORA_LINK_SKIP_DB_RESET=1 to skip this (e.g. if a CI step
+ * already did it, or to preserve manually inspected state between runs).
  *
  * Connection: local Postgres only. KORA_LINK_LOCAL_DB_URL overrides the
  * default local Supabase CLI connection string

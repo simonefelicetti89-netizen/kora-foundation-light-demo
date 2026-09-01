@@ -11,6 +11,16 @@
  *   references tenant_kind — this test proves that at the DB level, not
  *   just in the route's source text.
  *
+ *   This file also contains a second, independent describe block (added
+ *   2026-09-02, Ingestion dependency blockers + Contribution hardening PR):
+ *   NEGATIVE TENANT ISOLATION — proving the same `WHERE tenant_id = $1`
+ *   query genuinely isolates rows between two distinct tenants in both
+ *   directions (tenant A never sees tenant B's events and vice versa), with
+ *   deliberately distinct fixture values per tenant so any leakage would be
+ *   immediately detectable, not accidentally masked by identical fixtures.
+ *   Uses its own separate tenant pair (RLS14-ISO-A/RLS14-ISO-B) so its
+ *   assertions can never be confused with the parity block's.
+ *
  * WHY THIS MATTERS (ONE PRODUCT / NO DEMO RUNTIME, Patch 03):
  *   The B-TRUTH Contribution protected port (2026-09-01) retired
  *   KoraContributionService.getSummaryV2() (synthetic JSON seed input) in
@@ -286,6 +296,193 @@ describe.skipIf(!ready)(
       const liveInputs = await fetchContributionInputs(liveTenantId);
       const demoInputs = await fetchContributionInputs(demoTenantId);
       expect(Object.keys(liveInputs[0]).sort()).toEqual(Object.keys(demoInputs[0]).sort());
+    });
+  },
+);
+
+/**
+ * Negative tenant isolation — Ingestion dependency blockers PR (2026-09-02).
+ *
+ * A separate tenant pair and fixture set from the parity block above (kept
+ * independent so this block's distinguishing per-tenant values can never be
+ * confused with, or accidentally satisfy, the parity assertions above, and
+ * vice versa). Proves the same query getContributionV2Live() runs
+ * (`WHERE tenant_id = $1`, no cross-tenant join) genuinely isolates rows at
+ * the DB level in both directions, and that the isolated per-tenant inputs
+ * still flow through the SAME unchanged computeFromPipelineResult authority
+ * — no separate/duplicated methodology path for either tenant.
+ */
+
+const RLS14_ISO_TENANT_CODES = ['RLS14-ISO-A', 'RLS14-ISO-B'] as const;
+
+describe.skipIf(!ready)(
+  'RLS-14 — negative tenant isolation: tenant A never receives tenant B contribution events, and vice versa',
+  () => {
+    let client: InstanceType<typeof Client>;
+    let tenantAId: string;
+    let tenantBId: string;
+    let postAId: string;
+    let postBId: string;
+
+    const service = new KoraContributionService();
+
+    beforeAll(async () => {
+      if (!config) throw new Error('unreachable: beforeAll only runs when describe.skipIf(!ready) has already passed');
+      assertLocalPostgresOnly(config.pgUrl);
+
+      client = new Client({ connectionString: config.pgUrl });
+      await client.connect();
+
+      const aResult = await client.query<{ id: string }>(
+        `INSERT INTO analytics.tenant (tenant_code, company_name, tenant_kind)
+         VALUES ($1, $2, 'LIVE')
+         ON CONFLICT (tenant_code) DO UPDATE SET company_name = EXCLUDED.company_name, tenant_kind = 'LIVE'
+         RETURNING id`,
+        ['RLS14-ISO-A', 'RLS-14 Isolation Tenant A'],
+      );
+      tenantAId = aResult.rows[0].id;
+
+      const bResult = await client.query<{ id: string }>(
+        `INSERT INTO analytics.tenant (tenant_code, company_name, tenant_kind)
+         VALUES ($1, $2, 'DEMO')
+         ON CONFLICT (tenant_code) DO UPDATE SET company_name = EXCLUDED.company_name, tenant_kind = 'DEMO'
+         RETURNING id`,
+        ['RLS14-ISO-B', 'RLS-14 Isolation Tenant B'],
+      );
+      tenantBId = bResult.rows[0].id;
+
+      await client.query(`DELETE FROM commons.contribution_event WHERE tenant_id = ANY($1)`, [[tenantAId, tenantBId]]);
+      await client.query(`DELETE FROM commons.post WHERE tenant_id = ANY($1)`, [[tenantAId, tenantBId]]);
+
+      const postAResult = await client.query<{ id: string }>(
+        `INSERT INTO commons.post (tenant_id, author_role, title, body, category, pillar, status)
+         VALUES ($1, 'COMPANY_ADMIN', 'RLS-14 isolation initiative (A)', 'RLS-14 fixture body', 'initiative_update', 'IMPACT', 'published')
+         RETURNING id`,
+        [tenantAId],
+      );
+      postAId = postAResult.rows[0].id;
+
+      const postBResult = await client.query<{ id: string }>(
+        `INSERT INTO commons.post (tenant_id, author_role, title, body, category, pillar, status)
+         VALUES ($1, 'COMPANY_ADMIN', 'RLS-14 isolation initiative (B)', 'RLS-14 fixture body', 'initiative_update', 'CONNECTION', 'published')
+         RETURNING id`,
+        [tenantBId],
+      );
+      postBId = postBResult.rows[0].id;
+
+      // Deliberately distinct fixture shapes per tenant — a different
+      // event count AND a different impact_weight — so any cross-tenant
+      // leakage (wrong row count, wrong sum, wrong pillar) is immediately
+      // detectable rather than accidentally masked by identical fixtures.
+      // Tenant A: two events, weights 0.40 + 0.60 = 1.00 total.
+      for (const weight of [0.40, 0.60]) {
+        await client.query(
+          `INSERT INTO commons.contribution_event
+             (tenant_id, source_post_id, role, contribution_kind, impact_weight, evidence_status,
+              reporting_period, is_cross_company, is_kora_originated, is_kora_enabled)
+           VALUES ($1, $2, 'promoter', 'cross_company_participation', $3, 'verified',
+                   'RLS14-ISO-PERIOD', true, false, false)`,
+          [tenantAId, postAId, weight],
+        );
+      }
+      // Tenant B: one event, weight 9.99 — far outside tenant A's range, so
+      // it could never be mistaken for a tenant A row's contribution.
+      await client.query(
+        `INSERT INTO commons.contribution_event
+           (tenant_id, source_post_id, role, contribution_kind, impact_weight, evidence_status,
+            reporting_period, is_cross_company, is_kora_originated, is_kora_enabled)
+         VALUES ($1, $2, 'promoter', 'cross_company_participation', 9.99, 'verified',
+                 'RLS14-ISO-PERIOD', true, false, false)`,
+        [tenantBId, postBId],
+      );
+    });
+
+    afterAll(async () => {
+      if (!client) return;
+
+      const tenantRows = await client.query<{ id: string }>(
+        `SELECT id FROM analytics.tenant WHERE tenant_code = ANY($1)`,
+        [RLS14_ISO_TENANT_CODES as unknown as string[]],
+      );
+      const ids = tenantRows.rows.map((row) => row.id);
+
+      if (ids.length > 0) {
+        await client.query(`DELETE FROM commons.contribution_event WHERE tenant_id = ANY($1)`, [ids]);
+        await client.query(`DELETE FROM commons.post WHERE tenant_id = ANY($1)`, [ids]);
+        await client.query(`DELETE FROM analytics.tenant WHERE tenant_code = ANY($1)`, [
+          RLS14_ISO_TENANT_CODES as unknown as string[],
+        ]);
+      }
+
+      await client.end();
+    });
+
+    async function fetchIsolationInputs(tenantId: string): Promise<{
+      inputs: ReturnType<typeof buildContributionPipelineInputs>;
+      postIdsSeen: string[];
+    }> {
+      const eventsResult = await client.query(
+        `SELECT source_post_id, contribution_kind, impact_weight, evidence_status,
+                is_cross_company, is_kora_originated, is_kora_enabled
+         FROM commons.contribution_event
+         WHERE tenant_id = $1`,
+        [tenantId],
+      );
+      const rows = (eventsResult.rows as ContributionEventRow[]).map((row) => ({
+        ...row,
+        impact_weight: Number(row.impact_weight),
+      }));
+
+      const postIds = [...new Set(rows.map((r) => r.source_post_id))];
+      const pillarByPostId = new Map<string, string | null>();
+      if (postIds.length > 0) {
+        const postsResult = await client.query<{ id: string; pillar: string | null }>(
+          `SELECT id, pillar FROM commons.post WHERE id = ANY($1)`,
+          [postIds],
+        );
+        for (const p of postsResult.rows) pillarByPostId.set(p.id, p.pillar);
+      }
+
+      return { inputs: buildContributionPipelineInputs(rows, pillarByPostId), postIdsSeen: postIds };
+    }
+
+    it('tenant A receives only its own 2 contribution events — never tenant B\'s', async () => {
+      const { inputs, postIdsSeen } = await fetchIsolationInputs(tenantAId);
+      expect(inputs).toHaveLength(2);
+      expect(postIdsSeen).toEqual([postAId]);
+      expect(postIdsSeen).not.toContain(postBId);
+      const total = inputs.reduce((s, i) => s + i.impact_units_total, 0);
+      expect(total).toBeCloseTo(1.00, 6);
+      // Tenant B's distinguishing 9.99 value never appears in tenant A's data.
+      expect(inputs.map((i) => i.impact_units_total)).not.toContain(9.99);
+    });
+
+    it('tenant B receives only its own 1 contribution event — never tenant A\'s (reverse direction)', async () => {
+      const { inputs, postIdsSeen } = await fetchIsolationInputs(tenantBId);
+      expect(inputs).toHaveLength(1);
+      expect(postIdsSeen).toEqual([postBId]);
+      expect(postIdsSeen).not.toContain(postAId);
+      expect(inputs[0].impact_units_total).toBe(9.99);
+      // Tenant A's two distinguishing values never appear in tenant B's data.
+      expect(inputs.map((i) => i.impact_units_total)).not.toContain(0.40);
+      expect(inputs.map((i) => i.impact_units_total)).not.toContain(0.60);
+    });
+
+    it('both isolated per-tenant input sets flow through the same, single, unchanged computeFromPipelineResult authority — no duplicated methodology path', async () => {
+      const { inputs: inputsA } = await fetchIsolationInputs(tenantAId);
+      const { inputs: inputsB } = await fetchIsolationInputs(tenantBId);
+
+      const resultA = service.computeFromPipelineResult('RLS14-ISO-A', 'S1', inputsA);
+      const resultB = service.computeFromPipelineResult('RLS14-ISO-B', 'S1', inputsB);
+
+      expect(resultA.totalContributionIU).toBeCloseTo(1.00, 6);
+      expect(resultB.totalContributionIU).toBeCloseTo(9.99, 6);
+      // Distinct inputs correctly yield distinct outputs — proves the two
+      // tenants are not silently sharing or averaging a merged computation.
+      expect(resultA.totalContributionIU).not.toEqual(resultB.totalContributionIU);
+      // Both went through the identical authority — same doctrine flags.
+      expect(resultA.notKoraIndexComponent).toBe(true);
+      expect(resultB.notKoraIndexComponent).toBe(true);
     });
   },
 );

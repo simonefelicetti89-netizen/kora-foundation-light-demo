@@ -28,56 +28,25 @@
 
 import type {
   ActionTaxonomyEntry,
-  EligibilityClass,
   ActionFamily,
   EventNature,
   MandatoryStatus,
   PillarCode,
   PrivacySensitivity,
   DepthLevel,
+  EligibilityClassificationInput,
+  EligibilityClassificationResult,
 } from '@/lib/types';
 import { BTI_DOCTRINE, ELIGIBILITY_COPY, CCNL_IMPROVEMENT_SIGNALS } from '@/lib/constants/kora';
 import rawTaxonomy from '@/data/synthetic/action-taxonomy.json';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-
-export interface EligibilityClassificationInput {
-  name: string;
-  description?: string;
-  category?: string;
-  source_type?: string;
-  mandatory_status?: string;
-  evidence_type?: string;
-  amount?: number;
-  duration?: number;
-  notes?: string;
-}
-
-export interface EligibilityClassificationResult {
-  input: EligibilityClassificationInput;
-  matched_taxonomy_id: string | null;
-  kora_eligibility: EligibilityClass;
-  action_family: ActionFamily;
-  event_nature: EventNature;
-  primary_pillar: PillarCode | null;
-  secondary_pillars: PillarCode[];
-  pillar_distribution: Partial<Record<PillarCode, number>>;
-  mandatory_status: MandatoryStatus;
-  privacy_sensitivity: PrivacySensitivity;
-  depth_level: DepthLevel;
-  additionality_level: 'high' | 'moderate' | 'low' | 'none';
-  confidence: 'high' | 'medium' | 'low';
-  reason: string;
-  explanation_text: string;
-  scoring_allowed: boolean;
-  impact_units_allowed: boolean;
-  worker_pib_allowed: boolean;
-  company_index_allowed: boolean;
-  contribution_index_allowed: boolean;
-  value_chain_allowed: boolean;
-  blocked_reason?: string;
-  review_required: boolean;
-}
+// EligibilityClassificationInput / EligibilityClassificationResult moved to
+// @/lib/types (F-03/F-04 dependency-blocker resolution, 2026-09-02) — pure
+// data contracts, no computation attached. Re-exported here for backward
+// compatibility with existing importers (IngestionPipelineService.ts,
+// IngestionSimulatorService.ts both import them from this module).
+export type { EligibilityClassificationInput, EligibilityClassificationResult };
 
 export interface EligibilitySummary {
   total: number;

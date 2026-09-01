@@ -577,6 +577,95 @@ export interface KoraReadyRecord {
   structural_policy_subtype?: StructuralPolicySubtype;
 }
 
+// ── Eligibility taxonomy/preprocessing classifier contract ───────────────────
+// Moved here from services/eligibility-gate/EligibilityGateService.ts
+// (F-03/F-04 dependency-blocker resolution, 2026-09-02): this is a pure data
+// contract with zero computation attached — it belongs in the neutral type
+// module, not owned by the demo taxonomy service that happened to define it.
+// EligibilityGateService.ts re-exports both names from here for backward
+// compatibility with its existing importers (IngestionPipelineService.ts,
+// IngestionSimulatorService.ts). This is NOT the canonical scoring
+// eligibility engine's own contract — that engine
+// (lib/kora-engine/eligibility-gate.ts) has its own EligibilityResult type
+// and is unaffected by this move.
+
+export interface EligibilityClassificationInput {
+  name: string;
+  description?: string;
+  category?: string;
+  source_type?: string;
+  mandatory_status?: string;
+  evidence_type?: string;
+  amount?: number;
+  duration?: number;
+  notes?: string;
+}
+
+export interface EligibilityClassificationResult {
+  input: EligibilityClassificationInput;
+  matched_taxonomy_id: string | null;
+  kora_eligibility: EligibilityClass;
+  action_family: ActionFamily;
+  event_nature: EventNature;
+  primary_pillar: PillarCode | null;
+  secondary_pillars: PillarCode[];
+  pillar_distribution: Partial<Record<PillarCode, number>>;
+  mandatory_status: MandatoryStatus;
+  privacy_sensitivity: PrivacySensitivity;
+  depth_level: DepthLevel;
+  additionality_level: 'high' | 'moderate' | 'low' | 'none';
+  confidence: 'high' | 'medium' | 'low';
+  reason: string;
+  explanation_text: string;
+  scoring_allowed: boolean;
+  impact_units_allowed: boolean;
+  worker_pib_allowed: boolean;
+  company_index_allowed: boolean;
+  contribution_index_allowed: boolean;
+  value_chain_allowed: boolean;
+  blocked_reason?: string;
+  review_required: boolean;
+}
+
+// Moved here from services/ingestion-pipeline/IngestionPipelineService.ts
+// (F-03 dependency-blocker resolution, 2026-09-02): services/iu-computation/
+// IUComputationService.ts used this purely as a type shape (import type,
+// pure destructuring, zero value/method dependency on IngestionPipelineService)
+// — moving it here removes that dependency edge cleanly, with no behavior
+// change. IngestionPipelineService.ts re-exports it for backward
+// compatibility with its other existing importer (UEFReviewService.ts).
+export interface PipelineAnalyzedRow {
+  raw: RawIngestionRow;
+  normalized: NormalizedIngestionRow;
+  classification: EligibilityClassificationResult;
+  destination: IngestionDestination;
+  review_status: IngestionReviewStatus;
+  kora_ready: KoraReadyRecord;
+  missing_data_questions: string[];
+}
+
+// Moved here from services/ingestion-simulator/IngestionSimulatorService.ts
+// (F-04 dependency-blocker resolution, 2026-09-02): a pure flat data
+// contract, no computation attached. Three real, live product UI components
+// (components/kora-index/EligibilityGatePanel.tsx,
+// components/reports/EligibilitySummaryReport.tsx,
+// components/reports/ActionPlanReport.tsx — all consumed by
+// app/company/kora-index/page.tsx, a live session-authenticated page)
+// imported this purely for its type shape while already receiving real
+// data built from liveCtx.eligibility, never from
+// IngestionSimulatorService.getEligibilityGateSummary(). Moving the type
+// here removes their last remaining import-path coupling to the demo
+// service. IngestionSimulatorService.ts re-exports it for backward
+// compatibility with its own IIngestionSimulatorService interface.
+export interface EligibilityGateSummary {
+  blocked_count: number;
+  blocked_note: string;
+  limited_count: number;
+  limited_note: string;
+  eligible_row_count: number;
+  total_row_count: number;
+}
+
 export type IngestionAuditEventType =
   | 'row_normalized'
   | 'row_classified'

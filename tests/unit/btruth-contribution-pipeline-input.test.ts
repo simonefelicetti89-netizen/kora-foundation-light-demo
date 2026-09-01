@@ -10,6 +10,7 @@ import {
   deriveEventNature,
   deriveActionFamily,
   buildContributionPipelineInputs,
+  normalizeImpactWeight,
   type ContributionEventRow,
 } from '../../lib/kora-contribution/contribution-pipeline-input';
 
@@ -66,6 +67,82 @@ describe('deriveEventNature', () => {
   it('aggregate_feedback / aggregate_follow_up without flags -> undefined (not guessed)', () => {
     expect(deriveEventNature({ contribution_kind: 'aggregate_feedback', is_cross_company: false, is_kora_originated: false, is_kora_enabled: false })).toBeUndefined();
     expect(deriveEventNature({ contribution_kind: 'aggregate_follow_up', is_cross_company: false, is_kora_originated: false, is_kora_enabled: false })).toBeUndefined();
+  });
+});
+
+describe('normalizeImpactWeight — DB adapter boundary hardening', () => {
+  it('a numeric string (node-postgres numeric-column shape, RLS-14) normalizes to the canonical number', () => {
+    expect(normalizeImpactWeight('1.5')).toBe(1.5);
+  });
+
+  it('a real number (PostgREST/Supabase JS client shape) passes through unchanged', () => {
+    expect(normalizeImpactWeight(1.5)).toBe(1.5);
+  });
+
+  it('an invalid non-numeric string throws explicitly — no methodology fallback', () => {
+    expect(() => normalizeImpactWeight('not-a-number')).toThrow(/Invalid impact_weight/);
+  });
+
+  it('an empty string throws explicitly', () => {
+    expect(() => normalizeImpactWeight('')).toThrow(/Invalid impact_weight/);
+  });
+
+  it('a whitespace-only string throws explicitly', () => {
+    expect(() => normalizeImpactWeight('   ')).toThrow(/Invalid impact_weight/);
+  });
+
+  it('NaN (as a number) throws explicitly', () => {
+    expect(() => normalizeImpactWeight(NaN)).toThrow(/Invalid impact_weight/);
+  });
+
+  it('Infinity (as a number) throws explicitly', () => {
+    expect(() => normalizeImpactWeight(Infinity)).toThrow(/Invalid impact_weight/);
+    expect(() => normalizeImpactWeight(-Infinity)).toThrow(/Invalid impact_weight/);
+  });
+
+  it('a string form of Infinity throws explicitly', () => {
+    expect(() => normalizeImpactWeight('Infinity')).toThrow(/Invalid impact_weight/);
+  });
+
+  it('null is rejected — commons.contribution_event.impact_weight is NOT NULL by schema contract, never a legitimate case', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(() => normalizeImpactWeight(null as any)).toThrow(/Invalid impact_weight/);
+  });
+
+  it('undefined is rejected', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(() => normalizeImpactWeight(undefined as any)).toThrow(/Invalid impact_weight/);
+  });
+
+  it('an object is rejected (never coerced through arithmetic Number() surprises)', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(() => normalizeImpactWeight({} as any)).toThrow(/Invalid impact_weight/);
+  });
+
+  it('zero and negative-but-finite numbers are valid — normalization is about numeric validity, not business-rule range', () => {
+    expect(normalizeImpactWeight(0)).toBe(0);
+    expect(normalizeImpactWeight('0')).toBe(0);
+    expect(normalizeImpactWeight(-2)).toBe(-2);
+  });
+});
+
+describe('buildContributionPipelineInputs — propagates normalizeImpactWeight explicitly', () => {
+  it('a numeric-string impact_weight row (node-postgres shape) is normalized before reaching the output', () => {
+    const inputs = buildContributionPipelineInputs(
+      [{ ...BASE_ROW, impact_weight: '0.8000' }],
+      new Map([['post-1', 'IMPACT']]),
+    );
+    expect(inputs[0].impact_units_total).toBe(0.8);
+    expect(typeof inputs[0].impact_units_total).toBe('number');
+  });
+
+  it('an invalid impact_weight throws at the mapper boundary — never silently propagated into a ContributionPipelineInput', () => {
+    expect(() =>
+      buildContributionPipelineInputs(
+        [{ ...BASE_ROW, impact_weight: 'not-a-number' }],
+        new Map([['post-1', 'IMPACT']]),
+      ),
+    ).toThrow(/Invalid impact_weight/);
   });
 });
 
