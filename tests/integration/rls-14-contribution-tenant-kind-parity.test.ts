@@ -327,6 +327,7 @@ describe.skipIf(!ready)(
       let tenantAId: string;
       let tenantBId: string;
       let postAId: string;
+      let postA2Id: string;
       let postBId: string;
 
       beforeAll(async () => {
@@ -364,6 +365,20 @@ describe.skipIf(!ready)(
       );
       postAId = postAResult.rows[0].id;
 
+      // A second, distinct post for tenant A's second event — required by
+      // commons.contribution_event's own uq_contribution_external UNIQUE
+      // constraint (tenant_id, source_post_id, contribution_kind, role,
+      // reporting_period): two rows sharing the same post/kind/role/period
+      // and differing only in impact_weight would violate it. Using a
+      // second real initiative is also the more realistic fixture shape.
+      const postA2Result = await isoClient.query<{ id: string }>(
+        `INSERT INTO commons.post (tenant_id, author_role, title, body, category, pillar, status)
+         VALUES ($1, 'COMPANY_ADMIN', 'RLS-14 isolation initiative (A2)', 'RLS-14 fixture body', 'initiative_update', 'IMPACT', 'published')
+         RETURNING id`,
+        [tenantAId],
+      );
+      postA2Id = postA2Result.rows[0].id;
+
       const postBResult = await isoClient.query<{ id: string }>(
         `INSERT INTO commons.post (tenant_id, author_role, title, body, category, pillar, status)
          VALUES ($1, 'COMPANY_ADMIN', 'RLS-14 isolation initiative (B)', 'RLS-14 fixture body', 'initiative_update', 'CONNECTION', 'published')
@@ -376,15 +391,15 @@ describe.skipIf(!ready)(
       // event count AND a different impact_weight — so any cross-tenant
       // leakage (wrong row count, wrong sum, wrong pillar) is immediately
       // detectable rather than accidentally masked by identical fixtures.
-      // Tenant A: two events, weights 0.40 + 0.60 = 1.00 total.
-      for (const weight of [0.40, 0.60]) {
+      // Tenant A: two events on two distinct posts, weights 0.40 + 0.60 = 1.00 total.
+      for (const [postId, weight] of [[postAId, 0.40], [postA2Id, 0.60]] as const) {
         await isoClient.query(
           `INSERT INTO commons.contribution_event
              (tenant_id, source_post_id, role, contribution_kind, impact_weight, evidence_status,
               reporting_period, is_cross_company, is_kora_originated, is_kora_enabled)
            VALUES ($1, $2, 'promoter', 'cross_company_participation', $3, 'verified',
                    'RLS14-ISO-PERIOD', true, false, false)`,
-          [tenantAId, postAId, weight],
+          [tenantAId, postId, weight],
         );
       }
       // Tenant B: one event, weight 9.99 — far outside tenant A's range, so
@@ -451,7 +466,7 @@ describe.skipIf(!ready)(
       it('tenant A receives only its own 2 contribution events — never tenant B\'s', async () => {
         const { inputs, postIdsSeen } = await fetchIsolationInputs(tenantAId);
         expect(inputs).toHaveLength(2);
-        expect(postIdsSeen).toEqual([postAId]);
+        expect(postIdsSeen.sort()).toEqual([postAId, postA2Id].sort());
         expect(postIdsSeen).not.toContain(postBId);
         const total = inputs.reduce((s, i) => s + i.impact_units_total, 0);
         expect(total).toBeCloseTo(1.00, 6);
@@ -464,6 +479,7 @@ describe.skipIf(!ready)(
         expect(inputs).toHaveLength(1);
         expect(postIdsSeen).toEqual([postBId]);
         expect(postIdsSeen).not.toContain(postAId);
+        expect(postIdsSeen).not.toContain(postA2Id);
         expect(inputs[0].impact_units_total).toBe(9.99);
         // Tenant A's two distinguishing values never appear in tenant B's data.
         expect(inputs.map((i) => i.impact_units_total)).not.toContain(0.40);
