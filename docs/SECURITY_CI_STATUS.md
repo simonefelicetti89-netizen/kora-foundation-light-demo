@@ -42,7 +42,7 @@ Two steps:
 Both target `main`. No auto-merge is configured — every Dependabot PR still
 goes through the `KORA CI` and `KORA Security` gates like any other PR.
 
-## Known unresolved vulnerabilities (as of 2026-07-14)
+## Known unresolved vulnerabilities (as of 2026-07-14) — HISTORICAL, superseded below
 
 `npm audit` reports 6 findings, all low/moderate, none high/critical:
 
@@ -62,6 +62,47 @@ configuration only, not dependency changes. `npm audit fix --force` must
 never be run against this repository as long as the `postcss`/`next` and
 `uuid`/`exceljs` findings above remain open — it proposes breaking downgrades,
 not real fixes.
+
+## Known unresolved vulnerabilities (as of 2026-09-02) — CURRENT
+
+The `@babel/core`/`js-yaml`/`uuid`/`exceljs` findings above are gone from
+current `npm audit` output (resolved by routine dependency drift since
+2026-07-14, not by a dedicated sprint — this doc had simply gone stale).
+
+A new HIGH-severity finding appeared and was fixed (dependency-audit
+cleanup, 2026-09-02): `browserslist@4.28.2` (transitive, via
+`@sentry/nextjs` → `@sentry/webpack-plugin`/`@sentry/bundler-plugin-core` →
+`webpack`/`@babel/core` → `browserslist`) — two advisories,
+[GHSA-c83g-rgw3-j3cx](https://github.com/advisories/GHSA-c83g-rgw3-j3cx)
+(unbounded memory growth) and
+[GHSA-73wf-gq98-2v4g](https://github.com/advisories/GHSA-73wf-gq98-2v4g)
+(uncaught crash / prototype write), both fixed in `browserslist@4.28.7`+.
+Resolved via plain `npm audit fix` — a pure lockfile bump to
+`browserslist@4.28.8` (well within every parent's already-declared semver
+range: `@babel/helper-compilation-targets` `^4.24.0`, `webpack`'s own
+`browserslist` dep `^4.28.1`, `update-browserslist-db`'s peer
+`>=4.21.0`) plus its own small transitive deps
+(`baseline-browser-mapping`, `caniuse-lite`, `electron-to-chromium`,
+`node-releases`, `update-browserslist-db`). No `package.json` change, no
+breaking change, no unrelated package touched.
+
+`npm audit --audit-level=high` now exits 0 — the blocking gate is clean.
+
+Still open, moderate only (`npm audit --audit-level=high` does not see
+these — non-blocking):
+
+| Package | Severity | Status |
+|---|---|---|
+| `postcss` | moderate (incomplete fix of a prior sourceMappingURL advisory, [GHSA-fxqj-rqcc-2cmp](https://github.com/advisories/GHSA-fxqj-rqcc-2cmp)) | **No clean fix.** Bundled inside `next`'s own dependency tree (`next@16.2.11` installed). `npm audit fix --force` proposes `next@16.3.4` — outside this repo's stated Next.js dependency range, a breaking upgrade decision, not a security patch. Track upstream; re-check on every Next.js upgrade. |
+| `@tailwindcss/postcss` | moderate | Same root cause as `postcss` above — depends on the vulnerable `postcss` range. |
+| `vite` | moderate | Same root cause as `postcss` above — depends on the vulnerable `postcss` range (dev/test tooling only, not part of the production Next.js build). |
+| `next` (flagged by resolver) | moderate | Same false-positive-shaped pattern as before: the resolver attributes the bundled-`postcss` issue to the top-level `next` package. **Never run `npm audit fix --force`** on this repo without reading this table first. |
+
+**Updated policy:** `npm audit fix` (without `--force`) remains safe to run
+whenever convenient. `npm audit fix --force` must still never be run
+against this repository while the `postcss` cluster above remains open —
+it proposes a `next` version outside the stated dependency range, a product
+decision requiring its own review, not a routine security fix.
 
 ## Intentionally excluded from this sprint
 
