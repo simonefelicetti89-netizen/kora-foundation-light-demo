@@ -315,7 +315,14 @@ describe.skipIf(!ready)(
 
 const RLS14_ISO_TENANT_CODES = ['RLS14-ISO-A', 'RLS14-ISO-B'] as const;
 
-describe.skipIf(!ready)(
+// Deliberately independent from the parity block's `config`/`ready` above —
+// freshly re-read here rather than closing over the earlier module-level
+// consts, so this block's readiness can never be affected by anything the
+// first describe.skipIf block's evaluation order or state does.
+const isolationConfig = readRls14Config();
+const isolationReady = isolationConfig !== null && isRunExplicitlyAllowed();
+
+describe.skipIf(!isolationReady)(
   'RLS-14 — negative tenant isolation: tenant A never receives tenant B contribution events, and vice versa',
   () => {
     let client: InstanceType<typeof Client>;
@@ -327,10 +334,10 @@ describe.skipIf(!ready)(
     const service = new KoraContributionService();
 
     beforeAll(async () => {
-      if (!config) throw new Error('unreachable: beforeAll only runs when describe.skipIf(!ready) has already passed');
-      assertLocalPostgresOnly(config.pgUrl);
+      if (!isolationConfig) throw new Error('unreachable: beforeAll only runs when describe.skipIf(!isolationReady) has already passed');
+      assertLocalPostgresOnly(isolationConfig.pgUrl);
 
-      client = new Client({ connectionString: config.pgUrl });
+      client = new Client({ connectionString: isolationConfig.pgUrl });
       await client.connect();
 
       const aResult = await client.query<{ id: string }>(
