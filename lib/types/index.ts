@@ -512,6 +512,19 @@ export type IngestionSourceType =
   | 'manual'
   | 'unknown';
 
+// Moved here from services/ingestion-simulator/IngestionSimulatorService.ts
+// (B-TRUTH Ingestion/UEF PR2, 2026-09-02, IngestionSimulatorService
+// retirement): a real, live product code path
+// (app/api/admin/data-intake/upload-preview/route.ts ->
+// services/mapping-confidence/MappingConfidenceService.ts's sourceBonus())
+// imports this type only, and switches on its literal 'lms' value.
+// Deliberately NOT merged with the canonical IngestionSourceType above —
+// the two are genuinely different value sets ('lms' here vs
+// 'lms_training' there); collapsing them would silently change
+// sourceBonus()'s real switch-case behavior. MappingConfidenceService.ts
+// re-exports nothing; it now imports SourceType from here directly.
+export type SourceType = 'hr_system' | 'welfare_provider' | 'lms' | 'esg_initiatives' | 'partner_events' | 'manual';
+
 export interface RawIngestionRow {
   id: string;
   raw_name: string;
@@ -644,27 +657,22 @@ export interface PipelineAnalyzedRow {
   missing_data_questions: string[];
 }
 
-// Moved here from services/ingestion-simulator/IngestionSimulatorService.ts
-// (F-04 dependency-blocker resolution, 2026-09-02): a pure flat data
-// contract, no computation attached. Three real, live product UI components
+// EligibilityGateSummary (F-04 dependency-blocker resolution, 2026-09-02):
+// three real, live product UI components
 // (components/kora-index/EligibilityGatePanel.tsx,
 // components/reports/EligibilitySummaryReport.tsx,
 // components/reports/ActionPlanReport.tsx — all consumed by
 // app/company/kora-index/page.tsx, a live session-authenticated page)
-// imported this purely for its type shape while already receiving real
-// data built from liveCtx.eligibility, never from
-// IngestionSimulatorService.getEligibilityGateSummary(). Moving the type
-// here removes their last remaining import-path coupling to the demo
-// service. IngestionSimulatorService.ts re-exports it for backward
-// compatibility with its own IIngestionSimulatorService interface.
-export interface EligibilityGateSummary {
-  blocked_count: number;
-  blocked_note: string;
-  limited_count: number;
-  limited_note: string;
-  eligible_row_count: number;
-  total_row_count: number;
-}
+// imported this purely for its type shape from
+// services/ingestion-simulator/IngestionSimulatorService.ts (a duplicate,
+// locally-defined copy), while already receiving real data built from
+// liveCtx.eligibility, never from
+// IngestionSimulatorService.getEligibilityGateSummary(). All three now
+// import the type from this module directly instead. The canonical
+// definition already existed here (below, in this file's admin-report
+// section, since 2026-05-23) — that duplicate local copy is deleted, not
+// re-declared a second time; TypeScript interface merging had silently
+// tolerated the accidental duplication until this cleanup.
 
 export type IngestionAuditEventType =
   | 'row_normalized'

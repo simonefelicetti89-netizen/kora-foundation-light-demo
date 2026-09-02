@@ -14,11 +14,44 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 20 files / 31 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 19 files / 29 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH Ingestion/UEF PR2 — IngestionSimulatorService retirement
+// (2026-09-02): RLS-16 (Ingestion/UEF PR1) proved canonical LIVE/DEMO-kind
+// tenant Ingestion/UEF parity; this PR acts on that proof for the one
+// bounded surface it authorizes. Deleted
+// services/ingestion-simulator/IngestionSimulatorService.ts (and its
+// now-empty directory) — confirmed, by direct repo-wide grep before
+// deletion, ZERO real value/method-level callers anywhere
+// (`ingestionSimulatorService.` matched nothing outside its own file), and
+// exactly ONE real type-only dependency: services/mapping-confidence/
+// MappingConfidenceService.ts imported SourceType from it, feeding a real
+// live route (app/api/admin/data-intake/upload-preview/route.ts). SourceType
+// moved to @/lib/types (deliberately NOT merged with the pre-existing,
+// differently-valued IngestionSourceType there — 'lms' vs 'lms_training' —
+// which would have silently changed MappingConfidenceService's real
+// sourceBonus() switch-case behavior); EligibilityGateSummary's F-04 move
+// (2026-09-02, prior PR) is unaffected — its own duplicate-interface bug
+// (a second, accidentally-added copy in lib/types/index.ts alongside an
+// already-existing one from 2026-05-23) was found and fixed in this same
+// pass. data/synthetic/source-batches.json and
+// data/synthetic/ingestion-samples.json are NOT deleted — both remain
+// legitimately imported by other, non-retired files
+// (services/admin-preview/AdminPreviewService.ts and
+// services/ingestion-pipeline/IngestionPipelineService.ts respectively;
+// the latter is also explicitly protected by
+// tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts's own
+// "demo data preserved" assertion). IngestionPipelineService.ts,
+// EligibilityGateService.ts, UEFReviewService.ts, ReportGeneratorService.ts,
+// DynamicScoringPreviewService.ts, CompanyDataIntakeService.ts,
+// ScoringSimulatorService.ts, and the final scoring group are all
+// UNTOUCHED by this PR — each requires its own separately-verified slice.
+// Fifth genuine I9 reduction via a real caller migration: 20->19 files
+// (31->29 imports).
 //
 // B-TRUTH Company Onboarding Canonicalization (2026-09-01): removed
 // services/company-onboarding/CompanyOnboardingService.ts's sole synthetic
@@ -175,7 +208,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/financial-governance/FinancialGovernanceService.ts', reason: 'Informational-only financial governance demo data.' },
   { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
   { file: 'services/ingestion-pipeline/IngestionPipelineService.ts', reason: 'B-TRUTH Ingestion/UEF Classification (2026-08-31): DEMO_RUNTIME, not RETIRE. Isolated demo ingestion pipeline feeding the demo UEF review path only (svc.uef-review); the live UEF path (analytics.uef_record, lib/kora-engine/run-kora-pipeline.ts) never falls back to this data. Deliberately kept per tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts. See lib/architecture/registry.ts svc.ingestion-pipeline / svc.uef-review.' },
-  { file: 'services/ingestion-simulator/IngestionSimulatorService.ts', reason: 'Rule-based BCM classifier demo path — source batches + ingestion samples.' },
   { file: 'services/report-factory/ReportFactoryService.ts', reason: 'Reads synthetic Decision Pack version seed alongside live orchestration.' },
   { file: 'services/scoring-simulator/ScoringSimulatorService.ts', reason: 'Demo scoring path — KORA Index outputs, company aggregates, confidence records. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/tenant/TenantService.ts', reason: 'Reads synthetic tenant records for the demo tenant list.' },
