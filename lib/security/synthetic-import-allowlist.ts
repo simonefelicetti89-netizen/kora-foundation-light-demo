@@ -14,11 +14,43 @@
 // file and is expected to bring this count to 0, after which this allowlist
 // (and its guard test) should be deleted entirely — not emptied and kept.
 //
-// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 18 files / 28 import statements
+// CURRENT_SYNTHETIC_RUNTIME_IMPORTS = 17 files / 27 import statements
 // (counted by tests/unit/cc002-i9-synthetic-import-guard.test.ts itself —
 // the numbers above are a snapshot for human readability, not the source of
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
+//
+// B-TRUTH Explainability Synthetic Retirement (2026-09-02): removed
+// services/explainability/ExplainabilityService.ts's synthetic-backed
+// explanation branch (getExplanation, getTopWeakComponents,
+// getTopStrongComponents, getNextBestActions, getLimitations, getWarnings —
+// all confirmed, by direct repo-wide grep before removal, ZERO real runtime
+// callers; the Warning type they fed also had zero external callers) and its
+// sole synthetic import, data/synthetic/explainability-records.json (deleted
+// — confirmed its only REAL, value-level consumer was this file; a second,
+// nominal reference in services/demo-data/DemoDataService.ts — a bare string
+// literal 'explainability-records' inside the final-scoring-group-protected
+// SeedResourceType union — was confirmed non-functional: getResource() is an
+// unconditional stub that returns [] for every resource type and has zero
+// real callers of its own, never actually reading this or any of the other
+// unwired resource-type strings; DemoDataService.ts itself is untouched).
+// The live methodology glossary (getConceptExplanation, listConceptKeys,
+// CONCEPT_GLOSSARY, ConceptExplanation — a static, hardcoded 21-concept
+// object with no synthetic dependency) is unchanged; its real caller,
+// components/kora-index/MethodologyGlossary.tsx, is unaffected.
+// ExplainabilityComponentRef, ExplainabilityAction, and ExplainabilityRecord
+// are kept as pure type declarations (smallest safe change) because
+// components/kora-index/ExplainabilityPanel.tsx still has a type-only import
+// of ExplainabilityRecord — even though that component was independently
+// confirmed to be itself unreachable from any real entry point (a separate,
+// out-of-scope fact, not acted on here). See
+// tests/unit/b-truth-explainability-synthetic-retirement.test.ts and
+// lib/architecture/registry.ts svc.explainability for the full record.
+// ReportFactoryService, PreviewScoringAdapter, DynamicScoringPreviewService,
+// the Ingestion/UEF legacy chain (IngestionPipelineService,
+// EligibilityGateService, UEFReviewService), and the final scoring group are
+// explicitly untouched — one PR = one bounded retirement. Eighth genuine I9
+// reduction via a real caller migration: 18->17 files (28->27 imports).
 //
 // B-TRUTH FinancialGovernance Retirement (2026-09-02): deleted
 // services/financial-governance/FinancialGovernanceService.ts and its sole
@@ -257,7 +289,6 @@ export const SYNTHETIC_IMPORT_ALLOWLIST: SyntheticImportAllowlistEntry[] = [
   { file: 'services/company-data-intake/CompanyDataIntakeService.ts', reason: 'Company raw-data batch/row intake demo seed (fiscal plans, batches, rows).' },
   { file: 'services/demo-data/DemoDataService.ts', reason: 'Central synthetic seed reader — companies, departments/sites, programs, aggregates. Master Plan §32: scheduled for removal at end of B-TRUTH.' },
   { file: 'services/eligibility-gate/EligibilityGateService.ts', reason: 'Taxonomy/preprocessing classifier reads synthetic action taxonomy.' },
-  { file: 'services/explainability/ExplainabilityService.ts', reason: 'Reads synthetic explainability records for demo formula traces.' },
   { file: 'services/founder-validation/FounderValidationService.ts', reason: 'Internal/admin-only founder validation leads seed.' },
   { file: 'services/ingestion-pipeline/IngestionPipelineService.ts', reason: 'B-TRUTH Ingestion/UEF Classification (2026-08-31): DEMO_RUNTIME, not RETIRE. Isolated demo ingestion pipeline feeding the demo UEF review path only (svc.uef-review); the live UEF path (analytics.uef_record, lib/kora-engine/run-kora-pipeline.ts) never falls back to this data. Deliberately kept per tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts. See lib/architecture/registry.ts svc.ingestion-pipeline / svc.uef-review.' },
   { file: 'services/report-factory/ReportFactoryService.ts', reason: 'Reads synthetic Decision Pack version seed alongside live orchestration.' },
