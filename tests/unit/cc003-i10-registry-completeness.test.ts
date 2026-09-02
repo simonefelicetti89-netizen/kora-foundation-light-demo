@@ -77,7 +77,7 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       .map((e) => e.name);
 
     it('the live services/* directory listing has the expected count (sanity — catches silent additions/removals)', () => {
-      expect(serviceDirs.length).toBeGreaterThanOrEqual(50); // loose bound: catches drastic drift, not exact churn
+      expect(serviceDirs.length).toBeGreaterThanOrEqual(49); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService's deliberate retirement (B-TRUTH ReportGenerator Retirement, 2026-09-02)
     });
 
     for (const dir of serviceDirs) {
@@ -168,18 +168,25 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       expect(service?.decisionRef).toBe('CC-011 / D-A');
     });
 
-    it('D-B resolved (CC-013): lib.decision-pack is canonical; report-factory and report-generator are not, neither is DEAD', () => {
+    it('D-B resolved (CC-013): lib.decision-pack is canonical; report-factory retained, not DEAD (pending its own retirement decision)', () => {
       const factory = ARCHITECTURE_REGISTRY.find((c) => c.id === 'svc.report-factory');
-      const generator = ARCHITECTURE_REGISTRY.find((c) => c.id === 'svc.report-generator');
       const pack = ARCHITECTURE_REGISTRY.find((c) => c.id === 'lib.decision-pack');
       expect(pack?.status).toBe('CANONICAL');
       expect(factory?.status).not.toBe('CANONICAL');
       expect(factory?.status).not.toBe('DEAD');
-      expect(generator?.status).not.toBe('CANONICAL');
-      expect(generator?.status).not.toBe('DEAD');
       expect(factory?.decisionRef).toBe('CC-013 / D-B');
-      expect(generator?.decisionRef).toBe('CC-013 / D-B');
       expect(pack?.decisionRef).toBe('CC-013 / D-B');
+    });
+
+    // B-TRUTH ReportGenerator Retirement (2026-09-02): report-generator moved
+    // from "not DEAD" (pending decision) to actually DEAD — a founder-authorized
+    // retirement (this task's own prompt), not an anticipated/assumed one. See
+    // lib.architecture/registry.ts svc.report-generator and
+    // tests/unit/b-truth-report-generator-retirement.test.ts.
+    it('D-B ReportGenerator disposition executed: svc.report-generator is DEAD, not merely non-canonical', () => {
+      const generator = ARCHITECTURE_REGISTRY.find((c) => c.id === 'svc.report-generator');
+      expect(generator?.status).toBe('DEAD');
+      expect(generator?.decisionRef).toBe('B-TRUTH ReportGenerator Retirement (2026-09-02)');
     });
 
     it('/worker and /my-kora surfaces carry the same CC-024 / D-D decisionRef, neither is CANONICAL over the other', () => {

@@ -86,15 +86,18 @@ describe('B-TRUTH — the 3 confirmed consumers were trimmed, not redesigned', (
     expect(src).not.toContain('budgetToHumanImpactService');
   });
 
-  it('ReportGeneratorService keeps its BTI section behavior null-safe (already-existing null-handling, not new logic)', () => {
-    const src = read('services/report-generator/ReportGeneratorService.ts');
-    expect(src).toContain('const btiRecord: BudgetToHumanImpactRecord | null = null;');
-    expect(src).toContain('const btiRecs: BudgetToHumanImpactRecommendation[] = [];');
-    expect(src).not.toContain('budgetToHumanImpactService');
-    // Types still come from the pre-existing shared location, unaffected by this retirement.
-    expect(src).toContain("BudgetToHumanImpactRecord,\n  BudgetToHumanImpactRecommendation,\n} from '@/lib/types'");
-  });
-
+  // ReportGeneratorService was the 2nd of these 3 confirmed consumers — this
+  // describe block originally proved its BTI-specific dependency was trimmed
+  // (null-safe, not new logic) without touching the rest of the file. B-TRUTH
+  // ReportGenerator Retirement (2026-09-02) later retired the entire file —
+  // D-B ratified (CC-005/PR #131) lib/decision-pack/* as the sole canonical
+  // Decision Pack authority, ReportGeneratorService had zero real runtime
+  // callers, and its BTI section was already dead (empty array/null) at the
+  // time of that retirement. The null-safety assertion this test used to make
+  // is moot once the file it asserted on no longer exists — see
+  // tests/unit/b-truth-report-generator-retirement.test.ts for the retirement's
+  // own regression guard.
+  //
   // CompanyIntelligenceService was the 3rd of these 3 confirmed consumers —
   // this describe block originally proved its BTI-specific dependency was
   // trimmed without touching the rest of the file. CC-020A (2026-08-31)
@@ -105,22 +108,12 @@ describe('B-TRUTH — the 3 confirmed consumers were trimmed, not redesigned', (
     expect(existsSync(resolve(root, 'services/company-intelligence/CompanyIntelligenceService.ts'))).toBe(false);
   });
 
-  it('the other 2 consumers had their ScoringSimulatorService dependency untouched', () => {
-    for (const file of [
-      'services/dynamic-scoring/DynamicScoringPreviewService.ts',
-      'services/report-generator/ReportGeneratorService.ts',
-    ]) {
-      expect(read(file)).toContain('scoringSimulatorService');
-    }
+  it('the one remaining consumer (DynamicScoringPreviewService) had its ScoringSimulatorService dependency untouched', () => {
+    expect(read('services/dynamic-scoring/DynamicScoringPreviewService.ts')).toContain('scoringSimulatorService');
   });
 
-  it('the other 2 consumers were not deleted — only the BTI-specific dependency was removed', () => {
-    for (const file of [
-      'services/dynamic-scoring/DynamicScoringPreviewService.ts',
-      'services/report-generator/ReportGeneratorService.ts',
-    ]) {
-      expect(existsSync(resolve(root, file))).toBe(true);
-    }
+  it('the one remaining consumer (DynamicScoringPreviewService) was not deleted — only the BTI-specific dependency was removed', () => {
+    expect(existsSync(resolve(root, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(true);
   });
 });
 
