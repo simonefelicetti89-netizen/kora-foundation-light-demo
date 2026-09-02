@@ -12,7 +12,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync, statSync, existsSync } from 'fs';
 import { resolve, join } from 'path';
 
 const root = resolve(process.cwd());
@@ -529,8 +529,14 @@ describe('CC-014 Phase 9 — ReportGeneratorService production re-entry guard', 
     expect(offenders).toEqual([]);
   });
 
-  it('the service file itself still exists (not deleted)', () => {
-    expect(() => src(SELF_FILE)).not.toThrow();
+  // B-TRUTH ReportGenerator Retirement (2026-09-02): the file was deleted —
+  // D-B ratified (CC-005/PR #131) lib/decision-pack/* as sole canonical
+  // Decision Pack authority, and this guard's own "zero production callers"
+  // test above had already proven it safe. See
+  // tests/unit/b-truth-report-generator-retirement.test.ts for the
+  // retirement's own dedicated regression guard.
+  it('the service file no longer exists (retired — was zero-caller, D-B non-canonical)', () => {
+    expect(existsSync(resolve(root, SELF_FILE))).toBe(false);
   });
 });
 
@@ -702,11 +708,17 @@ describe('CC-014 Phase 14 — registry claims match reality', () => {
     expect(factory?.notes).toMatch(/synthetic/i);
   });
 
-  it('svc.report-generator is not CANONICAL, not DEAD, and its notes record zero real callers', async () => {
+  // B-TRUTH ReportGenerator Retirement (2026-09-02): the file was deleted —
+  // status legitimately moved from "not DEAD" (pending decision) to DEAD (a
+  // founder-authorized, executed retirement — see
+  // tests/unit/b-truth-report-generator-retirement.test.ts). This is not a
+  // stale-claim regression: the notes still record the zero-real-callers
+  // finding that justified the retirement.
+  it('svc.report-generator is not CANONICAL, IS DEAD (retired), and its notes record zero real callers', async () => {
     const { ARCHITECTURE_REGISTRY } = await import('@/lib/architecture/registry');
     const generator = ARCHITECTURE_REGISTRY.find((c) => c.id === 'svc.report-generator');
     expect(generator?.status).not.toBe('CANONICAL');
-    expect(generator?.status).not.toBe('DEAD');
+    expect(generator?.status).toBe('DEAD');
     expect(generator?.notes).toMatch(/ZERO real callers|zero real callers/i);
   });
 

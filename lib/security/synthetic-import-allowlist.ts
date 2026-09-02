@@ -20,6 +20,26 @@
 // truth; the test always recomputes the live count and fails if the
 // allowlist below and the live scan disagree).
 //
+// B-TRUTH ReportGenerator Retirement (2026-09-02): deleted
+// services/report-generator/ReportGeneratorService.ts entirely, following D-B
+// ratification (CC-005, PR #131 — lib/decision-pack/* + lib/live/decision-pack.ts
+// is the sole canonical Decision Pack authority). Re-verified independently
+// before deletion: zero real runtime callers (static, dynamic, barrel, and
+// type-only imports all checked, repo-wide) — confirming, not merely trusting,
+// the PR #131 audit. ReportGeneratorService.ts was never itself an entry in
+// this allowlist (it consumed synthetic data only transitively, via
+// ScoringSimulatorService/IngestionPipelineService/ActivationSafeguardService/
+// etc., each already separately allowlisted below) — this retirement does NOT
+// change CURRENT_SYNTHETIC_RUNTIME_IMPORTS; still 19 files / 29 imports. See
+// tests/unit/b-truth-report-generator-retirement.test.ts and
+// lib/architecture/registry.ts svc.report-generator for the full record,
+// including the 7-capability disposition and the deferred readiness
+// requirement preserved in governance (not implemented). ReportFactoryService,
+// the Ingestion/UEF legacy chain (IngestionPipelineService, EligibilityGateService,
+// UEFReviewService, DynamicScoringPreviewService, PreviewScoringAdapter,
+// ExplainabilityService, FinancialGovernanceService), and the final scoring
+// group are explicitly untouched — one PR = one service retirement.
+//
 // B-TRUTH Ingestion/UEF PR2 — IngestionSimulatorService retirement
 // (2026-09-02): RLS-16 (Ingestion/UEF PR1) proved canonical LIVE/DEMO-kind
 // tenant Ingestion/UEF parity; this PR acts on that proof for the one
