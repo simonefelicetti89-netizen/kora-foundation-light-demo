@@ -77,7 +77,7 @@ describe('I10 — Architecture Registry completeness (B-REG / CC-003)', () => {
       .map((e) => e.name);
 
     it('the live services/* directory listing has the expected count (sanity — catches silent additions/removals)', () => {
-      expect(serviceDirs.length).toBeGreaterThanOrEqual(49); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService's deliberate retirement (B-TRUTH ReportGenerator Retirement, 2026-09-02)
+      expect(serviceDirs.length).toBeGreaterThanOrEqual(48); // loose bound: catches drastic drift, not exact churn — lowered from 50 by ReportGeneratorService (2026-09-02) and FinancialGovernanceService (2026-09-02) deliberate retirements
     });
 
     for (const dir of serviceDirs) {
