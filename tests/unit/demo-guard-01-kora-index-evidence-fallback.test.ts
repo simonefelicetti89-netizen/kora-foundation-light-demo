@@ -77,24 +77,74 @@ describe('DEMO-GUARD-01 — no data/synthetic/ingestion-samples.json fallback re
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. Demo/preview services that legitimately use uefReviewService.getReviewSummary()
-//    in explicitly isolated demo contexts are untouched by this fix.
+// 3. Canonical-truth invariant (rewritten for D-B / RLS-16, superseding the
+//    prior "demo services still allowed to use synthetic UEF summary" framing).
+//
+//    D-B is resolved (lib/architecture/registry.ts svc.report-generator /
+//    svc.report-factory; lib/decision-pack/pdf-data.ts header;
+//    tests/unit/cc013-canonical-contract.test.ts): lib/decision-pack/* +
+//    lib/live/decision-pack.ts is the sole canonical Decision Pack authority.
+//    RLS-16 (tests/integration/rls-16-ingestion-tenant-kind-parity.test.ts)
+//    independently proved LIVE and DEMO-kind tenants converge on the same
+//    canonical Ingestion/UEF/scoring runtime (run-kora-pipeline,
+//    eligibility-gate.ts, uef-to-scoring-records.ts), differing only in
+//    provenance.
+//
+//    ReportGeneratorService, ReportFactoryService, UEFReviewService, and
+//    DynamicScoringPreviewService are NOT retired by this change — they
+//    still exist, are still isolated demo-only, and their capability
+//    disposition is recorded in the registry (RETIRE / MIGRATE / DEFERRED,
+//    see svc.report-generator notes). What changes is the invariant this
+//    guard protects: not "these legacy files are still allowed to touch
+//    synthetic data" (weak, backward-looking permission) but "the canonical
+//    Decision Pack authority never depends on them, in any way, under any
+//    condition" (strong, forward-looking non-dependency proof).
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('DEMO-GUARD-01 — demo services still allowed to use synthetic UEF summary where isolated', () => {
-  it('UEFReviewService.getReviewSummary still exists (service itself not removed)', () => {
-    const service = read('services/uef-review/UEFReviewService.ts');
-    expect(service).toContain('getReviewSummary(');
+describe('DEMO-GUARD-01 — canonical Decision Pack authority has zero dependency on legacy report chain', () => {
+  const pdfData      = read('lib/decision-pack/pdf-data.ts');
+  const htmlTemplate = read('lib/decision-pack/html-template.ts');
+  const pdfRuntime   = read('lib/decision-pack/pdf-runtime.ts');
+  const livePersist  = read('lib/live/decision-pack.ts');
+  const canonicalFiles: Record<string, string> = { pdfData, htmlTemplate, pdfRuntime, livePersist };
+
+  for (const [name, src] of Object.entries(canonicalFiles)) {
+    it(`${name}: no data/synthetic/** import`, () => {
+      expect(src).not.toMatch(/from\s+['"]@?\/?data\/synthetic\//);
+    });
+
+    it(`${name}: no ReportGeneratorService import`, () => {
+      expect(src).not.toMatch(/(?:import|require)\b[^\n]*ReportGeneratorService/);
+    });
+
+    it(`${name}: no ReportFactoryService import`, () => {
+      expect(src).not.toMatch(/(?:import|require)\b[^\n]*ReportFactoryService/);
+    });
+
+    it(`${name}: no ScoringSimulatorService import (final scoring group)`, () => {
+      expect(src).not.toMatch(/(?:import|require)\b[^\n]*ScoringSimulatorService/);
+    });
+
+    it(`${name}: no DemoDataService import (final scoring group)`, () => {
+      expect(src).not.toMatch(/(?:import|require)\b[^\n]*DemoDataService/);
+    });
+  }
+
+  it('pdf-data.ts reads only canonical persisted analytics tables (kora_index_result, decision_pack_version, bti_result, uef_record)', () => {
+    expect(pdfData).toContain("from('kora_index_result')");
+    expect(pdfData).toContain("from('decision_pack_version')");
   });
 
-  it('DynamicScoringPreviewService (demo/preview) still uses getReviewSummary', () => {
-    const service = read('services/dynamic-scoring/DynamicScoringPreviewService.ts');
-    expect(service).toContain('uefReviewService.getReviewSummary()');
+  it('pdf-data.ts header declares itself the canonical D-B authority, not a competing implementation', () => {
+    expect(pdfData).toContain('CANONICAL DECISION PACK DOMAIN BUILDER');
+    expect(pdfData).toContain('D-B resolved');
   });
 
-  it('ReportGeneratorService (isolated demo-only service, no live callers) still uses getReviewSummary', () => {
-    const service = read('services/report-generator/ReportGeneratorService.ts');
-    expect(service).toContain('uefReviewService.getReviewSummary()');
+  it('legacy chain still exists — this is a capability-disposition PR, not a retirement PR', () => {
+    expect(fs.existsSync(path.join(ROOT, 'services/report-generator/ReportGeneratorService.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(ROOT, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(ROOT, 'services/uef-review/UEFReviewService.ts'))).toBe(true);
+    expect(fs.existsSync(path.join(ROOT, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(true);
   });
 });
 
