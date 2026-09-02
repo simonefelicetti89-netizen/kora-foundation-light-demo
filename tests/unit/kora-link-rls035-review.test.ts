@@ -156,7 +156,9 @@ describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — KORA_LINK_ENABLED remains off
 describe('KORA-LINK-MIGRATION-FORMALIZATION-12 — golden-path services never import KORA Link', () => {
   const goldenPathServiceFiles = [
     'services/scoring-simulator/ScoringSimulatorService.ts',
-    'services/ingestion-simulator/IngestionSimulatorService.ts',
+    // services/ingestion-simulator/IngestionSimulatorService.ts retired
+    // (B-TRUTH Ingestion/UEF PR2, 2026-09-02) — zero real callers, confirmed
+    // before deletion. See lib/security/synthetic-import-allowlist.ts.
     'services/ingestion-normalizer/IngestionNormalizerService.ts',
     'services/ingestion-pipeline/IngestionPipelineService.ts',
     'services/dynamic-scoring/DynamicScoringPreviewService.ts',

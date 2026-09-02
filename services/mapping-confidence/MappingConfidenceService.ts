@@ -1,5 +1,4 @@
-import type { PillarCode } from '@/lib/types';
-import type { SourceType } from '@/services/ingestion-simulator/IngestionSimulatorService';
+import type { PillarCode, SourceType } from '@/lib/types';
 import { suggestColumnMapping } from '@/lib/data-intake/column-mapping';
 
 export interface MappingResult {
