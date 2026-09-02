@@ -134,6 +134,105 @@
 // and CompanyIntelligenceService remain separately-classified TenantService
 // consumers (their own pending decisions, out of CC-019's scope), and the 3
 // DEMO_RUNTIME consumers are intentionally untouched.
+//
+// ── CC-005 CLOSEOUT / D-B RESOLUTION (2026-09-02) ───────────────────────────────
+//
+// CC-005 — "Audit Decision Pack" (Master Plan §28 line 802/858, prereq
+// CC-029/N2 + CC-053, gate "Sì → D-B") had already established, in code and
+// tests (svc.report-generator / svc.report-factory / lib.decision-pack
+// notes above, cc013-canonical-contract.test.ts), that lib/decision-pack/*
+// + lib/live/decision-pack.ts is the sole canonical Decision Pack authority
+// and that ReportGeneratorService/ReportFactoryService are NOT canonical.
+// What remained open — per Master Plan §32's own line, "I perdenti fra i
+// tre Decision Pack | dopo D-B | 7 capability migrate o ritirate
+// esplicitamente" — was the capability-by-capability disposition of
+// ReportGeneratorService's 7 IReportGeneratorService methods. This PR
+// (feature/btruth-decision-pack-ratification) closes that gap and formally
+// ratifies D-B. It does NOT retire ReportGeneratorService or
+// ReportFactoryService — see their own entries below for continued status.
+//
+// D-B RESOLUTION: CANONICAL_DECISION_PACK_AUTHORITY = lib/decision-pack/
+// pdf-data.ts + html-template.ts + pdf-runtime.ts + pdf-strategy.ts +
+// lib/live/decision-pack.ts (persistence). Reads only canonical persisted
+// analytics.kora_index_result / decision_pack_version / bti_result /
+// uef_record rows; never recomputes protected methodology; tenant-scoped
+// via authenticated session (never a query/body param); zero data/synthetic
+// import at any of these 5 files (proven structurally by
+// tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts's
+// rewritten "canonical Decision Pack authority has zero dependency on
+// legacy report chain" block).
+//
+// REPORTGENERATOR — 7-CAPABILITY DISPOSITION (audited capability-by-
+// capability against current canonical coverage, not assumed):
+//   RETIRE (superseded, nothing to port): generate() [legacy stub, already
+//     redirects to its own successor], getCurrentCompanyDecisionPack()
+//     [pure alias], getDecisionPackVersionHistory() [hardcoded 2-entry
+//     fixture, not derived from any real store], getDecisionPackExportActions()
+//     [PDF entry superseded by lib/decision-pack's real, working PDF path;
+//     Excel/Share/Board-Pack-Draft entries are disabled stubs with zero
+//     logic behind them anywhere in the repo, not migration debt].
+//   RETIRE AS ASSEMBLY: generateCompanyDecisionPack() — 9 of its 14
+//     synthetic sections are already superseded at real DB-backed scale by
+//     lib/decision-pack/html-template.ts (KORA Index v3, macroblocks,
+//     pillar analysis, eligibility gate, economic relief, recommendations,
+//     evidence-gap readiness B18/B19, methodology boundaries, BTI — the
+//     last already dead in ReportGeneratorService itself, empty array).
+//     Its 3 uncovered sections do NOT automatically migrate: Dynamic
+//     Scoring Preview must NOT migrate (DynamicScoringPreviewService's own
+//     header: "NOT a full scoring run... do NOT use as a replacement" —
+//     migrating it would put an explicitly-non-authoritative preview into
+//     final canonical output); People Context / HR KPI is DEFERRED as an
+//     adjacent interpretation layer per CLAUDE.md §12.18 (no correlation-as-
+//     causality claim, not urgent, not canonical Decision Pack debt); 90-day
+//     action plan is a DEFERRED PRODUCT QUESTION (no Master Plan requirement
+//     found for it), not migration debt.
+//   MIGRATE: getDecisionPackLimitations() — investigated and found ALREADY
+//     migrated: every mandatory item (pre_empirical_calibration / not-
+//     certified / not-regulatory-grade disclosure, Delphi Study / v0.1
+//     provisional-weights disclosure, the exact CLAUDE.md §12.17 CSR/ESG
+//     disclaimer, "correlazione ≠ causalità", aggregate-only / no-
+//     individual-worker-data disclosure) is already present, verbatim or
+//     equivalent, in lib/decision-pack/html-template.ts — built
+//     incrementally by B18/B24/B79-B/CC-015 work, distributed contextually
+//     next to the section it governs rather than centralized. Proven, not
+//     just asserted, by tests/unit/cc005-decision-pack-limitations-
+//     migration.test.ts, which also proves the demo-specific items from the
+//     same legacy list (synthetic-seed references, "applicazione demo"
+//     wording, hardcoded S1 confidence commentary, Dynamic Preview
+//     batch-size commentary) are correctly ABSENT from canonical output,
+//     live or demo. No new rendering seam was added — adding one would have
+//     duplicated disclaimer logic the canonical renderer already owns.
+//   DEFERRED PRODUCT REQUIREMENT (not ported, not discarded):
+//     getDecisionPackReadiness() — the one capability with no canonical
+//     equivalent and genuine product value: automatic draft/review/ready
+//     status derivation from data-quality signals (today: UEF pending-ratio
+//     + confidence score, both synthetic inputs). lib/live/decision-pack.ts's
+//     persistDecisionPack() lifecycle is manual-only today (operator
+//     promotes draft→ready→exported via app/api/admin/decision-pack/status/
+//     route.ts) — this is a documented, explicit gap, not a silent one.
+//     REQUIREMENT (preserve verbatim for any future implementer): "future
+//     automated Decision Pack readiness/status derived from canonical live
+//     evidence/data-quality signals — NOT ported from ReportGeneratorService's
+//     synthetic-input heuristic; must be re-derived from live
+//     analytics.uef_record / kora_index_result once the Ingestion/UEF
+//     legacy chain (svc.ingestion-pipeline / svc.uef-review) is itself
+//     resolved, since porting the old algorithm as-is would import a
+//     synthetic dependency into the canonical path." No runtime code, no
+//     schema, no UI was added for this in the current PR — it is recorded
+//     here, in this durable governance surface, specifically so it is not
+//     silently lost when ReportGeneratorService is eventually deleted.
+//
+// NEXT STEP (not this PR): ReportGeneratorService retirement (delete the 6
+// RETIRE-classified methods + the assembly method), ReportFactoryService
+// retirement, and the downstream orphaned Ingestion/UEF legacy cluster
+// (IngestionPipelineService, EligibilityGateService, UEFReviewService,
+// DynamicScoringPreviewService, PreviewScoringAdapter,
+// ExplainabilityService's synthetic branch, FinancialGovernanceService) —
+// each its own separately-authorized, bounded slice per B-TRUTH's "One PR
+// = one bounded closure step" discipline. Final scoring group
+// (ScoringSimulatorService, DemoScoringAdapter, DemoDataService,
+// AccessControlService) remains untouched and out of scope until true
+// end of B-TRUTH (Master Plan §32).
 
 // ── A. ARCHITECTURE REGISTRY — code components ──────────────────────────────────
 
@@ -261,8 +360,8 @@ export const ARCHITECTURE_REGISTRY: ArchitectureComponent[] = [
   { id: 'svc.my-kora-preview', domain: 'Worker', primaryPath: 'services/my-kora-preview/MyKoraPreviewService.ts', purpose: 'Worker preview-mode (PREVIEW surface) data.', status: 'COMPLETE', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'CC-024 / D-D (at the app-surface level, not this service)', notes: '14 callers.', deletableWhen: null },
   { id: 'svc.pib-aggregation', domain: 'PIB', primaryPath: 'services/pib-aggregation/PIBAggregationService.ts', purpose: 'Stage 11 of the 14-stage algorithm: PIB = ΣIU per worker.', status: 'CANONICAL', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: '3 callers. Master Plan §33: prerequisite for canonical CF.', deletableWhen: null },
   { id: 'svc.privacy-visibility', domain: 'Privacy', primaryPath: 'services/privacy-visibility/PrivacyVisibilityService.ts', purpose: 'Suppression / N≥10 gatekeeper.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'after B-INV', notes: '1 caller. Master Plan §32: "dopo B-INV, I2 copre lo strato canonico" — scheduled for likely removal once I2 canonically covers this, per the Master Plan itself.', deletableWhen: null },
-  { id: 'svc.report-factory', domain: 'Reporting', primaryPath: 'services/report-factory/ReportFactoryService.ts', purpose: 'Demo Decision Pack status check for the Pilot Lifecycle orchestrator (app/admin/pipeline). Declared target-architecture role in its own header.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: ['svc.report-generator', 'lib.decision-pack'], decisionRef: 'CC-013 / D-B', notes: 'D-B resolved (CC-005/CC-013): lib.decision-pack is canonical; ReportFactoryService never becomes a second authority. B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30) removed its only other caller (root page.tsx) — 1 real caller remains, app/admin/pipeline/page.tsx (a demo caller — hardcoded DEMO_COMPANY_ID). B-TRUTH Demo/Orphan Chain Audit (2026-08-30): reachability trim — verified per-method, repo-wide, that pipeline calls exactly one method (getDecisionPackFactoryStatus); removed 10 other public methods (version history, generation, readiness, sections, export actions, change summary, period comparison, metric deltas, limitations, previous-comparable-version) plus 1 dead private method (isTenantActive) that had zero callers anywhere — not from pipeline, not internally, not from any test (guard-style "not.toContain" assertions only, unaffected). Kept: getDecisionPackFactoryStatus (public, reachable) and getLatestDecisionPackVersion (public, called only internally). Still 100% synthetic (data/synthetic/decision-pack-versions.json, zero DB queries) — that divergence is unchanged, just narrowed to the single reachable method; not a One-Truth violation because the demo tenant (DEMO_COMPANY_ID) has no live analytics.tenant row to read canonical data from in the first place. tsc + full suite (289 files/11128 tests) unchanged after removal — confirms zero prior test coverage of the removed methods. F-05 dependency-blocker audit (2026-09-02): confirmed by direct grep that ReportFactoryService.ts has NO import of any kind (value or type) from services/report-generator/ReportGeneratorService.ts — the "ReportFactoryService → ReportGeneratorService" dependency named by the independent audit does not exist in code; it exists only as an ASPIRATIONAL comment in ReportGeneratorService.ts\'s own header ("ReportFactoryService should call ReportGeneratorService internally" — target architecture, never implemented) and this file\'s own pre-existing header comment (line ~90-93, already correctly noting the shared method NAMES are "a same-named-method coincidence, not a real caller"). dependencies: [] here was already accurate — no correction was needed to this field, only external confirmation that it is correct.', deletableWhen: null },
-  { id: 'svc.report-generator', domain: 'Reporting', primaryPath: 'services/report-generator/ReportGeneratorService.ts', purpose: 'Report content generation — Decision Pack body, sections, metrics, insights, recommendations.', status: 'INVESTIGATE', futureCore: false, dependencies: [], competingWith: ['svc.report-factory', 'lib.decision-pack'], decisionRef: 'CC-013 / D-B', notes: 'D-B resolved (CC-005/CC-013): lib.decision-pack is canonical, ReportGeneratorService is NOT. CORRECTED CALLER COUNT: the previous "3 real callers (IScoringService.ts, PreviewScoringAdapter.ts, +1 test)" note was stale — CC-005 verified by direct import-statement search that this is actually ZERO real callers; those two files only mention it in comments (never import it), and the one test does static source-string analysis, never instantiates it. ReportGeneratorService itself imports dynamicScoringPreviewService directly, bypassing the IScoringService/PreviewScoringAdapter facade. Its own header comment claiming app/company/reports/page.tsx imports it is also stale (already flagged by CC-002). Master Plan §32/§33 state explicitly, twice: "restano INVESTIGATE" — status preserved, not changed to CONSOLIDATE.', deletableWhen: null },
+  { id: 'svc.report-factory', domain: 'Reporting', primaryPath: 'services/report-factory/ReportFactoryService.ts', purpose: 'Demo Decision Pack status check for the Pilot Lifecycle orchestrator (app/admin/pipeline). Declared target-architecture role in its own header.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: ['svc.report-generator', 'lib.decision-pack'], decisionRef: 'CC-013 / D-B', notes: 'D-B resolved (CC-005/CC-013): lib.decision-pack is canonical; ReportFactoryService never becomes a second authority. B-TRUTH Root Control Room Wave 3 Hardening (2026-08-30) removed its only other caller (root page.tsx) — 1 real caller remains, app/admin/pipeline/page.tsx (a demo caller — hardcoded DEMO_COMPANY_ID). B-TRUTH Demo/Orphan Chain Audit (2026-08-30): reachability trim — verified per-method, repo-wide, that pipeline calls exactly one method (getDecisionPackFactoryStatus); removed 10 other public methods (version history, generation, readiness, sections, export actions, change summary, period comparison, metric deltas, limitations, previous-comparable-version) plus 1 dead private method (isTenantActive) that had zero callers anywhere — not from pipeline, not internally, not from any test (guard-style "not.toContain" assertions only, unaffected). Kept: getDecisionPackFactoryStatus (public, reachable) and getLatestDecisionPackVersion (public, called only internally). Still 100% synthetic (data/synthetic/decision-pack-versions.json, zero DB queries) — that divergence is unchanged, just narrowed to the single reachable method; not a One-Truth violation because the demo tenant (DEMO_COMPANY_ID) has no live analytics.tenant row to read canonical data from in the first place. tsc + full suite (289 files/11128 tests) unchanged after removal — confirms zero prior test coverage of the removed methods. F-05 dependency-blocker audit (2026-09-02): confirmed by direct grep that ReportFactoryService.ts has NO import of any kind (value or type) from services/report-generator/ReportGeneratorService.ts — the "ReportFactoryService → ReportGeneratorService" dependency named by the independent audit does not exist in code; it exists only as an ASPIRATIONAL comment in ReportGeneratorService.ts\'s own header ("ReportFactoryService should call ReportGeneratorService internally" — target architecture, never implemented) and this file\'s own pre-existing header comment (line ~90-93, already correctly noting the shared method NAMES are "a same-named-method coincidence, not a real caller"). dependencies: [] here was already accurate — no correction was needed to this field, only external confirmation that it is correct. CC-005/D-B CLOSEOUT (2026-09-02): see the CC-005 CLOSEOUT / D-B RESOLUTION header block above for the full ratification record — this file\'s 2 remaining public methods (getDecisionPackFactoryStatus, getLatestDecisionPackVersion) have no canonical replacement needed (demo-only output, no unique methodology).', deletableWhen: 'CC-005/D-B capability disposition complete (2026-09-02) — safe to retire in a dedicated retirement PR alongside ReportGeneratorService; requires repointing or removing app/admin/pipeline/page.tsx\'s single demo caller first.' },
+  { id: 'svc.report-generator', domain: 'Reporting', primaryPath: 'services/report-generator/ReportGeneratorService.ts', purpose: 'Report content generation — Decision Pack body, sections, metrics, insights, recommendations.', status: 'INVESTIGATE', futureCore: false, dependencies: [], competingWith: ['svc.report-factory', 'lib.decision-pack'], decisionRef: 'CC-013 / D-B', notes: 'D-B resolved (CC-005/CC-013): lib.decision-pack is canonical, ReportGeneratorService is NOT. CORRECTED CALLER COUNT: the previous "3 real callers (IScoringService.ts, PreviewScoringAdapter.ts, +1 test)" note was stale — CC-005 verified by direct import-statement search that this is actually ZERO real callers; those two files only mention it in comments (never import it), and the one test does static source-string analysis, never instantiates it. ReportGeneratorService itself imports dynamicScoringPreviewService directly, bypassing the IScoringService/PreviewScoringAdapter facade. Its own header comment claiming app/company/reports/page.tsx imports it is also stale (already flagged by CC-002). Master Plan §32/§33 state explicitly, twice: "restano INVESTIGATE" — status preserved, not changed to CONSOLIDATE. CC-005/D-B CLOSEOUT (2026-09-02): see the CC-005 CLOSEOUT / D-B RESOLUTION header block above for the full 7-capability disposition (4 RETIRE, 1 RETIRE-as-assembly, 1 MIGRATE already complete, 1 DEFERRED PRODUCT REQUIREMENT explicitly preserved) — no unresolved "7 unique capabilities" ambiguity remains. status stays INVESTIGATE per the Master Plan\'s own explicit wording, not CONSOLIDATE/DEAD — this PR ratifies non-canonical status and completes disposition, it does not retire.', deletableWhen: 'CC-005/D-B capability disposition complete (2026-09-02) — safe to retire generate(), getCurrentCompanyDecisionPack(), getDecisionPackVersionHistory(), getDecisionPackExportActions(), and the generateCompanyDecisionPack() assembly in a dedicated retirement PR. getDecisionPackLimitations() requires no porting (already migrated/present in lib.decision-pack). getDecisionPackReadiness() requires the deferred product requirement above to be explicitly carried forward (not silently dropped) before deletion.' },
   { id: 'svc.role-permission', domain: 'Privacy', primaryPath: 'services/role-permission/RolePermissionService.ts', purpose: 'Role-based access gatekeeper, CLAUDE.md-mandated.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '2 callers — low relative to "mandatory gatekeeper" status, worth CC-002/I1 follow-up scrutiny.', deletableWhen: null },
   { id: 'svc.scenario', domain: 'Demo', primaryPath: 'services/scenario/ScenarioService.ts', purpose: 'S1–S4 demo scenario switching.', status: 'FROZEN', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: '4 callers, demo-only.', deletableWhen: null },
   { id: 'svc.scoring-simulator', domain: 'Scoring', primaryPath: 'services/scoring-simulator/ScoringSimulatorService.ts', purpose: 'Demo-path scoring — reads precomputed synthetic seed.', status: 'CONSOLIDATE', futureCore: false, dependencies: [], competingWith: [], decisionRef: 'B-TRUTH', notes: '21 callers (highest usage in this registry) yet Master Plan §32 explicitly schedules removal at end of B-TRUTH — high current usage does not make it the architectural target.', deletableWhen: null },
@@ -282,7 +381,7 @@ export const ARCHITECTURE_REGISTRY: ArchitectureComponent[] = [
 
   // ── lib/* domain aggregates ─────────────────────────────────────────────────
   { id: 'lib.kora-engine', domain: 'Methodology', primaryPath: 'lib/kora-engine/', purpose: '14-stage IU/Index/BTI/Confidence/Equity computation engine (25 files) — the CC-002 I6/I7-protected core.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Matches doc 10 methodology. run-kora-pipeline.ts orchestrates; consumed by LiveScoringAdapter. D-A (CC-011): confidence-engine.ts is the canonical Confidence implementation — scale/banding centralized via normalizeConfidenceScore/getConfidenceBand; lib/live/persistence.ts consumes them rather than owning independent methodology.', deletableWhen: null },
-  { id: 'lib.decision-pack', domain: 'Reporting', primaryPath: 'lib/decision-pack/', purpose: 'Live Decision Pack PDF/HTML generation (4 files: pdf-data, pdf-runtime, pdf-strategy, html-template).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: ['svc.report-factory', 'svc.report-generator'], decisionRef: 'CC-013 / D-B', notes: 'D-B resolved (CC-005/CC-013), OPTION A: canonical KORA Decision Pack implementation. Builder/renderer/PDF-runtime seam already existed cleanly pre-CC-013 (pdf-data.ts builds the content model from canonical persisted rows, html-template.ts and pdf-runtime.ts are pure functions of that model with zero DB access) — formalized via doc header, no module split needed. All 4 live routes (company preview/pdf, admin preview/pdf) confirmed to use this exact path with no accidental duplication. Confirmed single implementation of the live PDF layer itself (2 independent passes found no second PDF generator).', deletableWhen: null },
+  { id: 'lib.decision-pack', domain: 'Reporting', primaryPath: 'lib/decision-pack/', purpose: 'Live Decision Pack PDF/HTML generation (4 files: pdf-data, pdf-runtime, pdf-strategy, html-template).', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: ['svc.report-factory', 'svc.report-generator'], decisionRef: 'CC-013 / D-B', notes: 'D-B resolved (CC-005/CC-013), OPTION A: canonical KORA Decision Pack implementation. Builder/renderer/PDF-runtime seam already existed cleanly pre-CC-013 (pdf-data.ts builds the content model from canonical persisted rows, html-template.ts and pdf-runtime.ts are pure functions of that model with zero DB access) — formalized via doc header, no module split needed. All 4 live routes (company preview/pdf, admin preview/pdf) confirmed to use this exact path with no accidental duplication. Confirmed single implementation of the live PDF layer itself (2 independent passes found no second PDF generator). CC-005/D-B CLOSEOUT (2026-09-02): see the CC-005 CLOSEOUT / D-B RESOLUTION header block above — formal ratification, plus proof (tests/unit/cc005-decision-pack-limitations-migration.test.ts) that every mandatory disclaimer from ReportGeneratorService.getDecisionPackLimitations() is already present here, and that no demo-specific legacy wording leaks into live output.', deletableWhen: null },
   { id: 'lib.kora-link', domain: 'KORA Link', primaryPath: 'lib/kora-link/', purpose: 'Identity/token-based worker activation channel (8 files).', status: 'FUTURE_CORE', futureCore: true, dependencies: [], competingWith: [], decisionRef: null, notes: 'Master Plan §33: "FUTURE CORE, gap DG-07 chiusi [VERIFIED]". Flag-gated off (KORA_LINK_ENABLED=false) but functionally complete; RLS-dense (migration 035 alone ~23 policies).', deletableWhen: null },
   { id: 'lib.kora-contribution', domain: 'Contribution', primaryPath: 'lib/kora-contribution/contribution-methodology.ts', purpose: 'Contribution doctrine/policy constants (score presentation mode, index-independence flags, FL-vs-Pilot+ path documentation) — not a computation implementation.', status: 'CANONICAL', futureCore: false, dependencies: [], competingWith: [], decisionRef: null, notes: 'Corrected by the B-TRUTH Contribution audit and protected port (2026-09-01): full-file read confirms zero computation and zero imports — pure exported constants (CONTRIBUTION_IS_KORA_INDEX_COMPONENT, CONTRIBUTION_SCORE_PRESENTATION_MODE, CONTRIBUTION_FL_PATH/CONTRIBUTION_PILOT_PATH, etc.) plus doctrine comments, kept up to date with the DB-backed port. Not a competing implementation of svc.kora-contribution — the prior "genuine fragmentation" / INVESTIGATE classification was a misread of an unconsumed-computation file as a second implementation. Consumed by lib/partner-activities + lib/live/contribution-lineage.ts, both real, unrelated downstreams.', deletableWhen: null },
   { id: 'lib.scoring-result', domain: 'Scoring', primaryPath: 'lib/scoring-result/index.ts', purpose: 'Enforced single scoring consumption hook (useScoringResult).', status: 'CANONICAL', futureCore: false, dependencies: ['svc.scoring.facade'], competingWith: [], decisionRef: null, notes: 'In-code contract: app/components must never import ScoringSimulatorService/DynamicScoringPreviewService/run-kora-pipeline directly. CC-002 found 6 real violations of this contract (not fixed — CC-010/B-TRUTH scope).', deletableWhen: null },
