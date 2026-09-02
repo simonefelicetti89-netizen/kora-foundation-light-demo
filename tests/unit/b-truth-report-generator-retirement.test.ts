@@ -81,6 +81,11 @@ describe('B-TRUTH — this PR retired ONLY ReportGeneratorService (one PR = one 
     expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
   });
 
+  // FinancialGovernanceService was in this "untouched by PR #132" list originally
+  // (accurately, at that time) — it was later, separately retired by B-TRUTH
+  // FinancialGovernance Retirement (2026-09-02, its own bounded PR), so it is
+  // deliberately removed from this list rather than left to falsely assert
+  // continued existence. See tests/unit/b-truth-financial-governance-retirement.test.ts.
   it('the Ingestion/UEF legacy chain untouched — still exists', () => {
     for (const file of [
       'services/ingestion-pipeline/IngestionPipelineService.ts',
@@ -89,7 +94,6 @@ describe('B-TRUTH — this PR retired ONLY ReportGeneratorService (one PR = one 
       'services/dynamic-scoring/DynamicScoringPreviewService.ts',
       'services/scoring/PreviewScoringAdapter.ts',
       'services/explainability/ExplainabilityService.ts',
-      'services/financial-governance/FinancialGovernanceService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }
