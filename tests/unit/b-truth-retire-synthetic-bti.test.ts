@@ -79,41 +79,46 @@ describe('B-TRUTH — BudgetToHumanImpactService no longer exists', () => {
   });
 });
 
-describe('B-TRUTH — the 3 confirmed consumers were trimmed, not redesigned', () => {
-  it('DynamicScoringPreviewService still uses ScoringSimulatorService for its BTI macroblock fallback (untouched adjacent logic)', () => {
-    const src = read('services/dynamic-scoring/DynamicScoringPreviewService.ts');
-    expect(src).toContain("canonicalMacroblocks.find((m) => m.code === 'BTI')?.score ?? 0");
-    expect(src).not.toContain('budgetToHumanImpactService');
+// All 3 originally confirmed BTI-slice consumers have since been independently
+// retired, each by its own separate, later, unrelated decision:
+//
+// DynamicScoringPreviewService was the 1st — this describe block originally
+// proved its BTI-specific dependency was trimmed (untouched adjacent logic,
+// no new computation) without touching the rest of the file. B-TRUTH Preview
+// Scoring Retirement (2026-09-03) later retired the entire file (and its
+// sole real-ish caller, PreviewScoringAdapter) — zero real runtime callers,
+// no unique methodology (every remaining computation was an explicitly
+// labelled proxy approximation). The BTI-trim assertion this test used to
+// make is moot once the file it asserted on no longer exists — see
+// tests/unit/b-truth-preview-scoring-retirement.test.ts for the retirement's
+// own regression guard.
+//
+// ReportGeneratorService was the 2nd — this describe block originally
+// proved its BTI-specific dependency was trimmed (null-safe, not new logic)
+// without touching the rest of the file. B-TRUTH ReportGenerator Retirement
+// (2026-09-02) later retired the entire file — D-B ratified (CC-005/PR #131)
+// lib/decision-pack/* as the sole canonical Decision Pack authority,
+// ReportGeneratorService had zero real runtime callers, and its BTI section
+// was already dead (empty array/null) at the time of that retirement. See
+// tests/unit/b-truth-report-generator-retirement.test.ts.
+//
+// CompanyIntelligenceService was the 3rd — this describe block originally
+// proved its BTI-specific dependency was trimmed without touching the rest
+// of the file. CC-020A (2026-08-31) later retired the entire file for an
+// unrelated, explicit founder decision (no future canonical role for the
+// orphaned aggregator itself). See
+// tests/unit/cc020a-retire-company-intelligence.test.ts.
+describe('B-TRUTH — the 3 confirmed consumers were trimmed, then each independently retired', () => {
+  it('DynamicScoringPreviewService.ts no longer exists (retired by B-TRUTH Preview Scoring Retirement, unrelated to this BTI slice)', () => {
+    expect(existsSync(resolve(root, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(false);
   });
 
-  // ReportGeneratorService was the 2nd of these 3 confirmed consumers — this
-  // describe block originally proved its BTI-specific dependency was trimmed
-  // (null-safe, not new logic) without touching the rest of the file. B-TRUTH
-  // ReportGenerator Retirement (2026-09-02) later retired the entire file —
-  // D-B ratified (CC-005/PR #131) lib/decision-pack/* as the sole canonical
-  // Decision Pack authority, ReportGeneratorService had zero real runtime
-  // callers, and its BTI section was already dead (empty array/null) at the
-  // time of that retirement. The null-safety assertion this test used to make
-  // is moot once the file it asserted on no longer exists — see
-  // tests/unit/b-truth-report-generator-retirement.test.ts for the retirement's
-  // own regression guard.
-  //
-  // CompanyIntelligenceService was the 3rd of these 3 confirmed consumers —
-  // this describe block originally proved its BTI-specific dependency was
-  // trimmed without touching the rest of the file. CC-020A (2026-08-31)
-  // later retired the entire file for an unrelated, explicit founder
-  // decision (no future canonical role for the orphaned aggregator itself).
-  // See tests/unit/cc020a-retire-company-intelligence.test.ts.
+  it('ReportGeneratorService.ts no longer exists (retired by B-TRUTH ReportGenerator Retirement, unrelated to this BTI slice)', () => {
+    expect(existsSync(resolve(root, 'services/report-generator/ReportGeneratorService.ts'))).toBe(false);
+  });
+
   it('CompanyIntelligenceService.ts no longer exists (retired by CC-020A, unrelated to this BTI slice)', () => {
     expect(existsSync(resolve(root, 'services/company-intelligence/CompanyIntelligenceService.ts'))).toBe(false);
-  });
-
-  it('the one remaining consumer (DynamicScoringPreviewService) had its ScoringSimulatorService dependency untouched', () => {
-    expect(read('services/dynamic-scoring/DynamicScoringPreviewService.ts')).toContain('scoringSimulatorService');
-  });
-
-  it('the one remaining consumer (DynamicScoringPreviewService) was not deleted — only the BTI-specific dependency was removed', () => {
-    expect(existsSync(resolve(root, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(true);
   });
 });
 

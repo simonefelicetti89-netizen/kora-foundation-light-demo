@@ -83,16 +83,17 @@ describe('B-TRUTH — this PR retired ONLY ReportGeneratorService (one PR = one 
 
   // FinancialGovernanceService was in this "untouched by PR #132" list originally
   // (accurately, at that time) — it was later, separately retired by B-TRUTH
-  // FinancialGovernance Retirement (2026-09-02, its own bounded PR), so it is
-  // deliberately removed from this list rather than left to falsely assert
-  // continued existence. See tests/unit/b-truth-financial-governance-retirement.test.ts.
+  // FinancialGovernance Retirement (2026-09-02, its own bounded PR). PreviewScoringAdapter
+  // and DynamicScoringPreviewService were also in this list originally — later,
+  // separately retired by B-TRUTH Preview Scoring Retirement (2026-09-03). Each
+  // is deliberately removed from this list rather than left to falsely assert
+  // continued existence. See tests/unit/b-truth-financial-governance-retirement.test.ts
+  // and tests/unit/b-truth-preview-scoring-retirement.test.ts.
   it('the Ingestion/UEF legacy chain untouched — still exists', () => {
     for (const file of [
       'services/ingestion-pipeline/IngestionPipelineService.ts',
       'services/eligibility-gate/EligibilityGateService.ts',
       'services/uef-review/UEFReviewService.ts',
-      'services/dynamic-scoring/DynamicScoringPreviewService.ts',
-      'services/scoring/PreviewScoringAdapter.ts',
       'services/explainability/ExplainabilityService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
