@@ -86,15 +86,17 @@ describe('B-TRUTH — this PR retired ONLY ReportGeneratorService (one PR = one 
   // FinancialGovernance Retirement (2026-09-02, its own bounded PR). PreviewScoringAdapter
   // and DynamicScoringPreviewService were also in this list originally — later,
   // separately retired by B-TRUTH Preview Scoring Retirement (2026-09-03).
-  // UEFReviewService was also in this list originally — later, separately
-  // retired by B-TRUTH UEFReview Retirement (2026-09-03). Each is
-  // deliberately removed from this list rather than left to falsely assert
-  // continued existence. See tests/unit/b-truth-financial-governance-retirement.test.ts,
-  // tests/unit/b-truth-preview-scoring-retirement.test.ts, and
-  // tests/unit/b-truth-uef-review-retirement.test.ts.
+  // UEFReviewService and IngestionPipelineService were also in this list
+  // originally — each later, separately retired by its own bounded PR
+  // (B-TRUTH UEFReview Retirement, 2026-09-03; B-TRUTH Ingestion Pipeline
+  // Retirement, 2026-09-03). Each is deliberately removed from this list
+  // rather than left to falsely assert continued existence. See
+  // tests/unit/b-truth-financial-governance-retirement.test.ts,
+  // tests/unit/b-truth-preview-scoring-retirement.test.ts,
+  // tests/unit/b-truth-uef-review-retirement.test.ts, and
+  // tests/unit/b-truth-ingestion-pipeline-retirement.test.ts.
   it('the Ingestion/UEF legacy chain untouched — still exists', () => {
     for (const file of [
-      'services/ingestion-pipeline/IngestionPipelineService.ts',
       'services/eligibility-gate/EligibilityGateService.ts',
       'services/explainability/ExplainabilityService.ts',
     ]) {
