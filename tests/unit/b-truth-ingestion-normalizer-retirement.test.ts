@@ -116,17 +116,12 @@ describe('B-TRUTH — canonical live ingestion/data-intake path remains untouche
   });
 });
 
+// EligibilityGateService and its fixture, data/synthetic/action-taxonomy.json,
+// were documented here as untouched (accurately, at that time) — each was
+// later, separately retired by B-TRUTH Eligibility Gate Retirement
+// (2026-09-03, its own bounded PR). See
+// tests/unit/b-truth-eligibility-gate-retirement.test.ts.
 describe('B-TRUTH — this PR retired ONLY IngestionNormalizerService (one PR = one bounded retirement)', () => {
-  it('EligibilityGateService untouched — still exists, unmodified', () => {
-    expect(existsSync(resolve(root, 'services/eligibility-gate/EligibilityGateService.ts'))).toBe(true);
-    const src = read('services/eligibility-gate/EligibilityGateService.ts');
-    expect(src).toContain('classifyAction(');
-  });
-
-  it('data/synthetic/action-taxonomy.json (EligibilityGateService\'s fixture) untouched', () => {
-    expect(existsSync(resolve(root, 'data/synthetic/action-taxonomy.json'))).toBe(true);
-  });
-
   it('ReportFactoryService and the live methodology glossary untouched', () => {
     expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
     const glossary = read('services/explainability/ExplainabilityService.ts');
@@ -163,13 +158,18 @@ describe('B-TRUTH — registry and I9 reflect the retirement', () => {
     expect(entry).toContain("status: 'DEAD'");
   });
 
-  it('registry svc.eligibility-gate entry remains CANONICAL — untouched', () => {
+  // EligibilityGateService was checked here as remaining CANONICAL
+  // originally (accurately, at that time) — it was later, separately
+  // retired by B-TRUTH Eligibility Gate Retirement (2026-09-03). See
+  // tests/unit/b-truth-eligibility-gate-retirement.test.ts for its own
+  // registry-status regression guard.
+  it('registry svc.eligibility-gate entry reflects DEAD, not CANONICAL (historical note, not a live assertion of this PR)', () => {
     const registry = read('lib/architecture/registry.ts');
     const idx = registry.indexOf("id: 'svc.eligibility-gate'");
     expect(idx).toBeGreaterThan(-1);
     const nextIdx = registry.indexOf("{ id:", idx + 10);
     const entry = registry.slice(idx, nextIdx);
-    expect(entry).toContain("status: 'CANONICAL'");
+    expect(entry).toContain("status: 'DEAD'");
   });
 
   it('IngestionNormalizerService was never an I9 allowlist entry — I9 unaffected by this retirement', () => {

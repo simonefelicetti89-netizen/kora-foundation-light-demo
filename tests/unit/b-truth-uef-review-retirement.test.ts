@@ -143,11 +143,11 @@ describe('B-TRUTH — demo-guard-01 fallback prohibition preserved, unweakened',
 // (2026-09-03, its own bounded PR), which also deleted ingestion-samples.json
 // (confirmed zero other real consumers at that time). See
 // tests/unit/b-truth-ingestion-pipeline-retirement.test.ts.
+// EligibilityGateService was documented here as untouched (accurately, at
+// that time) — it was later, separately retired by B-TRUTH Eligibility
+// Gate Retirement (2026-09-03, its own bounded PR). See
+// tests/unit/b-truth-eligibility-gate-retirement.test.ts.
 describe('B-TRUTH — this PR retired ONLY UEFReviewService (one PR = one bounded retirement)', () => {
-  it('EligibilityGateService untouched — still exists, unmodified', () => {
-    expect(existsSync(resolve(root, 'services/eligibility-gate/EligibilityGateService.ts'))).toBe(true);
-  });
-
   it('ReportFactoryService and the live methodology glossary untouched', () => {
     expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
     const glossary = read('services/explainability/ExplainabilityService.ts');
