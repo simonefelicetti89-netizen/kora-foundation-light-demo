@@ -107,11 +107,14 @@ describe('B-TRUTH — this PR retired ONLY FinancialGovernanceService (one PR = 
   // (2026-09-03, its own bounded PR). See
   // tests/unit/b-truth-preview-scoring-retirement.test.ts.
 
+  // UEFReviewService was in this "untouched" list originally (accurately, at
+  // that time) — it was later, separately retired by B-TRUTH UEFReview
+  // Retirement (2026-09-03, its own bounded PR). See
+  // tests/unit/b-truth-uef-review-retirement.test.ts.
   it('the Ingestion/UEF legacy chain untouched — still exists', () => {
     for (const file of [
       'services/ingestion-pipeline/IngestionPipelineService.ts',
       'services/eligibility-gate/EligibilityGateService.ts',
-      'services/uef-review/UEFReviewService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }

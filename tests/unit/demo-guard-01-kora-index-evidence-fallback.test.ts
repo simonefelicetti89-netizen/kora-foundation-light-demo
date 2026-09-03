@@ -140,13 +140,13 @@ describe('DEMO-GUARD-01 — canonical Decision Pack authority has zero dependenc
     expect(pdfData).toContain('D-B resolved');
   });
 
-  it('ReportGeneratorService, FinancialGovernanceService, PreviewScoringAdapter and DynamicScoringPreviewService retired (2026-09-02/03, separate bounded PRs) — the rest of the legacy chain is untouched, one-PR-one-service discipline', () => {
+  it('ReportGeneratorService, FinancialGovernanceService, PreviewScoringAdapter, DynamicScoringPreviewService, and UEFReviewService retired (2026-09-02/03, separate bounded PRs) — the rest of the legacy chain is untouched, one-PR-one-service discipline', () => {
     expect(fs.existsSync(path.join(ROOT, 'services/report-generator/ReportGeneratorService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/financial-governance/FinancialGovernanceService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/scoring/PreviewScoringAdapter.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(false);
+    expect(fs.existsSync(path.join(ROOT, 'services/uef-review/UEFReviewService.ts'))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
-    expect(fs.existsSync(path.join(ROOT, 'services/uef-review/UEFReviewService.ts'))).toBe(true);
     expect(fs.existsSync(path.join(ROOT, 'services/ingestion-pipeline/IngestionPipelineService.ts'))).toBe(true);
     expect(fs.existsSync(path.join(ROOT, 'services/eligibility-gate/EligibilityGateService.ts'))).toBe(true);
     expect(fs.existsSync(path.join(ROOT, 'services/explainability/ExplainabilityService.ts'))).toBe(true);
