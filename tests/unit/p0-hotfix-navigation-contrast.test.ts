@@ -6,7 +6,6 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { buildNavGroups } from '../../components/layout/Sidebar';
-import { tenantService } from '../../services/tenant/TenantService';
 
 const ROOT = join(process.cwd());
 
@@ -68,29 +67,22 @@ describe('/company/status — contrast fix', () => {
 // The synthetic per-company workforce page this block tested (including its
 // hardcoded 'meridiana-group' fallback — a known hidden-fallback bug flagged
 // by the earlier Tenant Identity audit) was retired 2026-08-30. TenantService
-// itself is untouched and still resolves the same synthetic fixture — only
-// the page that consumed it for a live-looking "Gestisci workforce" flow is
-// gone. Real worker provisioning is /admin/workers (B104, live).
+// itself was untouched at that time and still resolved the same synthetic
+// fixture — only the page that consumed it for a live-looking "Gestisci
+// workforce" flow was gone. B-TRUTH TenantService Canonical Migration
+// (2026-09-04) later, separately, retired TenantService.ts itself (and its
+// fixture) entirely — the 3 tests that used to live here asserting
+// tenantService's synthetic resolution behavior are retired along with it.
+// See tests/unit/b-truth-tenantservice-canonical-migration.test.ts. Real
+// worker provisioning is /admin/workers (B104, live).
 
-describe('Workforce resolution (TenantService fixture, unaffected by retirement)', () => {
-  it('tenantService resolves meridiana-group by company_id', () => {
-    const tenant = tenantService.getTenant('meridiana-group');
-    expect(tenant).not.toBeNull();
-    expect(tenant?.company_id).toBe('meridiana-group');
-  });
-
-  it('tenantService resolves tenant-meridiana-001 by tenant_id', () => {
-    const tenant = tenantService.getTenantByTenantId('tenant-meridiana-001');
-    expect(tenant).not.toBeNull();
-    expect(tenant?.company_id).toBe('meridiana-group');
-  });
-
-  it('tenantService.getTenants() returns at least one tenant', () => {
-    expect(tenantService.getTenants().length).toBeGreaterThan(0);
-  });
-
+describe('Workforce resolution — retired page stays retired (historical note, TenantService assertions removed)', () => {
   it('the retired workforce page no longer exists (hidden meridiana-group fallback gone with it)', () => {
     expect(existsSync(join(ROOT, 'app/admin/companies/[companyId]/workforce/page.tsx'))).toBe(false);
+  });
+
+  it('services/tenant/TenantService.ts no longer exists', () => {
+    expect(existsSync(join(ROOT, 'services/tenant/TenantService.ts'))).toBe(false);
   });
 });
 

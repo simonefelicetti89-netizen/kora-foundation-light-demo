@@ -10,6 +10,7 @@ import { requireKoraAdmin, isKoraAuthError } from '@/lib/auth/kora-session';
 import { CompanyConsolePanel } from './_components/CompanyConsolePanel';
 import { WorkforceQuickAccessPanel } from '@/components/admin/WorkforceQuickAccessPanel';
 import { redirect } from 'next/navigation';
+import { getSupabaseServiceClient } from '@/lib/supabase/server';
 
 const FROM_LABELS: Record<string, string> = {
   workspace:   'Spazio Azienda',
@@ -36,6 +37,20 @@ export default async function CompanyConsolePage({
     ? FROM_LABELS[sp.from]
     : null;
 
+  // B-TRUTH TenantService Canonical Migration (2026-09-04): canonical tenant
+  // list for WorkforceQuickAccessPanel — every tenant_kind included (no
+  // hidden test tenants; tenant_kind is not a filter here, matching the
+  // frozen "no visible LIVE/DEMO product bifurcation" invariant).
+  const db = getSupabaseServiceClient();
+  const { data: tenantRows, error: tenantsErr } = await db
+    .schema('analytics').from('tenant')
+    .select('id, tenant_code, company_name')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (tenantsErr) throw new Error(`[KORA] tenant list fetch failed: ${tenantsErr.message}`);
+  const tenants = (tenantRows ?? []) as Array<{ id: string; tenant_code: string; company_name: string }>;
+
   return (
     <>
       {fromSection && (
@@ -45,7 +60,7 @@ export default async function CompanyConsolePage({
           Seleziona un&apos;azienda per aprire la sezione.
         </div>
       )}
-      <WorkforceQuickAccessPanel />
+      <WorkforceQuickAccessPanel tenants={tenants} />
       <CompanyConsolePanel userEmail={auth.email} />
     </>
   );

@@ -63,7 +63,9 @@ describe('CC-019A — no runtime navigation points at the retired route', () => 
   });
 
   it('admin/pipeline keeps its other quick links untouched', () => {
-    const src = read('app/admin/pipeline/page.tsx');
+    // B-TRUTH TenantService Canonical Migration (2026-09-04) moved this
+    // content from page.tsx into the new client component it renders.
+    const src = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
     expect(src).toContain("label: 'Worker Provisioning (live)'");
     expect(src).toContain("label: 'Submission Queue'");
     expect(src).toContain("label: 'UEF Review & Scoring'");
@@ -101,34 +103,23 @@ describe('CC-019A — the legacy synthetic subsystem was not migrated into the l
 });
 
 describe('CC-019A — TenantService and AccountProvisioningService implementations were not touched', () => {
-  it('TenantService.ts still exists with its other callers intact', () => {
-    expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(true);
-    // Other confirmed callers untouched by CC-019A. layout.tsx is NOT listed
-    // here — it was untouched by CC-019A specifically, but CC-019B (a later,
-    // separate sub-slice) has since canonicalized it; see
-    // tests/unit/cc019b-canonicalize-gen3-tenant-identity.test.ts.
-    // services/company-intelligence/CompanyIntelligenceService.ts is ALSO
-    // not listed here — it was untouched by CC-019A, but CC-020A (a later,
-    // unrelated sub-slice) has since retired it entirely; see
-    // tests/unit/cc020a-retire-company-intelligence.test.ts.
-    // app/admin/companies/workforce-baseline/page.tsx is NOT listed here —
-    // it was untouched by CC-019A, but B-TRUTH's first canonical seed group
-    // (2026-09-01) has since migrated it off tenantService entirely (its
-    // own workforce-baseline data source, plus its company selector); see
-    // tests/unit/btruth-workforce-baseline-route.test.ts and
-    // lib/architecture/registry.ts svc.workforce-baseline.
-    for (const file of [
-      'app/admin/pipeline/page.tsx',
-      'components/admin/WorkforceQuickAccessPanel.tsx',
-      'services/report-factory/ReportFactoryService.ts',
-    ]) {
-      expect(read(file)).toContain('tenantService');
-    }
+  // TenantService.ts was accurately untouched by CC-019A at the time this
+  // test was written. B-TRUTH TenantService Canonical Migration
+  // (2026-09-04), a later, unrelated slice, retired it entirely (all 3 real
+  // callers migrated to canonical analytics.tenant reads). See
+  // tests/unit/b-truth-tenantservice-canonical-migration.test.ts. That same
+  // migration split app/admin/pipeline/page.tsx into a thin Server
+  // Component (page.tsx) plus a new client component
+  // (_components/PilotLifecycleClient.tsx) that now holds the
+  // still-unmigrated accountProvisioningService call checked below —
+  // page.tsx itself no longer contains it.
+  it('TenantService.ts has been retired (historical note, not a live assertion of this test)', () => {
+    expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(false);
   });
 
   it('AccountProvisioningService.ts still exists with its other callers intact', () => {
     expect(existsSync(resolve(root, 'services/account/AccountProvisioningService.ts'))).toBe(true);
-    for (const file of ['app/admin/pipeline/page.tsx', 'app/my-kora/page.tsx']) {
+    for (const file of ['app/admin/pipeline/_components/PilotLifecycleClient.tsx', 'app/my-kora/page.tsx']) {
       expect(read(file)).toContain('accountProvisioningService');
     }
   });

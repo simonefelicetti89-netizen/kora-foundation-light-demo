@@ -37,8 +37,13 @@ function read(relPath: string): string {
   return readFileSync(resolve(root, relPath), 'utf-8');
 }
 
+// B-TRUTH TenantService Canonical Migration (2026-09-04): app/admin/pipeline/
+// page.tsx became a thin async Server Component (canonical tenant fetch
+// only); the demo banner/footer/nav-link content checked below moved,
+// unchanged, into the new app/admin/pipeline/_components/
+// PilotLifecycleClient.tsx it renders.
 describe('B-TRUTH Demo/Orphan Chain Audit — pipeline is a labeled demo surface, not production', () => {
-  const src = read('app/admin/pipeline/page.tsx');
+  const src = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
 
   it('carries an explicit demo banner and synthetic_demo_data label', () => {
     expect(src).toContain('DemoFlowBanner');
@@ -75,12 +80,15 @@ describe('B-TRUTH Demo/Orphan Chain Audit — ReportFactoryService trimmed to it
   }
 
   it('still defines the two reachable methods', () => {
-    expect(src).toContain('getDecisionPackFactoryStatus(companyId: string)');
+    // B-TRUTH TenantService Canonical Migration (2026-09-04) added a second
+    // parameter, canonicalTenant, replacing the internal tenantService
+    // dependency — getDecisionPackFactoryStatus itself, not a new method.
+    expect(src).toContain('getDecisionPackFactoryStatus(companyId: string, canonicalTenant: CanonicalTenantStatus | null)');
     expect(src).toContain('getLatestDecisionPackVersion(companyId: string)');
   });
 
   it('exactly one real caller remains — pipeline (a demo caller)', () => {
-    const pipeline = read('app/admin/pipeline/page.tsx');
+    const pipeline = read('app/admin/pipeline/_components/PilotLifecycleClient.tsx');
     expect(pipeline).toContain('reportFactoryService.getDecisionPackFactoryStatus');
   });
 });

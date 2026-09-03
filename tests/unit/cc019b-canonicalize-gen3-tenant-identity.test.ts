@@ -97,31 +97,21 @@ describe('CC-019A retirement remains intact', () => {
   });
 });
 
-describe('CC-019B — intentional DEMO_RUNTIME TenantService consumers remain untouched', () => {
-  it('demo surfaces still call tenantService, unchanged', () => {
-    // app/admin/companies/workforce-baseline/page.tsx is NOT listed here —
-    // B-TRUTH's first canonical seed group (2026-09-01) migrated it off
-    // tenantService (both its own data and its company selector now read
-    // live endpoints). See tests/unit/btruth-workforce-baseline-route.test.ts.
-    for (const file of [
-      'app/admin/pipeline/page.tsx',
-      'components/admin/WorkforceQuickAccessPanel.tsx',
-    ]) {
-      expect(read(file)).toContain('tenantService');
-    }
+// The 3 DEMO_RUNTIME consumers documented here as "untouched" — app/admin/
+// pipeline/page.tsx, components/admin/WorkforceQuickAccessPanel.tsx, and
+// services/report-factory/ReportFactoryService.ts — were accurately
+// untouched at the time this test was written. B-TRUTH TenantService
+// Canonical Migration (2026-09-04) migrated all three to canonical
+// analytics.tenant reads and retired services/tenant/TenantService.ts
+// entirely (zero-caller after the migration). See
+// tests/unit/b-truth-tenantservice-canonical-migration.test.ts for the
+// current regression guard.
+describe('CC-019B — TenantService has been fully, independently retired by a later PR (historical note, not a live assertion)', () => {
+  it('services/tenant/TenantService.ts no longer exists', () => {
+    expect(existsSync(resolve(root, 'services/tenant/TenantService.ts'))).toBe(false);
   });
 
-  it('the remaining separately-classified pending-decision service still calls tenantService, unchanged', () => {
-    // CompanyIntelligenceService was the other pending-decision consumer at
-    // the time this test was written; CC-020A (2026-08-31, a later,
-    // unrelated sub-slice) resolved its fate (RETIRE) and removed it
-    // entirely. See tests/unit/cc020a-retire-company-intelligence.test.ts.
-    expect(read('services/report-factory/ReportFactoryService.ts')).toContain('tenantService');
+  it('CompanyIntelligenceService remains retired (CC-020A, unaffected by this later PR)', () => {
     expect(existsSync(resolve(root, 'services/company-intelligence/CompanyIntelligenceService.ts'))).toBe(false);
-  });
-
-  it('TenantService.ts implementation itself is untouched — still reads its own synthetic seed', () => {
-    const src = read('services/tenant/TenantService.ts');
-    expect(src).toContain("from '@/data/synthetic/tenants.json'");
   });
 });
