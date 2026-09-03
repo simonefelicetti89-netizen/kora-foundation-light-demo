@@ -1,0 +1,104 @@
+{
+  "_comment": "B-TRUTH KoraTest Srl canonical foundation. These are deterministic FAKE INPUT rows only — the raw, company-provided-style records that a real client would upload. They are consumed by scripts/koratest-canonical-seed.ts and pushed through the real canonical ingestion -> UEF -> eligibility -> scoring -> Decision Pack pipeline. No field here is a KORA-computed output; every downstream result is produced by invoking the same canonical functions a real tenant uses. This is NOT under data/synthetic/** and NOT reused from OP-001 (lib/live/op001-synthetic-records.ts) — it is KoraTest Srl's own fixture, deliberately covering multiple pillars, an incomplete row, a limited-eligibility row, and a blocked-eligibility row so scoring is not trivially perfect.",
+  "company_name": "KoraTest Srl",
+  "tenant_code": "KORATEST-01",
+  "reporting_period": "2026-Q3",
+  "workforce_population": 42,
+  "segment_breakdown": {
+    "departments": { "dept-tech": 16, "dept-operations": 14, "dept-people": 12 },
+    "contract_types": { "full_time": 34, "part_time": 8 }
+  },
+  "rows": [
+    {
+      "row_id": "kt-001",
+      "initiative_name": "Corso di formazione digitale avanzata",
+      "category": "formazione",
+      "type": "training",
+      "amount": 3200,
+      "participants": 25,
+      "department_group": "dept-tech"
+    },
+    {
+      "row_id": "kt-002",
+      "initiative_name": "Sportello di supporto psicologico aziendale",
+      "category": "benessere psicologico",
+      "type": "counselling",
+      "amount": 4100,
+      "participants": 40,
+      "department_group": "dept-people"
+    },
+    {
+      "row_id": "kt-003",
+      "initiative_name": "Programma di mentoring inter-funzionale",
+      "category": "mentoring",
+      "type": "coaching",
+      "amount": 1800,
+      "participants": 18,
+      "department_group": "dept-operations"
+    },
+    {
+      "row_id": "kt-004",
+      "initiative_name": "Iniziativa di volontariato territoriale",
+      "category": "volontariato",
+      "type": "community",
+      "amount": 2600,
+      "participants": 30,
+      "department_group": "dept-people"
+    },
+    {
+      "row_id": "kt-005",
+      "initiative_name": "Percorso di trasferimento competenze senior-junior",
+      "category": "trasferimento competenze",
+      "type": "knowledge transfer",
+      "amount": 1500,
+      "participants": 12,
+      "department_group": "dept-tech"
+    },
+    {
+      "row_id": "kt-006",
+      "initiative_name": "Buoni pasto mensili",
+      "category": "buoni pasto",
+      "type": "fringe benefit",
+      "amount": 5400,
+      "participants": 42,
+      "department_group": "dept-operations",
+      "_note": "deliberately KW_LIMITED — economic relief, not deep activation"
+    },
+    {
+      "row_id": "kt-007",
+      "initiative_name": "Corso obbligatorio sicurezza sul lavoro (D.Lgs 81/08)",
+      "category": "sicurezza obbligatoria",
+      "type": "compliance",
+      "amount": 900,
+      "participants": 42,
+      "department_group": "dept-operations",
+      "_note": "deliberately KW_BLOCKED — mandatory compliance baseline"
+    },
+    {
+      "row_id": "kt-008",
+      "initiative_name": "Workshop di crescita professionale",
+      "category": "sviluppo professionale",
+      "type": "training",
+      "department_group": "dept-tech",
+      "_note": "deliberately incomplete — no amount, no participants, exercises missing-field/lower-confidence path"
+    },
+    {
+      "row_id": "kt-009",
+      "initiative_name": "Checkup salute e prevenzione",
+      "category": "prevenzione sanitaria",
+      "type": "wellbeing",
+      "amount": 2200,
+      "participants": 33,
+      "department_group": "dept-people"
+    },
+    {
+      "row_id": "kt-010",
+      "initiative_name": "Community di innovazione interna",
+      "category": "collaborazione",
+      "type": "peer coaching",
+      "amount": 1200,
+      "participants": 20,
+      "department_group": "dept-tech"
+    }
+  ]
+}
