@@ -141,24 +141,17 @@ describe('B-TRUTH — b89b architecture contract updated, remaining adapters sti
   });
 });
 
-describe('B-TRUTH — UEFReviewService untouched (real-caller drop is documented, not acted on)', () => {
-  it('UEFReviewService.ts still exists, unmodified', () => {
-    expect(existsSync(resolve(root, 'services/uef-review/UEFReviewService.ts'))).toBe(true);
-  });
-
-  it('no runtime file besides the deleted ones ever called UEFReviewService — demo-guard-01 protection remains untouched', () => {
-    const guard = read('tests/unit/demo-guard-01-kora-index-evidence-fallback.test.ts');
-    expect(guard).toContain('getReviewSummary');
-  });
-});
-
+// UEFReviewService was documented here as untouched (accurately, at that
+// time) — it was later, separately retired by B-TRUTH UEFReview Retirement
+// (2026-09-03, its own bounded PR). Its real-caller drop from this PR was
+// exactly the documented-but-not-acted-on evidence that later slice acted
+// on. See tests/unit/b-truth-uef-review-retirement.test.ts.
 describe('B-TRUTH — this PR retired ONLY the Preview pair (one PR = one bounded retirement)', () => {
   it('ReportFactoryService, the Ingestion/UEF legacy chain untouched — still exist', () => {
     for (const file of [
       'services/report-factory/ReportFactoryService.ts',
       'services/ingestion-pipeline/IngestionPipelineService.ts',
       'services/eligibility-gate/EligibilityGateService.ts',
-      'services/uef-review/UEFReviewService.ts',
     ]) {
       expect(existsSync(resolve(root, file))).toBe(true);
     }
