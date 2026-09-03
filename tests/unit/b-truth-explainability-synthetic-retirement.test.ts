@@ -161,10 +161,14 @@ describe('B-TRUTH — types kept for ExplainabilityPanel.tsx type-only compatibi
 });
 
 describe('B-TRUTH — this PR retired ONLY the synthetic branch (one PR = one bounded retirement)', () => {
-  it('ReportFactoryService, PreviewScoringAdapter, DynamicScoringPreviewService untouched — still exist', () => {
+  // PreviewScoringAdapter and DynamicScoringPreviewService were in this
+  // "untouched by this PR" list originally (accurately, at that time) — they
+  // were later, separately retired by B-TRUTH Preview Scoring Retirement
+  // (2026-09-03, its own bounded PR), so they are deliberately removed from
+  // this list rather than left to falsely assert continued existence. See
+  // tests/unit/b-truth-preview-scoring-retirement.test.ts.
+  it('ReportFactoryService untouched — still exists', () => {
     expect(existsSync(resolve(root, 'services/report-factory/ReportFactoryService.ts'))).toBe(true);
-    expect(existsSync(resolve(root, 'services/scoring/PreviewScoringAdapter.ts'))).toBe(true);
-    expect(existsSync(resolve(root, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(true);
   });
 
   it('the Ingestion/UEF legacy chain untouched — still exists', () => {

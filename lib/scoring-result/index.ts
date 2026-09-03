@@ -4,13 +4,13 @@
 //
 // All application pages and components MUST consume scoring via useScoringResult().
 //
-// THREE scoring paths exist (see services/scoring/IScoringService.ts for the full map):
+// TWO scoring paths exist (see services/scoring/IScoringService.ts for the full map):
 //   demo  → ScoringSimulatorService (synthetic seed, not authoritative)
 //   live  → fetchLiveScoringResult  (run-kora-pipeline, authoritative)
 //
-// NEVER import ScoringSimulatorService, DynamicScoringPreviewService,
-// or run-kora-pipeline directly in app/ routes or components.
-// Bypassing this hook breaks the demo/live boundary guarantee.
+// NEVER import ScoringSimulatorService or run-kora-pipeline directly in
+// app/ routes or components. Bypassing this hook breaks the demo/live
+// boundary guarantee.
 
 'use client';
 

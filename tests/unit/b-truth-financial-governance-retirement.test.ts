@@ -101,10 +101,11 @@ describe('B-TRUTH — this PR retired ONLY FinancialGovernanceService (one PR = 
     expect(existsSync(resolve(root, 'services/explainability/ExplainabilityService.ts'))).toBe(true);
   });
 
-  it('PreviewScoringAdapter and DynamicScoringPreviewService untouched — still exist', () => {
-    expect(existsSync(resolve(root, 'services/scoring/PreviewScoringAdapter.ts'))).toBe(true);
-    expect(existsSync(resolve(root, 'services/dynamic-scoring/DynamicScoringPreviewService.ts'))).toBe(true);
-  });
+  // PreviewScoringAdapter and DynamicScoringPreviewService were in this
+  // "untouched by this PR" list originally (accurately, at that time) — they
+  // were later, separately retired by B-TRUTH Preview Scoring Retirement
+  // (2026-09-03, its own bounded PR). See
+  // tests/unit/b-truth-preview-scoring-retirement.test.ts.
 
   it('the Ingestion/UEF legacy chain untouched — still exists', () => {
     for (const file of [

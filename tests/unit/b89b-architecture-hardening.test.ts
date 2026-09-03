@@ -21,7 +21,6 @@ import {
 } from '../../lib/permissions/index';
 import type { KoraRole } from '../../lib/types';
 import { demoScoringAdapter }    from '../../services/scoring/DemoScoringAdapter';
-import { previewScoringAdapter } from '../../services/scoring/PreviewScoringAdapter';
 import { liveScoringAdapter }    from '../../services/scoring/LiveScoringAdapter';
 import type { IScoringService, ScoringPathMode } from '../../services/scoring/IScoringService';
 import type {
@@ -238,13 +237,12 @@ describe('resolvePermission — worker-private resource guard', () => {
 describe('IScoringService — adapter contracts', () => {
   const adapters: Array<{ name: string; adapter: IScoringService }> = [
     { name: 'DemoScoringAdapter',    adapter: demoScoringAdapter },
-    { name: 'PreviewScoringAdapter', adapter: previewScoringAdapter },
     { name: 'LiveScoringAdapter',    adapter: liveScoringAdapter },
   ];
 
   for (const { name, adapter } of adapters) {
     it(`${name} has a mode property`, () => {
-      const validModes: ScoringPathMode[] = ['DEMO', 'PREVIEW', 'LIVE'];
+      const validModes: ScoringPathMode[] = ['DEMO', 'LIVE'];
       expect(validModes).toContain(adapter.mode);
     });
 
@@ -266,14 +264,6 @@ describe('IScoringService — adapter contracts', () => {
     expect(demoScoringAdapter.isAuthoritative).toBe(false);
   });
 
-  it('PreviewScoringAdapter mode is PREVIEW', () => {
-    expect(previewScoringAdapter.mode).toBe('PREVIEW');
-  });
-
-  it('PreviewScoringAdapter is NOT authoritative', () => {
-    expect(previewScoringAdapter.isAuthoritative).toBe(false);
-  });
-
   it('LiveScoringAdapter mode is LIVE', () => {
     expect(liveScoringAdapter.mode).toBe('LIVE');
   });
@@ -284,7 +274,6 @@ describe('IScoringService — adapter contracts', () => {
 
   it('only LiveScoringAdapter is authoritative', () => {
     expect(demoScoringAdapter.isAuthoritative).toBe(false);
-    expect(previewScoringAdapter.isAuthoritative).toBe(false);
     expect(liveScoringAdapter.isAuthoritative).toBe(true);
   });
 
