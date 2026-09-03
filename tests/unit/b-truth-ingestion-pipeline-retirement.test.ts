@@ -139,10 +139,13 @@ describe('B-TRUTH — demo-guard-01 fallback prohibition preserved, unweakened',
   });
 });
 
+// IngestionNormalizerService was in this "untouched" list originally
+// (accurately, at that time) — it was later, separately retired by B-TRUTH
+// Ingestion Normalizer Retirement (2026-09-03, its own bounded PR). See
+// tests/unit/b-truth-ingestion-normalizer-retirement.test.ts.
 describe('B-TRUTH — this PR retired ONLY IngestionPipelineService (one PR = one bounded retirement)', () => {
-  it('EligibilityGateService and IngestionNormalizerService untouched — still exist, unmodified', () => {
+  it('EligibilityGateService untouched — still exists, unmodified', () => {
     expect(existsSync(resolve(root, 'services/eligibility-gate/EligibilityGateService.ts'))).toBe(true);
-    expect(existsSync(resolve(root, 'services/ingestion-normalizer/IngestionNormalizerService.ts'))).toBe(true);
   });
 
   it('ReportFactoryService and the live methodology glossary untouched', () => {
@@ -173,15 +176,17 @@ describe('B-TRUTH — registry and I9 reflect the retirement', () => {
     expect(entry).toContain("status: 'DEAD'");
   });
 
-  it('EligibilityGateService and IngestionNormalizerService remain CANONICAL, not retired', () => {
+  // IngestionNormalizerService was checked here as remaining CANONICAL
+  // originally (accurately, at that time) — it was later, separately
+  // retired. See tests/unit/b-truth-ingestion-normalizer-retirement.test.ts
+  // for its own registry-status regression guard.
+  it('EligibilityGateService remains CANONICAL, not retired', () => {
     const registry = read('lib/architecture/registry.ts');
-    for (const id of ["id: 'svc.eligibility-gate'", "id: 'svc.ingestion-normalizer'"]) {
-      const idx = registry.indexOf(id);
-      expect(idx).toBeGreaterThan(-1);
-      const nextIdx = registry.indexOf("{ id:", idx + 10);
-      const entry = registry.slice(idx, nextIdx);
-      expect(entry).toContain("status: 'CANONICAL'");
-    }
+    const idx = registry.indexOf("id: 'svc.eligibility-gate'");
+    expect(idx).toBeGreaterThan(-1);
+    const nextIdx = registry.indexOf("{ id:", idx + 10);
+    const entry = registry.slice(idx, nextIdx);
+    expect(entry).toContain("status: 'CANONICAL'");
   });
 
   it('allowlist no longer lists the retired service', () => {
